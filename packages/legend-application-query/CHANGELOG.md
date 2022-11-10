@@ -1,5 +1,111 @@
 # @finos/legend-application-query
 
+## 9.0.8
+
+## 9.0.7
+
+## 9.0.6
+
+## 9.0.5
+
+## 9.0.4
+
+## 9.0.3
+
+## 9.0.2
+
+## 9.0.1
+
+## 9.0.0
+
+### Major Changes
+
+- [#1565](https://github.com/finos/legend-studio/pull/1565) [`ebe9acf9`](https://github.com/finos/legend-studio/commit/ebe9acf9bc01234849e64df792693e493c95cb8f) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Reworked query setup page, the list of option is not partitioned based on various dimensions: is it create/edit action? is it advanced mode, who is the target audience, etc. In particular, we replaced `QuerySetupOptionRendererConfiguration` by `QuerySetupActionConfiguration`
+
+  ```ts
+  type QuerySetupActionConfiguration = {
+    key: string;
+    isCreateAction: boolean;
+    isAdvanced: boolean;
+    tag?: string;
+    label: string;
+    icon: React.ReactNode;
+    className?: string | undefined;
+    action: (setupStore: QuerySetupStore) => Promise<void>;
+  };
+  ```
+
+### Minor Changes
+
+- [#1565](https://github.com/finos/legend-studio/pull/1565) [`ebe9acf9`](https://github.com/finos/legend-studio/commit/ebe9acf9bc01234849e64df792693e493c95cb8f) ([@akphi](https://github.com/akphi)) - Add a new query setup mode from `taxonomy`, this requires modification to `Legend Query` config to also include `url` of `Legend Taxonomy`.
+
+## 8.1.3
+
+## 8.1.2
+
+### Patch Changes
+
+- [#1554](https://github.com/finos/legend-studio/pull/1554) [`bbf54fb1`](https://github.com/finos/legend-studio/commit/bbf54fb13ff5957cf8f9a1391388782e1a308501) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Reset query loader state on closing.
+
+## 8.1.1
+
+## 8.1.0
+
+### Minor Changes
+
+- [#1509](https://github.com/finos/legend-studio/pull/1509) [`8cbd17f0`](https://github.com/finos/legend-studio/commit/8cbd17f0d6b4854525adcdbb974d0c7a0fe4a564) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use data space analytics result cached in `Depot` server whenever possible to speed up loading of data spaces
+
+## 8.0.0
+
+### Major Changes
+
+- [#1488](https://github.com/finos/legend-studio/pull/1488) [`a90b4698`](https://github.com/finos/legend-studio/commit/a90b469846363058ac7efffcbfb8cf0070582609) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `Legend Query` application config now requires `SDLC` entries configuration to enable the app to reason about the `SLDC` and `Studio` project/instance corresponding to a versioned project from the `Depot` server, this enables more seamless integration between `Legend Query` and `Legend Studio`, opening up avenues for new query edition modes. The new config looks like this:
+
+  ```jsonc
+  {
+    ... // existing config content
+    "studio": {
+      "url": "http://localhost:9000/studio",
+      "instances": [
+        {
+          "sdlcProjectIDPrefix": "PROD",
+          "url": "http://localhost:9000/studio"
+        }
+      ]
+    }
+  }
+  ```
+
+### Minor Changes
+
+- [#1488](https://github.com/finos/legend-studio/pull/1488) [`a90b4698`](https://github.com/finos/legend-studio/commit/a90b469846363058ac7efffcbfb8cf0070582609) ([@akphi](https://github.com/akphi)) - Add a new query setup mode `Edit existing service query` which will allow editing query of a service which is currently in `SDLC` via `Legend Studio`. Improve existing `Load query service` mode to allow loading a service in `Legend Studio`
+
+### Patch Changes
+
+- [#1497](https://github.com/finos/legend-studio/pull/1497) [`f10a68e`](https://github.com/finos/legend-studio/commit/f10a68e15185b58fc9d90fb55ad2a83263aa13b7) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Correct the generated `url` and the `mine-only` filter of query editor's query loader.
+
+- [#1497](https://github.com/finos/legend-studio/pull/1497) [`f10a68e1`](https://github.com/finos/legend-studio/commit/f10a68e15185b58fc9d90fb55ad2a83263aa13b7) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Minor Query Loader improvements: Correct the url for loading a new query and improve the logic for searching `mine` queries.
+
+- [#1488](https://github.com/finos/legend-studio/pull/1488) [`a90b4698`](https://github.com/finos/legend-studio/commit/a90b469846363058ac7efffcbfb8cf0070582609) ([@akphi](https://github.com/akphi)) - Remove `depot.TEMPORARY__useLegacyDepotServerAPIRoutes` config flag.
+
+## 7.0.1
+
+## 7.0.0
+
+### Major Changes
+
+- [#1476](https://github.com/finos/legend-studio/pull/1476) [`293f2345`](https://github.com/finos/legend-studio/commit/293f2345cd7dcc7e97fc4b6b21c7d274a1407176) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move core `query-builder` logic out to `@finos/legend-query-builder`.
+
+### Minor Changes
+
+- [#1436](https://github.com/finos/legend-studio/pull/1436) [`df810467`](https://github.com/finos/legend-studio/commit/df810467d81f7317b78f12aa69c52df8f72fe5ea) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Allow loading existing queries from within of query editor ([#1435](https://github.com/finos/legend-studio/issues/1435)).
+
+## 6.0.0
+
+### Major Changes
+
+- [#1457](https://github.com/finos/legend-studio/pull/1457) [`ddc2a034`](https://github.com/finos/legend-studio/commit/ddc2a034d8fe25d1eaf52058353d644f29c3da23) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Update route patterns for query editor modes: `/query/create/...` -> `/query/create/manual/...`, `/query/service/...` -> `/query/create/create-from-service`.
+
 ## 5.2.8
 
 ### Patch Changes

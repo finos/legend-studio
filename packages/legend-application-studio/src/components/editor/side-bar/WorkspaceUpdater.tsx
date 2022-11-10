@@ -28,8 +28,8 @@ import {
   CloudDownloadIcon,
   RefreshIcon,
   InfoCircleIcon,
+  PanelContent,
 } from '@finos/legend-art';
-import { Link } from 'react-router-dom';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor.js';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter.js';
@@ -41,10 +41,6 @@ import type {
 } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSDLCState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import {
-  ActionAlertType,
-  ActionAlertActionType,
-} from '@finos/legend-application';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
 
 export const WorkspaceUpdater = observer(() => {
@@ -55,37 +51,11 @@ export const WorkspaceUpdater = observer(() => {
   const workspaceUpdaterState = editorStore.workspaceUpdaterState;
   // Actions
   const updateWorkspace = (): void => {
-    if (editorStore.hasUnpushedChanges) {
-      editorStore.setActionAlertInfo({
-        message: 'You have unpushed changes',
-        prompt:
-          'This action will discard these changes and refresh the application',
-        type: ActionAlertType.CAUTION,
-        onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-        onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
-        actions: [
-          {
-            label: 'Proceed to update workspace',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: (): void => {
-              editorStore.setIgnoreNavigationBlocking(true);
-              flowResult(workspaceUpdaterState.updateWorkspace()).catch(
-                applicationStore.alertUnhandledError,
-              );
-            },
-          },
-          {
-            label: 'Abort',
-            type: ActionAlertActionType.PROCEED,
-            default: true,
-          },
-        ],
-      });
-    } else {
+    editorStore.localChangesState.alertUnsavedChanges((): void => {
       flowResult(workspaceUpdaterState.updateWorkspace()).catch(
         applicationStore.alertUnhandledError,
       );
-    }
+    });
   };
   const refreshWorkspaceUpdater = applicationStore.guardUnhandledError(() =>
     flowResult(workspaceUpdaterState.refreshWorkspaceUpdater()),
@@ -193,7 +163,7 @@ export const WorkspaceUpdater = observer(() => {
                   {changes.length}
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 {conflicts
                   .slice()
                   .sort((a, b) => a.entityName.localeCompare(b.entityName))
@@ -220,7 +190,7 @@ export const WorkspaceUpdater = observer(() => {
                       openDiff={openChange(diff)}
                     />
                   ))}
-              </div>
+              </PanelContent>
             </div>
           </ResizablePanel>
           <ResizablePanelSplitter>
@@ -249,15 +219,20 @@ export const WorkspaceUpdater = observer(() => {
                   {commitedReviews.length}
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 {commitedReviews.map((review) => (
-                  <Link
+                  <button
                     key={review.id}
                     className="side-bar__panel__item workspace-updater__review__link"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                    to={generateReviewRoute(review.projectId, review.id)}
-                    title={'See review detail'}
+                    title="See review"
+                    tabIndex={-1}
+                    onClick={(): void =>
+                      applicationStore.navigator.visitAddress(
+                        applicationStore.navigator.generateAddress(
+                          generateReviewRoute(review.projectId, review.id),
+                        ),
+                      )
+                    }
                   >
                     <div className="workspace-updater__review">
                       <span className="workspace-updater__review__name">
@@ -267,9 +242,9 @@ export const WorkspaceUpdater = observer(() => {
                         {review.author.name}
                       </span>
                     </div>
-                  </Link>
+                  </button>
                 ))}
-              </div>
+              </PanelContent>
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

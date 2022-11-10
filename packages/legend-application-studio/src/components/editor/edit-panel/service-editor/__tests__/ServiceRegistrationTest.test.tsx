@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { test, jest, expect } from '@jest/globals';
+import { test, expect } from '@jest/globals';
 import {
   type RenderResult,
   getByPlaceholderText,
@@ -28,11 +28,11 @@ import TEST_DATA__serviceEntities from '../../../../editor/edit-panel/service-ed
 import {
   type PlainObject,
   integrationTest,
-  MOBX__disableSpyOrMock,
-  MOBX__enableSpyOrMock,
   prettyCONSTName,
+  createSpy,
 } from '@finos/legend-shared';
 import {
+  TEST_DATA__DefaultDepotInfo,
   TEST_DATA__DefaultSDLCInfo,
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
@@ -51,7 +51,7 @@ import {
 } from '@finos/legend-graph';
 import { TEST__getLegendStudioApplicationConfig } from '../../../../../stores/EditorStoreTestUtils.js';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
-import { service_deleteOwner } from '../../../../../stores/graphModifier/DSLService_GraphModifierHelper.js';
+import { service_deleteOwner } from '../../../../../stores/shared/modifier/DSL_Service_GraphModifierHelper.js';
 
 let renderResult: RenderResult;
 
@@ -116,6 +116,7 @@ const setup = async (
     projects: [],
     projectData: [],
     projectDependency: [],
+    projectDependencyInfo: TEST_DATA__DefaultDepotInfo.dependencyInfo,
   });
   return MOCK__editorStore;
 };
@@ -160,20 +161,16 @@ test(
       '/myservice',
       'id1',
     );
-    MOBX__enableSpyOrMock();
-    jest
-      .spyOn(
-        MOCK__editorStore.graphManagerState.graphManager,
-        'registerService',
-      )
-      .mockResolvedValue(result);
-    jest
-      .spyOn(
-        MOCK__editorStore.graphManagerState.graphManager,
-        'activateService',
-      )
-      .mockResolvedValue();
-    MOBX__disableSpyOrMock();
+
+    createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'registerService',
+    ).mockResolvedValue(result);
+    createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'activateService',
+    ).mockResolvedValue();
+
     await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
       renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS),
@@ -263,20 +260,16 @@ test(
       '/myservice',
       'id1',
     );
-    MOBX__enableSpyOrMock();
-    jest
-      .spyOn(
-        MOCK__editorStore.graphManagerState.graphManager,
-        'registerService',
-      )
-      .mockResolvedValue(result);
-    jest
-      .spyOn(
-        MOCK__editorStore.graphManagerState.graphManager,
-        'activateService',
-      )
-      .mockResolvedValue();
-    MOBX__disableSpyOrMock();
+
+    createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'registerService',
+    ).mockResolvedValue(result);
+    createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'activateService',
+    ).mockResolvedValue();
+
     await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
       renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS),

@@ -52,6 +52,7 @@ import type {
 } from './models/review/ReviewCommands.js';
 import type { WorkflowJob } from './models/workflow/WorkflowJob.js';
 import type { SDLCServerFeaturesConfiguration } from './models/server/SDLCServerFeaturesConfiguration.js';
+import type { Platform } from './models/configuration/Platform.js';
 
 enum SDLC_ACTIVITY_TRACE {
   IMPORT_PROJECT = 'import project',
@@ -77,6 +78,8 @@ export interface SDLCServerClientConfig {
 export class SDLCServerClient extends AbstractServerClient {
   currentUser?: User;
   private _features: SDLCServerFeaturesConfiguration | undefined;
+  private _platformDependencyConfiguration?: Platform[] | undefined;
+
   private env: string;
 
   constructor(config: SDLCServerClientConfig) {
@@ -105,9 +108,16 @@ export class SDLCServerClient extends AbstractServerClient {
     );
   }
 
+  get platforms(): Platform[] | undefined {
+    return guaranteeNonNullable(
+      this._platformDependencyConfiguration,
+      `SDLC server client platforms configuration has not been fetched`,
+    );
+  }
+
   private getTraceData = (
     name: SDLC_ACTIVITY_TRACE,
-    tracingTags?: Record<PropertyKey, unknown>,
+    tracingTags?: PlainObject,
   ): TraceData => ({
     name,
     tags: {
@@ -122,6 +132,11 @@ export class SDLCServerClient extends AbstractServerClient {
   private _server = (): string => `${this.baseUrl}/server`;
   fetchServerFeaturesConfiguration = async (): Promise<void> => {
     this._features = await this.get(`${this._server()}/features`);
+  };
+  fetchServerPlatforms = async (): Promise<void> => {
+    this._platformDependencyConfiguration = await this.get(
+      `${this._server()}/platforms`,
+    );
   };
 
   // ------------------------------------------- Authorization -------------------------------------------
@@ -234,6 +249,8 @@ export class SDLCServerClient extends AbstractServerClient {
     ]).then((workspaces) => workspaces.flat()) as Promise<
       PlainObject<Workspace>[]
     >;
+  getGroupWorkspaces = (projectId: string): Promise<PlainObject<Workspace>[]> =>
+    this.get(this._groupWorkspaces(projectId));
   getWorkspace = (
     projectId: string,
     workspaceId: string,
@@ -698,6 +715,11 @@ export class SDLCServerClient extends AbstractServerClient {
       `${this._adaptiveWorkspace(projectId, workspace)}/entityChanges`,
       command,
     );
+  getWorkspaceEntity = (
+    workspace: Workspace,
+    entityPath: string,
+  ): Promise<PlainObject<Entity>> =>
+    this.get(`${this._entities(workspace.projectId, workspace)}/${entityPath}`);
 
   // ------------------------------------------- Review -------------------------------------------
 

@@ -38,6 +38,7 @@ import {
   TableExplicitReference,
   ViewExplicitReference,
   getAllRecordTypes,
+  PackageableElement,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -45,6 +46,7 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   useApplicationStore,
   buildElementOption,
+  getPackageableElementOptionFormatter,
 } from '@finos/legend-application';
 
 export const getMappingElementSourceFilterText = (
@@ -128,22 +130,15 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const options = (
-      editorStore.graphManagerState.graph.ownClasses as MappingElementSource[]
+      editorStore.graphManagerState.usableClasses as MappingElementSource[]
     )
-      .concat(
-        editorStore.graphManagerState.graph.dependencyManager
-          .classes as MappingElementSource[],
-      )
       .concat(
         editorStore.graphManagerState.graph.ownFlatDatas.flatMap(
           getAllRecordTypes,
         ),
       )
       .concat(
-        editorStore.graphManagerState.graph.ownDatabases
-          .concat(
-            editorStore.graphManagerState.graph.dependencyManager.databases,
-          )
+        editorStore.graphManagerState.usableDatabases
           .flatMap((e) =>
             e.schemas.flatMap((schema) =>
               (schema.tables as (Table | View)[]).concat(schema.views),
@@ -160,11 +155,21 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
           }),
       )
       .map(buildMappingElementSourceOption);
-    const filterOption = createFilter({
+    const sourceFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
       stringify: getMappingElementSourceFilterText,
     });
+    const formatSourceOptionLabel = (
+      option: MappingElementSourceSelectOption,
+    ): React.ReactNode => {
+      if (option.value instanceof PackageableElement) {
+        return getPackageableElementOptionFormatter({})(
+          buildElementOption(option.value),
+        );
+      }
+      return <div className="mapping-source-option-label">{option.label}</div>;
+    };
     const sourceSelectorRef = useRef<SelectComponent>(null);
     const selectedSourceType = buildMappingElementSourceOption(
       sourceElementToSelect ??
@@ -211,7 +216,8 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
             value={selectedSourceType}
             placeholder={`Select a source...`}
             isClearable={true}
-            filterOption={filterOption}
+            filterOption={sourceFilterOption}
+            formatOptionLabel={formatSourceOptionLabel}
           />
         </div>
       </Dialog>

@@ -13,23 +13,20 @@
   // See https://github.com/RyanCavanaugh/learn-a
   "files": [],
   "references": [
+    // core
     { "path": "packages/legend-manual-tests" },
     { "path": "packages/legend-shared" },
-    { "path": "packages/legend-extension-tracer-zipkin" },
     { "path": "packages/legend-storage" },
     { "path": "packages/legend-server-sdlc" },
     { "path": "packages/legend-server-depot" },
     { "path": "packages/legend-graph" },
+    { "path": "packages/legend-query-builder" },
     { "path": "packages/legend-art" },
     { "path": "packages/legend-application" },
     // studio
     { "path": "packages/legend-application-studio" },
     { "path": "packages/legend-application-studio-bootstrap" },
     { "path": "packages/legend-application-studio-deployment" },
-    {
-      "path": "packages/legend-extension-application-studio-management-toolkit"
-    },
-    { "path": "packages/legend-extension-application-studio-query-builder" },
     // query
     { "path": "packages/legend-application-query" },
     { "path": "packages/legend-application-query-bootstrap" },
@@ -39,6 +36,7 @@
     { "path": "packages/legend-application-taxonomy-bootstrap" },
     { "path": "packages/legend-application-taxonomy-deployment" },
     // extensions
+    { "path": "packages/legend-extension-tracer-zipkin" },
     {
       "path": "packages/legend-extension-dsl-text"
     },
@@ -49,22 +47,31 @@
       "path": "packages/legend-extension-dsl-data-space"
     },
     {
-      "path": "packages/legend-extension-dsl-persistence"
+      "path": "packages/legend-extension-dsl-service"
     },
     {
-      "path": "packages/legend-extension-dsl-mastery"
+      "path": "packages/legend-extension-dsl-persistence"
     },
     {
       "path": "packages/legend-extension-dsl-persistence-cloud"
     },
     {
-      "path": "packages/legend-extension-external-format-json-schema"
+      "path": "packages/legend-extension-dsl-mastery"
     },
     {
-      "path": "packages/legend-extension-external-store-service"
+      "path": "packages/legend-extension-store-service-store"
     },
     {
-      "path": "packages/legend-extension-external-language-morphir"
+      "path": "packages/legend-extension-store-flat-data"
+    },
+    {
+      "path": "packages/legend-extension-store-relational"
+    },
+    {
+      "path": "packages/legend-extension-format-json-schema"
+    },
+    {
+      "path": "packages/legend-extension-format-morphir"
     },
     // fixtures
     {

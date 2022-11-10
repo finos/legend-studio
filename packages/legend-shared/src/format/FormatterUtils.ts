@@ -15,9 +15,12 @@
  */
 
 import {
+  type JavaScriptValue,
+  type Replacer,
   stringify as losslessStringify,
   parse as losslessParse,
 } from 'lossless-json';
+import { assertNonNullable } from '../error/AssertionUtils.js';
 
 export const capitalize = (value: string): string =>
   value.length >= 1
@@ -124,13 +127,22 @@ export const toGrammarString = (value: string): string =>
  * NOTE: One can perform regular operations with a LosslessNumber, and it will throw an error when this would result in losing information.
  * But use this with discretion since it it does not result in the same object as `JSON.parse`
  */
-export { losslessStringify, losslessParse };
+export { losslessParse as parseLosslessJSON };
+export const stringifyLosslessJSON = (
+  val: JavaScriptValue,
+  replacer?: Replacer,
+  space?: number | string,
+): string => {
+  const result = losslessStringify(val, replacer, space);
+  assertNonNullable(result, `Can't stringify lossless JSON value`);
+  return result;
+};
 export const tryToFormatLosslessJSONString = (
   value: string,
   tabSize = 2,
 ): string => {
   try {
-    return losslessStringify(losslessParse(value), undefined, tabSize);
+    return stringifyLosslessJSON(losslessParse(value), undefined, tabSize);
   } catch {
     return value;
   }
@@ -138,7 +150,7 @@ export const tryToFormatLosslessJSONString = (
 
 export const tryToMinifyLosslessJSONString = (value: string): string => {
   try {
-    return losslessStringify(losslessParse(value));
+    return tryToFormatLosslessJSONString(value, 0);
   } catch {
     return value.replace(/\n\s*/g, '');
   }

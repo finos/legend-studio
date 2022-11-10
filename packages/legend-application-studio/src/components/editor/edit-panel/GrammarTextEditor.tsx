@@ -20,15 +20,11 @@ import {
   type IDisposable,
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
-  KeyCode,
 } from 'monaco-editor';
 import {
   ContextMenu,
-  revealError,
-  setErrorMarkers,
   disposeEditor,
-  baseTextEditorSettings,
-  disableEditorHotKeys,
+  getBaseTextEditorOptions,
   resetLineNumberGutterWidth,
   clsx,
   WordWrapIcon,
@@ -36,6 +32,12 @@ import {
   normalizeLineEnding,
   MoreHorizontalIcon,
   HackerIcon,
+  PanelContent,
+  useResizeDetector,
+  setWarningMarkers,
+  clearMarkers,
+  setErrorMarkers,
+  moveCursorToPosition,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -44,12 +46,12 @@ import {
   useApplicationStore,
   type DocumentationEntry,
   useApplicationNavigationContext,
+  createPassThroughOnKeyHandler,
 } from '@finos/legend-application';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   type ElementDragSource,
   CORE_DND_TYPE,
-} from '../../../stores/shared/DnDUtil.js';
+} from '../../../stores/shared/DnDUtils.js';
 import { useDrop } from 'react-dnd';
 import type {
   DSL_LegendStudioApplicationPlugin_Extension,
@@ -98,9 +100,12 @@ import {
   MAPPING_WITH_M2M_CLASS_MAPPING_SNIPPET,
   MAPPING_WITH_ENUMERATION_MAPPING_SNIPPET,
   MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
+  POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET,
+  createConnectionSnippetWithPostProcessorSuggestionSnippet,
 } from '../../../stores/LegendStudioCodeSnippets.js';
-import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLData_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
+import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 
 const getSectionParserNameFromLineText = (
   lineText: string,
@@ -523,6 +528,14 @@ const getParserElementSnippetSuggestions = (
       ];
     }
     case PURE_PARSER.CONNECTION: {
+      const embeddedPostProcessorSnippetSuggestions = editorStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
+            ).getExtraPostProcessorSnippetSuggestions?.() ?? [],
+        );
       return [
         {
           text: PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION,
@@ -544,7 +557,18 @@ const getParserElementSnippetSuggestions = (
           description: 'relational database connection',
           insertText: RELATIONAL_DATABASE_CONNECTION_SNIPPET,
         },
-        // TODO: extension mehcanism for connection and relational database connection
+        {
+          text: PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
+          description: 'relational database connection with post-processor',
+          insertText: POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET,
+        },
+        ...embeddedPostProcessorSnippetSuggestions.map((suggestion) => ({
+          text: PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
+          description: suggestion.description,
+          insertText: createConnectionSnippetWithPostProcessorSuggestionSnippet(
+            suggestion.text,
+          ),
+        })),
       ];
     }
     case PURE_PARSER.RUNTIME: {
@@ -603,7 +627,7 @@ const getParserElementSnippetSuggestions = (
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLData_LegendStudioApplicationPlugin_Extension
+              plugin as DSL_Data_LegendStudioApplicationPlugin_Extension
             ).getExtraEmbeddedDataSnippetSuggestions?.() ?? [],
         );
       return [
@@ -757,7 +781,9 @@ export const GrammarTextEditor = observer(() => {
   const grammarTextEditorState = editorStore.grammarTextEditorState;
   const currentElementLabelRegexString =
     grammarTextEditorState.currentElementLabelRegexString;
-  const error = grammarTextEditorState.error;
+  const error = editorStore.graphState.error;
+
+  const forcedCursorPosition = grammarTextEditorState.forcedCursorPosition;
   const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
   const textEditorRef = useRef<HTMLDivElement>(null);
   const hoverProviderDisposer = useRef<IDisposable | undefined>(undefined);
@@ -782,47 +808,32 @@ export const GrammarTextEditor = observer(() => {
     if (!editor && textEditorRef.current) {
       const element = textEditorRef.current;
       const _editor = monacoEditorAPI.create(element, {
-        ...baseTextEditorSettings,
+        ...getBaseTextEditorOptions(),
         language: EDITOR_LANGUAGE.PURE,
         theme: EDITOR_THEME.LEGEND,
         renderValidationDecorations: 'on',
       });
       _editor.onDidChangeModelContent(() => {
         grammarTextEditorState.setGraphGrammarText(getEditorValue(_editor));
-        editorStore.graphState.clearCompilationError();
-        // we can technically can reset the current element label regex string here
+        clearMarkers();
+        // NOTE: we can technically can reset the current element label regex string here
         // but if we do that on first load, the cursor will not jump to the current element
         // also, it's better to place that logic in an effect that watches for the regex string
       });
-      _editor.onKeyDown((event) => {
-        if (event.keyCode === KeyCode.F9) {
-          event.preventDefault();
-          event.stopPropagation();
-          flowResult(editorStore.graphState.globalCompileInTextMode()).catch(
-            applicationStore.alertUnhandledError,
-          );
-        } else if (event.keyCode === KeyCode.F8) {
-          event.preventDefault();
-          event.stopPropagation();
-          flowResult(editorStore.toggleTextMode()).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }
-      });
-      disableEditorHotKeys(_editor);
+      _editor.onKeyDown(createPassThroughOnKeyHandler());
       _editor.focus(); // focus on the editor initially
       setEditor(_editor);
     }
   }, [editorStore, applicationStore, editor, grammarTextEditorState]);
 
   // Drag and Drop
-  const extraDnDTypes = editorStore.pluginManager
+  const extraElementDragTypes = editorStore.pluginManager
     .getApplicationPlugins()
     .flatMap(
       (plugin) =>
         (
           plugin as DSL_LegendStudioApplicationPlugin_Extension
-        ).getExtraPureGrammarTextEditorDnDTypes?.() ?? [],
+        ).getExtraPureGrammarTextEditorDragElementTypes?.() ?? [],
     );
   const handleDrop = useCallback(
     (item: ElementDragSource): void => {
@@ -837,7 +848,7 @@ export const GrammarTextEditor = observer(() => {
   const [, dropConnector] = useDrop<ElementDragSource>(
     () => ({
       accept: [
-        ...extraDnDTypes,
+        ...extraElementDragTypes,
         CORE_DND_TYPE.PROJECT_EXPLORER_PACKAGE,
         CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
         CORE_DND_TYPE.PROJECT_EXPLORER_ASSOCIATION,
@@ -858,7 +869,7 @@ export const GrammarTextEditor = observer(() => {
 
       drop: (item) => handleDrop(item),
     }),
-    [extraDnDTypes, handleDrop],
+    [extraElementDragTypes, handleDrop],
   );
   dropConnector(textEditorRef);
 
@@ -875,17 +886,42 @@ export const GrammarTextEditor = observer(() => {
     const editorModel = editor.getModel();
     if (editorModel) {
       editorModel.updateOptions({ tabSize: TAB_SIZE });
-      if (error?.sourceInformation) {
-        setErrorMarkers(
+      if (
+        !editorStore.graphState.areProblemsStale &&
+        error?.sourceInformation
+      ) {
+        setErrorMarkers(editorModel, [
+          {
+            message: error.message,
+            startLineNumber: error.sourceInformation.startLine,
+            startColumn: error.sourceInformation.startColumn,
+            endLineNumber: error.sourceInformation.endLine,
+            endColumn: error.sourceInformation.endColumn,
+          },
+        ]);
+      }
+
+      if (
+        !editorStore.graphState.areProblemsStale &&
+        editorStore.graphState.warnings.length
+      ) {
+        setWarningMarkers(
           editorModel,
-          error.message,
-          error.sourceInformation.startLine,
-          error.sourceInformation.startColumn,
-          error.sourceInformation.endLine,
-          error.sourceInformation.endColumn,
+          editorStore.graphState.warnings
+            .map((warning) => {
+              if (!warning.sourceInformation) {
+                return undefined;
+              }
+              return {
+                message: warning.message,
+                startLineNumber: warning.sourceInformation.startLine,
+                startColumn: warning.sourceInformation.startColumn,
+                endLineNumber: warning.sourceInformation.endLine,
+                endColumn: warning.sourceInformation.endColumn,
+              };
+            })
+            .filter(isNonNullable),
         );
-      } else {
-        monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
       }
     }
     // Disable editing if user is in viewer mode
@@ -1117,28 +1153,11 @@ export const GrammarTextEditor = observer(() => {
       },
     });
 
-  /**
-   * Reveal error has to be in an effect like this because, we want to reveal the error.
-   * For this to happen, the editor needs to gain focus. However, if the user clicks on the
-   * exit hackermode button, the editor loses focus, and the blocking modal pops up. This modal
-   * in turn traps the focus and preventing the editor from gaining the focus to reveal the error.
-   * As such we want to dismiss the modal before revealing the error, however, as of the current flow
-   * dismissing the modal is called when we set the parser/compiler error. So if this logic belongs to
-   * the normal rendering logic, and not an effect, it might happen just when the modal is still present
-   * to make sure the modal is dismissed, we should place this logic in an effect to make sure it happens
-   * slightly later, also it's better to have this as part of an effect in response to change in the errors
-   */
   useEffect(() => {
-    if (editor) {
-      if (error?.sourceInformation) {
-        revealError(
-          editor,
-          error.sourceInformation.startLine,
-          error.sourceInformation.startColumn,
-        );
-      }
+    if (editor && forcedCursorPosition) {
+      moveCursorToPosition(editor, forcedCursorPosition);
     }
-  }, [editor, error, error?.sourceInformation]);
+  }, [editor, forcedCursorPosition]);
 
   /**
    * This effect helps to navigate to the currently selected element in the explorer tree
@@ -1233,11 +1252,11 @@ export const GrammarTextEditor = observer(() => {
           </button>
         </div>
       </ContextMenu>
-      <div className="panel__content edit-panel__content">
+      <PanelContent className="edit-panel__content">
         <div ref={ref} className="text-editor__container">
           <div className="text-editor__body" ref={textEditorRef} />
         </div>
-      </div>
+      </PanelContent>
     </div>
   );
 });

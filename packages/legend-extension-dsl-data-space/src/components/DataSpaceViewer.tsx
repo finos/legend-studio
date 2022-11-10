@@ -16,7 +16,6 @@
 
 import { useRef, useEffect, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   BlankPanelContent,
   ShapesIcon,
@@ -35,12 +34,17 @@ import {
   LightBulbIcon,
   InfoCircleIcon,
   ExternalLinkIcon,
+  useResizeDetector,
+  DropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  CaretDownIcon,
 } from '@finos/legend-art';
 import {
   type Diagram,
   DiagramRenderer,
 } from '@finos/legend-extension-dsl-diagram';
-import { DataSpaceSupportEmail } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
+import { DataSpaceSupportEmail } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import {
   extractElementNameFromPath,
   type PackageableRuntime,
@@ -50,7 +54,8 @@ import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
 } from '../stores/DataSpaceViewerState.js';
 import type { DataSpaceExecutionContextAnalysisResult } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
-import { generateGAVCoordinates } from '@finos/legend-server-depot';
+import { generateGAVCoordinates } from '@finos/legend-storage';
+import { useApplicationStore } from '@finos/legend-application';
 
 interface DataSpaceViewerActivityConfig {
   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE;
@@ -313,14 +318,14 @@ const DataSpaceInfo = observer(
     const { dataSpaceViewerState } = props;
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
     const viewProject = (): void =>
-      dataSpaceViewerState.viewProject?.(
+      dataSpaceViewerState.viewProject(
         dataSpaceViewerState.groupId,
         dataSpaceViewerState.artifactId,
         dataSpaceViewerState.versionId,
         undefined,
       );
     const viewDataSpaceInProject = (): void =>
-      dataSpaceViewerState.viewProject?.(
+      dataSpaceViewerState.viewProject(
         dataSpaceViewerState.groupId,
         dataSpaceViewerState.artifactId,
         dataSpaceViewerState.versionId,
@@ -475,6 +480,7 @@ const DataSpaceSupportInfoViewerInner = observer(
 export const DataSpaceViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+    const applicationStore = useApplicationStore();
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
     const changeActivity =
       (activity: DATA_SPACE_VIEWER_ACTIVITY_MODE): (() => void) =>
@@ -520,38 +526,61 @@ export const DataSpaceViewer = observer(
     ];
 
     const viewProject = (): void =>
-      dataSpaceViewerState.viewProject?.(
+      dataSpaceViewerState.viewProject(
         dataSpaceViewerState.groupId,
         dataSpaceViewerState.artifactId,
         dataSpaceViewerState.versionId,
         analysisResult.path,
       );
+    const viewSDLCProject = (): void => {
+      dataSpaceViewerState
+        .viewSDLCProject(
+          dataSpaceViewerState.groupId,
+          dataSpaceViewerState.artifactId,
+          analysisResult.path,
+        )
+        .catch(applicationStore.alertUnhandledError);
+    };
 
     return (
       <div className="data-space__viewer">
         <div className="data-space__viewer__header">
-          <button
-            className="data-space__viewer__title"
-            tabIndex={-1}
-            title={`View Project (${generateGAVCoordinates(
-              dataSpaceViewerState.groupId,
-              dataSpaceViewerState.artifactId,
-              dataSpaceViewerState.versionId,
-            )})`}
-            onClick={viewProject}
-          >
-            <div
-              className="data-space__viewer__title__label"
-              title={`${analysisResult.title ?? analysisResult.name} - ${
-                analysisResult.path
-              }`}
+          <div className="data-space__viewer__title">
+            <button
+              className="data-space__viewer__title__btn"
+              tabIndex={-1}
+              title={`View Project (${generateGAVCoordinates(
+                dataSpaceViewerState.groupId,
+                dataSpaceViewerState.artifactId,
+                dataSpaceViewerState.versionId,
+              )})`}
+              onClick={viewProject}
             >
-              {analysisResult.title ?? analysisResult.name}
-            </div>
-            <div className="data-space__viewer__title__link">
-              <ExternalLinkSquareIcon />
-            </div>
-          </button>
+              <div
+                className="data-space__viewer__title__label"
+                title={`${analysisResult.title ?? analysisResult.name} - ${
+                  analysisResult.path
+                }`}
+              >
+                {analysisResult.title ?? analysisResult.name}
+              </div>
+              <div className="data-space__viewer__title__link">
+                <ExternalLinkSquareIcon />
+              </div>
+            </button>
+            <DropdownMenu
+              className="data-space__viewer__title__dropdown-trigger"
+              content={
+                <MenuContent>
+                  <MenuContentItem onClick={viewSDLCProject}>
+                    View SDLC project
+                  </MenuContentItem>
+                </MenuContent>
+              }
+            >
+              <CaretDownIcon title="Show more options..." />
+            </DropdownMenu>
+          </div>
           <div
             className={clsx('data-space__viewer__description', {
               'data-space__viewer__description--empty':

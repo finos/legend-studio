@@ -24,6 +24,7 @@ export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
 
   MODEL_LOADER = 'studio.editor.model-loader',
   TEXT_MODE_EDITOR = 'studio.editor.text-mode-editor',
+  EMBEDDED_QUERY_BUILDER = 'studio.editor.embedded-query-builder',
 
   CLASS_EDITOR = 'studio.editor.class-editor',
   CLASS_EDITOR_PROPERTIES = 'studio.editor.class-editor.properties',

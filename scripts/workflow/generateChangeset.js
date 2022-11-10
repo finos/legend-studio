@@ -61,7 +61,7 @@ if (targetBranch === undefined) {
         type: 'confirm',
         name: 'proceed',
         message: `${chalk.yellow(
-          `If you are working off a release branch, (e.g release/0.4.0), please abort and use this command with '-v 0.4.0'.\n`,
+          `If you are working off a release branch, (e.g release/1.0.0), please abort and use this command with '-v 1.0.0'.\n`,
         )}Otherwise, the generator assumes you are working on the default branch. Proceed?`,
       },
     ])

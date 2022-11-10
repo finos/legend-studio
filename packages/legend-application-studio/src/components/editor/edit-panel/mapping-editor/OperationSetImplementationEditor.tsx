@@ -24,12 +24,14 @@ import {
   ArrowCircleRightIcon,
   PlusIcon,
   PanelDropZone,
+  Panel,
+  PanelContent,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
   type OperationSetImplementationDropTarget,
   type MappingElementDragSource,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import { useDrop } from 'react-dnd';
 import { noop } from '@finos/legend-shared';
 import {
@@ -55,7 +57,7 @@ import {
   operationMapping_addParameter,
   operationMapping_changeParameter,
   operationMapping_deleteParameter,
-} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 
 interface SetImplementationOption {
   value: SetImplementation;
@@ -195,7 +197,7 @@ export const OperationSetImplementationEditor = observer(
 
     return (
       <div className="mapping-element-editor__content">
-        <div className="panel">
+        <Panel>
           <div className="panel__header">
             <div className="panel__header__title">
               <div className="panel__header__title__content">PARAMETERS</div>
@@ -209,7 +211,7 @@ export const OperationSetImplementationEditor = observer(
                 }
                 onClick={addParameter}
                 tabIndex={-1}
-                title={'Add parameter'}
+                title="Add parameter"
               >
                 <PlusIcon />
               </button>
@@ -219,7 +221,7 @@ export const OperationSetImplementationEditor = observer(
             isDragOver={isDragOver && !isReadOnly}
             dropTargetConnector={dropRef}
           >
-            <div className="panel__content">
+            <PanelContent>
               {setImplementation.parameters.map((param) => (
                 <div
                   key={param._UUID}
@@ -235,14 +237,14 @@ export const OperationSetImplementationEditor = observer(
                         value: param,
                         label: param.setImplementation.value.id.value,
                       }}
-                      placeholder={`Select parameter ID`}
+                      placeholder="Select parameter ID"
                     />
                   </div>
                   <button
                     className="operation-mapping-editor__parameter__visit-btn"
                     onClick={visit(param)}
                     tabIndex={-1}
-                    title={'Visit mapping element'}
+                    title="Visit mapping element"
                   >
                     <ArrowCircleRightIcon />
                   </button>
@@ -252,16 +254,16 @@ export const OperationSetImplementationEditor = observer(
                       disabled={isReadOnly}
                       onClick={deleteParameter(param)}
                       tabIndex={-1}
-                      title={'Remove'}
+                      title="Remove"
                     >
                       <TimesIcon />
                     </button>
                   )}
                 </div>
               ))}
-            </div>
+            </PanelContent>
           </PanelDropZone>
-        </div>
+        </Panel>
       </div>
     );
   },

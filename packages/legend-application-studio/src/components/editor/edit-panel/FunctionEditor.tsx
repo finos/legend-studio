@@ -24,8 +24,9 @@ import {
   CORE_DND_TYPE,
   type UMLEditorElementDropTarget,
   type ElementDragSource,
-} from '../../../stores/shared/DnDUtil.js';
+} from '../../../stores/shared/DnDUtils.js';
 import {
+  assertErrorThrown,
   prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
@@ -42,6 +43,8 @@ import {
   PanelEntryDropZonePlaceholder,
   DragPreviewLayer,
   useDragPreviewLayer,
+  Panel,
+  PanelContent,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import {
@@ -60,11 +63,9 @@ import {
   type TaggedValue,
   type RawVariableExpression,
   Profile,
-  PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
   Unit,
   Type,
-  Multiplicity,
   Enumeration,
   Class,
   PrimitiveType,
@@ -74,13 +75,19 @@ import {
   stub_TaggedValue,
   stub_Stereotype,
   stub_RawVariableExpression,
+  getFunctionNameWithPath,
+  getFunctionSignature,
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
+  type ApplicationStore,
+  type LegendApplicationPlugin,
+  type LegendApplicationConfig,
+  type LegendApplicationPluginManager,
   useApplicationNavigationContext,
   useApplicationStore,
+  buildElementOption,
 } from '@finos/legend-application';
-import { StudioLambdaEditor } from '../../shared/StudioLambdaEditor.js';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
 import {
   function_setReturnType,
@@ -92,13 +99,16 @@ import {
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
   function_swapParameters,
-} from '../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import {
   rawVariableExpression_setMultiplicity,
   rawVariableExpression_setName,
   rawVariableExpression_setType,
-} from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper.js';
+} from '../../../stores/shared/modifier/RawValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
+import { LambdaEditor } from '@finos/legend-query-builder';
+import type { EditorStore } from '../../../stores/EditorStore.js';
+import { graph_renameElement } from '../../../stores/shared/modifier/GraphModifierHelper.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -128,6 +138,31 @@ type FunctionParameterDragSource = {
 
 const FUNCTION_PARAMETER_DND_TYPE = 'FUNCTION_PARAMETER';
 
+/**
+ * NOTE: every time we update the function signature (parameters, return value), we need to adjust the function path,
+ * therefore, we need to update the graph's function index.
+ */
+const updateFunctionName = (
+  editorStore: EditorStore,
+  applicationStore: ApplicationStore<
+    LegendApplicationConfig,
+    LegendApplicationPluginManager<LegendApplicationPlugin>
+  >,
+  func: ConcreteFunctionDefinition,
+): void => {
+  try {
+    graph_renameElement(
+      editorStore.graphManagerState.graph,
+      func,
+      `${getFunctionNameWithPath(func)}${getFunctionSignature(func)}`,
+      editorStore.changeDetectionState.observerContext,
+    );
+  } catch (error) {
+    assertErrorThrown(error);
+    applicationStore.notifyError(error);
+  }
+};
+
 const ParameterBasicEditor = observer(
   (props: {
     parameter: RawVariableExpression;
@@ -138,12 +173,16 @@ const ParameterBasicEditor = observer(
     const ref = useRef<HTMLDivElement>(null);
     const { parameter, _func, deleteParameter, isReadOnly } = props;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       rawVariableExpression_setName(parameter, event.target.value);
     // Type
     const [isEditingType, setIsEditingType] = useState(false);
-    const typeOptions = editorStore.classPropertyGenericTypeOptions;
+    const typeOptions =
+      editorStore.graphManagerState.usableClassPropertyTypes.map(
+        buildElementOption,
+      );
     const paramType = parameter.type.value;
     const typeName = getFunctionParameterType(paramType);
     const filterOption = createFilter({
@@ -154,7 +193,10 @@ const ParameterBasicEditor = observer(
     });
     const selectedType = { value: paramType, label: paramType.name };
     const changeType = (val: PackageableElementOption<Type>): void => {
-      rawVariableExpression_setType(parameter, val.value);
+      if (val.value !== parameter.type.value) {
+        rawVariableExpression_setType(parameter, val.value);
+        updateFunctionName(editorStore, applicationStore, _func);
+      }
       setIsEditingType(false);
     };
     const openElement = (): void => {
@@ -185,8 +227,9 @@ const ParameterBasicEditor = observer(
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
         rawVariableExpression_setMultiplicity(
           parameter,
-          new Multiplicity(lBound, uBound),
+          editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
         );
+        updateFunctionName(editorStore, applicationStore, _func);
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -262,7 +305,7 @@ const ParameterBasicEditor = observer(
               value={parameter.name}
               spellCheck={false}
               onChange={changeValue}
-              placeholder={`Parameter name`}
+              placeholder="Parameter name"
             />
             {!isReadOnly && isEditingType && (
               <CustomSelectorInput
@@ -270,7 +313,7 @@ const ParameterBasicEditor = observer(
                 options={typeOptions}
                 onChange={changeType}
                 value={selectedType}
-                placeholder={'Choose a data type or enumeration'}
+                placeholder="Choose a type..."
                 filterOption={filterOption}
               />
             )}
@@ -306,7 +349,7 @@ const ParameterBasicEditor = observer(
                     className="property-basic-editor__type__visit-btn"
                     onClick={openElement}
                     tabIndex={-1}
-                    title={'Visit element'}
+                    title="Visit element"
                   >
                     <ArrowCircleRightIcon />
                   </button>
@@ -338,7 +381,7 @@ const ParameterBasicEditor = observer(
                     className="property-basic-editor__type__visit-btn"
                     onClick={openElement}
                     tabIndex={-1}
-                    title={'Visit element'}
+                    title="Visit element"
                   >
                     <ArrowCircleRightIcon />
                   </button>
@@ -370,7 +413,7 @@ const ParameterBasicEditor = observer(
                 disabled={isReadOnly}
                 onClick={deleteParameter}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>
@@ -390,9 +433,13 @@ const ReturnTypeEditor = observer(
     const { functionElement, isReadOnly } = props;
     const { returnType, returnMultiplicity } = functionElement;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     // Type
     const [isEditingType, setIsEditingType] = useState(false);
-    const typeOptions = editorStore.classPropertyGenericTypeOptions;
+    const typeOptions =
+      editorStore.graphManagerState.usableClassPropertyTypes.map(
+        buildElementOption,
+      );
     const typeName = getFunctionParameterType(returnType.value);
     const filterOption = createFilter({
       ignoreCase: true,
@@ -404,6 +451,7 @@ const ReturnTypeEditor = observer(
     const changeType = (val: PackageableElementOption<Type>): void => {
       function_setReturnType(functionElement, val.value);
       setIsEditingType(false);
+      updateFunctionName(editorStore, applicationStore, functionElement);
     };
 
     const openElement = (): void => {
@@ -436,8 +484,9 @@ const ReturnTypeEditor = observer(
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
         function_setReturnMultiplicity(
           functionElement,
-          new Multiplicity(lBound, uBound),
+          editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
         );
+        updateFunctionName(editorStore, applicationStore, functionElement);
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -461,7 +510,7 @@ const ReturnTypeEditor = observer(
             options={typeOptions}
             onChange={changeType}
             value={selectedType}
-            placeholder={'Choose a data type or enumeration'}
+            placeholder="Choose a type..."
             filterOption={filterOption}
           />
         )}
@@ -497,7 +546,7 @@ const ReturnTypeEditor = observer(
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
-                title={'Visit element'}
+                title="Visit element"
               >
                 <ArrowCircleRightIcon />
               </button>
@@ -529,7 +578,7 @@ const ReturnTypeEditor = observer(
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
-                title={'Visit element'}
+                title="Visit element"
               >
                 <ArrowCircleRightIcon />
               </button>
@@ -572,22 +621,22 @@ export const FunctionMainEditor = observer(
     functionEditorState: FunctionEditorState;
   }) => {
     const editorStore = useEditorStore();
-    const defaultType = editorStore.graphManagerState.graph.getPrimitiveType(
-      PRIMITIVE_TYPE.STRING,
-    );
+    const applicationStore = useApplicationStore();
     const { functionElement, isReadOnly, functionEditorState } = props;
     const lambdaEditorState = functionEditorState.functionBodyEditorState;
     // Parameters
     const addParameter = (): void => {
       function_addParameter(
         functionElement,
-        stub_RawVariableExpression(defaultType),
+        stub_RawVariableExpression(PrimitiveType.STRING),
       );
+      updateFunctionName(editorStore, applicationStore, functionElement);
     };
     const deleteParameter =
       (val: RawVariableExpression): (() => void) =>
       (): void => {
         function_deleteParameter(functionElement, val);
+        updateFunctionName(editorStore, applicationStore, functionElement);
       };
     const handleDropParameter = useCallback(
       (item: UMLEditorElementDropTarget): void => {
@@ -596,9 +645,10 @@ export const FunctionMainEditor = observer(
             functionElement,
             stub_RawVariableExpression(item.data.packageableElement),
           );
+          updateFunctionName(editorStore, applicationStore, functionElement);
         }
       },
-      [functionElement, isReadOnly],
+      [applicationStore, editorStore, functionElement, isReadOnly],
     );
     const [{ isParameterDragOver }, dropParameterRef] = useDrop<
       ElementDragSource,
@@ -617,7 +667,6 @@ export const FunctionMainEditor = observer(
       }),
       [handleDropParameter],
     );
-
     return (
       <div className="panel__content function-editor__element">
         <div className="function-editor__element__item">
@@ -630,7 +679,7 @@ export const FunctionMainEditor = observer(
               disabled={isReadOnly}
               onClick={addParameter}
               tabIndex={-1}
-              title={'Add Parameter'}
+              title="Add Parameter"
             >
               <PlusIcon />
             </button>
@@ -678,8 +727,8 @@ export const FunctionMainEditor = observer(
               ),
             })}
           >
-            <StudioLambdaEditor
-              className={'function-editor__element__lambda-editor'}
+            <LambdaEditor
+              className="function-editor__element__lambda-editor"
               disabled={
                 lambdaEditorState.isConvertingFunctionBodyToString || isReadOnly
               }
@@ -810,7 +859,7 @@ export const FunctionEditor = observer(() => {
 
   return (
     <div className="function-editor">
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             {isReadOnly && (
@@ -820,7 +869,7 @@ export const FunctionEditor = observer(() => {
             )}
             <div className="panel__header__title__label">function</div>
             <div className="panel__header__title__content">
-              {functionElement.name}
+              {functionElement.functionName}
             </div>
           </div>
         </div>
@@ -857,7 +906,7 @@ export const FunctionEditor = observer(() => {
             isReadOnly={isReadOnly}
           />
         ) : (
-          <div className="panel__content">
+          <PanelContent>
             {selectedTab === FUNCTION_SPEC_TAB.TAGGED_VALUES && (
               <div
                 ref={dropTaggedValueRef}
@@ -898,9 +947,9 @@ export const FunctionEditor = observer(() => {
                 ))}
               </div>
             )}
-          </div>
+          </PanelContent>
         )}
-      </div>
+      </Panel>
     </div>
   );
 });

@@ -15,12 +15,11 @@
  */
 
 import type { EditorStore } from '../EditorStore.js';
-import { action, makeAutoObservable } from 'mobx';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import { action, makeObservable, observable } from 'mobx';
+import { hashValue, UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type PackageableElement,
-  type EngineError,
-  type DSLMapping_PureGraphManagerPlugin_Extension,
+  type DSL_Mapping_PureGraphManagerPlugin_Extension,
   Profile,
   Enumeration,
   Class,
@@ -44,6 +43,7 @@ import {
   PURE_ELEMENT_NAME,
   PURE_CONNECTION_NAME,
 } from '@finos/legend-graph';
+import type { TextEditorPosition } from '@finos/legend-art';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,
@@ -59,18 +59,22 @@ const getGrammarElementTypeLabelRegexString = (
     .replace(/\$/g, '\\$'); // replace special character $ by \\$
 
 export class GrammarTextEditorState {
-  editorStore: EditorStore;
+  readonly editorStore: EditorStore;
+
   graphGrammarText = '';
   currentElementLabelRegexString?: string | undefined;
   wrapText = false;
-  error?: EngineError | undefined;
+  forcedCursorPosition?: TextEditorPosition | undefined;
 
   constructor(editorStore: EditorStore) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      setError: action,
+    makeObservable(this, {
+      graphGrammarText: observable,
+      currentElementLabelRegexString: observable,
+      wrapText: observable,
+      forcedCursorPosition: observable,
       setGraphGrammarText: action,
       setWrapText: action,
+      setForcedCursorPosition: action,
       resetCurrentElementLabelRegexString: action,
       setCurrentElementLabelRegexString: action,
     });
@@ -78,8 +82,8 @@ export class GrammarTextEditorState {
     this.editorStore = editorStore;
   }
 
-  setError(error: EngineError | undefined): void {
-    this.error = error;
+  get currentTextGraphHash(): string {
+    return hashValue(this.graphGrammarText);
   }
 
   setGraphGrammarText(code: string): void {
@@ -88,6 +92,10 @@ export class GrammarTextEditorState {
 
   setWrapText(val: boolean): void {
     this.wrapText = val;
+  }
+
+  setForcedCursorPosition(position: TextEditorPosition | undefined): void {
+    this.forcedCursorPosition = position;
   }
 
   resetCurrentElementLabelRegexString(): void {
@@ -139,7 +147,7 @@ export class GrammarTextEditorState {
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_PureGraphManagerPlugin_Extension
+              plugin as DSL_Mapping_PureGraphManagerPlugin_Extension
             ).getExtraPureGrammarConnectionLabelers?.() ?? [],
         );
       for (const labeler of extraPureGrammarConnectionLabelers) {

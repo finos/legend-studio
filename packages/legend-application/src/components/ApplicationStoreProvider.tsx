@@ -32,7 +32,7 @@ const ApplicationStoreContext = createContext<
 
 export const ApplicationStoreProvider = <
   T extends LegendApplicationConfig,
-  V extends LegendApplicationPlugin,
+  V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
 >({
   children,
   config,
@@ -40,7 +40,7 @@ export const ApplicationStoreProvider = <
 }: {
   children: React.ReactNode;
   config: T;
-  pluginManager: LegendApplicationPluginManager<V>;
+  pluginManager: V;
 }): React.ReactElement => {
   const navigator = useWebApplicationNavigator();
   const applicationStore = useLocalObservable(
@@ -55,7 +55,7 @@ export const ApplicationStoreProvider = <
 
 export const useApplicationStore = <
   T extends LegendApplicationConfig,
-  V extends LegendApplicationPlugin,
+  V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
 >(): ApplicationStore<T, V> =>
   guaranteeNonNullable(
     useContext(ApplicationStoreContext) as ApplicationStore<T, V> | undefined,

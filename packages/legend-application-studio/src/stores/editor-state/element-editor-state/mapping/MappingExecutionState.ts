@@ -27,7 +27,6 @@ import {
   flow,
   computed,
   makeObservable,
-  makeAutoObservable,
   flowResult,
 } from 'mobx';
 import {
@@ -43,13 +42,13 @@ import {
   toGrammarString,
   isValidJSONString,
   createUrlStringFromData,
-  losslessStringify,
+  stringifyLosslessJSON,
   guaranteeType,
   ContentType,
   generateEnumerableNameFromToken,
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil.js';
+import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
 import {
   type InputData,
   type Mapping,
@@ -99,35 +98,36 @@ import {
   TestData,
   ConnectionTestData,
   DEFAULT_TEST_SUITE_PREFIX,
+  ModelStore,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
   ActionAlertType,
   ExecutionPlanState,
-  LambdaEditorState,
   TAB_SIZE,
 } from '@finos/legend-application';
 import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
-import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
+} from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { flatData_setData } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   service_addTestSuite,
   service_initNewService,
   service_setExecution,
-} from '../../../graphModifier/DSLService_GraphModifierHelper.js';
+} from '../../../shared/modifier/DSL_Service_GraphModifierHelper.js';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
+} from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
 import {
   createEmptyEqualToJsonAssertion,
   createBareExternalFormat,
 } from '../../../shared/testable/TestableUtils.js';
 import { SERIALIZATION_FORMAT } from '../service/testable/ServiceTestEditorState.js';
+import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -302,9 +302,7 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
     return createRuntimeForExecution(
       this.mapping,
       new JsonModelConnection(
-        PackageableElementExplicitReference.create(
-          this.editorStore.graphManagerState.graph.modelStore,
-        ),
+        PackageableElementExplicitReference.create(ModelStore.INSTANCE),
         PackageableElementExplicitReference.create(
           guaranteeNonNullable(this.inputData.sourceClass.value),
         ),
@@ -481,9 +479,10 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
 
 export class MappingExecutionState {
   readonly uuid = uuid();
+  readonly editorStore: EditorStore;
+  readonly mappingEditorState: MappingEditorState;
+
   name: string;
-  editorStore: EditorStore;
-  mappingEditorState: MappingEditorState;
   queryState: MappingExecutionQueryState;
   inputDataState: MappingExecutionInputDataState;
   showServicePathModal = false;
@@ -499,17 +498,27 @@ export class MappingExecutionState {
     mappingEditorState: MappingEditorState,
     name: string,
   ) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      mappingEditorState: false,
+    makeObservable(this, {
+      name: observable,
+      queryState: observable,
+      inputDataState: observable,
+      showServicePathModal: observable,
       executionPlanState: observable,
+      isExecuting: observable,
+      isGeneratingPlan: observable,
+      planGenerationDebugText: observable,
       setQueryState: action,
       setInputDataState: action,
       setExecutionResultText: action,
-      setPlanGenerationDebugText: action,
       setShowServicePathModal: action,
+      setPlanGenerationDebugText: action,
       setInputDataStateBasedOnSource: action,
       reset: action,
+      promoteToTest: flow,
+      promoteToService: flow,
+      executeMapping: flow,
+      generatePlan: flow,
+      buildQueryWithClassMapping: flow,
     });
 
     this.editorStore = editorStore;
@@ -530,18 +539,22 @@ export class MappingExecutionState {
     );
   }
 
-  setQueryState = (val: MappingExecutionQueryState): void => {
+  setQueryState(val: MappingExecutionQueryState): void {
     this.queryState = val;
-  };
-  setInputDataState = (val: MappingExecutionInputDataState): void => {
+  }
+
+  setInputDataState(val: MappingExecutionInputDataState): void {
     this.inputDataState = val;
-  };
-  setExecutionResultText = (val: string | undefined): void => {
+  }
+
+  setExecutionResultText(val: string | undefined): void {
     this.executionResultText = val;
-  };
-  setShowServicePathModal = (val: boolean): void => {
+  }
+
+  setShowServicePathModal(val: boolean): void {
     this.showServicePathModal = val;
-  };
+  }
+
   setPlanGenerationDebugText(val: string | undefined): void {
     this.planGenerationDebugText = val;
   }
@@ -752,7 +765,7 @@ export class MappingExecutionState {
             },
           )) as ExecutionResult;
         this.setExecutionResultText(
-          losslessStringify(
+          stringifyLosslessJSON(
             extractExecutionResultValues(result),
             undefined,
             TAB_SIZE,
@@ -863,12 +876,10 @@ export class MappingExecutionState {
           );
         }
       } else {
-        this.editorStore.setActionAlertInfo({
+        this.editorStore.applicationStore.setActionAlertInfo({
           message: 'Mapping execution input data is already set',
           prompt: 'Do you want to regenerate the input data?',
           type: ActionAlertType.CAUTION,
-          onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
-          onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
           actions: [
             {
               label: 'Regenerate',

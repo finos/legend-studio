@@ -25,6 +25,7 @@ import {
   CustomSelectorInput,
   MoreHorizontalIcon,
   CaretDownIcon,
+  Modal,
 } from '@finos/legend-art';
 import { getElementTypeIcon } from '../../shared/ElementIconUtils.js';
 import type { PackageableElement } from '@finos/legend-graph';
@@ -95,9 +96,11 @@ export const ProjectSearchCommand = observer(() => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <div className="modal search-modal modal--dark">
+      <Modal darkMode={true} className="search-modal">
         <div className="project-search-command">
           <DropdownMenu
+            className="project-search-command__type"
+            title="Choose Element Type..."
             content={
               <div className="project-search-command__options">
                 <div
@@ -118,22 +121,16 @@ export const ProjectSearchCommand = observer(() => {
               </div>
             }
           >
-            <button
-              className="project-search-command__type"
-              tabIndex={-1}
-              title="Choose Element Type..."
-            >
-              <div className="project-search-command__type__label">
-                {elementType ? (
-                  getElementTypeIcon(editorStore, elementType)
-                ) : (
-                  <MoreHorizontalIcon />
-                )}
-              </div>
-              <div className="project-search-command__type__selector">
-                <CaretDownIcon />
-              </div>
-            </button>
+            <div className="project-search-command__type__label">
+              {elementType ? (
+                getElementTypeIcon(editorStore, elementType)
+              ) : (
+                <MoreHorizontalIcon />
+              )}
+            </div>
+            <div className="project-search-command__type__selector">
+              <CaretDownIcon />
+            </div>
           </DropdownMenu>
           <CustomSelectorInput
             ref={selectorRef}
@@ -151,7 +148,7 @@ export const ProjectSearchCommand = observer(() => {
             })}
           />
         </div>
-      </div>
+      </Modal>
     </NonBlockingDialog>
   );
 });

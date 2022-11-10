@@ -31,7 +31,17 @@ import { GenericType } from '../../metamodel/pure/packageableElements/domain/Gen
 import type { Type } from '../../metamodel/pure/packageableElements/domain/Type.js';
 import { DerivedProperty } from '../../metamodel/pure/packageableElements/domain/DerivedProperty.js';
 import { Property } from '../../metamodel/pure/packageableElements/domain/Property.js';
+import { Package } from '../../metamodel/pure/packageableElements/domain/Package.js';
+import { getOrCreatePackage } from '../DomainHelper.js';
 
+export const stub_ElementhWithPackagePath = <T extends PackageableElement>(
+  element: T,
+  packagePath: string,
+): T => {
+  const root = new Package('');
+  element.package = getOrCreatePackage(root, packagePath, true, undefined);
+  return element;
+};
 export const stub_Tag = (profile: Profile): Tag => new Tag(profile, '');
 export const stub_TaggedValue = (tag: Tag): TaggedValue =>
   new TaggedValue(TagExplicitReference.create(tag), '');
@@ -46,9 +56,7 @@ export const stub_Class = (): Class => new Class('');
 export const stub_Property = (type: Type, _class: Class): Property =>
   new Property(
     '',
-    // NOTE: this multiplicity is subjected to change so we cannot pass
-    // the one from the graph typical multiplicity index
-    new Multiplicity(1, 1),
+    Multiplicity.ONE,
     GenericTypeExplicitReference.create(new GenericType(type)),
     _class,
   );
@@ -58,9 +66,7 @@ export const stub_DerivedProperty = (
 ): DerivedProperty =>
   new DerivedProperty(
     '',
-    // NOTE: this multiplicity is subjected to change so we cannot pass
-    // the one from the graph typical multiplicity index
-    new Multiplicity(1, 1),
+    Multiplicity.ONE,
     GenericTypeExplicitReference.create(new GenericType(type)),
     _class,
   );

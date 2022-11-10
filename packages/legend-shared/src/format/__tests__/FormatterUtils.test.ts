@@ -120,3 +120,12 @@ test(unitTest('Convert JSON value string to grammar string'), () => {
   expect(toGrammarString("id \\'id1\\'")).toEqual("id \\\\'id1\\\\'");
   expect(toGrammarString("id \r\nid1'")).toEqual("id \r\nid1\\'");
 });
+
+test(unitTest('Format lossless JSON'), () => {
+  expect(tryToFormatLosslessJSONString('{"a": "1.00000"}')).toEqual(
+    '{\n  "a": "1.00000"\n}',
+  );
+  expect(tryToMinifyLosslessJSONString('{"a": "1.00000"}')).toEqual(
+    '{"a":"1.00000"}',
+  );
+});

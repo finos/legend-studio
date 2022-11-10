@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { guaranteeType } from '@finos/legend-shared';
+import { guaranteeType, type PlainObject } from '@finos/legend-shared';
 import type { GraphManagerState } from '../GraphManagerState.js';
-import { TYPICAL_MULTIPLICITY_TYPE } from '../../graph/MetaModelConst.js';
 import { RawLambda } from '../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
   type LambdaFunction,
@@ -30,7 +29,7 @@ export const buildLambdaVariableExpressions = (
 ): ValueSpecification[] =>
   ((rawLambda.parameters ?? []) as object[]).map((param) =>
     graphManagerState.graphManager.buildValueSpecification(
-      param as Record<PropertyKey, unknown>,
+      param as PlainObject,
       graphManagerState.graph,
     ),
   );
@@ -39,12 +38,7 @@ export const buildRawLambdaFromLambdaFunction = (
   lambdaFunction: LambdaFunction,
   graphManagerState: GraphManagerState,
 ): RawLambda => {
-  const lambdaFunctionInstanceValue = new LambdaFunctionInstanceValue(
-    graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    ),
-    undefined,
-  );
+  const lambdaFunctionInstanceValue = new LambdaFunctionInstanceValue();
   lambdaFunctionInstanceValue.values = [lambdaFunction];
   return guaranteeType(
     graphManagerState.graphManager.buildRawValueSpecification(

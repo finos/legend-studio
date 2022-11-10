@@ -42,9 +42,25 @@
 
     height: 2.8rem;
     background: var(--color-dark-grey-300);
-    color: var(--color-light-grey-100);
     padding: 0 1rem;
     border-radius: 0.2rem;
+
+    &__label {
+      margin-left: 0.5rem;
+      margin-right: 0.5rem;
+      color: var(--color-light-grey-100);
+    }
+  }
+
+  &__name--with-validation {
+    background: var(--color-red-500);
+
+    &__indicator {
+      @include flexVCenter;
+
+      margin-left: 0.5rem;
+      color: var(--color-red-180);
+    }
   }
 
   &__type {
@@ -96,11 +112,35 @@
     color: var(--color-light-grey-100);
   }
 
+  &__generic-entry {
+    @include flexVCenter;
+
+    justify-content: flex-start;
+    height: 2.8rem;
+    margin-top: 0.5rem;
+
+    &__remove-btn {
+      @include flexCenter;
+
+      width: 2.8rem;
+      height: 2.8rem;
+      flex: 2.8rem 0 0;
+      color: var(--color-light-grey-0);
+      background: var(--color-dark-grey-300);
+      border-radius: 0.2rem;
+      margin-left: 0.5rem;
+      cursor: pointer;
+    }
+  }
+
+  &__entry__container {
+    width: 100%;
+  }
+
   &__entry {
     display: flex;
     flex-wrap: wrap;
     width: 100%;
-    margin-top: 0.5rem;
   }
 
   &__entry__id {
@@ -160,16 +200,29 @@
     font-size: 2rem;
   }
 
-  &__entry--empty {
+  &__entry--unsupported {
+    @include flexVCenter;
+
     height: 2.8rem;
-    line-height: 2.8rem;
-    background: var(--color-light-grey-100);
     margin-top: 0.5rem;
     padding: 0 0.5rem;
+    background: var(--color-light-grey-100);
+    color: var(--color-dark-grey-400);
+    cursor: not-allowed;
+    user-select: none;
+  }
+
+  &__entry--empty {
+    @include ellipsisTextOverflow;
+
+    height: 2.8rem;
+    line-height: 2.8rem;
+    margin-top: 0.5rem;
+    padding: 0 0.5rem;
+    background: var(--color-light-grey-100);
     color: var(--color-dark-grey-400);
     cursor: help;
-
-    @include ellipsisTextOverflow;
+    user-select: none;
   }
 
   &__entry--empty__visit-btn {
@@ -190,6 +243,7 @@
     margin-top: 0.5rem;
     padding: 0 0.5rem;
     color: var(--color-dark-grey-500);
+    width: 100%;
     cursor: help;
 
     @include ellipsisTextOverflow;

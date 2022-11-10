@@ -54,15 +54,23 @@ import {
   CogIcon,
   CaretRightIcon,
   PanelDropZone,
+  Panel,
+  PanelContent,
+  PanelHeader,
+  ModalHeader,
+  ModalTitle,
+  ModalHeaderActions,
+  ModalBody,
+  Modal,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
-import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtil.js';
+import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtils.js';
 import { ConnectionEditor } from './connection-editor/ConnectionEditor.js';
 import {
   type UMLEditorElementDropTarget,
   CORE_DND_TYPE,
   ElementDragSource,
-} from '../../../stores/shared/DnDUtil.js';
+} from '../../../stores/shared/DnDUtils.js';
 import { useDrop } from 'react-dnd';
 import {
   assertErrorThrown,
@@ -97,11 +105,11 @@ import {
   buildElementOption,
   type PackageableElementOption,
 } from '@finos/legend-application';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   runtime_addIdentifiedConnection,
   runtime_deleteIdentifiedConnection,
-} from '../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
+} from '../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const getConnectionTooltipText = (
@@ -128,7 +136,7 @@ const getConnectionTooltipText = (
     .flatMap(
       (plugin) =>
         (
-          plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+          plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
         ).getExtraRuntimeConnectionTooltipTextBuilders?.() ?? [],
     );
   for (const builder of extraConnectionToolTipTexts) {
@@ -585,14 +593,8 @@ const IdentifiedConnectionEditor = observer(
     return (
       <div className="runtime-connection-editor">
         <div className="panel runtime-connection-editor__pointer">
-          <div className="panel__header">
-            <div className="panel__header__title">
-              <div className="panel__header__title__label">
-                runtime connection
-              </div>
-            </div>
-          </div>
-          <div className="panel__content">
+          <PanelHeader title="runtime connection" />
+          <PanelContent>
             <div className="runtime-connection-editor__connection-option">
               <div className="runtime-connection-editor__connection-option__label">
                 <PURE_ConnectionIcon />
@@ -610,13 +612,13 @@ const IdentifiedConnectionEditor = observer(
                   className="btn--dark btn--sm runtime-connection-editor__connection-option__visit-btn"
                   onClick={visitConnection}
                   tabIndex={-1}
-                  title={'See connection'}
+                  title="See connection"
                 >
                   <LongArrowRightIcon />
                 </button>
               )}
             </div>
-          </div>
+          </PanelContent>
         </div>
         <div className="runtime-connection-editor__embedded">
           <ConnectionEditor
@@ -799,7 +801,7 @@ const IdentifiedConnectionsPerStoreEditor = observer(
               />
             )}
             {(!connectionEditorState || !identifiedConnection) && (
-              <div className="panel">
+              <Panel>
                 <div className="panel__header">
                   <div className="panel__header__title">
                     <div className="panel__header__title__label">
@@ -807,10 +809,10 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                     </div>
                   </div>
                 </div>
-                <div className="panel__content">
+                <PanelContent>
                   <BlankPanelContent>No connection selected</BlankPanelContent>
-                </div>
-              </div>
+                </PanelContent>
+              </Panel>
             )}
           </ResizablePanel>
         </ResizablePanelGroup>
@@ -937,7 +939,7 @@ const RuntimeGeneralEditor = observer(
     return (
       <div className="panel runtime-explorer">
         <div className="panel__header"></div>
-        <div className="panel__content">
+        <PanelContent>
           <PanelDropZone
             dropTargetConnector={dropMappingRef}
             isDragOver={isMappingDragOver && !isReadOnly}
@@ -976,7 +978,7 @@ const RuntimeGeneralEditor = observer(
               </div>
             </div>
           </PanelDropZone>
-        </div>
+        </PanelContent>
       </div>
     );
   },
@@ -1082,15 +1084,10 @@ export const EmbeddedRuntimeEditor = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal embedded-runtime-editor">
-          <div className="modal__header">
-            <div className="modal__title">
-              <div className="modal__title__icon">
-                <CogIcon />
-              </div>
-              <div className="modal__title__label">custom runtime</div>
-            </div>
-            <div className="modal__header__actions">
+        <Modal darkMode={true} className="editor-modal embedded-runtime-editor">
+          <ModalHeader>
+            <ModalTitle icon={<CogIcon />} title="custom runtime" />
+            <ModalHeaderActions>
               <button
                 className="modal__header__action"
                 tabIndex={-1}
@@ -1098,15 +1095,15 @@ export const EmbeddedRuntimeEditor = observer(
               >
                 <TimesIcon />
               </button>
-            </div>
-          </div>
-          <div className="modal__body modal__body--footless">
+            </ModalHeaderActions>
+          </ModalHeader>
+          <ModalBody className="modal__body--footless">
             <RuntimeEditor
               runtimeEditorState={runtimeEditorState}
               isReadOnly={isReadOnly}
             />
-          </div>
-        </div>
+          </ModalBody>
+        </Modal>
       </Dialog>
     );
   },

@@ -15,7 +15,7 @@
  */
 
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import remarkGFM from 'remark-gfm';
 import type { MarkdownText } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 
@@ -25,7 +25,7 @@ export const MarkdownTextViewer: React.FC<{
 }> = (props) => (
   <ReactMarkdown
     className={clsx('markdown-content', props.className)}
-    remarkPlugins={[remarkGfm]}
+    remarkPlugins={[remarkGFM]}
   >
     {props.value.value}
   </ReactMarkdown>

@@ -1,0 +1,330 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.query-builder-property-search-panel {
+  height: 50vh;
+  width: 40vw;
+
+  // make sure we cancel the effect of the `pointer-events: none` set
+  // on the container of the panel so we could interact with the panel
+  pointer-events: all;
+
+  &__container {
+    // NOTE: since we use a popover for the panel, we need to
+    // disable click-away trap so we could mimic the behavior of
+    // popper. See the note on the usage of popover for virtual
+    // assistant panel for more details
+    pointer-events: none;
+
+    &__root {
+      border-radius: 0;
+    }
+
+    &--hidden {
+      visibility: hidden;
+    }
+  }
+
+  &__node__container:hover {
+    background: var(--color-dark-blue-shade-100);
+
+    svg {
+      color: var(--color-light-grey-400);
+    }
+  }
+
+  &__content {
+    height: calc(100% - 4.4rem);
+    overflow-y: auto;
+  }
+
+  &__filter__element {
+    @include flexVCenter;
+
+    cursor: pointer;
+  }
+
+  &__node__icon {
+    width: 4rem;
+    min-width: 4rem;
+  }
+
+  &__type-icon {
+    @include flexCenter;
+
+    width: 1.7rem;
+    min-width: 1.7rem;
+    height: 1.4rem;
+  }
+
+  &__node__label {
+    @include ellipsisTextOverflow;
+
+    height: 2rem;
+    line-height: 2rem;
+    min-width: 0;
+    color: var(--color-light-grey-400);
+    user-select: none;
+  }
+
+  &__node__label--with-action {
+    width: calc(100% - 2rem);
+  }
+
+  &__node__label__multiple {
+    display: inline-flex;
+    font-weight: 700;
+    font-size: 1.6rem;
+    font-family: 'Roboto Mono', monospace;
+    height: 2rem;
+    line-height: 2rem;
+    margin-left: 0.5rem;
+    color: var(--color-yellow-200);
+    vertical-align: text-top;
+  }
+
+  &__node__actions {
+    display: flex;
+    height: 2rem;
+    padding-right: 0.5rem;
+  }
+
+  &__node__action {
+    @include flexCenter;
+
+    height: 2rem;
+    width: 2rem;
+
+    svg {
+      font-size: 1.3rem;
+      color: var(--color-dark-blue-shade-100);
+    }
+
+    &:hover svg {
+      color: var(--color-light-grey-200);
+    }
+
+    &[disabled] svg {
+      color: var(--color-dark-grey-300);
+    }
+  }
+
+  &__node__info {
+    cursor: help;
+  }
+
+  &__header {
+    @include flexCenter;
+
+    padding: 0.5rem;
+    border-bottom: 0.1rem solid var(--color-dark-grey-250);
+    height: 4.4rem;
+    position: relative;
+  }
+
+  &__close-btn {
+    height: 2.8rem;
+    width: 2.8rem;
+    margin-left: 0.5rem;
+  }
+
+  &__input {
+    font-size: 1.3rem;
+    height: 2.8rem;
+    padding-right: 2.8rem;
+    padding-left: 1rem;
+    width: 100%;
+    background: var(--color-dark-grey-85);
+    border-radius: 0.2rem;
+    border: 0.1rem solid var(--color-dark-grey-200);
+
+    &__container {
+      @include flexCenter;
+
+      position: relative;
+      height: 2.8rem;
+      width: 100%;
+    }
+
+    &--searching {
+      padding-right: 9rem; // account for the count badge
+    }
+
+    &__search__count {
+      @include flexCenter;
+
+      position: absolute;
+      right: 5.3rem;
+      border-radius: 0.8rem;
+      height: 1.6rem;
+      padding: 0 0.5rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      background: var(--color-yellow-100);
+      color: var(--color-dark-grey-280);
+      user-select: none;
+      cursor: default;
+    }
+
+    &__search__icon {
+      @include flexCenter;
+
+      position: absolute;
+      right: 0.3rem;
+      height: 2.8rem;
+      width: 2.8rem;
+
+      svg {
+        color: var(--color-light-shade-100);
+      }
+    }
+
+    &__search__config__trigger {
+      @include flexCenter;
+
+      position: absolute;
+      right: 3.1rem;
+      height: 2.8rem;
+      width: 1.8rem;
+      cursor: pointer;
+
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+
+      &--toggled svg,
+      &:hover svg {
+        color: var(--color-dark-grey-500);
+      }
+
+      &--active svg,
+      &--active:hover svg {
+        color: var(--color-blue-150);
+      }
+    }
+
+    &__clear-btn {
+      @include flexCenter;
+
+      position: absolute;
+      right: 0.3rem;
+      height: 2.8rem;
+      width: 2.8rem;
+
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+
+      &:hover svg {
+        color: var(--color-dark-grey-500);
+      }
+    }
+  }
+
+  &__form {
+    &__section {
+      cursor: default;
+      margin: 0.5rem 0 3rem;
+    }
+
+    &__section__header__label {
+      @include flexVCenter;
+
+      font-weight: 500;
+      color: var(--color-light-grey-50);
+      margin-bottom: 0.5rem;
+      line-height: 2rem;
+      cursor: default;
+    }
+
+    &__section__toggler {
+      @include flexVCenter;
+
+      cursor: pointer;
+    }
+
+    &__section__toggler__btn {
+      align-self: flex-start;
+      padding-top: 0.2rem;
+
+      svg {
+        font-size: 2rem;
+        color: var(--color-dark-grey-250);
+      }
+
+      &:hover svg {
+        font-size: 2rem;
+        color: var(--color-dark-grey-280);
+      }
+
+      &[disabled] svg,
+      &[disabled]:hover svg {
+        cursor: not-allowed;
+        color: var(--color-dark-grey-250);
+      }
+    }
+
+    &__section__toggler__btn--toggled {
+      svg {
+        font-size: 2rem;
+        color: var(--color-blue-150);
+      }
+
+      &:hover svg {
+        font-size: 2rem;
+        color: var(--color-blue-100);
+      }
+
+      &[disabled] svg,
+      &[disabled]:hover svg {
+        cursor: not-allowed;
+        color: var(--color-dark-grey-300);
+      }
+    }
+
+    &__section__toggler__prompt {
+      word-break: break-word;
+      margin-left: 0.8rem;
+      color: var(--color-light-grey-400);
+      line-height: 2rem;
+      cursor: pointer;
+    }
+  }
+
+  &__config,
+  &__results {
+    height: 100%;
+    padding: 1rem;
+    overflow-y: auto;
+  }
+
+  &__result-placeholder {
+    cursor: default;
+    user-select: none;
+
+    &__text {
+      color: var(--color-dark-grey-500);
+      font-weight: 700;
+    }
+
+    &__placeholder {
+      color: var(--color-dark-grey-300);
+      margin-top: 1rem;
+    }
+  }
+}

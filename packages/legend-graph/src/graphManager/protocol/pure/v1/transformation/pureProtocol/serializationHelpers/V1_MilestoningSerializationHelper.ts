@@ -31,7 +31,7 @@ import { V1_BusinessSnapshotMilestoning } from '../../../model/packageableElemen
 import type { V1_Milestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_Milestoning.js';
 import { V1_ProcessingMilestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_ProcessingMilestoning.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
-import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
+import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 import {
   V1_deserializeRawValueSpecification,
   V1_serializeRawValueSpecification,
@@ -99,7 +99,7 @@ export const V1_serializeMilestoning = (
   const extraMilestoningProtocolSerializers = plugins.flatMap(
     (plugin) =>
       (
-        plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+        plugin as STO_Relational_PureProtocolProcessorPlugin_Extension
       ).V1_getExtraMilestoningProtocolSerializers?.() ?? [],
   );
   for (const serializer of extraMilestoningProtocolSerializers) {
@@ -129,7 +129,7 @@ export const V1_deserializeMilestoning = (
       const extraMilestoningProtocolDeserializers = plugins.flatMap(
         (plugin) =>
           (
-            plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+            plugin as STO_Relational_PureProtocolProcessorPlugin_Extension
           ).V1_getExtraMilestoningProtocolDeserializers?.() ?? [],
       );
       for (const deserializer of extraMilestoningProtocolDeserializers) {

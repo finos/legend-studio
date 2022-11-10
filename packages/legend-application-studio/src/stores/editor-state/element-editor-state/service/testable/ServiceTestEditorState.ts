@@ -23,7 +23,6 @@ import {
   ParameterValue,
   buildLambdaVariableExpressions,
   VariableExpression,
-  generateVariableExpressionMockValue,
 } from '@finos/legend-graph';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { TestableTestEditorState } from '../../testable/TestableEditorState.js';
@@ -35,7 +34,7 @@ import {
   service_setParameterValues,
   service_setParameterValueSpec,
   service_setSerializationFormat,
-} from '../../../../graphModifier/DSLService_GraphModifierHelper.js';
+} from '../../../../shared/modifier/DSL_Service_GraphModifierHelper.js';
 import {
   assertErrorThrown,
   deleteEntry,
@@ -44,8 +43,10 @@ import {
   isNonNullable,
   returnUndefOnError,
   uuid,
+  type PlainObject,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../../EditorStore.js';
+import { generateVariableExpressionMockValue } from '@finos/legend-query-builder';
 
 export enum SERIALIZATION_FORMAT {
   PURE = 'PURE',
@@ -304,7 +305,7 @@ export class ServiceTestSetupState {
     return paramValues.map((pValue) => {
       const spec = returnUndefOnError(() =>
         this.editorStore.graphManagerState.graphManager.buildValueSpecification(
-          pValue.value as Record<PropertyKey, unknown>,
+          pValue.value as PlainObject,
           this.editorStore.graphManagerState.graph,
         ),
       );

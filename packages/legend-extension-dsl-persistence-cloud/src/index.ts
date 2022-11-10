@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './DSLPersistenceCloud_Extension.js';
+export * from './DSL_PersistenceCloud_Extension.js';

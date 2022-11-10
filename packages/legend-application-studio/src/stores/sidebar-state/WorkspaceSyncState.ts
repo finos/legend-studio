@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  makeAutoObservable,
-  flowResult,
-  action,
-  flow,
-  makeObservable,
-  observable,
-} from 'mobx';
+import { flowResult, action, flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import type { Entity } from '@finos/legend-storage';
@@ -373,23 +366,25 @@ class WorkspaceSyncConflictResolutionState extends AbstractConflictResolutionSta
 }
 
 export class WorkspaceSyncState {
-  editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
+  readonly editorStore: EditorStore;
+  readonly sdlcState: EditorSDLCState;
 
   pullChangesState = ActionState.create();
   incomingRevisions: Revision[] = [];
   workspaceSyncConflictResolutionState: WorkspaceSyncConflictResolutionState;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      sdlcState: false,
-      fetchIncomingRevisions: flow,
-      setIncomingRevisions: action,
-      pullChanges: flow,
+    makeObservable(this, {
+      pullChangesState: observable,
+      incomingRevisions: observable,
+      workspaceSyncConflictResolutionState: observable,
       resetConflictState: action,
-      forcePull: flow,
+      setIncomingRevisions: action,
+      fetchIncomingRevisions: flow,
+      pullChanges: flow,
       loadChanges: flow,
+      forcePull: flow,
+      applyResolutionChanges: flow,
     });
 
     this.editorStore = editorStore;
@@ -434,7 +429,7 @@ export class WorkspaceSyncState {
   *pullChanges(): GeneratorFn<void> {
     try {
       assertTrue(this.sdlcState.isWorkspaceOutOfSync);
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: `Pulling latest changes...`,
         showLoading: true,
       });
@@ -451,14 +446,12 @@ export class WorkspaceSyncState {
           this.editorStore.changeDetectionState.potentialWorkspacePullConflicts;
       }
       if (conflicts.length) {
-        this.editorStore.setBlockingAlert(undefined);
-        this.editorStore.setActionAlertInfo({
+        this.editorStore.applicationStore.setBlockingAlert(undefined);
+        this.editorStore.applicationStore.setActionAlertInfo({
           message: 'Conflicts found while pulling changes',
           prompt:
             'You can either force-pull (override local changes) or resolve these conflicts manually',
           type: ActionAlertType.CAUTION,
-          onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
-          onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
           actions: [
             {
               label: 'Resolve merge conflicts',
@@ -550,13 +543,13 @@ export class WorkspaceSyncState {
         `Can't force-pull remote workspace changes. Error: ${error.message}`,
       );
     } finally {
-      this.editorStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
     }
   }
 
   *applyResolutionChanges(): GeneratorFn<void> {
     try {
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: `Applying resolutions and reloading graph...`,
         showLoading: true,
       });
@@ -572,7 +565,7 @@ export class WorkspaceSyncState {
         `Can't apply resolutions to local workspace. Error: ${error.message}`,
       );
     } finally {
-      this.editorStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
     }
   }
 }

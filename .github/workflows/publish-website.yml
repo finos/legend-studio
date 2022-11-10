@@ -35,6 +35,6 @@ jobs:
           NODE_OPTIONS: '--max_old_space_size=4096'
         run: yarn build:ts && yarn build:website
       - name: Deploy documentation site
-        uses: JamesIves/github-pages-deploy-action@v4.4.0
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
           folder: ./build/docs

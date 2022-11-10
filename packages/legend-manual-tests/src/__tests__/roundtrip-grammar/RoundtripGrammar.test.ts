@@ -20,12 +20,14 @@ import fs from 'fs';
 /**
  * Previously, these exports rely on ES module interop to expose `default` export
  * properly. But since we use `ESM` for Typescript resolution now, we lose this
+ * so we have to workaround by importing these and re-export them from CJS
  *
  * TODO: remove these when the package properly work with Typescript's nodenext
  * module resolution
  *
  * @workaround ESM
  * See https://github.com/microsoft/TypeScript/issues/49298
+ * See https://github.com/axios/axios/pull/5104
  */
 import { default as axios, type AxiosResponse } from 'axios';
 import {
@@ -44,15 +46,15 @@ import {
   TEST__checkGraphHashUnchanged,
   TEST__getTestGraphManagerState,
   GRAPH_MANAGER_EVENT,
-  DSLExternalFormat_GraphPreset,
+  DSL_ExternalFormat_GraphPreset,
 } from '@finos/legend-graph';
-import { DSLText_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
-import { DSLDiagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLDataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space';
-import { DSLPersistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
-import { DSLMastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery';
-import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
-import { ESService_GraphManagerPreset } from '@finos/legend-extension-external-store-service';
+import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
+import { DSL_Diagram_GraphManagerPreset as DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
+import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space';
+import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
+import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery';
+import { DSL_PersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
+import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -77,9 +79,15 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
   // See https://github.com/finos/legend-studio/issues/295
   // See https://github.com/finos/legend-studio/issues/294
-  'embedded-relational-mapping.pure': SKIP,
-  'nested-embedded-relational-mapping.pure': SKIP,
-  'relational-mapping-filter.pure': SKIP,
+  'STO_Relational-embedded-relational-mapping.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+    ROUNTRIP_TEST_PHASES.CHECK_HASH,
+  ],
+  'STO_Relational-nested-embedded-relational-mapping.pure': SKIP,
+  'STO_Relational-relational-mapping-filter.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+    ROUNTRIP_TEST_PHASES.CHECK_HASH,
+  ],
 };
 
 type GrammarRoundtripOptions = {
@@ -127,14 +135,14 @@ const checkGrammarRoundtrip = async (
   // See https://github.com/finos/legend-studio/issues/820
   pluginManager
     .usePresets([
-      new DSLText_GraphManagerPreset(),
-      new DSLDiagram_GraphManagerPreset(),
-      new DSLDataSpace_GraphManagerPreset(),
-      new DSLExternalFormat_GraphPreset(),
-      new DSLPersistence_GraphManagerPreset(),
-      new DSLMastery_GraphManagerPreset(),
-      new DSLPersistenceCloud_GraphManagerPreset(),
-      new ESService_GraphManagerPreset(),
+      new DSL_Text_GraphManagerPreset(),
+      new DSL_Diagram_GraphManagerPreset(),
+      new DSL_DataSpace_GraphManagerPreset(),
+      new DSL_ExternalFormat_GraphPreset(),
+      new DSL_Persistence_GraphManagerPreset(),
+      new DSL_Mastery_GraphManagerPreset(),
+      new DSL_PersistenceCloud_GraphManagerPreset(),
+      new STO_ServiceStore_GraphManagerPreset(),
     ])
     .usePlugins([new WebConsole()]);
   pluginManager.install();
@@ -183,7 +191,6 @@ const checkGrammarRoundtrip = async (
       `[entities: ${entities.length}]`,
     );
   }
-  GRAPH_MANAGER_EVENT;
   startTime = Date.now();
   await TEST__buildGraphWithEntities(graphManagerState, entities, {
     TEMPORARY__preserveSectionIndex: true,
@@ -194,7 +201,6 @@ const checkGrammarRoundtrip = async (
       Date.now() - startTime,
       'ms',
     );
-    GRAPH_MANAGER_EVENT;
   }
   startTime = Date.now();
   const transformedEntities = graphManagerState.graph.allOwnElements.map(
@@ -206,7 +212,6 @@ const checkGrammarRoundtrip = async (
       Date.now() - startTime,
       'ms',
     );
-    GRAPH_MANAGER_EVENT;
   }
 
   if (!excludes.includes(phase)) {

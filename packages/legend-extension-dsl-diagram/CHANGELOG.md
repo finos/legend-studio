@@ -1,5 +1,49 @@
 # @finos/legend-extension-dsl-diagram
 
+## 7.0.12
+
+## 7.0.11
+
+## 7.0.10
+
+## 7.0.9
+
+## 7.0.8
+
+## 7.0.7
+
+## 7.0.6
+
+## 7.0.5
+
+## 7.0.4
+
+## 7.0.3
+
+## 7.0.2
+
+## 7.0.1
+
+## 7.0.0
+
+### Major Changes
+
+- [#1519](https://github.com/finos/legend-studio/pull/1519) [`b2e14b15`](https://github.com/finos/legend-studio/commit/b2e14b15379eef36e39d906d315fd4fb96472cd6) ([@gayathrir11](https://github.com/gayathrir11)) - **BREAKING CHANGE:** Renamed plugins and presets to use the prefix `DSL_Diagram` instead of `DSLDiagram`
+
+## 6.0.3
+
+## 6.0.2
+
+## 6.0.1
+
+## 6.0.0
+
+### Major Changes
+
+- [#1476](https://github.com/finos/legend-studio/pull/1476) [`293f2345`](https://github.com/finos/legend-studio/commit/293f2345cd7dcc7e97fc4b6b21c7d274a1407176) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Removed `DSLDiagram_LegendStudioApplicationPlugin_Extension`.
+
+## 5.0.11
+
 ## 5.0.10
 
 ## 5.0.9

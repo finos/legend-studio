@@ -1,7 +1,43 @@
 # @finos/legend-extension-dsl-mastery
 
-## 1.0.0
+## 2.0.12
+
+## 2.0.11
+
+## 2.0.10
+
+## 2.0.9
+
+## 2.0.8
+
+## 2.0.7
+
+## 2.0.6
+
+## 2.0.5
+
+## 2.0.4
+
+## 2.0.3
+
+## 2.0.2
+
+## 2.0.1
+
+## 2.0.0
 
 ### Major Changes
 
-- [#1404](https://github.com/finos/legend-studio/pull/1404) [`8dcd66fb`](https://github.com/finos/legend-studio/commit/8dcd66fbb989cbcd960d63e3c341b550a4fa3dd2) ([@sahil37](https://github.com/sahil37)) - add text support for master record management DSL
+- [#1519](https://github.com/finos/legend-studio/pull/1519) [`b2e14b15`](https://github.com/finos/legend-studio/commit/b2e14b15379eef36e39d906d315fd4fb96472cd6) ([@gayathrir11](https://github.com/gayathrir11)) - **BREAKING CHANGE:** Rename DSL Mastery plugins and presets to use prefix `DSL_Mastery` instead of `DSLMastery`
+
+## 1.0.5
+
+## 1.0.4
+
+## 1.0.3
+
+## 1.0.2
+
+## 1.0.1
+
+## 1.0.0

@@ -37,14 +37,15 @@ import {
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type PackageableElement,
-  PRIMITIVE_TYPE,
   fromElementPathToMappingElementId,
   Class,
   Enumeration,
   Association,
+  PrimitiveType,
 } from '@finos/legend-graph';
-import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil.js';
+import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelClassifierUtils.js';
 import {
+  buildElementOption,
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
 } from '@finos/legend-application';
@@ -77,9 +78,9 @@ export const NewMappingElementModal = observer(() => {
   // Target
   const targetSelectorRef = useRef<SelectComponent>(null);
   const options: PackageableElementOption<PackageableElement>[] = [
-    ...editorStore.enumerationOptions,
-    ...editorStore.associationOptions,
-    ...editorStore.classOptions,
+    ...editorStore.graphManagerState.usableEnumerations.map(buildElementOption),
+    ...editorStore.graphManagerState.usableAssociations.map(buildElementOption),
+    ...editorStore.graphManagerState.usableClasses.map(buildElementOption),
   ].sort(compareLabelFn);
   const filterOption = createFilter({
     ignoreCase: true,
@@ -168,9 +169,7 @@ export const NewMappingElementModal = observer(() => {
             mapping,
             id,
             spec.target,
-            editorStore.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.STRING,
-            ),
+            PrimitiveType.STRING,
           );
         } else if (spec.target instanceof Association) {
           throw new UnsupportedOperationError();
@@ -187,10 +186,6 @@ export const NewMappingElementModal = observer(() => {
       }
       handleClose();
     }
-  };
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    handleSubmit();
   };
   // Title
   const titleText = spec
@@ -223,7 +218,10 @@ export const NewMappingElementModal = observer(() => {
     >
       {spec && (
         <form
-          onSubmit={onSubmit}
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleSubmit();
+          }}
           className="modal search-modal new-mapping-element-modal"
         >
           {titleText && <div className="modal__title">{titleText}</div>}
@@ -262,11 +260,7 @@ export const NewMappingElementModal = observer(() => {
             />
           )}
           <div className="search-modal__actions">
-            <button
-              className="btn btn--primary"
-              disabled={disableCreateButton}
-              color="primary"
-            >
+            <button className="btn btn--primary" disabled={disableCreateButton}>
               Create
             </button>
           </div>

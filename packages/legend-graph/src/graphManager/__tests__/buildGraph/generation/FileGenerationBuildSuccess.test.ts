@@ -54,9 +54,9 @@ test(unitTest('File Generation Graph Success'), () => {
 });
 
 test(unitTest('Generated Function paths are valid'), () => {
-  const functionGen = graphManagerState.graph.getFunction(
-    'model::functionFullPath_Firm_1__Firm_MANY__Firm_$1_MANY$__String_1__Boolean_1_',
-  );
+  const functionPath =
+    'model::functionFullPath_Firm_1__Firm_MANY__Firm_$1_MANY$__String_1__Boolean_1_';
+  const functionGen = graphManagerState.graph.getFunction(functionPath);
   const entity = graphManagerState.graphManager.elementToEntity(functionGen);
-  expect(entity.path).toBe('model::functionFullPath');
+  expect(entity.path).toBe(functionPath);
 });

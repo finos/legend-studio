@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, computed, makeAutoObservable } from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { MINIMUM_SERVICE_OWNERS } from '../../../editor-state/element-editor-state/service/ServiceEditorState.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
@@ -28,21 +28,42 @@ import {
   UnsupportedOperationError,
   getNullableFirstElement,
   assertTrue,
+  URL_SEPARATOR,
+  filterByType,
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent.js';
 import { Version } from '@finos/legend-server-sdlc';
 import {
   type Service,
   type ServiceRegistrationResult,
+  type PureExecution,
   ServiceExecutionMode,
+  buildLambdaVariableExpressions,
+  VariableExpression,
+  generateMultiplicityString,
+  areMultiplicitiesEqual,
+  Multiplicity,
 } from '@finos/legend-graph';
-import { ServiceRegistrationEnvInfo } from '../../../../application/LegendStudioApplicationConfig.js';
+import { ServiceRegistrationEnvironmentConfig } from '../../../../application/LegendStudioApplicationConfig.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
+
+export const generateServiceManagementUrl = (
+  baseUrl: string,
+  serviceUrlPattern: string,
+): string =>
+  `${baseUrl}${
+    URL_SEPARATOR +
+    encodeURIComponent(
+      serviceUrlPattern[0] === URL_SEPARATOR
+        ? serviceUrlPattern.substring(1)
+        : serviceUrlPattern,
+    )
+  }`;
 
 const getServiceExecutionMode = (mode: string): ServiceExecutionMode => {
   switch (mode) {
@@ -59,23 +80,17 @@ const getServiceExecutionMode = (mode: string): ServiceExecutionMode => {
   }
 };
 
-const URL_SEPARATOR = '/';
-
 interface ServiceVersionOption {
   label: string;
   value: Version | string;
 }
 
-export enum SERVICE_REGISTRATION_PHASE {
-  REGISTERING_SERVICE = 'REGISTERING_SERVICE',
-  ACTIVATING_SERVICE = 'ACTIVATING_SERVICE',
-}
-
 export class ServiceRegistrationState {
   readonly editorStore: EditorStore;
   readonly service: Service;
-  readonly registrationOptions: ServiceRegistrationEnvInfo[] = [];
-  registrationState = ActionState.create();
+  readonly registrationOptions: ServiceRegistrationEnvironmentConfig[] = [];
+  readonly registrationState = ActionState.create();
+
   serviceEnv?: string | undefined;
   serviceExecutionMode?: ServiceExecutionMode | undefined;
   projectVersion?: Version | string | undefined;
@@ -86,19 +101,29 @@ export class ServiceRegistrationState {
   constructor(
     editorStore: EditorStore,
     service: Service,
-    registrationOptions: ServiceRegistrationEnvInfo[],
+    registrationOptions: ServiceRegistrationEnvironmentConfig[],
     enableModesWithVersioning: boolean,
   ) {
-    makeAutoObservable(this, {
-      editorStore: false,
+    makeObservable(this, {
+      serviceEnv: observable,
+      serviceExecutionMode: observable,
+      projectVersion: observable,
+      activatePostRegistration: observable,
+      enableModesWithVersioning: observable,
+      TEMPORARY__useStoreModel: observable,
       executionModes: computed,
-      updateVersion: action,
+      options: computed,
+      versionOptions: computed,
+      setServiceEnv: action,
+      setServiceExecutionMode: action,
       setProjectVersion: action,
+      setActivatePostRegistration: action,
       setUseStoreModelWithFullInteractive: action,
       initialize: action,
+      updateVersion: action,
       updateType: action,
       updateEnv: action,
-      setActivatePostRegistration: action,
+      registerService: flow,
     });
 
     this.editorStore = editorStore;
@@ -109,18 +134,71 @@ export class ServiceRegistrationState {
     this.registrationState.setMessageFormatter(prettyCONSTName);
   }
 
+  get options(): ServiceRegistrationEnvironmentConfig[] {
+    if (this.enableModesWithVersioning) {
+      return this.registrationOptions;
+    }
+    return this.registrationOptions
+      .map((_envConfig) => {
+        const envConfig = new ServiceRegistrationEnvironmentConfig();
+        envConfig.env = _envConfig.env;
+        envConfig.executionUrl = _envConfig.executionUrl;
+        envConfig.managementUrl = _envConfig.managementUrl;
+        // NOTE: For projects that we cannot create a version for, only fully-interactive mode is supported
+        envConfig.modes = _envConfig.modes.filter(
+          (mode) => mode === ServiceExecutionMode.FULL_INTERACTIVE,
+        );
+        return envConfig;
+      })
+      .filter((envConfig) => envConfig.modes.length);
+  }
+
+  get executionModes(): ServiceExecutionMode[] {
+    return (
+      this.options.find((e) => e.env === this.serviceEnv)?.modes ?? []
+    ).map(getServiceExecutionMode);
+  }
+
+  get versionOptions(): ServiceVersionOption[] | undefined {
+    if (
+      this.enableModesWithVersioning &&
+      this.serviceExecutionMode !== ServiceExecutionMode.FULL_INTERACTIVE
+    ) {
+      const options: ServiceVersionOption[] =
+        this.editorStore.sdlcState.projectVersions.map((version) => ({
+          label: version.id.id,
+          value: version,
+        }));
+      if (this.serviceExecutionMode !== ServiceExecutionMode.PROD) {
+        return [
+          {
+            label: prettyCONSTName(LATEST_PROJECT_REVISION),
+            value: LATEST_PROJECT_REVISION,
+          },
+          ...options,
+        ];
+      }
+      return options;
+    }
+    return undefined;
+  }
+
   setServiceEnv(val: string | undefined): void {
     this.serviceEnv = val;
   }
+
   setServiceExecutionMode(val: ServiceExecutionMode | undefined): void {
     this.serviceExecutionMode = val;
   }
+
   setProjectVersion(val: Version | string | undefined): void {
     this.projectVersion = val;
   }
+
   setActivatePostRegistration(val: boolean): void {
     this.activatePostRegistration = val;
   }
+
   setUseStoreModelWithFullInteractive(val: boolean): void {
     this.TEMPORARY__useStoreModel = val;
   }
@@ -151,55 +229,6 @@ export class ServiceRegistrationState {
     this.setServiceExecutionMode(this.executionModes[0]);
   }
 
-  get options(): ServiceRegistrationEnvInfo[] {
-    if (this.enableModesWithVersioning) {
-      return this.registrationOptions;
-    }
-    return this.registrationOptions
-      .map((_envConfig) => {
-        const envConfig = new ServiceRegistrationEnvInfo();
-        envConfig.env = _envConfig.env;
-        envConfig.executionUrl = _envConfig.executionUrl;
-        envConfig.managementUrl = _envConfig.managementUrl;
-        // NOTE: For projects that we cannot create a version for, only fully-interactive mode is supported
-        envConfig.modes = _envConfig.modes.filter(
-          (mode) => mode === ServiceExecutionMode.FULL_INTERACTIVE,
-        );
-        return envConfig;
-      })
-      .filter((envConfig) => envConfig.modes.length);
-  }
-
-  get executionModes(): ServiceExecutionMode[] {
-    return (
-      this.options.find((e) => e.env === this.serviceEnv)?.modes ?? []
-    ).map(getServiceExecutionMode);
-  }
-
-  get versionOptions(): ServiceVersionOption[] | undefined {
-    if (
-      this.enableModesWithVersioning &&
-      !(this.serviceExecutionMode === ServiceExecutionMode.FULL_INTERACTIVE)
-    ) {
-      const options: ServiceVersionOption[] =
-        this.editorStore.sdlcState.projectVersions.map((version) => ({
-          label: version.id.id,
-          value: version,
-        }));
-      if (this.serviceExecutionMode !== ServiceExecutionMode.PROD) {
-        return [
-          {
-            label: prettyCONSTName(LATEST_PROJECT_REVISION),
-            value: LATEST_PROJECT_REVISION,
-          },
-          ...options,
-        ];
-      }
-      return options;
-    }
-    return undefined;
-  }
-
   *registerService(): GeneratorFn<void> {
     try {
       this.registrationState.inProgress();
@@ -215,9 +244,7 @@ export class ServiceRegistrationState {
       const projectConfig = guaranteeNonNullable(
         this.editorStore.projectConfigurationEditorState.projectConfiguration,
       );
-      this.registrationState.setMessage(
-        SERVICE_REGISTRATION_PHASE.REGISTERING_SERVICE,
-      );
+      this.registrationState.setMessage(`Registering service...`);
       const serviceRegistrationResult =
         (yield this.editorStore.graphManagerState.graphManager.registerService(
           this.service,
@@ -227,12 +254,12 @@ export class ServiceRegistrationState {
           versionInput,
           serverUrl,
           guaranteeNonNullable(this.serviceExecutionMode),
-          this.TEMPORARY__useStoreModel,
+          {
+            TEMPORARY__useStoreModel: this.TEMPORARY__useStoreModel,
+          },
         )) as ServiceRegistrationResult;
       if (this.activatePostRegistration) {
-        this.registrationState.setMessage(
-          SERVICE_REGISTRATION_PHASE.ACTIVATING_SERVICE,
-        );
+        this.registrationState.setMessage(`Activating service...`);
         yield this.editorStore.graphManagerState.graphManager.activateService(
           serverUrl,
           serviceRegistrationResult.serviceInstanceId,
@@ -240,31 +267,25 @@ export class ServiceRegistrationState {
       }
       assertNonEmptyString(
         serviceRegistrationResult.pattern,
-        'Service registration pattern is missing',
+        'Service registration pattern is missing or empty',
       );
-      const message = `Service with pattern ${
-        serviceRegistrationResult.pattern
-      } registered ${this.activatePostRegistration ? 'and activated ' : ''}`;
-      const encodedServicePattern =
-        URL_SEPARATOR +
-        encodeURIComponent(
-          serviceRegistrationResult.pattern[0] === URL_SEPARATOR
-            ? serviceRegistrationResult.pattern.substring(1)
-            : serviceRegistrationResult.pattern,
-        );
-      this.editorStore.setActionAlertInfo({
-        message,
+
+      this.editorStore.applicationStore.setActionAlertInfo({
+        message: `Service with pattern ${
+          serviceRegistrationResult.pattern
+        } registered ${this.activatePostRegistration ? 'and activated ' : ''}`,
         prompt: 'You can now launch and monitor the operation of your service',
         type: ActionAlertType.STANDARD,
-        onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
-        onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
         actions: [
           {
             label: 'Launch Service',
             type: ActionAlertActionType.PROCEED,
             handler: (): void => {
-              this.editorStore.applicationStore.navigator.openNewWindow(
-                `${config.managementUrl}${encodedServicePattern}`,
+              this.editorStore.applicationStore.navigator.visitAddress(
+                generateServiceManagementUrl(
+                  config.managementUrl,
+                  serviceRegistrationResult.pattern,
+                ),
               );
             },
             default: true,
@@ -313,5 +334,35 @@ export class ServiceRegistrationState {
         'Service version can not be empty in Semi-interactive and Prod service type',
       );
     }
+
+    // validate service parameter multiplicities
+    const SUPPORTED_SERVICE_PARAMETER_MULTIPLICITIES = [
+      Multiplicity.ONE,
+      Multiplicity.ZERO_MANY,
+      Multiplicity.ZERO_ONE,
+    ];
+    const invalidParams = buildLambdaVariableExpressions(
+      (this.service.execution as PureExecution).func,
+      this.editorStore.graphManagerState,
+    )
+      .filter(filterByType(VariableExpression))
+      .filter(
+        (p) =>
+          !SUPPORTED_SERVICE_PARAMETER_MULTIPLICITIES.some((m) =>
+            areMultiplicitiesEqual(m, p.multiplicity),
+          ),
+      );
+    assertTrue(
+      invalidParams.length === 0,
+      `Parameter(s)${invalidParams.map(
+        (p) =>
+          ` ${p.name}: [${generateMultiplicityString(
+            p.multiplicity.lowerBound,
+            p.multiplicity.upperBound,
+          )}]`,
+      )} has/have unsupported multiplicity. Supported multiplicities include ${SUPPORTED_SERVICE_PARAMETER_MULTIPLICITIES.map(
+        (m) => ` [${generateMultiplicityString(m.lowerBound, m.upperBound)}]`,
+      )}.`,
+    );
   }
 }

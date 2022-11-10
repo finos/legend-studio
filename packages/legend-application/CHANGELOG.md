@@ -1,5 +1,78 @@
 # @finos/legend-application
 
+## 10.0.8
+
+## 10.0.7
+
+## 10.0.6
+
+## 10.0.5
+
+## 10.0.4
+
+## 10.0.3
+
+## 10.0.2
+
+## 10.0.1
+
+## 10.0.0
+
+### Major Changes
+
+- [#1552](https://github.com/finos/legend-studio/pull/1552) [`683800ab`](https://github.com/finos/legend-studio/commit/683800ab3ca1752c4382f22bcf8dede42518449d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Reworked `ApplicationNavigator` completely: it nolonger genericize on the type of location, rather, location now has a fixed shape (which for simplification purpose. is `string` for now); the methods are now reorganized to be more self-explanatory; support for navigation blocking is also added, with the pair of method `blockNavigation()/unblockNavigation()`, the former of which receives a list of checkers for when to enable blocking as well as an event handler when blocking occurs.
+
+- [#1552](https://github.com/finos/legend-studio/pull/1552) [`683800ab`](https://github.com/finos/legend-studio/commit/683800ab3ca1752c4382f22bcf8dede42518449d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** In `ApplicationNavigator`, changed `reloadToLocation` to `goToLocation`, the old `goToLocation` will now be called `updateCurrentLocation` and subjected to navigation blocking, this method will technically only update the location of the application (i.e. for `WebApplicationNavigator`, the URL) without reloading the app, or going to another section of the app; hence this method should only be used in very particular cases: majority of the time, `goToLocation` should be used.
+
+### Minor Changes
+
+- [#1552](https://github.com/finos/legend-studio/pull/1552) [`683800ab`](https://github.com/finos/legend-studio/commit/683800ab3ca1752c4382f22bcf8dede42518449d) ([@akphi](https://github.com/akphi)) - Rework keyboard support for application, now we don't need to consume `react-hotkeys` directly, but we can more systematically set keyboard shortcuts using `KeyboardShortcutsService`.
+
+## 9.0.1
+
+## 9.0.0
+
+### Major Changes
+
+- [#1520](https://github.com/finos/legend-studio/pull/1520) [`240875e8`](https://github.com/finos/legend-studio/commit/240875e869c95d7d228756a66eec1e82a45b8884) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `value specification` logic like `LambdaEditor`, `BasicValueSpecificationEditor` from `@finos/legend-application` to `@finos/legend-query-builder`
+
+- [#1520](https://github.com/finos/legend-studio/pull/1520) [`240875e8`](https://github.com/finos/legend-studio/commit/240875e869c95d7d228756a66eec1e82a45b8884) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rework `ApplicationNavigator` and renamed its methods; also added support for blocking platform navigation (e.g. web-browser's back/forward buttons).
+
+### Minor Changes
+
+- [#1520](https://github.com/finos/legend-studio/pull/1520) [`240875e8`](https://github.com/finos/legend-studio/commit/240875e869c95d7d228756a66eec1e82a45b8884) ([@akphi](https://github.com/akphi)) - Add `Backdrop` to `LegendApplicationComponentFrameworkProvider` and allow controling this backdrop from `ApplicationStore`
+
+## 8.0.2
+
+## 8.0.1
+
+## 8.0.0
+
+### Major Changes
+
+- [#1488](https://github.com/finos/legend-studio/pull/1488) [`a90b4698`](https://github.com/finos/legend-studio/commit/a90b469846363058ac7efffcbfb8cf0070582609) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `ApplicationStore` typings has been updated to genericize on the type of the plugin manager instead of the plugin, i.e. class
+
+  ```ts
+  class ApplicationStore<
+    T extends LegendApplicationConfig,
+    V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
+  >
+  ```
+
+### Patch Changes
+
+- [#1486](https://github.com/finos/legend-studio/pull/1486) [`4eb73868`](https://github.com/finos/legend-studio/commit/4eb73868a6f6041967252ec27b65ec15cdcc7edf) ([@xannem](https://github.com/xannem)) - Improve search algorithm for virtual assistant to enhance user experience [#1294](https://github.com/finos/legend-studio/issues/1294)
+
+## 7.2.1
+
+## 7.2.0
+
+### Minor Changes
+
+- [#1476](https://github.com/finos/legend-studio/pull/1476) [`293f2345`](https://github.com/finos/legend-studio/commit/293f2345cd7dcc7e97fc4b6b21c7d274a1407176) ([@akphi](https://github.com/akphi)) - Add `<DndProvider backend={html5Backend}>` to `<LegendApplicationComponentFrameworkProvider>`.
+
+## 7.1.7
+
 ## 7.1.6
 
 ## 7.1.5

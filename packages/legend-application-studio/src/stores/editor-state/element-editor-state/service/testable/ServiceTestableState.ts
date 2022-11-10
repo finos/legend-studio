@@ -46,7 +46,7 @@ import {
   service_addTest,
   service_addTestSuite,
   service_deleteTestSuite,
-} from '../../../../graphModifier/DSLService_GraphModifierHelper.js';
+} from '../../../../shared/modifier/DSL_Service_GraphModifierHelper.js';
 import { createEmptyEqualToJsonAssertion } from '../../../../shared/testable/TestableUtils.js';
 import type { ServiceEditorState } from '../ServiceEditorState.js';
 import { ServiceTestDataState } from './ServiceTestDataState.js';

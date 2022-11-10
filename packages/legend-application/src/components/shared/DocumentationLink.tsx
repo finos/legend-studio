@@ -15,6 +15,7 @@
  */
 
 import { clsx, QuestionCircleIcon } from '@finos/legend-art';
+import { shouldDisplayVirtualAssistantDocumentationEntry } from '../../stores/AssistantService.js';
 import { useApplicationStore } from '../ApplicationStoreProvider.js';
 
 export const DocumentationLink: React.FC<{
@@ -26,12 +27,22 @@ export const DocumentationLink: React.FC<{
   const documentationEntry =
     applicationStore.documentationService.getDocEntry(documentationKey);
   const openDocLink = (): void => {
-    if (documentationEntry?.url) {
-      applicationStore.navigator.openNewWindow(documentationEntry.url);
+    if (documentationEntry) {
+      if (shouldDisplayVirtualAssistantDocumentationEntry(documentationEntry)) {
+        applicationStore.assistantService.openDocumentationEntry(
+          documentationKey,
+        );
+      } else if (documentationEntry.url) {
+        applicationStore.navigator.visitAddress(documentationEntry.url);
+      }
     }
   };
 
-  if (!documentationEntry?.url) {
+  if (
+    !documentationEntry ||
+    (!documentationEntry.url &&
+      !shouldDisplayVirtualAssistantDocumentationEntry(documentationEntry))
+  ) {
     return null;
   }
   return (
@@ -40,5 +51,29 @@ export const DocumentationLink: React.FC<{
       onClick={openDocLink}
       className={clsx('documentation-link', className)}
     />
+  );
+};
+
+export const DocumentationPreview: React.FC<{
+  text?: string | undefined;
+  documentationKey: string;
+  className?: string | undefined;
+}> = (props) => {
+  const { documentationKey, text, className } = props;
+  const applicationStore = useApplicationStore();
+  const documentationEntry =
+    applicationStore.documentationService.getDocEntry(documentationKey);
+  const textContent = text ?? documentationEntry?.text;
+
+  if (!documentationEntry || !textContent) {
+    return null;
+  }
+  return (
+    <div className={clsx('documentation-preview', className)}>
+      <div className="documentation-preview__text">{textContent}</div>
+      <div className="documentation-preview__hint">
+        <DocumentationLink documentationKey={documentationKey} />
+      </div>
+    </div>
   );
 };

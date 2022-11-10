@@ -19,15 +19,15 @@
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./src/**/*.{js,ts,tsx}\""
   },
   "dependencies": {
-    "@types/react": "18.0.18",
+    "@types/react": "18.0.25",
     "react": "18.2.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.23.0",
+    "eslint": "8.27.0",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "typedoc": "0.23.14",
-    "typescript": "4.8.2"
+    "typedoc": "0.23.20",
+    "typescript": "4.8.4"
   }
 }

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../Core_HashUtils.js';
 import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference.js';
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 import {
@@ -21,7 +23,7 @@ import {
   ValueSpecification,
 } from './ValueSpecification.js';
 
-export class VariableExpression extends ValueSpecification {
+export class VariableExpression extends ValueSpecification implements Hashable {
   name: string;
 
   constructor(
@@ -31,6 +33,15 @@ export class VariableExpression extends ValueSpecification {
   ) {
     super(multiplicity, genericType);
     this.name = name;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.VARIABLE_EXPRESSION,
+      this.name,
+      this.multiplicity,
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+    ]);
   }
 
   accept_ValueSpecificationVisitor<T>(

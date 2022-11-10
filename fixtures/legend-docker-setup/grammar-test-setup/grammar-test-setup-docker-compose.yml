@@ -5,7 +5,7 @@ services:
     container_name: engine
     image: finos/legend-engine-server:snapshot
     ports:
-      - 6060:6060
+      - 6300:6300
     networks:
       - legend
     volumes:

@@ -37,8 +37,11 @@ import {
 import {
   annotatedElement_swapStereotypes,
   stereotypeReference_setValue,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
-import type { PackageableElementOption } from '@finos/legend-application';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-application';
 import { useDrop, useDrag } from 'react-dnd';
 
 interface StereotypeOption {
@@ -81,9 +84,9 @@ export const StereotypeSelector = observer(
     const editorStore = useEditorStore();
 
     // Profile
-    const profileOptions = editorStore.profileOptions.filter(
-      (p) => p.value.p_stereotypes.length,
-    );
+    const profileOptions = editorStore.graphManagerState.usableProfiles
+      .map(buildElementOption)
+      .filter((p) => p.value.p_stereotypes.length);
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
@@ -182,7 +185,7 @@ export const StereotypeSelector = observer(
                 options={profileOptions}
                 onChange={changeProfile}
                 value={selectedProfile}
-                placeholder={'Choose a profile'}
+                placeholder="Choose a profile"
                 filterOption={filterOption}
                 darkMode={Boolean(darkTheme)}
               />
@@ -193,7 +196,7 @@ export const StereotypeSelector = observer(
                 disabled={isStubbed_PackageableElement(stereotype.value._OWNER)}
                 onClick={visitProfile}
                 tabIndex={-1}
-                title={'Visit profile'}
+                title="Visit profile"
               >
                 <ArrowCircleRightIcon />
               </button>
@@ -204,7 +207,7 @@ export const StereotypeSelector = observer(
               options={stereotypeOptions}
               onChange={updateStereotype}
               value={selectedStereotype}
-              placeholder={'Choose a stereotype'}
+              placeholder="Choose a stereotype"
               filterOption={stereotypeFilterOption}
               darkMode={darkTheme ?? false}
             />
@@ -214,7 +217,7 @@ export const StereotypeSelector = observer(
                 disabled={isReadOnly}
                 onClick={deleteStereotype}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>

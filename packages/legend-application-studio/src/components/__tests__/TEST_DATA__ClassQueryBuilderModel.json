@@ -1,0 +1,339 @@
+[
+  {
+    "path": "model::Person",
+    "content": {
+      "_type": "class",
+      "name": "Person",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Person_ProcessingTemporal",
+    "content": {
+      "_type": "class",
+      "name": "Person_ProcessingTemporal",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "temporal",
+          "value": "processingtemporal"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Person_Bitemporal",
+    "content": {
+      "_type": "class",
+      "name": "Person_Bitemporal",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "temporal",
+          "value": "bitemporal"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Person_BusinessTemporal",
+    "content": {
+      "_type": "class",
+      "name": "Person_BusinessTemporal",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "temporal",
+          "value": "businesstemporal"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::MyMapping",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "model::Person",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "model::Person",
+                "property": "name"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ],
+                    "property": "name"
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true,
+          "srcClass": "model::Person"
+        },
+        {
+          "_type": "pureInstance",
+          "class": "model::Person_ProcessingTemporal",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "model::Person",
+                "property": "name"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ],
+                    "property": "name"
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true,
+          "srcClass": "model::Person_ProcessingTemporal"
+        },
+        {
+          "_type": "pureInstance",
+          "class": "model::Person_BusinessTemporal",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "model::Person",
+                "property": "name"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ],
+                    "property": "name"
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true,
+          "srcClass": "model::Person_BusinessTemporal"
+        },
+        {
+          "_type": "pureInstance",
+          "class": "model::Person_Bitemporal",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "model::Person",
+                "property": "name"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ],
+                    "property": "name"
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true,
+          "srcClass": "model::Person_Bitemporal"
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "MyMapping",
+      "package": "model",
+      "tests": [
+        {
+          "assert": {
+            "_type": "expectedOutputMappingTestAssert",
+            "expectedOutput": "{}"
+          },
+          "inputData": [
+            {
+              "_type": "object",
+              "data": "{\"name\":\"name 81\"}",
+              "inputType": "JSON",
+              "sourceClass": "model::Person"
+            }
+          ],
+          "name": "test_1",
+          "query": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "getAll",
+                "parameters": [
+                  {
+                    "_type": "packageableElementPtr",
+                    "fullPath": "model::Person"
+                  }
+                ]
+              }
+            ],
+            "parameters": []
+          }
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  },
+  {
+    "path": "model::MyService",
+    "content": {
+      "_type": "service",
+      "autoActivateUpdates": true,
+      "documentation": "",
+      "execution": {
+        "_type": "pureSingleExecution",
+        "func": {
+          "_type": "lambda",
+          "body": [
+            {
+              "_type": "func",
+              "function": "getAll",
+              "parameters": [
+                {
+                  "_type": "packageableElementPtr",
+                  "fullPath": "model::Person"
+                }
+              ]
+            }
+          ],
+          "parameters": []
+        },
+        "mapping": "model::MyMapping",
+        "runtime": {
+          "_type": "engineRuntime",
+          "connections": [
+            {
+              "store": {
+                "path": "ModelStore",
+                "type": "STORE"
+              },
+              "storeConnections": [
+                {
+                  "connection": {
+                    "_type": "JsonModelConnection",
+                    "class": "model::Person",
+                    "url": "data:application/json,%7B%7D"
+                  },
+                  "id": "connection_1"
+                }
+              ]
+            }
+          ],
+          "mappings": [
+            {
+              "path": "model::MyMapping",
+              "type": "MAPPING"
+            }
+          ]
+        }
+      },
+      "name": "MyService",
+      "owners": [],
+      "package": "model",
+      "pattern": "/e7548fc1-cac3-4056-b95c-f50892f4fc6c",
+      "test": {
+        "_type": "singleExecutionTest",
+        "asserts": [],
+        "data": ""
+      }
+    },
+    "classifierPath": "meta::legend::service::metamodel::Service"
+  }
+]

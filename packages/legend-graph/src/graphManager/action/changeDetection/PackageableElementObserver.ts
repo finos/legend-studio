@@ -52,17 +52,17 @@ import {
 import {
   observe_FileGenerationSpecification,
   observe_GenerationSpecification,
-} from './DSLGenerationSpecification_ObserverHelper.js';
+} from './DSL_Generation_ObserverHelper.js';
 import {
   observe_Mapping,
   observe_PackageableConnection,
   observe_PackageableRuntime,
-} from './DSLMapping_ObserverHelper.js';
-import { observe_Service } from './DSLService_ObserverHelper.js';
-import { observe_FlatData } from './StoreFlatData_ObserverHelper.js';
-import { observe_Database } from './StoreRelational_ObserverHelper.js';
+} from './DSL_Mapping_ObserverHelper.js';
+import { observe_Service } from './DSL_Service_ObserverHelper.js';
+import { observe_FlatData } from './STO_FlatData_ObserverHelper.js';
+import { observe_Database } from './STO_Relational_ObserverHelper.js';
 import type { DataElement } from '../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
-import { observe_DataElement } from './DSLData_ObserverHelper.js';
+import { observe_DataElement } from './DSL_Data_ObserverHelper.js';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {
   observerContext: ObserverContext;

@@ -17,7 +17,7 @@
 import { action, makeObservable, observable, computed } from 'mobx';
 import type { DocumentationEntry } from './DocumentationService.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
-import { Fuse } from './CJS__Fuse.cjs';
+import { Fuse } from '@finos/legend-art';
 import {
   type MarkdownText,
   guaranteeNonEmptyString,
@@ -25,11 +25,14 @@ import {
   isNonNullable,
   ActionState,
 } from '@finos/legend-shared';
+import { TextSearchAdvancedConfigState } from './shared/TextSearchAdvancedConfigState.js';
 
 export enum VIRTUAL_ASSISTANT_TAB {
   SEARCH = 'SEARCH',
   CONTEXTUAL_SUPPORT = 'CONTEXTUAL_SUPPORT',
 }
+
+export const DOCUMENTATION_SEARCH_RESULTS_LIMIT = 100;
 
 export class VirtualAssistantDocumentationEntry {
   uuid = uuid();
@@ -77,9 +80,28 @@ export class VirtualAssistantContextualDocumentationEntry {
   }
 }
 
+/**
+ * NOTE: since we're displaying the documentation entry in virtual assistant
+ * we want only user-friendly docs, we will discard anything that doesn't
+ * come with a title, or does not have any content/url
+ */
+export const isValidVirtualAssistantDocumentationEntry = (
+  entry: DocumentationEntry,
+): boolean =>
+  Boolean(entry.title && (entry.url ?? entry.text ?? entry.markdownText));
+
+/**
+ * Check if the documentation entry should be displayed in virtual assistant,
+ * i.e. it has some text content, rather just a link
+ */
+export const shouldDisplayVirtualAssistantDocumentationEntry = (
+  entry: DocumentationEntry,
+): boolean =>
+  isValidVirtualAssistantDocumentationEntry(entry) &&
+  Boolean(entry.text ?? entry.markdownText);
+
 export class AssistantService {
   readonly applicationStore: GenericLegendApplicationStore;
-  private readonly searchEngine: Fuse<DocumentationEntry>;
   /**
    * This key is used to allow programmatic re-rendering of the assistant panel
    */
@@ -87,19 +109,28 @@ export class AssistantService {
   isHidden = false;
   isOpen = false;
   selectedTab = VIRTUAL_ASSISTANT_TAB.SEARCH;
+  currentDocumentationEntry: VirtualAssistantDocumentationEntry | undefined;
 
-  searchResults: VirtualAssistantDocumentationEntry[] = [];
-  searchState = ActionState.create().pass();
+  // search text
+  private readonly searchEngine: Fuse<DocumentationEntry>;
+  searchConfigurationState: TextSearchAdvancedConfigState;
+  searchState = ActionState.create();
   searchText = '';
+  searchResults: VirtualAssistantDocumentationEntry[] = [];
+  showSearchConfigurationMenu = false;
+  isOverSearchLimit = false;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {
       isHidden: observable,
       isOpen: observable,
       panelRenderingKey: observable,
+      isOverSearchLimit: observable,
       selectedTab: observable,
       searchText: observable,
       searchResults: observable,
+      currentDocumentationEntry: observable,
+      showSearchConfigurationMenu: observable,
       currentContextualDocumentationEntry: computed,
       setIsHidden: action,
       setIsOpen: action,
@@ -107,17 +138,16 @@ export class AssistantService {
       setSearchText: action,
       resetSearch: action,
       search: action,
+      openDocumentationEntry: action,
       refreshPanelRendering: action,
+      setShowSearchConfigurationMenu: action,
     });
 
     this.applicationStore = applicationStore;
     this.searchEngine = new Fuse(
-      this.applicationStore.documentationService.getAllDocEntries().filter(
-        (entry) =>
-          // NOTE: since we're searching for user-friendly docs, we will discard anything that
-          // doesn't come with a title, or does not have any content/url
-          entry.title && (entry.url ?? entry.text ?? entry.markdownText),
-      ),
+      this.applicationStore.documentationService
+        .getAllDocEntries()
+        .filter(isValidVirtualAssistantDocumentationEntry),
       {
         includeScore: true,
         shouldSort: true,
@@ -143,8 +173,14 @@ export class AssistantService {
             weight: 1,
           },
         ],
+        // extended search allows for exact word match through single quote
+        // See https://fusejs.io/examples.html#extended-search
+        useExtendedSearch: true,
       },
     );
+    this.searchConfigurationState = new TextSearchAdvancedConfigState(() => {
+      this.search();
+    });
   }
 
   get currentContextualDocumentationEntry():
@@ -159,6 +195,7 @@ export class AssistantService {
       this.applicationStore.documentationService.getContextualDocEntry(
         currentContext,
       );
+
     return currentContextualDocumentationEntry
       ? new VirtualAssistantContextualDocumentationEntry(
           currentContext,
@@ -168,17 +205,26 @@ export class AssistantService {
               this.applicationStore.documentationService.getDocEntry(entry),
             )
             .filter(isNonNullable)
-            .filter(
-              (entry) =>
-                // NOTE: since we're searching for user-friendly docs, we will discard anything that
-                // doesn't come with a title, or does not have any content/url
-                //
-                // We could also consider having a flag in each documentation entry to be hidden from users
-                entry.title && (entry.url ?? entry.text ?? entry.markdownText),
-            )
+            .filter(isValidVirtualAssistantDocumentationEntry)
             .map((entry) => new VirtualAssistantDocumentationEntry(entry)),
         )
       : undefined;
+  }
+
+  openDocumentationEntry(docKey: string): void {
+    const matchingDocEntry = this.applicationStore.documentationService
+      .getAllDocEntries()
+      .find((entry) => entry._documentationKey === docKey);
+
+    if (matchingDocEntry) {
+      this.setIsOpen(true);
+      this.setIsHidden(false);
+      this.currentDocumentationEntry = new VirtualAssistantDocumentationEntry(
+        matchingDocEntry,
+      );
+      this.currentDocumentationEntry.setIsOpen(true);
+      this.resetSearch();
+    }
   }
 
   setIsHidden(val: boolean): void {
@@ -222,10 +268,39 @@ export class AssistantService {
   }
 
   search(): void {
+    if (!this.searchText) {
+      this.searchResults = [];
+      return;
+    }
+    this.currentDocumentationEntry = undefined;
     this.searchState.inProgress();
     this.searchResults = Array.from(
-      this.searchEngine.search(this.searchText).values(),
+      this.searchEngine
+        .search(
+          this.searchConfigurationState.generateSearchText(this.searchText),
+          {
+            // NOTE: search for limit + 1 item so we can know if there are more search results
+            limit: DOCUMENTATION_SEARCH_RESULTS_LIMIT + 1,
+          },
+        )
+        .values(),
     ).map((result) => new VirtualAssistantDocumentationEntry(result.item));
+
+    // check if the search results exceed the limit
+    if (this.searchResults.length > DOCUMENTATION_SEARCH_RESULTS_LIMIT) {
+      this.isOverSearchLimit = true;
+      this.searchResults = this.searchResults.slice(
+        0,
+        DOCUMENTATION_SEARCH_RESULTS_LIMIT,
+      );
+    } else {
+      this.isOverSearchLimit = false;
+    }
+
     this.searchState.complete();
+  }
+
+  setShowSearchConfigurationMenu(val: boolean): void {
+    this.showSearchConfigurationMenu = val;
   }
 }

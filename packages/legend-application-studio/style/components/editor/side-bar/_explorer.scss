@@ -99,6 +99,10 @@
     padding-left: 2rem;
   }
 
+  &__package-tree__node__container {
+    padding-right: 0.5rem;
+  }
+
   &__package-tree__node__container:hover {
     background: var(--color-dark-blue-shade-100);
   }

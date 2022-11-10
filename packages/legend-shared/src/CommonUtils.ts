@@ -25,7 +25,9 @@ import {
   debounce,
   throttle,
   mergeWith,
+  toNumber,
   type DebouncedFunc,
+  isObject,
 } from 'lodash-es';
 import { UnsupportedOperationError } from './error/ErrorUtils.js';
 import { format as prettyPrintObject } from 'pretty-format';
@@ -48,6 +50,21 @@ export {
 // NOTE: we can use the `rng` option in UUID V4 to control the random seed during testing
 // See https://github.com/uuidjs/uuid#version-4-random
 export { v4 as uuid } from 'uuid';
+
+/**
+ * This is a dummy type that acts as a signal to say the type should be plain object with shape rather than prototype object of type
+ * NOTE: This is useful in network client interface where we enforce that the input and output for the network call must be plain object,
+ * so as to force proper handling (i.e. deserialize/serialize) but also signal from documentation perspective about the type/shape of the plain object
+ */
+export type PlainObject<T = unknown> = Record<PropertyKey, unknown>; // eslint-disable-line @typescript-eslint/no-unused-vars
+
+/**
+ * This type allows modification of `readonly` attributes for class/interface
+ * This is useful to set properties like `owner`, `parent` where we can't do so in the constructors
+ *
+ * See https://stackoverflow.com/questions/46634876/how-can-i-change-a-readonly-property-in-typescript
+ */
+export type Writable<T> = { -readonly [K in keyof T]: T[K] };
 
 // Since the right side of `instanceof` is an expression evaluating to a constructor function (ie. a class), not a type, so we have to make it
 // as such, this is similar to type definition of Clazz in `serializer` and we take it out here because we want to refer to it in many places
@@ -115,31 +132,30 @@ export const noop = (): (() => void) => (): void => {
 /**
  * Recursively omit keys from an object
  */
-export const recursiveOmit = (
-  obj: Record<PropertyKey, unknown>,
+export const recursiveOmit = <T extends object>(
+  obj: T,
   /**
    * Checker function which returns `true` if the object field should be omit
    */
-  checker: (
-    object: Record<PropertyKey, unknown>,
-    propKey: PropertyKey,
-  ) => boolean,
-): Record<PropertyKey, unknown> => {
+  checker: (object: object, propKey: PropertyKey) => boolean,
+): T => {
   const newObj = deepClone(obj);
   const omit = (
-    _obj: Record<PropertyKey, unknown>,
-    _checker: (
-      object: Record<PropertyKey, unknown>,
-      propKey: string,
-    ) => boolean,
+    _obj: object,
+    _checker: (object: object, propKey: string) => boolean,
   ): void => {
-    for (const propKey in _obj) {
-      if (Object.prototype.hasOwnProperty.call(_obj, propKey)) {
-        const value = _obj[propKey] as Record<PropertyKey, unknown>;
-        if (_checker(_obj, propKey)) {
-          delete _obj[propKey];
-        } else if (typeof value === 'object') {
-          omit(value, _checker);
+    if (Array.isArray(_obj)) {
+      _obj.forEach((o) => omit(o, _checker));
+    } else {
+      const o = _obj as PlainObject;
+      for (const propKey in o) {
+        if (Object.prototype.hasOwnProperty.call(_obj, propKey)) {
+          const value = o[propKey];
+          if (_checker(_obj, propKey)) {
+            delete o[propKey];
+          } else if (isObject(value)) {
+            omit(value, _checker);
+          }
         }
       }
     }
@@ -151,13 +167,8 @@ export const recursiveOmit = (
 /**
  * Recursively remove fields with undefined values in object
  */
-export const pruneObject = (
-  obj: Record<PropertyKey, unknown>,
-): Record<PropertyKey, unknown> =>
-  pickBy(obj, (val: unknown): boolean => val !== undefined) as Record<
-    PropertyKey,
-    unknown
-  >;
+export const pruneObject = (obj: PlainObject): PlainObject =>
+  pickBy(obj, (val: unknown): boolean => val !== undefined) as PlainObject;
 
 /**
  * Recursively remove fields with null values in object
@@ -167,26 +178,19 @@ export const pruneObject = (
  * treat them as `undefined` instead, so we want to strip all the `null` values from the
  * plain JSON object.
  */
-export const pruneNullValues = (
-  obj: Record<PropertyKey, unknown>,
-): Record<PropertyKey, unknown> =>
-  pickBy(obj, (val: unknown): boolean => val !== null) as Record<
-    PropertyKey,
-    unknown
-  >;
+export const pruneNullValues = (obj: PlainObject): PlainObject =>
+  pickBy(obj, (val: unknown): boolean => val !== null) as PlainObject;
 
 /**
  * Recursively sort object keys alphabetically
  */
-export const sortObjectKeys = (
-  value: Record<PropertyKey, unknown>,
-): Record<PropertyKey, unknown> => {
+export const sortObjectKeys = (value: PlainObject): PlainObject => {
   const _sort = (obj: unknown): unknown => {
     if (Array.isArray(obj)) {
       return obj.map(sortObjectKeys);
     } else if (typeof obj === 'object') {
-      const oldObj = obj as Record<PropertyKey, unknown>;
-      const newObj: Record<PropertyKey, unknown> = {};
+      const oldObj = obj as PlainObject;
+      const newObj: PlainObject = {};
       Object.keys(oldObj)
         .sort((a, b) => a.localeCompare(b))
         .forEach((key) => {
@@ -196,7 +200,15 @@ export const sortObjectKeys = (
     }
     return obj;
   };
-  return _sort(value) as Record<PropertyKey, unknown>;
+  return _sort(value) as PlainObject;
+};
+
+export const parseNumber = (val: string): number => {
+  const num = toNumber(val);
+  if (isNaN(num)) {
+    throw new Error(`Can't parse number '${val}'`);
+  }
+  return num;
 };
 
 /**
@@ -237,21 +249,6 @@ export const generateEnumerableNameFromToken = (
  */
 export const getNullableFirstElement = <T>(array: T[]): T | undefined =>
   array.length ? array[0] : undefined;
-
-/**
- * This is a dummy type that acts as a signal to say the type should be plain object with shape rather than prototype object of type
- * NOTE: This is useful in network client interface where we enforce that the input and output for the network call must be plain object,
- * so as to force proper handling (i.e. deserialize/serialize) but also signal from documentation perspective about the type/shape of the plain object
- */
-export type PlainObject<T> = Record<PropertyKey, unknown>; // eslint-disable-line @typescript-eslint/no-unused-vars
-
-/**
- * This type allows modification of `readonly` attributes for class/interface
- * This is useful to set properties like `owner`, `parent` where we can't do so in the constructors
- *
- * See https://stackoverflow.com/questions/46634876/how-can-i-change-a-readonly-property-in-typescript
- */
-export type Writable<T> = { -readonly [K in keyof T]: T[K] };
 
 /**
  * NOTE: This object mutates the input object (obj1)

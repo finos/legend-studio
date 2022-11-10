@@ -729,7 +729,11 @@ export const TEST_DATA__FunctionRoundtrip = [
       sections: [
         {
           _type: 'importAware',
-          elements: ['test::tClass', 'test::tProf', 'test::tFunc'],
+          elements: [
+            'test::tClass',
+            'test::tProf',
+            'test::tFunc_tClass_1__tClass_1__tClass_1_',
+          ],
           imports: ['test'],
           parserName: 'Pure',
         },
@@ -758,13 +762,13 @@ export const TEST_DATA__FunctionRoundtrip = [
     classifierPath: 'meta::pure::metamodel::extension::Profile',
   },
   {
-    path: 'test::tFunc',
+    path: 'test::tFunc_tClass_1__tClass_1__tClass_1_',
     content: {
       _type: 'function',
       body: [
         {
           _type: 'func',
-          function: 'tFunc',
+          function: 'test::tFunc',
           parameters: [
             {
               _type: 'var',
@@ -777,7 +781,7 @@ export const TEST_DATA__FunctionRoundtrip = [
           ],
         },
       ],
-      name: 'tFunc',
+      name: 'tFunc_tClass_1__tClass_1__tClass_1_',
       package: 'test',
       parameters: [
         {
@@ -799,6 +803,8 @@ export const TEST_DATA__FunctionRoundtrip = [
           name: 's1',
         },
       ],
+      postConstraints: [],
+      preConstraints: [],
       returnMultiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -945,5 +951,84 @@ export const TEST_DATA__MeasureRoundtrip = [
       package: 'test',
     },
     classifierPath: 'meta::pure::metamodel::type::Measure',
+  },
+];
+
+export const TEST_DATA__OverloadedFunctionsRoundtrip = [
+  {
+    path: 'model::test_Boolean_1__String_1_',
+    content: {
+      _type: 'function',
+      body: [
+        {
+          _type: 'string',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          values: [''],
+        },
+      ],
+      name: 'test_Boolean_1__String_1_',
+      package: 'model',
+      parameters: [
+        {
+          _type: 'var',
+          class: 'Boolean',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'param1',
+        },
+      ],
+      postConstraints: [],
+      preConstraints: [],
+      returnMultiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      returnType: 'String',
+    },
+    classifierPath:
+      'meta::pure::metamodel::function::ConcreteFunctionDefinition',
+  },
+  {
+    path: 'model::test_String_1__String_1_',
+    content: {
+      _type: 'function',
+      body: [
+        {
+          _type: 'string',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          values: [''],
+        },
+      ],
+      name: 'test_String_1__String_1_',
+      package: 'model',
+      parameters: [
+        {
+          _type: 'var',
+          class: 'String',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'param1',
+        },
+      ],
+      postConstraints: [],
+      preConstraints: [],
+      returnMultiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      returnType: 'String',
+    },
+    classifierPath:
+      'meta::pure::metamodel::function::ConcreteFunctionDefinition',
   },
 ];

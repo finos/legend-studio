@@ -24,13 +24,14 @@ import {
   ContextMenu,
   Dialog,
   BlankPanelPlaceholder,
+  ModalTitle,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { ServiceTestSuite } from '@finos/legend-graph';
 import { ServiceTestDataEditor } from './ServiceTestDataEditor.js';
 import { ServiceTestsEditor } from './ServiceTestsEditor.js';
 import { forwardRef, useState } from 'react';
-import { testSuite_setId } from '../../../../../stores/graphModifier/Testable_GraphModifierHelper.js';
+import { testSuite_setId } from '../../../../../stores/shared/modifier/Testable_GraphModifierHelper.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type {
   ServiceTestableState,
@@ -101,10 +102,6 @@ export const RenameModal = observer(
   }) => {
     const { val, isReadOnly, showModal, closeModal, setValue } = props;
     const [inputValue, setInputValue] = useState(val);
-    const handleSubmit = (): void => {
-      setValue(inputValue);
-      closeModal();
-    };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       setInputValue(event.target.value);
     };
@@ -116,10 +113,14 @@ export const RenameModal = observer(
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(event) => {
+            event.preventDefault();
+            setValue(inputValue);
+            closeModal();
+          }}
           className="modal modal--dark search-modal"
         >
-          <div className="modal__title">Rename</div>
+          <ModalTitle title="Rename" />
           <div>
             <input
               className="panel__content__form__section__input"

@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-export * from './DSLDataSpace_Extension.js';
-export { DSLDataSpace_LegendStudioApplicationPlugin } from './components/studio/DSLDataSpace_LegendStudioApplicationPlugin.js';
-export { DSLDataSpace_LegendQueryApplicationPlugin } from './components/query/DSLDataSpace_LegendQueryApplicationPlugin.js';
+export * from './DSL_DataSpace_Extension.js';
+export { DSL_DataSpace_LegendStudioApplicationPlugin } from './components/studio/DSL_DataSpace_LegendStudioApplicationPlugin.js';
+export { DSL_DataSpace_LegendQueryApplicationPlugin } from './components/query/DSL_DataSpace_LegendQueryApplicationPlugin.js';
 
 export { DataSpaceViewer } from './components/DataSpaceViewer.js';
 
 export {
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   extractDataSpaceTaxonomyNodes,
-} from './graphManager/protocol/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
+} from './graphManager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 
 export { DataSpaceViewerState } from './stores/DataSpaceViewerState.js';
 
-export * from './graphManager/DSLDataSpace_GraphManagerHelper.js';
-export { getDSLDataSpaceGraphManagerExtension } from './graphManager/protocol/pure/DSLDataSpace_PureGraphManagerExtension.js';
-export { DataSpaceAnalysisResult } from './graphManager/action/analytics/DataSpaceAnalysis.js';
+export * from './graphManager/DSL_DataSpace_GraphManagerHelper.js';
+export { DSL_DataSpace_getGraphManagerExtension } from './graphManager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
+export * from './graphManager/action/analytics/DataSpaceAnalysis.js';
+
+export * from './graphManager/action/analytics/DataSpaceAnalysisHelper.js';

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-@forward './deps';
-@forward './data-space-viewer';
-@forward './data-space-query-plugin';
+@forward 'deps';
+@forward 'data-space-viewer';
+@forward 'data-space-query-plugin';
 
 :root {
   --color-data-space: var(--color-blue-50);

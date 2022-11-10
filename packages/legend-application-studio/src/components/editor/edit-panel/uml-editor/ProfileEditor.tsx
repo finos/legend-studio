@@ -30,6 +30,8 @@ import {
   PanelEntryDropZonePlaceholder,
   DragPreviewLayer,
   useDragPreviewLayer,
+  Panel,
+  PanelContent,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -48,7 +50,7 @@ import {
   tagStereotype_setValue,
   profile_swapTags,
   profile_swapStereotypes,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 import { useRef, useCallback } from 'react';
@@ -124,7 +126,7 @@ const TagBasicEditor = observer(
               disabled={isReadOnly}
               value={tag.value}
               onChange={changeValue}
-              placeholder={`Tag value`}
+              placeholder="Tag value"
               validationErrorMessage={
                 isTagDuplicated(tag) ? 'Duplicated tag' : undefined
               }
@@ -135,7 +137,7 @@ const TagBasicEditor = observer(
                 disabled={isReadOnly}
                 onClick={deleteValue}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>
@@ -220,7 +222,7 @@ const StereotypeBasicEditor = observer(
               disabled={isReadOnly}
               value={stereotype.value}
               onChange={changeValue}
-              placeholder={`Stereotype value`}
+              placeholder="Stereotype value"
               validationErrorMessage={
                 isStereotypeDuplicated(stereotype)
                   ? 'Duplicated stereotype'
@@ -233,7 +235,7 @@ const StereotypeBasicEditor = observer(
                 disabled={isReadOnly}
                 onClick={deleteStereotype}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>
@@ -293,7 +295,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
 
   return (
     <div className="uml-element-editor profile-editor">
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             {isReadOnly && (
@@ -334,7 +336,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
             </button>
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           {selectedTab === UML_EDITOR_TAB.TAGS && (
             <div className="panel__content__lists">
               <DragPreviewLayer
@@ -375,8 +377,8 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
               ))}
             </div>
           )}
-        </div>
-      </div>
+        </PanelContent>
+      </Panel>
     </div>
   );
 });

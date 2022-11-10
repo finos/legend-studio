@@ -15,9 +15,8 @@
  */
 
 import { createContext, useContext, useEffect } from 'react';
-import { useApplicationStore } from '@finos/legend-application';
+import { useApplicationStore, useParams } from '@finos/legend-application';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { useParams } from 'react-router';
 import type { LegendTaxonomyStandaloneDataSpaceViewerPathParams } from '../stores/LegendTaxonomyRouter.js';
 import { flowResult } from 'mobx';
 import {
@@ -30,10 +29,7 @@ import { DataSpaceViewer } from '@finos/legend-extension-dsl-data-space';
 import { StandaloneDataSpaceViewerStore } from '../stores/StandaloneDataSpaceViewerStore.js';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import {
-  useLegendTaxonomyApplicationStore,
-  useLegendTaxonomyBaseStore,
-} from './LegendTaxonomyBaseStoreProvider.js';
+import { useLegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStoreProvider.js';
 
 const StandaloneDataSpaceViewerStoreContext = createContext<
   StandaloneDataSpaceViewerStore | undefined
@@ -44,14 +40,9 @@ const StandaloneDataSpaceViewerStoreProvider: React.FC<{
 }> = ({ children }) => {
   const applicationStore = useLegendTaxonomyApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const baseStore = useLegendTaxonomyBaseStore();
   const store = useLocalObservable(
     () =>
-      new StandaloneDataSpaceViewerStore(
-        applicationStore,
-        depotServerClient,
-        baseStore.pluginManager,
-      ),
+      new StandaloneDataSpaceViewerStore(applicationStore, depotServerClient),
   );
   return (
     <StandaloneDataSpaceViewerStoreContext.Provider value={store}>
@@ -124,11 +115,11 @@ export const StandaloneDataSpaceViewer = withStandaloneDataSpaceViewerStore(
               )}
               {viewerStore.initState.hasFailed && (
                 <BlankPanelContent>
-                  <div className="query-setup__data-space__view--failed">
-                    <div className="query-setup__data-space__view--failed__icon">
+                  <div className="standalone-data-space-viewer__failure">
+                    <div className="standalone-data-space-viewer__failure__icon">
                       <TimesCircleIcon />
                     </div>
-                    <div className="query-setup__data-space__view--failed__text">
+                    <div className="standalone-data-space-viewer__failure__text">
                       Can&apos;t load data space
                     </div>
                   </div>

@@ -26,8 +26,11 @@ import { deflate } from 'pako';
 import {
   parse as _getQueryParams,
   parseUrl as _getQueryParamsFromUrl,
+  stringify as _stringifyQueryParams,
 } from 'query-string';
 import { returnUndefOnError } from '../error/ErrorUtils.js';
+import { sanitizeUrl } from '@braintree/sanitize-url';
+import type { PlainObject } from '../CommonUtils.js';
 
 /**
  * Unlike the download call (GET requests) which is gziped, the upload call send uncompressed data which is in megabytes realms
@@ -36,9 +39,10 @@ import { returnUndefOnError } from '../error/ErrorUtils.js';
  * want to make this decision `to compress or to not compress` more smartly and dynamicly (e.g. potentially to scan the size of the data/model
  * and decide the compression strategy).
  */
-const compressData = (data: Record<PropertyKey, unknown> | string): Blob =>
+const compressData = (data: object | string): Blob =>
   new Blob([deflate(isObject(data) ? JSON.stringify(data) : data)]);
 
+export const URL_SEPARATOR = '/';
 export const HttpStatus = StatusCodes;
 export const CHARSET = 'charset=utf-8';
 
@@ -90,7 +94,7 @@ export const mergeRequestHeaders = (
   return requestHeaders;
 };
 
-const MAX_ERROR_MESSAGE_LENGTH = 500;
+const MAX_ERROR_MESSAGE_LENGTH = 5000;
 
 type ParamterValue = string | number | boolean | undefined;
 /**
@@ -102,7 +106,7 @@ type ParamterValue = string | number | boolean | undefined;
  */
 export type RequestHeaders = Record<string, string>;
 export type Parameters = Record<string, ParamterValue | ParamterValue[]>;
-export type Payload = Record<PropertyKey, unknown> | string;
+export type Payload = PlainObject | string;
 
 /**
  * Custom error for service client with response details.
@@ -110,10 +114,20 @@ export type Payload = Record<PropertyKey, unknown> | string;
  * as pure/generic as possible
  */
 const extractMessage = (payload: Payload): string => {
-  if (isObject(payload) && isString(payload.message)) {
-    return payload.message;
+  if (isObject(payload)) {
+    return isString(payload.message)
+      ? payload.message
+      : JSON.stringify(payload);
   }
-  return isString(payload) ? payload : '';
+  let payloadAsObject: PlainObject | undefined;
+  try {
+    payloadAsObject = JSON.parse(payload) as PlainObject;
+  } catch {
+    // NOTE: ignored, above is best effort
+  }
+  return payloadAsObject && isString(payloadAsObject.message)
+    ? payloadAsObject.message
+    : payload;
 };
 
 // NOTE: status 0 is either timeout or client error possibly caused by authentication
@@ -148,7 +162,7 @@ export const autoReAuthenticate = (url: string): Promise<void> =>
   });
 
 export class NetworkClientError extends Error {
-  response: Response & { data?: Record<PropertyKey, unknown> };
+  response: Response & { data?: object };
   payload?: Payload | undefined;
 
   constructor(response: Response, payload: Payload | undefined) {
@@ -302,7 +316,7 @@ export const createRequestHeaders = (
 };
 
 interface NetworkClientConfig {
-  options?: Record<PropertyKey, unknown> | undefined;
+  options?: PlainObject | undefined;
   baseUrl?: string | undefined;
 }
 
@@ -417,12 +431,15 @@ export class NetworkClient {
     responseProcessConfig?: ResponseProcessConfig | undefined,
   ): Promise<T> {
     const requestUrl = makeUrl(this.baseUrl, url, parameters ?? {});
-    if (data !== undefined && requestProcessConfig?.enableCompression) {
+    if (
+      (isString(data) || isObject(data)) &&
+      requestProcessConfig?.enableCompression
+    ) {
       assertTrue(
         method !== HttpMethod.GET,
         ' GET request should not have any request payload',
       );
-      data = compressData(data as Record<PropertyKey, unknown> | string);
+      data = compressData(data);
       // NOTE: do not use Content-Type for GET to avoid unnecessary pre-flight when cross-origin
       headers = mergeRequestHeaders(headers, {
         // Override Content-Type header when compression is enabled
@@ -520,3 +537,34 @@ export const getQueryParameters = <T>(url: string, isFullUrl = false): T => {
     : _getQueryParams(url);
   return params as unknown as T;
 };
+
+export const getQueryParameterValue = (
+  data: Record<string, string | undefined>,
+  paramKey: string,
+): string | undefined => {
+  const paramValue = data[paramKey];
+  return paramValue ? decodeURIComponent(paramValue) : undefined;
+};
+
+export const stringifyQueryParams = (params: PlainObject): string => {
+  const data: PlainObject = {};
+  Object.entries(params).forEach(([key, value]) => {
+    if (!value) {
+      return;
+    }
+    data[key] = value.toString();
+  });
+  return _stringifyQueryParams(data);
+};
+
+export const addQueryParamsStringToUrl = (
+  url: string,
+  val: string | undefined,
+): string => (val ? `${url}?${val}` : url);
+
+export const buildUrl = (parts: string[]): string =>
+  parts
+    .map((part) => part.replaceAll(/^\/+/g, '').replaceAll(/\/+$/g, ''))
+    .join(URL_SEPARATOR);
+
+export const sanitizeURL = (val: string): string => sanitizeUrl(val);

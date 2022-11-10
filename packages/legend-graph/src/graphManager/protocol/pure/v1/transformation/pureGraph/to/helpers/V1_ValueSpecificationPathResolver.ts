@@ -27,10 +27,10 @@ import { isValidFullPath } from '../../../../../../../../graph/MetaModelUtils.js
 import { V1_RawLambda } from '../../../../model/rawValueSpecification/V1_RawLambda.js';
 import type { V1_AppliedFunction } from '../../../../model/valueSpecification/application/V1_AppliedFunction.js';
 import type { V1_AppliedProperty } from '../../../../model/valueSpecification/application/V1_AppliedProperty.js';
-import type { V1_PropertyGraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_PropertyGraphFetchTree.js';
-import type { V1_RootGraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree.js';
-import type { V1_Path } from '../../../../model/valueSpecification/raw/path/V1_Path.js';
-import type { V1_AggregateValue } from '../../../../model/valueSpecification/raw/V1_AggregateValue.js';
+import { V1_PropertyGraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_PropertyGraphFetchTree.js';
+import { V1_RootGraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_RootGraphFetchTree.js';
+import { V1_Path } from '../../../../model/valueSpecification/raw/classInstance/path/V1_Path.js';
+import { V1_AggregateValue } from '../../../../model/valueSpecification/raw/classInstance/V1_AggregateValue.js';
 import type { V1_CBoolean } from '../../../../model/valueSpecification/raw/V1_CBoolean.js';
 import type { V1_CDateTime } from '../../../../model/valueSpecification/raw/V1_CDateTime.js';
 import type { V1_CDecimal } from '../../../../model/valueSpecification/raw/V1_CDecimal.js';
@@ -42,24 +42,19 @@ import type { V1_CStrictDate } from '../../../../model/valueSpecification/raw/V1
 import type { V1_CStrictTime } from '../../../../model/valueSpecification/raw/V1_CStrictTime.js';
 import type { V1_CString } from '../../../../model/valueSpecification/raw/V1_CString.js';
 import type { V1_EnumValue } from '../../../../model/valueSpecification/raw/V1_EnumValue.js';
-import type { V1_ExecutionContextInstance } from '../../../../model/valueSpecification/raw/V1_ExecutionContextInstance.js';
-import type { V1_HackedClass } from '../../../../model/valueSpecification/raw/V1_HackedClass.js';
-import type { V1_HackedUnit } from '../../../../model/valueSpecification/raw/V1_HackedUnit.js';
+import { V1_ExecutionContextInstance } from '../../../../model/valueSpecification/raw/classInstance/V1_ExecutionContextInstance.js';
 import type { V1_KeyExpression } from '../../../../model/valueSpecification/raw/V1_KeyExpression.js';
 import type { V1_Lambda } from '../../../../model/valueSpecification/raw/V1_Lambda.js';
 import type { V1_PackageableElementPtr } from '../../../../model/valueSpecification/raw/V1_PackageableElementPtr.js';
-import type { V1_Pair } from '../../../../model/valueSpecification/raw/V1_Pair.js';
-import type { V1_PrimitiveType } from '../../../../model/valueSpecification/raw/V1_PrimitiveType.js';
-import type { V1_PureList } from '../../../../model/valueSpecification/raw/V1_PureList.js';
-import type { V1_RuntimeInstance } from '../../../../model/valueSpecification/raw/V1_RuntimeInstance.js';
-import type { V1_SerializationConfig } from '../../../../model/valueSpecification/raw/V1_SerializationConfig.js';
-import type { V1_TDSAggregateValue } from '../../../../model/valueSpecification/raw/V1_TDSAggregateValue.js';
-import type { V1_TDSColumnInformation } from '../../../../model/valueSpecification/raw/V1_TDSColumnInformation.js';
-import type { V1_TdsOlapAggregation } from '../../../../model/valueSpecification/raw/V1_TdsOlapAggregation.js';
-import type { V1_TdsOlapRank } from '../../../../model/valueSpecification/raw/V1_TdsOlapRank.js';
-import type { V1_TDSSortInformation } from '../../../../model/valueSpecification/raw/V1_TDSSortInformation.js';
-import type { V1_UnitInstance } from '../../../../model/valueSpecification/raw/V1_UnitInstance.js';
-import type { V1_UnitType } from '../../../../model/valueSpecification/raw/V1_UnitType.js';
+import { V1_Pair } from '../../../../model/valueSpecification/raw/classInstance/V1_Pair.js';
+import { V1_PureList } from '../../../../model/valueSpecification/raw/classInstance/V1_PureList.js';
+import { V1_RuntimeInstance } from '../../../../model/valueSpecification/raw/classInstance/V1_RuntimeInstance.js';
+import { V1_SerializationConfig } from '../../../../model/valueSpecification/raw/classInstance/V1_SerializationConfig.js';
+import { V1_TDSAggregateValue } from '../../../../model/valueSpecification/raw/classInstance/V1_TDSAggregateValue.js';
+import { V1_TDSColumnInformation } from '../../../../model/valueSpecification/raw/classInstance/V1_TDSColumnInformation.js';
+import { V1_TDSOlapAggregation } from '../../../../model/valueSpecification/raw/classInstance/V1_TDSOlapAggregation.js';
+import { V1_TDSOlapRank } from '../../../../model/valueSpecification/raw/classInstance/V1_TDSOlapRank.js';
+import { V1_TDSSortInformation } from '../../../../model/valueSpecification/raw/classInstance/V1_TDSSortInformation.js';
 import type { V1_INTERNAL__UnknownValueSpecification } from '../../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication.js';
 import type {
   V1_ValueSpecification,
@@ -75,6 +70,9 @@ import {
   V1_serializeValueSpecification,
 } from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
+import type { V1_GenericTypeInstance } from '../../../../model/valueSpecification/raw/V1_GenericTypeInstance.js';
+import type { V1_ClassInstance } from '../../../../model/valueSpecification/raw/V1_ClassInstance.js';
+import type { V1_GraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_GraphFetchTree.js';
 
 class V1_ValueSpecificationPathResolver
   implements V1_ValueSpecificationVisitor<V1_ValueSpecification>
@@ -96,57 +94,6 @@ class V1_ValueSpecificationPathResolver
     return spec;
   }
 
-  visit_PackageableElementPtr(
-    spec: V1_PackageableElementPtr,
-  ): V1_ValueSpecification {
-    const path = spec.fullPath;
-    if (!isValidFullPath(path)) {
-      spec.fullPath =
-        returnUndefOnError(() =>
-          V1_resolveElementPath(
-            path,
-            (_path) => this.context.resolveElement(_path, false),
-            this,
-          ),
-        ) ?? path;
-    }
-    return spec;
-  }
-
-  visit_HackedClass(spec: V1_HackedClass): V1_ValueSpecification {
-    return this.visit_PackageableElementPtr(spec);
-  }
-
-  visit_HackedUnit(spec: V1_HackedUnit): V1_ValueSpecification {
-    const path = spec.unitType;
-    if (!isValidFullPath(path)) {
-      spec.unitType =
-        returnUndefOnError(() =>
-          V1_resolveElementPath(
-            path,
-            (_path) => this.context.resolveElement(_path, false),
-            this,
-          ),
-        ) ?? path;
-    }
-    return spec;
-  }
-
-  visit_EnumValue(spec: V1_EnumValue): V1_ValueSpecification {
-    const enumPath = spec.fullPath;
-    if (!isValidFullPath(enumPath)) {
-      spec.fullPath =
-        returnUndefOnError(() =>
-          V1_resolveElementPath(
-            enumPath,
-            this.context.resolveEnumeration,
-            this,
-          ),
-        ) ?? enumPath;
-    }
-    return spec;
-  }
-
   visit_Variable(spec: V1_Variable): V1_ValueSpecification {
     const classPath = spec.class;
     if (classPath && !isValidFullPath(classPath)) {
@@ -164,8 +111,10 @@ class V1_ValueSpecificationPathResolver
     return spec;
   }
 
-  visit_Path(valueSpecification: V1_Path): V1_ValueSpecification {
-    return valueSpecification;
+  visit_KeyExpression(spec: V1_KeyExpression): V1_ValueSpecification {
+    spec.key.accept_ValueSpecificationVisitor(this);
+    spec.expression.accept_ValueSpecificationVisitor(this);
+    return spec;
   }
 
   visit_AppliedFunction(spec: V1_AppliedFunction): V1_ValueSpecification {
@@ -185,139 +134,175 @@ class V1_ValueSpecificationPathResolver
     return spec;
   }
 
+  visit_PackageableElementPtr(
+    spec: V1_PackageableElementPtr,
+  ): V1_ValueSpecification {
+    const path = spec.fullPath;
+    if (!isValidFullPath(path)) {
+      spec.fullPath =
+        returnUndefOnError(() =>
+          V1_resolveElementPath(
+            path,
+            (_path) => this.context.resolveElement(_path, false),
+            this,
+          ),
+        ) ?? path;
+    }
+    return spec;
+  }
+
+  visit_GenericTypeInstance(
+    spec: V1_GenericTypeInstance,
+  ): V1_ValueSpecification {
+    return this.visit_PackageableElementPtr(spec);
+  }
+
   visit_Collection(spec: V1_Collection): V1_ValueSpecification {
     spec.values.forEach((v) => v.accept_ValueSpecificationVisitor(this));
     return spec;
   }
+
+  visit_EnumValue(spec: V1_EnumValue): V1_ValueSpecification {
+    const enumPath = spec.fullPath;
+    if (!isValidFullPath(enumPath)) {
+      spec.fullPath =
+        returnUndefOnError(() =>
+          V1_resolveElementPath(
+            enumPath,
+            this.context.resolveEnumeration,
+            this,
+          ),
+        ) ?? enumPath;
+    }
+    return spec;
+  }
+
   visit_CInteger(spec: V1_CInteger): V1_ValueSpecification {
     return spec;
   }
+
   visit_CDecimal(spec: V1_CDecimal): V1_ValueSpecification {
     return spec;
   }
+
   visit_CString(spec: V1_CString): V1_ValueSpecification {
     return spec;
   }
+
   visit_CBoolean(spec: V1_CBoolean): V1_ValueSpecification {
     return spec;
   }
+
   visit_CFloat(spec: V1_CFloat): V1_ValueSpecification {
     return spec;
   }
+
   visit_CDateTime(spec: V1_CDateTime): V1_ValueSpecification {
     return spec;
   }
+
   visit_CStrictDate(spec: V1_CStrictDate): V1_ValueSpecification {
     return spec;
   }
+
   visit_CStrictTime(spec: V1_CStrictTime): V1_ValueSpecification {
     return spec;
   }
+
   visit_CLatestDate(spec: V1_CLatestDate): V1_ValueSpecification {
     return spec;
   }
-  visit_AggregateValue(spec: V1_AggregateValue): V1_ValueSpecification {
-    spec.aggregateFn.accept_ValueSpecificationVisitor(this);
-    spec.mapFn.accept_ValueSpecificationVisitor(this);
+
+  visit_ClassInstance(spec: V1_ClassInstance): V1_ValueSpecification {
+    spec.value = V1_resolveClassInstanceValueElementPaths(spec.value, this);
     return spec;
   }
-  visit_Pair(spec: V1_Pair): V1_ValueSpecification {
-    spec.first.accept_ValueSpecificationVisitor(this);
-    spec.second.accept_ValueSpecificationVisitor(this);
-    return spec;
+}
+
+const V1_resolvePropertyGraphFetchTreeElementPaths = (
+  tree: V1_GraphFetchTree,
+  resolver: V1_ValueSpecificationPathResolver,
+): V1_GraphFetchTree => {
+  if (tree instanceof V1_PropertyGraphFetchTree) {
+    const subType = tree.subType;
+    if (subType && !isValidFullPath(subType)) {
+      tree.subType =
+        returnUndefOnError(() =>
+          V1_resolveElementPath(
+            subType,
+            resolver.context.resolveType,
+            resolver,
+          ),
+        ) ?? subType;
+    }
+    tree.parameters.forEach((v) =>
+      v.accept_ValueSpecificationVisitor(resolver),
+    );
+    tree.subTrees.forEach((v) =>
+      V1_resolvePropertyGraphFetchTreeElementPaths(v, resolver),
+    );
+    return tree;
   }
-  visit_RuntimeInstance(spec: V1_RuntimeInstance): V1_ValueSpecification {
+  return tree;
+};
+
+function V1_resolveClassInstanceValueElementPaths(
+  spec: unknown,
+  resolver: V1_ValueSpecificationPathResolver,
+): unknown {
+  if (spec instanceof V1_Path) {
     return spec;
-  }
-  visit_ExecutionContextInstance(
-    spec: V1_ExecutionContextInstance,
-  ): V1_ValueSpecification {
-    return spec;
-  }
-  visit_PureList(spec: V1_PureList): V1_ValueSpecification {
-    spec.values.forEach((v) => v.accept_ValueSpecificationVisitor(this));
-    return spec;
-  }
-  visit_RootGraphFetchTree(spec: V1_RootGraphFetchTree): V1_ValueSpecification {
+  } else if (spec instanceof V1_RootGraphFetchTree) {
     const classPath = spec.class;
     if (!isValidFullPath(classPath)) {
       spec.class =
         returnUndefOnError(() =>
-          V1_resolveElementPath(classPath, this.context.resolveClass, this),
+          V1_resolveElementPath(
+            classPath,
+            resolver.context.resolveClass,
+            resolver,
+          ),
         ) ?? classPath;
     }
-    spec.subTrees.forEach((v) => v.accept_ValueSpecificationVisitor(this));
+    spec.subTrees.forEach((v) =>
+      V1_resolvePropertyGraphFetchTreeElementPaths(v, resolver),
+    );
+    return spec;
+  } else if (spec instanceof V1_ExecutionContextInstance) {
+    return spec;
+  } else if (spec instanceof V1_AggregateValue) {
+    spec.aggregateFn.accept_ValueSpecificationVisitor(resolver);
+    spec.mapFn.accept_ValueSpecificationVisitor(resolver);
+    return spec;
+  } else if (spec instanceof V1_Pair) {
+    spec.first.accept_ValueSpecificationVisitor(resolver);
+    spec.second.accept_ValueSpecificationVisitor(resolver);
+    return spec;
+  } else if (spec instanceof V1_PureList) {
+    spec.values.forEach((v) => v.accept_ValueSpecificationVisitor(resolver));
+    return spec;
+  } else if (spec instanceof V1_RuntimeInstance) {
+    return spec;
+  } else if (spec instanceof V1_SerializationConfig) {
+    return spec;
+  } else if (spec instanceof V1_TDSAggregateValue) {
+    spec.pmapFn.accept_ValueSpecificationVisitor(resolver);
+    spec.aggregateFn.accept_ValueSpecificationVisitor(resolver);
+    return spec;
+  } else if (spec instanceof V1_TDSColumnInformation) {
+    spec.columnFn.accept_ValueSpecificationVisitor(resolver);
+    return spec;
+  } else if (spec instanceof V1_TDSOlapAggregation) {
+    spec.function.accept_ValueSpecificationVisitor(resolver);
+    return spec;
+  } else if (spec instanceof V1_TDSOlapRank) {
+    spec.function.accept_ValueSpecificationVisitor(resolver);
+    return spec;
+  } else if (spec instanceof V1_TDSSortInformation) {
     return spec;
   }
-  visit_PropertyGraphFetchTree(
-    spec: V1_PropertyGraphFetchTree,
-  ): V1_ValueSpecification {
-    const subType = spec.subType;
-    if (subType && !isValidFullPath(subType)) {
-      spec.subType =
-        returnUndefOnError(() =>
-          V1_resolveElementPath(subType, this.context.resolveType, this),
-        ) ?? subType;
-    }
-    spec.parameters.forEach((v) => v.accept_ValueSpecificationVisitor(this));
-    spec.subTrees.forEach((v) => v.accept_ValueSpecificationVisitor(this));
-    return spec;
-  }
-  visit_SerializationConfig(
-    spec: V1_SerializationConfig,
-  ): V1_ValueSpecification {
-    return spec;
-  }
-  visit_UnitType(spec: V1_UnitType): V1_ValueSpecification {
-    const unitPath = spec.unitType;
-    if (!isValidFullPath(unitPath)) {
-      spec.unitType =
-        returnUndefOnError(() =>
-          V1_resolveElementPath(unitPath, this.context.resolveUnit, this),
-        ) ?? unitPath;
-    }
-    return spec;
-  }
-  visit_UnitInstance(spec: V1_UnitInstance): V1_ValueSpecification {
-    const unitPath = spec.unitType;
-    if (!isValidFullPath(unitPath)) {
-      spec.unitType =
-        returnUndefOnError(() =>
-          V1_resolveElementPath(unitPath, this.context.resolveUnit, this),
-        ) ?? unitPath;
-    }
-    return spec;
-  }
-  visit_KeyExpression(spec: V1_KeyExpression): V1_ValueSpecification {
-    spec.key.accept_ValueSpecificationVisitor(this);
-    spec.expression.accept_ValueSpecificationVisitor(this);
-    return spec;
-  }
-  visit_PrimitiveType(spec: V1_PrimitiveType): V1_ValueSpecification {
-    return spec;
-  }
-  visit_TDSAggregateValue(spec: V1_TDSAggregateValue): V1_ValueSpecification {
-    spec.pmapFn.accept_ValueSpecificationVisitor(this);
-    spec.aggregateFn.accept_ValueSpecificationVisitor(this);
-    return spec;
-  }
-  visit_TDSColumnInformation(
-    spec: V1_TDSColumnInformation,
-  ): V1_ValueSpecification {
-    spec.columnFn.accept_ValueSpecificationVisitor(this);
-    return spec;
-  }
-  visit_TDSSortInformation(spec: V1_TDSSortInformation): V1_ValueSpecification {
-    return spec;
-  }
-  visit_TdsOlapRank(spec: V1_TdsOlapRank): V1_ValueSpecification {
-    spec.function.accept_ValueSpecificationVisitor(this);
-    return spec;
-  }
-  visit_TdsOlapAggregation(spec: V1_TdsOlapAggregation): V1_ValueSpecification {
-    spec.function.accept_ValueSpecificationVisitor(this);
-    return spec;
-  }
+  // TODO: extension mechanism
+  return spec;
 }
 
 function V1_resolveElementPath(
@@ -355,6 +340,7 @@ const V1_resolveLambdaElementPaths = (
     // Convert raw lambda to V1 lambda
     const lambdaProtocol = V1_deserializeValueSpecification(
       V1_serializeRawValueSpecification(rawLambdaProtocol),
+      context.extensions.plugins,
     );
     // Resolve paths in V1 lambda
     const resolver = new V1_ValueSpecificationPathResolver(context);
@@ -364,7 +350,10 @@ const V1_resolveLambdaElementPaths = (
     // raw protocol and protocol forms)
     return resolver.hasModified
       ? (V1_deserializeRawValueSpecification(
-          V1_serializeValueSpecification(lambdaProtocol),
+          V1_serializeValueSpecification(
+            lambdaProtocol,
+            context.extensions.plugins,
+          ),
         ) as V1_RawLambda)
       : rawLambdaProtocol;
   } catch (error) {

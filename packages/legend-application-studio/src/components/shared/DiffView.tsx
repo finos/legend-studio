@@ -16,26 +16,25 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
-import { useResizeDetector } from 'react-resize-detector';
+import { editor as monacoEditorAPI } from 'monaco-editor';
 import {
   EDITOR_THEME,
   EDITOR_LANGUAGE,
   TAB_SIZE,
   useApplicationStore,
+  createPassThroughOnKeyHandler,
 } from '@finos/legend-application';
 import {
   disposeDiffEditor,
-  disableEditorHotKeys,
-  baseTextEditorSettings,
+  getBaseTextEditorOptions,
+  useResizeDetector,
 } from '@finos/legend-art';
 import {
   isString,
-  losslessStringify,
+  stringifyLosslessJSON,
   tryToFormatJSONString,
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 
 export const TextDiffView = observer(
@@ -65,29 +64,11 @@ export const TextDiffView = observer(
       if (!editor && editorRef.current) {
         const element = editorRef.current;
         const _editor = monacoEditorAPI.createDiffEditor(element, {
-          ...baseTextEditorSettings,
+          ...getBaseTextEditorOptions(),
           theme: EDITOR_THEME.LEGEND,
           readOnly: true,
         });
-        _editor.getOriginalEditor().onKeyDown((event) => {
-          if (event.keyCode === KeyCode.F8) {
-            event.preventDefault();
-            event.stopPropagation();
-            flowResult(editorStore.toggleTextMode()).catch(
-              applicationStore.alertUnhandledError,
-            );
-          }
-        });
-        _editor.getModifiedEditor().onKeyDown((event) => {
-          if (event.keyCode === KeyCode.F8) {
-            event.preventDefault();
-            event.stopPropagation();
-            flowResult(editorStore.toggleTextMode()).catch(
-              applicationStore.alertUnhandledError,
-            );
-          }
-        });
-        disableEditorHotKeys(_editor);
+        _editor.getOriginalEditor().onKeyDown(createPassThroughOnKeyHandler());
         setEditor(_editor);
       }
     }, [applicationStore, editorStore, editor]);
@@ -125,7 +106,7 @@ const formatJSONLikeValue = (value: unknown, lossless: boolean): string =>
         ? tryToFormatLosslessJSONString(value)
         : tryToFormatJSONString(value)
       : lossless
-      ? losslessStringify(value, undefined, TAB_SIZE)
+      ? stringifyLosslessJSON(value, undefined, TAB_SIZE)
       : JSON.stringify(value, undefined, TAB_SIZE)
     : '';
 

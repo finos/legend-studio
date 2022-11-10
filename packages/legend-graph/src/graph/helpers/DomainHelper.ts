@@ -26,6 +26,7 @@ import {
   PURE_DEPRECATED_STEREOTYPE,
   ROOT_PACKAGE_NAME,
   MILESTONING_VERSION_PROPERTY_SUFFIX,
+  FUNCTION_SIGNATURE_MULTIPLICITY_INFINITE_TOKEN,
 } from '../MetaModelConst.js';
 import { Package } from '../metamodel/pure/packageableElements/domain/Package.js';
 import type { PackageableElement } from '../metamodel/pure/packageableElements/PackageableElement.js';
@@ -39,6 +40,7 @@ import {
   uniqBy,
   UnsupportedOperationError,
   returnUndefOnError,
+  filterByType,
 } from '@finos/legend-shared';
 import { createPath } from '../MetaModelUtils.js';
 import type { BasicModel } from '../BasicModel.js';
@@ -62,8 +64,9 @@ import { DerivedProperty } from '../metamodel/pure/packageableElements/domain/De
 import type { Enum } from '../metamodel/pure/packageableElements/domain/Enum.js';
 import type { Constraint } from '../metamodel/pure/packageableElements/domain/Constraint.js';
 import type { GenericType } from '../metamodel/pure/packageableElements/domain/GenericType.js';
-import type { Multiplicity } from '../metamodel/pure/packageableElements/domain/Multiplicity.js';
+import { Multiplicity } from '../metamodel/pure/packageableElements/domain/Multiplicity.js';
 import type { AnnotatedElement } from '../metamodel/pure/packageableElements/domain/AnnotatedElement.js';
+import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
 
 export const addElementToPackage = (
   parent: Package,
@@ -218,9 +221,14 @@ export const getRawGenericType = <T extends Type>(
   clazz: Clazz<T>,
 ): T => guaranteeType<T>(genericType.rawType, clazz);
 
-export const isElementReadOnly = (element: PackageableElement): boolean =>
-  returnUndefOnError(() => getElementRootPackage(element))?.name !==
+export const isMainGraphElement = (
+  element: PackageableElement,
+): element is PackageableElement =>
+  returnUndefOnError(() => getElementRootPackage(element))?.name ===
   ROOT_PACKAGE_NAME.MAIN;
+
+export const isElementReadOnly = (element: PackageableElement): boolean =>
+  !isMainGraphElement(element);
 
 export const isDependencyElement = (
   element: PackageableElement,
@@ -401,15 +409,26 @@ export const getAllSubclasses = (c: Class): Class[] => {
   return Array.from(visitedClasses);
 };
 
+export const getMilestoningGeneratedProperties = (_class: Class): Property[] =>
+  _class._generatedMilestonedProperties.filter(filterByType(Property));
+
 /**
  * Get class and its supertypes' properties recursively, duplications and loops are handled (Which should be caught by compiler)
  */
-export const getAllClassProperties = (_class: Class): Property[] =>
+export const getAllClassProperties = (
+  _class: Class,
+  includeGeneratedMilestoning?: boolean | undefined,
+): Property[] =>
   uniqBy(
     getAllSuperclasses(_class)
       .concat(_class)
       .map((c) => c.propertiesFromAssociations.concat(c.properties))
-      .flat(),
+      .flat()
+      .concat(
+        includeGeneratedMilestoning
+          ? getMilestoningGeneratedProperties(_class)
+          : [],
+      ),
     (property) => property.name,
   );
 
@@ -426,7 +445,9 @@ export const getAllClassDerivedProperties = (
 
 export const getClassProperty = (_class: Class, name: string): Property =>
   guaranteeNonNullable(
-    getAllClassProperties(_class).find((property) => property.name === name),
+    getAllClassProperties(_class, true).find(
+      (property) => property.name === name,
+    ),
     `Can't find property '${name}' in class '${_class.path}'`,
   );
 
@@ -553,6 +574,33 @@ export const getMultiplicityDescription = (
   }`;
 };
 
+export const getMultiplicityPrettyDescription = (
+  multiplicity: Multiplicity,
+): string => {
+  if (multiplicity === Multiplicity.ONE) {
+    return `[${multiplicity.lowerBound.toString()}] - Required`;
+  } else if (multiplicity === Multiplicity.ZERO_MANY) {
+    return `[${MULTIPLICITY_INFINITE}] - List`;
+  } else if (multiplicity === Multiplicity.ZERO_ONE) {
+    return `[${multiplicity.lowerBound}..${
+      multiplicity.upperBound ?? MULTIPLICITY_INFINITE
+    }] - Optional`;
+  }
+  return `[${multiplicity.lowerBound}..${
+    multiplicity.upperBound ?? MULTIPLICITY_INFINITE
+  }] - ${
+    multiplicity.upperBound
+      ? `Must have from ${multiplicity.lowerBound} to ${multiplicity.upperBound} value(s)`
+      : `Must have at least ${multiplicity.lowerBound} values(s)`
+  }`;
+};
+
+export const areMultiplicitiesEqual = (
+  mul1: Multiplicity,
+  mul2: Multiplicity,
+): boolean =>
+  mul1.upperBound === mul2.upperBound && mul1.lowerBound === mul2.lowerBound;
+
 export const isElementDeprecated = (
   element: AnnotatedElement | Class,
   graph: PureModel,
@@ -580,3 +628,40 @@ export const getGeneratedMilestonedPropertiesForAssociation = (
       prop.name !==
         `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS_IN_RANGE}`,
   );
+
+const getMultiplicityString = (
+  lowerBound: number,
+  upperBound: number | undefined,
+): string => {
+  if (lowerBound === upperBound) {
+    return lowerBound.toString();
+  } else if (lowerBound === 0 && upperBound === undefined) {
+    return FUNCTION_SIGNATURE_MULTIPLICITY_INFINITE_TOKEN;
+  }
+  return `$${lowerBound}_${upperBound ?? 'MANY'}$`;
+};
+
+export const getFunctionSignature = (
+  func: ConcreteFunctionDefinition,
+): string =>
+  `_${func.parameters
+    .map(
+      (p) =>
+        `${p.type.value.name}_${getMultiplicityString(
+          p.multiplicity.lowerBound,
+          p.multiplicity.upperBound,
+        )}_`,
+    )
+    .join('_')}_${func.returnType.value.name}_${getMultiplicityString(
+    func.returnMultiplicity.lowerBound,
+    func.returnMultiplicity.upperBound,
+  )}_`;
+
+export const getFunctionName = (
+  func: ConcreteFunctionDefinition,
+  name: string,
+): string => name.substring(0, name.indexOf(getFunctionSignature(func)));
+
+export const getFunctionNameWithPath = (
+  func: ConcreteFunctionDefinition,
+): string => func.package?.path + ELEMENT_PATH_DELIMITER + func.functionName;

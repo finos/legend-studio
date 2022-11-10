@@ -24,8 +24,8 @@ import {
   ArrowUpIcon,
   CheckIcon,
   InfoCircleIcon,
+  PanelContent,
 } from '@finos/legend-art';
-import { formatDistanceToNow } from 'date-fns';
 import { EntityDiffViewState } from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
@@ -34,6 +34,7 @@ import { entityDiffSorter } from '../../stores/EditorSDLCState.js';
 import { useWorkspaceReviewStore } from './WorkspaceReviewStoreProvider.js';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
+import { formatDistanceToNow } from '@finos/legend-shared';
 
 export const WorkspaceReviewSideBar = observer(() => {
   const reviewStore = useWorkspaceReviewStore();
@@ -162,7 +163,7 @@ export const WorkspaceReviewSideBar = observer(() => {
                 onClick={reOpenReview}
                 disabled={isDispatchingAction}
                 tabIndex={-1}
-                title={'Re-open review'}
+                title="Reopen review"
               >
                 <ArrowUpIcon />
               </button>
@@ -178,7 +179,7 @@ export const WorkspaceReviewSideBar = observer(() => {
                     currentUser?.userId === review.author.name
                   }
                   tabIndex={-1}
-                  title={'Approve review'}
+                  title="Approve review"
                 >
                   <CheckIcon />
                 </button>
@@ -229,7 +230,7 @@ export const WorkspaceReviewSideBar = observer(() => {
                 {changes.length}
               </div>
             </div>
-            <div className="panel__content">
+            <PanelContent>
               {changes
                 .slice()
                 .sort(entityDiffSorter)
@@ -241,7 +242,7 @@ export const WorkspaceReviewSideBar = observer(() => {
                     openDiff={openChange(diff)}
                   />
                 ))}
-            </div>
+            </PanelContent>
           </div>
         </div>
       </div>

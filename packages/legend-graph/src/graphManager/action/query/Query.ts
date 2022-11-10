@@ -73,3 +73,14 @@ export const toLightQuery = (query: Query): LightQuery => {
   lightQuery.isCurrentUserQuery = query.isCurrentUserQuery;
   return lightQuery;
 };
+
+export interface QueryInfo {
+  name: string;
+  id: string;
+  versionId: string;
+  groupId: string;
+  artifactId: string;
+  mapping: string;
+  runtime: string;
+  content: string;
+}

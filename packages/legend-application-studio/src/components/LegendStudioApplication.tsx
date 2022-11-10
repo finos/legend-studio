@@ -15,7 +15,6 @@
  */
 
 import { useEffect } from 'react';
-import { Switch, Route } from 'react-router';
 import { WorkspaceSetup } from './workspace-setup/WorkspaceSetup.js';
 import { Editor } from './editor/Editor.js';
 import { WorkspaceReview } from './workspace-review/WorkspaceReview.js';
@@ -27,7 +26,10 @@ import {
   MarkdownTextViewer,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_ROUTE_PATTERN } from '../stores/LegendStudioRouter.js';
+import {
+  LEGEND_STUDIO_ROUTE_PATTERN,
+  LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN,
+} from '../stores/LegendStudioRouter.js';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import { flowResult } from 'mobx';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
@@ -41,6 +43,8 @@ import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   generateExtensionUrlPattern,
   LegendApplicationComponentFrameworkProvider,
+  Route,
+  Switch,
   useApplicationStore,
   VirtualAssistant,
 } from '@finos/legend-application';
@@ -50,7 +54,7 @@ import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../stores/LegendStudioDocumenta
 const LegendStudioNotFoundRouteScreen = observer(() => {
   const applicationStore = useApplicationStore();
 
-  const currentPath = applicationStore.navigator.getCurrentLocationPath();
+  const currentPath = applicationStore.navigator.getCurrentLocation();
 
   const documentation = applicationStore.documentationService.getDocEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.NOT_FOUND_HELP,
@@ -86,7 +90,7 @@ const LegendStudioNotFoundRouteScreen = observer(() => {
           <div className="not-found-screen__text-content__detail">
             The requested URL
             <span className="not-found-screen__text-content__detail__url">
-              {applicationStore.navigator.generateLocation(currentPath)}
+              {applicationStore.navigator.generateAddress(currentPath)}
             </span>
             was not found in the application
           </div>
@@ -119,10 +123,27 @@ export const LegendStudioApplicationRoot = observer(() => {
 
   return (
     <div className="app">
-      {!baseStore.isSDLCAuthorized && (
+      {baseStore.isSDLCAuthorized === false && (
         <div className="app__page">
           <PanelLoadingIndicator isLoading={true} />
         </div>
+      )}
+      {baseStore.isSDLCAuthorized === undefined && (
+        <>
+          <Switch>
+            <Route
+              exact={true}
+              path={[
+                LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
+                LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+              ]}
+              component={ProjectViewer}
+            />
+            <Route>
+              <LegendStudioNotFoundRouteScreen />
+            </Route>
+          </Switch>
+        </>
       )}
       {baseStore.isSDLCAuthorized && (
         <>
@@ -133,8 +154,6 @@ export const LegendStudioApplicationRoot = observer(() => {
               exact={true}
               path={[
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
-                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV,
-                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
@@ -152,8 +171,10 @@ export const LegendStudioApplicationRoot = observer(() => {
               exact={true}
               strict={true}
               path={[
-                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP,
-                LEGEND_STUDIO_ROUTE_PATTERN.EDIT,
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE,
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE_ENTITY,
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE,
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE_ENTITY,
               ]}
               component={Editor}
             />
@@ -162,8 +183,8 @@ export const LegendStudioApplicationRoot = observer(() => {
               path={[
                 // root path will lead to setup page (home page)
                 '/',
-                LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
-                LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
+                LEGEND_STUDIO_ROUTE_PATTERN.SETUP_WORKSPACE,
+                LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP_WORKSPACE,
               ]}
               component={WorkspaceSetup}
             />
@@ -210,7 +231,7 @@ export const LegendStudioApplication = observer(
             pluginManager={pluginManager}
             log={applicationStore.log}
           >
-            <LegendStudioBaseStoreProvider pluginManager={pluginManager}>
+            <LegendStudioBaseStoreProvider>
               <LegendApplicationComponentFrameworkProvider>
                 <LegendStudioApplicationRoot />
               </LegendApplicationComponentFrameworkProvider>

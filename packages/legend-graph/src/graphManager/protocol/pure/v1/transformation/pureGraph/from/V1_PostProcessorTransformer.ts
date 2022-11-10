@@ -29,7 +29,7 @@ import {
   V1_SchemaNameMapper,
   V1_TableNameMapper,
 } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_Mapper.js';
-import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
+import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 import type { ViewReference } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/ViewReference.js';
 import type { TableReference } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/TableReference.js';
 import { V1_TablePtr } from '../../../model/packageableElements/store/relational/model/V1_TablePtr.js';
@@ -82,13 +82,13 @@ export const V1_transformPostProcessor = (
   const extraConnectionPostProcessorTransformers = context.plugins.flatMap(
     (plugin) =>
       (
-        plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+        plugin as STO_Relational_PureProtocolProcessorPlugin_Extension
       ).V1_getExtraConnectionPostProcessorTransformers?.() ?? [],
   );
   for (const transformer of extraConnectionPostProcessorTransformers) {
-    const postprocessorProtocol = transformer(postProcessor, context);
-    if (postprocessorProtocol) {
-      return postprocessorProtocol;
+    const postProcessorProtocol = transformer(postProcessor, context);
+    if (postProcessorProtocol) {
+      return postProcessorProtocol;
     }
   }
   throw new UnsupportedOperationError(

@@ -27,7 +27,7 @@ import {
   TEST__getTestGraphManagerState,
 } from '../../../GraphManagerTestUtils.js';
 import type { GraphManagerState } from '../../../GraphManagerState.js';
-import { getOwnClassMappingsByClass } from '../../../../graph/helpers/DSLMapping_Helper.js';
+import { getOwnClassMappingsByClass } from '../../../../graph/helpers/DSL_Mapping_Helper.js';
 import { RootRelationalInstanceSetImplementation } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
 
 let graphManagerState: GraphManagerState;

@@ -46,6 +46,7 @@ import {
   type TEMPORARY__EngineSetupConfig,
   type GraphBuilderOptions,
   type ExecutionOptions,
+  type ServiceRegistrationOptions,
 } from '../../../../graphManager/AbstractPureGraphManager.js';
 import type { Mapping } from '../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { Runtime } from '../../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
@@ -162,7 +163,7 @@ import {
   V1_setupEngineRuntimeSerialization,
   V1_setupLegacyRuntimeSerialization,
 } from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
-import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Generation_PureProtocolProcessorPlugin_Extension } from '../DSL_Generation_PureProtocolProcessorPlugin_Extension.js';
 import type { RawRelationalOperationElement } from '../../../../graph/metamodel/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
 import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext.js';
 import type {
@@ -185,6 +186,7 @@ import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_Executio
 import type {
   LightQuery,
   Query,
+  QueryInfo,
 } from '../../../../graphManager/action/query/Query.js';
 import {
   V1_buildQuery,
@@ -225,13 +227,14 @@ import {
 } from '../../../../graph/metamodel/pure/test/result/TestResult.js';
 import {
   type Service,
+  type ParameterValue,
   MultiExecutionServiceTestResult,
-} from '../../../../DSLService_Exports.js';
+} from '../../../../DSL_Service_Exports.js';
 import type { Testable } from '../../../../graph/metamodel/pure/test/Testable.js';
 import {
   getNullableIDFromTestable,
   getNullableTestable,
-} from '../../../helpers/DSLData_GraphManagerHelper.js';
+} from '../../../helpers/DSL_Data_GraphManagerHelper.js';
 import type { TestAssertion } from '../../../../graph/metamodel/pure/test/assertion/TestAssertion.js';
 import { AssertFail } from '../../../../graph/metamodel/pure/test/assertion/status/AssertFail.js';
 import {
@@ -249,8 +252,13 @@ import type {
   RawMappingModelCoverageAnalysisResult,
 } from '../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
-import { V1_getFunctionSuffix } from './helpers/V1_DomainHelper.js';
-import type { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
+import type { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
+import type {
+  CompilationResult,
+  TextCompilationResult,
+} from '../../../action/compilation/CompilationResult.js';
+import { CompilationWarning } from '../../../action/compilation/CompilationWarning.js';
+import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_ServiceTransformer.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -1484,6 +1492,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // ------------------------------------------- Compile -------------------------------------------
 
+  async compileEntities(entities: Entity[]): Promise<void> {
+    await this.engine.compilePureModelContextData(
+      await this.entitiesToPureModelContextData(entities),
+    );
+  }
+
   async compileGraph(
     graph: PureModel,
     options?:
@@ -1492,8 +1506,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           keepSourceInformation?: boolean | undefined;
         }
       | undefined,
-  ): Promise<void> {
-    await this.engine.compilePureModelContextData(
+  ): Promise<CompilationResult> {
+    const compilationResult = await this.engine.compilePureModelContextData(
       this.getFullGraphModelData(graph, {
         keepSourceInformation: options?.keepSourceInformation,
       }),
@@ -1501,20 +1515,31 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         onError: options?.onError,
       },
     );
+    return {
+      warnings: compilationResult.warnings?.map(
+        (warning) =>
+          new CompilationWarning(warning.message, warning.sourceInformation),
+      ),
+    };
   }
 
   async compileText(
     graphGrammar: string,
     graph: PureModel,
     options?: { onError?: () => void },
-  ): Promise<Entity[]> {
-    return this.pureModelContextDataToEntities(
-      await this.engine.compileText(
-        graphGrammar,
-        this.getGraphCompileContext(graph),
-        options,
-      ),
+  ): Promise<TextCompilationResult> {
+    const compilationResult = await this.engine.compileText(
+      graphGrammar,
+      this.getGraphCompileContext(graph),
+      options,
     );
+    return {
+      entities: this.pureModelContextDataToEntities(compilationResult.model),
+      warnings: compilationResult.warnings?.map(
+        (warning) =>
+          new CompilationWarning(warning.message, warning.sourceInformation),
+      ),
+    };
   }
 
   getLambdaReturnType(
@@ -1551,14 +1576,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     generationMode: GenerationMode,
     graph: PureModel,
   ): Promise<GenerationOutput[]> {
-    const config: Record<PropertyKey, unknown> = {};
+    const config: PlainObject = {};
     config.scopeElements = fileGeneration.scopeElements.map((element) =>
       element instanceof PackageableElementReference
         ? element.value.path
         : element,
     );
     fileGeneration.configurationProperties.forEach((property) => {
-      config[property.name] = property.value as Record<PropertyKey, unknown>;
+      config[property.name] = property.value as PlainObject;
     });
     return (
       await this.engine.generateFile(
@@ -1581,7 +1606,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension
+            plugin as DSL_Generation_PureProtocolProcessorPlugin_Extension
           ).V1_getExtraModelGenerators?.() ?? [],
       );
     for (const generator of extraModelGenerators) {
@@ -1640,6 +1665,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           graph,
           this.pluginManager.getPureGraphManagerPlugins(),
         ),
+      this.pluginManager.getPureProtocolProcessorPlugins(),
     );
     return result;
   }
@@ -1679,6 +1705,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             graph,
             this.pluginManager.getPureGraphManagerPlugins(),
           ),
+        this.pluginManager.getPureProtocolProcessorPlugins(),
       );
       const result = results[0];
       let status: AssertFail | undefined = undefined;
@@ -1720,11 +1747,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   // ------------------------------------------- Value Specification -------------------------------------------
 
   buildValueSpecification(
-    json: Record<PropertyKey, unknown>,
+    json: PlainObject,
     graph: PureModel,
   ): ValueSpecification {
     return V1_buildValueSpecification(
-      V1_deserializeValueSpecification(json),
+      V1_deserializeValueSpecification(
+        json,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
       new V1_GraphBuilderContextBuilder(
         graph,
         graph,
@@ -1736,10 +1766,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   serializeValueSpecification(
     valueSpecification: ValueSpecification,
-  ): Record<PropertyKey, unknown> {
+  ): PlainObject {
     return V1_serializeValueSpecification(
       V1_transformRootValueSpecification(valueSpecification),
-    ) as Record<PropertyKey, unknown>;
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    ) as PlainObject;
   }
 
   buildRawValueSpecification(
@@ -1764,7 +1795,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   serializeRawValueSpecification(
     metamodel: RawValueSpecification,
-  ): Record<PropertyKey, unknown> {
+  ): PlainObject {
     return V1_serializeRawValueSpecification(
       metamodel.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(
@@ -1823,9 +1854,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     configurationProperties: ConfigurationProperty[],
     graph: PureModel,
   ): Promise<string> {
-    const config: Record<PropertyKey, unknown> = {};
+    const config: PlainObject = {};
     configurationProperties.forEach((property) => {
-      config[property.name] = property.value as Record<PropertyKey, unknown>;
+      config[property.name] = property.value as PlainObject;
     });
     const model = this.getFullGraphModelData(graph);
     const input = new V1_ExternalFormatModelGenerationInput(
@@ -1891,6 +1922,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
+    parameterValues?: ParameterValue[],
   ): V1_ExecuteInput =>
     this.buildExecutionInput(
       graph,
@@ -1899,6 +1931,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       runtime,
       clientVersion,
       new V1_ExecuteInput(),
+      parameterValues,
     );
 
   private buildExecutionInput = (
@@ -1908,6 +1941,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     runtime: Runtime,
     clientVersion: string,
     executeInput: V1_ExecuteInput,
+    parameterValues?: ParameterValue[],
   ): V1_ExecuteInput => {
     /**
      * NOTE: to lessen network load, we might need to think of a way to only include relevant part of the pure model context data here
@@ -1965,6 +1999,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     executeInput.model = prunedGraphData;
     executeInput.context = new V1_RawBaseExecutionContext(); // TODO: potentially need to support more types
+    if (parameterValues) {
+      executeInput.parameterValues = parameterValues.map((p) =>
+        V1_transformParameterValue(p),
+      );
+    }
     return executeInput;
   };
 
@@ -1983,6 +2022,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           lambda,
           runtime,
           V1_PureGraphManager.TARGET_PROTOCOL_VERSION,
+          options?.parameterValues,
         ),
         options,
       ),
@@ -2010,7 +2050,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       testDataGenerationExecuteInput,
     );
     testDataGenerationExecuteInput.parameters = parameters;
-    testDataGenerationExecuteInput.hashValues = Boolean(
+    testDataGenerationExecuteInput.hashStrings = Boolean(
       options?.anonymizeGeneratedData,
     );
     return this.engine.generateExecuteTestData(testDataGenerationExecuteInput);
@@ -2105,7 +2145,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     version: string | undefined,
     server: string,
     executionMode: ServiceExecutionMode,
-    TEMPORARY__useStoreModel: boolean,
+    options?: ServiceRegistrationOptions,
   ): Promise<ServiceRegistrationResult> {
     const serverServiceInfo = await this.engine.getServerServiceInfo();
     // input
@@ -2124,10 +2164,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       case ServiceExecutionMode.SEMI_INTERACTIVE: {
         const sdlcInfo = new V1_AlloySDLC(groupId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
+
         // data
         const data = new V1_PureModelContextData();
         data.origin = new V1_PureModelContextPointer(protocol);
-        data.elements = [this.elementToProtocol<V1_Service>(service)];
+        const serviceProtocol = this.elementToProtocol<V1_Service>(service);
+
+        // override the URL pattern if specified
+        if (options?.TEMPORARY__semiInteractiveOverridePattern) {
+          serviceProtocol.pattern =
+            options.TEMPORARY__semiInteractiveOverridePattern;
+        }
+
+        data.elements = [serviceProtocol];
+
         // SDLC info
         // TODO: We may need to add `runtime` pointers if the runtime defned in the service is a packageable runtime
         // and not embedded.
@@ -2181,7 +2231,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input,
         server,
         executionMode,
-        TEMPORARY__useStoreModel,
+        Boolean(options?.TEMPORARY__useStoreModel),
       ),
     );
   }
@@ -2241,8 +2291,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  async getQueryContent(queryId: string): Promise<string> {
-    return (await this.engine.getQuery(queryId)).content;
+  async getQueryInfo(queryId: string): Promise<QueryInfo> {
+    const query = await this.engine.getQuery(queryId);
+    return {
+      name: query.name,
+      id: query.id,
+      versionId: query.versionId,
+      groupId: query.groupId,
+      artifactId: query.artifactId,
+      mapping: query.mapping,
+      runtime: query.runtime,
+      content: query.content,
+    };
   }
 
   async createQuery(query: Query, graph: PureModel): Promise<Query> {
@@ -2270,14 +2330,40 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async buildHashesIndex(entities: Entity[]): Promise<Map<string, string>> {
     const hashMap = new Map<string, string>();
     const pureModelContextData = new V1_PureModelContextData();
+    /**
+     * FIXME: to be deleted when most users have migrated to using full function signature as function name
+     * Currently, SDLC store many functions in legacy form (entity path does
+     * not contain full function signature). However, since they store function
+     * entity in text, when they parse the content to return JSON for entity
+     * content, the content is then updated to have proper `name` for function
+     * entities, this means that there's now a mismatch in the path constructed
+     * from entity content and the entity path, which is a contract that SDLC
+     * should maintain but currently not because of this change
+     * See https://github.com/finos/legend-sdlc/pull/515
+     *
+     * For that reason, during this migration, we want to respect entity path
+     * instead of the path constructed from entity content to properly
+     * reflect the renaming of function in local changes.
+     */
+    const TEMPORARY__entityPathIndex = new Map<string, string>();
     await V1_entitiesToPureModelContextData(
       entities,
       pureModelContextData,
       this.pluginManager.getPureProtocolProcessorPlugins(),
+      TEMPORARY__entityPathIndex,
     );
     await Promise.all(
       pureModelContextData.elements.map((element) =>
-        promisify(() => hashMap.set(element.path, element.hashCode)),
+        promisify(() =>
+          hashMap.set(
+            TEMPORARY__entityPathIndex.get(element.path)
+              ? guaranteeNonNullable(
+                  TEMPORARY__entityPathIndex.get(element.path),
+                )
+              : element.path,
+            element.hashCode,
+          ),
+        ),
       ),
     );
     return hashMap;
@@ -2552,23 +2638,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         .build(),
     ) as T;
 
-  private getElementPath = (elementProtocol: V1_PackageableElement): string => {
-    let name = elementProtocol.name;
-    // These functions calculation the function suffix and are used to identify if an
-    // function imported into Studio via model loader already has a suffix attached to the name
-    // if so, we will remove that suffix
-    // TODO: to be revised when we support function overloading
-    if (elementProtocol instanceof V1_ConcreteFunctionDefinition) {
-      const suffixIndex = elementProtocol.name.indexOf(
-        V1_getFunctionSuffix(elementProtocol),
-      );
-      if (suffixIndex > 0) {
-        name = elementProtocol.name.substring(0, suffixIndex - 1);
-      }
-    }
-
-    return `${elementProtocol.package}${ENTITY_PATH_DELIMITER}${name}`;
-  };
+  private getElementPath = (elementProtocol: V1_PackageableElement): string =>
+    `${elementProtocol.package}${ENTITY_PATH_DELIMITER}${elementProtocol.name}`;
 
   private getElementClassiferPath = (
     protocol: V1_PackageableElement,

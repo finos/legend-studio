@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-@forward 'shared/notification';
 @forward 'shared/multiplicity-badge';
-@forward 'shared/lambda-editor';
-@forward 'shared/backdrop';
+@forward 'shared/workspace-selector';
+@forward 'shared/project-selector';

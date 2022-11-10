@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-import { test, jest, expect } from '@jest/globals';
+import { test, expect } from '@jest/globals';
 import {
   type PlainObject,
   type TEMPORARY__JestMatcher,
   unitTest,
   guaranteeNonNullable,
+  createSpy,
 } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../EditorStoreTestUtils.js';
-import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import {
   ProjectVersionEntities,
   type ProjectData,
+  type ProjectDependencyInfo,
 } from '@finos/legend-server-depot';
 import {
   DependencyManager,
@@ -163,6 +164,21 @@ const MULTI_PROJECT_DATA = [
   },
 ];
 
+const DEPENDENCY_INFO_DATA = {
+  tree: [],
+  conflicts: [
+    {
+      groupId: 'org.finos.legend',
+      artifactId: 'prod-a',
+      versions: ['1.0.0', '2.0.0'],
+      conflictPaths: [
+        'org.finos.legend:prod-a:1.0.0',
+        'org.finos.legend:prod-a:2.0.0',
+      ],
+    },
+  ],
+};
+
 const FILE_GENERATION_PATH = 'model::myFileGeneration';
 const buildFileGenerationDepentOnDependencyElements = (
   dependencyEntities: string[],
@@ -188,6 +204,7 @@ const testDependencyElements = async (
   dependencyEntities: PlainObject<ProjectVersionEntities>[],
   projectsData?: PlainObject<ProjectData>[],
   includeDependencyInFileGenerationScopeElements?: boolean,
+  dependencyInfo?: PlainObject<ProjectDependencyInfo>,
 ): Promise<void> => {
   const projectVersionEntities = dependencyEntities.map((e) =>
     ProjectVersionEntities.serialization.fromJson(e),
@@ -205,26 +222,27 @@ const testDependencyElements = async (
   editorStore.projectConfigurationEditorState.setProjectConfiguration(
     ProjectConfiguration.serialization.fromJson(PROJECT_CONFIG),
   );
-  // mock depot responses
-  jest
-    .spyOn(
-      guaranteeNonNullable(editorStore.depotServerClient),
-      'collectDependencyEntities',
-    )
-    .mockResolvedValue(dependencyEntities);
+
+  createSpy(
+    guaranteeNonNullable(editorStore.depotServerClient),
+    'collectDependencyEntities',
+  ).mockResolvedValue(dependencyEntities);
   if (projectsData) {
-    jest
-      .spyOn(
-        guaranteeNonNullable(editorStore.depotServerClient),
-        'getProjectById',
-      )
-      .mockResolvedValue(projectsData);
+    createSpy(
+      guaranteeNonNullable(editorStore.depotServerClient),
+      'getProjectById',
+    ).mockResolvedValue(projectsData);
+  }
+  if (dependencyInfo) {
+    createSpy(
+      guaranteeNonNullable(editorStore.depotServerClient),
+      'analyzeDependencyTree',
+    ).mockResolvedValue(dependencyInfo);
   }
   await editorStore.graphManagerState.initializeSystem();
   const dependencyManager = new DependencyManager([]);
-  const dependencyEntitiesIndex = await flowResult(
-    editorStore.graphState.getIndexedDependencyEntities(),
-  );
+  const dependencyEntitiesIndex =
+    await editorStore.graphState.getIndexedDependencyEntities();
   editorStore.graphManagerState.graph.dependencyManager = dependencyManager;
   await editorStore.graphManagerState.graphManager.buildDependencies(
     editorStore.graphManagerState.coreModel,
@@ -359,15 +377,26 @@ test(
 test(
   unitTest('Same project different versions dependency error check'),
   async () => {
+    const expectedError =
+      'Depending on multiple versions of a project is not supported. Found conflicts:\n' +
+      'project:\n' +
+      '  org.finos.legend:prod-a\n' +
+      'versions:\n' +
+      '  1.0.0\n' +
+      '  2.0.0\n' +
+      'paths:\n' +
+      '  1:\n' +
+      '  org.finos.legend:prod-a:1.0.0\n' +
+      '  2:\n' +
+      '  org.finos.legend:prod-a:2.0.0\n';
     await expect(
       testDependencyElements(
         [] as Entity[],
         testDependingOnDifferentProjectVersions,
         PROJECT_DATA,
         true,
+        DEPENDENCY_INFO_DATA,
       ),
-    ).rejects.toThrowError(
-      "Depending on multiple versions of a project is not supported. Found dependency on project 'org.finos.legend:prod-a' with versions: 1.0.0, 2.0.0.",
-    );
+    ).rejects.toThrowError(expectedError);
   },
 );

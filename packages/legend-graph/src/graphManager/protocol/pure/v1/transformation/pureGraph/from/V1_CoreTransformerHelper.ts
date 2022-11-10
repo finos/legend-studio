@@ -45,8 +45,9 @@ export const V1_initPackageableElement = (
 export const V1_transformMultiplicity = (
   element: Multiplicity,
 ): V1_Multiplicity => {
-  const multiplicity = new V1_Multiplicity();
-  multiplicity.lowerBound = element.lowerBound;
-  multiplicity.upperBound = element.upperBound;
+  const multiplicity = new V1_Multiplicity(
+    element.lowerBound,
+    element.upperBound,
+  );
   return multiplicity;
 };

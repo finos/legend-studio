@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-import { filterByType, Pair } from '@finos/legend-shared';
-import { computed, makeObservable, observable } from 'mobx';
-import { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
-import { Runtime } from '../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
+import { filterByType } from '@finos/legend-shared';
+import { computed, makeObservable, observable, override } from 'mobx';
 import {
-  type AlloySerializationConfigInstanceValue,
-  AlloySerializationConfig,
-} from '../../../graph/metamodel/pure/valueSpecification/AlloySerializationConfig.js';
-import {
-  type RootGraphFetchTreeInstanceValue,
-  type PropertyGraphFetchTreeInstanceValue,
+  type GraphFetchTreeInstanceValue,
   type GraphFetchTree,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
@@ -32,10 +25,6 @@ import {
 import type {
   PrimitiveInstanceValue,
   EnumValueInstanceValue,
-  RuntimeInstanceValue,
-  PairInstanceValue,
-  MappingInstanceValue,
-  PureListInstanceValue,
   CollectionInstanceValue,
   InstanceValue,
 } from '../../../graph/metamodel/pure/valueSpecification/InstanceValue.js';
@@ -50,7 +39,7 @@ import type {
   FunctionExpression,
   SimpleFunctionExpression,
   AbstractPropertyExpression,
-} from '../../../graph/metamodel/pure/valueSpecification/SimpleFunctionExpression.js';
+} from '../../../graph/metamodel/pure/valueSpecification/Expression.js';
 import {
   type ValueSpecificationVisitor,
   ValueSpecification,
@@ -60,7 +49,6 @@ import {
   type ObserverContext,
   skipObservedWithContext,
   skipObserved,
-  observe_Multiplicity,
   observe_PackageableElementReference,
 } from './CoreObserverHelper.js';
 import {
@@ -68,19 +56,18 @@ import {
   observe_GenericTypeReference,
   observe_PropertyReference,
 } from './DomainObserverHelper.js';
-import { observe_Runtime } from './DSLMapping_ObserverHelper.js';
 
 const observe_Abstract_ValueSpecification = (
   metamodel: ValueSpecification,
 ): void => {
   makeObservable<ValueSpecification>(metamodel, {
     multiplicity: observable,
+    hashCode: computed,
   });
 
   if (metamodel.genericType) {
     observe_GenericTypeReference(metamodel.genericType);
   }
-  observe_Multiplicity(metamodel.multiplicity);
 };
 
 export const observe_VariableExpression = skipObserved(
@@ -104,10 +91,6 @@ export const observe_SimpleFunctionExpression = skipObservedWithContext(
   (metamodel: SimpleFunctionExpression, context): SimpleFunctionExpression => {
     observe_Abstract_FunctionExpression(metamodel, context);
 
-    makeObservable(metamodel, {
-      func: observable,
-    });
-
     if (metamodel.func) {
       observe_PackageableElementReference(metamodel.func);
     }
@@ -123,10 +106,6 @@ export const observe_AbstractPropertyExpression = skipObservedWithContext(
   ): AbstractPropertyExpression => {
     observe_Abstract_FunctionExpression(metamodel, context);
 
-    makeObservable(metamodel, {
-      func: observable,
-    });
-
     return metamodel;
   },
 );
@@ -134,6 +113,9 @@ export const observe_AbstractPropertyExpression = skipObservedWithContext(
 export const observe_PrimitiveInstanceValue = skipObservedWithContext(
   (metamodel: PrimitiveInstanceValue, context): PrimitiveInstanceValue => {
     observe_Abstract_InstanceValue(metamodel, context);
+    makeObservable(metamodel, {
+      hashCode: override,
+    });
 
     return metamodel;
   },
@@ -142,6 +124,9 @@ export const observe_PrimitiveInstanceValue = skipObservedWithContext(
 export const observe_EnumValueInstanceValue = skipObservedWithContext(
   (metamodel: EnumValueInstanceValue, context): EnumValueInstanceValue => {
     observe_Abstract_InstanceValue(metamodel, context);
+    makeObservable(metamodel, {
+      hashCode: override,
+    });
 
     metamodel.values.forEach(observe_EnumValueReference);
 
@@ -163,63 +148,20 @@ export const observe_RootGraphFetchTree = skipObservedWithContext(
   observe_Abstract_GraphFetchTree,
 );
 
-export const observe_PropertyGraphFetchTreeInstanceValue =
-  skipObservedWithContext(
-    (
-      metamodel: PropertyGraphFetchTreeInstanceValue,
-      context,
-    ): PropertyGraphFetchTreeInstanceValue => {
-      observe_Abstract_InstanceValue(metamodel, context);
-
-      metamodel.values
-        .filter(filterByType(PropertyGraphFetchTree))
-        .forEach((value) => observe_PropertyGraphFetchTree(value, context));
-
-      return metamodel;
-    },
-  );
-
-export const observe_RootGraphFetchTreeInstanceValue = skipObservedWithContext(
+export const observe_GraphFetchTreeInstanceValue = skipObservedWithContext(
   (
-    metamodel: RootGraphFetchTreeInstanceValue,
+    metamodel: GraphFetchTreeInstanceValue,
     context,
-  ): RootGraphFetchTreeInstanceValue => {
+  ): GraphFetchTreeInstanceValue => {
     observe_Abstract_InstanceValue(metamodel, context);
+    makeObservable(metamodel, {
+      hashCode: override,
+    });
 
     metamodel.values.forEach((value) =>
       observe_RootGraphFetchTree(value, context),
     );
 
-    return metamodel;
-  },
-);
-
-const observe_AlloySerializationConfig = skipObserved(
-  (metamodel: AlloySerializationConfig) => {
-    makeObservable(metamodel, {
-      typeKeyName: observable,
-      includeType: observable,
-      includeEnumType: observable,
-      removePropertiesWithNullValues: observable,
-      removePropertiesWithEmptySets: observable,
-      fullyQualifiedTypePath: observable,
-      includeObjectReference: observable,
-    });
-
-    return metamodel;
-  },
-);
-
-const observe_AlloySerializationConfigInstanceValue = skipObservedWithContext(
-  (
-    metamodel: AlloySerializationConfigInstanceValue,
-    context,
-  ): AlloySerializationConfigInstanceValue => {
-    observe_Abstract_InstanceValue(metamodel, context);
-
-    metamodel.values
-      .filter(filterByType(AlloySerializationConfig))
-      .forEach((value) => observe_AlloySerializationConfig(value));
     return metamodel;
   },
 );
@@ -232,6 +174,9 @@ const observe_LambdaFunctionInstanceValue = skipObservedWithContext(
     context,
   ): LambdaFunctionInstanceValue => {
     observe_Abstract_InstanceValue(metamodel, context);
+    makeObservable(metamodel, {
+      hashCode: override,
+    });
 
     metamodel.values
       .filter(filterByType(LambdaFunction))
@@ -247,13 +192,13 @@ const observe_FunctionType = skipObserved(
       returnType: observable,
       parameters: observable,
       returnMultiplicity: observable,
+      hashCode: computed,
     });
 
     // TODO? returnType? - when we make this reference
     metamodel.parameters.forEach((parameter) =>
       observe_VariableExpression(parameter),
     );
-    observe_Multiplicity(metamodel.returnMultiplicity);
 
     return metamodel;
   },
@@ -268,42 +213,6 @@ const observe_INTERNAL__UnknownValueSpecification = skipObserved(
     makeObservable(metamodel, {
       content: observable.ref,
     });
-
-    return metamodel;
-  },
-);
-
-const observe_RuntimeInstanceValue = skipObservedWithContext(
-  (metamodel: RuntimeInstanceValue, context): RuntimeInstanceValue => {
-    observe_Abstract_InstanceValue(metamodel, context);
-
-    metamodel.values
-      .filter(filterByType(Runtime))
-      .forEach((value) => observe_Runtime(value, context));
-
-    return metamodel;
-  },
-);
-
-const observe_PairInstanceValue = skipObservedWithContext(
-  _observe_PairInstanceValue,
-);
-
-const observe_MappingInstanceValue = skipObservedWithContext(
-  (metamodel: MappingInstanceValue, context): MappingInstanceValue => {
-    observe_Abstract_InstanceValue(metamodel, context);
-
-    metamodel.values
-      .filter(filterByType(PackageableElementReference))
-      .forEach(observe_PackageableElementReference);
-
-    return metamodel;
-  },
-);
-
-const observe_PureListInstanceValue = skipObservedWithContext(
-  (metamodel: PureListInstanceValue, context): PureListInstanceValue => {
-    observe_Abstract_InstanceValue(metamodel, context);
 
     return metamodel;
   },
@@ -324,65 +233,16 @@ class ValueSpecificationObserver implements ValueSpecificationVisitor<void> {
     this.observerContext = observerContext;
   }
 
-  visit_RootGraphFetchTreeInstanceValue(
-    valueSpecification: RootGraphFetchTreeInstanceValue,
+  visit_INTERNAL__UnknownValueSpecification(
+    valueSpecification: INTERNAL__UnknownValueSpecification,
   ): void {
-    observe_RootGraphFetchTreeInstanceValue(
-      valueSpecification,
-      this.observerContext,
-    );
+    observe_INTERNAL__UnknownValueSpecification(valueSpecification);
   }
 
-  visit_PropertyGraphFetchTreeInstanceValue(
-    valueSpecification: PropertyGraphFetchTreeInstanceValue,
+  visit_INTERNAL__PropagatedValue(
+    valueSpecification: INTERNAL__PropagatedValue,
   ): void {
-    observe_PropertyGraphFetchTreeInstanceValue(
-      valueSpecification,
-      this.observerContext,
-    );
-  }
-
-  visit_AlloySerializationConfigInstanceValue(
-    valueSpecification: AlloySerializationConfigInstanceValue,
-  ): void {
-    observe_AlloySerializationConfigInstanceValue(
-      valueSpecification,
-      this.observerContext,
-    );
-  }
-
-  visit_PrimitiveInstanceValue(
-    valueSpecification: PrimitiveInstanceValue,
-  ): void {
-    observe_PrimitiveInstanceValue(valueSpecification, this.observerContext);
-  }
-
-  visit_EnumValueInstanceValue(
-    valueSpecification: EnumValueInstanceValue,
-  ): void {
-    observe_EnumValueInstanceValue(valueSpecification, this.observerContext);
-  }
-
-  visit_RuntimeInstanceValue(valueSpecification: RuntimeInstanceValue): void {
-    observe_RuntimeInstanceValue(valueSpecification, this.observerContext);
-  }
-
-  visit_PairInstanceValue(valueSpecification: PairInstanceValue): void {
-    observe_PairInstanceValue(valueSpecification, this.observerContext);
-  }
-
-  visit_MappingInstanceValue(valueSpecification: MappingInstanceValue): void {
-    observe_MappingInstanceValue(valueSpecification, this.observerContext);
-  }
-
-  visit_PureListInstanceValue(valueSpecification: PureListInstanceValue): void {
-    observe_PureListInstanceValue(valueSpecification, this.observerContext);
-  }
-
-  visit_CollectionInstanceValue(
-    valueSpecification: CollectionInstanceValue,
-  ): void {
-    observe_CollectionInstanceValue(valueSpecification, this.observerContext);
+    observe_Abstract_ValueSpecification(valueSpecification);
   }
 
   visit_FunctionExpression(valueSpecification: FunctionExpression): void {
@@ -399,15 +259,6 @@ class ValueSpecificationObserver implements ValueSpecificationVisitor<void> {
     observe_VariableExpression(valueSpecification);
   }
 
-  visit_LambdaFunctionInstanceValue(
-    valueSpecification: LambdaFunctionInstanceValue,
-  ): void {
-    observe_LambdaFunctionInstanceValue(
-      valueSpecification,
-      this.observerContext,
-    );
-  }
-
   visit_AbstractPropertyExpression(
     valueSpecification: AbstractPropertyExpression,
   ): void {
@@ -421,16 +272,40 @@ class ValueSpecificationObserver implements ValueSpecificationVisitor<void> {
     observe_InstanceValue(valueSpecification, this.observerContext);
   }
 
-  visit_INTERNAL__UnknownValueSpecification(
-    valueSpecification: INTERNAL__UnknownValueSpecification,
+  visit_CollectionInstanceValue(
+    valueSpecification: CollectionInstanceValue,
   ): void {
-    observe_INTERNAL__UnknownValueSpecification(valueSpecification);
+    observe_CollectionInstanceValue(valueSpecification, this.observerContext);
   }
 
-  visit_INTERNAL__PropagatedValue(
-    valueSpecification: INTERNAL__PropagatedValue,
+  visit_EnumValueInstanceValue(
+    valueSpecification: EnumValueInstanceValue,
   ): void {
-    observe_Abstract_ValueSpecification(valueSpecification);
+    observe_EnumValueInstanceValue(valueSpecification, this.observerContext);
+  }
+
+  visit_PrimitiveInstanceValue(
+    valueSpecification: PrimitiveInstanceValue,
+  ): void {
+    observe_PrimitiveInstanceValue(valueSpecification, this.observerContext);
+  }
+
+  visit_LambdaFunctionInstanceValue(
+    valueSpecification: LambdaFunctionInstanceValue,
+  ): void {
+    observe_LambdaFunctionInstanceValue(
+      valueSpecification,
+      this.observerContext,
+    );
+  }
+
+  visit_GraphFetchTreeInstanceValue(
+    valueSpecification: GraphFetchTreeInstanceValue,
+  ): void {
+    observe_GraphFetchTreeInstanceValue(
+      valueSpecification,
+      this.observerContext,
+    );
   }
 }
 
@@ -449,6 +324,9 @@ function _observe_CollectionInstanceValue(
   context: ObserverContext,
 ): CollectionInstanceValue {
   observe_Abstract_InstanceValue(metamodel, context);
+  makeObservable(metamodel, {
+    hashCode: override,
+  });
 
   return metamodel;
 }
@@ -463,6 +341,8 @@ function observe_Abstract_FunctionExpression(
     functionName: observable,
     parametersValues: observable,
     classifierGenericType: observable,
+    func: observable,
+    hashCode: override,
   });
 
   metamodel.parametersValues.forEach((value) =>
@@ -479,6 +359,7 @@ function observe_Abstract_GraphFetchTree(
   makeObservable(metamodel, {
     subTrees: observable,
     isEmpty: computed,
+    hashCode: computed,
   });
 
   metamodel.subTrees.forEach((subTree) => {
@@ -540,6 +421,7 @@ function _observe_LambdaFunction(
     functionType: observable,
     openVariables: observable,
     expressionSequence: observable,
+    hashCode: computed,
   });
 
   observe_FunctionType(metamodel.functionType);
@@ -549,36 +431,3 @@ function _observe_LambdaFunction(
 
   return metamodel;
 }
-
-function _observe_PairInstanceValue(
-  metamodel: PairInstanceValue,
-  context: ObserverContext,
-): PairInstanceValue {
-  observe_Abstract_InstanceValue(metamodel, context);
-
-  metamodel.values.filter(filterByType(Pair)).forEach((value) => {
-    makeObservable(value, {
-      first: observable,
-      second: observable,
-    });
-
-    if (value.first instanceof ValueSpecification) {
-      observe_ValueSpecification(value.first, context);
-    }
-    if (value.second instanceof ValueSpecification) {
-      observe_ValueSpecification(value.second, context);
-    }
-  });
-
-  return metamodel;
-}
-
-export const observe_adaptive_ValueSpecification = <
-  T extends ValueSpecification,
->(
-  metamodel: T,
-  context: ObserverContext,
-): T => {
-  observe_ValueSpecification(metamodel, context);
-  return metamodel;
-};

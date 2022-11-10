@@ -15,10 +15,8 @@
  */
 
 import { AbstractPlugin } from '@finos/legend-shared';
-import type { PureModel } from '../graph/PureModel.js';
 import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
-import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
 import type {
   AbstractPureGraphManager,
   AbstractPureGraphManagerExtension,
@@ -42,16 +40,6 @@ export type ElementObserver = (
 export type PureGrammarElementLabeler = (
   metamodel: PackageableElement,
 ) => string | undefined;
-
-export type TestableIDBuilder = (
-  testable: Testable,
-  graph: PureModel,
-) => string | undefined;
-
-export type TestableFinder = (
-  id: string,
-  graph: PureModel,
-) => Testable | undefined;
 
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   /**
@@ -96,14 +84,4 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
    * Get the list of Pure grammar element labelers.
    */
   getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
-
-  /**
-   * Get the list of testable ID builders.
-   */
-  getExtraTestableIDBuilders?(): TestableIDBuilder[];
-
-  /**
-   * Get the list of testable finders.
-   */
-  getExtraTestableFinders?(): TestableFinder[];
 }

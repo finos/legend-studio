@@ -18,13 +18,13 @@ import type { ApplicationStore } from '@finos/legend-application';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendTaxonomyApplicationConfig } from '../application/LegendTaxonomyApplicationConfig.js';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
-import type { LegendTaxonomyApplicationPlugin } from './LegendTaxonomyApplicationPlugin.js';
 import type { TaxonomyServerClient } from './TaxonomyServerClient.js';
 
 export type LegendTaxonomyApplicationStore = ApplicationStore<
   LegendTaxonomyApplicationConfig,
-  LegendTaxonomyApplicationPlugin
+  LegendTaxonomyPluginManager
 >;
+
 export class LegendTaxonomyBaseStore {
   applicationStore: LegendTaxonomyApplicationStore;
   depotServerClient: DepotServerClient;
@@ -35,12 +35,11 @@ export class LegendTaxonomyBaseStore {
     applicationStore: LegendTaxonomyApplicationStore,
     taxonomyServerClient: TaxonomyServerClient,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendTaxonomyPluginManager,
   ) {
     this.applicationStore = applicationStore;
     this.taxonomyServerClient = taxonomyServerClient;
     this.depotServerClient = depotServerClient;
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
 
     // Register plugins
     this.taxonomyServerClient.setTracerService(

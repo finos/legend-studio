@@ -1,0 +1,82 @@
+{
+  "name": "@finos/legend-extension-store-service-store",
+  "version": "1.0.12",
+  "description": "Legend extension for Service store",
+  "keywords": [
+    "legend",
+    "legend-extension",
+    "store",
+    "service-store"
+  ],
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-store-service-store",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-extension-store-service-store"
+  },
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": "./lib/index.js",
+    "./lib/index.css": "./lib/index.css"
+  },
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "yarn clean && yarn build:sass && yarn build:ts",
+    "build:sass": "cross-env INIT_CWD=$INIT_CWD node ../../scripts/workflow/buildSass.js",
+    "build:ts": "tsc --project ./tsconfig.build.json",
+    "clean": "npm-run-all clean:cache clean:lib",
+    "clean:cache": "rimraf \"build\"",
+    "clean:lib": "rimraf \"lib\"",
+    "dev": "npm-run-all --parallel dev:sass dev:ts",
+    "dev:sass": "sass style:lib --watch --load-path=../../node_modules/@finos/legend-art/scss",
+    "dev:ts": "tsc --watch --preserveWatchOutput",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-studio": "workspace:*",
+    "@finos/legend-art": "workspace:*",
+    "@finos/legend-graph": "workspace:*",
+    "@finos/legend-shared": "workspace:*",
+    "@finos/legend-storage": "workspace:*",
+    "@types/react": "18.0.25",
+    "mobx": "6.6.2",
+    "mobx-react-lite": "3.4.0",
+    "react": "18.2.0",
+    "serializr": "3.0.1"
+  },
+  "devDependencies": {
+    "@finos/legend-dev-utils": "workspace:*",
+    "@jest/globals": "29.3.0",
+    "cross-env": "7.0.3",
+    "eslint": "8.27.0",
+    "jest": "29.3.0",
+    "npm-run-all": "4.1.5",
+    "rimraf": "3.0.2",
+    "sass": "1.56.0",
+    "typescript": "4.8.4"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
+  },
+  "extensions": {
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-store-service-store",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-store-service-store",
+    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-store-service-store",
+    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-store-service-store",
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-store-service-store"
+  }
+}

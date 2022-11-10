@@ -18,6 +18,7 @@ export default {
   publish: {
     typescript: {
       main: './tsconfig.publish.json',
+      others: ['./tsconfig.package.json'],
     },
   },
 };

@@ -17,7 +17,6 @@
 import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
-import { Link } from 'react-router-dom';
 import {
   clsx,
   CustomSelectorInput,
@@ -32,6 +31,10 @@ import {
   UserIcon,
   ExternalLinkIcon,
   Dialog,
+  PanelContent,
+  Modal,
+  ModalBody,
+  ModalFooter,
 } from '@finos/legend-art';
 import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState.js';
 import {
@@ -65,17 +68,19 @@ const ShareProjectModal = observer(
     >();
     const projectId = editorStore.sdlcState.activeProject.projectId;
     const projectLink = selectedVersion
-      ? applicationStore.navigator.generateLocation(
+      ? applicationStore.navigator.generateAddress(
           generateViewVersionRoute(projectId, selectedVersion.id.id),
         )
-      : applicationStore.navigator.generateLocation(
+      : applicationStore.navigator.generateAddress(
           generateViewProjectRoute(projectId),
         );
-    const copyProjectLink = (): void => {
+    const copyProjectElementLink = (): void => {
       applicationStore
         .copyTextToClipboard(projectLink)
         .then(() =>
-          applicationStore.notifySuccess('Copied project link to clipboard'),
+          applicationStore.notifySuccess(
+            'Copied project element link to clipboard',
+          ),
         )
         .catch(applicationStore.alertUnhandledError)
         .finally(() => closeModal());
@@ -90,9 +95,9 @@ const ShareProjectModal = observer(
 
     return (
       <Dialog onClose={closeModal} open={open}>
-        <div className="modal modal--dark modal--no-padding">
+        <Modal darkMode={true} className="modal--no-padding">
           <PanelLoadingIndicator isLoading={isDispatchingAction} />
-          <div className="modal__body">
+          <ModalBody>
             <div className="project-overview__share-project__modal__info-entry">
               <div className="project-overview__share-project__modal__info-entry__title">
                 Version:
@@ -131,17 +136,17 @@ const ShareProjectModal = observer(
                 </a>
               </div>
             </div>
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             <button
               className="btn--wide btn--dark"
               disabled={isFetchingProject}
-              onClick={copyProjectLink}
+              onClick={copyProjectElementLink}
             >
               Copy Link
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },
@@ -177,6 +182,7 @@ const WorkspaceViewerContextMenu = observer(
 const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
   const { workspace } = props;
   const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
   const isActive = areWorkspacesEquivalent(
     editorStore.sdlcState.activeWorkspace,
     workspace,
@@ -192,7 +198,7 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
       onOpen={onContextMenuOpen}
       onClose={onContextMenuClose}
     >
-      <Link
+      <button
         className={clsx(
           'side-bar__panel__item project-overview__item__link',
           {
@@ -201,14 +207,19 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
           },
           { 'project-overview__item__link--active': isActive },
         )}
-        rel="noopener noreferrer"
-        target="_blank"
-        to={generateEditorRoute(
-          workspace.projectId,
-          workspace.workspaceId,
-          workspace.workspaceType,
-        )}
-        title={'Go to workspace detail'}
+        tabIndex={-1}
+        onClick={(): void =>
+          applicationStore.navigator.visitAddress(
+            applicationStore.navigator.generateAddress(
+              generateEditorRoute(
+                workspace.projectId,
+                workspace.workspaceId,
+                workspace.workspaceType,
+              ),
+            ),
+          )
+        }
+        title="See workspace"
       >
         <div className="project-overview__item__link__content project-overview__workspace__viewer">
           <div className="project-overview__workspace__viewer-icon">
@@ -222,7 +233,7 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
             {workspace.workspaceId}
           </div>
         </div>
-      </Link>
+      </button>
     </ContextMenu>
   );
 });
@@ -336,7 +347,7 @@ const ReleaseEditor = observer(() => {
             disabled={!canCreateVersion}
             value={revisionInput.notes}
             onChange={changeNotes}
-            placeholder={'Release notes'}
+            placeholder="Release notes"
           />
           <div className="project-overview__release__editor__actions">
             <button
@@ -381,17 +392,23 @@ const ReleaseEditor = observer(() => {
                   </div>
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 {latestProjectVersion && (
                   <div className="project-overview__release__info__current-version">
-                    <Link
+                    <button
                       className="project-overview__release__info__current-version__link"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                      to={generateViewVersionRoute(
-                        latestProjectVersion.projectId,
-                        latestProjectVersion.id.id,
-                      )}
+                      tabIndex={-1}
+                      onClick={(): void =>
+                        applicationStore.navigator.visitAddress(
+                          applicationStore.navigator.generateAddress(
+                            generateViewVersionRoute(
+                              latestProjectVersion.projectId,
+                              latestProjectVersion.id.id,
+                            ),
+                          ),
+                        )
+                      }
+                      title="See version"
                     >
                       <div className="project-overview__release__info__current-version__link__content">
                         <span className="project-overview__release__info__current-version__link__content__name">
@@ -401,7 +418,7 @@ const ReleaseEditor = observer(() => {
                           {latestProjectVersion.notes}
                         </span>
                       </div>
-                    </Link>
+                    </button>
                   </div>
                 )}
                 {!latestProjectVersion && (
@@ -411,7 +428,7 @@ const ReleaseEditor = observer(() => {
                     </span>
                   </div>
                 )}
-              </div>
+              </PanelContent>
             </div>
             <div className="panel project-overview__release__info__reviews">
               <div className="panel__header">
@@ -435,15 +452,20 @@ const ReleaseEditor = observer(() => {
                   {commitedReviews.length}
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 {commitedReviews.map((review) => (
-                  <Link
+                  <button
                     key={review.id}
                     className="side-bar__panel__item workspace-updater__review__link"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                    to={generateReviewRoute(review.projectId, review.id)}
-                    title={'See review detail'}
+                    tabIndex={-1}
+                    onClick={(): void =>
+                      applicationStore.navigator.visitAddress(
+                        applicationStore.navigator.generateAddress(
+                          generateReviewRoute(review.projectId, review.id),
+                        ),
+                      )
+                    }
+                    title="See review"
                   >
                     <div className="workspace-updater__review">
                       <span className="workspace-updater__review__name">
@@ -453,9 +475,9 @@ const ReleaseEditor = observer(() => {
                         {review.author.name}
                       </span>
                     </div>
-                  </Link>
+                  </button>
                 ))}
-              </div>
+              </PanelContent>
             </div>
           </div>
         )}
@@ -498,13 +520,18 @@ const VersionsViewer = observer(() => {
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
         <div className="panel__content__list">
           {versions.map((version) => (
-            <Link
+            <button
               key={version.id.id}
               className="side-bar__panel__item project-overview__item__link"
-              rel="noopener noreferrer"
-              target="_blank"
-              to={generateViewVersionRoute(version.projectId, version.id.id)}
-              title={'See version detail'}
+              tabIndex={-1}
+              onClick={(): void =>
+                applicationStore.navigator.visitAddress(
+                  applicationStore.navigator.generateAddress(
+                    generateViewVersionRoute(version.projectId, version.id.id),
+                  ),
+                )
+              }
+              title="See version"
             >
               <div className="project-overview__item__link__content">
                 <span className="project-overview__item__link__content__name">
@@ -514,7 +541,7 @@ const VersionsViewer = observer(() => {
                   {version.notes}
                 </span>
               </div>
-            </Link>
+            </button>
           ))}
         </div>
       </div>
@@ -828,7 +855,7 @@ export const ProjectOverview = observer(() => {
   const hideShareModal = (): void => setOpenShareModal(false);
   const projectOverviewState = editorStore.projectOverviewState;
   const openProjectWebUrl = (): void =>
-    applicationStore.navigator.openNewWindow(
+    applicationStore.navigator.visitAddress(
       editorStore.sdlcState.activeProject.webUrl,
     );
   const renderOverview = (): React.ReactNode => {

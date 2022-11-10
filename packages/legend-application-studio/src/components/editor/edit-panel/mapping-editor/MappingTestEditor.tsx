@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Fragment, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type MappingTestState,
@@ -45,16 +45,19 @@ import {
   WrenchIcon,
   PauseCircleIcon,
   PanelDropZone,
+  PencilIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import { useDrop } from 'react-dnd';
 import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import {
   IllegalStateError,
   guaranteeType,
   tryToFormatLosslessJSONString,
+  assertErrorThrown,
 } from '@finos/legend-shared';
 import {
   EDITOR_LANGUAGE,
@@ -62,6 +65,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   ExecutionPlanViewer,
+  TextInputEditor,
 } from '@finos/legend-application';
 import {
   ClassMappingSelectorModal,
@@ -83,13 +87,13 @@ import {
   isStubbed_RawLambda,
   DEPRECATED__validate_MappingTestAssert,
 } from '@finos/legend-graph';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
-import { flatData_setData } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper.js';
+import { flatData_setData } from '../../../../stores/shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/STO_Relational_GraphModifierHelper.js';
+import type { QueryBuilderState } from '@finos/legend-query-builder';
+import { MappingExecutionQueryBuilderState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -98,19 +102,66 @@ const MappingTestQueryEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
 
-    const extraQueryEditorActions = editorStore.pluginManager
-      .getApplicationPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
-          ).getExtraMappingTestQueryEditorActionConfigurations?.() ?? [],
-      )
-      .map((config) => (
-        <Fragment key={config.key}>
-          {config.renderer(testState, isReadOnly)}
-        </Fragment>
-      ));
+    // actions
+    const editWithQueryBuilder = applicationStore.guardUnhandledError(
+      async () => {
+        const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
+        await flowResult(
+          embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
+            setupQueryBuilderState: (): QueryBuilderState => {
+              const queryBuilderState = new MappingExecutionQueryBuilderState(
+                testState.mappingEditorState.mapping,
+                embeddedQueryBuilderState.editorStore.applicationStore,
+                embeddedQueryBuilderState.editorStore.graphManagerState,
+              );
+              queryBuilderState.initializeWithQuery(testState.queryState.query);
+              return queryBuilderState;
+            },
+            actionConfigs: [
+              {
+                key: 'save-query-btn',
+                renderer: (
+                  queryBuilderState: QueryBuilderState,
+                ): React.ReactNode => {
+                  const save = applicationStore.guardUnhandledError(
+                    async (): Promise<void> => {
+                      try {
+                        const rawLambda = queryBuilderState.buildQuery();
+                        await flowResult(
+                          testState.queryState.updateLamba(rawLambda),
+                        );
+                        applicationStore.notifySuccess(
+                          `Mapping test query is updated`,
+                        );
+                        embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
+                          undefined,
+                        );
+                      } catch (error) {
+                        assertErrorThrown(error);
+                        applicationStore.notifyError(
+                          `Can't save query: ${error.message}`,
+                        );
+                      }
+                    },
+                  );
+                  return (
+                    <button
+                      className="query-builder__dialog__header__custom-action"
+                      tabIndex={-1}
+                      disabled={isReadOnly}
+                      onClick={save}
+                    >
+                      Save Query
+                    </button>
+                  );
+                },
+              },
+            ],
+            disableCompile: isStubbed_RawLambda(testState.queryState.query),
+          }),
+        );
+      },
+    );
 
     // Class mapping selector
     const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
@@ -138,12 +189,10 @@ const MappingTestQueryEditor = observer(
 
         // Attempt to generate data for input data panel as we pick the class mapping
         if (setImplementation) {
-          editorStore.setActionAlertInfo({
+          applicationStore.setActionAlertInfo({
             message: 'Mapping test input data is already set',
             prompt: 'Do you want to regenerate the input data?',
             type: ActionAlertType.CAUTION,
-            onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-            onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
             actions: [
               {
                 label: 'Regenerate',
@@ -203,32 +252,39 @@ const MappingTestQueryEditor = observer(
             <div className="panel__header__title__label">query</div>
           </div>
           <div className="panel__header__actions">
-            {extraQueryEditorActions}
+            <button
+              className="panel__header__action"
+              tabIndex={-1}
+              onClick={editWithQueryBuilder}
+              title="Edit query..."
+            >
+              <PencilIcon />
+            </button>
             <button
               className="panel__header__action"
               tabIndex={-1}
               disabled={isReadOnly}
               onClick={clearQuery}
-              title={'Clear query'}
+              title="Clear query"
             >
               <TimesIcon />
             </button>
           </div>
         </div>
         {!isStubbed_RawLambda(queryState.query) && (
-          <div className="panel__content">
+          <PanelContent>
             <div className="mapping-test-editor__query-panel__query">
-              <StudioTextInputEditor
+              <TextInputEditor
                 inputValue={queryState.lambdaString}
                 isReadOnly={true}
                 language={EDITOR_LANGUAGE.PURE}
                 showMiniMap={false}
               />
             </div>
-          </div>
+          </PanelContent>
         )}
         {isStubbed_RawLambda(queryState.query) && (
-          <div className="panel__content">
+          <PanelContent>
             <PanelDropZone
               dropTargetConnector={dropRef}
               isDragOver={isDragOver}
@@ -242,7 +298,7 @@ const MappingTestQueryEditor = observer(
                 disabled={isReadOnly}
               />
             </PanelDropZone>
-          </div>
+          </PanelContent>
         )}
         {openClassMappingSelectorModal && (
           <ClassMappingSelectorModal
@@ -270,7 +326,7 @@ export const MappingTestObjectInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <StudioTextInputEditor
+        <TextInputEditor
           language={EDITOR_LANGUAGE.JSON}
           inputValue={inputDataState.data}
           isReadOnly={isReadOnly}
@@ -294,7 +350,7 @@ export const MappingTestFlatDataInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <StudioTextInputEditor
+        <TextInputEditor
           language={EDITOR_LANGUAGE.TEXT}
           inputValue={inputDataState.inputData.data}
           isReadOnly={isReadOnly}
@@ -321,7 +377,7 @@ export const MappingTestRelationalInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <StudioTextInputEditor
+        <TextInputEditor
           language={getRelationalInputTestDataEditorLanguage(
             inputDataState.inputData.inputType,
           )}
@@ -349,6 +405,7 @@ const RelationalMappingTestInputDataTypeSelector = observer(
     return (
       <DropdownMenu
         className="mapping-test-editor__input-data-panel__type-selector"
+        title="Choose input data type..."
         disabled={isReadOnly}
         content={
           <MenuContent>
@@ -364,10 +421,7 @@ const RelationalMappingTestInputDataTypeSelector = observer(
           </MenuContent>
         }
       >
-        <div
-          className="mapping-test-editor__input-data-panel__type-selector__value"
-          title="Choose input data type..."
-        >
+        <div className="mapping-test-editor__input-data-panel__type-selector__value">
           <div className="mapping-test-editor__input-data-panel__type-selector__value__label">
             {inputDataState.inputData.inputType}
           </div>
@@ -462,7 +516,7 @@ export const MappingTestInputDataBuilder = observer(
               tabIndex={-1}
               disabled={isReadOnly}
               onClick={showClassMappingSelectorModal}
-              title={'Regenerate...'}
+              title="Regenerate..."
             >
               <RefreshIcon className="mapping-test-editor__icon--refresh" />
             </button>
@@ -520,7 +574,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               disabled={testState.isExecutingTest || isReadOnly}
               onClick={regenerateExpectedResult}
               tabIndex={-1}
-              title={'Regenerate Result'}
+              title="Regenerate Result"
             >
               <RefreshIcon className="mapping-test-editor__icon__regenerate-result" />
             </button>
@@ -529,7 +583,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               disabled={isReadOnly}
               tabIndex={-1}
               onClick={formatExpectedResultJSONString}
-              title={'Format JSON'}
+              title="Format JSON"
             >
               <WrenchIcon />
             </button>
@@ -549,7 +603,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               <ErrorIcon />
             </div>
           )}
-          <StudioTextInputEditor
+          <TextInputEditor
             inputValue={assertionState.expectedResult}
             updateInput={updateExpectedResult}
             isReadOnly={isReadOnly}
@@ -713,20 +767,20 @@ export const MappingTestEditor = observer(
                 </div>
               </button>
             ) : (
-              <button
-                className="mapping-test-editor__execute-btn"
-                onClick={runTest}
-                disabled={
-                  testState.isExecutingTest || testState.isGeneratingPlan
-                }
-                tabIndex={-1}
-              >
-                <div className="mapping-test-editor__execute-btn__label">
+              <div className="mapping-test-editor__execute-btn">
+                <button
+                  className="mapping-test-editor__execute-btn__label"
+                  onClick={runTest}
+                  disabled={
+                    testState.isExecutingTest || testState.isGeneratingPlan
+                  }
+                  tabIndex={-1}
+                >
                   <PlayIcon className="mapping-test-editor__execute-btn__label__icon" />
                   <div className="mapping-test-editor__execute-btn__label__title">
                     Run Test
                   </div>
-                </div>
+                </button>
                 <DropdownMenu
                   className="mapping-test-editor__execute-btn__dropdown-btn"
                   disabled={
@@ -755,7 +809,7 @@ export const MappingTestEditor = observer(
                 >
                   <CaretDownIcon />
                 </DropdownMenu>
-              </button>
+              </div>
             )}
           </div>
         </div>

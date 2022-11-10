@@ -15,16 +15,14 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
+import { ACTIVITY_MODE, AUX_PANEL_MODE } from '../../stores/EditorConfig.js';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import {
-  CheckIcon,
   clsx,
   DropdownMenu,
   RepoIcon,
   MenuContent,
   MenuContentItem,
-  MenuContentItemIcon,
   MenuContentItemLabel,
   GitPullRequestIcon,
   GitMergeIcon,
@@ -48,16 +46,14 @@ import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvide
 const SettingsMenu = observer(
   forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {
     const editorStore = useEditorStore();
-    const toggleDevTool = (): void => {
-      editorStore.setDevTool(!editorStore.isDevToolEnabled);
+    const showDeveloperTool = (): void => {
+      editorStore.auxPanelDisplayState.open();
+      editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.DEV_TOOL);
     };
 
     return (
       <MenuContent ref={ref} className="activity-bar__setting__menu">
-        <MenuContentItem onClick={toggleDevTool}>
-          <MenuContentItemIcon>
-            {editorStore.isDevToolEnabled ? <CheckIcon /> : null}
-          </MenuContentItemIcon>
+        <MenuContentItem onClick={showDeveloperTool}>
           <MenuContentItemLabel>Show Developer Tool</MenuContentItemLabel>
         </MenuContentItem>
       </MenuContent>
@@ -76,10 +72,6 @@ export const ActivityBarMenu: React.FC = () => {
   const applicationStore = useLegendStudioApplicationStore();
   const appDocUrl = applicationStore.documentationService.url;
 
-  // menu
-  const [openMenuDropdown, setOpenMenuDropdown] = useState(false);
-  const showMenuDropdown = (): void => setOpenMenuDropdown(true);
-  const hideMenuDropdown = (): void => setOpenMenuDropdown(false);
   // about modal
   const [openAppInfo, setOpenAppInfo] = useState(false);
   const showAppInfo = (): void => setOpenAppInfo(true);
@@ -87,15 +79,13 @@ export const ActivityBarMenu: React.FC = () => {
   // documentation
   const goToDocumentation = (): void => {
     if (appDocUrl) {
-      applicationStore.navigator.openNewWindow(appDocUrl);
+      applicationStore.navigator.visitAddress(appDocUrl);
     }
   };
   // go to setup page
-  const goToSetupPage = (): void =>
-    applicationStore.navigator.openNewWindow(
-      applicationStore.navigator.generateLocation(
-        generateSetupRoute(undefined),
-      ),
+  const goToWorkspaceSetup = (): void =>
+    applicationStore.navigator.visitAddress(
+      applicationStore.navigator.generateAddress(generateSetupRoute(undefined)),
     );
   // help
   const openHelp = (): void => {
@@ -108,58 +98,34 @@ export const ActivityBarMenu: React.FC = () => {
 
   return (
     <>
-      <DropdownMenu
-        className={clsx('app__header__action', {
-          'menu__trigger--on-menu-open': openMenuDropdown,
-        })}
-        onClose={hideMenuDropdown}
-        menuProps={{
-          anchorOrigin: { vertical: 'top', horizontal: 'right' },
-          transformOrigin: { vertical: 'top', horizontal: 'left' },
-          elevation: 7,
-        }}
-        content={
-          <MenuContent className="app__header__menu">
-            <MenuContentItem
-              className="app__header__menu__item"
-              onClick={showAppInfo}
-            >
-              About
-            </MenuContentItem>
-            <MenuContentItem
-              className="app__header__menu__item"
-              onClick={openHelp}
-            >
-              Help...
-            </MenuContentItem>
-            <MenuContentItem
-              className="app__header__menu__item"
-              disabled={!appDocUrl}
-              onClick={goToDocumentation}
-            >
-              See Documentation
-            </MenuContentItem>
-            <MenuContentDivider />
-            <MenuContentItem
-              className="app__header__menu__item"
-              onClick={goToSetupPage}
-            >
-              Back to Setup
-            </MenuContentItem>
-          </MenuContent>
-        }
-      >
-        <div className="activity-bar__menu">
-          <button
-            className="activity-bar__menu-item"
-            tabIndex={-1}
-            onClick={showMenuDropdown}
-            title="Menu"
-          >
-            <MenuIcon />
-          </button>
-        </div>
-      </DropdownMenu>
+      <div className="activity-bar__menu">
+        <DropdownMenu
+          className="activity-bar__menu-item"
+          menuProps={{
+            anchorOrigin: { vertical: 'top', horizontal: 'right' },
+            transformOrigin: { vertical: 'top', horizontal: 'left' },
+            elevation: 7,
+          }}
+          content={
+            <MenuContent>
+              <MenuContentItem onClick={showAppInfo}>About</MenuContentItem>
+              <MenuContentItem onClick={openHelp}>Help...</MenuContentItem>
+              <MenuContentItem
+                disabled={!appDocUrl}
+                onClick={goToDocumentation}
+              >
+                See Documentation
+              </MenuContentItem>
+              <MenuContentDivider />
+              <MenuContentItem onClick={goToWorkspaceSetup}>
+                Back to workspace setup
+              </MenuContentItem>
+            </MenuContent>
+          }
+        >
+          <MenuIcon />
+        </DropdownMenu>
+      </div>
       <LegendStudioAppInfo open={openAppInfo} closeModal={hideAppInfo} />
     </>
   );
@@ -375,7 +341,7 @@ export const ActivityBar = observer(() => {
         ))}
       </div>
       <DropdownMenu
-        className="activity-bar__setting"
+        className="activity-bar__item"
         content={<SettingsMenu />}
         menuProps={{
           anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
@@ -383,13 +349,7 @@ export const ActivityBar = observer(() => {
           elevation: 7,
         }}
       >
-        <button
-          className="activity-bar__item"
-          tabIndex={-1}
-          title="Settings..."
-        >
-          <CogIcon />
-        </button>
+        <CogIcon />
       </DropdownMenu>
     </div>
   );

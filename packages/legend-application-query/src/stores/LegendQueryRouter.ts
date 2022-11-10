@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-import { generateGAVCoordinates } from '@finos/legend-server-depot';
-import { generatePath } from 'react-router';
+import {
+  generateExtensionUrlPattern,
+  generatePath,
+} from '@finos/legend-application';
+import {
+  addQueryParamsStringToUrl,
+  stringifyQueryParams,
+} from '@finos/legend-shared';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 
 export enum LEGEND_QUERY_PATH_PARAM_TOKEN {
   GAV = 'gav',
@@ -25,26 +32,91 @@ export enum LEGEND_QUERY_PATH_PARAM_TOKEN {
   SERVICE_PATH = 'servicePath',
 }
 
+export enum LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN {
+  SHOW_ALL_GROUPS = 'showAllGroups',
+  SHOW_ADVANCED_ACTIONS = 'showAdvancedActions',
+  TAG = 'tag',
+}
+
 export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
-  CLASS_PATH = 'class',
   SERVICE_EXECUTION_KEY = 'executionKey',
 }
 
 export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   SETUP: '/setup',
-  CREATE_QUERY: `/create/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}`,
-  SERVICE_QUERY: `/service/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH}`,
-  EXISTING_QUERY: `/edit/:${LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID}`,
+  EDIT_EXISTING_QUERY_SETUP: '/setup/existing-query',
+  CREATE_MAPPING_QUERY_SETUP: '/setup/manual',
+  CLONE_SERVICE_QUERY_SETUP: '/setup/clone-service-query',
+  QUERY_PRODUCTIONIZER_SETUP: '/setup/productionize-query',
+  UPDATE_EXISTING_SERVICE_QUERY_SETUP: '/setup/update-existing-service-query',
+  LOAD_PROJECT_SERVICE_QUERY_SETUP: '/setup/load-project-service-query',
+  CREATE_FROM_MAPPING_QUERY: `/create/manual/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}`,
+  CREATE_FROM_SERVICE_QUERY: `/create-from-service/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH}`,
+  EDIT_EXISTING_QUERY: `/edit/:${LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID}`,
 });
 
-export const generateCreateQueryEditorRoute = (
+export type QuerySetupQueryParams = {
+  [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ALL_GROUPS]?: string;
+  [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ADVANCED_ACTIONS]?: string;
+  [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG]?: string;
+};
+
+export const generateQuerySetupRoute = (
+  showAllGroups?: boolean | undefined,
+  showAdvancedActions?: boolean | undefined,
+  tag?: string | undefined,
+): string =>
+  addQueryParamsStringToUrl(
+    generatePath(LEGEND_QUERY_ROUTE_PATTERN.SETUP, {}),
+    stringifyQueryParams({
+      [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ALL_GROUPS]: showAllGroups
+        ? encodeURIComponent(showAllGroups)
+        : showAllGroups,
+      [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ADVANCED_ACTIONS]:
+        showAdvancedActions
+          ? encodeURIComponent(showAdvancedActions)
+          : undefined,
+      [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG]: tag
+        ? encodeURIComponent(tag)
+        : undefined,
+    }),
+  );
+
+export const generateEditExistingQuerySetupRoute = (): string =>
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY_SETUP, {});
+export const generateCreateMappingQuerySetupRoute = (): string =>
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_MAPPING_QUERY_SETUP, {});
+export const generateCloneServiceQuerySetupRoute = (): string =>
+  generateExtensionUrlPattern(
+    generatePath(LEGEND_QUERY_ROUTE_PATTERN.CLONE_SERVICE_QUERY_SETUP, {}),
+  );
+export const generateQueryProductionizerSetupRoute = (): string =>
+  generateExtensionUrlPattern(
+    generatePath(LEGEND_QUERY_ROUTE_PATTERN.QUERY_PRODUCTIONIZER_SETUP, {}),
+  );
+export const generateUpdateExistingServiceQuerySetup = (): string =>
+  generateExtensionUrlPattern(
+    generatePath(
+      LEGEND_QUERY_ROUTE_PATTERN.UPDATE_EXISTING_SERVICE_QUERY_SETUP,
+      {},
+    ),
+  );
+export const generateLoadProjectServiceQuerySetup = (): string =>
+  generateExtensionUrlPattern(
+    generatePath(
+      LEGEND_QUERY_ROUTE_PATTERN.LOAD_PROJECT_SERVICE_QUERY_SETUP,
+      {},
+    ),
+  );
+
+export const generateMappingQueryCreatorRoute = (
   groupId: string,
   artifactId: string,
   versionId: string,
   mappingPath: string,
   runtimePath: string,
 ): string =>
-  generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY, {
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_MAPPING_QUERY, {
     [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
       groupId,
       artifactId,
@@ -54,45 +126,46 @@ export const generateCreateQueryEditorRoute = (
     [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: runtimePath,
   });
 
-export interface CreateQueryPathParams {
+export interface MappingQueryCreatorPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: string;
 }
 
-export interface CreateQueryEditorQueryParams {
-  [LEGEND_QUERY_QUERY_PARAM_TOKEN.CLASS_PATH]?: string;
-}
-
-export const generateServiceQueryEditorRoute = (
+export const generateServiceQueryCreatorRoute = (
   groupId: string,
   artifactId: string,
   versionId: string,
   servicePath: string,
-  key?: string,
+  executionKey?: string | undefined,
 ): string =>
-  `${generatePath(LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY, {
-    [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
-      groupId,
-      artifactId,
-      versionId,
-    ),
-    [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: servicePath,
-  })}${
-    key ? `?${LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY}=${key}` : ''
-  }`;
+  addQueryParamsStringToUrl(
+    generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY, {
+      [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
+        groupId,
+        artifactId,
+        versionId,
+      ),
+      [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: servicePath,
+    }),
+    stringifyQueryParams({
+      [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY]: executionKey
+        ? encodeURIComponent(executionKey)
+        : executionKey,
+    }),
+  );
 
-export interface ServiceQueryEditorPathParams {
+export interface ServiceQueryCreatorPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: string;
 }
 
-export interface ServiceQueryEditorQueryParams {
+export type ServiceQueryCreatorQueryParams = {
   [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY]?: string;
-}
+};
 
 export const generateExistingQueryEditorRoute = (queryId: string): string =>
-  generatePath(LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY, {
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY, {
     [LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID]: queryId,
   });
 
@@ -100,7 +173,10 @@ export interface ExistingQueryEditorPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID]: string;
 }
 
-export const generateStudioProjectViewUrl = (
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
   studioUrl: string,
   groupId: string,
   artifactId: string,
@@ -112,3 +188,46 @@ export const generateStudioProjectViewUrl = (
     artifactId,
     versionId,
   )}${entityPath ? `/entity/${entityPath}` : ''}`;
+
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
+  (
+    studioUrl: string,
+    projectId: string,
+    entityPath: string | undefined,
+  ): string =>
+    `${studioUrl}/view/${projectId}${
+      entityPath ? `/entity/${entityPath}` : ''
+    }`;
+
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl =
+  (
+    studioUrl: string,
+    groupId: string,
+    artifactId: string,
+    servicePath: string,
+  ): string =>
+    `${studioUrl}/extensions/update-service-query/${servicePath}@${generateGAVCoordinates(
+      groupId,
+      artifactId,
+      undefined,
+    )}`;
+
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl =
+  (studioUrl: string, projectId: string): string =>
+    `${studioUrl}/extensions/update-project-service-query/${projectId}`;
+
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl =
+  (studioUrl: string, queryId: string): string =>
+    `${studioUrl}/extensions/productionize-query/${queryId}`;

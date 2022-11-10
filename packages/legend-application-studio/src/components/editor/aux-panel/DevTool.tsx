@@ -15,7 +15,12 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { clsx, CheckSquareIcon, SquareIcon } from '@finos/legend-art';
+import {
+  PanelFormBooleanField,
+  Panel,
+  PanelFormTextField,
+  PanelForm,
+} from '@finos/legend-art';
 import { isValidUrl } from '@finos/legend-shared';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { observe_TEMPORARY__AbstractEngineConfig } from '@finos/legend-graph';
@@ -26,12 +31,6 @@ export const DevTool = observer(() => {
   const engineConfig = observe_TEMPORARY__AbstractEngineConfig(
     editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig(),
   );
-  const changeEngineClientBaseUrl: React.ChangeEventHandler<
-    HTMLInputElement
-  > = (event) =>
-    engineConfig.setBaseUrl(
-      event.target.value === '' ? undefined : event.target.value,
-    );
   const toggleEngineClientRequestPayloadCompression = (): void =>
     engineConfig.setUseClientRequestPayloadCompression(
       !engineConfig.useClientRequestPayloadCompression,
@@ -40,79 +39,48 @@ export const DevTool = observer(() => {
     engineConfig.setUseBase64ForAdhocConnectionDataUrls(
       !engineConfig.useBase64ForAdhocConnectionDataUrls,
     );
+  // Graph Manager
+  const toggleStrictMode = (): void =>
+    editorStore.graphState.setEnableStrictMode(
+      !editorStore.graphState.enableStrictMode,
+    );
 
   return (
-    <div className="console-panel">
-      <div className="console-panel__content">
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Engine client request payload compression
-            </div>
-            <div
-              className={clsx('panel__content__form__section__toggler')}
-              onClick={toggleEngineClientRequestPayloadCompression}
-            >
-              <button
-                className={clsx('panel__content__form__section__toggler__btn', {
-                  'panel__content__form__section__toggler__btn--toggled':
-                    engineConfig.useClientRequestPayloadCompression,
-                })}
-              >
-                {engineConfig.useClientRequestPayloadCompression ? (
-                  <CheckSquareIcon />
-                ) : (
-                  <SquareIcon />
-                )}
-              </button>
-              <div className="panel__content__form__section__toggler__prompt">
-                Specifies if request payload should be compressed
-              </div>
-            </div>
-          </div>
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Engine client base URL
-            </div>
-            <div className="input-group">
-              <input
-                className="panel__content__form__section__input input-group__input input--dark"
-                spellCheck={false}
-                value={engineConfig.baseUrl ?? ''}
-                onChange={changeEngineClientBaseUrl}
-              />
-              {!isValidUrl(engineConfig.baseUrl ?? '') && (
-                <div className="input-group__error-message">Invalid URL</div>
-              )}
-            </div>
-          </div>
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Engine execution runner
-            </div>
-            <div
-              className={clsx('panel__content__form__section__toggler')}
-              onClick={toggleDataUrlEncoding}
-            >
-              <button
-                className={clsx('panel__content__form__section__toggler__btn', {
-                  'panel__content__form__section__toggler__btn--toggled':
-                    engineConfig.useBase64ForAdhocConnectionDataUrls,
-                })}
-              >
-                {engineConfig.useBase64ForAdhocConnectionDataUrls ? (
-                  <CheckSquareIcon />
-                ) : (
-                  <SquareIcon />
-                )}
-              </button>
-              <div className="panel__content__form__section__toggler__prompt">
-                Use Base64 encoding for adhoc connection data URLs
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Panel>
+      <PanelForm>
+        <PanelFormBooleanField
+          name="Engine client request payload compression"
+          prompt="Specifies if request payload should be compressed"
+          value={engineConfig.useClientRequestPayloadCompression}
+          isReadOnly={false}
+          update={toggleEngineClientRequestPayloadCompression}
+        />
+        <PanelFormTextField
+          name="Engine client base URL"
+          value={engineConfig.baseUrl ?? ''}
+          isReadOnly={false}
+          update={(value: string | undefined): void =>
+            engineConfig.setBaseUrl(value === '' ? undefined : value)
+          }
+          errorMessage={
+            !isValidUrl(engineConfig.baseUrl ?? '') ? 'Invalid URL' : ''
+          }
+        />
+        <PanelFormBooleanField
+          name="Engine execution runner"
+          prompt="Use Base64 encoding for adhoc connection data URLs"
+          value={engineConfig.useBase64ForAdhocConnectionDataUrls}
+          isReadOnly={false}
+          update={toggleDataUrlEncoding}
+        />
+        <PanelFormBooleanField
+          name="Graph builder strict mode"
+          prompt="Use strict-mode when building the graph (some warnings will be treated as errors)"
+          value={editorStore.graphState.enableStrictMode}
+          isReadOnly={false}
+          update={toggleStrictMode}
+        />
+      </PanelForm>
+    </Panel>
   );
 });

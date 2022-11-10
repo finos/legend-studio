@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { generateGAVCoordinates } from '@finos/legend-server-depot';
-import { generatePath } from 'react-router';
+import { generatePath } from '@finos/legend-application';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 
 export enum LEGEND_TAXONOMY_PARAM_TOKEN {
   TAXONOMY_TREE_KEY = 'taxonomyTreeKey',
@@ -84,7 +84,10 @@ export const generateStandaloneDataSpaceViewerRoute = (
     [LEGEND_TAXONOMY_PARAM_TOKEN.DATA_SPACE_PATH]: dataSpacePath,
   });
 
-export const generateStudioProjectViewUrl = (
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
   studioUrl: string,
   groupId: string,
   artifactId: string,
@@ -97,20 +100,37 @@ export const generateStudioProjectViewUrl = (
     versionId,
   )}${entityPath ? `/entity/${entityPath}` : ''}`;
 
-export const generateDataSpaceQueryEditorUrl = (
-  queryUrl: string,
-  groupId: string,
-  artifactId: string,
-  versionId: string,
-  dataSpacePath: string,
-  executionContext: string,
-  runtimePath: string | undefined,
-  classPath: string | undefined,
-): string =>
-  `${queryUrl}/extensions/dataspace/${generateGAVCoordinates(
-    groupId,
-    artifactId,
-    versionId,
-  )}/${dataSpacePath}/${executionContext}/${
-    runtimePath ? `/${runtimePath}` : ''
-  }${classPath ? `?class=${classPath}` : ''}`;
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
+  (
+    studioUrl: string,
+    projectId: string,
+    entityPath: string | undefined,
+  ): string =>
+    `${studioUrl}/view/${projectId}${
+      entityPath ? `/entity/${entityPath}` : ''
+    }`;
+
+/**
+ * @external_application_navigation This depends on Legend Query routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl =
+  (
+    queryUrl: string,
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    dataSpacePath: string,
+    executionContext: string,
+    runtimePath: string | undefined,
+    classPath: string | undefined,
+  ): string =>
+    `${queryUrl}/extensions/dataspace/${generateGAVCoordinates(
+      groupId,
+      artifactId,
+      versionId,
+    )}/${dataSpacePath}/${executionContext}/${
+      runtimePath ? `/${runtimePath}` : ''
+    }${classPath ? `?class=${classPath}` : ''}`;

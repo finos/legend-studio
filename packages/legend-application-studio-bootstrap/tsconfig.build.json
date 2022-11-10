@@ -11,6 +11,7 @@
     { "path": "../legend-graph/tsconfig.build.json" },
     { "path": "../legend-application-studio/tsconfig.build.json" },
     { "path": "../legend-shared/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-service/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-diagram/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-persistence/tsconfig.build.json" },
@@ -18,16 +19,13 @@
     { "path": "../legend-extension-dsl-persistence-cloud/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-text/tsconfig.build.json" },
     {
-      "path": "../legend-extension-external-format-json-schema/tsconfig.build.json"
+      "path": "../legend-extension-format-json-schema/tsconfig.build.json"
     },
     {
-      "path": "../legend-extension-external-language-morphir/tsconfig.build.json"
+      "path": "../legend-extension-format-morphir/tsconfig.build.json"
     },
     {
-      "path": "../legend-extension-external-store-service/tsconfig.build.json"
-    },
-    {
-      "path": "../legend-extension-application-studio-query-builder/tsconfig.build.json"
+      "path": "../legend-extension-store-service-store/tsconfig.build.json"
     }
   ]
 }

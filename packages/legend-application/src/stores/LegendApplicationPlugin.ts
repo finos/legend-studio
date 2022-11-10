@@ -16,6 +16,7 @@
 
 import { AbstractPlugin } from '@finos/legend-shared';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
+import type { KeyedCommandConfigEntry } from './CommandCenter.js';
 import type {
   ContextualDocumentationEntry,
   DocumentationRegistryEntry,
@@ -51,6 +52,11 @@ export abstract class LegendApplicationPlugin extends AbstractPlugin {
    * Get the list of application page entries to be rendered.
    */
   getExtraApplicationPageEntries?(): ApplicationPageEntry[];
+
+  /**
+   * Get the list of keyed command config entries to be registered with command center.
+   */
+  getExtraKeyedCommandConfigEntries?(): KeyedCommandConfigEntry[];
 
   /**
    * Get the list of documentation registry entries from which the application can fetch

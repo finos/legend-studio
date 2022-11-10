@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { jest } from '@jest/globals';
+import { createMock } from '@finos/legend-shared';
 
 /**
  * NOTE: we have tried different ways to mock `monaco-editor`. But those ways often involve
@@ -42,49 +42,49 @@ export enum MockedMonacoEditorEndOfLinePreference {
 }
 
 export const MockedMonacoEditorModel = {
-  dispose: jest.fn(),
-  updateOptions: jest.fn(),
-  getValue: jest.fn(),
-  getLineCount: jest.fn(),
-  getLineMaxColumn: jest.fn(),
-  pushStackElement: jest.fn(),
-  pushEditOperations: jest.fn(),
-  findMatches: jest.fn(),
+  dispose: createMock(),
+  updateOptions: createMock(),
+  getValue: createMock(),
+  getLineCount: createMock(),
+  getLineMaxColumn: createMock(),
+  pushStackElement: createMock(),
+  pushEditOperations: createMock(),
+  findMatches: createMock(),
 };
 
 export const MockedMonacoEditorInstance = {
-  dispose: jest.fn(),
-  addCommand: jest.fn(),
-  getValue: jest.fn(),
-  getPosition: jest.fn(),
-  getRawOptions: jest.fn(),
+  dispose: createMock(),
+  addCommand: createMock(),
+  getValue: createMock(),
+  getPosition: createMock(),
+  getRawOptions: createMock(),
   getModel: (): typeof MockedMonacoEditorModel => MockedMonacoEditorModel,
-  hasTextFocus: jest.fn(),
-  updateOptions: jest.fn(),
-  setValue: jest.fn(),
-  revealPosition: jest.fn(),
-  setPosition: jest.fn(),
-  onKeyDown: jest.fn(),
-  deltaDecorations: jest.fn(),
-  onDidChangeModelContent: jest.fn(),
-  onDidChangeCursorPosition: jest.fn(),
-  onDidFocusEditorText: jest.fn(),
-  onDidBlurEditorText: jest.fn(),
+  hasTextFocus: createMock(),
+  updateOptions: createMock(),
+  setValue: createMock(),
+  revealPosition: createMock(),
+  setPosition: createMock(),
+  onKeyDown: createMock(),
+  createDecorationsCollection: createMock(),
+  onDidChangeModelContent: createMock(),
+  onDidChangeCursorPosition: createMock(),
+  onDidFocusEditorText: createMock(),
+  onDidBlurEditorText: createMock(),
 };
 
 export const MockedMonacoEditorAPI = {
   create: (): typeof MockedMonacoEditorInstance => MockedMonacoEditorInstance,
-  focus: jest.fn(),
-  createModel: jest.fn(),
-  createDiffEditor: (): Record<PropertyKey, unknown> => ({
+  focus: createMock(),
+  createModel: createMock(),
+  createDiffEditor: () => ({
     getOriginalEditor: (): typeof MockedMonacoEditorInstance =>
       MockedMonacoEditorInstance,
     getModifiedEditor: (): typeof MockedMonacoEditorInstance =>
       MockedMonacoEditorInstance,
   }),
-  setModelMarkers: jest.fn(),
-  setModelLanguage: jest.fn(),
-  defineTheme: jest.fn(),
+  setModelMarkers: createMock(),
+  setModelLanguage: createMock(),
+  defineTheme: createMock(),
   EndOfLinePreference: MockedMonacoEditorEndOfLinePreference,
 };
 
@@ -98,12 +98,12 @@ export enum MockedMonacoLanguageCompletionItemInsertTextRule {
 }
 
 export const MockedMonacoEditorLanguagesAPI = {
-  register: jest.fn(),
-  setLanguageConfiguration: jest.fn(),
-  setMonarchTokensProvider: jest.fn(),
-  registerCodeLensProvider: jest.fn(),
-  registerHoverProvider: jest.fn(),
-  registerCompletionItemProvider: jest.fn(),
+  register: createMock(),
+  setLanguageConfiguration: createMock(),
+  setMonarchTokensProvider: createMock(),
+  registerCodeLensProvider: createMock(),
+  registerHoverProvider: createMock(),
+  registerCompletionItemProvider: createMock(),
   CompletionItemKind: MockedMonacoLanguageCompletionItemKind,
   CompletionItemInsertTextRule: MockedMonacoLanguageCompletionItemKind,
 };

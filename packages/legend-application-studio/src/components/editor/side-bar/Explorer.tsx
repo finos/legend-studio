@@ -51,15 +51,18 @@ import {
   CreateNewElementModal,
 } from './CreateNewElementModal.js';
 import { useDrag } from 'react-dnd';
-import { ElementDragSource } from '../../../stores/shared/DnDUtil.js';
+import { ElementDragSource } from '../../../stores/shared/DnDUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
-import { getTreeChildNodes } from '../../../stores/shared/PackageTreeUtil.js';
-import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtil.js';
+import {
+  generatePackageableElementTreeNodeDataLabel,
+  getTreeChildNodes,
+} from '../../../stores/shared/PackageTreeUtils.js';
+import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtils.js';
 import {
   type GenerationTreeNodeData,
   getFileGenerationChildNodes,
-} from '../../../stores/shared/FileGenerationTreeUtil.js';
+} from '../../../stores/shared/FileGenerationTreeUtils.js';
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor.js';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter.js';
 import { toTitleCase } from '@finos/legend-shared';
@@ -75,17 +78,27 @@ import {
   isSystemElement,
   isDependencyElement,
   isElementReadOnly,
+  ConcreteFunctionDefinition,
+  Class,
+  isMainGraphElement,
+  getFunctionSignature,
+  getFunctionNameWithPath,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
+import { queryClass } from '../edit-panel/uml-editor/ClassQueryBuilder.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const explorerTreeState = editorStore.explorerTreeState;
   const element = explorerTreeState.elementToRename;
-  const [path, setPath] = useState(element?.path ?? '');
+  const [path, setPath] = useState(
+    (element instanceof ConcreteFunctionDefinition
+      ? getFunctionNameWithPath(element)
+      : element?.path) ?? '',
+  );
   const pathInputRef = useRef<HTMLInputElement>(null);
   const changePath: React.ChangeEventHandler<HTMLInputElement> = (
     event,
@@ -96,8 +109,16 @@ const ElementRenamer = observer(() => {
     element instanceof Package || path.includes(ELEMENT_PATH_DELIMITER);
   const isValidElementPath =
     (element instanceof Package && isValidPath(path)) || isValidFullPath(path);
-  const existingElement =
-    editorStore.graphManagerState.graph.getNullableElement(path, true);
+  let existingElement = editorStore.graphManagerState.graph.getNullableElement(
+    path,
+    true,
+  );
+  existingElement =
+    existingElement instanceof Package
+      ? isMainGraphElement(existingElement)
+        ? existingElement
+        : undefined
+      : existingElement;
   const isElementUnique = !existingElement || existingElement === element;
   const elementRenameValidationErrorMessage = !isElementPathNonEmpty
     ? `Element path cannot be empty`
@@ -118,9 +139,14 @@ const ElementRenamer = observer(() => {
     event.preventDefault();
     if (element && canRenameElement) {
       explorerTreeState.setElementToRename(undefined);
-      flowResult(editorStore.renameElement(element, path)).catch(
-        applicationStore.alertUnhandledError,
-      );
+      flowResult(
+        editorStore.renameElement(
+          element,
+          element instanceof ConcreteFunctionDefinition
+            ? path + getFunctionSignature(element)
+            : path,
+        ),
+      ).catch(applicationStore.alertUnhandledError);
     }
   };
 
@@ -129,7 +155,11 @@ const ElementRenamer = observer(() => {
 
   useEffect(() => {
     if (element) {
-      setPath(element.path);
+      setPath(
+        element instanceof ConcreteFunctionDefinition
+          ? getFunctionNameWithPath(element)
+          : element.path,
+      );
     }
   }, [element]);
 
@@ -198,6 +228,23 @@ const ExplorerContextMenu = observer(
         ? node.packageableElement
         : undefined
       : editorStore.graphManagerState.graph.root;
+    const elementTypes = ([PACKAGEABLE_ELEMENT_TYPE.PACKAGE] as string[])
+      .concat(editorStore.getSupportedElementTypes())
+      .filter(
+        // NOTE: we can only create package in root
+        (type) =>
+          _package !== editorStore.graphManagerState.graph.root ||
+          type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
+      );
+
+    // actions
+    const buildQuery = editorStore.applicationStore.guardUnhandledError(
+      async () => {
+        if (node?.packageableElement instanceof Class) {
+          await queryClass(node.packageableElement, editorStore);
+        }
+      },
+    );
     const removeElement = (): void => {
       if (node) {
         flowResult(editorStore.deleteElement(node.packageableElement)).catch(
@@ -214,43 +261,35 @@ const ExplorerContextMenu = observer(
     };
     const openElementInViewerMode = (): void => {
       if (node && projectId) {
-        applicationStore.navigator.openNewWindow(
-          applicationStore.navigator.generateLocation(
+        applicationStore.navigator.visitAddress(
+          applicationStore.navigator.generateAddress(
             generateViewEntityRoute(projectId, node.packageableElement.path),
           ),
         );
       }
     };
-    const copyLinkToElementInViewerMode = (): void => {
+    const copyWorkspaceElementLink = (): void => {
       if (node) {
         applicationStore
           .copyTextToClipboard(
-            applicationStore.navigator.generateLocation(
+            applicationStore.navigator.generateAddress(
               editorStore.editorMode.generateElementLink(
                 node.packageableElement.path,
               ),
             ),
           )
           .then(() =>
-            applicationStore.notifySuccess('Copied element link to clipboard'),
+            applicationStore.notifySuccess(
+              'Copied workspace element link to clipboard',
+            ),
           )
           .catch(applicationStore.alertUnhandledError);
       }
     };
-
     const createNewElement =
       (type: string): (() => void) =>
       (): void =>
         editorStore.newElementState.openModal(type, _package);
-
-    const elementTypes = ([PACKAGEABLE_ELEMENT_TYPE.PACKAGE] as string[])
-      .concat(editorStore.getSupportedElementTypes())
-      .filter(
-        // NOTE: we can only create package in root
-        (type) =>
-          _package !== editorStore.graphManagerState.graph.root ||
-          type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
-      );
 
     if (_package && !isReadOnly) {
       return (
@@ -281,6 +320,7 @@ const ExplorerContextMenu = observer(
 
     return (
       <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+        <MenuContentItem onClick={buildQuery}>Query...</MenuContentItem>
         {extraExplorerContextMenuItems}
         {!isReadOnly && node && (
           <>
@@ -295,7 +335,7 @@ const ExplorerContextMenu = observer(
                 View in Project
               </MenuContentItem>
             )}
-            <MenuContentItem onClick={copyLinkToElementInViewerMode}>
+            <MenuContentItem onClick={copyWorkspaceElementLink}>
               Copy Link
             </MenuContentItem>
           </>
@@ -333,7 +373,7 @@ const ProjectConfig = observer(() => {
       <button
         className="tree-view__node__label explorer__package-tree__node__label"
         tabIndex={-1}
-        title={'Project configuration'}
+        title="Project configuration"
       >
         config
       </button>
@@ -439,7 +479,10 @@ const PackageTreeNodeContainer = observer(
             tabIndex={-1}
             title={node.packageableElement.path}
           >
-            {node.label}
+            {generatePackageableElementTreeNodeDataLabel(
+              node.packageableElement,
+              node,
+            )}
           </button>
         </div>
       </ContextMenu>
@@ -703,36 +746,26 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
           <FileImportIcon />
         </button>
       )}
-      <DropdownMenu
-        disabled={
-          disabled ||
-          isInGrammarMode ||
-          (selectedTreeNode &&
-            isElementReadOnly(selectedTreeNode.packageableElement))
-        }
-        content={<ExplorerDropdownMenu />}
-        menuProps={{
-          anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-          transformOrigin: { vertical: 'top', horizontal: 'left' },
-          elevation: 7,
-        }}
-      >
-        {!editorStore.isInViewerMode && (
-          <button
-            disabled={
-              disabled ||
-              isInGrammarMode ||
-              (selectedTreeNode &&
-                isElementReadOnly(selectedTreeNode.packageableElement))
-            }
-            className="panel__header__action"
-            tabIndex={-1}
-            title="New Element... (Ctrl + Shift + N)"
-          >
-            <PlusIcon />
-          </button>
-        )}
-      </DropdownMenu>
+      {!editorStore.isInViewerMode && (
+        <DropdownMenu
+          className="panel__header__action"
+          title="New Element... (Ctrl + Shift + N)"
+          disabled={
+            disabled ||
+            isInGrammarMode ||
+            (selectedTreeNode &&
+              isElementReadOnly(selectedTreeNode.packageableElement))
+          }
+          content={<ExplorerDropdownMenu />}
+          menuProps={{
+            anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+            transformOrigin: { vertical: 'top', horizontal: 'left' },
+            elevation: 7,
+          }}
+        >
+          <PlusIcon />
+        </DropdownMenu>
+      )}
       <button
         className="panel__header__action"
         disabled={disabled}

@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
-import {
-  V1_ValueSpecification,
-  type V1_ValueSpecificationVisitor,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_ValueSpecificationVisitor } from '../V1_ValueSpecification.js';
+import { V1_PrimitiveValueSpecification } from './V1_PrimitiveValueSpecification.js';
 
-export class V1_CStrictTime extends V1_ValueSpecification {
-  multiplicity!: V1_Multiplicity;
-  values: string[] = [];
+export class V1_CStrictTime extends V1_PrimitiveValueSpecification {
+  value!: string;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,

@@ -37,8 +37,7 @@ const STORE_FILE_PATTERN = '**/src/stores/**';
  *
  * NOTE: the limitation of this approach is we only rely on the import path
  * instead of the actual imported entities, so technically if we're importing
- * entities from another packages, we could accidentally import protocol
- * in an editor file
+ * entities from another packages, we could still mess up the import hierarchy
  */
 module.exports = {
   meta: {

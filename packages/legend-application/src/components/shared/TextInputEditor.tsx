@@ -20,21 +20,24 @@ import {
   type IKeyboardEvent,
   editor as monacoEditorAPI,
 } from 'monaco-editor';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   disposeEditor,
-  disableEditorHotKeys,
-  baseTextEditorSettings,
+  getBaseTextEditorOptions,
   resetLineNumberGutterWidth,
   getEditorValue,
   normalizeLineEnding,
+  useResizeDetector,
 } from '@finos/legend-art';
 import { type EDITOR_LANGUAGE, EDITOR_THEME, TAB_SIZE } from '../../const.js';
 import { useApplicationStore } from '../ApplicationStoreProvider.js';
+import { forceDispatchKeyboardEvent } from '../LegendApplicationComponentFrameworkProvider.js';
 
-export type TextInputEditorOnKeyDownEventHandler = {
-  matcher: (event: IKeyboardEvent) => boolean;
-  action: (event: IKeyboardEvent) => void;
+/**
+ * NOTE: `monaco-editor` does not bubble `keydown` event in natural order, we will
+ * have to manually do this in order to take advantage of application keyboard shortcuts service
+ */
+export const createPassThroughOnKeyHandler = () => (event: IKeyboardEvent) => {
+  forceDispatchKeyboardEvent(event.browserEvent);
 };
 
 export const TextInputEditor: React.FC<{
@@ -47,7 +50,6 @@ export const TextInputEditor: React.FC<{
     | (monacoEditorAPI.IEditorOptions & monacoEditorAPI.IGlobalEditorOptions)
     | undefined;
   updateInput?: ((val: string) => void) | undefined;
-  onKeyDownEventHandlers?: TextInputEditorOnKeyDownEventHandler[] | undefined;
 }> = (props) => {
   const {
     inputValue,
@@ -57,13 +59,11 @@ export const TextInputEditor: React.FC<{
     showMiniMap,
     hideGutter,
     extraEditorOptions,
-    onKeyDownEventHandlers,
   } = props;
   const applicationStore = useApplicationStore();
   const [editor, setEditor] = useState<
     monacoEditorAPI.IStandaloneCodeEditor | undefined
   >();
-  const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
   const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
     undefined,
   );
@@ -78,7 +78,6 @@ export const TextInputEditor: React.FC<{
    */
   const value = normalizeLineEnding(inputValue);
   const textInputRef = useRef<HTMLDivElement>(null);
-
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
   useEffect(() => {
@@ -91,14 +90,20 @@ export const TextInputEditor: React.FC<{
     if (!editor && textInputRef.current) {
       const element = textInputRef.current;
       const _editor = monacoEditorAPI.create(element, {
-        ...baseTextEditorSettings,
+        ...getBaseTextEditorOptions(),
         theme: applicationStore.TEMPORARY__isLightThemeEnabled
           ? EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
           : EDITOR_THEME.LEGEND,
         formatOnType: true,
         formatOnPaste: true,
       });
-      disableEditorHotKeys(_editor);
+      // NOTE: if we ever set any hotkey explicitly, we would like to use the disposer partern instead
+      // else, we could risk triggering these hotkeys command multiple times
+      // e.g.
+      // const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
+      // onKeyDownEventDisposer.current?.dispose();
+      // onKeyDownEventDisposer.current = editor.onKeyDown(() => ...)
+      _editor.onKeyDown(() => createPassThroughOnKeyHandler());
       setEditor(_editor);
     }
   }, [applicationStore, editor]);
@@ -124,19 +129,6 @@ export const TextInputEditor: React.FC<{
           updateInput?.(currentVal);
         }
       });
-
-    // dispose to avoid trigger hotkeys multiple times
-    // for a more extensive note on this, see `LambdaEditor`
-    onKeyDownEventDisposer.current?.dispose();
-    onKeyDownEventDisposer.current = editor.onKeyDown((event) => {
-      onKeyDownEventHandlers?.forEach((handler) => {
-        if (handler.matcher(event)) {
-          event.preventDefault();
-          event.stopPropagation();
-          handler.action(event);
-        }
-      });
-    });
 
     // Set the text value and editor options
     const currentValue = getEditorValue(editor);

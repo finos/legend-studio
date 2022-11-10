@@ -16,6 +16,8 @@
 
 import {
   collectContextualDocumnetationEntries,
+  collectKeyedCommandConfigEntriesFromConfig,
+  type KeyedCommandConfigEntry,
   type ContextualDocumentationEntry,
 } from '@finos/legend-application';
 import packageJson from '../../package.json';
@@ -25,12 +27,19 @@ import {
   LEGEND_STUDIO_DOCUMENTATION_KEY,
 } from '../stores/LegendStudioDocumentation.js';
 import { LegendStudioApplicationPlugin } from '../stores/LegendStudioApplicationPlugin.js';
+import { LEGEND_STUDIO_COMMAND_CONFIG } from '../stores/LegendStudioCommand.js';
 
 export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationPlugin {
   static NAME = packageJson.extensions.applicationStudioPlugin;
 
   constructor() {
     super(Core_LegendStudioApplicationPlugin.NAME, packageJson.version);
+  }
+
+  override getExtraKeyedCommandConfigEntries(): KeyedCommandConfigEntry[] {
+    return collectKeyedCommandConfigEntriesFromConfig(
+      LEGEND_STUDIO_COMMAND_CONFIG,
+    );
   }
 
   override getExtraRequiredDocumentationKeys(): string[] {

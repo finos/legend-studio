@@ -53,7 +53,6 @@ export {
   FaInfoCircle as InfoCircleIcon,
   FaCompress as CompressIcon,
   FaMap as MapIcon,
-  FaFlask as FlaskIcon,
   FaPlay as PlayIcon,
   FaGripVertical as VerticalDragHandleIcon,
   FaRobot as RobotIcon,
@@ -92,6 +91,7 @@ export {
   FaExpand as ExpandIcon,
   FaBrush as BrushIcon,
   FaSortAlphaDown as SortDownIcon,
+  FaSort as SortIcon,
   FaSortAlphaDownAlt as SortDownAltIcon,
   FaFolderPlus as NewFolderIcon,
   FaCaretRight as CaretRightIcon,
@@ -104,6 +104,7 @@ export {
   FaFolder as FolderIcon,
   FaFileCode as FileCodeIcon,
   FaCodeBranch as CodeBranchIcon,
+  FaArrowAltCircleUp as ArrowCirceUpIcon,
   FaArrowAltCircleLeft as ArrowCircleLeftIcon,
   FaRegStopCircle as EmptyStopCircleIcon,
   FaAsterisk as AsteriskIcon,
@@ -139,6 +140,8 @@ export {
   FaDatabase as DatabaseIcon,
   FaServer as ServerIcon,
   FaTable as TableIcon,
+  FaArchive as ArchiveIcon,
+  FaBrain as BrainIcon,
 } from 'react-icons/fa';
 export {
   GiWaterDrop as WaterDropIcon,
@@ -147,6 +150,7 @@ export {
   GiHouseKeys as HouseKeys,
 } from 'react-icons/gi';
 export {
+  MdManageSearch as ManageSearchIcon, // to be reviewed
   MdModeEdit as PencilIcon,
   MdTextFields as StringTypeIcon,
   MdMoreVert as MoreVerticalIcon,
@@ -161,19 +165,22 @@ export {
   MdEdit as EditIcon, // to be reviewed
   MdSubject as SubjectIcon,
   MdViewHeadline as ViewHeadlineIcon,
-  MdWarning as WarningIcon,
   MdAssistant as AssistantIcon,
   MdSettingsEthernet as SettingsEthernetIcon,
   MdLink as LinkIcon,
+  MdWindow as WindowIcon,
+  MdReviews as ReviewIcon,
 } from 'react-icons/md';
 export {
   VscError as ErrorIcon,
+  VscWarning as WarningIcon,
   VscWordWrap as WordWrapIcon,
   VscGoToFile as GoToFileIcon,
   VscClose as CloseIcon,
   VscRunAll as RunAllIcon,
   VscRunErrors as RunErrorsIcon,
   VscOpenPreview as OpenPreviewIcon,
+  VscDiff as DiffIcon,
 } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,
@@ -185,7 +192,6 @@ export {
   GoCloudDownload as CloudDownloadIcon,
   GoCloudUpload as CloudUploadIcon,
   GoSync as SyncIcon,
-  GoRepo as RepoIcon,
   GoGitBranch as GitBranchIcon,
   GoX as XIcon,
   GoPlug as PluginIcon,
@@ -196,8 +202,10 @@ export {
   IoFileTrayFullOutline as FileTrayIcon,
   IoMenuOutline as MenuIcon,
   IoBeaker as BeakerIcon,
+  IoFlaskSharp as FlaskIcon,
 } from 'react-icons/io5';
 export {
+  BsChevronDown as ChevronDownThinIcon,
   BsFillTriangleFill as FilledTriangleIcon,
   BsFillFileEarmarkSpreadsheetFill as TabulatedDataFileIcon,
   BsBoxSeam as BundleIcon,
@@ -228,8 +236,11 @@ export {
 export {
   RiShapeLine as ShapeLineIcon,
   RiTestTubeFill as TestTubeIcon,
+  RiRobotFill as DroidIcon,
 } from 'react-icons/ri';
 export {
   TbArrowsJoin2 as ArrowsJoinIcon,
   TbArrowsSplit2 as ArrowsSplitIcon,
+  TbMathFunction as FunctionIcon,
+  TbBook as RepoIcon,
 } from 'react-icons/tb';

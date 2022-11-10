@@ -17,6 +17,7 @@
 import {
   assertNonNullable,
   guaranteeNonEmptyString,
+  guaranteeNonNullable,
   SerializationFactory,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -52,21 +53,26 @@ class LegendQueryApplicationCoreOptions {
   }
 }
 
+type LegendStudioApplicationInstanceConfigurationData = {
+  sdlcProjectIDPrefix: string;
+  url: string;
+};
+
 export interface LegendQueryApplicationConfigurationData
   extends LegendApplicationConfigurationData {
   appName: string;
   env: string;
   depot: {
     url: string;
-    /**
-     * This is needed since some of our legacy infrastructure does not yet support
-     * the new API calls, we need to update them to use the latest version of
-     * finos/legend-depot though
-     */
-    TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean;
   };
   engine: { url: string; queryUrl?: string };
-  studio: { url: string };
+  studio: {
+    url: string;
+    instances: LegendStudioApplicationInstanceConfigurationData[];
+  };
+  taxonomy: {
+    url: string;
+  };
 }
 
 export class LegendQueryApplicationConfig extends LegendApplicationConfig {
@@ -76,13 +82,16 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
   readonly studioUrl: string;
-  readonly TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean | undefined;
+  readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
+    [];
+  readonly taxonomyUrl: string;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendQueryApplicationConfigurationData>,
   ) {
     super(input);
 
+    // engine
     assertNonNullable(
       input.configData.engine,
       `Can't configure application: 'engine' field is missing`,
@@ -92,17 +101,42 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
       `Can't configure application: 'engine.url' field is missing or empty`,
     );
     this.engineQueryServerUrl = input.configData.engine.queryUrl;
+
+    // depot
+    assertNonNullable(
+      input.configData.depot,
+      `Can't configure application: 'depot' field is missing`,
+    );
     this.depotServerUrl = guaranteeNonEmptyString(
       input.configData.depot.url,
       `Can't configure application: 'depot.url' field is missing or empty`,
+    );
+
+    // studio
+    assertNonNullable(
+      input.configData.studio,
+      `Can't configure application: 'studio' field is missing`,
     );
     this.studioUrl = guaranteeNonEmptyString(
       input.configData.studio.url,
       `Can't configure application: 'studio.url' field is missing or empty`,
     );
-    this.TEMPORARY__useLegacyDepotServerAPIRoutes =
-      input.configData.depot.TEMPORARY__useLegacyDepotServerAPIRoutes;
+    this.studioInstances = guaranteeNonNullable(
+      input.configData.studio.instances,
+      `Can't configure application: 'studio.instances' field is missing`,
+    );
 
+    // taxonomy
+    assertNonNullable(
+      input.configData.taxonomy,
+      `Can't configure application: 'taxonomy' field is missing`,
+    );
+    this.taxonomyUrl = guaranteeNonEmptyString(
+      input.configData.taxonomy.url,
+      `Can't configure application: 'taxonomy.url' field is missing or empty`,
+    );
+
+    // options
     this.options = LegendQueryApplicationCoreOptions.create(
       (input.configData.extensions?.core ??
         {}) as PlainObject<LegendQueryApplicationCoreOptions>,

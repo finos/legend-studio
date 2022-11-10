@@ -16,6 +16,6 @@
     { "path": "../legend-extension-dsl-mastery" },
     { "path": "../legend-extension-dsl-persistence-cloud" },
     { "path": "../legend-extension-dsl-text" },
-    { "path": "../legend-extension-external-store-service" }
+    { "path": "../legend-extension-store-service-store" }
   ]
 }

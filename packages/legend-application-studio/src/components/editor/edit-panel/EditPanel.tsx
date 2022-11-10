@@ -25,6 +25,7 @@ import {
   TimesIcon,
   PlusIcon,
   ArrowsAltHIcon,
+  useResizeDetector,
 } from '@finos/legend-art';
 import { MappingEditor } from './mapping-editor/MappingEditor.js';
 import { UMLEditor } from './uml-editor/UMLEditor.js';
@@ -33,7 +34,6 @@ import { UMLEditorState } from '../../../stores/editor-state/element-editor-stat
 import { ElementEditorState } from '../../../stores/editor-state/element-editor-state/ElementEditorState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { ELEMENT_NATIVE_VIEW_MODE } from '../../../stores/EditorConfig.js';
-import { useResizeDetector } from 'react-resize-detector';
 import type { EditorState } from '../../../stores/editor-state/EditorState.js';
 import {
   DIFF_VIEW_MODE,
@@ -429,7 +429,7 @@ export const EditPanel = observer(() => {
                   className="edit-panel__header__tab__close-btn"
                   onClick={closeTab(editorState)}
                   tabIndex={-1}
-                  title={'Close'}
+                  title="Close"
                 >
                   <TimesIcon />
                 </button>
@@ -440,7 +440,8 @@ export const EditPanel = observer(() => {
         <div className="edit-panel__header__actions">
           {currentEditorState instanceof ElementEditorState && (
             <DropdownMenu
-              className="edit-panel__view-mode"
+              className="edit-panel__view-mode__type"
+              title="View as..."
               content={
                 <MenuContent
                   data-testid={
@@ -503,23 +504,19 @@ export const EditPanel = observer(() => {
                 transformOrigin: { vertical: 'top', horizontal: 'right' },
               }}
             >
-              <button
-                className="edit-panel__view-mode__type"
-                title="View as..."
-              >
-                <div className="edit-panel__view-mode__type__label">
-                  {currentEditorState.generationViewMode
-                    ? editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
-                        currentEditorState.generationViewMode,
-                      ).label
-                    : currentEditorState.editMode}
-                </div>
-              </button>
+              <div className="edit-panel__view-mode__type__label">
+                {currentEditorState.generationViewMode
+                  ? editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
+                      currentEditorState.generationViewMode,
+                    ).label
+                  : currentEditorState.editMode}
+              </div>
             </DropdownMenu>
           )}
           {currentEditorState instanceof EntityDiffViewState && (
             <DropdownMenu
-              className="edit-panel__view-mode"
+              className="edit-panel__view-mode__type"
+              title="View as..."
               content={
                 <MenuContent
                   data-testid={
@@ -550,14 +547,9 @@ export const EditPanel = observer(() => {
                 transformOrigin: { vertical: 'top', horizontal: 'right' },
               }}
             >
-              <button
-                className="edit-panel__view-mode__type"
-                title="View as..."
-              >
-                <div className="edit-panel__view-mode__type__label">
-                  {currentEditorState.diffMode}
-                </div>
-              </button>
+              <div className="edit-panel__view-mode__type__label">
+                {currentEditorState.diffMode}
+              </div>
             </DropdownMenu>
           )}
         </div>

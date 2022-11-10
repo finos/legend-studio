@@ -34,14 +34,14 @@ import {
   type LegendApplicationConfigurationData,
 } from '@finos/legend-application';
 
-export class ServiceRegistrationEnvInfo {
+export class ServiceRegistrationEnvironmentConfig {
   env!: string;
   executionUrl!: string;
   modes: string[] = [];
   managementUrl!: string;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(ServiceRegistrationEnvInfo, {
+    createModelSchema(ServiceRegistrationEnvironmentConfig, {
       env: primitive(),
       executionUrl: primitive(),
       managementUrl: primitive(),
@@ -51,6 +51,13 @@ export class ServiceRegistrationEnvInfo {
 }
 
 class LegendStudioApplicationCoreOptions {
+  /**
+   * Indicates if we should enable strict-mode for graph builder
+   *
+   * Default to `false`
+   */
+  enableGraphBuilderStrictMode = false;
+  projectCreationGroupIdSuggestion = 'org.finos.legend.*';
   /**
    * Indicates if we should keep section index and do not rewrite/flatten the paths shortened by section
    * imports.
@@ -68,13 +75,16 @@ class LegendStudioApplicationCoreOptions {
    * @modularize
    * See https://github.com/finos/legend-studio/issues/65
    */
-  TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvInfo[] = [];
+  TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvironmentConfig[] =
+    [];
 
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendStudioApplicationCoreOptions, {
+      enableGraphBuilderStrictMode: optional(primitive()),
+      projectCreationGroupIdSuggestion: optional(primitive()),
       TEMPORARY__preserveSectionIndex: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
-        object(ServiceRegistrationEnvInfo),
+        object(ServiceRegistrationEnvironmentConfig),
       ),
     }),
   );
@@ -111,6 +121,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
   ) {
     super(input);
 
+    // engine
     assertNonNullable(
       input.configData.engine,
       `Can't configure application: 'engine' field is missing`,
@@ -119,8 +130,9 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
       input.configData.engine.url,
       `Can't configure application: 'engine.url' field is missing or empty`,
     );
-
     this.engineQueryServerUrl = input.configData.engine.queryUrl;
+
+    // depot
     assertNonNullable(
       input.configData.depot,
       `Can't configure application: 'depot' field is missing`,
@@ -130,6 +142,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
       `Can't configure application: 'depot.url' field is missing or empty`,
     );
 
+    // sdlc
     assertNonNullable(
       input.configData.sdlc,
       `Can't configure application: 'sdlc' field is missing`,
@@ -140,6 +153,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
     );
     this.SDLCServerBaseHeaders = input.configData.sdlc.baseHeaders;
 
+    // options
     this.options = LegendStudioApplicationCoreOptions.create(
       (input.configData.extensions?.core ??
         {}) as PlainObject<LegendStudioApplicationCoreOptions>,

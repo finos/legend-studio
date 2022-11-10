@@ -40,9 +40,6 @@ export enum ROOT_PACKAGE_NAME {
   PROJECT_DEPENDENCY_ROOT = 'PROJECT_DEPENDENCY_ROOT',
 }
 
-// Pure model connection does not use an actual store so this is just a dummy value
-export const MODEL_STORE_NAME = 'ModelStore';
-
 export enum PRIMITIVE_TYPE {
   STRING = 'String',
   BOOLEAN = 'Boolean',
@@ -60,14 +57,6 @@ export enum PRIMITIVE_TYPE {
   LATESTDATE = 'LatestDate',
 }
 
-export enum TYPICAL_MULTIPLICITY_TYPE {
-  ONE = 'one',
-  ZEROONE = 'zeroone',
-  ZEROMANY = 'zeromany',
-  ONEMANY = 'onemany',
-  ZERO = 'zero',
-}
-
 // NOTE: the list of auto-import are kept in `m3.pure` file in `finos/legend-pure`,
 // this includes a more extensive list of packges which contain native functions, classes, etc.
 // See https://github.com/finos/legend-pure/blob/master/legend-pure-m3-core/src/main/resources/platform/pure/m3.pure
@@ -82,7 +71,7 @@ export const AUTO_IMPORTS = [
   // 'meta::pure::metamodel::function::property',
   // 'meta::pure::metamodel::extension',
   // 'meta::pure::metamodel::import',
-  // 'meta::pure::functions::date',
+  'meta::pure::functions::date',
   // 'meta::pure::functions::string',
   // 'meta::pure::functions::collection',
   // 'meta::pure::functions::meta',
@@ -104,6 +93,7 @@ export const AUTO_IMPORTS = [
 
 export enum CORE_PURE_PATH {
   ANY = 'meta::pure::metamodel::type::Any',
+  NIL = 'meta::pure::metamodel::type::Nil',
 
   PROFILE_DOC = 'meta::pure::profiles::doc',
   PROFILE_TEMPORAL = 'meta::pure::profiles::temporal',
@@ -125,8 +115,12 @@ export enum CORE_PURE_PATH {
   GENERATION_SPECIFICATION = 'meta::pure::generation::metamodel::GenerationSpecification',
   SECTION_INDEX = 'meta::pure::metamodel::section::SectionIndex',
   DATA_ELEMENT = 'meta::pure::data::DataElement',
+
+  // TDS
+  TDS_ROW = 'meta::pure::tds::TDSRow',
 }
 
+export const PURE_DOC_TAG = 'doc';
 export const PURE_DEPRECATED_STEREOTYPE = 'deprecated';
 
 export enum MILESTONING_STEREOTYPE {
@@ -142,9 +136,8 @@ export enum MILESTONING_VERSION_PROPERTY_SUFFIX {
 
 export const MILESTONING_START_DATE_PARAMETER_NAME = 'start';
 export const MILESTONING_END_DATE_PARAMETER_NAME = 'end';
-export const DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME =
-  'processingDate';
-export const DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME = 'businessDate';
+export const PROCESSING_DATE_MILESTONING_PROPERTY_NAME = 'processingDate';
+export const BUSINESS_DATE_MILESTONING_PROPERTY_NAME = 'businessDate';
 
 export enum PackageableElementPointerType {
   STORE = 'STORE',

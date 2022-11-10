@@ -34,7 +34,7 @@ import {
   MappingTestState,
   TEST_RESULT,
 } from './MappingTestState.js';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil.js';
+import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -64,7 +64,6 @@ import {
   type EmbeddedSetImplementation,
   getAllClassMappings,
   GRAPH_MANAGER_EVENT,
-  PRIMITIVE_TYPE,
   fromElementPathToMappingElementId,
   extractSourceInformationCoordinates,
   getAllEnumerationMappings,
@@ -98,14 +97,14 @@ import {
   InferableMappingElementRootExplicitValue,
   stub_Class,
   findPropertyMapping,
+  PrimitiveType,
 } from '@finos/legend-graph';
-import { LambdaEditorState } from '@finos/legend-application';
 import type {
-  DSLMapping_LegendStudioApplicationPlugin_Extension,
+  DSL_Mapping_LegendStudioApplicationPlugin_Extension,
   MappingElementLabel,
-} from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+} from '../../../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { LegendStudioApplicationPlugin } from '../../../LegendStudioApplicationPlugin.js';
-import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
+import { flatData_setSourceRootRecordType } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   pureInstanceSetImpl_setSrcClass,
   mapping_addClassMapping,
@@ -117,9 +116,10 @@ import {
   mapping_deleteTest,
   setImpl_updateRootOnCreate,
   setImpl_updateRootOnDelete,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
-import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelUtil.js';
-import { rootRelationalSetImp_setMainTableAlias } from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
+} from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelClassifierUtils.js';
+import { rootRelationalSetImp_setMainTableAlias } from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
+import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -227,7 +227,7 @@ export const getMappingElementLabel = (
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+              plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
             ).getExtraSetImplementationMappingElementLabelInfoBuilders?.() ??
             [],
         );
@@ -297,7 +297,7 @@ export const getMappingElementSource = (
   const extraMappingElementSourceExtractors = plugins.flatMap(
     (plugin) =>
       (
-        plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+        plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
       ).getExtraMappingElementSourceExtractors?.() ?? [],
   );
   for (const extractor of extraMappingElementSourceExtractors) {
@@ -603,7 +603,6 @@ export class MappingEditorState extends ElementEditorState {
       mappingExplorerTreeData: observable.ref,
       mapping: computed,
       testSuiteResult: computed,
-      hasCompilationError: computed,
       setNewMappingElementSpec: action,
       setMappingExplorerTreeNodeData: action,
       openMappingElement: action,
@@ -943,7 +942,7 @@ export class MappingEditorState extends ElementEditorState {
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+                  plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
                 ).getExtraInstanceSetImplementationSourceUpdaters?.() ?? [],
             );
         for (const updater of extraInstanceSetImplementationSourceUpdaters) {
@@ -1100,9 +1099,7 @@ export class MappingEditorState extends ElementEditorState {
             this.mapping,
             suggestedId,
             spec.target,
-            this.editorStore.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.STRING,
-            ),
+            PrimitiveType.STRING,
           );
         }
         // NOTE: we don't support association now, nor do we support this for class
@@ -1160,7 +1157,7 @@ export class MappingEditorState extends ElementEditorState {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+            plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
           ).getExtraMappingElementStateCreators?.() ?? [],
       );
     for (const elementStateCreator of extraMappingElementStateCreators) {
@@ -1309,16 +1306,6 @@ export class MappingEditorState extends ElementEditorState {
       );
     }
     return revealed;
-  }
-
-  override get hasCompilationError(): boolean {
-    return this.openedTabStates
-      .filter(filterByType(InstanceSetImplementationState))
-      .some((tabState) =>
-        tabState.propertyMappingStates.some((pmState) =>
-          Boolean(pmState.compilationError),
-        ),
-      );
   }
 
   override clearCompilationError(): void {

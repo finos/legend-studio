@@ -1,0 +1,31 @@
+Class my::Person
+{
+  firstName: String[0..1];
+  lastName: String[0..1];
+}
+
+
+###Relational
+Database my::mainDb
+(
+  Table PersonTable
+  (
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+
+  Filter PersonFilter(PersonTable.firstName = 'Utkarsh')
+)
+
+
+###Mapping
+Mapping my::mainMap
+(
+  my::Person: Relational
+  {
+    ~filter [my::mainDb]PersonFilter
+    ~mainTable [my::mainDb]PersonTable
+    firstName: [my::mainDb]PersonTable.firstName,
+    lastName: [my::mainDb]PersonTable.lastName
+  }
+)

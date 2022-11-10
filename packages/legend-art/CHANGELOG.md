@@ -1,5 +1,69 @@
 # @finos/legend-art
 
+## 5.0.5
+
+### Patch Changes
+
+- [#1667](https://github.com/finos/legend-studio/pull/1667) [`0fb1e7c6`](https://github.com/finos/legend-studio/commit/0fb1e7c6f3edb35ddb4783bd21159f581c367976) ([@xannem](https://github.com/xannem)) - make scrollbar color lighter in dark mode selector
+
+## 5.0.4
+
+## 5.0.3
+
+## 5.0.2
+
+## 5.0.1
+
+## 5.0.0
+
+### Major Changes
+
+- [#1540](https://github.com/finos/legend-studio/pull/1540) [`d41811eb`](https://github.com/finos/legend-studio/commit/d41811ebff8177905ad37de45945bb12d8a8926d) ([@xannem](https://github.com/xannem)) - **BREAKING CHANGE:** Renamed `PanelSection` to `PanelFormSection`, `PanelFormTextEditor` and `PanelFormBooleanEditor` are not renamed to `PanelFormTextField` and `PanelFormBooleanField` respectively and are now wrapped with a `PanelFormSection`.
+
+## 4.1.0
+
+### Minor Changes
+
+- [#1565](https://github.com/finos/legend-studio/pull/1565) [`ebe9acf9`](https://github.com/finos/legend-studio/commit/ebe9acf9bc01234849e64df792693e493c95cb8f) ([@akphi](https://github.com/akphi)) - Change the wrapping component for `DropdownMenu` from `<div>` to `<button>`
+
+## 4.0.1
+
+### Patch Changes
+
+- [#1514](https://github.com/finos/legend-studio/pull/1514) [`34c29c4e`](https://github.com/finos/legend-studio/commit/34c29c4e6d0f04d3f57c42528a8cb16d05261434) ([@xannem](https://github.com/xannem)) - Support displaying (validation) error message with `PanelFormTextEditor`
+
+## 4.0.0
+
+### Major Changes
+
+- [#1520](https://github.com/finos/legend-studio/pull/1520) [`240875e8`](https://github.com/finos/legend-studio/commit/240875e869c95d7d228756a66eec1e82a45b8884) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Removed `ReactMarkdownMocker.jsx` setup script, instead, add mocks `MockedReactMarkdown.js` and `MockedRemarkGFM.js` which can be use in `Jest` config `moduleNameMapper`.
+
+## 3.3.0
+
+### Minor Changes
+
+- [#1502](https://github.com/finos/legend-studio/pull/1502) [`81757c5c`](https://github.com/finos/legend-studio/commit/81757c5c3ff514adcc532d118ec58e830938109b) ([@xannem](https://github.com/xannem)) - Add `PanelSection` and `PanelFormBooleanEditor` components
+
+## 3.2.2
+
+### Patch Changes
+
+- [#1500](https://github.com/finos/legend-studio/pull/1500) [`bed2c111`](https://github.com/finos/legend-studio/commit/bed2c11115bdeafe1a769363922bce13428d9433) ([@xannem](https://github.com/xannem)) - Add badge component and panel list selector item label component
+
+## 3.2.1
+
+## 3.2.0
+
+### Minor Changes
+
+- [#1481](https://github.com/finos/legend-studio/pull/1481) [`4fd88c58`](https://github.com/finos/legend-studio/commit/4fd88c58b66dd3033db1f2f45e4cbedd0420b57e) ([@xannem](https://github.com/xannem)) - Add PanelList and PanelListItem components
+
+## 3.1.0
+
+### Minor Changes
+
+- [#1434](https://github.com/finos/legend-studio/pull/1434) [`138d9989`](https://github.com/finos/legend-studio/commit/138d9989b59ae3e816e19a149f842f24754ec9d9) ([@xannem](https://github.com/xannem)) - Add basic `Panel` component.
+
 ## 3.0.4
 
 ## 3.0.3

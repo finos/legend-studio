@@ -121,6 +121,12 @@
     overflow-y: auto;
   }
 
+  &__content--full {
+    height: 100%;
+    width: 100%;
+    padding: 0.5rem 0;
+  }
+
   &__content__blank {
     @include flexCenter;
 
@@ -177,29 +183,87 @@
       stroke: var(--color-red-100);
     }
   }
+
+  .input--small {
+    max-width: 45rem;
+  }
 }
 
-.panel__content__sub-form {
-  padding: 0.5rem 0 0 2rem;
-  border-left: 0.3rem solid var(--color-dark-grey-80);
+.panel__list-selector {
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 2.4rem;
+    padding: 1rem;
+
+    &__label {
+      color: var(--color-white);
+      font-size: 1.2rem;
+      white-space: nowrap;
+    }
+
+    &--with-validation--error {
+      background: var(--color-red-500);
+    }
+  }
+
+  &__item:hover {
+    background: var(--color-dark-blue-shade-100);
+    cursor: pointer;
+  }
+
+  &__item--selected,
+  &__item--selected:hover {
+    background: var(--color-light-blue-450);
+  }
+
+  &__item--selected--with-validation--error,
+  &__item--selected--with-validation--error:hover {
+    background: var(--color-red-400);
+  }
 }
 
 .panel__content__form {
+  max-width: 80rem;
   padding: 2rem;
 
   & > div:last-child {
     margin-bottom: 0;
   }
 
-  &__actions {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
+  &__list {
+    margin: 1rem 0;
+
+    &__item {
+      width: 100%;
+      display: flex;
+    }
+  }
+
+  &__description {
+    @include flexVCenter;
+
+    background: var(--color-dark-grey-100);
+    color: var(--color-light-grey-400);
+    padding: 1rem;
+    width: 60%;
+    font-size: 1.2rem;
+    font-weight: 400;
+    margin-bottom: 3rem;
+    line-height: 1.9rem;
   }
 
   &__section {
-    cursor: default;
-    margin: 0.5rem 0 3rem;
+    padding: 0 1rem;
+
+    & + & {
+      margin-top: 2rem;
+    }
+  }
+
+  &__divider {
+    padding: 0.5rem 0;
   }
 
   &__section__header__label {
@@ -232,13 +296,12 @@
   &__section__input {
     width: 100%;
     min-width: 5rem;
-    max-width: 45rem;
-    background: var(--color-dark-grey-100);
-    color: var(--color-light-grey-200);
+    margin: 0;
     padding: 1rem;
     border-radius: 0.1rem;
+    background: var(--color-dark-grey-100);
+    color: var(--color-light-grey-200);
     height: 2.8rem;
-    border: 0.1rem solid var(--color-dark-grey-100);
 
     &:focus {
       border: 0.1rem solid var(--color-blue-200);
@@ -332,11 +395,18 @@
   }
 
   &__section__toggler__prompt {
+    @include flexCenter;
+
     word-break: break-word;
     margin-left: 0.8rem;
     color: var(--color-light-grey-400);
     line-height: 2rem;
+    user-select: none;
     cursor: pointer;
+
+    svg {
+      margin-left: 0.5rem;
+    }
   }
 
   &__section__dropdown {
@@ -491,6 +561,11 @@
     &:hover svg {
       color: var(--color-light-grey-100) !important;
     }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
   }
 }
 

@@ -31,6 +31,7 @@ import {
   SKIP,
 } from 'serializr';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../Testable_PureProtocolProcessorPlugin_Extension.js';
 import { V1_MultiExecutionServiceTestResult } from '../../../model/packageableElements/service/V1_MultiExecutionServiceTestResult.js';
 import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest.js';
 import { V1_ServiceTestSuite } from '../../../model/packageableElements/service/V1_ServiceTestSuite.js';
@@ -67,7 +68,7 @@ export enum V1_AtomicTestType {
   SERVICE_TEST = 'serviceTest',
 }
 
-enum V1_TestAssertionType {
+export enum V1_TestAssertionType {
   EQUAL_TO = 'equalTo',
   EQUAL_TO_JSON = 'equalToJson',
   EQUAL_TO_TDS = 'equalToTDS',
@@ -225,23 +226,54 @@ export function V1_deserializeTestResult(
 
 export const V1_serializeAtomicTest = (
   protocol: V1_AtomicTest,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_AtomicTest> => {
   if (protocol instanceof V1_ServiceTest) {
     return serialize(V1_serviceTestModelSchema, protocol);
   }
-  throw new UnsupportedOperationError(`Can't serialize atomic test`, protocol);
+  const extraAtomicTestSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as Testable_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraAtomicTestProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraAtomicTestSerializers) {
+    const atomicTestProtocolJson = serializer(protocol, plugins);
+    if (atomicTestProtocolJson) {
+      return atomicTestProtocolJson;
+    }
+  }
+
+  throw new UnsupportedOperationError(
+    `Can't serialize atomic test: no compatible serializer available from plugins`,
+    protocol,
+  );
 };
 
 export const V1_deserializeAtomicTest = (
   json: PlainObject<V1_AtomicTest>,
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_AtomicTest => {
   switch (json._type) {
     case V1_AtomicTestType.SERVICE_TEST:
       return deserialize(V1_serviceTestModelSchema, json);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't deserialize atomic test of type '${json._type}'`,
+    default: {
+      const extraAtomicTestProtocolDeserializers = plugins.flatMap(
+        (plugin) =>
+          (
+            plugin as Testable_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraAtomicTestProtocolDeserializers?.() ?? [],
       );
+      for (const deserializer of extraAtomicTestProtocolDeserializers) {
+        const atomicTestProtocol = deserializer(json, plugins);
+        if (atomicTestProtocol) {
+          return atomicTestProtocol;
+        }
+      }
+      throw new UnsupportedOperationError(
+        `Can't deserialize atomic test of type '${json._type}': no compatible deserializer available from plugins`,
+      );
+    }
   }
 };
 

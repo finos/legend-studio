@@ -20,8 +20,8 @@ import {
   type Class,
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
-import { Diagram } from '../../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
-import { ClassView } from '../../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
+import { Diagram } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
+import { ClassView } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_ClassView.js';
 
 export class InheritanceDiagramRenderer extends DiagramRenderer {
   constructor(div: HTMLDivElement, _class: Class) {

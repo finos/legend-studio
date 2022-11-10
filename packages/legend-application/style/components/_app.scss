@@ -16,6 +16,11 @@
 
 @use 'mixins' as *;
 
+.app__container {
+  height: 100%;
+  width: 100%;
+}
+
 .app {
   height: 100%;
 

@@ -16,7 +16,7 @@
 
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
-import { action, makeAutoObservable, flowResult } from 'mobx';
+import { action, makeObservable, flowResult, observable, flow } from 'mobx';
 import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
 import {
   type GeneratorFn,
@@ -45,19 +45,23 @@ import {
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 
 export class WorkspaceUpdaterState {
-  editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
-  committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
+  readonly editorStore: EditorStore;
+  readonly sdlcState: EditorSDLCState;
 
+  committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
   isUpdatingWorkspace = false;
   isRefreshingWorkspaceUpdater = false;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      sdlcState: false,
+    makeObservable(this, {
+      committedReviewsBetweenWorkspaceBaseAndProjectLatest: observable,
+      isUpdatingWorkspace: observable,
+      isRefreshingWorkspaceUpdater: observable,
       openProjectLatestChange: action,
       openPotentialWorkspaceUpdateConflict: action,
+      refreshWorkspaceUpdater: flow,
+      updateWorkspace: flow,
+      fetchLatestCommittedReviews: flow,
     });
 
     this.editorStore = editorStore;
@@ -158,7 +162,7 @@ export class WorkspaceUpdaterState {
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (isInConflictResolutionMode) {
-        this.editorStore.setBlockingAlert({
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -170,7 +174,7 @@ export class WorkspaceUpdaterState {
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND
       ) {
-        this.editorStore.setBlockingAlert({
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Current project or workspace no longer exists',
           prompt: 'Please refresh the application',
         });
@@ -248,7 +252,7 @@ export class WorkspaceUpdaterState {
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (isInConflictResolutionMode) {
-        this.editorStore.setBlockingAlert({
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -264,7 +268,7 @@ export class WorkspaceUpdaterState {
 
     this.isUpdatingWorkspace = true;
     try {
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: 'Updating workspace...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -284,7 +288,9 @@ export class WorkspaceUpdaterState {
         // TODO: we might want to handle the situation more gracefully rather than just reloading the page
         case WorkspaceUpdateReportStatus.CONFLICT:
         case WorkspaceUpdateReportStatus.UPDATED:
-          this.editorStore.applicationStore.navigator.reload();
+          this.editorStore.applicationStore.navigator.reload({
+            ignoreBlocking: true,
+          });
           break;
         case WorkspaceUpdateReportStatus.NO_OP:
         default:
@@ -298,7 +304,7 @@ export class WorkspaceUpdaterState {
       );
       this.editorStore.applicationStore.notifyError(error);
     } finally {
-      this.editorStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
       this.isUpdatingWorkspace = false;
     }
   }

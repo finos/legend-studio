@@ -60,6 +60,7 @@ import {
 import {
   addElementToPackage,
   deleteElementFromPackage,
+  getFunctionName,
   getOrCreateGraphPackage,
   getOrCreatePackage,
 } from '../graph/helpers/DomainHelper.js';
@@ -616,16 +617,16 @@ export abstract class BasicModel {
    */
   protected renameOwnElement(
     element: PackageableElement,
+    oldPath: string,
     newPath: string,
   ): void {
-    const elementCurrentPath = element.path;
     // validation before renaming
-    if (elementCurrentPath === newPath) {
+    if (oldPath === newPath) {
       return;
     }
     if (!newPath) {
       throw new UnsupportedOperationError(
-        `Can't rename element '${elementCurrentPath} to '${newPath}': path is empty'`,
+        `Can't rename element '${oldPath} to '${newPath}': path is empty'`,
       );
     }
     if (
@@ -633,16 +634,16 @@ export abstract class BasicModel {
       (!(element instanceof Package) && !isValidFullPath(newPath))
     ) {
       throw new UnsupportedOperationError(
-        `Can't rename element '${elementCurrentPath} to '${newPath}': invalid path'`,
+        `Can't rename element '${oldPath} to '${newPath}': invalid path'`,
       );
     }
     const existingElement = this.getOwnNullableElement(newPath, true);
     if (existingElement) {
       throw new UnsupportedOperationError(
-        `Can't rename element '${elementCurrentPath} to '${newPath}': another element with the same path already existed'`,
+        `Can't rename element '${oldPath} to '${newPath}': another element with the same path already existed'`,
       );
     }
-    const [packagePath, elementName] =
+    const [newPackagePath, newElementName] =
       resolvePackagePathAndElementName(newPath);
 
     // if we're not renaming package, we can simply add new package
@@ -650,74 +651,74 @@ export abstract class BasicModel {
     // it's a little bit more complicated as we need to rename its children
     // we will handle this case later
     if (!(element instanceof Package)) {
-      const parentPackage =
-        this.getNullablePackage(packagePath) ??
-        (packagePath !== ''
-          ? getOrCreateGraphPackage(this, packagePath, undefined)
+      const newParentPackage =
+        this.getNullablePackage(newPackagePath) ??
+        (newPackagePath !== ''
+          ? getOrCreateGraphPackage(this, newPackagePath, undefined)
           : this.root);
       // update element name
-      element.name = elementName;
+      element.name = newElementName;
+      if (element instanceof ConcreteFunctionDefinition) {
+        element.functionName = getFunctionName(element, element.name);
+      }
       // update element package if needed
-      if (element.package !== parentPackage) {
+      if (element.package !== newParentPackage) {
         if (element.package) {
           deleteElementFromPackage(element.package, element);
         }
-        addElementToPackage(parentPackage, element);
+        addElementToPackage(newParentPackage, element);
       }
     }
 
     // update index in the graph
     if (element instanceof Mapping) {
-      this.mappingsIndex.delete(elementCurrentPath);
+      this.mappingsIndex.delete(oldPath);
       this.mappingsIndex.set(newPath, element);
     } else if (element instanceof Store) {
-      this.storesIndex.delete(elementCurrentPath);
+      this.storesIndex.delete(oldPath);
       this.storesIndex.set(newPath, element);
     } else if (element instanceof Type) {
-      this.typesIndex.delete(elementCurrentPath);
+      this.typesIndex.delete(oldPath);
       this.typesIndex.set(newPath, element);
       if (element instanceof Measure) {
         if (element.canonicalUnit) {
           this.typesIndex.delete(element.canonicalUnit.path);
           this.typesIndex.set(
-            element.canonicalUnit.path.replace(elementCurrentPath, newPath),
+            element.canonicalUnit.path.replace(oldPath, newPath),
             element.canonicalUnit,
           );
         }
         element.nonCanonicalUnits.forEach((unit) => {
           this.typesIndex.delete(unit.path);
-          this.typesIndex.set(
-            unit.path.replace(elementCurrentPath, newPath),
-            unit,
-          );
+          this.typesIndex.set(unit.path.replace(oldPath, newPath), unit);
         });
       }
     } else if (element instanceof Association) {
-      this.associationsIndex.delete(elementCurrentPath);
+      this.associationsIndex.delete(oldPath);
       this.associationsIndex.set(newPath, element);
     } else if (element instanceof Profile) {
-      this.profilesIndex.delete(elementCurrentPath);
+      this.profilesIndex.delete(oldPath);
       this.profilesIndex.set(newPath, element);
     } else if (element instanceof ConcreteFunctionDefinition) {
-      this.functionsIndex.delete(elementCurrentPath);
+      this.functionsIndex.delete(oldPath);
       this.functionsIndex.set(newPath, element);
     } else if (element instanceof Service) {
-      this.servicesIndex.delete(elementCurrentPath);
+      this.servicesIndex.delete(oldPath);
       this.servicesIndex.set(newPath, element);
     } else if (element instanceof PackageableRuntime) {
-      this.runtimesIndex.delete(elementCurrentPath);
+      this.runtimesIndex.delete(oldPath);
       this.runtimesIndex.set(newPath, element);
     } else if (element instanceof PackageableConnection) {
-      this.connectionsIndex.delete(elementCurrentPath);
+      this.connectionsIndex.delete(oldPath);
       this.connectionsIndex.set(newPath, element);
     } else if (element instanceof FileGenerationSpecification) {
-      this.fileGenerationsIndex.delete(elementCurrentPath);
+      this.fileGenerationsIndex.delete(oldPath);
       this.fileGenerationsIndex.set(newPath, element);
     } else if (element instanceof DataElement) {
-      this.dataElementsIndex.delete(elementCurrentPath);
+      this.dataElementsIndex.delete(oldPath);
       this.dataElementsIndex.set(newPath, element);
     } else if (element instanceof GenerationSpecification) {
-      this.generationSpecificationsIndex.delete(elementCurrentPath);
+      this.generationSpecificationsIndex.delete(oldPath);
       this.generationSpecificationsIndex.set(newPath, element);
     } else if (element instanceof Package) {
       // Since we will modify the package name, we need to first store the original
@@ -727,7 +728,7 @@ export abstract class BasicModel {
         childElements.set(childElement.path, childElement);
       });
       // update element name
-      element.name = elementName;
+      element.name = newElementName;
       if (!element.package) {
         throw new IllegalStateError(`Can't rename root package`);
       }
@@ -741,25 +742,28 @@ export abstract class BasicModel {
        * we would end up having the `somethingElse` package containing itself as a child.
        */
       const currentParentPackage = element.package;
-      if (currentParentPackage !== this.getNullablePackage(packagePath)) {
+      if (currentParentPackage !== this.getNullablePackage(newPackagePath)) {
         deleteElementFromPackage(currentParentPackage, element);
         const newParentPackage =
-          packagePath !== ''
-            ? getOrCreateGraphPackage(this, packagePath, undefined)
+          newPackagePath !== ''
+            ? getOrCreateGraphPackage(this, newPackagePath, undefined)
             : this.root;
         addElementToPackage(newParentPackage, element);
       }
       childElements.forEach((childElement, childElementOriginalPath) => {
+        // NOTE: since we already modified the parent package path, we need to pass in the child element's original path
+        // here to be sure we're properly, if we rely on the `childElement.path` that would cause a bug
         this.renameOwnElement(
           childElement,
-          childElementOriginalPath.replace(elementCurrentPath, newPath),
+          childElementOriginalPath,
+          childElementOriginalPath.replace(oldPath, newPath),
         );
       });
     } else {
       const extension = this.getExtensionForElementClass(
         getClass<PackageableElement>(element),
       );
-      extension.renameElement(elementCurrentPath, newPath);
+      extension.renameElement(oldPath, newPath);
     }
   }
 

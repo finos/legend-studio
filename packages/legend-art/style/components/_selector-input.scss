@@ -16,6 +16,12 @@
 
 @use 'mixins' as *;
 
+.selector-input {
+  &__indicator {
+    cursor: pointer;
+  }
+}
+
 .selector-input .selector-input {
   &__control {
     cursor: text;
@@ -99,6 +105,10 @@
     margin-right: 0;
   }
 
+  &__placeholder {
+    white-space: nowrap;
+  }
+
   &__single-value + div {
     @include flexVCenter;
   }
@@ -127,10 +137,15 @@
 .selector-menu--no-match {
   @include flexVCenter;
 
-  height: 2.5rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 2.8rem;
+  white-space: nowrap;
   color: var(--color-dark-grey-500);
   padding: 0.5rem;
   cursor: default;
+  font-size: 1.2rem;
+  font-weight: 500;
 }
 
 .selector-input--dark,
@@ -174,6 +189,7 @@
     }
 
     .selector-input--dark__placeholder {
+      white-space: nowrap;
       color: var(--color-dark-grey-400) !important;
     }
   }
@@ -204,6 +220,10 @@
       animation: spin 1s infinite ease;
       color: var(--color-blue-200);
     }
+  }
+
+  .selector-menu--no-match {
+    color: var(--color-dark-grey-350);
   }
 
   .selector-input__dropdown-indicator {
@@ -255,6 +275,7 @@
   }
 
   &__placeholder {
+    white-space: nowrap;
     color: var(--color-dark-grey-500) !important;
   }
 

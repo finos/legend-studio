@@ -88,8 +88,8 @@ import { V1_XmlModelConnection } from '../../../model/packageableElements/store/
 import { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection.js';
 import { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection.js';
 import { V1_transformPostProcessor } from './V1_PostProcessorTransformer.js';
-import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
-import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
+import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../STO_Relational_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 
 const transformStaticDatasourceSpecification = (
@@ -206,7 +206,7 @@ const transformDatasourceSpecification = (
     context.plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+          plugin as STO_Relational_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraConnectionDatasourceSpecificationTransformers?.() ?? [],
     );
   for (const transformer of extraConnectionDatasourceSpecificationTransformers) {
@@ -282,7 +282,7 @@ const transformAuthenticationStrategy = (
     context.plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+          plugin as STO_Relational_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraConnectionAuthenticationStrategyTransformers?.() ?? [],
     );
   for (const transformer of extraConnectionAuthenticationStrategyTransformers) {
@@ -383,7 +383,7 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
     const extraConnectionTransformers = this.context.plugins.flatMap(
       (plugin) =>
         (
-          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+          plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraConnectionTransformers?.() ?? [],
     );
     for (const transformer of extraConnectionTransformers) {

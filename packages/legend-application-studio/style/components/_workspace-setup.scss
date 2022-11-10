@@ -16,7 +16,7 @@
 
 @use 'mixins' as *;
 
-@forward './workspace-setup/create-project-modal';
+@forward 'workspace-setup/create-project-modal';
 
 .workspace-setup {
   height: 100%;
@@ -26,16 +26,6 @@
   &__body {
     height: calc(100% - 2.2rem);
     width: 100%;
-  }
-
-  &__status-bar {
-    @include flexVCenter;
-    @include flexHSpaceBetween;
-
-    height: 2.2rem;
-    background: var(--color-blue-100);
-    color: var(--color-light-grey-0);
-    padding: 0 0.5rem 0 1rem;
   }
 
   &__title {
@@ -72,126 +62,58 @@
     padding: 1rem;
   }
 
-  &__project-option {
-    display: flex;
-    width: 100%;
-
-    &__label {
-      display: flex;
-      width: calc(100% - 6.5rem);
-
-      &__name {
-        @include flexVCenter;
-
-        height: 1.8rem;
-      }
-    }
-
-    &__visit-btn {
-      display: flex;
-      width: 6rem;
-      margin-right: 0.5rem;
-
-      &__label {
-        @include flexCenter;
-
-        width: 4.2rem;
-        height: 1.8rem;
-        background: var(--color-dark-grey-500);
-        border-radius: 0.2rem 0 0 0.2rem;
-        font-size: 1.2rem;
-        color: var(--color-dark-grey-200);
-        font-weight: 500;
-      }
-
-      &__icon {
-        @include flexCenter;
-
-        height: 1.8rem;
-        width: 1.8rem;
-        background: var(--color-dark-grey-500);
-        border-radius: 0 50% 50% 0;
-
-        svg {
-          font-size: 1.6rem;
-          color: var(--color-dark-grey-200);
-        }
-      }
-
-      &:hover &__label,
-      &:hover &__icon {
-        background: var(--color-light-grey-400);
-      }
-    }
-  }
-
   &__doc__setup-workspace {
     font-size: 2rem;
-    color: var(--color-dark-grey-400);
     margin-left: 1rem;
-  }
-
-  &__workspace__label {
-    display: flex;
-
-    &-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 1.7rem;
-      min-width: 1.7rem;
-      margin-right: 1rem;
-    }
-
-    &__name {
-      @include flexVCenter;
-
-      height: 1.8rem;
-    }
   }
 
   &__workspace__selector {
     margin-top: 1rem;
   }
-}
 
-.workspace-setup-selector {
-  display: flex;
-  margin-bottom: 0.5rem;
-
-  &__icon-box {
-    height: 2.8rem;
-    width: 2.8rem;
+  &__selector {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--color-dark-grey-200);
-    border-radius: 0.2rem 0 0 0.2rem;
-  }
+    margin-bottom: 0.5rem;
 
-  &__icon {
-    font-size: 1.8rem;
-    color: var(--color-dark-grey-400);
-  }
+    &__icon {
+      @include flexCenter;
 
-  &__label {
-    width: 3.5rem;
-    background: var(--color-light-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-300);
-    border-right: none;
-    color: var(--color-dark-grey-300);
+      height: 2.8rem;
+      width: 2.8rem;
+      background: var(--color-dark-grey-200);
+      border-radius: 0.2rem 0 0 0.2rem;
 
-    @include flexCenter;
-  }
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+    }
 
-  &__action {
-    height: 2.8rem;
-    width: 2.8rem;
-    min-width: 2.8rem;
-    margin-left: 0.5rem;
-  }
+    &__icon--project,
+    &__icon--workspace {
+      font-size: 1.8rem;
+    }
 
-  &__input {
-    flex: 1 0 auto;
+    &__label {
+      @include flexCenter;
+
+      width: 3.5rem;
+      background: var(--color-light-grey-100);
+      border: 0.1rem solid var(--color-dark-grey-300);
+      border-right: none;
+      color: var(--color-dark-grey-300);
+    }
+
+    &__input {
+      flex: 1 0 auto;
+    }
+
+    &__action {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 2.8rem;
+      width: 2.8rem;
+      margin-left: 0.5rem;
+    }
   }
 }

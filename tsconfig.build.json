@@ -2,24 +2,19 @@
   // This is the `build` counterpart of `tsconfig.json`
   "files": [],
   "references": [
+    // core
     { "path": "packages/legend-shared/tsconfig.build.json" },
-    { "path": "packages/legend-extension-tracer-zipkin/tsconfig.build.json" },
     { "path": "packages/legend-storage/tsconfig.build.json" },
     { "path": "packages/legend-server-sdlc/tsconfig.build.json" },
     { "path": "packages/legend-server-depot/tsconfig.build.json" },
     { "path": "packages/legend-graph/tsconfig.build.json" },
+    { "path": "packages/legend-query-builder/tsconfig.build.json" },
     { "path": "packages/legend-art/tsconfig.build.json" },
     { "path": "packages/legend-application/tsconfig.build.json" },
     // studio
     { "path": "packages/legend-application-studio/tsconfig.build.json" },
     {
       "path": "packages/legend-application-studio-bootstrap/tsconfig.build.json"
-    },
-    {
-      "path": "packages/legend-extension-application-studio-management-toolkit/tsconfig.build.json"
-    },
-    {
-      "path": "packages/legend-extension-application-studio-query-builder/tsconfig.build.json"
     },
     // query
     { "path": "packages/legend-application-query/tsconfig.build.json" },
@@ -32,6 +27,7 @@
       "path": "packages/legend-application-taxonomy-bootstrap/tsconfig.build.json"
     },
     // extensions
+    { "path": "packages/legend-extension-tracer-zipkin/tsconfig.build.json" },
     {
       "path": "packages/legend-extension-dsl-text/tsconfig.build.json"
     },
@@ -42,22 +38,31 @@
       "path": "packages/legend-extension-dsl-data-space/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-dsl-persistence/tsconfig.build.json"
+      "path": "packages/legend-extension-dsl-service/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-dsl-mastery/tsconfig.build.json"
+      "path": "packages/legend-extension-dsl-persistence/tsconfig.build.json"
     },
     {
       "path": "packages/legend-extension-dsl-persistence-cloud/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-external-format-json-schema/tsconfig.build.json"
+      "path": "packages/legend-extension-dsl-mastery/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-external-store-service/tsconfig.build.json"
+      "path": "packages/legend-extension-store-service-store/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-external-language-morphir/tsconfig.build.json"
+      "path": "packages/legend-extension-store-flat-data/tsconfig.build.json"
+    },
+    {
+      "path": "packages/legend-extension-store-relational/tsconfig.build.json"
+    },
+    {
+      "path": "packages/legend-extension-format-json-schema/tsconfig.build.json"
+    },
+    {
+      "path": "packages/legend-extension-format-morphir/tsconfig.build.json"
     },
     // fixtures
     {

@@ -20,7 +20,7 @@ import {
   ActionState,
   assertErrorThrown,
   LogEvent,
-  losslessStringify,
+  stringifyLosslessJSON,
   UnsupportedOperationError,
   filterByType,
 } from '@finos/legend-shared';
@@ -30,27 +30,25 @@ import {
   RuntimeEditorState,
 } from '../../../editor-state/element-editor-state/RuntimeEditorState.js';
 import {
-  buildParametersLetLambdaFunc,
+  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   ExecutionPlanState,
-  LambdaEditorState,
-  LambdaParametersState,
-  LambdaParameterState,
-  PARAMETER_SUBMIT_ACTION,
   TAB_SIZE,
 } from '@finos/legend-application';
 import {
   type ServiceExecution,
-  KeyedExecutionParameter,
   type PureExecution,
   type Mapping,
   type Runtime,
   type ExecutionResult,
   type LightQuery,
   type PackageableRuntime,
-  PureSingleExecution,
-  PureMultiExecution,
   type RawExecutionPlan,
   type PackageableElementReference,
+  type QueryInfo,
+  PureSingleExecution,
+  PureMultiExecution,
+  KeyedExecutionParameter,
   GRAPH_MANAGER_EVENT,
   RawLambda,
   EngineRuntime,
@@ -62,13 +60,11 @@ import {
   buildLambdaVariableExpressions,
   observe_ValueSpecification,
   VariableExpression,
-  buildRawLambdaFromLambdaFunction,
   stub_PackageableRuntime,
   stub_Mapping,
 } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-storage';
-import { parseGACoordinates } from '@finos/legend-server-depot';
-import { runtime_addMapping } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
+import { type Entity, parseGACoordinates } from '@finos/legend-storage';
+import { runtime_addMapping } from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   keyedExecutionParameter_setKey,
@@ -79,7 +75,15 @@ import {
   pureSingleExecution_setMapping,
   pureSingleExecution_setRuntime,
   service_setExecution,
-} from '../../../graphModifier/DSLService_GraphModifierHelper.js';
+} from '../../../shared/modifier/DSL_Service_GraphModifierHelper.js';
+import {
+  buildExecutionParameterValues,
+  getExecutionQueryFromRawLambda,
+  LambdaEditorState,
+  LambdaParametersState,
+  LambdaParameterState,
+  PARAMETER_SUBMIT_ACTION,
+} from '@finos/legend-query-builder';
 
 export class ServiceExecutionParameterState extends LambdaParametersState {
   executionState: ServicePureExecutionState;
@@ -233,9 +237,11 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
         const content =
           (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
             (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
-              (yield this.editorStore.graphManagerState.graphManager.getQueryContent(
-                query.id,
-              )) as string,
+              (
+                (yield this.editorStore.graphManagerState.graphManager.getQueryInfo(
+                  query.id,
+                )) as QueryInfo
+              ).content,
             )) as RawLambda,
             true,
           )) as string;
@@ -274,7 +280,8 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
   }
 
   *loadQueries(searchText: string): GeneratorFn<void> {
-    const isValidSearchString = searchText.length >= 3;
+    const isValidSearchString =
+      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
     this.loadQueriesState.inProgress();
     try {
       const searchSpecification = new QuerySearchSpecification();
@@ -286,16 +293,17 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
       searchSpecification.searchTerm = isValidSearchString
         ? searchText
         : undefined;
-      searchSpecification.limit = 10;
+      searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
       searchSpecification.projectCoordinates = [
         // either get queries for the current project
         currentProjectCoordinates,
         // or any of its dependencies
         ...Array.from(
           (
-            (yield flowResult(
-              this.editorStore.graphState.getIndexedDependencyEntities(),
-            )) as Map<string, Entity[]>
+            (yield this.editorStore.graphState.getIndexedDependencyEntities()) as Map<
+              string,
+              Entity[]
+            >
           ).keys(),
         ).map((coordinatesInText) => {
           const { groupId, artifactId } = parseGACoordinates(coordinatesInText);
@@ -570,22 +578,25 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     }
     try {
       this.isRunningQuery = true;
-      const query = this.getExecutionQuery();
       const promise =
         this.editorStore.graphManagerState.graphManager.executeMapping(
-          query,
+          this.getExecutionQuery(),
           this.selectedExecutionContextState.executionContext.mapping.value,
           this.selectedExecutionContextState.executionContext.runtime,
           this.editorStore.graphManagerState.graph,
           {
             useLosslessParse: true,
+            parameterValues: buildExecutionParameterValues(
+              this.parameterState.parameterStates,
+              this.editorStore.graphManagerState,
+            ),
           },
         );
       this.setQueryRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
       if (this.queryRunPromise === promise) {
         this.setExecutionResultText(
-          losslessStringify(result, undefined, TAB_SIZE),
+          stringifyLosslessJSON(result, undefined, TAB_SIZE),
         );
         this.parameterState.setParameters([]);
       }
@@ -602,28 +613,11 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   }
 
   getExecutionQuery(): RawLambda {
-    if (this.parameterState.parameterStates.length) {
-      const letlambdaFunction = buildParametersLetLambdaFunc(
-        this.editorStore.graphManagerState.graph,
-        this.parameterState.parameterStates,
-      );
-      const letRawLambda = buildRawLambdaFromLambdaFunction(
-        letlambdaFunction,
-        this.editorStore.graphManagerState,
-      );
-      // reset parameters
-      if (
-        Array.isArray(this.queryState.query.body) &&
-        Array.isArray(letRawLambda.body)
-      ) {
-        letRawLambda.body = [
-          ...(letRawLambda.body as object[]),
-          ...(this.queryState.query.body as object[]),
-        ];
-        return letRawLambda;
-      }
-    }
-    return this.queryState.query;
+    return getExecutionQueryFromRawLambda(
+      this.queryState.query,
+      this.parameterState.parameterStates,
+      this.editorStore.graphManagerState,
+    );
   }
 
   get serviceExecutionParameters():
@@ -826,6 +820,7 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
       setIsRunningQuery: action,
       changeExecution: action,
       generatePlan: flow,
+      handleExecute: flow,
       runQuery: flow,
     });
 
@@ -904,7 +899,7 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
 
   addExecutionParameter(value: string): void {
     const _mapping =
-      this.editorStore.mappingOptions[0]?.value ?? stub_Mapping();
+      this.editorStore.graphManagerState.usableMappings[0] ?? stub_Mapping();
     const _key = new KeyedExecutionParameter(
       value,
       PackageableElementExplicitReference.create(_mapping),

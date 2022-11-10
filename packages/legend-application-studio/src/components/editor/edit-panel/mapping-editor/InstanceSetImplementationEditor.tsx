@@ -26,12 +26,13 @@ import {
   LongArrowAltDownIcon,
   PencilEditIcon,
   PanelDropZone,
+  PanelContent,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type MappingElementSourceDropTarget,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import {
   InstanceSetImplementationState,
@@ -50,7 +51,7 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { TypeTree } from '../../../shared/TypeTree.js';
 import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree.js';
-import { PropertyMappingsEditor } from './PropertyMappingsEditor.js';
+import { PropertyMappingEditor } from './PropertyMappingsEditor.js';
 import { useDrop } from 'react-dnd';
 import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState.js';
 import { MappingElementDecorationCleaner } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
@@ -78,16 +79,16 @@ import {
   RootFlatDataRecordType,
   Table,
   Database,
-  PRIMITIVE_TYPE,
   TableAlias,
   TableExplicitReference,
   ViewExplicitReference,
   getAllRecordTypes,
   getAllClassProperties,
+  PrimitiveType,
 } from '@finos/legend-graph';
-import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import { LambdaEditor } from '@finos/legend-query-builder';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {
@@ -124,10 +125,8 @@ export const InstanceSetImplementationSourceExplorer = observer(
         if (!embeddedSetImpls.length) {
           setSourceElementForSourceSelectorModal(null);
         } else {
-          editorStore.setActionAlertInfo({
+          applicationStore.setActionAlertInfo({
             message: CHANGING_SOURCE_ON_EMBEDDED,
-            onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-            onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
             actions: [
               {
                 label: 'Continue',
@@ -219,10 +218,8 @@ export const InstanceSetImplementationSourceExplorer = observer(
           if (!embeddedSetImpls.length) {
             changeClassMappingSourceDriver(droppedPackagableElement);
           } else {
-            editorStore.setActionAlertInfo({
+            applicationStore.setActionAlertInfo({
               message: CHANGING_SOURCE_ON_EMBEDDED,
-              onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-              onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
               actions: [
                 {
                   label: 'Continue',
@@ -240,7 +237,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
       },
       [
         changeClassMappingSourceDriver,
-        editorStore,
+        applicationStore,
         isReadOnly,
         setImplementation,
       ],
@@ -276,7 +273,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+              plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
             ).getExtraInstanceSetImplementationBlockingErrorCheckers?.() ?? [],
         );
     let hasParseError = false;
@@ -323,7 +320,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
             </button>
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           <PanelDropZone
             dropTargetConnector={dropRef}
             isDragOver={isDragOver && !isReadOnly}
@@ -363,7 +360,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
             {isUnsupported && (
               <UnsupportedEditorPanel
                 isReadOnly={isReadOnly}
-                text={`Can't display class mapping source in form mode`}
+                text="Can't display class mapping source in form mode"
               ></UnsupportedEditorPanel>
             )}
             {sourceElementForSourceSelectorModal !== undefined && (
@@ -375,7 +372,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
               />
             )}
           </PanelDropZone>
-        </div>
+        </PanelContent>
       </div>
     );
   },
@@ -405,7 +402,7 @@ const MappingFilterEditor = observer(
         })}
       >
         <div className="class-mapping-filter-editor__content">
-          <StudioLambdaEditor
+          <LambdaEditor
             className="class-mapping-filter-editor__element__lambda-editor"
             disabled={
               isReadOnly ||
@@ -414,9 +411,7 @@ const MappingFilterEditor = observer(
             forceBackdrop={!!filterState.parserError}
             forceExpansion={false}
             lambdaEditorState={filterState}
-            expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.BOOLEAN,
-            )}
+            expectedType={PrimitiveType.BOOLEAN}
           />
         </div>
       </div>
@@ -535,11 +530,11 @@ export const InstanceSetImplementationEditor = observer(
                       </div>
                     </div>
                   </div>
-                  <div className="panel__content">
+                  <PanelContent>
                     {!isReadOnly &&
                       !isUnsupported &&
                       sortedProperties.map((property) => (
-                        <PropertyMappingsEditor
+                        <PropertyMappingEditor
                           key={property.name}
                           property={property}
                           instanceSetImplementationState={
@@ -561,7 +556,7 @@ export const InstanceSetImplementationEditor = observer(
                             ).length,
                         )
                         .map((property) => (
-                          <PropertyMappingsEditor
+                          <PropertyMappingEditor
                             key={property.name}
                             property={property}
                             instanceSetImplementationState={
@@ -573,10 +568,10 @@ export const InstanceSetImplementationEditor = observer(
                     {isUnsupported && (
                       <UnsupportedEditorPanel
                         isReadOnly={isReadOnly}
-                        text={`Can't display class mapping in form mode`}
+                        text="Can't display class mapping in form mode"
                       ></UnsupportedEditorPanel>
                     )}
-                  </div>
+                  </PanelContent>
                 </div>
               </ResizablePanel>
               <ResizablePanelSplitter />

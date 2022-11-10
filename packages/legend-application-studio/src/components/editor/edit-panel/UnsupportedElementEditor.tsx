@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { BlankPanelContent, LockIcon } from '@finos/legend-art';
+import { BlankPanelContent, LockIcon, Panel } from '@finos/legend-art';
 import { UnsupportedElementEditorState } from '../../../stores/editor-state/UnsupportedElementEditorState.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
@@ -59,7 +59,7 @@ export const UnsupportedElementEditor = observer(() => {
 
   return (
     <div className="unsupported-element-editor">
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             {isReadOnly && (
@@ -73,11 +73,11 @@ export const UnsupportedElementEditor = observer(() => {
         </div>
         <div className="panel__content unsupported-element-editor__content">
           <UnsupportedEditorPanel
-            text={`Can't display this element in form-mode`}
+            text="Can't display this element in form-mode"
             isReadOnly={isReadOnly}
           />
         </div>
-      </div>
+      </Panel>
     </div>
   );
 });

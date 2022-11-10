@@ -14,26 +14,39 @@
  * limitations under the License.
  */
 
-import type { Pair } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   type ValueSpecificationVisitor,
   ValueSpecification,
 } from './ValueSpecification.js';
-import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
+import { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference.js';
 import type { EnumValueReference } from '../packageableElements/domain/EnumValueReference.js';
-import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
-import type { EngineRuntime } from '../packageableElements/runtime/Runtime.js';
-import type { Mapping } from '../packageableElements/mapping/Mapping.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../Core_HashUtils.js';
 
 /**
- * NOTE: {@link InstanceValue} is the only metamodel available in Pure.
- * Its subtypes are created in Studio so that we can narrow down the types of `values`.
- * Also, right now, we haven't done the full build/transform flow for value specification
- * we use the subtypes to make it easier to transform metamodel back into protocol.
+ * NOTE: Theoretically {@link InstanceValue} is the only metamodel available in Pure.
+ * Its subtypes are created in Studio so that we can narrow down the types of `values`
+ * since we don't have powerful type matching like in Pure. Also, due to that, these
+ * subtypes of {@link InstanceValue}  make it easier to transform metamodel back into protocol.
+ * See https://github.com/finos/legend-engine/blob/94cd0aff3b314e568e830773f7200c8245baa09b/legend-engine-pure-code-compiled-core/src/main/resources/core/pure/protocol/vX_X_X/transfers/valueSpecification.pure#L254
+ *
+ * @discrepancy model
  */
-export class InstanceValue extends ValueSpecification {
+export class InstanceValue extends ValueSpecification implements Hashable {
   values: unknown[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INSTANCE_VALUE,
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+      hashObjectWithoutSourceInformation(this.values),
+    ]);
+  }
 
   accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
@@ -42,12 +55,21 @@ export class InstanceValue extends ValueSpecification {
   }
 }
 
-export class PrimitiveInstanceValue extends InstanceValue {
+export class PrimitiveInstanceValue extends InstanceValue implements Hashable {
   override genericType: GenericTypeReference;
 
-  constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
-    super(multiplicity, genericType);
+  constructor(genericType: GenericTypeReference) {
+    super(Multiplicity.ONE, genericType);
     this.genericType = genericType;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.PRIMITIVE_INSTANCE_VALUE,
+      this.genericType.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+      hashObjectWithoutSourceInformation(this.values),
+    ]);
   }
 
   override accept_ValueSpecificationVisitor<T>(
@@ -57,11 +79,24 @@ export class PrimitiveInstanceValue extends InstanceValue {
   }
 }
 
-export class EnumValueInstanceValue extends InstanceValue {
+export class EnumValueInstanceValue extends InstanceValue implements Hashable {
   override values: EnumValueReference[] = [];
 
-  constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
-    super(multiplicity, genericType);
+  constructor(genericType: GenericTypeReference) {
+    super(Multiplicity.ONE, genericType);
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.ENUM_INSTANCE_VALUE,
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+      hashArray(
+        this.values.map(
+          (value) => value.ownerReference.valueForSerialization ?? '',
+        ),
+      ),
+    ]);
   }
 
   override accept_ValueSpecificationVisitor<T>(
@@ -71,48 +106,17 @@ export class EnumValueInstanceValue extends InstanceValue {
   }
 }
 
-export class RuntimeInstanceValue extends InstanceValue {
-  override values: EngineRuntime[] = [];
-
-  override accept_ValueSpecificationVisitor<T>(
-    visitor: ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_RuntimeInstanceValue(this);
-  }
-}
-
-export class PairInstanceValue extends InstanceValue {
-  override values: Pair<unknown, unknown>[] = []; // TODO: both of these entries might be ValueSpecification
-
-  override accept_ValueSpecificationVisitor<T>(
-    visitor: ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_PairInstanceValue(this);
-  }
-}
-
-export class MappingInstanceValue extends InstanceValue {
-  override values: PackageableElementReference<Mapping>[] = [];
-
-  override accept_ValueSpecificationVisitor<T>(
-    visitor: ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_MappingInstanceValue(this);
-  }
-}
-
-export class PureListInstanceValue extends InstanceValue {
+export class CollectionInstanceValue extends InstanceValue implements Hashable {
   override values: ValueSpecification[] = [];
 
-  override accept_ValueSpecificationVisitor<T>(
-    visitor: ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_PureListInstanceValue(this);
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.COLLECTION_INSTANCE_VALUE,
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+      hashArray(this.values),
+    ]);
   }
-}
-
-export class CollectionInstanceValue extends InstanceValue {
-  override values: ValueSpecification[] = [];
 
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,

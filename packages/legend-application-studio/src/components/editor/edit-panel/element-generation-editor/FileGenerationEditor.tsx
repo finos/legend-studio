@@ -29,6 +29,7 @@ import {
   UnsupportedOperationError,
   debounce,
   guaranteeNonNullable,
+  type PlainObject,
 } from '@finos/legend-shared';
 import {
   type TreeNodeContainerProps,
@@ -56,12 +57,15 @@ import {
   LockIcon,
   SaveIcon,
   PanelDropZone,
+  Panel,
+  PanelContent,
+  PanelFormSection,
 } from '@finos/legend-art';
 import {
   type FileGenerationSourceDropTarget,
   type ElementDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import type { FileGenerationState } from '../../../../stores/editor-state/FileGenerationState.js';
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState.js';
 import {
@@ -69,7 +73,7 @@ import {
   GenerationDirectory,
   GenerationFile,
   getFileGenerationChildNodes,
-} from '../../../../stores/shared/FileGenerationTreeUtil.js';
+} from '../../../../stores/shared/FileGenerationTreeUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -82,15 +86,17 @@ import {
   resolvePackagePathAndElementName,
   getNullableFileGenerationConfig,
 } from '@finos/legend-graph';
-import { useApplicationStore } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import type { DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension.js';
+import {
+  TextInputEditor,
+  useApplicationStore,
+} from '@finos/legend-application';
+import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import {
   fileGeneration_addScopeElement,
   fileGeneration_changeScopeElement,
   fileGeneration_deleteScopeElement,
   fileGeneration_setGenerationOutputPath,
-} from '../../../../stores/graphModifier/DSLGeneration_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DSL_Generation_GraphModifierHelper.js';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -239,7 +245,7 @@ export const GenerationResultViewer = observer(
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension
+                  plugin as DSL_Generation_LegendStudioApplicationPlugin_Extension
                 ).getExtraFileGenerationResultViewerActionConfigurations?.() ??
                 [],
             )
@@ -270,13 +276,13 @@ export const GenerationResultViewer = observer(
                     tabIndex={-1}
                     disabled={fileGenerationState.isGenerating}
                     onClick={regenerate}
-                    title={'Re-generate'}
+                    title="Regenerate"
                   >
                     <RefreshIcon />
                   </button>
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 <PanelLoadingIndicator
                   isLoading={fileGenerationState.isGenerating}
                 />
@@ -290,7 +296,7 @@ export const GenerationResultViewer = observer(
                     Generation result not available
                   </BlankPanelContent>
                 )}
-              </div>
+              </PanelContent>
             </div>
           </div>
         </ResizablePanel>
@@ -312,9 +318,9 @@ export const GenerationResultViewer = observer(
                 {extraFileGenerationResultViewerActions}
               </div>
             </div>
-            <div className="panel__content">
+            <PanelContent>
               {fileNode instanceof GenerationFile && (
-                <StudioTextInputEditor
+                <TextInputEditor
                   inputValue={getTextContent(fileNode.content, fileNode.format)}
                   isReadOnly={true}
                   language={getEditorLanguageFromFormat(fileNode.format)}
@@ -323,7 +329,7 @@ export const GenerationResultViewer = observer(
               {!(fileNode instanceof GenerationFile) && (
                 <BlankPanelContent>No file selected</BlankPanelContent>
               )}
-            </div>
+            </PanelContent>
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
@@ -579,7 +585,7 @@ const GenerationStringPropertyEditor = observer(
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
-      newValue: Record<PropertyKey, unknown>,
+      newValue: PlainObject,
     ) => void;
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
@@ -590,10 +596,7 @@ const GenerationStringPropertyEditor = observer(
     const value =
       (getConfigValue(property.name) as string | undefined) ?? defaultValue;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      update(
-        property,
-        event.target.value as unknown as Record<PropertyKey, unknown>,
-      );
+      update(property, event.target.value as unknown as PlainObject);
     return (
       <div className="panel__content__form__section">
         <div className="panel__content__form__section__header__label">
@@ -620,7 +623,7 @@ const GenerationIntegerPropertyEditor = observer(
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
-      newValue: Record<PropertyKey, unknown>,
+      newValue: PlainObject,
     ) => void;
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
@@ -631,10 +634,7 @@ const GenerationIntegerPropertyEditor = observer(
     const value =
       (getConfigValue(property.name) as number | undefined) ?? defaultValue;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      update(
-        property,
-        event.target.value as unknown as Record<PropertyKey, unknown>,
-      );
+      update(property, event.target.value as unknown as PlainObject);
     return (
       <div className="panel__content__form__section">
         <div className="panel__content__form__section__header__label">
@@ -662,7 +662,7 @@ const GenerationBooleanPropertyEditor = observer(
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
-      newValue: Record<PropertyKey, unknown>,
+      newValue: PlainObject,
     ) => void;
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
@@ -674,7 +674,7 @@ const GenerationBooleanPropertyEditor = observer(
       (getConfigValue(property.name) as boolean | undefined) ?? defaultValue;
     const toggle = (): void => {
       if (!isReadOnly) {
-        update(property, !value as unknown as Record<PropertyKey, unknown>);
+        update(property, !value as unknown as PlainObject);
       }
     };
     return (
@@ -712,7 +712,7 @@ const GenerationEnumPropertyEditor = observer(
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
-      newValue: Record<PropertyKey, unknown>,
+      newValue: PlainObject,
     ) => void;
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
@@ -730,7 +730,7 @@ const GenerationEnumPropertyEditor = observer(
       property.defaultValue;
     const onChange = (val: { label: string; value: string } | null): void => {
       if (val !== null && val.value !== value) {
-        update(property, val.value as unknown as Record<PropertyKey, unknown>);
+        update(property, val.value as unknown as PlainObject);
       }
     };
     return (
@@ -823,7 +823,7 @@ const GenerationArrayPropertyEditor = observer(
         }
       };
     return (
-      <div className="panel__content__form__section">
+      <PanelFormSection>
         <div className="panel__content__form__section__header__label">
           {property.name}
         </div>
@@ -946,7 +946,7 @@ const GenerationArrayPropertyEditor = observer(
             </div>
           )}
         </div>
-      </div>
+      </PanelFormSection>
     );
   },
 );
@@ -1370,7 +1370,7 @@ export const FileGenerationConfigurationEditor = observer(
                 isReadOnly || !fileGeneration.configurationProperties.length
               }
               onClick={resetDefaultConfiguration}
-              title={'Reset to default configuration'}
+              title="Reset to default configuration"
             >
               <RefreshIcon />
             </button>
@@ -1380,14 +1380,14 @@ export const FileGenerationConfigurationEditor = observer(
                 tabIndex={-1}
                 disabled={isReadOnly}
                 onClick={showFileGenerationModal}
-                title={'Promote File Generation Specification...'}
+                title="Promote to file generation specification..."
               >
                 <SaveIcon />
               </button>
             )}
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           <PanelDropZone
             dropTargetConnector={scopeElementDropRef}
             isDragOver={
@@ -1430,7 +1430,7 @@ export const FileGenerationConfigurationEditor = observer(
               ))}
             </div>
           </PanelDropZone>
-        </div>
+        </PanelContent>
       </div>
     );
   },
@@ -1446,7 +1446,7 @@ export const FileGenerationEditor = observer(() => {
 
   return (
     <div className="file-generation-editor">
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             {isReadOnly && (
@@ -1483,7 +1483,7 @@ export const FileGenerationEditor = observer(() => {
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
-      </div>
+      </Panel>
     </div>
   );
 });

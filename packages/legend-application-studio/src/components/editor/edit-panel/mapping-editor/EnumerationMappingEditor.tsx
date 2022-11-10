@@ -31,6 +31,10 @@ import {
   TimesIcon,
   PlusIcon,
   PanelDropZone,
+  Panel,
+  PanelContent,
+  ModalTitle,
+  Modal,
 } from '@finos/legend-art';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { TypeTree } from '../../../shared/TypeTree.js';
@@ -41,7 +45,7 @@ import {
   type MappingElementSourceDropTarget,
   CORE_DND_TYPE,
   TypeDragSource,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { noop } from '@finos/legend-shared';
 import {
@@ -50,7 +54,6 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
-  PRIMITIVE_TYPE,
   Type,
   Enum,
   Enumeration,
@@ -60,15 +63,17 @@ import {
   type PackageableElementReference,
   getEnumValueNames,
   PackageableElementExplicitReference,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
-  enumMapping_updateSourceType,
+  enumerationMapping_updateSourceType,
   enumValueMapping_addSourceValue,
   enumValueMapping_deleteSourceValue,
   enumValueMapping_updateSourceValue,
-} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   buildElementOption,
+  getPackageableElementOptionFormatter,
   type PackageableElementOption,
 } from '@finos/legend-application';
 
@@ -80,16 +85,13 @@ const EnumerationMappingSourceSelectorModal = observer(
   }) => {
     const { enumerationMapping, closeModal, open } = props;
     const editorStore = useEditorStore();
-    const options = [
-      editorStore.graphManagerState.graph.getPrimitiveType(
-        PRIMITIVE_TYPE.INTEGER,
-      ),
-      editorStore.graphManagerState.graph.getPrimitiveType(
-        PRIMITIVE_TYPE.STRING,
-      ),
-    ]
+    const options = [PrimitiveType.INTEGER, PrimitiveType.STRING]
       .map(buildElementOption)
-      .concat(editorStore.enumerationOptions);
+      .concat(
+        editorStore.graphManagerState.usableEnumerations.map(
+          buildElementOption,
+        ),
+      );
 
     const sourceSelectorRef = useRef<SelectComponent>(null);
     const filterOption = createFilter({
@@ -108,7 +110,7 @@ const EnumerationMappingSourceSelectorModal = observer(
     ): void => {
       const value = val?.value;
       if (!value || value instanceof Type) {
-        enumMapping_updateSourceType(
+        enumerationMapping_updateSourceType(
           enumerationMapping,
           value ? PackageableElementExplicitReference.create(value) : undefined,
         );
@@ -135,18 +137,19 @@ const EnumerationMappingSourceSelectorModal = observer(
           },
         }}
       >
-        <div className="modal search-modal">
-          <div className="modal__title">Choose a source</div>
+        <Modal className="search-modal">
+          <ModalTitle title="Choose a Source" />
           <CustomSelectorInput
             ref={sourceSelectorRef}
             options={options}
             onChange={changeSourceType}
             value={selectedSourceType}
-            placeholder={'Choose a data type or an enumeration...'}
+            placeholder="Choose a type..."
             isClearable={true}
             filterOption={filterOption}
+            formatOptionLabel={getPackageableElementOptionFormatter({})}
           />
-        </div>
+        </Modal>
       </Dialog>
     );
   },
@@ -167,8 +170,6 @@ export const SourceValueInput = observer(
       expectedType,
       isReadOnly,
     } = props;
-    const inputType =
-      expectedType?.name === PRIMITIVE_TYPE.INTEGER ? 'number' : 'text';
     const value =
       sourceValue.value instanceof Enum
         ? sourceValue.value.name
@@ -237,8 +238,8 @@ export const SourceValueInput = observer(
           value={value}
           onChange={onChange}
           onBlur={onBlur}
-          placeholder={`Source value`}
-          type={inputType}
+          placeholder="Source value"
+          type={expectedType === PrimitiveType.INTEGER ? 'number' : 'text'}
         />
         <div className="enumeration-mapping-editor__enum-value__source-value__info">
           <div className="enumeration-mapping-editor__enum-value__source-value__expected-return-type">
@@ -251,7 +252,7 @@ export const SourceValueInput = observer(
             disabled={isReadOnly}
             onClick={deleteSourceValue}
             tabIndex={-1}
-            title={'Remove'}
+            title="Remove"
           >
             <TimesIcon />
           </button>
@@ -289,7 +290,7 @@ const EnumValueMappingEditor = observer(
               disabled={isReadOnly}
               onClick={addSourceValue}
               tabIndex={-1}
-              title={'Add enum value'}
+              title="Add enum value"
             >
               <PlusIcon />
             </button>
@@ -360,7 +361,7 @@ export const EnumerationMappingEditor = observer(
     const handleDrop = useCallback(
       (item: MappingElementSourceDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          enumMapping_updateSourceType(
+          enumerationMapping_updateSourceType(
             enumerationMapping,
             PackageableElementExplicitReference.create(
               item.data.packageableElement,
@@ -436,8 +437,9 @@ export const EnumerationMappingEditor = observer(
                   'mapping-element-editor__metadata__chunk',
                   'mapping-element-editor__metadata__driver-chunk',
                   'background--primitive',
+                  'mapping-element-editor__metadata__source-chunk--primitive',
                   {
-                    'mapping-element-editor__metadata__source--none':
+                    'mapping-element-editor__metadata__source-chunk--none':
                       !sourceType,
                   },
                 )}
@@ -467,7 +469,7 @@ export const EnumerationMappingEditor = observer(
           <div className="mapping-element-editor__content">
             <ResizablePanelGroup orientation="vertical">
               <ResizablePanel minSize={300}>
-                <div className="panel">
+                <Panel>
                   <div className="panel__header">
                     <div className="panel__header__title">
                       <div className="panel__header__title__content">ENUMS</div>
@@ -484,7 +486,7 @@ export const EnumerationMappingEditor = observer(
                       />
                     ))}
                   </div>
-                </div>
+                </Panel>
               </ResizablePanel>
               <ResizablePanelSplitter />
               <ResizablePanel size={300} minSize={300}>
@@ -505,13 +507,13 @@ export const EnumerationMappingEditor = observer(
                         onClick={showSourceSelectorModal}
                         disabled={isReadOnly}
                         tabIndex={-1}
-                        title={'Select Source...'}
+                        title="Select a source..."
                       >
                         <PencilIcon />
                       </button>
                     </div>
                   </div>
-                  <div className="panel__content">
+                  <PanelContent>
                     <PanelDropZone
                       dropTargetConnector={dropRef}
                       isDragOver={
@@ -543,7 +545,7 @@ export const EnumerationMappingEditor = observer(
                         closeModal={hideSourceSelectorModal}
                       />
                     </PanelDropZone>
-                  </div>
+                  </PanelContent>
                 </div>
               </ResizablePanel>
             </ResizablePanelGroup>

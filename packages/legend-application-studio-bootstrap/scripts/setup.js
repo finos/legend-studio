@@ -42,13 +42,13 @@ export const setup = (outputDir) => {
         appName: 'studio',
         env: 'local',
         sdlc: {
-          url: 'http://localhost:7070/api',
+          url: 'http://localhost:6100/api',
         },
         engine: {
-          url: 'http://localhost:6060/api',
+          url: 'http://localhost:6300/api',
         },
         depot: {
-          url: 'http://localhost:9090/depot/api',
+          url: 'http://localhost:6200/depot/api',
         },
         documentation: {
           url: 'https://legend.finos.org',
@@ -66,9 +66,13 @@ export const setup = (outputDir) => {
             /**
              * Use this end-point when developing documentation locally
              */
-            // { url: 'http://localhost:60001/studio/documentation.json' },
+            // { url: 'http://localhost:9999/studio/documentation.json' },
             {
-              url: 'https://legend.finos.org/resource/studio/documentation.json',
+              url: 'https://legend.finos.org/resource/studio/documentation/shared.json',
+              simple: true,
+            },
+            {
+              url: 'https://legend.finos.org/resource/studio/documentation/studio.json',
               simple: true,
             },
           ],

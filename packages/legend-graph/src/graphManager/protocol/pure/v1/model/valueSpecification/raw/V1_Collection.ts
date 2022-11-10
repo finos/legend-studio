@@ -18,11 +18,11 @@ import {
   type V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
 } from '../../../model/valueSpecification/V1_ValueSpecification.js';
-import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
+import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
 
 export class V1_Collection extends V1_ValueSpecification {
+  multiplicity = V1_Multiplicity.ONE_MANY;
   values: V1_ValueSpecification[] = [];
-  multiplicity!: V1_Multiplicity;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,

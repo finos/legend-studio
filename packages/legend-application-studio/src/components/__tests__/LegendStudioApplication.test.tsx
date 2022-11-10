@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { test, jest, expect } from '@jest/globals';
+import { test, expect } from '@jest/globals';
 import { LegendStudioApplicationRoot } from '../LegendStudioApplication.js';
 import {
+  type TEMPORARY__JestMatcher,
   integrationTest,
-  MOBX__enableSpyOrMock,
-  MOBX__disableSpyOrMock,
   noop,
+  createSpy,
 } from '@finos/legend-shared';
 import {
   WebApplicationNavigator,
@@ -28,11 +28,11 @@ import {
   TEST__ApplicationStoreProvider,
   TEST__provideMockedWebApplicationNavigator,
   LegendApplicationComponentFrameworkProvider,
+  MemoryRouter,
+  createMemoryHistory,
 } from '@finos/legend-application';
 import { TEST__LegendStudioBaseStoreProvider } from '../EditorComponentTestUtils.js';
 import { render, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
-import { createMemoryHistory } from 'history';
 import {
   SDLCServerClient,
   TEST__provideMockedSDLCServerClient,
@@ -47,19 +47,21 @@ test(
   async () => {
     const sdlcServerClient = TEST__provideMockedSDLCServerClient();
 
-    MOBX__enableSpyOrMock();
-    jest.spyOn(sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(true);
-    jest
-      .spyOn(sdlcServerClient, 'getCurrentUser')
-      .mockResolvedValueOnce({ name: 'testUser', userId: 'testUserId' });
-    jest
-      .spyOn(sdlcServerClient, 'hasAcceptedTermsOfService')
-      .mockResolvedValueOnce(['stubUrl']);
-    jest.spyOn(sdlcServerClient, 'getProjects').mockResolvedValue([]);
-    jest
-      .spyOn(sdlcServerClient, 'fetchServerFeaturesConfiguration')
-      .mockResolvedValue();
-    MOBX__disableSpyOrMock();
+    createSpy(sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(true);
+    createSpy(sdlcServerClient, 'getCurrentUser').mockResolvedValueOnce({
+      name: 'testUser',
+      userId: 'testUserId',
+    });
+    createSpy(
+      sdlcServerClient,
+      'hasAcceptedTermsOfService',
+    ).mockResolvedValueOnce(['stubUrl']);
+    createSpy(sdlcServerClient, 'getProjects').mockResolvedValue([]);
+    createSpy(
+      sdlcServerClient,
+      'fetchServerFeaturesConfiguration',
+    ).mockResolvedValue();
+
     TEST__provideMockedWebApplicationNavigator();
 
     const { queryByText } = render(
@@ -95,18 +97,21 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   const sdlcServerClient = TEST__provideMockedSDLCServerClient();
   const stubURL = 'stubUrl';
 
-  MOBX__enableSpyOrMock();
-  jest.spyOn(sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(false);
-  jest
-    .spyOn(sdlcServerClient, 'getCurrentUser')
-    .mockResolvedValueOnce({ name: 'testUser', userId: 'testUserId' });
+  createSpy(sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(false);
+  createSpy(sdlcServerClient, 'getCurrentUser').mockResolvedValueOnce({
+    name: 'testUser',
+    userId: 'testUserId',
+  });
   const navigator = new WebApplicationNavigator(createMemoryHistory());
   applicationStore.navigator = navigator;
-  const jumpToSpy = jest.spyOn(navigator, 'jumpTo').mockImplementation(noop);
-  jest
-    .spyOn(navigator, 'getCurrentLocation')
-    .mockImplementationOnce(() => stubURL);
-  MOBX__disableSpyOrMock();
+  const navigationActionSpy = createSpy(
+    navigator,
+    'goToAddress',
+  ).mockImplementation(noop);
+  createSpy(navigator, 'getCurrentAddress').mockImplementationOnce(
+    () => stubURL,
+  );
+
   TEST__provideMockedWebApplicationNavigator();
 
   render(
@@ -129,7 +134,7 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   );
 
   await waitFor(() =>
-    expect(jumpToSpy).toHaveBeenCalledWith(
+    expect(navigationActionSpy as TEMPORARY__JestMatcher).toHaveBeenCalledWith(
       SDLCServerClient.authorizeCallbackUrl(
         applicationStore.config.sdlcServerUrl,
         stubURL,

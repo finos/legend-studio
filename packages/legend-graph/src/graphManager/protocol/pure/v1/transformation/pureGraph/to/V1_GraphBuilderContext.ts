@@ -79,7 +79,7 @@ import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions.js';
 import type { GraphBuilderOptions } from '../../../../../../../graphManager/AbstractPureGraphManager.js';
 import { DataType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/DataType.js';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils.js';
-import type { DataElement } from '../../../../../../../DSLData_Exports.js';
+import type { DataElement } from '../../../../../../../DSL_Data_Exports.js';
 import {
   getClassProperty,
   getEnumValue,
@@ -90,11 +90,11 @@ import {
 import {
   getFilter,
   getJoin,
-} from '../../../../../../../graph/helpers/StoreRelational_Helper.js';
+} from '../../../../../../../graph/helpers/STO_Relational_Helper.js';
 import {
   getRootRecordType,
   getSection,
-} from '../../../../../../../graph/helpers/StoreFlatData_Helper.js';
+} from '../../../../../../../graph/helpers/STO_FlatData_Helper.js';
 
 export const V1_buildFullPath = (
   packagePath: string | undefined,
@@ -315,37 +315,34 @@ export class V1_GraphBuilderContext {
   };
 
   resolveOwnProperty = (
-    propertyPtr: V1_PropertyPointer,
+    pointer: V1_PropertyPointer,
   ): PropertyImplicitReference => {
     assertNonEmptyString(
-      propertyPtr.class,
+      pointer.class,
       `Property pointer 'class' field is missing or empty`,
     );
     assertNonEmptyString(
-      propertyPtr.property,
+      pointer.property,
       `Property pointer 'property' field is missing or empty`,
     );
-    const ownerReference = this.resolveClass(propertyPtr.class);
-    const value = getOwnClassProperty(
-      ownerReference.value,
-      propertyPtr.property,
-    );
+    const ownerReference = this.resolveClass(pointer.class);
+    const value = getOwnClassProperty(ownerReference.value, pointer.property);
     return PropertyImplicitReference.create(ownerReference, value);
   };
 
   resolveProperty = (
-    propertyPtr: V1_PropertyPointer,
+    pointer: V1_PropertyPointer,
   ): PropertyImplicitReference => {
     assertNonEmptyString(
-      propertyPtr.class,
+      pointer.class,
       `Property pointer 'class' field is missing or empty`,
     );
     assertNonEmptyString(
-      propertyPtr.property,
+      pointer.property,
       `Property pointer 'property' field is missing or empty`,
     );
-    const ownerReference = this.resolveClass(propertyPtr.class);
-    const value = getClassProperty(ownerReference.value, propertyPtr.property);
+    const ownerReference = this.resolveClass(pointer.class);
+    const value = getClassProperty(ownerReference.value, pointer.property);
     return PropertyImplicitReference.create(ownerReference, value);
   };
 

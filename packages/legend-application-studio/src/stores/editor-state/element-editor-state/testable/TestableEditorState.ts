@@ -35,7 +35,7 @@ import {
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
-import { atomicTest_addAssertion } from '../../../graphModifier/Testable_GraphModifierHelper.js';
+import { atomicTest_addAssertion } from '../../../shared/modifier/Testable_GraphModifierHelper.js';
 import { createEmptyEqualToJsonAssertion } from '../../../shared/testable/TestableUtils.js';
 import { TESTABLE_RESULT } from '../../../sidebar-state/testable/GlobalTestRunnerState.js';
 import {

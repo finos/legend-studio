@@ -26,6 +26,7 @@ import {
   LongArrowRightIcon,
   MenuContent,
   MenuContentItem,
+  PanelContent,
   PURE_DataIcon,
   WrenchIcon,
 } from '@finos/legend-art';
@@ -34,9 +35,8 @@ import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
-} from '../../../../stores/graphModifier/DSLData_GraphModifierHelper.js';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLData_LegendStudioApplicationPlugin_Extension.js';
+} from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
+import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import {
   type EmbeddedDataState,
@@ -45,7 +45,7 @@ import {
   RelationalCSVDataState,
 } from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import type { DataElement } from '@finos/legend-graph';
-import { buildElementOption } from '@finos/legend-application';
+import { buildElementOption, TextInputEditor } from '@finos/legend-application';
 import { RelationalCSVDataEditor } from './RelationalCSVDataEditor.js';
 
 export const ExternalFormatDataEditor = observer(
@@ -98,11 +98,12 @@ export const ExternalFormatDataEditor = observer(
               }
               tabIndex={-1}
               onClick={format}
-              title={'Format External Format'}
+              title="Format External Format"
             >
               <WrenchIcon />
             </button>
             <DropdownMenu
+              className="external-format-data-editor__type"
               disabled={isReadOnly}
               content={
                 <MenuContent className="external-format-data-editor__dropdown">
@@ -122,20 +123,18 @@ export const ExternalFormatDataEditor = observer(
                 transformOrigin: { vertical: 'top', horizontal: 'right' },
               }}
             >
-              <div className="external-format-data-editor__type">
-                <div className="external-format-data-editor__type__label">
-                  {externalFormatDataState.embeddedData.contentType}
-                </div>
-                <div className="external-format-data-editor__type__icon">
-                  <CaretDownIcon />
-                </div>
+              <div className="external-format-data-editor__type__label">
+                {externalFormatDataState.embeddedData.contentType}
+              </div>
+              <div className="external-format-data-editor__type__icon">
+                <CaretDownIcon />
               </div>
             </DropdownMenu>
           </div>
         </div>
         <div className={clsx('external-format-data-editor__content')}>
           <div className="external-format-data-editor__content__input">
-            <StudioTextInputEditor
+            <TextInputEditor
               language={language}
               inputValue={externalFormatDataState.embeddedData.data}
               updateInput={changeData}
@@ -157,7 +156,8 @@ export const DataElementReferenceDataEditor = observer(
     const dataElement =
       dataElementReferenceState.embeddedData.dataElement.value;
     const editorStore = dataElementReferenceState.editorStore;
-    const options = editorStore.dataOptions;
+    const options =
+      editorStore.graphManagerState.usableDataElements.map(buildElementOption);
     const selectedOption = buildElementOption(dataElement);
     const onDataElementChange = (val: {
       label: string;
@@ -199,7 +199,7 @@ export const DataElementReferenceDataEditor = observer(
               className="btn--dark btn--sm data-element-reference-editor__value-btn"
               onClick={visitData}
               tabIndex={-1}
-              title={'See data element'}
+              title="See data element"
             >
               <LongArrowRightIcon />
             </button>
@@ -265,7 +265,7 @@ export function renderEmbeddedDataEditor(
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLData_LegendStudioApplicationPlugin_Extension
+              plugin as DSL_Data_LegendStudioApplicationPlugin_Extension
             ).getExtraEmbeddedDataEditorRenderers?.() ?? [],
         );
     for (const editorRenderer of extraEmbeddedDataEditorRenderers) {
@@ -288,12 +288,12 @@ export function renderEmbeddedDataEditor(
             </div>
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           <UnsupportedEditorPanel
             text="Can't display this embedded data in form-mode"
             isReadOnly={isReadOnly}
           />
-        </div>
+        </PanelContent>
       </div>
     );
   }

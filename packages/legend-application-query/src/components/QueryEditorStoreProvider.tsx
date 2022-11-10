@@ -19,18 +19,13 @@ import { useLocalObservable } from 'mobx-react-lite';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   type QueryEditorStore,
-  CreateQueryEditorStore,
+  MappingQueryCreatorStore,
   ExistingQueryEditorStore,
-  ServiceQueryEditorStore,
+  ServiceQueryCreatorStore,
 } from '../stores/QueryEditorStore.js';
-import {
-  parseGAVCoordinates,
-  useDepotServerClient,
-} from '@finos/legend-server-depot';
-import {
-  useLegendQueryApplicationStore,
-  useLegendQueryBaseStore,
-} from './LegendQueryBaseStoreProvider.js';
+import { useDepotServerClient } from '@finos/legend-server-depot';
+import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import { parseGAVCoordinates } from '@finos/legend-storage';
 
 export const QueryEditorStoreContext = createContext<
   QueryEditorStore | undefined
@@ -42,13 +37,11 @@ export const ExistingQueryEditorStoreProvider: React.FC<{
 }> = ({ children, queryId }) => {
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new ExistingQueryEditorStore(
         applicationStore,
         depotServerClient,
-        baseStore.pluginManager,
         queryId,
       ),
   );
@@ -59,29 +52,25 @@ export const ExistingQueryEditorStoreProvider: React.FC<{
   );
 };
 
-export const CreateQueryEditorStoreProvider: React.FC<{
+export const MappingQueryCreatorStoreProvider: React.FC<{
   children: React.ReactNode;
   gav: string;
   mappingPath: string;
   runtimePath: string;
-  classPath: string | undefined;
-}> = ({ children, gav, mappingPath, runtimePath, classPath }) => {
+}> = ({ children, gav, mappingPath, runtimePath }) => {
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
-      new CreateQueryEditorStore(
+      new MappingQueryCreatorStore(
         applicationStore,
         depotServerClient,
-        baseStore.pluginManager,
         groupId,
         artifactId,
         versionId,
         mappingPath,
         runtimePath,
-        classPath,
       ),
   );
   return (
@@ -91,7 +80,7 @@ export const CreateQueryEditorStoreProvider: React.FC<{
   );
 };
 
-export const ServiceQueryEditorStoreProvider: React.FC<{
+export const ServiceQueryCreatorStoreProvider: React.FC<{
   children: React.ReactNode;
   gav: string;
   servicePath: string;
@@ -100,13 +89,11 @@ export const ServiceQueryEditorStoreProvider: React.FC<{
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
-      new ServiceQueryEditorStore(
+      new ServiceQueryCreatorStore(
         applicationStore,
         depotServerClient,
-        baseStore.pluginManager,
         groupId,
         artifactId,
         versionId,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, makeAutoObservable, flowResult } from 'mobx';
+import { observable, action, flowResult, makeObservable, flow } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import {
   type GeneratorFn,
@@ -22,6 +22,7 @@ import {
   assertErrorThrown,
   LogEvent,
   ActionState,
+  IllegalStateError,
 } from '@finos/legend-shared';
 import { generateSetupRoute } from '../LegendStudioRouter.js';
 import {
@@ -31,9 +32,12 @@ import {
   Project,
   Review,
   Workspace,
-  WorkspaceAccessType,
 } from '@finos/legend-server-sdlc';
 import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
+import {
+  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
+} from '@finos/legend-application';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -41,107 +45,52 @@ interface ImportProjectSuccessReport {
   reviewUrl: string;
 }
 
-export interface ProjectOption {
-  label: string;
-  value: string;
-}
-
-const buildProjectOption = (project: Project): ProjectOption => ({
-  label: project.name,
-  value: project.projectId,
-});
-
-export interface WorkspaceOption {
-  label: string;
-  value: Workspace;
-  __isNew__?: boolean | undefined;
-}
-
-const buildWorkspaceOption = (workspace: Workspace): WorkspaceOption => ({
-  label: workspace.workspaceId,
-  value: workspace,
-});
-
-export interface WorkspaceIdentifier {
-  workspaceId: string;
-  workspaceType: WorkspaceType;
-}
-
 export class WorkspaceSetupStore {
   applicationStore: LegendStudioApplicationStore;
   sdlcServerClient: SDLCServerClient;
+  initState = ActionState.create();
 
-  currentProjectId?: string | undefined;
-  currentWorkspaceIdentifier?: WorkspaceIdentifier | undefined;
-  projects?: Map<string, Project> | undefined;
-  workspacesByProject = new Map<string, Map<string, Workspace>>();
+  projects: Project[] = [];
+  currentProject?: Project | undefined;
+  loadProjectsState = ActionState.create();
+  createOrImportProjectState = ActionState.create();
+  importProjectSuccessReport?: ImportProjectSuccessReport | undefined;
+  showCreateProjectModal = false;
+
+  workspaces: Workspace[] = [];
+  currentWorkspace?: Workspace | undefined;
   loadWorkspacesState = ActionState.create();
   createWorkspaceState = ActionState.create();
-  createOrImportProjectState = ActionState.create();
-  loadProjectsState = ActionState.create();
-  showCreateProjectModal = false;
   showCreateWorkspaceModal = false;
-  importProjectSuccessReport?: ImportProjectSuccessReport | undefined;
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
   ) {
-    makeAutoObservable(this, {
-      applicationStore: false,
-      sdlcServerClient: false,
+    makeObservable(this, {
+      projects: observable,
+      currentProject: observable,
+      importProjectSuccessReport: observable,
+      showCreateProjectModal: observable,
+      workspaces: observable,
+      currentWorkspace: observable,
+      showCreateWorkspaceModal: observable,
       setShowCreateProjectModal: action,
       setShowCreateWorkspaceModal: action,
-      setCurrentProjectId: action,
-      setCurrentWorkspaceIdentifier: action,
       setImportProjectSuccessReport: action,
+      changeWorkspace: action,
+      resetProject: action,
+      resetWorkspace: action,
+      initialize: flow,
+      loadProjects: flow,
+      changeProject: flow,
+      createProject: flow,
+      importProject: flow,
+      createWorkspace: flow,
     });
 
     this.applicationStore = applicationStore;
     this.sdlcServerClient = sdlcServerClient;
-  }
-
-  get currentProject(): Project | undefined {
-    return this.projects && this.currentProjectId
-      ? this.projects.get(this.currentProjectId)
-      : undefined;
-  }
-
-  get currentProjectWorkspaces(): Map<string, Workspace> | undefined {
-    return this.currentProjectId
-      ? this.workspacesByProject.get(this.currentProjectId)
-      : undefined;
-  }
-
-  get currentWorkspace(): Workspace | undefined {
-    return this.currentProjectWorkspaces && this.currentWorkspaceCompositeId
-      ? this.currentProjectWorkspaces.get(this.currentWorkspaceCompositeId)
-      : undefined;
-  }
-
-  get currentWorkspaceCompositeId(): string | undefined {
-    return this.currentWorkspaceIdentifier
-      ? this.buildWorkspaceCompositeId(this.currentWorkspaceIdentifier)
-      : undefined;
-  }
-
-  init(
-    workspaceId: string | undefined,
-    groupWorkspaceId: string | undefined,
-  ): void {
-    if (workspaceId) {
-      this.setCurrentWorkspaceIdentifier({
-        workspaceId,
-        workspaceType: WorkspaceType.USER,
-      });
-    } else if (groupWorkspaceId) {
-      this.setCurrentWorkspaceIdentifier({
-        workspaceId: groupWorkspaceId,
-        workspaceType: WorkspaceType.GROUP,
-      });
-    } else {
-      this.setCurrentWorkspaceIdentifier(undefined);
-    }
   }
 
   setShowCreateProjectModal(val: boolean): void {
@@ -152,46 +101,183 @@ export class WorkspaceSetupStore {
     this.showCreateWorkspaceModal = val;
   }
 
-  setCurrentProjectId(id: string | undefined): void {
-    this.currentProjectId = id;
-  }
-
-  setCurrentWorkspaceIdentifier(val: WorkspaceIdentifier | undefined): void {
-    this.currentWorkspaceIdentifier = val;
-  }
-
   setImportProjectSuccessReport(
     importProjectSuccessReport: ImportProjectSuccessReport | undefined,
   ): void {
     this.importProjectSuccessReport = importProjectSuccessReport;
   }
 
-  *fetchProjects(): GeneratorFn<void> {
-    this.loadProjectsState.inProgress();
-    try {
-      const projects = (
-        (yield this.sdlcServerClient.getProjects(
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-        )) as PlainObject<Project>[]
-      ).map((v) => Project.serialization.fromJson(v));
-      const projectIndex = observable<string, Project>(new Map());
-      projects.forEach((project) =>
-        projectIndex.set(project.projectId, project),
+  resetProject(): void {
+    this.currentProject = undefined;
+    this.workspaces = [];
+    this.currentWorkspace = undefined;
+    this.applicationStore.navigator.updateCurrentLocation(
+      generateSetupRoute(undefined, undefined, undefined),
+    );
+  }
+
+  resetWorkspace(): void {
+    this.currentWorkspace = undefined;
+    if (this.currentProject) {
+      this.applicationStore.navigator.updateCurrentLocation(
+        generateSetupRoute(this.currentProject.projectId, undefined, undefined),
       );
-      this.projects = projectIndex;
-      this.loadProjectsState.pass();
+    }
+  }
+
+  *initialize(
+    projectId: string | undefined,
+    workspaceId: string | undefined,
+    groupWorkspaceId: string | undefined,
+  ): GeneratorFn<void> {
+    if (!this.initState.isInInitialState) {
+      return;
+    }
+    this.initState.inProgress();
+
+    try {
+      if (projectId) {
+        let project: Project;
+        try {
+          project = Project.serialization.fromJson(
+            (yield this.sdlcServerClient.getProject(
+              projectId,
+            )) as PlainObject<Project>,
+          );
+        } catch {
+          this.applicationStore.navigator.updateCurrentLocation(
+            generateSetupRoute(undefined),
+          );
+          this.initState.pass();
+          return;
+        }
+        yield flowResult(
+          this.changeProject(
+            project,
+            workspaceId
+              ? { workspaceId: workspaceId, workspaceType: WorkspaceType.USER }
+              : groupWorkspaceId
+              ? {
+                  workspaceId: groupWorkspaceId,
+                  workspaceType: WorkspaceType.GROUP,
+                }
+              : undefined,
+          ),
+        );
+      }
+
+      this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
       );
       this.applicationStore.notifyError(error);
+      this.initState.fail();
+    }
+  }
+
+  *loadProjects(searchText: string): GeneratorFn<void> {
+    const isValidSearchString =
+      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
+    this.loadProjectsState.inProgress();
+    try {
+      this.projects = (
+        (yield this.sdlcServerClient.getProjects(
+          undefined,
+          isValidSearchString ? searchText : undefined,
+          undefined,
+          DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+        )) as PlainObject<Project>[]
+      ).map((v) => Project.serialization.fromJson(v));
+      this.loadProjectsState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
       this.loadProjectsState.fail();
     }
+  }
+
+  *changeProject(
+    project: Project,
+    workspaceInfo?:
+      | {
+          workspaceId: string;
+          workspaceType: WorkspaceType;
+        }
+      | undefined,
+  ): GeneratorFn<void> {
+    this.loadWorkspacesState.inProgress();
+
+    try {
+      this.currentProject = project;
+
+      const workspacesInConflictResolutionIds = (
+        (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(
+          project.projectId,
+        )) as Workspace[]
+      ).map((workspace) => workspace.workspaceId);
+
+      this.workspaces = (
+        (yield this.sdlcServerClient.getWorkspaces(
+          project.projectId,
+        )) as PlainObject<Workspace>[]
+      )
+        .map((v) => Workspace.serialization.fromJson(v))
+        .filter(
+          // NOTE we don't handle workspaces that only have conflict resolution but no standard workspace
+          // since that indicates bad state of the SDLC server
+          (workspace) =>
+            !workspacesInConflictResolutionIds.includes(workspace.workspaceId),
+        );
+
+      if (workspaceInfo) {
+        const matchingWorkspace = this.workspaces.find(
+          (workspace) =>
+            workspace.workspaceType === workspaceInfo.workspaceType &&
+            workspace.workspaceId === workspaceInfo.workspaceId,
+        );
+        if (matchingWorkspace) {
+          this.changeWorkspace(matchingWorkspace);
+        } else {
+          this.applicationStore.navigator.updateCurrentLocation(
+            generateSetupRoute(project.projectId),
+          );
+        }
+      } else {
+        this.currentWorkspace = undefined;
+        this.applicationStore.navigator.updateCurrentLocation(
+          generateSetupRoute(project.projectId),
+        );
+      }
+
+      this.loadWorkspacesState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.log.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+        error,
+      );
+      this.applicationStore.notifyError(error);
+      this.loadWorkspacesState.fail();
+    }
+  }
+
+  changeWorkspace(workspace: Workspace): void {
+    if (!this.currentProject) {
+      throw new IllegalStateError(
+        `Can't change workspace: project is not specified`,
+      );
+    }
+    this.currentWorkspace = workspace;
+    this.applicationStore.navigator.updateCurrentLocation(
+      generateSetupRoute(
+        this.currentProject.projectId,
+        workspace.workspaceId,
+        workspace.workspaceType,
+      ),
+    );
   }
 
   *createProject(
@@ -215,11 +301,9 @@ export class WorkspaceSetupStore {
       this.applicationStore.notifySuccess(
         `Project '${name}' is succesfully created`,
       );
-      yield flowResult(this.fetchProjects());
-      this.projects?.set(createdProject.projectId, createdProject);
-      this.applicationStore.navigator.goTo(
-        generateSetupRoute(createdProject.projectId),
-      );
+
+      yield flowResult(this.changeProject(createdProject));
+
       this.setShowCreateProjectModal(false);
     } catch (error) {
       assertErrorThrown(error);
@@ -254,75 +338,14 @@ export class WorkspaceSetupStore {
         projectId: report.project.projectId,
         reviewUrl: importReview.webURL,
       });
-      yield flowResult(this.fetchProjects());
-      this.projects?.set(report.project.projectId, report.project);
-      this.setCurrentProjectId(report.project.projectId);
+
+      yield flowResult(this.changeProject(report.project));
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
     } finally {
       this.createOrImportProjectState.reset();
     }
-  }
-
-  get projectOptions(): ProjectOption[] {
-    return this.projects
-      ? Array.from(this.projects.values()).map(buildProjectOption)
-      : [];
-  }
-
-  get currentProjectWorkspaceOptions(): WorkspaceOption[] {
-    return this.currentProjectWorkspaces
-      ? Array.from(this.currentProjectWorkspaces.values()).map(
-          buildWorkspaceOption,
-        )
-      : [];
-  }
-
-  *fetchWorkspaces(projectId: string): GeneratorFn<void> {
-    this.loadWorkspacesState.inProgress();
-    try {
-      const workspacesInConflictResolutionIds = (
-        (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(
-          projectId,
-        )) as Workspace[]
-      ).map((workspace) => workspace.workspaceId);
-      const workspaceIndex = observable<string, Workspace>(new Map());
-
-      (
-        (yield this.sdlcServerClient.getWorkspaces(
-          projectId,
-        )) as PlainObject<Workspace>[]
-      )
-        .map((v) => Workspace.serialization.fromJson(v))
-        .forEach((workspace) => {
-          // NOTE we don't handle workspaces that only have conflict resolution but no standard workspace
-          // since that indicates bad state of the SDLC server
-          if (
-            workspacesInConflictResolutionIds.includes(workspace.workspaceId)
-          ) {
-            workspace.accessType = WorkspaceAccessType.CONFLICT_RESOLUTION;
-          }
-          workspaceIndex.set(
-            this.buildWorkspaceCompositeId(workspace),
-            workspace,
-          );
-        });
-      this.workspacesByProject.set(projectId, workspaceIndex);
-    } catch (error) {
-      assertErrorThrown(error);
-      // TODO handle error when fetching workspaces for an individual project
-      this.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
-        error,
-      );
-    } finally {
-      this.loadWorkspacesState.reset();
-    }
-  }
-
-  buildWorkspaceCompositeId(workspace: WorkspaceIdentifier): string {
-    return `${workspace.workspaceType}/${workspace.workspaceId}`;
   }
 
   *createWorkspace(
@@ -332,35 +355,32 @@ export class WorkspaceSetupStore {
   ): GeneratorFn<void> {
     this.createWorkspaceState.inProgress();
     try {
-      const workspace = Workspace.serialization.fromJson(
+      const newWorkspace = Workspace.serialization.fromJson(
         (yield this.sdlcServerClient.createWorkspace(
           projectId,
           workspaceId,
           workspaceType,
         )) as PlainObject<Workspace>,
       );
-      const existingWorkspaceForProject: Map<string, Workspace> | undefined =
-        this.workspacesByProject.get(projectId);
-      if (existingWorkspaceForProject) {
-        existingWorkspaceForProject.set(
-          this.buildWorkspaceCompositeId(workspace),
-          workspace,
-        );
-      } else {
-        const workspaceIndex = observable<string, Workspace>(new Map());
-        workspaceIndex.set(
-          this.buildWorkspaceCompositeId(workspace),
-          workspace,
-        );
-        this.workspacesByProject.set(projectId, workspaceIndex);
-      }
+
       this.applicationStore.notifySuccess(
-        `Workspace '${workspace.workspaceId}' is succesfully created`,
+        `Workspace '${newWorkspace.workspaceId}' is succesfully created`,
       );
-      this.setCurrentProjectId(projectId);
-      this.setCurrentWorkspaceIdentifier(workspace);
+
+      const matchingWorkspace = this.workspaces.find(
+        (workspace) =>
+          workspace.workspaceId === newWorkspace.workspaceId &&
+          workspace.workspaceType === newWorkspace.workspaceType,
+      );
+      const newWorkspaceToSelect = matchingWorkspace ?? newWorkspace;
+      this.changeWorkspace(newWorkspaceToSelect);
       this.setShowCreateWorkspaceModal(false);
-      this.createWorkspaceState.pass();
+
+      // NOTE: do this after closing the modal to not interfere
+      // with validation of existing workspaces in create workspace modal
+      if (!matchingWorkspace) {
+        this.workspaces.push(newWorkspace);
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
@@ -368,7 +388,8 @@ export class WorkspaceSetupStore {
         error,
       );
       this.applicationStore.notifyError(error);
-      this.createWorkspaceState.fail();
+    } finally {
+      this.createWorkspaceState.reset();
     }
   }
 }

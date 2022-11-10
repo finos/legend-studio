@@ -27,8 +27,8 @@ import {
   EDITOR_THEME,
   EDITOR_LANGUAGE,
   useApplicationStore,
+  createPassThroughOnKeyHandler,
 } from '@finos/legend-application';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   type MergeEditorComparisonViewInfo,
   type MergeConflict,
@@ -46,17 +46,17 @@ import {
   clsx,
   CustomSelectorInput,
   disposeEditor,
-  disableEditorHotKeys,
-  baseTextEditorSettings,
-  moveToPosition,
+  getBaseTextEditorOptions,
+  moveCursorToPosition,
   setErrorMarkers,
-  revealError,
   resetLineNumberGutterWidth,
   getEditorValue,
   normalizeLineEnding,
   CompareIcon,
   ArrowDownIcon,
   ArrowUpIcon,
+  useResizeDetector,
+  clearMarkers,
 } from '@finos/legend-art';
 import { TextDiffView } from '../../../shared/DiffView.js';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
@@ -161,7 +161,7 @@ const MergeConflictEditor = observer(
       ? normalizeLineEnding(conflictEditorState.mergedText)
       : '';
     const error = conflictEditorState.mergeEditorParserError;
-    const decorations = useRef<string[]>([]);
+    const decorations = useRef<monacoEditorAPI.IEditorDecorationsCollection>();
     const mergeConflictResolutionCodeLensDisposer = useRef<
       IDisposable | undefined
     >(undefined);
@@ -193,14 +193,14 @@ const MergeConflictEditor = observer(
       if (!editor && textInputRef.current) {
         const element = textInputRef.current;
         const _editor = monacoEditorAPI.create(element, {
-          ...baseTextEditorSettings,
+          ...getBaseTextEditorOptions(),
           theme: EDITOR_THEME.LEGEND,
           language: EDITOR_LANGUAGE.PURE,
           minimap: { enabled: false },
           formatOnType: true,
           formatOnPaste: true,
         });
-        disableEditorHotKeys(_editor);
+        _editor.onKeyDown(createPassThroughOnKeyHandler());
         _editor.focus(); // focus on the editor initially so we can correctly compute next/prev conflict chunks
         setEditor(_editor);
       }
@@ -376,22 +376,22 @@ const MergeConflictEditor = observer(
       if (editorModel) {
         editorModel.updateOptions({ tabSize: TAB_SIZE });
         if (error?.sourceInformation) {
-          setErrorMarkers(
-            editorModel,
-            error.message,
-            error.sourceInformation.startLine,
-            error.sourceInformation.startColumn,
-            error.sourceInformation.endLine,
-            error.sourceInformation.endColumn,
-          );
+          setErrorMarkers(editorModel, [
+            {
+              message: error.message,
+              startLineNumber: error.sourceInformation.startLine,
+              startColumn: error.sourceInformation.startColumn,
+              endLineNumber: error.sourceInformation.endLine,
+              endColumn: error.sourceInformation.endColumn,
+            },
+          ]);
         } else {
-          monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
+          clearMarkers();
         }
       }
 
       // decoration/highlighting for merge conflicts
-      decorations.current = editor.deltaDecorations(
-        decorations.current,
+      decorations.current = editor.createDecorationsCollection(
         conflictEditorState.mergeConflicts.flatMap((conflict) => {
           const currentChangeContentStartLine = conflict.startHeader + 1;
           const currentChangeContentEndLine =
@@ -550,11 +550,10 @@ const MergeConflictEditor = observer(
     useEffect(() => {
       if (editor) {
         if (error?.sourceInformation) {
-          revealError(
-            editor,
-            error.sourceInformation.startLine,
-            error.sourceInformation.startColumn,
-          );
+          moveCursorToPosition(editor, {
+            lineNumber: error.sourceInformation.startLine,
+            column: error.sourceInformation.startColumn,
+          });
         }
       }
     }, [editor, error, error?.sourceInformation]);
@@ -564,11 +563,11 @@ const MergeConflictEditor = observer(
         editor &&
         conflictEditorState.currentMergeEditorConflict !== undefined
       ) {
-        moveToPosition(
-          editor,
-          conflictEditorState.currentMergeEditorConflict.startHeader,
-          1,
-        );
+        moveCursorToPosition(editor, {
+          lineNumber:
+            conflictEditorState.currentMergeEditorConflict.startHeader,
+          column: 1,
+        });
       }
     }, [
       editor,
@@ -719,7 +718,7 @@ export const EntityChangeConflictEditor = observer(
               className="btn--dark btn--sm entity-change-conflict-editor__header__action"
               disabled={!conflictEditorState.previousConflict}
               onClick={goToPreviousConflict}
-              title={'Previous conflict'}
+              title="Previous conflict"
             >
               <ArrowUpIcon />
             </button>
@@ -727,7 +726,7 @@ export const EntityChangeConflictEditor = observer(
               className="btn--dark btn--sm entity-change-conflict-editor__header__action"
               disabled={!conflictEditorState.nextConflict}
               onClick={goToNextConflict}
-              title={'Next conflict'}
+              title="Next conflict"
             >
               <ArrowDownIcon />
             </button>

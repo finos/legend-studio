@@ -15,10 +15,6 @@
  */
 
 import { assertNonEmptyString } from '@finos/legend-shared';
-import {
-  PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
-} from '../../../../../../../graph/MetaModelConst.js';
 import type { PackageableElement } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import { Profile } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Profile.js';
 import { Enumeration } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
@@ -67,6 +63,9 @@ import { V1_checkDuplicatedElement } from './V1_ElementBuilder.js';
 import type { Package } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 import { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
+import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
+import { Multiplicity } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
+import { PrimitiveType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -243,18 +242,14 @@ export class V1_ElementFirstPassBuilder
       element.name,
       `Function 'name' field is missing or empty`,
     );
+    const name = V1_buildFunctionSignature(element);
     const func = new ConcreteFunctionDefinition(
-      element.name,
+      name,
       // This is just a stub to fill in when we first create the function
-      PackageableElementImplicitReference.create(
-        this.context.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
-        '',
-      ),
-      this.context.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
-      ),
+      PackageableElementImplicitReference.create(PrimitiveType.STRING, ''),
+      Multiplicity.ZERO_MANY,
     );
-    const path = V1_buildFullPath(element.package, element.name);
+    const path = V1_buildFullPath(element.package, name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
       getOrCreateGraphPackage(

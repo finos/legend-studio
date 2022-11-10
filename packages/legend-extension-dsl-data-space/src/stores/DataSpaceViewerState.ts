@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   type ClassView,
   type DiagramRenderer,
@@ -42,6 +43,7 @@ export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
 }
 
 export class DataSpaceViewerState {
+  readonly applicationStore: GenericLegendApplicationStore;
   groupId: string;
   artifactId: string;
   versionId: string;
@@ -51,29 +53,38 @@ export class DataSpaceViewerState {
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_OVERVIEW;
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
-  viewProject?:
-    | ((
-        groupId: string,
-        artifactId: string,
-        versionId: string,
-        entityPath: string | undefined,
-      ) => void)
-    | undefined;
-  onDiagramClassDoubleClick?: ((classView: ClassView) => void) | undefined;
+  viewProject: (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entityPath: string | undefined,
+  ) => void;
+  viewSDLCProject: (
+    groupId: string,
+    artifactId: string,
+    entityPath: string | undefined,
+  ) => Promise<void>;
+  onDiagramClassDoubleClick: (classView: ClassView) => void;
 
   constructor(
+    applicationStore: GenericLegendApplicationStore,
     groupId: string,
     artifactId: string,
     versionId: string,
     dataSpaceAnalysisResult: DataSpaceAnalysisResult,
-    options?: {
-      viewProject?: (
+    actions: {
+      viewProject: (
         groupId: string,
         artifactId: string,
         versionId: string,
         entityPath: string | undefined,
       ) => void;
-      onDiagramClassDoubleClick?: (classView: ClassView) => void;
+      viewSDLCProject: (
+        groupId: string,
+        artifactId: string,
+        entityPath: string | undefined,
+      ) => Promise<void>;
+      onDiagramClassDoubleClick: (classView: ClassView) => void;
     },
   ) {
     makeObservable(this, {
@@ -90,6 +101,7 @@ export class DataSpaceViewerState {
       setCurrentRuntime: action,
     });
 
+    this.applicationStore = applicationStore;
     this.dataSpaceAnalysisResult = dataSpaceAnalysisResult;
     this.groupId = groupId;
     this.artifactId = artifactId;
@@ -100,8 +112,9 @@ export class DataSpaceViewerState {
     this.currentDiagram = getNullableFirstElement(
       this.dataSpaceAnalysisResult.featuredDiagrams,
     );
-    this.viewProject = options?.viewProject;
-    this.onDiagramClassDoubleClick = options?.onDiagramClassDoubleClick;
+    this.viewProject = actions.viewProject;
+    this.viewSDLCProject = actions.viewSDLCProject;
+    this.onDiagramClassDoubleClick = actions.onDiagramClassDoubleClick;
   }
 
   get renderer(): DiagramRenderer {
@@ -164,6 +177,6 @@ export class DataSpaceViewerState {
   setupRenderer(): void {
     this.renderer.setIsReadOnly(true);
     this.renderer.onClassViewDoubleClick = (classView: ClassView): void =>
-      this.onDiagramClassDoubleClick?.(classView);
+      this.onDiagramClassDoubleClick(classView);
   }
 }

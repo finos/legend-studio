@@ -29,6 +29,7 @@ import {
   TEST_DATA__FunctionRoundtrip,
   TEST_DATA__MeasureRoundtrip,
   TEST_DATA__ClassWithComplexConstraint,
+  TEST_DATA__OverloadedFunctionsRoundtrip,
 } from './roundtripTestData/TEST_DATA__DomainRoundtrip.js';
 import {
   testConnectionRoundtrip,
@@ -45,6 +46,7 @@ import {
   TEST_DATA__FlatDataInputDataRoundtrip,
   TEST_DATA__FlatDataRoundtrip2,
   TEST_DATA__EmbeddedFlatDataMappingRoundtrip,
+  TEST_DATA__FlatDataAssociationMapping,
 } from './roundtripTestData/TEST_DATA__FlatDataRoundtrip.js';
 import { TEST_DATA__GenerationSpecificationRoundtrip } from './roundtripTestData/TEST_DATA__GenerationSpecification.js';
 import {
@@ -92,6 +94,10 @@ describe(unitTest('Domain import resolution roundtrip'), () => {
     ['Enumeration', TEST_DATA__EnumerationRoundtrip],
     ['Association', TEST_DATA__AssociationRoundtrip],
     ['Function', TEST_DATA__FunctionRoundtrip],
+    [
+      'Overloaded functions import resolution roundtrip',
+      TEST_DATA__OverloadedFunctionsRoundtrip,
+    ],
     ['Measure', TEST_DATA__MeasureRoundtrip],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
@@ -137,6 +143,7 @@ describe(unitTest('Flat-data import resolution roundtrip'), () => {
     ['Simple flat-data store', TEST_DATA__FlatDataRoundtrip],
     ['Complex flat-data store', TEST_DATA__FlatDataRoundtrip2],
     ['Flat-data mapping', TEST_DATA__FlatDataMappingRoundtrip],
+    ['Flat-data association mapping', TEST_DATA__FlatDataAssociationMapping],
     ['Flat-data embedded mapping', TEST_DATA__EmbeddedFlatDataMappingRoundtrip],
     ['Flat-data connection', TEST_DATA__FlatDataConnectionRoundtrip],
     [

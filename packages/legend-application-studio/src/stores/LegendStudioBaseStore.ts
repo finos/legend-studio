@@ -28,6 +28,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   ApplicationTelemetry,
+  matchPath,
 } from '@finos/legend-application';
 import {
   action,
@@ -43,13 +44,13 @@ import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
 import { LegendStudioEventService } from './LegendStudioEventService.js';
-import type { LegendStudioApplicationPlugin } from './LegendStudioApplicationPlugin.js';
+import { LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN } from './LegendStudioRouter.js';
 
 const UNKNOWN_USER_ID = '(unknown)';
 
 export type LegendStudioApplicationStore = ApplicationStore<
   LegendStudioApplicationConfig,
-  LegendStudioApplicationPlugin
+  LegendStudioPluginManager
 >;
 
 export class LegendStudioBaseStore {
@@ -60,14 +61,13 @@ export class LegendStudioBaseStore {
 
   initState = ActionState.create();
 
-  isSDLCAuthorized = false;
+  isSDLCAuthorized: boolean | undefined = false;
   SDLCServerTermsOfServicesUrlsToView: string[] = [];
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendStudioPluginManager,
   ) {
     makeObservable<LegendStudioBaseStore, 'initializeSDLCServerClient'>(this, {
       isSDLCAuthorized: observable,
@@ -82,7 +82,7 @@ export class LegendStudioBaseStore {
     this.sdlcServerClient = sdlcServerClient;
     this.depotServerClient = depotServerClient;
 
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
 
     // Register plugins
     this.sdlcServerClient.setTracerService(this.applicationStore.tracerService);
@@ -100,31 +100,46 @@ export class LegendStudioBaseStore {
     }
     this.initState.inProgress();
 
-    // setup SDLC server client
-    yield flowResult(this.initializeSDLCServerClient());
+    // authorize SDLC, unless navigation location match SDLC-bypassed patterns
+    if (
+      !matchPath(this.applicationStore.navigator.getCurrentLocation(), [
+        LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
+        LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+      ])
+    ) {
+      // setup SDLC server client
+      yield flowResult(this.initializeSDLCServerClient());
 
-    let currentUserID = UNKNOWN_USER_ID;
-    try {
-      const currentUser = User.serialization.fromJson(
-        (yield this.sdlcServerClient.getCurrentUser()) as PlainObject<User>,
-      );
-      this.sdlcServerClient.setCurrentUser(currentUser);
-      currentUserID = currentUser.userId;
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
-        error,
-      );
-      this.applicationStore.notifyWarning(error.message);
+      let currentUserID = UNKNOWN_USER_ID;
+      try {
+        const currentUser = User.serialization.fromJson(
+          (yield this.sdlcServerClient.getCurrentUser()) as PlainObject<User>,
+        );
+        this.sdlcServerClient.setCurrentUser(currentUser);
+        currentUserID = currentUser.userId;
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.log.error(
+          LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
+          error,
+        );
+        this.applicationStore.notifyWarning(error.message);
+      }
+
+      // setup telemetry service
+      this.applicationStore.telemetryService.setUserId(currentUserID);
+    } else {
+      this.isSDLCAuthorized = undefined;
     }
-
-    // setup telemetry service
-    this.applicationStore.telemetryService.setUserId(currentUserID);
 
     ApplicationTelemetry.logEvent_ApplicationInitialized(
       this.applicationStore.telemetryService,
       {
+        application: {
+          name: this.applicationStore.config.appName,
+          version: this.applicationStore.config.appVersion,
+          env: this.applicationStore.config.env,
+        },
         browser: {
           userAgent: navigator.userAgent,
         },
@@ -146,10 +161,10 @@ export class LegendStudioBaseStore {
       this.isSDLCAuthorized =
         (yield this.sdlcServerClient.isAuthorized()) as boolean;
       if (!this.isSDLCAuthorized) {
-        this.applicationStore.navigator.jumpTo(
+        this.applicationStore.navigator.goToAddress(
           SDLCServerClient.authorizeCallbackUrl(
             this.applicationStore.config.sdlcServerUrl,
-            this.applicationStore.navigator.getCurrentLocation(),
+            this.applicationStore.navigator.getCurrentAddress(),
           ),
         );
       } else {
@@ -169,7 +184,7 @@ export class LegendStudioBaseStore {
                 default: true,
                 handler: (): void =>
                   this.SDLCServerTermsOfServicesUrlsToView.forEach((url) =>
-                    this.applicationStore.navigator.openNewWindow(url),
+                    this.applicationStore.navigator.visitAddress(url),
                   ),
                 type: ActionAlertActionType.PROCEED,
               },
@@ -185,7 +200,8 @@ export class LegendStudioBaseStore {
           });
         }
 
-        // fetch server features config
+        // fetch server features config and platforms
+        yield this.sdlcServerClient.fetchServerPlatforms();
         yield this.sdlcServerClient.fetchServerFeaturesConfiguration();
       }
     } catch (error) {
@@ -206,7 +222,7 @@ export class LegendStudioBaseStore {
               type: ActionAlertActionType.PROCEED,
               default: true,
               handler: (): void => {
-                this.applicationStore.navigator.openNewWindow(
+                this.applicationStore.navigator.visitAddress(
                   this.sdlcServerClient.currentUserUrl,
                 );
                 this.applicationStore.setBlockingAlert({

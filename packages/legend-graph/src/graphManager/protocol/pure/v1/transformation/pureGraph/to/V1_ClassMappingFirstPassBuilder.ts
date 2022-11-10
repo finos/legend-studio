@@ -47,7 +47,7 @@ import type { InstanceSetImplementation } from '../../../../../../../graph/metam
 import { V1_buildAggregateContainer } from './helpers/V1_AggregationAwareClassMappingBuilderHelper.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './helpers/V1_ValueSpecificationPathResolver.js';
 import { V1_buildRelationalMappingFilter } from './helpers/V1_RelationalClassMappingBuilderHelper.js';
-import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
 import { MergeOperationSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MergeOperationSetImplementation.js';
 
@@ -72,7 +72,7 @@ export class V1_ClassMappingFirstPassBuilder
     const extraClassMappingBuilders = this.context.extensions.plugins.flatMap(
       (plugin) =>
         (
-          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+          plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraClassMappingFirstPassBuilders?.() ?? [],
     );
     for (const builder of extraClassMappingBuilders) {

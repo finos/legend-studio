@@ -31,23 +31,16 @@ import {
   fromGrammarString,
   toGrammarString,
   createUrlStringFromData,
-  losslessParse,
-  losslessStringify,
+  parseLosslessJSON,
+  stringifyLosslessJSON,
   tryToMinifyLosslessJSONString,
   tryToFormatLosslessJSONString,
   tryToMinifyJSONString,
   ContentType,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore.js';
-import {
-  observable,
-  flow,
-  action,
-  makeObservable,
-  makeAutoObservable,
-  flowResult,
-} from 'mobx';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil.js';
+import { observable, flow, action, makeObservable, flowResult } from 'mobx';
+import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
 import {
   type MappingTest,
   type RawLambda,
@@ -83,13 +76,10 @@ import {
   stub_Class,
   generateIdentifiedConnectionId,
   DEPRECATED__validate_MappingTest,
+  ModelStore,
 } from '@finos/legend-graph';
-import {
-  ExecutionPlanState,
-  LambdaEditorState,
-  TAB_SIZE,
-} from '@finos/legend-application';
-import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
+import { ExecutionPlanState, TAB_SIZE } from '@finos/legend-application';
+import { flatData_setData } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
   mappingTest_setAssert,
@@ -97,12 +87,13 @@ import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
+} from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
+} from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
+import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -243,9 +234,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
       PackageableElementExplicitReference.create(this.mapping),
     );
     const connection = new JsonModelConnection(
-      PackageableElementExplicitReference.create(
-        this.editorStore.graphManagerState.graph.modelStore,
-      ),
+      PackageableElementExplicitReference.create(ModelStore.INSTANCE),
       PackageableElementExplicitReference.create(
         this.inputData.sourceClass.value,
       ),
@@ -396,9 +385,10 @@ export enum MAPPING_TEST_EDITOR_TAB_TYPE {
 
 export class MappingTestState {
   readonly uuid = uuid();
+  readonly editorStore: EditorStore;
+  readonly mappingEditorState: MappingEditorState;
+
   selectedTab = MAPPING_TEST_EDITOR_TAB_TYPE.SETUP;
-  editorStore: EditorStore;
-  mappingEditorState: MappingEditorState;
   result: TEST_RESULT = TEST_RESULT.NONE;
   test: MappingTest;
   runTime = 0;
@@ -419,13 +409,25 @@ export class MappingTestState {
     test: MappingTest,
     mappingEditorState: MappingEditorState,
   ) {
-    makeAutoObservable(this, {
-      uuid: false,
-      editorStore: false,
-      mappingEditorState: false,
-      executionPlanState: false,
+    makeObservable(this, {
+      selectedTab: observable,
+      result: observable,
+      test: observable,
+      runTime: observable,
+      isSkipped: observable,
+      errorRunningTest: observable,
+      testExecutionResultText: observable,
+      isRunningTest: observable,
+      isExecutingTest: observable,
+      queryState: observable,
+      inputDataState: observable,
+      assertionState: observable,
+      isGeneratingPlan: observable,
+      executionPlanState: observable,
+      testRunPromise: observable,
       setIsRunningTest: action,
       setSelectedTab: action,
+      setTestRunPromise: action,
       resetTestRunStatus: action,
       setResult: action,
       toggleSkipTest: action,
@@ -435,6 +437,9 @@ export class MappingTestState {
       setInputDataStateBasedOnSource: action,
       updateAssertion: action,
       generatePlan: flow,
+      regenerateExpectedResult: flow,
+      runTest: flow,
+      onTestStateOpen: flow,
     });
 
     this.editorStore = editorStore;
@@ -457,9 +462,9 @@ export class MappingTestState {
     this.selectedTab = val;
   }
 
-  setTestRunPromise = (promise: Promise<ExecutionResult> | undefined): void => {
+  setTestRunPromise(promise: Promise<ExecutionResult> | undefined): void {
     this.testRunPromise = promise;
-  };
+  }
 
   buildQueryState(): MappingTestQueryState {
     const queryState = new MappingTestQueryState(
@@ -521,21 +526,26 @@ export class MappingTestState {
     this.runTime = 0;
     this.setResult(TEST_RESULT.NONE);
   }
+
   setResult(result: TEST_RESULT): void {
     this.result = result;
   }
+
   toggleSkipTest(): void {
     this.isSkipped = !this.isSkipped;
   }
-  setQueryState = (queryState: MappingTestQueryState): void => {
+
+  setQueryState(queryState: MappingTestQueryState): void {
     this.queryState = queryState;
-  };
-  setInputDataState = (inputDataState: MappingTestInputDataState): void => {
+  }
+
+  setInputDataState(inputDataState: MappingTestInputDataState): void {
     this.inputDataState = inputDataState;
-  };
-  setAssertionState = (assertionState: MappingTestAssertionState): void => {
+  }
+
+  setAssertionState(assertionState: MappingTestAssertionState): void {
     this.assertionState = assertionState;
-  };
+  }
 
   setInputDataStateBasedOnSource(
     source: MappingElementSource | undefined,
@@ -641,7 +651,7 @@ export class MappingTestState {
         this.assertionState instanceof MappingTestExpectedOutputAssertionState
       ) {
         this.assertionState.setExpectedResult(
-          losslessStringify(
+          stringifyLosslessJSON(
             extractExecutionResultValues(result),
             undefined,
             TAB_SIZE,
@@ -700,7 +710,7 @@ export class MappingTestState {
       this.setTestRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
       if (this.testRunPromise === promise) {
-        this.testExecutionResultText = losslessStringify(
+        this.testExecutionResultText = stringifyLosslessJSON(
           extractExecutionResultValues(result),
           undefined,
           TAB_SIZE,
@@ -712,7 +722,7 @@ export class MappingTestState {
           // TODO: this logic should probably be better handled in by engine mapping test runner
           assertionMatched =
             hashObject(extractExecutionResultValues(result)) ===
-            hashObject(losslessParse(this.assertionState.expectedResult));
+            hashObject(parseLosslessJSON(this.assertionState.expectedResult));
         } else {
           throw new UnsupportedOperationError();
         }

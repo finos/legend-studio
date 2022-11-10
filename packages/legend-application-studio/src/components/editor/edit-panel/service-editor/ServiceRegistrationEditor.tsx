@@ -36,7 +36,8 @@ export const ServiceRegistrationEditor = observer(() => {
   const applicationStore = useApplicationStore();
   const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
   const registrationState = serviceState.registrationState;
-  // service servers
+
+  // env & execution server
   const envOptions = registrationState.options.map((info) => ({
     label: info.env.toUpperCase(),
     value: info.env,
@@ -47,7 +48,13 @@ export const ServiceRegistrationEditor = observer(() => {
         value: registrationState.serviceEnv,
       }
     : null;
-  // service types
+  const onServerEnvChange = (
+    val: { label: string; value: string } | null,
+  ): void => {
+    registrationState.updateEnv(val?.value);
+  };
+
+  // execution mode
   const serviceTypesOptions = registrationState.executionModes.map((mode) => ({
     label: prettyCONSTName(mode),
     value: mode,
@@ -63,12 +70,8 @@ export const ServiceRegistrationEditor = observer(() => {
   ): void => {
     registrationState.updateType(val?.value);
   };
-  const onServerEnvChange = (
-    val: { label: string; value: string } | null,
-  ): void => {
-    registrationState.updateEnv(val?.value);
-  };
-  // version Projection
+
+  // version
   const selectedVersion = registrationState.projectVersion
     ? {
         label:
@@ -91,18 +94,21 @@ export const ServiceRegistrationEditor = observer(() => {
       : !registrationState.versionOptions.length
       ? 'Project has no versions'
       : undefined;
+
   // activate
   const toggleActivatePostRegistration = (): void => {
     registrationState.setActivatePostRegistration(
       !registrationState.activatePostRegistration,
     );
   };
+
   // store model for full interactive
   const toggleUseStoreModel = (): void => {
     registrationState.setUseStoreModelWithFullInteractive(
       !registrationState.TEMPORARY__useStoreModel,
     );
   };
+
   // actions
   const registerService = (): void => {
     if (selectedEnvOption && selectedServiceType) {
@@ -115,6 +121,7 @@ export const ServiceRegistrationEditor = observer(() => {
     !selectedEnvOption ||
     !selectedServiceType ||
     registrationState.registrationState.isInProgress;
+
   return (
     <div
       data-testid={LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_EDITOR}
@@ -156,7 +163,6 @@ export const ServiceRegistrationEditor = observer(() => {
             onClick={toggleActivatePostRegistration}
           >
             <button
-              type="button"
               className={clsx('panel__content__form__section__toggler__btn', {
                 'panel__content__form__section__toggler__btn--toggled':
                   registrationState.activatePostRegistration,
@@ -214,7 +220,6 @@ export const ServiceRegistrationEditor = observer(() => {
               onClick={toggleUseStoreModel}
             >
               <button
-                type="button"
                 className={clsx('panel__content__form__section__toggler__btn', {
                   'panel__content__form__section__toggler__btn--toggled':
                     registrationState.TEMPORARY__useStoreModel,

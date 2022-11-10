@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
+import type {
+  V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
 } from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import { V1_CoreClassInstance } from './V1_CoreClassInstance.js';
 
-export class V1_KeyExpression extends V1_ValueSpecification {
+export class V1_KeyExpression extends V1_CoreClassInstance {
   add?: boolean | undefined;
   expression!: V1_ValueSpecification;
   key!: V1_ValueSpecification;

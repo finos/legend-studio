@@ -36,15 +36,16 @@ import {
   PanelLoadingIndicator,
   BasePopover,
   FaceSadTearIcon,
+  CogIcon,
 } from '@finos/legend-art';
 import {
   ContentType,
   debounce,
   downloadFileUsingDataURI,
+  formatDate,
   isString,
   uuid,
 } from '@finos/legend-shared';
-import { format } from 'date-fns';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { TAB_SIZE } from '../const.js';
@@ -56,6 +57,7 @@ import { useApplicationStore } from './ApplicationStoreProvider.js';
 import Draggable from 'react-draggable';
 import { DATE_TIME_FORMAT } from '@finos/legend-graph';
 import { ApplicationTelemetry } from '../stores/ApplicationTelemetry.js';
+import { TextSearchAdvancedConfigMenu } from './shared/TextSearchAdvancedConfigMenu.js';
 
 const WIZARD_GREETING = `Bonjour, It's Pierre!`;
 
@@ -222,6 +224,7 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
               )}
             </>
           )}
+
           {contextualEntry.related.length && (
             <div className="virtual-assistant__contextual-support__relevant-entries">
               <div className="virtual-assistant__contextual-support__relevant-entries__title">
@@ -245,8 +248,8 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
               No contextual documentation found!
             </div>
             <div className="virtual-assistant__panel__placeholder__instruction">
-              Keep using the app, when contextual doc available, we will let you
-              know!
+              Keep using the app. When contextual help is available, we will let
+              you know!
             </div>
           </div>
         </BlankPanelContent>
@@ -258,7 +261,10 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
 const VirtualAssistantSearchPanel = observer(() => {
   const applicationStore = useApplicationStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchConfigButtonRef = useRef<HTMLButtonElement>(null);
   const assistantService = applicationStore.assistantService;
+
+  // search text
   const searchText = assistantService.searchText;
   const debouncedSearch = useMemo(
     () => debounce(() => assistantService.search(), 100),
@@ -272,16 +278,13 @@ const VirtualAssistantSearchPanel = observer(() => {
   };
   const clearSearchText = (): void => {
     assistantService.resetSearch();
+    assistantService.currentDocumentationEntry = undefined;
     searchInputRef.current?.focus();
   };
-  const results = assistantService.searchResults;
-  const resultCount =
-    assistantService.searchResults.length > 99
-      ? '99+'
-      : assistantService.searchResults.length;
+
   const downloadDocRegistry = (): void => {
     downloadFileUsingDataURI(
-      `documentation-registry_${format(
+      `documentation-registry_${formatDate(
         new Date(Date.now()),
         DATE_TIME_FORMAT,
       )}.json`,
@@ -295,7 +298,7 @@ const VirtualAssistantSearchPanel = observer(() => {
   };
   const downloadContextualDocIndex = (): void => {
     downloadFileUsingDataURI(
-      `documentation-registry_${format(
+      `documentation-registry_${formatDate(
         new Date(Date.now()),
         DATE_TIME_FORMAT,
       )}.json`,
@@ -307,6 +310,10 @@ const VirtualAssistantSearchPanel = observer(() => {
       ContentType.APPLICATION_JSON,
     );
   };
+  const toggleSearchConfigMenu = (): void =>
+    assistantService.setShowSearchConfigurationMenu(
+      !assistantService.showSearchConfigurationMenu,
+    );
 
   useEffect(() => {
     searchInputRef.current?.focus();
@@ -351,94 +358,138 @@ const VirtualAssistantSearchPanel = observer(() => {
           className={clsx('virtual-assistant__search__input input--dark', {
             'virtual-assistant__search__input--searching': searchText,
           })}
+          spellCheck={false}
           onChange={onSearchTextChange}
           value={searchText}
           placeholder="Ask me a question"
         />
+        {searchText && (
+          <div className="virtual-assistant__search__input__search__count">
+            {assistantService.searchResults.length +
+              (assistantService.isOverSearchLimit ? '+' : '')}
+          </div>
+        )}
+        <button
+          ref={searchConfigButtonRef}
+          className={clsx('virtual-assistant__search__input__config__trigger', {
+            'virtual-assistant__search__input__config__trigger--toggled':
+              assistantService.showSearchConfigurationMenu,
+            'virtual-assistant__search__input__config__trigger--active':
+              assistantService.searchConfigurationState.isAdvancedSearchActive,
+          })}
+          tabIndex={-1}
+          onClick={toggleSearchConfigMenu}
+          title={`${
+            assistantService.searchConfigurationState.isAdvancedSearchActive
+              ? 'Advanced search is currently active\n'
+              : ''
+          }Click to toggle search config menu`}
+        >
+          <CogIcon />
+        </button>
         {!searchText ? (
           <div className="virtual-assistant__search__input__search__icon">
             <SearchIcon />
           </div>
         ) : (
-          <>
-            <div className="virtual-assistant__search__input__search__count">
-              {resultCount}
-            </div>
-            <button
-              className="virtual-assistant__search__input__clear-btn"
-              tabIndex={-1}
-              onClick={clearSearchText}
-              title="Clear"
-            >
-              <TimesIcon />
-            </button>
-          </>
+          <button
+            className="virtual-assistant__search__input__clear-btn"
+            tabIndex={-1}
+            onClick={clearSearchText}
+            title="Clear"
+          >
+            <TimesIcon />
+          </button>
         )}
       </div>
       <div className="virtual-assistant__search__content">
         <PanelLoadingIndicator
           isLoading={assistantService.searchState.isInProgress}
         />
-        {Boolean(results.length) && (
+        {/* {assistantService.showSearchConfigurationMenu && ( */}
+        <div
+          className={clsx('virtual-assistant__search__input__config__panel', {
+            'virtual-assistant__search__input__config__panel--toggled':
+              assistantService.showSearchConfigurationMenu,
+          })}
+        >
+          <TextSearchAdvancedConfigMenu
+            configState={assistantService.searchConfigurationState}
+          />
+        </div>
+        {/* )} */}
+        {assistantService.currentDocumentationEntry && (
           <div className="virtual-assistant__search__results">
-            {results.map((result) => (
-              <VirtualAssistantDocumentationEntryViewer
-                key={result.uuid}
-                entry={result}
-              />
-            ))}
+            <VirtualAssistantDocumentationEntryViewer
+              key={assistantService.currentDocumentationEntry.uuid}
+              entry={assistantService.currentDocumentationEntry}
+            />
           </div>
         )}
-        {searchText && !results.length && (
-          <BlankPanelContent>
-            <div className="virtual-assistant__panel__placeholder">
-              <FaceSadTearIcon className="virtual-assistant__panel__placeholder__icon" />
-              <div className="virtual-assistant__panel__placeholder__message">
-                No result...
+        {!assistantService.currentDocumentationEntry && (
+          <>
+            {Boolean(assistantService.searchResults.length) && (
+              <div className="virtual-assistant__search__results">
+                {assistantService.searchResults.map((result) => (
+                  <VirtualAssistantDocumentationEntryViewer
+                    key={result.uuid}
+                    entry={result}
+                  />
+                ))}
               </div>
-            </div>
-          </BlankPanelContent>
-        )}
-        {/*
-          NOTE: technically, we don't need to check for the result size here.
-          However, since the search results update is slightly delayed compared to
-          the search text update, we do this to avoid showing the placeholder too
-          early, i.e. when the search results are not yet cleaned
-         */}
-        {!searchText && !results.length && (
-          <ContextMenu
-            className="virtual-assistant__character__container"
-            menuProps={{
-              elevation: 7,
-              classes: {
-                root: 'virtual-assistant__context-menu',
-              },
-            }}
-            content={
-              <MenuContent>
-                <MenuContentItem onClick={downloadDocRegistry}>
-                  Download documentation registry
-                </MenuContentItem>
-                <MenuContentItem onClick={downloadContextualDocIndex}>
-                  Download contextual documentation mapping
-                </MenuContentItem>
-              </MenuContent>
-            }
-          >
-            <div className="virtual-assistant__character">
-              <div className="virtual-assistant__character__figure">
-                <WizardHatIcon className="virtual-assistant__character__hat" />
-                <SunglassesIcon className="virtual-assistant__character__glasses" />
-                <BeardIcon className="virtual-assistant__character__beard" />
-              </div>
-              <div className="virtual-assistant__character__greeting">
-                {WIZARD_GREETING}
-              </div>
-              <div className="virtual-assistant__character__question">
-                How can I help today?
-              </div>
-            </div>
-          </ContextMenu>
+            )}
+            {searchText && !assistantService.searchResults.length && (
+              <BlankPanelContent>
+                <div className="virtual-assistant__panel__placeholder">
+                  <FaceSadTearIcon className="virtual-assistant__panel__placeholder__icon" />
+                  <div className="virtual-assistant__panel__placeholder__message">
+                    No result...
+                  </div>
+                </div>
+              </BlankPanelContent>
+            )}
+            {/*
+              NOTE: technically, we don't need to check for the result size here.
+              However, since the search results update is slightly delayed compared to
+              the search text update, we do this to avoid showing the placeholder too
+              early, i.e. when the search results are not yet cleaned
+            */}
+            {!searchText && !assistantService.searchResults.length && (
+              <ContextMenu
+                className="virtual-assistant__character__container"
+                menuProps={{
+                  elevation: 7,
+                  classes: {
+                    root: 'virtual-assistant__context-menu',
+                  },
+                }}
+                content={
+                  <MenuContent>
+                    <MenuContentItem onClick={downloadDocRegistry}>
+                      Download documentation registry
+                    </MenuContentItem>
+                    <MenuContentItem onClick={downloadContextualDocIndex}>
+                      Download contextual documentation mapping
+                    </MenuContentItem>
+                  </MenuContent>
+                }
+              >
+                <div className="virtual-assistant__character">
+                  <div className="virtual-assistant__character__figure">
+                    <WizardHatIcon className="virtual-assistant__character__hat" />
+                    <SunglassesIcon className="virtual-assistant__character__glasses" />
+                    <BeardIcon className="virtual-assistant__character__beard" />
+                  </div>
+                  <div className="virtual-assistant__character__greeting">
+                    {WIZARD_GREETING}
+                  </div>
+                  <div className="virtual-assistant__character__question">
+                    How can I help today?
+                  </div>
+                </div>
+              </ContextMenu>
+            )}
+          </>
         )}
       </div>
     </div>

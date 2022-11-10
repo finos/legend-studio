@@ -21,4 +21,4 @@ Last but not least, make sure you have `Yarn` installed. Run the following comma
   yarn dev:query
 ```
 
-After setting up, visit http://localhost:8081/query and the application should be up and running.
+After setting up, visit http://localhost:9001/query and the application should be up and running.

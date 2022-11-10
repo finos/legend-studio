@@ -22,25 +22,20 @@ import {
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
   type LegendApplicationConfigurationInput,
+  BrowserRouter,
 } from '@finos/legend-application';
-import { configure as configureReactHotkeys } from 'react-hotkeys';
-import { BrowserRouter } from 'react-router-dom';
 import { LegendTaxonomyApplication } from '../components/LegendTaxonomyApplication.js';
 import { LegendTaxonomyPluginManager } from './LegendTaxonomyPluginManager.js';
 import { getRootElement } from '@finos/legend-art';
-import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
+import { Core_PureGraphManagerPlugin } from '@finos/legend-graph';
 import {
   type LegendTaxonomyApplicationConfigurationData,
   LegendTaxonomyApplicationConfig,
 } from './LegendTaxonomyApplicationConfig.js';
+import { Core_LegendTaxonomyApplicationPlugin } from '../components/Core_LegendTaxonomyApplicationPlugin.js';
 
-export const setupLegendQueryUILibrary = async (): Promise<void> => {
-  configureReactHotkeys({
-    // By default, `react-hotkeys` will avoid capturing keys from input tags like <input>, <textarea>, <select>
-    // We want to listen to hotkey from every where in the app so we disable that
-    // See https://github.com/greena13/react-hotkeys#ignoring-events
-    ignoreTags: [],
-  });
+const setupLegendTaxonomyUILibrary = async (): Promise<void> => {
+  // do nothing
 };
 
 export class LegendTaxonomy extends LegendApplication {
@@ -51,7 +46,10 @@ export class LegendTaxonomy extends LegendApplication {
     const application = new LegendTaxonomy(
       LegendTaxonomyPluginManager.create(),
     );
-    application.withBasePlugins([new CorePureGraphManagerPlugin()]);
+    application.withBasePlugins([
+      new Core_PureGraphManagerPlugin(),
+      new Core_LegendTaxonomyApplicationPlugin(),
+    ]);
     return application;
   }
 
@@ -64,7 +62,7 @@ export class LegendTaxonomy extends LegendApplication {
   async loadApplication(): Promise<void> {
     // Setup React application libraries
     await setupLegendApplicationUILibrary(this.pluginManager, this.logger);
-    await setupLegendQueryUILibrary();
+    await setupLegendTaxonomyUILibrary();
 
     // Render React application
     const rootElement = createRoot(getRootElement());
@@ -75,10 +73,7 @@ export class LegendTaxonomy extends LegendApplication {
             config={this.config}
             pluginManager={this.pluginManager}
           >
-            <LegendTaxonomyApplication
-              config={this.config}
-              pluginManager={this.pluginManager}
-            />
+            <LegendTaxonomyApplication config={this.config} />
           </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Dialog } from '@finos/legend-art';
+import { Dialog, ModalBody, ModalFooter, ModalHeader } from '@finos/legend-art';
 import {
   ActionAlertActionType,
   ActionAlertType,
@@ -48,10 +48,6 @@ const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
     actions.find((action) => action.default)?.handler?.();
     handleClose();
   };
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    handleSubmit();
-  };
 
   return (
     <Dialog
@@ -62,23 +58,20 @@ const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
       }}
     >
       <form
-        onSubmit={onSubmit}
+        onSubmit={(event) => {
+          event.preventDefault();
+          handleSubmit();
+        }}
         className={`modal search-modal modal--dark blocking-alert blocking-alert--${(
           type ?? ActionAlertType.STANDARD
         ).toLowerCase()}`}
       >
-        {title && (
-          <div className="modal__header">
-            <div className="modal__title">
-              <div className="modal__title__label">{title}</div>
-            </div>
-          </div>
-        )}
-        <div className="modal__body">
+        {title && <ModalHeader title={title} />}
+        <ModalBody>
           <div className="blocking-alert__summary-text">{message}</div>
           <div className="blocking-alert__prompt-text">{prompt}</div>
-        </div>
-        <div className="modal__footer">
+        </ModalBody>
+        <ModalFooter>
           {actions.map((action) => {
             // NOTE: need to prevent default for the submit button, otherwise, we would get the warning "Form submission canceled because the form is not connected"
             // See https://stackoverflow.com/a/58234405
@@ -106,14 +99,14 @@ const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
           })}
           {!actions.length && (
             <button
-              type="button"
+              type="button" // prevent this toggler being activated on form submission
               className="btn btn--dark blocking-alert__action--standard"
               onClick={handleClose}
             >
               Cancel
             </button>
           )}
-        </div>
+        </ModalFooter>
       </form>
     </Dialog>
   );

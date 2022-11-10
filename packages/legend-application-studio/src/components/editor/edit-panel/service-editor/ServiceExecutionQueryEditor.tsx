@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import type {
   ServicePureExecutionQueryState,
@@ -34,19 +34,33 @@ import {
   CaretDownIcon,
   MenuContentItem,
   PauseCircleIcon,
+  PencilIcon,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
 } from '@finos/legend-art';
-import { debounce } from '@finos/legend-shared';
+import { assertErrorThrown, debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   EDITOR_LANGUAGE,
   ExecutionPlanViewer,
-  LambdaParameterValuesEditor,
+  TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import type { LightQuery } from '@finos/legend-graph';
-import type { DSLService_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLService_LegendStudioApplicationPlugin_Extension.js';
+import {
+  type LightQuery,
+  isStubbed_PackageableElement,
+  isStubbed_RawLambda,
+  KeyedExecutionParameter,
+} from '@finos/legend-graph';
+import {
+  type QueryBuilderState,
+  ServiceQueryBuilderState,
+  LambdaParameterValuesEditor,
+} from '@finos/legend-query-builder';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -66,27 +80,25 @@ const ServiceExecutionResultViewer = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal">
-          <div className="modal__header">
-            <div className="modal__title">Execution Result</div>
-          </div>
-          <div className="modal__body">
-            <StudioTextInputEditor
+        <Modal darkMode={true} className="editor-modal">
+          <ModalHeader title="Execution Result" />
+          <ModalBody>
+            <TextInputEditor
               inputValue={executionResultText ?? ''}
               isReadOnly={true}
               language={EDITOR_LANGUAGE.JSON}
               showMiniMap={true}
             />
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             <button
               className="btn modal__footer__close-btn"
               onClick={closeExecutionResultViewer}
             >
               Close
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },
@@ -180,8 +192,8 @@ const ServiceExecutionQueryImporter = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <div className="modal modal--dark search-modal">
-          <div className="modal__title">Import Query</div>
+        <Modal darkMode={true} className="search-modal">
+          <ModalTitle title="Import Query" />
           <CustomSelectorInput
             ref={queryFinderRef}
             options={queryOptions}
@@ -200,7 +212,7 @@ const ServiceExecutionQueryImporter = observer(
               isLoading={queryState.loadQueryInfoState.isInProgress}
             />
             {queryState.selectedQueryInfo && (
-              <StudioTextInputEditor
+              <TextInputEditor
                 inputValue={queryState.selectedQueryInfo.content}
                 isReadOnly={true}
                 language={EDITOR_LANGUAGE.PURE}
@@ -221,7 +233,7 @@ const ServiceExecutionQueryImporter = observer(
               Import
             </button>
           </div>
-        </div>
+        </Modal>
       </Dialog>
     );
   },
@@ -233,22 +245,95 @@ export const ServiceExecutionQueryEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { executionState, isReadOnly } = props;
-    const queryState = executionState.queryState;
-    const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const extraServiceQueryEditorActions = editorStore.pluginManager
-      .getApplicationPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSLService_LegendStudioApplicationPlugin_Extension
-          ).getExtraServiceQueryEditorActionConfigurations?.() ?? [],
-      )
-      .map((config) => (
-        <Fragment key={config.key}>
-          {config.renderer(executionState, isReadOnly)}
-        </Fragment>
-      ));
+    const editorStore = useEditorStore();
+    const queryState = executionState.queryState;
+
+    // actions
+    const editWithQueryBuilder = applicationStore.guardUnhandledError(
+      async () => {
+        const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
+        executionState.setOpeningQueryEditor(true);
+        const service = executionState.serviceEditorState.service;
+        const selectedExecutionState =
+          executionState.selectedExecutionContextState;
+        if (selectedExecutionState) {
+          const mapping = selectedExecutionState.executionContext.mapping.value;
+          if (!isStubbed_PackageableElement(mapping)) {
+            await flowResult(
+              embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
+                setupQueryBuilderState: (): QueryBuilderState => {
+                  const queryBuilderState = new ServiceQueryBuilderState(
+                    embeddedQueryBuilderState.editorStore.applicationStore,
+                    embeddedQueryBuilderState.editorStore.graphManagerState,
+                    service,
+                    undefined,
+                    selectedExecutionState.executionContext instanceof
+                    KeyedExecutionParameter
+                      ? selectedExecutionState.executionContext.key
+                      : undefined,
+                  );
+                  queryBuilderState.initializeWithQuery(
+                    executionState.execution.func,
+                  );
+                  return queryBuilderState;
+                },
+                actionConfigs: [
+                  {
+                    key: 'save-query-btn',
+                    renderer: (
+                      queryBuilderState: QueryBuilderState,
+                    ): React.ReactNode => {
+                      const save = applicationStore.guardUnhandledError(
+                        async () => {
+                          try {
+                            const rawLambda = queryBuilderState.buildQuery();
+                            await flowResult(
+                              executionState.queryState.updateLamba(rawLambda),
+                            );
+                            applicationStore.notifySuccess(
+                              `Service query is updated`,
+                            );
+                            embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
+                              undefined,
+                            );
+                          } catch (error) {
+                            assertErrorThrown(error);
+                            applicationStore.notifyError(
+                              `Can't save query: ${error.message}`,
+                            );
+                          }
+                        },
+                      );
+
+                      return (
+                        <button
+                          className="query-builder__dialog__header__custom-action"
+                          tabIndex={-1}
+                          disabled={isReadOnly}
+                          onClick={save}
+                        >
+                          Save Query
+                        </button>
+                      );
+                    },
+                  },
+                ],
+                disableCompile: isStubbed_RawLambda(
+                  executionState.queryState.query,
+                ),
+              }),
+            );
+            executionState.setOpeningQueryEditor(false);
+            return;
+          }
+        }
+        applicationStore.notifyWarning(
+          'Please specify a mapping and a runtime for the execution context to edit with query builder',
+        );
+        executionState.setOpeningQueryEditor(false);
+      },
+    );
     const importQuery = (): void => {
       queryState.setOpenQueryImporter(true);
     };
@@ -284,7 +369,14 @@ export const ServiceExecutionQueryEditor = observer(
             </div>
           </div>
           <div className="panel__header__actions">
-            {extraServiceQueryEditorActions}
+            <button
+              className="panel__header__action"
+              tabIndex={-1}
+              onClick={editWithQueryBuilder}
+              title="Edit query..."
+            >
+              <PencilIcon />
+            </button>
             <button
               className="panel__header__action"
               onClick={importQuery}
@@ -308,19 +400,19 @@ export const ServiceExecutionQueryEditor = observer(
                 </div>
               </button>
             ) : (
-              <button
-                className="service-editor__execution__execute-btn"
-                onClick={runQuery}
-                title="Run Query"
-                disabled={executionState.isRunningQuery}
-                tabIndex={-1}
-              >
-                <div className="service-editor__execution__execute-btn__label">
+              <div className="service-editor__execution__execute-btn">
+                <button
+                  className="service-editor__execution__execute-btn__label"
+                  onClick={runQuery}
+                  title="Run Query"
+                  disabled={executionState.isGeneratingPlan}
+                  tabIndex={-1}
+                >
                   <PlayIcon className="service-editor__execution__execute-btn__label__icon" />
                   <div className="service-editor__execution__execute-btn__label__title">
                     Run Query
                   </div>
-                </div>
+                </button>
                 <DropdownMenu
                   className="service-editor__execution__execute-btn__dropdown-btn"
                   disabled={executionState.isGeneratingPlan}
@@ -347,7 +439,7 @@ export const ServiceExecutionQueryEditor = observer(
                 >
                   <CaretDownIcon />
                 </DropdownMenu>
-              </button>
+              </div>
             )}
           </div>
         </div>
@@ -360,7 +452,7 @@ export const ServiceExecutionQueryEditor = observer(
             }
           />
           <div className="service-execution-query-editor__content">
-            <StudioTextInputEditor
+            <TextInputEditor
               inputValue={queryState.lambdaString}
               isReadOnly={true}
               language={EDITOR_LANGUAGE.PURE}
@@ -378,6 +470,9 @@ export const ServiceExecutionQueryEditor = observer(
             .showModal && (
             <LambdaParameterValuesEditor
               graph={executionState.editorStore.graphManagerState.graph}
+              observerContext={
+                executionState.editorStore.changeDetectionState.observerContext
+              }
               lambdaParametersState={executionState.parameterState}
             />
           )}

@@ -30,7 +30,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
-import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../DSLData_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   dataElementReference_setDataElement,
@@ -42,7 +42,7 @@ import {
   relationalData_setTableName,
   relationalData_setTableSchemaName,
   relationalData_setTableValues,
-} from '../../../graphModifier/DSLData_GraphModifierHelper.js';
+} from '../../../shared/modifier/DSL_Data_GraphModifierHelper.js';
 import { EmbeddedDataType } from '../../ExternalFormatState.js';
 
 export const createEmbeddedData = (
@@ -73,7 +73,7 @@ export const createEmbeddedData = (
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLData_LegendStudioApplicationPlugin_Extension
+            plugin as DSL_Data_LegendStudioApplicationPlugin_Extension
           ).getExtraEmbeddedDataCreators?.() ?? [],
       );
     for (const creator of extraEmbeddedDataCreator) {
@@ -337,7 +337,7 @@ export function buildEmbeddedDataEditorState(
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLData_LegendStudioApplicationPlugin_Extension
+            plugin as DSL_Data_LegendStudioApplicationPlugin_Extension
           ).getExtraEmbeddedDataEditorStateBuilders?.() ?? [],
       );
     for (const stateBuilder of extraEmbeddedDataEditorStateBuilders) {

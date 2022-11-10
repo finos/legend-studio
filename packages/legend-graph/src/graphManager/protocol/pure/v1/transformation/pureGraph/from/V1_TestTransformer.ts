@@ -37,6 +37,7 @@ import type {
 } from '../../../../../../../graph/metamodel/pure/test/Test.js';
 import { EqualToTDS } from '../../../../../../../graph/metamodel/pure/test/assertion/EqualToTDS.js';
 import { V1_EqualToTDS } from '../../../model/test/assertion/V1_EqualToTDS.js';
+import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../Testable_PureProtocolProcessorPlugin_Extension.js';
 
 const transformEqualTo = (element: EqualTo): V1_EqualTo => {
   const equalTo = new V1_EqualTo();
@@ -59,11 +60,31 @@ const transformEqualToTDS = (element: EqualToTDS): V1_EqualToTDS => {
   return equalToTDS;
 };
 
-export const V1_transformAtomicTest = (value: AtomicTest): V1_AtomicTest => {
+export const V1_transformAtomicTest = (
+  value: AtomicTest,
+  context: V1_GraphTransformerContext,
+): V1_AtomicTest => {
   if (value instanceof ServiceTest) {
     return V1_transformServiceTest(value);
   }
-  throw new UnsupportedOperationError(`Can't transform atomic test`, value);
+
+  const extraAtomicTestTransformers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as Testable_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraAtomicTestTransformers?.() ?? [],
+  );
+
+  for (const transformer of extraAtomicTestTransformers) {
+    const atomicTestTransformer = transformer(value, context);
+    if (atomicTestTransformer) {
+      return atomicTestTransformer;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform atomic test: no compatible transformer available from plugins `,
+    value,
+  );
 };
 
 export const V1_transformTestAssertion = (

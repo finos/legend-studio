@@ -39,18 +39,16 @@ import {
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
-  ActionAlertType,
-  ActionAlertActionType,
   useApplicationStore,
   EDITOR_LANGUAGE,
   useApplicationNavigationContext,
+  TextInputEditor,
 } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor.js';
 import type { ModelImporterExtensionConfiguration } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
-import { SCHEMA_SET_TAB_TYPE } from '../../../stores/editor-state/element-editor-state/external-format/SchemaSetEditorState.js';
-import { SchemaSetModelGenerationEditor } from './external-format-editor/SchemaSetModelGenerationEditor.js';
-import { SchemaSetGeneralEditor } from './external-format-editor/SchemaSetElementEditor.js';
+import { SCHEMA_SET_TAB_TYPE } from '../../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
+import { SchemaSetModelGenerationEditor } from './external-format-editor/DSL_ExternalFormat_SchemaSetModelGenerationEditor.js';
+import { SchemaSetGeneralEditor } from './external-format-editor/DSL_ExternalFormat_SchemaSetElementEditor.js';
 
 const ExternalFormatModelImporterEditor = observer(
   (props: { externalFormatState: ExternalFormatModelImporterState }) => {
@@ -151,37 +149,11 @@ export const ModelImporter = observer(() => {
   const label = modelImporterState.modelImportEditorState.label;
   const modelImportEditorState = modelImporterState.modelImportEditorState;
   const loadModel = (): void => {
-    if (editorStore.hasUnpushedChanges) {
-      editorStore.setActionAlertInfo({
-        message: 'You have unpushed changes',
-        prompt:
-          'This action will discard these changes and refresh the application',
-        type: ActionAlertType.CAUTION,
-        onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-        onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
-        actions: [
-          {
-            label: 'Proceed to load model',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: (): void => {
-              editorStore.setIgnoreNavigationBlocking(true);
-              flowResult(
-                modelImporterState.modelImportEditorState.loadModel(),
-              ).catch(applicationStore.alertUnhandledError);
-            },
-          },
-          {
-            label: 'Abort',
-            type: ActionAlertActionType.PROCEED,
-            default: true,
-          },
-        ],
-      });
-    } else {
-      flowResult(modelImporterState.modelImportEditorState.loadModel()).catch(
-        applicationStore.alertUnhandledError,
-      );
-    }
+    editorStore.localChangesState.alertUnsavedChanges((): void => {
+      modelImporterState.modelImportEditorState
+        .loadModel()
+        .catch(applicationStore.alertUnhandledError);
+    });
   };
   useApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MODEL_LOADER,
@@ -217,7 +189,7 @@ export const ModelImporter = observer(() => {
         modelImportEditorState.setModelText(val);
       return (
         <div className="panel__content model-loader__editor">
-          <StudioTextInputEditor
+          <TextInputEditor
             language={
               modelImportEditorState.nativeType ===
               MODEL_IMPORT_NATIVE_INPUT_TYPE.PURE_GRAMMAR
@@ -247,6 +219,7 @@ export const ModelImporter = observer(() => {
       <div className="panel__header model-loader__header">
         <div className="model-loader__header__configs">
           <DropdownMenu
+            className="model-loader__header__configs__type"
             content={
               <MenuContent className="model-loader__header__configs__type__menu">
                 <div className="model-loader__header__configs__type-option__group model-loader__header__configs__type-option__group--native">
@@ -326,13 +299,11 @@ export const ModelImporter = observer(() => {
               transformOrigin: { vertical: 'top', horizontal: 'right' },
             }}
           >
-            <div className="model-loader__header__configs__type">
-              <div className="model-loader__header__configs__type__label">
-                {prettyCONSTName(label)}
-              </div>
-              <div className="model-loader__header__configs__type__icon">
-                <CaretDownIcon />
-              </div>
+            <div className="model-loader__header__configs__type__label">
+              {prettyCONSTName(label)}
+            </div>
+            <div className="model-loader__header__configs__type__icon">
+              <CaretDownIcon />
             </div>
           </DropdownMenu>
           {modelImportEditorState.allowHardReplace && (

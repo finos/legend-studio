@@ -16,7 +16,6 @@
 
 import { useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Link } from 'react-router-dom';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView.js';
 import {
@@ -28,20 +27,17 @@ import {
   TimesIcon,
   PlusIcon,
   ExternalLinkSquareIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
-import { formatDistanceToNow } from 'date-fns';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSDLCState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import {
-  ActionAlertType,
-  ActionAlertActionType,
-} from '@finos/legend-application';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
+import { formatDistanceToNow } from '@finos/legend-shared';
 
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();
@@ -78,7 +74,7 @@ export const WorkspaceReviewDiffs = observer(() => {
           {changes.length}
         </div>
       </div>
-      <div className="panel__content">
+      <PanelContent>
         {changes
           .slice()
           .sort(entityDiffSorter)
@@ -90,7 +86,7 @@ export const WorkspaceReviewDiffs = observer(() => {
               openDiff={openChange(diff)}
             />
           ))}
-      </div>
+      </PanelContent>
     </div>
   );
 });
@@ -134,39 +130,12 @@ export const WorkspaceReview = observer(() => {
   };
   const commitReview = (): void => {
     if (workspaceReview && !isDispatchingAction) {
-      const commit = (): void => {
+      editorStore.localChangesState.alertUnsavedChanges((): void => {
         workspaceReviewState.setReviewTitle('');
         flowResult(
           workspaceReviewState.commitWorkspaceReview(workspaceReview),
         ).catch(applicationStore.alertUnhandledError);
-      };
-      if (editorStore.hasUnpushedChanges) {
-        editorStore.setActionAlertInfo({
-          message: 'You have unpushed changes',
-          prompt:
-            'This action will discard these changes and refresh the application',
-          type: ActionAlertType.CAUTION,
-          onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-          onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
-          actions: [
-            {
-              label: 'Proceed to commit review',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: (): void => {
-                editorStore.setIgnoreNavigationBlocking(true);
-                commit();
-              },
-            },
-            {
-              label: 'Abort',
-              type: ActionAlertActionType.PROCEED,
-              default: true,
-            },
-          ],
-        });
-      } else {
-        commit();
-      }
+      });
     }
   };
   const createReview = (): void => {
@@ -240,8 +209,8 @@ export const WorkspaceReview = observer(() => {
             <>
               <form
                 className="workspace-review__title"
-                onSubmit={(e): void => {
-                  e.preventDefault();
+                onSubmit={(event) => {
+                  event.preventDefault();
                 }}
               >
                 <div className="workspace-review__title__content">
@@ -252,7 +221,7 @@ export const WorkspaceReview = observer(() => {
                     value={workspaceReviewState.reviewTitle}
                     disabled={Boolean(workspaceReview)}
                     onChange={editReviewTitle}
-                    placeholder={'Title'}
+                    placeholder="Title"
                   />
                 </div>
                 <button
@@ -283,16 +252,21 @@ export const WorkspaceReview = observer(() => {
                 <div className="workspace-review__title__content">
                   <div
                     className="workspace-review__title__content__input workspace-review__title__content__input--with-link"
-                    title={'See review detail'}
+                    title="See review detail"
                   >
-                    <Link
+                    <button
                       className="workspace-review__title__content__input__link"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                      to={generateReviewRoute(
-                        workspaceReview.projectId,
-                        workspaceReview.id,
-                      )}
+                      tabIndex={-1}
+                      onClick={(): void =>
+                        applicationStore.navigator.visitAddress(
+                          applicationStore.navigator.generateAddress(
+                            generateReviewRoute(
+                              workspaceReview.projectId,
+                              workspaceReview.id,
+                            ),
+                          ),
+                        )
+                      }
                     >
                       <span className="workspace-review__title__content__input__link__review-name">
                         {workspaceReview.title}
@@ -300,7 +274,7 @@ export const WorkspaceReview = observer(() => {
                       <div className="workspace-review__title__content__input__link__btn">
                         <ExternalLinkSquareIcon />
                       </div>
-                    </Link>
+                    </button>
                   </div>
                 </div>
                 <button

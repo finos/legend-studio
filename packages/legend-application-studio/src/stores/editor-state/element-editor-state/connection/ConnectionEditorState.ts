@@ -22,7 +22,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './../ElementEditorState.js';
-import type { StoreRelational_LegendStudioApplicationPlugin_Extension } from '../../../StoreRelational_LegendStudioApplicationPlugin_Extension.js';
+import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 import { DatabaseBuilderState } from './DatabaseBuilderState.js';
 import {
   type PackageableElement,
@@ -53,12 +53,18 @@ import {
   SpannerDatasourceSpecification,
   createValidationError,
   isStubbed_PackageableElement,
+  type PostProcessor,
+  MapperPostProcessor,
 } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   relationDbConnection_setNewAuthenticationStrategy,
   relationDbConnection_setDatasourceSpecification,
-} from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
+} from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
+import {
+  MapperPostProcessorEditorState,
+  type PostProcessorEditorState,
+} from './PostProcessorEditorState.js';
 
 export abstract class ConnectionValueState {
   editorStore: EditorStore;
@@ -75,6 +81,7 @@ export abstract class ConnectionValueState {
 export enum RELATIONAL_DATABASE_TAB_TYPE {
   GENERAL = 'GENERAL',
   STORE = 'STORE',
+  POST_PROCESSORS = 'POST-PROCESSORS',
 }
 
 export enum CORE_DATASOURCE_SPEC_TYPE {
@@ -86,6 +93,10 @@ export enum CORE_DATASOURCE_SPEC_TYPE {
   REDSHIFT = 'REDSHIFT',
   BIGQUERY = 'BIGQUERY',
   SPANNER = 'SPANNER',
+}
+
+export enum POST_PROCESSOR_TYPE {
+  MAPPER = 'MAPPER',
 }
 
 export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
@@ -104,6 +115,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   override connection: RelationalDatabaseConnection;
   selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
   databaseBuilderState: DatabaseBuilderState;
+  postProcessorState: PostProcessorEditorState | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -111,16 +123,49 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   ) {
     super(editorStore, connection);
     makeObservable(this, {
-      setSelectedTab: action,
       databaseBuilderState: observable,
       selectedTab: observable,
+      postProcessorState: observable,
+      setSelectedTab: action,
+      selectPostProcessor: action,
     });
+
     this.connection = connection;
+
     this.databaseBuilderState = new DatabaseBuilderState(
       editorStore,
       connection,
     );
   }
+
+  selectPostProcessor = (postProcessor: PostProcessor | undefined): void => {
+    if (postProcessor) {
+      if (postProcessor instanceof MapperPostProcessor) {
+        this.postProcessorState = new MapperPostProcessorEditorState(
+          postProcessor,
+          this,
+        );
+      } else {
+        const extraPostProcessorStateCreators = this.editorStore.pluginManager
+          .getApplicationPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
+              ).getExtraPostProcessorStateCreators?.() ?? [],
+          );
+        for (const creator of extraPostProcessorStateCreators) {
+          const postProcessorState = creator(postProcessor, this);
+          if (postProcessorState) {
+            this.postProcessorState = postProcessorState;
+          }
+        }
+      }
+    }
+    if (this.postProcessorState) {
+      this.postProcessorState.setPostProcessorState(postProcessor);
+    }
+  };
 
   get storeValidationResult(): ValidationIssue | undefined {
     return isStubbed_PackageableElement(this.connection.store.value)
@@ -155,17 +200,17 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     } else if (spec instanceof SpannerDatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.SPANNER;
     }
-    const extraDatasourceSpecificationTypeGetters =
+    const extraDatasourceSpecificationClassifiers =
       this.editorStore.pluginManager
         .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
-            ).getExtraDatasourceSpecificationTypeGetters?.() ?? [],
+              plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
+            ).getExtraDatasourceSpecificationClassifiers?.() ?? [],
         );
-    for (const typeGetter of extraDatasourceSpecificationTypeGetters) {
-      const type = typeGetter(spec);
+    for (const classifier of extraDatasourceSpecificationClassifiers) {
+      const type = classifier(spec);
       if (type) {
         return type;
       }
@@ -227,7 +272,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
             .flatMap(
               (plugin) =>
                 (
-                  plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+                  plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
                 ).getExtraDatasourceSpecificationCreators?.() ?? [],
             );
         for (const creator of extraDatasourceSpecificationCreators) {
@@ -278,17 +323,17 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_AUTHENTICATION_STRATEGY_TYPE.MIDDLE_TIER_USERNAME_PASSWORD;
     }
 
-    const extraAuthenticationStrategyTypeGetters =
+    const extraAuthenticationStrategyClassifiers =
       this.editorStore.pluginManager
         .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
-            ).getExtraAuthenticationStrategyTypeGetters?.() ?? [],
+              plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
+            ).getExtraAuthenticationStrategyClassifiers?.() ?? [],
         );
-    for (const typeGetter of extraAuthenticationStrategyTypeGetters) {
-      const type = typeGetter(auth);
+    for (const classifier of extraAuthenticationStrategyClassifiers) {
+      const type = classifier(auth);
       if (type) {
         return type;
       }
@@ -351,7 +396,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
             .flatMap(
               (plugin) =>
                 (
-                  plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+                  plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
                 ).getExtraAuthenticationStrategyCreators?.() ?? [],
             );
         for (const creator of extraAuthenticationStrategyCreators) {
@@ -385,7 +430,7 @@ export class JsonModelConnectionValueState extends ConnectionValueState {
   }
 
   label(): string {
-    return 'Pure model connection';
+    return 'Model Connection';
   }
 }
 
@@ -441,7 +486,7 @@ export class ConnectionEditorState {
           .flatMap(
             (plugin) =>
               (
-                plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+                plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
               ).getExtraConnectionValueEditorStateBuilders?.() ?? [],
           );
       for (const stateBuilder of extraConnectionValueEditorStateBuilders) {
@@ -488,6 +533,7 @@ export class PackageableConnectionEditorState extends ElementEditorState {
       editorStore,
       newElement,
     );
+
     return editorState;
   }
 }

@@ -47,13 +47,13 @@ import {
   annotatedElement_addTaggedValue,
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import { useDrop } from 'react-dnd';
 import {
   CORE_DND_TYPE,
   type UMLEditorElementDropTarget,
   type ElementDragSource,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import {
   TaggedValueDragPreviewLayer,
   TaggedValueEditor,
@@ -66,11 +66,11 @@ import {
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
-} from '../../../../stores/graphModifier/DSLData_GraphModifierHelper.js';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
+} from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import type { ExternalFormatDataState } from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import { renderEmbeddedDataEditor } from './EmbeddedDataEditor.js';
+import { TextInputEditor } from '@finos/legend-application';
 
 export const ExternalFormatDataEditor = observer(
   (props: {
@@ -116,6 +116,7 @@ export const ExternalFormatDataEditor = observer(
           </div>
           <div className="external-format-data-editor__header__actions">
             <DropdownMenu
+              className="external-format-data-editor__type"
               disabled={isReadOnly}
               content={
                 <MenuContent className="external-format-data-editor__dropdown">
@@ -135,20 +136,18 @@ export const ExternalFormatDataEditor = observer(
                 transformOrigin: { vertical: 'top', horizontal: 'right' },
               }}
             >
-              <div className="external-format-data-editor__type">
-                <div className="external-format-data-editor__type__label">
-                  {externalFormatDataState.embeddedData.contentType}
-                </div>
-                <div className="external-format-data-editor__type__icon">
-                  <CaretDownIcon />
-                </div>
+              <div className="external-format-data-editor__type__label">
+                {externalFormatDataState.embeddedData.contentType}
+              </div>
+              <div className="external-format-data-editor__type__icon">
+                <CaretDownIcon />
               </div>
             </DropdownMenu>
           </div>
         </div>
         <div className={clsx('external-format-data-editor__content')}>
           <div className="external-format-data-editor__content__input">
-            <StudioTextInputEditor
+            <TextInputEditor
               language={language}
               inputValue={externalFormatDataState.embeddedData.data}
               updateInput={changeData}
@@ -315,7 +314,7 @@ export const DataElementEditor = observer(() => {
                   onClick={addStereotype}
                   disabled={isReadOnly}
                   tabIndex={-1}
-                  title={'Add Stereotype'}
+                  title="Add Stereotype"
                 >
                   <PlusIcon />
                 </button>
@@ -364,7 +363,7 @@ export const DataElementEditor = observer(() => {
                   onClick={addTaggedValue}
                   disabled={isReadOnly}
                   tabIndex={-1}
-                  title={'Add Tagged value'}
+                  title="Add Tagged value"
                 >
                   <PlusIcon />
                 </button>

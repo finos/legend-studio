@@ -93,13 +93,11 @@
   }
 
   &__editor {
-    overflow-y: hidden;
-    position: relative;
+    height: 100%;
   }
 
   &__preview {
-    overflow-y: hidden;
-    position: relative;
+    height: 100%;
 
     &__markdown {
       height: 100%;

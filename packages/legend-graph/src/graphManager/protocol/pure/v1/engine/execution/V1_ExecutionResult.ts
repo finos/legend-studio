@@ -64,25 +64,25 @@ export class V1_TDSColumn {
   );
 }
 
-export class V1_TdsBuilder extends V1_ResultBuilder {
+export class V1_TDSBuilder extends V1_ResultBuilder {
   columns: V1_TDSColumn[] = [];
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_TdsBuilder, {
+    createModelSchema(V1_TDSBuilder, {
       _type: primitive(),
       columns: list(usingModelSchema(V1_TDSColumn.serialization.schema)),
     }),
   );
 }
 
-export class V1_TdsExecutionResult extends V1_ExecutionResult {
-  declare builder: V1_TdsBuilder;
+export class V1_TDSExecutionResult extends V1_ExecutionResult {
+  declare builder: V1_TDSBuilder;
   result!: object;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_TdsExecutionResult, {
+    createModelSchema(V1_TDSExecutionResult, {
       _type: primitive(),
-      builder: usingModelSchema(V1_TdsBuilder.serialization.schema),
+      builder: usingModelSchema(V1_TDSBuilder.serialization.schema),
       activities: raw(),
       result: raw(),
     }),
@@ -130,7 +130,7 @@ export const V1_serializeExecutionResult = (
     case BuilderType.CLASS_BUILDER:
       return V1_ClassExecutionResult.serialization.fromJson(value);
     case BuilderType.TDS_BUILDER:
-      return V1_TdsExecutionResult.serialization.fromJson(value);
+      return V1_TDSExecutionResult.serialization.fromJson(value);
     case BuilderType.JSON_BUILDER:
       return V1_JsonExecutionResult.serialization.fromJson(value);
     default:

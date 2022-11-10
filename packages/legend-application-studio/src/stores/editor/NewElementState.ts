@@ -19,8 +19,8 @@ import {
   observable,
   computed,
   makeObservable,
-  makeAutoObservable,
   flowResult,
+  flow,
 } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import {
@@ -41,11 +41,9 @@ import {
   type PackageableElement,
   type Runtime,
   type Store,
-  type ModelStore,
+  ModelStore,
   type Connection,
   type PureModelConnection,
-  PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
   ELEMENT_PATH_DELIMITER,
   Package,
   Class,
@@ -72,27 +70,32 @@ import {
   DefaultH2AuthenticationStrategy,
   ModelGenerationSpecification,
   DataElement,
-  stub_RawLambda,
   stub_Database,
+  Measure,
+  Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   packageableConnection_setConnectionValue,
   runtime_addMapping,
-} from '../graphModifier/DSLMapping_GraphModifierHelper.js';
+} from '../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   fileGeneration_setScopeElements,
   fileGeneration_setType,
   generationSpecification_addGenerationElement,
-} from '../graphModifier/DSLGeneration_GraphModifierHelper.js';
+} from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
 import {
   service_initNewService,
   service_setExecution,
-} from '../graphModifier/DSLService_GraphModifierHelper.js';
+} from '../shared/modifier/DSL_Service_GraphModifierHelper.js';
 import type { EmbeddedDataTypeOption } from '../editor-state/element-editor-state/data/DataEditorState.js';
-import { dataElement_setEmbeddedData } from '../graphModifier/DSLData_GraphModifierHelper.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../shared/ModelUtil.js';
-import type { PackageableElementOption } from '@finos/legend-application';
+import { dataElement_setEmbeddedData } from '../shared/modifier/DSL_Data_GraphModifierHelper.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../shared/ModelClassifierUtils.js';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-application';
 import { EmbeddedDataType } from '../editor-state/ExternalFormatState.js';
 import { createEmbeddedData } from '../editor-state/element-editor-state/data/EmbeddedDataState.js';
 
@@ -302,7 +305,7 @@ export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDri
     if (store instanceof Database) {
       selectedStore = store;
     } else {
-      const dbs = this.editorStore.graphManagerState.graph.databases;
+      const dbs = this.editorStore.graphManagerState.usableDatabases;
       selectedStore = dbs.length ? (dbs[0] as Database) : stub_Database();
     }
     return new RelationalDatabaseConnection(
@@ -357,13 +360,13 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
         this.newConnectionValueDriver = new NewPureModelConnectionDriver(
           this.editorStore,
         );
-        break;
+        return;
       case CONNECTION_TYPE.RELATIONAL:
         this.newConnectionValueDriver =
           new NewRelationalDatabaseConnectionDriver(this.editorStore);
-        break;
+        return;
       default:
-        null;
+        return;
     }
   }
 
@@ -382,7 +385,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+            plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
           ).getExtraNewConnectionDriverCreators?.() ?? [],
       );
     for (const creator of extraNewConnectionDriverCreators) {
@@ -411,9 +414,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
     const connection = new PackageableConnection(name);
     packageableConnection_setConnectionValue(
       connection,
-      this.newConnectionValueDriver.createConnection(
-        this.store ?? this.editorStore.graphManagerState.graph.modelStore,
-      ),
+      this.newConnectionValueDriver.createConnection(ModelStore.INSTANCE),
       this.editorStore.changeDetectionState.observerContext,
     ); // default to model store
     return connection;
@@ -431,7 +432,8 @@ export class NewServiceDriver extends NewElementDriver<Service> {
       isValid: computed,
       createElement: action,
     });
-    this.mappingOption = editorStore.mappingOptions[0];
+    this.mappingOption =
+      editorStore.graphManagerState.usableMappings.map(buildElementOption)[0];
   }
 
   setMappingOption(val: PackageableElementOption<Mapping> | undefined): void {
@@ -447,10 +449,7 @@ export class NewServiceDriver extends NewElementDriver<Service> {
     const _mapping = mappingOption.value;
     const mapping = PackageableElementExplicitReference.create(_mapping);
     const service = new Service(name);
-    const runtimes =
-      this.editorStore.graphManagerState.graph.ownRuntimes.concat(
-        this.editorStore.graphManagerState.graph.dependencyManager.runtimes,
-      );
+    const runtimes = this.editorStore.graphManagerState.usableRuntimes;
     const compatibleRuntimes = runtimes.filter((runtime) =>
       runtime.runtimeValue.mappings.map((m) => m.value).includes(_mapping),
     );
@@ -465,7 +464,12 @@ export class NewServiceDriver extends NewElementDriver<Service> {
     }
     service_setExecution(
       service,
-      new PureSingleExecution(stub_RawLambda(), service, mapping, runtimeValue),
+      new PureSingleExecution(
+        this.editorStore.graphManagerState.graphManager.createDefaultBasicRawLambda(),
+        service,
+        mapping,
+        runtimeValue,
+      ),
       this.editorStore.changeDetectionState.observerContext,
     );
     service_initNewService(service);
@@ -593,8 +597,16 @@ export class NewElementState {
   newElementDriver?: NewElementDriver<PackageableElement> | undefined;
 
   constructor(editorStore: EditorStore) {
-    makeAutoObservable(this, {
-      editorStore: false,
+    makeObservable(this, {
+      showModal: observable,
+      showType: observable,
+      type: observable,
+      _package: observable,
+      name: observable,
+      newElementDriver: observable,
+      elementAndPackageName: computed,
+      selectedPackage: computed,
+      isValid: computed,
       setShowModal: action,
       setName: action,
       setShowType: action,
@@ -604,6 +616,7 @@ export class NewElementState {
       openModal: action,
       closeModal: action,
       createElement: action,
+      save: flow,
     });
 
     this.editorStore = editorStore;
@@ -617,11 +630,13 @@ export class NewElementState {
       this.name,
     );
   }
+
   get selectedPackage(): Package {
     return this._package
       ? this._package
       : this.editorStore.explorerTreeState.getSelectedNodePackage();
   }
+
   get isValid(): boolean {
     return this.newElementDriver?.isValid ?? true;
   }
@@ -629,17 +644,21 @@ export class NewElementState {
   setShowModal(val: boolean): void {
     this.showModal = val;
   }
+
   setName(name: string): void {
     this.name = name;
   }
+
   setShowType(showType: boolean): void {
     this.showType = showType;
   }
+
   setNewElementDriver(
     newElementDriver?: NewElementDriver<PackageableElement>,
   ): void {
     this.newElementDriver = newElementDriver;
   }
+
   setPackage(_package?: Package): void {
     this._package = _package;
   }
@@ -755,6 +774,9 @@ export class NewElementState {
       case PACKAGEABLE_ELEMENT_TYPE.ENUMERATION:
         element = new Enumeration(name);
         break;
+      case PACKAGEABLE_ELEMENT_TYPE.MEASURE:
+        element = new Measure(name);
+        break;
       case PACKAGEABLE_ELEMENT_TYPE.PROFILE:
         element = new Profile(name);
         break;
@@ -762,14 +784,8 @@ export class NewElementState {
       case PACKAGEABLE_ELEMENT_TYPE.FUNCTION: {
         const fn = new ConcreteFunctionDefinition(
           name,
-          PackageableElementExplicitReference.create(
-            this.editorStore.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.STRING,
-            ),
-          ),
-          this.editorStore.graphManagerState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
+          PackageableElementExplicitReference.create(PrimitiveType.STRING),
+          Multiplicity.ONE,
         );
         // default to empty string
         fn.expressionSequence =

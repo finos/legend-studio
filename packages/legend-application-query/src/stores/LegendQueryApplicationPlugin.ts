@@ -15,23 +15,51 @@
  */
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
+import type { Query } from '@finos/legend-graph';
+import type { QueryBuilderState } from '@finos/legend-query-builder';
 import type React from 'react';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import type { QueryEditorStore } from './QueryEditorStore.js';
-import type { QuerySetupState, QuerySetupStore } from './QuerySetupStore.js';
+import type { ExistingQueryEditorStore } from './QueryEditorStore.js';
+import type { QuerySetupLandingPageStore } from './QuerySetupStore.js';
 
-export type QuerySetupOptionRendererConfiguration = {
+export enum QuerySetupActionTag {
+  PRODUCTIONIZATION = 'Productionization',
+}
+
+export type QuerySetupActionConfiguration = {
   key: string;
-  renderer: (setupStore: QuerySetupStore) => React.ReactNode | undefined;
+  isCreateAction: boolean;
+  isAdvanced: boolean;
+  /**
+   * NOTE: we could potentially support multiple tags, but for simplicity
+   * we will only limit this to one
+   *
+   * If no tag is provided, the action will be classified into the default group
+   */
+  tag?: string;
+  // NOTE: we could have an advanced option for rendering, i.e. specifying the
+  // component for the button, this gives a lot of flexibility and could facilitate
+  // powerful interaction like click to open modal dialog, etc., but this allows
+  // too much customization, so we will not have that for now
+  //
+  label: string;
+  icon: React.ReactNode;
+  className?: string | undefined;
+  action: (setupStore: QuerySetupLandingPageStore) => Promise<void>;
 };
 
-export type QuerySetupRenderer = (
-  setupState: QuerySetupState,
-) => React.ReactNode | undefined;
+export type ExistingQueryEditorStateBuilder = (
+  query: Query,
+  editorStore: ExistingQueryEditorStore,
+) => QueryBuilderState | undefined;
 
-export type QueryEditorHeaderLabeler = (
-  editorStore: QueryEditorStore,
-) => React.ReactNode | undefined;
+export type ExistingQueryEditorActionRendererConfiguration = {
+  key: string;
+  renderer: (
+    editorStore: ExistingQueryEditorStore,
+    queryBuilderState: QueryBuilderState,
+  ) => React.ReactNode | undefined;
+};
 
 export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlugin {
   /**
@@ -45,17 +73,17 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
   }
 
   /**
-   * Get the list of renderer configurations for the query setup option.
+   * Get the list of actions (configurations) for query setup.
    */
-  getExtraQuerySetupOptionRendererConfigurations?(): QuerySetupOptionRendererConfiguration[];
+  getExtraQuerySetupActionConfigurations?(): QuerySetupActionConfiguration[];
 
   /**
-   * Get the list of renderers for query setup.
+   * Get the list of existing query editor state builders.
    */
-  getExtraQuerySetupRenderers?(): QuerySetupRenderer[];
+  getExtraExistingQueryEditorStateBuilders?(): ExistingQueryEditorStateBuilder[];
 
   /**
-   * Get the list of query editor header labelers.
+   * Get the list of renderer configurations for existing query editor actions.
    */
-  getExtraQueryEditorHeaderLabelers?(): QueryEditorHeaderLabeler[];
+  getExtraExistingQueryActionRendererConfiguration?(): ExistingQueryEditorActionRendererConfiguration[];
 }

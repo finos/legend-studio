@@ -71,6 +71,7 @@ const ES_RULES = {
   'no-prototype-builtins': ERROR,
   'no-redeclare': OFF,
   'no-regex-spaces': ERROR,
+  'no-return-await': ERROR,
   'no-return-assign': ERROR,
   /**
    * This is a workaround as `import/no-relative-parent-imports` is not working properly with Typescript as of 2.20.1

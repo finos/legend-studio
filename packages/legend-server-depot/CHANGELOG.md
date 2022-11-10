@@ -1,5 +1,43 @@
 # @finos/legend-server-depot
 
+## 4.1.6
+
+## 4.1.5
+
+## 4.1.4
+
+### Patch Changes
+
+- [#1597](https://github.com/finos/legend-studio/pull/1597) [`5b61c844`](https://github.com/finos/legend-studio/commit/5b61c844362b1ff60c4025ab9b93220e938399b0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Remove usage of `latest` version alias in `DepotServerClient` in favor of directly using `MASTER_SNAPSHOT_ALIAS`
+
+## 4.1.3
+
+## 4.1.2
+
+## 4.1.1
+
+## 4.1.0
+
+### Minor Changes
+
+- [#1509](https://github.com/finos/legend-studio/pull/1509) [`8cbd17f0`](https://github.com/finos/legend-studio/commit/8cbd17f0d6b4854525adcdbb974d0c7a0fe4a564) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support fetching `artifact-generation` content from server.
+
+## 4.0.0
+
+### Major Changes
+
+- [#1488](https://github.com/finos/legend-studio/pull/1488) [`a90b4698`](https://github.com/finos/legend-studio/commit/a90b469846363058ac7efffcbfb8cf0070582609) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Moved `Depot Server` utilities to `@finos/legend-storage`.
+
+### Patch Changes
+
+- [#1488](https://github.com/finos/legend-studio/pull/1488) [`a90b4698`](https://github.com/finos/legend-studio/commit/a90b469846363058ac7efffcbfb8cf0070582609) ([@akphi](https://github.com/akphi)) - Remove `TEMPORARY__useLegacyDepotServerAPIRoutes` client config.
+
+## 3.0.12
+
+## 3.0.11
+
+## 3.0.10
+
 ## 3.0.9
 
 ## 3.0.8

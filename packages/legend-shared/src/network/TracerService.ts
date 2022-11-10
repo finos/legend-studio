@@ -18,10 +18,11 @@ import {
   AbstractPlugin,
   type AbstractPluginManager,
 } from '../application/AbstractPluginManager.js';
+import type { PlainObject } from '../CommonUtils.js';
 
 export interface TraceData {
   name: string;
-  tags?: Record<PropertyKey, unknown>;
+  tags?: PlainObject;
 }
 
 export enum CORE_TRACER_TAG {
@@ -54,7 +55,7 @@ export abstract class TracerServicePlugin<T> extends AbstractPlugin {
     clientSpan: T,
     method: string,
     url: string,
-    headers: Record<PropertyKey, unknown>,
+    headers: PlainObject,
   ): T;
   abstract concludeClientSpan(
     clientSpan: T | undefined,
@@ -112,7 +113,7 @@ export class TracerService {
     traceData: TraceData | undefined,
     method: string,
     url: string,
-    headers: Record<PropertyKey, unknown>,
+    headers: PlainObject,
   ): Trace {
     const trace = new Trace();
     if (traceData) {

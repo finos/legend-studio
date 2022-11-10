@@ -28,8 +28,7 @@ const ERROR = 2;
  */
 const enableFastMode =
   process.env.NODE_ENV === undefined || // IDE ESLint process runs without setting a NODE environment
-  (process.env.NODE_ENV === 'development' &&
-    process.env.DEVELOPMENT_MODE !== 'advanced');
+  process.env.NODE_ENV === 'development';
 
 /**
  * NOTE: this config is supposed to be used for both the IDE ESLint process
@@ -63,8 +62,7 @@ module.exports = {
     'plugin:@finos/legend-studio/scripts-override', // must be called last to turn off rules which are not applicable for scripts
   ].filter(Boolean),
   rules: {
-    // turn off the prettier format check when running this in CI (i.e. production environment)
-    // to speed up pipeline
+    // turn off the prettier format check when running this in CI (i.e. production environment) to speed up pipeline
     'prettier/prettier': process.env.NODE_ENV === 'production' ? OFF : ERROR,
   },
 };

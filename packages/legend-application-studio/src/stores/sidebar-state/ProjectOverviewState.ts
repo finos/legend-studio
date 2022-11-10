@@ -16,7 +16,7 @@
 
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
-import { action, flowResult, makeAutoObservable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -63,10 +63,25 @@ export class ProjectOverviewState {
   isFetchingCurrentProjectRevision = false;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      sdlcState: false,
+    makeObservable(this, {
+      activityMode: observable,
+      releaseVersion: observable,
+      committedReviewsBetweenMostRecentVersionAndProjectLatest: observable,
+      latestProjectVersion: observable,
+      currentProjectRevision: observable,
+      projectWorkspaces: observable,
+      isCreatingVersion: observable,
+      isFetchingProjectWorkspaces: observable,
+      isDeletingWorkspace: observable,
+      isUpdatingProject: observable,
+      isFetchingLatestVersion: observable,
+      isFetchingCurrentProjectRevision: observable,
       setActivityMode: action,
+      fetchProjectWorkspaces: flow,
+      deleteWorkspace: flow,
+      updateProject: flow,
+      fetchLatestProjectVersion: flow,
+      createVersion: flow,
     });
 
     this.editorStore = editorStore;
@@ -115,13 +130,15 @@ export class ProjectOverviewState {
         )
       ) {
         this.editorStore.applicationStore.notifyWarning(
-          'Current workspace is deleted. Redirecting to home page',
+          'Current workspace is deleted. Redirecting to workspace setup',
         );
-        this.editorStore.setIgnoreNavigationBlocking(true);
-        this.editorStore.applicationStore.navigator.goTo(
+        this.editorStore.applicationStore.navigator.goToLocation(
           generateSetupRoute(
             this.editorStore.sdlcState.activeProject.projectId,
           ),
+          {
+            ignoreBlocking: true,
+          },
         );
       }
     } catch (error) {

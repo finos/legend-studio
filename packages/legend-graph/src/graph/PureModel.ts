@@ -15,9 +15,8 @@
  */
 
 import {
-  PRIMITIVE_TYPE,
+  type PRIMITIVE_TYPE,
   ROOT_PACKAGE_NAME,
-  TYPICAL_MULTIPLICITY_TYPE,
   AUTO_IMPORTS,
 } from '../graph/MetaModelConst.js';
 import {
@@ -69,13 +68,7 @@ import type { SectionIndex } from '../graph/metamodel/pure/packageableElements/s
  * as we rebuild the graph.
  */
 export class CoreModel extends BasicModel {
-  /**
-   * ModelStore is technically not a real store and for referential equality check, it is much better to
-   * have it as a singleton. As such, we make ModelStore part of CoreModel
-   */
-  modelStore: ModelStore;
   primitiveTypesIndex = new Map<string, PrimitiveType>();
-  multiplicitiesIndex = new Map<string, Multiplicity>();
 
   get primitiveTypes(): PrimitiveType[] {
     return Array.from(this.primitiveTypesIndex.values());
@@ -83,11 +76,9 @@ export class CoreModel extends BasicModel {
 
   constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
     super(ROOT_PACKAGE_NAME.CORE, extensionElementClasses);
-    this.initializeMultiplicities();
     this.initializePrimitiveTypes();
-    // initialize ModelStore
-    this.modelStore = new ModelStore();
-    this.setOwnStore(this.modelStore.path, this.modelStore);
+    // index model store singleton
+    this.setOwnStore(ModelStore.NAME, ModelStore.INSTANCE);
   }
 
   override get allOwnElements(): PackageableElement[] {
@@ -98,40 +89,23 @@ export class CoreModel extends BasicModel {
    * NOTE: primitive types are special, they are not put in any package (i.e. they are not linked to `Root` package at all)
    */
   initializePrimitiveTypes(): void {
-    Object.values(PRIMITIVE_TYPE).forEach((type) => {
-      const primitiveType = new PrimitiveType(type);
-      this.primitiveTypesIndex.set(type, primitiveType);
-      this.setOwnType(type, primitiveType);
+    [
+      PrimitiveType.STRING,
+      PrimitiveType.BOOLEAN,
+      PrimitiveType.BINARY,
+      PrimitiveType.NUMBER,
+      PrimitiveType.INTEGER,
+      PrimitiveType.FLOAT,
+      PrimitiveType.DECIMAL,
+      PrimitiveType.DATE,
+      PrimitiveType.STRICTDATE,
+      PrimitiveType.DATETIME,
+      PrimitiveType.STRICTTIME,
+      PrimitiveType.LATESTDATE,
+    ].forEach((primitiveType) => {
+      this.primitiveTypesIndex.set(primitiveType.path, primitiveType);
+      this.setOwnType(primitiveType.path, primitiveType);
     });
-  }
-
-  /**
-   * Create pointers for the most common use case of multiplicity, other abnormal use cases such as 5..6 will
-   * be left as is, but for these, we want to optimize by using singletons
-   * NOTE: in the execution server, we put create packageable multiplicity objects and put them in the package tree,
-   * here we haven't yet seen a reason to do that
-   */
-  initializeMultiplicities(): void {
-    this.multiplicitiesIndex.set(
-      TYPICAL_MULTIPLICITY_TYPE.ZERO,
-      new Multiplicity(0, 0),
-    );
-    this.multiplicitiesIndex.set(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-      new Multiplicity(1, 1),
-    );
-    this.multiplicitiesIndex.set(
-      TYPICAL_MULTIPLICITY_TYPE.ZEROONE,
-      new Multiplicity(0, 1),
-    );
-    this.multiplicitiesIndex.set(
-      TYPICAL_MULTIPLICITY_TYPE.ONEMANY,
-      new Multiplicity(1, undefined),
-    );
-    this.multiplicitiesIndex.set(
-      TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
-      new Multiplicity(0, undefined),
-    );
   }
 }
 
@@ -192,10 +166,6 @@ export class PureModel extends BasicModel {
     this.systemModel = systemModel;
     this.generationModel = new GenerationModel(extensionElementClasses);
     this.dependencyManager = new DependencyManager(extensionElementClasses);
-  }
-
-  get modelStore(): ModelStore {
-    return this.coreModel.modelStore;
   }
 
   get autoImports(): Package[] {
@@ -570,38 +540,21 @@ export class PureModel extends BasicModel {
     return element;
   }
 
-  /**
-   * We cache some typical/frequently-used multiplicity.
-   */
-  getTypicalMultiplicity = (name: TYPICAL_MULTIPLICITY_TYPE): Multiplicity =>
-    guaranteeNonNullable(
-      this.coreModel.multiplicitiesIndex.get(name),
-      `Can't find typical multiplicity with name ${name}`,
-    );
-
   getMultiplicity(
     lowerBound: number,
     upperBound: number | undefined,
   ): Multiplicity {
     let multiplicity: Multiplicity | undefined;
     if (lowerBound === 1 && upperBound === 1) {
-      multiplicity = this.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE);
+      multiplicity = Multiplicity.ONE;
     } else if (lowerBound === 0 && upperBound === 1) {
-      multiplicity = this.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ZEROONE,
-      );
+      multiplicity = Multiplicity.ZERO_ONE;
     } else if (lowerBound === 0 && upperBound === undefined) {
-      multiplicity = this.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
-      );
+      multiplicity = Multiplicity.ZERO_MANY;
     } else if (lowerBound === 1 && upperBound === undefined) {
-      multiplicity = this.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONEMANY,
-      );
+      multiplicity = Multiplicity.ONE_MANY;
     } else if (lowerBound === 0 && upperBound === 0) {
-      multiplicity = this.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ZERO,
-      );
+      multiplicity = Multiplicity.ZERO;
     }
     return multiplicity ?? new Multiplicity(lowerBound, upperBound);
   }
@@ -644,6 +597,6 @@ export class PureModel extends BasicModel {
       );
     }
 
-    super.renameOwnElement(element, newPath);
+    super.renameOwnElement(element, element.path, newPath);
   }
 }

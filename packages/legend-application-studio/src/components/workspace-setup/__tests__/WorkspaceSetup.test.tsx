@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-import { test, jest, expect, beforeEach } from '@jest/globals';
+import { test, expect, beforeEach } from '@jest/globals';
 import { render, waitFor } from '@testing-library/react';
 import { WorkspaceSetup } from '../WorkspaceSetup.js';
-import {
-  integrationTest,
-  MOBX__disableSpyOrMock,
-  MOBX__enableSpyOrMock,
-} from '@finos/legend-shared';
+import { createSpy, integrationTest } from '@finos/legend-shared';
 import { TEST_DATA__DefaultSDLCInfo } from '../../EditorComponentTestUtils.js';
-import { MemoryRouter } from 'react-router';
 import {
   type SDLCServerClient,
   TEST__SDLCServerClientProvider,
   TEST__provideMockedSDLCServerClient,
 } from '@finos/legend-server-sdlc';
 import {
+  MemoryRouter,
   TEST__ApplicationStoreProvider,
   TEST__provideMockedWebApplicationNavigator,
 } from '@finos/legend-application';
@@ -42,67 +38,29 @@ beforeEach(() => {
   sdlcServerClient = TEST__provideMockedSDLCServerClient();
 });
 
-test(
-  integrationTest(
-    'Shows project selector properly when there are at least 1 project',
-  ),
-  async () => {
-    MOBX__enableSpyOrMock();
-    jest
-      .spyOn(sdlcServerClient, 'getProjects')
-      .mockResolvedValueOnce([TEST_DATA__DefaultSDLCInfo.project])
-      .mockResolvedValueOnce([]);
-    MOBX__disableSpyOrMock();
-    TEST__provideMockedWebApplicationNavigator();
+test(integrationTest('Shows project searcher properly'), async () => {
+  createSpy(sdlcServerClient, 'getProjects')
+    .mockResolvedValueOnce([TEST_DATA__DefaultSDLCInfo.project])
+    .mockResolvedValueOnce([]);
 
-    const { queryByText } = render(
-      <MemoryRouter>
-        <TEST__ApplicationStoreProvider
-          config={TEST__getLegendStudioApplicationConfig()}
-          pluginManager={LegendStudioPluginManager.create()}
-        >
-          <TEST__SDLCServerClientProvider>
-            <WorkspaceSetup />
-          </TEST__SDLCServerClientProvider>
-        </TEST__ApplicationStoreProvider>
-      </MemoryRouter>,
-    );
+  TEST__provideMockedWebApplicationNavigator();
 
-    // NOTE: react-select is not like a normal input box where we could set the placeholder, so we just
-    // cannot use `queryByPlaceholderText` but have to use `queryByText`
-    await waitFor(() =>
-      expect(queryByText('Choose an existing project')).not.toBeNull(),
-    );
-  },
-);
+  const { queryByText } = render(
+    <MemoryRouter>
+      <TEST__ApplicationStoreProvider
+        config={TEST__getLegendStudioApplicationConfig()}
+        pluginManager={LegendStudioPluginManager.create()}
+      >
+        <TEST__SDLCServerClientProvider>
+          <WorkspaceSetup />
+        </TEST__SDLCServerClientProvider>
+      </TEST__ApplicationStoreProvider>
+    </MemoryRouter>,
+  );
 
-test(
-  integrationTest('Disable project selector when there is no projects'),
-  async () => {
-    MOBX__enableSpyOrMock();
-    jest.spyOn(sdlcServerClient, 'getProjects').mockResolvedValue([]);
-    MOBX__disableSpyOrMock();
-    TEST__provideMockedWebApplicationNavigator();
-
-    const { queryByText } = render(
-      <MemoryRouter>
-        <TEST__ApplicationStoreProvider
-          config={TEST__getLegendStudioApplicationConfig()}
-          pluginManager={LegendStudioPluginManager.create()}
-        >
-          <TEST__SDLCServerClientProvider>
-            <WorkspaceSetup />
-          </TEST__SDLCServerClientProvider>
-        </TEST__ApplicationStoreProvider>
-      </MemoryRouter>,
-    );
-
-    await waitFor(() =>
-      expect(
-        queryByText(
-          'You have no projects, please create or acquire access for at least one',
-        ),
-      ).not.toBeNull(),
-    );
-  },
-);
+  // NOTE: react-select does not seem to produce a normal input box where we could set the placeholder attribute
+  // as such, we cannot use `queryByPlaceholderText` but use `queryByText` instead
+  await waitFor(() =>
+    expect(queryByText('Search for project...')).not.toBeNull(),
+  );
+});

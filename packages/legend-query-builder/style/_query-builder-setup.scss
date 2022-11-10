@@ -1,0 +1,149 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.query-builder__setup {
+  .panel__content {
+    height: 100%;
+  }
+
+  &__content {
+    padding: 0.5rem;
+    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    overflow: hidden;
+    border-radius: 0.2rem;
+  }
+
+  &__config-group {
+    width: 100%;
+
+    &__header {
+      @include flexVCenter;
+
+      justify-content: space-between;
+      height: 1.6rem;
+      padding-left: 1rem;
+      background: var(--color-blue-300);
+      border-radius: 0.2rem 0.2rem 0.2rem 0;
+
+      &__title {
+        color: var(--color-light-grey-300);
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      &__dropdown-trigger {
+        @include flexCenter;
+
+        height: 100%;
+        width: 3rem;
+
+        svg {
+          color: var(--color-light-grey-300);
+        }
+      }
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      padding: 0.5rem 0 0 0.5rem;
+      border-left: 0.5rem solid var(--color-blue-300);
+    }
+
+    &__item {
+      @include flexVCenter;
+
+      width: 100%;
+    }
+
+    &__item__label {
+      @include flexCenter;
+
+      background: var(--color-dark-grey-100);
+      margin-right: 0.5rem;
+    }
+
+    &__item__selector {
+      width: 100%;
+      max-width: unset;
+    }
+
+    &__item + &__item {
+      margin-top: 0.5rem;
+    }
+
+    &--class &__header {
+      background: var(--color-purple-400);
+    }
+
+    &--class &__content {
+      padding-top: 0;
+      border-left: 0.5rem solid var(--color-purple-400);
+    }
+
+    &--class &__item__label {
+      border: 0.1rem solid var(--color-purple-400);
+    }
+  }
+
+  &__class-option-label {
+    @include flexVCenter;
+
+    &--deprecated &__name {
+      text-decoration: line-through 0.1rem;
+    }
+
+    &__milestoning {
+      @include flexCenter;
+
+      cursor: default;
+      width: 2rem;
+      font-size: 1.2rem;
+      color: var(--color-light-grey-400);
+    }
+  }
+
+  &__milestoning {
+    margin-left: 0.5rem;
+  }
+
+  &__config-group + &__config-group {
+    margin-top: 0.5rem;
+  }
+
+  &__runtime-option--custom {
+    @include flexVCenter;
+
+    svg {
+      color: var(--color-blue-100);
+    }
+
+    &__label {
+      @include flexCenter;
+
+      margin-left: 0.5rem;
+      height: 1.6rem;
+      font-size: 1.2rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-250);
+      padding: 0 0.5rem;
+      border-radius: 0.2rem;
+    }
+  }
+}

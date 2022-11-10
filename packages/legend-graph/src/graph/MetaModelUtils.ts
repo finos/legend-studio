@@ -101,9 +101,7 @@ export const fromElementPathToMappingElementId = (className: string): string =>
  * NOTE: That aside, We should cleanup these in the backend and use pointer instead so source information is coupled
  * with the value instead of having custom-name source information fields like these, polluting the protocol models.
  */
-export const pruneSourceInformation = (
-  object: Record<PropertyKey, unknown>,
-): Record<PropertyKey, unknown> =>
+export const pruneSourceInformation = <T extends object>(object: T): T =>
   recursiveOmit(
     object,
     (obj, propKey) =>

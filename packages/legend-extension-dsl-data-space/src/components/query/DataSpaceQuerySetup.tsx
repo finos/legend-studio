@@ -14,242 +14,167 @@
  * limitations under the License.
  */
 
+import { observer, useLocalObservable } from 'mobx-react-lite';
+import { debounce } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
+import { useDepotServerClient } from '@finos/legend-server-depot';
 import {
-  type SelectComponent,
-  BoltIcon,
-  ArrowRightIcon,
-  clsx,
-  BlankPanelContent,
-  TimesCircleIcon,
-  PanelLoadingIndicator,
-  ArrowLeftIcon,
+  QueryEditor,
+  QueryEditorStoreContext,
+  useLegendQueryApplicationStore,
+} from '@finos/legend-application-query';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { flowResult } from 'mobx';
+import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
+import {
   CustomSelectorInput,
   SearchIcon,
-  createFilter,
+  type SelectComponent,
 } from '@finos/legend-art';
-import { useQuerySetupStore } from '@finos/legend-application-query';
-import { generateGAVCoordinates } from '@finos/legend-server-depot';
-import { debounce } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import type {
-  DataSpaceQuerySetupState,
-  DataSpaceContext,
-} from '../../stores/query/DataSpaceQuerySetupState.js';
-import { DataSpaceViewer } from '../DataSpaceViewer.js';
+import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
+import {
+  type DataSpaceQuerySetupState,
+  DataSpaceQuerySetupStore,
+} from '../../stores/query/DataSpaceQuerySetupStore.js';
+import {
+  buildDataSpaceOption,
+  formatDataSpaceOptionLabel,
+  type DataSpaceOption,
+} from './DataSpaceQueryBuilder.js';
+import { DataSpaceAdvancedSearchModal } from './DataSpaceAdvancedSearchModal.js';
 
-type DataSpaceOption = { label: string; value: DataSpaceContext };
-const buildDataSpaceOption = (value: DataSpaceContext): DataSpaceOption => ({
-  label: value.title ?? value.name,
-  value: value,
-});
+const DataSpaceQuerySetupStoreProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
+  const applicationStore = useLegendQueryApplicationStore();
+  const depotServerClient = useDepotServerClient();
+  const store = useLocalObservable(
+    () => new DataSpaceQuerySetupStore(applicationStore, depotServerClient),
+  );
+  return (
+    <QueryEditorStoreContext.Provider value={store}>
+      {children}
+    </QueryEditorStoreContext.Provider>
+  );
+};
 
-export const DataspaceQuerySetup = observer(
-  (props: { querySetupState: DataSpaceQuerySetupState }) => {
-    const { querySetupState } = props;
+export const DataSpaceQuerySetup = observer(() => (
+  <DataSpaceQuerySetupStoreProvider>
+    <QueryEditor />
+  </DataSpaceQuerySetupStoreProvider>
+));
+
+/**
+ * This setup panel supports cascading in order: Data-space -> Execution context (-> Runtime) -> Class
+ *
+ * In other words, we will only show:
+ * - For runtime selector: the list of compatible runtimes with the selected execution context mapping
+ * - For class selector: the list of compatible class with the selected execution context mapping
+ *
+ * See details on propagation/cascading in {@link DataSpaceQuerySetupState}
+ */
+const DataSpaceQuerySetupSetupPanelContent = observer(
+  (props: { queryBuilderState: DataSpaceQuerySetupState }) => {
+    const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
-    const setupStore = useQuerySetupStore();
     const dataSpaceSearchRef = useRef<SelectComponent>(null);
-    const [searchText, setSearchText] = useState('');
+    const [dataSpaceSearchText, setDataSpaceSearchText] = useState('');
 
-    const toggleGetSnapshot = (): void => {
-      querySetupState.setToGetSnapShot(!querySetupState.toGetSnapShot);
-      flowResult(querySetupState.loadDataSpaces(searchText)).catch(
-        applicationStore.alertUnhandledError,
-      );
-    };
-
-    const next = (): void => {
-      if (querySetupState.dataSpaceViewerState) {
-        flowResult(querySetupState.proceedToCreateQuery()).catch(
-          applicationStore.alertUnhandledError,
-        );
-      }
-    };
-    const canProceed = querySetupState.dataSpaceViewerState;
-
-    const back = (): void => {
-      setupStore.setSetupState(undefined);
-      querySetupState.setCurrentDataSpace(undefined);
-    };
-
-    // query
+    // data space
     const dataSpaceOptions =
-      querySetupState.dataSpaces.map(buildDataSpaceOption);
-    const selectedDataSpaceOption = querySetupState.currentDataSpace
-      ? buildDataSpaceOption(querySetupState.currentDataSpace)
-      : null;
-    const onDataSpaceOptionChange = (option: DataSpaceOption | null): void => {
-      if (option?.value !== querySetupState.currentDataSpace) {
-        querySetupState.setCurrentDataSpace(option?.value);
-        querySetupState.setDataSpaceViewerState(undefined);
-      }
+      queryBuilderState.dataSpaces.map(buildDataSpaceOption);
+    const selectedDataSpaceOption = null;
+    const onDataSpaceOptionChange = (option: DataSpaceOption): void => {
+      queryBuilderState.onDataSpaceChange(option.value);
     };
-    const filterOption = createFilter({
-      ignoreCase: true,
-      ignoreAccents: false,
-      stringify: (option: DataSpaceOption): string =>
-        `${option.label} - ${option.value.path}`,
-    });
-    const formatQueryOptionLabel = (
-      option: DataSpaceOption,
-    ): React.ReactNode => (
-      <div
-        className="query-setup__data-space__option"
-        title={`${option.label} - ${
-          option.value.path
-        } - ${generateGAVCoordinates(
-          option.value.groupId,
-          option.value.artifactId,
-          option.value.versionId,
-        )}`}
-      >
-        <div className="query-setup__data-space__option__label">
-          {option.label}
-        </div>
-        <div className="query-setup__data-space__option__path">
-          {option.value.path}
-        </div>
-        <div className="query-setup__data-space__option__gav">
-          {generateGAVCoordinates(
-            option.value.groupId,
-            option.value.artifactId,
-            option.value.versionId,
-          )}
-        </div>
-      </div>
-    );
 
-    // search text
+    // data space search text
     const debouncedLoadDataSpaces = useMemo(
       () =>
         debounce((input: string): void => {
-          flowResult(querySetupState.loadDataSpaces(input)).catch(
+          flowResult(queryBuilderState.loadDataSpaces(input)).catch(
             applicationStore.alertUnhandledError,
           );
         }, 500),
-      [applicationStore, querySetupState],
+      [applicationStore, queryBuilderState],
     );
-    const onSearchTextChange = (value: string): void => {
-      if (value !== searchText) {
-        setSearchText(value);
+    const onDataSpaceSearchTextChange = (value: string): void => {
+      if (value !== dataSpaceSearchText) {
+        setDataSpaceSearchText(value);
         debouncedLoadDataSpaces.cancel();
         debouncedLoadDataSpaces(value);
       }
     };
+    const openDataSpaceAdvancedSearch = (): void =>
+      queryBuilderState.showAdvancedSearchPanel();
 
     useEffect(() => {
-      flowResult(querySetupState.loadDataSpaces('')).catch(
+      flowResult(queryBuilderState.loadDataSpaces('')).catch(
         applicationStore.alertUnhandledError,
       );
-    }, [querySetupState, applicationStore]);
+    }, [queryBuilderState, applicationStore]);
 
-    useEffect(() => {
-      if (querySetupState.currentDataSpace) {
-        flowResult(
-          querySetupState.loadDataSpace(querySetupState.currentDataSpace),
-        ).catch(applicationStore.alertUnhandledError);
-      }
-    }, [querySetupState, applicationStore, querySetupState.currentDataSpace]);
-
-    useEffect(() => {
-      dataSpaceSearchRef.current?.focus();
-    }, []);
+    useEffect(() => dataSpaceSearchRef.current?.focus());
 
     return (
-      <div className="query-setup__wizard query-setup__data-space">
-        <div className="query-setup__wizard__header query-setup__data-space__header">
-          <button
-            className="query-setup__wizard__header__btn"
-            onClick={back}
-            title="Back to Main Menu"
-          >
-            <ArrowLeftIcon />
-          </button>
-          <div className="query-setup__wizard__header__title">
-            Creating query from data space...
-          </div>
-          <button
-            className={clsx('query-setup__wizard__header__btn', {
-              'query-setup__wizard__header__btn--ready': canProceed,
-            })}
-            onClick={next}
-            disabled={!canProceed}
-            title="Proceed"
-          >
-            <ArrowRightIcon />
-          </button>
-        </div>
-        <div className="query-setup__wizard__content">
-          <div className="query-setup__wizard__group query-setup__wizard__group--inline query-setup__data-space__input-group">
-            <div className="query-setup__wizard__group__title">
-              <SearchIcon />
+      <>
+        <div className="query-builder__setup__config-group">
+          <div className="query-builder__setup__config-group__header">
+            <div className="query-builder__setup__config-group__header__title">
+              data space execution context
             </div>
-            <CustomSelectorInput
-              ref={dataSpaceSearchRef}
-              className="query-setup__wizard__selector"
-              options={dataSpaceOptions}
-              isLoading={querySetupState.loadDataSpacesState.isInProgress}
-              onInputChange={onSearchTextChange}
-              inputValue={searchText}
-              onChange={onDataSpaceOptionChange}
-              value={selectedDataSpaceOption}
-              placeholder="Search for data space by name..."
-              isClearable={true}
-              escapeClearsValue={true}
-              darkMode={true}
-              filterOption={filterOption}
-              formatOptionLabel={formatQueryOptionLabel}
-            />
-            <button
-              className={clsx('query-setup__data-space__use-snapshot-btn', {
-                'query-setup__data-space__use-snapshot-btn--active':
-                  querySetupState.toGetSnapShot,
-              })}
-              tabIndex={-1}
-              title={`[${
-                querySetupState.toGetSnapShot ? 'on' : 'off'
-              }] Toggle show data spaces from snapshot releases instead of latest releases`}
-              onClick={toggleGetSnapshot}
-            >
-              <BoltIcon />
-            </button>
           </div>
-          <div className="query-setup__data-space__view">
-            <PanelLoadingIndicator
-              isLoading={querySetupState.loadDataSpaceState.isInProgress}
-            />
-            {querySetupState.dataSpaceViewerState && (
-              <DataSpaceViewer
-                dataSpaceViewerState={querySetupState.dataSpaceViewerState}
+          <div className="query-builder__setup__config-group__content">
+            <div className="query-builder__setup__config-group__item">
+              <div
+                className="btn--sm query-builder__setup__config-group__item__label"
+                title="data space"
+              >
+                <DataSpaceIcon />
+              </div>
+              <CustomSelectorInput
+                ref={dataSpaceSearchRef}
+                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+                options={dataSpaceOptions}
+                isLoading={queryBuilderState.loadDataSpacesState.isInProgress}
+                onInputChange={onDataSpaceSearchTextChange}
+                inputValue={dataSpaceSearchText}
+                onChange={onDataSpaceOptionChange}
+                value={selectedDataSpaceOption}
+                placeholder="Search for data space..."
+                escapeClearsValue={true}
+                darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+                formatOptionLabel={formatDataSpaceOptionLabel}
               />
-            )}
-            {!querySetupState.dataSpaceViewerState && (
-              <>
-                {querySetupState.loadDataSpaceState.isInProgress && (
-                  <BlankPanelContent>
-                    {querySetupState.loadDataSpaceState.message}
-                  </BlankPanelContent>
-                )}
-                {querySetupState.loadDataSpaceState.hasFailed && (
-                  <BlankPanelContent>
-                    <div className="query-setup__data-space__view--failed">
-                      <div className="query-setup__data-space__view--failed__icon">
-                        <TimesCircleIcon />
-                      </div>
-                      <div className="query-setup__data-space__view--failed__text">
-                        Can&apos;t load data space
-                      </div>
-                    </div>
-                  </BlankPanelContent>
-                )}
-              </>
-            )}
+              <button
+                tabIndex={-1}
+                className="query-builder__setup__data-space-searcher__btn btn--dark"
+                onClick={openDataSpaceAdvancedSearch}
+                title="Open advanced search for data space..."
+              >
+                <SearchIcon />
+              </button>
+              {queryBuilderState.advancedSearchState && (
+                <DataSpaceAdvancedSearchModal
+                  searchState={queryBuilderState.advancedSearchState}
+                  onClose={() => queryBuilderState.hideAdvancedSearchPanel()}
+                />
+              )}
+            </div>
           </div>
         </div>
-      </div>
+        <QueryBuilderClassSelector
+          queryBuilderState={queryBuilderState}
+          classes={[]}
+          noMatchMessage="No compatible class found"
+        />
+      </>
     );
   },
+);
+
+export const renderDataSpaceQuerySetupSetupPanelContent = (
+  queryBuilderState: DataSpaceQuerySetupState,
+): React.ReactNode => (
+  <DataSpaceQuerySetupSetupPanelContent queryBuilderState={queryBuilderState} />
 );

@@ -17,29 +17,26 @@
 @use 'mixins' as *;
 
 .query-setup {
-  @include flexCenter;
+  @include flexHCenter;
 
   width: 100%;
   height: 100%;
+  padding: 20rem;
+  overflow: overlay;
 }
 
 .query-setup__landing-page {
-  @include flexCenter;
-
+  display: flex;
   flex-direction: column;
-  height: 30rem;
-  width: 32rem;
-  background: var(--color-dark-grey-80);
-  border-radius: 0.2rem;
+  width: 62rem;
 
   &__title {
-    @include flexCenter;
+    @include flexVCenter;
 
-    height: 3.4rem;
-    width: 25rem;
+    justify-content: flex-start;
     color: var(--color-light-grey-400);
     font-family: 'Roboto Mono', monospace;
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     margin-bottom: 1rem;
     cursor: default;
     user-select: none;
@@ -56,208 +53,227 @@
     }
   }
 
-  &__option {
+  &__action-group {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-dark-grey-80);
+    border-radius: 0.2rem;
+    position: relative;
+
+    &__tag {
+      @include flexVCenter;
+
+      height: 1.6rem;
+      background: var(--color-blue-200);
+      color: var(--color-light-grey-0);
+      font-size: 1.1rem;
+      padding: 0.5rem;
+      border-radius: 0.2rem;
+      margin-left: 0.5rem;
+      position: absolute;
+      top: -0.5rem;
+      font-weight: 700;
+      font-family: 'Roboto Mono', monospace;
+      user-select: none;
+      cursor: default;
+    }
+
+    &--studio &__tag {
+      background: var(--color-purple-200);
+    }
+
+    &__header {
+      @include flexVCenter;
+
+      justify-content: flex-end;
+      height: 2.5rem;
+    }
+
+    &__config {
+      @include flexCenter;
+
+      height: 2.5rem;
+      width: 2.5rem;
+      cursor: pointer;
+      color: var(--color-dark-grey-400);
+      position: relative;
+
+      &:hover {
+        color: var(--color-dark-grey-500);
+      }
+
+      &__status {
+        position: absolute;
+        right: 0.4rem;
+        bottom: 0.2rem;
+
+        svg {
+          font-size: 0.8rem;
+          color: var(--color-blue-100);
+        }
+      }
+    }
+
+    &__body {
+      @include flexHCenter;
+    }
+
+    &__body__column {
+      @include flexVCenter;
+
+      flex-direction: column;
+      width: 28rem;
+
+      & + & {
+        border-left: 0.2rem solid var(--color-dark-grey-50);
+      }
+    }
+
+    &__footer {
+      @include flexCenter;
+
+      height: 2.5rem;
+
+      &__content {
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+        width: 54rem;
+        height: 2.5rem;
+      }
+
+      &__btn {
+        svg {
+          font-size: 2rem;
+          color: var(--color-dark-grey-400);
+        }
+
+        &:hover svg {
+          color: var(--color-dark-grey-500);
+        }
+      }
+    }
+
+    & + & {
+      margin-top: 1rem;
+    }
+  }
+
+  &__action {
     @include flexVCenter;
 
     height: 3.4rem;
-    width: 25rem;
+    width: 26rem;
     border-radius: 0.2rem;
-    background: var(--color-light-grey-300);
+    background: var(--color-light-grey-400);
     user-select: none;
 
     &--existing-query:hover {
       background: var(--color-magenta-50);
     }
 
+    &--taxonomy-query:hover {
+      background: var(--color-blue-50);
+    }
+
     &--service-query:hover {
       background: var(--color-blue-50);
     }
 
-    &--create-query:hover {
+    &--productionize-query:hover {
+      background: var(--color-orange-100);
+    }
+
+    &--create-mapping-query:hover {
       background: var(--color-lime-75);
     }
 
-    &--advanced {
-      background: var(--color-dark-grey-500);
-    }
-  }
-
-  &__option + &__option {
-    margin-top: 0.5rem;
-  }
-
-  &__option__icon {
-    @include flexCenter;
-    @include flexConstantDimension;
-
-    height: 3.4rem;
-    width: 3.4rem;
-    border-right: 0.1rem solid var(--color-dark-shade-300);
-
-    svg {
-      color: var(--color-dark-shade-800);
-    }
-  }
-
-  &__option__label {
-    @include flexVCenter;
-
-    padding: 0 1.5rem;
-    height: 100%;
-    width: 100%;
-    color: var(--color-dark-shade-800);
-    font-size: 1.2rem;
-    font-weight: 500;
-  }
-
-  &__icon {
-    &--edit {
-      font-size: 1.6rem;
-    }
-  }
-}
-
-.query-setup__create-query {
-  height: 38.2rem;
-
-  &__header {
-    background: var(--color-lime-75);
-  }
-
-  &__project {
-    @include flexCenter;
-
-    flex-direction: column;
-    height: 16.9rem;
-    padding: 2.5rem 0 1rem;
-  }
-
-  &__graph {
-    display: flex;
-    flex-direction: column;
-    height: 13.4rem;
-    width: 50rem;
-
-    &__loader {
-      height: 13.4rem;
-      border: 0.1rem solid var(--color-dark-grey-200);
-      margin-top: 2rem;
-    }
-  }
-}
-
-.query-setup__service-query {
-  height: 32.2rem;
-
-  &__header {
-    background: var(--color-blue-50);
-  }
-
-  &__project {
-    @include flexCenter;
-
-    flex-direction: column;
-    height: 16.9rem;
-    padding: 2.5rem 0 1rem;
-  }
-
-  &__graph {
-    display: flex;
-    flex-direction: column;
-    height: 8.4rem;
-    width: 50rem;
-
-    &__loader {
-      height: 13.4rem;
-      border: 0.1rem solid var(--color-dark-grey-200);
-      margin-top: 2rem;
-    }
-  }
-}
-
-.query-setup__existing-query {
-  &__header {
-    background: var(--color-magenta-50);
-  }
-
-  .query-setup__wizard__content {
-    padding: 2rem 3rem 3rem;
-  }
-
-  .query-setup__wizard__selector {
-    width: 46.7rem;
-  }
-
-  &__input {
-    @include flexVCenter;
-
-    width: 50rem;
-  }
-
-  &__query-option {
-    @include flexVCenter;
-
-    &__label {
-      width: calc(100% - 5rem);
-    }
-
-    &__action {
-      @include flexCenter;
-
-      width: 5rem;
-      height: 1.8rem;
-      border-radius: 0.2rem;
-      font-size: 1rem;
-      font-weight: 500;
-      background: var(--color-dark-grey-250);
-      color: var(--color-dark-grey-500);
+    &--studio {
+      width: 54rem;
 
       &:hover {
-        background: var(--color-magenta-50);
+        background: var(--color-lime-75);
+      }
+    }
+
+    &--advanced {
+      background: var(--color-dark-grey-400);
+    }
+
+    &__icon {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 3.4rem;
+      width: 3.4rem;
+      border-right: 0.1rem solid var(--color-dark-shade-300);
+
+      svg {
         color: var(--color-dark-shade-800);
       }
     }
 
-    &__user {
-      @include flexCenter;
+    &__label {
+      @include flexVCenter;
 
-      width: 5rem;
-      height: 1.8rem;
-      border-radius: 0.2rem;
-      font-size: 1rem;
+      padding: 0 1.5rem;
+      height: 100%;
+      width: 100%;
+      color: var(--color-dark-shade-800);
+      font-size: 1.2rem;
       font-weight: 500;
-      background: var(--color-dark-grey-250);
-      color: var(--color-dark-grey-500);
+    }
 
-      &--mine {
-        background: var(--color-magenta-50);
-        color: var(--color-dark-shade-800);
+    & + & {
+      margin-top: 0.5rem;
+    }
+  }
+
+  &__icon--search {
+    font-size: 2rem;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.5rem 1rem;
+
+    &__more-btn {
+      svg {
+        font-size: 2.6rem;
+        color: var(--color-dark-grey-250);
+        animation: bouncedown 0.5s alternate ease infinite;
+      }
+
+      &:hover svg {
+        color: var(--color-dark-grey-400);
+      }
+    }
+
+    @keyframes bouncedown {
+      from {
+        transform: translateY(0.2rem);
+      }
+
+      to {
+        transform: translateY(-0.2rem);
       }
     }
   }
 
-  &__btn {
-    @include flexCenter;
-    @include flexConstantDimension;
-
-    width: 2.8rem;
-    height: 2.8rem;
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-250);
-    margin-left: 0.5rem;
-    border-radius: 0.2rem;
-
-    svg {
-      color: var(--color-dark-grey-500);
+  &__config-menu {
+    .menu__item {
+      font-size: 1.2rem;
+      height: 2.2rem;
     }
 
-    &--active {
-      background: var(--color-magenta-50);
-      border: none;
+    .menu__item__icon svg {
+      font-size: 1.2rem;
+    }
 
-      svg {
-        color: var(--color-dark-shade-300);
-      }
+    .menu__item__label {
+      font-size: 1.2rem;
+      margin-left: 0.5rem;
     }
   }
 }
@@ -369,5 +385,247 @@
 
   to {
     transform: translateX(-0.1rem);
+  }
+}
+
+.query-setup__create-query {
+  height: 38.2rem;
+
+  &__header {
+    background: var(--color-lime-75);
+  }
+
+  &__project {
+    @include flexCenter;
+
+    flex-direction: column;
+    height: 16.9rem;
+    padding: 2.5rem 0 1rem;
+  }
+
+  &__graph {
+    display: flex;
+    flex-direction: column;
+    height: 13.4rem;
+    width: 50rem;
+
+    &__loader {
+      height: 13.4rem;
+      border: 0.1rem solid var(--color-dark-grey-200);
+      margin-top: 2rem;
+    }
+  }
+}
+
+.query-setup__service-query {
+  height: 32.2rem;
+
+  &__header {
+    background: var(--color-blue-50);
+  }
+
+  &__project {
+    @include flexCenter;
+
+    flex-direction: column;
+    height: 16.9rem;
+    padding: 2.5rem 0 1rem;
+  }
+
+  &__graph {
+    display: flex;
+    flex-direction: column;
+    height: 8.4rem;
+    width: 50rem;
+
+    &__loader {
+      height: 13.4rem;
+      border: 0.1rem solid var(--color-dark-grey-200);
+      margin-top: 2rem;
+    }
+  }
+
+  .query-setup__wizard__group {
+    width: 100%;
+  }
+}
+
+.query-setup__existing-service-query {
+  width: calc(100% - 10rem);
+  height: 10.2rem;
+
+  &__header {
+    background: var(--color-blue-50);
+  }
+
+  &__search-bar {
+    height: 2.8rem;
+    width: 100%;
+  }
+
+  .query-setup__wizard__selector {
+    width: 100%;
+  }
+
+  .query-setup__wizard__content {
+    @include flexVCenter;
+
+    padding: 2rem;
+  }
+}
+
+.query-setup__existing-query {
+  &__header {
+    background: var(--color-magenta-50);
+  }
+
+  .query-setup__wizard__content {
+    padding: 3rem;
+  }
+
+  .query-setup__wizard__selector {
+    width: 46.7rem;
+  }
+
+  &__input {
+    @include flexVCenter;
+
+    width: 50rem;
+  }
+
+  &__query-option {
+    @include flexVCenter;
+
+    &__label {
+      @include ellipsisTextOverflow;
+
+      width: calc(100% - 6rem);
+    }
+
+    &__action {
+      @include flexCenter;
+
+      width: 5rem;
+      height: 1.8rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-250);
+      color: var(--color-dark-grey-500);
+      margin-left: 1rem;
+
+      &:hover {
+        background: var(--color-magenta-50);
+        color: var(--color-dark-shade-800);
+      }
+    }
+
+    &__user {
+      @include flexCenter;
+
+      width: 5rem;
+      height: 1.8rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-250);
+      color: var(--color-dark-grey-500);
+      margin-left: 1rem;
+
+      &--mine {
+        background: var(--color-magenta-50);
+        color: var(--color-dark-shade-800);
+      }
+    }
+  }
+
+  &__preview {
+    width: 53.3rem;
+    height: 30rem;
+    margin-top: 0.5rem;
+    position: relative;
+    border: 0.1rem solid var(--color-dark-grey-200);
+  }
+
+  &__btn {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    width: 2.8rem;
+    height: 2.8rem;
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-250);
+    margin-left: 0.5rem;
+    border-radius: 0.2rem;
+
+    svg {
+      color: var(--color-dark-grey-500);
+    }
+
+    &--active {
+      background: var(--color-magenta-50);
+      border: none;
+
+      svg {
+        color: var(--color-dark-shade-300);
+      }
+    }
+  }
+}
+
+.query-setup__productionize-query {
+  &__header {
+    background: var(--color-magenta-50);
+  }
+
+  .query-setup__wizard__content {
+    padding: 3rem;
+  }
+
+  .query-setup__wizard__selector {
+    width: 50rem;
+  }
+
+  &__query-option {
+    @include flexVCenter;
+
+    &__label {
+      @include ellipsisTextOverflow;
+
+      width: 100%;
+    }
+  }
+
+  &__preview {
+    width: 53.3rem;
+    height: 30rem;
+    margin-top: 0.5rem;
+    position: relative;
+    border: 0.1rem solid var(--color-dark-grey-200);
+  }
+
+  &__btn {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    width: 2.8rem;
+    height: 2.8rem;
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-250);
+    margin-left: 0.5rem;
+    border-radius: 0.2rem;
+
+    svg {
+      color: var(--color-dark-grey-500);
+    }
+
+    &--active {
+      background: var(--color-magenta-50);
+      border: none;
+
+      svg {
+        color: var(--color-dark-shade-300);
+      }
+    }
   }
 }

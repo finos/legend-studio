@@ -26,6 +26,11 @@ import {
   InfoCircleIcon,
   TimesIcon,
   Dialog,
+  PanelContent,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
 } from '@finos/legend-art';
 import type {
   EntityChangeConflict,
@@ -103,11 +108,9 @@ export const WorkspaceSyncConflictResolver = observer(() => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <div className="modal modal--dark editor-modal query-builder__dialog">
-        <div className="modal__header">
-          <div className="modal__title">Resolve Merge Conflicts</div>
-        </div>
-        <div className="modal__body">
+      <Modal darkMode={true} className="editor-modal query-builder__dialog">
+        <ModalHeader title="Resolve Merge Conflicts" />
+        <ModalBody>
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel size={350} minSize={350}>
               <div className="panel explorer">
@@ -137,7 +140,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                           {changes.length + conflicts.length}
                         </div>
                       </div>
-                      <div className="panel__content">
+                      <PanelContent>
                         {!hadResolvedAllConflicts && (
                           <>
                             {conflicts
@@ -182,7 +185,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                                 openDiff={openChange(diff)}
                               />
                             ))}
-                      </div>
+                      </PanelContent>
                     </div>
                   </ResizablePanelGroup>
                 </div>
@@ -220,7 +223,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                             className="workspace-sync-conflict-resolver__header__tab__close-btn"
                             onClick={closeTab(mergedState)}
                             tabIndex={-1}
-                            title={'Close'}
+                            title="Close"
                           >
                             <TimesIcon />
                           </button>
@@ -229,7 +232,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                     ))}
                   </div>
                 </div>
-                <div className="panel__content">
+                <PanelContent>
                   {updateConflictState.currentDiffEditorState instanceof
                     EntityChangeConflictEditorState && (
                     <EntityChangeConflictEditor
@@ -246,31 +249,25 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                       }
                     />
                   )}
-                </div>
+                </PanelContent>
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>
-        </div>
-        <div className="modal__footer">
+        </ModalBody>
+        <ModalFooter>
           <button
-            type="button"
-            className="btn btn--primary btn--dark"
+            className="btn btn--dark"
             disabled={Boolean(conflicts.length)}
             title="Apply Resolutions"
             onClick={applyResolutions}
           >
             Apply Resolutions
           </button>
-          <button
-            type="button"
-            title="Aborts"
-            className="btn btn--dark"
-            onClick={abort}
-          >
+          <button className="btn btn--dark" title="Aborts" onClick={abort}>
             Abort
           </button>
-        </div>
-      </div>
+        </ModalFooter>
+      </Modal>
     </Dialog>
   );
 });

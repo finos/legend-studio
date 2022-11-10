@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { uuid } from '../CommonUtils.js';
+import { type PlainObject, uuid } from '../CommonUtils.js';
 
 export class PluginInfo {
   name!: string;
@@ -58,7 +58,7 @@ export abstract class AbstractPlugin {
     return info;
   }
 
-  configure(configData: object): AbstractPlugin {
+  configure(configData: PlainObject): AbstractPlugin {
     return this;
   }
 
@@ -117,7 +117,7 @@ export abstract class AbstractPreset {
     return info;
   }
 
-  configure(configData: object): AbstractPreset {
+  configure(configData: PlainObject): AbstractPreset {
     return this;
   }
 
@@ -130,6 +130,8 @@ export type PluginManagerInfo = {
   plugins: PluginInfo[];
   presets: PresetInfo[];
 };
+
+export type ExtensionsConfigurationData = Record<PropertyKey, PlainObject>;
 
 export abstract class AbstractPluginManager {
   private plugins: AbstractPlugin[] = [];
@@ -145,9 +147,9 @@ export abstract class AbstractPluginManager {
     return this;
   }
 
-  configure(configData: Record<PropertyKey, object>): void {
+  configure(configData: ExtensionsConfigurationData): void {
     Object.keys(configData).forEach((key) => {
-      const configObj = configData[key] as object;
+      const configObj = configData[key] as PlainObject;
       this.presets.forEach((preset) => {
         if (preset.getName() === key) {
           preset.configure(configObj);

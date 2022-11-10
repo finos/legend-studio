@@ -44,16 +44,12 @@ export class V1_RawValueSpecificationTransformer
     rawLambda.body = rawValueSpecification.body
       ? this.context.keepSourceInformation
         ? rawValueSpecification.body
-        : pruneSourceInformation(
-            rawValueSpecification.body as Record<PropertyKey, unknown>,
-          )
+        : pruneSourceInformation(rawValueSpecification.body)
       : undefined;
     rawLambda.parameters = rawValueSpecification.parameters
       ? this.context.keepSourceInformation
         ? rawValueSpecification.parameters
-        : pruneSourceInformation(
-            rawValueSpecification.parameters as Record<PropertyKey, unknown>,
-          )
+        : pruneSourceInformation(rawValueSpecification.parameters)
       : undefined;
     return rawLambda;
   }
@@ -75,10 +71,7 @@ export class V1_RawValueSpecificationTransformer
   ): V1_RawValueSpecification {
     const protocol = new V1_RawPrimitiveInstanceValue();
     protocol.type = rawValueSpecification.type.valueForSerialization ?? '';
-    protocol.multiplicity = V1_transformMultiplicity(
-      rawValueSpecification.multiplicity,
-    );
-    protocol.values = rawValueSpecification.values;
+    protocol.value = rawValueSpecification.value;
     return protocol;
   }
 }

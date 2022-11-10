@@ -32,9 +32,9 @@ import {
   ChevronRightIcon,
 } from '@finos/legend-art';
 import { useDrag } from 'react-dnd';
-import { TypeDragSource, CORE_DND_TYPE } from '../../stores/shared/DnDUtil.js';
+import { TypeDragSource, CORE_DND_TYPE } from '../../stores/shared/DnDUtils.js';
 import { getClassPropertyIcon } from './ElementIconUtils.js';
-import type { TypeTreeNodeData } from '../../stores/shared/TreeUtil.js';
+import type { TypeTreeNodeData } from '../../stores/shared/TreeUtils.js';
 import {
   type Type,
   type Enum,
@@ -50,7 +50,7 @@ import {
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../stores/shared/ModelUtil.js';
+} from '../../stores/shared/ModelClassifierUtils.js';
 
 const getEnumTypeTreeNodeData = (
   _enum: Enum,

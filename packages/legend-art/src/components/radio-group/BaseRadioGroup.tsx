@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { uuid } from '@finos/legend-shared';
 import {
   type RadioGroupProps as MuiRadioGroupProps,
   RadioGroup as MuiRadioGroup,
   FormControlLabel,
   Radio,
 } from '@mui/material';
+import { clsx } from 'clsx';
 
 const transformToMatrix = (arr: unknown[], stepSize: number): unknown[][] => {
   const matrix = [];
@@ -34,12 +34,13 @@ export const BaseRadioGroup: React.FC<
   {
     options: unknown[];
     /**
-     * Display raidio buttons in a [n, size] matrix
+     * Display radio buttons in a (size x n) matrix (i.e. size is the number of columns).
      */
     size: number;
+    className?: string | undefined;
   } & MuiRadioGroupProps
 > = (props) => {
-  const { children, options, size, ...otherProps } = props;
+  const { children, options, size, className, ...otherProps } = props;
   // For displaying avaible options in a [n,size] matrix
   const targetOptionsValuesInMatrix = transformToMatrix(
     options,
@@ -47,13 +48,15 @@ export const BaseRadioGroup: React.FC<
   ) as never[][];
 
   return (
-    <div className="mui-radio-group">
-      {targetOptionsValuesInMatrix.map((row) => (
-        <div key={uuid()}>
+    <div className={clsx('mui-radio-group', className)}>
+      {targetOptionsValuesInMatrix.map((row, idx) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <div key={idx}>
           <MuiRadioGroup className="mui-radio-group__group" {...otherProps}>
             {row.map((op) => (
               <FormControlLabel
                 className="mui-radio-group__group__column"
+                style={{ width: `${100 / size}%` }}
                 key={op}
                 value={op}
                 control={

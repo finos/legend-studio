@@ -20,24 +20,22 @@ import {
   type V1_RawValueSpecificationVisitor,
   V1_RawValueSpecification,
 } from './V1_RawValueSpecification.js';
-import type { V1_Multiplicity } from '../packageableElements/domain/V1_Multiplicity.js';
+import { V1_Multiplicity } from '../packageableElements/domain/V1_Multiplicity.js';
 
 export class V1_RawPrimitiveInstanceValue
   extends V1_RawValueSpecification
   implements Hashable
 {
+  readonly multiplicity = V1_Multiplicity.ONE;
   type!: string;
-  multiplicity!: V1_Multiplicity;
-  values?: (string | number)[] | undefined; // to be revised?
+  value?: string | number | boolean | undefined;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RAW_INSTANCE_VALUE,
       this.type,
       this.multiplicity,
-      this.values
-        ? hashArray(this.values.map((value) => value.toString()))
-        : '',
+      this.value ?? '',
     ]);
   }
 

@@ -70,6 +70,10 @@ import {
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
   V1_MiddleTierUsernamePasswordAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../STO_Relational_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
+import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer.js';
 
 export const V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE = 'connection';
 
@@ -295,7 +299,7 @@ export const V1_serializeDatasourceSpecification = (
     plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+          plugin as STO_Relational_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraConnectionDatasourceSpecificationProtocolSerializers?.() ??
         [],
     );
@@ -337,7 +341,7 @@ export const V1_deserializeDatasourceSpecification = (
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+              plugin as STO_Relational_PureProtocolProcessorPlugin_Extension
             ).V1_getExtraConnectionDatasourceSpecificationProtocolDeserializers?.() ??
             [],
         );
@@ -500,7 +504,7 @@ export const V1_serializeAuthenticationStrategy = (
     plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+          plugin as STO_Relational_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraConnectionAuthenticationStrategyProtocolSerializers?.() ??
         [],
     );
@@ -562,7 +566,7 @@ export const V1_deserializeAuthenticationStrategy = (
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+              plugin as STO_Relational_PureProtocolProcessorPlugin_Extension
             ).V1_getExtraConnectionAuthenticationStrategyProtocolDeserializers?.() ??
             [],
         );
@@ -605,7 +609,7 @@ export const V1_serializeConnectionValue = (
   const extraConnectionProtocolSerializers = plugins.flatMap(
     (plugin) =>
       (
-        plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+        plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
       ).V1_getExtraConnectionProtocolSerializers?.() ?? [],
   );
   for (const serializer of extraConnectionProtocolSerializers) {
@@ -647,7 +651,7 @@ export const V1_deserializeConnectionValue = (
       const extraConnectionProtocolDeserializers = plugins.flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+            plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
           ).V1_getExtraConnectionProtocolDeserializers?.() ?? [],
       );
       for (const deserializer of extraConnectionProtocolDeserializers) {

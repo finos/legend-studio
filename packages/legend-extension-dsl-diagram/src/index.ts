@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-export * from './DSLDiagram_Extension.js';
-export { DSLDiagram_LegendStudioApplicationPlugin } from './components/studio/DSLDiagram_LegendStudioApplicationPlugin.js';
-export * from './components/studio/DSLDiagram_LegendStudioApplicationPlugin_Extension.js';
+export * from './DSL_Diagram_Extension.js';
+export { DSL_Diagram_LegendStudioApplicationPlugin } from './components/studio/DSL_Diagram_LegendStudioApplicationPlugin.js';
 
 export { DiagramEditorState } from './stores/studio/DiagramEditorState.js';
 
@@ -25,17 +24,17 @@ export {
   DIAGRAM_INTERACTION_MODE,
 } from './DiagramRenderer.js';
 
-export { Diagram } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
-export { ClassView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
-export { RelationshipView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_RelationshipView.js';
-export { PropertyHolderView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_PropertyHolderView.js';
-export { PropertyView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_PropertyView.js';
-export { AssociationView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_AssociationView.js';
-export { GeneralizationView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_GeneralizationView.js';
-export { Point } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
-export { Rectangle } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle.js';
-export { PositionedRectangle } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle.js';
+export { Diagram } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
+export { ClassView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_ClassView.js';
+export { RelationshipView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_RelationshipView.js';
+export { PropertyHolderView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_PropertyHolderView.js';
+export { PropertyView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_PropertyView.js';
+export { AssociationView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_AssociationView.js';
+export { GeneralizationView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_GeneralizationView.js';
+export { Point } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Point.js';
+export { Rectangle } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Rectangle.js';
+export { PositionedRectangle } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_PositionedRectangle.js';
 
-export * from './graph/helpers/DSLDiagram_Helper.js';
-export * from './graphManager/DSLDiagram_GraphManagerHelper.js';
-export { V1_DSLDiagram_PackageableElementPointerType } from './graphManager/protocol/pure/DSLDiagram_PureProtocolProcessorPlugin.js';
+export * from './graph/helpers/DSL_Diagram_Helper.js';
+export * from './graphManager/DSL_Diagram_GraphManagerHelper.js';
+export { V1_DSL_Diagram_PackageableElementPointerType } from './graphManager/protocol/pure/DSL_Diagram_PureProtocolProcessorPlugin.js';

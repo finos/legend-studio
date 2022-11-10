@@ -144,7 +144,7 @@ export const EntityDiffView = observer(
               disabled={!diffEditorState.element}
               tabIndex={-1}
               onClick={goToElement}
-              title={'Go to element'}
+              title="Go to element"
             >
               <GoToFileIcon />
             </button>

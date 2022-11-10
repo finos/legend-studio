@@ -17,6 +17,7 @@
 export enum LEGEND_STUDIO_APP_EVENT {
   // FAILURE
   // TODO: consider to spliting all of these generic errors into more specific events
+  GENERIC_FAILURE = 'application.failure.generic',
   WORKSPACE_SETUP_FAILURE = 'setup.workspace.failure',
   PACKAGE_TREE_BUILDER_FAILURE = 'editor.package-tree-build.failure',
   MODEL_LOADER_FAILURE = 'editor.model-loader.failure',
@@ -32,4 +33,8 @@ export enum LEGEND_STUDIO_APP_EVENT {
 
   WORKSPACE_UPDATED = 'sdlc.workspace-update.success',
   WORKSPACE_LOCAL_CHANGES_PUSHED = 'sdlc.local-changes-push.success',
+
+  // Depot
+  // TODO: consider to split this generic errors into more specific events
+  DEPOT_MANAGER_FAILURE = 'depot.manager.failure',
 }

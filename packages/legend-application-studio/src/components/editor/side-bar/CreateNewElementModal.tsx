@@ -41,13 +41,14 @@ import {
 import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState.js';
 import { flowResult } from 'mobx';
 import {
+  buildElementOption,
   getPackageableElementOptionFormatter,
   useApplicationStore,
   type PackageableElementOption,
 } from '@finos/legend-application';
 import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
-import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLData_LegendStudioApplicationPlugin_Extension.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil.js';
+import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
 import { EmbeddedDataType } from '../../../stores/editor-state/ExternalFormatState.js';
 
 export const getElementTypeLabel = (
@@ -127,7 +128,7 @@ const NewDataElementDriverEditor = observer(() => {
     .flatMap(
       (plugin) =>
         (
-          plugin as DSLData_LegendStudioApplicationPlugin_Extension
+          plugin as DSL_Data_LegendStudioApplicationPlugin_Extension
         ).getExtraEmbeddedDataTypeOptions?.() ?? [],
     );
   let options: EmbeddedDataTypeOption[] = Object.values(EmbeddedDataType)
@@ -164,7 +165,8 @@ const NewRuntimeDriverEditor = observer(() => {
   );
   // mapping
   const mapping = newRuntimeDriver.mapping;
-  const mappingOptions = editorStore.mappingOptions;
+  const mappingOptions =
+    editorStore.graphManagerState.usableMappings.map(buildElementOption);
   const selectedMappingOption = { label: mapping?.path ?? '', value: mapping };
   const onMappingSelectionChange = (
     val: PackageableElementOption<Mapping>,
@@ -204,7 +206,10 @@ const NewPureModelConnectionDriverEditor = observer(
       { label: 'ModelStore', value: undefined },
     ];
     storeOptions = storeOptions.concat(
-      editorStore.storeOptions.slice().sort(compareLabelFn),
+      editorStore.graphManagerState.usableStores
+        .map(buildElementOption)
+        .slice()
+        .sort(compareLabelFn),
     );
     const selectedStoreOption = {
       label: store?.path ?? 'ModelStore',
@@ -216,7 +221,10 @@ const NewPureModelConnectionDriverEditor = observer(
     }): void => newConnectionDriver.setStore(val.value);
     // class
     const _class = newConnectionValueDriver.class;
-    const classOptions = editorStore.classOptions.slice().sort(compareLabelFn);
+    const classOptions = editorStore.graphManagerState.usableClasses
+      .map(buildElementOption)
+      .slice()
+      .sort(compareLabelFn);
     const selectedClassOption = _class
       ? { label: _class.path, value: _class }
       : null;
@@ -234,6 +242,9 @@ const NewPureModelConnectionDriverEditor = observer(
     }
     return (
       <>
+        <div className="panel__content__form__section__header__label">
+          Source Store
+        </div>
         <div className="explorer__new-element-modal__driver">
           <CustomSelectorInput
             className="explorer__new-element-modal__driver__dropdown"
@@ -243,9 +254,12 @@ const NewPureModelConnectionDriverEditor = observer(
             darkMode={true}
           />
         </div>
+        <div className="panel__content__form__section__header__label">
+          Source Class
+        </div>
         <div className="explorer__new-element-modal__driver">
           <CustomSelectorInput
-            className="sub-panel__content__form__section__dropdown panel__content__form__section__dropdown"
+            className="sub-panel__content__form__section__dropdown"
             options={classOptions}
             onChange={onClassSelectionChange}
             value={selectedClassOption}
@@ -301,6 +315,9 @@ const NewConnectionDriverEditor = observer(() => {
   };
   return (
     <>
+      <div className="panel__content__form__section__header__label">
+        Connection Type
+      </div>
       <div className="explorer__new-element-modal__driver">
         <CustomSelectorInput
           className="explorer__new-element-modal__driver__dropdown"
@@ -321,7 +338,8 @@ const NewServiceDriverEditor = observer(() => {
     editorStore.newElementState.getNewElementDriver(NewServiceDriver);
   // mapping
   const currentMappingOption = newServiceDriver.mappingOption;
-  const mappingOptions = editorStore.mappingOptions;
+  const mappingOptions =
+    editorStore.graphManagerState.usableMappings.map(buildElementOption);
   const onMappingChange = (
     val: PackageableElementOption<Mapping> | null,
   ): void => {
@@ -455,10 +473,6 @@ export const CreateNewElementModal = observer(() => {
     newElementState.setName('');
     elementNameInputRef.current?.focus();
   };
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    save();
-  };
 
   if (!newElementState.showModal) {
     return null;
@@ -475,7 +489,10 @@ export const CreateNewElementModal = observer(() => {
     >
       <form
         data-testid={LEGEND_STUDIO_TEST_ID.NEW_ELEMENT_MODAL}
-        onSubmit={handleSubmit}
+        onSubmit={(event) => {
+          event.preventDefault();
+          save();
+        }}
         className="modal modal--dark search-modal"
       >
         <div className="modal__title">

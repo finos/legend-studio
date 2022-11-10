@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, computed, flowResult, makeAutoObservable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
 import {
@@ -37,7 +44,7 @@ import { ElementEditorState } from './editor-state/element-editor-state/ElementE
 import { GraphGenerationState } from './editor-state/GraphGenerationState.js';
 import { MODEL_IMPORT_NATIVE_INPUT_TYPE } from './editor-state/ModelImporterState.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
-import type { Entity } from '@finos/legend-storage';
+import { type Entity, generateGAVCoordinates } from '@finos/legend-storage';
 import {
   type EntityChange,
   type ProjectDependency,
@@ -49,19 +56,15 @@ import {
   ProjectVersionEntities,
   ProjectData,
   ProjectDependencyCoordinates,
-  generateGAVCoordinates,
+  ProjectDependencyInfo,
 } from '@finos/legend-server-depot';
 import {
-  type SetImplementation,
-  type PackageableElement,
   GRAPH_MANAGER_EVENT,
   CompilationError,
   EngineError,
   extractSourceInformationCoordinates,
   Package,
-  PureInstanceSetImplementation,
   Profile,
-  OperationSetImplementation,
   PrimitiveType,
   Enumeration,
   Class,
@@ -70,8 +73,6 @@ import {
   ConcreteFunctionDefinition,
   Service,
   FlatData,
-  FlatDataInstanceSetImplementation,
-  EmbeddedFlatDataPropertyMapping,
   PackageableConnection,
   PackageableRuntime,
   FileGenerationSpecification,
@@ -80,29 +81,29 @@ import {
   Unit,
   Database,
   SectionIndex,
-  RootRelationalInstanceSetImplementation,
-  EmbeddedRelationalInstanceSetImplementation,
-  AggregationAwareSetImplementation,
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
   GraphBuilderError,
-  type GraphBuilderReport,
   GraphManagerTelemetry,
   DataElement,
+  type PackageableElement,
+  type GraphBuilderReport,
+  type CompilationWarning,
+  type TextCompilationResult,
+  type CompilationResult,
 } from '@finos/legend-graph';
 import {
-  type LambdaEditorState,
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
-import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState.js';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from './DSLMapping_LegendStudioApplicationPlugin_Extension.js';
-import { graph_dispose } from './graphModifier/GraphModifierHelper.js';
 import {
-  PACKAGEABLE_ELEMENT_TYPE,
-  SET_IMPLEMENTATION_TYPE,
-} from './shared/ModelUtil.js';
+  CONFIGURATION_EDITOR_TAB,
+  getConflictsString,
+} from './editor-state/ProjectConfigurationEditorState.js';
+import { graph_dispose } from './shared/modifier/GraphModifierHelper.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -123,9 +124,12 @@ export interface GraphBuilderResult {
   error?: Error;
 }
 
+export type Problem = CompilationWarning | EngineError;
+
 export class EditorGraphState {
-  editorStore: EditorStore;
-  graphGenerationState: GraphGenerationState;
+  readonly editorStore: EditorStore;
+  readonly graphGenerationState: GraphGenerationState;
+
   isInitializingGraph = false;
   isRunningGlobalCompile = false;
   isRunningGlobalGenerate = false;
@@ -133,34 +137,86 @@ export class EditorGraphState {
   isUpdatingGraph = false; // critical synchronous update to refresh the graph
   isUpdatingApplication = false; // including graph update and async operations such as change detection
 
+  warnings: CompilationWarning[] = [];
+  error: EngineError | undefined;
+  private mostRecentTextModeCompilationGraphHash: string | undefined;
+  private mostRecentFormModeCompilationGraphHash: string | undefined;
+
+  enableStrictMode = false;
+
   constructor(editorStore: EditorStore) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      graphGenerationState: false,
-      getPackageableElementType: false,
-      getSetImplementationType: false,
-      hasCompilationError: computed,
-      clearCompilationError: action,
+    makeObservable<
+      EditorGraphState,
+      | 'updateGraphAndApplication'
+      | 'mostRecentFormModeCompilationGraphHash'
+      | 'mostRecentTextModeCompilationGraphHash'
+    >(this, {
+      isInitializingGraph: observable,
+      isRunningGlobalCompile: observable,
+      isRunningGlobalGenerate: observable,
+      isApplicationLeavingTextMode: observable,
+      isUpdatingGraph: observable,
+      isUpdatingApplication: observable,
+      warnings: observable,
+      error: observable,
+      mostRecentFormModeCompilationGraphHash: observable,
+      mostRecentTextModeCompilationGraphHash: observable,
+      enableStrictMode: observable,
+      problems: computed,
+      areProblemsStale: computed,
+      isApplicationUpdateOperationIsRunning: computed,
+      clearProblems: action,
+      setEnableStrictMode: action,
+      buildGraph: flow,
+      loadEntityChangesToGraph: flow,
+      globalCompileInFormMode: flow,
+      globalCompileInTextMode: flow,
+      leaveTextMode: flow,
+      updateGraphAndApplication: flow,
+      updateGenerationGraphAndApplication: flow,
     });
 
     this.editorStore = editorStore;
     this.graphGenerationState = new GraphGenerationState(this.editorStore);
+    this.enableStrictMode =
+      editorStore.applicationStore.config.options.enableGraphBuilderStrictMode;
   }
 
-  get hasCompilationError(): boolean {
+  get problems(): Problem[] {
+    return [this.error, ...this.warnings].filter(isNonNullable);
+  }
+
+  /**
+   * This function is temporary. There is no good way to detect if a problem not coming from
+   * the main graph at the moment. In text mode, we can rely on the fact that the source information
+   * has line 0 column 0. But this is not the case for form mode, so this is just temporary
+   * to help with text-mode.
+   */
+  TEMPORARY__removeDependencyProblems(
+    problems: Problem[] | CompilationWarning[],
+  ): Problem[] | CompilationWarning[] {
+    return problems.filter((problem) => {
+      if (problem.sourceInformation) {
+        return !(
+          problem.sourceInformation.startLine === 0 &&
+          problem.sourceInformation.startColumn === 0 &&
+          problem.sourceInformation.endLine === 0 &&
+          problem.sourceInformation.endColumn === 0
+        );
+      }
+      return true;
+    });
+  }
+
+  get areProblemsStale(): boolean {
     return (
-      Boolean(this.editorStore.grammarTextEditorState.error) ||
-      this.editorStore.openedEditorStates
-        .filter(filterByType(ElementEditorState))
-        .some((editorState) => editorState.hasCompilationError)
+      (this.editorStore.isInFormMode &&
+        this.mostRecentFormModeCompilationGraphHash !==
+          this.editorStore.changeDetectionState.currentGraphHash) ||
+      (this.editorStore.isInGrammarTextMode &&
+        this.mostRecentTextModeCompilationGraphHash !==
+          this.editorStore.grammarTextEditorState.currentTextGraphHash)
     );
-  }
-
-  clearCompilationError(): void {
-    this.editorStore.grammarTextEditorState.setError(undefined);
-    this.editorStore.openedEditorStates
-      .filter(filterByType(ElementEditorState))
-      .forEach((editorState) => editorState.clearCompilationError());
   }
 
   get isApplicationUpdateOperationIsRunning(): boolean {
@@ -207,6 +263,64 @@ export class EditorGraphState {
     return false;
   }
 
+  /**
+   * Get entitiy changes to prepare for syncing
+   */
+  computeLocalEntityChanges(): EntityChange[] {
+    const baseHashesIndex = this.editorStore.isInConflictResolutionMode
+      ? this.editorStore.changeDetectionState
+          .conflictResolutionHeadRevisionState.entityHashesIndex
+      : this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
+          .entityHashesIndex;
+    const originalPaths = new Set(Array.from(baseHashesIndex.keys()));
+    const entityChanges: EntityChange[] = [];
+    this.editorStore.graphManagerState.graph.allOwnElements.forEach(
+      (element) => {
+        const elementPath = element.path;
+        if (baseHashesIndex.get(elementPath) !== element.hashCode) {
+          const entity =
+            this.editorStore.graphManagerState.graphManager.elementToEntity(
+              element,
+              {
+                pruneSourceInformation: true,
+              },
+            );
+          entityChanges.push({
+            classifierPath: entity.classifierPath,
+            entityPath: element.path,
+            content: entity.content,
+            type:
+              baseHashesIndex.get(elementPath) !== undefined
+                ? EntityChangeType.MODIFY
+                : EntityChangeType.CREATE,
+          });
+        }
+        originalPaths.delete(elementPath);
+      },
+    );
+    Array.from(originalPaths).forEach((path) => {
+      entityChanges.push({
+        type: EntityChangeType.DELETE,
+        entityPath: path,
+      });
+    });
+    return entityChanges;
+  }
+
+  clearProblems(): void {
+    this.error = undefined;
+    this.editorStore.openedEditorStates
+      .filter(filterByType(ElementEditorState))
+      .forEach((editorState) => editorState.clearCompilationError());
+    this.mostRecentFormModeCompilationGraphHash = undefined;
+    this.mostRecentTextModeCompilationGraphHash = undefined;
+    this.warnings = [];
+  }
+
+  setEnableStrictMode(val: boolean): void {
+    this.enableStrictMode = val;
+  }
+
   *buildGraph(entities: Entity[]): GeneratorFn<GraphBuilderResult> {
     try {
       this.isInitializingGraph = true;
@@ -251,6 +365,7 @@ export class EditorGraphState {
             TEMPORARY__preserveSectionIndex:
               this.editorStore.applicationStore.config.options
                 .TEMPORARY__preserveSectionIndex,
+            strict: this.enableStrictMode,
           },
         )) as GraphBuilderReport;
 
@@ -371,7 +486,7 @@ export class EditorGraphState {
 
   private redirectToModelImporterForDebugging(error: Error): void {
     if (this.editorStore.isInConflictResolutionMode) {
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: `Can't de-serialize graph model from entities`,
         prompt: `Please refresh the application and abort conflict resolution`,
       });
@@ -387,50 +502,6 @@ export class EditorGraphState {
     // Making an async call
     nativeImporterState.loadCurrentProjectEntities();
     this.editorStore.openState(this.editorStore.modelImporterState);
-  }
-
-  /**
-   * Get entitiy changes to prepare for syncing
-   */
-  computeLocalEntityChanges(): EntityChange[] {
-    const baseHashesIndex = this.editorStore.isInConflictResolutionMode
-      ? this.editorStore.changeDetectionState
-          .conflictResolutionHeadRevisionState.entityHashesIndex
-      : this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
-          .entityHashesIndex;
-    const originalPaths = new Set(Array.from(baseHashesIndex.keys()));
-    const entityChanges: EntityChange[] = [];
-    this.editorStore.graphManagerState.graph.allOwnElements.forEach(
-      (element) => {
-        const elementPath = element.path;
-        if (baseHashesIndex.get(elementPath) !== element.hashCode) {
-          const entity =
-            this.editorStore.graphManagerState.graphManager.elementToEntity(
-              element,
-              {
-                pruneSourceInformation: true,
-              },
-            );
-          entityChanges.push({
-            classifierPath: entity.classifierPath,
-            entityPath: element.path,
-            content: entity.content,
-            type:
-              baseHashesIndex.get(elementPath) !== undefined
-                ? EntityChangeType.MODIFY
-                : EntityChangeType.CREATE,
-          });
-        }
-        originalPaths.delete(elementPath);
-      },
-    );
-    Array.from(originalPaths).forEach((path) => {
-      entityChanges.push({
-        type: EntityChangeType.DELETE,
-        entityPath: path,
-      });
-    });
-    return entityChanges;
   }
 
   /**
@@ -463,8 +534,8 @@ export class EditorGraphState {
   }
 
   // TODO: when we support showing multiple notifications, we can take this options out as the only users of this
-  // is delete element flow, where we want to say `re-compiling graph after deletion`, but because compilation
-  // sometimes is so fast, the message flashes, so we want to combine with the message in this method
+  // is delete element flow, where we want to say `re-compiling graph after deletion`, but because sometimes, compilation
+  // is so fast, the message flashes, so we want to combine with the message in this method
   *globalCompileInFormMode(options?: {
     message?: string;
     disableNotificationOnSuccess?: boolean;
@@ -474,30 +545,53 @@ export class EditorGraphState {
       this.editorStore.isInFormMode,
       'Editor must be in form mode to call this method',
     );
+
     if (this.checkIfApplicationUpdateOperationIsRunning()) {
       return FormModeCompilationOutcome.SKIPPED;
     }
-    this.isRunningGlobalCompile = true;
+
+    const currentGraphHash =
+      this.editorStore.changeDetectionState.currentGraphHash;
+
     try {
-      this.clearCompilationError();
+      this.isRunningGlobalCompile = true;
+      this.clearProblems();
       if (options?.openConsole) {
         this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
       }
+
       // NOTE: here we always keep the source information while compiling in form mode
       // so that the form parts where the user interacted with (i.e. where the lamdbas source
       // information are populated), can reveal compilation error. If compilation errors
       // show up in other parts, the user will get redirected to text-mode
-      yield this.editorStore.graphManagerState.graphManager.compileGraph(
-        this.editorStore.graphManagerState.graph,
-        {
-          keepSourceInformation: true,
-        },
-      );
+      const compilationResult =
+        (yield this.editorStore.graphManagerState.graphManager.compileGraph(
+          this.editorStore.graphManagerState.graph,
+          {
+            keepSourceInformation: true,
+          },
+        )) as CompilationResult;
+
+      this.warnings = compilationResult.warnings
+        ? this.TEMPORARY__removeDependencyProblems(compilationResult.warnings)
+        : [];
+
+      this.mostRecentFormModeCompilationGraphHash = currentGraphHash;
+
       if (!options?.disableNotificationOnSuccess) {
-        this.editorStore.applicationStore.notifySuccess(
-          'Compiled successfully',
-        );
+        if (this.warnings.length) {
+          this.editorStore.applicationStore.notifyWarning(
+            `Compilation suceeded with warnings`,
+          );
+        } else {
+          if (!options?.disableNotificationOnSuccess) {
+            this.editorStore.applicationStore.notifySuccess(
+              'Compiled successfully',
+            );
+          }
+        }
       }
+
       return FormModeCompilationOutcome.SUCCEEDED;
     } catch (error) {
       assertErrorThrown(error);
@@ -508,6 +602,7 @@ export class EditorGraphState {
         LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         error,
       );
+      this.mostRecentFormModeCompilationGraphHash = currentGraphHash;
       let fallbackToTextModeForDebugging = true;
       // if compilation failed, we try to reveal the error in form mode,
       // if even this fail, we will fall back to show it in text mode
@@ -569,6 +664,7 @@ export class EditorGraphState {
         );
         return FormModeCompilationOutcome.FAILED_AND_FALLBACK_TO_TEXT_MODE;
       } else {
+        this.error = error;
         this.editorStore.applicationStore.notifyWarning(
           `Compilation failed: ${error.message}`,
         );
@@ -591,41 +687,63 @@ export class EditorGraphState {
       this.editorStore.isInGrammarTextMode,
       'Editor must be in text mode to call this method',
     );
+
     if (
       !options?.ignoreBlocking &&
       this.checkIfApplicationUpdateOperationIsRunning()
     ) {
       return;
     }
+
+    const currentGraphHash =
+      this.editorStore.grammarTextEditorState.currentTextGraphHash;
+
     try {
       this.isRunningGlobalCompile = true;
-      this.clearCompilationError();
+      this.clearProblems();
       if (options?.openConsole) {
         this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
       }
-      const entities =
+
+      const compilationResult =
         (yield this.editorStore.graphManagerState.graphManager.compileText(
           this.editorStore.grammarTextEditorState.graphGrammarText,
           this.editorStore.graphManagerState.graph,
-        )) as Entity[];
+        )) as TextCompilationResult;
+
+      const entities = compilationResult.entities;
+      this.mostRecentTextModeCompilationGraphHash = currentGraphHash;
+      this.warnings = compilationResult.warnings
+        ? this.TEMPORARY__removeDependencyProblems(compilationResult.warnings)
+        : [];
 
       if (!options?.disableNotificationOnSuccess) {
-        this.editorStore.applicationStore.notifySuccess(
-          'Compiled successfully',
-        );
+        if (this.warnings.length) {
+          this.editorStore.applicationStore.notifyWarning(
+            `Compilation suceeded with warnings`,
+          );
+        } else {
+          if (!options?.disableNotificationOnSuccess) {
+            this.editorStore.applicationStore.notifySuccess(
+              'Compiled successfully',
+            );
+          }
+        }
       }
 
       yield flowResult(this.updateGraphAndApplication(entities));
     } catch (error) {
       assertErrorThrown(error);
+      this.mostRecentTextModeCompilationGraphHash = currentGraphHash;
       if (error instanceof EngineError) {
-        this.editorStore.grammarTextEditorState.setError(error);
+        this.error = error;
+        if (error.sourceInformation) {
+          this.editorStore.grammarTextEditorState.setForcedCursorPosition({
+            lineNumber: error.sourceInformation.startLine,
+            column: error.sourceInformation.startColumn,
+          });
+        }
       }
-      this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
-        'Compilation failed:',
-        error,
-      );
       if (
         !this.editorStore.applicationStore.notification ||
         !options?.suppressCompilationFailureMessage
@@ -649,26 +767,37 @@ export class EditorGraphState {
     }
     try {
       this.isApplicationLeavingTextMode = true;
-      this.clearCompilationError();
-      this.editorStore.setBlockingAlert({
+      this.clearProblems();
+      this.editorStore.applicationStore.setBlockingAlert({
         message: 'Compiling graph before leaving text mode...',
         showLoading: true,
       });
       try {
-        const entities =
+        const compilationResult =
           (yield this.editorStore.graphManagerState.graphManager.compileText(
             this.editorStore.grammarTextEditorState.graphGrammarText,
             this.editorStore.graphManagerState.graph,
             // surpress the modal to reveal error properly in the text editor
             // if the blocking modal is not dismissed, the edior will not be able to gain focus as modal has a focus trap
             // therefore, the editor will not be able to get the focus
-            { onError: () => this.editorStore.setBlockingAlert(undefined) },
-          )) as Entity[];
-        this.editorStore.setBlockingAlert({
+            {
+              onError: () =>
+                this.editorStore.applicationStore.setBlockingAlert(undefined),
+            },
+          )) as TextCompilationResult;
+
+        this.warnings = compilationResult.warnings
+          ? this.TEMPORARY__removeDependencyProblems(compilationResult.warnings)
+          : [];
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Leaving text mode and rebuilding graph...',
           showLoading: true,
         });
-        yield flowResult(this.updateGraphAndApplication(entities));
+        yield flowResult(
+          this.updateGraphAndApplication(compilationResult.entities),
+        );
+        this.mostRecentFormModeCompilationGraphHash =
+          this.editorStore.changeDetectionState.getCurrentGraphHash();
         this.editorStore.grammarTextEditorState.setGraphGrammarText('');
         this.editorStore.grammarTextEditorState.resetCurrentElementLabelRegexString();
         this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.FORM);
@@ -677,8 +806,13 @@ export class EditorGraphState {
         }
       } catch (error) {
         assertErrorThrown(error);
-        if (error instanceof EngineError) {
-          this.editorStore.grammarTextEditorState.setError(error);
+        this.mostRecentFormModeCompilationGraphHash =
+          this.editorStore.changeDetectionState.getCurrentGraphHash();
+        if (error instanceof EngineError && error.sourceInformation) {
+          this.editorStore.grammarTextEditorState.setForcedCursorPosition({
+            lineNumber: error.sourceInformation.startLine,
+            column: error.sourceInformation.startColumn,
+          });
         }
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
@@ -694,13 +828,11 @@ export class EditorGraphState {
           this.editorStore.applicationStore.notifyWarning(
             `Compilation failed: ${error.message}`,
           );
-          this.editorStore.setActionAlertInfo({
+          this.editorStore.applicationStore.setActionAlertInfo({
             message: 'Project is not in a compiled state',
             prompt:
               'All changes made since the last time the graph was built successfully will be lost',
             type: ActionAlertType.CAUTION,
-            onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
-            onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
             actions: [
               {
                 label: 'Discard Changes',
@@ -725,32 +857,8 @@ export class EditorGraphState {
       );
     } finally {
       this.isApplicationLeavingTextMode = false;
-      this.editorStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
     }
-  }
-
-  /**
-   * This function is used in lambda editor in form mode when user try to do an action that involves the lambda being edited, it takes an action
-   * and proceeds with a parsing check for the current lambda before executing the action. This prevents case where user quickly type something
-   * that does not parse and hit compile or generate right away.
-   */
-  *checkLambdaParsingError(
-    lambdaHolderElement: LambdaEditorState,
-    checkParsingError: boolean,
-    onSuccess: () => Promise<void>,
-  ): GeneratorFn<void> {
-    this.clearCompilationError();
-    lambdaHolderElement.clearErrors();
-    if (checkParsingError) {
-      yield flowResult(
-        lambdaHolderElement.convertLambdaGrammarStringToObject(),
-      );
-      // abort action if parser error occurred
-      if (lambdaHolderElement.parserError) {
-        return;
-      }
-    }
-    yield onSuccess();
   }
 
   /**
@@ -864,6 +972,7 @@ export class EditorGraphState {
           TEMPORARY__preserveSectionIndex:
             this.editorStore.applicationStore.config.options
               .TEMPORARY__preserveSectionIndex,
+          strict: this.enableStrictMode,
         },
       );
 
@@ -1031,32 +1140,31 @@ export class EditorGraphState {
     }
   }
 
-  *getIndexedDependencyEntities(): GeneratorFn<Map<string, Entity[]>> {
+  async getIndexedDependencyEntities(): Promise<Map<string, Entity[]>> {
     const dependencyEntitiesIndex = new Map<string, Entity[]>();
     const currentConfiguration =
       this.editorStore.projectConfigurationEditorState
         .currentProjectConfiguration;
     try {
       if (currentConfiguration.projectDependencies.length) {
-        const dependencyCoordinates = (yield flowResult(
-          this.buildProjectDependencyCoordinates(
+        const dependencyCoordinates =
+          await this.buildProjectDependencyCoordinates(
             currentConfiguration.projectDependencies,
-          ),
-        )) as ProjectDependencyCoordinates[];
+          );
         // NOTE: if A@v1 is transitive dependencies of 2 or more
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
-          (yield this.editorStore.depotServerClient.collectDependencyEntities(
+          await this.editorStore.depotServerClient.collectDependencyEntities(
             dependencyCoordinates.map((e) =>
               ProjectDependencyCoordinates.serialization.toJson(e),
             ),
             true,
             true,
-          )) as PlainObject<ProjectVersionEntities>[];
+          );
         const dependencyEntities = dependencyEntitiesJson.map((e) =>
           ProjectVersionEntities.serialization.fromJson(e),
         );
-        const dependencyProjects = new Set<string>();
+        const dependencyProjects = new Map<string, Set<string>>();
         dependencyEntities.forEach((dependencyInfo) => {
           const projectId = dependencyInfo.id;
           // There are a few validations that must be done:
@@ -1069,21 +1177,61 @@ export class EditorGraphState {
           //    e.g. model::someClass -> project1::v1_0_0::model::someClass
           //    But this is a rare and advanced use-case which we will not attempt to handle now.
           if (dependencyProjects.has(projectId)) {
-            const projectVersions = dependencyEntities
-              .filter((e) => e.id === projectId)
-              .map((e) => e.versionId);
-            throw new UnsupportedOperationError(
-              `Depending on multiple versions of a project is not supported. Found dependency on project '${projectId}' with versions: ${projectVersions.join(
-                ', ',
-              )}.`,
+            dependencyProjects.get(projectId)?.add(dependencyInfo.versionId);
+          } else {
+            dependencyProjects.set(
+              dependencyInfo.id,
+              new Set<string>([dependencyInfo.versionId]),
             );
           }
           dependencyEntitiesIndex.set(
             dependencyInfo.id,
             dependencyInfo.entities,
           );
-          dependencyProjects.add(dependencyInfo.id);
         });
+        const hasConflicts = Array.from(dependencyProjects.entries()).find(
+          ([k, v]) => v.size > 1,
+        );
+        if (hasConflicts) {
+          let dependencyInfo: ProjectDependencyInfo | undefined;
+          try {
+            const dependencyTree =
+              await this.editorStore.depotServerClient.analyzeDependencyTree(
+                dependencyCoordinates.map((e) =>
+                  ProjectDependencyCoordinates.serialization.toJson(e),
+                ),
+              );
+            dependencyInfo =
+              ProjectDependencyInfo.serialization.fromJson(dependencyTree);
+          } catch (error) {
+            assertErrorThrown(error);
+            this.editorStore.applicationStore.log.error(
+              LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+              error,
+            );
+          }
+          const startErrorMessage =
+            'Depending on multiple versions of a project is not supported. Found conflicts:\n';
+          if (dependencyInfo?.conflicts) {
+            throw new UnsupportedOperationError(
+              startErrorMessage + getConflictsString(dependencyInfo),
+            );
+          } else {
+            throw new UnsupportedOperationError(
+              startErrorMessage +
+                Array.from(dependencyProjects.entries())
+                  .map(([k, v]) => {
+                    if (v.size > 1) {
+                      `project: ${k}\n versions: \n${Array.from(
+                        v.values(),
+                      ).join('\n')}`;
+                    }
+                    return '';
+                  })
+                  .join('\n'),
+            );
+          }
+        }
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -1098,14 +1246,17 @@ export class EditorGraphState {
     return dependencyEntitiesIndex;
   }
 
-  *buildProjectDependencyCoordinates(
+  async buildProjectDependencyCoordinates(
     projectDependencies: ProjectDependency[],
-  ): GeneratorFn<ProjectDependencyCoordinates[]> {
-    return (yield Promise.all(
+  ): Promise<ProjectDependencyCoordinates[]> {
+    return Promise.all(
       projectDependencies.map((dep) => {
-        // legacyDependencies
-        // We do this for backward compatible reasons as we expect current dependency ids to be in the format of {groupId}:{artifactId}.
-        // For the legacy dependency we must fetch the corresponding coordinates (group, artifact ids) from the depot server
+        /**
+         * We expect current dependency ids to be in the format of {groupId}:{artifactId}.
+         * For the legacy dependency we must fetch the corresponding coordinates (group, artifact ids) from the depot server
+         *
+         * @backwardCompatibility
+         */
         if (dep.isLegacyDependency) {
           return this.editorStore.depotServerClient
             .getProjectById(dep.projectId)
@@ -1146,21 +1297,10 @@ export class EditorGraphState {
           );
         }
       }),
-    )) as ProjectDependencyCoordinates[];
+    );
   }
 
   // -------------------------------------------------- UTILITIES -----------------------------------------------------
-  /**
-   * NOTE: Notice how this utility draws resources from all of metamodels and uses `instanceof` to classify behavior/response.
-   * As such, methods in this utility cannot be placed in place they should belong to.
-   *
-   * For example: `getSetImplemetnationType` cannot be placed in `SetImplementation` because of circular module dependency
-   * So this utility is born for such purpose, to avoid circular module dependency, and it should just be used for only that
-   * Other utilities that really should reside in the domain-specific meta model should be placed in the meta model module.
-   *
-   * NOTE: We expect the need for these methods will eventually go away as we complete modularization. But we need these
-   * methods here so that we can load plugins.
-   */
 
   getPackageableElementType(element: PackageableElement): string {
     if (element instanceof PrimitiveType) {
@@ -1208,7 +1348,7 @@ export class EditorGraphState {
         (plugin) =>
           (
             plugin as DSL_LegendStudioApplicationPlugin_Extension
-          ).getExtraElementTypeGetters?.() ?? [],
+          ).getExtraElementClassifiers?.() ?? [],
       );
     for (const labelGetter of extraElementTypeLabelGetters) {
       const label = labelGetter(element);
@@ -1218,46 +1358,6 @@ export class EditorGraphState {
     }
     throw new UnsupportedOperationError(
       `Can't get type label for element '${element.path}': no compatible label getter available from plugins`,
-    );
-  }
-
-  getSetImplementationType(setImplementation: SetImplementation): string {
-    if (setImplementation instanceof PureInstanceSetImplementation) {
-      return SET_IMPLEMENTATION_TYPE.PUREINSTANCE;
-    } else if (setImplementation instanceof OperationSetImplementation) {
-      return SET_IMPLEMENTATION_TYPE.OPERATION;
-    } else if (setImplementation instanceof FlatDataInstanceSetImplementation) {
-      return SET_IMPLEMENTATION_TYPE.FLAT_DATA;
-    } else if (setImplementation instanceof EmbeddedFlatDataPropertyMapping) {
-      return SET_IMPLEMENTATION_TYPE.EMBEDDED_FLAT_DATA;
-    } else if (
-      setImplementation instanceof RootRelationalInstanceSetImplementation
-    ) {
-      return SET_IMPLEMENTATION_TYPE.RELATIONAL;
-    } else if (
-      setImplementation instanceof EmbeddedRelationalInstanceSetImplementation
-    ) {
-      return SET_IMPLEMENTATION_TYPE.EMBEDDED_RELATIONAL;
-    } else if (setImplementation instanceof AggregationAwareSetImplementation) {
-      return SET_IMPLEMENTATION_TYPE.AGGREGATION_AWARE;
-    }
-    const extraSetImplementationClassifiers = this.editorStore.pluginManager
-      .getApplicationPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
-          ).getExtraSetImplementationClassifiers?.() ?? [],
-      );
-    for (const Classifier of extraSetImplementationClassifiers) {
-      const setImplementationClassifier = Classifier(setImplementation);
-      if (setImplementationClassifier) {
-        return setImplementationClassifier;
-      }
-    }
-    throw new UnsupportedOperationError(
-      `Can't classify set implementation: no compatible classifer available from plugins`,
-      setImplementation,
     );
   }
 }

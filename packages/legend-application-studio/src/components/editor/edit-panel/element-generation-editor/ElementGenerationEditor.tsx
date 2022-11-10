@@ -78,10 +78,6 @@ const NewFileGenerationModal = observer(
         close();
       }
     };
-    const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-      event.preventDefault();
-      promoteToFileGeneration().catch(applicationStore.alertUnhandledError);
-    };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       setServicePath(event.target.value);
 
@@ -98,14 +94,22 @@ const NewFileGenerationModal = observer(
           },
         }}
       >
-        <form onSubmit={onSubmit} className="modal search-modal modal--dark">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            promoteToFileGeneration().catch(
+              applicationStore.alertUnhandledError,
+            );
+          }}
+          className="modal search-modal modal--dark"
+        >
           <div className="modal__title">
             Promote file generation specification
           </div>
           <div className="input-group">
             <input
               ref={nameRef}
-              className="modal--simple__input input--dark input-group__input"
+              className="input input--dark input-group__input"
               disabled={isReadOnly}
               value={servicePath}
               spellCheck={false}
@@ -120,9 +124,8 @@ const NewFileGenerationModal = observer(
           </div>
           <div className="search-modal__actions">
             <button
-              className="modal--simple__btn btn btn--dark btn--primary"
+              className="btn btn--dark"
               disabled={isReadOnly || elementAlreadyExists}
-              color="primary"
             >
               Create
             </button>
@@ -158,7 +161,7 @@ export const ElementGenerationEditor = observer(
               className="panel__header__action element-generation-editor__leave-btn"
               tabIndex={-1}
               onClick={leaveElementGenerationView}
-              title={'Leave element generation view mode'}
+              title="Leave element generation view mode"
             >
               <ArrowCircleLeftIcon /> exit generation view
             </button>

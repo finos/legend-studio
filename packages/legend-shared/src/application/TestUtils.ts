@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { noop } from '../CommonUtils.js';
-import { configure as configureMobx } from 'mobx';
+import { noop, type SuperGenericFunction } from '../CommonUtils.js';
+import { jest } from '@jest/globals';
 
 /**
  * This is a pass through worker, it will post message, but do not ever reply so `onmessage` and `onerror` are never called
@@ -43,33 +43,24 @@ export const integrationTest = (testName: string): string =>
 export const unitTest = (testName: string): string => `[UNIT] ${testName}`;
 
 /**
- * MobX makes some fields non-configurable or non-writable which would prevent spying/mocking/stubbing in your tests.
- * NOTE: Use with caution and only when needed - do not turn this off globally for all tests, otherwise you risk
- * false positives (passing tests with broken code).
- *
- * A small caveat is with the usage of `flow` with `makeObservable`, if we use the `flow(function* (args) { })` form,
- * the latter will treat these non-observable (stateless) fields (action, flow) as non-writable. So we have to call this
- * function at test environment setup (due to the fact that `flow` decorates the class property outside of `makeObservable`)
- * or change the function to use flow decorater form in `makeObservable`.
- *
- * See https://mobx.js.org/configuration.html#safedescriptors-boolean
- * See https://github.com/mobxjs/mobx/issues/2752
- */
-export const MOBX__enableSpyOrMock = (): void => {
-  configureMobx({ safeDescriptors: false });
-};
-export const MOBX__disableSpyOrMock = (): void => {
-  configureMobx({ safeDescriptors: false });
-};
-
-/**
  * Currently, `jest-extended` augments the matchers from @types/jest instead of expect (or @jest/expect)
  * so we're stubbing this type for now.
- *
- * Also, the type of `jest.fn` is not compatible with a lot of mocks right now
- *
- * TODO: We will remove these when Jest sort this out
  * See https://github.com/facebook/jest/issues/12424
+ * See https://github.com/DefinitelyTyped/DefinitelyTyped/pull/62037
  */
 export type TEMPORARY__JestMatcher = any; // eslint-disable-line @typescript-eslint/no-explicit-any
-export type TEMPORARY__JestMock = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+/**
+ * This is a more ergonomic way to type mocks produced by `jest.fn`
+ * See https://github.com/facebook/jest/issues/12479
+ */
+export const createMock = <T extends SuperGenericFunction>(
+  reference?: T,
+): jest.Mock<T> => jest.fn(reference);
+
+/**
+ * Since `jest.spyOn` has not been made global, this is just
+ * a more ergonomic version of it
+ * See https://github.com/jest-community/eslint-plugin-jest/issues/35#issuecomment-388386336
+ */
+export const createSpy = jest.spyOn;

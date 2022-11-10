@@ -17,6 +17,9 @@
 import { useState, useEffect } from 'react';
 
 export { clsx, type ClassValue } from 'clsx';
+export { Portal } from '@mui/material';
+
+export { useResizeDetector } from 'react-resize-detector';
 
 // React `setState` used to come with a callback that runs after the state is updated
 // See https://www.robinwieruch.de/react-usestate-callback

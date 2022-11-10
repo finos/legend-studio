@@ -25,6 +25,9 @@ import { observer } from 'mobx-react-lite';
 import {
   ProjectConfigurationEditorState,
   CONFIGURATION_EDITOR_TAB,
+  DEPENDENCY_INFO_TYPE,
+  getDependencyTreeStringFromInfo,
+  getConflictsString,
 } from '../../../../stores/editor-state/ProjectConfigurationEditorState.js';
 import {
   type SelectComponent,
@@ -36,16 +39,35 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   ExternalLinkSquareIcon,
+  Dialog,
+  Panel,
+  PanelForm,
+  PanelFormTextField,
+  CheckSquareIcon,
+  SquareIcon,
+  ExclamationTriangleIcon,
+  DropdownMenu,
+  CaretDownIcon,
+  MenuContentItem,
+  MenuContent,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
+  type Platform,
+  PlatformConfiguration,
   ProjectDependency,
   type ProjectConfiguration,
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
-  ActionAlertActionType,
-  ActionAlertType,
+  DocumentationPreview,
+  EDITOR_LANGUAGE,
+  LEGEND_APPLICATION_DOCUMENTATION_KEY,
+  TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../stores/LegendStudioAppEvent.js';
@@ -53,9 +75,13 @@ import {
   SNAPSHOT_VERSION_ALIAS,
   MASTER_SNAPSHOT_ALIAS,
   type ProjectData,
-  compareSemVerVersions,
-  generateGAVCoordinates,
+  type ProjectDependencyInfo,
 } from '@finos/legend-server-depot';
+import {
+  generateViewProjectByGAVRoute,
+  generateViewProjectRoute,
+} from '../../../../stores/LegendStudioRouter.js';
+import { compareSemVerVersions } from '@finos/legend-storage';
 
 interface VersionOption {
   label: string;
@@ -85,20 +111,6 @@ const ProjectStructureEditor = observer(
       latestVersion &&
       (latestVersion.version > projectConfig.projectStructureVersion.version ||
         latestProjectExtensionVersion > currentProjectExtensionVersion);
-    const changeGroupId: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      if (!isReadOnly) {
-        projectConfig.setGroupId(event.target.value);
-      }
-    };
-    const changeArtifactId: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      if (!isReadOnly) {
-        projectConfig.setArtifactId(event.target.value);
-      }
-    };
     const updateVersion = (): void => {
       flowResult(
         editorStore.projectConfigurationEditorState.updateToLatestStructure(),
@@ -139,43 +151,30 @@ const ProjectStructureEditor = observer(
             </button>
           )}
         </div>
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Group ID
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              The domain for artifacts generated as part of the project build
-              pipeline and published to an artifact repository
-            </div>
-            <input
-              className="panel__content__form__section__input"
-              spellCheck={false}
-              disabled={isReadOnly}
-              value={projectConfig.groupId}
-              onChange={changeGroupId}
-            />
-          </div>
-        </div>
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Artifact ID
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              The identifier (within the domain specified by group ID) for
+
+        <PanelForm>
+          <PanelFormTextField
+            isReadOnly={isReadOnly}
+            value={projectConfig.groupId}
+            name="Group ID"
+            prompt="The domain for artifacts generated as part of the project build
+              pipeline and published to an artifact repository"
+            update={(value: string | undefined): void =>
+              projectConfig.setGroupId(value ?? '')
+            }
+          />
+          <PanelFormTextField
+            isReadOnly={isReadOnly}
+            value={projectConfig.artifactId}
+            name="Artifact ID"
+            prompt="The identifier (within the domain specified by group ID) for
               artifacts generated as part of the project build pipeline and
-              published to an artifact repository
-            </div>
-            <input
-              className="panel__content__form__section__input"
-              spellCheck={false}
-              disabled={isReadOnly}
-              value={projectConfig.artifactId}
-              onChange={changeArtifactId}
-            />
-          </div>
-        </div>
+              published to an artifact repository"
+            update={(value: string | undefined): void =>
+              projectConfig.setArtifactId(value ?? '')
+            }
+          />
+        </PanelForm>
       </div>
     );
   },
@@ -192,14 +191,68 @@ const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
   </div>
 );
 
+const ProjectDependencyInfoModal = observer(
+  (props: {
+    configState: ProjectConfigurationEditorState;
+    info: ProjectDependencyInfo;
+    type: DEPENDENCY_INFO_TYPE;
+  }) => {
+    const { configState, info, type } = props;
+    const closeModal = (): void =>
+      configState.setDependencyInfoModal(undefined);
+    return (
+      <Dialog
+        open={Boolean(configState.dependencyInfoModalType)}
+        onClose={closeModal}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <Modal darkMode={true} className="editor-modal">
+          <ModalHeader title={type} />
+          <ModalBody>
+            {type === DEPENDENCY_INFO_TYPE.DEPENDENCY_TREE ? (
+              <TextInputEditor
+                inputValue={getDependencyTreeStringFromInfo(info)}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.TEXT}
+                showMiniMap={true}
+              />
+            ) : (
+              <TextInputEditor
+                inputValue={getConflictsString(info)}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.TEXT}
+                showMiniMap={true}
+              />
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <button
+              className="btn modal__footer__close-btn"
+              onClick={closeModal}
+            >
+              Close
+            </button>
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 const ProjectDependencyEditor = observer(
   (props: {
     projectDependency: ProjectDependency;
     deleteValue: () => void;
     isReadOnly: boolean;
+    projects: Map<string, ProjectData>;
   }) => {
     // init
-    const { projectDependency, deleteValue, isReadOnly } = props;
+    const { projectDependency, deleteValue, isReadOnly, projects } = props;
+    const projectDependencyData = projects.get(projectDependency.projectId);
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const projectSelectorRef = useRef<SelectComponent>(null);
@@ -228,6 +281,9 @@ const ProjectDependencyEditor = observer(
         projectDependency.setProjectId(val?.value.coordinates ?? '');
         if (val) {
           projectDependency.setVersionId(val.value.latestVersion);
+          flowResult(configState.fetchDependencyInfo()).catch(
+            applicationStore.alertUnhandledError,
+          );
         }
       }
     };
@@ -258,6 +314,9 @@ const ProjectDependencyEditor = observer(
       ) {
         try {
           projectDependency.setVersionId(val?.value ?? '');
+          flowResult(configState.fetchDependencyInfo()).catch(
+            applicationStore.alertUnhandledError,
+          );
         } catch (error) {
           assertErrorThrown(error);
           applicationStore.log.error(
@@ -267,20 +326,29 @@ const ProjectDependencyEditor = observer(
         }
       }
     };
-    const openProject = (): void => {
+    const viewProject = (): void => {
       if (!projectDependency.isLegacyDependency) {
-        const projectDependencyVersionId =
-          projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
-            ? SNAPSHOT_VERSION_ALIAS
-            : projectDependency.versionId;
-        applicationStore.navigator.openNewWindow(
-          `${
-            applicationStore.config.baseUrl
-          }view/archive/${generateGAVCoordinates(
-            guaranteeNonNullable(projectDependency.groupId),
-            guaranteeNonNullable(projectDependency.artifactId),
-            projectDependencyVersionId,
-          )}`,
+        applicationStore.navigator.visitAddress(
+          applicationStore.navigator.generateAddress(
+            generateViewProjectByGAVRoute(
+              guaranteeNonNullable(projectDependency.groupId),
+              guaranteeNonNullable(projectDependency.artifactId),
+              projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
+                ? SNAPSHOT_VERSION_ALIAS
+                : projectDependency.versionId,
+            ),
+          ),
+        );
+      }
+    };
+    // NOTE: This assumes that the dependant project is in the same studio instance as the current project
+    // In the future, the studio instance may be part of the project data
+    const viewSDLCProject = (): void => {
+      if (projectDependencyData) {
+        applicationStore.navigator.visitAddress(
+          applicationStore.navigator.generateAddress(
+            generateViewProjectRoute(projectDependencyData.projectId),
+          ),
         );
       }
     };
@@ -321,28 +389,271 @@ const ProjectDependencyEditor = observer(
           }
           darkMode={true}
         />
-        <button
-          className="project-dependency-editor__visit-btn btn--dark btn--sm"
-          disabled={
-            projectDependency.isLegacyDependency ||
-            !selectedProject ||
-            !selectedVersionOption
-          }
-          onClick={openProject}
-          tabIndex={-1}
-          title={'Open Project'}
-        >
-          <ExternalLinkSquareIcon />
-        </button>
+        <div className="project-dependency-editor__visit-project-btn">
+          <button
+            className="project-dependency-editor__visit-project-btn__btn btn--dark"
+            disabled={
+              projectDependency.isLegacyDependency ||
+              !selectedProject ||
+              !selectedVersionOption
+            }
+            onClick={viewProject}
+            tabIndex={-1}
+            title="View project"
+          >
+            <ExternalLinkSquareIcon />
+          </button>
+          <DropdownMenu
+            className="project-dependency-editor__visit-project-btn__dropdown-trigger btn--dark"
+            content={
+              <MenuContent>
+                <MenuContentItem
+                  disabled={
+                    projectDependency.isLegacyDependency ||
+                    !selectedProject ||
+                    !selectedVersionOption ||
+                    !projectDependencyData
+                  }
+                  onClick={viewSDLCProject}
+                >
+                  View SDLC project
+                </MenuContentItem>
+              </MenuContent>
+            }
+          >
+            <CaretDownIcon title="Show more options..." />
+          </DropdownMenu>
+        </div>
         <button
           className="project-dependency-editor__remove-btn btn--dark btn--caution"
           disabled={isReadOnly}
           onClick={deleteValue}
           tabIndex={-1}
-          title={'Close'}
+          title="Close"
         >
           <TimesIcon />
         </button>
+      </div>
+    );
+  },
+);
+
+const PlatformDependencyViewer = observer(
+  (props: {
+    platform: PlatformConfiguration;
+    isDefault: boolean;
+    isLatestVersion?: boolean | undefined;
+  }) => {
+    const { platform, isDefault, isLatestVersion } = props;
+
+    return (
+      <div className="platform-configurations-editor__dependency">
+        <div className="platform-configurations-editor__dependency__label">
+          <div className="platform-configurations-editor__dependency__label__status">
+            {isDefault && (
+              <CheckCircleIcon
+                className="platform-configurations-editor__dependency__label__status--default"
+                title="Platform version is up to date"
+              />
+            )}
+            {isLatestVersion !== undefined &&
+              (isLatestVersion ? (
+                <CheckCircleIcon
+                  className="platform-configurations-editor__dependency__label__status--up-to-date"
+                  title="Platform version is up to date"
+                />
+              ) : (
+                <ExclamationTriangleIcon
+                  className="platform-configurations-editor__dependency__label__status--outdated"
+                  title="Platform version is outdated"
+                />
+              ))}
+          </div>
+          <div className="platform-configurations-editor__dependency__label__text">
+            {platform.name}
+          </div>
+          <div
+            className={clsx(
+              'platform-configurations-editor__dependency__label__version',
+            )}
+          >
+            {platform.version}
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
+const ProjectPlatformVersionEditor = observer(
+  (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
+    const { projectConfig, isReadOnly } = props;
+    const editorStore = useEditorStore();
+
+    const convertPlatformtoPlatformConfiguration = (
+      platforms: Platform[] | undefined,
+    ): PlatformConfiguration[] | undefined => {
+      if (platforms) {
+        return platforms.map(
+          (platform) =>
+            new PlatformConfiguration(platform.name, platform.platformVersion),
+        );
+      } else {
+        return undefined;
+      }
+    };
+
+    const platformConfigurations = projectConfig.platformConfigurations;
+    const defaultPlatforms = convertPlatformtoPlatformConfiguration(
+      editorStore.sdlcServerClient.platforms,
+    );
+    const isUpToDate = platformConfigurations?.every(
+      (conf) =>
+        defaultPlatforms?.find((p) => p.name === conf.name)?.version ===
+        conf.version,
+    );
+    const updateLatestToLatestVersion = (): void => {
+      if (platformConfigurations && defaultPlatforms) {
+        projectConfig.setPlatformConfigurations(
+          platformConfigurations.map((conf) => {
+            const matchingPlatformConfig = defaultPlatforms.find(
+              (p) => p.name === conf.name,
+            );
+            if (matchingPlatformConfig) {
+              return matchingPlatformConfig;
+            }
+            return conf;
+          }),
+        );
+      }
+    };
+
+    const toggleOverridePlatformConfigurations = (): void => {
+      if (!projectConfig.platformConfigurations) {
+        projectConfig.setPlatformConfigurations(defaultPlatforms);
+      } else {
+        projectConfig.setPlatformConfigurations(undefined);
+      }
+    };
+
+    return (
+      <Panel>
+        <PanelForm>
+          <DocumentationPreview
+            text="By default, your project will use the latest platform
+              dependencies' versions (e.g. engine, sdlc, etc.) in the pipeline.
+              This might be undesirable when you want to produce stable
+              artifacts; in this case, you can freeze the platform dependencies'
+              versions"
+            documentationKey={
+              LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_WHEN_TO_CONFIGURE_PLATFORM_VERSIONS
+            }
+          />
+          <div className="platform-configurations-editor__dependencies">
+            <div className="platform-configurations-editor__dependencies__header">
+              <div className="platform-configurations-editor__dependencies__header__left">
+                <div
+                  className="platform-configurations-editor__toggler"
+                  onClick={toggleOverridePlatformConfigurations}
+                >
+                  <button
+                    className={clsx(
+                      'platform-configurations-editor__toggler__btn',
+                      {
+                        'platform-configurations-editor__toggler__btn--toggled':
+                          Boolean(platformConfigurations),
+                      },
+                    )}
+                    disabled={isReadOnly}
+                    tabIndex={-1}
+                  >
+                    {platformConfigurations ? (
+                      <CheckSquareIcon />
+                    ) : (
+                      <SquareIcon />
+                    )}
+                  </button>
+                  <div className="platform-configurations-editor__toggler__prompt">
+                    {`Override platform dependencies' versions`}
+                  </div>
+                </div>
+              </div>
+              {platformConfigurations && !isUpToDate && (
+                <div className="platform-configurations-editor__dependencies__header__right">
+                  <button
+                    className="btn btn--dark"
+                    tabIndex={-1}
+                    onClick={updateLatestToLatestVersion}
+                  >
+                    Update to the current latest platform version
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="platform-configurations-editor__dependencies__content">
+              {!platformConfigurations &&
+                defaultPlatforms?.map((p) => (
+                  <PlatformDependencyViewer
+                    key={p.name}
+                    isDefault={true}
+                    platform={p}
+                  />
+                ))}
+              {platformConfigurations?.map((p) => (
+                <PlatformDependencyViewer
+                  key={p.name}
+                  platform={p}
+                  isDefault={false}
+                  isLatestVersion={isUpToDate}
+                />
+              ))}
+            </div>
+          </div>
+        </PanelForm>
+      </Panel>
+    );
+  },
+);
+
+const ProjectDependencyActions = observer(
+  (props: { config: ProjectConfigurationEditorState }) => {
+    const { config } = props;
+    const hasConflicts = config.dependencyInfo?.conflicts.length;
+    const viewTree = (): void => {
+      if (config.dependencyInfo) {
+        config.setDependencyInfoModal(DEPENDENCY_INFO_TYPE.DEPENDENCY_TREE);
+      }
+    };
+    const viewConflict = (): void => {
+      if (config.dependencyInfo) {
+        config.setDependencyInfoModal(DEPENDENCY_INFO_TYPE.CONFLICTS);
+      }
+    };
+    return (
+      <div className="project-dependency-editor__info">
+        <button
+          className="btn btn--dark"
+          tabIndex={-1}
+          onClick={viewTree}
+          disabled={!config.dependencyInfo}
+          title="View dependency tree"
+        >
+          View Dependency Tree
+        </button>
+
+        {Boolean(hasConflicts) && (
+          <button
+            className="project-dependency-editor__conflicts-btn"
+            tabIndex={-1}
+            onClick={viewConflict}
+            disabled={
+              !config.dependencyInfo || !config.dependencyInfo.conflicts.length
+            }
+            title="View any conflcits in your dependencies"
+          >
+            View Conflicts
+          </button>
+        )}
       </div>
     );
   },
@@ -360,6 +671,7 @@ export const ProjectConfigurationEditor = observer(() => {
   const tabs = [
     CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE,
     CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES,
+    CONFIGURATION_EDITOR_TAB.PLATFORM_CONFIGURATIONS,
   ];
   const changeTab =
     (tab: CONFIGURATION_EDITOR_TAB): (() => void) =>
@@ -376,8 +688,12 @@ export const ProjectConfigurationEditor = observer(() => {
   const currentProjectConfiguration = configState.currentProjectConfiguration;
   const deleteProjectDependency =
     (val: ProjectDependency): (() => void) =>
-    (): void =>
+    (): void => {
       currentProjectConfiguration.deleteProjectDependency(val);
+      flowResult(configState.fetchDependencyInfo()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
   const addValue = (): void => {
     if (!isReadOnly) {
       if (selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES) {
@@ -389,6 +705,9 @@ export const ProjectConfigurationEditor = observer(() => {
           );
           dependencyToAdd.setVersionId(projectToAdd.latestVersion);
           currentProjectConfiguration.addProjectDependency(dependencyToAdd);
+          flowResult(configState.fetchDependencyInfo()).catch(
+            applicationStore.alertUnhandledError,
+          );
         } else {
           currentProjectConfiguration.addProjectDependency(
             new ProjectDependency(''),
@@ -398,39 +717,13 @@ export const ProjectConfigurationEditor = observer(() => {
     }
   };
   const disableAddButton =
-    selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE || isReadOnly;
+    selectedTab !== CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES || isReadOnly;
   const updateConfigs = (): void => {
-    if (editorStore.hasUnpushedChanges) {
-      editorStore.setActionAlertInfo({
-        message: 'You have unpushed changes',
-        prompt:
-          'This action will discard these changes and refresh the application',
-        type: ActionAlertType.CAUTION,
-        onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-        onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
-        actions: [
-          {
-            label: 'Proceed to update project dependencies',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: (): void => {
-              editorStore.setIgnoreNavigationBlocking(true);
-              flowResult(configState.updateConfigs()).catch(
-                applicationStore.alertUnhandledError,
-              );
-            },
-          },
-          {
-            label: 'Abort',
-            type: ActionAlertActionType.PROCEED,
-            default: true,
-          },
-        ],
-      });
-    } else {
+    editorStore.localChangesState.alertUnsavedChanges((): void => {
       flowResult(configState.updateConfigs()).catch(
         applicationStore.alertUnhandledError,
       );
-    }
+    });
   };
   useEffect(() => {
     if (
@@ -441,6 +734,9 @@ export const ProjectConfigurationEditor = observer(() => {
       flowResult(configState.fectchAssociatedProjectsAndVersions()).catch(
         applicationStore.alertUnhandledError,
       );
+      flowResult(configState.fetchDependencyInfo()).catch(
+        applicationStore.alertUnhandledError,
+      );
     }
   }, [applicationStore, configState, selectedTab]);
 
@@ -449,7 +745,7 @@ export const ProjectConfigurationEditor = observer(() => {
   }
   return (
     <div className="project-configuration-editor">
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">
@@ -510,6 +806,7 @@ export const ProjectConfigurationEditor = observer(() => {
           )}
           {selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES && (
             <div className="panel__content__lists">
+              <ProjectDependencyActions config={configState} />
               {currentProjectConfiguration.projectDependencies.map(
                 (projectDependency) => (
                   <ProjectDependencyEditor
@@ -517,13 +814,28 @@ export const ProjectConfigurationEditor = observer(() => {
                     projectDependency={projectDependency}
                     deleteValue={deleteProjectDependency(projectDependency)}
                     isReadOnly={isReadOnly}
+                    projects={configState.projects}
                   />
                 ),
               )}
             </div>
           )}
+          {selectedTab === CONFIGURATION_EDITOR_TAB.PLATFORM_CONFIGURATIONS && (
+            <ProjectPlatformVersionEditor
+              projectConfig={currentProjectConfiguration}
+              isReadOnly={isReadOnly}
+            />
+          )}
+          {configState.dependencyInfo &&
+            configState.dependencyInfoModalType && (
+              <ProjectDependencyInfoModal
+                configState={configState}
+                info={configState.dependencyInfo}
+                type={configState.dependencyInfoModalType}
+              />
+            )}
         </div>
-      </div>
+      </Panel>
     </div>
   );
 });

@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import { TAB_SIZE } from '@finos/legend-application';
+import { type CommandRegistrar, TAB_SIZE } from '@finos/legend-application';
 import {
   type TreeData,
   type TreeNodeData,
-  HotkeyConfiguration,
   NonBlockingDialogState,
   PanelDisplayState,
 } from '@finos/legend-art';
@@ -27,10 +26,9 @@ import {
   extractDataSpaceTaxonomyNodes,
 } from '@finos/legend-extension-dsl-data-space';
 import { BasicGraphManagerState } from '@finos/legend-graph';
-import {
-  type DepotServerClient,
-  type StoredEntity,
-  generateGAVCoordinates,
+import type {
+  DepotServerClient,
+  StoredEntity,
 } from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
@@ -43,10 +41,12 @@ import {
   ActionState,
   assertErrorThrown,
 } from '@finos/legend-shared';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 import { makeObservable, flow, observable, action, flowResult } from 'mobx';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
 import { LEGEND_TAXONOMY_APP_EVENT } from './LegendTaxonomyAppEvent.js';
 import type { LegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStore.js';
+import { LEGEND_TAXONOMY_COMMAND_KEY } from './LegendTaxonomyCommand.js';
 import {
   generateExploreTaxonomyTreeRoute,
   type LegendTaxonomyPathParams,
@@ -72,7 +72,7 @@ export class DataSpaceTaxonomyContext {
     artifactId: string,
     versionId: string,
     path: string,
-    json: Record<PropertyKey, unknown>,
+    json: PlainObject,
   ) {
     this.groupId = groupId;
     this.artifactId = artifactId;
@@ -109,15 +109,7 @@ export class TaxonomyTreeNodeData implements TreeNodeData {
   }
 }
 
-enum LEGEND_TAXONOMY_HOTKEY {
-  SEARCH_TAXONOMY = 'SEARCH_TAXONOMY',
-}
-
-const LEGEND_TAXONOMY_HOTKEY_MAP = Object.freeze({
-  [LEGEND_TAXONOMY_HOTKEY.SEARCH_TAXONOMY]: 'ctrl+p',
-});
-
-export class TaxonomyExplorerStore {
+export class TaxonomyExplorerStore implements CommandRegistrar {
   applicationStore: LegendTaxonomyApplicationStore;
   depotServerClient: DepotServerClient;
   taxonomyServerClient: TaxonomyServerClient;
@@ -129,7 +121,6 @@ export class TaxonomyExplorerStore {
     default: 300,
     snap: 150,
   });
-  hotkeys: HotkeyConfiguration[] = [];
   searchTaxonomyNodeCommandState = new NonBlockingDialogState();
 
   initState = ActionState.create();
@@ -145,7 +136,6 @@ export class TaxonomyExplorerStore {
     applicationStore: LegendTaxonomyApplicationStore,
     taxonomyServerClient: TaxonomyServerClient,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendTaxonomyPluginManager,
   ) {
     makeObservable(this, {
       treeData: observable.ref,
@@ -159,10 +149,10 @@ export class TaxonomyExplorerStore {
     this.taxonomyServerClient = taxonomyServerClient;
     this.depotServerClient = depotServerClient;
     this.graphManagerState = new BasicGraphManagerState(
-      pluginManager,
+      applicationStore.pluginManager,
       applicationStore.log,
     );
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
 
     // Register plugins
     this.taxonomyServerClient.setTracerService(
@@ -171,18 +161,6 @@ export class TaxonomyExplorerStore {
     this.depotServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
-
-    // Hotkeys
-    this.hotkeys = [
-      new HotkeyConfiguration(
-        LEGEND_TAXONOMY_HOTKEY.SEARCH_TAXONOMY,
-        [LEGEND_TAXONOMY_HOTKEY_MAP.SEARCH_TAXONOMY],
-        (event?: KeyboardEvent): void => {
-          event?.preventDefault();
-          this.searchTaxonomyNodeCommandState.open();
-        },
-      ),
-    ];
   }
 
   setTreeData(val: TreeData<TaxonomyTreeNodeData>): void {
@@ -195,6 +173,19 @@ export class TaxonomyExplorerStore {
     this.currentTaxonomyNodeViewerState = val;
   }
 
+  registerCommands(): void {
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_TAXONOMY_COMMAND_KEY.SEARCH_TAXONOMY,
+      action: () => this.searchTaxonomyNodeCommandState.open(),
+    });
+  }
+
+  deregisterCommands(): void {
+    [LEGEND_TAXONOMY_COMMAND_KEY.SEARCH_TAXONOMY].forEach((key) =>
+      this.applicationStore.commandCenter.deregisterCommand(key),
+    );
+  }
+
   internalizeDataSpacePath(params: LegendTaxonomyPathParams): void {
     const { taxonomyPath, gav, dataSpacePath } = params;
     if (taxonomyPath) {
@@ -202,7 +193,7 @@ export class TaxonomyExplorerStore {
       if (gav && dataSpacePath) {
         this.initialDataSpaceId = `${gav}${DATA_SPACE_ID_DELIMITER}${dataSpacePath}`;
       }
-      this.applicationStore.navigator.goTo(
+      this.applicationStore.navigator.updateCurrentLocation(
         generateExploreTaxonomyTreeRoute(
           this.applicationStore.config.currentTaxonomyTreeOption.key,
         ),

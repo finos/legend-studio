@@ -21,7 +21,7 @@ import {
   ElementEditorState,
 } from '@finos/legend-application-studio';
 import type { PackageableElement } from '@finos/legend-graph';
-import { Text } from '../../graph/metamodel/pure/model/packageableElements/text/DSLText_Text.js';
+import { Text } from '../../graph/metamodel/pure/model/packageableElements/text/DSL_Text_Text.js';
 
 export class TextEditorState extends ElementEditorState {
   constructor(editorStore: EditorStore, element: PackageableElement) {

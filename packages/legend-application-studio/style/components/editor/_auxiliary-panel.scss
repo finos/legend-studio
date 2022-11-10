@@ -67,8 +67,82 @@
   }
 
   &__header__tab__title {
+    @include flexVCenter;
+
     font-size: 1.2rem;
     font-weight: 500;
+  }
+
+  &__header__tab__title__problem__count {
+    border-radius: 0.8rem;
+    background: var(--color-dark-grey-250);
+    color: var(--color-light-grey-200);
+    font-size: 1.1rem;
+    margin-left: 0.5rem;
+  }
+
+  &__problems__stale-warning {
+    @include flexVCenter;
+
+    height: 3.8rem;
+    padding: 1rem;
+    background: var(--color-dark-grey-100);
+    border-left: 0.5rem solid var(--color-yellow-100);
+    cursor: default;
+  }
+
+  &__problems__placeholder {
+    @include flexVCenter;
+
+    height: 2.8rem;
+    padding: 0 1rem;
+    margin: 1rem 0;
+    cursor: default;
+  }
+
+  &__problem {
+    @include flexVCenter;
+
+    width: 100%;
+    height: 2.8rem;
+    padding: 0 1rem;
+    margin: 0;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--color-dark-grey-200);
+    }
+
+    &__icon {
+      margin: 0 1rem 0 0.5rem;
+
+      &--warning {
+        color: var(--color-yellow-100);
+      }
+
+      &--error {
+        color: var(--color-red-100);
+      }
+    }
+
+    &__message {
+      @include ellipsisTextOverflow;
+
+      color: var(--color-light-grey-400);
+    }
+
+    &__source {
+      color: var(--color-dark-grey-400);
+      margin-left: 0.5rem;
+    }
+
+    &--stale {
+      cursor: default;
+    }
+
+    &--stale &__message {
+      color: var(--color-dark-grey-400);
+    }
   }
 
   &__content__tab {
@@ -76,16 +150,9 @@
     color: var(--color-light-grey-400);
   }
 
-  &__header__actions {
-    display: flex;
-  }
-
   &__header__action {
-    @include flexCenter;
-
     height: 3.6rem;
     width: 3.6rem;
-    cursor: pointer;
   }
 
   &__header__action svg {

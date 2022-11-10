@@ -25,7 +25,7 @@ import {
   isString,
   ApplicationError,
 } from '@finos/legend-shared';
-import { makeAutoObservable, action } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import { APPLICATION_EVENT } from './ApplicationEvent.js';
 import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
 import type { WebApplicationNavigator } from './WebApplicationNavigator.js';
@@ -35,6 +35,8 @@ import { AssistantService } from './AssistantService.js';
 import { EventService } from './EventService.js';
 import { ApplicationNavigationContextService } from './ApplicationNavigationContextService.js';
 import type { LegendApplicationPlugin } from './LegendApplicationPlugin.js';
+import { CommandCenter } from './CommandCenter.js';
+import { KeyboardShortcutsService } from './KeyboardShortcutsService.js';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -105,15 +107,15 @@ export class Notification {
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
-  LegendApplicationPlugin
+  LegendApplicationPluginManager<LegendApplicationPlugin>
 >;
 
 export class ApplicationStore<
   T extends LegendApplicationConfig,
-  V extends LegendApplicationPlugin,
+  V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
 > {
-  pluginManager: LegendApplicationPluginManager<V>;
   config: T;
+  pluginManager: V;
 
   // navigation
   navigator: WebApplicationNavigator;
@@ -136,6 +138,17 @@ export class ApplicationStore<
   telemetryService = new TelemetryService();
   tracerService = new TracerService();
 
+  // control and interactions
+  commandCenter: CommandCenter;
+  keyboardShortcutsService: KeyboardShortcutsService;
+
+  // TODO: config
+  // See https://github.com/finos/legend-studio/issues/407
+
+  // backdrop
+  backdropContainerElementID?: string | undefined;
+  showBackdrop = false;
+
   // theme
   /**
    * NOTE: this is the poor man way of doing theming
@@ -144,13 +157,16 @@ export class ApplicationStore<
    */
   TEMPORARY__isLightThemeEnabled = false;
 
-  constructor(
-    config: T,
-    navigator: WebApplicationNavigator,
-    pluginManager: LegendApplicationPluginManager<V>,
-  ) {
-    makeAutoObservable(this, {
-      navigator: false,
+  constructor(config: T, navigator: WebApplicationNavigator, pluginManager: V) {
+    makeObservable(this, {
+      notification: observable,
+      blockingAlertInfo: observable,
+      actionAlertInfo: observable,
+      TEMPORARY__isLightThemeEnabled: observable,
+      backdropContainerElementID: observable,
+      showBackdrop: observable,
+      setBackdropContainerElementID: action,
+      setShowBackdrop: action,
       setBlockingAlert: action,
       setActionAlertInfo: action,
       setNotification: action,
@@ -176,6 +192,8 @@ export class ApplicationStore<
     this.telemetryService.registerPlugins(
       pluginManager.getTelemetryServicePlugins(),
     );
+    this.commandCenter = new CommandCenter(this);
+    this.keyboardShortcutsService = new KeyboardShortcutsService(this);
     this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
     this.eventService.registerEventNotifierPlugins(
       pluginManager.getEventNotifierPlugins(),
@@ -186,7 +204,25 @@ export class ApplicationStore<
     this.TEMPORARY__isLightThemeEnabled = val;
   }
 
+  /**
+   * Change the ID used to find the base element to mount the backdrop on.
+   * This is useful when we want to use backdrop with embedded application which
+   * requires its own backdrop usage.
+   */
+  setBackdropContainerElementID(val: string | undefined): void {
+    this.backdropContainerElementID = val;
+  }
+
+  setShowBackdrop(val: boolean): void {
+    this.showBackdrop = val;
+  }
+
   setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
+    if (alertInfo) {
+      this.keyboardShortcutsService.blockGlobalHotkeys();
+    } else {
+      this.keyboardShortcutsService.unblockGlobalHotkeys();
+    }
     this.blockingAlertInfo = alertInfo;
   }
 
@@ -195,6 +231,11 @@ export class ApplicationStore<
       this.notifyIllegalState(
         'Action alert is stacked: new alert is invoked while another one is being displayed',
       );
+    }
+    if (alertInfo) {
+      this.keyboardShortcutsService.blockGlobalHotkeys();
+    } else {
+      this.keyboardShortcutsService.unblockGlobalHotkeys();
     }
     this.actionAlertInfo = alertInfo;
   }
@@ -336,18 +377,11 @@ export class ApplicationStore<
     };
 
   async copyTextToClipboard(text: string): Promise<void> {
-    if (
-      typeof navigator.clipboard === 'object' &&
-      typeof navigator.clipboard.writeText === 'function'
-    ) {
-      // This is a much cleaner way which requires HTTPS
-      // See https://developers.google.com/web/updates/2018/03/clipboardapi
-      await navigator.clipboard.writeText(text).catch((error) => {
-        this.notifyError(error);
-      });
-      return;
-    }
-    this.notifyError('Browser does not support clipboard functionality');
+    // This is a much cleaner way which requires HTTPS
+    // See https://developers.google.com/web/updates/2018/03/clipboardapi
+    await navigator.clipboard.writeText(text).catch((error) => {
+      this.notifyError(error);
+    });
   }
 
   notifyUnsupportedFeature(featureName: string): void {

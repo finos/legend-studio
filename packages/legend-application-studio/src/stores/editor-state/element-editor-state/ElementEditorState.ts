@@ -143,10 +143,6 @@ export abstract class ElementEditorState extends EditorState {
     return false;
   }
 
-  get hasCompilationError(): boolean {
-    return false;
-  }
-
   clearCompilationError(): void {
     return;
   }

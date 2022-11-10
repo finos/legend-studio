@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable, flowResult } from 'mobx';
+import { action, makeObservable, flowResult, observable, flow } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
@@ -41,8 +41,9 @@ import {
 import { ActionAlertActionType } from '@finos/legend-application';
 
 export class WorkspaceReviewState {
-  editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
+  readonly editorStore: EditorStore;
+  readonly sdlcState: EditorSDLCState;
+
   reviewTitle = '';
   committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
   workspaceReview?: Review | undefined;
@@ -57,20 +58,35 @@ export class WorkspaceReviewState {
   isRecreatingWorkspaceAfterCommittingReview = false;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      sdlcState: false,
+    makeObservable(this, {
+      reviewTitle: observable,
+      committedReviewsBetweenWorkspaceBaseAndProjectLatest: observable,
+      workspaceReview: observable,
+      isUpdatingWorkspace: observable,
+      isRefreshingWorkspaceUpdater: observable,
+      isFetchingCurrentWorkspaceReview: observable,
+      isRefreshingWorkspaceChangesDetector: observable,
+      isClosingWorkspaceReview: observable,
+      isCreatingWorkspaceReview: observable,
+      isCommittingWorkspaceReview: observable,
+      isRecreatingWorkspaceAfterCommittingReview: observable,
       setReviewTitle: action,
       openReviewChange: action,
+      refreshWorkspaceChanges: flow,
+      fetchCurrentWorkspaceReview: flow,
+      recreateWorkspaceAfterCommittingReview: flow,
+      closeWorkspaceReview: flow,
+      createWorkspaceReview: flow,
+      commitWorkspaceReview: flow,
     });
 
     this.editorStore = editorStore;
     this.sdlcState = sdlcState;
   }
 
-  setReviewTitle = (val: string): void => {
+  setReviewTitle(val: string): void {
     this.reviewTitle = val;
-  };
+  }
 
   openReviewChange(diff: EntityDiff): void {
     const fromEntityGetter = (
@@ -206,8 +222,8 @@ export class WorkspaceReviewState {
   *recreateWorkspaceAfterCommittingReview(): GeneratorFn<void> {
     try {
       this.isRecreatingWorkspaceAfterCommittingReview = true;
-      this.editorStore.setBlockingAlert({
-        message: 'Re-creating workspace...',
+      this.editorStore.applicationStore.setBlockingAlert({
+        message: 'Recreating workspace...',
         prompt: 'Please do not close the application',
         showLoading: true,
       });
@@ -216,7 +232,9 @@ export class WorkspaceReviewState {
         this.sdlcState.activeWorkspace.workspaceId,
         this.sdlcState.activeWorkspace.workspaceType,
       );
-      this.editorStore.applicationStore.navigator.reload();
+      this.editorStore.applicationStore.navigator.reload({
+        ignoreBlocking: true,
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -225,7 +243,7 @@ export class WorkspaceReviewState {
       );
       this.editorStore.applicationStore.notifyError(error);
     } finally {
-      this.editorStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
       this.isRecreatingWorkspaceAfterCommittingReview = false;
     }
   }
@@ -323,7 +341,7 @@ export class WorkspaceReviewState {
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (isInConflictResolutionMode) {
-        this.editorStore.setBlockingAlert({
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -343,12 +361,10 @@ export class WorkspaceReviewState {
         review.id,
         { message: `${review.title} [review]` },
       );
-      this.editorStore.setActionAlertInfo({
+      this.editorStore.applicationStore.setActionAlertInfo({
         message: 'Committed review successfully',
         prompt:
           'You can create a new workspace with the same name or leave for the start page',
-        onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
-        onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
         actions: [
           {
             label: 'Create new workspace',
@@ -360,12 +376,16 @@ export class WorkspaceReviewState {
           {
             label: 'Leave',
             type: ActionAlertActionType.PROCEED,
-            handler: (): void =>
-              this.editorStore.applicationStore.navigator.goTo(
+            handler: (): void => {
+              this.editorStore.applicationStore.navigator.goToLocation(
                 generateSetupRoute(
                   this.editorStore.sdlcState.activeProject.projectId,
                 ),
-              ),
+                {
+                  ignoreBlocking: true,
+                },
+              );
+            },
             default: true,
           },
         ],

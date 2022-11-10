@@ -49,8 +49,8 @@ import {
 import {
   externalFormat_schemaSet_setFormat,
   externalFormat_schemaSet_setSchemas,
-} from '../graphModifier/DSLExternalFormat_GraphModifierHelper.js';
-import { InnerSchemaSetEditorState } from './element-editor-state/external-format/SchemaSetEditorState.js';
+} from '../shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+import { InnerSchemaSetEditorState } from './element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
 
 export enum MODEL_IMPORT_NATIVE_INPUT_TYPE {
   ENTITIES = 'ENTITIES',
@@ -67,7 +67,7 @@ export enum MODEL_IMPORT_TYPE {
 export abstract class ModelImporterEditorState {
   readonly editorStore: EditorStore;
   readonly modelImporterState: ModelImporterState;
-  loadModelActionState = ActionState.create();
+  readonly loadModelActionState = ActionState.create();
 
   constructor(modelImporterState: ModelImporterState) {
     this.editorStore = modelImporterState.editorStore;
@@ -80,7 +80,7 @@ export abstract class ModelImporterEditorState {
 
   abstract get isLoadingDisabled(): boolean;
 
-  abstract loadModel(): GeneratorFn<void>;
+  abstract loadModel(): Promise<void>;
 }
 
 export class NativeModelImporterEditorState extends ModelImporterEditorState {
@@ -90,7 +90,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
 
   constructor(modelImporterState: ModelImporterState) {
     super(modelImporterState);
-    this.modelText = this.getExampleEntitiesInputText();
+
     makeObservable(this, {
       nativeType: observable,
       modelText: observable,
@@ -98,9 +98,10 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
       setModelText: action,
       setNativeImportType: action,
       isLoadingDisabled: computed,
-      loadModel: flow,
       loadCurrentProjectEntities: flow,
     });
+
+    this.modelText = this.getExampleEntitiesInputText();
   }
 
   get label(): string {
@@ -152,7 +153,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
         return JSON.parse(this.modelText) as Entity[];
       }
       case MODEL_IMPORT_NATIVE_INPUT_TYPE.PURE_GRAMMAR: {
-        return await this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
+        return this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
           this.modelText,
         );
       }
@@ -235,26 +236,28 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
     return `###Pure\n Class model::A\n {\n\n}`;
   }
 
-  *loadModel(): GeneratorFn<void> {
+  async loadModel(): Promise<void> {
     try {
       this.loadModelActionState.inProgress();
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: 'Loading model...',
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      const entities = (yield this.loadEntites()) as Entity[];
+      const entities = await this.loadEntites();
       const message = `loading entities from ${
         this.editorStore.applicationStore.config.appName
       } [${this.modelImporterState.replace ? `potentially affected ` : ''} ${
         entities.length
       } entities]`;
-      yield this.editorStore.sdlcServerClient.updateEntities(
+      await this.editorStore.sdlcServerClient.updateEntities(
         this.editorStore.sdlcState.activeProject.projectId,
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.modelImporterState.replace, entities, message },
       );
-      this.editorStore.applicationStore.navigator.reload();
+      this.editorStore.applicationStore.navigator.reload({
+        ignoreBlocking: true,
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -264,7 +267,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
       this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.loadModelActionState.complete();
-      this.editorStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
     }
   }
 }
@@ -286,8 +289,7 @@ export class ExtensionModelImporterEditorState extends ModelImporterEditorState 
     modelImporterState: ModelImporterState,
   ) {
     super(modelImporterState);
-    this.config = config;
-    this.rendererState = rendererState;
+
     makeObservable(this, {
       config: observable,
       modelImporterState: observable,
@@ -297,6 +299,9 @@ export class ExtensionModelImporterEditorState extends ModelImporterEditorState 
       setExtension: action,
       loadModel: flow,
     });
+
+    this.config = config;
+    this.rendererState = rendererState;
   }
 
   get label(): string {
@@ -317,8 +322,8 @@ export class ExtensionModelImporterEditorState extends ModelImporterEditorState 
     this.config = extensionConfiguration;
   }
 
-  *loadModel(): GeneratorFn<void> {
-    flowResult(this.config.loadModel(this.rendererState));
+  async loadModel(): Promise<void> {
+    await this.config.loadModel(this.rendererState);
   }
 }
 
@@ -336,6 +341,18 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
     modelImporterState: ModelImporterState,
   ) {
     super(modelImporterState);
+
+    makeObservable(this, {
+      schemaSet: observable,
+      schemaSetEditorState: observable,
+      loadModelActionState: observable,
+      description: observable,
+      isolatedSchemaGraph: observable,
+      setExternalFormat: action,
+      setDescription: action,
+      isLoadingDisabled: computed,
+    });
+
     this.description = description;
     this.schemaSet = new SchemaSet(DEFAULT_SCHEMA_NAME);
     this.schemaSet.format = description.name;
@@ -350,17 +367,6 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
       this.editorStore,
       this.isolatedSchemaGraph,
     );
-    makeObservable(this, {
-      schemaSet: observable,
-      schemaSetEditorState: observable,
-      loadModelActionState: observable,
-      description: observable,
-      isolatedSchemaGraph: observable,
-      setExternalFormat: action,
-      setDescription: action,
-      isLoadingDisabled: computed,
-      loadModel: flow,
-    });
   }
 
   get allowHardReplace(): boolean {
@@ -393,26 +399,25 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
     }
   }
 
-  *loadModel(): GeneratorFn<void> {
+  async loadModel(): Promise<void> {
     this.loadModelActionState.inProgress();
     try {
       this.loadModelActionState.inProgress();
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: 'Loading model...',
         prompt: 'Please do not close the application',
         showLoading: true,
       });
       const modelgenerationstate =
         this.schemaSetEditorState.schemaSetModelGenerationState;
-      const entities = (yield flowResult(
+      const entities = await flowResult(
         modelgenerationstate.getImportEntities(),
-      )) as Entity[];
+      );
       if (modelgenerationstate.targetBinding) {
-        const schemaEntity = (yield flowResult(
+        const schemaEntity =
           this.editorStore.graphManagerState.graphManager.elementToEntity(
             this.schemaSet,
-          ),
-        )) as Entity;
+          );
         entities.push(schemaEntity);
       }
       assertTrue(Boolean(entities.length), 'No entities to load');
@@ -421,18 +426,20 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
       } [${this.modelImporterState.replace ? `potentially affected ` : ''} ${
         entities.length
       } entities]`;
-      yield this.editorStore.sdlcServerClient.updateEntities(
+      await this.editorStore.sdlcServerClient.updateEntities(
         this.editorStore.sdlcState.activeProject.projectId,
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.modelImporterState.replace, entities, message },
       );
-      this.editorStore.applicationStore.navigator.reload();
+      this.editorStore.applicationStore.navigator.reload({
+        ignoreBlocking: true,
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.loadModelActionState.complete();
-      this.editorStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
     }
   }
 }
@@ -455,6 +462,7 @@ export class ModelImporterState extends EditorState {
       setExternalFormatImportFormat: action,
       setImportEditorState: action,
     });
+
     this.modelImportEditorState = new NativeModelImporterEditorState(this);
     this.extensionConfigs = this.editorStore.pluginManager
       .getApplicationPlugins()
@@ -468,12 +476,15 @@ export class ModelImporterState extends EditorState {
   get headerName(): string {
     return 'Model Importer';
   }
+
   setReplaceFlag(val: boolean): void {
     this.replace = val;
   }
+
   setImportEditorState(val: ModelImporterEditorState): void {
     this.modelImportEditorState = val;
   }
+
   setNativeImportType(
     nativeImportType: MODEL_IMPORT_NATIVE_INPUT_TYPE,
   ): NativeModelImporterEditorState {
@@ -485,6 +496,7 @@ export class ModelImporterState extends EditorState {
     this.setImportEditorState(nativeEditorState);
     return nativeEditorState;
   }
+
   setExternalFormatImportFormat(
     externalFormat: ExternalFormatDescription,
   ): ExternalFormatModelImporterState {
@@ -496,19 +508,24 @@ export class ModelImporterState extends EditorState {
     this.setImportEditorState(extensionEditorState);
     return extensionEditorState;
   }
+
   setModelImporterExtension(
     extension: ModelImporterExtensionConfiguration,
   ): ExtensionModelImporterEditorState {
-    const externalEditorState =
-      this.modelImportEditorState instanceof ExtensionModelImporterEditorState
-        ? this.modelImportEditorState
-        : new ExtensionModelImporterEditorState(
-            extension,
-            extension.getExtensionModelImportRendererStateCreator(this),
-            this,
-          );
-    externalEditorState.setExtension(extension);
-    this.setImportEditorState(externalEditorState);
-    return externalEditorState;
+    if (
+      this.modelImportEditorState instanceof
+        ExtensionModelImporterEditorState &&
+      this.modelImportEditorState.config === extension
+    ) {
+      return this.modelImportEditorState;
+    } else {
+      const modelImporterEditorState = new ExtensionModelImporterEditorState(
+        extension,
+        extension.getExtensionModelImportRendererStateCreator(this),
+        this,
+      );
+      this.setImportEditorState(modelImporterEditorState);
+      return modelImporterEditorState;
+    }
   }
 }

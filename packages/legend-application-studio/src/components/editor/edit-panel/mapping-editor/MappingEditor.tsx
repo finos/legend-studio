@@ -32,10 +32,11 @@ import {
   PURE_ClassIcon,
   PURE_EnumerationIcon,
   PURE_AssociationIcon,
+  Panel,
+  useResizeDetector,
 } from '@finos/legend-art';
 import { ClassMappingEditor } from './ClassMappingEditor.js';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor.js';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   type MappingEditorTabState,
   type MappingElement,
@@ -241,7 +242,7 @@ export const MappingEditor = observer(() => {
         </ResizablePanel>
         <ResizablePanelSplitter />
         <ResizablePanel>
-          <div className="panel">
+          <Panel>
             <ContextMenu
               className="panel__header mapping-editor__header"
               disabled={true}
@@ -328,7 +329,7 @@ export const MappingEditor = observer(() => {
                         className="mapping-editor__header__tab__close-btn"
                         onClick={closeTab(tabState)}
                         tabIndex={-1}
-                        title={'Close'}
+                        title="Close"
                       >
                         <TimesIcon />
                       </button>
@@ -340,7 +341,7 @@ export const MappingEditor = observer(() => {
             <div className="panel__content mapping-editor__content">
               {renderActiveMappingElementTab()}
             </div>
-          </div>
+          </Panel>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

@@ -41,27 +41,32 @@
 }
 
 .mui-radio-group {
-  padding: 1rem 1.5rem;
+  padding: 1rem;
 
   &__group {
     color: var(--color-light-grey-200);
-    height: 3.6rem;
+    height: 2rem;
 
     &__column {
-      width: 50%;
       margin-left: 0;
       margin-right: 0;
     }
 
     &__item__radio-btn {
       color: var(--color-dark-grey-300);
+      padding: 0;
+      margin-right: 0.5rem;
     }
 
     &__item__label {
       margin: 0;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       line-height: 1.5;
     }
+  }
+
+  .Mui-checked {
+    color: var(--color-blue-100);
   }
 }
 

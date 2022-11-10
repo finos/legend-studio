@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, action, flow } from 'mobx';
+import { observable, makeObservable, action, flow } from 'mobx';
 import { type GeneratorFn, uuid } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore.js';
 import type { MappingElement } from './MappingEditorState.js';
@@ -24,7 +24,7 @@ import type {
   SetImplementation,
   Type,
 } from '@finos/legend-graph';
-import { LambdaEditorState } from '@finos/legend-application';
+import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export class MappingElementState {
   readonly uuid = uuid();
@@ -43,20 +43,6 @@ export class MappingElementState {
 
 export abstract class SetImplementationState extends MappingElementState {
   declare mappingElement: SetImplementation;
-
-  constructor(editorStore: EditorStore, setImplementation: SetImplementation) {
-    super(editorStore, setImplementation);
-
-    makeObservable(this, {
-      setImplementation: computed,
-    });
-
-    this.mappingElement = setImplementation;
-  }
-
-  get setImplementation(): SetImplementation {
-    return this.mappingElement;
-  }
 }
 
 export abstract class InstanceSetImplementationState extends SetImplementationState {
@@ -77,8 +63,6 @@ export abstract class InstanceSetImplementationState extends SetImplementationSt
       decorate: action,
       convertPropertyMappingTransformObjects: flow,
     });
-
-    this.mappingElement = setImplementation;
   }
 
   setSelectedType(type: Type | undefined): void {

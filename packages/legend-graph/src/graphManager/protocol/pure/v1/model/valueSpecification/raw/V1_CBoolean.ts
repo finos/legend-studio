@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
-import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
+import type { V1_ValueSpecificationVisitor } from '../V1_ValueSpecification.js';
+import { V1_PrimitiveValueSpecification } from './V1_PrimitiveValueSpecification.js';
 
-export class V1_CBoolean extends V1_ValueSpecification {
-  values: boolean[] = [];
-  multiplicity!: V1_Multiplicity;
+export class V1_CBoolean extends V1_PrimitiveValueSpecification {
+  value!: boolean;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,

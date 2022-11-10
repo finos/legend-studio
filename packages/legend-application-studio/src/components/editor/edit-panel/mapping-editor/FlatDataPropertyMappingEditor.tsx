@@ -20,7 +20,7 @@ import {
   type FlatDataPropertyMappingTransformDropTarget,
   CORE_DND_TYPE,
   FlatDataColumnDragSource,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import {
   type MappingElement,
   MappingEditorState,
@@ -45,12 +45,12 @@ import {
   getRawGenericType,
   EnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
-import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
-import { flatDataPropertyMapping_setTransformer } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper.js';
+import { flatDataPropertyMapping_setTransformer } from '../../../../stores/shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/shared/ModelUtil.js';
+} from '../../../../stores/shared/ModelClassifierUtils.js';
+import { LambdaEditor } from '@finos/legend-query-builder';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -83,7 +83,7 @@ const SimplePropertyMappingEditor = observer(
     return (
       <div className="property-mapping-editor__entry__container">
         <div ref={drop} className="property-mapping-editor__entry">
-          <StudioLambdaEditor
+          <LambdaEditor
             className={clsx({ 'lambda-editor--dnd-match': canDrop })}
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}
@@ -194,18 +194,18 @@ const EnumerationPropertyMappingEditor = observer(
               options={options}
               onChange={handleSelectionChange}
               value={{ value: transformerLabel, label: transformerLabel }}
-              placeholder={`Select an existing enumeration mapping`}
+              placeholder="Select an existing enumeration mapping"
             />
             <button
               className="property-mapping-editor__entry__visit-btn"
               onClick={visit}
               tabIndex={-1}
-              title={'Visit enumeration mapping'}
+              title="Visit enumeration mapping"
             >
               <ArrowCircleRightIcon />
             </button>
           </div>
-          <StudioLambdaEditor
+          <LambdaEditor
             className={clsx(
               'property-mapping-editor__entry__enumeration__transform',
               { 'lambda-editor--dnd-match': canDrop },
@@ -312,7 +312,7 @@ export const FlatDataPropertyMappingEditor = observer(
         //       className="property-mapping-editor__entry--embedded__visit-btn"
         //       onClick={visitEmbeddedPropertyMapping}
         //       tabIndex={-1}
-        //       title={'Create mapping element'}
+        //       title="Create mapping element"
         //     ><ArrowCircleRightIcon /></button>
         //     {`to visit the embedded class mapping for property '${flatDataPropertyMappingState.propertyMapping.property.name}'.`}
         //   </div>

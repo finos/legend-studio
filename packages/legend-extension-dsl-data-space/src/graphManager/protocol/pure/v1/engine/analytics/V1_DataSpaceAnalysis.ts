@@ -24,8 +24,8 @@ import {
   primitive,
   SKIP,
 } from 'serializr';
-import type { V1_DataSpaceSupportInfo } from '../../../../../../graphManager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSLDataSpace_DataSpace.js';
-import { V1_deserializeSupportInfo } from '../../../../../../graphManager/protocol/pure/v1/transformation/pureProtocol/V1_DSLDataSpace_ProtocolHelper.js';
+import type { V1_DataSpaceSupportInfo } from '../../model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
+import { V1_deserializeSupportInfo } from '../../transformation/pureProtocol/V1_DSL_DataSpace_ProtocolHelper.js';
 
 class V1_DataSpaceTaggedValueInfo {
   profile!: string;

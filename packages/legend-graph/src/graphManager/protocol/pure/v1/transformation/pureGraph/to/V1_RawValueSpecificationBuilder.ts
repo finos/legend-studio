@@ -41,14 +41,13 @@ export class V1_RawValueSpecificationBuilder
   }
 
   visit_Variable(valueSpecification: V1_RawVariable): RawValueSpecification {
-    const multiplicity = this.context.graph.getMultiplicity(
-      valueSpecification.multiplicity.lowerBound,
-      valueSpecification.multiplicity.upperBound,
-    );
     const type = this.context.resolveType(valueSpecification.class);
     return new RawVariableExpression(
       valueSpecification.name,
-      multiplicity,
+      this.context.graph.getMultiplicity(
+        valueSpecification.multiplicity.lowerBound,
+        valueSpecification.multiplicity.upperBound,
+      ),
       type,
     );
   }
@@ -56,15 +55,9 @@ export class V1_RawValueSpecificationBuilder
   visit_PrimitiveInstanceValue(
     valueSpecification: V1_RawPrimitiveInstanceValue,
   ): RawValueSpecification {
-    const multiplicity = this.context.graph.getMultiplicity(
-      valueSpecification.multiplicity.lowerBound,
-      valueSpecification.multiplicity.upperBound,
-    );
-    const type = this.context.resolveType(valueSpecification.type);
     return new RawPrimitiveInstanceValue(
-      type,
-      multiplicity,
-      valueSpecification.values,
+      this.context.resolveType(valueSpecification.type),
+      valueSpecification.value,
     );
   }
 }

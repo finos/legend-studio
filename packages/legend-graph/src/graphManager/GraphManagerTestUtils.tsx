@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-import { jest, expect } from '@jest/globals';
+import { expect } from '@jest/globals';
 import {
   type LoggerPlugin,
   type TEMPORARY__JestMatcher,
+  type PlainObject,
   Log,
   AbstractPluginManager,
   promisify,
+  createMock,
 } from '@finos/legend-shared';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
 import { GraphManagerState } from './GraphManagerState.js';
@@ -93,7 +95,7 @@ export const TEST__provideMockedGraphManagerState = (customization?: {
     customization?.mock ??
     TEST__getTestGraphManagerState(customization?.pluginManager);
   const MockedGraphManagerStateProvider = require('./GraphManagerStateProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedGraphManagerStateProvider.useGraphManagerState = jest.fn();
+  MockedGraphManagerStateProvider.useGraphManagerState = createMock();
   MockedGraphManagerStateProvider.useGraphManagerState.mockReturnValue(value);
   return value;
 };
@@ -112,7 +114,7 @@ export const TEST__GraphManagerStateProvider: React.FC<{
 export const TEST__excludeSectionIndex = (entities: Entity[]): Entity[] =>
   entities.filter((entity) => entity.path !== SECTION_INDEX_ELEMENT_PATH);
 
-export const TEST_DEBUG__expectToIncludeSameMembers = (
+export const TEST_DEBUG__expectToIncludeSameEntities = (
   expected: Entity[],
   actual: Entity[],
 ): void => {
@@ -127,16 +129,16 @@ export const TEST_DEBUG__expectToIncludeSameMembers = (
 };
 
 export const TEST__ensureObjectFieldsAreSortedAlphabetically = (
-  obj: Record<PropertyKey, unknown> | unknown[],
+  obj: PlainObject | unknown[],
 ): void => {
   const checkObjectFieldsAreSortedAlphabetically = (
-    _obj: Record<PropertyKey, unknown> | unknown[],
+    _obj: PlainObject | unknown[],
   ): void => {
     if (Array.isArray(_obj)) {
       _obj.forEach((element) => {
         if (typeof element === 'object') {
           checkObjectFieldsAreSortedAlphabetically(
-            element as Record<PropertyKey, unknown> | unknown[],
+            element as PlainObject | unknown[],
           );
         }
       });
@@ -157,7 +159,7 @@ export const TEST__ensureObjectFieldsAreSortedAlphabetically = (
           const value = _obj[prop];
           if (typeof value === 'object') {
             checkObjectFieldsAreSortedAlphabetically(
-              value as Record<PropertyKey, unknown> | unknown[],
+              value as PlainObject | unknown[],
             );
           }
         }
@@ -187,11 +189,11 @@ export const TEST__checkGraphHashUnchanged = async (
 ): Promise<void> => {
   const originalHashesIndex =
     await graphManagerState.graphManager.buildHashesIndex(entities);
-  const graphHashesIndex = new Map<string, string>();
+  const currentGraphHashesIndex = new Map<string, string>();
   await Promise.all<void>(
     graphManagerState.graph.allOwnElements.map((element) =>
       promisify(() => {
-        graphHashesIndex.set(element.path, element.hashCode);
+        currentGraphHashesIndex.set(element.path, element.hashCode);
       }),
     ),
   );
@@ -202,7 +204,7 @@ export const TEST__checkGraphHashUnchanged = async (
       ),
     ) as TEMPORARY__JestMatcher
   ).toIncludeSameMembers(
-    Array.from(graphHashesIndex.entries()).filter(
+    Array.from(currentGraphHashesIndex.entries()).filter(
       (entry) => entry[0] !== SECTION_INDEX_ELEMENT_PATH,
     ),
   );

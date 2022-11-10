@@ -20,14 +20,12 @@ import {
   useWorkspaceReviewStore,
   withWorkspaceReviewStore,
 } from './WorkspaceReviewStoreProvider.js';
-import { useParams } from 'react-router';
 import { WorkspaceReviewSideBar } from './WorkspaceReviewSideBar.js';
 import { WorkspaceReviewPanel } from './WorkspaceReviewPanel.js';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
-import { Link } from 'react-router-dom';
 import {
   type ResizablePanelHandlerProps,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   clsx,
   PanelLoadingIndicator,
   ResizablePanel,
@@ -41,15 +39,14 @@ import {
 } from '@finos/legend-art';
 import {
   type ReviewPathParams,
-  generateViewProjectRoute,
-  generateEditorRoute,
+  generateSetupRoute,
 } from '../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
 import {
   useEditorStore,
   withEditorStore,
 } from '../editor/EditorStoreProvider.js';
-import { useApplicationStore } from '@finos/legend-application';
+import { useApplicationStore, useParams } from '@finos/legend-application';
 
 const WorkspaceReviewStatusBar = observer(() => {
   const reviewStore = useWorkspaceReviewStore();
@@ -82,23 +79,39 @@ const WorkspaceReviewStatusBar = observer(() => {
           <div className="workspace-review__status-bar__workspace__icon">
             <CodeBranchIcon />
           </div>
-          <div className="workspace-review__status-bar__workspace__project">
-            <Link to={generateViewProjectRoute(reviewStore.projectId)}>
-              {currentProject}
-            </Link>
-          </div>
+          <button
+            className="workspace-review__status-bar__workspace__project"
+            title="Go back to workspace setup using the specified project"
+            tabIndex={-1}
+            onClick={(): void =>
+              applicationStore.navigator.visitAddress(
+                applicationStore.navigator.generateAddress(
+                  generateSetupRoute(reviewStore.projectId),
+                ),
+              )
+            }
+          >
+            {currentProject}
+          </button>
           /
-          <div className="workspace-review__status-bar__workspace__workspace">
-            <Link
-              to={generateEditorRoute(
-                reviewStore.projectId,
-                review.workspaceId,
-                review.workspaceType,
-              )}
-            >
-              {review.workspaceId}
-            </Link>
-          </div>
+          <button
+            className="workspace-review__status-bar__workspace__workspace"
+            title="Go back to workspace setup using the specified workspace"
+            tabIndex={-1}
+            onClick={(): void =>
+              applicationStore.navigator.visitAddress(
+                applicationStore.navigator.generateAddress(
+                  generateSetupRoute(
+                    reviewStore.projectId,
+                    review.workspaceId,
+                    review.workspaceType,
+                  ),
+                ),
+              )
+            }
+          >
+            {review.workspaceId}
+          </button>
           <div className="workspace-review__status-bar__review">
             <a target="_blank" rel="noopener noreferrer" href={review.webURL}>
               {review.title}
@@ -139,10 +152,19 @@ const WorkspaceReviewExplorer = observer(() => {
   const reviewStore = useWorkspaceReviewStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
+
+  // layout
   const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
     editorStore.sideBarDisplayState.setSize(
       (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
     );
+  const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+    editorStore.sideBarDisplayState.size === 0,
+    {
+      onStopResize: resizeSideBar,
+      size: editorStore.sideBarDisplayState.size,
+    },
+  );
 
   useEffect(() => {
     flowResult(reviewStore.fetchReviewComparison()).catch(
@@ -153,19 +175,16 @@ const WorkspaceReviewExplorer = observer(() => {
   return (
     <ResizablePanelGroup orientation="vertical">
       <ResizablePanel
-        {...getControlledResizablePanelProps(
-          editorStore.sideBarDisplayState.size === 0,
-          {
-            onStopResize: resizeSideBar,
-            size: editorStore.sideBarDisplayState.size,
-          },
-        )}
+        {...sideBarCollapsiblePanelGroupProps.collapsiblePanel}
         direction={1}
       >
         <WorkspaceReviewSideBar />
       </ResizablePanel>
       <ResizablePanelSplitter />
-      <ResizablePanel minSize={300}>
+      <ResizablePanel
+        {...sideBarCollapsiblePanelGroupProps.remainingPanel}
+        minSize={300}
+      >
         <WorkspaceReviewPanel />
       </ResizablePanel>
     </ResizablePanelGroup>
@@ -214,7 +233,7 @@ export const WorkspaceReview = withEditorStore(
                         key={ACTIVITY_MODE.REVIEW}
                         className="activity-bar__item activity-bar__item--active workspace-review__activity-bar__review-icon"
                         tabIndex={-1}
-                        title={'Review'}
+                        title="Review"
                         onClick={changeActivity(ACTIVITY_MODE.REVIEW)}
                       >
                         <CheckListIcon />
@@ -224,7 +243,7 @@ export const WorkspaceReview = withEditorStore(
                       <button
                         className="activity-bar__item"
                         tabIndex={-1}
-                        title={'Settings...'}
+                        title="Settings..."
                       >
                         <CogIcon />
                       </button>

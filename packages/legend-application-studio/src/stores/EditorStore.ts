@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, flowResult, makeAutoObservable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import { ClassEditorState } from './editor-state/element-editor-state/ClassEditorState.js';
 import { ExplorerTreeState } from './ExplorerTreeState.js';
 import {
@@ -22,8 +29,6 @@ import {
   AUX_PANEL_MODE,
   GRAPH_EDITOR_MODE,
   EDITOR_MODE,
-  LEGEND_STUDIO_HOTKEY,
-  LEGEND_STUDIO_HOTKEY_MAP,
 } from './EditorConfig.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState.js';
@@ -45,7 +50,6 @@ import {
   type GeneratorFn,
   type PlainObject,
   LogEvent,
-  addUniqueEntry,
   isNonNullable,
   assertErrorThrown,
   guaranteeType,
@@ -55,6 +59,7 @@ import {
   assertTrue,
   ActionState,
   filterByType,
+  AssertionError,
 } from '@finos/legend-shared';
 import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState.js';
 import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState.js';
@@ -74,29 +79,25 @@ import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState.js';
 import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState.js';
 import { FileGenerationViewerState } from './editor-state/FileGenerationViewerState.js';
-import type { GenerationFile } from './shared/FileGenerationTreeUtil.js';
+import type { GenerationFile } from './shared/FileGenerationTreeUtils.js';
 import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState.js';
 import { DevToolState } from './aux-panel-state/DevToolState.js';
 import {
+  generateEditorRoute,
   generateSetupRoute,
   generateViewProjectRoute,
+  type WorkspaceEditorPathParams,
 } from './LegendStudioRouter.js';
-import {
-  HotkeyConfiguration,
-  NonBlockingDialogState,
-  PanelDisplayState,
-} from '@finos/legend-art';
+import { NonBlockingDialogState, PanelDisplayState } from '@finos/legend-art';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 import type { Entity } from '@finos/legend-storage';
 import {
   ProjectConfiguration,
+  WorkspaceType,
   type SDLCServerClient,
-  type WorkspaceType,
 } from '@finos/legend-server-sdlc';
 import {
   type PackageableElement,
-  type Type,
-  type Store,
   type GraphManagerState,
   GRAPH_MANAGER_EVENT,
   PrimitiveType,
@@ -114,7 +115,6 @@ import {
   PackageableConnection,
   FileGenerationSpecification,
   GenerationSpecification,
-  PRIMITIVE_TYPE,
   Package,
   DataElement,
   isElementReadOnly,
@@ -122,14 +122,11 @@ import {
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import {
-  type ActionAlertInfo,
-  type BlockingAlertInfo,
+  type CommandRegistrar,
   ActionAlertActionType,
   ActionAlertType,
   APPLICATION_EVENT,
   TAB_SIZE,
-  buildElementOption,
-  type PackageableElementOption,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import type { EditorMode } from './editor/EditorMode.js';
@@ -140,10 +137,12 @@ import {
   graph_deleteElement,
   graph_deleteOwnElement,
   graph_renameElement,
-} from './graphModifier/GraphModifierHelper.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil.js';
+} from './shared/modifier/GraphModifierHelper.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
+import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
+import { LEGEND_STUDIO_COMMAND_KEY } from './LegendStudioCommand.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -153,31 +152,19 @@ export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
 }
 
-export class EditorStore {
+export class EditorStore implements CommandRegistrar {
   applicationStore: LegendStudioApplicationStore;
   sdlcServerClient: SDLCServerClient;
   depotServerClient: DepotServerClient;
   pluginManager: LegendStudioPluginManager;
 
   editorMode: EditorMode;
-  setEditorMode(val: EditorMode): void {
-    this.editorMode = val;
-  }
   // NOTE: once we clear up the editor store to make modes more separated
   // we should remove these sets of functions. They are basically hacks to
   // ensure hiding parts of the UI based on the editing mode.
   // Instead, we will gradually move these `boolean` flags into `EditorMode`
   // See https://github.com/finos/legend-studio/issues/317
   mode = EDITOR_MODE.STANDARD;
-  setMode(val: EDITOR_MODE): void {
-    this.mode = val;
-  }
-  get isInViewerMode(): boolean {
-    return this.mode === EDITOR_MODE.VIEWER;
-  }
-  get isInConflictResolutionMode(): boolean {
-    return this.mode === EDITOR_MODE.CONFLICT_RESOLUTION;
-  }
 
   editorExtensionStates: EditorExtensionState[] = [];
   explorerTreeState: ExplorerTreeState;
@@ -196,8 +183,10 @@ export class EditorStore {
   localChangesState: LocalChangesState;
   conflictResolutionState: WorkspaceUpdateConflictResolutionState;
   devToolState: DevToolState;
+  embeddedQueryBuilderState: EmbeddedQueryBuilderState;
+  newElementState: NewElementState;
 
-  private _isDisposed = false;
+  initialEntityPath?: string | undefined;
   initState = ActionState.create();
   graphEditMode = GRAPH_EDITOR_MODE.FORM;
 
@@ -216,33 +205,40 @@ export class EditorStore {
     snap: 150,
   });
 
-  // Hot keys
-  blockGlobalHotkeys = false;
-  defaultHotkeys: HotkeyConfiguration[] = [];
-  hotkeys: HotkeyConfiguration[] = [];
-
-  // Tabs
+  // Editor Tabs
   currentEditorState?: EditorState | undefined;
   openedEditorStates: EditorState[] = [];
-  newElementState: NewElementState;
   /**
    * Since we want to share element generation state across all element in the editor, we will create 1 element generate state
    * per file generation configuration type.
    */
   elementGenerationStates: ElementFileGenerationState[] = [];
   searchElementCommandState = new NonBlockingDialogState();
-  backdrop = false;
-  ignoreNavigationBlocking = false;
-  isDevToolEnabled = true;
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
-    pluginManager: LegendStudioPluginManager,
   ) {
-    makeAutoObservable(this, {
+    makeObservable<
+      EditorStore,
+      'initStandardMode' | 'initConflictResolutionMode'
+    >(this, {
+      editorMode: observable,
+      mode: observable,
+      graphEditMode: observable,
+      activeAuxPanelMode: observable,
+      activeActivity: observable,
+      currentEditorState: observable,
+      openedEditorStates: observable,
+
+      isInViewerMode: computed,
+      isInConflictResolutionMode: computed,
+      isInitialized: computed,
+      isInGrammarTextMode: computed,
+      isInFormMode: computed,
+
       applicationStore: false,
       sdlcServerClient: false,
       depotServerClient: false,
@@ -250,18 +246,10 @@ export class EditorStore {
       graphManagerState: false,
       setEditorMode: action,
       setMode: action,
-      setDevTool: action,
-      setHotkeys: action,
-      addHotKey: action,
-      resetHotkeys: action,
-      setBlockGlobalHotkeys: action,
+
       setCurrentEditorState: action,
-      setBackdrop: action,
       setActiveAuxPanelMode: action,
-      setIgnoreNavigationBlocking: action,
       refreshCurrentEntityDiffEditorState: action,
-      setBlockingAlert: action,
-      setActionAlertInfo: action,
       cleanUp: action,
       reset: action,
       setGraphEditMode: action,
@@ -277,12 +265,22 @@ export class EditorStore {
       reprocessElementEditorState: action,
       openGeneratedFile: action,
       closeAllEditorTabs: action,
+
+      initialize: flow,
+      initMode: flow,
+      initStandardMode: flow,
+      initConflictResolutionMode: flow,
+      buildGraph: flow,
+      addElement: flow,
+      deleteElement: flow,
+      renameElement: flow,
+      toggleTextMode: flow,
     });
 
     this.applicationStore = applicationStore;
     this.sdlcServerClient = sdlcServerClient;
     this.depotServerClient = depotServerClient;
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
 
     this.editorMode = new StandardEditorMode(this);
 
@@ -291,6 +289,7 @@ export class EditorStore {
     this.graphManagerState = graphManagerState;
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);
     this.devToolState = new DevToolState(this);
+    this.embeddedQueryBuilderState = new EmbeddedQueryBuilderState(this);
     // side bar panels
     this.explorerTreeState = new ExplorerTreeState(this);
     this.projectOverviewState = new ProjectOverviewState(this, this.sdlcState);
@@ -328,101 +327,6 @@ export class EditorStore {
       )
       .map((creator) => creator(this))
       .filter(isNonNullable);
-
-    // hotkeys
-    this.defaultHotkeys = [
-      // actions that need blocking
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.COMPILE,
-        [LEGEND_STUDIO_HOTKEY_MAP.COMPILE],
-        this.createGlobalHotKeyAction(() => {
-          flowResult(this.graphState.globalCompileInFormMode()).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.GENERATE,
-        [LEGEND_STUDIO_HOTKEY_MAP.GENERATE],
-        this.createGlobalHotKeyAction(() => {
-          flowResult(
-            this.graphState.graphGenerationState.globalGenerate(),
-          ).catch(applicationStore.alertUnhandledError);
-        }),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.CREATE_ELEMENT,
-        [LEGEND_STUDIO_HOTKEY_MAP.CREATE_ELEMENT],
-        this.createGlobalHotKeyAction(() => this.newElementState.openModal()),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT,
-        [LEGEND_STUDIO_HOTKEY_MAP.OPEN_ELEMENT],
-        this.createGlobalHotKeyAction(() =>
-          this.searchElementCommandState.open(),
-        ),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE,
-        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
-        this.createGlobalHotKeyAction(() => {
-          flowResult(this.toggleTextMode()).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.TOGGLE_MODEL_LOADER,
-        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_MODEL_LOADER],
-        this.createGlobalHotKeyAction(() =>
-          this.openState(this.modelImporterState),
-        ),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.SYNC_WITH_WORKSPACE,
-        [LEGEND_STUDIO_HOTKEY_MAP.SYNC_WITH_WORKSPACE],
-        this.createGlobalHotKeyAction(() => {
-          flowResult(this.localChangesState.pushLocalChanges()).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }),
-      ),
-      // simple actions (no blocking is needed)
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.TOGGLE_AUX_PANEL,
-        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_AUX_PANEL],
-        this.createGlobalHotKeyAction(() => this.auxPanelDisplayState.toggle()),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_EXPLORER,
-        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_EXPLORER],
-        this.createGlobalHotKeyAction(() =>
-          this.setActiveActivity(ACTIVITY_MODE.EXPLORER),
-        ),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_CHANGES,
-        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_CHANGES],
-        this.createGlobalHotKeyAction(() =>
-          this.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES),
-        ),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
-        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_REVIEW],
-        this.createGlobalHotKeyAction(() =>
-          this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_REVIEW),
-        ),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
-        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_UPDATER],
-        this.createGlobalHotKeyAction(() =>
-          this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_UPDATER),
-        ),
-      ),
-    ];
-    this.hotkeys = this.defaultHotkeys;
   }
 
   get isInitialized(): boolean {
@@ -435,74 +339,43 @@ export class EditorStore {
       ) && this.graphManagerState.systemBuildState.hasSucceeded
     );
   }
+
   get isInGrammarTextMode(): boolean {
     return this.graphEditMode === GRAPH_EDITOR_MODE.GRAMMAR_TEXT;
   }
+
   get isInFormMode(): boolean {
     return this.graphEditMode === GRAPH_EDITOR_MODE.FORM;
   }
-  get hasUnpushedChanges(): boolean {
-    return Boolean(
-      this.changeDetectionState.workspaceLocalLatestRevisionState.changes
-        .length,
-    );
+
+  get isInViewerMode(): boolean {
+    return this.mode === EDITOR_MODE.VIEWER;
   }
 
-  setDevTool(val: boolean): void {
-    this.isDevToolEnabled = val;
+  get isInConflictResolutionMode(): boolean {
+    return this.mode === EDITOR_MODE.CONFLICT_RESOLUTION;
   }
 
-  setHotkeys(val: HotkeyConfiguration[]): void {
-    this.hotkeys = val;
+  /**
+   * TODO?: we should really think of how we could simplify the trigger condition below
+   * after we refactor editor modes
+   *
+   * See https://github.com/finos/legend-studio/issues/317
+   */
+  createEditorCommandTrigger(additionalChecker?: () => boolean): () => boolean {
+    return (): boolean =>
+      // we don't want to leak any hotkeys when we have embedded query builder open
+      // TODO?: we probably should come up with a more generic mechanism for this
+      !this.embeddedQueryBuilderState.queryBuilderState &&
+      (!additionalChecker || additionalChecker());
   }
 
-  addHotKey(val: HotkeyConfiguration): void {
-    addUniqueEntry(this.hotkeys, val);
+  setEditorMode(val: EditorMode): void {
+    this.editorMode = val;
   }
 
-  resetHotkeys(): void {
-    this.hotkeys = this.defaultHotkeys;
-  }
-
-  setBlockGlobalHotkeys(val: boolean): void {
-    this.blockGlobalHotkeys = val;
-  }
-
-  setCurrentEditorState(val: EditorState | undefined): void {
-    this.currentEditorState = val;
-  }
-
-  setBackdrop(val: boolean): void {
-    this.backdrop = val;
-  }
-
-  setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
-    this.activeAuxPanelMode = val;
-  }
-
-  setIgnoreNavigationBlocking(val: boolean): void {
-    this.ignoreNavigationBlocking = val;
-  }
-
-  refreshCurrentEntityDiffEditorState(): void {
-    if (this.currentEditorState instanceof EntityDiffEditorState) {
-      this.currentEditorState.refresh();
-    }
-  }
-
-  setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
-    if (this._isDisposed) {
-      return;
-    }
-    this.setBlockGlobalHotkeys(Boolean(alertInfo)); // block global hotkeys if alert is shown
-    this.applicationStore.setBlockingAlert(alertInfo);
-  }
-
-  setActionAlertInfo(alertInfo: ActionAlertInfo | undefined): void {
-    if (this._isDisposed) {
-      return;
-    }
-    this.applicationStore.setActionAlertInfo(alertInfo);
+  setMode(val: EDITOR_MODE): void {
+    this.mode = val;
   }
 
   cleanUp(): void {
@@ -510,11 +383,129 @@ export class EditorStore {
     // end up blocking other parts of the app
     // e.g. trying going to an unknown workspace, we will be redirected to the home page
     // but the blocking alert for not-found workspace will still block the app
-    this.setBlockingAlert(undefined);
-    this.setActionAlertInfo(undefined);
+    this.applicationStore.setBlockingAlert(undefined);
+    this.applicationStore.setActionAlertInfo(undefined);
     // stop change detection to avoid memory-leak
     this.changeDetectionState.stop();
-    this._isDisposed = true;
+  }
+
+  registerCommands(): void {
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.COMPILE,
+      trigger: this.createEditorCommandTrigger(
+        () =>
+          this.isInitialized &&
+          (!this.isInConflictResolutionMode ||
+            this.conflictResolutionState.hasResolvedAllConflicts),
+      ),
+      action: () => {
+        if (this.isInFormMode) {
+          flowResult(this.graphState.globalCompileInFormMode()).catch(
+            this.applicationStore.alertUnhandledError,
+          );
+        } else if (this.isInGrammarTextMode) {
+          flowResult(this.graphState.globalCompileInTextMode()).catch(
+            this.applicationStore.alertUnhandledError,
+          );
+        }
+      },
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.GENERATE,
+      trigger: this.createEditorCommandTrigger(
+        () =>
+          this.isInitialized &&
+          (!this.isInConflictResolutionMode ||
+            this.conflictResolutionState.hasResolvedAllConflicts),
+      ),
+      action: () => {
+        flowResult(this.graphState.graphGenerationState.globalGenerate()).catch(
+          this.applicationStore.alertUnhandledError,
+        );
+      },
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.CREATE_ELEMENT,
+      trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
+      action: () => this.newElementState.openModal(),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.SEARCH_ELEMENT,
+      trigger: this.createEditorCommandTrigger(),
+      action: () => this.searchElementCommandState.open(),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_TEXT_MODE,
+      trigger: this.createEditorCommandTrigger(
+        () =>
+          this.isInitialized &&
+          (!this.isInConflictResolutionMode ||
+            this.conflictResolutionState.hasResolvedAllConflicts),
+      ),
+      action: () => {
+        flowResult(this.toggleTextMode()).catch(
+          this.applicationStore.alertUnhandledError,
+        );
+      },
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_MODEL_LOADER,
+      trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
+      action: () => this.openState(this.modelImporterState),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.SYNC_WITH_WORKSPACE,
+      trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
+      action: () => {
+        flowResult(this.localChangesState.pushLocalChanges()).catch(
+          this.applicationStore.alertUnhandledError,
+        );
+      },
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_AUX_PANEL,
+      trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
+      action: () => this.auxPanelDisplayState.toggle(),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_EXPLORER,
+      trigger: this.createEditorCommandTrigger(),
+      action: () => this.setActiveActivity(ACTIVITY_MODE.EXPLORER),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_LOCAL_CHANGES,
+      trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
+      action: () => this.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
+      trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
+      action: () => this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_REVIEW),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
+      trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
+      action: () => this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_UPDATER),
+    });
+  }
+
+  deregisterCommands(): void {
+    [
+      LEGEND_STUDIO_COMMAND_KEY.SYNC_WITH_WORKSPACE,
+      LEGEND_STUDIO_COMMAND_KEY.CREATE_ELEMENT,
+      LEGEND_STUDIO_COMMAND_KEY.SEARCH_ELEMENT,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_TEXT_MODE,
+      LEGEND_STUDIO_COMMAND_KEY.GENERATE,
+      LEGEND_STUDIO_COMMAND_KEY.COMPILE,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_AUX_PANEL,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_MODEL_LOADER,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_EXPLORER,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_LOCAL_CHANGES,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
+    ].forEach((key) =>
+      this.applicationStore.commandCenter.deregisterCommand(key),
+    );
   }
 
   reset(): void {
@@ -524,6 +515,23 @@ export class EditorStore {
       this.sdlcState,
     );
     this.explorerTreeState = new ExplorerTreeState(this);
+  }
+
+  internalizeEntityPath(params: WorkspaceEditorPathParams): void {
+    const { projectId, entityPath } = params;
+    const workspaceType = params.groupWorkspaceId
+      ? WorkspaceType.GROUP
+      : WorkspaceType.USER;
+    const workspaceId = guaranteeNonNullable(
+      params.groupWorkspaceId ?? params.workspaceId,
+      `Workspace/group workspace ID is not provided`,
+    );
+    if (entityPath) {
+      this.initialEntityPath = entityPath;
+      this.applicationStore.navigator.updateCurrentLocation(
+        generateEditorRoute(projectId, workspaceId, workspaceType),
+      );
+    }
   }
 
   /**
@@ -550,7 +558,6 @@ export class EditorStore {
           `Fast-refreshing the app - undoing cleanUp() and preventing initialize() recall in editor store...`,
         );
         this.changeDetectionState.start();
-        this._isDisposed = false;
         return;
       }
       this.applicationStore.notifyIllegalState(
@@ -576,12 +583,10 @@ export class EditorStore {
       // instead, we give them the option to:
       // - reload the page (in case they later gain access)
       // - back to the setup page
-      this.setActionAlertInfo({
+      this.applicationStore.setActionAlertInfo({
         message: `Project not found or inaccessible`,
         prompt: 'Please check that the project exists and request access to it',
         type: ActionAlertType.STANDARD,
-        onEnter: (): void => this.setBlockGlobalHotkeys(true),
-        onClose: (): void => this.setBlockGlobalHotkeys(false),
         actions: [
           {
             label: 'Reload application',
@@ -592,10 +597,10 @@ export class EditorStore {
             },
           },
           {
-            label: 'Back to setup page',
+            label: 'Back to workspace setup',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigator.goTo(
+              this.applicationStore.navigator.goToLocation(
                 generateSetupRoute(undefined),
               );
             },
@@ -647,19 +652,17 @@ export class EditorStore {
           this.applicationStore.notifyError(error);
         }
       };
-      this.setActionAlertInfo({
+      this.applicationStore.setActionAlertInfo({
         message: 'Workspace not found',
         prompt: `Please note that you can check out the project in viewer mode. Workspace is only required if you need to work on the project.`,
         type: ActionAlertType.STANDARD,
-        onEnter: (): void => this.setBlockGlobalHotkeys(true),
-        onClose: (): void => this.setBlockGlobalHotkeys(false),
         actions: [
           {
             label: 'View project',
             default: true,
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigator.goTo(
+              this.applicationStore.navigator.goToLocation(
                 generateViewProjectRoute(projectId),
               );
             },
@@ -674,10 +677,10 @@ export class EditorStore {
             },
           },
           {
-            label: 'Back to setup page',
+            label: 'Back to workspace setup',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigator.goTo(
+              this.applicationStore.navigator.goToLocation(
                 generateSetupRoute(projectId, workspaceId, workspaceType),
               );
             },
@@ -709,6 +712,7 @@ export class EditorStore {
       ),
     ]);
     yield flowResult(this.initMode());
+
     onLeave(true);
   }
 
@@ -741,13 +745,11 @@ export class EditorStore {
   }
 
   private *initConflictResolutionMode(): GeneratorFn<void> {
-    this.setActionAlertInfo({
+    this.applicationStore.setActionAlertInfo({
       message: 'Failed to update workspace.',
       prompt:
         'You can discard all of your changes or review them, resolve all merge conflicts and fix any potential compilation issues as well as test failures',
       type: ActionAlertType.CAUTION,
-      onEnter: (): void => this.setBlockGlobalHotkeys(true),
-      onClose: (): void => this.setBlockGlobalHotkeys(false),
       actions: [
         {
           label: 'Discard your changes',
@@ -837,9 +839,30 @@ export class EditorStore {
         return;
       }
 
+      this.initState.setMessage(`Starting change detection engine...`);
+
       // build explorer tree
       this.explorerTreeState.buildImmutableModelTrees();
       this.explorerTreeState.build();
+
+      // open element if provided an element path
+      if (
+        this.graphManagerState.graphBuildState.hasSucceeded &&
+        this.explorerTreeState.buildState.hasCompleted &&
+        this.initialEntityPath
+      ) {
+        try {
+          this.openElement(
+            this.graphManagerState.graph.getElement(this.initialEntityPath),
+          );
+        } catch {
+          const elementPath = this.initialEntityPath;
+          this.initialEntityPath = undefined;
+          throw new AssertionError(
+            `Can't find element with path '${elementPath}'`,
+          );
+        }
+      }
 
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
@@ -874,7 +897,13 @@ export class EditorStore {
       );
       // since errors have been handled accordingly, we don't need to do anything here
       return;
+    } finally {
+      this.initState.setMessage(undefined);
     }
+  }
+
+  setCurrentEditorState(val: EditorState | undefined): void {
+    this.currentEditorState = val;
   }
 
   getCurrentEditorState<T extends EditorState>(clazz: Clazz<T>): T {
@@ -890,26 +919,6 @@ export class EditorStore {
       this.editorExtensionStates.find(filterByType(clazz)),
       `Can't find extension editor state of the specified type: no built extension editor state available from plugins`,
     );
-  }
-
-  setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): void {
-    this.graphEditMode = graphEditor;
-    this.graphState.clearCompilationError();
-  }
-
-  setActiveActivity(
-    activity: ACTIVITY_MODE,
-    options?: { keepShowingIfMatchedCurrent?: boolean },
-  ): void {
-    if (!this.sideBarDisplayState.isOpen) {
-      this.sideBarDisplayState.open();
-    } else if (
-      activity === this.activeActivity &&
-      !options?.keepShowingIfMatchedCurrent
-    ) {
-      this.sideBarDisplayState.close();
-    }
-    this.activeActivity = activity;
   }
 
   closeState(editorState: EditorState): void {
@@ -938,7 +947,7 @@ export class EditorStore {
       this.openedEditorStates.find((e) => e === editorState),
       'Editor tab should be currently opened',
     );
-    this.currentEditorState = editorState;
+    this.setCurrentEditorState(editorState);
     this.openedEditorStates = [editorState];
     this.explorerTreeState.reprocess();
   }
@@ -968,6 +977,12 @@ export class EditorStore {
       );
     }
     this.explorerTreeState.reprocess();
+  }
+
+  refreshCurrentEntityDiffEditorState(): void {
+    if (this.currentEditorState instanceof EntityDiffEditorState) {
+      this.currentEditorState.refresh();
+    }
   }
 
   openEntityDiff(entityDiffEditorState: EntityDiffViewState): void {
@@ -1016,6 +1031,30 @@ export class EditorStore {
       this.openedEditorStates.push(editorState);
     }
     this.setCurrentEditorState(editorState);
+  }
+
+  setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): void {
+    this.graphEditMode = graphEditor;
+    this.graphState.clearProblems();
+  }
+
+  setActiveActivity(
+    activity: ACTIVITY_MODE,
+    options?: { keepShowingIfMatchedCurrent?: boolean },
+  ): void {
+    if (!this.sideBarDisplayState.isOpen) {
+      this.sideBarDisplayState.open();
+    } else if (
+      activity === this.activeActivity &&
+      !options?.keepShowingIfMatchedCurrent
+    ) {
+      this.sideBarDisplayState.close();
+    }
+    this.activeActivity = activity;
+  }
+
+  setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
+    this.activeAuxPanelMode = val;
   }
 
   createElementState(
@@ -1274,29 +1313,6 @@ export class EditorStore {
     this.setCurrentEditorState(generatedFileState);
   }
 
-  createGlobalHotKeyAction =
-    (
-      handler: (event?: KeyboardEvent) => void,
-      preventDefault = true,
-    ): ((event?: KeyboardEvent) => void) =>
-    (event?: KeyboardEvent): void => {
-      if (preventDefault) {
-        event?.preventDefault();
-      }
-      // TODO: maybe we should come up with a better way to block global hot keys, this seems highly restrictive.
-      const isResolvingConflicts =
-        this.isInConflictResolutionMode &&
-        !this.conflictResolutionState.hasResolvedAllConflicts;
-      if (
-        (this.isInitialized &&
-          !isResolvingConflicts &&
-          !this.blockGlobalHotkeys) ||
-        this.isInViewerMode
-      ) {
-        handler(event);
-      }
-    };
-
   closeAllEditorTabs(): void {
     this.setCurrentEditorState(undefined);
     this.openedEditorStates = [];
@@ -1307,7 +1323,7 @@ export class EditorStore {
       if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
         return;
       }
-      this.setBlockingAlert({
+      this.applicationStore.setBlockingAlert({
         message: 'Switching to text mode...',
         showLoading: true,
       });
@@ -1324,10 +1340,10 @@ export class EditorStore {
         this.applicationStore.notifyWarning(
           `Can't enter text mode: transformation to grammar text failed. Error: ${error.message}`,
         );
-        this.setBlockingAlert(undefined);
+        this.applicationStore.setBlockingAlert(undefined);
         return;
       }
-      this.setBlockingAlert(undefined);
+      this.applicationStore.setBlockingAlert(undefined);
       this.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
       // navigate to the currently opened element immediately after entering text mode editor
       if (this.currentEditorState instanceof ElementEditorState) {
@@ -1342,91 +1358,6 @@ export class EditorStore {
         'Editor only support form mode and text mode at the moment',
       );
     }
-  }
-
-  get enumerationOptions(): PackageableElementOption<Enumeration>[] {
-    return this.graphManagerState.graph.ownEnumerations
-      .concat(this.graphManagerState.graph.dependencyManager.enumerations)
-      .map(buildElementOption);
-  }
-
-  get classOptions(): PackageableElementOption<Class>[] {
-    return this.graphManagerState.graph.ownClasses
-      .concat(
-        this.graphManagerState.collectExposedSystemElements(
-          this.graphManagerState.graph.systemModel.ownClasses,
-        ),
-      )
-      .concat(this.graphManagerState.graph.dependencyManager.classes)
-      .map(buildElementOption);
-  }
-
-  get associationOptions(): PackageableElementOption<Association>[] {
-    return this.graphManagerState.graph.ownAssociations
-      .concat(
-        this.graphManagerState.collectExposedSystemElements(
-          this.graphManagerState.graph.systemModel.ownAssociations,
-        ),
-      )
-      .concat(this.graphManagerState.graph.dependencyManager.associations)
-      .map(buildElementOption);
-  }
-
-  get profileOptions(): PackageableElementOption<Profile>[] {
-    return this.graphManagerState.graph.ownProfiles
-      .concat(
-        this.graphManagerState.collectExposedSystemElements(
-          this.graphManagerState.graph.systemModel.ownProfiles,
-        ),
-      )
-      .concat(this.graphManagerState.graph.dependencyManager.profiles)
-      .map(buildElementOption);
-  }
-
-  get classPropertyGenericTypeOptions(): PackageableElementOption<Type>[] {
-    return this.graphManagerState.graph.primitiveTypes
-      .filter((p) => p.path !== PRIMITIVE_TYPE.LATESTDATE)
-      .map(buildElementOption)
-      .concat(
-        this.graphManagerState.graph.ownTypes
-          .concat(
-            this.graphManagerState.collectExposedSystemElements(
-              this.graphManagerState.graph.systemModel.ownTypes,
-            ),
-          )
-          .concat(this.graphManagerState.graph.dependencyManager.types)
-          .map(buildElementOption),
-      );
-  }
-
-  get mappingOptions(): PackageableElementOption<Mapping>[] {
-    return this.graphManagerState.graph.ownMappings
-      .concat(this.graphManagerState.graph.dependencyManager.mappings)
-      .map(buildElementOption);
-  }
-
-  get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
-    return this.graphManagerState.graph.ownRuntimes
-      .concat(this.graphManagerState.graph.dependencyManager.runtimes)
-      .map(buildElementOption);
-  }
-
-  get serviceOptions(): PackageableElementOption<Service>[] {
-    return this.graphManagerState.graph.ownServices
-      .concat(this.graphManagerState.graph.dependencyManager.services)
-      .map(buildElementOption);
-  }
-
-  get storeOptions(): PackageableElementOption<Store>[] {
-    return this.graphManagerState.graph.ownStores
-      .concat(this.graphManagerState.graph.dependencyManager.stores)
-      .map(buildElementOption);
-  }
-
-  get dataOptions(): PackageableElementOption<DataElement>[] {
-    return this.graphManagerState.graph.ownDataElements
-      .concat(this.graphManagerState.graph.dependencyManager.dataElements)
-      .map(buildElementOption);
   }
 
   getSupportedElementTypes(): string[] {

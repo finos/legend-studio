@@ -32,7 +32,7 @@ import {
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
-import { generateGAVCoordinates } from '@finos/legend-server-depot';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 import {
   generateStandaloneDataSpaceViewerRoute,
   generateExploreTaxonomyTreeNodeDataSpaceRoute,
@@ -90,7 +90,7 @@ const TaxonomyNodeDataSpaceItem = observer(
     const copyLink = (): void => {
       applicationStore
         .copyTextToClipboard(
-          applicationStore.navigator.generateLocation(
+          applicationStore.navigator.generateAddress(
             generateExploreTaxonomyTreeNodeDataSpaceRoute(
               applicationStore.config.currentTaxonomyTreeOption.key,
               taxonomyNodeViewerState.taxonomyNode.id,
@@ -170,7 +170,7 @@ const TaxonomyNodeViewerExplorer = observer(
       <div className="panel taxonomy-node-viewer__explorer">
         <div className="panel__header taxonomy-node-viewer__explorer__header">
           <div className="panel__header__title taxonomy-node-viewer__explorer__header__title">
-            Dataspaces ({dataSpaceOptions.length}/
+            Data spaces ({dataSpaceOptions.length}/
             {taxonomyNode.dataSpaceTaxonomyContexts.length})
           </div>
         </div>
@@ -211,8 +211,8 @@ const TaxonomyNodeDataSpaceViewer = observer(
     const queryDataSpace = (): void =>
       nodeViewerState.queryDataSpace(undefined);
     const viewDataSpace = (): void =>
-      applicationStore.navigator.openNewWindow(
-        applicationStore.navigator.generateLocation(
+      applicationStore.navigator.visitAddress(
+        applicationStore.navigator.generateAddress(
           generateStandaloneDataSpaceViewerRoute(
             generateGAVCoordinates(
               dataSpaceViewerState.groupId,

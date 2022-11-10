@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
 import type { V1_Variable } from '../../../model/valueSpecification/V1_Variable.js';
+import type {
+  V1_ValueSpecification,
+  V1_ValueSpecificationVisitor,
+} from '../V1_ValueSpecification.js';
+import { V1_CoreClassInstance } from './V1_CoreClassInstance.js';
 
-export class V1_Lambda extends V1_ValueSpecification {
+export class V1_Lambda extends V1_CoreClassInstance {
   body: V1_ValueSpecification[] = [];
   parameters: V1_Variable[] = [];
 

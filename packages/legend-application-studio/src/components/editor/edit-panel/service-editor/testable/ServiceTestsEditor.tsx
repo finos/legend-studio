@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { BasicValueSpecificationEditor } from '@finos/legend-application';
+
 import {
   ContextMenu,
   PlusIcon,
@@ -35,7 +35,8 @@ import {
   RefreshIcon,
   TimesIcon,
 } from '@finos/legend-art';
-import { type ValueSpecification, PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { type ValueSpecification, PrimitiveType } from '@finos/legend-graph';
+import { BasicValueSpecificationEditor } from '@finos/legend-query-builder';
 import {
   filterByType,
   guaranteeNonNullable,
@@ -55,7 +56,7 @@ import type { TestAssertionEditorState } from '../../../../../stores/editor-stat
 import {
   atomicTest_setId,
   testAssertion_setId,
-} from '../../../../../stores/graphModifier/Testable_GraphModifierHelper.js';
+} from '../../../../../stores/shared/modifier/Testable_GraphModifierHelper.js';
 import {
   getTestableResultFromTestResult,
   TESTABLE_RESULT,
@@ -158,7 +159,6 @@ export const NewParameterModal = observer(
     };
     const options = setupState.newParamOptions;
     const closeModal = (): void => setupState.setShowNewParameterModal(false);
-    const handleSubmit = (): void => setupState.addParameterValue();
     const onChange = (val: { label: string; value: string } | null): void => {
       if (val === null) {
         setupState.setNewParameterValueName('');
@@ -174,7 +174,10 @@ export const NewParameterModal = observer(
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(event) => {
+            event.preventDefault();
+            setupState.addParameterValue();
+          }}
           className="modal modal--dark search-modal"
         >
           <div className="modal__title">New Test Parameter Value </div>
@@ -233,12 +236,13 @@ const ServiceTestParameterEditor = observer(
               paramState.updateValueSpecification(val);
             }}
             graph={setupState.editorStore.graphManagerState.graph}
+            obseverContext={
+              setupState.editorStore.changeDetectionState.observerContext
+            }
             typeCheckOption={{
               expectedType:
                 paramState.varExpression.genericType?.value.rawType ??
-                setupState.editorStore.graphManagerState.graph.getPrimitiveType(
-                  PRIMITIVE_TYPE.STRING,
-                ),
+                PrimitiveType.STRING,
             }}
             className="query-builder__parameters__value__editor"
             resetValue={(): void => {

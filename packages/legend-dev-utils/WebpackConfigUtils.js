@@ -279,7 +279,7 @@ export const getWebAppBaseWebpackConfig = (
         appConfig.baseUrl.length === 1
           ? false
           : [appConfig.baseUrl.slice(1, -1)],
-      port: 8080,
+      port: 9000,
       host: 'localhost',
       // redirect 404s to /index.html
       historyApiFallback: {

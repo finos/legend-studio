@@ -137,17 +137,21 @@ import { RelationalInputData } from '../../../../../../../graph/metamodel/pure/p
 import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
-import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { InstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
 import type { SubstituteStore } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/SubstituteStore.js';
-import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_BindingTransformer.js';
+import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_BindingTransformer.js';
 import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
 import { MergeOperationSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MergeOperationSetImplementation.js';
 import type { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation.js';
-import { isStubbed_EnumValueMapping } from '../../../../../../../graph/helpers/creator/DSLMapping_ModelCreatorHelper.js';
+import { isStubbed_EnumValueMapping } from '../../../../../../../graph/helpers/creator/DSL_Mapping_ModelCreatorHelper.js';
 import { isStubbed_RawLambda } from '../../../../../../../graph/helpers/creator/RawValueSpecificationCreatorHelper.js';
-import { isStubbed_RawRelationalOperationElement } from '../../../../../../../graph/helpers/creator/StoreRelational_ModelCreatorHelper.js';
+import { isStubbed_RawRelationalOperationElement } from '../../../../../../../graph/helpers/creator/STO_Relational_ModelCreatorHelper.js';
 import { pruneSourceInformation } from '../../../../../../../graph/MetaModelUtils.js';
+import { FlatDataAssociationImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationImplementation.js';
+import { V1_FlatDataAssociationMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationMapping.js';
+import type { FlatDataAssociationPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
+import { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -360,7 +364,7 @@ const transformClassMappingPropertyMappings = (
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+              plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
             ).getExtraPropertyMappingTransformationExcludabilityCheckers?.() ??
             [],
         )
@@ -397,6 +401,28 @@ const transformSimpleFlatDataPropertyMapping = (
       ) as V1_RawLambda;
   }
   return flatDataPropertyMapping;
+};
+
+const transformFlatDataAssociationPropertyMapping = (
+  element: FlatDataAssociationPropertyMapping,
+  context: V1_GraphTransformerContext,
+): V1_FlatDataAssociationPropertyMapping => {
+  const flatDataAssociationPropertyMapping =
+    new V1_FlatDataAssociationPropertyMapping();
+
+  flatDataAssociationPropertyMapping.property = V1_transformPropertyReference(
+    element.property,
+  );
+  flatDataAssociationPropertyMapping.source =
+    element.sourceSetImplementation.valueForSerialization;
+  flatDataAssociationPropertyMapping.target =
+    element.targetSetImplementation?.valueForSerialization;
+
+  flatDataAssociationPropertyMapping.flatData = element.flatData;
+
+  flatDataAssociationPropertyMapping.sectionName = element.sectionName;
+
+  return flatDataAssociationPropertyMapping;
 };
 
 const transformEmbeddedFlatDataPropertyMapping = (
@@ -472,9 +498,7 @@ const transformRelationalPropertyMapping = (
   propertyMapping.relationalOperation = (
     context.keepSourceInformation
       ? element.relationalOperation
-      : pruneSourceInformation(
-          element.relationalOperation as Record<PropertyKey, unknown>,
-        )
+      : pruneSourceInformation(element.relationalOperation)
   ) as V1_RawRelationalOperationElement;
   propertyMapping.source =
     element.sourceSetImplementation.valueForSerialization;
@@ -660,7 +684,7 @@ class PropertyMappingTransformer
     const extraPropertyMappingTransformers = this.context.plugins.flatMap(
       (plugin) =>
         (
-          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+          plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraPropertyMappingTransformers?.() ?? [],
     );
     for (const transformer of extraPropertyMappingTransformers) {
@@ -687,6 +711,14 @@ class PropertyMappingTransformer
     propertyMapping: FlatDataPropertyMapping,
   ): V1_PropertyMapping {
     return transformSimpleFlatDataPropertyMapping(
+      propertyMapping,
+      this.context,
+    );
+  }
+  visit_FlatDataAssociationPropertyMapping(
+    propertyMapping: FlatDataAssociationPropertyMapping,
+  ): V1_PropertyMapping {
+    return transformFlatDataAssociationPropertyMapping(
       propertyMapping,
       this.context,
     );
@@ -1043,7 +1075,7 @@ export class V1_SetImplementationTransformer
     const extraClassMappingTransformers = this.context.plugins.flatMap(
       (plugin) =>
         (
-          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+          plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraClassMappingTransformers?.() ?? [],
     );
     for (const transformer of extraClassMappingTransformers) {
@@ -1165,6 +1197,26 @@ const transformRelationalAssociationImplementation = (
   return relationalMapping;
 };
 
+const transformFlatDataAssociationImplementation = (
+  element: FlatDataAssociationImplementation,
+  context: V1_GraphTransformerContext,
+): V1_FlatDataAssociationMapping => {
+  const flatDataAssociationMapping = new V1_FlatDataAssociationMapping();
+  flatDataAssociationMapping.stores = element.stores.map(
+    (store) => store.valueForSerialization ?? '',
+  );
+  flatDataAssociationMapping.association =
+    element.association.valueForSerialization ?? '';
+  flatDataAssociationMapping.propertyMappings =
+    transformClassMappingPropertyMappings(
+      element.propertyMappings,
+      true,
+      context,
+    );
+  flatDataAssociationMapping.id = mappingElementIdSerializer(element.id);
+  return flatDataAssociationMapping;
+};
+
 const transformXStorelAssociationImplementation = (
   element: XStoreAssociationImplementation,
   context: V1_GraphTransformerContext,
@@ -1191,6 +1243,8 @@ const transformAssociationImplementation = (
     return transformRelationalAssociationImplementation(element, context);
   } else if (element instanceof XStoreAssociationImplementation) {
     return transformXStorelAssociationImplementation(element, context);
+  } else if (element instanceof FlatDataAssociationImplementation) {
+    return transformFlatDataAssociationImplementation(element, context);
   }
   throw new UnsupportedOperationError(
     `Can't transform association implementation`,

@@ -35,7 +35,7 @@ import {
 import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,
-} from '../../../../../stores/editor-state/element-editor-state/mapping/relational/DatabaseEditorHelper.js';
+} from '../../connection-editor/DatabaseEditorHelper.js';
 import {
   type Type,
   type Table,
@@ -300,7 +300,7 @@ const RelationalOperationElementTreeNodeContainer: React.FC<
               //     primitiveType && primitiveType === selectedType,
               // })}
               tabIndex={-1}
-              title={'Column Type'}
+              title="Column Type"
             >
               {generateColumnTypeLabel(guaranteeType(node.column, Column).type)}
             </button>

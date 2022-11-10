@@ -34,16 +34,16 @@ import { RootRelationalInstanceSetImplementation } from '../../../../graph/metam
 import {
   findPropertyMapping,
   getOwnClassMappingsByClass,
-} from '../../../../graph/helpers/DSLMapping_Helper.js';
+} from '../../../../graph/helpers/DSL_Mapping_Helper.js';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 import { RelationalPropertyMapping } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';
-import { PRIMITIVE_TYPE } from '../../../../graph/MetaModelConst.js';
 import { TEST_DATA__SemiStructuredRelationalTypeRoundtrip } from './TEST_DATA__SemiStructuredRelationalTypeRoundtrip.js';
-import { DSLExternalFormat_GraphPreset } from '../../../../DSLExternalFormat_Extension.js';
+import { DSL_ExternalFormat_GraphPreset } from '../../../../DSL_ExternalFormat_Extension.js';
 import {
   getSchema,
   getTable,
-} from '../../../../graph/helpers/StoreRelational_Helper.js';
+} from '../../../../graph/helpers/STO_Relational_Helper.js';
+import { PrimitiveType } from '../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 
 let graphManagerState: GraphManagerState;
 
@@ -130,12 +130,12 @@ test(unitTest('Relational Mapping is loaded properly'), () => {
     firmExtensionSetImpl,
   );
   expect(propertyMapping.property.value.genericType.value.rawType).toBe(
-    graph.getPrimitiveType(PRIMITIVE_TYPE.DATE),
+    PrimitiveType.DATE,
   );
 });
 
 const pluginManager = new TEST__GraphManagerPluginManager();
-pluginManager.usePresets([new DSLExternalFormat_GraphPreset()]).install();
+pluginManager.usePresets([new DSL_ExternalFormat_GraphPreset()]).install();
 
 test(unitTest('SemiStructured relational type roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(

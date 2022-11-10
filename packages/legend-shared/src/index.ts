@@ -23,6 +23,8 @@ export * from './network/NetworkUtils.js';
 export * from './network/AbstractServerClient.js';
 export * from './network/TracerService.js';
 
+export * from './date/DateUtils.js';
+
 export * from './format/FormatterUtils.js';
 export * from './format/ValidatorUtils.js';
 

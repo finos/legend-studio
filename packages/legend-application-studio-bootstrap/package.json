@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-studio-bootstrap",
-  "version": "7.12.0",
+  "version": "8.8.0",
   "description": "Legend Studio application bootrap",
   "keywords": [
     "legend",
@@ -47,29 +47,29 @@
     "@finos/legend-application": "workspace:*",
     "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
-    "@finos/legend-extension-application-studio-query-builder": "workspace:*",
     "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-extension-dsl-mastery": "workspace:*",
     "@finos/legend-extension-dsl-persistence": "workspace:*",
     "@finos/legend-extension-dsl-persistence-cloud": "workspace:*",
+    "@finos/legend-extension-dsl-service": "workspace:*",
     "@finos/legend-extension-dsl-text": "workspace:*",
-    "@finos/legend-extension-external-format-json-schema": "workspace:*",
-    "@finos/legend-extension-external-language-morphir": "workspace:*",
-    "@finos/legend-extension-external-store-service": "workspace:*",
+    "@finos/legend-extension-format-json-schema": "workspace:*",
+    "@finos/legend-extension-format-morphir": "workspace:*",
+    "@finos/legend-extension-store-service-store": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@types/react": "18.0.18",
+    "@types/react": "18.0.25",
     "react": "18.2.0"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.23.0",
+    "eslint": "8.27.0",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.54.8",
-    "typescript": "4.8.2"
+    "sass": "1.56.0",
+    "typescript": "4.8.4"
   },
   "publishConfig": {
     "directory": "build/publishContent"

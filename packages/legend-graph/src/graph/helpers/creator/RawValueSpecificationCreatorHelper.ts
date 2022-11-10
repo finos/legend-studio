@@ -23,9 +23,7 @@ import { RawVariableExpression } from '../../metamodel/pure/rawValueSpecificatio
 export const stub_RawVariableExpression = (type: Type): RawVariableExpression =>
   new RawVariableExpression(
     '',
-    // NOTE: this multiplicity is subjected to change so we cannot pass
-    // the one from the graph typical multiplicity index
-    new Multiplicity(1, 1),
+    Multiplicity.ONE,
     PackageableElementExplicitReference.create(type),
   );
 

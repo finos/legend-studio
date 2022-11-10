@@ -1,5 +1,29 @@
 # @finos/legend-server-sdlc
 
+## 4.1.4
+
+## 4.1.3
+
+## 4.1.2
+
+## 4.1.1
+
+## 4.1.0
+
+### Minor Changes
+
+- [#1514](https://github.com/finos/legend-studio/pull/1514) [`34c29c4e`](https://github.com/finos/legend-studio/commit/34c29c4e6d0f04d3f57c42528a8cb16d05261434) ([@xannem](https://github.com/xannem)) - Support configuring project platforms [#1505](https://github.com/finos/legend-studio/issues/1505)
+
+## 4.0.17
+
+## 4.0.16
+
+## 4.0.15
+
+## 4.0.14
+
+## 4.0.13
+
 ## 4.0.12
 
 ## 4.0.11

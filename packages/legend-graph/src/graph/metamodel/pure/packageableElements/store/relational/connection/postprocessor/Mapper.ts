@@ -15,7 +15,7 @@
  */
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../graph/Core_HashUtils.js';
-import { type Hashable, hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
 
 export class PostProcessorParameter {}
 
@@ -23,6 +23,8 @@ export abstract class Mapper
   extends PostProcessorParameter
   implements Hashable
 {
+  readonly _UUID = uuid();
+
   from: string;
   to: string;
 

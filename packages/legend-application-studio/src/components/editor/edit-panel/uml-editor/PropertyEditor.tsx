@@ -21,10 +21,11 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import {
   clsx,
   LockIcon,
+  PanelContent,
   PanelDropZone,
   PlusIcon,
   TimesIcon,
@@ -56,7 +57,7 @@ import {
   annotatedElement_addTaggedValue,
   annotatedElement_addStereotype,
   annotatedElement_deleteStereotype,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 
 export const PropertyEditor = observer(
   (props: {
@@ -183,7 +184,7 @@ export const PropertyEditor = observer(
                 className="panel__header__action"
                 onClick={deselectProperty}
                 tabIndex={-1}
-                title={'Close'}
+                title="Close"
               >
                 <TimesIcon />
               </button>
@@ -215,7 +216,7 @@ export const PropertyEditor = observer(
               </button>
             </div>
           </div>
-          <div className="panel__content">
+          <PanelContent>
             {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
               <PanelDropZone
                 isDragOver={isTaggedValueDragOver && !isReadOnly}
@@ -254,7 +255,7 @@ export const PropertyEditor = observer(
                 </div>
               </PanelDropZone>
             )}
-          </div>
+          </PanelContent>
         </div>
       </div>
     );

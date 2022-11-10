@@ -18,6 +18,7 @@ import {
   BusinessTimeIcon,
   DatabaseIcon,
   FileCodeIcon,
+  FunctionIcon,
   LayerGroupIcon,
   LinkIcon,
   MapIcon,
@@ -70,7 +71,9 @@ export const PURE_ProfileIcon: React.FC = () => (
 );
 
 export const PURE_FunctionIcon: React.FC = () => (
-  <div className="icon icon--function color--function">(x)</div>
+  <div className="icon icon--function color--function">
+    <FunctionIcon />
+  </div>
 );
 
 export const PURE_FlatDataStoreIcon: React.FC = () => (

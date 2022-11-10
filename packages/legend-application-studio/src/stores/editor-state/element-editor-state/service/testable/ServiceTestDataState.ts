@@ -51,11 +51,11 @@ import type { EditorStore } from '../../../../EditorStore.js';
 import {
   service_addConnectionTestData,
   service_setConnectionTestDataEmbeddedData,
-} from '../../../../graphModifier/DSLService_GraphModifierHelper.js';
+} from '../../../../shared/modifier/DSL_Service_GraphModifierHelper.js';
 import {
   createMockEnumerationProperty,
   createMockPrimitiveProperty,
-} from '../../../../shared/MockDataUtil.js';
+} from '../../../../shared/MockDataUtils.js';
 import {
   createRelationalDataFromCSV,
   EmbeddedDataConnectionTypeVisitor,
@@ -206,13 +206,17 @@ export class ConnectionTestDataState {
 }
 
 export class NewConnectionDataState {
+  readonly editorStore: EditorStore;
   readonly testSuiteState: ServiceTestDataState;
   showModal = false;
   connection: IdentifiedConnection | undefined;
   embeddedDataType: EmbeddedDataTypeOption | undefined;
   dataElement: DataElement | undefined;
 
-  constructor(suite: ServiceTestDataState) {
+  constructor(
+    editorStore: EditorStore,
+    serviceTestDataState: ServiceTestDataState,
+  ) {
     makeObservable(this, {
       showModal: observable,
       connection: observable,
@@ -224,8 +228,10 @@ export class NewConnectionDataState {
       handleConnectionChange: action,
       setDataElement: action,
     });
-    this.testSuiteState = suite;
-    this.dataElement = this.testSuiteState.editorStore.dataOptions[0]?.value;
+
+    this.editorStore = editorStore;
+    this.testSuiteState = serviceTestDataState;
+    this.dataElement = editorStore.graphManagerState.usableDataElements[0];
   }
 
   setModal(val: boolean): void {
@@ -303,6 +309,7 @@ export class ServiceTestDataState {
       newConnectionDataState: observable,
       selectedDataState: observable,
     });
+
     this.testData = testData;
     this.testSuiteState = testSuiteState;
     this.editorStore = testSuiteState.editorStore;
@@ -315,7 +322,10 @@ export class ServiceTestDataState {
         connectionData,
       );
     }
-    this.newConnectionDataState = new NewConnectionDataState(this);
+    this.newConnectionDataState = new NewConnectionDataState(
+      this.editorStore,
+      this,
+    );
   }
 
   createConnectionTestData(): void {

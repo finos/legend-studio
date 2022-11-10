@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { jest } from '@jest/globals';
 import { createMemoryHistory } from 'history';
 import { ApplicationStore } from '../stores/ApplicationStore.js';
 import { WebApplicationNavigator } from '../stores/WebApplicationNavigator.js';
@@ -22,6 +21,7 @@ import type { LegendApplicationConfig } from '../application/LegendApplicationCo
 import { ApplicationStoreProvider } from './ApplicationStoreProvider.js';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';
+import { createMock } from '@finos/legend-shared';
 
 export const TEST__ApplicationStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -35,10 +35,10 @@ export const TEST__ApplicationStoreProvider: React.FC<{
 
 export const TEST__provideMockedApplicationStore = <
   T extends LegendApplicationConfig,
-  V extends LegendApplicationPlugin,
+  V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
 >(
   config: T,
-  pluginManager: LegendApplicationPluginManager<V>,
+  pluginManager: V,
   customization?: {
     mock?: ApplicationStore<T, V>;
     navigator?: WebApplicationNavigator;
@@ -53,7 +53,7 @@ export const TEST__provideMockedApplicationStore = <
       pluginManager,
     );
   const MockedApplicationStoreProvider = require('./ApplicationStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedApplicationStoreProvider.useApplicationStore = jest.fn();
+  MockedApplicationStoreProvider.useApplicationStore = createMock();
   MockedApplicationStoreProvider.useApplicationStore.mockReturnValue(value);
   return value;
 };

@@ -42,15 +42,15 @@ import {
   getRawGenericType,
 } from '@finos/legend-graph';
 import { action, makeObservable, observable } from 'mobx';
-import type { Diagram } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
-import { Rectangle } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle.js';
-import { Point } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
-import { PositionedRectangle } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle.js';
-import { ClassView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
-import type { PropertyHolderView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_PropertyHolderView.js';
-import { GeneralizationView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_GeneralizationView.js';
-import { RelationshipView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_RelationshipView.js';
-import { PropertyView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_PropertyView.js';
+import type { Diagram } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
+import { Rectangle } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Rectangle.js';
+import { Point } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Point.js';
+import { PositionedRectangle } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_PositionedRectangle.js';
+import { ClassView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_ClassView.js';
+import type { PropertyHolderView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_PropertyHolderView.js';
+import { GeneralizationView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_GeneralizationView.js';
+import { RelationshipView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_RelationshipView.js';
+import { PropertyView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_PropertyView.js';
 import {
   boxContains,
   buildBottomRightCornerBox,
@@ -58,8 +58,8 @@ import {
   getElementPosition,
   rotatePointX,
   rotatePointY,
-} from './graph/helpers/DSLDiagram_Helper.js';
-import { AssociationView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_AssociationView.js';
+} from './graph/helpers/DSL_Diagram_Helper.js';
+import { AssociationView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_AssociationView.js';
 import {
   class_addProperty,
   class_addSuperType,
@@ -88,7 +88,8 @@ import {
   relationshipView_changePoint,
   relationshipView_simplifyPath,
   relationshipView_setPath,
-} from './stores/studio/DSLDiagram_GraphModifierHelper.js';
+} from './stores/studio/DSL_Diagram_GraphModifierHelper.js';
+import { forceDispatchKeyboardEvent } from '@finos/legend-application';
 
 export enum DIAGRAM_INTERACTION_MODE {
   LAYOUT,
@@ -559,7 +560,7 @@ export class DiagramRenderer {
   }
 
   autoRecenter(): void {
-    this.recenter(
+    this.center(
       this.virtualScreen.position.x + this.virtualScreen.rectangle.width / 2,
       this.virtualScreen.position.y + this.virtualScreen.rectangle.height / 2,
     );
@@ -568,7 +569,7 @@ export class DiagramRenderer {
   /**
    * Reset the screen offset
    */
-  private recenter(x: number, y: number): void {
+  private center(x: number, y: number): void {
     this.screenOffset = new Point(
       -x + this.canvasCenter.x,
       -y + this.canvasCenter.y,
@@ -663,7 +664,7 @@ export class DiagramRenderer {
           ): PropertyView | undefined => {
             const property = new Property(
               `property_${startClassView.class.value.properties.length + 1}`,
-              new Multiplicity(1, 1),
+              Multiplicity.ONE,
               GenericTypeExplicitReference.create(
                 new GenericType(targetClassView.class.value),
               ),
@@ -2292,7 +2293,109 @@ export class DiagramRenderer {
     });
   }
 
+  // -------------------------------- Actions ------------------------------
+
+  recenter(): void {
+    if (this.selectedClasses.length !== 0) {
+      const firstClass = getNullableFirstElement(this.selectedClasses);
+      if (firstClass) {
+        this.center(
+          firstClass.position.x + firstClass.rectangle.width / 2,
+          firstClass.position.y + firstClass.rectangle.height / 2,
+        );
+      }
+    } else {
+      this.autoRecenter();
+    }
+  }
+
+  switchToZoomMode(): void {
+    this.changeMode(
+      this.interactionMode !== DIAGRAM_INTERACTION_MODE.ZOOM_IN
+        ? DIAGRAM_INTERACTION_MODE.ZOOM_IN
+        : DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
+      DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+    );
+  }
+
+  switchToViewMode(): void {
+    this.changeMode(
+      DIAGRAM_INTERACTION_MODE.LAYOUT,
+      DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+    );
+  }
+
+  switchToPanMode(): void {
+    this.changeMode(
+      DIAGRAM_INTERACTION_MODE.PAN,
+      DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+    );
+  }
+
+  switchToAddPropertyMode(): void {
+    if (!this.isReadOnly) {
+      this.changeMode(
+        DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
+      );
+    }
+  }
+
+  switchToAddInheritanceMode(): void {
+    if (!this.isReadOnly) {
+      this.changeMode(
+        DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
+      );
+    }
+  }
+
+  switchToAddClassMode(): void {
+    if (!this.isReadOnly) {
+      this.changeMode(
+        DIAGRAM_INTERACTION_MODE.ADD_CLASS,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+      );
+    }
+  }
+
+  ejectProperty(): void {
+    if (!this.isReadOnly) {
+      if (this.mouseOverClassProperty) {
+        if (
+          this.mouseOverClassProperty.genericType.value.rawType instanceof Class
+        ) {
+          this.addClassView(
+            this.mouseOverClassProperty.genericType.value.rawType,
+            this.canvasCoordinateToModelCoordinate(
+              this.eventCoordinateToCanvasCoordinate(
+                new Point(this.cursorPosition.x, this.cursorPosition.y),
+              ),
+            ),
+          );
+        }
+      } else if (this.selectedClassProperty) {
+        if (
+          this.selectedClassProperty.property.genericType.value
+            .rawType instanceof Class
+        ) {
+          this.addClassView(
+            this.selectedClassProperty.property.genericType.value.rawType,
+            this.selectedClassProperty.selectionPoint,
+          );
+        }
+        this.selectedClassProperty = undefined;
+      }
+    }
+  }
+
+  // --------------------------------- Event handler --------------------------
+
   keydown(e: KeyboardEvent): void {
+    // NOTE: Since <canvas> element does not bubble `keydown` event naturally, we will
+    // manually do this in order to take advantage of application keyboard shortcuts service
+    forceDispatchKeyboardEvent(e);
+
     // Remove selected view(s)
     if ('Delete' === e.key) {
       if (!this.isReadOnly) {
@@ -2357,7 +2460,7 @@ export class DiagramRenderer {
             );
           }
         }
-        this.selectedClasses = [];
+        this.setSelectedClasses([]);
         this.drawScreen();
       }
     }
@@ -2387,72 +2490,6 @@ export class DiagramRenderer {
         e.preventDefault();
       } else if (this.selectedClasses.length === 1) {
         this.handleEditClassView(this.selectedClasses[0] as ClassView);
-      }
-    }
-
-    // Recenter
-    else if ('r' === e.key) {
-      if (this.selectedClasses.length !== 0) {
-        const firstClass = getNullableFirstElement(this.selectedClasses);
-        if (firstClass) {
-          this.recenter(
-            firstClass.position.x + firstClass.rectangle.width / 2,
-            firstClass.position.y + firstClass.rectangle.height / 2,
-          );
-        }
-      } else {
-        this.autoRecenter();
-      }
-    }
-    // Zoom
-    else if ('z' === e.key) {
-      this.changeMode(
-        this.interactionMode !== DIAGRAM_INTERACTION_MODE.ZOOM_IN
-          ? DIAGRAM_INTERACTION_MODE.ZOOM_IN
-          : DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
-        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-      );
-    }
-
-    // Use View Tool
-    else if ('v' === e.key) {
-      this.changeMode(
-        DIAGRAM_INTERACTION_MODE.LAYOUT,
-        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-      );
-    }
-    // Use Pan Tool
-    else if ('m' === e.key) {
-      this.changeMode(
-        DIAGRAM_INTERACTION_MODE.PAN,
-        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-      );
-    }
-    // Use Property Tool
-    else if ('p' === e.key) {
-      if (!this.isReadOnly) {
-        this.changeMode(
-          DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
-          DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
-        );
-      }
-    }
-    // Use Inheritance Tool
-    else if ('i' === e.key) {
-      if (!this.isReadOnly) {
-        this.changeMode(
-          DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
-          DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
-        );
-      }
-    }
-    // Add Class
-    else if ('c' === e.key) {
-      if (!this.isReadOnly) {
-        this.changeMode(
-          DIAGRAM_INTERACTION_MODE.ADD_CLASS,
-          DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-        );
       }
     }
 
@@ -2497,38 +2534,6 @@ export class DiagramRenderer {
     else if (e.altKey && 'ArrowDown' === e.code) {
       if (!this.isReadOnly && this.selectedClasses.length === 1) {
         this.handleAddSimpleProperty(this.selectedClasses[0] as ClassView);
-      }
-    }
-
-    // Eject the property
-    else if ('ArrowRight' === e.key) {
-      if (!this.isReadOnly) {
-        if (this.mouseOverClassProperty) {
-          if (
-            this.mouseOverClassProperty.genericType.value.rawType instanceof
-            Class
-          ) {
-            this.addClassView(
-              this.mouseOverClassProperty.genericType.value.rawType,
-              this.canvasCoordinateToModelCoordinate(
-                this.eventCoordinateToCanvasCoordinate(
-                  new Point(this.cursorPosition.x, this.cursorPosition.y),
-                ),
-              ),
-            );
-          }
-        } else if (this.selectedClassProperty) {
-          if (
-            this.selectedClassProperty.property.genericType.value
-              .rawType instanceof Class
-          ) {
-            this.addClassView(
-              this.selectedClassProperty.property.genericType.value.rawType,
-              this.selectedClassProperty.selectionPoint,
-            );
-          }
-          this.selectedClassProperty = undefined;
-        }
       }
     }
 
@@ -3435,6 +3440,8 @@ export class DiagramRenderer {
     }
     return [];
   }
+
+  // --------------------------------------- Extension -----------------------------------
 
   layoutTaxonomy(
     classViewLevels: ClassView[][],

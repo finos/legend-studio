@@ -16,6 +16,7 @@
 
 import { configure as configureMobx } from 'mobx';
 import { editor as monacoEditorAPI } from 'monaco-editor';
+import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { MONOSPACED_FONT_FAMILY } from '../const.js';
 import type {
   LegendApplicationConfig,
@@ -31,6 +32,7 @@ import {
   assertNonNullable,
   NetworkClient,
   type Writable,
+  type ExtensionsConfigurationData,
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../stores/ApplicationEvent.js';
 import { configureComponents } from '@finos/legend-art';
@@ -131,6 +133,13 @@ export const setupLegendApplicationUILibrary = async (
     enforceActions: 'observed',
   });
 
+  configureReactHotkeys({
+    // By default, `react-hotkeys` will avoid capturing keys from input tags like <input>, <textarea>, <select>
+    // We want to listen to hotkey from every where in the app so we disable that
+    // See https://github.com/greena13/react-hotkeys#ignoring-events
+    ignoreTags: [],
+  });
+
   configureComponents();
 };
 
@@ -210,7 +219,7 @@ export abstract class LegendApplication {
 
   async fetchApplicationConfiguration(
     baseUrl: string,
-  ): Promise<[LegendApplicationConfig, Record<PropertyKey, object>]> {
+  ): Promise<[LegendApplicationConfig, ExtensionsConfigurationData]> {
     const client = new NetworkClient();
 
     // app config
@@ -252,7 +261,7 @@ export abstract class LegendApplication {
         versionData,
         baseUrl,
       }),
-      (configData.extensions ?? {}) as Record<PropertyKey, object>,
+      configData.extensions ?? {},
     ];
   }
 

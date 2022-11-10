@@ -21,7 +21,8 @@ export * from './application/LegendApplication.js';
 export * from './components/ApplicationStoreProvider.js';
 export * from './components/WebApplicationNavigatorProvider.js';
 export * from './components/LegendApplicationComponentFrameworkProvider.js';
-export * from './components/ApplicationNavigationContextServiceUtils.js';
+export * from './components/useApplicationNavigationContext.js';
+export * from './components/useCommands.js';
 export * from './components/ApplicationStoreProviderTestUtils.js';
 export * from './components/WebApplicationNavigatorProviderTestUtils.js';
 // TODO: consider moving this to `LegendApplicationComponentFrameworkProvider`
@@ -34,25 +35,29 @@ export * from './stores/ApplicationEvent.js';
 export * from './application/LegendApplicationConfig.js';
 export { WebApplicationNavigator } from './stores/WebApplicationNavigator.js';
 export * from './stores/DocumentationService.js';
+export * from './stores/CommandCenter.js';
 export * from './stores/EventService.js';
 export * from './stores/AssistantService.js';
 export * from './stores/ApplicationNavigationContextService.js';
 export * from './stores/LegendApplicationPlugin.js';
 
+export * from './components/shared/TextSearchAdvancedConfigMenu.js';
+export * from './stores/shared/TextSearchAdvancedConfigState.js';
+export * from './stores/LegendApplicationDocumentation.js';
+
 export * from './stores/ApplicationStoreTestUtils.js';
+export * from './stores/WebApplicationRouter.js';
 
 // ------------------------------------------- Shared components -------------------------------------------
 
 export * from './components/shared/DocumentationLink.js';
 export * from './components/shared/TextInputEditor.js';
-export * from './components/shared/LambdaEditor.js';
-export * from './components/shared/BasicValueSpecificationEditor.js';
-export * from './components/shared/LambdaParameterValuesEditor.js';
-export * from './components/shared/PackageableElementOptionRenderer.js';
-export * from './components/shared/execution-plan-viewer/ExecutionPlanViewer.js';
+export * from './components/shared/PackageableElementOptionLabel.js';
 
-export { LambdaEditorState } from './stores/shared/LambdaEditorState.js';
 export * from './stores/shared/PackageableElementOption.js';
-export * from './stores/shared/LambdaParameterState.js';
-export * from './stores/shared/ValueSpecificationModifierHelper.js';
-export * from './stores/shared/ExecutionPlanState.js';
+
+/**
+ * @modularize
+ */
+export * from './components/execution-plan-viewer/ExecutionPlanViewer.js';
+export * from './stores/ExecutionPlanState.js';

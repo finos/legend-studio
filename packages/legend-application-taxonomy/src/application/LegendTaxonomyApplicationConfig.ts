@@ -46,22 +46,24 @@ export class TaxonomyTreeOption {
   );
 }
 
+type LegendStudioApplicationInstanceConfigurationData = {
+  sdlcProjectIDPrefix: string;
+  url: string;
+};
+
 export interface LegendTaxonomyApplicationConfigurationData
   extends LegendApplicationConfigurationData {
   appName: string;
   env: string;
   depot: {
     url: string;
-    /**
-     * This is needed since some of our legacy infrastructure does not yet support
-     * the new API calls, we need to update them to use the latest version of
-     * finos/legend-depot though
-     */
-    TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean;
   };
   engine: { url: string; queryUrl?: string };
   query: { url: string };
-  studio: { url: string };
+  studio: {
+    url: string;
+    instances: LegendStudioApplicationInstanceConfigurationData[];
+  };
   taxonomy: PlainObject<TaxonomyTreeOption>[];
 }
 
@@ -71,7 +73,8 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
   readonly depotServerUrl: string;
   readonly queryUrl: string;
   readonly studioUrl: string;
-  readonly TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean | undefined;
+  readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
+    [];
 
   currentTaxonomyTreeOption!: TaxonomyTreeOption;
   taxonomyTreeOptions: TaxonomyTreeOption[] = [];
@@ -87,6 +90,7 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
       setCurrentTaxonomyTreeOption: action,
     });
 
+    // taxonomy
     assertNonNullable(
       input.configData.taxonomy,
       `Can't configure application: 'taxonomy' field is missing`,
@@ -127,11 +131,7 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
     }
     this.currentTaxonomyTreeOption = this.defaultTaxonomyTreeOption;
 
-    assertNonNullable(
-      input.configData.engine,
-      `Can't configure application: 'engine' field is missing`,
-    );
-
+    // engine
     assertNonNullable(
       input.configData.engine,
       `Can't configure application: 'engine' field is missing`,
@@ -141,20 +141,40 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
       `Can't configure application: 'engine.url' field is missing or empty`,
     );
     this.engineQueryServerUrl = input.configData.engine.queryUrl;
+
+    // depot
+    assertNonNullable(
+      input.configData.depot,
+      `Can't configure application: 'depot' field is missing`,
+    );
     this.depotServerUrl = guaranteeNonEmptyString(
       input.configData.depot.url,
       `Can't configure application: 'depot.url' field is missing or empty`,
+    );
+
+    // query
+    assertNonNullable(
+      input.configData.query,
+      `Can't configure application: 'query' field is missing`,
     );
     this.queryUrl = guaranteeNonEmptyString(
       input.configData.query.url,
       `Can't configure application: 'query.url' field is missing or empty`,
     );
+
+    // studio
+    assertNonNullable(
+      input.configData.studio,
+      `Can't configure application: 'studio' field is missing`,
+    );
     this.studioUrl = guaranteeNonEmptyString(
       input.configData.studio.url,
       `Can't configure application: 'studio.url' field is missing or empty`,
     );
-    this.TEMPORARY__useLegacyDepotServerAPIRoutes =
-      input.configData.depot.TEMPORARY__useLegacyDepotServerAPIRoutes;
+    this.studioInstances = guaranteeNonNullable(
+      input.configData.studio.instances,
+      `Can't configure application: 'studio.instances' field is missing`,
+    );
   }
 
   get defaultTaxonomyTreeOption(): TaxonomyTreeOption {

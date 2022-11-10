@@ -24,6 +24,7 @@ import {
 } from '@finos/legend-graph';
 import {
   editor as monacoEditorAPI,
+  KeyCode,
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
 import { EDITOR_LANGUAGE, EDITOR_THEME } from '../const.js';
@@ -124,10 +125,7 @@ const generateLanguageMonarch = (
       PURE_ELEMENT_NAME.MEASURE,
       PURE_ELEMENT_NAME.PROFILE,
       PURE_ELEMENT_NAME.FUNCTION,
-      PURE_ELEMENT_NAME.FLAT_DATA,
-      PURE_ELEMENT_NAME.DATABASE,
       PURE_ELEMENT_NAME.MAPPING,
-      PURE_ELEMENT_NAME.SERVICE,
       PURE_ELEMENT_NAME.RUNTIME,
       PURE_ELEMENT_NAME.CONNECTION,
       PURE_ELEMENT_NAME.FILE_GENERATION,
@@ -148,6 +146,9 @@ const generateLanguageMonarch = (
        * @modularize
        * See https://github.com/finos/legend-studio/issues/65
        */
+      PURE_ELEMENT_NAME.SERVICE,
+      PURE_ELEMENT_NAME.FLAT_DATA,
+      PURE_ELEMENT_NAME.DATABASE,
       PURE_CONNECTION_NAME.FLAT_DATA_CONNECTION,
       PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
       'Relational',
@@ -357,6 +358,25 @@ export const setupPureLanguageService = (
 ): void => {
   // register Pure language in `monaco-editor`
   monacoEditorAPI.defineTheme(EDITOR_THEME.LEGEND, theme);
+  // Override `monaco-editor` native hotkeys
+  // See https://github.com/microsoft/monaco-editor/issues/102#issuecomment-1282897640
+  monacoEditorAPI.addKeybindingRules([
+    {
+      // disable show command center
+      keybinding: KeyCode.F1,
+      command: null,
+    },
+    {
+      // disable show error command
+      keybinding: KeyCode.F8,
+      command: null,
+    },
+    {
+      // disable toggle debugger breakpoint
+      keybinding: KeyCode.F9,
+      command: null,
+    },
+  ]);
   monacoLanguagesAPI.register({ id: EDITOR_LANGUAGE.PURE });
   monacoLanguagesAPI.setLanguageConfiguration(
     EDITOR_LANGUAGE.PURE,

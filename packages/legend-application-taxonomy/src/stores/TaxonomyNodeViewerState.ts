@@ -17,11 +17,14 @@
 import {
   type DataSpaceAnalysisResult,
   DataSpaceViewerState,
-  getDSLDataSpaceGraphManagerExtension,
+  DSL_DataSpace_getGraphManagerExtension,
+  retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
-import type { Entity } from '@finos/legend-storage';
-import { ProjectData } from '@finos/legend-server-depot';
+import {
+  ProjectData,
+  retrieveProjectEntitiesWithDependencies,
+} from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -36,15 +39,16 @@ import {
   flowResult,
   computed,
 } from 'mobx';
-import {
-  generateDataSpaceQueryEditorUrl,
-  generateStudioProjectViewUrl,
-} from './LegendTaxonomyRouter.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl } from './LegendTaxonomyRouter.js';
 import type {
   DataSpaceTaxonomyContext,
   TaxonomyExplorerStore,
   TaxonomyTreeNodeData,
 } from './TaxonomyExplorerStore.js';
+import {
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
+} from './LegendTaxonomyDataSpaceViewerHelper.js';
 
 interface TaxonomyNodeDataSpaceOption {
   label: string;
@@ -59,9 +63,10 @@ export const buildTaxonomyNodeDataSpaceOption = (
 });
 
 export class TaxonomyNodeViewerState {
-  explorerStore: TaxonomyExplorerStore;
-  taxonomyNode: TaxonomyTreeNodeData;
-  initDataSpaceViewerState = ActionState.create();
+  readonly explorerStore: TaxonomyExplorerStore;
+  readonly taxonomyNode: TaxonomyTreeNodeData;
+  readonly initDataSpaceViewerState = ActionState.create();
+
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
   currentDataSpace?: DataSpaceTaxonomyContext | undefined;
   dataSpaceSearchText = '';
@@ -121,55 +126,40 @@ export class TaxonomyNodeViewerState {
           this.explorerStore.depotServerClient.getProject(groupId, artifactId),
         )) as PlainObject<ProjectData>,
       );
-
-      // fetch entities
-      this.initDataSpaceViewerState.setMessage(`Fetching entities...`);
-      const entities = (yield this.explorerStore.depotServerClient.getEntities(
-        project,
-        versionId,
-      )) as Entity[];
-
-      // fetch dependencies
-      this.initDataSpaceViewerState.setMessage(`Fetching dependencies...`);
-      const dependencyEntitiesIndex = (yield flowResult(
-        this.explorerStore.depotServerClient.getIndexedDependencyEntities(
-          project,
-          versionId,
-        ),
-      )) as Map<string, Entity[]>;
-
       // analyze data space
-      this.initDataSpaceViewerState.setMessage(`Analyzing data space...`);
-      const analysisResult = (yield getDSLDataSpaceGraphManagerExtension(
+      const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
         this.explorerStore.graphManagerState.graphManager,
       ).analyzeDataSpace(
         dataSpaceTaxonomyContext.path,
-        entities,
-        dependencyEntitiesIndex,
+        () =>
+          retrieveProjectEntitiesWithDependencies(
+            project,
+            versionId,
+            this.explorerStore.depotServerClient,
+          ),
+        () =>
+          retrieveAnalyticsResultCache(
+            project,
+            versionId,
+            dataSpaceTaxonomyContext.path,
+            this.explorerStore.depotServerClient,
+          ),
+        this.initDataSpaceViewerState,
       )) as DataSpaceAnalysisResult;
-
       const dataSpaceViewerState = new DataSpaceViewerState(
+        this.explorerStore.applicationStore,
         dataSpaceTaxonomyContext.groupId,
         dataSpaceTaxonomyContext.artifactId,
         dataSpaceTaxonomyContext.versionId,
         analysisResult,
         {
-          viewProject: (
-            _groupId: string,
-            _artifactId: string,
-            _versionId: string,
-            entityPath: string | undefined,
-          ): void => {
-            this.explorerStore.applicationStore.navigator.openNewWindow(
-              generateStudioProjectViewUrl(
-                this.explorerStore.applicationStore.config.studioUrl,
-                _groupId,
-                _artifactId,
-                _versionId,
-                entityPath,
-              ),
-            );
-          },
+          viewProject: createViewProjectHandler(
+            this.explorerStore.applicationStore,
+          ),
+          viewSDLCProject: createViewSDLCProjectHandler(
+            this.explorerStore.applicationStore,
+            this.explorerStore.depotServerClient,
+          ),
           onDiagramClassDoubleClick: (classView: ClassView): void =>
             this.queryDataSpace(classView.class.value.path),
         },
@@ -187,8 +177,8 @@ export class TaxonomyNodeViewerState {
 
   queryDataSpace(classPath?: string | undefined): void {
     if (this.dataSpaceViewerState) {
-      this.explorerStore.applicationStore.navigator.openNewWindow(
-        generateDataSpaceQueryEditorUrl(
+      this.explorerStore.applicationStore.navigator.visitAddress(
+        EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
           this.explorerStore.applicationStore.config.queryUrl,
           this.dataSpaceViewerState.groupId,
           this.dataSpaceViewerState.artifactId,

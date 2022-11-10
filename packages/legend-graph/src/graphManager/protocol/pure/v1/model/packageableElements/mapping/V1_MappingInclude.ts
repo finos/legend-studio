@@ -16,22 +16,16 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
-import { ELEMENT_PATH_DELIMITER } from '../../../../../../../graph/MetaModelConst.js';
 
 export class V1_MappingInclude implements Hashable {
-  includedMapping?: string | undefined;
-  // TODO: the below two are for backward compatability
-  includedMappingName?: string | undefined;
-  includedMappingPackage?: string | undefined;
+  includedMapping!: string;
   sourceDatabasePath?: string | undefined;
   targetDatabasePath?: string | undefined;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING_INCLUDE,
-      this.includedMapping
-        ? this.includedMapping
-        : `${this.includedMappingPackage}${ELEMENT_PATH_DELIMITER}${this.includedMappingName}`,
+      this.includedMapping,
       this.sourceDatabasePath ?? '',
       this.targetDatabasePath ?? '',
     ]);

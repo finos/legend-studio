@@ -149,7 +149,8 @@ export const WorkspaceReviewPanel = observer(() => {
         </div>
         <div className="workspace-review-panel__header__actions">
           <DropdownMenu
-            className="workspace-review-panel__element-view"
+            className="workspace-review-panel__element-view__type"
+            title="View as..."
             content={
               <div className="workspace-review-panel__element-view__options">
                 <div
@@ -171,14 +172,9 @@ export const WorkspaceReviewPanel = observer(() => {
               transformOrigin: { vertical: 'top', horizontal: 'right' },
             }}
           >
-            <button
-              className="workspace-review-panel__element-view__type"
-              title="View as..."
-            >
-              <div className="workspace-review-panel__element-view__type__label">
-                {currentEditorState.diffMode}
-              </div>
-            </button>
+            <div className="workspace-review-panel__element-view__type__label">
+              {currentEditorState.diffMode}
+            </div>
           </DropdownMenu>
         </div>
       </ContextMenu>

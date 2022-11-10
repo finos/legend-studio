@@ -33,10 +33,11 @@ import {
   ActionState,
   assertErrorThrown,
   ContentType,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
-import { externalFormatData_setData } from '../../../graphModifier/DSLData_GraphModifierHelper.js';
+import { externalFormatData_setData } from '../../../shared/modifier/DSL_Data_GraphModifierHelper.js';
 import {
   getTestableResultFromAssertionStatus,
   TESTABLE_RESULT,
@@ -245,7 +246,7 @@ export class EqualToJsonAssertionState extends TestAssertionState {
 
 export class UnsupportedAssertionState extends TestAssertionState {
   generateBare(): TestAssertion {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   generateExpected(status: AssertFail): void {
     return;

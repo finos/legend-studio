@@ -22,31 +22,25 @@ import {
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
   type LegendApplicationConfigurationInput,
+  BrowserRouter,
 } from '@finos/legend-application';
-import { configure as configureReactHotkeys } from 'react-hotkeys';
-import { ModuleRegistry as agGrid_ModuleRegistry } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { BrowserRouter } from 'react-router-dom';
 import { LegendQueryApplication } from '../components/LegendQueryApplication.js';
 import { LegendQueryPluginManager } from './LegendQueryPluginManager.js';
-import { QueryBuilder_GraphManagerPreset } from '../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { getRootElement } from '@finos/legend-art';
-import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
+import { Core_PureGraphManagerPlugin } from '@finos/legend-graph';
 import {
   type LegendQueryApplicationConfigurationData,
   LegendQueryApplicationConfig,
 } from './LegendQueryApplicationConfig.js';
+import {
+  QueryBuilder_GraphManagerPreset,
+  QueryBuilder_LegendApplicationPlugin,
+  setupQueryBuilderUILibrary,
+} from '@finos/legend-query-builder';
+import { Core_LegendQueryApplicationPlugin } from '../components/Core_LegendQueryApplicationPlugin.js';
 
 export const setupLegendQueryUILibrary = async (): Promise<void> => {
-  // Register module extensions for `ag-grid`
-  agGrid_ModuleRegistry.registerModules([ClientSideRowModelModule]);
-
-  configureReactHotkeys({
-    // By default, `react-hotkeys` will avoid capturing keys from input tags like <input>, <textarea>, <select>
-    // We want to listen to hotkey from every where in the app so we disable that
-    // See https://github.com/greena13/react-hotkeys#ignoring-events
-    ignoreTags: [],
-  });
+  await setupQueryBuilderUILibrary();
 };
 
 export class LegendQuery extends LegendApplication {
@@ -55,8 +49,12 @@ export class LegendQuery extends LegendApplication {
 
   static create(): LegendQuery {
     const application = new LegendQuery(LegendQueryPluginManager.create());
-    application.withBasePlugins([new CorePureGraphManagerPlugin()]);
     application.withBasePresets([new QueryBuilder_GraphManagerPreset()]);
+    application.withBasePlugins([
+      new Core_PureGraphManagerPlugin(),
+      new Core_LegendQueryApplicationPlugin(),
+      new QueryBuilder_LegendApplicationPlugin(),
+    ]);
     return application;
   }
 
@@ -80,10 +78,7 @@ export class LegendQuery extends LegendApplication {
             config={this.config}
             pluginManager={this.pluginManager}
           >
-            <LegendQueryApplication
-              config={this.config}
-              pluginManager={this.pluginManager}
-            />
+            <LegendQueryApplication config={this.config} />
           </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,

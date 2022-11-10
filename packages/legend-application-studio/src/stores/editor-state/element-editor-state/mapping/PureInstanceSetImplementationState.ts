@@ -39,8 +39,8 @@ import {
   stub_RawLambda,
   isStubbed_RawLambda,
 } from '@finos/legend-graph';
-import { LambdaEditorState } from '@finos/legend-application';
-import { pureInstanceSetImpl_setMappingFilter } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
+import { pureInstanceSetImpl_setMappingFilter } from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export class PurePropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -178,7 +178,6 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
-        GRAPH_MANAGER_EVENT;
       }
     } else {
       this.clearErrors();
@@ -207,7 +206,6 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
-        GRAPH_MANAGER_EVENT;
       }
     } else {
       this.clearErrors();
@@ -315,7 +313,6 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
-        GRAPH_MANAGER_EVENT;
       } finally {
         this.isConvertingTransformLambdaObjects = false;
       }
@@ -340,7 +337,6 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
-        GRAPH_MANAGER_EVENT;
       } finally {
         this.isConvertingTransformLambdaObjects = false;
       }

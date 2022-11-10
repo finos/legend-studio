@@ -21,7 +21,7 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import {
   clsx,
   CustomSelectorInput,
@@ -31,7 +31,7 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   BlankPanelContent,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   InputWithInlineValidation,
   LockIcon,
   PlusIcon,
@@ -45,6 +45,7 @@ import {
   DragPreviewLayer,
   useDragPreviewLayer,
   PanelDropZone,
+  Panel,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { PropertyEditor } from './PropertyEditor.js';
@@ -68,12 +69,10 @@ import {
   type Constraint,
   type Property,
   type DerivedProperty,
-  PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
   Class,
   GenericType,
   Profile,
-  Multiplicity,
   Type,
   PrimitiveType,
   Unit,
@@ -93,9 +92,9 @@ import {
   getAllClassDerivedProperties,
   isElementReadOnly,
 } from '@finos/legend-graph';
-import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import {
   ApplicationNavigationContextData,
+  buildElementOption,
   getPackageableElementOptionFormatter,
   useApplicationNavigationContext,
   useApplicationStore,
@@ -127,12 +126,13 @@ import {
   class_swapConstraints,
   class_swapSuperTypes,
   setGenericTypeReferenceValue,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/shared/ModelUtil.js';
+} from '../../../../stores/shared/ModelClassifierUtils.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import { LambdaEditor } from '@finos/legend-query-builder';
 
 type ClassPropertyDragSource = {
   property: Property;
@@ -167,7 +167,10 @@ const PropertyBasicEditor = observer(
     };
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
-    const propertyTypeOptions = editorStore.classPropertyGenericTypeOptions;
+    const propertyTypeOptions =
+      editorStore.graphManagerState.usableClassPropertyTypes.map(
+        buildElementOption,
+      );
     const propertyType = property.genericType.value.rawType;
     const propertyTypeName = getClassPropertyType(propertyType);
     const filterOption = createFilter({
@@ -203,7 +206,10 @@ const PropertyBasicEditor = observer(
           ? upper
           : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
-        property_setMultiplicity(property, new Multiplicity(lBound, uBound));
+        property_setMultiplicity(
+          property,
+          editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
+        );
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -298,7 +304,7 @@ const PropertyBasicEditor = observer(
                   value={property.name}
                   spellCheck={false}
                   onChange={changeValue}
-                  placeholder={`Property name`}
+                  placeholder="Property name"
                   validationErrorMessage={
                     isPropertyDuplicated(property)
                       ? 'Duplicated property'
@@ -313,7 +319,7 @@ const PropertyBasicEditor = observer(
                 options={propertyTypeOptions}
                 onChange={changePropertyType}
                 value={selectedPropertyType}
-                placeholder={'Choose a data type or enumeration'}
+                placeholder="Choose a type..."
                 filterOption={filterOption}
                 formatOptionLabel={getPackageableElementOptionFormatter({})}
               />
@@ -353,7 +359,7 @@ const PropertyBasicEditor = observer(
                     className="property-basic-editor__type__visit-btn"
                     onClick={openElement}
                     tabIndex={-1}
-                    title={'Visit element'}
+                    title="Visit element"
                   >
                     <ArrowCircleRightIcon />
                   </button>
@@ -385,7 +391,7 @@ const PropertyBasicEditor = observer(
                     className="property-basic-editor__type__visit-btn"
                     onClick={openElement}
                     tabIndex={-1}
-                    title={'Visit element'}
+                    title="Visit element"
                   >
                     <ArrowCircleRightIcon />
                   </button>
@@ -416,7 +422,7 @@ const PropertyBasicEditor = observer(
                 className="uml-element-editor__basic__detail-btn"
                 onClick={selectProperty}
                 tabIndex={-1}
-                title={'See detail'}
+                title="See detail"
               >
                 <LongArrowRightIcon />
               </button>
@@ -443,7 +449,7 @@ const PropertyBasicEditor = observer(
                 })}
                 onClick={deleteProperty}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>
@@ -492,7 +498,10 @@ const DerivedPropertyBasicEditor = observer(
       property_setName(derivedProperty, event.target.value);
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
-    const propertyTypeOptions = editorStore.classPropertyGenericTypeOptions;
+    const propertyTypeOptions =
+      editorStore.graphManagerState.usableClassPropertyTypes.map(
+        buildElementOption,
+      );
     const propertyType = derivedProperty.genericType.value.rawType;
     const propertyTypeName = getClassPropertyType(propertyType);
     const filterOption = createFilter({
@@ -530,7 +539,7 @@ const DerivedPropertyBasicEditor = observer(
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
         property_setMultiplicity(
           derivedProperty,
-          new Multiplicity(lBound, uBound),
+          editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
         );
       }
     };
@@ -669,7 +678,7 @@ const DerivedPropertyBasicEditor = observer(
                   options={propertyTypeOptions}
                   onChange={changePropertyType}
                   value={selectedPropertyType}
-                  placeholder="Choose a data type or enumeration"
+                  placeholder="Choose a type..."
                   filterOption={filterOption}
                   formatOptionLabel={getPackageableElementOptionFormatter({})}
                 />
@@ -801,7 +810,7 @@ const DerivedPropertyBasicEditor = observer(
                 </button>
               )}
             </div>
-            <StudioLambdaEditor
+            <LambdaEditor
               disabled={
                 editorState.classState
                   .isConvertingDerivedPropertyLambdaObjects ||
@@ -811,7 +820,7 @@ const DerivedPropertyBasicEditor = observer(
               lambdaEditorState={dpState}
               forceBackdrop={hasParserError}
               expectedType={propertyType}
-              onEditorFocusEventHandler={onLambdaEditorFocus}
+              onEditorFocus={onLambdaEditorFocus}
             />
           </div>
         </PanelEntryDropZonePlaceholder>
@@ -961,7 +970,7 @@ const ConstraintEditor = observer(
                 </button>
               )}
             </div>
-            <StudioLambdaEditor
+            <LambdaEditor
               disabled={
                 editorState.classState.isConvertingConstraintLambdaObjects ||
                 isReadOnly ||
@@ -969,10 +978,8 @@ const ConstraintEditor = observer(
               }
               lambdaEditorState={constraintState}
               forceBackdrop={hasParserError}
-              expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.BOOLEAN,
-              )}
-              onEditorFocusEventHandler={onLambdaEditorFocus}
+              expectedType={PrimitiveType.BOOLEAN}
+              onEditorFocus={onLambdaEditorFocus}
             />
           </div>
         </PanelEntryDropZonePlaceholder>
@@ -998,16 +1005,18 @@ const SuperTypeEditor = observer(
     const { superType, _class, deleteSuperType, isReadOnly } = props;
     const editorStore = useEditorStore();
     // Type
-    const superTypeOptions = editorStore.classOptions.filter(
-      (classOption) =>
-        classOption.value instanceof Class &&
-        // Exclude current class
-        classOption.value !== _class &&
-        // Exclude super types of the class
-        !getAllSuperclasses(_class).includes(classOption.value) &&
-        // Ensure there is no loop (might be expensive)
-        !getAllSuperclasses(classOption.value).includes(_class),
-    );
+    const superTypeOptions = editorStore.graphManagerState.usableClasses
+      .filter(
+        (c) =>
+          c instanceof Class &&
+          // Exclude current class
+          c !== _class &&
+          // Exclude super types of the class
+          !getAllSuperclasses(_class).includes(c) &&
+          // Ensure there is no loop (might be expensive)
+          !getAllSuperclasses(c).includes(_class),
+      )
+      .map(buildElementOption);
 
     // Drag and Drop
     const handleHover = useCallback(
@@ -1072,7 +1081,7 @@ const SuperTypeEditor = observer(
               options={superTypeOptions}
               onChange={changeType}
               value={selectedType}
-              placeholder={'Choose a class'}
+              placeholder="Choose a class"
               filterOption={filterOption}
               formatOptionLabel={getPackageableElementOptionFormatter({})}
             />
@@ -1080,7 +1089,7 @@ const SuperTypeEditor = observer(
               className="uml-element-editor__basic__detail-btn"
               onClick={visitDerivationSource}
               tabIndex={-1}
-              title={'Visit super type'}
+              title="Visit super type"
             >
               <LongArrowRightIcon />
             </button>
@@ -1090,7 +1099,7 @@ const SuperTypeEditor = observer(
                 disabled={isReadOnly}
                 onClick={deleteSuperType}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>
@@ -1544,9 +1553,6 @@ export const ClassFormEditor = observer(
         ); // attempting to read the hashCode of immutable element will throw an error
     const classState = editorState.classState;
     const isReadOnly = editorState.isReadOnly;
-    const defaultType = editorStore.graphManagerState.graph.getPrimitiveType(
-      PRIMITIVE_TYPE.STRING,
-    );
 
     // Tab
     const selectedTab = editorState.selectedTab;
@@ -1609,9 +1615,12 @@ export const ClassFormEditor = observer(
     const add = (): void => {
       if (!isReadOnly) {
         if (selectedTab === UML_EDITOR_TAB.PROPERTIES) {
-          class_addProperty(_class, stub_Property(defaultType, _class));
+          class_addProperty(
+            _class,
+            stub_Property(PrimitiveType.STRING, _class),
+          );
         } else if (selectedTab === UML_EDITOR_TAB.DERIVED_PROPERTIES) {
-          const dp = stub_DerivedProperty(defaultType, _class);
+          const dp = stub_DerivedProperty(PrimitiveType.STRING, _class);
           class_addDerivedProperty(_class, dp);
           classState.addDerivedPropertyState(dp);
         } else if (selectedTab === UML_EDITOR_TAB.CONSTRAINTS) {
@@ -1676,14 +1685,23 @@ export const ClassFormEditor = observer(
       );
     }, [applicationStore, classState]);
 
+    // layout
+    const propertyEditorCollapsiblePanelGroupProps =
+      getCollapsiblePanelGroupProps(!editorState.selectedProperty, {
+        size: 250,
+      });
+
     return (
       <div
         data-testid={LEGEND_STUDIO_TEST_ID.CLASS_FORM_EDITOR}
         className="uml-element-editor class-form-editor"
       >
         <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel minSize={56}>
-            <div className="panel">
+          <ResizablePanel
+            {...propertyEditorCollapsiblePanelGroupProps.remainingPanel}
+            minSize={56}
+          >
+            <Panel>
               <div className="panel__header">
                 <div className="panel__header__title">
                   {isReadOnly && (
@@ -1786,16 +1804,13 @@ export const ClassFormEditor = observer(
                   />
                 )}
               </div>
-            </div>
+            </Panel>
           </ResizablePanel>
           <ResizablePanelSplitter>
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
           </ResizablePanelSplitter>
           <ResizablePanel
-            {...getControlledResizablePanelProps(
-              !editorState.selectedProperty,
-              { size: 250 },
-            )}
+            {...propertyEditorCollapsiblePanelGroupProps.collapsiblePanel}
             direction={-1}
           >
             {editorState.selectedProperty ? (

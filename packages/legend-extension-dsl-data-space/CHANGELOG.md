@@ -1,5 +1,65 @@
 # @finos/legend-extension-dsl-data-space
 
+## 9.0.8
+
+## 9.0.7
+
+## 9.0.6
+
+## 9.0.5
+
+## 9.0.4
+
+## 9.0.3
+
+### Patch Changes
+
+- [#1597](https://github.com/finos/legend-studio/pull/1597) [`5b61c844`](https://github.com/finos/legend-studio/commit/5b61c844362b1ff60c4025ab9b93220e938399b0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Disable fetching project dependencies if dataspace cache analysis is found
+
+## 9.0.2
+
+## 9.0.1
+
+## 9.0.0
+
+### Major Changes
+
+- [#1565](https://github.com/finos/legend-studio/pull/1565) [`ebe9acf9`](https://github.com/finos/legend-studio/commit/ebe9acf9bc01234849e64df792693e493c95cb8f) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Reworked routing for data space query builder: `/create-from-dataspace/...` is now `/dataspace/...`; also, the basic route `/dataspace/` now will show an empty query builder page
+
+## 8.0.1
+
+## 8.0.0
+
+### Major Changes
+
+- [#1520](https://github.com/finos/legend-studio/pull/1520) [`240875e8`](https://github.com/finos/legend-studio/commit/240875e869c95d7d228756a66eec1e82a45b8884) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `getDSLDataSpaceGraphManagerExtension()` to `DSL_DataSpace_getGraphManagerExtension()`
+
+## 7.0.1
+
+## 7.0.0
+
+### Major Changes
+
+- [#1519](https://github.com/finos/legend-studio/pull/1519) [`b2e14b15`](https://github.com/finos/legend-studio/commit/b2e14b15379eef36e39d906d315fd4fb96472cd6) ([@gayathrir11](https://github.com/gayathrir11)) - **BREAKING CHANGE:** Renamed plugins and presets to use the prefix `DSL_DataSpace` instead of `DSLDataSpace`
+
+### Minor Changes
+
+- [#1509](https://github.com/finos/legend-studio/pull/1509) [`8cbd17f0`](https://github.com/finos/legend-studio/commit/8cbd17f0d6b4854525adcdbb974d0c7a0fe4a564) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use data space analytics result cached in `Depot` server whenever possible to speed up loading of data spaces
+
+## 6.1.16
+
+## 6.1.15
+
+## 6.1.14
+
+## 6.1.13
+
+## 6.1.12
+
+### Patch Changes
+
+- [#1457](https://github.com/finos/legend-studio/pull/1457) [`ddc2a034`](https://github.com/finos/legend-studio/commit/ddc2a034d8fe25d1eaf52058353d644f29c3da23) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Update route patterns for query editor: `/query/dataspace/...` -> `/query/create-from-dataspace/...`
+
 ## 6.1.11
 
 ## 6.1.10

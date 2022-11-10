@@ -43,4 +43,5 @@ export enum GRAPH_MANAGER_EVENT {
   COMPILATION_FAILURE = 'graph-manager.compilation.failure',
   PARSING_FAILURE = 'graph-manager.grammar.parsing.failure',
   GRAPH_MANAGER_FAILURE = 'graph-manager.failure',
+  CACHE_MANAGER_FAILURE = 'graph-manager.cache.failure',
 }

@@ -81,8 +81,10 @@ import type { V1_DataElement } from '../../../model/packageableElements/data/V1_
 import { V1_buildEmbeddedData } from './helpers/V1_DataElementBuilderHelper.js';
 import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper.js';
 import { ServiceTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/service/ServiceTestSuite.js';
-import { V1_getIncludedMappingPath } from '../../../helpers/V1_DSLMapping_Helper.js';
 import { V1_DataElementReference } from '../../../model/data/V1_EmbeddedData.js';
+import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
+import { getFunctionName } from '../../../../../../../graph/helpers/DomainHelper.js';
+import { GraphBuilderError } from '../../../../../../GraphManagerUtils.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -106,18 +108,17 @@ export class V1_ElementSecondPassBuilder
     const uniqueStereotypes = new Set<string>();
     profile.p_stereotypes = element.stereotypes.map((stereotype) => {
       if (uniqueStereotypes.has(stereotype)) {
+        const message = `Found duplicated stereotype '${stereotype}' in profile '${element.path}'`;
         /**
-         * This test is skipped because we want to temporarily relax graph building algorithm
-         * to ease Pure -> Legend migration push.
-         * See https://github.com/finos/legend-studio/issues/660
+         * In strict-mode, graph builder will consider this as an error
+         * See https://github.com/finos/legend-studio/issues/941
          *
          * @discrepancy graph-building
          */
-        this.context.log.warn(
-          LogEvent.create(
-            `Found duplicated stereotype '${stereotype}' in profile '${element.path}'`,
-          ),
-        );
+        if (this.context.options?.strict) {
+          throw new GraphBuilderError(message);
+        }
+        this.context.log.warn(LogEvent.create(message));
       }
       uniqueStereotypes.add(stereotype);
       return new Stereotype(profile, stereotype);
@@ -125,18 +126,17 @@ export class V1_ElementSecondPassBuilder
     const uniqueTags = new Set<string>();
     profile.p_tags = element.tags.map((tag) => {
       if (uniqueTags.has(tag)) {
+        const message = `Found duplicated tag '${tag}' in profile '${element.path}'`;
         /**
-         * This test is skipped because we want to temporarily relax graph building algorithm
-         * to ease Pure -> Legend migration push.
-         * See https://github.com/finos/legend-studio/issues/660
+         * In strict-mode, graph builder will consider this as an error
+         * See https://github.com/finos/legend-studio/issues/941
          *
          * @discrepancy graph-building
          */
-        this.context.log.warn(
-          LogEvent.create(
-            `Found duplicated tag '${tag}' in profile '${element.path}'`,
-          ),
-        );
+        if (this.context.options?.strict) {
+          throw new GraphBuilderError(message);
+        }
+        this.context.log.warn(LogEvent.create(message));
       }
       uniqueTags.add(tag);
       return new Tag(profile, tag);
@@ -160,18 +160,17 @@ export class V1_ElementSecondPassBuilder
         `Enum value 'value' field is missing or empty`,
       );
       if (uniqueEnumValues.has(enumValue.value)) {
+        const message = `Found duplicated value '${enumValue.value}' in enumeration '${enumeration.path}'`;
         /**
-         * This test is skipped because we want to temporarily relax graph building algorithm
-         * to ease Pure -> Legend migration push.
-         * See https://github.com/finos/legend-studio/issues/660
+         * In strict-mode, graph builder will consider this as an error
+         * See https://github.com/finos/legend-studio/issues/941
          *
          * @discrepancy graph-building
          */
-        this.context.log.warn(
-          LogEvent.create(
-            `Found duplicated value '${enumValue.value}' in enumeration '${enumeration.path}'`,
-          ),
-        );
+        if (this.context.options?.strict) {
+          throw new GraphBuilderError(message);
+        }
+        this.context.log.warn(LogEvent.create(message));
       }
       const _enum = new Enum(enumValue.value, enumeration);
       _enum.stereotypes = enumValue.stereotypes
@@ -234,7 +233,7 @@ export class V1_ElementSecondPassBuilder
       `Function 'returnMultiplicity' field is missing`,
     );
     const func = this.context.currentSubGraph.getOwnFunction(
-      V1_buildFullPath(protocol.package, protocol.name),
+      V1_buildFullPath(protocol.package, V1_buildFunctionSignature(protocol)),
     );
     func.returnType = this.context.resolveType(protocol.returnType);
     func.returnMultiplicity = this.context.graph.getMultiplicity(
@@ -251,6 +250,7 @@ export class V1_ElementSecondPassBuilder
       V1_buildVariable(param, this.context),
     );
     func.expressionSequence = protocol.body;
+    func.functionName = getFunctionName(func, func.name);
   }
 
   visit_FlatData(element: V1_FlatData): void {
@@ -279,8 +279,8 @@ export class V1_ElementSecondPassBuilder
       V1_buildFullPath(element.package, element.name),
     );
     const mappingIncludesSet = new Set<string>();
-    mapping.includes = element.includedMappings.map((i) => {
-      const includedMappingPath = V1_getIncludedMappingPath(i);
+    mapping.includes = element.includedMappings.map((mappingInclude) => {
+      const includedMappingPath = mappingInclude.includedMapping;
       assertNonEmptyString(
         includedMappingPath,
         `Mapping include path is missing or empty`,
@@ -290,7 +290,7 @@ export class V1_ElementSecondPassBuilder
         `Duplicated mapping include '${includedMappingPath}' in mapping '${mapping.path}'`,
       );
       mappingIncludesSet.add(includedMappingPath);
-      return V1_buildMappingInclude(i, this.context, mapping);
+      return V1_buildMappingInclude(mappingInclude, this.context, mapping);
     });
     mapping.enumerationMappings = element.enumerationMappings.map(
       (enumerationMapping) =>

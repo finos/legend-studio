@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
 import {
   BlankPanelPlaceholder,
   clsx,
@@ -32,7 +32,6 @@ import type { RelationalCSVDataTable } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useState } from 'react';
 import type { RelationalCSVDataState } from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 
 const RelationalTableIdentifierModal = observer(
   (props: { dataState: RelationalCSVDataState; isReadOnly: boolean }) => {
@@ -40,10 +39,6 @@ const RelationalTableIdentifierModal = observer(
     const tableIdentifierState = dataState.tableIdentifierState;
     const editableTable = tableIdentifierState.table;
     const closeModal = (): void => dataState.closeModal();
-    const handleSubmit = (): void => {
-      tableIdentifierState.handleSubmit();
-      closeModal();
-    };
     const changeTableValue: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => {
@@ -62,7 +57,11 @@ const RelationalTableIdentifierModal = observer(
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(event) => {
+            event.preventDefault();
+            tableIdentifierState.handleSubmit();
+            closeModal();
+          }}
           className="modal modal--dark search-modal"
         >
           <div className="modal__title">
@@ -75,7 +74,7 @@ const RelationalTableIdentifierModal = observer(
               <input
                 className="panel__content__form__section__input"
                 disabled={isReadOnly}
-                placeholder={'schemaName'}
+                placeholder="schemaName"
                 value={tableIdentifierState.schemaName}
                 onChange={changeSchemaValue}
               />
@@ -84,7 +83,7 @@ const RelationalTableIdentifierModal = observer(
               <input
                 className="relational-data-editor__identifier__values panel__content__form__section__input"
                 disabled={isReadOnly}
-                placeholder={'tableName'}
+                placeholder="tableName"
                 value={tableIdentifierState.tableName}
                 onChange={changeTableValue}
               />
@@ -159,7 +158,7 @@ export const RelationalCSVDataEditor = observer(
                   onClick={openIdentifierModal}
                   disabled={isReadOnly}
                   tabIndex={-1}
-                  title={'Add Relational Table Data'}
+                  title="Add Relational Table Data"
                 >
                   <PlusIcon />
                 </button>
@@ -226,7 +225,7 @@ export const RelationalCSVDataEditor = observer(
             <div className="relational-data-editor__content">
               {currentTableState && (
                 <div className="relational-data-editor__values">
-                  <StudioTextInputEditor
+                  <TextInputEditor
                     inputValue={currentTableState.table.values}
                     updateInput={updateTableValues}
                     isReadOnly={isReadOnly}
@@ -239,7 +238,7 @@ export const RelationalCSVDataEditor = observer(
                   onClick={(): void => openIdentifierModal()}
                   text="Add a relational data table"
                   clickActionType="add"
-                  tooltipText={'Click to add new relational data table'}
+                  tooltipText="Click to add new relational data table"
                 />
               )}
               {dataState.showTableIdentifierModal && (

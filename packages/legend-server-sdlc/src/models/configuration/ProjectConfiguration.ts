@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { list, createModelSchema, primitive } from 'serializr';
+import {
+  list,
+  createModelSchema,
+  primitive,
+  serialize,
+  deserialize,
+} from 'serializr';
 import { observable, action, computed, makeObservable } from 'mobx';
 import { ProjectStructureVersion } from '../configuration/ProjectStructureVersion.js';
 import { ProjectDependency } from '../configuration/ProjectDependency.js';
@@ -25,16 +31,20 @@ import {
   deleteEntry,
   SerializationFactory,
   usingModelSchema,
+  serializeArray,
+  deserializeArray,
+  optionalCustom,
 } from '@finos/legend-shared';
 import { ENTITY_PATH_DELIMITER } from '@finos/legend-storage';
-
-const PROJECT_CONFIGURATION_HASH_STRUCTURE = 'PROJECT_CONFIGURATION';
+import { PlatformConfiguration } from './PlatformConfiguration.js';
+import { SDLC_HASH_STRUCTURE } from '../../SDLC_HashUtils.js';
 
 export class ProjectConfiguration implements Hashable {
   projectId!: string;
   groupId!: string;
   artifactId!: string;
   projectStructureVersion!: ProjectStructureVersion;
+  platformConfigurations?: PlatformConfiguration[] | undefined;
   projectDependencies: ProjectDependency[] = [];
 
   constructor() {
@@ -42,8 +52,10 @@ export class ProjectConfiguration implements Hashable {
       groupId: observable,
       artifactId: observable,
       projectStructureVersion: observable,
+      platformConfigurations: observable,
       projectDependencies: observable,
       setGroupId: action,
+      setPlatformConfigurations: action,
       setArtifactId: action,
       deleteProjectDependency: action,
       addProjectDependency: action,
@@ -56,6 +68,16 @@ export class ProjectConfiguration implements Hashable {
     createModelSchema(ProjectConfiguration, {
       artifactId: primitive(),
       groupId: primitive(),
+      platformConfigurations: optionalCustom(
+        (values) =>
+          serializeArray(values, (value) =>
+            serialize(PlatformConfiguration.serialization.schema, value),
+          ),
+        (values) =>
+          deserializeArray(values, (v) =>
+            deserialize(PlatformConfiguration.serialization.schema, v),
+          ),
+      ),
       projectDependencies: list(
         usingModelSchema(ProjectDependency.serialization.schema),
       ),
@@ -68,6 +90,10 @@ export class ProjectConfiguration implements Hashable {
 
   setGroupId(val: string): void {
     this.groupId = val;
+  }
+
+  setPlatformConfigurations(val: PlatformConfiguration[] | undefined): void {
+    this.platformConfigurations = val;
   }
 
   setArtifactId(val: string): void {
@@ -91,9 +117,10 @@ export class ProjectConfiguration implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      PROJECT_CONFIGURATION_HASH_STRUCTURE,
+      SDLC_HASH_STRUCTURE.PROJECT_CONFIGURATION,
       this.groupId,
       this.artifactId,
+      hashArray(this.platformConfigurations ?? []),
       this.projectStructureVersion.version.toString(),
       this.projectStructureVersion.extensionVersion?.toString() ?? '',
       hashArray(this.projectDependencies),

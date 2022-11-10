@@ -25,12 +25,12 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import { prettyCONSTName } from '@finos/legend-shared';
 import {
   BlankPanelContent,
   clsx,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   InputWithInlineValidation,
   ResizablePanel,
   ResizablePanelGroup,
@@ -47,6 +47,8 @@ import {
   DragPreviewLayer,
   useDragPreviewLayer,
   PanelDropZone,
+  Panel,
+  PanelContent,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import {
@@ -80,7 +82,7 @@ import {
   enum_deleteValue,
   enum_addValue,
   enum_swapValues,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
@@ -160,7 +162,7 @@ const EnumBasicEditor = observer(
               disabled={isReadOnly}
               value={enumValue.name}
               onChange={changeValue}
-              placeholder={`Enum name`}
+              placeholder="Enum name"
               validationErrorMessage={
                 isEnumValueDuplicated(enumValue) ? 'Duplicated enum' : undefined
               }
@@ -169,7 +171,7 @@ const EnumBasicEditor = observer(
               className="uml-element-editor__basic__detail-btn"
               onClick={selectValue}
               tabIndex={-1}
-              title={'See detail'}
+              title="See detail"
             >
               <LongArrowRightIcon />
             </button>
@@ -179,7 +181,7 @@ const EnumBasicEditor = observer(
                 disabled={isReadOnly}
                 onClick={deleteValue}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>
@@ -310,7 +312,7 @@ const EnumEditor = observer(
                 className="panel__header__action"
                 onClick={deselectValue}
                 tabIndex={-1}
-                title={'Close'}
+                title="Close"
               >
                 <TimesIcon />
               </button>
@@ -345,7 +347,7 @@ const EnumEditor = observer(
               </button>
             </div>
           </div>
-          <div className="panel__content">
+          <PanelContent>
             {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
               <PanelDropZone
                 isDragOver={isTaggedValueDragOver && !isReadOnly}
@@ -384,7 +386,7 @@ const EnumEditor = observer(
                 </div>
               </PanelDropZone>
             )}
-          </div>
+          </PanelContent>
         </div>
       </div>
     );
@@ -539,14 +541,25 @@ export const EnumerationEditor = observer(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.ENUMERATION_EDITOR,
     );
 
+    // layout
+    const enumEditorCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      !selectedEnum,
+      {
+        size: 250,
+      },
+    );
+
     return (
       <div
         data-testid={LEGEND_STUDIO_TEST_ID.ENUMERATION_EDITOR}
         className="uml-element-editor enumeration-editor"
       >
         <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel minSize={56}>
-            <div className="panel">
+          <ResizablePanel
+            {...enumEditorCollapsiblePanelGroupProps.remainingPanel}
+            minSize={56}
+          >
+            <Panel>
               <div className="panel__header">
                 <div className="panel__header__title">
                   <div className="panel__header__title__label">enumeration</div>
@@ -605,7 +618,7 @@ export const EnumerationEditor = observer(
                   </button>
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 {selectedTab === UML_EDITOR_TAB.ENUM_VALUES && (
                   <div className="panel__content__lists">
                     <DragPreviewLayer
@@ -665,16 +678,14 @@ export const EnumerationEditor = observer(
                     </div>
                   </PanelDropZone>
                 )}
-              </div>
-            </div>
+              </PanelContent>
+            </Panel>
           </ResizablePanel>
           <ResizablePanelSplitter>
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
           </ResizablePanelSplitter>
           <ResizablePanel
-            {...getControlledResizablePanelProps(!selectedEnum, {
-              size: 250,
-            })}
+            {...enumEditorCollapsiblePanelGroupProps.collapsiblePanel}
             direction={-1}
           >
             {selectedEnum ? (

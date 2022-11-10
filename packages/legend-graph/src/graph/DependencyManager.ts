@@ -161,7 +161,7 @@ export class DependencyManager {
   );
   getOwnNullableDataElement = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnDataElement(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableDataElement(path),
   );
   getOwnNullableExtensionElement<T extends PackageableElement>(
     path: string,
@@ -179,93 +179,65 @@ export class DependencyManager {
   }
 
   get sectionIndices(): SectionIndex[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownSectionIndices))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownSectionIndices);
   }
   get profiles(): Profile[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownProfiles))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownProfiles);
   }
   get enumerations(): Enumeration[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownEnumerations))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownEnumerations);
   }
   get measures(): Measure[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownMeasures))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownMeasures);
   }
   get classes(): Class[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownClasses))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownClasses);
   }
   get types(): Type[] {
-    return this.dependencyGraphs.map((dep) => Array.from(dep.ownTypes)).flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownTypes);
   }
   get associations(): Association[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownAssociations))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownAssociations);
   }
   get functions(): ConcreteFunctionDefinition[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownFunctions))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownFunctions);
   }
   get stores(): Store[] {
-    return this.dependencyGraphs.map((dep) => Array.from(dep.ownStores)).flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownStores);
   }
   get databases(): Database[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownDatabases))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownDatabases);
   }
   get mappings(): Mapping[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownMappings))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownMappings);
   }
   get services(): Service[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownServices))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownServices);
   }
   get runtimes(): PackageableRuntime[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownRuntimes))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownRuntimes);
   }
   get connections(): PackageableConnection[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownConnections))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownConnections);
   }
   get dataElements(): DataElement[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownDataElements))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownDataElements);
   }
   get generationSpecifications(): GenerationSpecification[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownGenerationSpecifications))
-      .flat();
+    return this.dependencyGraphs.flatMap(
+      (dep) => dep.ownGenerationSpecifications,
+    );
   }
   get fileGenerations(): FileGenerationSpecification[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownFileGenerations))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) => dep.ownFileGenerations);
   }
 
   getExtensionElements<T extends PackageableElement>(
     extensionElementClass: Clazz<T>,
   ): T[] {
-    return this.dependencyGraphs
-      .map((dep) => dep.getExtensionElements(extensionElementClass))
-      .flat();
+    return this.dependencyGraphs.flatMap((dep) =>
+      dep.getExtensionElements(extensionElementClass),
+    );
   }
 
   getModel(projectId: string): BasicModel {

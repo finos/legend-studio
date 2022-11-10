@@ -18,15 +18,16 @@ import { TAB_SIZE } from '@finos/legend-application';
 import {
   type DataSpaceAnalysisResult,
   DataSpaceViewerState,
-  getDSLDataSpaceGraphManagerExtension,
+  DSL_DataSpace_getGraphManagerExtension,
+  retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import { BasicGraphManagerState } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-storage';
+import { parseGAVCoordinates } from '@finos/legend-storage';
 import {
   type DepotServerClient,
-  parseGAVCoordinates,
   ProjectData,
+  retrieveProjectEntitiesWithDependencies,
 } from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
@@ -38,10 +39,13 @@ import { makeObservable, flow, observable, flowResult } from 'mobx';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
 import type { LegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStore.js';
 import {
-  generateDataSpaceQueryEditorUrl,
-  generateStudioProjectViewUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
   type LegendTaxonomyStandaloneDataSpaceViewerPathParams,
 } from './LegendTaxonomyRouter.js';
+import {
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
+} from './LegendTaxonomyDataSpaceViewerHelper.js';
 
 export class StandaloneDataSpaceViewerStore {
   applicationStore: LegendTaxonomyApplicationStore;
@@ -55,7 +59,6 @@ export class StandaloneDataSpaceViewerStore {
   constructor(
     applicationStore: LegendTaxonomyApplicationStore,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendTaxonomyPluginManager,
   ) {
     makeObservable(this, {
       viewerState: observable,
@@ -64,10 +67,10 @@ export class StandaloneDataSpaceViewerStore {
     this.applicationStore = applicationStore;
     this.depotServerClient = depotServerClient;
     this.graphManagerState = new BasicGraphManagerState(
-      pluginManager,
+      applicationStore.pluginManager,
       applicationStore.log,
     );
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
   }
 
   *initialize(
@@ -101,51 +104,39 @@ export class StandaloneDataSpaceViewerStore {
           this.depotServerClient.getProject(groupId, artifactId),
         )) as PlainObject<ProjectData>,
       );
-
-      // fetch entities
-      this.initState.setMessage(`Fetching entities...`);
-      const entities = (yield this.depotServerClient.getEntities(
-        project,
-        versionId,
-      )) as Entity[];
-
-      // fetch dependencies
-      this.initState.setMessage(`Fetching dependencies...`);
-      const dependencyEntitiesIndex = (yield flowResult(
-        this.depotServerClient.getIndexedDependencyEntities(project, versionId),
-      )) as Map<string, Entity[]>;
-
       // analyze data space
-      this.initState.setMessage(`Analyzing data space...`);
-      const analysisResult = (yield getDSLDataSpaceGraphManagerExtension(
+      const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
         this.graphManagerState.graphManager,
       ).analyzeDataSpace(
         dataSpacePath,
-        entities,
-        dependencyEntitiesIndex,
+        () =>
+          retrieveProjectEntitiesWithDependencies(
+            project,
+            versionId,
+            this.depotServerClient,
+          ),
+        () =>
+          retrieveAnalyticsResultCache(
+            project,
+            versionId,
+            dataSpacePath,
+            this.depotServerClient,
+          ),
+        this.initState,
       )) as DataSpaceAnalysisResult;
 
       this.viewerState = new DataSpaceViewerState(
+        this.applicationStore,
         groupId,
         artifactId,
         versionId,
         analysisResult,
         {
-          viewProject: (
-            _groupId: string,
-            _artifactId: string,
-            _versionId: string,
-            entityPath: string | undefined,
-          ): void =>
-            this.applicationStore.navigator.openNewWindow(
-              generateStudioProjectViewUrl(
-                this.applicationStore.config.studioUrl,
-                _groupId,
-                _artifactId,
-                _versionId,
-                entityPath,
-              ),
-            ),
+          viewProject: createViewProjectHandler(this.applicationStore),
+          viewSDLCProject: createViewSDLCProjectHandler(
+            this.applicationStore,
+            this.depotServerClient,
+          ),
           onDiagramClassDoubleClick: (classView: ClassView): void =>
             this.queryDataSpace(classView.class.value.path),
         },
@@ -162,8 +153,8 @@ export class StandaloneDataSpaceViewerStore {
 
   queryDataSpace(classPath?: string | undefined): void {
     if (this.viewerState) {
-      this.applicationStore.navigator.openNewWindow(
-        generateDataSpaceQueryEditorUrl(
+      this.applicationStore.navigator.visitAddress(
+        EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
           this.applicationStore.config.queryUrl,
           this.viewerState.groupId,
           this.viewerState.artifactId,

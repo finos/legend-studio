@@ -42,20 +42,22 @@ import {
   DragPreviewLayer,
   useDragPreviewLayer,
   PanelEntryDropZonePlaceholder,
+  Panel,
+  PanelContent,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type FileGenerationSourceDropTarget,
-} from '../../../stores/shared/DnDUtil.js';
+} from '../../../stores/shared/DnDUtils.js';
 import { getNullableFirstElement } from '@finos/legend-shared';
-import type { DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   type PackageableElement,
   type PackageableElementReference,
-  type DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
+  type DSL_Generation_PureGraphManagerPlugin_Extension,
   FileGenerationSpecification,
   PackageableElementExplicitReference,
   GenerationTreeNode,
@@ -65,12 +67,12 @@ import {
   useApplicationStore,
   type PackageableElementOption,
 } from '@finos/legend-application';
-import { packageableElementReference_setValue } from '../../../stores/graphModifier/DomainGraphModifierHelper.js';
+import { packageableElementReference_setValue } from '../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_deleteFileGeneration,
   generationSpecification_setId,
-} from '../../../stores/graphModifier/DSLGeneration_GraphModifierHelper.js';
+} from '../../../stores/shared/modifier/DSL_Generation_GraphModifierHelper.js';
 
 const GENERATION_SPEC_NODE_DND_TYPE = 'GENERATION_SPEC_NODE';
 
@@ -205,7 +207,7 @@ const ModelGenerationItem = observer(
             className="btn--dark btn--sm"
             onClick={visitModelGeneration}
             tabIndex={-1}
-            title={'See mapping'}
+            title="See mapping"
           >
             <LongArrowRightIcon />
           </button>
@@ -213,7 +215,7 @@ const ModelGenerationItem = observer(
             className="generation-spec-model-generation-editor__item__remove-btn"
             onClick={deleteNode}
             tabIndex={-1}
-            title={'Remove'}
+            title="Remove"
           >
             <TimesIcon />
           </button>
@@ -233,7 +235,7 @@ const ModelGenerationSpecifications = observer(
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
+            plugin as DSL_Generation_PureGraphManagerPlugin_Extension
           ).getExtraModelGenerationElementGetters?.() ?? [],
       )
       .flatMap((getter) => getter(editorStore.graphManagerState.graph));
@@ -243,7 +245,7 @@ const ModelGenerationSpecifications = observer(
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension
+              plugin as DSL_Generation_LegendStudioApplicationPlugin_Extension
             ).getExtraModelGenerationSpecificationElementDnDTypes?.() ?? [],
         );
     const modelGenerationElementOptions =
@@ -289,7 +291,7 @@ const ModelGenerationSpecifications = observer(
       [handleDrop],
     );
     return (
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">Model Generations</div>
@@ -306,7 +308,7 @@ const ModelGenerationSpecifications = observer(
             </button>
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           <PanelDropZone
             isDragOver={isDragOver}
             dropTargetConnector={dropTargetConnector}
@@ -336,8 +338,8 @@ const ModelGenerationSpecifications = observer(
               </BlankPanelContent>
             )}
           </PanelDropZone>
-        </div>
-      </div>
+        </PanelContent>
+      </Panel>
     );
   },
 );
@@ -382,7 +384,7 @@ const FileGenerationItem = observer(
           className="btn--dark btn--sm"
           onClick={visitFileGen}
           tabIndex={-1}
-          title={'See mapping'}
+          title="See mapping"
         >
           <LongArrowRightIcon />
         </button>
@@ -390,7 +392,7 @@ const FileGenerationItem = observer(
           className="generation-spec-file-generation-editor__item__remove-btn"
           onClick={deleteColumnSort}
           tabIndex={-1}
-          title={'Remove'}
+          title="Remove"
         >
           <TimesIcon />
         </button>
@@ -470,7 +472,7 @@ const FileGenerationSpecifications = observer(
             </button>
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           <PanelDropZone
             isDragOver={isDragOver}
             dropTargetConnector={dropTargetConnector}
@@ -496,7 +498,7 @@ const FileGenerationSpecifications = observer(
               </BlankPanelContent>
             )}
           </PanelDropZone>
-        </div>
+        </PanelContent>
       </div>
     );
   },
@@ -519,7 +521,7 @@ export const GenerationSpecificationEditor = observer(() => {
 
   return (
     <div className="generation-spec-editor">
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">
@@ -540,7 +542,7 @@ export const GenerationSpecificationEditor = observer(() => {
               )}
               tabIndex={-1}
               onClick={generate}
-              title={'Generate'}
+              title="Generate"
             >
               <FireIcon />
             </button>
@@ -579,7 +581,7 @@ export const GenerationSpecificationEditor = observer(() => {
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
-      </div>
+      </Panel>
     </div>
   );
 });

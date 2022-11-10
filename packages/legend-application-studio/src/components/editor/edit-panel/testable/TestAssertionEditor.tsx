@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
 import {
   clsx,
   CompareIcon,
   Dialog,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  PanelContent,
   PanelLoadingIndicator,
   RefreshIcon,
   WrenchIcon,
@@ -39,10 +44,9 @@ import {
   type TestAssertionEditorState,
   type TestAssertionState,
 } from '../../../../stores/editor-state/element-editor-state/testable/TestAssertionState.js';
-import { externalFormatData_setData } from '../../../../stores/graphModifier/DSLData_GraphModifierHelper.js';
+import { externalFormatData_setData } from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
 import { TESTABLE_RESULT } from '../../../../stores/sidebar-state/testable/GlobalTestRunnerState.js';
 import { JsonDiffView } from '../../../shared/DiffView.js';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 
 const EqualToJsonAsssertionEditor = observer(
@@ -71,7 +75,7 @@ const EqualToJsonAsssertionEditor = observer(
               disabled={testAssertionEditorState.testState.isReadOnly}
               tabIndex={-1}
               onClick={formatExpectedResultJSONString}
-              title={'Format JSON (Alt + Shift + F)'}
+              title="Format JSON (Alt + Shift + F)"
             >
               <WrenchIcon />
             </button>
@@ -79,7 +83,7 @@ const EqualToJsonAsssertionEditor = observer(
         </div>
         <div className="equal-to-json-editor__content panel__content">
           <div className="equal-to-json-editor__content__data">
-            <StudioTextInputEditor
+            <TextInputEditor
               inputValue={assertion.expected.data}
               language={EDITOR_LANGUAGE.JSON}
               updateInput={(val: string): void => {
@@ -114,8 +118,8 @@ const EqualToJsonAssertFailViewer = observer(
               paper: 'editor-modal__content',
             }}
           >
-            <div className="modal modal--dark editor-modal">
-              <div className="modal__header">
+            <Modal darkMode={true} className="editor-modal">
+              <ModalHeader>
                 <div className="equal-to-json-result__diff__summary">
                   <div className="equal-to-json-result__diff__header__label">
                     expected
@@ -127,22 +131,22 @@ const EqualToJsonAssertFailViewer = observer(
                     actual
                   </div>
                 </div>
-              </div>
-              <div className="modal__body">
+              </ModalHeader>
+              <ModalBody>
                 <JsonDiffView
                   from={equalToJsonAssertFailState.status.expected}
                   to={equalToJsonAssertFailState.status.actual}
                 />
-              </div>
-              <div className="modal__footer">
+              </ModalBody>
+              <ModalFooter>
                 <button
                   className="btn modal__footer__close-btn"
                   onClick={close}
                 >
                   Close
                 </button>
-              </div>
-            </div>
+              </ModalFooter>
+            </Modal>
           </Dialog>
         )}
       </>
@@ -243,7 +247,7 @@ const TestAssertionResultViewer = observer(
           </div>
           <div className="panel__header__actions"></div>
         </div>
-        <div className="testable-test-assertion-result__content panel__content">
+        <PanelContent className="testable-test-assertion-result__content">
           <div
             className={clsx('testable-test-assertion-result__summary', {
               'testable-test-assertion-result__summary--fail':
@@ -262,7 +266,7 @@ const TestAssertionResultViewer = observer(
               </div>
             )}
 
-            {!(assertionResult === TESTABLE_RESULT.IN_PROGRESS) && (
+            {assertionResult !== TESTABLE_RESULT.IN_PROGRESS && (
               <>
                 <div className="testable-test-assertion-result__summary-info">
                   Id: {testAssertionEditorState.assertion.id}
@@ -275,7 +279,7 @@ const TestAssertionResultViewer = observer(
             )}
           </div>
           <div></div>
-        </div>
+        </PanelContent>
       </>
     );
   },

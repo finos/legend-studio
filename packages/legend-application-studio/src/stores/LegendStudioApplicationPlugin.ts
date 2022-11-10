@@ -117,7 +117,7 @@ export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlu
   getExtraTestableMetadata?(): TestableMetadataGetter[];
 }
 
-export type ElementTypeGetter = (
+export type ElementClassifier = (
   metamodel: PackageableElement,
 ) => string | undefined;
 
@@ -165,7 +165,7 @@ export type ElementEditorStateCreator = (
   element: PackageableElement,
 ) => ElementEditorState | undefined;
 
-export type ElementProjectExplorerDnDTypeGetter = (
+export type DragElementClassifier = (
   element: PackageableElement,
 ) => string | undefined;
 
@@ -251,7 +251,7 @@ export interface DSL_LegendStudioApplicationPlugin_Extension
   /**
    * Get the list of classifiers for a packageable element.
    */
-  getExtraElementTypeGetters?(): ElementTypeGetter[];
+  getExtraElementClassifiers?(): ElementClassifier[];
 
   /**
    * Get the list of (user-friendly) type labelers for a packageable element.
@@ -304,14 +304,14 @@ export interface DSL_LegendStudioApplicationPlugin_Extension
   getExtraElementEditorStateCreators?(): ElementEditorStateCreator[];
 
   /**
-   * Get the list of the supported drag-and-drop type speficiers.
+   * Get the list of the classifiers for draggable elements from explorer tree
    */
-  getExtraElementProjectExplorerDnDTypeGetters?(): ElementProjectExplorerDnDTypeGetter[];
+  getExtraDragElementClassifiers?(): DragElementClassifier[];
 
   /**
-   * Get the list of the supported drag-and-drop type speficiers for Pure grammar text editor.
+   * Get the list of the supported drag element type speficiers for Pure grammar text editor.
    */
-  getExtraPureGrammarTextEditorDnDTypes?(): string[];
+  getExtraPureGrammarTextEditorDragElementTypes?(): string[];
 
   /**
    * Get the list of Pure grammar parser description getters based on parser section keyword

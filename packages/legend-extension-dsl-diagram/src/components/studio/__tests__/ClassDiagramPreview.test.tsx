@@ -23,9 +23,9 @@ import {
   TEST__openElementFromExplorerTree,
   LegendStudioPluginManager,
 } from '@finos/legend-application-studio';
-import { DSL_DIAGRAM_TEST_ID } from '../DSLDiagram_TestID.js';
-import { DSLDiagram_GraphManagerPreset } from '../../../DSLDiagram_Extension.js';
-import { DSLDiagram_LegendStudioApplicationPlugin } from '../DSLDiagram_LegendStudioApplicationPlugin.js';
+import { DSL_DIAGRAM_TEST_ID } from '../DSL_Diagram_TestID.js';
+import { DSL_Diagram_GraphManagerPreset } from '../../../DSL_Diagram_Extension.js';
+import { DSL_Diagram_LegendStudioApplicationPlugin } from '../DSL_Diagram_LegendStudioApplicationPlugin.js';
 
 const TEST_DATA__dummyModel = [
   {
@@ -51,8 +51,8 @@ const TEST_DATA__dummyModel = [
 
 const pluginManager = LegendStudioPluginManager.create();
 pluginManager
-  .usePresets([new DSLDiagram_GraphManagerPreset()])
-  .usePlugins([new DSLDiagram_LegendStudioApplicationPlugin()])
+  .usePresets([new DSL_Diagram_GraphManagerPreset()])
+  .usePlugins([new DSL_Diagram_LegendStudioApplicationPlugin()])
   .install();
 
 test(integrationTest('Class diagram preview shows up properly'), async () => {

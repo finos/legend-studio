@@ -17,13 +17,20 @@
 import {
   createModelSchema,
   custom,
+  deserialize,
   list,
   object,
   optional,
   primitive,
+  serialize,
   SKIP,
 } from 'serializr';
-import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import {
+  deserializeArray,
+  SerializationFactory,
+  serializeArray,
+  usingModelSchema,
+} from '@finos/legend-shared';
 import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
 import type { V1_Runtime } from '../../model/packageableElements/runtime/V1_Runtime.js';
 import type { V1_RawExecutionContext } from '../../model/rawValueSpecification/V1_RawExecutionContext.js';
@@ -33,6 +40,8 @@ import {
   V1_rawBaseExecutionContextModelSchema,
   V1_rawLambdaModelSchema,
 } from '../../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
+import type { V1_ParameterValue } from '../../model/packageableElements/service/V1_ParameterValue.js';
+import { V1_parameterValueModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
 
 export class V1_ExecuteInput {
   clientVersion!: string;
@@ -46,6 +55,7 @@ export class V1_ExecuteInput {
   model!: V1_PureModelContextData;
   runtime!: V1_Runtime;
   context!: V1_RawExecutionContext;
+  parameterValues: V1_ParameterValue[] = [];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_ExecuteInput, {
@@ -58,13 +68,31 @@ export class V1_ExecuteInput {
         () => SKIP,
       ),
       context: usingModelSchema(V1_rawBaseExecutionContextModelSchema),
+      parameterValues: custom(
+        (values) =>
+          serializeArray(
+            values,
+            (value) => serialize(V1_parameterValueModelSchema, value),
+            {
+              skipIfEmpty: true,
+            },
+          ),
+        (values) =>
+          deserializeArray(
+            values,
+            (v) => deserialize(V1_parameterValueModelSchema, v),
+            {
+              skipIfEmpty: false,
+            },
+          ),
+      ),
     }),
   );
 }
 
 export class V1_TestDataGenerationExecutionInput extends V1_ExecuteInput {
   parameters: (string | number | boolean)[] = [];
-  hashValues = false;
+  hashStrings = false;
 
   static override readonly serialization = new SerializationFactory(
     createModelSchema(V1_TestDataGenerationExecutionInput, {
@@ -77,7 +105,7 @@ export class V1_TestDataGenerationExecutionInput extends V1_ExecuteInput {
         () => SKIP,
       ),
       context: usingModelSchema(V1_rawBaseExecutionContextModelSchema),
-      hashValues: primitive(),
+      hashStrings: primitive(),
       parameters: list(primitive()),
     }),
   );

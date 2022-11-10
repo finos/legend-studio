@@ -16,8 +16,7 @@
 
 import { list, createModelSchema, primitive, raw } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
-import type { Entity } from '@finos/legend-storage';
-import { generateGAVCoordinates } from '../DepotUtils.js';
+import { type Entity, generateGAVCoordinates } from '@finos/legend-storage';
 
 export class ProjectDependencyCoordinates {
   groupId: string;

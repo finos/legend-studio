@@ -33,6 +33,8 @@ import {
   ChevronRightIcon,
   CheckCircleIcon,
   EmptyCircleIcon,
+  PanelContent,
+  Modal,
 } from '@finos/legend-art';
 import { useEffect } from 'react';
 import {
@@ -46,14 +48,14 @@ import {
 import { capitalize } from '@finos/legend-shared';
 import {
   EDITOR_LANGUAGE,
+  TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,
-} from '../../../../stores/editor-state/element-editor-state/mapping/relational/DatabaseEditorHelper.js';
+} from './DatabaseEditorHelper.js';
 import { flowResult } from 'mobx';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 
 const getNodeIcon = (node: DatabaseBuilderTreeNodeData): React.ReactNode => {
   if (node instanceof SchemaDatabaseBuilderTreeNodeData) {
@@ -254,7 +256,7 @@ export const DatabaseBuilder = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <div className="modal modal--dark database-builder">
+        <Modal darkMode={true} className="database-builder">
           <div className="database-builder__heading">
             <div className="database-builder__heading__label">
               Build Database
@@ -317,7 +319,7 @@ export const DatabaseBuilder = observer(
                         disabled={isReadOnly || isExecutingAction}
                         tabIndex={-1}
                         onClick={buildDb}
-                        title={'Build Database...'}
+                        title="Build database..."
                       >
                         <FireIcon />
                       </button>
@@ -336,18 +338,18 @@ export const DatabaseBuilder = observer(
                       </button>
                     </div>
                   </div>
-                  <div className="panel__content">
-                    <StudioTextInputEditor
+                  <PanelContent>
+                    <TextInputEditor
                       language={EDITOR_LANGUAGE.PURE}
                       inputValue={databaseBuilderState.databaseGrammarCode}
                       isReadOnly={true}
                     />
-                  </div>
+                  </PanelContent>
                 </div>
               </ResizablePanel>
             </ResizablePanelGroup>
           </div>
-        </div>
+        </Modal>
       </Dialog>
     );
   },

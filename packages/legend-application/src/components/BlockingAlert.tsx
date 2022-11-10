@@ -15,7 +15,12 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { PanelLoadingIndicator, Dialog } from '@finos/legend-art';
+import {
+  PanelLoadingIndicator,
+  Dialog,
+  Modal,
+  ModalBody,
+} from '@finos/legend-art';
 import { noop } from '@finos/legend-shared';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
 
@@ -40,15 +45,15 @@ export const BlockingAlert = observer(() => {
         container: 'blocking-alert__container',
       }}
     >
-      <div className="modal modal--dark blocking-alert">
+      <Modal darkMode={true} className="blocking-alert">
         <PanelLoadingIndicator isLoading={Boolean(info.showLoading)} />
-        <div className="modal__body">
+        <ModalBody>
           <div className="blocking-alert__message">{info.message}</div>
           {info.prompt && (
             <div className="blocking-alert__message__prompt">{info.prompt}</div>
           )}
-        </div>
-      </div>
+        </ModalBody>
+      </Modal>
     </Dialog>
   );
 });

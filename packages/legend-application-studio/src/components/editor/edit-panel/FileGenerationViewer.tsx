@@ -24,10 +24,12 @@ import {
   LockIcon,
   FireIcon,
   StickArrowCircleRightIcon,
+  Panel,
+  PanelContent,
 } from '@finos/legend-art';
 import type { FileGenerationSpecification } from '@finos/legend-graph';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor.js';
+import { TextInputEditor } from '@finos/legend-application';
 
 export const FileGenerationViewer = observer(() => {
   const editorStore = useEditorStore();
@@ -45,7 +47,7 @@ export const FileGenerationViewer = observer(() => {
 
   return (
     <div className="file-generation-viewer">
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             {
@@ -87,20 +89,18 @@ export const FileGenerationViewer = observer(() => {
               )}
             </div>
           </div>
-          <div className="panel__content">
-            {
-              <StudioTextInputEditor
-                inputValue={getTextContent(
-                  generatedFile.content,
-                  generatedFile.format,
-                )}
-                isReadOnly={true}
-                language={getEditorLanguageFromFormat(generatedFile.format)}
-              />
-            }
-          </div>
+          <PanelContent>
+            <TextInputEditor
+              inputValue={getTextContent(
+                generatedFile.content,
+                generatedFile.format,
+              )}
+              isReadOnly={true}
+              language={getEditorLanguageFromFormat(generatedFile.format)}
+            />
+          </PanelContent>
         </div>
-      </div>
+      </Panel>
     </div>
   );
 });

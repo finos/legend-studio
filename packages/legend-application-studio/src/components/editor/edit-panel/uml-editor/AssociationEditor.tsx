@@ -24,7 +24,7 @@ import {
   CORE_DND_TYPE,
   type UMLEditorElementDropTarget,
   type ElementDragSource,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import { useDrop } from 'react-dnd';
 import {
   clsx,
@@ -35,13 +35,14 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitterLine,
   BlankPanelContent,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   InputWithInlineValidation,
   LockIcon,
   PlusIcon,
   ArrowCircleRightIcon,
   LongArrowRightIcon,
   PanelDropZone,
+  Panel,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
@@ -63,7 +64,6 @@ import {
   type TaggedValue,
   MULTIPLICITY_INFINITE,
   Profile,
-  Multiplicity,
   Class,
   PrimitiveType,
   Unit,
@@ -83,12 +83,13 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteTaggedValue,
   association_changePropertyType,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/shared/ModelUtil.js';
+} from '../../../../stores/shared/ModelClassifierUtils.js';
 import {
+  buildElementOption,
   useApplicationNavigationContext,
   type PackageableElementOption,
 } from '@finos/legend-application';
@@ -119,7 +120,8 @@ const AssociationPropertyBasicEditor = observer(
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
     // TODO: make this so that association can only refer to classes from the same graph space
-    const propertyTypeOptions = editorStore.classOptions;
+    const propertyTypeOptions =
+      editorStore.graphManagerState.usableClasses.map(buildElementOption);
     const propertyType = property.genericType.value.rawType;
     const propertyTypeName = getClassPropertyType(propertyType);
     const filterOption = createFilter({
@@ -163,7 +165,10 @@ const AssociationPropertyBasicEditor = observer(
           ? upper
           : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
-        property_setMultiplicity(property, new Multiplicity(lBound, uBound));
+        property_setMultiplicity(
+          property,
+          editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
+        );
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -196,7 +201,7 @@ const AssociationPropertyBasicEditor = observer(
             value={property.name}
             spellCheck={false}
             onChange={changeValue}
-            placeholder={`Property name`}
+            placeholder="Property name"
             validationErrorMessage={
               isPropertyDuplicated(property) ? 'Duplicated property' : undefined
             }
@@ -208,7 +213,7 @@ const AssociationPropertyBasicEditor = observer(
             options={propertyTypeOptions}
             onChange={changePropertyType}
             value={selectedPropertyType}
-            placeholder={'Choose a data type or enumeration'}
+            placeholder="Choose a type..."
             filterOption={filterOption}
           />
         )}
@@ -244,7 +249,7 @@ const AssociationPropertyBasicEditor = observer(
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
-                title={'Visit element'}
+                title="Visit element"
               >
                 <ArrowCircleRightIcon />
               </button>
@@ -276,7 +281,7 @@ const AssociationPropertyBasicEditor = observer(
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
-                title={'Visit element'}
+                title="Visit element"
               >
                 <ArrowCircleRightIcon />
               </button>
@@ -304,7 +309,7 @@ const AssociationPropertyBasicEditor = observer(
           className="uml-element-editor__basic__detail-btn"
           onClick={selectProperty}
           tabIndex={-1}
-          title={'See detail'}
+          title="See detail"
         >
           <LongArrowRightIcon />
         </button>
@@ -435,14 +440,23 @@ export const AssociationEditor = observer(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.ASSOCIATION_EDITOR,
     );
 
+    // layout
+    const propertyEditorCollapsiblePanelGroupProps =
+      getCollapsiblePanelGroupProps(!selectedProperty, {
+        size: 250,
+      });
+
     return (
       <div
         data-testid={LEGEND_STUDIO_TEST_ID.ASSOCIATION_EDITOR}
         className="uml-element-editor association-editor"
       >
         <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel minSize={56}>
-            <div className="panel">
+          <ResizablePanel
+            {...propertyEditorCollapsiblePanelGroupProps.remainingPanel}
+            minSize={56}
+          >
+            <Panel>
               <div className="panel__header">
                 <div className="panel__header__title">
                   {isReadOnly && (
@@ -550,15 +564,13 @@ export const AssociationEditor = observer(
                   </PanelDropZone>
                 )}
               </div>
-            </div>
+            </Panel>
           </ResizablePanel>
           <ResizablePanelSplitter>
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
           </ResizablePanelSplitter>
           <ResizablePanel
-            {...getControlledResizablePanelProps(!selectedProperty, {
-              size: 250,
-            })}
+            {...propertyEditorCollapsiblePanelGroupProps.collapsiblePanel}
             direction={-1}
           >
             {selectedProperty ? (

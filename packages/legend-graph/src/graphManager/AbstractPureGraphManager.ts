@@ -46,11 +46,12 @@ import type {
 import type { ExecutionNode } from '../graph/metamodel/pure/executionPlan/nodes/ExecutionNode.js';
 import {
   ActionState,
+  type PlainObject,
   type Log,
   type ServerClientConfig,
   type TracerService,
 } from '@finos/legend-shared';
-import type { LightQuery, Query } from './action/query/Query.js';
+import type { LightQuery, Query, QueryInfo } from './action/query/Query.js';
 import type { Entity } from '@finos/legend-storage';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification.js';
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription.js';
@@ -67,7 +68,12 @@ import type {
   MappingModelCoverageAnalysisResult,
   RawMappingModelCoverageAnalysisResult,
 } from './action/analytics/MappingModelCoverageAnalysis.js';
-import type { SchemaSet } from '../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
+import type { SchemaSet } from '../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
+import type {
+  CompilationResult,
+  TextCompilationResult,
+} from './action/compilation/CompilationResult.js';
+import type { ParameterValue } from '../DSL_Service_Exports.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -83,6 +89,14 @@ export interface GraphBuilderOptions {
    * See https://github.com/finos/legend-studio/issues/1067
    */
   TEMPORARY__preserveSectionIndex?: boolean;
+  /**
+   * If strict mode is enabled, certain validations, which, in normal mode, are often considered as warnings or non-problems,
+   * will be treated as error and will be thrown. This is to compensate for discrepancies in strictness between engine compilation
+   * and graph builder algorithm. Ideally, a lot of these errors will eventually be treated as errors by engine compilation.
+   *
+   * See https://github.com/finos/legend-studio/issues/941
+   */
+  strict?: boolean;
 }
 
 export interface ExecutionOptions {
@@ -92,6 +106,12 @@ export interface ExecutionOptions {
    */
   useLosslessParse?: boolean | undefined;
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
+  parameterValues?: ParameterValue[];
+}
+
+export interface ServiceRegistrationOptions {
+  TEMPORARY__useStoreModel?: boolean | undefined;
+  TEMPORARY__semiInteractiveOverridePattern?: string | undefined;
 }
 
 export abstract class AbstractPureGraphManagerExtension {
@@ -230,15 +250,19 @@ export abstract class AbstractPureGraphManager {
 
   // ------------------------------------------- Compile -------------------------------------------
 
+  abstract compileEntities(entities: Entity[]): Promise<void>;
   abstract compileGraph(
     graph: PureModel,
-    options?: { onError?: () => void; keepSourceInformation?: boolean },
-  ): Promise<void>;
+    options?: {
+      onError?: () => void;
+      keepSourceInformation?: boolean;
+    },
+  ): Promise<CompilationResult>;
   abstract compileText(
     graphGrammar: string,
     graph: PureModel,
     options?: { onError?: () => void },
-  ): Promise<Entity[]>;
+  ): Promise<TextCompilationResult>;
   abstract getLambdaReturnType(
     lambda: RawLambda,
     graph: PureModel,
@@ -262,19 +286,19 @@ export abstract class AbstractPureGraphManager {
   // ------------------------------------------- Value Specification  -------------------------------------------
 
   abstract buildValueSpecification(
-    valueSpecificationJson: Record<PropertyKey, unknown>,
+    json: PlainObject,
     graph: PureModel,
   ): ValueSpecification;
   abstract serializeValueSpecification(
     valueSpecification: ValueSpecification,
-  ): Record<PropertyKey, unknown>;
+  ): PlainObject;
   abstract buildRawValueSpecification(
     valueSpecification: ValueSpecification,
     graph: PureModel,
   ): RawValueSpecification;
   abstract serializeRawValueSpecification(
     rawValueSpecification: RawValueSpecification,
-  ): Record<PropertyKey, unknown>;
+  ): PlainObject;
 
   // These methods are utilities that we could use to quickly construct compilable
   // raw lambdas.
@@ -381,7 +405,7 @@ export abstract class AbstractPureGraphManager {
     version: string | undefined,
     server: string,
     executionMode: ServiceExecutionMode,
-    TEMPORARY__useStoreModel: boolean,
+    options?: ServiceRegistrationOptions,
   ): Promise<ServiceRegistrationResult>;
   abstract activateService(
     serviceUrl: string,
@@ -405,7 +429,7 @@ export abstract class AbstractPureGraphManager {
   ): Promise<LightQuery[]>;
   abstract getLightQuery(queryId: string): Promise<LightQuery>;
   abstract getQuery(queryId: string, graph: PureModel): Promise<Query>;
-  abstract getQueryContent(queryId: string): Promise<string>;
+  abstract getQueryInfo(queryId: string): Promise<QueryInfo>;
   abstract createQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract updateQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract deleteQuery(queryId: string): Promise<void>;

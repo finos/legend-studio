@@ -14,6 +14,7 @@
     { "path": "../legend-storage" },
     { "path": "../legend-server-depot" },
     { "path": "../legend-application" },
+    { "path": "../legend-query-builder" },
     { "path": "../legend-art" }
   ]
 }

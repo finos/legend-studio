@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-@import '@finos/legend-art/lib/index.css';
-@import '@finos/legend-application/lib/index.css';
-@import '@finos/legend-application-query/lib/index.css';
-@import '@finos/legend-extension-dsl-data-space/lib/index.css';
+@import url('@finos/legend-art/lib/index.css');
+@import url('@finos/legend-application/lib/index.css');
+@import url('@finos/legend-query-builder/lib/index.css');
+@import url('@finos/legend-application-query/lib/index.css');
+@import url('@finos/legend-extension-dsl-data-space/lib/index.css');
+@import url('@finos/legend-extension-dsl-service/lib/index.css');
 
 // NOTE: the following styles are temporary so we can have a poor-man version of
 // theming for Legend Query. The reason why we put the code here is that this is
@@ -71,6 +73,10 @@
     }
   }
 
+  .menu__item[disabled] {
+    color: var(--color-light-grey-400);
+  }
+
   // ---------------------------- Button -------------------------------
 
   .btn--dark,
@@ -85,8 +91,8 @@
     color: var(--color-white);
   }
 
-  .btn--dark.btn--caution:disabled,
-  .btn--dark:disabled {
+  .btn--dark.btn--caution[disabled],
+  .btn--dark[disabled] {
     background: var(--color-dark-grey-500);
     color: var(--color-white);
   }
@@ -105,7 +111,7 @@
   .table {
     th,
     td {
-      border: 0.1rem solid var(--color-light-grey-250);
+      border-color: var(--color-light-grey-250);
     }
 
     thead {
@@ -196,7 +202,7 @@
 
   .value-spec-editor__reset-btn {
     background: var(--color-legacy-light-grey-100);
-    border: 0.1rem solid var(--color-light-grey-300);
+    border-color: var(--color-light-grey-300);
     border-left: none;
 
     svg {
@@ -206,7 +212,7 @@
 
   .value-spec-editor__date-picker__trigger {
     background: var(--color-white);
-    border: 0.1rem solid var(--color-light-grey-300);
+    border-color: var(--color-light-grey-300);
     color: var(--color-legacy-dark-grey-200);
   }
 
@@ -247,6 +253,48 @@
     }
   }
 
+  // ---------------------------- Query Loader -------------------------------
+
+  .query-editor {
+    &__query-loader {
+      &__filter-section {
+        &__section__toggler__btn {
+          svg {
+            color: var(--color-legacy-light-blue-100);
+          }
+        }
+
+        &__section__toggler__prompt {
+          color: var(--color-legacy-dark-grey-200);
+        }
+      }
+
+      &__search-section {
+        border-color: var(--color-legacy-light-grey-200);
+
+        &__input {
+          border-color: var(--color-legacy-light-grey-200);
+        }
+      }
+
+      &__body {
+        .table {
+          color: var(--color-legacy-dark-grey-200);
+        }
+
+        &__table__row:hover {
+          color: var(--color-legacy-light-blue-100);
+          background: var(--color-legacy-light-grey-200);
+        }
+
+        &__table__row--selected:hover,
+        &__table__row--selected {
+          background: var(--color-legacy-light-grey-200);
+        }
+      }
+    }
+  }
+
   // ---------------------------- Property Search -------------------------------
 
   .query-builder-property-search-panel {
@@ -257,6 +305,10 @@
     &__form__section__header__label,
     &__form__section__toggler__prompt {
       color: var(--color-legacy-dark-grey-200);
+    }
+
+    &__form__section__toggler__btn--toggled svg {
+      color: var(--color-legacy-light-blue-100);
     }
 
     .resizable-panel__splitter-line {
@@ -279,6 +331,66 @@
       &:focus {
         border-color: var(--color-legacy-light-blue-100);
       }
+    }
+
+    &__input__search__icon svg {
+      color: var(--color-dark-grey-400);
+    }
+
+    &__input__search__count {
+      background: var(--color-legacy-light-blue-100);
+      color: var(--color-white);
+    }
+  }
+
+  // ---------------------------- Diff Panel -------------------------------
+
+  .query-builder__diff-panel {
+    &__header {
+      background: var(--color-white);
+    }
+
+    &__actions {
+      border-color: var(--color-legacy-light-grey-300);
+
+      .btn {
+        height: 3.6rem;
+        border-radius: 0.2rem;
+        color: var(--color-light-grey-50);
+      }
+    }
+
+    &__mode {
+      background: var(--color-light-grey-250);
+      color: var(--color-dark-grey-500);
+    }
+
+    &__mode--selected {
+      background: var(--color-legacy-light-blue-200);
+      color: var(--color-light-grey-100);
+    }
+  }
+
+  // ---------------------------- Search config -------------------------------
+
+  .text-search-advanced-config__panel {
+    background: var(--color-white);
+
+    &__header__label {
+      color: var(--color-legacy-dark-grey-400);
+      background: var(--color-legacy-light-grey-100);
+    }
+
+    &__header__hint {
+      color: var(--color-legacy-dark-grey-400);
+    }
+
+    .mui-radio-group__group__item__label {
+      color: var(--color-legacy-dark-grey-200);
+    }
+
+    .Mui-checked {
+      color: var(--color-legacy-light-blue-200);
     }
   }
 
@@ -304,8 +416,8 @@
     background: var(--color-legacy-light-grey-300);
     outline-offset: -0.2rem;
     border-radius: 0.4rem;
-    outline: 0.2rem solid var(--color-legacy-light-grey-100);
-    border: 0.1rem solid var(--color-legacy-light-grey-100);
+    outline-color: var(--color-legacy-light-grey-100);
+    border-color: var(--color-legacy-light-grey-100);
   }
 
   ::-webkit-scrollbar-track-piece {
@@ -332,6 +444,7 @@
 
   .query-editor__header {
     background: var(--color-legacy-light-blue-350);
+    border-color: var(--color-legacy-light-blue-600);
 
     &__label {
       background: var(--color-dark-shade-100);
@@ -343,7 +456,15 @@
     }
   }
 
-  .query-editor__header__back-btn.btn--dark,
+  .query-editor__header__menu {
+    border-color: var(--color-legacy-light-blue-600);
+  }
+
+  .query-editor__header__menu-item {
+    color: var(--color-white);
+  }
+
+  .query-editor__header__action__view-project .btn--dark,
   .query-editor__header__action.btn--dark {
     background: var(--color-legacy-light-blue-250);
     color: var(--color-white);
@@ -364,21 +485,12 @@
   }
 
   .query-builder__main {
-    border: 0.1rem solid var(--color-legacy-light-grey-300);
+    border-color: var(--color-legacy-light-grey-300);
     background: var(--color-legacy-light-grey-200);
-  }
-
-  .query-builder__activity-bar {
-    background: var(--color-legacy-light-grey-100);
-    border-top: 0.1rem solid var(--color-legacy-light-grey-300);
   }
 
   .query-builder__status-bar {
     background: var(--color-legacy-light-blue-350);
-  }
-
-  .query-builder__activity-bar__item:hover {
-    color: var(--color-dark-grey-250);
   }
 
   .query-builder__sub-header__custom-action {
@@ -396,12 +508,11 @@
     color: var(--color-legacy-dark-grey-200);
     background: var(--color-legacy-light-grey-100);
     border-color: var(--color-legacy-light-grey-300);
-    border: 0.1rem solid var(--color-legacy-light-grey-300);
   }
 
   .query-builder .panel__content {
     background: var(--color-white);
-    border: 0.1rem solid var(--color-legacy-light-grey-300);
+    border-color: var(--color-legacy-light-grey-300);
     border-top: none;
   }
 
@@ -427,7 +538,8 @@
     text-transform: capitalize;
   }
 
-  .query-builder__projection__column__drag-handle {
+  .query-builder__projection__column__drag-handle,
+  .query-builder__olap__column__drag-handle {
     background: var(--color-light-grey-180);
 
     svg {
@@ -442,14 +554,41 @@
   }
 
   .query-builder__setup__milestoning {
-    &:disabled {
+    &[disabled] {
       background: var(--color-light-grey-180);
     }
   }
 
-  .query-builder__setup__config__item__label {
+  .query-builder__setup__config-group__item__label {
     background: var(--color-legacy-light-grey-100);
-    border: 0.1rem solid var(--color-legacy-light-grey-300);
+    border-color: var(--color-legacy-light-grey-300);
+  }
+
+  .query-builder__setup__runtime-option--custom__label {
+    background: var(--color-light-grey-50);
+    border-color: var(--color-light-grey-180);
+  }
+
+  .query-builder__setup__config-group__header {
+    background: var(--color-legacy-light-blue-350);
+  }
+
+  .query-builder__setup__config-group__header__title {
+    color: var(--color-light-grey-150);
+  }
+
+  .query-builder__setup__config-group__content {
+    border-color: var(--color-legacy-light-blue-350);
+  }
+
+  .query-builder__setup__config-group--class {
+    .query-builder__setup__config-group__content {
+      border-color: var(--color-purple-100);
+    }
+
+    .query-builder__setup__config-group__item__label {
+      border-color: var(--color-purple-0);
+    }
   }
 
   // ------------------------------------ Explorer Panel ---------------------------------------
@@ -535,7 +674,7 @@
   }
 
   .query-builder__fetch__structure__mode--selected {
-    background: var(--color-legacy-light-blue-100);
+    background: var(--color-legacy-light-blue-200);
     color: var(--color-light-grey-100);
   }
 
@@ -547,7 +686,8 @@
   }
 
   .query-builder__projection__column__action .query-builder__icon,
-  .query-builder__projection__column__action {
+  .query-builder__projection__column__action,
+  .query-builder__olap__column__action {
     &:hover svg {
       color: var(--color-dark-grey-350);
     }
@@ -557,12 +697,15 @@
     background: var(--color-legacy-light-blue-100);
   }
 
-  .query-builder__projection__column__aggregate__operator__badge {
+  .query-builder__projection__column__aggregate__operator__badge,
+  .query-builder__olap__column__sortby__operator__badge {
     background: var(--color-dark-grey-400);
     color: var(--color-light-grey-100);
   }
 
-  .query-builder__projection__column__aggregate__operator__dropdown__trigger {
+  .query-builder__projection__column__aggregate__operator__dropdown__trigger,
+  .query-builder__olap__column__sortby__operator__dropdown__trigger,
+  .query-builder__olap__column__operation__operator__dropdown__trigger {
     background: var(--color-dark-grey-350);
 
     svg {
@@ -570,7 +713,8 @@
     }
   }
 
-  .query-builder__projection__column__aggregate__operator__badge--activated {
+  .query-builder__projection__column__aggregate__operator__badge--activated,
+  .query-builder__olap__column__sortby__operator__badge--activated {
     background: var(--color-legacy-light-blue-200);
 
     svg {
@@ -714,7 +858,38 @@
     color: var(--color-legacy-dark-grey-200);
   }
 
+  // ------------------------------------ OLAP Panel ---------------------------------------
+  .query-builder__olap__column__sortby__none,
+  .query-builder__olap__column__window__content__label {
+    background: var(--color-dark-grey-300);
+  }
+
+  .query-builder__olap__column__sortby__operator__label,
+  .query-builder__olap__column__operation__operator__label {
+    background: var(--color-dark-grey-400);
+    color: var(--color-light-grey-100);
+  }
+
+  .query-builder__olap__column__window__operator__badge,
+  .query-builder__olap__column__operation__operator__badge {
+    background: var(--color-legacy-light-blue-200);
+    color: var(--color-light-grey-100);
+
+    svg {
+      color: var(--color-legacy-light-grey-100);
+    }
+  }
+
+  .query-builder__olap__tds__column-badge__content {
+    background: var(--color-blue-50);
+  }
+
   // ------------------------------------ Result Panel ---------------------------------------
+
+  .query-builder__result__stale-status__icon,
+  .query-builder__result__stale-status__label {
+    color: var(--color-legacy-orange-100);
+  }
 
   .query-builder__result__limit__input:not(:focus) {
     border-color: var(--color-light-grey-250);
@@ -746,21 +921,21 @@
     }
   }
 
-  .query-builder__result__execute-btn:disabled:hover
+  .query-builder__result__execute-btn
     .query-builder__result__execute-btn__label,
-  .query-builder__result__execute-btn:disabled
+  .query-builder__result__execute-btn[disabled]:hover
+    .query-builder__result__execute-btn__label,
+  .query-builder__result__execute-btn[disabled]
     .query-builder__result__execute-btn__label {
-    background: var(--color-legacy-light-grey-200);
-
     &__title,
     svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-white);
     }
   }
 
-  .query-builder__result__execute-btn:disabled:hover
+  .query-builder__result__execute-btn[disabled]:hover
     .query-builder__result__execute-btn__dropdown-btn,
-  .query-builder__result__execute-btn:disabled
+  .query-builder__result__execute-btn[disabled]
     .query-builder__result__execute-btn__dropdown-btn {
     background: var(--color-legacy-light-grey-200);
     border-color: var(--color-dark-shade-50);
@@ -874,7 +1049,7 @@
   }
 
   .query-builder__lambda-editor {
-    border: 0.1rem solid var(--color-legacy-light-blue-100);
+    border-color: var(--color-legacy-light-blue-100);
 
     .monaco-editor {
       .margin,

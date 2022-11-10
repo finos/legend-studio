@@ -15,6 +15,8 @@
  */
 
 import {
+  DATE_FORMAT,
+  ELEMENT_PATH_DELIMITER,
   MULTIPLICITY_INFINITE,
   MULTIPLICITY_RANGE_OPERATOR,
   PRIMITIVE_TYPE,
@@ -23,7 +25,7 @@ import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableEl
 import type { Type } from '../metamodel/pure/packageableElements/domain/Type.js';
 import { PrimitiveType } from '../metamodel/pure/packageableElements/domain/PrimitiveType.js';
 import { Enumeration } from '../metamodel/pure/packageableElements/domain/Enumeration.js';
-import { format } from 'date-fns';
+import { formatDate } from '@finos/legend-shared';
 
 export enum PURE_ELEMENT_NAME {
   PROFILE = 'Profile',
@@ -101,9 +103,9 @@ export const generateDefaultParameterValueForType = (
         return 0;
       case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
-        return `%${format(new Date(), 'yyyy-MM-dd')}`;
+        return `%${formatDate(new Date(), DATE_FORMAT)}`;
       case PRIMITIVE_TYPE.DATETIME:
-        return `%${format(new Date(), 'yyyy-MM-dd')}T00:00:00`;
+        return `%${formatDate(new Date(), DATE_FORMAT)}T00:00:00`;
       case PRIMITIVE_TYPE.STRICTTIME:
         return `%00:00:00`;
       case PRIMITIVE_TYPE.STRING:
@@ -130,14 +132,17 @@ export const generateFunctionCallString = (
         separator;
     }
   }
-  return `${element.path}(${lambdaString})`;
+  return `${element.package?.path}${ELEMENT_PATH_DELIMITER}${element.functionName}(${lambdaString})`;
 };
 
-export const generateFunctionSignature = (
+export const generateFunctionPrettyName = (
   element: ConcreteFunctionDefinition,
   fullPath: boolean,
 ): string =>
-  `${fullPath ? element.path : element.name}(${element.parameters
+  `${
+    (fullPath ? element.package?.path + ELEMENT_PATH_DELIMITER : '') +
+    element.functionName
+  }(${element.parameters
     .map(
       (p) =>
         `${p.name}: ${p.type.value.name}[${generateMultiplicityString(

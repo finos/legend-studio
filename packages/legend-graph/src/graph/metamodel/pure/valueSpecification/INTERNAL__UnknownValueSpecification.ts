@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../Core_HashUtils.js';
 import { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 import {
   type ValueSpecificationVisitor,
@@ -26,12 +31,24 @@ import {
  *
  * @internal This type is specific to Studio only, not a standard, recognizeable in Pure/engine.
  */
-export class INTERNAL__UnknownValueSpecification extends ValueSpecification {
-  content: object;
+export class INTERNAL__UnknownValueSpecification
+  extends ValueSpecification
+  implements Hashable
+{
+  readonly content: object;
 
   constructor(content: object) {
-    super(new Multiplicity(0, 0));
+    super(Multiplicity.ZERO);
+
     this.content = content;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INTERNAL_UNKNOWN_VALUE_SPECIFICATION,
+      hashObjectWithoutSourceInformation(this.content),
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+    ]);
   }
 
   accept_ValueSpecificationVisitor<T>(

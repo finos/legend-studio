@@ -15,14 +15,7 @@
  */
 
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
-import {
-  makeAutoObservable,
-  observable,
-  action,
-  flowResult,
-  makeObservable,
-  flow,
-} from 'mobx';
+import { observable, action, flowResult, makeObservable, flow } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
@@ -102,11 +95,12 @@ const updateWorkflowJobData = (
 };
 
 export class WorkflowLogState {
-  editorStore: EditorStore;
-  workflowManagerState: WorkflowManagerState;
+  readonly editorStore: EditorStore;
+  readonly workflowManagerState: WorkflowManagerState;
+  readonly fetchJobLogState = ActionState.create();
+
   job: WorkflowJob | undefined;
   logs: string;
-  fetchJobLogState = ActionState.create();
 
   constructor(
     editorStore: EditorStore,
@@ -114,12 +108,14 @@ export class WorkflowLogState {
     job: WorkflowJob | undefined,
     logs: string | undefined,
   ) {
-    makeAutoObservable(this, {
-      editorStore: false,
+    makeObservable(this, {
       job: observable,
       logs: observable,
       setLogs: action,
       setJob: action,
+      closeModal: action,
+      refreshJobLogs: flow,
+      viewJobLogs: flow,
     });
 
     this.editorStore = editorStore;
@@ -187,8 +183,9 @@ export class WorkflowLogState {
 
 export class WorkflowState {
   readonly uuid = uuid();
-  editorStore: EditorStore;
-  workflowManagerState: WorkflowManagerState;
+  readonly editorStore: EditorStore;
+  readonly workflowManagerState: WorkflowManagerState;
+
   treeData: TreeData<WorkflowExplorerTreeNodeData>;
   isExecutingWorkflowRequest = false;
 
@@ -198,10 +195,15 @@ export class WorkflowState {
     workflow: Workflow,
     jobs: WorkflowJob[] | undefined,
   ) {
-    makeAutoObservable(this, {
-      editorStore: false,
+    makeObservable(this, {
       treeData: observable.ref,
+      isExecutingWorkflowRequest: observable,
       setWorkflowTreeData: action,
+      fetchAllWorkspaceWorkJobs: flow,
+      onTreeNodeSelect: flow,
+      cancelJob: flow,
+      refreshWorkflow: flow,
+      retryJob: flow,
     });
 
     this.editorStore = editorStore;
@@ -326,19 +328,15 @@ export class WorkflowState {
 }
 
 export abstract class WorkflowManagerState {
-  editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
-  fetchWorkflowsState = ActionState.create();
+  readonly editorStore: EditorStore;
+  readonly sdlcState: EditorSDLCState;
+  readonly fetchWorkflowsState = ActionState.create();
+
   logState: WorkflowLogState;
   workflowStates: WorkflowState[] = [];
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    this.editorStore = editorStore;
-    this.sdlcState = sdlcState;
     makeObservable(this, {
-      editorStore: false,
-      sdlcState: false,
-      fetchWorkflowsState: observable,
       logState: observable,
       workflowStates: observable,
       fetchAllWorkflows: flow,
@@ -350,6 +348,10 @@ export abstract class WorkflowManagerState {
       cancelJob: flow,
       getJobLogs: flow,
     });
+
+    this.editorStore = editorStore;
+    this.sdlcState = sdlcState;
+
     this.logState = new WorkflowLogState(
       this.editorStore,
       this,
@@ -357,18 +359,13 @@ export abstract class WorkflowManagerState {
       undefined,
     );
   }
+
   abstract getWorkflows(): GeneratorFn<Workflow[]>;
-
   abstract getWorkflow(workflowId: string): GeneratorFn<Workflow>;
-
   abstract getJobs(workflowId: string): GeneratorFn<WorkflowJob[]>;
-
   abstract getJob(job: WorkflowJob): GeneratorFn<WorkflowJob[]>;
-
   abstract retryJob(workflowJob: WorkflowJob): GeneratorFn<void>;
-
   abstract cancelJob(workflowJob: WorkflowJob): GeneratorFn<void>;
-
   abstract getJobLogs(workflowJob: WorkflowJob): GeneratorFn<string>;
 
   *fetchAllWorkflows(): GeneratorFn<void> {

@@ -17,7 +17,7 @@
 import { useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { guaranteeType } from '@finos/legend-shared';
-import { Dialog } from '@finos/legend-art';
+import { Dialog, ModalTitle } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -61,10 +61,6 @@ export const NewServiceModal = observer(
           .catch(applicationStore.alertUnhandledError);
       }
     };
-    const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-      event.preventDefault();
-      create();
-    };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       setServicePath(event.target.value);
     return (
@@ -80,12 +76,18 @@ export const NewServiceModal = observer(
           },
         }}
       >
-        <form onSubmit={onSubmit} className="modal search-modal modal--dark">
-          <div className="modal__title">Promote to Service</div>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            create();
+          }}
+          className="modal search-modal modal--dark"
+        >
+          <ModalTitle title="Promote to Service" />
           <div className="input-group">
             <input
               ref={nameRef}
-              className="modal--simple__input input--dark input-group__input"
+              className="input input--dark input-group__input"
               disabled={isReadOnly}
               value={servicePath}
               spellCheck={false}
@@ -100,9 +102,8 @@ export const NewServiceModal = observer(
           </div>
           <div className="search-modal__actions">
             <button
-              className="modal--simple__btn btn btn--dark btn--primary"
+              className="btn btn--dark"
               disabled={Boolean(isReadOnly) || elementAlreadyExists}
-              color="primary"
               onClick={create}
             >
               Create

@@ -271,12 +271,14 @@ export class ChangeDetectionState {
   aggregatedConflictResolutionChanges: EntityDiff[] = [];
   conflicts: EntityChangeConflict[] = []; // conflicts in conflict resolution mode (derived from aggregated workspace changes and conflict resolution changes)
   resolutions: EntityChangeConflictResolution[] = [];
+  currentGraphHash: string | undefined;
 
   observerContext: ObserverContext;
 
   constructor(editorStore: EditorStore, graphState: EditorGraphState) {
     makeObservable(this, {
       resolutions: observable,
+      currentGraphHash: observable,
       projectLatestRevisionState: observable.ref,
       conflictResolutionBaseRevisionState: observable.ref,
       conflictResolutionHeadRevisionState: observable.ref,
@@ -355,6 +357,15 @@ export class ChangeDetectionState {
     this.potentialWorkspacePullConflicts = conflicts;
   }
 
+  getCurrentGraphHash(): string {
+    return hashObject(
+      Array.from(this.snapshotLocalEntityHashesIndex(true).entries())
+        // sort to ensure this array order does not affect change detection status
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([key, value]) => `${key}@${value}`),
+    );
+  }
+
   stop(force = false): void {
     this.changeDetectionReaction?.();
     this.changeDetectionReaction = undefined;
@@ -407,16 +418,10 @@ export class ChangeDetectionState {
      * See https://medium.com/terria/when-and-why-does-mobxs-keepalive-cause-a-memory-leak-8c29feb9ff55
      */
     this.changeDetectionReaction = reaction(
-      // to be safe, rather than just giving the reaction the hash index snapshot to watch, we hash the snapshot content
-      () =>
-        hashObject(
-          Array.from(this.snapshotLocalEntityHashesIndex(true).entries())
-            // sort to ensure this array order does not affect change detection status
-            .sort((a, b) => a[0].localeCompare(b[0]))
-            .map(([key, value]) => `${key}@${value}`),
-        ),
+      () => this.getCurrentGraphHash(),
       () => {
         flowResult(this.computeLocalChanges(true)).catch(noop());
+        this.currentGraphHash = this.getCurrentGraphHash();
       },
       {
         // fire reaction immediately to compute the first changeset
@@ -426,11 +431,15 @@ export class ChangeDetectionState {
       },
     );
 
+    // set initial current graph hash
+    this.currentGraphHash = this.getCurrentGraphHash();
+
     // dispose and remove the disposers for `keepAlive` computations for elements' hash code
     this.graphElementHashCodeKeepAliveComputationDisposers.forEach((disposer) =>
       disposer(),
     );
     this.graphElementHashCodeKeepAliveComputationDisposers = [];
+
     this.initState.pass();
   }
 
