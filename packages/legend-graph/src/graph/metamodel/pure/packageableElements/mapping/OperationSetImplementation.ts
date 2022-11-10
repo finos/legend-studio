@@ -39,6 +39,11 @@ export class OperationSetImplementation
   implements Hashable
 {
   parameters: SetImplementationContainer[] = [];
+  /**
+   * For convenience, we don't process the operation, but assign it an enum
+   *
+   * @discrepancy model
+   */
   operation: OperationType;
 
   constructor(

@@ -20,6 +20,7 @@ import {
   guaranteeNonNullable,
   isNonNullable,
   assertTrue,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { Class } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import type { Association } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Association.js';
@@ -54,6 +55,7 @@ import {
   getAllClassProperties,
   getOrCreateGraphPackage,
 } from '../../../../../../../../graph/helpers/DomainHelper.js';
+import { AggregationKind } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/AggregationKind.js';
 
 export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,
@@ -160,6 +162,15 @@ export const V1_buildUnit = (
   return pureUnit;
 };
 
+const V1_extractPropertyAggregationKind = (val: string): AggregationKind => {
+  if (!Object.values(AggregationKind).find((v) => v === val)) {
+    throw new UnsupportedOperationError(
+      `Can't handle unsupported property aggregation kind '${val}'`,
+    );
+  }
+  return val as AggregationKind;
+};
+
 export const V1_buildProperty = (
   property: V1_Property,
   context: V1_GraphBuilderContext,
@@ -187,6 +198,9 @@ export const V1_buildProperty = (
     context.resolveGenericType(property.type),
     owner,
   );
+  pureProperty.aggregation = property.aggregation
+    ? V1_extractPropertyAggregationKind(property.aggregation)
+    : undefined;
   pureProperty.stereotypes = property.stereotypes
     .map((stereotype) => context.resolveStereotype(stereotype))
     .filter(isNonNullable);

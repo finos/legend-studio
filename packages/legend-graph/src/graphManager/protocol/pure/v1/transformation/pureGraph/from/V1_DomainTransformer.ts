@@ -164,6 +164,7 @@ const transformProperty = (element: Property): V1_Property => {
   property.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   property.type =
     element.genericType.ownerReference.valueForSerialization ?? '';
+  property.aggregation = element.aggregation;
   return property;
 };
 

@@ -24,6 +24,7 @@ export class V1_Property implements Hashable {
   name!: string;
   type!: string;
   multiplicity!: V1_Multiplicity;
+  aggregation?: string | undefined;
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
 
@@ -33,6 +34,7 @@ export class V1_Property implements Hashable {
       this.name,
       this.multiplicity,
       this.type,
+      this.aggregation ?? '',
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),
     ]);
