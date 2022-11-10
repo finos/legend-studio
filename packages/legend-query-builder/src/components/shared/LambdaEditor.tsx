@@ -46,7 +46,6 @@ import {
 import { flowResult } from 'mobx';
 import { ParserError, type EngineError, type Type } from '@finos/legend-graph';
 import {
-  createPassThroughOnKeyHandler,
   EDITOR_LANGUAGE,
   EDITOR_THEME,
   TAB_SIZE,
@@ -191,13 +190,6 @@ const LambdaEditorInline = observer(
             : EDITOR_THEME.LEGEND,
           ...lambdaEditorOptions,
         });
-        // NOTE: if we ever set any hotkey explicitly, we would like to use the disposer partern instead
-        // else, we could risk triggering these hotkeys command multiple times
-        // e.g.
-        // const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
-        // onKeyDownEventDisposer.current?.dispose();
-        // onKeyDownEventDisposer.current = editor.onKeyDown(() => ...)
-        _editor.onKeyDown(() => createPassThroughOnKeyHandler());
         setEditor(_editor);
       }
     }, [editor, applicationStore, useBaseTextEditorSettings]);
@@ -472,13 +464,6 @@ const LambdaEditorPopUp = observer(
           language: EDITOR_LANGUAGE.PURE,
           theme: EDITOR_THEME.LEGEND,
         });
-        // NOTE: if we ever set any hotkey explicitly, we would like to use the disposer partern instead
-        // else, we could risk triggering these hotkeys command multiple times
-        // e.g.
-        // const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
-        // onKeyDownEventDisposer.current?.dispose();
-        // onKeyDownEventDisposer.current = editor.onKeyDown(() => ...)
-        _editor.onKeyDown(() => createPassThroughOnKeyHandler());
         setEditor(_editor);
       }
     };

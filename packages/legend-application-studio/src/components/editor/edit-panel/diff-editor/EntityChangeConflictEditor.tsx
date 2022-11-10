@@ -27,7 +27,6 @@ import {
   EDITOR_THEME,
   EDITOR_LANGUAGE,
   useApplicationStore,
-  createPassThroughOnKeyHandler,
 } from '@finos/legend-application';
 import {
   type MergeEditorComparisonViewInfo,
@@ -200,7 +199,6 @@ const MergeConflictEditor = observer(
           formatOnType: true,
           formatOnPaste: true,
         });
-        _editor.onKeyDown(createPassThroughOnKeyHandler());
         _editor.focus(); // focus on the editor initially so we can correctly compute next/prev conflict chunks
         setEditor(_editor);
       }

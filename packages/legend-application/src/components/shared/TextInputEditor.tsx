@@ -15,11 +15,7 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
-import {
-  type IDisposable,
-  type IKeyboardEvent,
-  editor as monacoEditorAPI,
-} from 'monaco-editor';
+import { type IDisposable, editor as monacoEditorAPI } from 'monaco-editor';
 import {
   disposeEditor,
   getBaseTextEditorOptions,
@@ -30,15 +26,6 @@ import {
 } from '@finos/legend-art';
 import { type EDITOR_LANGUAGE, EDITOR_THEME, TAB_SIZE } from '../../const.js';
 import { useApplicationStore } from '../ApplicationStoreProvider.js';
-import { forceDispatchKeyboardEvent } from '../LegendApplicationComponentFrameworkProvider.js';
-
-/**
- * NOTE: `monaco-editor` does not bubble `keydown` event in natural order, we will
- * have to manually do this in order to take advantage of application keyboard shortcuts service
- */
-export const createPassThroughOnKeyHandler = () => (event: IKeyboardEvent) => {
-  forceDispatchKeyboardEvent(event.browserEvent);
-};
 
 export const TextInputEditor: React.FC<{
   inputValue: string;
@@ -97,13 +84,6 @@ export const TextInputEditor: React.FC<{
         formatOnType: true,
         formatOnPaste: true,
       });
-      // NOTE: if we ever set any hotkey explicitly, we would like to use the disposer partern instead
-      // else, we could risk triggering these hotkeys command multiple times
-      // e.g.
-      // const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
-      // onKeyDownEventDisposer.current?.dispose();
-      // onKeyDownEventDisposer.current = editor.onKeyDown(() => ...)
-      _editor.onKeyDown(() => createPassThroughOnKeyHandler());
       setEditor(_editor);
     }
   }, [applicationStore, editor]);
