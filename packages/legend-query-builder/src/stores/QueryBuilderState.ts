@@ -284,9 +284,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.milestoningState.updateMilestoningConfiguration();
   }
 
-  changeMapping(val: Mapping): void {
+  changeMapping(val: Mapping, keepQueryContent?: boolean): void {
     this.resetQueryResult();
-    this.resetQueryContent();
+    if (!keepQueryContent) this.resetQueryContent();
     this.milestoningState.updateMilestoningConfiguration();
     this.setMapping(val);
   }
