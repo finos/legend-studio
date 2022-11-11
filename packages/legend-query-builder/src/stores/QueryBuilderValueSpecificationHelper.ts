@@ -38,7 +38,6 @@ import {
   Class,
   getMilestoneTemporalStereotype,
   DerivedProperty,
-  MILESTONING_STEREOTYPE,
   PackageableElementExplicitReference,
   Multiplicity,
   CollectionInstanceValue,
@@ -55,7 +54,10 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
-import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
+import {
+  getDerivedPropertyMilestoningSteoreotype,
+  validateMilestoningPropertyExpressionChain,
+} from './milestoning/QueryBuilderMilestoningHelper.js';
 
 export const getNonCollectionValueSpecificationType = (
   valueSpecification: ValueSpecification,
@@ -301,33 +303,11 @@ export const validatePropertyExpressionChain = (
           guaranteeType(func, DerivedProperty),
           graph,
         );
-        if (
-          sourceStereotype !== MILESTONING_STEREOTYPE.BITEMPORAL &&
-          targetStereotype !== sourceStereotype
-        ) {
-          if (targetStereotype === MILESTONING_STEREOTYPE.BITEMPORAL) {
-            if (
-              propertyExpression.parametersValues.length !== 3 &&
-              !sourceStereotype
-            ) {
-              throw new UnsupportedOperationError(
-                `Property of milestoning sterotype '${MILESTONING_STEREOTYPE.BITEMPORAL}' should have exactly two parameters`,
-              );
-            } else if (propertyExpression.parametersValues.length < 2) {
-              throw new UnsupportedOperationError(
-                `Property of milestoning sterotype '${MILESTONING_STEREOTYPE.BITEMPORAL}' should have at least one parameter`,
-              );
-            } else if (propertyExpression.parametersValues.length > 3) {
-              throw new UnsupportedOperationError(
-                `Property of milestoning sterotype '${MILESTONING_STEREOTYPE.BITEMPORAL}' should not have more than two parameters`,
-              );
-            }
-          } else if (propertyExpression.parametersValues.length !== 2) {
-            throw new UnsupportedOperationError(
-              `Property of milestoning sterotype '${targetStereotype}' should have exactly one parameter`,
-            );
-          }
-        }
+        validateMilestoningPropertyExpressionChain(
+          sourceStereotype,
+          targetStereotype,
+          propertyExpression,
+        );
       }
     }
   }

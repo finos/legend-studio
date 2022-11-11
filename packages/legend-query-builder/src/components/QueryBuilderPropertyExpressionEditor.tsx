@@ -28,7 +28,6 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
-  generateMilestonedPropertyParameterValue,
   generateValueSpecificationForParameter,
   getPropertyPath,
   type QueryBuilderDerivedPropertyExpressionState,
@@ -53,10 +52,22 @@ import {
   Enumeration,
   PrimitiveType,
   isSuperType,
+  AbstractPropertyExpression,
+  INTERNAL__PropagatedValue,
+  getMilestoneTemporalStereotype,
 } from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
 import { functionExpression_setParameterValue } from '../stores/shared/ValueSpecificationModifierHelper.js';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
+import {
+  generateMilestonedPropertyParameterValue,
+  isDefaultDatePropagationSupported,
+  matchMilestoningParameterValue,
+} from '../stores/milestoning/QueryBuilderMilestoningHelper.js';
 
 const DerivedPropertyParameterValueEditor = observer(
   (props: {
@@ -108,6 +119,76 @@ const DerivedPropertyParameterValueEditor = observer(
       }),
       [handleDrop],
     );
+    const queryBuilderState = derivedPropertyExpressionState.queryBuilderState;
+    // Resets the next property expression in the property chain for milestoned properties when the user changes
+    // the milestoned dates of current property expression and it propagates those dates to next property expression.
+    const resetNextExpression = (
+      nextExpression: AbstractPropertyExpression,
+    ): void => {
+      const milestoningStereotype = getMilestoneTemporalStereotype(
+        guaranteeType(
+          nextExpression.func.value.genericType.value.rawType,
+          Class,
+        ),
+        queryBuilderState.graphManagerState.graph,
+      );
+      nextExpression.parametersValues.slice(1).forEach((parameter, index) => {
+        if (
+          milestoningStereotype &&
+          parameter instanceof INTERNAL__PropagatedValue &&
+          !matchMilestoningParameterValue(
+            milestoningStereotype,
+            index,
+            parameter.getValue(),
+            queryBuilderState.milestoningState,
+          )
+        ) {
+          const newParameterValue = new INTERNAL__PropagatedValue(() =>
+            guaranteeNonNullable(
+              queryBuilderState.milestoningState
+                .getMilestoningImplementation(milestoningStereotype)
+                .getMilestoningDate(index),
+            ),
+          );
+          newParameterValue.isPropagatedValue = false;
+          functionExpression_setParameterValue(
+            guaranteeType(nextExpression, AbstractPropertyExpression),
+            guaranteeNonNullable(newParameterValue),
+            index + 1,
+            queryBuilderState.observableContext,
+          );
+        }
+      });
+    };
+    const checkDatePropagation = (
+      nextExpression: ValueSpecification | undefined,
+    ): void => {
+      if (
+        nextExpression instanceof AbstractPropertyExpression &&
+        isDefaultDatePropagationSupported(nextExpression, queryBuilderState) &&
+        nextExpression.func.value.genericType.value.rawType instanceof Class
+      ) {
+        queryBuilderState.applicationStore.setActionAlertInfo({
+          message:
+            'You have just changed a milestoning date in the property expression chain, this date will be propagated down the rest of the chain. Do you want to proceed? Otherwise, you can choose to propagate the default milestoning dates instead.',
+          type: ActionAlertType.CAUTION,
+          actions: [
+            {
+              label: 'Proceed',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              default: true,
+            },
+            {
+              label: 'Propagate default milestoning date(s)',
+              type: ActionAlertActionType.PROCEED,
+              handler: queryBuilderState.applicationStore.guardUnhandledError(
+                async () => resetNextExpression(nextExpression),
+              ),
+            },
+          ],
+        });
+      }
+    };
     const resetParameterValue = (): void => {
       functionExpression_setParameterValue(
         derivedPropertyExpressionState.propertyExpression,
@@ -122,6 +203,19 @@ const DerivedPropertyParameterValueEditor = observer(
           ),
         idx + 1,
         derivedPropertyExpressionState.queryBuilderState.observableContext,
+      );
+      const derivedPropertyExpressionStates =
+        derivedPropertyExpressionState.propertyExpressionState
+          .derivedPropertyExpressionStates;
+      const currentDerivedPropertyStateindex =
+        derivedPropertyExpressionStates.indexOf(derivedPropertyExpressionState);
+      checkDatePropagation(
+        currentDerivedPropertyStateindex + 1 <
+          derivedPropertyExpressionStates.length
+          ? derivedPropertyExpressionStates[
+              currentDerivedPropertyStateindex + 1
+            ]?.propertyExpression
+          : undefined,
       );
     };
 

@@ -15,8 +15,6 @@
  */
 
 import {
-  BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
-  PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
   GenericType,
   GenericTypeExplicitReference,
   getMilestoneTemporalStereotype,
@@ -27,13 +25,24 @@ import {
   Multiplicity,
   PrimitiveType,
 } from '@finos/legend-graph';
-import { type Hashable, hashArray } from '@finos/legend-shared';
+import {
+  type Hashable,
+  hashArray,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
-import type { QueryBuilderState } from './QueryBuilderState.js';
-import { LambdaParameterState } from './shared/LambdaParameterState.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../graphManager/QueryBuilderHashUtils.js';
+import type { QueryBuilderState } from '../QueryBuilderState.js';
+import { LambdaParameterState } from '../shared/LambdaParameterState.js';
+import { QueryBuilderBitemporalMilestoningImplementation } from './QueryBuilderBitemporalMilestoningImplementation.js';
+import { QueryBuilderBusinessTemporalMilestoningImplementation } from './QueryBuilderBusinessTemporalMilestoningImplementation.js';
+import type { QueryBuilderMilestoningImplementation } from './QueryBuilderMilestoningImplementation.js';
+import { QueryBuilderProcessingTemporalMilestoningImplementation } from './QueryBuilderProcessingTemporalMilestoningImplementation.js';
 
 export class QueryBuilderMilestoningState implements Hashable {
+  readonly milestoningImplementations: QueryBuilderMilestoningImplementation[] =
+    [];
+
   queryBuilderState: QueryBuilderState;
 
   showMilestoningEditor = false;
@@ -55,6 +64,24 @@ export class QueryBuilderMilestoningState implements Hashable {
     });
 
     this.queryBuilderState = queryBuilderState;
+    this.milestoningImplementations.push(
+      new QueryBuilderBusinessTemporalMilestoningImplementation(
+        this,
+        MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL,
+      ),
+    );
+    this.milestoningImplementations.push(
+      new QueryBuilderProcessingTemporalMilestoningImplementation(
+        this,
+        MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL,
+      ),
+    );
+    this.milestoningImplementations.push(
+      new QueryBuilderBitemporalMilestoningImplementation(
+        this,
+        MILESTONING_STEREOTYPE.BITEMPORAL,
+      ),
+    );
   }
 
   get isMilestonedQuery(): boolean {
@@ -65,39 +92,22 @@ export class QueryBuilderMilestoningState implements Hashable {
     this.showMilestoningEditor = val;
   }
 
-  private initializeQueryMilestoningParameters(stereotype: string): void {
-    switch (stereotype) {
-      case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
-        this.setBusinessDate(
-          this.buildMilestoningParameter(
-            BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
-        break;
-      }
-      case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
-        this.setProcessingDate(
-          this.buildMilestoningParameter(
-            PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
-        break;
-      }
-      case MILESTONING_STEREOTYPE.BITEMPORAL: {
-        this.setProcessingDate(
-          this.buildMilestoningParameter(
-            PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
-        this.setBusinessDate(
-          this.buildMilestoningParameter(
-            BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
-        break;
-      }
-      default:
-    }
+  getMilestoningImplementation(
+    stereotype: MILESTONING_STEREOTYPE,
+  ): QueryBuilderMilestoningImplementation {
+    return guaranteeNonNullable(
+      this.milestoningImplementations.find(
+        (imp) => imp.stereotype === stereotype,
+      ),
+    );
+  }
+
+  private initializeQueryMilestoningParameters(
+    stereotype: MILESTONING_STEREOTYPE,
+  ): void {
+    this.getMilestoningImplementation(
+      stereotype,
+    ).initializeMilestoningParameters(true);
   }
 
   setProcessingDate(val: ValueSpecification | undefined): void {

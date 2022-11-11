@@ -28,7 +28,6 @@ import {
   GenericTypeExplicitReference,
   LambdaFunction,
   SimpleFunctionExpression,
-  MILESTONING_STEREOTYPE,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { buildFilterExpression } from './filter/QueryBuilderFilterValueSpecificationBuilder.js';
@@ -91,42 +90,9 @@ export const buildLambdaFunction = (
     queryBuilderState.graphManagerState.graph,
   );
   if (milestoningStereotype) {
-    switch (milestoningStereotype) {
-      case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
-        getAllFunction.parametersValues.push(
-          guaranteeNonNullable(
-            queryBuilderState.milestoningState.businessDate,
-            `Milestoning class should have a parameter of type 'Date'`,
-          ),
-        );
-        break;
-      }
-      case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
-        getAllFunction.parametersValues.push(
-          guaranteeNonNullable(
-            queryBuilderState.milestoningState.processingDate,
-            `Milestoning class should have a parameter of type 'Date'`,
-          ),
-        );
-        break;
-      }
-      case MILESTONING_STEREOTYPE.BITEMPORAL: {
-        getAllFunction.parametersValues.push(
-          guaranteeNonNullable(
-            queryBuilderState.milestoningState.processingDate,
-            `Milestoning class should have a parameter of type 'Date'`,
-          ),
-        );
-        getAllFunction.parametersValues.push(
-          guaranteeNonNullable(
-            queryBuilderState.milestoningState.businessDate,
-            `Milestoning class should have a parameter of type 'Date'`,
-          ),
-        );
-        break;
-      }
-      default:
-    }
+    queryBuilderState.milestoningState
+      .getMilestoningImplementation(milestoningStereotype)
+      .buildGetAllParameters(getAllFunction);
   }
   lambdaFunction.expressionSequence[0] = getAllFunction;
 

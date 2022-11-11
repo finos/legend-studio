@@ -38,21 +38,14 @@ import {
   EnumValueInstanceValue,
   InstanceValue,
   PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
+  type PRIMITIVE_TYPE,
   VariableExpression,
-  getMilestoneTemporalStereotype,
-  MILESTONING_STEREOTYPE,
   SimpleFunctionExpression,
   matchFunctionName,
   TYPE_CAST_TOKEN,
   observe_AbstractPropertyExpression,
   GenericTypeExplicitReference,
   GenericType,
-  BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
-  PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
-  INTERNAL__PropagatedValue,
-  Association,
-  getGeneratedMilestonedPropertiesForAssociation,
   PropertyExplicitReference,
   PrimitiveType,
 } from '@finos/legend-graph';
@@ -61,7 +54,6 @@ import {
   generateDefaultValueForPrimitiveType,
 } from './QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import type { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
 import {
@@ -69,235 +61,10 @@ import {
   functionExpression_setParametersValues,
   instanceValue_setValues,
 } from './shared/ValueSpecificationModifierHelper.js';
-
-export const getDerivedPropertyMilestoningSteoreotype = (
-  property: DerivedProperty,
-  graph: PureModel,
-): MILESTONING_STEREOTYPE | undefined => {
-  const owner = property._OWNER;
-  if (owner instanceof Class) {
-    return getMilestoneTemporalStereotype(owner, graph);
-  } else if (owner instanceof Association) {
-    const generatedMilestonedProperties =
-      getGeneratedMilestonedPropertiesForAssociation(owner, property);
-    if (generatedMilestonedProperties.length) {
-      const ownerClass =
-        generatedMilestonedProperties[0]?.genericType.value.rawType;
-      return getMilestoneTemporalStereotype(
-        guaranteeType(ownerClass, Class),
-        graph,
-      );
-    }
-  }
-  return undefined;
-};
-
-/**
- * Check if the parameter value of the milestoned property is
- * the same as those specified in global scope, so that we can
- * potentially replace them with propgated value.
- */
-const matchMilestoningParameterValue = (
-  stereotype: MILESTONING_STEREOTYPE,
-  idx: number,
-  parameterValue: ValueSpecification,
-  milestoningDate: QueryBuilderMilestoningState,
-): boolean => {
-  const checkIfEquivalent = (
-    param1: ValueSpecification | undefined,
-    param2: ValueSpecification | undefined,
-  ): boolean => {
-    if (
-      param1 instanceof VariableExpression &&
-      param2 instanceof VariableExpression
-    ) {
-      return param1.name === param2.name;
-    } else if (
-      param1 instanceof PrimitiveInstanceValue &&
-      param2 instanceof PrimitiveInstanceValue
-    ) {
-      if (
-        param1.genericType.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE &&
-        param2.genericType.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE
-      ) {
-        return true;
-      }
-      return (
-        param1.genericType.value.rawType.name ===
-          param2.genericType.value.rawType.name &&
-        param1.values[0] === param2.values[0]
-      );
-    }
-    return false;
-  };
-  switch (stereotype) {
-    case MILESTONING_STEREOTYPE.BITEMPORAL:
-      return (
-        (idx === 0 &&
-          checkIfEquivalent(parameterValue, milestoningDate.processingDate)) ||
-        (idx === 1 &&
-          checkIfEquivalent(parameterValue, milestoningDate.businessDate))
-      );
-    case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL:
-      return checkIfEquivalent(parameterValue, milestoningDate.processingDate);
-    case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL:
-      return checkIfEquivalent(parameterValue, milestoningDate.businessDate);
-    default:
-  }
-  return false;
-};
+import { generateMilestonedPropertyParameterValue } from './milestoning/QueryBuilderMilestoningHelper.js';
 
 export const prettyPropertyName = (value: string): string =>
   isCamelCase(value) ? prettyCamelCase(value) : prettyCONSTName(value);
-
-/**
- * Generate a parameter value for the derived property given the index if the property is milestoned.
- *
- * This method considers different scenarios for milestoning and take into account date propagation
- * See https://github.com/finos/legend-studio/pull/891
- */
-export const generateMilestonedPropertyParameterValue = (
-  derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
-  idx: number,
-): ValueSpecification | undefined => {
-  // Milestoning transformations should not be done on actual derived properties.
-  if (
-    derivedPropertyExpressionState.derivedProperty._OWNER.derivedProperties.includes(
-      derivedPropertyExpressionState.derivedProperty,
-    )
-  ) {
-    return undefined;
-  }
-  const milestoningState =
-    derivedPropertyExpressionState.queryBuilderState.milestoningState;
-  const temporalSource = getDerivedPropertyMilestoningSteoreotype(
-    derivedPropertyExpressionState.derivedProperty,
-    derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
-  );
-  const temporalTarget =
-    derivedPropertyExpressionState.propertyExpression.func.value.genericType
-      .value.rawType instanceof Class &&
-    derivedPropertyExpressionState.propertyExpression.func.value._OWNER
-      ._generatedMilestonedProperties.length !== 0
-      ? getMilestoneTemporalStereotype(
-          derivedPropertyExpressionState.propertyExpression.func.value
-            .genericType.value.rawType,
-          derivedPropertyExpressionState.queryBuilderState.graphManagerState
-            .graph,
-        )
-      : undefined;
-  const shouldReturnMilestoningParameter =
-    temporalTarget &&
-    ((idx < derivedPropertyExpressionState.parameterValues.length &&
-      (matchMilestoningParameterValue(
-        temporalTarget,
-        idx,
-        guaranteeNonNullable(
-          derivedPropertyExpressionState.parameterValues[idx],
-        ),
-        milestoningState,
-      ) ||
-        /**
-         * Checks if the given milestoning needs to be overwritten or not.
-         * Specially, we would need to rewrite the query if the user passes a single parameter
-         * to the `bitemporal` property expression with `processing temporal` source.
-         */
-        (getDerivedPropertyMilestoningSteoreotype(
-          derivedPropertyExpressionState.derivedProperty,
-          derivedPropertyExpressionState.queryBuilderState.graphManagerState
-            .graph,
-        ) === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL &&
-          temporalTarget === MILESTONING_STEREOTYPE.BITEMPORAL &&
-          derivedPropertyExpressionState.parameterValues.length === 1))) ||
-      idx >= derivedPropertyExpressionState.parameterValues.length);
-
-  if (!shouldReturnMilestoningParameter) {
-    return undefined;
-  }
-
-  switch (temporalTarget) {
-    case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
-      if (!milestoningState.businessDate) {
-        milestoningState.setBusinessDate(
-          derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
-            BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
-      }
-      const parameter = new INTERNAL__PropagatedValue(() =>
-        guaranteeNonNullable(milestoningState.businessDate),
-      );
-      return parameter;
-    }
-    case MILESTONING_STEREOTYPE.BITEMPORAL: {
-      if (!milestoningState.processingDate) {
-        milestoningState.setProcessingDate(
-          derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
-            PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
-      }
-      if (!milestoningState.businessDate) {
-        milestoningState.setBusinessDate(
-          derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
-            BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
-      }
-      if (idx === 0) {
-        if (
-          temporalSource === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL &&
-          derivedPropertyExpressionState.parameterValues.length === 1
-        ) {
-          return guaranteeType(
-            derivedPropertyExpressionState.propertyExpression
-              .parametersValues[0],
-            AbstractPropertyExpression,
-          ).parametersValues[1];
-        }
-        const parameter = new INTERNAL__PropagatedValue(() =>
-          guaranteeNonNullable(milestoningState.processingDate),
-        );
-        return parameter;
-      } else {
-        if (
-          temporalSource === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL &&
-          derivedPropertyExpressionState.parameterValues.length === 1
-        ) {
-          return derivedPropertyExpressionState.parameterValues[0];
-        } else if (
-          temporalSource === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL &&
-          derivedPropertyExpressionState.parameterValues.length === 1
-        ) {
-          return guaranteeType(
-            derivedPropertyExpressionState.propertyExpression
-              .parametersValues[0],
-            AbstractPropertyExpression,
-          ).parametersValues[1];
-        }
-        const parameter = new INTERNAL__PropagatedValue(() =>
-          guaranteeNonNullable(milestoningState.businessDate),
-        );
-        return parameter;
-      }
-    }
-    case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
-      if (!milestoningState.processingDate) {
-        milestoningState.setProcessingDate(
-          derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
-            PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
-      }
-      const parameter = new INTERNAL__PropagatedValue(() =>
-        guaranteeNonNullable(milestoningState.processingDate),
-      );
-      return parameter;
-    }
-    default:
-      return undefined;
-  }
-};
 
 export const getPropertyChainName = (
   propertyExpression: AbstractPropertyExpression,
@@ -468,10 +235,12 @@ export class QueryBuilderDerivedPropertyExpressionState {
   readonly propertyExpression: AbstractPropertyExpression;
   readonly derivedProperty: DerivedProperty;
   readonly parameters: VariableExpression[] = [];
+  readonly propertyExpressionState: QueryBuilderPropertyExpressionState;
 
   constructor(
     queryBuilderState: QueryBuilderState,
     propertyExpression: AbstractPropertyExpression,
+    propertyExpressionState: QueryBuilderPropertyExpressionState,
   ) {
     this.path = getPropertyPath(propertyExpression);
     this.title = getPropertyChainName(propertyExpression, true);
@@ -484,6 +253,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
       propertyExpression.func.value,
       DerivedProperty,
     );
+    this.propertyExpressionState = propertyExpressionState;
     // build the parameters of the derived properties
     if (Array.isArray(this.derivedProperty.parameters)) {
       this.parameters = this.derivedProperty.parameters.map((parameter) =>
@@ -625,6 +395,7 @@ export class QueryBuilderPropertyExpressionState implements Hashable {
           new QueryBuilderDerivedPropertyExpressionState(
             this.queryBuilderState,
             currentExpression,
+            this,
           );
         result.push(derivedPropertyExpressionState);
       }
