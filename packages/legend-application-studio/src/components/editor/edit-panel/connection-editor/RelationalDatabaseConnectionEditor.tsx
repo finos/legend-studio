@@ -588,20 +588,20 @@ const SpannerDatasourceSpecificationEditor = observer(
     const { sourceSpec, isReadOnly } = props;
     return (
       <>
-        <ConnectionEditor_StringEditor
+        <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.projectId}
-          propertyName="project id"
-          description="Your Google Cloud Platform (GCP) project identifier"
+          name="project id"
+          prompt="Your Google Cloud Platform (GCP) project identifier"
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setProjectId(sourceSpec, value ?? '')
           }
         />
-        <ConnectionEditor_StringEditor
+        <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.instanceId}
-          propertyName="instance id"
-          description="Spanner instance identifier in Google Cloud Platform (GCP)"
+          name="instance id"
+          prompt="Spanner instance identifier in Google Cloud Platform (GCP)"
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setInstanceId(
               sourceSpec,
@@ -609,11 +609,11 @@ const SpannerDatasourceSpecificationEditor = observer(
             )
           }
         />
-        <ConnectionEditor_StringEditor
+        <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseId}
-          propertyName="database id"
-          description="Spanner database identifier"
+          name="database id"
+          prompt="Spanner database identifier"
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setDatabaseId(
               sourceSpec,
@@ -621,20 +621,20 @@ const SpannerDatasourceSpecificationEditor = observer(
             )
           }
         />
-        <ConnectionEditor_StringEditor
+        <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyHost}
-          propertyName="proxyHost"
-          description="Specifies the connection host. Leave blank to use GCP defaults"
+          name="proxyHost"
+          prompt="Specifies the connection host. Leave blank to use GCP defaults"
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setProxyHost(sourceSpec, value ?? '')
           }
         />
-        <ConnectionEditor_StringEditor
+        <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyPort}
-          propertyName="proxyPort"
-          description="Specifies the connection port. Leave blank to use GCP defaults"
+          name="proxyPort"
+          prompt="Specifies the connection port. Leave blank to use GCP defaults"
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setProxyPort(sourceSpec, value ?? '')
           }
