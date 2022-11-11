@@ -1630,15 +1630,5 @@ export const TEST_DATA__getAllWithHardcodedDateOutput = {
       ],
     },
   ],
-  parameters: [
-    {
-      _type: 'var',
-      class: 'Date',
-      name: 'businessDate',
-      multiplicity: {
-        lowerBound: 1,
-        upperBound: 1,
-      },
-    },
-  ],
+  parameters: [],
 };

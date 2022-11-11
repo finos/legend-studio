@@ -60,6 +60,7 @@ export class QueryBuilderMilestoningState implements Hashable {
       setProcessingDate: action,
       setBusinessDate: action,
       setShowMilestoningEditor: action,
+      clearMilestoningDates: action,
       hashCode: computed,
     });
 
@@ -126,6 +127,11 @@ export class QueryBuilderMilestoningState implements Hashable {
           this.queryBuilderState.observableContext,
         )
       : val;
+  }
+
+  clearMilestoningDates(): void {
+    this.setBusinessDate(undefined);
+    this.setProcessingDate(undefined);
   }
 
   updateMilestoningConfiguration(): void {
