@@ -244,7 +244,6 @@ test(integrationTest('Association editor'), async () => {
     associationEditor,
     LEGEND_STUDIO_TEST_ID.PANEL,
   );
-  getByDisplayValue(subPropertyPanel, 'association tag');
   fireEvent.click(getByText(subPropertyPanel, 'Stereotypes'));
   await waitFor(() => getByText(subPropertyPanel, 'stereotype1'));
   fireEvent.click(
