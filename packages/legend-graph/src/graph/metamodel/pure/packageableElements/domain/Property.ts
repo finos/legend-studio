@@ -22,6 +22,7 @@ import type { AbstractProperty, PropertyOwner } from './AbstractProperty.js';
 import type { AnnotatedElement } from './AnnotatedElement.js';
 import type { TaggedValue } from './TaggedValue.js';
 import type { StereotypeReference } from './StereotypeReference.js';
+import type { AggregationKind } from './AggregationKind.js';
 
 export class Property implements AbstractProperty, AnnotatedElement, Hashable {
   readonly _UUID = uuid();
@@ -30,6 +31,7 @@ export class Property implements AbstractProperty, AnnotatedElement, Hashable {
   name: string;
   multiplicity: Multiplicity;
   genericType: GenericTypeReference;
+  aggregation?: AggregationKind | undefined;
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
 
@@ -51,6 +53,7 @@ export class Property implements AbstractProperty, AnnotatedElement, Hashable {
       this.name,
       this.multiplicity,
       this.genericType.ownerReference.valueForSerialization ?? '',
+      this.aggregation ?? '',
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashArray(this.taggedValues),
     ]);

@@ -251,6 +251,7 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
     );
     const val = new RelationalDatabaseConnection(
       store,
+      // TODO: create a function to validate this is of the type we support
       connection.type as unknown as DatabaseType,
       V1_buildDatasourceSpecification(
         connection.datasourceSpecification,

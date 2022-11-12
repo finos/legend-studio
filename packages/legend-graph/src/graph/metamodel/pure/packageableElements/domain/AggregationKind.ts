@@ -14,18 +14,8 @@
  * limitations under the License.
  */
 
-@forward 'uml-editor/uml-element-editor';
-@forward 'uml-editor/tagged-value-editor';
-@forward 'uml-editor/stereotype-selector';
-@forward 'uml-editor/profile-editor';
-@forward 'uml-editor/enum-editor';
-@forward 'uml-editor/class-editor';
-
-.uml-editor {
-  height: 100%;
-  position: relative;
-
-  .panel__content__form__section__header__label {
-    color: var(--color-dark-grey-350);
-  }
+export enum AggregationKind {
+  NONE = 'NONE',
+  SHARED = 'SHARED',
+  COMPOSITE = 'COMPOSITE',
 }

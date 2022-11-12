@@ -22,7 +22,6 @@ import {
   EDITOR_LANGUAGE,
   TAB_SIZE,
   useApplicationStore,
-  createPassThroughOnKeyHandler,
 } from '@finos/legend-application';
 import {
   disposeDiffEditor,
@@ -68,7 +67,6 @@ export const TextDiffView = observer(
           theme: EDITOR_THEME.LEGEND,
           readOnly: true,
         });
-        _editor.getOriginalEditor().onKeyDown(createPassThroughOnKeyHandler());
         setEditor(_editor);
       }
     }, [applicationStore, editorStore, editor]);

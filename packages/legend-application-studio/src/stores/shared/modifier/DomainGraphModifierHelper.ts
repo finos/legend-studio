@@ -47,6 +47,7 @@ import {
   type Unit,
   type RawLambda,
   type Association,
+  type AggregationKind,
   Class,
   observe_Enum,
   observe_DerivedProperty,
@@ -194,6 +195,11 @@ export const property_setGenericType = action(
 export const property_setMultiplicity = action(
   (_property: Property | DerivedProperty, value: Multiplicity): void => {
     _property.multiplicity = value;
+  },
+);
+export const property_setAggregationKind = action(
+  (target: Property, value: AggregationKind | undefined): void => {
+    target.aggregation = value;
   },
 );
 export const stereotypeReference_setValue = action(

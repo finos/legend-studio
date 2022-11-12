@@ -30,6 +30,7 @@ import {
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
+import { variableExpression_setName } from './shared/ValueSpecificationModifierHelper.js';
 
 /**
  * Gets the value of ValueSpecification given INTERNAL__PropagatedValue is pointing to.
@@ -138,7 +139,7 @@ export const buildPropertyExpressionChain = (
 
   // Update the root lambda name based on the parent's lambda parameter name.
   if (currentExpression instanceof VariableExpression) {
-    currentExpression.name = lambdaParameterName;
+    variableExpression_setName(currentExpression, lambdaParameterName);
   }
   return newPropertyExpression;
 };
