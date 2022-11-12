@@ -21,7 +21,7 @@ concurrency:
 jobs:
   integration-and-unit-test:
     name: Run Unit & Integration Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-16-cores
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -62,7 +62,7 @@ jobs:
   # backend for the grammar parser/composer.
   run-manual-tests:
     name: Run Engine Roundtrip Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-16-cores
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
