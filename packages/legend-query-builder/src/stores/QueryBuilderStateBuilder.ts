@@ -77,7 +77,7 @@ const processGetAllExpression = (
     `Can't process getAll() expression: getAll() return type is missing`,
   );
   queryBuilderState.setClass(_class);
-  queryBuilderState.milestoningState.updateMilestoningConfiguration();
+  queryBuilderState.milestoningState.clearMilestoningDates();
   queryBuilderState.explorerState.refreshTreeData();
 
   // check parameters (milestoning) and build state
