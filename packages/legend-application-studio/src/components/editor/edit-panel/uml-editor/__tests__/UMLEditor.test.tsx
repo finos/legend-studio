@@ -147,6 +147,7 @@ test(
       classForm,
       LEGEND_STUDIO_TEST_ID.PANEL,
     );
+    fireEvent.click(getByText(subPropertyPanel, 'Tagged Values'));
     expect(
       getByDisplayValue(subPropertyPanel, 'lets write a tag'),
     ).not.toBeNull();
