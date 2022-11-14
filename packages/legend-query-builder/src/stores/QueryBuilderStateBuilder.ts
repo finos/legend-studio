@@ -66,7 +66,7 @@ import {
 } from './fetch-structure/tds/projection/QueryBuilderProjectionStateBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import { LambdaParameterState } from './shared/LambdaParameterState.js';
-import { processTDS_OLAPGroupByExpression } from './fetch-structure/tds/olapGroupBy/QueryBuilderOLAPGroupByStateBuilder_.js';
+import { processTDS_OLAPGroupByExpression } from './fetch-structure/tds/olapGroupBy/QueryBuilderOLAPGroupByStateBuilder.js';
 import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkStateBuilder.js';
 import { QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
 

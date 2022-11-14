@@ -97,7 +97,7 @@ import {
   TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank,
   TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank_VarName,
   TEST_DATA__GroupBy_postFilter_OlapGroupBy,
-} from './TEST_DATA__QueryBuilder_OLAPGroupBy_.js';
+} from './TEST_DATA__QueryBuilder_OLAPGroupBy.js';
 import {
   TEST_DATA_lambda_watermark_Constant,
   TEST_DATA_lambda_watermark_filter_Constant,

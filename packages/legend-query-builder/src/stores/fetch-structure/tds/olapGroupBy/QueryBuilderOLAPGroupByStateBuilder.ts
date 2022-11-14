@@ -44,7 +44,7 @@ import {
   QueryBuilderOLAPGroupByColumnState,
   QueryBuilderTDS_OLAPAggreationOperatorState,
   QueryBuilderTDS_OLAPRankOperatorState,
-} from './QueryBuilderOLAPGroupByState_.js';
+} from './QueryBuilderOLAPGroupByState.js';
 
 export const processTDS_OLAPGroupByExpression = (
   expression: SimpleFunctionExpression,
