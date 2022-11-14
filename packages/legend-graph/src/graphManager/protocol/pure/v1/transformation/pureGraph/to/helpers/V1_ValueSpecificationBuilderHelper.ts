@@ -196,13 +196,16 @@ export class V1_ValueSpecificationBuilder
         appliedFunction.parameters[0],
         V1_CString,
       ).value;
-      const firstParam = guaranteeNonNullable(parameters[0]);
+      // right side (value spec)
+      const rightSide = guaranteeNonNullable(parameters[1]);
       const variableExpression = new VariableExpression(
         letName,
-        firstParam.multiplicity,
+        rightSide.multiplicity,
       );
-      variableExpression.genericType = firstParam.genericType;
+
+      variableExpression.genericType = rightSide.genericType;
       this.processingContext.addInferredVariables(letName, variableExpression);
+      this.openVariables.push(letName);
     }
     const func = V1_buildFunctionExpression(
       appliedFunction.function,
@@ -434,7 +437,6 @@ export function V1_buildLambdaBody(
       ),
     ),
   );
-  // Remove let variables
   const firstExpression = guaranteeNonNullable(_expressions[0]);
   const functionType = new FunctionType(
     firstExpression.genericType
@@ -447,7 +449,12 @@ export function V1_buildLambdaBody(
   functionType.parameters = pureParameters;
   processingContext.pop();
   const _lambda = new LambdaFunction(functionType);
-  _lambda.openVariables = [];
+  openVariables.forEach((v) => {
+    const varExp = processingContext.getInferredVariable(v);
+    if (varExp instanceof VariableExpression) {
+      _lambda.openVariables.set(varExp.name, varExp);
+    }
+  });
   _lambda.expressionSequence = _expressions;
   return _lambda;
 }

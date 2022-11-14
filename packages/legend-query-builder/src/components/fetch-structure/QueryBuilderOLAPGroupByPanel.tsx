@@ -56,7 +56,7 @@ import {
   QueryBuilderTDS_OLAPRankOperatorState,
   QueryBuilderTDS_OLAPAggreationOperatorState,
   QUERY_BUILDER_OLAP_COLUMN_DND_TYPE,
-} from '../../stores/fetch-structure/tds/olapGroupBy/QueryBuilderOLAPGroupByState_.js';
+} from '../../stores/fetch-structure/tds/olapGroupBy/QueryBuilderOLAPGroupByState.js';
 import { QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';

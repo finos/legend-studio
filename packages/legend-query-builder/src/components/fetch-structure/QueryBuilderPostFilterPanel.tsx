@@ -79,15 +79,15 @@ import {
   QueryBuilderDerivationProjectionColumnState,
 } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
-import {
-  type QueryBuilderParameterDragSource,
-  QUERY_BUILDER_PARAMETER_DND_TYPE,
-} from '../../stores/QueryBuilderParametersState.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
-import { BasicValueSpecificationEditor } from '../shared/BasicValueSpecificationEditor.js';
+import {
+  type QueryBuilderVariableDragSource,
+  BasicValueSpecificationEditor,
+  QUERY_BUILDER_VARIABLE_DND_TYPE,
+} from '../shared/BasicValueSpecificationEditor.js';
 import {
   QueryBuilderColumnInfoTooltip,
   renderPropertyTypeIcon,
@@ -95,7 +95,7 @@ import {
 import {
   type QueryBuilderOLAPColumnDragSource,
   QUERY_BUILDER_OLAP_COLUMN_DND_TYPE,
-} from '../../stores/fetch-structure/tds/olapGroupBy/QueryBuilderOLAPGroupByState_.js';
+} from '../../stores/fetch-structure/tds/olapGroupBy/QueryBuilderOLAPGroupByState.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
@@ -280,9 +280,9 @@ const QueryBuilderPostFilterConditionEditor = observer(
     isDragOver: boolean;
   }) => {
     const { node, isDragOver } = props;
-    const graph =
-      node.condition.postFilterState.tdsState.queryBuilderState
-        .graphManagerState.graph;
+    const queryBuilderState =
+      node.condition.postFilterState.tdsState.queryBuilderState;
+    const graph = queryBuilderState.graphManagerState.graph;
     const applicationStore = useApplicationStore();
     const changeOperator = (val: QueryBuilderPostFilterOperator) => (): void =>
       node.condition.changeOperator(val);
@@ -299,15 +299,14 @@ const QueryBuilderPostFilterConditionEditor = observer(
     };
     // Drag and Drop on filter condition value
     const handleDrop = useCallback(
-      (item: QueryBuilderParameterDragSource): void => {
-        const parameterType =
-          item.variable.parameter.genericType?.value.rawType;
+      (item: QueryBuilderVariableDragSource): void => {
+        const parameterType = item.variable.genericType?.value.rawType;
         const conditionValueType = node.condition.columnState.getColumnType();
         if (
           conditionValueType &&
           isTypeCompatibleForAssignment(parameterType, conditionValueType)
         ) {
-          node.condition.setValue(item.variable.parameter);
+          node.condition.setValue(item.variable);
         } else {
           applicationStore.notifyWarning(
             `Incompatible parameter type ${parameterType?.name}. ${parameterType?.name} is not compatible with type ${conditionValueType?.name}.`,
@@ -317,12 +316,12 @@ const QueryBuilderPostFilterConditionEditor = observer(
       [applicationStore, node.condition],
     );
     const [{ isFilterValueDragOver }, dropConnector] = useDrop<
-      QueryBuilderParameterDragSource,
+      QueryBuilderVariableDragSource,
       void,
       { isFilterValueDragOver: boolean }
     >(
       () => ({
-        accept: [QUERY_BUILDER_PARAMETER_DND_TYPE],
+        accept: [QUERY_BUILDER_VARIABLE_DND_TYPE],
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item);
@@ -417,10 +416,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
                     valueSpecification={node.condition.value}
                     setValueSpecification={changeValueSpecification}
                     graph={graph}
-                    obseverContext={
-                      node.condition.postFilterState.tdsState.queryBuilderState
-                        .observableContext
-                    }
+                    obseverContext={queryBuilderState.observableContext}
                     typeCheckOption={{
                       expectedType: guaranteeNonNullable(
                         node.condition.columnState.getColumnType(),
@@ -428,6 +424,9 @@ const QueryBuilderPostFilterConditionEditor = observer(
                     }}
                     resetValue={resetNode}
                     selectorConfig={selectorConfig}
+                    isConstant={queryBuilderState.constantState.isValueSpecConstant(
+                      node.condition.value,
+                    )}
                   />
                 </PanelEntryDropZonePlaceholder>
               </div>

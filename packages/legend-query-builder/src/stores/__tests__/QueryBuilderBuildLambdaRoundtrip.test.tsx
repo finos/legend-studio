@@ -97,13 +97,18 @@ import {
   TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank,
   TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank_VarName,
   TEST_DATA__GroupBy_postFilter_OlapGroupBy,
-} from './TEST_DATA__QueryBuilder_OLAPGroupBy_.js';
+} from './TEST_DATA__QueryBuilder_OLAPGroupBy.js';
 import {
   TEST_DATA_lambda_watermark_Constant,
   TEST_DATA_lambda_watermark_filter_Constant,
   TEST_DATA_lambda_watermark_olapGroupBy,
   TEST_DATA_lambda_watermark_Parameter,
 } from './TEST_DATA__QueryBuilder_Roundtrip_Watermark.js';
+import {
+  TEST_DATA__lambda_ContantExpression_MultiConstantVAriables,
+  TEST_DATA__lambda_ContantExpression_Simple,
+  TEST_DATA__lambda_ContantExpression_SimpleUsedAsVariable,
+} from './TEST_DATA__QueryBuilder_ConstantExpression.js';
 
 type RoundtripTestCase = [
   string,
@@ -494,6 +499,24 @@ const cases: RoundtripTestCase[] = [
     'OlapGroupBy with TDS groupBy -> post-filter -> olap groupBy',
     postFilterCtx,
     TEST_DATA__GroupBy_postFilter_OlapGroupBy,
+    undefined,
+  ],
+  [
+    'Constant expression with simple string instance',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_ContantExpression_Simple,
+    undefined,
+  ],
+  [
+    'Constant expression with simple integer instance used as variable',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_ContantExpression_SimpleUsedAsVariable,
+    undefined,
+  ],
+  [
+    'Constant expression with multi string instance',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_ContantExpression_MultiConstantVAriables,
     undefined,
   ],
 ];

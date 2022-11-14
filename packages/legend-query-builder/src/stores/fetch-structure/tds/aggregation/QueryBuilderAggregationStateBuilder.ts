@@ -15,6 +15,7 @@
  */
 
 import {
+  type LambdaFunction,
   CollectionInstanceValue,
   LambdaFunctionInstanceValue,
   matchFunctionName,
@@ -41,6 +42,7 @@ export const processTDSAggregateExpression = (
   expression: SimpleFunctionExpression,
   parentExpression: SimpleFunctionExpression | undefined,
   queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
 ): void => {
   // check parent expression
   assertTrue(
@@ -65,6 +67,7 @@ export const processTDSAggregateExpression = (
     // TODO?: do we want to do more validation here for the shape of the column lambda?
     guaranteeNonNullable(expression.parametersValues[0]),
     expression,
+    parentLambda,
     queryBuilderState,
   );
 
@@ -137,6 +140,7 @@ export const processTDSAggregateExpression = (
 export const processTDSGroupByExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
 ): void => {
   // update fetch-structureTABULAR_DATA_STRUCTURE
   queryBuilderState.fetchStructureState.changeImplementation(
@@ -164,6 +168,7 @@ export const processTDSGroupByExpression = (
   );
   QueryBuilderValueSpecificationProcessor.process(
     precedingExpression,
+    parentLambda,
     queryBuilderState,
   );
 
@@ -178,6 +183,7 @@ export const processTDSGroupByExpression = (
     QueryBuilderValueSpecificationProcessor.processChild(
       value,
       expression,
+      parentLambda,
       queryBuilderState,
     ),
   );
@@ -193,6 +199,7 @@ export const processTDSGroupByExpression = (
     QueryBuilderValueSpecificationProcessor.processChild(
       value,
       expression,
+      parentLambda,
       queryBuilderState,
     ),
   );

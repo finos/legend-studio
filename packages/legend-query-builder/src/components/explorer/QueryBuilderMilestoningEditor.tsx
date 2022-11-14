@@ -16,13 +16,10 @@
 
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
-import {
-  type QueryBuilderParameterDragSource,
-  QUERY_BUILDER_PARAMETER_DND_TYPE,
-} from '../../stores/QueryBuilderParametersState.js';
 import { useCallback } from 'react';
 import {
   type ValueSpecification,
+  type VariableExpression,
   GenericType,
   GenericTypeExplicitReference,
   MILESTONING_STEREOTYPE,
@@ -33,7 +30,6 @@ import {
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
-import { VariableExpressionViewer } from '../QueryBuilderParametersPanel.js';
 import {
   Dialog,
   Modal,
@@ -44,8 +40,13 @@ import {
   PanelFormSection,
 } from '@finos/legend-art';
 import { generateDefaultValueForPrimitiveType } from '../../stores/QueryBuilderValueSpecificationHelper.js';
-import { BasicValueSpecificationEditor } from '../shared/BasicValueSpecificationEditor.js';
+import {
+  BasicValueSpecificationEditor,
+  type QueryBuilderVariableDragSource,
+  QUERY_BUILDER_VARIABLE_DND_TYPE,
+} from '../shared/BasicValueSpecificationEditor.js';
 import { instanceValue_setValues } from '../../stores/shared/ValueSpecificationModifierHelper.js';
+import { VariableSelector } from '../shared/QueryBuilderVariableSelector.js';
 
 const MilestoningParameterEditor = observer(
   (props: {
@@ -54,26 +55,22 @@ const MilestoningParameterEditor = observer(
   }) => {
     const { queryBuilderState, stereotype } = props;
     const handleDrop = useCallback(
-      (item: QueryBuilderParameterDragSource): void => {
+      (item: QueryBuilderVariableDragSource): void => {
         if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
-          queryBuilderState.milestoningState.setBusinessDate(
-            item.variable.parameter,
-          );
+          queryBuilderState.milestoningState.setBusinessDate(item.variable);
         } else {
-          queryBuilderState.milestoningState.setProcessingDate(
-            item.variable.parameter,
-          );
+          queryBuilderState.milestoningState.setProcessingDate(item.variable);
         }
       },
       [queryBuilderState, stereotype],
     );
     const [{ isMilestoningParameterValueDragOver }, dropConnector] = useDrop<
-      QueryBuilderParameterDragSource,
+      QueryBuilderVariableDragSource,
       void,
       { isMilestoningParameterValueDragOver: boolean }
     >(
       () => ({
-        accept: [QUERY_BUILDER_PARAMETER_DND_TYPE],
+        accept: [QUERY_BUILDER_VARIABLE_DND_TYPE],
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item);
@@ -119,7 +116,7 @@ const MilestoningParameterEditor = observer(
     };
 
     return (
-      <div ref={dropConnector} className="query-builder__parameter-editor">
+      <div ref={dropConnector} className="query-builder__variable-editor">
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isMilestoningParameterValueDragOver}
           label="Change Milestoning Parameter Value"
@@ -138,6 +135,9 @@ const MilestoningParameterEditor = observer(
               expectedType: PrimitiveType.DATE,
             }}
             resetValue={resetMilestoningParameter}
+            isConstant={queryBuilderState.constantState.isValueSpecConstant(
+              milestoningParameter,
+            )}
           />
         </PanelEntryDropZonePlaceholder>
       </div>
@@ -243,6 +243,13 @@ export const MilestoningParametersEditor = observer(
     const { queryBuilderState } = props;
     const milestoningState = queryBuilderState.milestoningState;
     const close = (): void => milestoningState.setShowMilestoningEditor(false);
+    const isCompatibleMilestoningParameter = (
+      variable: VariableExpression,
+    ): boolean =>
+      variable.genericType?.value.rawType.name === PRIMITIVE_TYPE.STRICTDATE ||
+      variable.genericType?.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE ||
+      variable.genericType?.value.rawType.name === PRIMITIVE_TYPE.DATE ||
+      variable.genericType?.value.rawType.name === PRIMITIVE_TYPE.DATETIME;
 
     return (
       <Dialog
@@ -256,36 +263,19 @@ export const MilestoningParametersEditor = observer(
       >
         <Modal
           darkMode={true}
-          className="editor-modal query-builder__parameters__modal"
+          className="editor-modal query-builder__variables__modal"
         >
           <ModalHeader title="Milestoning Parameters" />
-          <ModalBody className="query-builder__parameters__modal__body">
+          <ModalBody className="query-builder__variables__modal__body">
             <TemporalMilestoningEditor queryBuilderState={queryBuilderState} />
             <div className="panel__content__form__section__header__label">
               List of compatible milestoning parameters
             </div>
             <div className="panel__content__form__section__list__items">
-              {queryBuilderState.parametersState.parameterStates
-                .filter(
-                  (parameter) =>
-                    parameter.parameter.genericType?.value.rawType.name ===
-                      PRIMITIVE_TYPE.STRICTDATE ||
-                    parameter.parameter.genericType?.value.rawType.name ===
-                      PRIMITIVE_TYPE.LATESTDATE ||
-                    parameter.parameter.genericType?.value.rawType.name ===
-                      PRIMITIVE_TYPE.DATE ||
-                    parameter.parameter.genericType?.value.rawType.name ===
-                      PRIMITIVE_TYPE.DATETIME,
-                )
-                .map((parameter) => (
-                  <VariableExpressionViewer
-                    key={parameter.uuid}
-                    queryBuilderState={queryBuilderState}
-                    variableExpressionState={parameter}
-                    isReadOnly={true}
-                    hideActions={true}
-                  />
-                ))}
+              <VariableSelector
+                queryBuilderState={queryBuilderState}
+                filterBy={isCompatibleMilestoningParameter}
+              />
             </div>
           </ModalBody>
           <ModalFooter>

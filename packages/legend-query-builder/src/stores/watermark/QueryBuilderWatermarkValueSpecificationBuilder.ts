@@ -17,17 +17,22 @@
 import {
   SimpleFunctionExpression,
   extractElementNameFromPath,
+  type LambdaFunction,
 } from '@finos/legend-graph';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graphManager/QueryBuilderSupportedFunctions.js';
 import type { QueryBuilderWatermarkState } from './QueryBuilderWatermarkState.js';
 
 export const buildWatermarkExpression = (
   watermarkState: QueryBuilderWatermarkState,
-  getAllFunc: SimpleFunctionExpression,
-): SimpleFunctionExpression | undefined => {
+  lambdaFunction: LambdaFunction,
+): void => {
   if (!watermarkState.value) {
-    return undefined;
+    return;
   }
+  const currentExpression = guaranteeNonNullable(
+    lambdaFunction.expressionSequence[0],
+  );
 
   // main filter expression
   const watermarkExpression = new SimpleFunctionExpression(
@@ -35,10 +40,11 @@ export const buildWatermarkExpression = (
   );
 
   // param [0]
-  watermarkExpression.parametersValues.push(getAllFunc);
+  watermarkExpression.parametersValues.push(currentExpression);
 
   // param [1]
   watermarkExpression.parametersValues.push(watermarkState.value);
 
-  return watermarkExpression;
+  // replace watermark as main expression
+  lambdaFunction.expressionSequence[0] = watermarkExpression;
 };

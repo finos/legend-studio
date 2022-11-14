@@ -21,7 +21,7 @@ import {
   ResizablePanelSplitter,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from '../filter/QueryBuilderFilterPanel.js';
-import { QueryBuilderOlapGroupByPanel } from './QueryBuilderOLAPGroupByPanel_.js';
+import { QueryBuilderOlapGroupByPanel } from './QueryBuilderOLAPGroupByPanel.js';
 import { QueryBuilderPostFilterPanel } from './QueryBuilderPostFilterPanel.js';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 

@@ -34,7 +34,7 @@ import {
   type QueryBuilderOLAPGroupByColumnState,
   type QueryBuilderOLAPGroupByState,
   QueryBuilderTDS_OLAPAggreationOperatorState,
-} from './QueryBuilderOLAPGroupByState_.js';
+} from './QueryBuilderOLAPGroupByState.js';
 
 const appendOLAPGroupByColumnState = (
   olapGroupByColumnState: QueryBuilderOLAPGroupByColumnState,

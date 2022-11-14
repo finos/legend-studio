@@ -15,6 +15,7 @@
  */
 
 import {
+  type LambdaFunction,
   SimpleFunctionExpression,
   matchFunctionName,
 } from '@finos/legend-graph';
@@ -26,6 +27,7 @@ import { QueryBuilderValueSpecificationProcessor } from '../QueryBuilderStateBui
 export const processWatermarkExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
 ): void => {
   // check preceding expression
   const precedingExpression = guaranteeType(
@@ -42,6 +44,7 @@ export const processWatermarkExpression = (
 
   QueryBuilderValueSpecificationProcessor.process(
     precedingExpression,
+    parentLambda,
     queryBuilderState,
   );
 

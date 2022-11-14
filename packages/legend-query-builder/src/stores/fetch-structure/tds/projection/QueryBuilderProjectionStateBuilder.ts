@@ -17,6 +17,7 @@
 import {
   type INTERNAL__UnknownValueSpecification,
   type ValueSpecification,
+  type LambdaFunction,
   AbstractPropertyExpression,
   CollectionInstanceValue,
   DerivedProperty,
@@ -59,6 +60,7 @@ import {
 export const processTDSProjectExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
 ): void => {
   // update fetch-structure
   queryBuilderState.fetchStructureState.changeImplementation(
@@ -87,6 +89,7 @@ export const processTDSProjectExpression = (
   );
   QueryBuilderValueSpecificationProcessor.process(
     precedingExpression,
+    parentLambda,
     queryBuilderState,
   );
 
@@ -101,6 +104,7 @@ export const processTDSProjectExpression = (
     QueryBuilderValueSpecificationProcessor.processChild(
       value,
       expression,
+      parentLambda,
       queryBuilderState,
     ),
   );
@@ -236,6 +240,7 @@ export const processTDSProjectionDerivationExpression = (
 export const processTDSTakeExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
 ): void => {
   // check parameters
   assertTrue(
@@ -263,6 +268,7 @@ export const processTDSTakeExpression = (
   );
   QueryBuilderValueSpecificationProcessor.process(
     precedingExpression,
+    parentLambda,
     queryBuilderState,
   );
 
@@ -283,6 +289,7 @@ export const processTDSTakeExpression = (
 export const processTDSDistinctExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
 ): void => {
   // check parameters
   assertTrue(
@@ -309,6 +316,7 @@ export const processTDSDistinctExpression = (
   );
   QueryBuilderValueSpecificationProcessor.process(
     precedingExpression,
+    parentLambda,
     queryBuilderState,
   );
 
@@ -326,6 +334,7 @@ export const processTDSDistinctExpression = (
 export const processTDSSortExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
 ): void => {
   // check parameters
   assertTrue(
@@ -353,6 +362,7 @@ export const processTDSSortExpression = (
   );
   QueryBuilderValueSpecificationProcessor.process(
     precedingExpression,
+    parentLambda,
     queryBuilderState,
   );
 
@@ -367,6 +377,7 @@ export const processTDSSortExpression = (
     QueryBuilderValueSpecificationProcessor.processChild(
       value,
       expression,
+      parentLambda,
       queryBuilderState,
     ),
   );
