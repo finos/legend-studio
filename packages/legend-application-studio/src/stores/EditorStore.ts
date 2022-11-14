@@ -330,14 +330,22 @@ export class EditorStore implements CommandRegistrar {
   }
 
   get isInitialized(): boolean {
-    return (
-      Boolean(
-        this.sdlcState.currentProject &&
-          this.sdlcState.currentWorkspace &&
-          this.sdlcState.currentRevision &&
-          this.sdlcState.remoteWorkspaceRevision,
-      ) && this.graphManagerState.systemBuildState.hasSucceeded
-    );
+    if (this.isInViewerMode) {
+      return (
+        Boolean(
+          this.sdlcState.currentProject && this.sdlcState.currentWorkspace,
+        ) && this.graphManagerState.systemBuildState.hasSucceeded
+      );
+    } else {
+      return (
+        Boolean(
+          this.sdlcState.currentProject &&
+            this.sdlcState.currentWorkspace &&
+            this.sdlcState.currentRevision &&
+            this.sdlcState.remoteWorkspaceRevision,
+        ) && this.graphManagerState.systemBuildState.hasSucceeded
+      );
+    }
   }
 
   get isInGrammarTextMode(): boolean {
