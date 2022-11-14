@@ -83,7 +83,7 @@ import type { DataElement } from '../../../../../../../DSL_Data_Exports.js';
 import {
   getClassProperty,
   getEnumValue,
-  getOwnClassProperty,
+  getOwnProperty,
   getStereotype,
   getTag,
 } from '../../../../../../../graph/helpers/DomainHelper.js';
@@ -95,6 +95,7 @@ import {
   getRootRecordType,
   getSection,
 } from '../../../../../../../graph/helpers/STO_FlatData_Helper.js';
+import type { PropertyOwner } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/AbstractProperty.js';
 
 export const V1_buildFullPath = (
   packagePath: string | undefined,
@@ -325,8 +326,8 @@ export class V1_GraphBuilderContext {
       pointer.property,
       `Property pointer 'property' field is missing or empty`,
     );
-    const ownerReference = this.resolveClass(pointer.class);
-    const value = getOwnClassProperty(ownerReference.value, pointer.property);
+    const ownerReference = this.resolvePropertyOwner(pointer.class);
+    const value = getOwnProperty(ownerReference.value, pointer.property);
     return PropertyImplicitReference.create(ownerReference, value);
   };
 
@@ -472,6 +473,13 @@ export class V1_GraphBuilderContext {
     this.createImplicitPackageableElementReference(
       path,
       this.graph.getAssociation,
+    );
+  resolvePropertyOwner = (
+    path: string,
+  ): PackageableElementImplicitReference<PropertyOwner> =>
+    this.createImplicitPackageableElementReference(
+      path,
+      this.graph.getPropertyOwner,
     );
   resolveFunction = (
     path: string,
