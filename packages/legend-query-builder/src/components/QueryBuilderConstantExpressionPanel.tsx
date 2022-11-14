@@ -36,6 +36,8 @@ import {
   type Type,
   type ValueSpecification,
   PrimitiveType,
+  VariableExpression,
+  Multiplicity,
 } from '@finos/legend-graph';
 import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -203,9 +205,14 @@ export const QueryBuilderConstantExpressionPanel = observer(
           varNames,
           DEFAULT_CONSTANT_VARIABLE_NAME,
         );
+        const variableEx = new VariableExpression(
+          constantName,
+          Multiplicity.ONE,
+        );
+        variableEx.genericType = defaultVal.genericType;
         const constState = new QueryBuilderConstantExpressionState(
           queryBuilderState,
-          constantName,
+          variableEx,
           defaultVal,
         );
         constantState.setSelectedConstant(constState);

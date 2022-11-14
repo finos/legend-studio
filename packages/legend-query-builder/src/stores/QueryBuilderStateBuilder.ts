@@ -105,6 +105,7 @@ const processGetAllExpression = (
 const processLetExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
 ): void => {
   const parameters = expression.parametersValues;
   assertTrue(
@@ -120,12 +121,16 @@ const processLetExpression = (
     ).values[0],
     'Can`t process let function: left side should be a string primitive instance value',
   );
+  const varExp = guaranteeNonNullable(
+    parentLambda.openVariables.get(letVariable),
+    `Unable to find variable ${letVariable} in lambda function`,
+  );
   // process right side (value)
   const rightSide = guaranteeNonNullable(parameters[1]);
   // final
   const constantExpression = new QueryBuilderConstantExpressionState(
     queryBuilderState,
-    letVariable,
+    varExp,
     rightSide,
   );
   queryBuilderState.constantState.setShowConstantPanel(true);
@@ -212,21 +217,29 @@ export class QueryBuilderValueSpecificationProcessor
    * value specification.
    */
   readonly parentExpression?: SimpleFunctionExpression | undefined;
+  readonly parentLambda: LambdaFunction;
 
   private constructor(
     queryBuilderState: QueryBuilderState,
+    parentLambda: LambdaFunction,
     parentExpression: SimpleFunctionExpression | undefined,
   ) {
     this.queryBuilderState = queryBuilderState;
     this.parentExpression = parentExpression;
+    this.parentLambda = parentLambda;
   }
 
   static process(
     valueSpecification: ValueSpecification,
+    parentLambda: LambdaFunction,
     queryBuilderState: QueryBuilderState,
   ): void {
     valueSpecification.accept_ValueSpecificationVisitor(
-      new QueryBuilderValueSpecificationProcessor(queryBuilderState, undefined),
+      new QueryBuilderValueSpecificationProcessor(
+        queryBuilderState,
+        parentLambda,
+        undefined,
+      ),
     );
   }
 
@@ -237,11 +250,13 @@ export class QueryBuilderValueSpecificationProcessor
   static processChild(
     valueSpecification: ValueSpecification,
     parentExpression: SimpleFunctionExpression,
+    parentLambda: LambdaFunction,
     queryBuilderState: QueryBuilderState,
   ): void {
     valueSpecification.accept_ValueSpecificationVisitor(
       new QueryBuilderValueSpecificationProcessor(
         queryBuilderState,
+        parentLambda,
         parentExpression,
       ),
     );
@@ -319,6 +334,7 @@ export class QueryBuilderValueSpecificationProcessor
       );
       QueryBuilderValueSpecificationProcessor.process(
         precedingExpression,
+        this.parentLambda,
         this.queryBuilderState,
       );
 
@@ -374,7 +390,11 @@ export class QueryBuilderValueSpecificationProcessor
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK,
       )
     ) {
-      processWatermarkExpression(valueSpecification, this.queryBuilderState);
+      processWatermarkExpression(
+        valueSpecification,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
       return;
     } else if (
       matchFunctionName(
@@ -382,7 +402,11 @@ export class QueryBuilderValueSpecificationProcessor
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
       )
     ) {
-      processTDSProjectExpression(valueSpecification, this.queryBuilderState);
+      processTDSProjectExpression(
+        valueSpecification,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
       return;
     } else if (
       matchFunctionName(
@@ -390,7 +414,11 @@ export class QueryBuilderValueSpecificationProcessor
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
       )
     ) {
-      processTDSTakeExpression(valueSpecification, this.queryBuilderState);
+      processTDSTakeExpression(
+        valueSpecification,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
       return;
     } else if (
       matchFunctionName(
@@ -398,7 +426,11 @@ export class QueryBuilderValueSpecificationProcessor
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
       )
     ) {
-      processTDSDistinctExpression(valueSpecification, this.queryBuilderState);
+      processTDSDistinctExpression(
+        valueSpecification,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
       return;
     } else if (
       matchFunctionName(
@@ -406,7 +438,11 @@ export class QueryBuilderValueSpecificationProcessor
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
       )
     ) {
-      processTDSSortExpression(valueSpecification, this.queryBuilderState);
+      processTDSSortExpression(
+        valueSpecification,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
       return;
     } else if (
       matchFunctionName(functionName, [
@@ -426,7 +462,11 @@ export class QueryBuilderValueSpecificationProcessor
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
       )
     ) {
-      processTDSGroupByExpression(valueSpecification, this.queryBuilderState);
+      processTDSGroupByExpression(
+        valueSpecification,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
       return;
     } else if (
       matchFunctionName(functionName, QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG)
@@ -435,6 +475,7 @@ export class QueryBuilderValueSpecificationProcessor
         valueSpecification,
         this.parentExpression,
         this.queryBuilderState,
+        this.parentLambda,
       );
       return;
     } else if (
@@ -446,6 +487,7 @@ export class QueryBuilderValueSpecificationProcessor
       processTDS_OLAPGroupByExpression(
         valueSpecification,
         this.queryBuilderState,
+        this.parentLambda,
       );
       return;
     } else if (
@@ -457,6 +499,7 @@ export class QueryBuilderValueSpecificationProcessor
       processGraphFetchSerializeExpression(
         valueSpecification,
         this.queryBuilderState,
+        this.parentLambda,
       );
       return;
     } else if (
@@ -465,10 +508,18 @@ export class QueryBuilderValueSpecificationProcessor
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
       ])
     ) {
-      processGraphFetchExpression(valueSpecification, this.queryBuilderState);
+      processGraphFetchExpression(
+        valueSpecification,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
       return;
     } else if (matchFunctionName(functionName, [SUPPORTED_FUNCTIONS.LET])) {
-      processLetExpression(valueSpecification, this.queryBuilderState);
+      processLetExpression(
+        valueSpecification,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
       return;
     }
     throw new UnsupportedOperationError(
@@ -537,6 +588,7 @@ export class QueryBuilderValueSpecificationProcessor
         expression.accept_ValueSpecificationVisitor(
           new QueryBuilderValueSpecificationProcessor(
             this.queryBuilderState,
+            this.parentLambda,
             this.parentExpression,
           ),
         ),
@@ -580,6 +632,7 @@ export const processQueryLambdaFunction = (
   lambdaFunction.expressionSequence.map((expression) =>
     QueryBuilderValueSpecificationProcessor.process(
       expression,
+      lambdaFunction,
       queryBuilderState,
     ),
   );

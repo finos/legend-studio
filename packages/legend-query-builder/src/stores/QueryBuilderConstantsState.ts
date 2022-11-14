@@ -19,7 +19,6 @@ import {
   type ValueSpecification,
   GenericType,
   GenericTypeExplicitReference,
-  Multiplicity,
   observe_ValueSpecification,
   VariableExpression,
 } from '@finos/legend-graph';
@@ -46,7 +45,7 @@ export class QueryBuilderConstantExpressionState implements Hashable {
 
   constructor(
     queryBuilderState: QueryBuilderState,
-    varName: string,
+    variable: VariableExpression,
     value: ValueSpecification,
   ) {
     makeObservable(this, {
@@ -60,17 +59,11 @@ export class QueryBuilderConstantExpressionState implements Hashable {
       value,
       this.queryBuilderState.observableContext,
     );
-    this.variable = this.buildVariableExpression(varName);
-  }
-
-  buildVariableExpression(varName: string): VariableExpression {
-    const variableEx = new VariableExpression(varName, Multiplicity.ONE);
-    variableEx.genericType = this.value.genericType;
     observe_ValueSpecification(
-      variableEx,
+      variable,
       this.queryBuilderState.observableContext,
     );
-    return variableEx;
+    this.variable = variable;
   }
 
   changeValSpecType(type: Type): void {

@@ -49,6 +49,7 @@ import {
 export const processTDS_OLAPGroupByExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
 ): void => {
   // check parameters
   const parametersLength = expression.parametersValues.length;
@@ -90,6 +91,7 @@ export const processTDS_OLAPGroupByExpression = (
   );
   QueryBuilderValueSpecificationProcessor.process(
     precedingExpression,
+    parentLambda,
     queryBuilderState,
   );
 

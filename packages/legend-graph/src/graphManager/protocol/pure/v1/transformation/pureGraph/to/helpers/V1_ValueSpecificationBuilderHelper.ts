@@ -205,6 +205,7 @@ export class V1_ValueSpecificationBuilder
 
       variableExpression.genericType = rightSide.genericType;
       this.processingContext.addInferredVariables(letName, variableExpression);
+      this.openVariables.push(letName);
     }
     const func = V1_buildFunctionExpression(
       appliedFunction.function,
@@ -436,7 +437,6 @@ export function V1_buildLambdaBody(
       ),
     ),
   );
-  // Remove let variables
   const firstExpression = guaranteeNonNullable(_expressions[0]);
   const functionType = new FunctionType(
     firstExpression.genericType
@@ -449,7 +449,12 @@ export function V1_buildLambdaBody(
   functionType.parameters = pureParameters;
   processingContext.pop();
   const _lambda = new LambdaFunction(functionType);
-  _lambda.openVariables = [];
+  openVariables.forEach((v) => {
+    const varExp = processingContext.getInferredVariable(v);
+    if (varExp instanceof VariableExpression) {
+      _lambda.openVariables.set(varExp.name, varExp);
+    }
+  });
   _lambda.expressionSequence = _expressions;
   return _lambda;
 }
