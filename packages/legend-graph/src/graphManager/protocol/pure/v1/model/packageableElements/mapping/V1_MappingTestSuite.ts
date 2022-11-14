@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
-import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
-import { AtomicTest } from '../../test/Test.js';
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
+import { V1_TestSuite } from '../../test/V1_TestSuite.js';
+import type { V1_StoreTestData } from './V1_StoreTestData.js';
 
-export class MappingTest extends AtomicTest implements Hashable {
-  query!: RawLambda;
+export class V1_MappingTestSuite extends V1_TestSuite implements Hashable {
+  storeTestDatas: V1_StoreTestData[] = [];
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.MAPPING_TEST,
-      this.query,
+      CORE_HASH_STRUCTURE.MAPPING_TEST_SUITE,
+      hashArray(this.storeTestDatas),
       this.id,
-      hashArray(this.assertions),
+      hashArray(this.tests),
     ]);
   }
 }

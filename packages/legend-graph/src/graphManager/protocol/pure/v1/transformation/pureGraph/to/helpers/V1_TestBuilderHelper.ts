@@ -25,6 +25,7 @@ import type {
   TestSuite,
 } from '../../../../../../../../graph/metamodel/pure/test/Test.js';
 import type { Testable } from '../../../../../../../../graph/metamodel/pure/test/Testable.js';
+import { V1_MappingTestSuite } from '../../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
 import { V1_ServiceTestSuite } from '../../../../model/packageableElements/service/V1_ServiceTestSuite.js';
 import { V1_EqualTo } from '../../../../model/test/assertion/V1_EqualTo.js';
 import { V1_EqualToJson } from '../../../../model/test/assertion/V1_EqualToJson.js';
@@ -33,6 +34,7 @@ import type { V1_TestAssertion } from '../../../../model/test/assertion/V1_TestA
 import type { V1_TestSuite } from '../../../../model/test/V1_TestSuite.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
+import { V1_buildMappingTestSuite } from './V1_MappingBuilderHelper.js';
 import { V1_buildServiceTestSuite } from './V1_ServiceBuilderHelper.js';
 import type { V1_AtomicTest } from '../../../../model/test/V1_AtomicTest.js';
 import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../../Testable_PureProtocolProcessorPlugin_Extension.js';
@@ -123,6 +125,8 @@ export const V1_buildTestSuite = (
   let suite: TestSuite | undefined;
   if (value instanceof V1_ServiceTestSuite) {
     suite = V1_buildServiceTestSuite(value, context);
+  } else if (value instanceof V1_MappingTestSuite) {
+    suite = V1_buildMappingTestSuite(value, context);
   }
   if (suite) {
     suite.__parent = parent;
