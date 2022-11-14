@@ -211,6 +211,7 @@ export const generateDefaultValueForPrimitiveType = (
     case PRIMITIVE_TYPE.DECIMAL:
     case PRIMITIVE_TYPE.FLOAT:
     case PRIMITIVE_TYPE.INTEGER:
+    case PRIMITIVE_TYPE.BINARY:
       return 0;
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.STRICTDATE:

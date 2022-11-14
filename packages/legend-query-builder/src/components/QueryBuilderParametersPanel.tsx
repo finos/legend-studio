@@ -20,23 +20,15 @@ import {
   Dialog,
   BlankPanelContent,
   CustomSelectorInput,
-  PencilIcon,
-  TimesIcon,
-  DollarIcon,
   PlusIcon,
-  DragPreviewLayer,
-  useDragPreviewLayer,
   BlankPanelPlaceholder,
   Modal,
   ModalBody,
   ModalFooter,
   ModalHeader,
   PanelFormTextField,
+  InfoCircleIcon,
 } from '@finos/legend-art';
-import {
-  type QueryBuilderParameterDragSource,
-  QUERY_BUILDER_PARAMETER_DND_TYPE,
-} from '../stores/QueryBuilderParametersState.js';
 import {
   type Type,
   VariableExpression,
@@ -52,12 +44,12 @@ import {
   getPackageableElementOptionFormatter,
   useApplicationStore,
 } from '@finos/legend-application';
-import { useDrag } from 'react-dnd';
 import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { DEFAULT_VARIABLE_NAME } from '../stores/QueryBuilderConfig.js';
 import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { LambdaParameterState } from '../stores/shared/LambdaParameterState.js';
 import { LambdaParameterValuesEditor } from './shared/LambdaParameterValuesEditor.js';
+import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 
 type MultiplicityOption = { label: string; value: Multiplicity };
 
@@ -147,12 +139,12 @@ const VariableExpressionEditor = observer(
       >
         <Modal
           darkMode={true}
-          className="editor-modal query-builder__parameters__modal"
+          className="editor-modal query-builder__variables__modal"
         >
           <ModalHeader
             title={`${isCreating ? 'Create Parameter' : 'Update Parameter'}`}
           />
-          <ModalBody className="query-builder__parameters__modal__body">
+          <ModalBody className="query-builder__variables__modal__body">
             <PanelFormTextField
               name="Parameter Name"
               prompt="Name of the parameter. Should be descriptive of its purpose."
@@ -223,90 +215,6 @@ const VariableExpressionEditor = observer(
   },
 );
 
-export const VariableExpressionViewer = observer(
-  (props: {
-    queryBuilderState: QueryBuilderState;
-    isReadOnly: boolean;
-    hideActions?: boolean;
-    variableExpressionState: LambdaParameterState;
-  }) => {
-    const {
-      queryBuilderState,
-      isReadOnly,
-      hideActions,
-      variableExpressionState,
-    } = props;
-    const queryParameterState = queryBuilderState.parametersState;
-    const variable = variableExpressionState.parameter;
-    const name = variable.name;
-    const variableType = variable.genericType?.value.rawType;
-    const typeName = variableType?.name;
-    const editVariable = (): void => {
-      queryParameterState.setSelectedParameter(variableExpressionState);
-    };
-    const deleteVariable = (): void =>
-      queryParameterState.removeParameter(variableExpressionState);
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: QUERY_BUILDER_PARAMETER_DND_TYPE,
-        item: { variable: variableExpressionState },
-      }),
-      [variableExpressionState],
-    );
-    useDragPreviewLayer(dragPreviewConnector);
-
-    return (
-      <div className="query-builder__parameters__parameter" ref={dragConnector}>
-        <DragPreviewLayer
-          labelGetter={(item: QueryBuilderParameterDragSource): string =>
-            item.variable.variableName === ''
-              ? '(unknown)'
-              : item.variable.variableName
-          }
-          types={[QUERY_BUILDER_PARAMETER_DND_TYPE]}
-        />
-        <div className="query-builder__parameters__parameter__content">
-          <div className="query-builder__parameters__parameter__icon">
-            <div className="query-builder__parameters__parameter-icon">
-              <DollarIcon />
-            </div>
-          </div>
-          <div className="query-builder__parameters__parameter__label">
-            {name}
-            <div className="query-builder__parameters__parameter__type">
-              <div className="query-builder__parameters__parameter__type__label">
-                {typeName}
-              </div>
-            </div>
-          </div>
-        </div>
-        {!hideActions && (
-          <div className="query-builder__parameters__parameter__actions">
-            <button
-              className="query-builder__parameters__parameter__action"
-              tabIndex={-1}
-              disabled={isReadOnly}
-              onClick={editVariable}
-              title="Edit"
-            >
-              <PencilIcon />
-            </button>
-            <button
-              className="query-builder__parameters__parameter__action"
-              tabIndex={-1}
-              onClick={deleteVariable}
-              disabled={isReadOnly}
-              title="Remove"
-            >
-              <TimesIcon />
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  },
-);
-
 export const QueryBuilderParametersPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
@@ -334,10 +242,16 @@ export const QueryBuilderParametersPanel = observer(
     };
 
     return (
-      <div className="panel query-builder__parameters">
+      <div className="panel query-builder__variables">
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">parameters</div>
+            <div
+              className="service-editor__pattern__parameters__header__info"
+              title={`Parameters are variables assigned to your query. They are dynamic in nature and can change for each execution.`}
+            >
+              <InfoCircleIcon />
+            </div>
           </div>
           {!isReadOnly && !queryBuilderState.isParameterSupportDisabled && (
             <div className="panel__header__actions">
@@ -352,16 +266,21 @@ export const QueryBuilderParametersPanel = observer(
             </div>
           )}
         </div>
-        <div className="panel__content query-builder__parameters__content">
+        <div className="panel__content query-builder__variables__content">
           {!queryBuilderState.isParameterSupportDisabled && (
             <>
               {Boolean(queryParameterState.parameterStates.length) &&
-                queryParameterState.parameterStates.map((parameter) => (
-                  <VariableExpressionViewer
-                    key={parameter.uuid}
-                    queryBuilderState={queryBuilderState}
+                queryParameterState.parameterStates.map((pState) => (
+                  <VariableViewer
+                    key={pState.uuid}
+                    variable={pState.parameter}
                     isReadOnly={isReadOnly}
-                    variableExpressionState={parameter}
+                    actions={{
+                      editVariable: () =>
+                        queryParameterState.setSelectedParameter(pState),
+                      deleteVariable: () =>
+                        queryParameterState.removeParameter(pState),
+                    }}
                   />
                 ))}
               {!queryParameterState.parameterStates.length && (

@@ -23,12 +23,6 @@ import {
   LambdaParametersState,
 } from './shared/LambdaParameterState.js';
 
-export const QUERY_BUILDER_PARAMETER_DND_TYPE = 'PARAMETER';
-
-export interface QueryBuilderParameterDragSource {
-  variable: LambdaParameterState;
-}
-
 export class QueryBuilderParametersState
   extends LambdaParametersState
   implements Hashable

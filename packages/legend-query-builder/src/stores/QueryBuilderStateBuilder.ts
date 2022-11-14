@@ -18,6 +18,8 @@ import {
   assertNonNullable,
   assertTrue,
   assertType,
+  guaranteeIsString,
+  guaranteeNonNullable,
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
@@ -34,13 +36,14 @@ import {
   Class,
   type CollectionInstanceValue,
   type LambdaFunctionInstanceValue,
-  type PrimitiveInstanceValue,
+  PrimitiveInstanceValue,
   SimpleFunctionExpression,
   type VariableExpression,
   type AbstractPropertyExpression,
   getMilestoneTemporalStereotype,
   type INTERNAL__PropagatedValue,
   type ValueSpecification,
+  SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
 import { processTDSPostFilterExpression } from './fetch-structure/tds/post-filter/QueryBuilderPostFilterStateBuilder.js';
 import { processFilterExpression } from './filter/QueryBuilderFilterStateBuilder.js';
@@ -65,6 +68,7 @@ import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderS
 import { LambdaParameterState } from './shared/LambdaParameterState.js';
 import { processTDS_OLAPGroupByExpression } from './fetch-structure/tds/olapGroupBy/QueryBuilderOLAPGroupByStateBuilder_.js';
 import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkStateBuilder.js';
+import { QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
 
 const processGetAllExpression = (
   expression: SimpleFunctionExpression,
@@ -96,6 +100,36 @@ const processGetAllExpression = (
       `Can't process getAll() expression: getAll() expects no arguments`,
     );
   }
+};
+
+const processLetExpression = (
+  expression: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+): void => {
+  const parameters = expression.parametersValues;
+  assertTrue(
+    expression.parametersValues.length === 2,
+    'Let function expected to have two parameters (left and right side value)',
+  );
+  // process left side (var)
+  const letVariable = guaranteeIsString(
+    guaranteeType(
+      parameters[0],
+      PrimitiveInstanceValue,
+      'Can`t process let function: left side should be a primitive instance value',
+    ).values[0],
+    'Can`t process let function: left side should be a string primitive instance value',
+  );
+  // process right side (value)
+  const rightSide = guaranteeNonNullable(parameters[1]);
+  // final
+  const constantExpression = new QueryBuilderConstantExpressionState(
+    queryBuilderState,
+    letVariable,
+    rightSide,
+  );
+  queryBuilderState.constantState.setShowConstantPanel(true);
+  queryBuilderState.constantState.addConstant(constantExpression);
 };
 
 /**
@@ -432,6 +466,9 @@ export class QueryBuilderValueSpecificationProcessor
       ])
     ) {
       processGraphFetchExpression(valueSpecification, this.queryBuilderState);
+      return;
+    } else if (matchFunctionName(functionName, [SUPPORTED_FUNCTIONS.LET])) {
+      processLetExpression(valueSpecification, this.queryBuilderState);
       return;
     }
     throw new UnsupportedOperationError(

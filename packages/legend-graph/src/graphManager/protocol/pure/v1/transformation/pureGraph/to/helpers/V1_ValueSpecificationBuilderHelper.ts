@@ -196,12 +196,14 @@ export class V1_ValueSpecificationBuilder
         appliedFunction.parameters[0],
         V1_CString,
       ).value;
-      const firstParam = guaranteeNonNullable(parameters[0]);
+      // right side (value spec)
+      const rightSide = guaranteeNonNullable(parameters[1]);
       const variableExpression = new VariableExpression(
         letName,
-        firstParam.multiplicity,
+        rightSide.multiplicity,
       );
-      variableExpression.genericType = firstParam.genericType;
+
+      variableExpression.genericType = rightSide.genericType;
       this.processingContext.addInferredVariables(letName, variableExpression);
     }
     const func = V1_buildFunctionExpression(

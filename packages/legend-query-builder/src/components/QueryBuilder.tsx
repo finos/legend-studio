@@ -56,6 +56,7 @@ import { guaranteeType } from '@finos/legend-shared';
 import { QueryBuilderGraphFetchTreeState } from '../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSPanel.js';
 import { QueryBuilderWatermarkEditor } from './watermark/QueryBuilderWatermark.js';
+import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpressionPanel.js';
 
 export const QUERY_BUILDER_BACKDROP_CONTAINER_ID =
   'query-builder.backdrop-container';
@@ -187,6 +188,11 @@ export const QueryBuilder = observer(
         !queryBuilderState.showParametersPanel,
       );
     };
+    const toggleConstantPanel = (): void => {
+      queryBuilderState.constantState.setShowConstantPanel(
+        !queryBuilderState.constantState.showConstantPanel,
+      );
+    };
     const toggleShowFilterPanel = (): void => {
       queryBuilderState.filterState.setShowPanel(
         !queryBuilderState.filterState.showPanel,
@@ -305,6 +311,27 @@ export const QueryBuilder = observer(
                             </MenuContentItemLabel>
                           </MenuContentItem>
                         )}
+                        {
+                          <MenuContentItem
+                            onClick={toggleConstantPanel}
+                            disabled={
+                              !queryBuilderState.isQuerySupported ||
+                              queryBuilderState.constantState.constants.length >
+                                0
+                            }
+                          >
+                            <MenuContentItemIcon>
+                              {queryBuilderState.constantState
+                                .showConstantPanel ? (
+                                <CheckIcon />
+                              ) : null}
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                              Show Constant(s)
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                        }
+
                         <MenuContentItem
                           onClick={toggleShowFilterPanel}
                           disabled={
@@ -437,6 +464,17 @@ export const QueryBuilder = observer(
                             {queryBuilderState.showParametersPanel && (
                               <ResizablePanel minSize={40} direction={-1}>
                                 <QueryBuilderParametersPanel
+                                  queryBuilderState={queryBuilderState}
+                                />
+                              </ResizablePanel>
+                            )}
+                            {/* constants panel */}
+                            {queryBuilderState.constantState
+                              .showConstantPanel && <ResizablePanelSplitter />}
+                            {queryBuilderState.constantState
+                              .showConstantPanel && (
+                              <ResizablePanel minSize={40} direction={-1}>
+                                <QueryBuilderConstantExpressionPanel
                                   queryBuilderState={queryBuilderState}
                                 />
                               </ResizablePanel>
