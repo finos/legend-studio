@@ -97,7 +97,7 @@ Mapping execution::RelationalMapping
             shouldPass:
               EqualToJson
               #{
-                expected :
+                expected : 
                   ExternalFormat
                   #{
                     contentType: 'application/json';
