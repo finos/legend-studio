@@ -4,18 +4,18 @@ Data data::RelationalData
   Relational
   #{
     default.PersonTable:
-              'id,firm_id,firstName,lastName\n'
-              '1,1,John,Doe\n'
-              '2,1,Nicole,Smith\n'
-              '3,2,Time,Smith\n';
+      'id,firm_id,firstName,lastName\n'+
+      '1,1,John,Doe\n'+
+      '2,1,Nicole,Smith\n'+
+      '3,2,Time,Smith\n';
 
     default.FirmTable:
-          'id,legal_name\n'
-          '1,Finos\n'
-          '2,Apple';
-
+      'id,legal_name\n'+
+      '1,Finos\n'+
+      '2,Apple\n';
   }#
 }
+
 
 ###Relational
 Database store::TestDB
@@ -74,38 +74,39 @@ Mapping execution::RelationalMapping
     legalName: [store::TestDB]FirmTable.legal_name,
     employees[model_Person]: [store::TestDB]@FirmPerson
   }
+
   testSuites:
-    [
-      testSuite1:
-      {
-        data:
-        [
-          store::TestDB:
-              Reference
+  [
+    testSuite1:
+    {
+      data:
+      [
+        store::TestDB:
+          Reference
+          #{
+            data::RelationalData
+          }#
+      ];
+      tests:
+      [
+        test1:
+        {
+          query: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);
+          asserts:
+          [
+            shouldPass:
+              EqualToJson
               #{
-                data::RelationalData
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"columns":[{"name":"Employees/First Name","type":"String"},{"name":"Employees/Last Name","type":"String"},{"name":"Legal Name","type":"String"}],"rows":[{"values":["John","Doe","Finos"]},{"values":["Nicole","Smith","Finos"]},{"values":["Time","Smith","Apple"]}]}';
+                  }#;
               }#
-        ];
-        tests:
-        [
-          test1:
-          {
-            query: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);
-            asserts:
-            [
-              shouldPass:
-                EqualToJson
-                #{
-                  expected :
-                    ExternalFormat
-                    #{
-                      contentType: 'application/json';
-                      data: '{"columns":[{"name":"Employees/First Name","type":"String"},{"name":"Employees/Last Name","type":"String"},{"name":"Legal Name","type":"String"}],"rows":[{"values":["John","Doe","Finos"]},{"values":["Nicole","Smith","Finos"]},{"values":["Time","Smith","Apple"]}]}';
-                    }#;
-                }#
-            ];
-          }
-        ];
-      }
-    ]
+          ];
+        }
+      ];
+    }
+  ]
 )
