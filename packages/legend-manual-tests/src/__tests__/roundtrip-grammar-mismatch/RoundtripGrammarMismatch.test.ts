@@ -99,7 +99,7 @@ const checkGrammarRoundtripMismatch = async (
   options?: GrammarRoundtripOptions,
 ): Promise<void> => {
   const pluginManager = new TEST__GraphManagerPluginManager();
-  pluginManager.install();
+  pluginManager.usePresets([new DSL_ExternalFormat_GraphPreset()]).install();
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
 
   if (options?.debug) {
