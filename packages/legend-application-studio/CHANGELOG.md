@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 20.0.7
+
+### Patch Changes
+
+- [#1658](https://github.com/finos/legend-studio/pull/1658) [`b4bbdb774`](https://github.com/finos/legend-studio/commit/b4bbdb7742d3ae3b7952cecedeee4694840c4345) ([@xannem](https://github.com/xannem)) - fix: toogle text mode shortcut in viewer mode
+
+- [#1676](https://github.com/finos/legend-studio/pull/1676) [`eb12c94ae`](https://github.com/finos/legend-studio/commit/eb12c94ae243c01c9ee86d563caa081349c3a771) ([@gayathrir11](https://github.com/gayathrir11)) - Add project configuration panel shortcut to project explorer action panel.
+
 ## 20.0.6
 
 ### Patch Changes
