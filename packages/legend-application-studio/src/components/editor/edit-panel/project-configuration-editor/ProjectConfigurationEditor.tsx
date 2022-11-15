@@ -646,10 +646,8 @@ const ProjectDependencyActions = observer(
             className="project-dependency-editor__conflicts-btn"
             tabIndex={-1}
             onClick={viewConflict}
-            disabled={
-              !config.dependencyInfo || !config.dependencyInfo.conflicts.length
-            }
-            title="View any conflcits in your dependencies"
+            disabled={!config.dependencyInfo?.conflicts.length}
+            title="View any conflicts in your dependencies"
           >
             View Conflicts
           </button>

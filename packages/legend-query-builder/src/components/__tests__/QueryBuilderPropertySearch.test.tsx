@@ -72,7 +72,7 @@ test(
       'name',
     );
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.explorerState.propertySearchState.setSearchText('Name');
       queryBuilderState.explorerState.propertySearchState.search();
     });

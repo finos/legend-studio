@@ -103,6 +103,7 @@ export class LegendStudioBaseStore {
     // authorize SDLC, unless navigation location match SDLC-bypassed patterns
     if (
       !matchPath(this.applicationStore.navigator.getCurrentLocation(), [
+        // TODO: we might want to consider making this extensible
         LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
         LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
       ])

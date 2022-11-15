@@ -205,14 +205,14 @@ test(
     // we will then change env from `int` to `prod`
     await waitFor(() => getByText(registrationEditor, 'INT'));
 
-    act(() => {
+    await act(async () => {
       registrationState.updateEnv('prod');
     });
     await waitFor(() => getByText(registrationEditor, 'PROD'));
 
     // select version
     await waitFor(() => getByText(registrationEditor, 'Select...'));
-    act(() => {
+    await act(async () => {
       registrationState.setProjectVersion(
         versions.find((v) => v.id.id === '1.0.1'),
       );
@@ -222,7 +222,7 @@ test(
     expect(registrationState.executionModes[0]).toBe(ServiceExecutionMode.PROD);
 
     // change env
-    act(() => {
+    await act(async () => {
       registrationState.updateEnv('int');
     });
     // change from full to semi
@@ -232,7 +232,7 @@ test(
         prettyCONSTName(ServiceExecutionMode.FULL_INTERACTIVE),
       ),
     );
-    act(() => {
+    await act(async () => {
       registrationState.updateType(ServiceExecutionMode.SEMI_INTERACTIVE);
     });
     await waitFor(() =>

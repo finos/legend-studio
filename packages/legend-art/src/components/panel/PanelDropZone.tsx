@@ -70,7 +70,7 @@ export const useDragPreviewLayer = (
 ): void => {
   // hide default HTML5 preview image
   useEffect(() => {
-    dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
+    dragPreviewConnector(getEmptyImage());
   }, [dragPreviewConnector]);
 };
 

@@ -305,7 +305,7 @@ test(
     expect(tdsState.projectionColumns.length).toBe(0);
 
     // filter with group condition
-    act(() => {
+    await act(async () => {
       queryBuilderState.resetQueryResult();
       queryBuilderState.resetQueryContent();
     });
@@ -339,7 +339,7 @@ test(
     expect(tdsState.projectionColumns.length).toBe(0);
 
     // projection column with derived property
-    act(() => {
+    await act(async () => {
       queryBuilderState.resetQueryResult();
       queryBuilderState.resetQueryContent();
     });
@@ -494,7 +494,7 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'MyMapping'));
 
     // simple graph fetch
-    act(() => {
+    await act(async () => {
       queryBuilderState.initializeWithQuery(
         create_RawLambda(
           TEST_DATA__simpleGraphFetch.parameters,
