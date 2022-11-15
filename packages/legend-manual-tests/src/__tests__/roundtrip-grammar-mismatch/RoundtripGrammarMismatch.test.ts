@@ -41,6 +41,7 @@ import {
  * See https://github.com/axios/axios/pull/5104
  */
 import { default as axios, type AxiosResponse } from 'axios';
+import {DSL_ExternalFormat_GraphPreset} from "../../../../legend-graph/src/DSL_ExternalFormat_Extension.js";
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
