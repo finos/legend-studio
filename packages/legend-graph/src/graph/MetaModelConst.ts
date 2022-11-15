@@ -40,9 +40,6 @@ export enum ROOT_PACKAGE_NAME {
   PROJECT_DEPENDENCY_ROOT = 'PROJECT_DEPENDENCY_ROOT',
 }
 
-// Pure model connection does not use an actual store so this is just a dummy value
-export const MODEL_STORE_NAME = 'ModelStore';
-
 export enum PRIMITIVE_TYPE {
   STRING = 'String',
   BOOLEAN = 'Boolean',

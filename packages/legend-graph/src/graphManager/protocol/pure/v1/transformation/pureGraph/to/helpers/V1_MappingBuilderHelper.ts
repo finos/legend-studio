@@ -23,10 +23,6 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import {
-  MODEL_STORE_NAME,
-  PRIMITIVE_TYPE,
-} from '../../../../../../../../graph/MetaModelConst.js';
 import { fromElementPathToMappingElementId } from '../../../../../../../../graph/MetaModelUtils.js';
 import type { Type } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Type.js';
 import type { Mapping } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
@@ -43,7 +39,10 @@ import { FlatDataInputData } from '../../../../../../../../graph/metamodel/pure/
 import { ExpectedOutputMappingTestAssert } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert.js';
 import type { Class } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import { InferableMappingElementIdImplicitValue } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/InferableMappingElementId.js';
-import { PackageableElementImplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
+import {
+  type PackageableElementImplicitReference,
+  PackageableElementExplicitReference,
+} from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { EnumValueImplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/EnumValueReference.js';
 import { MappingInclude } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
 import { SubstituteStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/SubstituteStore.js';
@@ -81,6 +80,7 @@ import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
 import type { V1_StoreTestData } from '../../../../model/packageableElements/mapping/V1_StoreTestData.js';
 import { StoreTestData } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/StoreTestData.js';
 import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
+import { ModelStore } from '../../../../../../../../DSL_Mapping_Exports.js';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,
@@ -214,10 +214,9 @@ const buildStoreTestData = (
   context: V1_GraphBuilderContext,
 ): StoreTestData => {
   const storeTestData = new StoreTestData();
-  if (element.store === MODEL_STORE_NAME) {
-    storeTestData.store = PackageableElementImplicitReference.create(
-      context.graph.modelStore,
-      element.store,
+  if (element.store === ModelStore.NAME) {
+    storeTestData.store = PackageableElementExplicitReference.create(
+      ModelStore.INSTANCE,
     );
   } else {
     storeTestData.store = context.resolveStore(element.store);

@@ -1219,7 +1219,6 @@ export const V1_mappingModelSchema = (
     ),
     name: primitive(),
     package: primitive(),
-    tests: list(usingModelSchema(V1_mappingTestModelLegacySchema)),
     testSuites: optionalCustom(
       (values) =>
         serializeArray(
@@ -1234,4 +1233,5 @@ export const V1_mappingModelSchema = (
           skipIfEmpty: false,
         }),
     ),
+    tests: list(usingModelSchema(V1_mappingTestModelLegacySchema)),
   });
