@@ -1,38 +1,8 @@
-###ServiceStore
-ServiceStore testServiceStoreTestSuites::ServiceStore
-(
-  ServiceGroup EmployeeServices
-  (
-    path : '/employees';
-    Service EmployeeService
-    (
-      path : '/allEmployees';
-      method : GET;
-      response : [testServiceStoreTestSuites::Employee <- testServiceStoreTestSuites::employeeServiceStoreSchemaBinding];
-      security : [];
-    )
-    Service EmployeeServiceWithParameters
-    (
-      path : '/employeesWithParameters';
-      method : GET;
-      parameters :
-      (
-          stringParam : String (location = query),
-          integerParam : Integer (location = query),
-          floatParam : Float (location = query),
-          booleanParam : Boolean (location = query)
-      );
-      response : [testServiceStoreTestSuites::Employee2 <- testServiceStoreTestSuites::employeeServiceStoreSchemaBinding];
-      security : [];
-    )
-  )
-)
-
-
 ###Data
 Data testServiceStoreTestSuites::TestData
 {
-  ServiceStore #{
+  ServiceStore
+  #{
     [
       {
         request:
@@ -46,7 +16,7 @@ Data testServiceStoreTestSuites::TestData
             ExternalFormat
             #{
               contentType: 'application/json';
-              data: '[ { \"kerberos\": \"dummy kerberos\", \"employeeID\": \"dummy id\", \"title\": \"dummy title\", \"firstName\": \"dummy firstName\", \"lastName\": \"dummy lastname\", \"countryCode\": \"dummy countryCode\" } ]';
+              data: '[ { "kerberos": "dummy kerberos", "employeeID": "dummy id", "title": "dummy title", "firstName": "dummy firstName", "lastName": "dummy lastname", "countryCode": "dummy countryCode" } ]';
             }#;
         };
       }
@@ -55,12 +25,43 @@ Data testServiceStoreTestSuites::TestData
 }
 
 
+###ServiceStore
+ServiceStore testServiceStoreTestSuites::ServiceStore
+(
+  ServiceGroup EmployeeServices
+  (
+    path : '/employees';
+
+    Service EmployeeService
+    (
+      path : '/allEmployees';
+      method : GET;
+      response : [testServiceStoreTestSuites::Employee <- testServiceStoreTestSuites::employeeServiceStoreSchemaBinding];
+      security : [];
+    )
+    Service EmployeeServiceWithParameters
+    (
+      path : '/employeesWithParameters';
+      method : GET;
+      parameters :
+      (
+        stringParam : String ( location = query ),
+        integerParam : Integer ( location = query ),
+        floatParam : Float ( location = query ),
+        booleanParam : Boolean ( location = query )
+      );
+      response : [testServiceStoreTestSuites::Employee2 <- testServiceStoreTestSuites::employeeServiceStoreSchemaBinding];
+      security : [];
+    )
+  )
+)
+
+
 ###ExternalFormat
 Binding testServiceStoreTestSuites::employeeServiceStoreSchemaBinding
 {
   contentType: 'application/json';
-  modelIncludes:
-  [
+  modelIncludes: [
     testServiceStoreTestSuites::Employee,
     testServiceStoreTestSuites::Employee2
   ];
@@ -77,12 +78,13 @@ Class testServiceStoreTestSuites::Employee
   lastName: String[0..1];
   countryCode: String[0..1];
 }
+
 Class testServiceStoreTestSuites::Employee2
 {
-  stringParam : String[1];
-  integerParam :  Integer[1];
-  floatParam :  Float[1];
-  booleanParam :  Boolean[1];
+  stringParam: String[1];
+  integerParam: Integer[1];
+  floatParam: Float[1];
+  booleanParam: Boolean[1];
 }
 
 
@@ -109,6 +111,7 @@ Mapping testServiceStoreTestSuites::ServiceStoreMapping
       )
     )
   }
+
   testSuites:
   [
     testSuite1:
@@ -116,10 +119,10 @@ Mapping testServiceStoreTestSuites::ServiceStoreMapping
       data:
       [
         testServiceStoreTestSuites::ServiceStore:
-            Reference
-            #{
-              testServiceStoreTestSuites::TestData
-            }#
+          Reference
+          #{
+            testServiceStoreTestSuites::TestData
+          }#
       ];
       tests:
       [
@@ -135,7 +138,7 @@ Mapping testServiceStoreTestSuites::ServiceStoreMapping
                   ExternalFormat
                   #{
                     contentType: 'application/json';
-                    data: '{\"kerberos\" : \"dummy kerberos\",\"employeeID\" : \"dummy id\",\"title\" : \"dummy title\",\"firstName\" : \"dummy firstName\",\"lastName\" : \"dummy lastname\",\"countryCode\" : \"dummy countryCode\"}';
+                    data: '{"kerberos" : "dummy kerberos","employeeID" : "dummy id","title" : "dummy title","firstName" : "dummy firstName","lastName" : "dummy lastname","countryCode" : "dummy countryCode"}';
                   }#;
               }#
           ];
