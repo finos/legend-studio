@@ -54,6 +54,7 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
+  PanelLoadingIndicator,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -369,7 +370,7 @@ const ProjectDependencyEditor = observer(
           escapeClearsValue={true}
           onChange={onProjectSelectionChange}
           value={selectedProjectOption}
-          isLoading={configState.isFetchingAssociatedProjectsAndVersions}
+          isLoading={configState.fetchingProjectVersionsState.isInProgress}
           formatOptionLabel={formatOptionLabel}
           darkMode={true}
         />
@@ -385,7 +386,7 @@ const ProjectDependencyEditor = observer(
           placeholder={projectSelectorPlaceholder}
           isLoading={
             editorStore.projectConfigurationEditorState
-              .isFetchingAssociatedProjectsAndVersions
+              .fetchingProjectVersionsState.isInProgress
           }
           darkMode={true}
         />
@@ -718,6 +719,10 @@ export const ProjectConfigurationEditor = observer(() => {
   };
   const disableAddButton =
     selectedTab !== CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES || isReadOnly;
+  const isLoading =
+    configState.updatingConfigurationState.isInProgress ||
+    configState.fetchingProjectVersionsState.isInProgress ||
+    configState.fetchingDependencyInfoState.isInProgress;
   const updateConfigs = (): void => {
     editorStore.localChangesState.alertUnsavedChanges((): void => {
       flowResult(configState.updateConfigs()).catch(
@@ -760,7 +765,7 @@ export const ProjectConfigurationEditor = observer(() => {
             className="project-configuration-editor__update-btn"
             disabled={
               isReadOnly ||
-              configState.isUpdatingConfiguration ||
+              configState.updatingConfigurationState.isInProgress ||
               currentProjectConfiguration.hashCode ===
                 configState.originalConfig.hashCode
             }
@@ -806,6 +811,14 @@ export const ProjectConfigurationEditor = observer(() => {
           )}
           {selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES && (
             <div className="panel__content__lists">
+              <PanelLoadingIndicator isLoading={isLoading} />
+              <div className="project-dependency-editor__progress-msg">
+                {configState.updatingConfigurationState.isInProgress
+                  ? `Updating configuration...`
+                  : configState.fetchingProjectVersionsState.isInProgress
+                  ? `Fetching dependency versions`
+                  : 'Updating project dependency tree and potential conflicts'}
+              </div>
               <ProjectDependencyActions config={configState} />
               {currentProjectConfiguration.projectDependencies.map(
                 (projectDependency) => (

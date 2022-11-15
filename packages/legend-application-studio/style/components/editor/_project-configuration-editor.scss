@@ -221,6 +221,15 @@
     cursor: pointer;
   }
 
+  &__progress-msg {
+    margin: 1rem;
+    line-height: 2rem;
+    color: var(--color-dark-grey-500);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.2rem;
+    user-select: none;
+  }
+
   &__visit-project-btn {
     @include flexVCenter;
 
