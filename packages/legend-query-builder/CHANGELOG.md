@@ -1,5 +1,17 @@
 # @finos/legend-query-builder
 
+## 0.5.0
+
+### Minor Changes
+
+- [#1627](https://github.com/finos/legend-studio/pull/1627) [`fac6a9cc8`](https://github.com/finos/legend-studio/commit/fac6a9cc842cb6ed7a60b65e900dc33015f5f5e9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for constants in query builder.
+
+### Patch Changes
+
+- [#1680](https://github.com/finos/legend-studio/pull/1680) [`ff01c821a`](https://github.com/finos/legend-studio/commit/ff01c821a249d87af943941e9fbb2a528016a334) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix incorrectly creating parameters for milestone date values when not required
+
+- [#1682](https://github.com/finos/legend-studio/pull/1682) [`aa6665463`](https://github.com/finos/legend-studio/commit/aa6665463c710b2e9e4f8f80aa929aa8b6a15fb1) ([@xannem](https://github.com/xannem)) - fix: keeping query states when switching service execution contexts
+
 ## 0.4.4
 
 ### Patch Changes

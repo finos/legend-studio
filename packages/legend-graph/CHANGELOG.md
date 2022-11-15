@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 20.1.0
+
+### Minor Changes
+
+- [#1677](https://github.com/finos/legend-studio/pull/1677) [`45962dcc8`](https://github.com/finos/legend-studio/commit/45962dcc8dedbc72af1bb9f598e2380d6d1c037c) ([@akphi](https://github.com/akphi)) - Add support for property aggregation (shared, composite).
+
 ## 20.0.2
 
 ## 20.0.1
