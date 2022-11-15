@@ -359,15 +359,6 @@ export const getAssociatedPropertyClass = (
   );
 };
 
-export const getOwnProperty = (
-  propertyOwner: PropertyOwner,
-  name: string,
-): Property =>
-  guaranteeNonNullable(
-    propertyOwner.properties.find((property) => property.name === name),
-    `Can't find property '${name}' in owner '${propertyOwner.path}'`,
-  );
-
 /**
  * Get all superclasses of a class, accounted for loop and duplication (which should be caught by compiler)
  * NOTE: we intentionally leave out `Any`
@@ -471,6 +462,19 @@ export const getAllClassConstraints = (_class: Class): Constraint[] =>
     .concat(_class)
     .map((c) => c.constraints)
     .flat();
+
+export const getOwnProperty = (
+  propertyOwner: PropertyOwner,
+  name: string,
+): AbstractProperty =>
+  guaranteeNonNullable(
+    propertyOwner instanceof Class
+      ? getAllOwnClassProperties(propertyOwner).find(
+          (property) => property.name === name,
+        )
+      : propertyOwner.properties.find((property) => property.name === name),
+    `Can't find property '${name}' of '${propertyOwner.path}'`,
+  );
 
 /**
  * Check if the first type subtype of the second type

@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 5.0.6
+
+### Patch Changes
+
+- [#1678](https://github.com/finos/legend-studio/pull/1678) [`a146b94f3`](https://github.com/finos/legend-studio/commit/a146b94f31d990c4f7b4dcfc4367c71c1f46b7cc) ([@xannem](https://github.com/xannem)) - fix: create workspace group toogle
+
 ## 5.0.5
 
 ### Patch Changes

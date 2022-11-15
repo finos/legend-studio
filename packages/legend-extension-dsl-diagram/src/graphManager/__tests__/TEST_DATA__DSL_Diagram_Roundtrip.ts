@@ -150,3 +150,129 @@ export const TEST_DATA__roundtrip = [
     classifierPath: 'meta::pure::metamodel::section::SectionIndex',
   },
 ];
+
+export const TEST_DATA__diagramWithAssociationProperty = [
+  {
+    path: 'test::class1',
+    content: {
+      _type: 'class',
+      name: 'class1',
+      package: 'test',
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::class2',
+    content: {
+      _type: 'class',
+      name: 'class2',
+      package: 'test',
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::association',
+    content: {
+      _type: 'association',
+      name: 'association',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'class1',
+          type: 'test::class1',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'class2',
+          type: 'test::class2',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::relationship::Association',
+  },
+  {
+    path: 'test::diagram',
+    content: {
+      _type: 'diagram',
+      classViews: [
+        {
+          class: 'test::class1',
+          id: '08428815-419f-46ea-926c-cf06202e7beb',
+          position: {
+            x: 550,
+            y: 363,
+          },
+          rectangle: {
+            height: 44,
+            width: 109.29443359375,
+          },
+        },
+        {
+          class: 'test::class2',
+          id: 'd0702ef8-133c-4224-b897-5f13c89846ec',
+          position: {
+            x: 645,
+            y: 443,
+          },
+          rectangle: {
+            height: 30,
+            width: 56.703125,
+          },
+        },
+      ],
+      generalizationViews: [],
+      name: 'diagram',
+      package: 'test',
+      propertyViews: [
+        {
+          line: {
+            points: [
+              {
+                x: 673.3515625,
+                y: 458,
+              },
+              {
+                x: 604.647216796875,
+                y: 385,
+              },
+            ],
+          },
+          property: {
+            class: 'test::association',
+            property: 'class1',
+          },
+          sourceView: 'd0702ef8-133c-4224-b897-5f13c89846ec',
+          targetView: '08428815-419f-46ea-926c-cf06202e7beb',
+        },
+        {
+          line: {
+            points: [
+              {
+                x: 604.647216796875,
+                y: 385,
+              },
+              {
+                x: 673.3515625,
+                y: 458,
+              },
+            ],
+          },
+          property: {
+            class: 'test::association',
+            property: 'class2',
+          },
+          sourceView: '08428815-419f-46ea-926c-cf06202e7beb',
+          targetView: 'd0702ef8-133c-4224-b897-5f13c89846ec',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::diagram::Diagram',
+  },
+];

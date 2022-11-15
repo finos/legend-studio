@@ -24,7 +24,6 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
-  PanelFormListItems,
   PanelFormSection,
 } from '@finos/legend-art';
 import {
@@ -37,14 +36,14 @@ import {
 import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
 import { useDrop } from 'react-dnd';
-import {
-  type QueryBuilderParameterDragSource,
-  QUERY_BUILDER_PARAMETER_DND_TYPE,
-} from '../../stores/QueryBuilderParametersState.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import type { QueryBuilderWatermarkState } from '../../stores/watermark/QueryBuilderWatermarkState.js';
-import { VariableExpressionViewer } from '../QueryBuilderParametersPanel.js';
-import { BasicValueSpecificationEditor } from '../shared/BasicValueSpecificationEditor.js';
+import {
+  BasicValueSpecificationEditor,
+  QUERY_BUILDER_VARIABLE_DND_TYPE,
+  type QueryBuilderVariableDragSource,
+} from '../shared/BasicValueSpecificationEditor.js';
+import { VariableSelector } from '../shared/QueryBuilderVariableSelector.js';
 
 const isParamaterCompatibleWithWaterMark = (
   parameter: VariableExpression,
@@ -62,24 +61,24 @@ const WatermarkValueEditor = observer(
     const graph = watermarkState.queryBuilderState.graphManagerState.graph;
 
     const handleDrop = useCallback(
-      (item: QueryBuilderParameterDragSource): void => {
-        watermarkState.setValue(item.variable.parameter);
+      (item: QueryBuilderVariableDragSource): void => {
+        watermarkState.setValue(item.variable);
       },
       [watermarkState],
     );
 
     const [{ isParameterValueDragOver }, dropTargetConnector] = useDrop<
-      QueryBuilderParameterDragSource,
+      QueryBuilderVariableDragSource,
       void,
       { isParameterValueDragOver: boolean }
     >(
       () => ({
-        accept: [QUERY_BUILDER_PARAMETER_DND_TYPE],
+        accept: [QUERY_BUILDER_VARIABLE_DND_TYPE],
         drop: (item, monitor): void => {
           if (
             !monitor.didDrop() &&
             // Only allows parameters with muliplicity 1 and type string
-            isParamaterCompatibleWithWaterMark(item.variable.parameter)
+            isParamaterCompatibleWithWaterMark(item.variable)
           ) {
             handleDrop(item);
           } // prevent drop event propagation to accomondate for nested DnD
@@ -95,7 +94,7 @@ const WatermarkValueEditor = observer(
 
     return (
       <PanelFormSection>
-        <div className="query-builder__parameter-editor">
+        <div className="query-builder__variable-editor">
           <PanelDropZone
             isDragOver={isParameterValueDragOver}
             dropTargetConnector={dropTargetConnector}
@@ -115,6 +114,9 @@ const WatermarkValueEditor = observer(
               resetValue={(): void => {
                 watermarkState.resetValue();
               }}
+              isConstant={watermarkState.queryBuilderState.constantState.isValueSpecConstant(
+                watermarkValue,
+              )}
             />
           </PanelDropZone>
         </div>
@@ -130,10 +132,6 @@ export const QueryBuilderWatermarkEditor = observer(
     const handleClose = (): void => {
       watermarkState.setIsEditingWatermark(false);
     };
-    const compatibleParameters =
-      queryBuilderState.parametersState.parameterStates.filter((p) =>
-        isParamaterCompatibleWithWaterMark(p.parameter),
-      );
 
     return (
       <Dialog
@@ -162,20 +160,10 @@ export const QueryBuilderWatermarkEditor = observer(
                     watermarkValue={watermarkState.value}
                   />
                   <PanelDivider />
-                  <PanelFormListItems title="List of available parameters">
-                    {compatibleParameters.length === 0 && (
-                      <> No available parameters </>
-                    )}
-                    {compatibleParameters.map((parameter) => (
-                      <VariableExpressionViewer
-                        key={parameter.uuid}
-                        queryBuilderState={queryBuilderState}
-                        variableExpressionState={parameter}
-                        isReadOnly={true}
-                        hideActions={true}
-                      />
-                    ))}
-                  </PanelFormListItems>
+                  <VariableSelector
+                    filterBy={isParamaterCompatibleWithWaterMark}
+                    queryBuilderState={queryBuilderState}
+                  />
                 </>
               )}
             </PanelForm>

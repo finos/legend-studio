@@ -130,7 +130,7 @@
     color: var(--color-legacy-dark-grey-200);
   }
 
-  .query-builder__parameters__parameter__name__input,
+  .query-builder__variables__variable__name__input,
   .panel__content__form__section__input {
     background: var(--color-white);
     color: var(--color-legacy-dark-grey-200);
@@ -141,12 +141,12 @@
     }
   }
 
-  .query-builder__parameters__parameter__label {
+  .query-builder__variables__variable__label {
     color: var(--color-legacy-dark-grey-200);
   }
 
-  .query-builder__parameters__parameter:hover
-    .query-builder__parameters__parameter__action
+  .query-builder__variables__variable:hover
+    .query-builder__variables__variable__action
     svg {
     color: var(--color-legacy-light-blue-100);
   }
@@ -652,16 +652,16 @@
 
   // ------------------------------------ Parameters Panel ---------------------------------------
 
-  .query-builder__parameters__parameter__label {
+  .query-builder__variables__variable__label {
     color: var(--color-legacy-dark-grey-200);
   }
 
-  .query-builder__parameters__parameter__type__label {
+  .query-builder__variables__variable__type__label {
     background: var(--color-dark-grey-400);
   }
 
-  .query-builder__parameters__parameter:hover
-    .query-builder__parameters__parameter__action
+  .query-builder__variables__variable:hover
+    .query-builder__variables__variable__action
     svg {
     color: var(--color-legacy-light-blue-100);
   }

@@ -15,6 +15,7 @@
  */
 
 import {
+  type LambdaFunction,
   GraphFetchTreeInstanceValue,
   matchFunctionName,
   RootGraphFetchTree,
@@ -31,6 +32,7 @@ import { buildGraphFetchTreeData } from './QueryBuilderGraphFetchTreeUtil.js';
 export const processGraphFetchExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
 ): void => {
   const functionName = expression.functionName;
 
@@ -55,6 +57,7 @@ export const processGraphFetchExpression = (
   );
   QueryBuilderValueSpecificationProcessor.process(
     precedingExpression,
+    parentLambda,
     queryBuilderState,
   );
 
@@ -77,6 +80,7 @@ export const processGraphFetchExpression = (
 export const processGraphFetchSerializeExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
 ): void => {
   // update fetch-structure
   queryBuilderState.fetchStructureState.changeImplementation(
@@ -104,6 +108,7 @@ export const processGraphFetchSerializeExpression = (
   );
   QueryBuilderValueSpecificationProcessor.process(
     precedingExpression,
+    parentLambda,
     queryBuilderState,
   );
 

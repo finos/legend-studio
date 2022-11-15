@@ -28,6 +28,9 @@ import {
   GenericTypeExplicitReference,
   LambdaFunction,
   SimpleFunctionExpression,
+  PrimitiveInstanceValue,
+  PrimitiveType,
+  SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { buildFilterExpression } from './filter/QueryBuilderFilterValueSpecificationBuilder.js';
@@ -36,6 +39,7 @@ import type { QueryBuilderFetchStructureState } from './fetch-structure/QueryBui
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import { buildWatermarkExpression } from './watermark/QueryBuilderWatermarkValueSpecificationBuilder.js';
 import { buildExecutionQueryFromLambdaFunction } from './shared/LambdaParameterState.js';
+import type { QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
 
 const buildGetAllFunction = (
   _class: Class,
@@ -51,6 +55,22 @@ const buildGetAllFunction = (
   classInstance.values[0] = PackageableElementExplicitReference.create(_class);
   _func.parametersValues.push(classInstance);
   return _func;
+};
+
+const buildLetExpression = (
+  constantExpressionState: QueryBuilderConstantExpressionState,
+): SimpleFunctionExpression => {
+  const varName = constantExpressionState.variable.name;
+  const value = constantExpressionState.value;
+  const leftSide = new PrimitiveInstanceValue(
+    GenericTypeExplicitReference.create(new GenericType(PrimitiveType.STRING)),
+  );
+  leftSide.values = [varName];
+  const letFunc = new SimpleFunctionExpression(
+    extractElementNameFromPath(SUPPORTED_FUNCTIONS.LET),
+  );
+  letFunc.parametersValues = [leftSide, value];
+  return letFunc;
 };
 
 const buildFetchStructure = (
@@ -97,22 +117,10 @@ export const buildLambdaFunction = (
   lambdaFunction.expressionSequence[0] = getAllFunction;
 
   // build watermark
-  const watermarkFunction = buildWatermarkExpression(
-    queryBuilderState.watermarkState,
-    getAllFunction,
-  );
-  if (watermarkFunction) {
-    lambdaFunction.expressionSequence[0] = watermarkFunction;
-  }
+  buildWatermarkExpression(queryBuilderState.watermarkState, lambdaFunction);
 
   // build filter
-  const filterFunction = buildFilterExpression(
-    queryBuilderState.filterState,
-    watermarkFunction ?? getAllFunction,
-  );
-  if (filterFunction) {
-    lambdaFunction.expressionSequence[0] = filterFunction;
-  }
+  buildFilterExpression(queryBuilderState.filterState, lambdaFunction);
 
   // build fetch-structure
   buildFetchStructure(
@@ -121,6 +129,15 @@ export const buildLambdaFunction = (
     options,
   );
 
+  // build variable expressions
+  if (queryBuilderState.constantState.constants.length) {
+    const letExpressions =
+      queryBuilderState.constantState.constants.map(buildLetExpression);
+    lambdaFunction.expressionSequence = [
+      ...letExpressions,
+      ...lambdaFunction.expressionSequence,
+    ];
+  }
   // build parameters
   if (queryBuilderState.parametersState.parameterStates.length) {
     if (options?.isBuildingExecutionQuery) {

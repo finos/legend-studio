@@ -56,7 +56,14 @@ export class FunctionType implements Hashable {
 
 export class LambdaFunction implements Hashable {
   functionType: FunctionType;
-  openVariables: string[] = [];
+  /**
+   * Engine saves `openVariables` as strings. We save them as a map of var name to the VariableExpression
+   * This is so we don't needless recreate VariableExpressions again and can leverage the same VariableExpression as
+   * the ones used in LambdaFunction expressions. This is especially useful when handling `let` statements.
+   *
+   * @discrepancy model
+   */
+  openVariables: Map<string, VariableExpression> = new Map();
   expressionSequence: ValueSpecification[] = [];
 
   constructor(type: FunctionType) {
@@ -67,7 +74,7 @@ export class LambdaFunction implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.LAMBDA_FUNCTION,
       this.functionType,
-      hashArray(this.openVariables),
+      hashArray(Array.from(this.openVariables.keys())),
       hashArray(this.expressionSequence),
     ]);
   }

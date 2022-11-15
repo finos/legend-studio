@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-persistence-cloud",
-  "version": "4.0.12",
+  "version": "4.0.13",
   "description": "Legend extension for Persistence Cloud DSL",
   "keywords": [
     "legend",
@@ -48,7 +48,7 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "@types/react": "18.0.25",
-    "mobx": "6.6.2",
+    "mobx": "6.7.0",
     "react": "18.2.0",
     "serializr": "3.0.1"
   },

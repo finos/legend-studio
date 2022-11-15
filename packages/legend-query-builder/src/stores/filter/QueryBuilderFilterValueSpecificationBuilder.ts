@@ -17,6 +17,7 @@
 import { isNonNullable, guaranteeNonNullable } from '@finos/legend-shared';
 import {
   type ValueSpecification,
+  type LambdaFunction,
   extractElementNameFromPath,
   SimpleFunctionExpression,
 } from '@finos/legend-graph';
@@ -80,22 +81,25 @@ const buildFilterConditionExpression = (
 
 export const buildFilterExpression = (
   filterState: QueryBuilderFilterState,
-  getAllFunc: SimpleFunctionExpression,
-): SimpleFunctionExpression | undefined => {
+  lambdaFunction: LambdaFunction,
+): void => {
   const filterConditionExpressions = filterState.rootIds
     .map((e) => guaranteeNonNullable(filterState.nodes.get(e)))
     .map((e) => buildFilterConditionExpression(filterState, e))
     .filter(isNonNullable);
 
   if (!filterConditionExpressions.length) {
-    return undefined;
+    return;
   }
   // main filter expression
   const filterExpression = new SimpleFunctionExpression(
     extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER),
   );
+  const currentExpression = guaranteeNonNullable(
+    lambdaFunction.expressionSequence[0],
+  );
   // param [0]
-  filterExpression.parametersValues.push(getAllFunc);
+  filterExpression.parametersValues.push(currentExpression);
   // param [1]
   filterExpression.parametersValues.push(
     buildGenericLambdaFunctionInstanceValue(
@@ -104,5 +108,6 @@ export const buildFilterExpression = (
       filterState.queryBuilderState.graphManagerState.graph,
     ),
   );
-  return filterExpression;
+  // reprocess filter as main expression
+  lambdaFunction.expressionSequence[0] = filterExpression;
 };

@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-dev-utils",
-  "version": "2.0.25",
+  "version": "2.0.26",
   "description": "Legend Studio development utilities, helpers, and scripts",
   "keywords": [
     "legend",
@@ -68,7 +68,7 @@
     "chalk": "5.1.2",
     "circular-dependency-plugin": "5.2.2",
     "clean-webpack-plugin": "4.0.0",
-    "css-loader": "6.7.1",
+    "css-loader": "6.7.2",
     "cssnano": "5.1.14",
     "html-webpack-plugin": "5.5.0",
     "isbinaryfile": "5.0.0",

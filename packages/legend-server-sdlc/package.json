@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-server-sdlc",
-  "version": "4.1.4",
+  "version": "4.1.5",
   "description": "Legend SDLC server client",
   "keywords": [
     "legend",
@@ -41,7 +41,7 @@
   "dependencies": {
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
-    "mobx": "6.6.2",
+    "mobx": "6.7.0",
     "mobx-react-lite": "3.4.0",
     "react": "18.2.0",
     "serializr": "3.0.1"

@@ -76,6 +76,7 @@ import { QueryBuilderMilestoningState } from './milestoning/QueryBuilderMileston
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
 import { QUERY_BUILDER_COMMAND_KEY } from './QueryBuilderCommand.js';
 import { QueryBuilderWatermarkState } from './watermark/QueryBuilderWatermarkState.js';
+import { QueryBuilderConstantsState } from './QueryBuilderConstantsState.js';
 
 export abstract class QueryBuilderState implements CommandRegistrar {
   applicationStore: GenericLegendApplicationStore;
@@ -85,6 +86,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   explorerState: QueryBuilderExplorerState;
   functionsExplorerState: QueryFunctionsExplorerState;
   parametersState: QueryBuilderParametersState;
+  constantState: QueryBuilderConstantsState;
   milestoningState: QueryBuilderMilestoningState;
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
@@ -116,6 +118,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     makeObservable(this, {
       explorerState: observable,
       parametersState: observable,
+      constantState: observable,
       functionsExplorerState: observable,
       fetchStructureState: observable,
       filterState: observable,
@@ -159,6 +162,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.milestoningState = new QueryBuilderMilestoningState(this);
     this.explorerState = new QueryBuilderExplorerState(this);
     this.parametersState = new QueryBuilderParametersState(this);
+    this.constantState = new QueryBuilderConstantsState(this);
     this.functionsExplorerState = new QueryFunctionsExplorerState(this);
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
@@ -198,6 +202,20 @@ export abstract class QueryBuilderState implements CommandRegistrar {
    */
   get TEMPORARY__isDnDFetchStructureToFilterSupported(): boolean {
     return true;
+  }
+
+  get allVariables(): VariableExpression[] {
+    const parameterVars = this.parametersState.parameterStates.map(
+      (paramState) => paramState.parameter,
+    );
+    const letVars = this.constantState.constants.map(
+      (letVar) => letVar.variable,
+    );
+    return [...parameterVars, ...letVars];
+  }
+
+  get allVariableNames(): string[] {
+    return this.allVariables.map((e) => e.name);
   }
 
   setShowFunctionsExplorerPanel(val: boolean): void {
@@ -258,6 +276,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.explorerState = new QueryBuilderExplorerState(this);
     this.explorerState.refreshTreeData();
     this.parametersState = new QueryBuilderParametersState(this);
+    this.constantState = new QueryBuilderConstantsState(this);
     this.functionsExplorerState = new QueryFunctionsExplorerState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.watermarkState = new QueryBuilderWatermarkState(this);

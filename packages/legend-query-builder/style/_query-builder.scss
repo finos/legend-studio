@@ -810,15 +810,25 @@
   }
 }
 
-.query-builder__parameter-editor {
+.query-builder__variable-editor {
   @include flexCenter;
 
   height: 2.8rem;
 
-  &__parameter {
+  &__variable {
     height: 2.8rem;
     margin: 0.7rem 0 1.2rem;
     width: 100%;
+  }
+}
+
+.query-builder__parameters {
+  &__value__editor {
+    height: 2.8rem;
+
+    input {
+      font-size: 1.4rem !important;
+    }
   }
 }
 
