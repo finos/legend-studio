@@ -21,4 +21,5 @@ export enum LEGEND_APPLICATION_DOCUMENTATION_KEY {
   QUESTION_HOW_TO_ADD_PARAMETERS_TO_QUERY = 'question.how-to-add-parameters-to-query',
   QUESTION_HOW_TO_ADD_CONSTANTS_TO_QUERY = 'question.how-to-add-constants-to-query',
   QUESTION_HOW_TO_WRITE_SERVICE_CONNECTION_TEST_DATA = 'question.how-to-write-service-connection-test-data',
+  QUESTION_HOW_TO_CREATE_A_DATA_ELEMENT = 'question.how-to-create-a-data-element',
 }

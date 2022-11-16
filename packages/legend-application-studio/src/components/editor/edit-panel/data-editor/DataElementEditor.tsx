@@ -25,6 +25,7 @@ import {
   CaretDownIcon,
   clsx,
   DropdownMenu,
+  InfoCircleIcon,
   LockIcon,
   MenuContent,
   MenuContentItem,
@@ -70,7 +71,13 @@ import {
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import type { ExternalFormatDataState } from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import { renderEmbeddedDataEditor } from './EmbeddedDataEditor.js';
-import { TextInputEditor } from '@finos/legend-application';
+import {
+  LEGEND_APPLICATION_DOCUMENTATION_KEY,
+  TextInputEditor,
+  useApplicationNavigationContext,
+  useApplicationStore,
+} from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 export const ExternalFormatDataEditor = observer(
   (props: {
@@ -177,6 +184,7 @@ export const EmbeddedDataEditor = observer(
 
 export const DataElementEditor = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
   const editorState = editorStore.getCurrentEditorState(
     PackageableDataEditorState,
   );
@@ -259,6 +267,14 @@ export const DataElementEditor = observer(() => {
     }),
     [handleDropStereotype],
   );
+  const seeDocumentation = (): void =>
+    applicationStore.assistantService.openDocumentationEntry(
+      LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_CREATE_A_DATA_ELEMENT,
+    );
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DATA_ELEMENT_EDITOR,
+  );
 
   return (
     <div className="data-editor">
@@ -269,7 +285,18 @@ export const DataElementEditor = observer(() => {
               <LockIcon />
             </div>
           )}
-          <div className="data-editor__header__title__label">Data Element</div>
+          <div className="data-editor__header__title__label">
+            Data Element
+            <button
+              className="binding-editor__header__title__label__hint"
+              tabIndex={-1}
+              onClick={seeDocumentation}
+              title="click to see more details on service test"
+            >
+              <InfoCircleIcon />
+            </button>
+          </div>
+
           <div className="data-editor__header__title__content">
             {dataElement.name}
           </div>
