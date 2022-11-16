@@ -62,14 +62,6 @@ export enum ATOMIC_TEST_TYPE {
   MAPPING_TEST = 'mappingTest',
 }
 
-export enum TYPICAL_MULTIPLICITY_TYPE {
-  ONE = 'one',
-  ZEROONE = 'zeroone',
-  ZEROMANY = 'zeromany',
-  ONEMANY = 'onemany',
-  ZERO = 'zero',
-}
-
 // NOTE: the list of auto-import are kept in `m3.pure` file in `finos/legend-pure`,
 // this includes a more extensive list of packges which contain native functions, classes, etc.
 // See https://github.com/finos/legend-pure/blob/master/legend-pure-m3-core/src/main/resources/platform/pure/m3.pure
