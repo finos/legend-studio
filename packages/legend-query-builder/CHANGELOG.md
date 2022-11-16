@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 0.6.0
+
+### Minor Changes
+
+- [#1691](https://github.com/finos/legend-studio/pull/1691) [`85aef2dfe`](https://github.com/finos/legend-studio/commit/85aef2dfe531188a87687352541e52f97d6018ec) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Disable deleting variables if used in query.
+
 ## 0.5.0
 
 ### Minor Changes
