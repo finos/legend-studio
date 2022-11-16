@@ -275,6 +275,7 @@ export const QueryBuilderParametersPanel = observer(
                     key={pState.uuid}
                     variable={pState.parameter}
                     isReadOnly={isReadOnly}
+                    queryBuilderState={queryBuilderState}
                     actions={{
                       editVariable: () =>
                         queryParameterState.setSelectedParameter(pState),

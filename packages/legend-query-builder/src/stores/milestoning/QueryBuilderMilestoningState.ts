@@ -33,6 +33,7 @@ import {
 import { action, computed, makeObservable, observable } from 'mobx';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../graphManager/QueryBuilderHashUtils.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
+import { isValueExpressionReferencesinValue } from '../QueryBuilderValueSpecificationHelper.js';
 import { LambdaParameterState } from '../shared/LambdaParameterState.js';
 import { QueryBuilderBitemporalMilestoningImplementation } from './QueryBuilderBitemporalMilestoningImplementation.js';
 import { QueryBuilderBusinessTemporalMilestoningImplementation } from './QueryBuilderBusinessTemporalMilestoningImplementation.js';
@@ -171,6 +172,16 @@ export class QueryBuilderMilestoningState implements Hashable {
       this.queryBuilderState.parametersState.addParameter(variableState);
     }
     return milestoningParameter;
+  }
+
+  isVariableUsed(variable: VariableExpression): boolean {
+    const usedInBusiness = this.businessDate
+      ? isValueExpressionReferencesinValue(variable, this.businessDate)
+      : false;
+    const usedInProcessingDate = this.processingDate
+      ? isValueExpressionReferencesinValue(variable, this.processingDate)
+      : false;
+    return usedInBusiness || usedInProcessingDate;
   }
 
   get hashCode(): string {

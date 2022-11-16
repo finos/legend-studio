@@ -89,7 +89,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
         : 'starting change detection...'
       : editorStore.localChangesState.pushChangesState.isInProgress
       ? 'pushing local changes...'
-      : configurationState.isUpdatingConfiguration
+      : configurationState.updatingConfigurationState.isInProgress
       ? 'updating configuration...'
       : changes
       ? `${changes} unpushed changes`
@@ -284,12 +284,12 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               className={clsx('editor__status-bar__push-changes__btn', {
                 'editor__status-bar__push-changes__btn--loading':
                   editorStore.localChangesState.pushChangesState.isInProgress ||
-                  configurationState.isUpdatingConfiguration,
+                  configurationState.updatingConfigurationState.isInProgress,
               })}
               onClick={pushLocalChanges}
               disabled={
                 !changes ||
-                configurationState.isUpdatingConfiguration ||
+                configurationState.updatingConfigurationState.isInProgress ||
                 editorStore.localChangesState.pushChangesState.isInProgress ||
                 editorStore.changeDetectionState
                   .workspaceLocalLatestRevisionState

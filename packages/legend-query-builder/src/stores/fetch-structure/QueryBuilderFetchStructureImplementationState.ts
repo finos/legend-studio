@@ -18,6 +18,7 @@ import type {
   Class,
   CompilationError,
   LambdaFunction,
+  VariableExpression,
 } from '@finos/legend-graph';
 import type { Hashable } from '@finos/legend-shared';
 import { computed, makeObservable } from 'mobx';
@@ -61,6 +62,7 @@ export abstract class QueryBuilderFetchStructureImplementationState
   abstract fetchProperties(
     nodes: QueryBuilderExplorerTreePropertyNodeData[],
   ): void;
+  abstract isVariableUsed(variable: VariableExpression): boolean;
   abstract checkBeforeChangingImplementation(onChange: () => void): void;
   abstract appendFetchStructure(
     lambdaFunction: LambdaFunction,
