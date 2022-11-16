@@ -191,16 +191,14 @@ const ServiceGeneralEditor = observer(() => {
         </div>
       </PanelForm>
       <div className="service-editor__pattern__parameters">
-        <div className="service-editor__pattern__parameters__header">
-          <div className="service-editor__pattern__parameters__header__label">
-            Parameters
-          </div>
-          <div
-            className="service-editor__pattern__parameters__header__info"
-            title={`URL parameters (each must be surrounded by curly braces) will be passed as arguments for the execution query.\nNote that if the service is configured to use multi-execution, one of the URL parameters must be chosen as the execution key.`}
-          >
-            <InfoCircleIcon />
-          </div>
+        <div className="panel__content__form__section__header__label">
+          Parameters
+        </div>
+        <div className="panel__content__form__section__header__prompt">
+          URL parameters (each must be surrounded by curly braces) will be
+          passed as arguments for the execution query. Note that if the service
+          is configured to use multi-execution, one of the URL parameters must
+          be chosen as the execution key.
         </div>
         <div className="service-editor__pattern__parameters__list">
           {!service.patternParameters.length && (
