@@ -43,6 +43,7 @@ import {
   buildElementOption,
   getPackageableElementOptionFormatter,
   useApplicationStore,
+  LEGEND_APPLICATION_DOCUMENTATION_KEY,
 } from '@finos/legend-application';
 import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { DEFAULT_VARIABLE_NAME } from '../stores/QueryBuilderConfig.js';
@@ -223,6 +224,10 @@ export const QueryBuilderParametersPanel = observer(
     const varNames = queryBuilderState.parametersState.parameterStates.map(
       (parameter) => parameter.variableName,
     );
+    const seeDocumentation = (): void =>
+      queryBuilderState.applicationStore.assistantService.openDocumentationEntry(
+        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_ADD_PARAMETERS_TO_QUERY,
+      );
     const addParameter = (): void => {
       if (!isReadOnly && !queryBuilderState.isParameterSupportDisabled) {
         const parmaterState = new LambdaParameterState(
@@ -247,7 +252,8 @@ export const QueryBuilderParametersPanel = observer(
           <div className="panel__header__title">
             <div className="panel__header__title__label">parameters</div>
             <div
-              className="service-editor__pattern__parameters__header__info"
+              onClick={seeDocumentation}
+              className="query-builder__variables__info"
               title={`Parameters are variables assigned to your query. They are dynamic in nature and can change for each execution.`}
             >
               <InfoCircleIcon />

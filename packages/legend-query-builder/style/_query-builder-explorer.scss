@@ -96,6 +96,13 @@
     }
   }
 
+  &__info {
+    @include flexVCenter;
+
+    color: var(--color-light-grey-200);
+    cursor: pointer;
+  }
+
   &__variable {
     @include flexCenter;
 

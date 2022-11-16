@@ -39,6 +39,7 @@ import {
   DURATION_UNIT,
   type ObserverContext,
   PrimitiveType,
+  getSupportFunctionFullPath,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -569,7 +570,7 @@ const buildCustomDateOptionReferenceMomentValue = (
   const funcName = (
     pureDateAjustFunction.parametersValues[0] as SimpleFunctionExpression
   ).functionName;
-  switch (funcName) {
+  switch (getSupportFunctionFullPath(funcName)) {
     case SUPPORTED_FUNCTIONS.TODAY:
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY;
     case SUPPORTED_FUNCTIONS.NOW:
@@ -637,7 +638,7 @@ const buildDatePickerOption = (
   valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
 ): DatePickerOption => {
   if (valueSpecification instanceof SimpleFunctionExpression) {
-    switch (valueSpecification.functionName) {
+    switch (getSupportFunctionFullPath(valueSpecification.functionName)) {
       case SUPPORTED_FUNCTIONS.TODAY:
         return new DatePickerOption(
           CUSTOM_DATE_PICKER_OPTION.TODAY,

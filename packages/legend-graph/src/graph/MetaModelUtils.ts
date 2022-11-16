@@ -26,6 +26,7 @@
 import {
   ELEMENT_PATH_DELIMITER,
   SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX,
+  SUPPORTED_FUNCTIONS,
 } from './MetaModelConst.js';
 import {
   findLast,
@@ -47,6 +48,13 @@ export const matchFunctionName = (
       )
     : functionName === functionFullPaths ||
       extractElementNameFromPath(functionFullPaths) === functionName;
+
+export const getSupportFunctionFullPath = (
+  functionName: string,
+): SUPPORTED_FUNCTIONS | undefined =>
+  Object.values(SUPPORTED_FUNCTIONS).find((_func) =>
+    matchFunctionName(functionName, _func),
+  );
 
 /**
  * This method concatenate 2 fully-qualified elementh paths to form a single one
