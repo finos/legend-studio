@@ -291,7 +291,7 @@ export const DataElementEditor = observer(() => {
               className="binding-editor__header__title__label__hint"
               tabIndex={-1}
               onClick={seeDocumentation}
-              title="click to see more details on service test"
+              title="click to see more details on creating a data element"
             >
               <InfoCircleIcon />
             </button>
