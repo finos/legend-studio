@@ -21,9 +21,7 @@ import { makeObservable, action } from 'mobx';
 import type { EditorState } from './editor-state/EditorState.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import { EntityDiffViewerState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
-import { FileGenerationViewerState } from './editor-state/FileGenerationViewerState.js';
-import { ModelImporterState } from './editor-state/ModelImporterState.js';
-import { ProjectConfigurationEditorState } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
+import type { FileGenerationViewerState } from './editor-state/FileGenerationViewerState.js';
 import type { EditorStore } from './EditorStore.js';
 
 export class EditorTabManagerState extends TabManagerState {
@@ -93,44 +91,64 @@ export class EditorTabManagerState extends TabManagerState {
    * cause memory issues
    *
    * See https://github.com/finos/legend-studio/issues/1713
-   *
-   * FIXME: we allow this so the UX stays the same but this can cause memory leak
-   * we should change `reprocess` model to do something like having source information
-   * on the form to navigate to it properly so that information is not dependent on the
-   * graph, but on the component itself, with IDs and such.
-   *
-   * TODO: to be removed when we process editor states properly
-   *
-   * @risk memory-leak
    */
-  recoverTabs(tabs: EditorState[], currentTab: EditorState | undefined): void {
-    let newCurrentTab: EditorState | undefined;
-    this.tabs = tabs
-      .map((tab) => {
-        let newTab: EditorState | undefined = undefined;
-        if (tab instanceof ElementEditorState) {
+  recoverTabs = (
+    openedTabEditorPaths: string[],
+    openedGeneratedFileTabStates: FileGenerationViewerState[],
+    currentTabState: EditorState | undefined,
+    currentTabElementPath: string | undefined,
+    shouldRecoverTabs: boolean,
+  ): void => {
+    const getElemenetPathFromFilePath = (filePath: string): string => {
+      const paths = filePath.split('/');
+      let elementPath = '';
+      const fileName = paths.slice(-1)[0]?.split('.')[0];
+      paths
+        .slice(1, paths.length - 1)
+        .forEach((path) => (elementPath = `${elementPath + path}::`));
+      elementPath = `${elementPath + fileName}`;
+      return elementPath;
+    };
+    if (shouldRecoverTabs) {
+      this.tabs = openedTabEditorPaths
+        .map((editorPath) => {
           const correspondingElement =
             this.editorStore.graphManagerState.graph.getNullableElement(
-              tab.element.path,
+              editorPath,
             );
           if (correspondingElement) {
-            newTab = tab.reprocess(correspondingElement, this.editorStore);
+            return this.editorStore.createElementEditorState(
+              correspondingElement,
+            );
           }
-        } else if (
-          // No need to reprocess generated file state as it has no reference to any of the graphs
-          // TODO: we should do a check to see if the generated file is still around or not
-          tab instanceof FileGenerationViewerState ||
-          tab instanceof ModelImporterState ||
-          tab instanceof ProjectConfigurationEditorState
-        ) {
-          newTab = tab;
-        }
-        if (tab === currentTab) {
-          newCurrentTab = newTab;
-        }
-        return newTab;
-      })
-      .filter(isNonNullable);
-    this.setCurrentTab(newCurrentTab);
-  }
+          const fileGenerationViewerEditor = openedGeneratedFileTabStates.find(
+            (editorState) =>
+              editorState.generatedFilePath === editorPath &&
+              this.editorStore.graphManagerState.graph.getNullableElement(
+                getElemenetPathFromFilePath(editorState.file.path),
+              ) !== undefined,
+          );
+          return fileGenerationViewerEditor;
+        })
+        .filter(isNonNullable);
+      this.setCurrentTab(
+        this.findCurrentTab(currentTabState, currentTabElementPath),
+      );
+    }
+  };
+
+  findCurrentTab = (
+    tab: EditorState | undefined,
+    tabElementPath: string | undefined,
+  ): EditorState | undefined => {
+    if (tab) {
+      return tab;
+    } else {
+      return this.tabs.find(
+        (editorState) =>
+          editorState instanceof ElementEditorState &&
+          editorState.elementPath === tabElementPath,
+      );
+    }
+  };
 }

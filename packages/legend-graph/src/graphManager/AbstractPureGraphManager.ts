@@ -148,6 +148,11 @@ export abstract class AbstractPureGraphManager {
   abstract getSupportedProtocolVersion(): string;
 
   /**
+   * Removes the SectionIndex from the list of enitites
+   */
+  abstract getElementEntities(entities: Entity[]): Entity[];
+
+  /**
    * TODO: we should not expose a fixed config like this, we probably
    * should not mention anything about engine because it is an internal construct
    * used by the graph manager, different graph manager may not need engine.
@@ -200,6 +205,16 @@ export abstract class AbstractPureGraphManager {
    * Process entities and build the main graph.
    */
   abstract buildGraph(
+    graph: PureModel,
+    entities: Entity[],
+    buildState: ActionState,
+    options?: GraphBuilderOptions,
+  ): Promise<GraphBuilderReport>;
+
+  /**
+   * Process entities and build the light graph.
+   */
+  abstract buildLightGraph(
     graph: PureModel,
     entities: Entity[],
     buildState: ActionState,

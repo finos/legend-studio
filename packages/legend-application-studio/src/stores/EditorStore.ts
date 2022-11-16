@@ -42,7 +42,11 @@ import { NewElementState } from './editor/NewElementState.js';
 import { WorkspaceUpdaterState } from './sidebar-state/WorkspaceUpdaterState.js';
 import { ProjectOverviewState } from './sidebar-state/ProjectOverviewState.js';
 import { WorkspaceReviewState } from './sidebar-state/WorkspaceReviewState.js';
-import { LocalChangesState } from './sidebar-state/LocalChangesState.js';
+import {
+  FormLocalChangesState,
+  type LocalChangesState,
+  TextLocalChangesState,
+} from './sidebar-state/LocalChangesState.js';
 import { WorkspaceWorkflowManagerState } from './sidebar-state/WorkflowManagerState.js';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState.js';
 import {
@@ -270,7 +274,7 @@ export class EditorStore implements CommandRegistrar {
       this.sdlcState,
     );
     this.workspaceReviewState = new WorkspaceReviewState(this, this.sdlcState);
-    this.localChangesState = new LocalChangesState(this, this.sdlcState);
+    this.localChangesState = new FormLocalChangesState(this, this.sdlcState);
     this.conflictResolutionState = new WorkspaceUpdateConflictResolutionState(
       this,
       this.sdlcState,
@@ -338,6 +342,7 @@ export class EditorStore implements CommandRegistrar {
 
   setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): void {
     this.graphEditMode = graphEditor;
+    this.changeLocalChangesState();
     this.graphState.clearProblems();
   }
 
@@ -1115,6 +1120,13 @@ export class EditorStore implements CommandRegistrar {
           this.tabManagerState.currentTab.element,
         );
       }
+      // Stop change detection as we don't need the actual change detection in text mode
+      this.changeDetectionState.stop();
+      this.changeDetectionState.computeLocalChangesInTextMode(
+        (yield this.graphManagerState.graphManager.pureCodeToEntities(
+          this.grammarTextEditorState.graphGrammarText,
+        )) as Entity[],
+      );
     } else if (this.isInGrammarTextMode) {
       yield flowResult(this.graphState.leaveTextMode());
     } else {
@@ -1153,5 +1165,13 @@ export class EditorStore implements CommandRegistrar {
             ).getExtraSupportedElementTypes?.() ?? [],
         ),
     );
+  }
+
+  changeLocalChangesState(): void {
+    if (this.isInFormMode) {
+      this.localChangesState = new FormLocalChangesState(this, this.sdlcState);
+    } else {
+      this.localChangesState = new TextLocalChangesState(this, this.sdlcState);
+    }
   }
 }
