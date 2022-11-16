@@ -40,6 +40,7 @@ import {
 export const VariableViewer = observer(
   (props: {
     variable: VariableExpression;
+    queryBuilderState: QueryBuilderState;
     isReadOnly: boolean;
     constantValue?: ValueSpecification | undefined;
     actions?: {
@@ -47,13 +48,17 @@ export const VariableViewer = observer(
       deleteVariable: () => void;
     };
   }) => {
-    const { variable, constantValue, actions, isReadOnly } = props;
+    const { variable, constantValue, actions, isReadOnly, queryBuilderState } =
+      props;
     const valueString = constantValue
       ? getValueSpecificationStringValue(constantValue)
       : undefined;
     const name = variable.name;
     const variableType = variable.genericType?.value.rawType;
     const typeName = variableType?.name;
+    const isVariableUsed = queryBuilderState.isVariableUsed(variable);
+    const deleteDisabled = isReadOnly || isVariableUsed;
+    const deleteTitle = isVariableUsed ? 'Used in query' : 'Remove';
     const editVariable = (): void => {
       actions?.editVariable();
     };
@@ -122,8 +127,8 @@ export const VariableViewer = observer(
               className="query-builder__variables__variable__action"
               tabIndex={-1}
               onClick={deleteVariable}
-              disabled={isReadOnly}
-              title="Remove"
+              disabled={deleteDisabled}
+              title={deleteTitle}
             >
               <TimesIcon />
             </button>
@@ -165,6 +170,7 @@ export const VariableSelector = observer(
               key={pState.uuid}
               variable={pState.parameter}
               isReadOnly={isReadOnly}
+              queryBuilderState={queryBuilderState}
             />
           ))}
         </PanelFormListItems>
@@ -175,6 +181,7 @@ export const VariableSelector = observer(
                 key={constantState.uuid}
                 variable={constantState.variable}
                 constantValue={constantState.value}
+                queryBuilderState={queryBuilderState}
                 isReadOnly={isReadOnly}
               />
             ))}

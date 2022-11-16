@@ -250,6 +250,7 @@ export const QueryBuilderConstantExpressionPanel = observer(
               queryBuilderState.constantState.constants.map((constState) => (
                 <VariableViewer
                   key={constState.uuid}
+                  queryBuilderState={queryBuilderState}
                   variable={constState.variable}
                   constantValue={constState.value}
                   actions={{

@@ -39,14 +39,15 @@ import {
 import type { QueryBuilderState } from '../../QueryBuilderState.js';
 import {
   type CompilationError,
+  type LambdaFunction,
+  type ValueSpecification,
+  type VariableExpression,
   GRAPH_MANAGER_EVENT,
   extractSourceInformationCoordinates,
   LAMBDA_PIPE,
   RawLambda,
   isStubbed_RawLambda,
   Class,
-  type LambdaFunction,
-  type ValueSpecification,
   AbstractPropertyExpression,
   matchFunctionName,
   SimpleFunctionExpression,
@@ -634,6 +635,22 @@ export class QueryBuilderTDSState
     } else {
       onChange();
     }
+  }
+
+  isVariableUsed(variable: VariableExpression): boolean {
+    const columns = this.projectionColumns;
+    const derivationColumns = columns.filter(
+      filterByType(QueryBuilderDerivationProjectionColumnState),
+    );
+    if (derivationColumns.length) {
+      // we will return false if any derivation cols are present as we can't verify is the variable is ued
+      return false;
+    }
+    const usedInProjection = columns
+      .filter(filterByType(QueryBuilderSimpleProjectionColumnState))
+      .find((col) => col.isVariableUsed(variable));
+    const usedInPostFilter = this.postFilterState.isVariableUsed(variable);
+    return Boolean(usedInProjection ?? usedInPostFilter);
   }
 
   get hashCode(): string {

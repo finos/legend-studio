@@ -257,6 +257,17 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     });
   }
 
+  // Used to determine if variable is used within query
+  // For places where we don't know, we will assume the variable is not used (i.e projection derivation column)
+  isVariableUsed(variable: VariableExpression): boolean {
+    return (
+      this.milestoningState.isVariableUsed(variable) ||
+      this.filterState.isVariableUsed(variable) ||
+      this.watermarkState.isVariableUsed(variable) ||
+      this.fetchStructureState.implementation.isVariableUsed(variable)
+    );
+  }
+
   deregisterCommands(): void {
     [QUERY_BUILDER_COMMAND_KEY.COMPILE].forEach((key) =>
       this.applicationStore.commandCenter.deregisterCommand(key),

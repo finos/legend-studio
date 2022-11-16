@@ -43,6 +43,7 @@ import {
   CollectionInstanceValue,
   GenericTypeExplicitReference,
   GenericType,
+  INTERNAL__PropagatedValue,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -342,3 +343,15 @@ export const createNullishValue = (graph: PureModel): CollectionInstanceValue =>
       new GenericType(graph.getType(CORE_PURE_PATH.ANY)),
     ),
   );
+
+export const isValueExpressionReferencesinValue = (
+  variable: VariableExpression,
+  value: ValueSpecification,
+): boolean => {
+  if (value instanceof VariableExpression) {
+    return value.name === variable.name;
+  } else if (value instanceof INTERNAL__PropagatedValue) {
+    return isValueExpressionReferencesinValue(variable, value.getValue());
+  }
+  return false;
+};
