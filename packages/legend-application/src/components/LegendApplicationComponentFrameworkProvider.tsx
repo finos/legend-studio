@@ -18,11 +18,15 @@ import { Backdrop, LegendStyleProvider, Portal } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { type KeyMap, GlobalHotKeys } from 'react-hotkeys';
 import { ActionAlert } from './ActionAlert.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
 import { BlockingAlert } from './BlockingAlert.js';
 import { NotificationManager } from './NotificationManager.js';
+import { useEffect } from 'react';
+import {
+  createKeybindingsHandler,
+  type KeyBindingConfig,
+} from '@finos/legend-shared';
 
 const APP_CONTAINER_ID = 'app.container';
 const APP_BACKDROP_CONTAINER_ID = 'app.backdrop-container';
@@ -44,30 +48,29 @@ const buildReactHotkeysConfiguration = (
   handlerCreator: (
     keyCombination: string,
   ) => (keyEvent?: KeyboardEvent) => void,
-): [KeyMap, { [key: string]: (keyEvent?: KeyboardEvent) => void }] => {
-  const keyMap: Record<PropertyKey, string[]> = {};
+): KeyBindingConfig => {
+  const keyMap: KeyBindingConfig = {};
   commandKeyMap.forEach((keyCombination, commandKey) => {
     if (keyCombination) {
-      keyMap[commandKey] = [keyCombination];
-    }
-  });
-  const handlers: Record<PropertyKey, (keyEvent?: KeyboardEvent) => void> = {};
-  commandKeyMap.forEach((keyCombination, commandKey) => {
-    if (keyCombination) {
-      handlers[commandKey] = handlerCreator(keyCombination);
+      keyMap[commandKey] = {
+        combinations: [keyCombination],
+        handler: handlerCreator(keyCombination),
+      };
     }
   });
 
   // Disable platform native keyboard shortcuts
   const PLATFORM_NATIVE_KEYBOARD_COMMAND =
     'INTERNAL__PLATFORM_NATIVE_KEYBOARD_COMMAND';
-  keyMap[PLATFORM_NATIVE_KEYBOARD_COMMAND] = PLATFORM_NATIVE_KEYBOARD_SHORTCUTS;
-  handlers[PLATFORM_NATIVE_KEYBOARD_COMMAND] = (event?: KeyboardEvent) => {
-    // prevent default from potentially clashing key combinations
-    event?.preventDefault();
+  keyMap[PLATFORM_NATIVE_KEYBOARD_COMMAND] = {
+    combinations: PLATFORM_NATIVE_KEYBOARD_SHORTCUTS,
+    handler: (event?: KeyboardEvent) => {
+      // prevent default from potentially clashing key combinations
+      event?.preventDefault();
+    },
   };
 
-  return [keyMap, handlers];
+  return keyMap;
 };
 
 export const forceDispatchKeyboardEvent = (event: KeyboardEvent): void => {
@@ -95,7 +98,7 @@ export const LegendApplicationComponentFrameworkProvider = observer(
         document.getElementById(APP_BACKDROP_CONTAINER_ID)
       : document.getElementById(APP_BACKDROP_CONTAINER_ID);
 
-    const [keyMap, hotkeyHandlerMap] = buildReactHotkeysConfiguration(
+    const keyBindingMap = buildReactHotkeysConfiguration(
       applicationStore.keyboardShortcutsService.commandKeyMap,
       (keyCombination: string) => (event?: KeyboardEvent) => {
         // prevent default from potentially clashing key combinations with platform native keyboard shortcuts
@@ -109,6 +112,14 @@ export const LegendApplicationComponentFrameworkProvider = observer(
         applicationStore.keyboardShortcutsService.dispatch(keyCombination);
       },
     );
+
+    useEffect(() => {
+      const onKeyEvent = createKeybindingsHandler(keyBindingMap);
+      document.addEventListener('keydown', onKeyEvent);
+      return () => {
+        document.removeEventListener('keydown', onKeyEvent);
+      };
+    }, [keyBindingMap]);
 
     return (
       <LegendStyleProvider>
@@ -130,21 +141,15 @@ export const LegendApplicationComponentFrameworkProvider = observer(
           </Portal>
         )}
         <DndProvider backend={HTML5Backend}>
-          <GlobalHotKeys
-            keyMap={keyMap}
-            handlers={hotkeyHandlerMap}
-            allowChanges={true}
+          <div
+            className="app__container"
+            // NOTE: this `id` is used to quickly identify this DOM node so we could manually
+            // dispatch keyboard event here in order to be captured by our global hotkeys matchers
+            id={APP_CONTAINER_ID}
           >
-            <div
-              className="app__container"
-              // NOTE: this `id` is used to quickly identify this DOM node so we could manually
-              // dispatch keyboard event here in order to be captured by our global hotkeys matchers
-              id={APP_CONTAINER_ID}
-            >
-              <BackdropContainer elementID={APP_BACKDROP_CONTAINER_ID} />
-              {children}
-            </div>
-          </GlobalHotKeys>
+            <BackdropContainer elementID={APP_BACKDROP_CONTAINER_ID} />
+            {children}
+          </div>
         </DndProvider>
       </LegendStyleProvider>
     );
