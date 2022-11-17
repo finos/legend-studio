@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 20.0.9
+
+### Patch Changes
+
+- [#1697](https://github.com/finos/legend-studio/pull/1697) [`44b5ff5ab`](https://github.com/finos/legend-studio/commit/44b5ff5ab1a187176f2dd8991b05241c40429361) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Remove Service's parameter icon and added the prompt below the header.
+
+- [#1679](https://github.com/finos/legend-studio/pull/1679) [`478092e7c`](https://github.com/finos/legend-studio/commit/478092e7c55da1a96380d2c7815958d5310898e8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support contextual documentation for service test and data element editor, and add a doc icon for connection test data.
+
 ## 20.0.8
 
 ## 20.0.7
