@@ -44,4 +44,7 @@ export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
   CONNECTION_EDITOR = 'studio.editor.connection-editor',
 
   SERVICE_EDITOR = 'studio.editor.service-editor',
+  SERVICE_EDITOR_TEST = 'studio.editor.service-editor.test',
+
+  DATA_ELEMENT_EDITOR = 'studio.editor.data-element-editor',
 }
