@@ -272,6 +272,7 @@ const StringPrimitiveInstanceValueEditor = observer(
             options={queryOptions}
             onChange={changeValue}
             value={selectedValue}
+            inputValue={value}
             onInputChange={handleInputChange}
             darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
             isLoading={isLoading}
