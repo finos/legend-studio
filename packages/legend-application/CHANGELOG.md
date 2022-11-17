@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 10.0.11
+
+### Patch Changes
+
+- [#1679](https://github.com/finos/legend-studio/pull/1679) [`478092e7c`](https://github.com/finos/legend-studio/commit/478092e7c55da1a96380d2c7815958d5310898e8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support contextual documentation for service test and data element editor, and add a doc icon for connection test data.
+
 ## 10.0.10
 
 ## 10.0.9
