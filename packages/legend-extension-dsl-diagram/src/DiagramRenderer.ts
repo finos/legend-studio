@@ -2580,7 +2580,7 @@ export class DiagramRenderer {
     }
 
     // Hide/show properties for selected element(s)
-    else if (e.altKey && 'KeyP' === e.code) {
+    else if (e.altKey && 'p' === e.key) {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
@@ -2591,7 +2591,7 @@ export class DiagramRenderer {
       }
     }
     // Hide/show stereotypes for selected element(s)
-    else if (e.altKey && 'KeyS' === e.code) {
+    else if (e.altKey && 's' === e.key) {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
@@ -2602,7 +2602,7 @@ export class DiagramRenderer {
       }
     }
     // Hide/show tagged values for selected element(s)
-    else if (e.altKey && 'KeyT' === e.code) {
+    else if (e.altKey && 't' === e.key) {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
@@ -2617,7 +2617,7 @@ export class DiagramRenderer {
     }
 
     // Add a new simple property to selected class
-    else if (e.altKey && 'ArrowDown' === e.code) {
+    else if (e.altKey && 'ArrowDown' === e.key) {
       if (!this.isReadOnly && this.selectedClasses.length === 1) {
         this.handleAddSimpleProperty(this.selectedClasses[0] as ClassView);
       }

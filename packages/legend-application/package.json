@@ -59,7 +59,6 @@
     "react-dnd-html5-backend": "16.0.1",
     "react-dom": "18.2.0",
     "react-draggable": "4.4.5",
-    "react-hotkeys": "2.0.0",
     "react-router": "5.3.4",
     "react-router-dom": "5.3.4",
     "serializr": "3.0.1",

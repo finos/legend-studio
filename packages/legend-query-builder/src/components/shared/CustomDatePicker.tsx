@@ -833,6 +833,8 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
         // Despite its name this would actually allow us to register time in UTC
         // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#setting_timezones
         type="datetime-local"
+        // Configure the step to show seconds picker
+        // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#step
         step="1"
         spellCheck={false}
         value={absoluteTimeValue}

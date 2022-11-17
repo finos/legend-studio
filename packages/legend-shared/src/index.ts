@@ -19,6 +19,8 @@ export * from './CommonUtils.js';
 export * from './error/AssertionUtils.js';
 export * from './error/ErrorUtils.js';
 
+export * from './keyboard/KeyBinding.js';
+
 export * from './network/NetworkUtils.js';
 export * from './network/AbstractServerClient.js';
 export * from './network/TracerService.js';
