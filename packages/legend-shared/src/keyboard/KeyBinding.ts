@@ -112,6 +112,12 @@ const isMatchingKeyCombination = (
       !combinationData.modifiers.includes(modifier),
   );
 
+/**
+ * Create event listener for keyboard event (recommended to be used with `keydown/keyup` event)
+ *
+ * This succinct logic is adapted from `tinykeys`
+ * See https://github.com/jamiebuilds/tinykeys
+ */
 export function createKeybindingsHandler(
   config: KeyBindingConfig,
 ): EventListener {
