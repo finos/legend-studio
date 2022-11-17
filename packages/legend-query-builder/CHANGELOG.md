@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 0.6.2
+
+### Patch Changes
+
+- [#1700](https://github.com/finos/legend-studio/pull/1700) [`9b2e9b698`](https://github.com/finos/legend-studio/commit/9b2e9b69860246faae068c219d936f68bb242302) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where datetime values are not provided with seconds.
+
+- [#1705](https://github.com/finos/legend-studio/pull/1705) [`048271628`](https://github.com/finos/legend-studio/commit/0482716286d64f6305e0a6836037751c65fcfe8f) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug with the cursor when editing `filter` and `post filter` text input value ([#1594](https://github.com/finos/legend-studio/issues/1594)).
+
 ## 0.6.1
 
 ## 0.6.0
