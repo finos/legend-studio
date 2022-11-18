@@ -392,15 +392,34 @@ const QueryBuilderFilterTreeNodeContainer = observer(
           // const dropNode = (item as QueryBuilderFilterConditionDragSource).node;
           // TODO: re-arrange
         } else {
-          const dropNode = (item as QueryBuilderExplorerTreeDragSource).node;
           let filterConditionState: FilterConditionState;
           try {
+            let propertyExpression;
+            if (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE) {
+              if (
+                (item as QueryBuilderProjectionColumnDragSource)
+                  .columnState instanceof
+                QueryBuilderSimpleProjectionColumnState
+              ) {
+                propertyExpression = (
+                  (item as QueryBuilderProjectionColumnDragSource)
+                    .columnState as QueryBuilderSimpleProjectionColumnState
+                ).propertyExpressionState.propertyExpression;
+              } else {
+                throw new UnsupportedOperationError(
+                  `Dragging and Dropping derivation projection column is not supported.`,
+                );
+              }
+            } else {
+              propertyExpression =
+                buildPropertyExpressionFromExplorerTreeNodeData(
+                  (item as QueryBuilderExplorerTreeDragSource).node,
+                  filterState.queryBuilderState.explorerState,
+                );
+            }
             filterConditionState = new FilterConditionState(
               filterState,
-              buildPropertyExpressionFromExplorerTreeNodeData(
-                dropNode,
-                filterState.queryBuilderState.explorerState,
-              ),
+              propertyExpression,
             );
           } catch (error) {
             assertErrorThrown(error);
@@ -444,11 +463,19 @@ const QueryBuilderFilterTreeNodeContainer = observer(
       { isDragOver: boolean }
     >(
       () => ({
-        accept: [
-          ...Object.values(QUERY_BUILDER_FILTER_DND_TYPE),
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-        ],
+        accept:
+          queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
+            ? [
+                ...Object.values(QUERY_BUILDER_FILTER_DND_TYPE),
+                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+                QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+              ]
+            : [
+                ...Object.values(QUERY_BUILDER_FILTER_DND_TYPE),
+                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+              ],
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item, monitor.getItemType() as string);
