@@ -309,7 +309,7 @@ export class EditorGraphState {
 
   clearProblems(): void {
     this.error = undefined;
-    this.editorStore.openedEditorStates
+    this.editorStore.editorTabManagerState.openedTabStates
       .filter(filterByType(ElementEditorState))
       .forEach((editorState) => editorState.clearCompilationError());
     this.mostRecentFormModeCompilationGraphHash = undefined;
@@ -501,7 +501,9 @@ export class EditorGraphState {
       );
     // Making an async call
     nativeImporterState.loadCurrentProjectEntities();
-    this.editorStore.openState(this.editorStore.modelImporterState);
+    this.editorStore.editorTabManagerState.openState(
+      this.editorStore.modelImporterState,
+    );
   }
 
   /**
@@ -622,11 +624,12 @@ export class EditorGraphState {
           if (element) {
             this.editorStore.openElement(element);
             if (
-              this.editorStore.currentEditorState instanceof ElementEditorState
+              this.editorStore.editorTabManagerState.currentTabState instanceof
+              ElementEditorState
             ) {
               // check if we can reveal the error in the element editor state
               fallbackToTextModeForDebugging =
-                !this.editorStore.currentEditorState.revealCompilationError(
+                !this.editorStore.editorTabManagerState.currentTabState.revealCompilationError(
                   error,
                 );
             }
@@ -801,8 +804,10 @@ export class EditorGraphState {
         this.editorStore.grammarTextEditorState.setGraphGrammarText('');
         this.editorStore.grammarTextEditorState.resetCurrentElementLabelRegexString();
         this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.FORM);
-        if (this.editorStore.currentEditorState) {
-          this.editorStore.openState(this.editorStore.currentEditorState);
+        if (this.editorStore.editorTabManagerState.currentTabState) {
+          this.editorStore.editorTabManagerState.openState(
+            this.editorStore.editorTabManagerState.currentTabState,
+          );
         }
       } catch (error) {
         assertErrorThrown(error);
@@ -880,7 +885,7 @@ export class EditorGraphState {
    *    so far it is tempting to refer to elements in the graph from various editor state. On top of that, change detection
    *    sometimes obfuscate the investigation but we have cleared it out with explicit disposing of reaction
    * 2. Reusable models, at this point in time, we haven't completed stabilize the logic for handling generated models, as well
-   *    as depdendencies, we intended to save computation time by reusing these while updating the graph. This can pose potential
+   *    as dependencies, we intended to save computation time by reusing these while updating the graph. This can pose potential
    *    danger as well. Beware the way when we start to make system/project dependencies references elements of current graph
    *    e.g. when we have a computed value in a immutable class that get all subclasses, etc.
    * 3. We reprocess editor states to ensure good UX, e.g. find tabs to keep open, find tree nodes to expand, etc.
@@ -947,8 +952,10 @@ export class EditorGraphState {
        *
        * @risk memory-leak
        */
-      const openedEditorStates = this.editorStore.openedEditorStates;
-      const currentEditorState = this.editorStore.currentEditorState;
+      const openedTabStates =
+        this.editorStore.editorTabManagerState.openedTabStates;
+      const currentTabState =
+        this.editorStore.editorTabManagerState.currentTabState;
       /**
        * We remove the current editor state so that we no longer let React displays the element that belongs to the old graph
        * NOTE: this causes an UI flash, but this is in many way, acceptable since the user probably should know that we are
@@ -1018,13 +1025,13 @@ export class EditorGraphState {
        *
        * @risk memory-leak
        */
-      this.editorStore.openedEditorStates = openedEditorStates
+      this.editorStore.editorTabManagerState.openedTabStates = openedTabStates
         .map((editorState) =>
           this.editorStore.reprocessElementEditorState(editorState),
         )
         .filter(isNonNullable);
       this.editorStore.setCurrentEditorState(
-        this.editorStore.findCurrentEditorState(currentEditorState),
+        this.editorStore.findCurrentEditorState(currentTabState),
       );
 
       this.editorStore.applicationStore.log.info(
@@ -1091,8 +1098,10 @@ export class EditorGraphState {
        *
        * @risk memory-leak
        */
-      const openedEditorStates = this.editorStore.openedEditorStates;
-      const currentEditorState = this.editorStore.currentEditorState;
+      const openedTabStates =
+        this.editorStore.editorTabManagerState.openedTabStates;
+      const currentTabState =
+        this.editorStore.editorTabManagerState.currentTabState;
       this.editorStore.closeAllEditorTabs();
 
       yield flowResult(
@@ -1118,13 +1127,13 @@ export class EditorGraphState {
       this.editorStore.explorerTreeState.reprocess();
 
       // so that information is not dependent on the graph, but on the component itself, with IDs and such.
-      this.editorStore.openedEditorStates = openedEditorStates
+      this.editorStore.editorTabManagerState.openedTabStates = openedTabStates
         .map((editorState) =>
           this.editorStore.reprocessElementEditorState(editorState),
         )
         .filter(isNonNullable);
       this.editorStore.setCurrentEditorState(
-        this.editorStore.findCurrentEditorState(currentEditorState),
+        this.editorStore.findCurrentEditorState(currentTabState),
       );
     } catch (error) {
       assertErrorThrown(error);

@@ -55,8 +55,6 @@ import {
   guaranteeType,
   guaranteeNonNullable,
   UnsupportedOperationError,
-  assertNonNullable,
-  assertTrue,
   ActionState,
   filterByType,
   AssertionError,
@@ -143,6 +141,7 @@ import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunner
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
 import { LEGEND_STUDIO_COMMAND_KEY } from './LegendStudioCommand.js';
+import { EditorTabManagerState } from './EditorTabState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -206,8 +205,10 @@ export class EditorStore implements CommandRegistrar {
   });
 
   // Editor Tabs
-  currentEditorState?: EditorState | undefined;
-  openedEditorStates: EditorState[] = [];
+
+  editorTabManagerState = new EditorTabManagerState(this);
+  // currentTabState?: EditorState | undefined;
+  // openedTabStates: EditorState[] = [];
   /**
    * Since we want to share element generation state across all element in the editor, we will create 1 element generate state
    * per file generation configuration type.
@@ -230,8 +231,8 @@ export class EditorStore implements CommandRegistrar {
       graphEditMode: observable,
       activeAuxPanelMode: observable,
       activeActivity: observable,
-      currentEditorState: observable,
-      openedEditorStates: observable,
+      // currentTabState: observable,
+      // openedTabStates: observable,
 
       isInViewerMode: computed,
       isInConflictResolutionMode: computed,
@@ -247,18 +248,12 @@ export class EditorStore implements CommandRegistrar {
       setEditorMode: action,
       setMode: action,
 
-      setCurrentEditorState: action,
       setActiveAuxPanelMode: action,
       refreshCurrentEntityDiffEditorState: action,
       cleanUp: action,
       reset: action,
       setGraphEditMode: action,
       setActiveActivity: action,
-      closeState: action,
-      closeAllOtherStates: action,
-      closeAllStates: action,
-      openState: action,
-      openLastClosedTab: action,
       openEntityDiff: action,
       openEntityChangeConflict: action,
       openSingletonEditorState: action,
@@ -284,7 +279,6 @@ export class EditorStore implements CommandRegistrar {
     this.pluginManager = applicationStore.pluginManager;
 
     this.editorMode = new StandardEditorMode(this);
-    this.tabHistory = new Stack<EditorState>();
 
     this.sdlcState = new EditorSDLCState(this);
     this.graphState = new EditorGraphState(this);
@@ -461,7 +455,8 @@ export class EditorStore implements CommandRegistrar {
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_MODEL_LOADER,
       trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
-      action: () => this.openState(this.modelImporterState),
+      action: () =>
+        this.editorTabManagerState.openState(this.modelImporterState),
     });
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.SYNC_WITH_WORKSPACE,
@@ -913,12 +908,12 @@ export class EditorStore implements CommandRegistrar {
   }
 
   setCurrentEditorState(val: EditorState | undefined): void {
-    this.currentEditorState = val;
+    this.editorTabManagerState.currentTabState = val;
   }
 
   getCurrentEditorState<T extends EditorState>(clazz: Clazz<T>): T {
     return guaranteeType(
-      this.currentEditorState,
+      this.editorTabManagerState.currentTabState,
       clazz,
       `Current editor state is not of the specified type (this is likely caused by calling this method at the wrong place)`,
     );
@@ -931,106 +926,17 @@ export class EditorStore implements CommandRegistrar {
     );
   }
 
-  closeState(editorState: EditorState): void {
-    const elementIndex = this.openedEditorStates.findIndex(
-      (e) => e === editorState,
-    );
-
-    this.tabHistory.push(editorState);
-    assertTrue(elementIndex !== -1, `Can't close a tab which is not opened`);
-    this.openedEditorStates.splice(elementIndex, 1);
-    if (this.currentEditorState === editorState) {
-      if (this.openedEditorStates.length) {
-        const openIndex = elementIndex - 1;
-
-        this.setCurrentEditorState(
-          openIndex >= 0
-            ? this.openedEditorStates[openIndex]
-            : this.openedEditorStates[0],
-        );
-      } else {
-        this.setCurrentEditorState(undefined);
-      }
-    }
-    this.explorerTreeState.reprocess();
-  }
-
-  closeAllOtherStates(editorState: EditorState): void {
-    assertNonNullable(
-      this.openedEditorStates.find((e) => e === editorState),
-      'Editor tab should be currently opened',
-    );
-    this.setCurrentEditorState(editorState);
-    this.openedEditorStates = [editorState];
-    this.explorerTreeState.reprocess();
-  }
-
-  closeAllStates(): void {
-    this.openedEditorStates.forEach((otherState) => {
-      this.tabHistory.push(otherState);
-    });
-    this.closeAllEditorTabs();
-    this.explorerTreeState.reprocess();
-  }
-
-  openLastClosedTab(): void {
-    while (this.tabHistory.peek()) {
-      const editorState = this.tabHistory.pop();
-      if (!editorState) {
-        return;
-      }
-      if (
-        this.openedEditorStates.find(
-          (e) =>
-            e.editorStore === editorState.editorStore &&
-            e.headerName === editorState.headerName,
-        )
-      ) {
-        continue;
-      }
-      if (this.currentEditorState) {
-        const editorStateIndex = this.openedEditorStates.findIndex(
-          (e) => e === this.currentEditorState,
-        );
-        this.openedEditorStates.splice(editorStateIndex + 1, 0, editorState);
-      } else {
-        this.openedEditorStates.push(editorState);
-      }
-      this.setCurrentEditorState(editorState);
-      return;
-    }
-  }
-
-  openState(editorState: EditorState): void {
-    if (editorState instanceof ElementEditorState) {
-      this.openElement(editorState.element);
-    } else if (editorState instanceof EntityDiffViewState) {
-      this.openEntityDiff(editorState);
-    } else if (editorState instanceof EntityChangeConflictEditorState) {
-      this.openEntityChangeConflict(editorState);
-    } else if (editorState instanceof FileGenerationViewerState) {
-      this.openGeneratedFile(editorState.generatedFile);
-    } else if (editorState === this.modelImporterState) {
-      this.openSingletonEditorState(this.modelImporterState);
-    } else if (editorState === this.projectConfigurationEditorState) {
-      this.openSingletonEditorState(this.projectConfigurationEditorState);
-    } else {
-      throw new UnsupportedOperationError(
-        `Can't open editor state`,
-        editorState,
-      );
-    }
-    this.explorerTreeState.reprocess();
-  }
-
   refreshCurrentEntityDiffEditorState(): void {
-    if (this.currentEditorState instanceof EntityDiffEditorState) {
-      this.currentEditorState.refresh();
+    if (
+      this.editorTabManagerState.currentTabState instanceof
+      EntityDiffEditorState
+    ) {
+      this.editorTabManagerState.currentTabState.refresh();
     }
   }
 
   openEntityDiff(entityDiffEditorState: EntityDiffViewState): void {
-    const existingEditorState = this.openedEditorStates.find(
+    const existingEditorState = this.editorTabManagerState.openedTabStates.find(
       (editorState) =>
         editorState instanceof EntityDiffViewState &&
         editorState.fromEntityPath === entityDiffEditorState.fromEntityPath &&
@@ -1040,7 +946,7 @@ export class EditorStore implements CommandRegistrar {
     );
     const diffEditorState = existingEditorState ?? entityDiffEditorState;
     if (!existingEditorState) {
-      this.openEditorState(diffEditorState);
+      this.editorTabManagerState.openEditorState(diffEditorState);
     }
     this.setCurrentEditorState(diffEditorState);
   }
@@ -1048,7 +954,7 @@ export class EditorStore implements CommandRegistrar {
   openEntityChangeConflict(
     entityChangeConflictEditorState: EntityChangeConflictEditorState,
   ): void {
-    const existingEditorState = this.openedEditorStates.find(
+    const existingEditorState = this.editorTabManagerState.openedTabStates.find(
       (editorState) =>
         editorState instanceof EntityChangeConflictEditorState &&
         editorState.entityPath === entityChangeConflictEditorState.entityPath,
@@ -1056,7 +962,7 @@ export class EditorStore implements CommandRegistrar {
     const conflictEditorState =
       existingEditorState ?? entityChangeConflictEditorState;
     if (!existingEditorState) {
-      this.openEditorState(conflictEditorState);
+      this.editorTabManagerState.openEditorState(conflictEditorState);
     }
     this.setCurrentEditorState(conflictEditorState);
   }
@@ -1067,12 +973,12 @@ export class EditorStore implements CommandRegistrar {
   openSingletonEditorState(
     singularEditorState: ModelImporterState | ProjectConfigurationEditorState,
   ): void {
-    const existingEditorState = this.openedEditorStates.find(
+    const existingEditorState = this.editorTabManagerState.openedTabStates.find(
       (e) => e === singularEditorState,
     );
     const editorState = existingEditorState ?? singularEditorState;
     if (!existingEditorState) {
-      this.openEditorState(editorState);
+      this.editorTabManagerState.openEditorState(editorState);
     }
     this.setCurrentEditorState(editorState);
   }
@@ -1159,24 +1065,6 @@ export class EditorStore implements CommandRegistrar {
     );
   }
 
-  swapTabs = (
-    sourceEditorState: EditorState,
-    targetEditorState: EditorState,
-  ): void => {
-    swapEntry(this.openedEditorStates, sourceEditorState, targetEditorState);
-  };
-
-  openEditorState(editorState: EditorState): void {
-    if (this.currentEditorState) {
-      const currIndex = this.openedEditorStates.findIndex(
-        (e) => e === this.currentEditorState,
-      );
-      this.openedEditorStates.splice(currIndex + 1, 0, editorState);
-    } else {
-      this.openedEditorStates.push(editorState);
-    }
-  }
-
   openElement(element: PackageableElement): void {
     if (this.isInGrammarTextMode) {
       // in text mode, we want to select the block of code that corresponds to the element if possible
@@ -1184,14 +1072,15 @@ export class EditorStore implements CommandRegistrar {
       this.grammarTextEditorState.setCurrentElementLabelRegexString(element);
     } else {
       if (!(element instanceof Package)) {
-        const existingElementState = this.openedEditorStates.find(
-          (state) =>
-            state instanceof ElementEditorState && state.element === element,
-        );
+        const existingElementState =
+          this.editorTabManagerState.openedTabStates.find(
+            (state) =>
+              state instanceof ElementEditorState && state.element === element,
+          );
         const elementState =
           existingElementState ?? this.createElementState(element);
         if (elementState && !existingElementState) {
-          this.openEditorState(elementState);
+          this.editorTabManagerState.openEditorState(elementState);
         }
         this.setCurrentEditorState(elementState);
       }
@@ -1237,23 +1126,29 @@ export class EditorStore implements CommandRegistrar {
       )
       .filter(isNonNullable);
     const elementsToDelete = [element, ...generatedChildrenElements];
-    this.openedEditorStates = this.openedEditorStates.filter((elementState) => {
-      if (elementState instanceof ElementEditorState) {
-        if (elementState === this.currentEditorState) {
-          // avoid closing the current editor state as this will be taken care of
-          // by the `closeState()` call later
-          return true;
+    this.editorTabManagerState.openedTabStates =
+      this.editorTabManagerState.openedTabStates.filter((elementState) => {
+        if (elementState instanceof ElementEditorState) {
+          if (elementState === this.editorTabManagerState.currentTabState) {
+            // avoid closing the current editor state as this will be taken care of
+            // by the `closeState()` call later
+            return true;
+          }
+          return !elementsToDelete.includes(elementState.element);
         }
-        return !elementsToDelete.includes(elementState.element);
-      }
-      return true;
-    });
+        return true;
+      });
     if (
-      this.currentEditorState &&
-      this.currentEditorState instanceof ElementEditorState &&
-      elementsToDelete.includes(this.currentEditorState.element)
+      this.editorTabManagerState.currentTabState &&
+      this.editorTabManagerState.currentTabState instanceof
+        ElementEditorState &&
+      elementsToDelete.includes(
+        this.editorTabManagerState.currentTabState.element,
+      )
     ) {
-      this.closeState(this.currentEditorState);
+      this.editorTabManagerState.closeState(
+        this.editorTabManagerState.currentTabState,
+      );
     }
     // remove/retire the element's generated children before remove the element itself
     generatedChildrenElements.forEach((el) =>
@@ -1349,35 +1244,38 @@ export class EditorStore implements CommandRegistrar {
     editor: EditorState | undefined,
   ): EditorState | undefined => {
     if (editor instanceof ElementEditorState) {
-      return this.openedEditorStates.find(
+      return this.editorTabManagerState.openedTabStates.find(
         (es): es is ElementEditorState =>
           es instanceof ElementEditorState &&
           es.element.path === editor.element.path,
       );
     }
     if (editor instanceof FileGenerationViewerState) {
-      return this.openedEditorStates.find((e) => e === editor);
+      return this.editorTabManagerState.openedTabStates.find(
+        (e) => e === editor,
+      );
     }
     return undefined;
   };
 
   openGeneratedFile(file: GenerationFile): void {
-    const existingGeneratedFileState = this.openedEditorStates.find(
-      (editorState) =>
-        editorState instanceof FileGenerationViewerState &&
-        editorState.generatedFile === file,
-    );
+    const existingGeneratedFileState =
+      this.editorTabManagerState.openedTabStates.find(
+        (editorState) =>
+          editorState instanceof FileGenerationViewerState &&
+          editorState.generatedFile === file,
+      );
     const generatedFileState =
       existingGeneratedFileState ?? new FileGenerationViewerState(this, file);
     if (!existingGeneratedFileState) {
-      this.openEditorState(generatedFileState);
+      this.editorTabManagerState.openEditorState(generatedFileState);
     }
     this.setCurrentEditorState(generatedFileState);
   }
 
   closeAllEditorTabs(): void {
     this.setCurrentEditorState(undefined);
-    this.openedEditorStates = [];
+    this.editorTabManagerState.openedTabStates = [];
   }
 
   *toggleTextMode(): GeneratorFn<void> {
@@ -1408,9 +1306,11 @@ export class EditorStore implements CommandRegistrar {
       this.applicationStore.setBlockingAlert(undefined);
       this.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
       // navigate to the currently opened element immediately after entering text mode editor
-      if (this.currentEditorState instanceof ElementEditorState) {
+      if (
+        this.editorTabManagerState.currentTabState instanceof ElementEditorState
+      ) {
         this.grammarTextEditorState.setCurrentElementLabelRegexString(
-          this.currentEditorState.element,
+          this.editorTabManagerState.currentTabState.element,
         );
       }
     } else if (this.isInGrammarTextMode) {

@@ -133,8 +133,12 @@ export class GraphGenerationState {
   }
 
   get supportedFileGenerationConfigurationsForCurrentElement(): GenerationConfigurationDescription[] {
-    if (this.editorStore.currentEditorState instanceof ElementEditorState) {
-      const currentElement = this.editorStore.currentEditorState.element;
+    if (
+      this.editorStore.editorTabManagerState.currentTabState instanceof
+      ElementEditorState
+    ) {
+      const currentElement =
+        this.editorStore.editorTabManagerState.currentTabState.element;
       // NOTE: For now we only allow classes and enumerations for all types of generations.
       const extraFileGenerationScopeFilterConfigurations =
         this.editorStore.pluginManager
@@ -456,16 +460,18 @@ export class GraphGenerationState {
         openedNodeIds,
       ),
     );
-    this.editorStore.openedEditorStates = this.editorStore.openedEditorStates
-      .map((e) => this.reprocessGenerationFileState(e))
-      .filter(isNonNullable);
-    const currentEditorState = this.editorStore.currentEditorState;
-    if (currentEditorState instanceof FileGenerationViewerState) {
+    this.editorStore.editorTabManagerState.openedTabStates =
+      this.editorStore.editorTabManagerState.openedTabStates
+        .map((e) => this.reprocessGenerationFileState(e))
+        .filter(isNonNullable);
+    const currentTabState =
+      this.editorStore.editorTabManagerState.currentTabState;
+    if (currentTabState instanceof FileGenerationViewerState) {
       this.editorStore.setCurrentEditorState(
-        this.editorStore.openedEditorStates.find(
+        this.editorStore.editorTabManagerState.openedTabStates.find(
           (e) =>
             e instanceof FileGenerationViewerState &&
-            e.generatedFile.path === currentEditorState.generatedFile.path,
+            e.generatedFile.path === currentTabState.generatedFile.path,
         ),
       );
     }

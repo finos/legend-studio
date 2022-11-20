@@ -47,7 +47,7 @@ export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useLegendStudioApplicationStore();
   const sdlcState = editorStore.sdlcState;
-  const currentEditorState = editorStore.currentEditorState;
+  const currentTabState = editorStore.editorTabManagerState.currentTabState;
   const workspaceUpdaterState = editorStore.workspaceUpdaterState;
   // Actions
   const updateWorkspace = (): void => {
@@ -68,8 +68,8 @@ export const WorkspaceUpdater = observer(() => {
   const conflicts =
     editorStore.changeDetectionState.potentialWorkspaceUpdateConflicts;
   const isSelectedConflict = (conflict: EntityChangeConflict): boolean =>
-    currentEditorState instanceof EntityChangeConflictEditorState &&
-    conflict.entityPath === currentEditorState.entityPath;
+    currentTabState instanceof EntityChangeConflictEditorState &&
+    conflict.entityPath === currentTabState.entityPath;
   const openPotentialConflict =
     (conflict: EntityChangeConflict): (() => void) =>
     (): void =>
@@ -84,9 +84,9 @@ export const WorkspaceUpdater = observer(() => {
         .includes(change.entityPath),
   );
   const isSelectedDiff = (diff: EntityDiff): boolean =>
-    currentEditorState instanceof EntityDiffViewState &&
-    diff.oldPath === currentEditorState.fromEntityPath &&
-    diff.newPath === currentEditorState.toEntityPath;
+    currentTabState instanceof EntityDiffViewState &&
+    diff.oldPath === currentTabState.fromEntityPath &&
+    diff.newPath === currentTabState.toEntityPath;
   const openChange =
     (diff: EntityDiff): (() => void) =>
     (): void =>

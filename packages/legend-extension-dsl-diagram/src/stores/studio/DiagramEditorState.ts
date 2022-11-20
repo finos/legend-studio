@@ -89,7 +89,7 @@ export class DiagramEditorClassViewEditorSidePanelState extends DiagramEditorSid
 
     this.classView = classView;
     this.classEditorState = guaranteeType(
-      this.editorStore.openedEditorStates.find(
+      this.editorStore.editorTabManagerState.openedTabStates.find(
         (elementState) =>
           isType(elementState, ClassEditorState) &&
           elementState.element === classView.class.value,
@@ -408,7 +408,7 @@ export class DiagramEditorState
   registerCommands(): void {
     const DEFAULT_TRIGGER = (): boolean =>
       // make sure the current active editor is this diagram editor
-      this.editorStore.currentEditorState === this &&
+      this.editorStore.editorTabManagerState.currentTabState === this &&
       // make sure the renderer is initialized
       this.isDiagramRendererInitialized &&
       // since we use hotkeys that can be easily in text input

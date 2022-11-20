@@ -128,6 +128,7 @@ import {
 } from '../../../shared/testable/TestableUtils.js';
 import { SERIALIZATION_FORMAT } from '../service/testable/ServiceTestEditorState.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
+import type { TabState } from '@finos/legend-art';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -477,7 +478,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
   }
 }
 
-export class MappingExecutionState {
+export class MappingExecutionState implements TabState {
   readonly uuid = uuid();
   readonly editorStore: EditorStore;
   readonly mappingEditorState: MappingEditorState;
@@ -539,6 +540,9 @@ export class MappingExecutionState {
     );
   }
 
+  get headerName(): string {
+    return this.name;
+  }
   setQueryState(val: MappingExecutionQueryState): void {
     this.queryState = val;
   }
@@ -653,7 +657,7 @@ export class MappingExecutionState {
           assert,
         );
         yield flowResult(this.mappingEditorState.addTest(mappingTest));
-        this.mappingEditorState.closeTab(this); // after promoting to test, remove the execution state
+        this.mappingEditorState.closeState(this); // after promoting to test, remove the execution state
       }
     } catch (error) {
       assertErrorThrown(error);

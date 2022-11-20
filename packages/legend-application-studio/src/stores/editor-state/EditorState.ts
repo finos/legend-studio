@@ -16,8 +16,9 @@
 
 import type { EditorStore } from '../EditorStore.js';
 import { uuid } from '@finos/legend-shared';
+import type { TabState } from '@finos/legend-art';
 
-export abstract class EditorState {
+export abstract class EditorState implements TabState {
   /**
    * NOTE: used to detect when an element editor state changes so we can force a remount of the editor component
    */

@@ -40,10 +40,24 @@
     padding-left: 0;
   }
 
+  &__header__dnd__placeholder {
+    text-align: left;
+    margin: 0;
+    width: 100%;
+    padding: 0 0.5rem;
+  }
+
   &__header__tabs {
     display: flex;
     height: 100%;
     overflow-x: overlay;
+  }
+
+  &__header__tab__label {
+    display: flex;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__header__tab {

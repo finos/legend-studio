@@ -20,11 +20,19 @@ import { generateSimpleDIVComponent } from '../ComponentCreatorUtils.js';
 
 export const MenuContent = forwardRef<
   HTMLDivElement,
-  { className?: string; children: React.ReactNode }
+  { className?: string; lightMode?: boolean; children: React.ReactNode }
 >(function MenuContent(props, ref) {
-  const { className, children, ...otherProps } = props;
+  const { className, lightMode, children, ...otherProps } = props;
   return (
-    <div ref={ref} className={clsx('menu', className)} {...otherProps}>
+    <div
+      ref={ref}
+      className={clsx(
+        lightMode ? 'menu--light' : 'menu--dark',
+        'menu',
+        className,
+      )}
+      {...otherProps}
+    >
       {children}
     </div>
   );
@@ -34,12 +42,18 @@ export const MenuContentItem: React.FC<{
   children: React.ReactNode;
   className?: string;
   disabled?: boolean;
+  lightMode?: boolean;
   onClick?: () => void;
 }> = (props) => {
-  const { className, onClick, disabled, children, ...otherProps } = props;
+  const { className, onClick, lightMode, disabled, children, ...otherProps } =
+    props;
   return (
     <button
-      className={clsx('menu__item', className)}
+      className={clsx(
+        'menu__item',
+        className,
+        lightMode ? 'menu__item--light' : 'menu__item--dark',
+      )}
       disabled={Boolean(disabled)}
       onClick={onClick}
       {...otherProps}

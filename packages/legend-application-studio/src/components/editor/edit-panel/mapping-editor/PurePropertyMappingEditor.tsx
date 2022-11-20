@@ -67,7 +67,9 @@ const SimplePropertyMappingEditor = observer(
     const propertyMapping = propertyMappingState.propertyMapping;
     const expectedType =
       propertyMapping.property.value.genericType.value.rawType;
-    const canDrop = dragItem && dragItem.data.type === expectedType;
+
+    const canDrop = dragItem?.data?.type === expectedType;
+
     const onExpectedTypeLabelSelect = (): void =>
       propertyMappingState.instanceSetImplementationState.setSelectedType(
         expectedType,
@@ -183,9 +185,9 @@ const EnumerationPropertyMappingEditor = observer(
     // NOTE: when we drag enum, we should highlight if the enumeration where that enum is part of matches
     const canDrop =
       dragItem &&
-      ((dragItem.data.type && dragItem.data.type === expectedType) ||
+      ((dragItem.data?.type && dragItem.data.type === expectedType) ||
         (dragItemType === CORE_DND_TYPE.TYPE_TREE_ENUM &&
-          dragItem.data.parent === expectedType));
+          dragItem.data?.parent === expectedType));
 
     return (
       <div className="property-mapping-editor__entry__container">
@@ -271,7 +273,8 @@ const ClassPropertyMappingEditor = observer(
       }
     };
     // Drag and Drop
-    const canDrop = dragItem?.data.type && dragItem.data.type === expectedType;
+
+    const canDrop = dragItem?.data?.type && dragItem.data.type === expectedType;
 
     return (
       <div className="property-mapping-editor__entry__container">
@@ -333,10 +336,12 @@ export const PurePropertyMappingEditor = observer(
             // if the dragged node is enum, when dropped, we want to have it as a constant
             let toAppend = '';
             if (dropType === CORE_DND_TYPE.TYPE_TREE_ENUM) {
-              toAppend = `${dropItem.data.parent.path}.${dropItem.data.label}`;
+              toAppend = `${dropItem.data?.parent.path}.${dropItem.data?.label}`;
             } else {
-              toAppend = dropItem.data.id;
-              if (dropItem.data.property instanceof DerivedProperty) {
+              if (dropItem.data?.id) {
+                toAppend = dropItem.data.id;
+              }
+              if (dropItem.data?.property instanceof DerivedProperty) {
                 toAppend += '()';
               }
             }

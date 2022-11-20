@@ -69,6 +69,95 @@
   }
 }
 
+.general__tab__dropdown {
+  max-width: 22rem;
+  padding: 0 2rem;
+
+  &__toogle {
+    @include flexCenter;
+
+    margin: 0 1rem;
+    border-radius: 0.2rem;
+    color: var(--color-light-grey-400);
+    height: 1.5em;
+    width: 1.5em;
+
+    svg {
+      height: 1.2em;
+      width: 1.2em;
+    }
+
+    &--dark:hover {
+      background: var(--color-dark-grey-280);
+    }
+
+    &--light:hover {
+      background: var(--color-light-grey-100);
+    }
+  }
+
+  &__description {
+    font-weight: 600;
+    display: flex;
+    width: 100%;
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    margin: 0.5rem 0 1rem;
+    padding: 0 1rem;
+
+    &--dark {
+      color: var(--color-light-grey-400);
+    }
+
+    &--light {
+      color: var(--color-light-grey-85);
+    }
+  }
+
+  &__item {
+    justify-content: space-between;
+
+    &--dark:hover {
+      background: var(--color-dark-grey-250) !important;
+    }
+
+    &--light:hover {
+      background: var(--color-light-grey-200) !important;
+    }
+  }
+
+  &__tab {
+    text-align: left;
+    white-space: nowrap;
+    font-size: 1.3rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &__close-btn {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      padding: 0.4rem;
+      margin-left: 0.6rem;
+      flex-direction: end;
+      border-radius: 50%;
+
+      &--dark:hover {
+        background: var(--color-dark-grey-300);
+      }
+
+      &--light:hover {
+        background: var(--color-light-grey-100);
+      }
+    }
+
+    &__close-btn svg {
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+  }
+}
+
 .dnd__dropzone {
   position: relative;
   width: 100%;
@@ -107,14 +196,7 @@
     font-weight: 700;
 
     &--borderless {
-      @include flexVCenter;
-
       border: none;
-      height: 100%;
-      padding: 0 0.5rem;
-      width: 100%;
-      margin: 0;
-      font-weight: 700;
     }
   }
 }

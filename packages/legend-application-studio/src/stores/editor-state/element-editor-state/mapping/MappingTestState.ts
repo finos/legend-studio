@@ -94,6 +94,7 @@ import {
   relationalInputData_setData,
 } from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
+import type { TabState } from '@finos/legend-art';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -383,7 +384,7 @@ export enum MAPPING_TEST_EDITOR_TAB_TYPE {
   RESULT = 'Test Result',
 }
 
-export class MappingTestState {
+export class MappingTestState implements TabState {
   readonly uuid = uuid();
   readonly editorStore: EditorStore;
   readonly mappingEditorState: MappingEditorState;
@@ -454,6 +455,9 @@ export class MappingTestState {
     );
   }
 
+  get headerName(): string {
+    return this.test.name;
+  }
   setIsRunningTest(val: boolean): void {
     this.isRunningTest = val;
   }

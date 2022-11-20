@@ -353,7 +353,7 @@ const ProjectConfig = observer(() => {
       editorStore.projectConfigurationEditorState,
     );
   const isSelected =
-    editorStore.currentEditorState ===
+    editorStore.editorTabManagerState.currentTabState ===
       editorStore.projectConfigurationEditorState &&
     // if we select non-element like packages, we need to deselect project configuration
     // so maybe a good TODO is to move this to explorer tree state
@@ -733,7 +733,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
     editorStore.explorerTreeState.setTreeData({ ...treeData });
   };
   const showModelImporter = (): void =>
-    editorStore.openState(editorStore.modelImporterState);
+    editorStore.editorTabManagerState.openState(editorStore.modelImporterState);
   const openConfigurationEditor = (): void =>
     editorStore.openSingletonEditorState(
       editorStore.projectConfigurationEditorState,

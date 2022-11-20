@@ -203,7 +203,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
   }
 
   closeConflict(conflict: EntityChangeConflictEditorState): void {
-    this.editorStore.closeState(conflict);
+    this.editorStore.editorTabManagerState.closeState(conflict);
   }
 
   resolveConflict(resolution: EntityChangeConflictResolution): void {

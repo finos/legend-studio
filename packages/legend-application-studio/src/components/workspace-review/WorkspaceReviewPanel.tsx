@@ -39,10 +39,12 @@ const WorkspaceReviewPanelHeaderTabContextMenu = observer(
   >(function ReviewPanelHeaderTabContextMenu(props, ref) {
     const { editorState } = props;
     const editorStore = useEditorStore();
-    const close = (): void => editorStore.closeState(editorState);
+    const close = (): void =>
+      editorStore.editorTabManagerState.closeState(editorState);
     const closeOthers = (): void =>
-      editorStore.closeAllOtherStates(editorState);
-    const closeAll = (): void => editorStore.closeAllStates();
+      editorStore.editorTabManagerState.closeAllStates();
+    const closeAll = (): void =>
+      editorStore.editorTabManagerState.closeAllStates();
 
     return (
       <div
@@ -57,7 +59,9 @@ const WorkspaceReviewPanelHeaderTabContextMenu = observer(
         </button>
         <button
           className="workspace-review-panel__header__tab__context-menu__item"
-          disabled={editorStore.openedEditorStates.length < 2}
+          disabled={
+            editorStore.editorTabManagerState.openedTabStates.length < 2
+          }
           onClick={closeOthers}
         >
           Close Others
@@ -75,34 +79,36 @@ const WorkspaceReviewPanelHeaderTabContextMenu = observer(
 
 export const WorkspaceReviewPanel = observer(() => {
   const editorStore = useEditorStore();
-  const currentEditorState =
-    editorStore.currentEditorState instanceof EntityDiffViewState
-      ? editorStore.currentEditorState
+  const currentTabState =
+    editorStore.editorTabManagerState.currentTabState instanceof
+    EntityDiffViewState
+      ? editorStore.editorTabManagerState.currentTabState
       : undefined;
-  const openedEditorStates = editorStore.openedEditorStates.filter(
-    filterByType(EntityDiffViewState),
-  );
+  const openedTabStates =
+    editorStore.editorTabManagerState.openedTabStates.filter(
+      filterByType(EntityDiffViewState),
+    );
   const closeTab =
     (diffState: EditorState): React.MouseEventHandler =>
     (event): void =>
-      editorStore.closeState(diffState);
+      editorStore.editorTabManagerState.closeState(diffState);
   const closeTabOnMiddleClick =
     (editorState: EditorState): React.MouseEventHandler =>
     (event): void => {
       if (event.nativeEvent.button === 1) {
-        editorStore.closeState(editorState);
+        editorStore.editorTabManagerState.closeState(editorState);
       }
     };
   const switchTab =
     (editorState: EditorState): (() => void) =>
     (): void =>
-      editorStore.openState(editorState);
+      editorStore.editorTabManagerState.openState(editorState);
   const switchViewMode =
     (mode: DIFF_VIEW_MODE): (() => void) =>
     (): void =>
-      currentEditorState?.setDiffMode(mode);
+      currentTabState?.setDiffMode(mode);
 
-  if (!currentEditorState) {
+  if (!currentTabState) {
     return <WorkspaceReviewPanelSplashScreen />;
   }
   return (
@@ -112,11 +118,11 @@ export const WorkspaceReviewPanel = observer(() => {
         disabled={true}
       >
         <div className="workspace-review-panel__header__tabs">
-          {openedEditorStates.map((editorState) => (
+          {openedTabStates.map((editorState) => (
             <div
               className={clsx('workspace-review-panel__header__tab', {
                 'workspace-review-panel__header__tab--active':
-                  editorState === currentEditorState,
+                  editorState === currentTabState,
               })}
               key={editorState.uuid}
               onMouseUp={closeTabOnMiddleClick(editorState)}
@@ -173,13 +179,13 @@ export const WorkspaceReviewPanel = observer(() => {
             }}
           >
             <div className="workspace-review-panel__element-view__type__label">
-              {currentEditorState.diffMode}
+              {currentTabState.diffMode}
             </div>
           </DropdownMenu>
         </div>
       </ContextMenu>
       <div className="panel__content workspace-review-panel__content">
-        <EntityDiffView entityDiffViewState={currentEditorState} />
+        <EntityDiffView entityDiffViewState={currentTabState} />
       </div>
     </div>
   );

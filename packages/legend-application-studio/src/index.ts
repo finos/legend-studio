@@ -25,6 +25,7 @@ export { queryClass } from './components/editor/edit-panel/uml-editor/ClassQuery
 
 // stores
 export * from './stores/LegendStudioApplicationPlugin.js';
+export * from './stores/EditorTabState.js';
 export * from './stores/EditorStore.js';
 export * from './stores/EditorConfig.js';
 export * from './stores/editor-state/ModelImporterState.js';
