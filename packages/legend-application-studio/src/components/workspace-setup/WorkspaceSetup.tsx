@@ -158,6 +158,11 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
     const onWorkspaceChange = (val: WorkspaceOption | null): void => {
       if (val) {
         setupStore.changeWorkspace(val.value);
+        if (!setupStore.currentProjectConfigurationStatus?.isConfigured) {
+          applicationStore.notifyIllegalState(
+            `Can't edit current workspace as the current project is not configured`,
+          );
+        }
       } else {
         setupStore.resetWorkspace();
       }
@@ -254,6 +259,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                       darkMode={true}
                       formatOptionLabel={getProjectOptionLabelFormatter(
                         applicationStore,
+                        setupStore.currentProjectConfigurationStatus,
                       )}
                     />
                     <button
@@ -278,6 +284,9 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                       options={workspaceOptions}
                       disabled={
                         !setupStore.currentProject ||
+                        !setupStore.currentProjectConfigurationStatus ||
+                        !setupStore.currentProjectConfigurationStatus
+                          .isConfigured ||
                         setupStore.loadProjectsState.isInProgress ||
                         setupStore.loadWorkspacesState.isInProgress
                       }
@@ -301,7 +310,12 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                     <button
                       className="workspace-setup__selector__action btn--dark"
                       onClick={showCreateWorkspaceModal}
-                      disabled={!setupStore.currentProject}
+                      disabled={
+                        !setupStore.currentProject ||
+                        !setupStore.currentProjectConfigurationStatus ||
+                        !setupStore.currentProjectConfigurationStatus
+                          .isConfigured
+                      }
                       tabIndex={-1}
                       type="button" // prevent this toggler being activated on form submission
                       title="Create a Workspace"
@@ -315,6 +329,9 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                       onClick={handleProceed}
                       disabled={
                         !setupStore.currentProject ||
+                        !setupStore.currentProjectConfigurationStatus ||
+                        !setupStore.currentProjectConfigurationStatus
+                          .isConfigured ||
                         !setupStore.currentWorkspace ||
                         setupStore.createWorkspaceState.isInProgress ||
                         setupStore.createOrImportProjectState.isInProgress

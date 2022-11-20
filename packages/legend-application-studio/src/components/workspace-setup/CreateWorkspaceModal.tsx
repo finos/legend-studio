@@ -55,7 +55,10 @@ export const CreateWorkspaceModal = observer(
       ),
     );
     const createWorkspace = (): void => {
-      if (workspaceName) {
+      if (
+        workspaceName &&
+        setupStore.currentProjectConfigurationStatus?.isConfigured
+      ) {
         flowResult(
           setupStore.createWorkspace(
             selectedProject.projectId,

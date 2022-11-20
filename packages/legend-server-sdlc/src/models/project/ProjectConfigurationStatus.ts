@@ -14,29 +14,17 @@
  * limitations under the License.
  */
 
-import { list, primitive, createModelSchema } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
-import type { ProjectConfigurationStatusReport } from './ProjectConfigurationStatus.js';
+import { createModelSchema, list, primitive } from 'serializr';
 
-export class Project {
-  description!: string;
-  name!: string;
-  projectId!: string;
-  webUrl!: string;
-  tags: string[] = [];
-  projectConfigurationStatus?: ProjectConfigurationStatusReport;
+export class ProjectConfigurationStatusReport {
+  projectConfigured!: boolean;
+  reviewIds!: string[];
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(Project, {
-      description: primitive(),
-      name: primitive(),
-      projectId: primitive(),
-      tags: list(primitive()),
-      webUrl: primitive(),
+    createModelSchema(ProjectConfigurationStatusReport, {
+      projectConfigured: primitive(),
+      reviewIds: list(primitive()),
     }),
   );
-
-  setProjectConfigurationStatus(val: ProjectConfigurationStatusReport): void {
-    this.projectConfigurationStatus = val;
-  }
 }

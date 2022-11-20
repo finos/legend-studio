@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {
+import React, {
   type CSSProperties,
   useRef,
   useEffect,
@@ -39,6 +39,16 @@ interface ListChildComponentProps {
   style: React.CSSProperties;
   isFocused?: boolean;
 }
+
+// Create props for buttons within selector input option to ensure
+// we don't trigger selector dropdown menu when clicking on these buttons
+// NOTE: react-selector uses `mousedown` event instead of `onclick`
+// See https://stackoverflow.com/a/55663995
+export const getSelectorInputOptionEmbeddedButtonProps = (): {
+  onMouseDown: React.MouseEventHandler;
+} => ({
+  onMouseDown: (event) => event.stopPropagation(),
+});
 
 /**
  * This custom list component uses virtualization from `react-window` to help improve performance of

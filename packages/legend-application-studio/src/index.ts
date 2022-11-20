@@ -28,6 +28,7 @@ export * from './stores/LegendStudioApplicationPlugin.js';
 export * from './stores/EditorStore.js';
 export * from './stores/EditorConfig.js';
 export * from './stores/editor-state/ModelImporterState.js';
+export * from './stores/workspace-setup/ProjectConfigurationStatus.js';
 export { ClassEditorState } from './stores/editor-state/element-editor-state/ClassEditorState.js';
 export { ElementEditorState } from './stores/editor-state/element-editor-state/ElementEditorState.js';
 export { UnsupportedElementEditorState } from './stores/editor-state/UnsupportedElementEditorState.js';

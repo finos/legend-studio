@@ -23,8 +23,10 @@ import {
 } from '@finos/legend-application';
 import {
   type LegendStudioApplicationStore,
+  type ProjectConfigurationStatus,
   LEGEND_STUDIO_APP_EVENT,
   generateEditorRoute,
+  fetchProjectConfigurationStatus,
 } from '@finos/legend-application-studio';
 import {
   type LightQuery,
@@ -165,6 +167,7 @@ export class QueryProductionizerStore {
   readonly loadProjectsState = ActionState.create();
   projects: Project[] = [];
   currentProject?: Project | undefined;
+  currentProjectConfigurationStatus?: ProjectConfigurationStatus | undefined;
 
   readonly loadWorkspacesState = ActionState.create();
   groupWorkspaces: Workspace[] = [];
@@ -188,6 +191,7 @@ export class QueryProductionizerStore {
       showQueryPreviewModal: observable,
       projects: observable,
       currentProject: observable,
+      currentProjectConfigurationStatus: observable,
       isAutoConfigurationEnabled: observable,
       groupWorkspaces: observable,
       workspaceName: observable,
@@ -410,6 +414,7 @@ export class QueryProductionizerStore {
 
   *changeProject(project: Project): GeneratorFn<void> {
     this.currentProject = project;
+    this.currentProjectConfigurationStatus = undefined;
     // NOTE: no need to enable auto-configuration if the query's project is selected
     this.setIsAutoConfigurationEnabled(
       project.projectId !== this.currentQueryProject?.projectId,
@@ -417,6 +422,13 @@ export class QueryProductionizerStore {
 
     this.loadWorkspacesState.inProgress();
     try {
+      this.currentProjectConfigurationStatus =
+        (yield fetchProjectConfigurationStatus(
+          project.projectId,
+          this.applicationStore,
+          this.sdlcServerClient,
+        )) as ProjectConfigurationStatus;
+
       const workspacesInConflictResolutionIds = (
         (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(
           project.projectId,
