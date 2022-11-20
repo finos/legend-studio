@@ -23,9 +23,10 @@ import {
 } from '@finos/legend-application';
 import {
   type LegendStudioApplicationStore,
+  type ProjectConfigurationStatus,
   LEGEND_STUDIO_APP_EVENT,
   generateEditorRoute,
-  ProjectSetupStore,
+  fetchProjectConfigurationStatus,
 } from '@finos/legend-application-studio';
 import {
   type LightQuery,
@@ -146,7 +147,9 @@ const createServiceEntity = async (
 
 const DEFAULT_WORKSPACE_NAME_PREFIX = 'productionize-query';
 
-export class QueryProductionizerStore extends ProjectSetupStore {
+export class QueryProductionizerStore {
+  readonly applicationStore: LegendStudioApplicationStore;
+  readonly sdlcServerClient: SDLCServerClient;
   readonly depotServerClient: DepotServerClient;
   readonly graphManagerState: GraphManagerState;
 
@@ -160,6 +163,11 @@ export class QueryProductionizerStore extends ProjectSetupStore {
   currentQueryInfo?: QueryInfo | undefined;
   currentQueryProject?: ProjectData | undefined;
   showQueryPreviewModal = false;
+
+  readonly loadProjectsState = ActionState.create();
+  projects: Project[] = [];
+  currentProject?: Project | undefined;
+  currentProjectConfigurationStatus?: ProjectConfigurationStatus | undefined;
 
   readonly loadWorkspacesState = ActionState.create();
   groupWorkspaces: Workspace[] = [];
@@ -175,14 +183,15 @@ export class QueryProductionizerStore extends ProjectSetupStore {
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
   ) {
-    super(applicationStore, sdlcServerClient);
-
     makeObservable(this, {
       queries: observable,
       currentQuery: observable,
       currentQueryInfo: observable,
       currentQueryProject: observable,
       showQueryPreviewModal: observable,
+      projects: observable,
+      currentProject: observable,
+      currentProjectConfigurationStatus: observable,
       isAutoConfigurationEnabled: observable,
       groupWorkspaces: observable,
       workspaceName: observable,
@@ -201,8 +210,12 @@ export class QueryProductionizerStore extends ProjectSetupStore {
       initialize: flow,
       loadQueries: flow,
       changeQuery: flow,
+      loadProjects: flow,
       changeProject: flow,
     });
+
+    this.applicationStore = applicationStore;
+    this.sdlcServerClient = sdlcServerClient;
     this.depotServerClient = depotServerClient;
     this.graphManagerState = graphManagerState;
   }
@@ -378,8 +391,30 @@ export class QueryProductionizerStore extends ProjectSetupStore {
     }
   }
 
+  *loadProjects(searchText: string): GeneratorFn<void> {
+    const isValidSearchString =
+      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
+    this.loadProjectsState.inProgress();
+    try {
+      this.projects = (
+        (yield this.sdlcServerClient.getProjects(
+          undefined,
+          isValidSearchString ? searchText : undefined,
+          undefined,
+          DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+        )) as PlainObject<Project>[]
+      ).map((v) => Project.serialization.fromJson(v));
+      this.loadProjectsState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
+      this.loadProjectsState.fail();
+    }
+  }
+
   *changeProject(project: Project): GeneratorFn<void> {
     this.currentProject = project;
+    this.currentProjectConfigurationStatus = undefined;
     // NOTE: no need to enable auto-configuration if the query's project is selected
     this.setIsAutoConfigurationEnabled(
       project.projectId !== this.currentQueryProject?.projectId,
@@ -387,6 +422,13 @@ export class QueryProductionizerStore extends ProjectSetupStore {
 
     this.loadWorkspacesState.inProgress();
     try {
+      this.currentProjectConfigurationStatus =
+        (yield fetchProjectConfigurationStatus(
+          project.projectId,
+          this.applicationStore,
+          this.sdlcServerClient,
+        )) as ProjectConfigurationStatus;
+
       const workspacesInConflictResolutionIds = (
         (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(
           project.projectId,

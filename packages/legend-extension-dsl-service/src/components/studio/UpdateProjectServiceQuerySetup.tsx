@@ -116,17 +116,11 @@ const CreateWorkspaceModal = observer((props: { selectedProject: Project }) => {
     if (
       workspaceName &&
       !workspaceAlreadyExists &&
-      setupStore.currentProjectConfigurationStatus?.projectConfigured
+      setupStore.currentProjectConfigurationStatus?.isConfigured
     ) {
       flowResult(
         setupStore.createWorkspace(selectedProject.projectId, workspaceName),
       ).catch(applicationStore.alertUnhandledError);
-    } else if (
-      !setupStore.currentProjectConfigurationStatus?.projectConfigured
-    ) {
-      applicationStore.notifyIllegalState(
-        `Can't create a workspace as the project is not configured`,
-      );
     }
   };
   const handleEnter = (): void => {
@@ -242,7 +236,8 @@ export const UpdateProjectServiceQuerySetup =
         !setupStore.currentProject ||
         !setupStore.currentGroupWorkspace ||
         !setupStore.currentService ||
-        !setupStore.currentProjectConfigurationStatus?.projectConfigured;
+        !setupStore.currentProjectConfigurationStatus ||
+        !setupStore.currentProjectConfigurationStatus.isConfigured;
       const handleProceed = (): void => {
         if (
           setupStore.currentProject &&
@@ -304,9 +299,7 @@ export const UpdateProjectServiceQuerySetup =
           flowResult(setupStore.changeWorkspace(option.value)).catch(
             applicationStore.alertUnhandledError,
           );
-          if (
-            !setupStore.currentProjectConfigurationStatus?.projectConfigured
-          ) {
+          if (!setupStore.currentProjectConfigurationStatus?.isConfigured) {
             applicationStore.notifyIllegalState(
               `Can't edit service query as the project is not configured`,
             );
@@ -326,9 +319,7 @@ export const UpdateProjectServiceQuerySetup =
       const onServiceOptionChange = (option: ServiceOption | null): void => {
         if (option) {
           setupStore.changeService(option.value.entity);
-          if (
-            !setupStore.currentProjectConfigurationStatus?.projectConfigured
-          ) {
+          if (!setupStore.currentProjectConfigurationStatus?.isConfigured) {
             applicationStore.notifyIllegalState(
               `Can't edit current service query as the current project is not configured`,
             );
@@ -386,7 +377,7 @@ export const UpdateProjectServiceQuerySetup =
                       escapeClearsValue={true}
                       formatOptionLabel={getProjectOptionLabelFormatter(
                         applicationStore,
-                        setupStore,
+                        setupStore.currentProjectConfigurationStatus,
                       )}
                     />
                   </div>
@@ -402,6 +393,9 @@ export const UpdateProjectServiceQuerySetup =
                       options={workspaceOptions}
                       disabled={
                         !setupStore.currentProject ||
+                        !setupStore.currentProjectConfigurationStatus ||
+                        !setupStore.currentProjectConfigurationStatus
+                          .isConfigured ||
                         setupStore.loadWorkspacesState.isInProgress
                       }
                       isLoading={setupStore.loadWorkspacesState.isInProgress}

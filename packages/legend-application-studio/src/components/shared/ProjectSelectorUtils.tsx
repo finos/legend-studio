@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-import { ArrowCircleRightIcon, ExclamationCircleIcon } from '@finos/legend-art';
+import {
+  ArrowCircleRightIcon,
+  clsx,
+  ExclamationCircleIcon,
+  getSelectorInputOptionEmbeddedButtonProps,
+} from '@finos/legend-art';
 import type { Project } from '@finos/legend-server-sdlc';
 import type { LegendStudioApplicationStore } from '../../stores/LegendStudioBaseStore.js';
 import { generateViewProjectRoute } from '../../stores/LegendStudioRouter.js';
-import type { ProjectSetupStore } from '../../stores/project-setup/ProjectSetupStore.js';
+import type { ProjectConfigurationStatus } from '../../stores/workspace-setup/ProjectConfigurationStatus.js';
 
 export interface ProjectOption {
   label: string;
@@ -32,7 +37,7 @@ export const buildProjectOption = (project: Project): ProjectOption => ({
 
 export const getProjectOptionLabelFormatter = (
   applicationStore: LegendStudioApplicationStore,
-  setupStore: ProjectSetupStore,
+  projectConfigurationStatus?: ProjectConfigurationStatus | undefined,
 ): ((option: ProjectOption) => React.ReactNode) =>
   function ProjectOptionLabel(option: ProjectOption): React.ReactNode {
     const viewProject = (): void =>
@@ -41,62 +46,77 @@ export const getProjectOptionLabelFormatter = (
           generateViewProjectRoute(option.value.projectId),
         ),
       );
-    const openReview = (): void => {
-      if (setupStore.currentProjectConfigurationReviewUrl) {
+    const configure = (): void => {
+      if (projectConfigurationStatus?.reviewUrl) {
         applicationStore.navigator.visitAddress(
-          setupStore.currentProjectConfigurationReviewUrl,
+          projectConfigurationStatus.reviewUrl,
         );
+      } else {
+        applicationStore.notifyWarning(
+          `Can't find project configuration review: opening the project web page...`,
+        );
+        applicationStore.navigator.visitAddress(option.value.webUrl);
       }
     };
 
     return (
       <div className="project-selector__option">
-        <div className="project-selector__option__label">
+        <div
+          className={clsx('project-selector__option__label', {
+            'project-selector__option__label--selected':
+              projectConfigurationStatus &&
+              option.value.projectId === projectConfigurationStatus.projectId &&
+              projectConfigurationStatus.isConfigured,
+            'project-selector__option__label--not-configured':
+              projectConfigurationStatus &&
+              option.value.projectId === projectConfigurationStatus.projectId &&
+              !projectConfigurationStatus.isConfigured,
+          })}
+        >
           <div className="project-selector__option__label__name">
             {option.label}
           </div>
         </div>
-        {setupStore.currentProject &&
-          setupStore.currentProject.name === option.label &&
-          setupStore.currentProjectConfigurationStatus?.projectConfigured ===
-            false && (
-            <div className="project-selector__option__project-modal-not-configured">
-              <ExclamationCircleIcon
-                title="Your project is not configured correctly. To complete the configuration, please click the visit button and commit it"
-                className="project-selector__option__project-model-not-configured-icon"
-              />
-              <button
-                type="button"
-                className="project-selector__option__visit-btn"
-                tabIndex={-1}
-                onClick={openReview}
-              >
-                <div className="project-selector__option__visit-btn__label">
-                  review
-                </div>
-                <div className="project-selector__option__visit-btn__icon">
-                  <ArrowCircleRightIcon />
-                </div>
-              </button>
-            </div>
-          )}
-        {setupStore.currentProject &&
-          setupStore.currentProject.name === option.label &&
-          setupStore.currentProjectConfigurationStatus?.projectConfigured ===
-            true && (
-            <button
-              type="button" // prevent this toggler being activated on form submission
-              className="project-selector__option__visit-btn"
-              tabIndex={-1}
-              onClick={viewProject}
-            >
-              <div className="project-selector__option__visit-btn__label">
-                view
-              </div>
-              <div className="project-selector__option__visit-btn__icon">
-                <ArrowCircleRightIcon />
-              </div>
-            </button>
+        {projectConfigurationStatus &&
+          option.value.projectId === projectConfigurationStatus.projectId && (
+            <>
+              {projectConfigurationStatus.isConfigured && (
+                <button
+                  type="button" // prevent this toggler being activated on form submission
+                  className="project-selector__option__visit-btn"
+                  tabIndex={-1}
+                  onClick={viewProject}
+                  {...getSelectorInputOptionEmbeddedButtonProps()}
+                >
+                  <div className="project-selector__option__visit-btn__label">
+                    view
+                  </div>
+                  <div className="project-selector__option__visit-btn__icon">
+                    <ArrowCircleRightIcon />
+                  </div>
+                </button>
+              )}
+              {!projectConfigurationStatus.isConfigured && (
+                <button
+                  className="project-selector__option__configure-btn"
+                  type="button" // prevent this toggler being activated on form submission
+                  tabIndex={-1}
+                  onClick={configure}
+                  {...getSelectorInputOptionEmbeddedButtonProps()}
+                  title="The project has not been configured properly. Click to see the review and commit it to get complete the configuration."
+                >
+                  <div className="project-selector__option__configure-btn__warning-icon">
+                    <ExclamationCircleIcon />
+                  </div>
+                  <div className="project-selector__option__configure-btn__label">
+                    configure
+                  </div>
+                  <div className="project-selector__option__configure-btn__icon">
+                    <ArrowCircleRightIcon />
+                  </div>
+                </button>
+              )}
+            </>
           )}
       </div>
     );

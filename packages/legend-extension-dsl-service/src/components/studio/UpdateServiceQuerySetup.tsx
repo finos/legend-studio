@@ -129,7 +129,7 @@ const CreateWorkspaceModal = observer(
       if (
         workspaceName &&
         !workspaceAlreadyExists &&
-        setupStore.currentProjectConfigurationStatus?.projectConfigured
+        setupStore.currentProjectConfigurationStatus?.isConfigured
       ) {
         flowResult(
           setupStore.createWorkspace(
@@ -138,12 +138,6 @@ const CreateWorkspaceModal = observer(
             selectedSnapService.path,
           ),
         ).catch(applicationStore.alertUnhandledError);
-      } else if (
-        !setupStore.currentProjectConfigurationStatus?.projectConfigured
-      ) {
-        applicationStore.notifyIllegalState(
-          `Can't create a workspace as the project is not configured`,
-        );
       }
     };
     const changeWorkspaceName: React.ChangeEventHandler<HTMLInputElement> = (
@@ -229,7 +223,8 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
       !setupStore.currentProject ||
       !setupStore.currentGroupWorkspace ||
       !setupStore.currentWorkspaceService ||
-      setupStore.currentProjectConfigurationStatus?.projectConfigured;
+      !setupStore.currentProjectConfigurationStatus ||
+      !setupStore.currentProjectConfigurationStatus.isConfigured;
     const handleProceed = (): void => {
       if (
         setupStore.currentProject &&
@@ -261,7 +256,7 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
             option.value.path,
           ),
         ).catch(applicationStore.alertUnhandledError);
-        if (!setupStore.currentProjectConfigurationStatus?.projectConfigured) {
+        if (!setupStore.currentProjectConfigurationStatus?.isConfigured) {
           applicationStore.notifyIllegalState(
             `Can't edit current service query as the current project is not configured`,
           );
@@ -305,9 +300,7 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
               setupStore.currentSnapshotService.path,
             ),
           ).catch(applicationStore.alertUnhandledError);
-          if (
-            !setupStore.currentProjectConfigurationStatus?.projectConfigured
-          ) {
+          if (!setupStore.currentProjectConfigurationStatus?.isConfigured) {
             applicationStore.notifyIllegalState(
               `Can't edit service query as the project is not configured`,
             );
@@ -426,6 +419,9 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
                     options={workspaceOptions}
                     disabled={
                       !setupStore.currentProject ||
+                      !setupStore.currentProjectConfigurationStatus ||
+                      !setupStore.currentProjectConfigurationStatus
+                        .isConfigured ||
                       !setupStore.currentSnapshotService ||
                       setupStore.loadWorkspacesState.isInProgress
                     }

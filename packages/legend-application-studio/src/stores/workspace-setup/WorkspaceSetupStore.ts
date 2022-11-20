@@ -34,7 +34,14 @@ import {
   Workspace,
 } from '@finos/legend-server-sdlc';
 import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
-import { ProjectSetupStore } from '../project-setup/ProjectSetupStore.js';
+import {
+  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
+} from '@finos/legend-application';
+import {
+  fetchProjectConfigurationStatus,
+  type ProjectConfigurationStatus,
+} from './ProjectConfigurationStatus.js';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -42,9 +49,15 @@ interface ImportProjectSuccessReport {
   reviewUrl: string;
 }
 
-export class WorkspaceSetupStore extends ProjectSetupStore {
+export class WorkspaceSetupStore {
+  applicationStore: LegendStudioApplicationStore;
+  sdlcServerClient: SDLCServerClient;
   initState = ActionState.create();
 
+  projects: Project[] = [];
+  currentProject?: Project | undefined;
+  currentProjectConfigurationStatus?: ProjectConfigurationStatus | undefined;
+  loadProjectsState = ActionState.create();
   createOrImportProjectState = ActionState.create();
   importProjectSuccessReport?: ImportProjectSuccessReport | undefined;
   showCreateProjectModal = false;
@@ -59,9 +72,10 @@ export class WorkspaceSetupStore extends ProjectSetupStore {
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
   ) {
-    super(applicationStore, sdlcServerClient);
-
     makeObservable(this, {
+      projects: observable,
+      currentProject: observable,
+      currentProjectConfigurationStatus: observable,
       importProjectSuccessReport: observable,
       showCreateProjectModal: observable,
       workspaces: observable,
@@ -74,11 +88,15 @@ export class WorkspaceSetupStore extends ProjectSetupStore {
       resetProject: action,
       resetWorkspace: action,
       initialize: flow,
+      loadProjects: flow,
       changeProject: flow,
       createProject: flow,
       importProject: flow,
       createWorkspace: flow,
     });
+
+    this.applicationStore = applicationStore;
+    this.sdlcServerClient = sdlcServerClient;
   }
 
   setShowCreateProjectModal(val: boolean): void {
@@ -102,7 +120,7 @@ export class WorkspaceSetupStore extends ProjectSetupStore {
     this.applicationStore.navigator.updateCurrentLocation(
       generateSetupRoute(undefined, undefined, undefined),
     );
-    this.resetCurrentProjectConfigurationStatus();
+    this.currentProjectConfigurationStatus = undefined;
   }
 
   resetWorkspace(): void {
@@ -167,6 +185,27 @@ export class WorkspaceSetupStore extends ProjectSetupStore {
     }
   }
 
+  *loadProjects(searchText: string): GeneratorFn<void> {
+    const isValidSearchString =
+      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
+    this.loadProjectsState.inProgress();
+    try {
+      this.projects = (
+        (yield this.sdlcServerClient.getProjects(
+          undefined,
+          isValidSearchString ? searchText : undefined,
+          undefined,
+          DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+        )) as PlainObject<Project>[]
+      ).map((v) => Project.serialization.fromJson(v));
+      this.loadProjectsState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
+      this.loadProjectsState.fail();
+    }
+  }
+
   *changeProject(
     project: Project,
     workspaceInfo?:
@@ -176,12 +215,17 @@ export class WorkspaceSetupStore extends ProjectSetupStore {
         }
       | undefined,
   ): GeneratorFn<void> {
+    this.currentProject = project;
+    this.currentProjectConfigurationStatus = undefined;
     this.loadWorkspacesState.inProgress();
 
     try {
-      this.resetCurrentProjectConfigurationStatus();
-      this.currentProject = project;
-      yield flowResult(this.fetchCurrentProjectConfigurationStatus());
+      this.currentProjectConfigurationStatus =
+        (yield fetchProjectConfigurationStatus(
+          project.projectId,
+          this.applicationStore,
+          this.sdlcServerClient,
+        )) as ProjectConfigurationStatus;
 
       const workspacesInConflictResolutionIds = (
         (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(

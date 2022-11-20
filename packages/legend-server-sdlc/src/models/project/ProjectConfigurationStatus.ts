@@ -17,12 +17,12 @@
 import { SerializationFactory } from '@finos/legend-shared';
 import { createModelSchema, list, primitive } from 'serializr';
 
-export class ProjectConfigurationStatus {
+export class ProjectConfigurationStatusReport {
   projectConfigured!: boolean;
   reviewIds!: string[];
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(ProjectConfigurationStatus, {
+    createModelSchema(ProjectConfigurationStatusReport, {
       projectConfigured: primitive(),
       reviewIds: list(primitive()),
     }),

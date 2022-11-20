@@ -392,7 +392,7 @@ const QueryProductionizerContent = observer(() => {
                       escapeClearsValue={true}
                       formatOptionLabel={getProjectOptionLabelFormatter(
                         applicationStore,
-                        productionizerStore,
+                        productionizerStore.currentProjectConfigurationStatus,
                       )}
                     />
                   </div>
@@ -531,6 +531,8 @@ const QueryProductionizerContent = observer(() => {
                     !productionizerStore.currentQuery ||
                     !productionizerStore.currentQueryInfo ||
                     !productionizerStore.currentProject ||
+                    !productionizerStore.currentProjectConfigurationStatus
+                      ?.isConfigured ||
                     !productionizerStore.workspaceName ||
                     !productionizerStore.servicePath ||
                     !productionizerStore.servicePattern ||

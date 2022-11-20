@@ -38,12 +38,12 @@ import {
   type SDLCServerClient,
   Workspace,
   WorkspaceType,
-  Review,
-  ProjectConfigurationStatus,
 } from '@finos/legend-server-sdlc';
 import {
   type LegendStudioApplicationStore,
+  type ProjectConfigurationStatus,
   LEGEND_STUDIO_APP_EVENT,
+  fetchProjectConfigurationStatus,
 } from '@finos/legend-application-studio';
 import {
   generateServiceQueryUpdaterSetupRoute,
@@ -67,7 +67,6 @@ export class UpdateServiceQuerySetupStore {
   currentProject?: ProjectData | undefined;
   currentSnapshotService?: ServiceInfo | undefined;
   currentProjectConfigurationStatus?: ProjectConfigurationStatus | undefined;
-  currentProjectConfigurationReviewUrl?: string | undefined;
 
   readonly loadWorkspacesState = ActionState.create();
   readonly createWorkspaceState = ActionState.create();
@@ -91,11 +90,7 @@ export class UpdateServiceQuerySetupStore {
       currentWorkspaceService: observable,
       showCreateWorkspaceModal: observable,
       currentProjectConfigurationStatus: observable,
-      currentProjectConfigurationReviewUrl: observable,
       setShowCreateWorkspaceModal: action,
-      setCurrentProjectConfigurationStatus: action,
-      setCurrentProjectConfigurationReviewUrl: action,
-      resetCurrentProjectConfigurationStatus: action,
       resetCurrentService: action,
       resetCurrentGroupWorkspace: action,
       initialize: flow,
@@ -103,8 +98,6 @@ export class UpdateServiceQuerySetupStore {
       changeService: flow,
       changeWorkspace: flow,
       createWorkspace: flow,
-      fetchCurrentProjectConfigurationStatus: flow,
-      fetchCurrentProjectConfigurationReviewUrl: flow,
     });
 
     this.applicationStore = applicationStore;
@@ -124,70 +117,12 @@ export class UpdateServiceQuerySetupStore {
     this.applicationStore.navigator.updateCurrentLocation(
       generateServiceQueryUpdaterSetupRoute(undefined, undefined, undefined),
     );
-    this.resetCurrentProjectConfigurationStatus();
+    this.currentProjectConfigurationStatus = undefined;
   }
 
   resetCurrentGroupWorkspace(): void {
     this.currentGroupWorkspace = undefined;
     this.currentWorkspaceService = undefined;
-  }
-  setCurrentProjectConfigurationStatus(
-    val: ProjectConfigurationStatus | undefined,
-  ): void {
-    this.currentProjectConfigurationStatus = val;
-  }
-
-  setCurrentProjectConfigurationReviewUrl(val: string | undefined): void {
-    this.currentProjectConfigurationReviewUrl = val;
-  }
-
-  resetCurrentProjectConfigurationStatus(): void {
-    this.setCurrentProjectConfigurationReviewUrl(undefined);
-    this.setCurrentProjectConfigurationStatus(undefined);
-  }
-
-  *fetchCurrentProjectConfigurationStatus(): GeneratorFn<void> {
-    if (this.currentProject) {
-      this.setCurrentProjectConfigurationStatus(
-        ProjectConfigurationStatus.serialization.fromJson(
-          (yield this.sdlcServerClient.projectConfigurationStatus(
-            this.currentProject.projectId,
-          )) as PlainObject<ProjectConfigurationStatus>,
-        ),
-      );
-      if (!this.currentProjectConfigurationStatus?.projectConfigured) {
-        this.applicationStore.notifyIllegalState(
-          'Current project is not configured',
-        );
-        this.fetchCurrentProjectConfigurationReviewUrl();
-      }
-    } else {
-      this.resetCurrentProjectConfigurationStatus();
-    }
-  }
-
-  *fetchCurrentProjectConfigurationReviewUrl(): GeneratorFn<void> {
-    if (
-      this.currentProject &&
-      !this.currentProjectConfigurationStatus?.projectConfigured &&
-      this.currentProjectConfigurationStatus?.reviewIds.length
-    ) {
-      const projectConfigurationReviewObj =
-        (yield this.sdlcServerClient.getReview(
-          this.currentProject.projectId,
-          guaranteeNonNullable(
-            this.currentProjectConfigurationStatus.reviewIds[0],
-          ),
-        )) as PlainObject<Review>;
-      const projectConfigurationReview = Review.serialization.fromJson(
-        projectConfigurationReviewObj,
-      );
-      this.setCurrentProjectConfigurationReviewUrl(
-        projectConfigurationReview.webURL,
-      );
-    } else {
-      this.setCurrentProjectConfigurationReviewUrl(undefined);
-    }
   }
 
   *initialize(serviceCoordinates: string | undefined): GeneratorFn<void> {
@@ -246,11 +181,12 @@ export class UpdateServiceQuerySetupStore {
     servicePath: string,
   ): GeneratorFn<void> {
     this.loadWorkspacesState.inProgress();
+    this.currentProjectConfigurationStatus = undefined;
 
     try {
       let project: ProjectData | undefined;
       let serviceEntity: Entity | undefined;
-      this.resetCurrentProjectConfigurationStatus();
+
       try {
         project = ProjectData.serialization.fromJson(
           (yield this.depotServerClient.getProject(
@@ -286,7 +222,13 @@ export class UpdateServiceQuerySetupStore {
       }
 
       this.currentProject = project;
-      yield flowResult(this.fetchCurrentProjectConfigurationStatus());
+      this.currentProjectConfigurationStatus =
+        (yield fetchProjectConfigurationStatus(
+          project.projectId,
+          this.applicationStore,
+          this.sdlcServerClient,
+        )) as ProjectConfigurationStatus;
+
       this.currentSnapshotService = extractServiceInfo({
         groupId: groupId,
         artifactId: artifactId,

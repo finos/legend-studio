@@ -23,12 +23,20 @@
 
   &__label {
     display: flex;
-    width: calc(100% - 6.5rem);
+    width: 100%;
 
     &__name {
       @include flexVCenter;
 
       height: 1.8rem;
+    }
+
+    &--selected {
+      width: calc(100% - 6.5rem);
+    }
+
+    &--not-configured {
+      width: calc(100% - 10.5rem);
     }
   }
 
@@ -69,34 +77,34 @@
     }
   }
 
-  &__project-modal-not-configured {
-    @include flexCenter;
-  }
-
-  &__project-model-not-configured-icon {
-    font-size: 2rem;
-    color: var(--color-red-200);
-    margin-left: 1rem;
-    cursor: pointer;
+  &__configure-btn {
     display: flex;
-    margin-right: 0.5rem;
-  }
-
-  &__review-url-visit-btn {
-    display: flex;
-    width: 6rem;
+    width: 10rem;
     margin-right: 0.5rem;
 
     &__label {
       @include flexCenter;
 
-      width: 4.2rem;
+      width: 6.4rem;
       height: 1.8rem;
-      background: var(--color-yellow-400);
-      border-radius: 0.2rem 0 0 0.2rem;
+      background: var(--color-yellow-100);
       font-size: 1.2rem;
       color: var(--color-dark-grey-200);
       font-weight: 500;
+    }
+
+    &__warning-icon {
+      @include flexCenter;
+
+      height: 1.8rem;
+      width: 1.8rem;
+      background: var(--color-yellow-100);
+      border-radius: 0.2rem 0 0 0.2rem;
+
+      svg {
+        font-size: 1.2rem;
+        color: var(--color-dark-grey-200);
+      }
     }
 
     &__icon {
@@ -104,11 +112,12 @@
 
       height: 1.8rem;
       width: 1.8rem;
-      background: var(--color-yellow-400);
+      background: var(--color-yellow-100);
       border-radius: 0 50% 50% 0;
 
       svg {
         font-size: 1.6rem;
+        // color: var(--color-dark-shade-250);
         color: var(--color-dark-grey-200);
       }
     }
