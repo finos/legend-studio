@@ -25,7 +25,6 @@ import {
   PlusIcon,
   ArrowsAltHIcon,
   useResizeDetector,
-  PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import { MappingEditor } from './mapping-editor/MappingEditor.js';
 import { UMLEditor } from './uml-editor/UMLEditor.js';
@@ -414,15 +413,10 @@ export const EditPanel = observer(() => {
                 key={editorState.uuid}
                 generalEditorState={editorState}
                 nameOfTabType="edit-panel"
-                placeholderContent={
-                  <PanelEntryDropZonePlaceholderContent
-                    label={editorState.headerName}
-                    className="dnd__entry-dropzone__placeholder__content--borderless"
-                  />
-                }
+                placeholderContent={<PanelEntryDropZonePlaceholderContent />}
                 generalOpenedTabStates={editorStore.openedEditorStates}
                 DND_TYPE_NAME="EDITOR_STATE"
-                EditPanelHeaderTabContextMenu={
+                editPanelHeaderTabContextMenu={
                   <EditPanelHeaderTabContextMenu editorState={editorState} />
                 }
                 closeTab={closeTabTest}

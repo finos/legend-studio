@@ -44,7 +44,6 @@ import {
   useDragPreviewLayer,
   BlankPanelContent,
   PanelContent,
-  PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import {
   type ValueSpecification,
@@ -170,10 +169,8 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
       <div className="query-builder-post-filter-tree__node__label__content">
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isDragOver}
+          label="Add to Logical Group"
           className="query-builder__dnd__placeholder"
-          placeholderContent={
-            <PanelEntryDropZonePlaceholderContent label="Add to Logical Group" />
-          }
         >
           <div
             className={clsx('query-builder-post-filter-tree__group-node', {
@@ -239,10 +236,8 @@ export const QueryBuilderColumnBadge = observer(
       <div ref={dropConnector} className="query-builder-column-badge">
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isDragOver}
+          label="Change Property"
           className="query-builder__dnd__placeholder"
-          placeholderContent={
-            <PanelEntryDropZonePlaceholderContent label="Change Property" />
-          }
         >
           <div className="query-builder-column-badge__content">
             {type && (
@@ -368,10 +363,8 @@ const QueryBuilderPostFilterConditionEditor = observer(
       <div className="query-builder-post-filter-tree__node__label__content">
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isDragOver}
+          label="Add New Logical Group"
           className="query-builder__dnd__placeholder"
-          placeholderContent={
-            <PanelEntryDropZonePlaceholderContent label="Add New Logical Group" />
-          }
         >
           <div className="query-builder-post-filter-tree__condition-node">
             <div className="query-builder-post-filter-tree__condition-node__property">
@@ -416,10 +409,8 @@ const QueryBuilderPostFilterConditionEditor = observer(
               >
                 <PanelEntryDropZonePlaceholder
                   showPlaceholder={isFilterValueDragOver}
+                  label="Change Filter Value"
                   className="query-builder__dnd__placeholder"
-                  placeholderContent={
-                    <PanelEntryDropZonePlaceholderContent label="Change Filter Value" />
-                  }
                 >
                   <BasicValueSpecificationEditor
                     valueSpecification={node.condition.value}
@@ -457,10 +448,8 @@ const QueryBuilderPostFilterBlankConditionEditor = observer(
       <div className="query-builder-post-filter-tree__node__label__content">
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isDragOver}
+          label="Create Condition"
           className="query-builder__dnd__placeholder"
-          placeholderContent={
-            <PanelEntryDropZonePlaceholderContent label="Create Condition" />
-          }
         >
           <div className="query-builder-post-filter-tree__blank-node">
             blank

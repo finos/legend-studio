@@ -273,16 +273,11 @@ export const MappingEditor = observer(() => {
                     generalEditorState={tabState}
                     generalOpenedTabStates={mappingEditorState.openedTabStates}
                     closeTab={closeTabTest}
-                    EditPanelHeaderTabContextMenu={
+                    editPanelHeaderTabContextMenu={
                       <MappingEditorHeaderTabContextMenu tabState={tabState} />
                     }
                     placeholderContent={
-                      <>
-                        <PanelEntryDropZonePlaceholderContent
-                          className="dnd__entry-dropzone__placeholder__content--borderless"
-                          label={getTabStateName(tabState)}
-                        />
-                      </>
+                      <PanelEntryDropZonePlaceholderContent />
                     }
                     openTab={openTabTest}
                     closeTabOnMiddleClick={closeTabOnMiddleClickTest}

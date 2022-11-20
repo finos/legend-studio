@@ -52,7 +52,7 @@ export const GeneralTabEditor = observer(
     closeTab: any;
     openTab: any;
     closeTabOnMiddleClick: any;
-    EditPanelHeaderTabContextMenu: React.ReactNode;
+    editPanelHeaderTabContextMenu: React.ReactNode;
     nameOfTabType?: string;
     renderHeaderLabel?: (generalEditorState: EditorState) => React.ReactNode;
   }) => {
@@ -68,7 +68,7 @@ export const GeneralTabEditor = observer(
       openTab,
       closeTabOnMiddleClick,
       renderHeaderLabel,
-      EditPanelHeaderTabContextMenu,
+      editPanelHeaderTabContextMenu,
     } = props;
 
     type GeneralPanelDragSource = {
@@ -168,7 +168,7 @@ export const GeneralTabEditor = observer(
           className={`${nameOfTabType}__header__dnd__placeholder`}
         >
           <ContextMenu
-            content={EditPanelHeaderTabContextMenu}
+            content={editPanelHeaderTabContextMenu}
             className={`${nameOfTabType}__header__tab__content`}
           >
             {

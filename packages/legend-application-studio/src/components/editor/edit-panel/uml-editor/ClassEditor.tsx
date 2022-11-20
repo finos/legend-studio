@@ -46,7 +46,6 @@ import {
   useDragPreviewLayer,
   PanelDropZone,
   Panel,
-  PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { PropertyEditor } from './PropertyEditor.js';
@@ -284,10 +283,7 @@ const PropertyBasicEditor = observer(
 
     return (
       <div ref={ref} className="property-basic-editor__container">
-        <PanelEntryDropZonePlaceholder
-          showPlaceholder={isBeingDragged}
-          placeholderContent={<PanelEntryDropZonePlaceholderContent />}
-        >
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="property-basic-editor">
             {!isIndirectProperty && <PanelEntryDragHandle />}
             {isIndirectProperty && (
@@ -647,7 +643,6 @@ const DerivedPropertyBasicEditor = observer(
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isBeingDragged}
           className="derived-property-editor__dnd__placeholder"
-          placeholderContent={<PanelEntryDropZonePlaceholderContent />}
         >
           <div
             className={clsx('derived-property-editor', {
@@ -925,7 +920,6 @@ const ConstraintEditor = observer(
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isBeingDragged}
           className="constraint-editor__dnd__placeholder"
-          placeholderContent={<PanelEntryDropZonePlaceholderContent />}
         >
           <div
             className={clsx('constraint-editor', {
@@ -1078,10 +1072,7 @@ const SuperTypeEditor = observer(
 
     return (
       <div ref={ref} className="super-type-editor__container">
-        <PanelEntryDropZonePlaceholder
-          showPlaceholder={isBeingDragged}
-          placeholderContent={<PanelEntryDropZonePlaceholderContent />}
-        >
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="super-type-editor">
             <PanelEntryDragHandle />
             <CustomSelectorInput

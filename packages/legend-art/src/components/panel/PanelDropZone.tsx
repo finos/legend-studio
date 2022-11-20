@@ -46,35 +46,21 @@ export const PanelEntryDragHandle: React.FC = () => (
 
 export const PanelEntryDropZonePlaceholder: React.FC<{
   children: React.ReactNode;
+  showPlaceholder: boolean;
+  label?: string;
   className?: string;
-  showPlaceholder?: boolean;
-  placeholderContent?: React.ReactNode;
-  borderless?: boolean;
 }> = (props) => {
-  const { children, placeholderContent, showPlaceholder, className } = props;
+  const { children, label, showPlaceholder, className } = props;
   if (!showPlaceholder) {
     return <>{children}</>;
   }
   return (
     <div className={clsx(['dnd__entry-dropzone__placeholder', className])}>
-      {placeholderContent}
-    </div>
-  );
-};
-
-export const PanelEntryDropZonePlaceholderContent: React.FC<{
-  children?: React.ReactNode;
-  className?: string;
-  label?: string;
-  placeholderContent?: React.ReactNode;
-  borderless?: boolean;
-}> = (props) => {
-  const { className, label } = props;
-  return (
-    <div
-      className={clsx(['dnd__entry-dropzone__placeholder__content', className])}
-    >
-      {label && <div> {label}</div>}
+      <div className="dnd__entry-dropzone__placeholder__content">
+        <div className="dnd__entry-dropzone__placeholder__label">
+          {label ?? ''}
+        </div>
+      </div>
     </div>
   );
 };

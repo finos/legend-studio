@@ -21,7 +21,6 @@ import {
   PanelDropZone,
   InfoCircleIcon,
   PanelEntryDropZonePlaceholder,
-  PanelEntryDropZonePlaceholderContent,
   Modal,
   ModalHeader,
   ModalBody,
@@ -406,10 +405,8 @@ export const QueryBuilderPropertyExpressionBadge = observer(
       >
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isDragOver}
+          label="Change Property"
           className="query-builder__dnd__placeholder"
-          placeholderContent={
-            <PanelEntryDropZonePlaceholderContent label="Change Property" />
-          }
         >
           <div
             className={clsx(

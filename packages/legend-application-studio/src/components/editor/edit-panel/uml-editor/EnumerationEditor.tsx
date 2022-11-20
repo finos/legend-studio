@@ -49,7 +49,6 @@ import {
   PanelDropZone,
   Panel,
   PanelContent,
-  PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import {
@@ -154,10 +153,7 @@ const EnumBasicEditor = observer(
 
     return (
       <div ref={ref} className="enum-basic-editor__container">
-        <PanelEntryDropZonePlaceholder
-          showPlaceholder={isBeingDragged}
-          placeholderContent={<PanelEntryDropZonePlaceholderContent />}
-        >
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="enum-basic-editor">
             <PanelEntryDragHandle />
             <InputWithInlineValidation

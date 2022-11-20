@@ -51,7 +51,7 @@ export enum CORE_DND_TYPE {
   MAPPING_EXPLORER_ASSOCIATION_MAPPING = 'MAPPING_EXPLORER_ASSOCIATION_MAPPING',
 }
 
-// react-dnd uses Redux under the hood and also it champions the use of plain object over class instance
+// NOTE: react-dnd uses Redux under the hood and also it champions the use of plain object over class instance
 // There is some practical reason for that (due to the potential need to serialize the item object), but as for now
 // this way of creating the drag itm is still very convenient for us since we can do direct type comparison rather than having
 // to use element full path, we might need follow the following threads if there are any breaking changes

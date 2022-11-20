@@ -42,7 +42,6 @@ import {
   Modal,
   ModalFooter,
   PanelFormSection,
-  PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -609,9 +608,7 @@ const TDSColumnReferenceEditor = observer(
           >
             <PanelEntryDropZonePlaceholder
               showPlaceholder={isDragOver}
-              placeholderContent={
-                <PanelEntryDropZonePlaceholderContent label="Change Column" />
-              }
+              label="Change Column"
               className="query-builder__dnd__placeholder"
             >
               <div className="query-builder__olap__tds__column-badge__content">
@@ -935,9 +932,7 @@ const QueryBuilderOlapGroupByColumnEditor = observer(
               >
                 <PanelEntryDropZonePlaceholder
                   showPlaceholder={isDragOver}
-                  placeholderContent={
-                    <PanelEntryDropZonePlaceholderContent label="Add" />
-                  }
+                  label="Add"
                   className="query-builder__dnd__placeholder"
                 >
                   <div

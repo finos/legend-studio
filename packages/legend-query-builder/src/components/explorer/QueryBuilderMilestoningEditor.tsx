@@ -37,7 +37,6 @@ import {
   ModalFooter,
   ModalHeader,
   PanelEntryDropZonePlaceholder,
-  PanelEntryDropZonePlaceholderContent,
   PanelFormSection,
 } from '@finos/legend-art';
 import { generateDefaultValueForPrimitiveType } from '../../stores/QueryBuilderValueSpecificationHelper.js';
@@ -120,10 +119,8 @@ const MilestoningParameterEditor = observer(
       <div ref={dropConnector} className="query-builder__variable-editor">
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isMilestoningParameterValueDragOver}
+          label="Change Milestoning Parameter Value"
           className="query-builder__dnd__placeholder"
-          placeholderContent={
-            <PanelEntryDropZonePlaceholderContent label="Change Milestoning Parameter Value" />
-          }
         >
           <BasicValueSpecificationEditor
             valueSpecification={milestoningParameter}

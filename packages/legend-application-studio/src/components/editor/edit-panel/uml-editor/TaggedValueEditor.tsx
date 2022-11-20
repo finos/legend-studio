@@ -28,7 +28,6 @@ import {
   PanelEntryDropZonePlaceholder,
   DragPreviewLayer,
   useDragPreviewLayer,
-  PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -185,7 +184,6 @@ export const TaggedValueEditor = observer(
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isBeingDragged}
           className="tagged-value-editor__dnd__placeholder"
-          placeholderContent={<PanelEntryDropZonePlaceholderContent />}
         >
           <div className="tagged-value-editor">
             <PanelEntryDragHandle />
