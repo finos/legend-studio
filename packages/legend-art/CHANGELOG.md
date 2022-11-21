@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 5.0.8
+
+### Patch Changes
+
+- [#1714](https://github.com/finos/legend-studio/pull/1714) [`59fc8c4aa`](https://github.com/finos/legend-studio/commit/59fc8c4aae608dcc7b64be59762ab248dd4666c8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fixed a regression introduced in #1705 by enabling edit of the selected tag.
+
 ## 5.0.7
 
 ## 5.0.6

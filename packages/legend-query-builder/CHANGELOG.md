@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 0.6.3
+
+### Patch Changes
+
+- [#1708](https://github.com/finos/legend-studio/pull/1708) [`56e287e57`](https://github.com/finos/legend-studio/commit/56e287e57bc98c37c813c5d924c01955cec38d68) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support DnD from `fetch structure` to `fitler` panel to create a new logical group.
+
 ## 0.6.2
 
 ### Patch Changes
