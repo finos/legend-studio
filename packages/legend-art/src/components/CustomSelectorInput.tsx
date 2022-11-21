@@ -31,6 +31,7 @@ import {
   createFilter as _createFilter,
 } from './CJS__ReactSelect.cjs';
 import type { PlainObject } from '@finos/legend-shared';
+import { components as baseComponents, type InputProps } from 'react-select';
 
 export type { InputActionMeta };
 export const createFilter = _createFilter;
@@ -154,6 +155,12 @@ const ClearIndicator: React.FC<{
   );
 };
 
+// Enable edit of the selected tag
+// See https://github.com/JedWatson/react-select/issues/1558
+const CustomInput: React.FC<InputProps> = (props) => (
+  <baseComponents.Input {...props} isHidden={false} />
+);
+
 export interface SelectOption {
   label: string;
   value?: string;
@@ -224,6 +231,7 @@ export const CustomSelectorInput = forwardRef<
         DropdownIndicator,
         LoadingIndicator,
         MenuList: CustomMenuList,
+        Input: CustomInput,
         ...components,
       }}
       {...{ ...innerProps, darkMode, noMatchMessage }}
