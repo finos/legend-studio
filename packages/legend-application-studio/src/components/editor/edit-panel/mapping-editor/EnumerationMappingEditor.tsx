@@ -344,7 +344,7 @@ export const EnumerationMappingEditor = observer(
     const { enumerationMapping, isReadOnly } = props;
     const editorStore = useEditorStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const enumeration = enumerationMapping.enumeration;
     // ID
     const showId =

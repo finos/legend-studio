@@ -25,7 +25,8 @@ import { Class, Enumeration, Association, Profile } from '@finos/legend-graph';
 
 export const UMLEditor = observer(() => {
   const editorStore = useEditorStore();
-  const umlEditorState = editorStore.getCurrentEditorState(UMLEditorState);
+  const umlEditorState =
+    editorStore.tabManagerState.getCurrentEditorState(UMLEditorState);
   const currentElement = umlEditorState.element;
 
   return (

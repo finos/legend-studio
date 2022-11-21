@@ -477,6 +477,10 @@ export class ModelImporterState extends EditorState {
     return 'Model Importer';
   }
 
+  match(tab: EditorState): boolean {
+    return tab instanceof ModelImporterEditorState;
+  }
+
   setReplaceFlag(val: boolean): void {
     this.replace = val;
   }

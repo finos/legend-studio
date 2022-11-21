@@ -28,7 +28,7 @@ import type {
   Type,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-query-builder';
-import type { TabState } from '@finos/legend-art';
+import type { TabState } from '@finos/legend-application';
 
 export class MappingElementState implements TabState {
   readonly uuid = uuid();

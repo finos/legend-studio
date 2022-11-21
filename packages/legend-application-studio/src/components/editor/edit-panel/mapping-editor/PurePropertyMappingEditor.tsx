@@ -119,7 +119,7 @@ const EnumerationPropertyMappingEditor = observer(
     } = props;
     const editorStore = useEditorStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const propertyMapping = propertyMappingState.propertyMapping;
     const enumeration = getRawGenericType(
       propertyMapping.property.value.genericType.value,
@@ -241,7 +241,7 @@ const ClassPropertyMappingEditor = observer(
     const { propertyMappingState, drop, dragItem, transformProps } = props;
     const editorStore = useEditorStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const propertyMapping = propertyMappingState.propertyMapping;
     const isDefaultId =
       propertyMapping.targetSetImplementation?.value.id.isDefault;

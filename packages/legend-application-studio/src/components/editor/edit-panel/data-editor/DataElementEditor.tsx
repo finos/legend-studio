@@ -68,7 +68,7 @@ import {
   externalFormatData_setContentType,
   externalFormatData_setData,
 } from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
-import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
+import { getEditorLanguageForFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import type { ExternalFormatDataState } from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import { renderEmbeddedDataEditor } from './EmbeddedDataEditor.js';
 import {
@@ -102,7 +102,7 @@ export const ExternalFormatDataEditor = observer(
         externalFormatDataState.embeddedData,
         val,
       );
-    const language = getEditorLanguageFromFormat(
+    const language = getEditorLanguageForFormat(
       editorStore.graphState.graphGenerationState.externalFormatState.getFormatTypeForContentType(
         externalFormatDataState.embeddedData.contentType,
       ),
@@ -185,7 +185,7 @@ export const EmbeddedDataEditor = observer(
 export const DataElementEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const editorState = editorStore.getCurrentEditorState(
+  const editorState = editorStore.tabManagerState.getCurrentEditorState(
     PackageableDataEditorState,
   );
   const dataElement = editorState.data;

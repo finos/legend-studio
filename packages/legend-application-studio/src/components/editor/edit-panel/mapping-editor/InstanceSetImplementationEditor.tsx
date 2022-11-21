@@ -99,7 +99,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const instanceSetImplementationState =
       mappingEditorState.currentTabState instanceof MappingElementState
         ? mappingEditorState.currentTabState
@@ -437,7 +437,7 @@ export const InstanceSetImplementationEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const [sortByRequired, setSortByRequired] = useState(true);
     const instanceSetImplementationState = guaranteeNonNullable(
       mappingEditorState.currentTabState instanceof

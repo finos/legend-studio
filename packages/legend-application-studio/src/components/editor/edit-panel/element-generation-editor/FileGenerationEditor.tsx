@@ -21,7 +21,7 @@ import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import { useDrop } from 'react-dnd';
 import {
   getTextContent,
-  getEditorLanguageFromFormat,
+  getEditorLanguageForFormat,
 } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import { FileGenerationEditorState } from '../../../../stores/editor-state/element-editor-state/FileGenerationEditorState.js';
 import {
@@ -323,7 +323,7 @@ export const GenerationResultViewer = observer(
                 <TextInputEditor
                   inputValue={getTextContent(fileNode.content, fileNode.format)}
                   isReadOnly={true}
-                  language={getEditorLanguageFromFormat(fileNode.format)}
+                  language={getEditorLanguageForFormat(fileNode.format)}
                 />
               )}
               {!(fileNode instanceof GenerationFile) && (
@@ -1438,9 +1438,10 @@ export const FileGenerationConfigurationEditor = observer(
 
 export const FileGenerationEditor = observer(() => {
   const editorStore = useEditorStore();
-  const fileGenerationEditorState = editorStore.getCurrentEditorState(
-    FileGenerationEditorState,
-  );
+  const fileGenerationEditorState =
+    editorStore.tabManagerState.getCurrentEditorState(
+      FileGenerationEditorState,
+    );
   const fileGeneration = fileGenerationEditorState.fileGeneration;
   const isReadOnly = fileGenerationEditorState.isReadOnly;
 

@@ -250,7 +250,8 @@ const StereotypeBasicEditor = observer(
 export const ProfileEditor = observer((props: { profile: Profile }) => {
   const { profile } = props;
   const editorStore = useEditorStore();
-  const editorState = editorStore.getCurrentEditorState(UMLEditorState);
+  const editorState =
+    editorStore.tabManagerState.getCurrentEditorState(UMLEditorState);
   const isReadOnly = editorState.isReadOnly;
   // Tab
   const selectedTab = editorState.selectedTab;

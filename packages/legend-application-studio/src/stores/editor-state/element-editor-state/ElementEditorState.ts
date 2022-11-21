@@ -69,15 +69,21 @@ export abstract class ElementEditorState extends EditorState {
     return this.element.name;
   }
 
+  match(tab: EditorState): boolean {
+    return tab instanceof ElementEditorState && tab.element === this.element;
+  }
+
   setTextContent(text: string): void {
     this.textContent = text;
   }
+
   setEditMode(mode: ELEMENT_NATIVE_VIEW_MODE): void {
     this.editMode = mode;
     // changing edit mode will clear any existing generation view mode
     // as edit mode always takes precedence
     this.setGenerationViewMode(undefined);
   }
+
   setGenerationViewMode(mode: string | undefined): void {
     this.generationViewMode = mode;
   }
@@ -147,6 +153,16 @@ export abstract class ElementEditorState extends EditorState {
     return;
   }
 
+  /**
+   * Clone the element editor state to be replaced as processing graph
+   *
+   * FIXME: here we clone instead of reusing the old state to avoid memory leak
+   * however, this is still not ideal, because this method can still be written
+   * to refer to older state. Ideally, we should produce a source-information
+   * like JSON object to indicate the current location of the editor tab instead
+   *
+   * @risk memory-leak
+   */
   abstract reprocess(
     newElement: PackageableElement,
     editorStore: EditorStore,

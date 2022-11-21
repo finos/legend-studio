@@ -42,7 +42,7 @@ export const WorkspaceUpdateConflictResolver = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const sdlcState = editorStore.sdlcState;
-  const currentTabState = editorStore.editorTabManagerState.currentTabState;
+  const currentTabState = editorStore.tabManagerState.currentTab;
   const conflictResolutionState = editorStore.conflictResolutionState;
   // Actions
   const isRunningTask =

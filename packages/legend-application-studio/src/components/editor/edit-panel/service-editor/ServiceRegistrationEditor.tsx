@@ -34,7 +34,8 @@ import { useApplicationStore } from '@finos/legend-application';
 export const ServiceRegistrationEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
+  const serviceState =
+    editorStore.tabManagerState.getCurrentEditorState(ServiceEditorState);
   const registrationState = serviceState.registrationState;
 
   // env & execution server

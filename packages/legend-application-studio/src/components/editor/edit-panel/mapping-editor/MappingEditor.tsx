@@ -33,10 +33,6 @@ import {
   PURE_AssociationIcon,
   Panel,
   useResizeDetector,
-  GeneralTabEditor,
-  type TabState,
-  horizontalScroll,
-  GeneralTabDropDown,
 } from '@finos/legend-art';
 import { ClassMappingEditor } from './ClassMappingEditor.js';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor.js';
@@ -65,7 +61,13 @@ import {
   type SetImplementation,
   type EnumerationMapping,
 } from '@finos/legend-graph';
-import { useApplicationNavigationContext } from '@finos/legend-application';
+import {
+  GeneralTabDropDown,
+  GeneralTabEditor,
+  horizontalToVerticalScroll,
+  type TabState,
+  useApplicationNavigationContext,
+} from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const getMappingElementTargetIcon = (
@@ -108,7 +110,7 @@ export const MappingEditorSplashScreen: React.FC = () => {
 export const MappingEditor = observer(() => {
   const editorStore = useEditorStore();
   const mappingEditorState =
-    editorStore.getCurrentEditorState(MappingEditorState);
+    editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
   const isReadOnly = mappingEditorState.isReadOnly;
 
   const currentTabState = mappingEditorState.currentTabState;
@@ -256,7 +258,7 @@ export const MappingEditor = observer(() => {
               <div
                 data-testid={LEGEND_STUDIO_TEST_ID.EDITOR__TABS__HEADER}
                 className="mapping-editor__header__tabs"
-                onWheel={horizontalScroll}
+                onWheel={horizontalToVerticalScroll}
               >
                 {mappingEditorState.openedTabStates.map((tabState) => (
                   <GeneralTabEditor
@@ -270,7 +272,6 @@ export const MappingEditor = observer(() => {
                   />
                 ))}
               </div>
-
               <GeneralTabDropDown
                 managerTabState={mappingEditorState}
                 lightMode={true}

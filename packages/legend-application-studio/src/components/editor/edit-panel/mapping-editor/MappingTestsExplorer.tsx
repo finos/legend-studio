@@ -221,7 +221,7 @@ export const MappingTestExplorer = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const openTest = applicationStore.guardUnhandledError(() =>
       flowResult(mappingEditorState.openTest(testState.test)),
     );
@@ -312,7 +312,7 @@ export const MappingTestsExplorer = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const runAllTests = applicationStore.guardUnhandledError(() =>
       flowResult(mappingEditorState.runTests()),
     );

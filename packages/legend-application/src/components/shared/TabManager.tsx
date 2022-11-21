@@ -14,38 +14,35 @@
  * limitations under the License.
  */
 
+import {
+  ChevronDownIcon,
+  clsx,
+  ContextMenu,
+  DropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  PanelEntryDropZonePlaceholder,
+  TimesIcon,
+  useDragPreviewLayer,
+} from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useRef, useCallback, forwardRef } from 'react';
 import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
-import { clsx } from '../../utils/ComponentUtils.js';
-import { ChevronDownIcon, TimesIcon } from '../CJS__Icon.cjs';
-import { ContextMenu } from '../menu/ContextMenu.js';
-import { DropdownMenu } from '../menu/DropdownMenu.js';
-import { MenuContent, MenuContentItem } from '../menu/MenuContent.js';
-import {
-  useDragPreviewLayer,
-  PanelEntryDropZonePlaceholder,
-} from '../panel/PanelDropZone.js';
+import type {
+  TabManagerState,
+  TabState,
+} from '../../stores/shared/TabManagerState.js';
 
 type TabStatePanelDragSource = {
   panel: TabState;
 };
 
-export interface TabState {
-  uuid?: string | undefined;
-  get headerName(): string;
-}
-
-export abstract class TabManagerState {
-  abstract currentTabState?: TabState | undefined;
-  abstract openedTabStates: TabState[];
-
-  abstract swapStates(tab1: TabState, tab2: TabState): void;
-  abstract openState(tab: TabState): void;
-  abstract closeState(tab: TabState): void;
-  abstract closeAllStates(): void;
-  abstract closeAllOtherStates(tabState: TabState): void;
-}
+export const horizontalToVerticalScroll: React.WheelEventHandler = (event) => {
+  if (event.deltaY === 0) {
+    return;
+  }
+  event.currentTarget.scrollBy(event.deltaY, 0);
+};
 
 const GeneralPanelHeaderTabContextMenu = observer(
   forwardRef<
@@ -57,10 +54,9 @@ const GeneralPanelHeaderTabContextMenu = observer(
     }
   >(function GeneralPanelHeaderTabContextMenu(props, ref) {
     const { tabState, managerTabState, headerName } = props;
-    const close = (): void => managerTabState.closeState(tabState);
-    const closeOthers = (): void =>
-      managerTabState.closeAllOtherStates(tabState);
-    const closeAll = (): void => managerTabState.closeAllStates();
+    const close = (): void => managerTabState.closeTab(tabState);
+    const closeOthers = (): void => managerTabState.closeAllOtherTabs(tabState);
+    const closeAll = (): void => managerTabState.closeAllTabs();
 
     return (
       <div ref={ref} className={`${headerName}__header__tab__context-menu`}>
@@ -72,7 +68,7 @@ const GeneralPanelHeaderTabContextMenu = observer(
         </button>
         <button
           className={`${headerName}__header__tab__context-menu__item`}
-          disabled={managerTabState.openedTabStates.length < 2}
+          disabled={managerTabState.tabs.length < 2}
           onClick={closeOthers}
         >
           Close Others
@@ -116,10 +112,10 @@ export const GeneralTabEditor: React.FC<{
       const draggingTab = item.panel;
       const hoveredTab = tabState;
 
-      const dragIndex = managerTabState.openedTabStates.findIndex(
+      const dragIndex = managerTabState.tabs.findIndex(
         (e) => e === draggingTab,
       );
-      const hoverIndex = managerTabState.openedTabStates.findIndex(
+      const hoverIndex = managerTabState.tabs.findIndex(
         (e) => e === hoveredTab,
       );
 
@@ -136,7 +132,7 @@ export const GeneralTabEditor: React.FC<{
         return;
       }
 
-      managerTabState.swapStates(draggingTab, hoveredTab);
+      managerTabState.swapTabs(draggingTab, hoveredTab);
     },
     [managerTabState, tabState],
   );
@@ -145,7 +141,7 @@ export const GeneralTabEditor: React.FC<{
     (currTab: TabState): React.MouseEventHandler =>
     (event): void => {
       if (event.nativeEvent.button === 1) {
-        managerTabState.closeState(currTab);
+        managerTabState.closeTab(currTab);
       }
     };
 
@@ -182,20 +178,20 @@ export const GeneralTabEditor: React.FC<{
     );
   dragConnector(dropConnector(ref));
   useDragPreviewLayer(dragPreviewConnector);
+
   return (
     <div
       ref={ref}
       key={tabState.uuid}
       className={clsx(`${headerName}__header__tab`, {
         [`${headerName}__header__tab--active`]:
-          tabState === managerTabState.currentTabState,
+          tabState === managerTabState.currentTab,
       })}
       onMouseUp={closeTabOnMiddleClick(tabState)}
     >
       <PanelEntryDropZonePlaceholder
         showPlaceholder={isBeingDragged}
         label={getTabStateHeaderName ?? tabState.headerName}
-        // className="dnd__entry-dropzone__placeholder__content--borderless"
         className={`${headerName}__header__dnd__placeholder`}
       >
         <ContextMenu
@@ -212,7 +208,7 @@ export const GeneralTabEditor: React.FC<{
             <button
               className={`${headerName}__header__tab__label`}
               tabIndex={-1}
-              onClick={() => managerTabState.openState(tabState)}
+              onClick={() => managerTabState.openTab(tabState)}
               title={headerTitle ?? tabState.headerName}
             >
               {renderHeaderButtonLabel(tabState)}
@@ -220,7 +216,7 @@ export const GeneralTabEditor: React.FC<{
           )}
           <button
             className={`${headerName}__header__tab__close-btn`}
-            onClick={() => managerTabState.closeState(tabState)}
+            onClick={() => managerTabState.closeTab(tabState)}
             tabIndex={-1}
             title={'Close'}
           >
@@ -255,7 +251,7 @@ export const GeneralTabDropDown: React.FC<{
           >
             Open Tabs
           </div>
-          {managerTabState.openedTabStates.map((tabState) => (
+          {managerTabState.tabs.map((tabState) => (
             <MenuContentItem
               className={clsx(
                 'general__tab__dropdown__item',
@@ -265,7 +261,7 @@ export const GeneralTabDropDown: React.FC<{
               )}
               key={tabState.uuid}
               lightMode={lightMode ?? false}
-              onClick={() => managerTabState.openState(tabState)}
+              onClick={() => managerTabState.openTab(tabState)}
             >
               <div className="general__tab__dropdown__tab">
                 {tabState.headerName}
@@ -280,7 +276,7 @@ export const GeneralTabDropDown: React.FC<{
                 )}
                 onClick={(event) => {
                   event.stopPropagation();
-                  managerTabState.closeState(tabState);
+                  managerTabState.closeTab(tabState);
                 }}
                 tabIndex={-1}
                 title={'Close'}

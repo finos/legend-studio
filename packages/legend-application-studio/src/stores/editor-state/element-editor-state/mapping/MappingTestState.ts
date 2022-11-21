@@ -78,7 +78,11 @@ import {
   DEPRECATED__validate_MappingTest,
   ModelStore,
 } from '@finos/legend-graph';
-import { ExecutionPlanState, TAB_SIZE } from '@finos/legend-application';
+import {
+  ExecutionPlanState,
+  type TabState,
+  TAB_SIZE,
+} from '@finos/legend-application';
 import { flatData_setData } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
@@ -94,7 +98,6 @@ import {
   relationalInputData_setData,
 } from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
-import type { TabState } from '@finos/legend-art';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet

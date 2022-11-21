@@ -39,12 +39,9 @@ const WorkspaceReviewPanelHeaderTabContextMenu = observer(
   >(function ReviewPanelHeaderTabContextMenu(props, ref) {
     const { editorState } = props;
     const editorStore = useEditorStore();
-    const close = (): void =>
-      editorStore.editorTabManagerState.closeState(editorState);
-    const closeOthers = (): void =>
-      editorStore.editorTabManagerState.closeAllStates();
-    const closeAll = (): void =>
-      editorStore.editorTabManagerState.closeAllStates();
+    const close = (): void => editorStore.tabManagerState.closeTab(editorState);
+    const closeOthers = (): void => editorStore.tabManagerState.closeAllTabs();
+    const closeAll = (): void => editorStore.tabManagerState.closeAllTabs();
 
     return (
       <div
@@ -59,9 +56,7 @@ const WorkspaceReviewPanelHeaderTabContextMenu = observer(
         </button>
         <button
           className="workspace-review-panel__header__tab__context-menu__item"
-          disabled={
-            editorStore.editorTabManagerState.openedTabStates.length < 2
-          }
+          disabled={editorStore.tabManagerState.tabs.length < 2}
           onClick={closeOthers}
         >
           Close Others
@@ -80,29 +75,27 @@ const WorkspaceReviewPanelHeaderTabContextMenu = observer(
 export const WorkspaceReviewPanel = observer(() => {
   const editorStore = useEditorStore();
   const currentTabState =
-    editorStore.editorTabManagerState.currentTabState instanceof
-    EntityDiffViewState
-      ? editorStore.editorTabManagerState.currentTabState
+    editorStore.tabManagerState.currentTab instanceof EntityDiffViewState
+      ? editorStore.tabManagerState.currentTab
       : undefined;
-  const openedTabStates =
-    editorStore.editorTabManagerState.openedTabStates.filter(
-      filterByType(EntityDiffViewState),
-    );
+  const openedTabStates = editorStore.tabManagerState.tabs.filter(
+    filterByType(EntityDiffViewState),
+  );
   const closeTab =
     (diffState: EditorState): React.MouseEventHandler =>
     (event): void =>
-      editorStore.editorTabManagerState.closeState(diffState);
+      editorStore.tabManagerState.closeTab(diffState);
   const closeTabOnMiddleClick =
     (editorState: EditorState): React.MouseEventHandler =>
     (event): void => {
       if (event.nativeEvent.button === 1) {
-        editorStore.editorTabManagerState.closeState(editorState);
+        editorStore.tabManagerState.closeTab(editorState);
       }
     };
   const switchTab =
     (editorState: EditorState): (() => void) =>
     (): void =>
-      editorStore.editorTabManagerState.openState(editorState);
+      editorStore.tabManagerState.openTab(editorState);
   const switchViewMode =
     (mode: DIFF_VIEW_MODE): (() => void) =>
     (): void =>

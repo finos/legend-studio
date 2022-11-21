@@ -16,18 +16,25 @@
 
 import type { EditorStore } from '../EditorStore.js';
 import { uuid } from '@finos/legend-shared';
-import type { TabState } from '@finos/legend-art';
+import type { TabState } from '@finos/legend-application';
 
 export abstract class EditorState implements TabState {
   /**
    * NOTE: used to detect when an element editor state changes so we can force a remount of the editor component
    */
   readonly uuid = uuid();
-  editorStore: EditorStore;
+
+  readonly editorStore: EditorStore;
 
   constructor(editorStore: EditorStore) {
     this.editorStore = editorStore;
   }
 
   abstract get headerName(): string;
+
+  /**
+   * Check if the specified tab this tab or not.
+   * This is often used when checking if a tab is already opened.
+   */
+  abstract match(tab: EditorState): boolean;
 }

@@ -47,7 +47,7 @@ export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useLegendStudioApplicationStore();
   const sdlcState = editorStore.sdlcState;
-  const currentTabState = editorStore.editorTabManagerState.currentTabState;
+  const currentTabState = editorStore.tabManagerState.currentTab;
   const workspaceUpdaterState = editorStore.workspaceUpdaterState;
   // Actions
   const updateWorkspace = (): void => {

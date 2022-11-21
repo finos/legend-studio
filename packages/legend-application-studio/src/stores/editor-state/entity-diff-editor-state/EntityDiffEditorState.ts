@@ -43,6 +43,6 @@ export const getPrettyLabelForRevision = (
   }
 };
 
-export abstract class EntityDiffEditorState extends EditorState {
+export abstract class EntityDiffViewerState extends EditorState {
   abstract refresh(): void;
 }

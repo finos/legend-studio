@@ -344,14 +344,14 @@ export const createNullishValue = (graph: PureModel): CollectionInstanceValue =>
     ),
   );
 
-export const isValueExpressionReferencesinValue = (
+export const isValueExpressionReferencedInValue = (
   variable: VariableExpression,
   value: ValueSpecification,
 ): boolean => {
   if (value instanceof VariableExpression) {
     return value.name === variable.name;
   } else if (value instanceof INTERNAL__PropagatedValue) {
-    return isValueExpressionReferencesinValue(variable, value.getValue());
+    return isValueExpressionReferencedInValue(variable, value.getValue());
   }
   return false;
 };

@@ -57,7 +57,7 @@ import {
 } from '../../../QueryBuilderConfig.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
 import { LambdaEditorState } from '../../../shared/LambdaEditorState.js';
-import { isValueExpressionReferencesinValue } from '../../../QueryBuilderValueSpecificationHelper.js';
+import { isValueExpressionReferencedInValue } from '../../../QueryBuilderValueSpecificationHelper.js';
 
 export const QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE = 'PROJECTION_COLUMN';
 
@@ -130,7 +130,7 @@ export class QueryBuilderSimpleProjectionColumnState
       this.propertyExpressionState.derivedPropertyExpressionStates.find(
         (derived) =>
           derived.parameterValues.find((param) =>
-            isValueExpressionReferencesinValue(variable, param),
+            isValueExpressionReferencedInValue(variable, param),
           ),
       ),
     );

@@ -26,11 +26,12 @@ import {
 import type { EditorStore } from '../../EditorStore.js';
 import {
   type SPECIAL_REVISION_ALIAS,
-  EntityDiffEditorState,
+  EntityDiffViewerState,
 } from './EntityDiffEditorState.js';
 import { type Entity, extractEntityNameFromPath } from '@finos/legend-storage';
 import { LEGEND_STUDIO_APP_EVENT } from '../../LegendStudioAppEvent.js';
 import type { PackageableElement } from '@finos/legend-graph';
+import type { EditorState } from '../EditorState.js';
 
 /**
  * NOTE: when we support comparison between entities, we should create a new editor state
@@ -44,7 +45,7 @@ export enum DIFF_VIEW_MODE {
   GRAMMAR = 'Grammar',
 }
 
-export class EntityDiffViewState extends EntityDiffEditorState {
+export class EntityDiffViewState extends EntityDiffViewerState {
   diffMode = DIFF_VIEW_MODE.GRAMMAR;
   fromEntityPath?: string | undefined;
   toEntityPath?: string | undefined;
@@ -133,14 +134,17 @@ export class EntityDiffViewState extends EntityDiffEditorState {
       'Neither from nor to entity paths can be missing',
     );
   }
+
   get element(): PackageableElement | undefined {
     return this.editorStore.graphManagerState.graph.getNullableElement(
       this.effectiveEntityPath,
     );
   }
+
   get headerName(): string {
     return extractEntityNameFromPath(this.effectiveEntityPath);
   }
+
   get headerTooltip(): string {
     return this.effectiveEntityPath;
   }
@@ -161,15 +165,27 @@ export class EntityDiffViewState extends EntityDiffEditorState {
     return `Entity '${this.toEntityPath}' is modified`;
   }
 
-  setDiffMode = (diffMode: DIFF_VIEW_MODE): void => {
+  setDiffMode(diffMode: DIFF_VIEW_MODE): void {
     this.diffMode = diffMode;
-  };
-  private setToGrammarText = (text: string): void => {
+  }
+
+  private setToGrammarText(text: string): void {
     this.toGrammarText = text;
-  };
-  private setFromGrammarText = (text: string): void => {
+  }
+
+  private setFromGrammarText(text: string): void {
     this.fromGrammarText = text;
-  };
+  }
+
+  match(tab: EditorState): boolean {
+    return (
+      tab instanceof EntityDiffViewState &&
+      tab.fromEntityPath === this.fromEntityPath &&
+      tab.toEntityPath === this.toEntityPath &&
+      tab.fromRevision === this.fromRevision &&
+      tab.toRevision === this.toRevision
+    );
+  }
 
   refresh(): void {
     this.fromEntity = this.fromEntityGetter

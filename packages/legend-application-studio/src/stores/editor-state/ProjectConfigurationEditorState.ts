@@ -186,6 +186,10 @@ export class ProjectConfigurationEditorState extends EditorState {
     return 'config';
   }
 
+  match(tab: EditorState): boolean {
+    return tab instanceof ProjectConfigurationEditorState;
+  }
+
   get currentProjectConfiguration(): ProjectConfiguration {
     return guaranteeNonNullable(
       this.projectConfiguration,
@@ -310,7 +314,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         ),
       );
       yield flowResult(this.editorStore.initMode());
-      this.editorStore.openSingletonEditorState(
+      this.editorStore.tabManagerState.openTab(
         this.editorStore.projectConfigurationEditorState,
       );
     } catch (error) {

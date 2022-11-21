@@ -201,7 +201,7 @@ const ParameterBasicEditor = observer(
     };
     const openElement = (): void => {
       if (!(paramType instanceof PrimitiveType)) {
-        editorStore.openElement(
+        editorStore.tabManagerState.openElementEditor(
           paramType instanceof Unit ? paramType.measure : paramType,
         );
       }
@@ -456,7 +456,7 @@ const ReturnTypeEditor = observer(
 
     const openElement = (): void => {
       if (!(returnType.value instanceof PrimitiveType)) {
-        editorStore.openElement(
+        editorStore.tabManagerState.openElementEditor(
           returnType.value instanceof Unit
             ? returnType.value.measure
             : returnType.value,
@@ -748,7 +748,7 @@ export const FunctionEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const functionEditorState =
-    editorStore.getCurrentEditorState(FunctionEditorState);
+    editorStore.tabManagerState.getCurrentEditorState(FunctionEditorState);
   const isReadOnly = functionEditorState.isReadOnly;
   const functionElement = functionEditorState.functionElement;
   const selectedTab = functionEditorState.selectedTab;

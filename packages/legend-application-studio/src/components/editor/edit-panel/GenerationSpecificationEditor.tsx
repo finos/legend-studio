@@ -99,7 +99,7 @@ const ModelGenerationItem = observer(
     const deleteNode = (): void =>
       specState.deleteGenerationTreeNode(generationTreeNode);
     const visitModelGeneration = (): void =>
-      editorStore.openElement(modelGeneration);
+      editorStore.tabManagerState.openElementEditor(modelGeneration);
     // generation id
     const isUnique =
       specState.spec.generationNodes.filter(
@@ -367,7 +367,8 @@ const FileGenerationItem = observer(
         generationSpecificationEditorState.spec,
         fileGeneraitonRef,
       );
-    const visitFileGen = (): void => editorStore.openElement(fileGeneration);
+    const visitFileGen = (): void =>
+      editorStore.tabManagerState.openElementEditor(fileGeneration);
     return (
       <div className="generation-spec-file-generation-editor__item">
         <div className="btn--sm generation-spec-file-generation-editor__item__label">
@@ -507,9 +508,10 @@ const FileGenerationSpecifications = observer(
 export const GenerationSpecificationEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const generationSpecificationState = editorStore.getCurrentEditorState(
-    GenerationSpecificationEditorState,
-  );
+  const generationSpecificationState =
+    editorStore.tabManagerState.getCurrentEditorState(
+      GenerationSpecificationEditorState,
+    );
   const modelGenerationState = editorStore.graphState.graphGenerationState;
   const generationSpec = generationSpecificationState.spec;
   const generate = applicationStore.guardUnhandledError(() =>

@@ -1428,7 +1428,7 @@ const DiagramEditorHeader = observer(
 export const DiagramEditor = observer(() => {
   const editorStore = useEditorStore();
   const diagramEditorState =
-    editorStore.getCurrentEditorState(DiagramEditorState);
+    editorStore.tabManagerState.getCurrentEditorState(DiagramEditorState);
   const diagramCanvasRef = useRef<HTMLDivElement>(null);
   const onContextMenuClose = (): void => diagramEditorState.closeContextMenu();
 

@@ -163,7 +163,7 @@ export const LocalChanges = observer(() => {
     localChangesState.workspaceSyncState.pullChangesState.isInProgress ||
     localChangesState.refreshWorkspaceSyncStatusState.isInProgress;
   // Changes
-  const currentTabState = editorStore.editorTabManagerState.currentTabState;
+  const currentTabState = editorStore.tabManagerState.currentTab;
   const isSelectedDiff = (diff: EntityDiff): boolean =>
     currentTabState instanceof EntityDiffViewState &&
     diff.oldPath === currentTabState.fromEntityPath &&

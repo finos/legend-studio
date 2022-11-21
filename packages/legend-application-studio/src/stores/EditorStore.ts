@@ -46,38 +46,29 @@ import { LocalChangesState } from './sidebar-state/LocalChangesState.js';
 import { WorkspaceWorkflowManagerState } from './sidebar-state/WorkflowManagerState.js';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState.js';
 import {
-  type Clazz,
   type GeneratorFn,
   type PlainObject,
   LogEvent,
   isNonNullable,
   assertErrorThrown,
-  guaranteeType,
   guaranteeNonNullable,
   UnsupportedOperationError,
   ActionState,
-  filterByType,
   AssertionError,
 } from '@finos/legend-shared';
 import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState.js';
 import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState.js';
 import { EditorSDLCState } from './EditorSDLCState.js';
 import { ModelImporterState } from './editor-state/ModelImporterState.js';
-import type { EditorState } from './editor-state/EditorState.js';
-import { EntityDiffViewState } from './editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { FunctionEditorState } from './editor-state/element-editor-state/FunctionEditorState.js';
 import { ProjectConfigurationEditorState } from './editor-state/ProjectConfigurationEditorState.js';
 import { PackageableRuntimeEditorState } from './editor-state/element-editor-state/RuntimeEditorState.js';
 import { PackageableConnectionEditorState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { PackageableDataEditorState } from './editor-state/element-editor-state/data/DataEditorState.js';
 import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState.js';
-import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
-import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState.js';
 import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState.js';
-import { FileGenerationViewerState } from './editor-state/FileGenerationViewerState.js';
-import type { GenerationFile } from './shared/FileGenerationTreeUtils.js';
 import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState.js';
 import { DevToolState } from './aux-panel-state/DevToolState.js';
 import {
@@ -141,7 +132,7 @@ import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunner
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
 import { LEGEND_STUDIO_COMMAND_KEY } from './LegendStudioCommand.js';
-import { EditorTabManagerState } from './EditorTabState.js';
+import { EditorTabManagerState } from './EditorTabManagerState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -152,11 +143,14 @@ export abstract class EditorExtensionState {
 }
 
 export class EditorStore implements CommandRegistrar {
-  applicationStore: LegendStudioApplicationStore;
-  sdlcServerClient: SDLCServerClient;
-  depotServerClient: DepotServerClient;
-  pluginManager: LegendStudioPluginManager;
+  readonly applicationStore: LegendStudioApplicationStore;
+  readonly sdlcServerClient: SDLCServerClient;
+  readonly depotServerClient: DepotServerClient;
+  readonly pluginManager: LegendStudioPluginManager;
 
+  readonly initState = ActionState.create();
+  initialEntityPath?: string | undefined;
+  graphEditMode = GRAPH_EDITOR_MODE.FORM;
   editorMode: EditorMode;
   // NOTE: once we clear up the editor store to make modes more separated
   // we should remove these sets of functions. They are basically hacks to
@@ -184,37 +178,26 @@ export class EditorStore implements CommandRegistrar {
   devToolState: DevToolState;
   embeddedQueryBuilderState: EmbeddedQueryBuilderState;
   newElementState: NewElementState;
-
-  initialEntityPath?: string | undefined;
-  initState = ActionState.create();
-  graphEditMode = GRAPH_EDITOR_MODE.FORM;
-
-  // Aux Panel
-  activeAuxPanelMode: AUX_PANEL_MODE = AUX_PANEL_MODE.CONSOLE;
-  auxPanelDisplayState = new PanelDisplayState({
-    initial: 0,
-    default: 300,
-    snap: 100,
-  });
-  // Side Bar
-  activeActivity?: ACTIVITY_MODE = ACTIVITY_MODE.EXPLORER;
-  sideBarDisplayState = new PanelDisplayState({
-    initial: 300,
-    default: 300,
-    snap: 150,
-  });
-
-  // Editor Tabs
-
-  editorTabManagerState = new EditorTabManagerState(this);
-  // currentTabState?: EditorState | undefined;
-  // openedTabStates: EditorState[] = [];
   /**
    * Since we want to share element generation state across all element in the editor, we will create 1 element generate state
    * per file generation configuration type.
    */
   elementGenerationStates: ElementFileGenerationState[] = [];
   searchElementCommandState = new NonBlockingDialogState();
+
+  activeAuxPanelMode: AUX_PANEL_MODE = AUX_PANEL_MODE.CONSOLE;
+  readonly auxPanelDisplayState = new PanelDisplayState({
+    initial: 0,
+    default: 300,
+    snap: 100,
+  });
+  activeActivity?: ACTIVITY_MODE = ACTIVITY_MODE.EXPLORER;
+  readonly sideBarDisplayState = new PanelDisplayState({
+    initial: 300,
+    default: 300,
+    snap: 150,
+  });
+  readonly tabManagerState = new EditorTabManagerState(this);
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
@@ -231,8 +214,6 @@ export class EditorStore implements CommandRegistrar {
       graphEditMode: observable,
       activeAuxPanelMode: observable,
       activeActivity: observable,
-      // currentTabState: observable,
-      // openedTabStates: observable,
 
       isInViewerMode: computed,
       isInConflictResolutionMode: computed,
@@ -240,27 +221,14 @@ export class EditorStore implements CommandRegistrar {
       isInGrammarTextMode: computed,
       isInFormMode: computed,
 
-      applicationStore: false,
-      sdlcServerClient: false,
-      depotServerClient: false,
-      graphState: false,
-      graphManagerState: false,
       setEditorMode: action,
       setMode: action,
 
       setActiveAuxPanelMode: action,
-      refreshCurrentEntityDiffEditorState: action,
       cleanUp: action,
       reset: action,
       setGraphEditMode: action,
       setActiveActivity: action,
-      openEntityDiff: action,
-      openEntityChangeConflict: action,
-      openSingletonEditorState: action,
-      openElement: action,
-      reprocessElementEditorState: action,
-      openGeneratedFile: action,
-      closeAllEditorTabs: action,
 
       initialize: flow,
       initMode: flow,
@@ -360,6 +328,30 @@ export class EditorStore implements CommandRegistrar {
     return this.mode === EDITOR_MODE.CONFLICT_RESOLUTION;
   }
 
+  setEditorMode(val: EditorMode): void {
+    this.editorMode = val;
+  }
+
+  setMode(val: EDITOR_MODE): void {
+    this.mode = val;
+  }
+
+  setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): void {
+    this.graphEditMode = graphEditor;
+    this.graphState.clearProblems();
+  }
+
+  cleanUp(): void {
+    // dismiss all the alerts as these are parts of application, if we don't do this, we might
+    // end up blocking other parts of the app
+    // e.g. trying going to an unknown workspace, we will be redirected to the home page
+    // but the blocking alert for not-found workspace will still block the app
+    this.applicationStore.setBlockingAlert(undefined);
+    this.applicationStore.setActionAlertInfo(undefined);
+    // stop change detection to avoid memory-leak
+    this.changeDetectionState.stop();
+  }
+
   /**
    * TODO?: we should really think of how we could simplify the trigger condition below
    * after we refactor editor modes
@@ -372,25 +364,6 @@ export class EditorStore implements CommandRegistrar {
       // TODO?: we probably should come up with a more generic mechanism for this
       !this.embeddedQueryBuilderState.queryBuilderState &&
       (!additionalChecker || additionalChecker());
-  }
-
-  setEditorMode(val: EditorMode): void {
-    this.editorMode = val;
-  }
-
-  setMode(val: EDITOR_MODE): void {
-    this.mode = val;
-  }
-
-  cleanUp(): void {
-    // dismiss all the alerts as these are parts of application, if we don't do this, we might
-    // end up blocking other parts of the app
-    // e.g. trying going to an unknown workspace, we will be redirected to the home page
-    // but the blocking alert for not-found workspace will still block the app
-    this.applicationStore.setBlockingAlert(undefined);
-    this.applicationStore.setActionAlertInfo(undefined);
-    // stop change detection to avoid memory-leak
-    this.changeDetectionState.stop();
   }
 
   registerCommands(): void {
@@ -455,8 +428,7 @@ export class EditorStore implements CommandRegistrar {
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_MODEL_LOADER,
       trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
-      action: () =>
-        this.editorTabManagerState.openState(this.modelImporterState),
+      action: () => this.tabManagerState.openTab(this.modelImporterState),
     });
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.SYNC_WITH_WORKSPACE,
@@ -514,7 +486,7 @@ export class EditorStore implements CommandRegistrar {
   }
 
   reset(): void {
-    this.closeAllEditorTabs();
+    this.tabManagerState.closeAllTabs();
     this.projectConfigurationEditorState = new ProjectConfigurationEditorState(
       this,
       this.sdlcState,
@@ -857,7 +829,7 @@ export class EditorStore implements CommandRegistrar {
         this.initialEntityPath
       ) {
         try {
-          this.openElement(
+          this.tabManagerState.openElementEditor(
             this.graphManagerState.graph.getElement(this.initialEntityPath),
           );
         } catch {
@@ -907,87 +879,6 @@ export class EditorStore implements CommandRegistrar {
     }
   }
 
-  setCurrentEditorState(val: EditorState | undefined): void {
-    this.editorTabManagerState.currentTabState = val;
-  }
-
-  getCurrentEditorState<T extends EditorState>(clazz: Clazz<T>): T {
-    return guaranteeType(
-      this.editorTabManagerState.currentTabState,
-      clazz,
-      `Current editor state is not of the specified type (this is likely caused by calling this method at the wrong place)`,
-    );
-  }
-
-  getEditorExtensionState<T extends EditorExtensionState>(clazz: Clazz<T>): T {
-    return guaranteeNonNullable(
-      this.editorExtensionStates.find(filterByType(clazz)),
-      `Can't find extension editor state of the specified type: no built extension editor state available from plugins`,
-    );
-  }
-
-  refreshCurrentEntityDiffEditorState(): void {
-    if (
-      this.editorTabManagerState.currentTabState instanceof
-      EntityDiffEditorState
-    ) {
-      this.editorTabManagerState.currentTabState.refresh();
-    }
-  }
-
-  openEntityDiff(entityDiffEditorState: EntityDiffViewState): void {
-    const existingEditorState = this.editorTabManagerState.openedTabStates.find(
-      (editorState) =>
-        editorState instanceof EntityDiffViewState &&
-        editorState.fromEntityPath === entityDiffEditorState.fromEntityPath &&
-        editorState.toEntityPath === entityDiffEditorState.toEntityPath &&
-        editorState.fromRevision === entityDiffEditorState.fromRevision &&
-        editorState.toRevision === entityDiffEditorState.toRevision,
-    );
-    const diffEditorState = existingEditorState ?? entityDiffEditorState;
-    if (!existingEditorState) {
-      this.editorTabManagerState.openEditorState(diffEditorState);
-    }
-    this.setCurrentEditorState(diffEditorState);
-  }
-
-  openEntityChangeConflict(
-    entityChangeConflictEditorState: EntityChangeConflictEditorState,
-  ): void {
-    const existingEditorState = this.editorTabManagerState.openedTabStates.find(
-      (editorState) =>
-        editorState instanceof EntityChangeConflictEditorState &&
-        editorState.entityPath === entityChangeConflictEditorState.entityPath,
-    );
-    const conflictEditorState =
-      existingEditorState ?? entityChangeConflictEditorState;
-    if (!existingEditorState) {
-      this.editorTabManagerState.openEditorState(conflictEditorState);
-    }
-    this.setCurrentEditorState(conflictEditorState);
-  }
-
-  /**
-   * This method helps open editor that only exists one instance at at time such as model-loader, project config, settings ...
-   */
-  openSingletonEditorState(
-    singularEditorState: ModelImporterState | ProjectConfigurationEditorState,
-  ): void {
-    const existingEditorState = this.editorTabManagerState.openedTabStates.find(
-      (e) => e === singularEditorState,
-    );
-    const editorState = existingEditorState ?? singularEditorState;
-    if (!existingEditorState) {
-      this.editorTabManagerState.openEditorState(editorState);
-    }
-    this.setCurrentEditorState(editorState);
-  }
-
-  setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): void {
-    this.graphEditMode = graphEditor;
-    this.graphState.clearProblems();
-  }
-
   setActiveActivity(
     activity: ACTIVITY_MODE,
     options?: { keepShowingIfMatchedCurrent?: boolean },
@@ -1007,7 +898,7 @@ export class EditorStore implements CommandRegistrar {
     this.activeAuxPanelMode = val;
   }
 
-  createElementState(
+  createElementEditorState(
     element: PackageableElement,
   ): ElementEditorState | undefined {
     if (element instanceof PrimitiveType) {
@@ -1065,30 +956,6 @@ export class EditorStore implements CommandRegistrar {
     );
   }
 
-  openElement(element: PackageableElement): void {
-    if (this.isInGrammarTextMode) {
-      // in text mode, we want to select the block of code that corresponds to the element if possible
-      // the cheap way to do this is to search by element label text, e.g. `Mapping some::package::someMapping`
-      this.grammarTextEditorState.setCurrentElementLabelRegexString(element);
-    } else {
-      if (!(element instanceof Package)) {
-        const existingElementState =
-          this.editorTabManagerState.openedTabStates.find(
-            (state) =>
-              state instanceof ElementEditorState && state.element === element,
-          );
-        const elementState =
-          existingElementState ?? this.createElementState(element);
-        if (elementState && !existingElementState) {
-          this.editorTabManagerState.openEditorState(elementState);
-        }
-        this.setCurrentEditorState(elementState);
-      }
-      // expand tree node
-      this.explorerTreeState.openNode(element);
-    }
-  }
-
   *addElement(
     element: PackageableElement,
     packagePath: string | undefined,
@@ -1103,7 +970,7 @@ export class EditorStore implements CommandRegistrar {
     this.explorerTreeState.reprocess();
 
     if (openAfterCreate) {
-      this.openElement(element);
+      this.tabManagerState.openElementEditor(element);
     }
   }
 
@@ -1126,10 +993,10 @@ export class EditorStore implements CommandRegistrar {
       )
       .filter(isNonNullable);
     const elementsToDelete = [element, ...generatedChildrenElements];
-    this.editorTabManagerState.openedTabStates =
-      this.editorTabManagerState.openedTabStates.filter((elementState) => {
+    this.tabManagerState.tabs = this.tabManagerState.tabs.filter(
+      (elementState) => {
         if (elementState instanceof ElementEditorState) {
-          if (elementState === this.editorTabManagerState.currentTabState) {
+          if (elementState === this.tabManagerState.currentTab) {
             // avoid closing the current editor state as this will be taken care of
             // by the `closeState()` call later
             return true;
@@ -1137,18 +1004,14 @@ export class EditorStore implements CommandRegistrar {
           return !elementsToDelete.includes(elementState.element);
         }
         return true;
-      });
+      },
+    );
     if (
-      this.editorTabManagerState.currentTabState &&
-      this.editorTabManagerState.currentTabState instanceof
-        ElementEditorState &&
-      elementsToDelete.includes(
-        this.editorTabManagerState.currentTabState.element,
-      )
+      this.tabManagerState.currentTab &&
+      this.tabManagerState.currentTab instanceof ElementEditorState &&
+      elementsToDelete.includes(this.tabManagerState.currentTab.element)
     ) {
-      this.editorTabManagerState.closeState(
-        this.editorTabManagerState.currentTabState,
-      );
+      this.tabManagerState.closeTab(this.tabManagerState.currentTab);
     }
     // remove/retire the element's generated children before remove the element itself
     generatedChildrenElements.forEach((el) =>
@@ -1219,65 +1082,6 @@ export class EditorStore implements CommandRegistrar {
     );
   }
 
-  // TODO: to be removed when we process editor states properly
-  reprocessElementEditorState = (
-    editorState: EditorState,
-  ): EditorState | undefined => {
-    if (editorState instanceof ElementEditorState) {
-      const correspondingElement =
-        this.graphManagerState.graph.getNullableElement(
-          editorState.element.path,
-        );
-      if (correspondingElement) {
-        return editorState.reprocess(correspondingElement, this);
-      }
-    }
-    // No need to reprocess generated file state as it has no reference to any of the graphs
-    if (editorState instanceof FileGenerationViewerState) {
-      return editorState;
-    }
-    return undefined;
-  };
-
-  // TODO: to be removed when we process editor states properly
-  findCurrentEditorState = (
-    editor: EditorState | undefined,
-  ): EditorState | undefined => {
-    if (editor instanceof ElementEditorState) {
-      return this.editorTabManagerState.openedTabStates.find(
-        (es): es is ElementEditorState =>
-          es instanceof ElementEditorState &&
-          es.element.path === editor.element.path,
-      );
-    }
-    if (editor instanceof FileGenerationViewerState) {
-      return this.editorTabManagerState.openedTabStates.find(
-        (e) => e === editor,
-      );
-    }
-    return undefined;
-  };
-
-  openGeneratedFile(file: GenerationFile): void {
-    const existingGeneratedFileState =
-      this.editorTabManagerState.openedTabStates.find(
-        (editorState) =>
-          editorState instanceof FileGenerationViewerState &&
-          editorState.generatedFile === file,
-      );
-    const generatedFileState =
-      existingGeneratedFileState ?? new FileGenerationViewerState(this, file);
-    if (!existingGeneratedFileState) {
-      this.editorTabManagerState.openEditorState(generatedFileState);
-    }
-    this.setCurrentEditorState(generatedFileState);
-  }
-
-  closeAllEditorTabs(): void {
-    this.setCurrentEditorState(undefined);
-    this.editorTabManagerState.openedTabStates = [];
-  }
-
   *toggleTextMode(): GeneratorFn<void> {
     if (this.isInFormMode) {
       if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
@@ -1306,11 +1110,9 @@ export class EditorStore implements CommandRegistrar {
       this.applicationStore.setBlockingAlert(undefined);
       this.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
       // navigate to the currently opened element immediately after entering text mode editor
-      if (
-        this.editorTabManagerState.currentTabState instanceof ElementEditorState
-      ) {
+      if (this.tabManagerState.currentTab instanceof ElementEditorState) {
         this.grammarTextEditorState.setCurrentElementLabelRegexString(
-          this.editorTabManagerState.currentTabState.element,
+          this.tabManagerState.currentTab.element,
         );
       }
     } else if (this.isInGrammarTextMode) {

@@ -397,7 +397,8 @@ export const EnumerationEditor = observer(
   (props: { enumeration: Enumeration }) => {
     const { enumeration } = props;
     const editorStore = useEditorStore();
-    const editorState = editorStore.getCurrentEditorState(UMLEditorState);
+    const editorState =
+      editorStore.tabManagerState.getCurrentEditorState(UMLEditorState);
     const isReadOnly = editorState.isReadOnly;
     // Selected enum value
     const [selectedEnum, setSelectedEnum] = useState<Enum | undefined>();
@@ -533,7 +534,7 @@ export const EnumerationEditor = observer(
       : undefined;
     const visitGenerationParentElement = (): void => {
       if (generationParentElement) {
-        editorStore.openElement(generationParentElement);
+        editorStore.tabManagerState.openElementEditor(generationParentElement);
       }
     };
 

@@ -121,11 +121,8 @@ import {
 import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelClassifierUtils.js';
 import { rootRelationalSetImp_setMainTableAlias } from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
-import type {
-  TreeNodeData,
-  TreeData,
-  TabManagerState,
-} from '@finos/legend-art';
+import type { TreeNodeData, TreeData } from '@finos/legend-art';
+import type { TabManagerState } from '@finos/legend-application';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -865,10 +862,14 @@ export class MappingEditorState
     }
     // Open mapping element from included mapping in another mapping editor tab
     if (mappingElement._PARENT !== this.element) {
-      this.editorStore.openElement(mappingElement._PARENT);
+      this.editorStore.tabManagerState.openElementEditor(
+        mappingElement._PARENT,
+      );
     }
     const currentMappingEditorState =
-      this.editorStore.getCurrentEditorState(MappingEditorState);
+      this.editorStore.tabManagerState.getCurrentEditorState(
+        MappingEditorState,
+      );
     // If the next mapping element to be opened is not opened yet, we will find the right place to put it in the tab bar
     if (
       !currentMappingEditorState.openedTabStates.find(

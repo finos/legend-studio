@@ -27,7 +27,6 @@ import {
   useResizeDetector,
   GeneralTabEditor,
   type TabState,
-  horizontalScroll,
   GeneralTabDropDown,
 } from '@finos/legend-art';
 import { MappingEditor } from './mapping-editor/MappingEditor.js';
@@ -72,6 +71,7 @@ import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../store
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { PackageableDataEditorState } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
+import { horizontalToVerticalScroll } from '@finos/legend-application';
 
 export const ViewerEditPanelSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -175,8 +175,8 @@ export const EditPanelSplashScreen: React.FC = () => {
 
 export const EditPanel = observer(() => {
   const editorStore = useEditorStore();
-  const currentTabState = editorStore.editorTabManagerState.currentTabState;
-  const openedTabStates = editorStore.editorTabManagerState.openedTabStates;
+  const currentTabState = editorStore.tabManagerState.currentTab;
+  const openedTabStates = editorStore.tabManagerState.tabs;
   const nativeViewModes =
     currentTabState instanceof ElementEditorState
       ? Object.values(ELEMENT_NATIVE_VIEW_MODE)
@@ -280,6 +280,7 @@ export const EditPanel = observer(() => {
     } else if (currentTabState instanceof ProjectConfigurationEditorState) {
       return <ProjectConfigurationEditor />;
     }
+    // TODO: create an editor for unsupported tab
     return null;
   };
 
@@ -334,7 +335,7 @@ export const EditPanel = observer(() => {
         <div
           data-testid={LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS}
           className="edit-panel__header__tabs"
-          onWheel={horizontalScroll}
+          onWheel={horizontalToVerticalScroll}
         >
           {openedTabStates.map((editorState) => (
             <GeneralTabEditor
@@ -349,16 +350,14 @@ export const EditPanel = observer(() => {
               key={editorState.uuid}
               tabState={editorState}
               DND_TYPE="EDITOR_STATE"
-              managerTabState={editorStore.editorTabManagerState}
+              managerTabState={editorStore.tabManagerState}
               renderHeaderButtonLabel={renderHeaderButtonLabel}
             />
           ))}
         </div>
 
         <div className="edit-panel__header__actions">
-          <GeneralTabDropDown
-            managerTabState={editorStore.editorTabManagerState}
-          />
+          <GeneralTabDropDown managerTabState={editorStore.tabManagerState} />
           {currentTabState instanceof ElementEditorState && (
             <DropdownMenu
               className="edit-panel__view-mode__type"

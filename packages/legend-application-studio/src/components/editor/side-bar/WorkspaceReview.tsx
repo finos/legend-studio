@@ -42,7 +42,7 @@ import { formatDistanceToNow } from '@finos/legend-shared';
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();
   const workspaceReviewState = editorStore.workspaceReviewState;
-  const currentTabState = editorStore.editorTabManagerState.currentTabState;
+  const currentTabState = editorStore.tabManagerState.currentTab;
   const changes = editorStore.changeDetectionState.aggregatedWorkspaceChanges;
   const isSelectedDiff = (diff: EntityDiff): boolean =>
     currentTabState instanceof EntityDiffViewState &&

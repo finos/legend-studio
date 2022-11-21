@@ -41,7 +41,7 @@ import {
   EntityChangeConflictSideBarItem,
 } from '../edit-panel/diff-editor/EntityChangeConflictEditor.js';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
-import type { EntityDiffEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
+import type { EntityDiffViewerState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import {
   EntityDiffSideBarItem,
   EntityDiffView,
@@ -70,18 +70,18 @@ export const WorkspaceSyncConflictResolver = observer(() => {
     currentDiffEditorState instanceof EntityChangeConflictEditorState &&
     conflict.entityPath === currentDiffEditorState.entityPath;
   const closeTabOnMiddleClick =
-    (conflictState: EntityDiffEditorState): React.MouseEventHandler =>
+    (conflictState: EntityDiffViewerState): React.MouseEventHandler =>
     (event): void => {
       if (event.nativeEvent.button === 1) {
         updateConflictState.closeConflict(conflictState);
       }
     };
   const closeTab =
-    (conflictState: EntityDiffEditorState): React.MouseEventHandler =>
+    (conflictState: EntityDiffViewerState): React.MouseEventHandler =>
     (event): void =>
       updateConflictState.closeConflict(conflictState);
   const openTab =
-    (conflictState: EntityDiffEditorState): (() => void) =>
+    (conflictState: EntityDiffViewerState): (() => void) =>
     (): void =>
       updateConflictState.openState(conflictState);
   const isSelectedDiff = (diff: EntityDiff): boolean =>

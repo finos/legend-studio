@@ -37,7 +37,7 @@ export const getTextContent = (
   }
 };
 
-export const getEditorLanguageFromFormat = (
+export const getEditorLanguageForFormat = (
   format?: string,
 ): EDITOR_LANGUAGE => {
   switch (format?.toLowerCase()) {
@@ -51,20 +51,24 @@ export const getEditorLanguageFromFormat = (
 };
 
 export class FileGenerationViewerState extends EditorState {
-  generatedFile: GenerationFile;
+  file: GenerationFile;
 
-  constructor(editorStore: EditorStore, generatedFile: GenerationFile) {
+  constructor(editorStore: EditorStore, file: GenerationFile) {
     super(editorStore);
 
     makeObservable(this, {
-      generatedFile: observable,
+      file: observable,
       headerName: computed,
     });
 
-    this.generatedFile = generatedFile;
+    this.file = file;
   }
 
   get headerName(): string {
-    return this.generatedFile.name;
+    return this.file.name;
+  }
+
+  match(tab: EditorState): boolean {
+    return tab instanceof FileGenerationViewerState && tab.file === this.file;
   }
 }

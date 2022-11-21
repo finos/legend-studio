@@ -57,7 +57,8 @@ const getTextElementEditorLanguage = (
 
 export const TextElementEditor = observer(() => {
   const editorStore = useEditorStore();
-  const textEditorState = editorStore.getCurrentEditorState(TextEditorState);
+  const textEditorState =
+    editorStore.tabManagerState.getCurrentEditorState(TextEditorState);
   const textElement = textEditorState.textElement;
   const isReadOnly = textEditorState.isReadOnly;
   const typeNameRef = useRef<HTMLInputElement>(null);

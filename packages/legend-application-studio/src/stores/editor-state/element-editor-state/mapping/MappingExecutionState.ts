@@ -104,6 +104,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   ExecutionPlanState,
+  type TabState,
   TAB_SIZE,
 } from '@finos/legend-application';
 import {
@@ -128,7 +129,6 @@ import {
 } from '../../../shared/testable/TestableUtils.js';
 import { SERIALIZATION_FORMAT } from '../service/testable/ServiceTestEditorState.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
-import type { TabState } from '@finos/legend-art';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;

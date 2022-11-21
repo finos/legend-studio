@@ -136,7 +136,7 @@ export const ModelImporter = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const modelImporterState =
-    editorStore.getCurrentEditorState(ModelImporterState);
+    editorStore.tabManagerState.getCurrentEditorState(ModelImporterState);
   const nativeInputTypes = Object.values(MODEL_IMPORT_NATIVE_INPUT_TYPE);
   const extraModelImporterExtensionsConfigs =
     modelImporterState.extensionConfigs;
