@@ -29,9 +29,10 @@ import {
   CreatableSelect,
   Select,
   createFilter as _createFilter,
+  baseComponents,
+  type InputProps,
 } from './CJS__ReactSelect.cjs';
 import type { PlainObject } from '@finos/legend-shared';
-import { components as baseComponents, type InputProps } from 'react-select';
 
 export type { InputActionMeta };
 export const createFilter = _createFilter;
