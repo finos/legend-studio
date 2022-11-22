@@ -120,6 +120,7 @@ export const V1_buildServiceTest = (
   serviceTest.parameters = element.parameters.map((parameter) =>
     buildParameterValue(parameter),
   );
+  serviceTest.keys = element.keys;
   serviceTest.assertions = element.assertions.map((assertion) =>
     V1_buildTestAssertion(assertion, serviceTest, context),
   );

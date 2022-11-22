@@ -1121,8 +1121,9 @@
   }
 
   &__setup {
-    &__serialization {
+    &__configuration {
       padding: 1rem;
+      overflow-y: scroll;
     }
 
     &__parameters {
