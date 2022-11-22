@@ -1190,7 +1190,7 @@ export class EditorStore implements CommandRegistrar {
           // by the `closeState()` call later
           return true;
         }
-        return !generatedChildrenElements.includes(elementState.element);
+        return !elementsToDelete.includes(elementState.element);
       }
       return true;
     });
