@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 20.1.0
+
+### Minor Changes
+
+- [#1511](https://github.com/finos/legend-studio/pull/1511) [`9311cd4ba`](https://github.com/finos/legend-studio/commit/9311cd4bab703c65e590f1b1eed6cd89a5387d4d) ([@gayathrir11](https://github.com/gayathrir11)) - Improve user experience when they import gitlab projects in studio
+
 ## 20.0.10
 
 ## 20.0.9
