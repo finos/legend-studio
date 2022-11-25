@@ -31,6 +31,7 @@ import {
   type SetupPathParams,
   generateEditorRoute,
   LEGEND_STUDIO_PATH_PARAM_TOKEN,
+  generateProjectDashboardRoute,
 } from '../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
 import {
@@ -182,6 +183,14 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
       }
     };
 
+    const handleManageProject = (): void => {
+      if (setupStore.currentProject) {
+        applicationStore.navigator.goToLocation(
+          generateProjectDashboardRoute(setupStore.currentProject.projectId),
+        );
+      }
+    };
+
     useEffect(() => {
       flowResult(
         setupStore.initialize(projectId, workspaceId, groupWorkspaceId),
@@ -325,7 +334,19 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                   </div>
                   <div className="workspace-setup__actions">
                     <button
-                      className="workspace-setup__next-btn btn--dark"
+                      className="workspace-setup__actions__btn btn--dark"
+                      onClick={handleManageProject}
+                      disabled={
+                        !setupStore.currentProject ||
+                        setupStore.createWorkspaceState.isInProgress ||
+                        setupStore.createOrImportProjectState.isInProgress
+                      }
+                    >
+                      View Project Dashboard
+                    </button>
+
+                    <button
+                      className="workspace-setup__actions__btn btn--dark"
                       onClick={handleProceed}
                       disabled={
                         !setupStore.currentProject ||
@@ -352,7 +373,6 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
               </div>
             </div>
           </div>
-
           <div
             data-testid={LEGEND_STUDIO_TEST_ID.STATUS_BAR}
             className="editor__status-bar"

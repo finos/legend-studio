@@ -50,6 +50,7 @@ import {
 } from '@finos/legend-application';
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../stores/LegendStudioDocumentation.js';
+import { ProjectOverview } from './editor/dashboard/ProjectOverview.js';
 
 const LegendStudioNotFoundRouteScreen = observer(() => {
   const applicationStore = useApplicationStore();
@@ -187,6 +188,11 @@ export const LegendStudioApplicationRoot = observer(() => {
                 LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP_WORKSPACE,
               ]}
               component={WorkspaceSetup}
+            />
+            <Route
+              exact={true}
+              path={[LEGEND_STUDIO_ROUTE_PATTERN.PROJECT_DASHBOARD]}
+              component={ProjectOverview}
             />
             {extraApplicationPageEntries.map((entry) => (
               <Route

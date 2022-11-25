@@ -58,8 +58,10 @@
     justify-content: flex-end;
   }
 
-  &__next-btn {
+  &__actions__btn {
+    min-width: 12rem;
     padding: 1rem;
+    margin-left: 0.5rem;
   }
 
   &__doc__setup-workspace {

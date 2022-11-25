@@ -60,7 +60,6 @@ import {
   type ActivityDisplay,
 } from '../editor/ActivityBar.js';
 import { Explorer } from '../editor/side-bar/Explorer.js';
-import { ProjectOverview } from '../editor/side-bar/ProjectOverview.js';
 import { WorkflowManager } from '../editor/side-bar/WorkflowManager.js';
 import {
   useLegendStudioApplicationStore,
@@ -178,8 +177,6 @@ const ProjectViewerSideBar = observer(() => {
     switch (editorStore.activeActivity) {
       case ACTIVITY_MODE.EXPLORER:
         return <Explorer />;
-      case ACTIVITY_MODE.PROJECT_OVERVIEW:
-        return <ProjectOverview />;
       case ACTIVITY_MODE.WORKFLOW_MANAGER:
         return viewerStore.workflowManagerState ? (
           <WorkflowManager

@@ -35,12 +35,16 @@ import {
   MenuIcon,
   MenuContentDivider,
   FlaskIcon,
+  Button,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { forwardRef, useState } from 'react';
 import { VIRTUAL_ASSISTANT_TAB } from '@finos/legend-application';
 import { LegendStudioAppInfo } from '../LegendStudioAppInfo.js';
-import { generateSetupRoute } from '../../stores/LegendStudioRouter.js';
+import {
+  generateProjectDashboardRoute,
+  generateSetupRoute,
+} from '../../stores/LegendStudioRouter.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 
 const SettingsMenu = observer(
@@ -303,15 +307,6 @@ export const ActivityBar = observer(() => {
       ),
     },
     !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.PROJECT_OVERVIEW,
-      title: 'Project',
-      icon: (
-        <div className="activity-bar__project-overview-icon">
-          <RepoIcon />
-        </div>
-      ),
-    },
-    !editorStore.isInConflictResolutionMode && {
       mode: ACTIVITY_MODE.WORKFLOW_MANAGER,
       title: 'Workflow Manager',
       icon: <WrenchIcon />,
@@ -339,6 +334,19 @@ export const ActivityBar = observer(() => {
             {activity.icon}
           </button>
         ))}
+        <Button
+          className="activity-bar__project-overview-icon activity-bar__item"
+          onClick={() =>
+            editorStore.applicationStore.navigator.visitAddress(
+              generateProjectDashboardRoute(
+                editorStore.sdlcState.activeProject.projectId,
+              ),
+            )
+          }
+          title="Open project dashboard"
+        >
+          <RepoIcon />
+        </Button>
       </div>
       <DropdownMenu
         className="activity-bar__item"

@@ -21,10 +21,10 @@ import { LocalChanges } from './LocalChanges.js';
 import { WorkspaceReview } from './WorkspaceReview.js';
 import { WorkspaceUpdater } from './WorkspaceUpdater.js';
 import { WorkspaceUpdateConflictResolver } from './WorkspaceUpdateConflictResolver.js';
-import { ProjectOverview } from './ProjectOverview.js';
 import { WorkflowManager } from './WorkflowManager.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { GlobalTestRunner } from './testable/GlobalTestRunner.js';
+import { generateProjectDashboardRoute } from '../../../stores/LegendStudioRouter.js';
 
 /**
  * Wrapper component around different implementations of sidebar, such as to view domain, to manage SDLC, etc.
@@ -44,8 +44,14 @@ export const SideBar = observer(() => {
         return <WorkspaceUpdater />;
       case ACTIVITY_MODE.CONFLICT_RESOLUTION:
         return <WorkspaceUpdateConflictResolver />;
-      case ACTIVITY_MODE.PROJECT_OVERVIEW:
-        return <ProjectOverview />;
+      case ACTIVITY_MODE.PROJECT_OVERVIEW: {
+        editorStore.applicationStore.navigator.visitAddress(
+          generateProjectDashboardRoute(
+            editorStore.sdlcState.activeProject.projectId,
+          ),
+        );
+        return null;
+      }
       case ACTIVITY_MODE.WORKFLOW_MANAGER:
         return (
           <WorkflowManager

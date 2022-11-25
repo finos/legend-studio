@@ -42,6 +42,7 @@ export const LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
   EDIT_WORKSPACE_ENTITY: `/edit/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
   EDIT_GROUP_WORKSPACE: `/edit/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/groupWorkspace/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/`,
   EDIT_GROUP_WORKSPACE_ENTITY: `/edit/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/groupWorkspace/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
+  PROJECT_DASHBOARD: `/overview/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}?`,
   SETUP_WORKSPACE: `/setup/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}?/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID}?`,
   SETUP_GROUP_WORKSPACE: `/setup/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/groupWorkspace/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/`,
 });
@@ -101,6 +102,13 @@ const generateWorkspaceSetupRoute = (
     // we will fix this when upgrading react-router
     // See https://github.com/finos/legend-studio/issues/688
     workspaceId: workspaceId as string,
+  });
+
+export const generateProjectDashboardRoute = (
+  projectId: string | undefined,
+): string =>
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.PROJECT_DASHBOARD, {
+    projectId: projectId as string,
   });
 
 export const generateSetupRoute = (

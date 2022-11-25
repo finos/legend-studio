@@ -27,22 +27,28 @@ export const PanelFullContent = generateSimpleDIVComponent(
   'panel__content--full',
 );
 
+export const PanelBody = generateSimpleDIVComponent('PanelBody', 'panel__body');
 export const PanelHeader: React.FC<{
   title?: string;
+  content?: string;
   children?: React.ReactNode;
   className?: string;
 }> = (props) => {
-  const { title, children } = props;
+  const { title, content, children } = props;
   return (
     <div className="panel__header">
-      {title && (
-        <div className="panel__header__title">
+      <div className="panel__header__title">
+        {title && (
           <div className="panel__header__title__label">
             {title.toLowerCase()}
           </div>
-        </div>
-      )}
-
+        )}
+        {content && (
+          <div className="panel__header__title__content">
+            {content.toLowerCase()}
+          </div>
+        )}
+      </div>
       {children}
     </div>
   );

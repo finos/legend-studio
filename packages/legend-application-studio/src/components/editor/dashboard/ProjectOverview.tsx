@@ -19,46 +19,80 @@ import { observer } from 'mobx-react-lite';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import {
   clsx,
+  AssistantIcon,
   CustomSelectorInput,
-  ShareIcon,
-  PanelLoadingIndicator,
-  ContextMenu,
-  SyncIcon,
-  PencilIcon,
-  InfoCircleIcon,
-  TimesIcon,
-  UsersIcon,
-  UserIcon,
   ExternalLinkIcon,
+  ShareIcon,
   Dialog,
+  PanelLoadingIndicator,
+  PencilIcon,
+  SyncIcon,
+  TimesIcon,
+  InfoCircleIcon,
   PanelContent,
   Modal,
   ModalBody,
   ModalFooter,
+  ContextMenu,
+  UserIcon,
+  UsersIcon,
+  PanelHeader,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+  PanelForm,
+  Button,
+  Panel,
+  PanelFormSection,
+  PanelFormTextField,
 } from '@finos/legend-art';
-import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState.js';
 import {
+  type SetupPathParams,
   generateEditorRoute,
+  LEGEND_STUDIO_PATH_PARAM_TOKEN,
   generateViewProjectRoute,
   generateViewVersionRoute,
   generateReviewRoute,
 } from '../../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
 import {
-  type Workspace,
-  type Version,
-  NewVersionType,
-  WorkspaceType,
-  areWorkspacesEquivalent,
-} from '@finos/legend-server-sdlc';
-import { useEditorStore } from '../EditorStoreProvider.js';
-import { useApplicationStore } from '@finos/legend-application';
+  useApplicationNavigationContext,
+  useApplicationStore,
+  useParams,
+} from '@finos/legend-application';
+import { ActivityBarMenu } from '../ActivityBar.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
+import {
+  NewVersionType,
+  type Version,
+  type Workspace,
+  WorkspaceType,
+} from '@finos/legend-server-sdlc';
+import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState.js';
+import { EditorStoreProvider, useEditorStore } from '../EditorStoreProvider.js';
+import type { EditorStore } from '../../../stores/EditorStore.js';
+
+interface ProjectOverviewActivityDisplay {
+  mode: PROJECT_OVERVIEW_ACTIVITY_MODE;
+  title: string;
+}
+
+const withEditorStore = (WrappedComponent: React.FC): React.FC =>
+  function WithEditorStore() {
+    return (
+      <EditorStoreProvider>
+        <WrappedComponent />
+      </EditorStoreProvider>
+    );
+  };
 
 const ShareProjectModal = observer(
-  (props: { open: boolean; closeModal: () => void }) => {
-    const { open, closeModal } = props;
-    const editorStore = useEditorStore();
+  (props: {
+    editorStore: EditorStore;
+    open: boolean;
+    closeModal: () => void;
+  }) => {
+    const { editorStore, open, closeModal } = props;
     const applicationStore = useLegendStudioApplicationStore();
     const versions = editorStore.sdlcState.projectVersions;
     const isDispatchingAction = editorStore.sdlcState.isFetchingProjectVersions;
@@ -152,6 +186,55 @@ const ShareProjectModal = observer(
   },
 );
 
+export const ProjectOverviewActivityBar = observer(
+  (props: { editorStore: EditorStore }) => {
+    const { editorStore } = props;
+    const projectOverviewState = editorStore.projectOverviewState;
+
+    const changeActivity =
+      (activity: PROJECT_OVERVIEW_ACTIVITY_MODE): (() => void) =>
+      (): void =>
+        projectOverviewState.setActivityMode(activity);
+    const activities: ProjectOverviewActivityDisplay[] = [
+      { mode: PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW, title: 'Overview' },
+      {
+        mode: PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE,
+        title: 'Release',
+      },
+      { mode: PROJECT_OVERVIEW_ACTIVITY_MODE.VERSIONS, title: 'Versions' },
+      { mode: PROJECT_OVERVIEW_ACTIVITY_MODE.WORKSPACES, title: 'Workspaces' },
+    ].filter((activity): activity is ProjectOverviewActivityDisplay =>
+      Boolean(activity),
+    );
+
+    return (
+      <>
+        <div
+          data-testid={LEGEND_STUDIO_TEST_ID.PROJECT_OVERVIEW__ACTIVITY_BAR}
+          className="panel__header"
+        >
+          <div className="project-configuration-editor__tabs">
+            {activities.map((activity) => (
+              <button
+                key={activity.mode}
+                className={clsx('project-configuration-editor__tab', {
+                  'project-configuration-editor__tab--active':
+                    activity.mode === projectOverviewState.activityMode,
+                })}
+                onClick={changeActivity(activity.mode)}
+                tabIndex={-1}
+                title={activity.title}
+              >
+                {activity.mode}
+              </button>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  },
+);
+
 const WorkspaceViewerContextMenu = observer(
   forwardRef<
     HTMLDivElement,
@@ -181,12 +264,7 @@ const WorkspaceViewerContextMenu = observer(
 
 const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
   const { workspace } = props;
-  const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const isActive = areWorkspacesEquivalent(
-    editorStore.sdlcState.activeWorkspace,
-    workspace,
-  );
   const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
     useState(false);
   const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
@@ -199,14 +277,10 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
       onClose={onContextMenuClose}
     >
       <button
-        className={clsx(
-          'side-bar__panel__item project-overview__item__link',
-          {
-            'project-overview__item__link--selected-from-context-menu':
-              isSelectedFromContextMenu && !isActive,
-          },
-          { 'project-overview__item__link--active': isActive },
-        )}
+        className={clsx('side-bar__panel__item project-overview__item__link', {
+          'project-overview__item__link--selected-from-context-menu':
+            isSelectedFromContextMenu,
+        })}
         tabIndex={-1}
         onClick={(): void =>
           applicationStore.navigator.visitAddress(
@@ -242,6 +316,7 @@ const WorkspacesViewer = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const projectOverviewState = editorStore.projectOverviewState;
+
   const workspaces = projectOverviewState.projectWorkspaces;
   const isDispatchingAction =
     projectOverviewState.isDeletingWorkspace ||
@@ -255,13 +330,8 @@ const WorkspacesViewer = observer(() => {
   }, [applicationStore, projectOverviewState]);
 
   return (
-    <div className="panel side-bar__panel project-overview__panel project-overview__workspaces">
-      <div className="panel__header">
-        <div className="panel__header__title">
-          <div className="panel__header__title__content">
-            {PROJECT_OVERVIEW_ACTIVITY_MODE.WORKSPACES}
-          </div>
-        </div>
+    <Panel className="project-overview__panel">
+      <PanelHeader content={PROJECT_OVERVIEW_ACTIVITY_MODE.WORKSPACES}>
         <div
           className="side-bar__panel__header__changes-count"
           data-testid={
@@ -270,8 +340,9 @@ const WorkspacesViewer = observer(() => {
         >
           {workspaces.length}
         </div>
-      </div>
-      <div className="panel__content project-overview__panel__content">
+      </PanelHeader>
+
+      <div className=" project-overview__poanel__content">
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
         <div
           data-testid={LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_LIST}
@@ -285,7 +356,7 @@ const WorkspacesViewer = observer(() => {
           ))}
         </div>
       </div>
-    </div>
+    </Panel>
   );
 });
 
@@ -330,15 +401,9 @@ const ReleaseEditor = observer(() => {
   }, [applicationStore, projectOverviewState]);
 
   return (
-    <div className="panel side-bar__panel project-overview__panel project-overview__release">
-      <div className="panel__header">
-        <div className="panel__header__title">
-          <div className="panel__header__title__content">
-            {PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE}
-          </div>
-        </div>
-      </div>
-      <div className="panel__content project-overview__release__panel__content project-overview__release__content">
+    <Panel className="project-overview__panel">
+      <PanelHeader content={PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE} />
+      <div className=" project-overview__release__panel__content project-overview__release__content">
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
         <div className="project-overview__release__editor">
           <textarea
@@ -482,7 +547,7 @@ const ReleaseEditor = observer(() => {
           </div>
         )}
       </div>
-    </div>
+    </Panel>
   );
 });
 
@@ -500,13 +565,8 @@ const VersionsViewer = observer(() => {
   }, [applicationStore, editorStore]);
 
   return (
-    <div className="panel side-bar__panel project-overview__panel project-overview__versions">
-      <div className="panel__header">
-        <div className="panel__header__title">
-          <div className="panel__header__title__content">
-            {PROJECT_OVERVIEW_ACTIVITY_MODE.VERSIONS}
-          </div>
-        </div>
+    <Panel className="project-overview__panel">
+      <PanelHeader content={PROJECT_OVERVIEW_ACTIVITY_MODE.VERSIONS}>
         <div
           className="side-bar__panel__header__changes-count"
           data-testid={
@@ -515,8 +575,8 @@ const VersionsViewer = observer(() => {
         >
           {versions.length}
         </div>
-      </div>
-      <div className="panel__content project-overview__panel__content">
+      </PanelHeader>
+      <div>
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
         <div className="panel__content__list">
           {versions.map((version) => (
@@ -545,31 +605,32 @@ const VersionsViewer = observer(() => {
           ))}
         </div>
       </div>
-    </div>
+    </Panel>
   );
 });
 
 const OverviewViewer = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
+
   const projectOverviewState = editorStore.projectOverviewState;
+
+  const params = useParams<SetupPathParams>();
+
+  const projectId = params[LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID] ?? '';
+
   const sdlcState = editorStore.sdlcState;
   const initialName = sdlcState.currentProject?.name ?? '';
   const initialDescription = sdlcState.currentProject?.description ?? '';
+
   const initialTags = sdlcState.currentProject?.tags ?? [];
   const isDispatchingAction = projectOverviewState.isUpdatingProject;
   const [projectIdentifier, setProjectIdentifier] = useState(initialName);
   const [description, setDescription] = useState(initialDescription);
+
   const [itemValue, setItemValue] = useState<string>('');
   const [tagsArray, setTagsArray] = useState<Array<string>>(initialTags);
-  const changeDescription: React.ChangeEventHandler<HTMLTextAreaElement> = (
-    event,
-  ) => {
-    setDescription(event.target.value);
-  };
-  const changeProjectIdentifier: React.ChangeEventHandler<HTMLInputElement> = (
-    event,
-  ) => setProjectIdentifier(event.target.value);
+
   // NOTE: `showEditInput` is either boolean (to hide/show the add value button) or a number (index of the item being edited)
   const [showEditInput, setShowEditInput] = useState<boolean | number>(false);
   const showAddItemInput = (): void => setShowEditInput(true);
@@ -612,8 +673,8 @@ const OverviewViewer = observer(() => {
         setShowEditInput(showEditInput - 1);
       }
     };
-  const handleUpdate = (event: React.MouseEvent<HTMLButtonElement>): void => {
-    event.preventDefault();
+
+  const handleUpdate = (): void => {
     flowResult(
       projectOverviewState.updateProject(
         projectIdentifier,
@@ -623,94 +684,144 @@ const OverviewViewer = observer(() => {
     ).catch(applicationStore.alertUnhandledError);
   };
 
+  useEffect(() => {
+    flowResult(
+      editorStore.sdlcState.fetchCurrentProject(projectId, {
+        suppressNotification: true,
+      }),
+    )
+      .then(() => {
+        if (editorStore.sdlcState.currentProject) {
+          setDescription(editorStore.sdlcState.currentProject.description);
+          setProjectIdentifier(editorStore.sdlcState.currentProject.name);
+        }
+      })
+      .catch(applicationStore.alertUnhandledError);
+  }, [editorStore, projectId, applicationStore, projectOverviewState]);
+
   return (
-    <div className="panel side-bar__panel project-overview__panel project-overview__overview">
-      <div className="panel__header">
-        <div className="panel__header__title">
-          <div className="panel__header__title__content">
-            {PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW}
-          </div>
-        </div>
-        <button
-          className="panel__header__action side-bar__header__action local-changes__sync-btn"
-          onClick={handleUpdate}
-          tabIndex={-1}
-          title="Update project"
-        >
-          <SyncIcon />
-        </button>
-      </div>
-      <div className="panel__content project-overview__panel__content">
+    <Panel className="project-overview__panel">
+      <div className="">
+        <PanelHeader content={PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW}>
+          <Button
+            className="panel__header__action side-bar__header__action local-changes__sync-btn"
+            onClick={handleUpdate}
+            title="Update project"
+            tabIndex={-1}
+          >
+            <SyncIcon />
+          </Button>
+        </PanelHeader>
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Project Name
-            </div>
-            <input
-              className="panel__content__form__section__input"
-              title="Project Name"
-              spellCheck={false}
-              value={projectIdentifier}
-              onChange={changeProjectIdentifier}
-            />
-          </div>
-        </div>
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Description
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              Description of the project
-            </div>
-            <textarea
-              className="panel__content__form__section__textarea"
-              title="PROJECT DESCRIPTION"
-              spellCheck={false}
-              value={description}
-              onChange={changeDescription}
-            />
-          </div>
-        </div>
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Tags
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              List of annotations to categorize projects
-            </div>
-            <div className="panel__content__form__section__list"></div>
-            <div
-              className="panel__content__form__section__list__items"
-              data-testid={
-                LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
-              }
-            >
-              {tagsArray.map((value, idx) => (
-                // NOTE: since the value must be unique, we will use it as the key
+        <PanelForm>
+          <PanelFormTextField
+            name="Project Name"
+            value={projectIdentifier}
+            isReadOnly={false}
+            update={(value: string | undefined): void => {
+              setProjectIdentifier(value ?? '');
+            }}
+          />
+          <PanelFormTextField
+            name="Description"
+            prompt="Description of the project"
+            value={description}
+            isReadOnly={false}
+            update={(value: string | undefined): void => {
+              setDescription(value ?? '');
+            }}
+          />
+          <PanelFormSection>
+            <div>
+              <div className="panel__content__form__section__header__label">
+                Tags
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                List of annotations to categorize projects
+              </div>
+              <div className="panel__content__form__section__list">
                 <div
-                  key={value}
-                  className={
-                    showEditInput === idx
-                      ? 'panel__content__form__section__list__new-item'
-                      : 'panel__content__form__section__list__item'
+                  className="panel__content__form__section__list__items"
+                  data-testid={
+                    LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
                   }
                 >
-                  {showEditInput === idx ? (
-                    <>
+                  {tagsArray.map((value, idx) => (
+                    // NOTE: since the value must be unique, we will use it as the key
+                    <div
+                      key={value}
+                      className={
+                        showEditInput === idx
+                          ? 'panel__content__form__section__list__new-item'
+                          : 'panel__content__form__section__list__item'
+                      }
+                    >
+                      {showEditInput === idx ? (
+                        <>
+                          <input
+                            className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
+                            spellCheck={false}
+                            value={itemValue}
+                            onChange={changeItemInputValue}
+                          />
+                          <div className="panel__content__form__section__list__new-item__actions">
+                            <button
+                              className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                              disabled={tagsArray.includes(itemValue)}
+                              onClick={updateValue(idx)}
+                              tabIndex={-1}
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
+                              onClick={hideAddOrEditItemInput}
+                              tabIndex={-1}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="panel__content__form__section__list__item__value">
+                            {value}
+                          </div>
+                          <div className="panel__content__form__section__list__item__actions">
+                            <button
+                              className="panel__content__form__section__list__item__edit-btn"
+                              onClick={showEditItemInput(value, idx)}
+                              tabIndex={-1}
+                            >
+                              <PencilIcon />
+                            </button>
+                            <button
+                              className="panel__content__form__section__list__item__remove-btn"
+                              onClick={deleteValue(idx)}
+                              tabIndex={-1}
+                            >
+                              <TimesIcon />
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  {/* ADD NEW VALUE */}
+                  {showEditInput === true && (
+                    <div className="panel__content__form__section__list__new-item">
                       <input
                         className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
                         spellCheck={false}
                         value={itemValue}
+                        title="TAG INPUT"
                         onChange={changeItemInputValue}
                       />
                       <div className="panel__content__form__section__list__new-item__actions">
                         <button
                           className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
                           disabled={tagsArray.includes(itemValue)}
-                          onClick={updateValue(idx)}
+                          onClick={addValue}
                           tabIndex={-1}
                         >
                           Save
@@ -723,191 +834,152 @@ const OverviewViewer = observer(() => {
                           Cancel
                         </button>
                       </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="panel__content__form__section__list__item__value">
-                        {value}
-                      </div>
-                      <div className="panel__content__form__section__list__item__actions">
-                        <button
-                          className="panel__content__form__section__list__item__edit-btn"
-                          onClick={showEditItemInput(value, idx)}
-                          tabIndex={-1}
-                        >
-                          <PencilIcon />
-                        </button>
-                        <button
-                          className="panel__content__form__section__list__item__remove-btn"
-                          onClick={deleteValue(idx)}
-                          tabIndex={-1}
-                        >
-                          <TimesIcon />
-                        </button>
-                      </div>
-                    </>
+                    </div>
                   )}
                 </div>
-              ))}
-              {/* ADD NEW VALUE */}
-              {showEditInput === true && (
-                <div className="panel__content__form__section__list__new-item">
-                  <input
-                    className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                    spellCheck={false}
-                    value={itemValue}
-                    title="TAG INPUT"
-                    onChange={changeItemInputValue}
-                  />
-                  <div className="panel__content__form__section__list__new-item__actions">
-                    <button
+                {showEditInput !== true && (
+                  <div className="panel__content__form__section__list__new-item__add">
+                    <Button
                       className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                      disabled={tagsArray.includes(itemValue)}
-                      onClick={addValue}
-                      tabIndex={-1}
+                      onClick={showAddItemInput}
                     >
-                      Save
-                    </button>
-                    <button
-                      className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
-                      onClick={hideAddOrEditItemInput}
-                      tabIndex={-1}
-                    >
-                      Cancel
-                    </button>
+                      Add Value
+                    </Button>
                   </div>
-                </div>
-              )}
-            </div>
-            {showEditInput !== true && (
-              <div className="panel__content__form__section__list__new-item__add">
-                <button
-                  className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                  onClick={showAddItemInput}
-                  tabIndex={-1}
-                >
-                  Add Value
-                </button>
+                )}
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          </PanelFormSection>
+        </PanelForm>
       </div>
-    </div>
+    </Panel>
   );
 });
-interface ProjectOverviewActivityDisplay {
-  mode: PROJECT_OVERVIEW_ACTIVITY_MODE;
-  title: string;
-}
 
-export const ProjectOverviewActivityBar = observer(() => {
-  const editorStore = useEditorStore();
-  const projectOverviewState = editorStore.projectOverviewState;
-  const changeActivity =
-    (activity: PROJECT_OVERVIEW_ACTIVITY_MODE): (() => void) =>
-    (): void =>
-      projectOverviewState.setActivityMode(activity);
-  const activities: ProjectOverviewActivityDisplay[] = [
-    { mode: PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW, title: 'Overview' },
-    {
-      mode: PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE,
-      title: 'Release',
-    },
-    { mode: PROJECT_OVERVIEW_ACTIVITY_MODE.VERSIONS, title: 'Versions' },
-    { mode: PROJECT_OVERVIEW_ACTIVITY_MODE.WORKSPACES, title: 'Workspaces' },
-  ].filter((activity): activity is ProjectOverviewActivityDisplay =>
-    Boolean(activity),
-  );
+export const ProjectOverview = withEditorStore(
+  observer(() => {
+    const params = useParams<SetupPathParams>();
+    const projectId = params[LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID] ?? '';
+    const applicationStore = useApplicationStore();
+    const editorStore = useEditorStore();
 
-  return (
-    <div
-      data-testid={LEGEND_STUDIO_TEST_ID.PROJECT_OVERVIEW__ACTIVITY_BAR}
-      className="project-overview__activity-bar"
-    >
-      <div className="project-overview__activity-bar__items">
-        {activities.map((activity) => (
-          <div
-            key={activity.mode}
-            className={clsx('project-overview__activity-bar__item', {
-              'project-overview__activity-bar__item--active':
-                activity.mode === projectOverviewState.activityMode,
-            })}
-            onClick={changeActivity(activity.mode)}
-            tabIndex={-1}
-            title={activity.title}
-          >
-            <div className="project-overview__activity-bar__item-mode">
-              {activity.mode}
+    const [openShareModal, setOpenShareModal] = useState(false);
+    const showShareModal = (): void => setOpenShareModal(true);
+    const hideShareModal = (): void => setOpenShareModal(false);
+    const projectOverviewState = editorStore.projectOverviewState;
+
+    useEffect(() => {
+      if (projectId && editorStore.sdlcState.currentProject === undefined) {
+        flowResult(
+          editorStore.sdlcState.fetchCurrentProject(projectId, {
+            suppressNotification: true,
+          }),
+        ).catch(applicationStore.alertUnhandledError);
+      } else {
+        flowResult(projectOverviewState.fetchProjectWorkspaces()).catch(
+          applicationStore.alertUnhandledError,
+        );
+      }
+    }, [
+      editorStore.sdlcState,
+      projectId,
+      applicationStore,
+      projectOverviewState,
+    ]);
+
+    const openProjectWebUrl = (): void =>
+      applicationStore.navigator.visitAddress(
+        editorStore.sdlcState.activeProject.webUrl,
+      );
+
+    const renderOverview = (): React.ReactNode => {
+      switch (projectOverviewState.activityMode) {
+        case PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW:
+          return <OverviewViewer />;
+        case PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE:
+          return <ReleaseEditor />;
+        case PROJECT_OVERVIEW_ACTIVITY_MODE.VERSIONS:
+          return <VersionsViewer />;
+        case PROJECT_OVERVIEW_ACTIVITY_MODE.WORKSPACES:
+          return <WorkspacesViewer />;
+        default:
+          return null;
+      }
+    };
+
+    const toggleAssistant = (): void =>
+      applicationStore.assistantService.toggleAssistant();
+
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SETUP,
+    );
+
+    return (
+      <div className="app__page">
+        <div className="project-overview">
+          <div className="project-overview__body">
+            <div className="activity-bar">
+              <ActivityBarMenu />
+            </div>
+            <div className="project-overview__container">
+              <div className="panel project-overview">
+                <PanelHeader
+                  title="Project"
+                  content={editorStore.sdlcState.currentProject?.name ?? ''}
+                >
+                  <PanelHeaderActions>
+                    <PanelHeaderActionItem
+                      disabled={!editorStore.sdlcState.currentProject}
+                      className="side-bar__header__action"
+                      title="Share..."
+                      onClick={showShareModal}
+                    >
+                      <ShareIcon />
+                    </PanelHeaderActionItem>
+                    <PanelHeaderActionItem
+                      disabled={!editorStore.sdlcState.currentProject}
+                      className="side-bar__header__action"
+                      title="Go to project in underlying VCS system"
+                      onClick={openProjectWebUrl}
+                    >
+                      <ExternalLinkIcon />
+                    </PanelHeaderActionItem>
+                  </PanelHeaderActions>
+                </PanelHeader>
+                <ProjectOverviewActivityBar editorStore={editorStore} />
+                {renderOverview()}
+                {editorStore.sdlcState.currentProject && (
+                  <ShareProjectModal
+                    editorStore={editorStore}
+                    open={openShareModal}
+                    closeModal={hideShareModal}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        ))}
-      </div>
-    </div>
-  );
-});
 
-export const ProjectOverview = observer(() => {
-  const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
-  const [openShareModal, setOpenShareModal] = useState(false);
-  const showShareModal = (): void => setOpenShareModal(true);
-  const hideShareModal = (): void => setOpenShareModal(false);
-  const projectOverviewState = editorStore.projectOverviewState;
-  const openProjectWebUrl = (): void =>
-    applicationStore.navigator.visitAddress(
-      editorStore.sdlcState.activeProject.webUrl,
-    );
-  const renderOverview = (): React.ReactNode => {
-    switch (projectOverviewState.activityMode) {
-      case PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW:
-        return <OverviewViewer />;
-      case PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE:
-        return <ReleaseEditor />;
-      case PROJECT_OVERVIEW_ACTIVITY_MODE.VERSIONS:
-        return <VersionsViewer />;
-      case PROJECT_OVERVIEW_ACTIVITY_MODE.WORKSPACES:
-        return <WorkspacesViewer />;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="panel project-overview">
-      <div className="panel__header side-bar__header">
-        <div className="panel__header__title">
-          <div className="panel__header__title__content side-bar__header__title__content">
-            PROJECT
+          <div className="editor__status-bar">
+            <div className="editor__status-bar__left"></div>
+            <div className="editor__status-bar__right">
+              <button
+                className={clsx(
+                  'editor__status-bar__action editor__status-bar__action__toggler',
+                  {
+                    'editor__status-bar__action__toggler--active':
+                      !applicationStore.assistantService.isHidden,
+                  },
+                )}
+                onClick={toggleAssistant}
+                tabIndex={-1}
+                title="Toggle assistant"
+              >
+                <AssistantIcon />
+              </button>
+            </div>
           </div>
         </div>
-        <div className="panel__header__actions side-bar__header__actions">
-          <button
-            className="panel__header__action side-bar__header__action"
-            disabled={!editorStore.sdlcState.currentProject}
-            title="Share..."
-            onClick={showShareModal}
-          >
-            <ShareIcon />
-          </button>
-          <button
-            className="panel__header__action side-bar__header__action"
-            disabled={!editorStore.sdlcState.currentProject}
-            onClick={openProjectWebUrl}
-            tabIndex={-1}
-            title="Go to project in underlying VCS system"
-          >
-            <ExternalLinkIcon />
-          </button>
-        </div>
       </div>
-      <div className="panel__content side-bar__content project-overview__content">
-        <ProjectOverviewActivityBar />
-        {renderOverview()}
-      </div>
-      {editorStore.sdlcState.currentProject && (
-        <ShareProjectModal open={openShareModal} closeModal={hideShareModal} />
-      )}
-    </div>
-  );
-});
+    );
+  }),
+);

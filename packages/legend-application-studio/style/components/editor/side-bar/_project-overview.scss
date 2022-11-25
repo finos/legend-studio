@@ -16,10 +16,40 @@
 
 @use 'mixins' as *;
 
+.absolute {
+  position: absolute;
+}
+
 .project-overview {
-  &__content {
-    display: flex;
-    flex-direction: row;
+  height: 100%;
+  width: 100%;
+  background: var(--color-dark-grey-50);
+
+  &__body {
+    height: calc(100% - 2.2rem);
+    width: 100%;
+  }
+
+  .panel__header {
+    padding-left: 0.5rem;
+    color: var(--color-light-grey-300);
+    font-weight: bold;
+    background: var(--color-dark-grey-50);
+    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    box-shadow: none !important;
+    text-transform: uppercase;
+  }
+
+  .panel__content {
+    background: var(--color-dark-grey-50);
+  }
+
+  &__container {
+    margin: 0 5rem;
+    padding-top: 0;
+    width: calc(100% - 5rem);
+    position: absolute;
+    top: 0;
   }
 
   &__item__link {
@@ -31,17 +61,13 @@
     background: var(--color-dark-blue-shade-100);
   }
 
-  &__item__link--active,
-  &__item__link--active:hover {
-    background: var(--color-light-blue-450) !important;
-  }
-
   &__item__link__content {
     @include ellipsisTextOverflow;
   }
 
   &__item__link__content__name {
     color: var(--color-light-grey-400);
+    font-family: 'Roboto Mono', monospace;
   }
 
   &__item__link__content__info {
@@ -79,36 +105,19 @@
       padding: 1rem 0;
       cursor: pointer;
       width: 100%;
-      border-left: 0.2rem solid var(--color-dark-grey-200);
       color: var(--color-dark-grey-500);
-
-      &-mode {
-        writing-mode: vertical-lr;
-        transform: rotate(180deg);
-        font-size: 1.2rem;
-      }
 
       &--active {
         color: var(--color-light-grey-200);
-        border-left: 0.2rem solid var(--color-yellow-200);
       }
     }
   }
 
   &__panel {
-    width: calc(100% - 2.8rem);
-  }
-
-  &__panel__content {
-    padding-top: 0 !important;
-  }
-
-  &__release,
-  &__versions,
-  &__workspaces,
-  &__overview {
-    height: 100%;
-    background: var(--color-dark-grey-100);
+    max-width: 80rem;
+    width: 100%;
+    margin: 1rem;
+    border: 0.1rem solid var(--color-dark-grey-100);
   }
 
   &__workspace__viewer {
@@ -190,7 +199,6 @@
       @include flexVCenter;
 
       padding: 0.5rem;
-      height: 9.4rem;
       resize: none;
       line-height: 2rem;
       width: 100%;

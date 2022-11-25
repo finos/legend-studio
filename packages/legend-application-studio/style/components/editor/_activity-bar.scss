@@ -147,9 +147,12 @@
     right: -0.3rem;
   }
 
-  &__review-icon svg,
-  &__project-overview-icon svg {
+  &__review-icon svg {
     font-size: 2.3rem;
+  }
+
+  &__project-overview-icon svg {
+    font-size: 2.6rem;
   }
 
   &__conflict-resolution-icon svg {
