@@ -1,5 +1,7 @@
 # @finos/legend-application-studio-deployment
 
+## 8.14.0
+
 ## 8.13.0
 
 ## 8.12.0
