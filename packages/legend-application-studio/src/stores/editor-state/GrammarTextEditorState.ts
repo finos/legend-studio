@@ -15,7 +15,7 @@
  */
 
 import type { EditorStore } from '../EditorStore.js';
-import { action, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable, computed } from 'mobx';
 import { hashValue, UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type PackageableElement,
@@ -44,6 +44,7 @@ import {
   PURE_CONNECTION_NAME,
 } from '@finos/legend-graph';
 import type { TextEditorPosition } from '@finos/legend-art';
+import { EditorState } from './EditorState.js';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,
@@ -58,32 +59,74 @@ const getGrammarElementTypeLabelRegexString = (
   ) // account for termination after element path
     .replace(/\$/g, '\\$'); // replace special character $ by \\$
 
-export class GrammarTextEditorState {
-  readonly editorStore: EditorStore;
+export const getRegexStringForElement = (
+  elementPath: string,
+  typeLabels: string[],
+): string => {
+  const _typeLabelsString = typeLabels.join('|');
+  return (
+    `^([^\\S\\n])*Class` + // start with type label (accounted for spaces, but not newline)
+    `(\\s+<<.*>>)?` + // account for stereotype
+    `(\\s+\\{.*\\})?` + // account for tagged value
+    `\\s+${elementPath}` + // element path
+    `[\\s\\n]`
+  ) // account for termination after element path
+    .replace(/\$/g, '\\$'); // replace special character $ by \\$
+};
 
+export const getRegexString = (typeLabels: string[]): string => {
+  const _typeLabelsString = typeLabels.join('|');
+  return (
+    `^([^\\S\\n])Class` + // start with type label (accounted for spaces, but not newline)
+    `(\\s+<<.*>>)?` + // account for stereotype
+    `(\\s+\\{.*\\})?` + // account for tagged value
+    `[\\s\\n]`
+  ) // account for termination after element path
+    .replace(/\$/g, '\\$'); // replace special character $ by \\$
+};
+
+export class GrammarTextEditorState extends EditorState {
   graphGrammarText = '';
   currentElementLabelRegexString?: string | undefined;
   wrapText = true;
   forcedCursorPosition?: TextEditorPosition | undefined;
+  element?: PackageableElement | undefined;
+  isElementPathInvalid = false;
 
   constructor(editorStore: EditorStore) {
+    super(editorStore);
     makeObservable(this, {
       graphGrammarText: observable,
       currentElementLabelRegexString: observable,
+      element: observable,
       wrapText: observable,
       forcedCursorPosition: observable,
+      isElementPathInvalid: observable,
+      elementLabelRegexString: computed,
+      setIsElementPathInvalid: action,
       setGraphGrammarText: action,
       setWrapText: action,
       setForcedCursorPosition: action,
       resetCurrentElementLabelRegexString: action,
       setCurrentElementLabelRegexString: action,
+      setElement: action,
     });
+  }
 
-    this.editorStore = editorStore;
+  get label(): string {
+    return this.element ? this.element.name : 'Text Mode';
   }
 
   get currentTextGraphHash(): string {
     return hashValue(this.graphGrammarText);
+  }
+
+  setElement(val: PackageableElement | undefined): void {
+    this.element = val;
+  }
+
+  setIsElementPathInvalid(val: boolean): void {
+    this.isElementPathInvalid = val;
   }
 
   setGraphGrammarText(code: string): void {
@@ -96,6 +139,15 @@ export class GrammarTextEditorState {
 
   setForcedCursorPosition(position: TextEditorPosition | undefined): void {
     this.forcedCursorPosition = position;
+  }
+
+  get elementLabelRegexString(): string | undefined {
+    return this.element
+      ? getRegexStringForElement(
+          this.element.path,
+          this.editorStore.getTypeLabels(),
+        )
+      : undefined;
   }
 
   resetCurrentElementLabelRegexString(): void {

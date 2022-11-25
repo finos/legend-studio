@@ -27,6 +27,7 @@ export const V1_sourceInformationSerialization = new SerializationFactory(
     startColumn: primitive(),
     endLine: primitive(),
     endColumn: primitive(),
+    elementPath: optional(primitive()),
   }),
 );
 

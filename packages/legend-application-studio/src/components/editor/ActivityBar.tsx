@@ -35,6 +35,7 @@ import {
   MenuIcon,
   MenuContentDivider,
   FlaskIcon,
+  SearchIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { forwardRef, useState } from 'react';
@@ -243,6 +244,12 @@ export const ActivityBar = observer(() => {
       title: 'Explorer (Ctrl + Shift + X)',
       icon: <FileTrayIcon className="activity-bar__explorer-icon" />,
     },
+    editorStore.isInGrammarTextMode &&
+      !editorStore.grammarModeManagerState.isInDefaultTextMode && {
+        mode: ACTIVITY_MODE.SEARCH_TEXT,
+        title: 'Search for text ( Ctrl + Shift + F)',
+        icon: <SearchIcon />,
+      },
     !editorStore.isInConflictResolutionMode && {
       mode: ACTIVITY_MODE.GLOBAL_TEST_RUNNER,
       title: 'Global Test Runner',

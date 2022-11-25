@@ -19,6 +19,9 @@ export const BLANK_SERVICE_STORE_SNIPPET = `ServiceStore \${1:model::NewServiceS
   \${2:// service store content}
 }`;
 
+export const BLANK_SERVICE_STORE_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###ServiceStore\nServiceStore ${path}\n{\n}\n`;
+
 export const SERVICE_STORE_WITH_SERVICE = `ServiceStore \${1:model::NewServiceStore}
 (
   Service \${2:someService}

@@ -79,6 +79,8 @@ export const getElementTypeLabel = (
       return 'file generation';
     case PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION:
       return 'generation specification';
+    case PACKAGEABLE_ELEMENT_TYPE.PACKAGEABLE_ELEMENT:
+      return 'packageable element';
     case PACKAGEABLE_ELEMENT_TYPE.DATA:
       return 'data';
     default: {
@@ -449,6 +451,12 @@ export const CreateNewElementModal = observer(() => {
   const elementNameInputRef = useRef<HTMLInputElement>(null);
   // Type
   const typeOptions = ([PACKAGEABLE_ELEMENT_TYPE.PACKAGE] as string[])
+    .concat(
+      editorStore.isInGrammarTextMode &&
+        !editorStore.grammarModeManagerState.isInDefaultTextMode
+        ? ([PACKAGEABLE_ELEMENT_TYPE.PACKAGEABLE_ELEMENT] as string[])
+        : [],
+    )
     .concat(editorStore.getSupportedElementTypes())
     .filter(
       // NOTE: we can only create package in root

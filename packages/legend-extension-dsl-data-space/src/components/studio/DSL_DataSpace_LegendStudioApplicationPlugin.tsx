@@ -31,6 +31,7 @@ import {
   type PureGrammarParserElementSnippetSuggestionsGetter,
   UnsupportedElementEditorState,
   LegendStudioApplicationPlugin,
+  type CodeSnippetGetter,
 } from '@finos/legend-application-studio';
 import {
   PackageableElementExplicitReference,
@@ -47,7 +48,10 @@ import {
   PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
 } from '../../graphManager/DSL_DataSpace_PureGraphManagerPlugin.js';
-import { SIMPLE_DATA_SPACE_SNIPPET } from './DSL_DataSpace_CodeSnippets.js';
+import {
+  SIMPLE_DATASPACE_SNIPPET_WITH_PARSER,
+  SIMPLE_DATA_SPACE_SNIPPET,
+} from './DSL_DataSpace_CodeSnippets.js';
 import type {
   DocumentationEntry,
   PureGrammarTextSuggestion,
@@ -119,6 +123,21 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
           dataSpace.executionContexts = [dataSpaceExecutionContext];
           dataSpace.defaultExecutionContext = dataSpaceExecutionContext;
           return dataSpace;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraNewElementFromStateCreatorsInTextMode(): NewElementFromStateCreator[] {
+    return [
+      (
+        type: string,
+        name: string,
+        state: NewElementState,
+      ): PackageableElement | undefined => {
+        if (type === DATA_SPACE_ELEMENT_TYPE) {
+          return new DataSpace(name);
         }
         return undefined;
       },
@@ -219,6 +238,20 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
               },
             ]
           : undefined,
+    ];
+  }
+
+  getExtraCodeSnippets(): CodeSnippetGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        element: PackageableElement,
+      ): string | undefined => {
+        if (element instanceof DataSpace) {
+          return SIMPLE_DATASPACE_SNIPPET_WITH_PARSER(element.path);
+        }
+        return undefined;
+      },
     ];
   }
 }

@@ -48,6 +48,7 @@ import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { WorkspaceSyncConflictResolver } from './side-bar/WorkspaceSyncConflictResolver.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/LegendStudioApplicationNavigationContext.js';
 import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
+import { GrammarEditPanel } from './GrammarEditPanel.js';
 
 export const Editor = withEditorStore(
   observer(() => {
@@ -205,9 +206,21 @@ export const Editor = withEditorStore(
                       >
                         {(isResolvingConflicts || editable) &&
                           editorStore.isInFormMode && <EditPanel />}
-                        {editable && editorStore.isInGrammarTextMode && (
-                          <GrammarTextEditor />
-                        )}
+                        {editable &&
+                          editorStore.isInGrammarTextMode &&
+                          editorStore.grammarModeManagerState
+                            .isInDefaultTextMode && (
+                            <GrammarTextEditor
+                              grammarTextEditorState={
+                                editorStore.grammarModeManagerState
+                                  .grammarTextEditorState
+                              }
+                            />
+                          )}
+                        {editable &&
+                          editorStore.isInGrammarTextMode &&
+                          !editorStore.grammarModeManagerState
+                            .isInDefaultTextMode && <GrammarEditPanel />}
                         {!editable && <EditPanelSplashScreen />}
                       </ResizablePanel>
                       <ResizablePanelSplitter>

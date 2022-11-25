@@ -66,6 +66,7 @@ import type {
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import type { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import { V1_transformDataElement } from './V1_DataElementTransformer.js';
+import type { INTERNAL__PackageableElement } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/INTERNAL__PackageableElement.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -97,6 +98,12 @@ class V1_PackageableElementTransformer
   }
 
   visit_Package(element: Package): V1_PackageableElement {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_INTERNAL__PackageableElement(
+    element: INTERNAL__PackageableElement,
+  ): V1_PackageableElement {
     throw new UnsupportedOperationError();
   }
 

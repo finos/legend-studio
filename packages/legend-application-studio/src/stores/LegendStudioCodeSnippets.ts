@@ -15,9 +15,19 @@
  */
 
 import { TAB_SIZE } from '@finos/legend-application';
+import { Database, FlatData } from '@finos/legend-graph';
 import { indent } from '@finos/legend-shared';
+import { EmbeddedDataType } from './editor-state/ExternalFormatState.js';
+import type {
+  NewDataElementDriver,
+  NewFileGenerationDriver,
+  NewPackageableConnectionDriver,
+} from './editor/NewElementState.js';
 
 // ------------------------------------- Class -------------------------------------
+
+export const BLANK_CLASS_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###Pure\nClass ${path}\n{\n}\n`;
 
 export const BLANK_CLASS_SNIPPET = `Class \${1:model::NewClass}
 // example of a constraint
@@ -58,7 +68,13 @@ export const SIMPLE_PROFILE_SNIPPET = `Profile \${1:model::NewProfile}
   tags: [\${3:}];
 }`;
 
+export const SIMPLE_PROFILE_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###Pure\nProfile ${path}\n{\n}\n`;
+
 // ------------------------------------- Enumeration -------------------------------------
+
+export const SIMPLE_ENUMERATION_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###Pure\nEnum ${path}\n{\n}\n`;
 
 export const SIMPLE_ENUMERATION_SNIPPET = `Enum \${1:model::NewEnumeration}
 {
@@ -73,6 +89,9 @@ export const SIMPLE_ASSOCIATION_SNIPPET = `Association \${1:model::NewAssociatio
   \${4:prop2}: \${5:model::Type2[1]};
 }`;
 
+export const SIMPLE_ASSOCIATION_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###Pure\nAssociation ${path}\n{\n}\n`;
+
 // ------------------------------------- Function -------------------------------------
 
 export const BLANK_FUNCTION_SNIPPET = `function \${1:model::NewEnumeration}(\${2:param1: String[1]}): \${3:String[1]}
@@ -85,6 +104,9 @@ export const SIMPLE_FUNCTION_SNIPPET = `function \${1:model::NewEnumeration}(): 
   ''
 }`;
 
+export const SIMPLE_FUNCTION_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###Pure\nfunction ${path}(): String[1]\n{\n ''\n}\n`;
+
 // ------------------------------------- Measure -------------------------------------
 
 export const SIMPLE_MEASURE_SNIPPET = `Measure \${1:model::NewEnumeration}
@@ -95,6 +117,9 @@ export const SIMPLE_MEASURE_SNIPPET = `Measure \${1:model::NewEnumeration}
   // Unit_2: x -> $x * 100;
   // Unit_3: x -> $x * 1000;
 }`;
+
+export const SIMPLE_MEASURE_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###Pure\nMeasure ${path}\n{\n}\n`;
 
 // ------------------------------------- Runtime -------------------------------------
 
@@ -125,6 +150,12 @@ export const SIMPLE_RUNTIME_SNIPPET = `Runtime \${1:model::NewRuntime}
   ];
 }`;
 
+export const SIMPLE_RUNTIME_SNIPPET_WITH_PARSER = (
+  path: string,
+  mapping: string,
+): string =>
+  `###Runtime\nRuntime ${path}\n{\n mappings:\n [\n  ${mapping}\n ];\n}\n`;
+
 // ------------------------------------- Connection -------------------------------------
 
 export const JSON_MODEL_CONNECTION_SNIPPET = `JsonModelConnection \${1:model::NewConnection}
@@ -133,6 +164,12 @@ export const JSON_MODEL_CONNECTION_SNIPPET = `JsonModelConnection \${1:model::Ne
   // data URL
   url: '\${3:data:application/json,{\\}}';
 }`;
+
+export const JSON_MODEL_CONNECTION_SNIPPET_WITH_PARSER = (
+  path: string,
+  _class: string,
+): string =>
+  `###Connection\nJsonModelConnection ${path}\n{\n class: ${_class};\n url: 'data:application/json,{}';\n}\n`;
 
 export const XML_MODEL_CONNECTION_SNIPPET = `XmlModelConnection \${1:model::NewConnection}
 {
@@ -156,6 +193,33 @@ export const RELATIONAL_DATABASE_CONNECTION_SNIPPET = `RelationalDatabaseConnect
   specification: \${4:LocalH2 {\\}};
   auth: \${5:DefaultH2 {\\}};
 }`;
+
+export const RELATIONAL_DATABASE_CONNECTION_SNIPPET_WITH_PARSER = (
+  path: string,
+  db: string,
+): string =>
+  `###Connection\nRelationalDatabaseConnection ${path}\n{\n store: ${db};}\n`;
+
+export const FLAT_DATA_CONNECTION_SNIPPET_WITH_PARSER = (
+  path: string,
+  db: string,
+): string => `###Connection\nFlatDataConnection ${path}\n{\n store: ${db};}\n`;
+
+export const CONNECTION_SNIPPET_WITH_PARSER = (
+  path: string,
+  driver: NewPackageableConnectionDriver,
+): string => {
+  if (driver.store instanceof FlatData) {
+    return FLAT_DATA_CONNECTION_SNIPPET_WITH_PARSER(path, driver.store.path);
+  } else if (driver.store instanceof Database) {
+    return RELATIONAL_DATABASE_CONNECTION_SNIPPET_WITH_PARSER(
+      path,
+      driver.store.name,
+    );
+  } else {
+    return JSON_MODEL_CONNECTION_SNIPPET_WITH_PARSER(path, '');
+  }
+};
 
 // ------------------------------------- Post-Processor -------------------------------------
 
@@ -198,6 +262,9 @@ export const BLANK_MAPPING_SNIPPET = `Mapping \${1:model::NewMapping}
   \${2:// mapping content}
 )`;
 
+export const BLANK_MAPPING_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###Mapping\nMapping ${path}\n(\n)\n`;
+
 export const MAPPING_WITH_M2M_CLASS_MAPPING_SNIPPET = `Mapping \${1:model::NewMapping}
 (
   \${2:model::TargetClass}: Pure
@@ -238,6 +305,9 @@ export const BLANK_SERVICE_SNIPPET = `Service \${1:new::NewService}
   execution: \${6:}
   test: \${7:}
 }`;
+
+export const BLANK_SERVICE_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###Service\nService ${path}\n{\n}\n`;
 
 export const SERVICE_WITH_SINGLE_EXECUTION_SNIPPET = `Service \${1:new::NewService}
 {
@@ -334,6 +404,11 @@ export const SIMPLE_GENERATION_SPECIFICATION_SNIPPET = `GenerationSpecification 
   \${2:// generation specification content}
 }`;
 
+export const SIMPLE_GENERATION_SPECIFICATION_SNIPPET_WITH_PARSER = (
+  path: string,
+): string =>
+  `###GenerationSpecification\nGenerationSpecification ${path}\n{\n}\n`;
+
 // ------------------------------------- Relational -------------------------------------
 
 export const BLANK_RELATIONAL_DATABASE_SNIPPET = `Database \${1:model::NewDatabase}
@@ -357,6 +432,10 @@ export const BLANK_RELATIONAL_DATABASE_SNIPPET = `Database \${1:model::NewDataba
   \${2:// database content}
 )`;
 
+export const BLANK_RELATIONAL_DATABASE_SNIPPET_WITH_PARSER = (
+  path: string,
+): string => `###Relational\nDatabase ${path}\n(\n)\n`;
+
 // ------------------------------------- Data -------------------------------------
 
 export const DATA_WITH_EXTERNAL_FORMAT_SNIPPET = `Data \${1:model::NewData}
@@ -378,7 +457,37 @@ export const DATA_WITH_MODEL_STORE_SNIPPET = `Data \${1:model::NewData}
   }#
 }`;
 
+export const DATA_WITH_EXTERNAL_FORMAT_SNIPPET_WITH_PARSER = (
+  path: string,
+): string => `###Data\nData ${path}\n{\n ExternalFormat\n #{\n\n }#\n}\n`;
+
+export const DATA_WITH_MODEL_STORE_SNIPPET_WITH_PARSER = (
+  path: string,
+): string => `###Data\nData ${path}{\n ModelStore\n #{\n\n }#}\n`;
+
+export const SIMPLE_DATA_SNIPPET_WITH_PARSER = (
+  path: string,
+  driver: NewDataElementDriver,
+): string => {
+  if (
+    driver.embeddedDataOption?.value === EmbeddedDataType.EXTERNAL_FORMAT_DATA
+  ) {
+    return DATA_WITH_EXTERNAL_FORMAT_SNIPPET_WITH_PARSER(path);
+  } else {
+    return DATA_WITH_MODEL_STORE_SNIPPET_WITH_PARSER(path);
+  }
+};
+
 export const createDataElementSnippetWithEmbeddedDataSuggestionSnippet = (
   snippetText: string,
 ): string =>
   `Data \${1:model::NewData}\n${indent(snippetText, ' '.repeat(TAB_SIZE))}\n}`;
+
+export const SIMPLE_FILE_GENERATION_SNIPPERT_WITH_PARSER = (
+  path: string,
+  driver: NewFileGenerationDriver,
+): string => `###FileGeneration\n${driver.typeOption?.label} ${path}\n{\n}\n`;
+
+export const SIMPLE_FLAT_DATA_STORE_SNIPPET_WITH_PARSER = (
+  path: string,
+): string => `###FlatData\nFlatData ${path}\n{\n}\n`;

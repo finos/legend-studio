@@ -457,13 +457,9 @@ export class ProjectViewerStore {
           `Can't build graph. Redirected to text mode for debugging. Error: ${error.message}`,
         );
         try {
-          const editorGrammar =
-            (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
-              entities,
-            )) as string;
           yield flowResult(
-            this.editorStore.grammarTextEditorState.setGraphGrammarText(
-              editorGrammar,
+            this.editorStore.grammarModeManagerState.setGraphGrammarFromEntites(
+              entities,
             ),
           );
         } catch {

@@ -66,6 +66,28 @@
     }
   }
 
+  &__header__tab__text-mode__icon svg {
+    color: var(--color-blue-100) !important;
+    font-size: 1.3rem;
+  }
+
+  &__header__tab__label {
+    color: inherit;
+    padding: 0 0.5rem;
+    white-space: nowrap;
+  }
+
+  &__header__tab__label__diff {
+    @include flexVCenter;
+
+    &__label {
+      @include flexCenter;
+
+      height: 100%;
+      padding: 0 1rem;
+    }
+  }
+
   &__header__actions {
     display: flex;
     height: 100%;

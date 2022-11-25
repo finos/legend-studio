@@ -63,6 +63,7 @@ import { observe_FlatData } from './STO_FlatData_ObserverHelper.js';
 import { observe_Database } from './STO_Relational_ObserverHelper.js';
 import type { DataElement } from '../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import { observe_DataElement } from './DSL_Data_ObserverHelper.js';
+import type { INTERNAL__PackageableElement } from '../../../graph/metamodel/pure/packageableElements/domain/INTERNAL__PackageableElement.js';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {
   observerContext: ObserverContext;
@@ -85,6 +86,12 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
 
   visit_Package(element: Package): void {
     observe_Package(element, this.observerContext);
+  }
+
+  visit_INTERNAL__PackageableElement(
+    element: INTERNAL__PackageableElement,
+  ): void {
+    return;
   }
 
   visit_SectionIndex(element: SectionIndex): void {

@@ -38,6 +38,7 @@ export type { Function } from './graph/metamodel/pure/packageableElements/domain
 export { Class } from './graph/metamodel/pure/packageableElements/domain/Class.js';
 export { type AnnotatedElement } from './graph/metamodel/pure/packageableElements/domain/AnnotatedElement.js';
 export { Package } from './graph/metamodel/pure/packageableElements/domain/Package.js';
+export { INTERNAL__PackageableElement } from './graph/metamodel/pure/packageableElements/domain/INTERNAL__PackageableElement.js';
 export { Constraint } from './graph/metamodel/pure/packageableElements/domain/Constraint.js';
 export { Association } from './graph/metamodel/pure/packageableElements/domain/Association.js';
 export { Enumeration } from './graph/metamodel/pure/packageableElements/domain/Enumeration.js';

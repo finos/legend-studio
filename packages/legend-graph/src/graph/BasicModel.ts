@@ -65,6 +65,7 @@ import {
 } from '../graph/helpers/DomainHelper.js';
 import { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
+import { INTERNAL__PackageableElement } from './metamodel/pure/packageableElements/domain/INTERNAL__PackageableElement.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -548,6 +549,8 @@ export abstract class BasicModel {
     } else if (element instanceof DataElement) {
       this.setOwnDataElement(element.path, element);
     } else if (element instanceof Package) {
+      // do nothing
+    } else if (element instanceof INTERNAL__PackageableElement) {
       // do nothing
     } else {
       const extension = this.getExtensionForElementClass(

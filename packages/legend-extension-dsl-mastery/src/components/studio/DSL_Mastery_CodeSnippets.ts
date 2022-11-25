@@ -56,3 +56,7 @@ export const SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET = `MasterRecordDefinition \
      }
    ]
  }`;
+
+export const SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET_WITH_PARSER = (
+  path: string,
+): string => `###Mastery\nMasterRecordDefinition ${path}\n{\n}\n`;

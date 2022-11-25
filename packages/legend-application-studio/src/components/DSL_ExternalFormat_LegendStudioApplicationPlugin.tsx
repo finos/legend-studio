@@ -53,6 +53,7 @@ import {
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   LegendStudioApplicationPlugin,
+  type CodeSnippetGetter,
 } from '../stores/LegendStudioApplicationPlugin.js';
 import type {
   ConnectionEditorRenderer,
@@ -83,6 +84,8 @@ import {
   SCHEMASET_WITH_JSON_SCHEMA_SNIPPET,
   SCHEMASET_WITH_XML_SCHEMA_SNIPPET,
   SCHEMASET_WITH_FLAT_DATA_SCHEMA_SNIPPET,
+  SIMPLE_BINDING_SNIPPET_WITH_PARSER,
+  SIMPLE_SCHEMASET_SNIPPET_WITH_PARSER,
 } from './DSL_ExternalFormat_CodeSnippets.js';
 import {
   NewSchemaSetDriver,
@@ -196,6 +199,25 @@ export class DSL_ExternalFormat_LegendStudioApplicationPlugin
           const modelUnit = new ModelUnit();
           binding.modelUnit = modelUnit;
           return binding;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraNewElementFromStateCreatorsInTextMode(): NewElementFromStateCreator[] {
+    return [
+      (
+        type: string,
+        name: string,
+        state: NewElementState,
+      ): PackageableElement | undefined => {
+        if (type === SCHEMA_SET_ELEMENT_TYPE) {
+          return state
+            .getNewElementDriver(NewSchemaSetDriver)
+            .createElementInTextMode(name);
+        } else if (type === BINDING_ELEMENT_TYPE) {
+          return new Binding(name);
         }
         return undefined;
       },
@@ -448,6 +470,22 @@ export class DSL_ExternalFormat_LegendStudioApplicationPlugin
               },
             ]
           : undefined,
+    ];
+  }
+
+  getExtraCodeSnippets(): CodeSnippetGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        element: PackageableElement,
+      ): string | undefined => {
+        if (element instanceof SchemaSet) {
+          return SIMPLE_SCHEMASET_SNIPPET_WITH_PARSER(element.path);
+        } else if (element instanceof Binding) {
+          return SIMPLE_BINDING_SNIPPET_WITH_PARSER(element.path);
+        }
+        return undefined;
+      },
     ];
   }
 }

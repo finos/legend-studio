@@ -91,8 +91,14 @@ export abstract class LambdaEditorState {
   processSourceInformation(
     sourceInformation: SourceInformation,
   ): SourceInformation {
-    const { sourceId, startLine, startColumn, endLine, endColumn } =
-      sourceInformation;
+    const {
+      sourceId,
+      startLine,
+      startColumn,
+      endLine,
+      endColumn,
+      elementPath,
+    } = sourceInformation;
     const lineOffset = 0;
     const columnOffset = this.lambdaPrefix.length;
     return new SourceInformation(
@@ -101,6 +107,7 @@ export abstract class LambdaEditorState {
       startColumn - (startLine === 1 ? columnOffset : 0),
       endLine + lineOffset,
       endColumn - (endLine === 1 ? columnOffset : 0),
+      elementPath,
     );
   }
 

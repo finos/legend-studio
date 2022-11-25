@@ -20,4 +20,5 @@ export class V1_SourceInformation {
   startColumn!: number;
   endLine!: number;
   endColumn!: number;
+  elementPath?: string | undefined;
 }

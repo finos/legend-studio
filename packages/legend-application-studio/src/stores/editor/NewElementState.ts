@@ -46,6 +46,7 @@ import {
   type PureModelConnection,
   ELEMENT_PATH_DELIMITER,
   Package,
+  INTERNAL__PackageableElement,
   Class,
   Association,
   Enumeration,
@@ -179,6 +180,8 @@ export abstract class NewElementDriver<T extends PackageableElement> {
   abstract get isValid(): boolean;
 
   abstract createElement(name: string): T;
+
+  abstract createElementInTextMode(name: string): T;
 }
 
 export class NewPackageableRuntimeDriver extends NewElementDriver<PackageableRuntime> {
@@ -217,6 +220,10 @@ export class NewPackageableRuntimeDriver extends NewElementDriver<PackageableRun
       ),
     );
     return runtime;
+  }
+
+  createElementInTextMode(name: string): PackageableRuntime {
+    return new PackageableRuntime(name);
   }
 }
 
@@ -446,6 +453,10 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
     ); // default to model store
     return connection;
   }
+
+  createElementInTextMode(name: string): PackageableConnection {
+    return new PackageableConnection(name);
+  }
 }
 
 export class NewServiceDriver extends NewElementDriver<Service> {
@@ -508,6 +519,10 @@ export class NewServiceDriver extends NewElementDriver<Service> {
     }
     return service;
   }
+
+  createElementInTextMode(name: string): Service {
+    return new Service(name);
+  }
 }
 
 export class NewFileGenerationDriver extends NewElementDriver<FileGenerationSpecification> {
@@ -551,6 +566,10 @@ export class NewFileGenerationDriver extends NewElementDriver<FileGenerationSpec
     );
     return fileGeneration;
   }
+
+  createElementInTextMode(name: string): FileGenerationSpecification {
+    return new FileGenerationSpecification(name);
+  }
 }
 
 // Note: Main reason for driver is to disallow if generation specification already exists
@@ -570,6 +589,10 @@ export class NewGenerationSpecificationDriver extends NewElementDriver<Generatio
   }
 
   createElement(name: string): GenerationSpecification {
+    return new GenerationSpecification(name);
+  }
+
+  createElementInTextMode(name: string): GenerationSpecification {
     return new GenerationSpecification(name);
   }
 }
@@ -607,6 +630,10 @@ export class NewDataElementDriver extends NewElementDriver<DataElement> {
     );
 
     return dataElement;
+  }
+
+  createElementInTextMode(name: string): DataElement {
+    return new DataElement(name);
   }
 
   get isValid(): boolean {
@@ -774,13 +801,17 @@ export class NewElementState {
           `Can't create elements for type other than 'package' in root package`,
         );
       } else {
-        const element = this.createElement(elementName);
-        yield flowResult(
-          this.editorStore.addElement(element, packagePath, true),
-        );
+        const element = this.editorStore.isInFormMode
+          ? this.createElement(elementName)
+          : this.createElementInTextMode(elementName);
+        if (element) {
+          yield flowResult(
+            this.editorStore.addElement(element, packagePath, true),
+          );
 
-        // post creation handling
-        yield handlePostCreateAction(element, this.editorStore);
+          // post creation handling
+          yield handlePostCreateAction(element, this.editorStore);
+        }
       }
     }
     this.closeModal();
@@ -865,6 +896,109 @@ export class NewElementState {
               (
                 plugin as DSL_LegendStudioApplicationPlugin_Extension
               ).getExtraNewElementFromStateCreators?.() ?? [],
+          );
+        for (const creator of extraNewElementFromStateCreators) {
+          const _element = creator(this.type, name, this);
+          if (_element) {
+            element = _element;
+            break;
+          }
+        }
+        if (!element) {
+          throw new UnsupportedOperationError(
+            `Can't create element of type '${this.type}': no compatible element creator available from plugins`,
+          );
+        }
+      }
+    }
+    return element;
+  }
+
+  /**
+   * This method is used when we create an element form the text mode. We only create metamodels with just the path
+   * This would be similar to doing first pass building. We do first pass when we build the graph in text mode so
+   * aligning the creating element logic with that.
+   */
+  createElementInTextMode(name: string): PackageableElement | undefined {
+    let element: PackageableElement | undefined;
+    switch (this.type) {
+      case PACKAGEABLE_ELEMENT_TYPE.PACKAGEABLE_ELEMENT:
+        element = new INTERNAL__PackageableElement(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.PACKAGE:
+        element = new Package(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.CLASS:
+        element = new Class(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.ASSOCIATION:
+        element = new Association(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.ENUMERATION:
+        element = new Enumeration(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.MEASURE:
+        element = new Measure(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.PROFILE:
+        element = new Profile(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.FUNCTION: {
+        element = new ConcreteFunctionDefinition(
+          name,
+          PackageableElementExplicitReference.create(PrimitiveType.STRING),
+          Multiplicity.ONE,
+        );
+        break;
+      }
+      case PACKAGEABLE_ELEMENT_TYPE.MAPPING:
+        element = new Mapping(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE:
+        element = new FlatData(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.DATABASE:
+        element = new Database(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.SERVICE: {
+        element =
+          this.getNewElementDriver(NewServiceDriver).createElementInTextMode(
+            name,
+          );
+        break;
+      }
+      case PACKAGEABLE_ELEMENT_TYPE.CONNECTION:
+        element = this.getNewElementDriver(
+          NewPackageableConnectionDriver,
+        ).createElementInTextMode(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.RUNTIME:
+        element = this.getNewElementDriver(
+          NewPackageableRuntimeDriver,
+        ).createElementInTextMode(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION:
+        element = this.getNewElementDriver(
+          NewFileGenerationDriver,
+        ).createElementInTextMode(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.DATA:
+        element =
+          this.getNewElementDriver(
+            NewDataElementDriver,
+          ).createElementInTextMode(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION:
+        element = new GenerationSpecification(name);
+        break;
+      default: {
+        const extraNewElementFromStateCreators = this.editorStore.pluginManager
+          .getApplicationPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSL_LegendStudioApplicationPlugin_Extension
+              ).getExtraNewElementFromStateCreatorsInTextMode?.() ?? [],
           );
         for (const creator of extraNewElementFromStateCreators) {
           const _element = creator(this.type, name, this);

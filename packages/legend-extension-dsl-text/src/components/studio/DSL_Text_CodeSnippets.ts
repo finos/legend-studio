@@ -24,3 +24,6 @@ export const MARKDOWN_TEXT_SNIPPET = `Text \${1:model::NewText}
   type: markdown;
   content: '\${2:}';
 }`;
+
+export const SIMPLE_TEXT_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###Text\nText ${path}\n{\n}\n`;

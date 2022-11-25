@@ -21,6 +21,9 @@ export const EMPTY_DIAGRAM_SNIPPET = `Diagram \${1:model::NewDiagram}
   \${2:// diagram content: it is highly recommended to create diagrams using\n  // diagram editor as it gives better visual guidance and less error-prone}
 }`;
 
+export const SIMPLE_DIAGRAM_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###Diagram\nDiagram ${path}\n{\n}\n`;
+
 export const getDiagramSnippetWithOneClassView =
   (): string => `Diagram \${1:model::NewDiagram}
 {

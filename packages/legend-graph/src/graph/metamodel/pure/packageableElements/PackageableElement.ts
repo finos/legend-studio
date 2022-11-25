@@ -23,6 +23,7 @@ import {
 import { ELEMENT_PATH_DELIMITER } from '../../../MetaModelConst.js';
 import { CORE_HASH_STRUCTURE } from '../../../../graph/Core_HashUtils.js';
 import type { Package } from './domain/Package.js';
+import type { INTERNAL__PackageableElement } from './domain/INTERNAL__PackageableElement.js';
 import type { Profile } from './domain/Profile.js';
 import type { Enumeration } from './domain/Enumeration.js';
 import type { Class } from './domain/Class.js';
@@ -46,6 +47,7 @@ export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
   visit_SectionIndex(element: SectionIndex): T;
   visit_Package(element: Package): T;
+  visit_INTERNAL__PackageableElement(element: INTERNAL__PackageableElement): T;
   visit_PrimitiveType(element: PrimitiveType): T;
   visit_Profile(element: Profile): T;
   visit_Enumeration(element: Enumeration): T;

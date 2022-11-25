@@ -206,12 +206,36 @@ export class V1_Engine {
     );
   }
 
+  async pureModelContextDataToPureCodeWithElements(
+    graph: V1_PureModelContextData,
+  ): Promise<Map<string, string>> {
+    return deserializeMap(
+      await this.engineServerClient.JSONToGrammar_elements(
+        this.serializePureModelContextData(graph),
+        V1_RenderStyle.STANDARD,
+      ),
+      (v) => v,
+    );
+  }
+
   async pureCodeToPureModelContextData(
     code: string,
     options?: { onError?: () => void },
   ): Promise<V1_PureModelContextData> {
     return V1_deserializePureModelContextData(
       await this.pureCodeToPureModelContextDataJSON(code, {
+        ...options,
+        returnSourceInformation: false,
+      }),
+    );
+  }
+
+  async pureCodeWithElementsToPureModelContextData(
+    code: Map<string, string>,
+    options?: { onError?: () => void },
+  ): Promise<V1_PureModelContextData> {
+    return V1_deserializePureModelContextData(
+      await this.pureCodeWithElementsToPureModelContextDataJSON(code, {
         ...options,
         returnSourceInformation: false,
       }),
@@ -225,6 +249,38 @@ export class V1_Engine {
     try {
       return await this.engineServerClient.grammarToJSON_model(
         code,
+        undefined,
+        undefined,
+        options?.returnSourceInformation,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      options?.onError?.();
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildParserError(
+          V1_ParserError.serialization.fromJson(
+            error.payload as PlainObject<V1_ParserError>,
+          ),
+        );
+      }
+      throw error;
+    }
+  }
+
+  private async pureCodeWithElementsToPureModelContextDataJSON(
+    code: Map<string, string>,
+    options?: { onError?: () => void; returnSourceInformation?: boolean },
+  ): Promise<PlainObject<V1_PureModelContextData>> {
+    const input: Record<string, string> = {};
+    code.forEach((inputCode, key) => {
+      input[key] = inputCode;
+    });
+    try {
+      return await this.engineServerClient.grammarToJSON_elements(
+        input,
         undefined,
         undefined,
         options?.returnSourceInformation,
@@ -453,6 +509,60 @@ export class V1_Engine {
     }
   }
 
+  async compileTextWithElements(
+    graphText: Map<string, string>,
+    compileContext?: V1_PureModelContextData,
+    options?: { onError?: () => void; getCompilationWarnings?: boolean },
+  ): Promise<V1_TextCompilationResult> {
+    const mainGraph = await this.pureCodeWithElementsToPureModelContextDataJSON(
+      graphText,
+      {
+        ...options,
+        // NOTE: we need to return source information here so we can locate the compilation
+        // errors/warnings
+        returnSourceInformation: true,
+      },
+    );
+    const pureModelContextDataJson = compileContext
+      ? mergeObjects(
+          this.serializePureModelContextData(compileContext),
+          mainGraph,
+          false,
+        )
+      : mainGraph;
+    try {
+      await this.engineServerClient.compile(pureModelContextDataJson);
+      const model = V1_deserializePureModelContextData(mainGraph);
+      const compilationResult = await this.engineServerClient.compile(
+        pureModelContextDataJson,
+      );
+      return {
+        model,
+        warnings: (
+          compilationResult.warnings as
+            | PlainObject<V1_CompilationWarning>[]
+            | undefined
+        )?.map((warning) =>
+          V1_CompilationWarning.serialization.fromJson(warning),
+        ),
+      };
+    } catch (error) {
+      assertErrorThrown(error);
+      options?.onError?.();
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildCompilationError(
+          V1_CompilationError.serialization.fromJson(
+            error.payload as PlainObject<V1_CompilationError>,
+          ),
+        );
+      }
+      throw error;
+    }
+  }
+
   async getLambdaReturnType(
     lambda: V1_RawLambda,
     model: V1_PureModelContextData,
@@ -621,6 +731,22 @@ export class V1_Engine {
     const pureCode = await this.engineServerClient.JSONToGrammar_model(
       model,
       V1_RenderStyle.STANDARD,
+    );
+    return pureCode;
+  }
+
+  async generateElements(
+    input: V1_ExternalFormatModelGenerationInput,
+  ): Promise<Map<string, string>> {
+    const model = (await this.engineServerClient.generateModel(
+      V1_ExternalFormatModelGenerationInput.serialization.toJson(input),
+    )) as unknown as PlainObject<V1_PureModelContextData>;
+    const pureCode = deserializeMap(
+      await this.engineServerClient.JSONToGrammar_elements(
+        model,
+        V1_RenderStyle.STANDARD,
+      ),
+      (v) => v,
     );
     return pureCode;
   }

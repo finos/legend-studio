@@ -30,14 +30,21 @@ import { CompilationWarning, EngineError } from '@finos/legend-graph';
 const ProblemItem = observer((props: { problem: Problem }) => {
   const { problem } = props;
   const editorStore = useEditorStore();
+  const grammarModeManagerState = editorStore.grammarModeManagerState;
   const isStale = editorStore.graphState.areProblemsStale;
   const goToSource = (): void => {
     // NOTE: in text mode, we allow click to go to position even when the problems might already be stale
     if (editorStore.isInGrammarTextMode && problem.sourceInformation) {
-      editorStore.grammarTextEditorState.setForcedCursorPosition({
-        lineNumber: problem.sourceInformation.startLine,
-        column: problem.sourceInformation.startColumn,
-      });
+      if (grammarModeManagerState.isInDefaultTextMode) {
+        grammarModeManagerState.grammarTextEditorState.setForcedCursorPosition({
+          lineNumber: problem.sourceInformation.startLine,
+          column: problem.sourceInformation.startColumn,
+        });
+      } else {
+        grammarModeManagerState.openGrammarTextEditor(
+          problem.sourceInformation,
+        );
+      }
     }
   };
 
@@ -65,7 +72,13 @@ const ProblemItem = observer((props: { problem: Problem }) => {
         {problem.sourceInformation && (
           <div className="auxiliary-panel__problem__source">
             {editorStore.isInGrammarTextMode &&
-              `[Ln ${problem.sourceInformation.startLine}, Col ${problem.sourceInformation.startColumn}]`}
+              `[${
+                editorStore.grammarModeManagerState.isInDefaultTextMode
+                  ? ''
+                  : `File ${problem.sourceInformation.elementPath}, `
+              }Ln ${problem.sourceInformation.startLine}, Col ${
+                problem.sourceInformation.startColumn
+              }]`}
           </div>
         )}
       </button>

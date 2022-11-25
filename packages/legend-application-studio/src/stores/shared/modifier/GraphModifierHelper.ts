@@ -55,6 +55,17 @@ export const graph_addElement = action(
   },
 );
 
+export const graph_addElementInTextMode = action(
+  (
+    graph: PureModel,
+    element: PackageableElement,
+    packagePath: string | undefined,
+    context: ObserverContext,
+  ): void => {
+    graph.addElement(element, packagePath);
+  },
+);
+
 export const graph_deleteElement = action(
   (graph: PureModel, element: PackageableElement): void => {
     graph.deleteElement(element);
@@ -78,3 +89,15 @@ export const graph_renameElement = action(
     }
   },
 );
+
+export const graph_renameElementInTextMode = action(
+  (
+    graph: PureModel,
+    element: PackageableElement,
+    newPath: string,
+    context: ObserverContext,
+  ): void => {
+    graph.renameElement(element, newPath);
+  },
+);
+

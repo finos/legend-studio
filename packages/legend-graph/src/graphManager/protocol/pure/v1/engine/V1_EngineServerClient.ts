@@ -166,6 +166,28 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
+  grammarToJSON_elements = (
+    input: Record<string, string>,
+    sourceId?: string | undefined,
+    lineOffset?: number | undefined,
+    returnSourceInformation?: boolean | undefined,
+  ): Promise<PlainObject<V1_PureModelContextData>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GRAMMAR_TO_JSON),
+      `${this._grammarToJSON()}/elements`,
+      input,
+      {},
+      {
+        [HttpHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON,
+      },
+      {
+        sourceId,
+        lineOffset,
+        returnSourceInformation,
+      },
+      { enableCompression: true },
+    );
+
   grammarToJSON_lambda = (
     input: string,
     sourceId?: string | undefined,
@@ -260,6 +282,20 @@ export class V1_EngineServerClient extends AbstractServerClient {
       input,
       {},
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
+      { renderStyle },
+      { enableCompression: true },
+    );
+
+  JSONToGrammar_elements = (
+    input: PlainObject<V1_PureModelContextData>,
+    renderStyle?: V1_RenderStyle | undefined,
+  ): Promise<Record<string, string>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.JSON_TO_GRAMMAR),
+      `${this._JSONToGrammar()}/elements`,
+      input,
+      {},
+      { [HttpHeader.ACCEPT]: ContentType.APPLICATION_JSON },
       { renderStyle },
       { enableCompression: true },
     );

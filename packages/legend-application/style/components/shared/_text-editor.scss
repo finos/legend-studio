@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+ @use 'mixins' as *;
+
 .text-editor {
   &__container {
     height: 100%;
@@ -28,5 +30,48 @@
     top: 0;
     left: 0;
     overflow: hidden;
+  }
+
+  &__header__content__actions {
+    @include flexVCenter;
+
+    justify-content: flex-end;
+    flex: 1;
+  }
+
+  &__header__custom-action {
+    @include flexCenter;
+
+    height: 2.2rem;
+    padding: 0 1rem;
+    border-radius: 0.2rem;
+    margin-right: 0.5rem;
+    font-weight: 500;
+    border: 0.1rem solid var(--color-dark-grey-300);
+
+    &__label {
+      font-size: 1.2rem;
+      color: var(--color-dark-grey-500);
+    }
+
+    &__icon {
+      margin-left: 1rem;
+      color: var(--color-dark-grey-500);
+    }
+
+    svg {
+      cursor: pointer;
+    }
+  }
+
+  &__header__menu-content {
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  &__incorrect--element--path {
+    text-decoration-color: var(--color-red-180);
+    background-color: var(--color-red-180);
+    text-decoration: underline dotted;
   }
 }

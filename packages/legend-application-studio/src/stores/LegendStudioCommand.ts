@@ -20,6 +20,7 @@ export enum LEGEND_STUDIO_COMMAND_KEY {
   SYNC_WITH_WORKSPACE = 'editor.sync-workspace',
   CREATE_ELEMENT = 'editor.create-new-element',
   SEARCH_ELEMENT = 'editor.search-element',
+  SEARCH_TEXT = 'editor.search-text',
   TOGGLE_TEXT_MODE = 'editor.toggle-text-mode',
   GENERATE = 'editor.generate',
   COMPILE = 'editor.compile',
@@ -43,6 +44,10 @@ export const LEGEND_STUDIO_COMMAND_CONFIG: CommandConfigData = {
   [LEGEND_STUDIO_COMMAND_KEY.SEARCH_ELEMENT]: {
     title: 'Search for element',
     defaultKeyboardShortcut: 'Control+KeyP',
+  },
+  [LEGEND_STUDIO_COMMAND_KEY.SEARCH_TEXT]: {
+    title: 'Search for text',
+    defaultKeyboardShortcut: 'Control+Shift+KeyF',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_MODEL_LOADER]: {
     title: 'Toggle model loader',

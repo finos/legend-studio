@@ -232,13 +232,25 @@ export abstract class AbstractPureGraphManager {
   // ------------------------------------------- Grammar -------------------------------------------
 
   abstract graphToPureCode(graph: PureModel): Promise<string>;
+  abstract graphToPureCodeWithElements(
+    graph: PureModel,
+  ): Promise<Map<string, string>>;
   abstract pureCodeToEntities(
     code: string,
     options?: {
       TEMPORARY__keepSectionIndex?: boolean;
     },
   ): Promise<Entity[]>;
+  abstract pureCodeWithElementsToEntities(
+    code: Map<string, string>,
+    options?: {
+      TEMPORARY__keepSectionIndex?: boolean;
+    },
+  ): Promise<Entity[]>;
   abstract entitiesToPureCode(entities: Entity[]): Promise<string>;
+  abstract entitiesToPureCodeWithElements(
+    entities: Entity[],
+  ): Promise<Map<string, string>>;
   abstract pureCodeToLambda(
     lambda: string,
     lambdaId?: string,
@@ -276,6 +288,11 @@ export abstract class AbstractPureGraphManager {
   ): Promise<CompilationResult>;
   abstract compileText(
     graphGrammar: string,
+    graph: PureModel,
+    options?: { onError?: () => void },
+  ): Promise<TextCompilationResult>;
+  abstract compileTextWithElements(
+    graphGrammar: Map<string, string>,
     graph: PureModel,
     options?: { onError?: () => void },
   ): Promise<TextCompilationResult>;

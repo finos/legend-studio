@@ -392,6 +392,7 @@ const buildSourceInformation = (
       sourceInformation.endColumn,
       `Source information 'endColumn' field is missing`,
     ),
+    sourceInformation.elementPath,
   );
 
 export const V1_buildCompilationError = (

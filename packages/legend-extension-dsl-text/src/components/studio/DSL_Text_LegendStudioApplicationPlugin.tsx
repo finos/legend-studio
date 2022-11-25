@@ -31,6 +31,7 @@ import {
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarParserElementSnippetSuggestionsGetter,
   type PureGrammarParserElementDocumentationGetter,
+  type CodeSnippetGetter,
 } from '@finos/legend-application-studio';
 import { FileIcon } from '@finos/legend-art';
 import { TextEditorState } from '../../stores/studio/TextEditorState.js';
@@ -45,6 +46,7 @@ import {
 import {
   MARKDOWN_TEXT_SNIPPET,
   PLAIN_TEXT_SNIPPET,
+  SIMPLE_TEXT_SNIPPET_WITH_PARSER,
 } from './DSL_Text_CodeSnippets.js';
 import { create_TextElement } from '../../graph/helpers/DSL_Text_Helper.js';
 import type {
@@ -119,6 +121,21 @@ export class DSL_Text_LegendStudioApplicationPlugin
   }
 
   getExtraNewElementFromStateCreators(): NewElementFromStateCreator[] {
+    return [
+      (
+        type: string,
+        name: string,
+        state: NewElementState,
+      ): PackageableElement | undefined => {
+        if (type === TEXT_ELEMENT_TYPE) {
+          return create_TextElement(name);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraNewElementFromStateCreatorsInTextMode(): NewElementFromStateCreator[] {
     return [
       (
         type: string,
@@ -233,6 +250,20 @@ export class DSL_Text_LegendStudioApplicationPlugin
               },
             ]
           : undefined,
+    ];
+  }
+
+  getExtraCodeSnippets(): CodeSnippetGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        element: PackageableElement,
+      ): string | undefined => {
+        if (element instanceof Text) {
+          return SIMPLE_TEXT_SNIPPET_WITH_PARSER(element.path);
+        }
+        return undefined;
+      },
     ];
   }
 }

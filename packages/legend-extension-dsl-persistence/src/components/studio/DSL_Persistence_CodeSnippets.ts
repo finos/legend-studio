@@ -100,3 +100,10 @@ export const BLANK_PERSISTENCE_CONTEXT_SNIPPET = `PersistenceContext \${1:model:
 {
   \${2:// persistence context content}
 }`;
+
+export const BLANK_PERSISTENCE_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###Persistence\nPersistence ${path}\n{\n}\n`;
+
+export const BLANK_PERSISTENCE_CONTEXT_SNIPPET_WITH_PARSER = (
+  path: string,
+): string => `###Persistence\nPersistenceContext ${path}\n{\n}\n`;

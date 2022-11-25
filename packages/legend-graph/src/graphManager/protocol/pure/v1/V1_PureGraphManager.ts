@@ -1514,11 +1514,42 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return grammarToJson;
   }
 
+  async graphToPureCodeWithElements(
+    graph: PureModel,
+  ): Promise<Map<string, string>> {
+    const startTime = Date.now();
+    const graphData = this.graphToPureModelContextData(graph);
+    const grammarToJson =
+      await this.engine.pureModelContextDataToPureCodeWithElements(graphData);
+    this.log.info(
+      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED),
+      Date.now() - startTime,
+      'ms',
+    );
+    return grammarToJson;
+  }
+
   async entitiesToPureCode(entities: Entity[]): Promise<string> {
     const startTime = Date.now();
     const grammarToJson = await this.engine.pureModelContextDataToPureCode(
       await this.entitiesToPureModelContextData(entities),
     );
+    this.log.info(
+      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED),
+      Date.now() - startTime,
+      'ms',
+    );
+    return grammarToJson;
+  }
+
+  async entitiesToPureCodeWithElements(
+    entities: Entity[],
+  ): Promise<Map<string, string>> {
+    const startTime = Date.now();
+    const grammarToJson =
+      await this.engine.pureModelContextDataToPureCodeWithElements(
+        await this.entitiesToPureModelContextData(entities),
+      );
     this.log.info(
       LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED),
       Date.now() - startTime,
@@ -1534,6 +1565,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     },
   ): Promise<Entity[]> {
     const pmcd = await this.engine.pureCodeToPureModelContextData(code);
+    pmcd.elements = pmcd.elements.filter(
+      (el) =>
+        options?.TEMPORARY__keepSectionIndex ??
+        !(el instanceof V1_SectionIndex),
+    );
+    return this.pureModelContextDataToEntities(pmcd);
+  }
+
+  async pureCodeWithElementsToEntities(
+    code: Map<string, string>,
+    options?: {
+      TEMPORARY__keepSectionIndex?: boolean;
+    },
+  ): Promise<Entity[]> {
+    const pmcd = await this.engine.pureCodeWithElementsToPureModelContextData(
+      code,
+    );
     pmcd.elements = pmcd.elements.filter(
       (el) =>
         options?.TEMPORARY__keepSectionIndex ??
@@ -1633,6 +1681,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: { onError?: () => void },
   ): Promise<TextCompilationResult> {
     const compilationResult = await this.engine.compileText(
+      graphGrammar,
+      this.getGraphCompileContext(graph),
+      options,
+    );
+    return {
+      entities: this.pureModelContextDataToEntities(compilationResult.model),
+      warnings: compilationResult.warnings?.map(
+        (warning) =>
+          new CompilationWarning(warning.message, warning.sourceInformation),
+      ),
+    };
+  }
+
+  async compileTextWithElements(
+    graphGrammar: Map<string, string>,
+    graph: PureModel,
+    options?: { onError?: () => void },
+  ): Promise<TextCompilationResult> {
+    const compilationResult = await this.engine.compileTextWithElements(
       graphGrammar,
       this.getGraphCompileContext(graph),
       options,

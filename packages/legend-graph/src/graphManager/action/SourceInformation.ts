@@ -20,6 +20,7 @@ export class SourceInformation {
   startColumn!: number;
   endLine!: number;
   endColumn!: number;
+  elementPath?: string | undefined;
 
   constructor(
     sourceId: string,
@@ -27,11 +28,13 @@ export class SourceInformation {
     startColumn: number,
     endLine: number,
     endColumn: number,
+    elementPath?: string,
   ) {
     this.sourceId = sourceId;
     this.startLine = startLine;
     this.startColumn = startColumn;
     this.endLine = endLine;
     this.endColumn = endColumn;
+    this.elementPath = elementPath;
   }
 }

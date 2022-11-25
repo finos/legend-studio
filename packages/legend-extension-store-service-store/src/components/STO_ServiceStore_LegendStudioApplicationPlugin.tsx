@@ -53,6 +53,7 @@ import {
   type EmbeddedDataCreator,
   type MappingElementSource,
   type ConnectionTypeOption,
+  type CodeSnippetGetter,
 } from '@finos/legend-application-studio';
 import { SwaggerIcon } from '@finos/legend-art';
 import {
@@ -73,6 +74,7 @@ import {
 import { EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from './STO_ServiceStore_LegendStudioDocumentation.js';
 import {
   BLANK_SERVICE_STORE_SNIPPET,
+  BLANK_SERVICE_STORE_SNIPPET_WITH_PARSER,
   SERVICE_STORE_EMBEDDED_DATA,
   SERVICE_STORE_WITH_DESCRIPTION,
   SERVICE_STORE_WITH_SERVICE,
@@ -152,6 +154,21 @@ export class STO_ServiceStore_LegendStudioApplicationPlugin
   }
 
   getExtraNewElementFromStateCreators(): NewElementFromStateCreator[] {
+    return [
+      (
+        type: string,
+        name: string,
+        state: NewElementState,
+      ): PackageableElement | undefined => {
+        if (type === SERVICE_STORE_ELEMENT_TYPE) {
+          return new ServiceStore(name);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraNewElementFromStateCreatorsInTextMode(): NewElementFromStateCreator[] {
     return [
       (
         type: string,
@@ -464,6 +481,20 @@ export class STO_ServiceStore_LegendStudioApplicationPlugin
         if (embeddedDataType === SERVICE_STORE_EMBEDDED_DATA_TYPE) {
           const serviceStoreEmbeddedData = new ServiceStoreEmbeddedData();
           return serviceStoreEmbeddedData;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraCodeSnippets(): CodeSnippetGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        element: PackageableElement,
+      ): string | undefined => {
+        if (element instanceof ServiceStore) {
+          return BLANK_SERVICE_STORE_SNIPPET_WITH_PARSER(element.path);
         }
         return undefined;
       },

@@ -25,6 +25,7 @@ import { ProjectOverview } from './ProjectOverview.js';
 import { WorkflowManager } from './WorkflowManager.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { GlobalTestRunner } from './testable/GlobalTestRunner.js';
+import { GrammarModeSearchBar } from './GrammarModeSearchBar.js';
 
 /**
  * Wrapper component around different implementations of sidebar, such as to view domain, to manage SDLC, etc.
@@ -58,6 +59,8 @@ export const SideBar = observer(() => {
             globalTestRunnerState={editorStore.globalTestRunnerState}
           />
         );
+      case ACTIVITY_MODE.SEARCH_TEXT:
+        return <GrammarModeSearchBar />;
       default:
         return null;
     }

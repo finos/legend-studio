@@ -59,6 +59,10 @@ export class NewSchemaSetDriver extends NewElementDriver<SchemaSet> {
     );
     return schemaSet;
   }
+
+  createElementInTextMode(name: string): SchemaSet {
+    return new SchemaSet(name);
+  }
 }
 
 export const NewSchemaSetDriverEditor = observer(() => {

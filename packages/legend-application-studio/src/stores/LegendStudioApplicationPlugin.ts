@@ -190,6 +190,11 @@ export type PureGrammarParserElementSnippetSuggestionsGetter = (
   parserKeyword: string,
 ) => PureGrammarTextSuggestion[] | undefined;
 
+export type CodeSnippetGetter = (
+  editorStore: EditorStore,
+  element: PackageableElement,
+) => string | undefined;
+
 /**
  * Studio plugins for new DSL extension.
  */
@@ -219,6 +224,11 @@ export interface DSL_LegendStudioApplicationPlugin_Extension
    * Get the list of creators for packageable element given the creation state.
    */
   getExtraNewElementFromStateCreators?(): NewElementFromStateCreator[];
+
+  /**
+   * Get the list of creators for packageable element given the creation state in text mode.
+   */
+  getExtraNewElementFromStateCreatorsInTextMode?(): NewElementFromStateCreator[];
 
   /**
    * Get the list of creators for element creation state driver given the element type specifier.
@@ -287,4 +297,9 @@ export interface DSL_LegendStudioApplicationPlugin_Extension
    * (e.g. Class, Enum in ###Pure)
    */
   getExtraPureGrammarParserElementSnippetSuggestionsGetters?(): PureGrammarParserElementSnippetSuggestionsGetter[];
+
+  /**
+   * Get the list of extra code snippet that is used to load in the fie when we create an element from text mode
+   */
+  getExtraCodeSnippets?(): CodeSnippetGetter[];
 }

@@ -20,14 +20,13 @@ import {
   type IDisposable,
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
+  Range,
 } from 'monaco-editor';
 import {
   ContextMenu,
   disposeEditor,
   getBaseTextEditorOptions,
   resetLineNumberGutterWidth,
-  clsx,
-  WordWrapIcon,
   getEditorValue,
   normalizeLineEnding,
   MoreHorizontalIcon,
@@ -39,6 +38,11 @@ import {
   moveCursorToPosition,
   MenuContent,
   MenuContentItem,
+  CaretDownIcon,
+  CheckIcon,
+  DropdownMenu,
+  MenuContentItemIcon,
+  MenuContentItemLabel,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -67,10 +71,26 @@ import {
   isNonNullable,
 } from '@finos/legend-shared';
 import {
+  Association,
+  Class,
+  ConcreteFunctionDefinition,
+  Database,
+  DataElement,
+  Enumeration,
+  FileGenerationSpecification,
+  FlatData,
+  GenerationSpecification,
+  Mapping,
+  Measure,
+  PackageableConnection,
+  type PackageableElement,
+  PackageableRuntime,
   PARSER_SECTION_MARKER,
+  Profile,
   PURE_CONNECTION_NAME,
   PURE_ELEMENT_NAME,
   PURE_PARSER,
+  Service,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../stores/EditorStore.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../stores/LegendStudioDocumentation.js';
@@ -104,11 +124,96 @@ import {
   MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
   POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET,
   createConnectionSnippetWithPostProcessorSuggestionSnippet,
+  BLANK_CLASS_SNIPPET_WITH_PARSER,
+  BLANK_MAPPING_SNIPPET_WITH_PARSER,
+  BLANK_RELATIONAL_DATABASE_SNIPPET_WITH_PARSER,
+  BLANK_SERVICE_SNIPPET_WITH_PARSER,
+  CONNECTION_SNIPPET_WITH_PARSER,
+  SIMPLE_ASSOCIATION_SNIPPET_WITH_PARSER,
+  SIMPLE_DATA_SNIPPET_WITH_PARSER,
+  SIMPLE_ENUMERATION_SNIPPET_WITH_PARSER,
+  SIMPLE_FILE_GENERATION_SNIPPERT_WITH_PARSER,
+  SIMPLE_FLAT_DATA_STORE_SNIPPET_WITH_PARSER,
+  SIMPLE_FUNCTION_SNIPPET_WITH_PARSER,
+  SIMPLE_GENERATION_SPECIFICATION_SNIPPET_WITH_PARSER,
+  SIMPLE_MEASURE_SNIPPET_WITH_PARSER,
+  SIMPLE_PROFILE_SNIPPET_WITH_PARSER,
+  SIMPLE_RUNTIME_SNIPPET_WITH_PARSER,
 } from '../../../stores/LegendStudioCodeSnippets.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
+import {
+  getRegexString,
+  GrammarTextEditorState,
+} from '../../../stores/editor-state/GrammarTextEditorState.js';
+import {
+  NewPackageableRuntimeDriver,
+  NewPackageableConnectionDriver,
+  NewFileGenerationDriver,
+  NewDataElementDriver,
+} from '../../../stores/editor/NewElementState.js';
+
+const RENAME_FILE_COMMAND = 'RENAME_FILE_COMMAND';
+
+export const GrammarTextEditorPanelActions = observer(
+  (props: { grammarTextEditorState: GrammarTextEditorState | undefined }) => {
+    const { grammarTextEditorState } = props;
+    const editorStore = useEditorStore();
+    const grammarModeManagerState = editorStore.grammarModeManagerState;
+    const toggleWordWrap = (): void =>
+      grammarTextEditorState?.setWrapText(!grammarTextEditorState?.wrapText);
+    const toggleDefaultTextMode = (): void => {
+      flowResult(editorStore.graphState.toggleDefaultTextMode()).catch(
+        editorStore.applicationStore.alertUnhandledError,
+      );
+    };
+
+    return (
+      <div className="text-editor__header__content__actions">
+        <DropdownMenu
+          className="text-editor__header__custom-action"
+          title="Show More Options..."
+          content={
+            <MenuContent>
+              {grammarTextEditorState && (
+                <MenuContentItem onClick={toggleWordWrap}>
+                  <MenuContentItemIcon>
+                    {grammarTextEditorState.wrapText ? <CheckIcon /> : null}
+                  </MenuContentItemIcon>
+                  <MenuContentItemLabel className="text-editor__header__menu-content">
+                    Word wrap
+                  </MenuContentItemLabel>
+                </MenuContentItem>
+              )}
+              <MenuContentItem onClick={toggleDefaultTextMode}>
+                <MenuContentItemIcon>
+                  {!grammarModeManagerState.isInDefaultTextMode ? (
+                    <CheckIcon />
+                  ) : null}
+                </MenuContentItemIcon>
+                <MenuContentItemLabel className="text-editor__header__menu-content">
+                  Show grammar in multiple file mode
+                </MenuContentItemLabel>
+              </MenuContentItem>
+            </MenuContent>
+          }
+          menuProps={{
+            anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+            transformOrigin: { vertical: 'top', horizontal: 'right' },
+            elevation: 7,
+          }}
+        >
+          <div className="text-editor__header__custom-action__label">
+            More options
+          </div>
+          <CaretDownIcon className="text-editor__header__custom-action__icon" />
+        </DropdownMenu>
+      </div>
+    );
+  },
+);
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   forwardRef<HTMLDivElement, { children?: React.ReactNode }>(
@@ -677,402 +782,612 @@ const collectParserElementSnippetSuggestions = (
   return [];
 };
 
-export const GrammarTextEditor = observer(() => {
-  const [editor, setEditor] = useState<
-    monacoEditorAPI.IStandaloneCodeEditor | undefined
-  >();
-  const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
-  const grammarTextEditorState = editorStore.grammarTextEditorState;
-  const currentElementLabelRegexString =
-    grammarTextEditorState.currentElementLabelRegexString;
-  const error = editorStore.graphState.error;
-
-  const forcedCursorPosition = grammarTextEditorState.forcedCursorPosition;
-  const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
-  const textEditorRef = useRef<HTMLDivElement>(null);
-  const hoverProviderDisposer = useRef<IDisposable | undefined>(undefined);
-  const suggestionProviderDisposer = useRef<IDisposable | undefined>(undefined);
-
-  const leaveTextMode = applicationStore.guardUnhandledError(() =>
-    flowResult(editorStore.toggleTextMode()),
-  );
-
-  const toggleWordWrap = (): void =>
-    grammarTextEditorState.setWrapText(!grammarTextEditorState.wrapText);
-
-  const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-
-  useEffect(() => {
-    if (width !== undefined && height !== undefined) {
-      editor?.layout({ width, height });
-    }
-  }, [editor, width, height]);
-
-  useEffect(() => {
-    if (!editor && textEditorRef.current) {
-      const element = textEditorRef.current;
-      const _editor = monacoEditorAPI.create(element, {
-        ...getBaseTextEditorOptions(),
-        language: EDITOR_LANGUAGE.PURE,
-        theme: EDITOR_THEME.LEGEND,
-        renderValidationDecorations: 'on',
-      });
-      _editor.onDidChangeModelContent(() => {
-        grammarTextEditorState.setGraphGrammarText(getEditorValue(_editor));
-        clearMarkers();
-        // NOTE: we can technically can reset the current element label regex string here
-        // but if we do that on first load, the cursor will not jump to the current element
-        // also, it's better to place that logic in an effect that watches for the regex string
-      });
-      _editor.focus(); // focus on the editor initially
-      setEditor(_editor);
-    }
-  }, [editorStore, applicationStore, editor, grammarTextEditorState]);
-
-  // Drag and Drop
-  const extraElementDragTypes = editorStore.pluginManager
+export const getCodeSnippet = (
+  editorStore: EditorStore,
+  element: PackageableElement,
+): string => {
+  if (element instanceof Class) {
+    return BLANK_CLASS_SNIPPET_WITH_PARSER(element.path);
+  } else if (element instanceof Enumeration) {
+    return SIMPLE_ENUMERATION_SNIPPET_WITH_PARSER(element.path);
+  } else if (element instanceof Association) {
+    return SIMPLE_ASSOCIATION_SNIPPET_WITH_PARSER(element.path);
+  } else if (element instanceof Profile) {
+    return SIMPLE_PROFILE_SNIPPET_WITH_PARSER(element.path);
+  } else if (element instanceof ConcreteFunctionDefinition) {
+    return SIMPLE_FUNCTION_SNIPPET_WITH_PARSER(element.path);
+  } else if (element instanceof Measure) {
+    return SIMPLE_MEASURE_SNIPPET_WITH_PARSER(element.path);
+  } else if (element instanceof Mapping) {
+    return BLANK_MAPPING_SNIPPET_WITH_PARSER(element.path);
+  } else if (element instanceof PackageableRuntime) {
+    return SIMPLE_RUNTIME_SNIPPET_WITH_PARSER(
+      element.path,
+      editorStore.newElementState.getNewElementDriver(
+        NewPackageableRuntimeDriver,
+      ).mapping?.path ?? '',
+    );
+  } else if (element instanceof PackageableConnection) {
+    return CONNECTION_SNIPPET_WITH_PARSER(
+      element.path,
+      editorStore.newElementState.getNewElementDriver(
+        NewPackageableConnectionDriver,
+      ),
+    );
+  } else if (element instanceof Service) {
+    return BLANK_SERVICE_SNIPPET_WITH_PARSER(element.path);
+  } else if (element instanceof GenerationSpecification) {
+    return SIMPLE_GENERATION_SPECIFICATION_SNIPPET_WITH_PARSER(element.path);
+  } else if (element instanceof FileGenerationSpecification) {
+    return SIMPLE_FILE_GENERATION_SNIPPERT_WITH_PARSER(
+      element.path,
+      editorStore.newElementState.getNewElementDriver(NewFileGenerationDriver),
+    );
+  } else if (element instanceof FlatData) {
+    return SIMPLE_FLAT_DATA_STORE_SNIPPET_WITH_PARSER(element.path);
+  } else if (element instanceof Database) {
+    return BLANK_RELATIONAL_DATABASE_SNIPPET_WITH_PARSER(element.path);
+  } else if (element instanceof DataElement) {
+    return SIMPLE_DATA_SNIPPET_WITH_PARSER(
+      element.path,
+      editorStore.newElementState.getNewElementDriver(NewDataElementDriver),
+    );
+  }
+  const elementSnippet = editorStore.pluginManager
     .getApplicationPlugins()
     .flatMap(
       (plugin) =>
         (
           plugin as DSL_LegendStudioApplicationPlugin_Extension
-        ).getExtraPureGrammarTextEditorDragElementTypes?.() ?? [],
+        ).getExtraCodeSnippets?.() ?? [],
     );
-  const handleDrop = useCallback(
-    (item: ElementDragSource): void => {
-      if (editor) {
-        editor.trigger('keyboard', 'type', {
-          text: item.data.packageableElement.path,
-        });
-      }
-    },
-    [editor],
-  );
-  const [, dropConnector] = useDrop<ElementDragSource>(
-    () => ({
-      accept: [
-        ...extraElementDragTypes,
-        CORE_DND_TYPE.PROJECT_EXPLORER_PACKAGE,
-        CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
-        CORE_DND_TYPE.PROJECT_EXPLORER_ASSOCIATION,
-        CORE_DND_TYPE.PROJECT_EXPLORER_MEASURE,
-        CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
-        CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE,
-        CORE_DND_TYPE.PROJECT_EXPLORER_FUNCTION,
-        CORE_DND_TYPE.PROJECT_EXPLORER_FLAT_DATA,
-        CORE_DND_TYPE.PROJECT_EXPLORER_DATABASE,
-        CORE_DND_TYPE.PROJECT_EXPLORER_MAPPING,
-        CORE_DND_TYPE.PROJECT_EXPLORER_SERVICE,
-        CORE_DND_TYPE.PROJECT_EXPLORER_CONNECTION,
-        CORE_DND_TYPE.PROJECT_EXPLORER_RUNTIME,
-        CORE_DND_TYPE.PROJECT_EXPLORER_FILE_GENERATION,
-        CORE_DND_TYPE.PROJECT_EXPLORER_GENERATION_TREE,
-        CORE_DND_TYPE.PROJECT_EXPLORER_DATA,
-      ],
-
-      drop: (item) => handleDrop(item),
-    }),
-    [extraElementDragTypes, handleDrop],
-  );
-  dropConnector(textEditorRef);
-
-  if (editor) {
-    // Set the value of the editor
-    const currentValue = getEditorValue(editor);
-    if (currentValue !== value) {
-      editor.setValue(value);
+  for (const snippetGetter of elementSnippet) {
+    const snippet = snippetGetter(editorStore, element);
+    if (snippet) {
+      return snippet;
     }
-    editor.updateOptions({
-      wordWrap: grammarTextEditorState.wrapText ? 'on' : 'off',
-    });
-    resetLineNumberGutterWidth(editor);
-    const editorModel = editor.getModel();
-    if (editorModel) {
-      editorModel.updateOptions({ tabSize: TAB_SIZE });
-      if (
-        !editorStore.graphState.areProblemsStale &&
-        error?.sourceInformation
-      ) {
-        setErrorMarkers(editorModel, [
-          {
-            message: error.message,
-            startLineNumber: error.sourceInformation.startLine,
-            startColumn: error.sourceInformation.startColumn,
-            endLineNumber: error.sourceInformation.endLine,
-            endColumn: error.sourceInformation.endColumn,
-          },
-        ]);
-      }
-
-      if (
-        !editorStore.graphState.areProblemsStale &&
-        editorStore.graphState.warnings.length
-      ) {
-        setWarningMarkers(
-          editorModel,
-          editorStore.graphState.warnings
-            .map((warning) => {
-              if (!warning.sourceInformation) {
-                return undefined;
-              }
-              return {
-                message: warning.message,
-                startLineNumber: warning.sourceInformation.startLine,
-                startColumn: warning.sourceInformation.startColumn,
-                endLineNumber: warning.sourceInformation.endLine,
-                endColumn: warning.sourceInformation.endColumn,
-              };
-            })
-            .filter(isNonNullable),
-        );
-      }
-    }
-    // Disable editing if user is in viewer mode
-    editor.updateOptions({ readOnly: editorStore.isInViewerMode });
   }
+  return '';
+};
 
-  // hover
-  hoverProviderDisposer.current?.dispose();
-  hoverProviderDisposer.current = monacoLanguagesAPI.registerHoverProvider(
-    EDITOR_LANGUAGE.PURE,
-    {
-      provideHover: (model, position) => {
-        const currentWord = model.getWordAtPosition(position);
-        if (!currentWord) {
-          return { contents: [] };
-        }
+export const GrammarTextEditor = observer(
+  (props: { grammarTextEditorState: GrammarTextEditorState }) => {
+    const { grammarTextEditorState } = props;
+    const [editor, setEditor] = useState<
+      monacoEditorAPI.IStandaloneCodeEditor | undefined
+    >();
+    const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
+    const currentElementLabelRegexString =
+      grammarTextEditorState.currentElementLabelRegexString;
+    const error = editorStore.graphState.error;
 
-        // show documention for parser section
-        const lineTextIncludingWordRange = {
-          startLineNumber: position.lineNumber,
-          startColumn: 1,
-          endLineNumber: position.lineNumber,
-          endColumn: currentWord.endColumn,
-        };
-        const lineTextIncludingWord = model.getValueInRange(
-          lineTextIncludingWordRange,
-        );
-        // NOTE: we don't need to trim here since the leading whitespace in front of
-        // the section header is considered invalid syntax in the grammar
-        if (
-          !hasWhiteSpace(lineTextIncludingWord) &&
-          lineTextIncludingWord.startsWith(PARSER_SECTION_MARKER)
-        ) {
-          const parserKeyword = lineTextIncludingWord.substring(
-            PARSER_SECTION_MARKER.length,
-          );
-          const doc = getParserDocumetation(editorStore, parserKeyword);
-          if (doc) {
-            return {
-              range: lineTextIncludingWordRange,
-              contents: [
-                doc.markdownText
-                  ? {
-                      value: doc.markdownText.value,
-                    }
-                  : undefined,
-                doc.url
-                  ? {
-                      value: `[See documentation](${doc.url})`,
-                    }
-                  : undefined,
-              ].filter(isNonNullable),
-            };
-          }
-        }
+    const forcedCursorPosition = grammarTextEditorState.forcedCursorPosition;
+    const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
+    const textEditorRef = useRef<HTMLDivElement>(null);
+    const hoverProviderDisposer = useRef<IDisposable | undefined>(undefined);
+    const suggestionProviderDisposer = useRef<IDisposable | undefined>(
+      undefined,
+    );
 
-        // show documentation for parser element
-        const textUntilPosition = model.getValueInRange({
-          startLineNumber: 1,
-          startColumn: 1,
-          endLineNumber: position.lineNumber,
-          endColumn: position.column,
+    const leaveTextMode = applicationStore.guardUnhandledError(() =>
+      flowResult(editorStore.toggleTextMode()),
+    );
+
+    const { ref, width, height } = useResizeDetector<HTMLDivElement>();
+
+    useEffect(() => {
+      if (width !== undefined && height !== undefined) {
+        editor?.layout({ width, height });
+      }
+    }, [editor, width, height]);
+
+    useEffect(() => {
+      if (!editor && textEditorRef.current) {
+        const element = textEditorRef.current;
+        const _editor = monacoEditorAPI.create(element, {
+          ...getBaseTextEditorOptions(),
+          language: EDITOR_LANGUAGE.PURE,
+          theme: EDITOR_THEME.LEGEND,
+          contextmenu: !editorStore.grammarModeManagerState.isInDefaultTextMode,
+          renderValidationDecorations: 'on',
         });
-        const allParserSectionHeaders =
-          // NOTE: since `###Pure` is implicitly considered as the first section, we prepend it to the text
-          `${PARSER_SECTION_MARKER}${PURE_PARSER.PURE}\n${textUntilPosition}`
-            .split('\n')
-            .filter((line) => line.startsWith(PARSER_SECTION_MARKER));
-        const currentSectionParserKeyword = getSectionParserNameFromLineText(
-          allParserSectionHeaders[allParserSectionHeaders.length - 1] ?? '',
-        );
-        if (currentSectionParserKeyword) {
-          const doc = getParserElementDocumentation(
-            editorStore,
-            currentSectionParserKeyword,
-            currentWord.word,
-          );
-          if (doc) {
-            return {
-              range: {
-                startLineNumber: position.lineNumber,
-                startColumn: currentWord.startColumn,
-                endLineNumber: position.lineNumber,
-                endColumn: currentWord.endColumn,
-              },
-              contents: [
-                doc.markdownText
-                  ? {
-                      value: doc.markdownText.value,
-                    }
-                  : undefined,
-                doc.url
-                  ? {
-                      value: `[See documentation](${doc.url})`,
-                    }
-                  : undefined,
-              ].filter(isNonNullable),
-            };
+        _editor.onDidChangeModelContent(() => {
+          const grammarText = getEditorValue(_editor);
+          grammarTextEditorState.setGraphGrammarText(grammarText);
+          if (
+            !editorStore.grammarModeManagerState.isInDefaultTextMode &&
+            grammarTextEditorState.element?.path
+          ) {
+            const grammarElement =
+              editorStore.grammarModeManagerState.currentGrammarElements.get(
+                grammarTextEditorState.element.path,
+              );
+            // Not to clear errors when we force open editor during compilation check
+            if (grammarElement !== grammarText) {
+              editorStore.graphState.clearProblems();
+            }
+            if (grammarElement !== undefined) {
+              editorStore.grammarModeManagerState.currentGrammarElements.set(
+                grammarTextEditorState.element.path,
+                grammarText,
+              );
+            }
+            const model = _editor.getModel();
+            const matches = model?.findMatches(
+              guaranteeNonNullable(
+                grammarTextEditorState.elementLabelRegexString,
+              ),
+              true,
+              true,
+              true,
+              null,
+              true,
+            );
+            if (!(Array.isArray(matches) && matches.length)) {
+              grammarTextEditorState.setIsElementPathInvalid(true);
+              const regex = getRegexString(editorStore.getTypeLabels());
+              const match = model?.findMatches(
+                regex,
+                true,
+                true,
+                true,
+                null,
+                true,
+              );
+              if (model && Array.isArray(match) && match.length) {
+                const range = guaranteeNonNullable(match[0]).range;
+                const errorRange = new Range(
+                  range.startLineNumber,
+                  range.endColumn,
+                  range.endLineNumber,
+                  model.getLineLength(range.startLineNumber) + 1,
+                );
+                setErrorMarkers(
+                  model,
+                  [
+                    {
+                      message: 'Please change the element path by right clicking',
+                      startLineNumber: errorRange.startLineNumber,
+                      startColumn: errorRange.startColumn,
+                      endLineNumber: errorRange.endLineNumber,
+                      endColumn: errorRange.endColumn,
+                    },
+                  ],
+                  'invalid-path',
+                );
+              }
+            } else {
+              clearMarkers('invalid-path');
+            }
           }
+          clearMarkers();
+          // NOTE: we can technically can reset the current element label regex string here
+          // but if we do that on first load, the cursor will not jump to the current element
+          // also, it's better to place that logic in an effect that watches for the regex string
+        });
+
+        _editor.createContextKey(
+          RENAME_FILE_COMMAND,
+          !editorStore.grammarModeManagerState.isInDefaultTextMode,
+        );
+
+        _editor.addAction({
+          id: 'rename-file',
+          label: 'Rename file',
+          precondition: RENAME_FILE_COMMAND,
+          contextMenuGroupId: 'navigation',
+          contextMenuOrder: 1.5,
+          run: function () {
+            if (
+              grammarTextEditorState.element &&
+              grammarTextEditorState.isElementPathInvalid
+            ) {
+              clearMarkers('invalid-path');
+              editorStore.explorerTreeState.setElementToRename(
+                editorStore.graphManagerState.graph.getNullableElement(
+                  grammarTextEditorState.element.path,
+                ),
+              );
+            }
+          },
+        });
+
+        _editor.focus(); // focus on the editor initially
+        setEditor(_editor);
+      }
+    }, [editorStore, applicationStore, editor, grammarTextEditorState]);
+
+    // Drag and Drop
+    const extraElementDragTypes = editorStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_LegendStudioApplicationPlugin_Extension
+          ).getExtraPureGrammarTextEditorDragElementTypes?.() ?? [],
+      );
+    const handleDrop = useCallback(
+      (item: ElementDragSource): void => {
+        if (editor) {
+          editor.trigger('keyboard', 'type', {
+            text: item.data.packageableElement.path,
+          });
         }
-
-        return { contents: [] };
       },
-    },
-  );
+      [editor],
+    );
+    const [, dropConnector] = useDrop<ElementDragSource>(
+      () => ({
+        accept: [
+          ...extraElementDragTypes,
+          CORE_DND_TYPE.PROJECT_EXPLORER_PACKAGE,
+          CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
+          CORE_DND_TYPE.PROJECT_EXPLORER_ASSOCIATION,
+          CORE_DND_TYPE.PROJECT_EXPLORER_MEASURE,
+          CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
+          CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE,
+          CORE_DND_TYPE.PROJECT_EXPLORER_FUNCTION,
+          CORE_DND_TYPE.PROJECT_EXPLORER_FLAT_DATA,
+          CORE_DND_TYPE.PROJECT_EXPLORER_DATABASE,
+          CORE_DND_TYPE.PROJECT_EXPLORER_MAPPING,
+          CORE_DND_TYPE.PROJECT_EXPLORER_SERVICE,
+          CORE_DND_TYPE.PROJECT_EXPLORER_CONNECTION,
+          CORE_DND_TYPE.PROJECT_EXPLORER_RUNTIME,
+          CORE_DND_TYPE.PROJECT_EXPLORER_FILE_GENERATION,
+          CORE_DND_TYPE.PROJECT_EXPLORER_GENERATION_TREE,
+          CORE_DND_TYPE.PROJECT_EXPLORER_DATA,
+        ],
 
-  // suggestion
-  suggestionProviderDisposer.current?.dispose();
-  suggestionProviderDisposer.current =
-    monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
-      // NOTE: we need to specify this to show suggestions for section
-      // because by default, only alphanumeric characters trigger completion item provider
-      // See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionContext.html#triggerCharacter
-      // See https://github.com/microsoft/monaco-editor/issues/2530#issuecomment-861757198
-      triggerCharacters: ['#'],
-      provideCompletionItems: (model, position) => {
-        let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+        drop: (item) => handleDrop(item),
+      }),
+      [extraElementDragTypes, handleDrop],
+    );
+    dropConnector(textEditorRef);
 
-        // suggestions for parser keyword
-        suggestions = suggestions.concat(
-          getParserKeywordSuggestions(
-            position,
-            model,
-            collectParserKeywordSuggestions(editorStore),
-          ),
-        );
-
-        // suggestions for parser element snippets
-        suggestions = suggestions.concat(
-          getParserElementSnippetSuggestions(
-            position,
-            model,
-            (parserName: string) =>
-              collectParserElementSnippetSuggestions(editorStore, parserName),
-          ),
-        );
-
-        // inline code snippet suggestions
-        suggestions = suggestions.concat(
-          getInlineSnippetSuggestions(position, model),
-        );
-
-        return { suggestions };
-      },
-    });
-
-  useEffect(() => {
-    if (editor && forcedCursorPosition) {
-      moveCursorToPosition(editor, forcedCursorPosition);
-    }
-  }, [editor, forcedCursorPosition]);
-
-  /**
-   * This effect helps to navigate to the currently selected element in the explorer tree
-   * NOTE: this effect is placed after the effect to highlight and move cursor to error,
-   * as even when there are errors, the user should be able to click on the explorer tree
-   * to navigate to the element
-   */
-  useEffect(() => {
-    if (editor && currentElementLabelRegexString) {
+    if (editor) {
+      // Set the value of the editor
+      const currentValue = getEditorValue(editor);
+      if (currentValue !== value) {
+        editor.setValue(value);
+      }
+      editor.updateOptions({
+        wordWrap: grammarTextEditorState.wrapText ? 'on' : 'off',
+      });
+      resetLineNumberGutterWidth(editor);
       const editorModel = editor.getModel();
       if (editorModel) {
-        const match = editorModel.findMatches(
-          currentElementLabelRegexString,
+        editorModel.updateOptions({ tabSize: TAB_SIZE });
+        if (
+          !editorStore.graphState.areProblemsStale &&
+          error?.sourceInformation &&
+          (editorStore.grammarModeManagerState.isInDefaultTextMode
+            ? true
+            : error.sourceInformation.elementPath ===
+              grammarTextEditorState.element?.path)
+        ) {
+          setErrorMarkers(editorModel, [
+            {
+              message: error.message,
+              startLineNumber: error.sourceInformation.startLine,
+              startColumn: error.sourceInformation.startColumn,
+              endLineNumber: error.sourceInformation.endLine,
+              endColumn: error.sourceInformation.endColumn,
+            },
+          ]);
+        }
+
+        if (
+          !editorStore.graphState.areProblemsStale &&
+          editorStore.graphState.warnings.length
+        ) {
+          setWarningMarkers(
+            editorModel,
+            editorStore.graphState.warnings
+              .map((warning) => {
+                if (
+                  !warning.sourceInformation ||
+                  (!editorStore.grammarModeManagerState.isInDefaultTextMode &&
+                    warning.sourceInformation.elementPath !==
+                      grammarTextEditorState.element?.path)
+                ) {
+                  return undefined;
+                }
+                return {
+                  message: warning.message,
+                  startLineNumber: warning.sourceInformation.startLine,
+                  startColumn: warning.sourceInformation.startColumn,
+                  endLineNumber: warning.sourceInformation.endLine,
+                  endColumn: warning.sourceInformation.endColumn,
+                };
+              })
+              .filter(isNonNullable),
+          );
+        }
+      }
+    }
+
+    // hover
+    hoverProviderDisposer.current?.dispose();
+    hoverProviderDisposer.current = monacoLanguagesAPI.registerHoverProvider(
+      EDITOR_LANGUAGE.PURE,
+      {
+        provideHover: (model, position) => {
+          const currentWord = model.getWordAtPosition(position);
+          if (!currentWord) {
+            return { contents: [] };
+          }
+
+          // show documention for parser section
+          const lineTextIncludingWordRange = {
+            startLineNumber: position.lineNumber,
+            startColumn: 1,
+            endLineNumber: position.lineNumber,
+            endColumn: currentWord.endColumn,
+          };
+          const lineTextIncludingWord = model.getValueInRange(
+            lineTextIncludingWordRange,
+          );
+          // NOTE: we don't need to trim here since the leading whitespace in front of
+          // the section header is considered invalid syntax in the grammar
+          if (
+            !hasWhiteSpace(lineTextIncludingWord) &&
+            lineTextIncludingWord.startsWith(PARSER_SECTION_MARKER)
+          ) {
+            const parserKeyword = lineTextIncludingWord.substring(
+              PARSER_SECTION_MARKER.length,
+            );
+            const doc = getParserDocumetation(editorStore, parserKeyword);
+            if (doc) {
+              return {
+                range: lineTextIncludingWordRange,
+                contents: [
+                  doc.markdownText
+                    ? {
+                        value: doc.markdownText.value,
+                      }
+                    : undefined,
+                  doc.url
+                    ? {
+                        value: `[See documentation](${doc.url})`,
+                      }
+                    : undefined,
+                ].filter(isNonNullable),
+              };
+            }
+          }
+
+          // show documentation for parser element
+          const textUntilPosition = model.getValueInRange({
+            startLineNumber: 1,
+            startColumn: 1,
+            endLineNumber: position.lineNumber,
+            endColumn: position.column,
+          });
+          const allParserSectionHeaders =
+            // NOTE: since `###Pure` is implicitly considered as the first section, we prepend it to the text
+            `${PARSER_SECTION_MARKER}${PURE_PARSER.PURE}\n${textUntilPosition}`
+              .split('\n')
+              .filter((line) => line.startsWith(PARSER_SECTION_MARKER));
+          const currentSectionParserKeyword = getSectionParserNameFromLineText(
+            allParserSectionHeaders[allParserSectionHeaders.length - 1] ?? '',
+          );
+          if (currentSectionParserKeyword) {
+            const doc = getParserElementDocumentation(
+              editorStore,
+              currentSectionParserKeyword,
+              currentWord.word,
+            );
+            if (doc) {
+              return {
+                range: {
+                  startLineNumber: position.lineNumber,
+                  startColumn: currentWord.startColumn,
+                  endLineNumber: position.lineNumber,
+                  endColumn: currentWord.endColumn,
+                },
+                contents: [
+                  doc.markdownText
+                    ? {
+                        value: doc.markdownText.value,
+                      }
+                    : undefined,
+                  doc.url
+                    ? {
+                        value: `[See documentation](${doc.url})`,
+                      }
+                    : undefined,
+                ].filter(isNonNullable),
+              };
+            }
+          }
+
+          return { contents: [] };
+        },
+      },
+    );
+
+    // suggestion
+    suggestionProviderDisposer.current?.dispose();
+    suggestionProviderDisposer.current =
+      monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
+        // NOTE: we need to specify this to show suggestions for section
+        // because by default, only alphanumeric characters trigger completion item provider
+        // See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionContext.html#triggerCharacter
+        // See https://github.com/microsoft/monaco-editor/issues/2530#issuecomment-861757198
+        triggerCharacters: ['#'],
+        provideCompletionItems: (model, position) => {
+          let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+
+          // suggestions for parser keyword
+          suggestions = suggestions.concat(
+            getParserKeywordSuggestions(
+              position,
+              model,
+              collectParserKeywordSuggestions(editorStore),
+            ),
+          );
+
+          // suggestions for parser element snippets
+          suggestions = suggestions.concat(
+            getParserElementSnippetSuggestions(
+              position,
+              model,
+              (parserName: string) =>
+                collectParserElementSnippetSuggestions(editorStore, parserName),
+            ),
+          );
+
+          // inline code snippet suggestions
+          suggestions = suggestions.concat(
+            getInlineSnippetSuggestions(position, model),
+          );
+
+          return { suggestions };
+        },
+      });
+
+    useEffect(() => {
+      if (editor && forcedCursorPosition) {
+        moveCursorToPosition(editor, forcedCursorPosition);
+      }
+    }, [editor, forcedCursorPosition]);
+
+    /**
+     * This effect helps to navigate to the currently selected element in the explorer tree
+     * NOTE: this effect is placed after the effect to highlight and move cursor to error,
+     * as even when there are errors, the user should be able to click on the explorer tree
+     * to navigate to the element
+     */
+    useEffect(() => {
+      if (editor && currentElementLabelRegexString) {
+        const editorModel = editor.getModel();
+        if (editorModel) {
+          const match = editorModel.findMatches(
+            currentElementLabelRegexString,
+            true,
+            true,
+            true,
+            null,
+            true,
+          );
+          if (Array.isArray(match) && match.length) {
+            const range = guaranteeNonNullable(match[0]).range;
+            editor.focus();
+            editor.revealPositionInCenter({
+              lineNumber: range.startLineNumber,
+              column: range.startColumn,
+            });
+            editor.setPosition({
+              column: range.startColumn,
+              lineNumber: range.startLineNumber,
+            });
+          }
+        }
+      }
+    }, [editor, currentElementLabelRegexString]);
+
+    useEffect(() => {
+      if (editor && grammarTextEditorState.element?.path) {
+        const model = editor.getModel();
+        const matches = model?.findMatches(
+          guaranteeNonNullable(grammarTextEditorState.elementLabelRegexString),
           true,
           true,
           true,
           null,
           true,
         );
-        if (Array.isArray(match) && match.length) {
-          const range = guaranteeNonNullable(match[0]).range;
-          editor.focus();
-          editor.revealPositionInCenter({
-            lineNumber: range.startLineNumber,
-            column: range.startColumn,
-          });
-          editor.setPosition({
-            column: range.startColumn,
-            lineNumber: range.startLineNumber,
-          });
+        if (!(Array.isArray(matches) && matches.length)) {
+          grammarTextEditorState.setIsElementPathInvalid(true);
+          const regex = getRegexString(editorStore.getTypeLabels());
+          const match = model?.findMatches(regex, true, true, true, null, true);
+          if (model && Array.isArray(match) && match.length) {
+            clearMarkers('invalid-path');
+            const range = guaranteeNonNullable(match[0]).range;
+            const errorRange = new Range(
+              range.startLineNumber,
+              range.endColumn,
+              range.endLineNumber,
+              model.getLineLength(range.startLineNumber) + 1,
+            );
+            setErrorMarkers(
+              model,
+              [
+                {
+                  message: 'Please change the element path by right clicking',
+                  startLineNumber: errorRange.startLineNumber,
+                  startColumn: errorRange.startColumn,
+                  endLineNumber: errorRange.endLineNumber,
+                  endColumn: errorRange.endColumn,
+                },
+              ],
+              'invalid-path',
+            );
+          }
+        } else {
+          grammarTextEditorState.setIsElementPathInvalid(false);
+          clearMarkers('invalid-path');
         }
       }
-    }
-  }, [editor, currentElementLabelRegexString]);
+    }, [editor, grammarTextEditorState.element?.path]);
 
-  // NOTE: dispose the editor to prevent potential memory-leak
-  useEffect(
-    () => (): void => {
-      if (editor) {
-        disposeEditor(editor);
-      }
-      // NOTE: make sure the call the disposer again after leaving this editor
-      // else we would end up with duplicated suggestions and hover infos
-      hoverProviderDisposer.current?.dispose();
-      suggestionProviderDisposer.current?.dispose();
-    },
-    [editor],
-  );
+    // NOTE: dispose the editor to prevent potential memory-leak
+    useEffect(
+      () => (): void => {
+        if (editor) {
+          disposeEditor(editor);
+        }
+        // NOTE: make sure the call the disposer again after leaving this editor
+        // else we would end up with duplicated suggestions and hover infos
+        hoverProviderDisposer.current?.dispose();
+        suggestionProviderDisposer.current?.dispose();
+      },
+      [editor],
+    );
 
-  useApplicationNavigationContext(
-    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.TEXT_MODE_EDITOR,
-  );
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.TEXT_MODE_EDITOR,
+    );
 
-  return (
-    <div className="panel edit-panel">
-      <div className="panel__header edit-panel__header">
-        <div className="edit-panel__header__tabs">
-          <div className="edit-panel__text-mode__tab">
-            <button
-              className="edit-panel__text-mode__tab__label"
-              disabled={editorStore.graphState.isApplicationLeavingTextMode}
-              onClick={leaveTextMode}
-              tabIndex={-1}
-              title="Click to exit text mode and go back to form mode"
-            >
-              <MoreHorizontalIcon />
-            </button>
+    return (
+      <div className="panel edit-panel">
+        {editorStore.grammarModeManagerState.isInDefaultTextMode && (
+          <div className="panel__header edit-panel__header">
+            <div className="edit-panel__header__tabs">
+              <div className="edit-panel__text-mode__tab">
+                <button
+                  className="edit-panel__text-mode__tab__label"
+                  disabled={editorStore.graphState.isApplicationLeavingTextMode}
+                  onClick={leaveTextMode}
+                  tabIndex={-1}
+                  title="Click to exit text mode and go back to form mode"
+                >
+                  <MoreHorizontalIcon />
+                </button>
+              </div>
+              <ContextMenu
+                className="edit-panel__text-mode__tab edit-panel__text-mode__tab--active"
+                content={<GrammarTextEditorHeaderTabContextMenu />}
+              >
+                <div className="edit-panel__text-mode__tab__label">
+                  Text Mode
+                </div>
+              </ContextMenu>
+            </div>
+            <div className="edit-panel__header__actions">
+              <GrammarTextEditorPanelActions
+                grammarTextEditorState={grammarTextEditorState}
+              />
+            </div>
           </div>
-          <ContextMenu
-            className="edit-panel__text-mode__tab edit-panel__text-mode__tab--active"
-            content={<GrammarTextEditorHeaderTabContextMenu />}
-          >
-            <div className="edit-panel__text-mode__tab__label">Text Mode</div>
-          </ContextMenu>
-        </div>
-        <div className="edit-panel__header__actions">
-          <button
-            className={clsx('edit-panel__header__action', {
-              'edit-panel__header__action--active':
-                grammarTextEditorState.wrapText,
-            })}
-            onClick={toggleWordWrap}
-            tabIndex={-1}
-            title={`[${
-              grammarTextEditorState.wrapText ? 'on' : 'off'
-            }] Toggle word wrap`}
-          >
-            <WordWrapIcon className="edit-panel__icon__word-wrap" />
-          </button>
-        </div>
+        )}
+        <PanelContent className="edit-panel__content">
+          <div ref={ref} className="text-editor__container">
+            <div className="text-editor__body" ref={textEditorRef} />
+          </div>
+        </PanelContent>
       </div>
-      <PanelContent className="edit-panel__content">
-        <div ref={ref} className="text-editor__container">
-          <div className="text-editor__body" ref={textEditorRef} />
-        </div>
-      </PanelContent>
-    </div>
-  );
-});
+    );
+  },
+);

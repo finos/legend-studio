@@ -38,6 +38,7 @@ import {
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
   type ElementTypeLabelGetter,
+  type CodeSnippetGetter,
 } from '@finos/legend-application-studio';
 import { Persistence } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Persistence.js';
 import { PersistenceContext } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceContext.js';
@@ -48,7 +49,9 @@ import {
 } from '../../graphManager/DSL_Persistence_PureGraphManagerPlugin.js';
 import {
   BLANK_PERSISTENCE_CONTEXT_SNIPPET,
+  BLANK_PERSISTENCE_CONTEXT_SNIPPET_WITH_PARSER,
   BLANK_PERSISTENCE_SNIPPET,
+  BLANK_PERSISTENCE_SNIPPET_WITH_PARSER,
 } from './DSL_Persistence_CodeSnippets.js';
 import { DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSL_Persistence_LegendStudioDocumentation.js';
 
@@ -115,6 +118,23 @@ export class DSL_Persistence_LegendStudioApplicationPlugin
   }
 
   getExtraNewElementFromStateCreators(): NewElementFromStateCreator[] {
+    return [
+      (
+        type: string,
+        name: string,
+        state: NewElementState,
+      ): PackageableElement | undefined => {
+        if (type === PERSISTENCE_ELEMENT_TYPE) {
+          return new Persistence(name);
+        } else if (type === PERSISTENCE_CONTEXT_ELEMENT_TYPE) {
+          return new PersistenceContext(name);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraNewElementFromStateCreatorsInTextMode(): NewElementFromStateCreator[] {
     return [
       (
         type: string,
@@ -254,6 +274,22 @@ export class DSL_Persistence_LegendStudioApplicationPlugin
       (type: string): string | undefined => {
         if (type === PERSISTENCE_CONTEXT_ELEMENT_TYPE) {
           return 'Persistence Context';
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraCodeSnippets(): CodeSnippetGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        element: PackageableElement,
+      ): string | undefined => {
+        if (element instanceof Persistence) {
+          return BLANK_PERSISTENCE_SNIPPET_WITH_PARSER(element.path);
+        } else if (element instanceof PersistenceContext) {
+          return BLANK_PERSISTENCE_CONTEXT_SNIPPET_WITH_PARSER(element.path);
         }
         return undefined;
       },

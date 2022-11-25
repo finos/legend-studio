@@ -35,3 +35,6 @@ export const SIMPLE_DATA_SPACE_SNIPPET = `DataSpace \${1:model::NewDataSpace}
   //   address: 'someEmail@test.org';
   // };
 }`;
+
+export const SIMPLE_DATASPACE_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###DataSpace\nDataSpace ${path}\n{\n}\n`;

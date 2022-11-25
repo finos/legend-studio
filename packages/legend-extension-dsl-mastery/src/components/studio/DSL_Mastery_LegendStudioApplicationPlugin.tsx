@@ -31,9 +31,13 @@ import {
   type ElementTypeLabelGetter,
   LegendStudioApplicationPlugin,
   UnsupportedElementEditorState,
+  type CodeSnippetGetter,
 } from '@finos/legend-application-studio';
 import { MasterRecordDefinition } from '../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
-import { SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET } from './DSL_Mastery_CodeSnippets.js';
+import {
+  SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET,
+  SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET_WITH_PARSER,
+} from './DSL_Mastery_CodeSnippets.js';
 import {
   PURE_GRAMMAR_MASTERY_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_MASTERY_PARSER_NAME,
@@ -83,6 +87,21 @@ export class DSL_Mastery_LegendStudioApplicationPlugin
   }
 
   getExtraNewElementFromStateCreators(): NewElementFromStateCreator[] {
+    return [
+      (
+        type: string,
+        name: string,
+        state: NewElementState,
+      ): PackageableElement | undefined => {
+        if (type === MASTERY_ELEMENT_TYPE) {
+          return new MasterRecordDefinition(name);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraNewElementFromStateCreatorsInTextMode(): NewElementFromStateCreator[] {
     return [
       (
         type: string,
@@ -148,6 +167,22 @@ export class DSL_Mastery_LegendStudioApplicationPlugin
       (type: string): string | undefined => {
         if (type === MASTERY_CONTEXT_ELEMENT_TYPE) {
           return 'Mastery Context';
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraCodeSnippets(): CodeSnippetGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        element: PackageableElement,
+      ): string | undefined => {
+        if (element instanceof MasterRecordDefinition) {
+          return SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET_WITH_PARSER(
+            element.path,
+          );
         }
         return undefined;
       },

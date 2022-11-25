@@ -115,6 +115,37 @@
     color: var(--color-light-grey-0);
   }
 
+  &__studio-mode {
+    @include flexCenter;
+
+    display: flex;
+    height: 100%;
+    cursor: pointer;
+    width: 8rem;
+    color: var(--color-light-grey-0);
+
+    &[disabled] {
+      color: var(--color-dark-shade-300);
+    }
+  }
+
+  &__file-icon {
+    cursor: pointer;
+    background: none;
+    height: 100%;
+    color: var(--color-light-grey-0);
+    width: 2rem;
+    margin-left: 1rem;
+
+    &[disabled] {
+      color: var(--color-dark-shade-300);
+    }
+  }
+
+  &__studio-mode:hover, &__file-icon:hover {
+    background: var(--color-light-shade-50);
+  }
+
   &__workspace-sync {
     display: flex;
     height: 100%;

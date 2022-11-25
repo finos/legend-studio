@@ -36,6 +36,12 @@ export const BASIC_SCHEMASET_SNIPPET = `SchemaSet \${1:model::NewSchemaSet}
   ];
 }`;
 
+export const SIMPLE_SCHEMASET_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###ExternalFormat\nSchemaSet ${path}\n{\n}\n`;
+
+export const SIMPLE_BINDING_SNIPPET_WITH_PARSER = (path: string): string =>
+  `###ExternalFormat\nBinding ${path}\n{\n}\n`;
+
 export const SCHEMASET_WITH_JSON_SCHEMA_SNIPPET = `SchemaSet \${1:model::NewSchemaSet}
 {
   format: JSON;

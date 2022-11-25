@@ -34,6 +34,7 @@ import {
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarParserElementSnippetSuggestionsGetter,
+  type CodeSnippetGetter,
 } from '@finos/legend-application-studio';
 import { ShapesIcon } from '@finos/legend-art';
 import type { Class, PackageableElement } from '@finos/legend-graph';
@@ -51,6 +52,7 @@ import {
   getDiagramSnippetWithGeneralizationView,
   getDiagramSnippetWithOneClassView,
   getDiagramSnippetWithPropertyView,
+  SIMPLE_DIAGRAM_SNIPPET_WITH_PARSER,
 } from './DSL_Diagram_CodeSnippets.js';
 import {
   collectKeyedCommandConfigEntriesFromConfig,
@@ -141,6 +143,21 @@ export class DSL_Diagram_LegendStudioApplicationPlugin
   }
 
   getExtraNewElementFromStateCreators(): NewElementFromStateCreator[] {
+    return [
+      (
+        type: string,
+        name: string,
+        state: NewElementState,
+      ): PackageableElement | undefined => {
+        if (type === DIAGRAM_ELEMENT_TYPE) {
+          return new Diagram(name);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraNewElementFromStateCreatorsInTextMode(): NewElementFromStateCreator[] {
     return [
       (
         type: string,
@@ -291,6 +308,20 @@ export class DSL_Diagram_LegendStudioApplicationPlugin
               },
             ]
           : undefined,
+    ];
+  }
+
+  getExtraCodeSnippets(): CodeSnippetGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        element: PackageableElement,
+      ): string | undefined => {
+        if (element instanceof Diagram) {
+          return SIMPLE_DIAGRAM_SNIPPET_WITH_PARSER(element.path);
+        }
+        return undefined;
+      },
     ];
   }
 }

@@ -111,6 +111,8 @@ import {
   Package,
   DataElement,
   isElementReadOnly,
+  PURE_CONNECTION_NAME,
+  PURE_ELEMENT_NAME,
 } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
@@ -120,6 +122,7 @@ import {
   ActionAlertType,
   APPLICATION_EVENT,
   TAB_SIZE,
+  type TabState,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import type { EditorMode } from './editor/EditorMode.js';
@@ -127,16 +130,24 @@ import { StandardEditorMode } from './editor/StandardEditorMode.js';
 import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState.js';
 import {
   graph_addElement,
+  graph_addElementInTextMode,
   graph_deleteElement,
   graph_deleteOwnElement,
   graph_renameElement,
+  graph_renameElementInTextMode,
 } from './shared/modifier/GraphModifierHelper.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
 import { LEGEND_STUDIO_COMMAND_KEY } from './LegendStudioCommand.js';
-import { EditorTabManagerState } from './EditorTabManagerState.js';
+import {
+  type EditorTabManagerState,
+  FormEditorTabManagerState,
+  GrammarEditorTabManagerState,
+} from './EditorTabManagerState.js';
+import { GrammarModeManagerState } from './GrammarModeManagerState.js';
+import { GrammarModeSearchState } from './GrammarModeSearchState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -169,7 +180,7 @@ export class EditorStore implements CommandRegistrar {
   graphState: EditorGraphState;
   graphManagerState: GraphManagerState;
   changeDetectionState: ChangeDetectionState;
-  grammarTextEditorState: GrammarTextEditorState;
+  grammarModeManagerState: GrammarModeManagerState;
   modelImporterState: ModelImporterState;
   projectConfigurationEditorState: ProjectConfigurationEditorState;
   projectOverviewState: ProjectOverviewState;
@@ -201,7 +212,7 @@ export class EditorStore implements CommandRegistrar {
     default: 300,
     snap: 150,
   });
-  readonly tabManagerState = new EditorTabManagerState(this);
+  tabManagerState: EditorTabManagerState = new FormEditorTabManagerState(this);
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
@@ -243,6 +254,7 @@ export class EditorStore implements CommandRegistrar {
       deleteElement: flow,
       renameElement: flow,
       toggleTextMode: flow,
+      updateTabManagerState: action,
     });
 
     this.applicationStore = applicationStore;
@@ -251,6 +263,7 @@ export class EditorStore implements CommandRegistrar {
     this.pluginManager = applicationStore.pluginManager;
 
     this.editorMode = new StandardEditorMode(this);
+    this.grammarModeManagerState = new GrammarModeManagerState(this);
 
     this.sdlcState = new EditorSDLCState(this);
     this.graphState = new EditorGraphState(this);
@@ -280,8 +293,6 @@ export class EditorStore implements CommandRegistrar {
       this.sdlcState,
     );
     this.newElementState = new NewElementState(this);
-    // special (singleton) editors
-    this.grammarTextEditorState = new GrammarTextEditorState(this);
     this.modelImporterState = new ModelImporterState(this);
     this.projectConfigurationEditorState = new ProjectConfigurationEditorState(
       this,
@@ -344,15 +355,15 @@ export class EditorStore implements CommandRegistrar {
     this.graphEditMode = graphEditor;
     this.changeLocalChangesState();
     this.graphState.clearProblems();
+    // Keeps the tabs which were opened in form mode open in text mode and vice versa
+    this.updateTabManagerState();
     if (graphEditor === GRAPH_EDITOR_MODE.GRAMMAR_TEXT) {
       // Stop change detection as we don't need the actual change detection in text mode
       this.changeDetectionState.stop();
       try {
         yield flowResult(
           this.changeDetectionState.computeLocalChangesInTextMode(
-            (yield this.graphManagerState.graphManager.pureCodeToEntities(
-              this.grammarTextEditorState.graphGrammarText,
-            )) as Entity[],
+            (yield this.grammarModeManagerState.computeEntitiesFromCurrentGrammar()) as Entity[],
           ),
         );
       } catch (error) {
@@ -363,6 +374,40 @@ export class EditorStore implements CommandRegistrar {
         );
       }
     }
+  }
+
+  updateTabManagerState(): void {
+    const openedTabEditorPaths: string[] = [];
+    let currentTabElementPath;
+    if (this.graphEditMode === GRAPH_EDITOR_MODE.GRAMMAR_TEXT) {
+      this.tabManagerState.tabs.forEach((state: TabState) => {
+        if (state instanceof ElementEditorState) {
+          openedTabEditorPaths.push(state.elementPath);
+        }
+      });
+      currentTabElementPath =
+        this.tabManagerState.currentTab instanceof ElementEditorState
+          ? this.tabManagerState.currentTab.elementPath
+          : undefined;
+      this.tabManagerState.closeAllTabs();
+      this.tabManagerState = new GrammarEditorTabManagerState(this);
+    } else {
+      this.tabManagerState.tabs.forEach((state: TabState) => {
+        if (state instanceof GrammarTextEditorState && state.element) {
+          openedTabEditorPaths.push(state.element.path);
+        }
+      });
+      currentTabElementPath =
+        this.tabManagerState.currentTab instanceof GrammarTextEditorState
+          ? this.tabManagerState.currentTab.element?.path
+          : undefined;
+      this.tabManagerState.closeAllTabs();
+      this.tabManagerState = new FormEditorTabManagerState(this);
+    }
+    this.tabManagerState.recoverTabs(
+      openedTabEditorPaths,
+      currentTabElementPath,
+    );
   }
 
   cleanUp(): void {
@@ -436,6 +481,18 @@ export class EditorStore implements CommandRegistrar {
       action: () => this.searchElementCommandState.open(),
     });
     this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.SEARCH_TEXT,
+      trigger: this.createEditorCommandTrigger(),
+      action: () => {
+        if (
+          this.isInGrammarTextMode &&
+          !this.grammarModeManagerState.isInDefaultTextMode
+        ) {
+          this.setActiveActivity(ACTIVITY_MODE.SEARCH_TEXT);
+        }
+      },
+    });
+    this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_TEXT_MODE,
       trigger: this.createEditorCommandTrigger(
         () =>
@@ -495,6 +552,7 @@ export class EditorStore implements CommandRegistrar {
       LEGEND_STUDIO_COMMAND_KEY.SYNC_WITH_WORKSPACE,
       LEGEND_STUDIO_COMMAND_KEY.CREATE_ELEMENT,
       LEGEND_STUDIO_COMMAND_KEY.SEARCH_ELEMENT,
+      LEGEND_STUDIO_COMMAND_KEY.SEARCH_TEXT,
       LEGEND_STUDIO_COMMAND_KEY.TOGGLE_TEXT_MODE,
       LEGEND_STUDIO_COMMAND_KEY.GENERATE,
       LEGEND_STUDIO_COMMAND_KEY.COMPILE,
@@ -903,6 +961,13 @@ export class EditorStore implements CommandRegistrar {
     }
   }
 
+  openGrammarEditorState(editorState: GrammarTextEditorState): void {
+    const element = this.graphManagerState.graph.getElement(
+      guaranteeNonNullable(editorState.element).path,
+    );
+    this.tabManagerState.openElementEditor(element);
+  }
+
   setActiveActivity(
     activity: ACTIVITY_MODE,
     options?: { keepShowingIfMatchedCurrent?: boolean },
@@ -985,12 +1050,24 @@ export class EditorStore implements CommandRegistrar {
     packagePath: string | undefined,
     openAfterCreate: boolean,
   ): GeneratorFn<void> {
-    graph_addElement(
-      this.graphManagerState.graph,
-      element,
-      packagePath,
-      this.changeDetectionState.observerContext,
-    );
+    if (this.isInFormMode) {
+      graph_addElement(
+        this.graphManagerState.graph,
+        element,
+        packagePath,
+        this.changeDetectionState.observerContext,
+      );
+    } else if (
+      this.isInGrammarTextMode &&
+      !this.grammarModeManagerState.isInDefaultTextMode
+    ) {
+      graph_addElementInTextMode(
+        this.graphManagerState.graph,
+        element,
+        packagePath,
+        this.changeDetectionState.observerContext,
+      );
+    }
     this.explorerTreeState.reprocess();
 
     if (openAfterCreate) {
@@ -1017,52 +1094,91 @@ export class EditorStore implements CommandRegistrar {
       )
       .filter(isNonNullable);
     const elementsToDelete = [element, ...generatedChildrenElements];
-    this.tabManagerState.tabs = this.tabManagerState.tabs.filter(
-      (elementState) => {
-        if (elementState instanceof ElementEditorState) {
-          if (elementState === this.tabManagerState.currentTab) {
-            // avoid closing the current editor state as this will be taken care of
-            // by the `closeState()` call later
-            return true;
+    if (this.isInFormMode) {
+      this.tabManagerState.tabs = this.tabManagerState.tabs.filter(
+        (elementState) => {
+          if (elementState instanceof ElementEditorState) {
+            if (elementState === this.tabManagerState.currentTab) {
+              // avoid closing the current editor state as this will be taken care of
+              // by the `closeState()` call later
+              return true;
+            }
+            return !elementsToDelete.includes(elementState.element);
           }
-          return !elementsToDelete.includes(elementState.element);
-        }
-        return true;
-      },
-    );
-    if (
-      this.tabManagerState.currentTab &&
-      this.tabManagerState.currentTab instanceof ElementEditorState &&
-      elementsToDelete.includes(this.tabManagerState.currentTab.element)
-    ) {
-      this.tabManagerState.closeTab(this.tabManagerState.currentTab);
-    }
-    // remove/retire the element's generated children before remove the element itself
-    generatedChildrenElements.forEach((el) =>
-      graph_deleteOwnElement(this.graphManagerState.graph.generationModel, el),
-    );
-    graph_deleteElement(this.graphManagerState.graph, element);
-
-    const extraElementEditorPostDeleteActions = this.pluginManager
-      .getApplicationPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_LegendStudioApplicationPlugin_Extension
-          ).getExtraElementEditorPostDeleteActions?.() ?? [],
+          return true;
+        },
       );
-    for (const postDeleteAction of extraElementEditorPostDeleteActions) {
-      postDeleteAction(this, element);
-    }
+      if (
+        this.tabManagerState.currentTab &&
+        this.tabManagerState.currentTab instanceof ElementEditorState &&
+        elementsToDelete.includes(this.tabManagerState.currentTab.element)
+      ) {
+        this.tabManagerState.closeTab(this.tabManagerState.currentTab);
+      }
+      // remove/retire the element's generated children before remove the element itself
+      generatedChildrenElements.forEach((el) =>
+        graph_deleteOwnElement(
+          this.graphManagerState.graph.generationModel,
+          el,
+        ),
+      );
+      graph_deleteElement(this.graphManagerState.graph, element);
 
-    // reprocess project explorer tree
-    this.explorerTreeState.reprocess();
-    // recompile
-    yield flowResult(
-      this.graphState.globalCompileInFormMode({
-        message: `Can't compile graph after deletion and error cannot be located in form mode. Redirected to text mode for debugging`,
-      }),
-    );
+      const extraElementEditorPostDeleteActions = this.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_LegendStudioApplicationPlugin_Extension
+            ).getExtraElementEditorPostDeleteActions?.() ?? [],
+        );
+      for (const postDeleteAction of extraElementEditorPostDeleteActions) {
+        postDeleteAction(this, element);
+      }
+
+      // reprocess project explorer tree
+      this.explorerTreeState.reprocess();
+      // recompile
+      yield flowResult(
+        this.graphState.globalCompileInFormMode({
+          message: `Can't compile graph after deletion and error cannot be located in form mode. Redirected to text mode for debugging`,
+        }),
+      );
+    } else {
+      if (
+        this.isInGrammarTextMode &&
+        !this.grammarModeManagerState.isInDefaultTextMode
+      ) {
+        this.tabManagerState.tabs = this.tabManagerState.tabs.filter(
+          (elementState) => {
+            if (
+              elementState instanceof GrammarTextEditorState &&
+              elementState.element?.path === element.path
+            ) {
+              this.tabManagerState.closeTab(elementState);
+              return false;
+            } else {
+              return true;
+            }
+          },
+        );
+        this.grammarModeManagerState.currentGrammarElements.delete(
+          element.path,
+        );
+        // remove/retire the element's generated children before remove the element itself
+        generatedChildrenElements.forEach((el) =>
+          graph_deleteOwnElement(
+            this.graphManagerState.graph.generationModel,
+            el,
+          ),
+        );
+        graph_deleteElement(this.graphManagerState.graph, element);
+        // reprocess project explorer tree
+        this.explorerTreeState.reprocess();
+        // recompile
+        yield flowResult(this.graphState.globalCompileInTextMode());
+      }
+    }
   }
 
   *renameElement(
@@ -1072,23 +1188,46 @@ export class EditorStore implements CommandRegistrar {
     if (isElementReadOnly(element)) {
       return;
     }
-    graph_renameElement(
-      this.graphManagerState.graph,
-      element,
-      newPath,
-      this.changeDetectionState.observerContext,
-    );
-
-    const extraElementEditorPostRenameActions = this.pluginManager
-      .getApplicationPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_LegendStudioApplicationPlugin_Extension
-          ).getExtraElementEditorPostRenameActions?.() ?? [],
+    if (this.isInFormMode) {
+      graph_renameElement(
+        this.graphManagerState.graph,
+        element,
+        newPath,
+        this.changeDetectionState.observerContext,
       );
-    for (const postRenameAction of extraElementEditorPostRenameActions) {
-      postRenameAction(this, element);
+      const extraElementEditorPostRenameActions = this.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_LegendStudioApplicationPlugin_Extension
+            ).getExtraElementEditorPostRenameActions?.() ?? [],
+        );
+      for (const postRenameAction of extraElementEditorPostRenameActions) {
+        postRenameAction(this, element);
+      }
+    } else if (
+      this.isInGrammarTextMode &&
+      !this.grammarModeManagerState.isInDefaultTextMode
+    ) {
+      const grammar = this.grammarModeManagerState.currentGrammarElements.get(
+        element.path,
+      );
+      if (grammar) {
+        this.grammarModeManagerState.currentGrammarElements.delete(
+          element.path,
+        );
+        this.grammarModeManagerState.currentGrammarElements.set(
+          newPath,
+          grammar,
+        );
+      }
+      graph_renameElementInTextMode(
+        this.graphManagerState.graph,
+        element,
+        newPath,
+        this.changeDetectionState.observerContext,
+      );
     }
 
     // reprocess project explorer tree
@@ -1099,14 +1238,23 @@ export class EditorStore implements CommandRegistrar {
       this.explorerTreeState.openNode(element.package);
     }
     // recompile
-    yield flowResult(
-      this.graphState.globalCompileInFormMode({
-        message: `Can't compile graph after renaming and error cannot be located in form mode. Redirected to text mode for debugging`,
-      }),
-    );
+    if (this.isInFormMode) {
+      yield flowResult(
+        this.graphState.globalCompileInFormMode({
+          message: `Can't compile graph after renaming and error cannot be located in form mode. Redirected to text mode for debugging`,
+        }),
+      );
+    } else if (
+      this.isInGrammarTextMode &&
+      !this.grammarModeManagerState.isInDefaultTextMode
+    ) {
+      // yield flowResult(this.graphState.globalCompileInTextMode());
+    }
   }
 
   *toggleTextMode(): GeneratorFn<void> {
+    this.grammarModeManagerState.grammarModeSearchState =
+      new GrammarModeSearchState(this);
     if (this.isInFormMode) {
       if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
         return;
@@ -1116,13 +1264,7 @@ export class EditorStore implements CommandRegistrar {
         showLoading: true,
       });
       try {
-        const graphGrammar =
-          (yield this.graphManagerState.graphManager.graphToPureCode(
-            this.graphManagerState.graph,
-          )) as string;
-        yield flowResult(
-          this.grammarTextEditorState.setGraphGrammarText(graphGrammar),
-        );
+        yield flowResult(this.grammarModeManagerState.setGraphGrammar());
       } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.notifyWarning(
@@ -1135,11 +1277,19 @@ export class EditorStore implements CommandRegistrar {
       yield flowResult(this.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT));
       // navigate to the currently opened element immediately after entering text mode editor
       if (this.tabManagerState.currentTab instanceof ElementEditorState) {
-        this.grammarTextEditorState.setCurrentElementLabelRegexString(
+        this.grammarModeManagerState.grammarTextEditorState.setCurrentElementLabelRegexString(
           this.tabManagerState.currentTab.element,
         );
+        if (!this.grammarModeManagerState.isInDefaultTextMode) {
+          this.tabManagerState.openElementEditor(
+            this.tabManagerState.currentTab.element,
+          );
+        }
       }
     } else if (this.isInGrammarTextMode) {
+      if (this.activeActivity === ACTIVITY_MODE.SEARCH_TEXT) {
+        this.setActiveActivity(ACTIVITY_MODE.EXPLORER);
+      }
       yield flowResult(this.graphState.leaveTextMode());
     } else {
       throw new UnsupportedOperationError(
@@ -1185,5 +1335,36 @@ export class EditorStore implements CommandRegistrar {
     } else {
       this.localChangesState = new TextLocalChangesState(this, this.sdlcState);
     }
+  }
+
+  getTypeLabels(): string[] {
+    const labels = [
+      PURE_ELEMENT_NAME.CLASS,
+      PURE_ELEMENT_NAME.ASSOCIATION,
+      PURE_ELEMENT_NAME.ENUMERATION,
+      PURE_ELEMENT_NAME.MEASURE,
+      PURE_ELEMENT_NAME.PROFILE,
+      PURE_ELEMENT_NAME.FUNCTION,
+      PURE_ELEMENT_NAME.MAPPING,
+      PURE_ELEMENT_NAME.RUNTIME,
+      PURE_ELEMENT_NAME.CONNECTION,
+      PURE_ELEMENT_NAME.FILE_GENERATION,
+      PURE_ELEMENT_NAME.GENERATION_SPECIFICATION,
+      PURE_ELEMENT_NAME.DATA_ELEMENT,
+      PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION,
+      PURE_CONNECTION_NAME.MODEL_CHAIN_CONNECTION,
+      PURE_CONNECTION_NAME.XML_MODEL_CONNECTION,
+      PURE_ELEMENT_NAME.SERVICE,
+      PURE_ELEMENT_NAME.FLAT_DATA,
+      PURE_ELEMENT_NAME.DATABASE,
+      PURE_CONNECTION_NAME.FLAT_DATA_CONNECTION,
+      PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
+    ] as string[];
+    labels.concat(
+      this.graphManagerState.pluginManager
+        .getPureGraphManagerPlugins()
+        .flatMap((plugin) => plugin.getExtraPureGrammarKeywords?.() ?? []),
+    );
+    return labels;
   }
 }

@@ -17,7 +17,6 @@
 import { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { EditPanel } from '../editor/edit-panel/EditPanel.js';
-import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor.js';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
 import {
@@ -67,6 +66,8 @@ import {
   useLegendStudioBaseStore,
 } from '../LegendStudioBaseStoreProvider.js';
 import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
+import { GrammarEditPanel } from '../editor/GrammarEditPanel.js';
+import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor.js';
 
 const ProjectViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();
@@ -139,18 +140,15 @@ const ProjectViewerStatusBar = observer(() => {
       </div>
       <div className="editor__status-bar__right">
         <button
-          className={clsx(
-            'editor__status-bar__action editor__status-bar__action__toggler',
-            {
-              'editor__status-bar__action__toggler--active':
-                editorStore.isInGrammarTextMode,
-            },
-          )}
+          className={clsx('editor__status-bar__studio-mode', {
+            'editor__status-bar__text-mode': editorStore.isInGrammarTextMode,
+          })}
           onClick={handleTextModeClick}
           tabIndex={-1}
           title="Toggle text mode (F8)"
         >
           <HackerIcon />
+          {editorStore.isInFormMode ? 'Form Mode' : 'Text Mode'}
         </button>
         <button
           className={clsx(
@@ -330,7 +328,19 @@ export const ProjectViewer = withEditorStore(
                       minSize={300}
                     >
                       {editorStore.isInFormMode && <EditPanel />}
-                      {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
+                      {editorStore.isInGrammarTextMode &&
+                        !editorStore.grammarModeManagerState
+                          .isInDefaultTextMode && <GrammarEditPanel />}
+                      {editorStore.isInGrammarTextMode &&
+                        editorStore.grammarModeManagerState
+                          .isInDefaultTextMode && (
+                          <GrammarTextEditor
+                            grammarTextEditorState={
+                              editorStore.grammarModeManagerState
+                                .grammarTextEditorState
+                            }
+                          />
+                        )}
                     </ResizablePanel>
                   </ResizablePanelGroup>
                 </div>

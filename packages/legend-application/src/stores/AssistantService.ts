@@ -151,6 +151,7 @@ export class AssistantService {
       {
         includeScore: true,
         shouldSort: true,
+        findAllMatches: true,
         // Ignore location when computing the search score
         // See https://fusejs.io/concepts/scoring-theory.html
         ignoreLocation: true,
