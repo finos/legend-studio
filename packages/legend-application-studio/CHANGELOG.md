@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 20.1.1
+
+### Patch Changes
+
+- [#1717](https://github.com/finos/legend-studio/pull/1717) [`c641e0781`](https://github.com/finos/legend-studio/commit/c641e0781eb76100ee2ce6cac4b0bd16736ab20e) ([@gayathrir11](https://github.com/gayathrir11)) - Fix with `Studio` not closing editor tabs for deleted elements
+
+- [#1719](https://github.com/finos/legend-studio/pull/1719) [`52c69421f`](https://github.com/finos/legend-studio/commit/52c69421f39e9677da261200ba226bd95a93b8fe) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support env keys selection for each test in multiexec services([#1718](https://github.com/finos/legend-studio/issues/1718)).
+
 ## 20.1.0
 
 ### Minor Changes

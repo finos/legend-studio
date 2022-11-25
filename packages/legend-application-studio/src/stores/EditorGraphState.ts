@@ -1217,18 +1217,17 @@ export class EditorGraphState {
               startErrorMessage + getConflictsString(dependencyInfo),
             );
           } else {
+            const conflictMessages = Array.from(dependencyProjects.entries())
+              .filter(([, v]) => v.size > 1)
+              .map(
+                ([k, v]) =>
+                  `project: ${k}\n versions: ${Array.from(v.values()).join(
+                    ',',
+                  )}`,
+              )
+              .join('\n\n');
             throw new UnsupportedOperationError(
-              startErrorMessage +
-                Array.from(dependencyProjects.entries())
-                  .map(([k, v]) => {
-                    if (v.size > 1) {
-                      `project: ${k}\n versions: \n${Array.from(
-                        v.values(),
-                      ).join('\n')}`;
-                    }
-                    return '';
-                  })
-                  .join('\n'),
+              startErrorMessage + conflictMessages,
             );
           }
         }
