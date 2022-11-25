@@ -73,6 +73,8 @@ export const getJoinType = (type: string): JoinType => {
       return JoinType.LEFT_OUTER;
     case JoinType.RIGHT_OUTER:
       return JoinType.RIGHT_OUTER;
+    case JoinType.OUTER:
+      return JoinType.OUTER;
     default:
       throw new UnsupportedOperationError(
         `Encountered unsupported join type '${type}'`,

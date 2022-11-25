@@ -83,6 +83,10 @@ export enum JoinType {
   INNER = 'INNER',
   LEFT_OUTER = 'LEFT_OUTER',
   RIGHT_OUTER = 'RIGHT_OUTER',
+  // NOTE: this is not technically part of the join type enumeration
+  // but Engine expose it as an alias for which can be resolved into either outer join types
+  // for simplicity sake
+  OUTER = 'OUTER',
 }
 
 // TODO: create RelationalTreeNode like in PURE?
