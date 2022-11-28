@@ -1,5 +1,7 @@
 # @finos/legend-application-studio
 
+## 20.1.2
+
 ## 20.1.1
 
 ### Patch Changes
