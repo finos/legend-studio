@@ -87,12 +87,6 @@ export const service_setSerializationFormat = action(
   },
 );
 
-export const service_addAssertKeyForTest = action(
-  (test: ServiceTest, keys: string[]) => {
-    test.keys = keys;
-  },
-);
-
 export const service_addTestSuite = action(
   (
     service: Service,

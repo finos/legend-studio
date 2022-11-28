@@ -105,7 +105,6 @@ export const observe_ServiceTest = skipObserved(
       serializationFormat: observable,
       assertions: observable,
       parameters: observable,
-      keys: observable,
       hashCode: computed,
     });
 
