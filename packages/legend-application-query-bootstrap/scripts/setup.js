@@ -77,6 +77,14 @@ export const setup = (outputDir) => {
               url: 'https://legend.finos.org/resource/studio/documentation/shared.json',
               simple: true,
             },
+            {
+              url: 'https://legend.finos.org/resource/studio/documentation/query.json',
+              simple: true,
+            },
+            {
+              url: 'https://legend.finos.org/resource/studio/documentation/dsl-service.json',
+              simple: true,
+            },
           ],
         },
         taxonomy: {

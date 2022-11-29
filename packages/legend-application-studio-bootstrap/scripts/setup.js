@@ -75,6 +75,10 @@ export const setup = (outputDir) => {
               url: 'https://legend.finos.org/resource/studio/documentation/studio.json',
               simple: true,
             },
+            {
+              url: 'https://legend.finos.org/resource/studio/documentation/dsl-service.json',
+              simple: true,
+            },
           ],
         },
         extensions: {
