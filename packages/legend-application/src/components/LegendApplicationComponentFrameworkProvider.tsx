@@ -27,6 +27,7 @@ import {
   createKeybindingsHandler,
   type KeyBindingConfig,
 } from '@finos/legend-shared';
+import { VirtualAssistant } from './VirtualAssistant.js';
 
 const APP_CONTAINER_ID = 'app.container';
 const APP_BACKDROP_CONTAINER_ID = 'app.backdrop-container';
@@ -148,6 +149,7 @@ export const LegendApplicationComponentFrameworkProvider = observer(
             id={APP_CONTAINER_ID}
           >
             <BackdropContainer elementID={APP_BACKDROP_CONTAINER_ID} />
+            <VirtualAssistant />
             {children}
           </div>
         </DndProvider>

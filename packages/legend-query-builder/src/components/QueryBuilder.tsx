@@ -31,6 +31,7 @@ import {
   CaretDownIcon,
   DiffIcon,
   WaterDropIcon,
+  AssistantIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -72,6 +73,8 @@ const QueryBuilderStatusBar = observer(
     const compile = applicationStore.guardUnhandledError(() =>
       flowResult(queryBuilderState.compileQuery()),
     );
+    const toggleAssistant = (): void =>
+      applicationStore.assistantService.toggleAssistant();
 
     return (
       <div className="query-builder__status-bar">
@@ -149,6 +152,20 @@ const QueryBuilderStatusBar = observer(
             title="View Query in Pure"
           >
             <HackerIcon />
+          </button>
+          <button
+            className={clsx(
+              'query-builder__status-bar__action query-builder__status-bar__action__toggler',
+              {
+                'query-builder__status-bar__action__toggler--toggled':
+                  !applicationStore.assistantService.isHidden,
+              },
+            )}
+            onClick={toggleAssistant}
+            tabIndex={-1}
+            title="Toggle assistant"
+          >
+            <AssistantIcon />
           </button>
         </div>
       </div>
