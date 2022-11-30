@@ -35,7 +35,11 @@ import {
   RefreshIcon,
   TimesIcon,
 } from '@finos/legend-art';
-import { type ValueSpecification, PrimitiveType } from '@finos/legend-graph';
+import {
+  type ValueSpecification,
+  PrimitiveType,
+  PureMultiExecution,
+} from '@finos/legend-graph';
 import { BasicValueSpecificationEditor } from '@finos/legend-query-builder';
 import {
   filterByType,
@@ -47,9 +51,10 @@ import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useState } from 'react';
 import type { ServiceTestSuiteState } from '../../../../../stores/editor-state/element-editor-state/service/testable/ServiceTestableState.js';
 import {
-  ServiceValueSpecificationTestParameterState,
+  type KeyOption,
   type ServiceTestSetupState,
   type ServiceTestState,
+  ServiceValueSpecificationTestParameterState,
 } from '../../../../../stores/editor-state/element-editor-state/service/testable/ServiceTestEditorState.js';
 import { TESTABLE_TEST_TAB } from '../../../../../stores/editor-state/element-editor-state/testable/TestableEditorState.js';
 import type { TestAssertionEditorState } from '../../../../../stores/editor-state/element-editor-state/testable/TestAssertionState.js';
@@ -276,14 +281,24 @@ const ServiceTestSetupEditor = observer(
     const format = test.serializationFormat;
     const selectedSerializationFormat = setupState.getSelectedFormatOption();
     const options = setupState.options;
+    const keyOptions = setupState.keyOptions;
+    const [selectedKeys, setSelectedKeys] = useState<KeyOption[]>(
+      setupState.getSelectedKeyOptions(),
+    );
     const isReadOnly =
       serviceTestState.suiteState.testableState.serviceEditorState.isReadOnly;
-    const onChange = (val: { label: string; value: string } | null): void => {
+    const onSerializationFormatChange = (
+      val: { label: string; value: string } | null,
+    ): void => {
       if (val === null) {
         setupState.changeSerializationFormat(undefined);
       } else if (val.value !== format) {
         setupState.changeSerializationFormat(val.value);
       }
+    };
+    const onKeyOptionChange = (val: KeyOption[]): void => {
+      setupState.addServiceTestAssertKeys(val.map((op) => op.value));
+      setSelectedKeys(val);
     };
     const addParameter = (): void => {
       setupState.setShowNewParameterModal(true);
@@ -307,27 +322,27 @@ const ServiceTestSetupEditor = observer(
         </div>
         <div className="service-test-editor__content">
           <ResizablePanelGroup orientation="horizontal">
-            <ResizablePanel size={200} minSize={28}>
+            <ResizablePanel size={230} minSize={28}>
               <div className="service-test-data-editor panel">
                 <div className="service-test-suite-editor__header">
                   <div className="service-test-suite-editor__header__title">
                     <div className="service-test-suite-editor__header__title__label">
-                      serialization
+                      configuration
                     </div>
                   </div>
                 </div>
-                <div className="service-test-editor__setup__serialization">
+                <div className="service-test-editor__setup__configuration">
                   <div className="panel__content__form__section">
                     <div className="panel__content__form__section__header__label">
                       Serialization Format
                     </div>
                     <div className="panel__content__form__section__header__prompt">
-                      format to serialize execution result
+                      Format to serialize execution result
                     </div>
                     <CustomSelectorInput
                       className="panel__content__form__section__dropdown"
                       options={options}
-                      onChange={onChange}
+                      onChange={onSerializationFormatChange}
                       value={selectedSerializationFormat}
                       isClearable={true}
                       escapeClearsValue={true}
@@ -335,6 +350,30 @@ const ServiceTestSetupEditor = observer(
                       disable={isReadOnly}
                     />
                   </div>
+                  {setupState.testState.testable.execution instanceof
+                    PureMultiExecution && (
+                    <div className="panel__content__form__section">
+                      <div className="panel__content__form__section__header__label">
+                        Keys
+                      </div>
+                      <div className="panel__content__form__section__header__prompt">
+                        Specify keys for each test to run assertions against
+                        selected env keys
+                      </div>
+                      <CustomSelectorInput
+                        className="panel__content__form__section__dropdown"
+                        options={keyOptions}
+                        onChange={onKeyOptionChange}
+                        value={selectedKeys}
+                        isClearable={true}
+                        escapeClearsValue={true}
+                        darkMode={true}
+                        isMulti={true}
+                        disable={isReadOnly}
+                        placeholder={'Choose keys...'}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </ResizablePanel>
