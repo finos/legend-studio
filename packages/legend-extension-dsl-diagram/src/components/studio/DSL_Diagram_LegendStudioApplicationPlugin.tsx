@@ -188,8 +188,10 @@ export class DSL_Diagram_LegendStudioApplicationPlugin
     return [
       (editorStore: EditorStore, element: PackageableElement): void => {
         // rerender currently opened diagram
-        if (editorStore.currentEditorState instanceof DiagramEditorState) {
-          editorStore.currentEditorState.renderer.render();
+        if (
+          editorStore.tabManagerState.currentTab instanceof DiagramEditorState
+        ) {
+          editorStore.tabManagerState.currentTab.renderer.render();
         }
       },
     ];
@@ -199,8 +201,10 @@ export class DSL_Diagram_LegendStudioApplicationPlugin
     return [
       (editorStore: EditorStore, element: PackageableElement): void => {
         // rerender currently opened diagram
-        if (editorStore.currentEditorState instanceof DiagramEditorState) {
-          editorStore.currentEditorState.renderer.render();
+        if (
+          editorStore.tabManagerState.currentTab instanceof DiagramEditorState
+        ) {
+          editorStore.tabManagerState.currentTab.renderer.render();
         }
       },
     ];

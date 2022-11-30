@@ -81,7 +81,7 @@ export class ElementFileGenerationState {
   }
 
   *regenerate(): GeneratorFn<void> {
-    const currentState = this.editorStore.currentEditorState;
+    const currentState = this.editorStore.tabManagerState.currentTab;
     if (currentState instanceof ElementEditorState) {
       this.fileGenerationState.fileGeneration.scopeElements = [
         PackageableElementExplicitReference.create(currentState.element),

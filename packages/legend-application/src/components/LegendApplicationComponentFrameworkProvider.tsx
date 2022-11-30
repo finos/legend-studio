@@ -94,6 +94,10 @@ export const LegendApplicationComponentFrameworkProvider = observer(
   (props: { children: React.ReactNode }) => {
     const { children } = props;
     const applicationStore = useApplicationStore();
+    const disableContextMenu: React.MouseEventHandler = (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+    };
     const backdropContainer = applicationStore.backdropContainerElementID
       ? document.getElementById(applicationStore.backdropContainerElementID) ??
         document.getElementById(APP_BACKDROP_CONTAINER_ID)
@@ -147,6 +151,8 @@ export const LegendApplicationComponentFrameworkProvider = observer(
             // NOTE: this `id` is used to quickly identify this DOM node so we could manually
             // dispatch keyboard event here in order to be captured by our global hotkeys matchers
             id={APP_CONTAINER_ID}
+            // Disable global context menu so that only places in the app that supports context-menu will be effective
+            onContextMenu={disableContextMenu}
           >
             <BackdropContainer elementID={APP_BACKDROP_CONTAINER_ID} />
             <VirtualAssistant />

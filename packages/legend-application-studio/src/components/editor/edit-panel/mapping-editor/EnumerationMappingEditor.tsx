@@ -198,7 +198,7 @@ export const SourceValueInput = observer(
     const handleDrop = useCallback(
       (item: TransformDropTarget): void => {
         if (!isReadOnly) {
-          if (item instanceof TypeDragSource) {
+          if (item instanceof TypeDragSource && item.data) {
             updateSourceValue(value + item.data.label);
           }
         }
@@ -344,7 +344,7 @@ export const EnumerationMappingEditor = observer(
     const { enumerationMapping, isReadOnly } = props;
     const editorStore = useEditorStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const enumeration = enumerationMapping.enumeration;
     // ID
     const showId =

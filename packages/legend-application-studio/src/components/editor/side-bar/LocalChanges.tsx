@@ -163,11 +163,11 @@ export const LocalChanges = observer(() => {
     localChangesState.workspaceSyncState.pullChangesState.isInProgress ||
     localChangesState.refreshWorkspaceSyncStatusState.isInProgress;
   // Changes
-  const currentEditorState = editorStore.currentEditorState;
+  const currentTabState = editorStore.tabManagerState.currentTab;
   const isSelectedDiff = (diff: EntityDiff): boolean =>
-    currentEditorState instanceof EntityDiffViewState &&
-    diff.oldPath === currentEditorState.fromEntityPath &&
-    diff.newPath === currentEditorState.toEntityPath;
+    currentTabState instanceof EntityDiffViewState &&
+    diff.oldPath === currentTabState.fromEntityPath &&
+    diff.newPath === currentTabState.toEntityPath;
   const changes =
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes;
   const openChange =
@@ -178,8 +178,8 @@ export const LocalChanges = observer(() => {
   const conflicts =
     editorStore.changeDetectionState.potentialWorkspacePullConflicts;
   const isSelectedConflict = (conflict: EntityChangeConflict): boolean =>
-    currentEditorState instanceof EntityChangeConflictEditorState &&
-    conflict.entityPath === currentEditorState.entityPath;
+    currentTabState instanceof EntityChangeConflictEditorState &&
+    conflict.entityPath === currentTabState.entityPath;
   const openPotentialConflict =
     (conflict: EntityChangeConflict): (() => void) =>
     (): void =>

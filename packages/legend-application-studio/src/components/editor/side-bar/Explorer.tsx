@@ -349,11 +349,11 @@ const ExplorerContextMenu = observer(
 const ProjectConfig = observer(() => {
   const editorStore = useEditorStore();
   const openConfigurationEditor = (): void =>
-    editorStore.openSingletonEditorState(
+    editorStore.tabManagerState.openTab(
       editorStore.projectConfigurationEditorState,
     );
   const isSelected =
-    editorStore.currentEditorState ===
+    editorStore.tabManagerState.currentTab ===
       editorStore.projectConfigurationEditorState &&
     // if we select non-element like packages, we need to deselect project configuration
     // so maybe a good TODO is to move this to explorer tree state
@@ -528,7 +528,7 @@ const ExplorerTrees = observer(() => {
   const editorStore = useEditorStore();
   const { isInGrammarTextMode, isInViewerMode } = editorStore;
   const openModelImport = (): void =>
-    editorStore.openSingletonEditorState(editorStore.modelImporterState);
+    editorStore.tabManagerState.openTab(editorStore.modelImporterState);
   const graph = editorStore.graphManagerState.graph;
   // Explorer tree
   const treeData = editorStore.explorerTreeState.getTreeData();
@@ -733,9 +733,9 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
     editorStore.explorerTreeState.setTreeData({ ...treeData });
   };
   const showModelImporter = (): void =>
-    editorStore.openState(editorStore.modelImporterState);
+    editorStore.tabManagerState.openTab(editorStore.modelImporterState);
   const openConfigurationEditor = (): void =>
-    editorStore.openSingletonEditorState(
+    editorStore.tabManagerState.openTab(
       editorStore.projectConfigurationEditorState,
     );
 

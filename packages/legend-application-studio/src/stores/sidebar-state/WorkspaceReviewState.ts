@@ -117,7 +117,7 @@ export class WorkspaceReviewState {
           `Can't find entity with path  '${diff.newPath}'`,
         )
       : undefined;
-    this.editorStore.openEntityDiff(
+    this.editorStore.tabManagerState.openTab(
       new EntityDiffViewState(
         this.editorStore,
         SPECIAL_REVISION_ALIAS.WORKSPACE_BASE,

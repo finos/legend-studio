@@ -447,11 +447,7 @@ const RuntimeExplorer = observer(
             <div className="panel__header__title__content">{runtimeName}</div>
           </div>
         </div>
-        <ContextMenu
-          className="panel__content"
-          disabled={true}
-          menuProps={{ elevation: 7 }}
-        >
+        <div className="panel__content">
           <PanelDropZone
             dropTargetConnector={dropRuntimeSubElementRef}
             isDragOver={isRuntimeSubElementDragOver}
@@ -472,7 +468,7 @@ const RuntimeExplorer = observer(
               />
             </div>
           </PanelDropZone>
-        </ContextMenu>
+        </div>
       </div>
     );
   },
@@ -584,7 +580,7 @@ const IdentifiedConnectionEditor = observer(
     };
     const visitConnection = (): void => {
       if (identifiedConnection.connection instanceof ConnectionPointer) {
-        editorStore.openElement(
+        editorStore.tabManagerState.openElementEditor(
           identifiedConnection.connection.packageableConnection.value,
         );
       }
@@ -847,7 +843,8 @@ const RuntimeMappingEditor = observer(
       runtimeEditorState.changeMapping(mappingRef, val.value);
     const deleteMapping = (): void =>
       runtimeEditorState.deleteMapping(mappingRef);
-    const visitMapping = (): void => editorStore.openElement(mappingRef.value);
+    const visitMapping = (): void =>
+      editorStore.tabManagerState.openElementEditor(mappingRef.value);
 
     return (
       <div className="panel__content__form__section__list__item--customized runtime-mapping-editor">
@@ -1046,7 +1043,7 @@ export const RuntimeEditor = observer(
 
 export const PackageableRuntimeEditor = observer(() => {
   const editorStore = useEditorStore();
-  const editorState = editorStore.getCurrentEditorState(
+  const editorState = editorStore.tabManagerState.getCurrentEditorState(
     PackageableRuntimeEditorState,
   );
   const isReadOnly = editorState.isReadOnly;

@@ -321,7 +321,9 @@ export class ExplorerTreeState {
   ): void => {
     // Open non-package element
     if (!(node.packageableElement instanceof Package)) {
-      this.editorStore.openElement(node.packageableElement);
+      this.editorStore.tabManagerState.openElementEditor(
+        node.packageableElement,
+      );
     }
     // Expand package element
     if (node.childrenIds?.length) {

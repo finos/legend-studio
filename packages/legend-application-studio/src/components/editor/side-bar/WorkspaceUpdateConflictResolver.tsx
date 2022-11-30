@@ -42,7 +42,7 @@ export const WorkspaceUpdateConflictResolver = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const sdlcState = editorStore.sdlcState;
-  const currentEditorState = editorStore.currentEditorState;
+  const currentTabState = editorStore.tabManagerState.currentTab;
   const conflictResolutionState = editorStore.conflictResolutionState;
   // Actions
   const isRunningTask =
@@ -66,8 +66,8 @@ export const WorkspaceUpdateConflictResolver = observer(() => {
   // Conflicts
   const conflicts = conflictResolutionState.conflicts;
   const isSelectedConflict = (conflict: EntityChangeConflict): boolean =>
-    currentEditorState instanceof EntityChangeConflictEditorState &&
-    conflict.entityPath === currentEditorState.entityPath;
+    currentTabState instanceof EntityChangeConflictEditorState &&
+    conflict.entityPath === currentTabState.entityPath;
   const openConflict =
     (conflict: EntityChangeConflict): (() => void) =>
     (): void =>
@@ -79,9 +79,9 @@ export const WorkspaceUpdateConflictResolver = observer(() => {
     (): void =>
       conflictResolutionState.openConflictResolutionChange(diff);
   const isSelectedDiff = (diff: EntityDiff): boolean =>
-    currentEditorState instanceof EntityDiffViewState &&
-    diff.oldPath === currentEditorState.fromEntityPath &&
-    diff.newPath === currentEditorState.toEntityPath;
+    currentTabState instanceof EntityDiffViewState &&
+    diff.oldPath === currentTabState.fromEntityPath &&
+    diff.newPath === currentTabState.toEntityPath;
 
   return (
     <div className="panel conflict-resolution">

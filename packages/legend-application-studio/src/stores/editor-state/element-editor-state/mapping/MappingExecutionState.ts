@@ -128,6 +128,7 @@ import {
 } from '../../../shared/testable/TestableUtils.js';
 import { SERIALIZATION_FORMAT } from '../service/testable/ServiceTestEditorState.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
+import { MappingEditorTabState } from './MappingTabManagerState.js';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -477,8 +478,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
   }
 }
 
-export class MappingExecutionState {
-  readonly uuid = uuid();
+export class MappingExecutionState extends MappingEditorTabState {
   readonly editorStore: EditorStore;
   readonly mappingEditorState: MappingEditorState;
 
@@ -498,6 +498,8 @@ export class MappingExecutionState {
     mappingEditorState: MappingEditorState,
     name: string,
   ) {
+    super();
+
     makeObservable(this, {
       name: observable,
       queryState: observable,
@@ -539,6 +541,9 @@ export class MappingExecutionState {
     );
   }
 
+  get label(): string {
+    return this.name;
+  }
   setQueryState(val: MappingExecutionQueryState): void {
     this.queryState = val;
   }

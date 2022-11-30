@@ -98,7 +98,7 @@ export const EntityDiffView = observer(
     } = diffEditorState;
     const goToElement = (): void => {
       if (diffEditorState.element) {
-        editorStore.openElement(diffEditorState.element);
+        editorStore.tabManagerState.openElementEditor(diffEditorState.element);
       }
     };
 

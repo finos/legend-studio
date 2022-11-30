@@ -473,8 +473,12 @@ export class ModelImporterState extends EditorState {
       .filter(isNonNullable);
   }
 
-  get headerName(): string {
+  get label(): string {
     return 'Model Importer';
+  }
+
+  match(tab: EditorState): boolean {
+    return tab instanceof ModelImporterEditorState;
   }
 
   setReplaceFlag(val: boolean): void {

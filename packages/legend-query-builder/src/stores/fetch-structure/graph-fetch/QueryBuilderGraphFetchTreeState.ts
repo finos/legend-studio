@@ -52,7 +52,7 @@ import {
   type Hashable,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
-import { isValueExpressionReferencesinValue } from '../../QueryBuilderValueSpecificationHelper.js';
+import { isValueExpressionReferencedInValue } from '../../QueryBuilderValueSpecificationHelper.js';
 
 export class QueryBuilderGraphFetchTreeState
   extends QueryBuilderFetchStructureImplementationState
@@ -253,7 +253,7 @@ export class QueryBuilderGraphFetchTreeState
     return Boolean(
       Array.from(this.treeData?.nodes.values() ?? []).find((node) =>
         node.tree.parameters.find((p) =>
-          isValueExpressionReferencesinValue(variable, p),
+          isValueExpressionReferencedInValue(variable, p),
         ),
       ),
     );

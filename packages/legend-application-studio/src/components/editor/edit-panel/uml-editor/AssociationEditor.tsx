@@ -186,7 +186,7 @@ const AssociationPropertyBasicEditor = observer(
     // Other
     const openElement = (): void => {
       if (!(propertyType instanceof PrimitiveType)) {
-        editorStore.openElement(
+        editorStore.tabManagerState.openElementEditor(
           propertyType instanceof Unit ? propertyType.measure : propertyType,
         );
       }
@@ -322,7 +322,8 @@ export const AssociationEditor = observer(
   (props: { association: Association }) => {
     const { association } = props;
     const editorStore = useEditorStore();
-    const editorState = editorStore.getCurrentEditorState(UMLEditorState);
+    const editorState =
+      editorStore.tabManagerState.getCurrentEditorState(UMLEditorState);
     const isReadOnly = editorState.isReadOnly;
     // Selected property
     const [selectedProperty, setSelectedProperty] = useState<

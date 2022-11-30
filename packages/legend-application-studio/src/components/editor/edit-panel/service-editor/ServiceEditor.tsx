@@ -57,7 +57,8 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../st
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
-  const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
+  const serviceState =
+    editorStore.tabManagerState.getCurrentEditorState(ServiceEditorState);
   const service = serviceState.service;
   const isReadOnly = serviceState.isReadOnly;
   // Pattern
@@ -401,7 +402,8 @@ const ServiceGeneralEditor = observer(() => {
 export const ServiceEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
+  const serviceState =
+    editorStore.tabManagerState.getCurrentEditorState(ServiceEditorState);
   const service = serviceState.service;
   const isReadOnly = serviceState.isReadOnly;
   // Tab

@@ -33,7 +33,7 @@ import {
 import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import {
-  type EntityDiffEditorState,
+  type EntityDiffViewerState,
   SPECIAL_REVISION_ALIAS,
 } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState.js';
@@ -55,8 +55,8 @@ import { AbstractConflictResolutionState } from '../AbstractConflictResolutionSt
 class WorkspaceSyncConflictResolutionState extends AbstractConflictResolutionState {
   showModal = false;
   conflicts: EntityChangeConflict[] = [];
-  openMergedEditorStates: EntityDiffEditorState[] = [];
-  currentDiffEditorState: EntityDiffEditorState | undefined;
+  openMergedEditorStates: EntityDiffViewerState[] = [];
+  currentDiffEditorState: EntityDiffViewerState | undefined;
   resolutions: EntityChangeConflictResolution[] = [];
   baseToLocalChanges: EntityDiff[] = [];
 
@@ -154,7 +154,7 @@ class WorkspaceSyncConflictResolutionState extends AbstractConflictResolutionSta
       .concat(this.resolvedChanges);
   }
 
-  openState(entityDiffEditorState: EntityDiffEditorState): void {
+  openState(entityDiffEditorState: EntityDiffViewerState): void {
     if (entityDiffEditorState instanceof EntityChangeConflictEditorState) {
       this.openConflictState(entityDiffEditorState);
     }
@@ -207,7 +207,7 @@ class WorkspaceSyncConflictResolutionState extends AbstractConflictResolutionSta
     this.openEntityChangeConflict(mergeEditorState);
   }
 
-  closeConflict(conflictState: EntityDiffEditorState): void {
+  closeConflict(conflictState: EntityDiffViewerState): void {
     const conflictIndex = this.openMergedEditorStates.findIndex(
       (e) => e === conflictState,
     );
@@ -328,7 +328,7 @@ class WorkspaceSyncConflictResolutionState extends AbstractConflictResolutionSta
     this.showModal = val;
   }
 
-  setCurrentMergeEditorState(val: EntityDiffEditorState | undefined): void {
+  setCurrentMergeEditorState(val: EntityDiffViewerState | undefined): void {
     this.currentDiffEditorState = val;
   }
 

@@ -50,8 +50,10 @@ export * from './stores/WebApplicationRouter.js';
 export * from './components/shared/DocumentationLink.js';
 export * from './components/shared/TextInputEditor.js';
 export * from './components/shared/PackageableElementOptionLabel.js';
+export * from './components/shared/TabManager.js';
 
 export * from './stores/shared/PackageableElementOption.js';
+export * from './stores/shared/TabManagerState.js';
 
 /**
  * @modularize

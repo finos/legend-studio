@@ -82,7 +82,7 @@ export const MappingExplorerContextMenu = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const currentMappingElement =
       mappingEditorState.currentTabState instanceof MappingElementState
         ? mappingEditorState.currentTabState.mappingElement
@@ -232,7 +232,7 @@ export const MappingElementExplorer = observer(
     const { mappingElement, openNewMapingModal, isReadOnly } = props;
     const editorStore = useEditorStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const currentMappingElement =
       mappingEditorState.currentTabState instanceof MappingElementState
         ? mappingEditorState.currentTabState.mappingElement
@@ -321,7 +321,7 @@ const MappingElementTreeNodeContainer = observer(
     const mappingElement = node.mappingElement;
     const editorStore = useEditorStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const currentMappingElement =
       mappingEditorState.currentTabState instanceof MappingElementState
         ? mappingEditorState.currentTabState.mappingElement
@@ -429,7 +429,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
   const { isReadOnly } = props;
   const editorStore = useEditorStore();
   const mappingEditorState =
-    editorStore.getCurrentEditorState(MappingEditorState);
+    editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
   const mapping = mappingEditorState.mapping;
   const mappingElements = getAllMappingElements(mapping).sort((a, b) =>
     getMappingIdentitySortString(a, getMappingElementTarget(a)).localeCompare(
@@ -483,7 +483,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
     : undefined;
   const visitGenerationParentElement = (): void => {
     if (generationParentElement) {
-      editorStore.openElement(generationParentElement);
+      editorStore.tabManagerState.openElementEditor(generationParentElement);
     }
   };
   // explorer tree data

@@ -22,7 +22,6 @@ import {
   MAPPING_TEST_EDITOR_TAB_TYPE,
   TEST_RESULT,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState.js';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   clsx,
   ContextMenu,
@@ -49,6 +48,7 @@ import { Randomizer } from '@finos/legend-shared';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { SetImplementation } from '@finos/legend-graph';
+import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 
 const addTestPromps = [
   `Let's add some test!`,
@@ -221,7 +221,7 @@ export const MappingTestExplorer = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const openTest = applicationStore.guardUnhandledError(() =>
       flowResult(mappingEditorState.openTest(testState.test)),
     );
@@ -312,7 +312,7 @@ export const MappingTestsExplorer = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const runAllTests = applicationStore.guardUnhandledError(() =>
       flowResult(mappingEditorState.runTests()),
     );

@@ -136,7 +136,9 @@ test.only(
 
     // test tabs
     const mappingEditorState =
-      MOCK__editorStore.getCurrentEditorState(MappingEditorState);
+      MOCK__editorStore.tabManagerState.getCurrentEditorState(
+        MappingEditorState,
+      );
     expect(mappingEditorState.openedTabStates).toHaveLength(3);
     const mappingTabs = await waitFor(() =>
       renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR__TABS__HEADER),

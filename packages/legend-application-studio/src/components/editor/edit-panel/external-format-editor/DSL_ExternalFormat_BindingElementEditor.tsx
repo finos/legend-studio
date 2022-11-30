@@ -289,7 +289,8 @@ const BindingGeneralEditor = observer(
 
 export const BindingEditor = observer(() => {
   const editorStore = useEditorStore();
-  const editorState = editorStore.getCurrentEditorState(BindingEditorState);
+  const editorState =
+    editorStore.tabManagerState.getCurrentEditorState(BindingEditorState);
   const binding = editorState.binding;
   const modelUnit = binding.modelUnit;
   const isReadOnly = editorState.isReadOnly;

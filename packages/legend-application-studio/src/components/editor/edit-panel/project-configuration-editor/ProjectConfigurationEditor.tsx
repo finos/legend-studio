@@ -661,7 +661,7 @@ const ProjectDependencyActions = observer(
 export const ProjectConfigurationEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const configState = editorStore.getCurrentEditorState(
+  const configState = editorStore.tabManagerState.getCurrentEditorState(
     ProjectConfigurationEditorState,
   );
   const sdlcState = editorStore.sdlcState;

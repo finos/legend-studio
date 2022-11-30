@@ -53,7 +53,7 @@ import {
 import type { QueryBuilderFilterOperator } from './QueryBuilderFilterOperator.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../QueryBuilderGroupOperationHelper.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../graphManager/QueryBuilderHashUtils.js';
-import { isValueExpressionReferencesinValue } from '../QueryBuilderValueSpecificationHelper.js';
+import { isValueExpressionReferencedInValue } from '../QueryBuilderValueSpecificationHelper.js';
 
 export enum QUERY_BUILDER_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',
@@ -800,7 +800,7 @@ export class QueryBuilderFilterState
         .filter(filterByType(QueryBuilderFilterTreeConditionNodeData))
         .map((node) => node.condition.value)
         .filter(isNonNullable)
-        .find((value) => isValueExpressionReferencesinValue(variable, value)),
+        .find((value) => isValueExpressionReferencedInValue(variable, value)),
     );
   }
 

@@ -25,7 +25,7 @@ import {
 import type { EditorStore } from '../../EditorStore.js';
 import {
   type SPECIAL_REVISION_ALIAS,
-  EntityDiffEditorState,
+  EntityDiffViewerState,
 } from './EntityDiffEditorState.js';
 import {
   type GeneratorFn,
@@ -37,6 +37,7 @@ import { type Entity, extractEntityNameFromPath } from '@finos/legend-storage';
 import { EntityChangeConflictResolution } from '@finos/legend-server-sdlc';
 import { ParserError } from '@finos/legend-graph';
 import type { AbstractConflictResolutionState } from '../../AbstractConflictResolutionState.js';
+import type { EditorState } from '../EditorState.js';
 
 const START_HEADER_MARKER = '<<<<<<<';
 const COMMON_BASE_MARKER = '|||||||';
@@ -127,7 +128,7 @@ export enum ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE {
   CURRENT_INCOMING = 'CURRENT_INCOMING',
 }
 
-export class EntityChangeConflictEditorState extends EntityDiffEditorState {
+export class EntityChangeConflictEditorState extends EntityDiffViewerState {
   entityPath: string;
   // revision
   baseRevision: SPECIAL_REVISION_ALIAS | string;
@@ -207,7 +208,7 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
       currentMergeEditorLine: observable,
       mergeEditorParserError: observable,
       currentMode: observable,
-      headerName: computed,
+      label: computed,
       sortedMergedConflicts: computed,
       canUseTheirs: computed,
       canUseYours: computed,
@@ -253,18 +254,23 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
   setReadOnly(val: boolean): void {
     this.isReadOnly = val;
   }
+
   setMergedText(val: string): void {
     this.mergedText = val;
   }
+
   setCurrentMode(mode: ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE): void {
     this.currentMode = mode;
   }
+
   setCurrentMergeEditorLine(val: number | undefined): void {
     this.currentMergeEditorLine = val;
   }
+
   setCurrentMergeEditorConflict(conflict: MergeConflict | undefined): void {
     this.currentMergeEditorConflict = conflict;
   }
+
   clearMergeEditorError(): void {
     this.mergeEditorParserError = undefined;
   }
@@ -275,24 +281,28 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
     }
   }
 
-  get headerName(): string {
+  get label(): string {
     return extractEntityNameFromPath(this.entityPath);
   }
+
   private get sortedMergedConflicts(): MergeConflict[] {
     return this.mergeConflicts
       .slice()
       .sort((a, b) => a.startHeader - b.startHeader);
   }
+
   get canUseTheirs(): boolean {
     return (
       this.currentMode !== ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE.BASE_CURRENT
     );
   }
+
   get canUseYours(): boolean {
     return (
       this.currentMode !== ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE.BASE_INCOMING
     );
   }
+
   get canMarkAsResolved(): boolean {
     return Boolean(
       !this.mergeConflicts.length &&
@@ -315,6 +325,13 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
     const currentLine = this.currentMergeEditorLine ?? 0;
     return this.sortedMergedConflicts.find(
       (conflict) => conflict.startHeader > currentLine,
+    );
+  }
+
+  match(tab: EditorState): boolean {
+    return (
+      tab instanceof EntityChangeConflictEditorState &&
+      tab.entityPath === this.entityPath
     );
   }
 
