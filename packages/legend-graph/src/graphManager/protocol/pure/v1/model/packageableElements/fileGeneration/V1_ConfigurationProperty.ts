@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { hashArray, hashObject, type Hashable } from '@finos/legend-shared';
+import {
+  hashArray,
+  hashObject,
+  hashUnknownValue,
+  isObject,
+  type Hashable,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 
 export class V1_ConfigurationProperty implements Hashable {
@@ -25,7 +31,9 @@ export class V1_ConfigurationProperty implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.CONFIGURATION_PROPERTY,
       this.name,
-      hashObject(this.value as object),
+      isObject(this.value)
+        ? hashObject(this.value)
+        : hashUnknownValue(this.value),
     ]);
   }
 }

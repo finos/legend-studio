@@ -16,7 +16,7 @@
 
 import { existsSync, readdirSync } from 'fs';
 import { resolve, dirname } from 'path';
-import fsExtra from 'fs-extra';
+import { copySync } from 'fs-extra/esm';
 import { fileURLToPath } from 'url';
 import { exitWithError } from '@finos/legend-dev-utils/DevUtils';
 
@@ -34,7 +34,7 @@ const prepareSiteContent = () => {
 
   // Copy over website static content
   readdirSync(websiteStaticContentDir).forEach((fileOrDir) => {
-    fsExtra.copySync(
+    copySync(
       resolve(websiteStaticContentDir, fileOrDir),
       resolve(typeDocBuildDir, fileOrDir),
     );

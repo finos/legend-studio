@@ -41,10 +41,10 @@
   "dependencies": {
     "@braintree/sanitize-url": "6.0.2",
     "@types/lodash-es": "4.17.6",
-    "@types/object-hash": "2.2.1",
+    "@types/object-hash": "3.0.0",
     "@types/pako": "2.0.0",
     "@types/seedrandom": "3.0.2",
-    "@types/uuid": "8.3.4",
+    "@types/uuid": "9.0.0",
     "date-fns": "2.29.3",
     "hash.js": "1.1.7",
     "http-status-codes": "2.2.0",

@@ -27,7 +27,7 @@ import chalk from 'chalk';
 import { resolve, dirname } from 'path';
 import { execSync } from 'child_process';
 import { resolveFullTsConfig } from '@finos/legend-dev-utils/TypescriptConfigUtils';
-import fsExtra from 'fs-extra';
+import { mkdirs, copySync } from 'fs-extra/esm';
 import { fileURLToPath } from 'url';
 import { loadJSModule, loadJSON } from '@finos/legend-dev-utils/DevUtils';
 import rimraf from 'rimraf';
@@ -58,14 +58,14 @@ const preparePublishContent = async () => {
     if (existsSync(publishContentDir)) {
       rimraf.sync(publishContentDir);
     }
-    fsExtra.mkdirs(publishContentDir);
+    mkdirs(publishContentDir);
 
     // Copy the content of the workspace (including build artifacts) to the staging area
     readdirSync(workspaceDir).forEach((fileOrDir) => {
       if (['build', 'dev', 'temp'].includes(fileOrDir)) {
         return;
       }
-      fsExtra.copySync(
+      copySync(
         resolve(workspaceDir, fileOrDir),
         resolve(publishContentDir, fileOrDir),
       );

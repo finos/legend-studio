@@ -22,7 +22,6 @@ import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { exitWithError, loadJSON } from '@finos/legend-dev-utils/DevUtils';
 import chalk from 'chalk';
-import fsExtra from 'fs-extra';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -64,14 +63,6 @@ const generateLocalAssemblagePackageResolutions = async () => {
     'package.json',
   );
   const localAssemblagePackageJson = loadJSON(localAssemblagePackageJsonPath);
-  const localAssemblageCopyOverPath = resolve(
-    localAssemblagePath,
-    'assemblage',
-  );
-
-  if (!existsSync(localAssemblageCopyOverPath)) {
-    fsExtra.mkdirs(localAssemblageCopyOverPath);
-  }
 
   execSync('yarn workspaces list --json', {
     encoding: 'utf-8',
