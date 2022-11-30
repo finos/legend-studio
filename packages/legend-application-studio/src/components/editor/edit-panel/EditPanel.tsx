@@ -19,15 +19,11 @@ import { observer } from 'mobx-react-lite';
 import {
   clsx,
   DropdownMenu,
-  ContextMenu,
   MenuContent,
   MenuContentItem,
   PlusIcon,
   ArrowsAltHIcon,
   useResizeDetector,
-  GeneralTabEditor,
-  type TabState,
-  GeneralTabDropDown,
 } from '@finos/legend-art';
 import { MappingEditor } from './mapping-editor/MappingEditor.js';
 import { UMLEditor } from './uml-editor/UMLEditor.js';
@@ -71,7 +67,7 @@ import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../store
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { PackageableDataEditorState } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
-import { horizontalToVerticalScroll } from '@finos/legend-application';
+import { TabManager, type TabState } from '@finos/legend-application';
 
 export const ViewerEditPanelSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -176,7 +172,6 @@ export const EditPanelSplashScreen: React.FC = () => {
 export const EditPanel = observer(() => {
   const editorStore = useEditorStore();
   const currentTabState = editorStore.tabManagerState.currentTab;
-  const openedTabStates = editorStore.tabManagerState.tabs;
   const nativeViewModes =
     currentTabState instanceof ElementEditorState
       ? Object.values(ELEMENT_NATIVE_VIEW_MODE)
@@ -289,34 +284,30 @@ export const EditPanel = observer(() => {
   ): React.ReactNode | undefined => {
     if (editorState instanceof EntityDiffViewState) {
       return (
-        <div className="edit-panel__header__tab__label__diff">
-          <div className="edit-panel__header__tab__label__diff__element-name">
-            {editorState.headerName}
-          </div>
-          <div className="edit-panel__header__tab__label__diff__text">
+        <div className="diff-tab">
+          <div className="diff-tab__element-name">{editorState.label}</div>
+          <div className="diff-tab__text">
             ({getPrettyLabelForRevision(editorState.fromRevision)}
           </div>
-          <div className="edit-panel__header__tab__label__diff__icon">
+          <div className="diff-tab__icon">
             <ArrowsAltHIcon />
           </div>
-          <div className="edit-panel__header__tab__label__diff__text">
+          <div className="diff-tab__text">
             {getPrettyLabelForRevision(editorState.toRevision)})
           </div>
         </div>
       );
     } else if (editorState instanceof EntityChangeConflictEditorState) {
       return (
-        <div className="edit-panel__header__tab__label__diff">
-          <div className="edit-panel__header__tab__label__diff__element-name">
-            {editorState.headerName}
-          </div>
-          <div className="edit-panel__header__tab__label__diff__text">
+        <div className="diff-tab">
+          <div className="diff-tab__element-name">{editorState.label}</div>
+          <div className="diff-tab__text">
             {editorState.isReadOnly ? '(Merge Preview)' : '(Merged)'}
           </div>
         </div>
       );
     }
-    return editorState.headerName;
+    return editorState.label;
   };
 
   if (!currentTabState) {
@@ -331,33 +322,17 @@ export const EditPanel = observer(() => {
       data-testid={LEGEND_STUDIO_TEST_ID.EDIT_PANEL}
       className="panel edit-panel"
     >
-      <ContextMenu disabled={true} className="panel__header edit-panel__header">
+      <div className="panel__header edit-panel__header">
         <div
           data-testid={LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS}
           className="edit-panel__header__tabs"
-          onWheel={horizontalToVerticalScroll}
         >
-          {openedTabStates.map((editorState) => (
-            <GeneralTabEditor
-              headerName="edit-panel"
-              headerTitle={
-                editorState instanceof ElementEditorState
-                  ? editorState.element.path
-                  : editorState instanceof EntityDiffViewState
-                  ? editorState.headerTooltip
-                  : editorState.headerName
-              }
-              key={editorState.uuid}
-              tabState={editorState}
-              DND_TYPE="EDITOR_STATE"
-              managerTabState={editorStore.tabManagerState}
-              renderHeaderButtonLabel={renderHeaderButtonLabel}
-            />
-          ))}
+          <TabManager
+            tabManagerState={editorStore.tabManagerState}
+            tabRenderer={renderHeaderButtonLabel}
+          />
         </div>
-
         <div className="edit-panel__header__actions">
-          <GeneralTabDropDown managerTabState={editorStore.tabManagerState} />
           {currentTabState instanceof ElementEditorState && (
             <DropdownMenu
               className="edit-panel__view-mode__type"
@@ -471,7 +446,7 @@ export const EditPanel = observer(() => {
             </DropdownMenu>
           )}
         </div>
-      </ContextMenu>
+      </div>
       <div
         // NOTE: This is one small but extremely important line. Using `key` we effectivly force-remounting the element editor
         // component every time current element editor state is changed. This is great to control errors that has to do with stale states

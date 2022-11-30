@@ -53,7 +53,8 @@ export abstract class ElementEditorState extends EditorState {
       generationViewMode: observable,
       textContent: observable,
       isReadOnly: observable,
-      headerName: computed,
+      label: computed,
+      description: computed,
       setTextContent: action,
       setEditMode: action,
       setGenerationViewMode: action,
@@ -65,8 +66,12 @@ export abstract class ElementEditorState extends EditorState {
     this.isReadOnly = isElementReadOnly(element) || editorStore.isInViewerMode;
   }
 
-  get headerName(): string {
+  get label(): string {
     return this.element.name;
+  }
+
+  override get description(): string | undefined {
+    return this.element.path;
   }
 
   match(tab: EditorState): boolean {

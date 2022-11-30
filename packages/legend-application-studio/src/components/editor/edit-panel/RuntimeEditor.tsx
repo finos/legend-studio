@@ -447,11 +447,7 @@ const RuntimeExplorer = observer(
             <div className="panel__header__title__content">{runtimeName}</div>
           </div>
         </div>
-        <ContextMenu
-          className="panel__content"
-          disabled={true}
-          menuProps={{ elevation: 7 }}
-        >
+        <div className="panel__content">
           <PanelDropZone
             dropTargetConnector={dropRuntimeSubElementRef}
             isDragOver={isRuntimeSubElementDragOver}
@@ -472,7 +468,7 @@ const RuntimeExplorer = observer(
               />
             </div>
           </PanelDropZone>
-        </ContextMenu>
+        </div>
       </div>
     );
   },

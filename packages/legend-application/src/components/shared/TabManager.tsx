@@ -18,6 +18,7 @@ import {
   ChevronDownIcon,
   clsx,
   ContextMenu,
+  DragPreviewLayer,
   DropdownMenu,
   MenuContent,
   MenuContentItem,
@@ -26,260 +27,200 @@ import {
   useDragPreviewLayer,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { useRef, useCallback, forwardRef } from 'react';
+import { useRef, useCallback } from 'react';
 import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
 import type {
   TabManagerState,
   TabState,
 } from '../../stores/shared/TabManagerState.js';
 
-type TabStatePanelDragSource = {
-  panel: TabState;
+type TabDragSource = {
+  tab: TabState;
 };
 
-export const horizontalToVerticalScroll: React.WheelEventHandler = (event) => {
-  if (event.deltaY === 0) {
+const horizontalToVerticalScroll: React.WheelEventHandler = (event) => {
+  // NOTE: only convert horizontal to vertical scroll when the scroll causes more horizontal than vertical displacement
+  if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
     return;
   }
   event.currentTarget.scrollBy(event.deltaY, 0);
 };
 
-const GeneralPanelHeaderTabContextMenu = observer(
-  forwardRef<
-    HTMLDivElement,
-    {
-      tabState: TabState;
-      managerTabState: TabManagerState;
-      headerName: string;
-    }
-  >(function GeneralPanelHeaderTabContextMenu(props, ref) {
-    const { tabState, managerTabState, headerName } = props;
+const TabContextMenu = observer(
+  (props: { tabState: TabState; managerTabState: TabManagerState }) => {
+    const { tabState, managerTabState } = props;
     const close = (): void => managerTabState.closeTab(tabState);
     const closeOthers = (): void => managerTabState.closeAllOtherTabs(tabState);
     const closeAll = (): void => managerTabState.closeAllTabs();
 
     return (
-      <div ref={ref} className={`${headerName}__header__tab__context-menu`}>
-        <button
-          className={`${headerName}__header__tab__context-menu__item`}
-          onClick={close}
-        >
-          Close
-        </button>
-        <button
-          className={`${headerName}__header__tab__context-menu__item`}
+      <MenuContent>
+        <MenuContentItem onClick={close}>Close</MenuContentItem>
+        <MenuContentItem
           disabled={managerTabState.tabs.length < 2}
           onClick={closeOthers}
         >
           Close Others
-        </button>
-        <button
-          className={`${headerName}__header__tab__context-menu__item`}
-          onClick={closeAll}
-        >
-          Close All
-        </button>
-      </div>
+        </MenuContentItem>
+        <MenuContentItem onClick={closeAll}>Close All</MenuContentItem>
+      </MenuContent>
     );
-  }),
+  },
 );
 
-export const GeneralTabEditor: React.FC<{
-  managerTabState: TabManagerState;
-  headerName: string;
-  headerTitle?: string;
-  DND_TYPE: string;
-  tabState: TabState;
-  renderHeaderButtonLabel?:
-    | ((editorState: TabState) => React.ReactNode)
-    | undefined;
-  getTabStateHeaderName?: string;
-}> = (props) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const {
-    managerTabState,
-    headerName,
-    headerTitle,
-    DND_TYPE,
-    tabState,
-    renderHeaderButtonLabel,
-    getTabStateHeaderName,
-  } = props;
+const Tab = observer(
+  (props: {
+    tabState: TabState;
+    tabManagerState: TabManagerState;
+    tabRenderer?: ((editorState: TabState) => React.ReactNode) | undefined;
+  }) => {
+    const ref = useRef<HTMLDivElement>(null);
+    const { tabManagerState, tabState, tabRenderer } = props;
 
-  // Drag and Drop
-  const handleHover = useCallback(
-    (item: TabStatePanelDragSource, monitor: DropTargetMonitor): void => {
-      const draggingTab = item.panel;
-      const hoveredTab = tabState;
+    // Drag and Drop
+    const handleHover = useCallback(
+      (item: TabDragSource, monitor: DropTargetMonitor): void => {
+        const draggingTab = item.tab;
+        const hoveredTab = tabState;
 
-      const dragIndex = managerTabState.tabs.findIndex(
-        (e) => e === draggingTab,
-      );
-      const hoverIndex = managerTabState.tabs.findIndex(
-        (e) => e === hoveredTab,
-      );
+        const dragIndex = tabManagerState.tabs.findIndex(
+          (e) => e === draggingTab,
+        );
+        const hoverIndex = tabManagerState.tabs.findIndex(
+          (e) => e === hoveredTab,
+        );
 
-      const hoverBoundingReact = ref.current?.getBoundingClientRect();
-      const distanceThreshold =
-        ((hoverBoundingReact?.left ?? 0) - (hoverBoundingReact?.right ?? 0)) /
-        2;
-      const dragDistance =
-        (monitor.getClientOffset()?.x ?? 0) - (hoverBoundingReact?.right ?? 0);
-      if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
-        return;
-      }
-      if (dragIndex > hoverIndex && dragDistance > distanceThreshold) {
-        return;
-      }
+        const hoverBoundingReact = ref.current?.getBoundingClientRect();
+        const distanceThreshold =
+          ((hoverBoundingReact?.left ?? 0) - (hoverBoundingReact?.right ?? 0)) /
+          2;
+        const dragDistance =
+          (monitor.getClientOffset()?.x ?? 0) -
+          (hoverBoundingReact?.right ?? 0);
+        if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
+          return;
+        }
+        if (dragIndex > hoverIndex && dragDistance > distanceThreshold) {
+          return;
+        }
 
-      managerTabState.swapTabs(draggingTab, hoveredTab);
-    },
-    [managerTabState, tabState],
-  );
+        tabManagerState.swapTabs(draggingTab, hoveredTab);
+      },
+      [tabManagerState, tabState],
+    );
 
-  const closeTabOnMiddleClick =
-    (currTab: TabState): React.MouseEventHandler =>
-    (event): void => {
-      if (event.nativeEvent.button === 1) {
-        managerTabState.closeTab(currTab);
-      }
-    };
+    const closeTabOnMiddleClick =
+      (currTab: TabState): React.MouseEventHandler =>
+      (event): void => {
+        if (event.nativeEvent.button === 1) {
+          tabManagerState.closeTab(currTab);
+        }
+      };
 
-  const [{ isBeingDraggedEditorPanel }, dropConnector] = useDrop<
-    TabStatePanelDragSource,
-    void,
-    { isBeingDraggedEditorPanel: TabState | undefined }
-  >(
-    () => ({
-      accept: [DND_TYPE],
-      hover: (item, monitor) => handleHover(item, monitor),
-      collect: (
-        monitor,
-      ): {
-        isBeingDraggedEditorPanel: TabState | undefined;
-      } => ({
-        isBeingDraggedEditorPanel:
-          monitor.getItem<TabStatePanelDragSource | null>()?.panel,
-      }),
-    }),
-    [handleHover],
-  );
-  const isBeingDragged = tabState === isBeingDraggedEditorPanel;
-
-  const [, dragConnector, dragPreviewConnector] =
-    useDrag<TabStatePanelDragSource>(
+    const [{ isBeingDraggedEditorPanel }, dropConnector] = useDrop<
+      TabDragSource,
+      void,
+      { isBeingDraggedEditorPanel: TabState | undefined }
+    >(
       () => ({
-        type: DND_TYPE,
-        item: () => ({
-          panel: tabState,
+        accept: [tabManagerState.dndType],
+        hover: (item, monitor) => handleHover(item, monitor),
+        collect: (
+          monitor,
+        ): {
+          isBeingDraggedEditorPanel: TabState | undefined;
+        } => ({
+          isBeingDraggedEditorPanel: monitor.getItem<TabDragSource | null>()
+            ?.tab,
         }),
       }),
-      [tabState, managerTabState],
+      [handleHover],
     );
-  dragConnector(dropConnector(ref));
-  useDragPreviewLayer(dragPreviewConnector);
+    const isBeingDragged = tabState === isBeingDraggedEditorPanel;
 
-  return (
-    <div
-      ref={ref}
-      key={tabState.uuid}
-      className={clsx(`${headerName}__header__tab`, {
-        [`${headerName}__header__tab--active`]:
-          tabState === managerTabState.currentTab,
-      })}
-      onMouseUp={closeTabOnMiddleClick(tabState)}
-    >
-      <PanelEntryDropZonePlaceholder
-        showPlaceholder={isBeingDragged}
-        label={getTabStateHeaderName ?? tabState.headerName}
-        className={`${headerName}__header__dnd__placeholder`}
+    const [, dragConnector, dragPreviewConnector] = useDrag<TabDragSource>(
+      () => ({
+        type: tabManagerState.dndType,
+        item: () => ({
+          tab: tabState,
+        }),
+      }),
+      [tabState, tabManagerState],
+    );
+    dragConnector(dropConnector(ref));
+    useDragPreviewLayer(dragPreviewConnector);
+
+    return (
+      <div
+        ref={ref}
+        className={clsx('tab-manager__tab', {
+          'tab-manager__tab--active': tabState === tabManagerState.currentTab,
+          'tab-manager__tab--dragged': isBeingDragged,
+        })}
+        onMouseUp={closeTabOnMiddleClick(tabState)}
       >
-        <ContextMenu
-          content={
-            <GeneralPanelHeaderTabContextMenu
-              tabState={tabState}
-              managerTabState={managerTabState}
-              headerName={headerName}
-            />
-          }
-          className={`${headerName}__header__tab__content`}
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={false}
+          className="tab-manager__tab__dnd__placeholder"
         >
-          {renderHeaderButtonLabel && (
-            <button
-              className={`${headerName}__header__tab__label`}
-              tabIndex={-1}
-              onClick={() => managerTabState.openTab(tabState)}
-              title={headerTitle ?? tabState.headerName}
-            >
-              {renderHeaderButtonLabel(tabState)}
-            </button>
-          )}
-          <button
-            className={`${headerName}__header__tab__close-btn`}
-            onClick={() => managerTabState.closeTab(tabState)}
-            tabIndex={-1}
-            title={'Close'}
+          <ContextMenu
+            content={
+              <TabContextMenu
+                tabState={tabState}
+                managerTabState={tabManagerState}
+              />
+            }
+            className="tab-manager__tab__content"
           >
-            <TimesIcon />
-          </button>
-        </ContextMenu>
-      </PanelEntryDropZonePlaceholder>
-    </div>
-  );
-};
+            <button
+              className="tab-manager__tab__label"
+              tabIndex={-1}
+              onClick={() => tabManagerState.openTab(tabState)}
+              title={tabState.description}
+            >
+              {tabRenderer?.(tabState) ?? tabState.label}
+            </button>
+            <button
+              className="tab-manager__tab__close-btn"
+              onClick={() => tabManagerState.closeTab(tabState)}
+              tabIndex={-1}
+              title="Close"
+            >
+              <TimesIcon />
+            </button>
+          </ContextMenu>
+        </PanelEntryDropZonePlaceholder>
+      </div>
+    );
+  },
+);
 
-export const GeneralTabDropDown: React.FC<{
-  managerTabState: TabManagerState;
-  lightMode?: boolean;
-}> = (props) => {
-  const { managerTabState, lightMode } = props;
+const TabMenu = observer((props: { managerTabState: TabManagerState }) => {
+  const { managerTabState } = props;
   return (
     <DropdownMenu
-      title="Open Tabs"
+      className="tab-manager__menu__toggler"
+      title="Show All Tabs"
       content={
-        <MenuContent
-          lightMode={lightMode ?? false}
-          className={clsx('general__tab__dropdown')}
-        >
-          <div
-            className={clsx(
-              'general__tab__dropdown__description',
-              lightMode
-                ? 'general__tab__dropdown__description--light'
-                : 'general__tab__dropdown__description--dark',
-            )}
-          >
-            Open Tabs
-          </div>
+        <MenuContent className="tab-manager__menu">
           {managerTabState.tabs.map((tabState) => (
             <MenuContentItem
-              className={clsx(
-                'general__tab__dropdown__item',
-                lightMode
-                  ? 'general__tab__dropdown__item--light'
-                  : 'general__tab__dropdown__item--dark',
-              )}
               key={tabState.uuid}
-              lightMode={lightMode ?? false}
+              className="tab-manager__menu__item"
               onClick={() => managerTabState.openTab(tabState)}
             >
-              <div className="general__tab__dropdown__tab">
-                {tabState.headerName}
+              <div className="tab-manager__menu__item__label">
+                {tabState.label}
               </div>
-
               <div
-                className={clsx(
-                  'general__tab__dropdown__tab__close-btn',
-                  lightMode
-                    ? 'general__tab__dropdown__tab__close-btn--light'
-                    : 'general__tab__dropdown__tab__close-btn--dark',
-                )}
+                className="tab-manager__menu__item__close-btn"
                 onClick={(event) => {
+                  // NOTE: prevent default action of dropdown menu
                   event.stopPropagation();
                   managerTabState.closeTab(tabState);
                 }}
                 tabIndex={-1}
-                title={'Close'}
+                title="Close"
               >
                 <TimesIcon />
               </div>
@@ -292,16 +233,36 @@ export const GeneralTabDropDown: React.FC<{
         transformOrigin: { vertical: 'top', horizontal: 'right' },
       }}
     >
-      <div
-        className={clsx(
-          'general__tab__dropdown__toogle',
-          lightMode
-            ? 'general__tab__dropdown__toogle--light'
-            : 'general__tab__dropdown__toogle--dark',
-        )}
-      >
-        <ChevronDownIcon />
-      </div>
+      <ChevronDownIcon />
     </DropdownMenu>
   );
-};
+});
+
+export const TabManager = observer(
+  (props: {
+    tabManagerState: TabManagerState;
+    tabRenderer?: ((editorState: TabState) => React.ReactNode) | undefined;
+  }) => {
+    const { tabManagerState, tabRenderer } = props;
+
+    return (
+      <div className="tab-manager" onWheel={horizontalToVerticalScroll}>
+        <div className="tab-manager__content">
+          {tabManagerState.tabs.map((tab) => (
+            <Tab
+              key={tab.uuid}
+              tabState={tab}
+              tabManagerState={tabManagerState}
+              tabRenderer={tabRenderer}
+            />
+          ))}
+          <DragPreviewLayer
+            labelGetter={(item: TabDragSource): string => item.tab.label}
+            types={[tabManagerState.dndType]}
+          />
+        </div>
+        <TabMenu managerTabState={tabManagerState} />
+      </div>
+    );
+  },
+);

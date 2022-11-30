@@ -31,7 +31,6 @@ import {
   getEditorValue,
   normalizeLineEnding,
   MoreHorizontalIcon,
-  HackerIcon,
   PanelContent,
   useResizeDetector,
   setWarningMarkers,
@@ -1228,9 +1227,6 @@ export const GrammarTextEditor = observer(() => {
             className="edit-panel__header__tab edit-panel__header__tab__text-mode edit-panel__header__tab--active"
             content={<GrammarTextEditorHeaderTabContextMenu />}
           >
-            <div className="edit-panel__header__tab__icon">
-              <HackerIcon />
-            </div>
             <div className="edit-panel__header__tab__label">Text Mode</div>
           </ContextMenu>
         </div>

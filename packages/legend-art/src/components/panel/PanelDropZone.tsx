@@ -23,6 +23,7 @@ import {
 } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { VerticalDragHandleIcon } from '../CJS__Icon.cjs';
+import { Portal } from '../Portal.js';
 
 export const PanelDropZone: React.FC<{
   children: React.ReactNode;
@@ -97,21 +98,24 @@ export function DragPreviewLayer<T>(props: {
     return null;
   }
   return (
-    <div className="dnd__drag-preview-layer">
-      <div
-        className="dnd__drag-preview-layer__content"
-        style={
-          !currentPosition
-            ? { display: 'none' }
-            : {
-                transform: `translate(${currentPosition.x / 10 + 2}rem, ${
-                  currentPosition.y / 10 + 1
-                }rem)`,
-              }
-        }
-      >
-        {labelGetter(item)}
+    // use portal so this will show on top of everything regardless of the parent element's container
+    <Portal>
+      <div className="dnd__drag-preview-layer">
+        <div
+          className="dnd__drag-preview-layer__content"
+          style={
+            !currentPosition
+              ? { display: 'none' }
+              : {
+                  transform: `translate(${currentPosition.x / 10 + 2}rem, ${
+                    currentPosition.y / 10 + 1
+                  }rem)`,
+                }
+          }
+        >
+          {labelGetter(item)}
+        </div>
       </div>
-    </div>
+    </Portal>
   );
 }

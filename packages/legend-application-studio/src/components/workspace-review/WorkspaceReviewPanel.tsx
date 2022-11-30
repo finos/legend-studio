@@ -106,10 +106,7 @@ export const WorkspaceReviewPanel = observer(() => {
   }
   return (
     <div className="panel workspace-review-panel">
-      <ContextMenu
-        className="panel__header workspace-review-panel__header"
-        disabled={true}
-      >
+      <div className="panel__header workspace-review-panel__header">
         <div className="workspace-review-panel__header__tabs">
           {openedTabStates.map((editorState) => (
             <div
@@ -133,7 +130,7 @@ export const WorkspaceReviewPanel = observer(() => {
                   tabIndex={-1}
                   onClick={switchTab(editorState)}
                 >
-                  {editorState.headerName}
+                  {editorState.label}
                 </button>
                 <button
                   className="workspace-review-panel__header__tab__close-btn"
@@ -176,7 +173,7 @@ export const WorkspaceReviewPanel = observer(() => {
             </div>
           </DropdownMenu>
         </div>
-      </ContextMenu>
+      </div>
       <div className="panel__content workspace-review-panel__content">
         <EntityDiffView entityDiffViewState={currentTabState} />
       </div>

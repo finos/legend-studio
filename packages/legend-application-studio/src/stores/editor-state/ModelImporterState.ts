@@ -473,7 +473,7 @@ export class ModelImporterState extends EditorState {
       .filter(isNonNullable);
   }
 
-  get headerName(): string {
+  get label(): string {
     return 'Model Importer';
   }
 

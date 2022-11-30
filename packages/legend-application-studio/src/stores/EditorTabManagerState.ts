@@ -34,8 +34,8 @@ import type { EditorStore } from './EditorStore.js';
 export class EditorTabManagerState extends TabManagerState {
   readonly editorStore: EditorStore;
 
-  currentTab?: EditorState | undefined;
-  tabs: EditorState[] = [];
+  declare currentTab?: EditorState | undefined;
+  declare tabs: EditorState[];
 
   constructor(editorStore: EditorStore) {
     super();
@@ -47,6 +47,10 @@ export class EditorTabManagerState extends TabManagerState {
     });
 
     this.editorStore = editorStore;
+  }
+
+  get dndType(): string {
+    return 'editor.tab-manager.tab';
   }
 
   closeTab(tab: EditorState): void {

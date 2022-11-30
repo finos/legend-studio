@@ -78,11 +78,7 @@ import {
   DEPRECATED__validate_MappingTest,
   ModelStore,
 } from '@finos/legend-graph';
-import {
-  ExecutionPlanState,
-  type TabState,
-  TAB_SIZE,
-} from '@finos/legend-application';
+import { ExecutionPlanState, TAB_SIZE } from '@finos/legend-application';
 import { flatData_setData } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
@@ -98,6 +94,7 @@ import {
   relationalInputData_setData,
 } from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
+import { MappingEditorTabState } from './MappingTabManagerState.js';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -387,8 +384,7 @@ export enum MAPPING_TEST_EDITOR_TAB_TYPE {
   RESULT = 'Test Result',
 }
 
-export class MappingTestState implements TabState {
-  readonly uuid = uuid();
+export class MappingTestState extends MappingEditorTabState {
   readonly editorStore: EditorStore;
   readonly mappingEditorState: MappingEditorState;
 
@@ -413,6 +409,8 @@ export class MappingTestState implements TabState {
     test: MappingTest,
     mappingEditorState: MappingEditorState,
   ) {
+    super();
+
     makeObservable(this, {
       selectedTab: observable,
       result: observable,
@@ -458,7 +456,7 @@ export class MappingTestState implements TabState {
     );
   }
 
-  get headerName(): string {
+  get label(): string {
     return this.test.name;
   }
   setIsRunningTest(val: boolean): void {

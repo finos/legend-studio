@@ -94,8 +94,8 @@ export class EntityDiffViewState extends EntityDiffViewerState {
       toEntityGetter: observable,
       effectiveEntityPath: computed,
       element: computed,
-      headerName: computed,
-      headerTooltip: computed,
+      label: computed,
+      description: computed,
       summaryText: computed,
       setDiffMode: action,
       setToGrammarText: action,
@@ -141,11 +141,11 @@ export class EntityDiffViewState extends EntityDiffViewerState {
     );
   }
 
-  get headerName(): string {
+  get label(): string {
     return extractEntityNameFromPath(this.effectiveEntityPath);
   }
 
-  get headerTooltip(): string {
+  override get description(): string {
     return this.effectiveEntityPath;
   }
 

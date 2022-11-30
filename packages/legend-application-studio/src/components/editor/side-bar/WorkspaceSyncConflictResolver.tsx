@@ -215,9 +215,9 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                             className="workspace-sync-conflict-resolver__header__tab__label"
                             tabIndex={-1}
                             onClick={openTab(mergedState)}
-                            title={mergedState.headerName}
+                            title={mergedState.label}
                           >
-                            {mergedState.headerName}
+                            {mergedState.label}
                           </button>
                           <button
                             className="workspace-sync-conflict-resolver__header__tab__close-btn"

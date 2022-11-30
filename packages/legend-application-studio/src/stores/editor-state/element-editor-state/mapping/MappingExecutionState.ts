@@ -104,7 +104,6 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   ExecutionPlanState,
-  type TabState,
   TAB_SIZE,
 } from '@finos/legend-application';
 import {
@@ -129,6 +128,7 @@ import {
 } from '../../../shared/testable/TestableUtils.js';
 import { SERIALIZATION_FORMAT } from '../service/testable/ServiceTestEditorState.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
+import { MappingEditorTabState } from './MappingTabManagerState.js';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -478,8 +478,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
   }
 }
 
-export class MappingExecutionState implements TabState {
-  readonly uuid = uuid();
+export class MappingExecutionState extends MappingEditorTabState {
   readonly editorStore: EditorStore;
   readonly mappingEditorState: MappingEditorState;
 
@@ -499,6 +498,8 @@ export class MappingExecutionState implements TabState {
     mappingEditorState: MappingEditorState,
     name: string,
   ) {
+    super();
+
     makeObservable(this, {
       name: observable,
       queryState: observable,
@@ -540,7 +541,7 @@ export class MappingExecutionState implements TabState {
     );
   }
 
-  get headerName(): string {
+  get label(): string {
     return this.name;
   }
   setQueryState(val: MappingExecutionQueryState): void {
@@ -657,7 +658,7 @@ export class MappingExecutionState implements TabState {
           assert,
         );
         yield flowResult(this.mappingEditorState.addTest(mappingTest));
-        this.mappingEditorState.closeState(this); // after promoting to test, remove the execution state
+        this.mappingEditorState.closeTab(this); // after promoting to test, remove the execution state
       }
     } catch (error) {
       assertErrorThrown(error);

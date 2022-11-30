@@ -14,20 +14,4 @@
  * limitations under the License.
  */
 
-// Dependencies
-@forward 'extensions';
-
-// Components
-@forward 'components/app';
-@forward 'components/blocking-alert';
-@forward 'components/backdrop';
-@forward 'components/notification';
-@forward 'components/virtual-assistant';
-@forward 'components/text-search';
-
-// Shared
-@forward 'components/shared/tab-manager';
-@forward 'components/shared/documentation-link';
-@forward 'components/shared/text-editor';
-@forward 'components/shared/packageable-element-option-label';
-@forward 'components/shared/execution-plan-viewer';
+export { Portal } from '@mui/material';

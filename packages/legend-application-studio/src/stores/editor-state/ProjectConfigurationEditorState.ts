@@ -182,7 +182,7 @@ export class ProjectConfigurationEditorState extends EditorState {
     this.dependencyInfoModalType = type;
   }
 
-  get headerName(): string {
+  get label(): string {
     return 'config';
   }
 

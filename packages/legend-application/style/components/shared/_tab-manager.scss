@@ -16,91 +16,125 @@
 
 @use 'mixins' as *;
 
-.general__tab__dropdown {
-  max-width: 22rem;
-  padding: 0 2rem;
+.tab-manager {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
 
-  &__toogle {
-    @include flexCenter;
-
-    margin: 0 1rem;
-    border-radius: 0.2rem;
-    color: var(--color-light-grey-400);
-    height: 1.5em;
-    width: 1.5em;
-
-    svg {
-      height: 1.2em;
-      width: 1.2em;
-    }
-
-    &--dark:hover {
-      background: var(--color-dark-grey-280);
-    }
-
-    &--light:hover {
-      background: var(--color-light-grey-100);
-    }
-  }
-
-  &__description {
-    font-weight: 600;
+  &__content {
+    width: calc(100% - 2.8rem);
     display: flex;
-    width: 100%;
-    text-transform: uppercase;
-    font-size: 1.2rem;
-    margin: 0.5rem 0 1rem;
-    padding: 0 1rem;
-
-    &--dark {
-      color: var(--color-light-grey-400);
-    }
-
-    &--light {
-      color: var(--color-light-grey-85);
-    }
-  }
-
-  &__item {
-    justify-content: space-between;
-
-    &--dark:hover {
-      background: var(--color-dark-grey-250) !important;
-    }
-
-    &--light:hover {
-      background: var(--color-light-grey-200) !important;
-    }
+    overflow-x: overlay;
   }
 
   &__tab {
-    text-align: left;
-    white-space: nowrap;
-    font-size: 1.3rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    @include flexVCenter;
+
+    cursor: pointer;
+    color: var(--color-light-grey-400);
+    background: var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-dark-grey-50);
+
+    &--active {
+      color: var(--color-light-grey-100);
+      background: var(--color-dark-grey-50);
+    }
+
+    &--dragged {
+      filter: opacity(0.7);
+    }
+
+    &__content {
+      @include flexVCenter;
+
+      height: 100%;
+      width: 100%;
+    }
+
+    &__label {
+      height: 100%;
+      color: inherit;
+      padding: 0 0.5rem 0 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
     &__close-btn {
+      visibility: hidden;
+
+      @include flexVCenter;
+
+      svg {
+        color: var(--color-light-grey-200);
+        font-size: 1.2rem;
+        margin-right: 1rem;
+      }
+    }
+
+    &--active svg {
+      color: var(--color-light-grey-100);
+    }
+
+    &--active &__close-btn,
+    &:hover &__close-btn {
+      visibility: visible;
+    }
+
+    &__dnd__placeholder {
+      text-align: left;
+      margin: 0;
+      padding: 0 0.5rem;
+      background-color: var(--color-dark-grey-100);
+    }
+  }
+
+  &__menu {
+    min-width: 15rem;
+    max-width: 30rem;
+    height: 100%;
+    padding: 0;
+
+    &__toggler {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      color: var(--color-light-grey-400);
+      border-left: 0.1rem solid var(--color-dark-grey-50);
+      height: 100%;
+      width: 2.8rem;
+    }
+
+    &__item {
+      justify-content: space-between;
+
+      &--active,
+      &:not([disabled]):hover {
+        background: var(--color-dark-grey-250);
+      }
+    }
+
+    &__item__label {
+      text-align: left;
+      white-space: nowrap;
+      font-size: 1.3rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &__item__close-btn {
       @include flexCenter;
       @include flexConstantDimension;
 
       padding: 0.4rem;
       margin-left: 0.6rem;
       flex-direction: end;
-      border-radius: 50%;
 
-      &--dark:hover {
-        background: var(--color-dark-grey-300);
+      & svg {
+        width: 1.2rem;
+        height: 1.2rem;
       }
-
-      &--light:hover {
-        background: var(--color-light-grey-100);
-      }
-    }
-
-    &__close-btn svg {
-      width: 1.2rem;
-      height: 1.2rem;
     }
   }
 }

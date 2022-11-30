@@ -208,7 +208,7 @@ export class EntityChangeConflictEditorState extends EntityDiffViewerState {
       currentMergeEditorLine: observable,
       mergeEditorParserError: observable,
       currentMode: observable,
-      headerName: computed,
+      label: computed,
       sortedMergedConflicts: computed,
       canUseTheirs: computed,
       canUseYours: computed,
@@ -281,7 +281,7 @@ export class EntityChangeConflictEditorState extends EntityDiffViewerState {
     }
   }
 
-  get headerName(): string {
+  get label(): string {
     return extractEntityNameFromPath(this.entityPath);
   }
 

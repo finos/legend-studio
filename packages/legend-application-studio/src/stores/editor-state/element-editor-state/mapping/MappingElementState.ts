@@ -15,7 +15,7 @@
  */
 
 import { observable, makeObservable, action, flow } from 'mobx';
-import { type GeneratorFn, uuid } from '@finos/legend-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   getMappingElementLabel,
@@ -28,14 +28,15 @@ import type {
   Type,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-query-builder';
-import type { TabState } from '@finos/legend-application';
+import { MappingEditorTabState } from './MappingTabManagerState.js';
 
-export class MappingElementState implements TabState {
-  readonly uuid = uuid();
-  editorStore: EditorStore;
-  mappingElement: MappingElement;
+export class MappingElementState extends MappingEditorTabState {
+  readonly editorStore: EditorStore;
+  readonly mappingElement: MappingElement;
 
   constructor(editorStore: EditorStore, mappingElement: MappingElement) {
+    super();
+
     makeObservable(this, {
       mappingElement: observable,
     });
@@ -44,7 +45,7 @@ export class MappingElementState implements TabState {
     this.mappingElement = mappingElement;
   }
 
-  get headerName(): string {
+  get label(): string {
     return getMappingElementLabel(this.mappingElement, this.editorStore).value;
   }
 }

@@ -58,13 +58,13 @@ export class FileGenerationViewerState extends EditorState {
 
     makeObservable(this, {
       file: observable,
-      headerName: computed,
+      label: computed,
     });
 
     this.file = file;
   }
 
-  get headerName(): string {
+  get label(): string {
     return this.file.name;
   }
 

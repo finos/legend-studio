@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-import { assertNonNullable, swapEntry } from '@finos/legend-shared';
+import { assertNonNullable, swapEntry, uuid } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 
-export interface TabState {
-  uuid: string;
+export abstract class TabState {
+  readonly uuid = uuid();
 
-  get headerName(): string;
+  abstract get label(): string;
+
+  get description(): string | undefined {
+    return undefined;
+  }
 }
 
 export abstract class TabManagerState {
-  abstract currentTab?: TabState | undefined;
-  abstract tabs: TabState[];
+  currentTab?: TabState | undefined;
+  tabs: TabState[] = [];
 
   constructor() {
     makeObservable(this, {
@@ -61,6 +65,12 @@ export abstract class TabManagerState {
   swapTabs(tab1: TabState, tab2: TabState): void {
     swapEntry(this.tabs, tab1, tab2);
   }
+
+  /**
+   * The unique drag and drop type
+   * See https://react-dnd.github.io/react-dnd/docs/overview#items-and-types
+   */
+  abstract get dndType(): string;
 
   abstract openTab(tab: TabState): void;
   abstract closeTab(tab: TabState): void;
