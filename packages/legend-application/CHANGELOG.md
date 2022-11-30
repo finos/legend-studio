@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 10.1.0
+
+### Minor Changes
+
+- [#1727](https://github.com/finos/legend-studio/pull/1727) [`cde6df0f8`](https://github.com/finos/legend-studio/commit/cde6df0f84856e685ea9dc792a3915a0c925466d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Enable virtual assistant for all applications ([#1712](https://github.com/finos/legend-studio/issues/1712)).
+
 ## 10.0.15
 
 ## 10.0.14

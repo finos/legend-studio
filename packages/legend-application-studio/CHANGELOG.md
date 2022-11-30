@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 20.2.0
+
+### Minor Changes
+
+- [#1711](https://github.com/finos/legend-studio/pull/1711) [`b0c0e5053`](https://github.com/finos/legend-studio/commit/b0c0e50534162f23ac1430c707226ad4d9bddbb5) ([@xannem](https://github.com/xannem)) - Allow re-arranging editor tabs by drag-and-drop and opening last closed editor tab #130 ([#1474](https://github.com/finos/legend-studio/pull/1474)).
+
 ## 20.1.2
 
 ## 20.1.1
