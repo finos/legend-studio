@@ -282,9 +282,7 @@ const ServiceTestSetupEditor = observer(
     const selectedSerializationFormat = setupState.getSelectedFormatOption();
     const options = setupState.options;
     const keyOptions = setupState.keyOptions;
-    const [selectedKeys, setSelectedKeys] = useState<KeyOption[]>(
-      setupState.getSelectedKeyOptions(),
-    );
+    const selectedKeys = setupState.getSelectedKeyOptions();
     const isReadOnly =
       serviceTestState.suiteState.testableState.serviceEditorState.isReadOnly;
     const onSerializationFormatChange = (
@@ -298,7 +296,6 @@ const ServiceTestSetupEditor = observer(
     };
     const onKeyOptionChange = (val: KeyOption[]): void => {
       setupState.addServiceTestAssertKeys(val.map((op) => op.value));
-      setSelectedKeys(val);
     };
     const addParameter = (): void => {
       setupState.setShowNewParameterModal(true);
