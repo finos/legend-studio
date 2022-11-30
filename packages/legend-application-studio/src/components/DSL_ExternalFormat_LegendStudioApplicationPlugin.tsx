@@ -110,8 +110,8 @@ export class DSL_ExternalFormat_LegendStudioApplicationPlugin
 
   override getExtraRequiredDocumentationKeys(): string[] {
     return [
-      DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_BINDING,
-      DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_SCHEMASET,
+      DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_BINDING,
+      DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_SCHEMASET,
       DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
     ];
   }
@@ -348,13 +348,13 @@ export class DSL_ExternalFormat_LegendStudioApplicationPlugin
         if (parserKeyword === PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL) {
             return editorStore.applicationStore.documentationService.getDocEntry(
-              DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_BINDING,
+              DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_BINDING,
             );
           } else if (
             elementKeyword === PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL
           ) {
             return editorStore.applicationStore.documentationService.getDocEntry(
-              DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_SCHEMASET,
+              DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_SCHEMASET,
             );
           }
         }

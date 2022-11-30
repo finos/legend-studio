@@ -90,7 +90,7 @@ export class STO_ServiceStore_LegendStudioApplicationPlugin
 
   override getExtraRequiredDocumentationKeys(): string[] {
     return [
-      EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_SERVICE_STORE,
+      EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_SERVICE_STORE,
       EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
     ];
   }
@@ -237,7 +237,7 @@ export class STO_ServiceStore_LegendStudioApplicationPlugin
             elementKeyword === PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL
           ) {
             return editorStore.applicationStore.documentationService.getDocEntry(
-              EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_SERVICE_STORE,
+              EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_SERVICE_STORE,
             );
           }
         }

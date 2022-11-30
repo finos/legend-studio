@@ -40,6 +40,32 @@
     overflow: hidden;
   }
 
+  &__text-mode__tab {
+    @include flexVCenter;
+
+    cursor: pointer;
+    color: var(--color-light-grey-400);
+    background: var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-dark-grey-50);
+
+    &--active {
+      color: var(--color-light-grey-100);
+      background: var(--color-dark-grey-50);
+    }
+
+    svg {
+      color: var(--color-blue-100) !important;
+      font-size: 1.3rem;
+    }
+
+    &__label {
+      @include flexCenter;
+
+      height: 100%;
+      padding: 0 1rem;
+    }
+  }
+
   &__header__actions {
     display: flex;
     height: 100%;

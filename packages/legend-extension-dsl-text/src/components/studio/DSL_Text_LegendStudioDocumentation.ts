@@ -16,5 +16,5 @@
 
 export enum DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY {
   GRAMMAR_PARSER = 'dsl-text.grammar.parser',
-  GRAMMAR_ELEMENT_TEXT = 'dsl-text.grammar.element.text',
+  CONCEPT_ELEMENT_TEXT = 'dsl-text.concept.element.text',
 }

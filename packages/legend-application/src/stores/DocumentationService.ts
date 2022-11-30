@@ -48,6 +48,11 @@ export type DocumentationRegistryEntry = {
    * See https://cors-anywhere.herokuapp.com/
    */
   simple?: boolean | undefined;
+  /**
+   * Optional list of wildcard patterns to be matched against documentation entries' keys to
+   * narrow the scope of inclusion
+   */
+  includes?: string[];
 };
 
 export type DocumentationRegistryData = {
