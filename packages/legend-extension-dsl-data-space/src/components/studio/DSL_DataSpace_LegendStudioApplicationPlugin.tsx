@@ -66,7 +66,7 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
 
   override getExtraRequiredDocumentationKeys(): string[] {
     return [
-      DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DATA_SPACE,
+      DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_DATA_SPACE,
       DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
     ];
   }
@@ -162,7 +162,7 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
         if (parserKeyword === PURE_GRAMMAR_DATA_SPACE_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL) {
             return editorStore.applicationStore.documentationService.getDocEntry(
-              DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DATA_SPACE,
+              DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_DATA_SPACE,
             );
           }
         }

@@ -28,6 +28,7 @@ export * from './network/TracerService.js';
 export * from './date/DateUtils.js';
 
 export * from './format/FormatterUtils.js';
+export * from './format/MatcherUtils.js';
 export * from './format/ValidatorUtils.js';
 
 export * from './markdown/MarkdownUtils.js';

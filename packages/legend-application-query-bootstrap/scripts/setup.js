@@ -68,11 +68,11 @@ export const setup = (outputDir) => {
              * See https://cors-anywhere.herokuapp.com/
              * See https://gist.github.com/jimmywarting/ac1be6ea0297c16c477e17f8fbe51347
              */
-            // { url: 'https://cors-anywhere.herokuapp.com/https://raw.githubusercontent.com/finos/legend/master/website/static/resource/studio/documentation.json' },
+            // { url: 'https://cors-anywhere.herokuapp.com/https://raw.githubusercontent.com/finos/legend/master/website/static/resource/studio/documentation/shared.json' },
             /**
              * Use this end-point when developing documentation locally
              */
-            // { url: 'http://localhost:9999/studio/documentation.json' },
+            // { url: 'http://localhost:9999/documentation.json' },
             {
               url: 'https://legend.finos.org/resource/studio/documentation/shared.json',
               simple: true,
@@ -82,8 +82,12 @@ export const setup = (outputDir) => {
               simple: true,
             },
             {
-              url: 'https://legend.finos.org/resource/studio/documentation/dsl-service.json',
+              url: 'https://legend.finos.org/resource/studio/documentation/studio.json',
               simple: true,
+              includes: [
+                'dsl-service.concept.element.service',
+                'dsl-service.setup.productionize-query*',
+              ],
             },
           ],
         },

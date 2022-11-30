@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-export enum DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY {
-  GRAMMAR_PARSER = 'dsl-diagram.grammar.parser',
-  CONCEPT_ELEMENT_DIAGRAM = 'dsl-diagram.concept.element.diagram',
-}
+export const createRegExpPatternFromWildcardPattern = (value: string): RegExp =>
+  new RegExp(
+    // trim and add start/end regexp to make sure the wildcard pattern must be a full match
+    `^${value
+      .trim()
+      // escape special characters except for wilcard *
+      .replace(/[\^$\\.+?()[\]{}|]/g, '\\$&')
+      // translate wildcard * to .*
+      .replace(/\*/g, '.*')}$`,
+  );

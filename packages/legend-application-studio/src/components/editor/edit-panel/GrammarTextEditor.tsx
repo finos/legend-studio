@@ -217,27 +217,27 @@ const getParserElementDocumentation = (
     case PURE_PARSER.PURE: {
       if (elementKeyword === PURE_ELEMENT_NAME.CLASS) {
         return editorStore.applicationStore.documentationService.getDocEntry(
-          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_CLASS,
+          LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_CLASS,
         );
       } else if (elementKeyword === PURE_ELEMENT_NAME.PROFILE) {
         return editorStore.applicationStore.documentationService.getDocEntry(
-          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_PROFILE,
+          LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_PROFILE,
         );
       } else if (elementKeyword === PURE_ELEMENT_NAME.ENUMERATION) {
         return editorStore.applicationStore.documentationService.getDocEntry(
-          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_ENUMERATION,
+          LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_ENUMERATION,
         );
       } else if (elementKeyword === PURE_ELEMENT_NAME.MEASURE) {
         return editorStore.applicationStore.documentationService.getDocEntry(
-          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_MEASURE,
+          LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_MEASURE,
         );
       } else if (elementKeyword === PURE_ELEMENT_NAME.ASSOCIATION) {
         return editorStore.applicationStore.documentationService.getDocEntry(
-          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_ASSOCIATION,
+          LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_ASSOCIATION,
         );
       } else if (elementKeyword === PURE_ELEMENT_NAME.FUNCTION) {
         return editorStore.applicationStore.documentationService.getDocEntry(
-          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_FUNCTION,
+          LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_FUNCTION,
         );
       }
       return undefined;
@@ -245,7 +245,7 @@ const getParserElementDocumentation = (
     case PURE_PARSER.MAPPING: {
       if (elementKeyword === PURE_ELEMENT_NAME.MAPPING) {
         return editorStore.applicationStore.documentationService.getDocEntry(
-          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_MAPPING,
+          LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_MAPPING,
         );
       }
       return undefined;
@@ -278,7 +278,7 @@ const getParserElementDocumentation = (
     case PURE_PARSER.RUNTIME: {
       if (elementKeyword === PURE_ELEMENT_NAME.RUNTIME) {
         return editorStore.applicationStore.documentationService.getDocEntry(
-          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_RUNTIME,
+          LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_RUNTIME,
         );
       }
       return undefined;
@@ -286,7 +286,7 @@ const getParserElementDocumentation = (
     case PURE_PARSER.SERVICE: {
       if (elementKeyword === PURE_ELEMENT_NAME.SERVICE) {
         return editorStore.applicationStore.documentationService.getDocEntry(
-          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_SERVICE,
+          LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_SERVICE,
         );
       }
       return undefined;
@@ -294,7 +294,7 @@ const getParserElementDocumentation = (
     case PURE_PARSER.RELATIONAL: {
       if (elementKeyword === PURE_ELEMENT_NAME.DATABASE) {
         return editorStore.applicationStore.documentationService.getDocEntry(
-          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DATABASE,
+          LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_DATABASE,
         );
       }
       return undefined;
@@ -302,7 +302,7 @@ const getParserElementDocumentation = (
     case PURE_PARSER.FILE_GENERATION_SPECIFICATION: {
       if (elementKeyword === PURE_ELEMENT_NAME.FILE_GENERATION) {
         return editorStore.applicationStore.documentationService.getDocEntry(
-          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_FILE_GENERATION_SPECIFICATION,
+          LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_FILE_GENERATION_SPECIFICATION,
         );
       }
       return undefined;
@@ -310,7 +310,7 @@ const getParserElementDocumentation = (
     case PURE_PARSER.GENERATION_SPECIFICATION: {
       if (elementKeyword === PURE_ELEMENT_NAME.GENERATION_SPECIFICATION) {
         return editorStore.applicationStore.documentationService.getDocEntry(
-          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_GENERATION_SPECIFICATION,
+          LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_GENERATION_SPECIFICATION,
         );
       }
       return undefined;
@@ -1212,9 +1212,9 @@ export const GrammarTextEditor = observer(() => {
     <div className="panel edit-panel">
       <ContextMenu className="panel__header edit-panel__header" disabled={true}>
         <div className="edit-panel__header__tabs">
-          <div className="edit-panel__header__tab edit-panel__header__tab__exit-text-mode">
+          <div className="edit-panel__text-mode__tab">
             <button
-              className="edit-panel__header__tab__label edit-panel__header__tab__exit-text-mode__label"
+              className="edit-panel__text-mode__tab__label"
               disabled={editorStore.graphState.isApplicationLeavingTextMode}
               onClick={leaveTextMode}
               tabIndex={-1}
@@ -1224,10 +1224,10 @@ export const GrammarTextEditor = observer(() => {
             </button>
           </div>
           <ContextMenu
-            className="edit-panel__header__tab edit-panel__header__tab__text-mode edit-panel__header__tab--active"
+            className="edit-panel__text-mode__tab edit-panel__text-mode__tab--active"
             content={<GrammarTextEditorHeaderTabContextMenu />}
           >
-            <div className="edit-panel__header__tab__label">Text Mode</div>
+            <div className="edit-panel__text-mode__tab__label">Text Mode</div>
           </ContextMenu>
         </div>
         <div className="edit-panel__header__actions">

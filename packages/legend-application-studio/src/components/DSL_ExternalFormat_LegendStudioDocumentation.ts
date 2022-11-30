@@ -16,6 +16,6 @@
 
 export enum DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY {
   GRAMMAR_PARSER = 'dsl-external-format.grammar.parser',
-  GRAMMAR_ELEMENT_BINDING = 'dsl-external-format.grammar.element.binding',
-  GRAMMAR_ELEMENT_SCHEMASET = 'dsl-external-format.grammar.element.schema-set',
+  CONCEPT_ELEMENT_BINDING = 'dsl-external-format.concept.element.binding',
+  CONCEPT_ELEMENT_SCHEMASET = 'dsl-external-format.concept.element.schema-set',
 }
