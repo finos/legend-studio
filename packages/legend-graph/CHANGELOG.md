@@ -1,5 +1,25 @@
 # @finos/legend-graph
 
+## 20.1.7
+
+## 20.1.6
+
+## 20.1.5
+
+### Patch Changes
+
+- [#1719](https://github.com/finos/legend-studio/pull/1719) [`52c69421f`](https://github.com/finos/legend-studio/commit/52c69421f39e9677da261200ba226bd95a93b8fe) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support env keys selection for each test in multiexec services([#1718](https://github.com/finos/legend-studio/issues/1718)).
+
+- [#1722](https://github.com/finos/legend-studio/pull/1722) [`3fb9f5d31`](https://github.com/finos/legend-studio/commit/3fb9f5d316218fb5a625a19a3ab7734717e23560) ([@akphi](https://github.com/akphi)) - Add support for `OUTER` join type alias.
+
+## 20.1.4
+
+## 20.1.3
+
+## 20.1.2
+
+## 20.1.1
+
 ## 20.1.0
 
 ### Minor Changes

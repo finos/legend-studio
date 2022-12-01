@@ -51,9 +51,10 @@ export const UnsupportedEditorPanel = observer(
 // NOTE: this editor can be used for any element supported via text mode but no editor has been built
 export const UnsupportedElementEditor = observer(() => {
   const editorStore = useEditorStore();
-  const unsupportedElementEditorState = editorStore.getCurrentEditorState(
-    UnsupportedElementEditorState,
-  );
+  const unsupportedElementEditorState =
+    editorStore.tabManagerState.getCurrentEditorState(
+      UnsupportedElementEditorState,
+    );
   const element = unsupportedElementEditorState.element;
   const isReadOnly = unsupportedElementEditorState.isReadOnly;
 

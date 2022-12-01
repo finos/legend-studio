@@ -134,6 +134,7 @@ export const V1_serviceTestModelSchema = createModelSchema(V1_ServiceTest, {
     ),
   ),
   id: primitive(),
+  keys: list(primitive()),
   parameters: custom(
     (values) =>
       serializeArray(

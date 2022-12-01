@@ -109,6 +109,7 @@ export const V1_transformServiceTest = (
   serviceTest.parameters = element.parameters.map((parameter) =>
     V1_transformParameterValue(parameter),
   );
+  serviceTest.keys = element.keys;
   serviceTest.assertions = element.assertions.map((assertion) =>
     V1_transformTestAssertion(assertion),
   );

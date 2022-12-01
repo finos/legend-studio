@@ -120,6 +120,7 @@ import {
 import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelClassifierUtils.js';
 import { rootRelationalSetImp_setMainTableAlias } from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
+import type { MappingEditorTabState } from './MappingTabManagerState.js';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -574,11 +575,6 @@ export interface MappingElementSpec {
   postSubmitAction?: (newMappingElement: MappingElement | undefined) => void;
 }
 
-export type MappingEditorTabState =
-  | MappingElementState
-  | MappingTestState
-  | MappingExecutionState;
-
 export class MappingEditorState extends ElementEditorState {
   currentTabState?: MappingEditorTabState | undefined;
   openedTabStates: MappingEditorTabState[] = [];
@@ -625,7 +621,6 @@ export class MappingEditorState extends ElementEditorState {
       deleteMappingElement: flow,
     });
 
-    this.editorStore = editorStore;
     this.mappingTestStates = this.mapping.test.map(
       (t) => new MappingTestState(editorStore, t, this),
     );
@@ -847,10 +842,14 @@ export class MappingEditorState extends ElementEditorState {
     }
     // Open mapping element from included mapping in another mapping editor tab
     if (mappingElement._PARENT !== this.element) {
-      this.editorStore.openElement(mappingElement._PARENT);
+      this.editorStore.tabManagerState.openElementEditor(
+        mappingElement._PARENT,
+      );
     }
     const currentMappingEditorState =
-      this.editorStore.getCurrentEditorState(MappingEditorState);
+      this.editorStore.tabManagerState.getCurrentEditorState(
+        MappingEditorState,
+      );
     // If the next mapping element to be opened is not opened yet, we will find the right place to put it in the tab bar
     if (
       !currentMappingEditorState.openedTabStates.find(

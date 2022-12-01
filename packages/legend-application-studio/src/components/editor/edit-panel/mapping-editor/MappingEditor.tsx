@@ -38,7 +38,6 @@ import {
 import { ClassMappingEditor } from './ClassMappingEditor.js';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor.js';
 import {
-  type MappingEditorTabState,
   type MappingElement,
   MappingEditorState,
   getMappingElementTarget,
@@ -68,6 +67,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import type { MappingEditorTabState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTabManagerState.js';
 
 export const MappingEditorSplashScreen: React.FC = () => {
   const logoWidth = 280;
@@ -103,7 +103,7 @@ const MappingEditorHeaderTabContextMenu = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const close = applicationStore.guardUnhandledError(() =>
       flowResult(mappingEditorState.closeTab(tabState)),
     );
@@ -156,7 +156,7 @@ export const MappingEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const mappingEditorState =
-    editorStore.getCurrentEditorState(MappingEditorState);
+    editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
   const isReadOnly = mappingEditorState.isReadOnly;
   const currentTabState = mappingEditorState.currentTabState;
   const renderActiveMappingElementTab = (): React.ReactNode => {

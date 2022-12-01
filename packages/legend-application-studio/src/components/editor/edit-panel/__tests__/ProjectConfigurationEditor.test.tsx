@@ -152,9 +152,10 @@ test(integrationTest('Test Project DependencyInfo'), async () => {
   );
   fireEvent.click(getByText(editPanel, 'Project Dependencies'));
   await waitFor(() => getByText(editPanel, 'View Dependency Tree'));
-  const currentEditorStore = MOCK__editorStore.getCurrentEditorState(
-    ProjectConfigurationEditorState,
-  );
+  const currentEditorStore =
+    MOCK__editorStore.tabManagerState.getCurrentEditorState(
+      ProjectConfigurationEditorState,
+    );
   await waitFor(() => getByText(editPanel, 'View Conflicts'));
   const _dependencyInfo = currentEditorStore.dependencyInfo;
   expect(_dependencyInfo).toBeDefined();

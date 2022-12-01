@@ -37,7 +37,6 @@ import {
   GenerationDirectory,
   GENERATION_FILE_ROOT_NAME,
   GenerationFile,
-  getGenerationTreeData,
   openNode,
   populateDirectoryTreeNodeChildren,
   buildGenerationDirectory,
@@ -45,7 +44,6 @@ import {
 } from '../shared/FileGenerationTreeUtils.js';
 import type { TreeData } from '@finos/legend-art';
 import type { EditorStore } from '../EditorStore.js';
-import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState.js';
 import { FileGenerationViewerState } from './FileGenerationViewerState.js';
 import type { EditorState } from './EditorState.js';
 import { ElementEditorState } from './element-editor-state/ElementEditorState.js';
@@ -133,8 +131,11 @@ export class GraphGenerationState {
   }
 
   get supportedFileGenerationConfigurationsForCurrentElement(): GenerationConfigurationDescription[] {
-    if (this.editorStore.currentEditorState instanceof ElementEditorState) {
-      const currentElement = this.editorStore.currentEditorState.element;
+    if (
+      this.editorStore.tabManagerState.currentTab instanceof ElementEditorState
+    ) {
+      const currentElement =
+        this.editorStore.tabManagerState.currentTab.element;
       // NOTE: For now we only allow classes and enumerations for all types of generations.
       const extraFileGenerationScopeFilterConfigurations =
         this.editorStore.pluginManager
@@ -444,40 +445,25 @@ export class GraphGenerationState {
       this.filesIndex,
     );
     this.editorStore.graphState.editorStore.explorerTreeState.setFileGenerationTreeData(
-      getGenerationTreeData(
-        this.rootFileDirectory,
-        ExplorerTreeRootPackageLabel.FILE_GENERATION,
-      ),
-    );
-    this.editorStore.graphState.editorStore.explorerTreeState.setFileGenerationTreeData(
       this.reprocessNodeTree(
         Array.from(generationResultIndex.values()),
         this.editorStore.graphState.editorStore.explorerTreeState.getFileGenerationTreeData(),
         openedNodeIds,
       ),
     );
-    this.editorStore.openedEditorStates = this.editorStore.openedEditorStates
-      .map((e) => this.reprocessGenerationFileState(e))
-      .filter(isNonNullable);
-    const currentEditorState = this.editorStore.currentEditorState;
-    if (currentEditorState instanceof FileGenerationViewerState) {
-      this.editorStore.setCurrentEditorState(
-        this.editorStore.openedEditorStates.find(
-          (e) =>
-            e instanceof FileGenerationViewerState &&
-            e.generatedFile.path === currentEditorState.generatedFile.path,
-        ),
-      );
-    }
+    this.editorStore.tabManagerState.tabs =
+      this.editorStore.tabManagerState.tabs
+        .map((e) => this.reprocessGenerationFileState(e))
+        .filter(isNonNullable);
   }
 
   reprocessGenerationFileState(
     editorState: EditorState,
   ): EditorState | undefined {
     if (editorState instanceof FileGenerationViewerState) {
-      const fileNode = this.filesIndex.get(editorState.generatedFile.path);
+      const fileNode = this.filesIndex.get(editorState.file.path);
       if (fileNode) {
-        editorState.generatedFile = fileNode;
+        editorState.file = fileNode;
         return editorState;
       } else {
         return undefined;
@@ -530,7 +516,9 @@ export class GraphGenerationState {
       }
     }
     if (!reprocess && node.fileNode instanceof GenerationFile) {
-      this.editorStore.openGeneratedFile(node.fileNode);
+      this.editorStore.tabManagerState.openTab(
+        new FileGenerationViewerState(this.editorStore, node.fileNode),
+      );
     }
     this.setSelectedNode(node);
     this.editorStore.graphState.editorStore.explorerTreeState.setFileGenerationTreeData(

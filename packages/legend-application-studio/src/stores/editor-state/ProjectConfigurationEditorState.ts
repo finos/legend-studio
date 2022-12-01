@@ -182,8 +182,12 @@ export class ProjectConfigurationEditorState extends EditorState {
     this.dependencyInfoModalType = type;
   }
 
-  get headerName(): string {
+  get label(): string {
     return 'config';
+  }
+
+  match(tab: EditorState): boolean {
+    return tab instanceof ProjectConfigurationEditorState;
   }
 
   get currentProjectConfiguration(): ProjectConfiguration {
@@ -310,7 +314,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         ),
       );
       yield flowResult(this.editorStore.initMode());
-      this.editorStore.openSingletonEditorState(
+      this.editorStore.tabManagerState.openTab(
         this.editorStore.projectConfigurationEditorState,
       );
     } catch (error) {

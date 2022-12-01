@@ -27,7 +27,7 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../graphManager/QueryBuilderHashUtils.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
-import { isValueExpressionReferencesinValue } from '../QueryBuilderValueSpecificationHelper.js';
+import { isValueExpressionReferencedInValue } from '../QueryBuilderValueSpecificationHelper.js';
 
 export class QueryBuilderWatermarkState implements Hashable {
   readonly queryBuilderState: QueryBuilderState;
@@ -82,7 +82,7 @@ export class QueryBuilderWatermarkState implements Hashable {
 
   isVariableUsed(variable: VariableExpression): boolean {
     return this.value
-      ? isValueExpressionReferencesinValue(variable, this.value)
+      ? isValueExpressionReferencedInValue(variable, this.value)
       : false;
   }
 

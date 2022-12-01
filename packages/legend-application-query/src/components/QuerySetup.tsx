@@ -30,6 +30,7 @@ import {
   MenuContentItemLabel,
   CheckIcon,
   MenuContentDivider,
+  AssistantIcon,
 } from '@finos/legend-art';
 import {
   getQueryParameters,
@@ -276,77 +277,99 @@ export const QuerySetupLandingPage = withQuerySetupLandingPageStore(
         applicationStore.config.studioUrl,
       );
     const showAllActionGroup = (): void => setupStore.setShowAllGroups(true);
-
+    const toggleAssistant = (): void =>
+      applicationStore.assistantService.toggleAssistant();
     useEffect(() => {
       setupStore.initialize(showAdvancedActions, showAllGroups, tagToFocus);
     }, [setupStore, showAdvancedActions, showAllGroups, tagToFocus]);
 
     return (
-      <div className="query-setup">
-        <div className="query-setup__landing-page">
-          {setupStore.initState.hasCompleted && (
-            <>
-              <div className="query-setup__landing-page__title">
-                What do you want to do today
-                <QuestionCircleIcon
-                  className="query-setup__landing-page__title__question-mark"
-                  title="Choose one of the option below to start"
-                />
-              </div>
-              <div className="query-setup__landing-page__actions">
-                {setupStore.tagToFocus && (
-                  <QuerySetupActionGroup tag={setupStore.tagToFocus} />
-                )}
-                {!setupStore.tagToFocus && (
-                  <>
-                    <QuerySetupActionGroup />
-                    {setupStore.showAllGroups && (
-                      <>
-                        {setupStore.tags.map((tag) => (
-                          <QuerySetupActionGroup key={tag} tag={tag} />
-                        ))}
-                        <div className="query-setup__landing-page__action-group query-setup__landing-page__action-group--studio">
-                          <div className="query-setup__landing-page__action-group__tag">
-                            Developer Workstation
+      <>
+        <div className="query-setup">
+          <div className="query-setup__landing-page">
+            {setupStore.initState.hasCompleted && (
+              <>
+                <div className="query-setup__landing-page__title">
+                  What do you want to do today
+                  <QuestionCircleIcon
+                    className="query-setup__landing-page__title__question-mark"
+                    title="Choose one of the option below to start"
+                  />
+                </div>
+                <div className="query-setup__landing-page__actions">
+                  {setupStore.tagToFocus && (
+                    <QuerySetupActionGroup tag={setupStore.tagToFocus} />
+                  )}
+                  {!setupStore.tagToFocus && (
+                    <>
+                      <QuerySetupActionGroup />
+                      {setupStore.showAllGroups && (
+                        <>
+                          {setupStore.tags.map((tag) => (
+                            <QuerySetupActionGroup key={tag} tag={tag} />
+                          ))}
+                          <div className="query-setup__landing-page__action-group query-setup__landing-page__action-group--studio">
+                            <div className="query-setup__landing-page__action-group__tag">
+                              Developer Workstation
+                            </div>
+                            <div className="query-setup__landing-page__action-group__header" />
+                            <div className="query-setup__landing-page__action-group__body">
+                              <button
+                                className="query-setup__landing-page__action query-setup__landing-page__action--studio"
+                                onClick={goToStudio}
+                                tabIndex={-1}
+                              >
+                                <div className="query-setup__landing-page__action__icon">
+                                  <PencilIcon />
+                                </div>
+                                <div className="query-setup__landing-page__action__label">
+                                  Open Legend Studio
+                                </div>
+                              </button>
+                            </div>
+                            <div className="query-setup__landing-page__action-group__footer" />
                           </div>
-                          <div className="query-setup__landing-page__action-group__header" />
-                          <div className="query-setup__landing-page__action-group__body">
-                            <button
-                              className="query-setup__landing-page__action query-setup__landing-page__action--studio"
-                              onClick={goToStudio}
-                              tabIndex={-1}
-                            >
-                              <div className="query-setup__landing-page__action__icon">
-                                <PencilIcon />
-                              </div>
-                              <div className="query-setup__landing-page__action__label">
-                                Open Legend Studio
-                              </div>
-                            </button>
-                          </div>
-                          <div className="query-setup__landing-page__action-group__footer" />
+                        </>
+                      )}
+                      {!setupStore.showAllGroups && (
+                        <div className="query-setup__landing-page__footer">
+                          <button
+                            className="query-setup__landing-page__footer__more-btn"
+                            onClick={showAllActionGroup}
+                            tabIndex={-1}
+                            title="Show all action groups"
+                          >
+                            <ChevronDownThinIcon />
+                          </button>
                         </div>
-                      </>
-                    )}
-                    {!setupStore.showAllGroups && (
-                      <div className="query-setup__landing-page__footer">
-                        <button
-                          className="query-setup__landing-page__footer__more-btn"
-                          onClick={showAllActionGroup}
-                          tabIndex={-1}
-                          title="Show all action groups"
-                        >
-                          <ChevronDownThinIcon />
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </>
-          )}
+                      )}
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+        <div className="query-setup__status-bar">
+          <div className="query-setup__status-bar__left"></div>
+          <div className="query-setup__status-bar__right">
+            <button
+              className={clsx(
+                'query-setup__status-bar__action query-setup__status-bar__action__toggler',
+                {
+                  'query-setup__status-bar__action__toggler--active':
+                    !applicationStore.assistantService.isHidden,
+                },
+              )}
+              onClick={toggleAssistant}
+              tabIndex={-1}
+              title="Toggle assistant"
+            >
+              <AssistantIcon />
+            </button>
+          </div>
+        </div>
+      </>
     );
   }),
 );
@@ -365,7 +388,9 @@ export const BaseQuerySetup = observer(
   (props: { children: React.ReactNode }) => {
     const { children } = props;
     const setupStore = useBaseQuerySetupStore();
-
+    const applicationStore = useLegendQueryApplicationStore();
+    const toggleAssistant = (): void =>
+      applicationStore.assistantService.toggleAssistant();
     useEffect(() => {
       setupStore.initialize();
     }, [setupStore]);
@@ -374,7 +399,28 @@ export const BaseQuerySetup = observer(
       <>
         <PanelLoadingIndicator isLoading={setupStore.initState.isInProgress} />
         {setupStore.initState.hasCompleted && (
-          <div className="query-setup">{children}</div>
+          <>
+            <div className="query-setup">{children}</div>
+            <div className="query-setup__status-bar">
+              <div className="query-setup__status-bar__left"></div>
+              <div className="query-setup__status-bar__right">
+                <button
+                  className={clsx(
+                    'query-setup__status-bar__action query-setup__status-bar__action__toggler',
+                    {
+                      'query-setup__status-bar__action__toggler--active':
+                        !applicationStore.assistantService.isHidden,
+                    },
+                  )}
+                  onClick={toggleAssistant}
+                  tabIndex={-1}
+                  title="Toggle assistant"
+                >
+                  <AssistantIcon />
+                </button>
+              </div>
+            </div>
+          </>
         )}
       </>
     );

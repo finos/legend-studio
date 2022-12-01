@@ -37,7 +37,7 @@ import {
   externalFormatData_setData,
 } from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
-import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
+import { getEditorLanguageForFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import {
   type EmbeddedDataState,
   DataElementReferenceState,
@@ -71,7 +71,7 @@ export const ExternalFormatDataEditor = observer(
         externalFormatDataState.embeddedData,
         val,
       );
-    const language = getEditorLanguageFromFormat(
+    const language = getEditorLanguageForFormat(
       editorStore.graphState.graphGenerationState.externalFormatState.getFormatTypeForContentType(
         externalFormatDataState.embeddedData.contentType,
       ),
@@ -167,7 +167,8 @@ export const DataElementReferenceDataEditor = observer(
         dataElementReferenceState.setDataElement(val.value);
       }
     };
-    const visitData = (): void => editorStore.openElement(dataElement);
+    const visitData = (): void =>
+      editorStore.tabManagerState.openElementEditor(dataElement);
     return (
       <div className="panel data-element-reference-editor">
         <div className="data-element-reference-editor__header">

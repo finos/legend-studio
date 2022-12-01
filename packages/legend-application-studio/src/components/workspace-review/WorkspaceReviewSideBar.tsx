@@ -100,11 +100,11 @@ export const WorkspaceReviewSideBar = observer(() => {
   );
   // Changes
   const changes = editorStore.changeDetectionState.aggregatedWorkspaceChanges;
-  const currentEditorState = editorStore.currentEditorState;
+  const currentTabState = editorStore.tabManagerState.currentTab;
   const isSelectedDiff = (diff: EntityDiff): boolean =>
-    currentEditorState instanceof EntityDiffViewState &&
-    diff.oldPath === currentEditorState.fromEntityPath &&
-    diff.newPath === currentEditorState.toEntityPath;
+    currentTabState instanceof EntityDiffViewState &&
+    diff.oldPath === currentTabState.fromEntityPath &&
+    diff.newPath === currentTabState.toEntityPath;
   const openChange =
     (diff: EntityDiff): (() => void) =>
     (): void =>

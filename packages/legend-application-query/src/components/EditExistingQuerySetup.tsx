@@ -131,16 +131,20 @@ const EditExistingQuerySetupContent = observer(() => {
             Delete
           </button>
         )}
-        {!setupStore.showCurrentUserQueriesOnly && Boolean(option.value.owner) && (
-          <div
-            className={clsx('query-setup__existing-query__query-option__user', {
-              'query-setup__existing-query__query-option__user--mine':
-                option.value.isCurrentUserQuery,
-            })}
-          >
-            {option.value.isCurrentUserQuery ? 'mine' : option.value.owner}
-          </div>
-        )}
+        {!setupStore.showCurrentUserQueriesOnly &&
+          Boolean(option.value.owner) && (
+            <div
+              className={clsx(
+                'query-setup__existing-query__query-option__user',
+                {
+                  'query-setup__existing-query__query-option__user--mine':
+                    option.value.isCurrentUserQuery,
+                },
+              )}
+            >
+              {option.value.isCurrentUserQuery ? 'mine' : option.value.owner}
+            </div>
+          )}
       </div>
     );
   };

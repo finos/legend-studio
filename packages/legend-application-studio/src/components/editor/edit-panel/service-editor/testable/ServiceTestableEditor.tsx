@@ -37,6 +37,8 @@ import type {
   ServiceTestableState,
   ServiceTestSuiteState,
 } from '../../../../../stores/editor-state/element-editor-state/service/testable/ServiceTestableState.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 export const ServiceTestSuiteEditor = observer(
   (props: { serviceTestSuiteState: ServiceTestSuiteState }) => {
@@ -157,6 +159,11 @@ export const ServiceTestableEditor = observer(
         guaranteeNonNullable(serviceTestableState.suiteToRename),
         val,
       );
+
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SERVICE_EDITOR_TEST,
+    );
+
     return (
       <div className="service-test-suite-editor panel">
         <div className="panel__header">

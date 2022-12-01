@@ -18,6 +18,7 @@ import {
   type PackageableElementOption,
   buildElementOption,
   getPackageableElementOptionFormatter,
+  LEGEND_APPLICATION_DOCUMENTATION_KEY,
 } from '@finos/legend-application';
 import {
   BlankPanelPlaceholder,
@@ -195,6 +196,10 @@ export const QueryBuilderConstantExpressionPanel = observer(
     const graph = queryBuilderState.graphManagerState.graph;
     const isReadOnly = !queryBuilderState.isQuerySupported;
     const varNames = queryBuilderState.allVariableNames;
+    const seeDocumentation = (): void =>
+      queryBuilderState.applicationStore.assistantService.openDocumentationEntry(
+        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_ADD_CONSTANTS_TO_QUERY,
+      );
     const addConstant = (): void => {
       if (!isReadOnly) {
         const defaultVal = buildDefaultInstanceValue(
@@ -225,7 +230,8 @@ export const QueryBuilderConstantExpressionPanel = observer(
           <div className="panel__header__title">
             <div className="panel__header__title__label">constants</div>
             <div
-              className="service-editor__pattern__parameters__header__info"
+              onClick={seeDocumentation}
+              className="query-builder__variables__info"
               title={`Constants are static values set to a variable name that can be leveraged within your query. They remain the same for ALL executions`}
             >
               <InfoCircleIcon />

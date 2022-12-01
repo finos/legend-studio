@@ -150,27 +150,6 @@
     margin-bottom: 3rem;
     border-left: 0.3rem solid var(--color-pink-200);
 
-    &__header {
-      @include flexVCenter;
-
-      color: var(--color-light-grey-50);
-      margin-bottom: 0.5rem;
-      line-height: 2rem;
-    }
-
-    &__header__label {
-      color: var(--color-light-grey-200);
-      font-weight: 500;
-      margin-right: 0.5rem;
-    }
-
-    &__header__info {
-      @include flexVCenter;
-
-      color: var(--color-light-grey-200);
-      cursor: help;
-    }
-
     &__list {
       max-width: 47.7rem; // account for the border width
     }
@@ -1142,8 +1121,9 @@
   }
 
   &__setup {
-    &__serialization {
+    &__configuration {
       padding: 1rem;
+      overflow-y: scroll;
     }
 
     &__parameters {

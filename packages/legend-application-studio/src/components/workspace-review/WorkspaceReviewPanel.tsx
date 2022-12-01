@@ -39,10 +39,9 @@ const WorkspaceReviewPanelHeaderTabContextMenu = observer(
   >(function ReviewPanelHeaderTabContextMenu(props, ref) {
     const { editorState } = props;
     const editorStore = useEditorStore();
-    const close = (): void => editorStore.closeState(editorState);
-    const closeOthers = (): void =>
-      editorStore.closeAllOtherStates(editorState);
-    const closeAll = (): void => editorStore.closeAllStates();
+    const close = (): void => editorStore.tabManagerState.closeTab(editorState);
+    const closeOthers = (): void => editorStore.tabManagerState.closeAllTabs();
+    const closeAll = (): void => editorStore.tabManagerState.closeAllTabs();
 
     return (
       <div
@@ -57,7 +56,7 @@ const WorkspaceReviewPanelHeaderTabContextMenu = observer(
         </button>
         <button
           className="workspace-review-panel__header__tab__context-menu__item"
-          disabled={editorStore.openedEditorStates.length < 2}
+          disabled={editorStore.tabManagerState.tabs.length < 2}
           onClick={closeOthers}
         >
           Close Others
@@ -75,48 +74,45 @@ const WorkspaceReviewPanelHeaderTabContextMenu = observer(
 
 export const WorkspaceReviewPanel = observer(() => {
   const editorStore = useEditorStore();
-  const currentEditorState =
-    editorStore.currentEditorState instanceof EntityDiffViewState
-      ? editorStore.currentEditorState
+  const currentTabState =
+    editorStore.tabManagerState.currentTab instanceof EntityDiffViewState
+      ? editorStore.tabManagerState.currentTab
       : undefined;
-  const openedEditorStates = editorStore.openedEditorStates.filter(
+  const openedTabStates = editorStore.tabManagerState.tabs.filter(
     filterByType(EntityDiffViewState),
   );
   const closeTab =
     (diffState: EditorState): React.MouseEventHandler =>
     (event): void =>
-      editorStore.closeState(diffState);
+      editorStore.tabManagerState.closeTab(diffState);
   const closeTabOnMiddleClick =
     (editorState: EditorState): React.MouseEventHandler =>
     (event): void => {
       if (event.nativeEvent.button === 1) {
-        editorStore.closeState(editorState);
+        editorStore.tabManagerState.closeTab(editorState);
       }
     };
   const switchTab =
     (editorState: EditorState): (() => void) =>
     (): void =>
-      editorStore.openState(editorState);
+      editorStore.tabManagerState.openTab(editorState);
   const switchViewMode =
     (mode: DIFF_VIEW_MODE): (() => void) =>
     (): void =>
-      currentEditorState?.setDiffMode(mode);
+      currentTabState?.setDiffMode(mode);
 
-  if (!currentEditorState) {
+  if (!currentTabState) {
     return <WorkspaceReviewPanelSplashScreen />;
   }
   return (
     <div className="panel workspace-review-panel">
-      <ContextMenu
-        className="panel__header workspace-review-panel__header"
-        disabled={true}
-      >
+      <div className="panel__header workspace-review-panel__header">
         <div className="workspace-review-panel__header__tabs">
-          {openedEditorStates.map((editorState) => (
+          {openedTabStates.map((editorState) => (
             <div
               className={clsx('workspace-review-panel__header__tab', {
                 'workspace-review-panel__header__tab--active':
-                  editorState === currentEditorState,
+                  editorState === currentTabState,
               })}
               key={editorState.uuid}
               onMouseUp={closeTabOnMiddleClick(editorState)}
@@ -134,7 +130,7 @@ export const WorkspaceReviewPanel = observer(() => {
                   tabIndex={-1}
                   onClick={switchTab(editorState)}
                 >
-                  {editorState.headerName}
+                  {editorState.label}
                 </button>
                 <button
                   className="workspace-review-panel__header__tab__close-btn"
@@ -173,13 +169,13 @@ export const WorkspaceReviewPanel = observer(() => {
             }}
           >
             <div className="workspace-review-panel__element-view__type__label">
-              {currentEditorState.diffMode}
+              {currentTabState.diffMode}
             </div>
           </DropdownMenu>
         </div>
-      </ContextMenu>
+      </div>
       <div className="panel__content workspace-review-panel__content">
-        <EntityDiffView entityDiffViewState={currentEditorState} />
+        <EntityDiffView entityDiffViewState={currentTabState} />
       </div>
     </div>
   );

@@ -1,5 +1,33 @@
 # @finos/legend-query-builder
 
+## 0.6.6
+
+## 0.6.5
+
+## 0.6.4
+
+## 0.6.3
+
+### Patch Changes
+
+- [#1708](https://github.com/finos/legend-studio/pull/1708) [`56e287e57`](https://github.com/finos/legend-studio/commit/56e287e57bc98c37c813c5d924c01955cec38d68) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support DnD from `fetch structure` to `fitler` panel to create a new logical group.
+
+## 0.6.2
+
+### Patch Changes
+
+- [#1700](https://github.com/finos/legend-studio/pull/1700) [`9b2e9b698`](https://github.com/finos/legend-studio/commit/9b2e9b69860246faae068c219d936f68bb242302) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where datetime values are not provided with seconds.
+
+- [#1705](https://github.com/finos/legend-studio/pull/1705) [`048271628`](https://github.com/finos/legend-studio/commit/0482716286d64f6305e0a6836037751c65fcfe8f) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug with the cursor when editing `filter` and `post filter` text input value ([#1594](https://github.com/finos/legend-studio/issues/1594)).
+
+## 0.6.1
+
+## 0.6.0
+
+### Minor Changes
+
+- [#1691](https://github.com/finos/legend-studio/pull/1691) [`85aef2dfe`](https://github.com/finos/legend-studio/commit/85aef2dfe531188a87687352541e52f97d6018ec) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Disable deleting variables if used in query.
+
 ## 0.5.0
 
 ### Minor Changes

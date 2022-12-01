@@ -16,5 +16,5 @@
 
 export enum DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY {
   GRAMMAR_PARSER = 'dsl-dataspace.grammar.parser',
-  GRAMMAR_ELEMENT_DATA_SPACE = 'dsl-dataspace.grammar.element.data-space',
+  CONCEPT_ELEMENT_DATA_SPACE = 'dsl-dataspace.concept.element.data-space',
 }

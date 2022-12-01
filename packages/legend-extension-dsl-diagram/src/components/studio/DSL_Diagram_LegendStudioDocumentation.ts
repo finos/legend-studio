@@ -16,5 +16,5 @@
 
 export enum DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY {
   GRAMMAR_PARSER = 'dsl-diagram.grammar.parser',
-  GRAMMAR_ELEMENT_DIAGRAM = 'dsl-diagram.grammar.element.diagram',
+  CONCEPT_ELEMENT_DIAGRAM = 'dsl-diagram.concept.element.diagram',
 }

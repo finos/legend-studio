@@ -661,7 +661,7 @@ const ProjectDependencyActions = observer(
 export const ProjectConfigurationEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const configState = editorStore.getCurrentEditorState(
+  const configState = editorStore.tabManagerState.getCurrentEditorState(
     ProjectConfigurationEditorState,
   );
   const sdlcState = editorStore.sdlcState;
@@ -810,13 +810,15 @@ export const ProjectConfigurationEditor = observer(() => {
           {selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES && (
             <div className="panel__content__lists">
               <PanelLoadingIndicator isLoading={isLoading} />
-              <div className="project-dependency-editor__progress-msg">
-                {configState.updatingConfigurationState.isInProgress
-                  ? `Updating configuration...`
-                  : configState.fetchingProjectVersionsState.isInProgress
-                  ? `Fetching dependency versions`
-                  : 'Updating project dependency tree and potential conflicts'}
-              </div>
+              {isLoading && (
+                <div className="project-dependency-editor__progress-msg">
+                  {configState.updatingConfigurationState.isInProgress
+                    ? `Updating configuration...`
+                    : configState.fetchingProjectVersionsState.isInProgress
+                    ? `Fetching dependency versions`
+                    : 'Updating project dependency tree and potential conflicts'}
+                </div>
+              )}
               <ProjectDependencyActions config={configState} />
               {currentProjectConfiguration.projectDependencies.map(
                 (projectDependency) => (

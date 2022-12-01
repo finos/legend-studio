@@ -181,7 +181,9 @@ test(
     );
     fireEvent.click(getByText(editPanel, 'Registration'));
     const serviceEditorState =
-      MOCK__editorStore.getCurrentEditorState(ServiceEditorState);
+      MOCK__editorStore.tabManagerState.getCurrentEditorState(
+        ServiceEditorState,
+      );
     const registrationEditor = await waitFor(() =>
       renderResult.getByTestId(
         LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_EDITOR,
@@ -294,7 +296,9 @@ test(
     await waitFor(() => getByText(editPanel, 'owner2'));
     // add owner
     const serviceEditorState =
-      MOCK__editorStore.getCurrentEditorState(ServiceEditorState);
+      MOCK__editorStore.tabManagerState.getCurrentEditorState(
+        ServiceEditorState,
+      );
     const service = serviceEditorState.service;
     expect(service.owners).toHaveLength(2);
     fireEvent.click(getByTitle(editPanel, 'Add owner'));

@@ -41,7 +41,9 @@ import {
 } from '@finos/legend-server-sdlc';
 import {
   type LegendStudioApplicationStore,
+  type ProjectConfigurationStatus,
   LEGEND_STUDIO_APP_EVENT,
+  fetchProjectConfigurationStatus,
 } from '@finos/legend-application-studio';
 import {
   generateServiceQueryUpdaterSetupRoute,
@@ -64,6 +66,7 @@ export class UpdateServiceQuerySetupStore {
   services: ServiceInfo[] = [];
   currentProject?: ProjectData | undefined;
   currentSnapshotService?: ServiceInfo | undefined;
+  currentProjectConfigurationStatus?: ProjectConfigurationStatus | undefined;
 
   readonly loadWorkspacesState = ActionState.create();
   readonly createWorkspaceState = ActionState.create();
@@ -86,6 +89,7 @@ export class UpdateServiceQuerySetupStore {
       currentGroupWorkspace: observable,
       currentWorkspaceService: observable,
       showCreateWorkspaceModal: observable,
+      currentProjectConfigurationStatus: observable,
       setShowCreateWorkspaceModal: action,
       resetCurrentService: action,
       resetCurrentGroupWorkspace: action,
@@ -113,6 +117,7 @@ export class UpdateServiceQuerySetupStore {
     this.applicationStore.navigator.updateCurrentLocation(
       generateServiceQueryUpdaterSetupRoute(undefined, undefined, undefined),
     );
+    this.currentProjectConfigurationStatus = undefined;
   }
 
   resetCurrentGroupWorkspace(): void {
@@ -176,10 +181,12 @@ export class UpdateServiceQuerySetupStore {
     servicePath: string,
   ): GeneratorFn<void> {
     this.loadWorkspacesState.inProgress();
+    this.currentProjectConfigurationStatus = undefined;
 
     try {
       let project: ProjectData | undefined;
       let serviceEntity: Entity | undefined;
+
       try {
         project = ProjectData.serialization.fromJson(
           (yield this.depotServerClient.getProject(
@@ -215,6 +222,13 @@ export class UpdateServiceQuerySetupStore {
       }
 
       this.currentProject = project;
+      this.currentProjectConfigurationStatus =
+        (yield fetchProjectConfigurationStatus(
+          project.projectId,
+          this.applicationStore,
+          this.sdlcServerClient,
+        )) as ProjectConfigurationStatus;
+
       this.currentSnapshotService = extractServiceInfo({
         groupId: groupId,
         artifactId: artifactId,

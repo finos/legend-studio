@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-import { ArrowCircleRightIcon } from '@finos/legend-art';
+import {
+  ArrowCircleRightIcon,
+  clsx,
+  ExclamationCircleIcon,
+  getSelectorInputOptionEmbeddedButtonProps,
+} from '@finos/legend-art';
 import type { Project } from '@finos/legend-server-sdlc';
 import type { LegendStudioApplicationStore } from '../../stores/LegendStudioBaseStore.js';
 import { generateViewProjectRoute } from '../../stores/LegendStudioRouter.js';
+import type { ProjectConfigurationStatus } from '../../stores/workspace-setup/ProjectConfigurationStatus.js';
 
 export interface ProjectOption {
   label: string;
@@ -31,6 +37,7 @@ export const buildProjectOption = (project: Project): ProjectOption => ({
 
 export const getProjectOptionLabelFormatter = (
   applicationStore: LegendStudioApplicationStore,
+  projectConfigurationStatus?: ProjectConfigurationStatus | undefined,
 ): ((option: ProjectOption) => React.ReactNode) =>
   function ProjectOptionLabel(option: ProjectOption): React.ReactNode {
     const viewProject = (): void =>
@@ -39,25 +46,78 @@ export const getProjectOptionLabelFormatter = (
           generateViewProjectRoute(option.value.projectId),
         ),
       );
+    const configure = (): void => {
+      if (projectConfigurationStatus?.reviewUrl) {
+        applicationStore.navigator.visitAddress(
+          projectConfigurationStatus.reviewUrl,
+        );
+      } else {
+        applicationStore.notifyWarning(
+          `Can't find project configuration review: opening the project web page...`,
+        );
+        applicationStore.navigator.visitAddress(option.value.webUrl);
+      }
+    };
 
     return (
       <div className="project-selector__option">
-        <div className="project-selector__option__label">
+        <div
+          className={clsx('project-selector__option__label', {
+            'project-selector__option__label--selected':
+              projectConfigurationStatus &&
+              option.value.projectId === projectConfigurationStatus.projectId &&
+              projectConfigurationStatus.isConfigured,
+            'project-selector__option__label--not-configured':
+              projectConfigurationStatus &&
+              option.value.projectId === projectConfigurationStatus.projectId &&
+              !projectConfigurationStatus.isConfigured,
+          })}
+        >
           <div className="project-selector__option__label__name">
             {option.label}
           </div>
         </div>
-        <button
-          type="button" // prevent this toggler being activated on form submission
-          className="project-selector__option__visit-btn"
-          tabIndex={-1}
-          onClick={viewProject}
-        >
-          <div className="project-selector__option__visit-btn__label">view</div>
-          <div className="project-selector__option__visit-btn__icon">
-            <ArrowCircleRightIcon />
-          </div>
-        </button>
+        {projectConfigurationStatus &&
+          option.value.projectId === projectConfigurationStatus.projectId && (
+            <>
+              {projectConfigurationStatus.isConfigured && (
+                <button
+                  type="button" // prevent this toggler being activated on form submission
+                  className="project-selector__option__visit-btn"
+                  tabIndex={-1}
+                  onClick={viewProject}
+                  {...getSelectorInputOptionEmbeddedButtonProps()}
+                >
+                  <div className="project-selector__option__visit-btn__label">
+                    view
+                  </div>
+                  <div className="project-selector__option__visit-btn__icon">
+                    <ArrowCircleRightIcon />
+                  </div>
+                </button>
+              )}
+              {!projectConfigurationStatus.isConfigured && (
+                <button
+                  className="project-selector__option__configure-btn"
+                  type="button" // prevent this toggler being activated on form submission
+                  tabIndex={-1}
+                  onClick={configure}
+                  {...getSelectorInputOptionEmbeddedButtonProps()}
+                  title="The project has not been configured properly. Click to see the review and commit it to get complete the configuration."
+                >
+                  <div className="project-selector__option__configure-btn__warning-icon">
+                    <ExclamationCircleIcon />
+                  </div>
+                  <div className="project-selector__option__configure-btn__label">
+                    configure
+                  </div>
+                  <div className="project-selector__option__configure-btn__icon">
+                    <ArrowCircleRightIcon />
+                  </div>
+                </button>
+              )}
+            </>
+          )}
       </div>
     );
   };

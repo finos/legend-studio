@@ -560,7 +560,7 @@ export class ProjectViewerStore {
         this.initialEntityPath
       ) {
         try {
-          this.editorStore.openElement(
+          this.editorStore.tabManagerState.openElementEditor(
             this.editorStore.graphManagerState.graph.getElement(
               this.initialEntityPath,
             ),

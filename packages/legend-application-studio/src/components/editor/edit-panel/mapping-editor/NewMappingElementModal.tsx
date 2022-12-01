@@ -58,7 +58,7 @@ interface ClassMappingSubTypeOption {
 export const NewMappingElementModal = observer(() => {
   const editorStore = useEditorStore();
   const mappingEditorState =
-    editorStore.getCurrentEditorState(MappingEditorState);
+    editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
   const spec = mappingEditorState.newMappingElementSpec;
 
   // ID

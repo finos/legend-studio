@@ -91,7 +91,7 @@ const EnumerationPropertyMappingEditor = observer(
     const { propertyMappingState, drop, transformProps, isReadOnly } = props;
     const editorStore = useEditorStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const propertyMapping = guaranteeType(
       propertyMappingState.propertyMapping,
       RelationalPropertyMapping,
@@ -195,7 +195,7 @@ const ClassPropertyMappingEditor = observer(
     const { propertyMappingState, drop, transformProps } = props;
     const editorStore = useEditorStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const propertyMapping = propertyMappingState.propertyMapping;
     const isDefaultId =
       propertyMapping.targetSetImplementation?.value.id.isDefault;

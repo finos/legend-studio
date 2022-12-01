@@ -49,6 +49,7 @@ import {
   Panel,
   useResizeDetector,
   Modal,
+  AssistantIcon,
 } from '@finos/legend-art';
 import { TaxonomyTree } from './TaxonomyTree.js';
 import { TaxonomyNodeViewer } from './TaxonomyNodeViewer.js';
@@ -398,6 +399,8 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
         size: explorerStore.sideBarDisplayState.size,
       },
     );
+    const toggleAssistant = (): void =>
+      applicationStore.assistantService.toggleAssistant();
 
     useEffect(() => {
       if (taxonomyTreeKey) {
@@ -429,7 +432,6 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
         }
       }
     }, [applicationStore, explorerStore, taxonomyTreeKey]);
-
     useEffect(() => {
       explorerStore.internalizeDataSpacePath(params);
     }, [explorerStore, params]);
@@ -482,7 +484,22 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
           </div>
           <div className="taxonomy-explorer__status-bar ">
             <div className="taxonomy-explorer__status-bar__left"></div>
-            <div className="taxonomy-explorer__status-bar__right"></div>
+            <div className="taxonomy-explorer__status-bar__right">
+              <button
+                className={clsx(
+                  'taxonomy-explorer__status-bar__action taxonomy-explorer__status-bar__action__toggler',
+                  {
+                    'taxonomy-explorer__status-bar__action__toggler--active':
+                      !applicationStore.assistantService.isHidden,
+                  },
+                )}
+                onClick={toggleAssistant}
+                tabIndex={-1}
+                title="Toggle assistant"
+              >
+                <AssistantIcon />
+              </button>
+            </div>
           </div>
           <TaxonomySearchCommand />
         </div>

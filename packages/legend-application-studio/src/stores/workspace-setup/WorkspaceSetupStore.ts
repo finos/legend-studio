@@ -38,6 +38,10 @@ import {
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
 } from '@finos/legend-application';
+import {
+  fetchProjectConfigurationStatus,
+  type ProjectConfigurationStatus,
+} from './ProjectConfigurationStatus.js';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -52,6 +56,7 @@ export class WorkspaceSetupStore {
 
   projects: Project[] = [];
   currentProject?: Project | undefined;
+  currentProjectConfigurationStatus?: ProjectConfigurationStatus | undefined;
   loadProjectsState = ActionState.create();
   createOrImportProjectState = ActionState.create();
   importProjectSuccessReport?: ImportProjectSuccessReport | undefined;
@@ -70,6 +75,7 @@ export class WorkspaceSetupStore {
     makeObservable(this, {
       projects: observable,
       currentProject: observable,
+      currentProjectConfigurationStatus: observable,
       importProjectSuccessReport: observable,
       showCreateProjectModal: observable,
       workspaces: observable,
@@ -114,6 +120,7 @@ export class WorkspaceSetupStore {
     this.applicationStore.navigator.updateCurrentLocation(
       generateSetupRoute(undefined, undefined, undefined),
     );
+    this.currentProjectConfigurationStatus = undefined;
   }
 
   resetWorkspace(): void {
@@ -208,10 +215,17 @@ export class WorkspaceSetupStore {
         }
       | undefined,
   ): GeneratorFn<void> {
+    this.currentProject = project;
+    this.currentProjectConfigurationStatus = undefined;
     this.loadWorkspacesState.inProgress();
 
     try {
-      this.currentProject = project;
+      this.currentProjectConfigurationStatus =
+        (yield fetchProjectConfigurationStatus(
+          project.projectId,
+          this.applicationStore,
+          this.sdlcServerClient,
+        )) as ProjectConfigurationStatus;
 
       const workspacesInConflictResolutionIds = (
         (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(

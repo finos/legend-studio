@@ -92,7 +92,7 @@ export const ClassMappingEditor = observer(
     const { setImplementation, isReadOnly } = props;
     const editorStore = useEditorStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const _class = setImplementation.class;
     // ID
     const isDefaultId =

@@ -1,5 +1,27 @@
 # @finos/legend-application
 
+## 10.1.0
+
+### Minor Changes
+
+- [#1727](https://github.com/finos/legend-studio/pull/1727) [`cde6df0f8`](https://github.com/finos/legend-studio/commit/cde6df0f84856e685ea9dc792a3915a0c925466d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Enable virtual assistant for all applications ([#1712](https://github.com/finos/legend-studio/issues/1712)).
+
+## 10.0.15
+
+## 10.0.14
+
+## 10.0.13
+
+## 10.0.12
+
+## 10.0.11
+
+### Patch Changes
+
+- [#1679](https://github.com/finos/legend-studio/pull/1679) [`478092e7c`](https://github.com/finos/legend-studio/commit/478092e7c55da1a96380d2c7815958d5310898e8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support contextual documentation for service test and data element editor, and add a doc icon for connection test data.
+
+## 10.0.10
+
 ## 10.0.9
 
 ## 10.0.8

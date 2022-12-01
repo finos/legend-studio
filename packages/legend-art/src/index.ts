@@ -49,6 +49,8 @@ export * from './components/panel/BlankPanelPlaceholder.js';
 export * from './components/panel/PanelLoadingIndicator.js';
 export * from './components/panel/PanelDropZone.js';
 
+export * from './components/Portal.js';
+
 export * from './components/ProgressBar.js';
 
 export * from './components/Tooltip.js';

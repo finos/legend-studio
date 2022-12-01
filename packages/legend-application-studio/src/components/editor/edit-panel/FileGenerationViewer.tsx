@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import {
   FileGenerationViewerState,
   getTextContent,
-  getEditorLanguageFromFormat,
+  getEditorLanguageForFormat,
 } from '../../../stores/editor-state/FileGenerationViewerState.js';
 import {
   LockIcon,
@@ -33,17 +33,17 @@ import { TextInputEditor } from '@finos/legend-application';
 
 export const FileGenerationViewer = observer(() => {
   const editorStore = useEditorStore();
-  const generatedFileState = editorStore.getCurrentEditorState(
+  const generatedFileState = editorStore.tabManagerState.getCurrentEditorState(
     FileGenerationViewerState,
   );
-  const generatedFile = generatedFileState.generatedFile;
+  const generatedFile = generatedFileState.file;
   const fileGeneration = generatedFile.parentId
     ? editorStore.graphManagerState.graph.getNullableFileGeneration(
         generatedFile.parentId,
       )
     : undefined;
   const visitFileGeneration = (fg: FileGenerationSpecification): void =>
-    editorStore.openElement(fg);
+    editorStore.tabManagerState.openElementEditor(fg);
 
   return (
     <div className="file-generation-viewer">
@@ -96,7 +96,7 @@ export const FileGenerationViewer = observer(() => {
                 generatedFile.format,
               )}
               isReadOnly={true}
-              language={getEditorLanguageFromFormat(generatedFile.format)}
+              language={getEditorLanguageForFormat(generatedFile.format)}
             />
           </PanelContent>
         </div>

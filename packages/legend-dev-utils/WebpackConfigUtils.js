@@ -342,6 +342,7 @@ export const getWebAppBaseWebpackConfig = (
         // bundling or list of features and we could end up with features suddenly not
         // working as expected
         features: [
+          'linesOperations',
           'bracketMatching',
           'clipboard',
           'contextmenu',
@@ -355,6 +356,7 @@ export const getWebAppBaseWebpackConfig = (
           'multicursor',
           'snippet',
           'suggest',
+          'wordHighlighter',
         ],
       }),
     ].filter(Boolean),

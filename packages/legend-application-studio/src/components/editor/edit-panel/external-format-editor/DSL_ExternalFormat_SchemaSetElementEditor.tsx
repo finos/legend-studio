@@ -45,7 +45,7 @@ import {
   SCHEMA_SET_TAB_TYPE,
 } from '../../../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
 import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
-import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
+import { getEditorLanguageForFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -207,7 +207,7 @@ export const SchemaSetGeneralEditor = observer(
       schemaSetEditorState.schemaSetModelGenerationState.description;
     // TEMPROARY engine api should return `fileformat`.
     const language = description
-      ? getEditorLanguageFromFormat(description.name)
+      ? getEditorLanguageForFormat(description.name)
       : EDITOR_LANGUAGE.TEXT;
     const changeState =
       (schema: Schema): (() => void) =>
@@ -371,7 +371,7 @@ export const SchemaSetGeneralEditor = observer(
 export const SchemaSetEditor = observer(() => {
   const editorStore = useEditorStore();
   const schemaSetEditorState =
-    editorStore.getCurrentEditorState(SchemaSetEditorState);
+    editorStore.tabManagerState.getCurrentEditorState(SchemaSetEditorState);
   const isReadOnly = schemaSetEditorState.isReadOnly;
   const schemaSet = schemaSetEditorState.schemaSet;
   const currentTab = schemaSetEditorState.selectedTab;

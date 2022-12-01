@@ -183,7 +183,7 @@ export const ConnectionEditor = observer(
 
 export const PackageableConnectionEditor = observer(() => {
   const editorStore = useEditorStore();
-  const editorState = editorStore.getCurrentEditorState(
+  const editorState = editorStore.tabManagerState.getCurrentEditorState(
     PackageableConnectionEditorState,
   );
   const isReadOnly = editorState.isReadOnly;

@@ -386,7 +386,7 @@ export class EditorSDLCState {
           ),
         ),
       );
-      this.editorStore.refreshCurrentEntityDiffEditorState();
+      this.editorStore.tabManagerState.refreshCurrentEntityDiffViewer();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -416,7 +416,7 @@ export class EditorSDLCState {
           ),
         ),
       );
-      this.editorStore.refreshCurrentEntityDiffEditorState();
+      this.editorStore.tabManagerState.refreshCurrentEntityDiffViewer();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -445,7 +445,7 @@ export class EditorSDLCState {
           ),
         ),
       );
-      this.editorStore.refreshCurrentEntityDiffEditorState();
+      this.editorStore.tabManagerState.refreshCurrentEntityDiffViewer();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(

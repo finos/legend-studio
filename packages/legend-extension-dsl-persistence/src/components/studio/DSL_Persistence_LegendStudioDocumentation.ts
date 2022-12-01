@@ -16,6 +16,6 @@
 
 export enum DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY {
   GRAMMAR_PARSER = 'dsl-persistence.grammar.parser',
-  GRAMMAR_ELEMENT_PERSISTENCE = 'dsl-persistence.grammar.element.persistence',
-  GRAMMAR_ELEMENT_PERSISTENCE_CONTEXT = 'dsl-persistence.grammar.element.persistence-context',
+  CONCEPT_ELEMENT_PERSISTENCE = 'dsl-persistence.concept.element.persistence',
+  CONCEPT_ELEMENT_PERSISTENCE_CONTEXT = 'dsl-persistence.concept.element.persistence-context',
 }
