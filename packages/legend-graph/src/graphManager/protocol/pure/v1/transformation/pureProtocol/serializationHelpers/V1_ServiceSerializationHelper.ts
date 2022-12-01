@@ -126,7 +126,7 @@ export const V1_testDataModelSchema = (
   });
 
 export const V1_serviceTestModelSchema = createModelSchema(V1_ServiceTest, {
-  _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.SERVICE_TEST),
+  _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Service_Test),
   assertions: list(
     custom(
       (val) => V1_serializeTestAssertion(val),

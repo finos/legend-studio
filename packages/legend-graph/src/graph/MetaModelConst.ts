@@ -58,8 +58,8 @@ export enum PRIMITIVE_TYPE {
 }
 
 export enum ATOMIC_TEST_TYPE {
-  SERVICE_TEST = 'serviceTest',
-  MAPPING_TEST = 'mappingTest',
+  Service_Test = 'serviceTest',
+  Mapping_Test = 'mappingTest',
 }
 
 // NOTE: the list of auto-import are kept in `m3.pure` file in `finos/legend-pure`,

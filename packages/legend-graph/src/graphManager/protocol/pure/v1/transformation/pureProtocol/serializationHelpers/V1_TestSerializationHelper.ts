@@ -261,9 +261,9 @@ export const V1_deserializeAtomicTest = (
   plugins: PureProtocolProcessorPlugin[],
 ): V1_AtomicTest => {
   switch (json._type) {
-    case ATOMIC_TEST_TYPE.SERVICE_TEST:
+    case ATOMIC_TEST_TYPE.Service_Test:
       return deserialize(V1_serviceTestModelSchema, json);
-    case ATOMIC_TEST_TYPE.MAPPING_TEST:
+    case ATOMIC_TEST_TYPE.Mapping_Test:
       return deserialize(V1_mappingTestModelSchema, json);
     default: {
       const extraAtomicTestProtocolDeserializers = plugins.flatMap(

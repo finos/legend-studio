@@ -871,7 +871,7 @@ export const V1_storeTestDataModelSchema = (
   });
 
 export const V1_mappingTestModelSchema = createModelSchema(V1_MappingTest, {
-  _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.MAPPING_TEST),
+  _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Mapping_Test),
   assertions: list(
     custom(
       (val) => V1_serializeTestAssertion(val),
