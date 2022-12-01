@@ -25,7 +25,7 @@ import { EditPanel } from './edit-panel/EditPanel.js';
 import { FileSearchCommand } from './command-center/FileSearchCommand.js';
 import { flowResult } from 'mobx';
 import { TextSearchCommand } from './command-center/TextSearchCommand.js';
-import { useApplicationStore } from '@finos/legend-application';
+import { useApplicationStore, useCommands } from '@finos/legend-application';
 import {
   type ResizablePanelHandlerProps,
   useResizeDetector,
@@ -46,6 +46,7 @@ export const Editor = withEditorStore(
   observer(() => {
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
+    const editable = editorStore.initState.hasSucceeded;
 
     // layout
     const { ref, width, height } = useResizeDetector<HTMLDivElement>();
@@ -108,7 +109,16 @@ export const Editor = withEditorStore(
       ).catch(applicationStore.alertUnhandledError);
     }, [editorStore, applicationStore]);
 
-    const editable = editorStore.initState.hasSucceeded;
+    useEffect(() => {
+      applicationStore.navigator.blockNavigation([() => true], undefined, () =>
+        applicationStore.notifyWarning(`Navigation from the editor is blocked`),
+      );
+      return (): void => {
+        applicationStore.navigator.unblockNavigation();
+      };
+    }, [editorStore, applicationStore]);
+
+    useCommands(editorStore);
 
     return (
       <div className="editor">

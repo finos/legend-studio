@@ -17,7 +17,7 @@
 import { forwardRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
-import { FileEditorState } from '../../../stores/EditorState.js';
+import { FileEditorState } from '../../../stores/FileEditorState.js';
 import { CreateNewFileCommand } from '../command-center/CreateNewFileCommand.js';
 import { CreateNewDirectoryCommand } from '../command-center/CreateNewDirectoryCommand.js';
 import { useApplicationStore } from '@finos/legend-application';
@@ -289,11 +289,11 @@ export const DirectoryTreeExplorer = observer(() => {
       applicationStore.alertUnhandledError,
     );
   const focus = (): void => {
-    const currentEditorState = editorStore.currentEditorState;
-    if (currentEditorState instanceof FileEditorState) {
-      flowResult(
-        treeState.revealPath(currentEditorState.filePath, false),
-      ).catch(applicationStore.alertUnhandledError);
+    const currentTab = editorStore.tabManagerState.currentTab;
+    if (currentTab instanceof FileEditorState) {
+      flowResult(treeState.revealPath(currentTab.filePath, false)).catch(
+        applicationStore.alertUnhandledError,
+      );
     }
   };
   const collapseTree = (): void => {

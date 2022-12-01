@@ -32,6 +32,7 @@ import {
 import { LegendPureIDEPluginManager } from './LegendPureIDEPluginManager.js';
 import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
 import { LegendPureIDEApplication } from '../components/LegendPureIDEApplication.js';
+import { Core_LegendPureIDEApplicationPlugin } from '../components/Core_LegendPureIDEApplicationPlugin.js';
 
 export class LegendPureIDE extends LegendApplication {
   declare config: LegendPureIDEApplicationConfig;
@@ -39,6 +40,7 @@ export class LegendPureIDE extends LegendApplication {
 
   static create(): LegendPureIDE {
     const application = new LegendPureIDE(LegendPureIDEPluginManager.create());
+    application.withBasePlugins([new Core_LegendPureIDEApplicationPlugin()]);
     application.withBasePresets([new DSL_Diagram_GraphManagerPreset()]);
     return application;
   }

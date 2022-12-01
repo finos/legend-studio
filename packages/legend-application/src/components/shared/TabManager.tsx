@@ -39,12 +39,25 @@ type TabDragSource = {
 };
 
 const horizontalToVerticalScroll: React.WheelEventHandler = (event) => {
-  console.log(event);
-  // NOTE: only convert horizontal to vertical scroll when the scroll causes more horizontal than vertical displacement
-  if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
+  // if scrolling is more horizontal than vertical, there's nothing much to do, the OS should handle it just fine
+  // else, intercept
+  if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
     return;
   }
-  event.currentTarget.scrollBy(event.deltaY, 0);
+  event.stopPropagation();
+  let deltaX = event.deltaX;
+  // NOTE: only convert horizontal to vertical scroll when the scroll causes more horizontal than vertical displacement
+  // let the direction of `deltaY` be the direction of the scroll, i.e.
+  // - if we scroll upward, that translate to a left scroll
+  // - if we scroll downward, that translates to a right scroll
+  if (event.deltaY === 0) {
+    deltaX = event.deltaY;
+  } else if (event.deltaY < 0) {
+    deltaX = -Math.abs(event.deltaY);
+  } else {
+    deltaX = Math.abs(event.deltaY);
+  }
+  event.currentTarget.scrollBy(deltaX, 0);
 };
 
 const TabContextMenu = observer(
@@ -247,8 +260,11 @@ export const TabManager = observer(
     const { tabManagerState, tabRenderer } = props;
 
     return (
-      <div className="tab-manager" onWheel={horizontalToVerticalScroll}>
-        <div className="tab-manager__content">
+      <div className="tab-manager">
+        <div
+          className="tab-manager__content"
+          onWheel={horizontalToVerticalScroll}
+        >
           {tabManagerState.tabs.map((tab) => (
             <Tab
               key={tab.uuid}

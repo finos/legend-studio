@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  editor as monacoEditorAPI,
-  KeyCode,
-  type Position,
-} from 'monaco-editor';
-import type { FileEditorState } from '../../../stores/EditorState.js';
-import { flowResult } from 'mobx';
+import { editor as monacoEditorAPI, type Position } from 'monaco-editor';
+import type { FileEditorState } from '../../../stores/FileEditorState.js';
 import { FileCoordinate } from '../../../server/models/PureFile.js';
 import {
   EDITOR_LANGUAGE,
   EDITOR_THEME,
-  MONOSPACED_FONT_FAMILY,
   TAB_SIZE,
   useApplicationStore,
+  useCommands,
 } from '@finos/legend-application';
 import {
   disposeEditor,
+  getBaseTextEditorOptions,
   moveCursorToPosition,
   setErrorMarkers,
   useResizeDetector,
@@ -43,9 +39,7 @@ export const FileEditor = observer(
   (props: { editorState: FileEditorState }) => {
     const { editorState } = props;
     const currentCursorPosition = useRef<Position | undefined>(undefined);
-    const [editor, setEditor] = useState<
-      monacoEditorAPI.IStandaloneCodeEditor | undefined
-    >();
+    const editor = editorState._textEditor;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const content = editorState.file.content;
@@ -53,24 +47,10 @@ export const FileEditor = observer(
     const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
     useEffect(() => {
-      if (!editor && textInput.current) {
+      if (textInput.current) {
         const element = textInput.current;
         const _editor = monacoEditorAPI.create(element, {
-          contextmenu: false,
-          copyWithSyntaxHighlighting: false,
-          // NOTE: These following font options are needed (and CSS font-size option `.monaco-editor * { font-size: ... }` as well)
-          // in order to make the editor appear properly on multiple platform, the ligatures option is needed for Mac to display properly
-          // otherwise the cursor position relatively to text would be off
-          // Another potential cause for this misaligment is that the fonts are being lazy-loaded and made available after `monaco-editor`
-          // calculated the font-width, for this, we can use `remeasureFonts`, but our case here, `fontLigatures: true` seems
-          // to do the trick
-          // See https://github.com/microsoft/monaco-editor/issues/392
-          fontSize: 14,
-          // Enforce a fixed font-family to make cross platform display consistent (i.e. Mac defaults to use `Menlo` which is bigger than
-          // `Consolas` on Windows, etc.)
-          fontFamily: MONOSPACED_FONT_FAMILY,
-          fontLigatures: true,
-          fixedOverflowWidgets: true, // make sure hover or widget near boundary are not truncated
+          ...getBaseTextEditorOptions(),
           language: EDITOR_LANGUAGE.PURE,
           theme: EDITOR_THEME.LEGEND,
         });
@@ -88,66 +68,10 @@ export const FileEditor = observer(
           }
           editorState.file.setContent(currentVal);
         });
-        // TODO-BEFORE-PR: cleanup to use the general mechanism
-        _editor.onKeyDown((event) => {
-          if (event.keyCode === KeyCode.F9) {
-            event.preventDefault();
-            event.stopPropagation();
-            flowResult(editorStore.executeGo()).catch(
-              applicationStore.alertUnhandledError,
-            );
-          } else if (
-            event.keyCode === KeyCode.KeyB &&
-            event.ctrlKey &&
-            !event.altKey
-          ) {
-            // [ctrl + b] Navigate
-            event.preventDefault();
-            event.stopPropagation();
-            const currentPosition = _editor.getPosition();
-            if (currentPosition) {
-              const coordinate = new FileCoordinate(
-                editorState.filePath,
-                currentPosition.lineNumber,
-                currentPosition.column,
-              );
-              flowResult(editorStore.executeNavigation(coordinate)).catch(
-                applicationStore.alertUnhandledError,
-              );
-            }
-          } else if (
-            event.keyCode === KeyCode.KeyB &&
-            event.ctrlKey &&
-            event.altKey
-          ) {
-            // [ctrl + alt + b] Navigate back
-            event.preventDefault();
-            event.stopPropagation();
-            flowResult(editorStore.navigateBack()).catch(
-              applicationStore.alertUnhandledError,
-            );
-          } else if (event.keyCode === KeyCode.F7 && event.altKey) {
-            // [alt + f7] Find usages
-            event.preventDefault();
-            event.stopPropagation();
-            const currentPosition = _editor.getPosition();
-            if (currentPosition) {
-              const coordinate = new FileCoordinate(
-                editorState.filePath,
-                currentPosition.lineNumber,
-                currentPosition.column,
-              );
-              flowResult(editorStore.findUsages(coordinate)).catch(
-                applicationStore.alertUnhandledError,
-              );
-            }
-          }
-          // NOTE: Legacy IDE's [alt + g] -> go to line ~ equivalent to `monaco-editor`'s [ctrl + g]
-        });
         _editor.focus(); // focus on the editor initially
-        setEditor(_editor);
+        editorState.setTextEditor(_editor);
       }
-    }, [editorStore, applicationStore, editor, editorState]);
+    }, [editorStore, applicationStore, editorState]);
 
     if (editor) {
       // Set the value of the editor
@@ -174,6 +98,8 @@ export const FileEditor = observer(
         }
       }
     }
+
+    useCommands(editorState);
 
     useEffect(() => {
       if (width !== undefined && height !== undefined) {

@@ -39,10 +39,10 @@ import {
   FileCoordinate,
   trimPathLeadingSlash,
 } from '../server/models/PureFile.js';
-import { EditorState } from './EditorState.js';
 import type { EditorStore } from './EditorStore.js';
+import { EditorTabState } from './EditorTabManagerState.js';
 
-export class DiagramEditorState extends EditorState {
+export class DiagramEditorState extends EditorTabState {
   diagramInfo: DiagramInfo;
   _renderer?: DiagramRenderer | undefined;
   diagram: Diagram;
@@ -78,12 +78,12 @@ export class DiagramEditorState extends EditorState {
     this.diagramClasses = diagramClasses;
   }
 
-  rebuild(value: DiagramInfo): void {
-    this.diagramInfo = value;
-    const [diagram, graph, diagramClasses] = buildGraphFromDiagramInfo(value);
-    this.diagram = diagram;
-    this.graph = graph;
-    this.diagramClasses = diagramClasses;
+  get label(): string {
+    return trimPathLeadingSlash(this.diagramPath);
+  }
+
+  override get description(): string | undefined {
+    return trimPathLeadingSlash(this.diagramPath);
   }
 
   get renderer(): DiagramRenderer {
@@ -95,6 +95,14 @@ export class DiagramEditorState extends EditorState {
 
   get isDiagramRendererInitialized(): boolean {
     return Boolean(this._renderer);
+  }
+
+  rebuild(value: DiagramInfo): void {
+    this.diagramInfo = value;
+    const [diagram, graph, diagramClasses] = buildGraphFromDiagramInfo(value);
+    this.diagram = diagram;
+    this.graph = graph;
+    this.diagramClasses = diagramClasses;
   }
 
   setupRenderer(): void {
@@ -117,10 +125,6 @@ export class DiagramEditorState extends EditorState {
 
   setRenderer(val: DiagramRenderer): void {
     this._renderer = val;
-  }
-
-  get headerName(): string {
-    return trimPathLeadingSlash(this.diagramPath);
   }
 
   *addClassView(path: string, position: Point | undefined): GeneratorFn<void> {

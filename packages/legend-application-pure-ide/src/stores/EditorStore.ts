@@ -15,13 +15,8 @@
  */
 
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import {
-  ACTIVITY_MODE,
-  AUX_PANEL_MODE,
-  IDE_HOTKEY,
-  IDE_HOTKEY_MAP,
-} from './EditorConfig.js';
-import { FileEditorState, type EditorState } from './EditorState.js';
+import { ACTIVITY_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
+import { FileEditorState } from './FileEditorState.js';
 import { deserialize } from 'serializr';
 import {
   FileCoordinate,
@@ -74,19 +69,16 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
+  type CommandRegistrar,
 } from '@finos/legend-application';
 import {
-  type Clazz,
   type GeneratorFn,
   type PlainObject,
   isNonNullable,
   NetworkClient,
   ActionState,
   assertErrorThrown,
-  assertNonNullable,
-  assertTrue,
   guaranteeNonNullable,
-  guaranteeType,
 } from '@finos/legend-shared';
 import { PureClient as PureServerClient } from '../server/PureServerClient.js';
 import { PanelDisplayState } from '@finos/legend-art';
@@ -94,8 +86,10 @@ import { DiagramEditorState } from './DiagramEditorState.js';
 import { DiagramInfo, serializeDiagram } from '../server/models/DiagramInfo.js';
 import type { LegendPureIDEApplicationStore } from './LegendPureIDEBaseStore.js';
 import { SearchCommandState } from './SearchCommandState.js';
+import { EditorTabManagerState } from './EditorTabManagerState.js';
+import { LEGEND_PURE_IDE_COMMAND_KEY } from './LegendPureIDECommand.js';
 
-export class EditorStore {
+export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
 
   readonly initState = ActionState.create();
@@ -103,12 +97,7 @@ export class EditorStore {
   readonly conceptTreeState: ConceptTreeState;
   readonly client: PureServerClient;
 
-  // Tabs
-  currentEditorState?: EditorState | undefined;
-  openedEditorStates: EditorState[] = [];
-  showOpenedTabsMenu = false;
-
-  // Aux Panel
+  // Layout
   isMaxAuxPanelSizeSet = false;
   activeAuxPanelMode = AUX_PANEL_MODE.CONSOLE;
   readonly auxPanelDisplayState = new PanelDisplayState({
@@ -116,34 +105,28 @@ export class EditorStore {
     default: 300,
     snap: 100,
   });
-
-  // Side Bar
   activeActivity?: ACTIVITY_MODE = ACTIVITY_MODE.CONCEPT;
   readonly sideBarDisplayState = new PanelDisplayState({
     initial: 300,
     default: 300,
     snap: 150,
   });
+  readonly tabManagerState = new EditorTabManagerState(this);
+
+  readonly executionState = ActionState.create();
+  navigationStack: FileCoordinate[] = []; // TODO?: we might want to limit the number of items in this stack
 
   // Console
   consoleText?: string | undefined;
 
-  // Execution
-  executionState = ActionState.create();
-
-  // Navigation
-  navigationStack: FileCoordinate[] = []; // TODO?: we might want to limit the number of items in this stack
-
-  // File search
-  openFileSearchCommand = false;
+  // Search Command
   readonly fileSearchCommandLoadingState = ActionState.create();
+  readonly fileSearchCommandState = new SearchCommandState();
+  openFileSearchCommand = false;
   fileSearchCommandResults: string[] = [];
-  fileSearchCommandState = new SearchCommandState();
-
-  // Text search
-  openTextSearchCommand = false;
   readonly textSearchCommandLoadingState = ActionState.create();
-  textSearchCommandState = new SearchCommandState();
+  readonly textSearchCommandState = new SearchCommandState();
+  openTextSearchCommand = false;
 
   // Search Panel
   searchState?: SearchState | undefined;
@@ -158,7 +141,6 @@ export class EditorStore {
       activeAuxPanelMode: observable,
       activeActivity: observable,
       consoleText: observable,
-      executionState: observable,
       navigationStack: observable,
       openFileSearchCommand: observable,
       fileSearchCommandResults: observable,
@@ -168,7 +150,6 @@ export class EditorStore {
       searchState: observable,
       testRunnerState: observable,
 
-      setShowOpenedTabsMenu: action,
       setOpenFileSearchCommand: action,
       setOpenTextSearchCommand: action,
       setActiveAuxPanelMode: action,
@@ -215,103 +196,7 @@ export class EditorStore {
           : this.applicationStore.config.pureUrl,
       }),
     );
-
-    // // hotkeys
-    // this.defaultHotkeys = [
-    //   new EditorHotkey(
-    //     IDE_HOTKEY.SEARCH_FILE,
-    //     IDE_HOTKEY_MAP.SEARCH_FILE,
-    //     this.createGlobalHotKeyAction(() => {
-    //       this.setOpenFileSearchCommand(true);
-    //     }),
-    //   ),
-    //   new EditorHotkey(
-    //     IDE_HOTKEY.SEARCH_TEXT,
-    //     IDE_HOTKEY_MAP.SEARCH_TEXT,
-    //     this.createGlobalHotKeyAction(() => {
-    //       this.setOpenTextSearchCommand(true);
-    //     }),
-    //   ),
-    //   new EditorHotkey(
-    //     IDE_HOTKEY.EXECUTE,
-    //     IDE_HOTKEY_MAP.EXECUTE,
-    //     this.createGlobalHotKeyAction(() => {
-    //       flowResult(this.executeGo()).catch(
-    //         this.applicationStore.alertUnhandledError,
-    //       );
-    //     }),
-    //   ),
-    //   new EditorHotkey(
-    //     IDE_HOTKEY.TOGGLE_AUX_PANEL,
-    //     IDE_HOTKEY_MAP.TOGGLE_AUX_PANEL,
-    //     this.createGlobalHotKeyAction(() => {
-    //       this.auxPanelDisplayState.toggle();
-    //     }),
-    //   ),
-    //   new EditorHotkey(
-    //     IDE_HOTKEY.GO_TO_FILE,
-    //     IDE_HOTKEY_MAP.GO_TO_FILE,
-    //     this.createGlobalHotKeyAction(() => {
-    //       const currentEditorState = this.currentEditorState;
-    //       if (currentEditorState instanceof FileEditorState) {
-    //         this.directoryTreeState.revealPath(
-    //           currentEditorState.filePath,
-    //           true,
-    //         );
-    //       }
-    //     }),
-    //   ),
-    //   new EditorHotkey(
-    //     IDE_HOTKEY.FULL_RECOMPILE,
-    //     IDE_HOTKEY_MAP.FULL_RECOMPILE,
-    //     this.createGlobalHotKeyAction((event: KeyboardEvent | undefined) => {
-    //       flowResult(
-    //         this.fullReCompile(Boolean(event?.shiftKey ?? event?.ctrlKey)),
-    //       ).catch(this.applicationStore.alertUnhandledError);
-    //     }),
-    //   ),
-    //   new EditorHotkey(
-    //     IDE_HOTKEY.RUN_TEST,
-    //     IDE_HOTKEY_MAP.RUN_TEST,
-    //     this.createGlobalHotKeyAction((event: KeyboardEvent | undefined) => {
-    //       flowResult(this.executeFullTestSuite(event?.shiftKey)).catch(
-    //         this.applicationStore.alertUnhandledError,
-    //       );
-    //     }),
-    //   ),
-    //   new EditorHotkey(
-    //     IDE_HOTKEY.TOGGLE_OPEN_TABS_MENU,
-    //     IDE_HOTKEY_MAP.TOGGLE_OPEN_TABS_MENU,
-    //     this.createGlobalHotKeyAction(() => {
-    //       this.setShowOpenedTabsMenu(!this.showOpenedTabsMenu);
-    //     }),
-    //   ),
-    // ];
-    // this.hotkeys = this.defaultHotkeys;
   }
-
-  // ------ TODO-BEFORE-PR --------------
-
-  // createGlobalHotKeyAction =
-  //   (
-  //     handler: (event?: KeyboardEvent | undefined) => void,
-  //   ): ((event: KeyboardEvent | undefined) => void) =>
-  //   (event: KeyboardEvent | undefined): void => {
-  //     event?.preventDefault();
-  //     if (!this.blockGlobalHotkeys) {
-  //       handler(event);
-  //     }
-  //   };
-
-  setShowOpenedTabsMenu(val: boolean): void {
-    this.showOpenedTabsMenu = val;
-  }
-
-  setCurrentEditorState(val: EditorState | undefined): void {
-    this.currentEditorState = val;
-  }
-
-  // ------ TODO-BEFORE-PR --------------
 
   setOpenFileSearchCommand(val: boolean): void {
     this.openFileSearchCommand = val;
@@ -470,11 +355,88 @@ export class EditorStore {
     return Promise.resolve();
   }
 
-  getCurrentEditorState<T extends EditorState>(clazz: Clazz<T>): T {
-    return guaranteeType(
-      this.currentEditorState,
-      clazz,
-      `Expected current editor state to be of type '${clazz.name}' (this is caused by calling this method at the wrong place)`,
+  registerCommands(): void {
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_FILE,
+      trigger: () => this.initState.hasSucceeded,
+      action: () => this.setOpenFileSearchCommand(true),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_TEXT,
+      trigger: () => this.initState.hasSucceeded,
+      action: () => this.setOpenTextSearchCommand(true),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_COMMAND_KEY.GO_TO_FILE,
+      action: () => {
+        if (this.tabManagerState.currentTab instanceof FileEditorState) {
+          this.directoryTreeState.revealPath(
+            this.tabManagerState.currentTab.filePath,
+            true,
+          );
+        }
+      },
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_AUX_PANEL,
+      trigger: () => this.initState.hasSucceeded,
+      action: () => this.auxPanelDisplayState.toggle(),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_COMMAND_KEY.EXECUTE,
+      action: () => {
+        flowResult(this.executeGo()).catch(
+          this.applicationStore.alertUnhandledError,
+        );
+      },
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_COMMAND_KEY.FULL_RECOMPILE,
+      action: () => {
+        flowResult(this.fullReCompile(false)).catch(
+          this.applicationStore.alertUnhandledError,
+        );
+      },
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_COMMAND_KEY.FULL_RECOMPILE_WITH_FULL_INIT,
+      action: () => {
+        flowResult(this.fullReCompile(true)).catch(
+          this.applicationStore.alertUnhandledError,
+        );
+      },
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_COMMAND_KEY.RUN_ALL_TESTS,
+      action: () => {
+        flowResult(this.executeFullTestSuite(false)).catch(
+          this.applicationStore.alertUnhandledError,
+        );
+      },
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_COMMAND_KEY.RUN_RELAVANT_TESTS,
+      action: () => {
+        flowResult(this.executeFullTestSuite(true)).catch(
+          this.applicationStore.alertUnhandledError,
+        );
+      },
+    });
+  }
+
+  deregisterCommands(): void {
+    [
+      LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_FILE,
+      LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_TEXT,
+      LEGEND_PURE_IDE_COMMAND_KEY.GO_TO_FILE,
+      LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_AUX_PANEL,
+      LEGEND_PURE_IDE_COMMAND_KEY.EXECUTE,
+      LEGEND_PURE_IDE_COMMAND_KEY.FULL_RECOMPILE,
+      LEGEND_PURE_IDE_COMMAND_KEY.FULL_RECOMPILE_WITH_FULL_INIT,
+      LEGEND_PURE_IDE_COMMAND_KEY.RUN_ALL_TESTS,
+      LEGEND_PURE_IDE_COMMAND_KEY.RUN_RELAVANT_TESTS,
+    ].forEach((key) =>
+      this.applicationStore.commandCenter.deregisterCommand(key),
     );
   }
 
@@ -493,58 +455,13 @@ export class EditorStore {
     this.activeActivity = activity;
   }
 
-  closeState(editorState: EditorState): void {
-    const elementIndex = this.openedEditorStates.findIndex(
-      (e) => e === editorState,
-    );
-    assertTrue(elementIndex !== -1, `Can't close a tab which is not opened`);
-    this.openedEditorStates.splice(elementIndex, 1);
-    if (this.currentEditorState === editorState) {
-      if (this.openedEditorStates.length) {
-        const openIndex = elementIndex - 1;
-        this.setCurrentEditorState(
-          openIndex >= 0
-            ? this.openedEditorStates[openIndex]
-            : this.openedEditorStates[0],
-        );
-      } else {
-        this.setCurrentEditorState(undefined);
-      }
-    }
-  }
-
-  closeAllOtherStates(editorState: EditorState): void {
-    assertNonNullable(
-      this.openedEditorStates.find((e) => e === editorState),
-      'Editor tab should be currently opened',
-    );
-    this.currentEditorState = editorState;
-    this.openedEditorStates = [editorState];
-  }
-
-  closeAllStates(): void {
-    this.currentEditorState = undefined;
-    this.openedEditorStates = [];
-  }
-
-  openState(editorState: EditorState): void {
-    const existingEditorState = this.openedEditorStates.find(
-      (openedEditorState) => openedEditorState === editorState,
-    );
-    if (!existingEditorState) {
-      this.openedEditorStates.push(editorState);
-    }
-    this.setCurrentEditorState(editorState);
-  }
-
   *loadDiagram(filePath: string, diagramPath: string): GeneratorFn<void> {
-    const existingDiagramEditorState = this.openedEditorStates.find(
-      (editorState): editorState is DiagramEditorState =>
-        editorState instanceof DiagramEditorState &&
-        editorState.filePath === filePath,
+    const existingDiagramEditorState = this.tabManagerState.tabs.find(
+      (tab): tab is DiagramEditorState =>
+        tab instanceof DiagramEditorState && tab.filePath === filePath,
     );
     if (existingDiagramEditorState) {
-      this.openState(existingDiagramEditorState);
+      this.tabManagerState.openTab(existingDiagramEditorState);
     } else {
       yield flowResult(this.checkIfSessionWakingUp());
       const newDiagramEditorState = new DiagramEditorState(
@@ -553,20 +470,20 @@ export class EditorStore {
         diagramPath,
         filePath,
       );
-      this.openState(newDiagramEditorState);
+      this.tabManagerState.openTab(newDiagramEditorState);
     }
   }
 
   *loadFile(path: string, coordinate?: FileCoordinate): GeneratorFn<void> {
-    const existingFileEditorState = this.openedEditorStates.find(
-      (editorState): editorState is FileEditorState =>
-        editorState instanceof FileEditorState && editorState.filePath === path,
+    const existingFileEditorState = this.tabManagerState.tabs.find(
+      (tab): tab is FileEditorState =>
+        tab instanceof FileEditorState && tab.filePath === path,
     );
     if (existingFileEditorState) {
       if (coordinate) {
         existingFileEditorState.setCoordinate(coordinate);
       }
-      this.openState(existingFileEditorState);
+      this.tabManagerState.openTab(existingFileEditorState);
     } else {
       yield flowResult(this.checkIfSessionWakingUp());
       const newFileEditorState = new FileEditorState(
@@ -575,29 +492,26 @@ export class EditorStore {
         path,
         coordinate,
       );
-      this.openState(newFileEditorState);
+      this.tabManagerState.openTab(newFileEditorState);
     }
   }
 
   *reloadFile(filePath: string): GeneratorFn<void> {
     yield Promise.all(
-      this.openedEditorStates.map(async (editorState) => {
-        if (
-          editorState instanceof FileEditorState &&
-          editorState.filePath === filePath
-        ) {
-          editorState.setFile(
+      this.tabManagerState.tabs.map(async (tab) => {
+        if (tab instanceof FileEditorState && tab.filePath === filePath) {
+          tab.setFile(
             deserialize(PureFile, await this.client.getFile(filePath)),
           );
-          editorState.setCoordinate(undefined);
+          tab.setCoordinate(undefined);
         } else if (
-          editorState instanceof DiagramEditorState &&
-          editorState.filePath === filePath
+          tab instanceof DiagramEditorState &&
+          tab.filePath === filePath
         ) {
-          editorState.rebuild(
+          tab.rebuild(
             deserialize(
               DiagramInfo,
-              await this.client.getDiagramInfo(editorState.diagramPath),
+              await this.client.getDiagramInfo(tab.diagramPath),
             ),
           );
         }
@@ -629,17 +543,17 @@ export class EditorStore {
     }
     this.executionState.inProgress();
     try {
-      const openedFiles = this.openedEditorStates
-        .map((editorState) => {
-          if (editorState instanceof FileEditorState) {
+      const openedFiles = this.tabManagerState.tabs
+        .map((tab) => {
+          if (tab instanceof FileEditorState) {
             return {
-              path: editorState.filePath,
-              code: editorState.file.content,
+              path: tab.filePath,
+              code: tab.file.content,
             };
-          } else if (editorState instanceof DiagramEditorState) {
+          } else if (tab instanceof DiagramEditorState) {
             return {
-              diagram: editorState.diagramPath,
-              code: serializeDiagram(editorState.diagram),
+              diagram: tab.diagramPath,
+              code: serializeDiagram(tab.diagram),
             };
           }
           return undefined;
@@ -1149,12 +1063,14 @@ export class EditorStore {
                   this.client.deleteDirectoryOrFile(trimPathLeadingSlash(path)),
                 ),
               );
-              const editorStatesToClose = this.openedEditorStates.filter(
-                (state) =>
-                  state instanceof FileEditorState &&
-                  state.filePath.startsWith(path),
+              const editorStatesToClose = this.tabManagerState.tabs.filter(
+                (tab) =>
+                  tab instanceof FileEditorState &&
+                  tab.filePath.startsWith(path),
               );
-              editorStatesToClose.forEach((state) => this.closeState(state));
+              editorStatesToClose.forEach((tab) =>
+                this.tabManagerState.closeTab(tab),
+              );
               await flowResult(this.directoryTreeState.refreshTreeData());
             } catch (error) {
               assertErrorThrown(error);

@@ -279,9 +279,7 @@ export const EditPanel = observer(() => {
     return null;
   };
 
-  const renderHeaderButtonLabel = (
-    editorState: TabState,
-  ): React.ReactNode | undefined => {
+  const renderTab = (editorState: TabState): React.ReactNode | undefined => {
     if (editorState instanceof EntityDiffViewState) {
       return (
         <div className="diff-tab">
@@ -329,7 +327,7 @@ export const EditPanel = observer(() => {
         >
           <TabManager
             tabManagerState={editorStore.tabManagerState}
-            tabRenderer={renderHeaderButtonLabel}
+            tabRenderer={renderTab}
           />
         </div>
         <div className="edit-panel__header__actions">

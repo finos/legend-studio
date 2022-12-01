@@ -23,6 +23,6 @@ export enum QUERY_BUILDER_COMMAND_KEY {
 export const QUERY_BUILDER_COMMAND_CONFIG: CommandConfigData = {
   [QUERY_BUILDER_COMMAND_KEY.COMPILE]: {
     title: 'Query Builder: Compile query',
-    defaultKeyboardShortcut: 'f9',
+    defaultKeyboardShortcut: 'F9',
   },
 };

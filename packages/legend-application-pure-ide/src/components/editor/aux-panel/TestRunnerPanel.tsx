@@ -51,6 +51,7 @@ import {
   BanIcon,
   PlayIcon,
   PlusIcon,
+  ResizablePanelSplitterLine,
 } from '@finos/legend-art';
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
@@ -376,7 +377,15 @@ const TestRunnerResultDisplay = observer(
               </div>
             </div>
           </ResizablePanel>
-          <ResizablePanelSplitter />
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine
+              color={
+                editorStore.auxPanelDisplayState.isMaximized
+                  ? 'transparent'
+                  : 'var(--color-dark-grey-250)'
+              }
+            />
+          </ResizablePanelSplitter>
           <ResizablePanel minSize={400}>
             {testRunnerState.selectedTestId && !testResultInfo && <div />}
             {testRunnerState.selectedTestId && testResultInfo && (
