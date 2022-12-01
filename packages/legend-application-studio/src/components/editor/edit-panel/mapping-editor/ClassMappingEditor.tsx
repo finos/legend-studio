@@ -158,110 +158,108 @@ export const ClassMappingEditor = observer(
     };
 
     return (
-      <div className="editor__main">
-        <div className="mapping-element-editor class-mapping-editor">
-          <div className="mapping-element-editor__metadata">
-            {/* Target */}
-            <div className="mapping-element-editor__metadata__chunk mapping-element-editor__metadata__overview-chunk background--class">
-              <div className="mapping-element-editor__metadata__sub-chunk">
-                class mapping
+      <div className="mapping-element-editor class-mapping-editor">
+        <div className="mapping-element-editor__metadata">
+          {/* Target */}
+          <div className="mapping-element-editor__metadata__chunk mapping-element-editor__metadata__overview-chunk background--class">
+            <div className="mapping-element-editor__metadata__sub-chunk">
+              class mapping
+            </div>
+            {showId && (
+              <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__overview__id">
+                {isDefaultId ? 'default ID' : setImplementation.id.value}
               </div>
-              {showId && (
-                <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__overview__id">
-                  {isDefaultId ? 'default ID' : setImplementation.id.value}
-                </div>
-              )}
-              <div className="mapping-element-editor__metadata__sub-chunk">
-                for
+            )}
+            <div className="mapping-element-editor__metadata__sub-chunk">
+              for
+            </div>
+            <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__target">
+              <div className="mapping-element-editor__metadata__target__type icon">
+                <PURE_ClassIcon />
               </div>
-              <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__target">
-                <div className="mapping-element-editor__metadata__target__type icon">
-                  <PURE_ClassIcon />
-                </div>
-                <div className="mapping-element-editor__metadata__target__label">
-                  {_class.value.name}
-                </div>
+              <div className="mapping-element-editor__metadata__target__label">
+                {_class.value.name}
               </div>
             </div>
-            {/* Instance Set Implementation Source */}
-            {!(setImplementation instanceof OperationSetImplementation) && (
-              <div
-                className={clsx(
-                  'mapping-element-editor__metadata__chunk',
-                  'mapping-element-editor__metadata__source-chunk',
-                  {
-                    'mapping-element-editor__metadata__source-chunk--none':
-                      !sourceName,
-                  },
-                )}
-              >
-                <div className="mapping-element-editor__metadata__sub-chunk">
-                  with{' '}
-                  {sourceName
-                    ? `source ${sourceType.toLowerCase()}`
-                    : `no source`}
-                </div>
-                {sourceName && (
-                  <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__source">
-                    <div className="mapping-element-editor__metadata__source__type icon">
-                      {getElementTypeIcon(editorStore, sourceType)}
-                    </div>
-                    <div className="mapping-element-editor__metadata__source__label">
-                      {sourceName}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            {/* Operation Set Implementation Operator */}
-            {setImplementation instanceof OperationSetImplementation && (
-              <div className="mapping-element-editor__metadata__operator-selector">
-                <OperatorSelector
-                  setImplementation={setImplementation}
-                  isReadOnly={isReadOnly}
-                />
-              </div>
-            )}
-            {/* Root */}
-            {(showId || rootHasNotBeenSet) && (
-              <button
-                className={clsx(
-                  'mapping-element-editor__metadata__chunk',
-                  'mapping-element-editor__metadata__root-chunk',
-                  {
-                    'mapping-element-editor__metadata__root-chunk--checked':
-                      setImplementation.root.value,
-                  },
-                )}
-                onClick={toggleRoot}
-                disabled={isReadOnly}
-                tabIndex={-1}
-                title="Toggle set class mapping as root"
-              >
-                {setImplementation.root.value ? (
-                  <CheckSquareIcon />
-                ) : (
-                  <EmptySquareIcon />
-                )}
-                root
-              </button>
-            )}
           </div>
-          {setImplementation instanceof OperationSetImplementation && (
-            <OperationSetImplementationEditor
-              setImplementation={setImplementation}
-              isReadOnly={isReadOnly}
-            />
+          {/* Instance Set Implementation Source */}
+          {!(setImplementation instanceof OperationSetImplementation) && (
+            <div
+              className={clsx(
+                'mapping-element-editor__metadata__chunk',
+                'mapping-element-editor__metadata__source-chunk',
+                {
+                  'mapping-element-editor__metadata__source-chunk--none':
+                    !sourceName,
+                },
+              )}
+            >
+              <div className="mapping-element-editor__metadata__sub-chunk">
+                with{' '}
+                {sourceName
+                  ? `source ${sourceType.toLowerCase()}`
+                  : `no source`}
+              </div>
+              {sourceName && (
+                <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__source">
+                  <div className="mapping-element-editor__metadata__source__type icon">
+                    {getElementTypeIcon(editorStore, sourceType)}
+                  </div>
+                  <div className="mapping-element-editor__metadata__source__label">
+                    {sourceName}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
-          {editorStore.graphManagerState.isInstanceSetImplementation(
-            setImplementation,
-          ) && (
-            <InstanceSetImplementationEditor
-              setImplementation={setImplementation}
-              isReadOnly={isReadOnly}
-            />
+          {/* Operation Set Implementation Operator */}
+          {setImplementation instanceof OperationSetImplementation && (
+            <div className="mapping-element-editor__metadata__operator-selector">
+              <OperatorSelector
+                setImplementation={setImplementation}
+                isReadOnly={isReadOnly}
+              />
+            </div>
+          )}
+          {/* Root */}
+          {(showId || rootHasNotBeenSet) && (
+            <button
+              className={clsx(
+                'mapping-element-editor__metadata__chunk',
+                'mapping-element-editor__metadata__root-chunk',
+                {
+                  'mapping-element-editor__metadata__root-chunk--checked':
+                    setImplementation.root.value,
+                },
+              )}
+              onClick={toggleRoot}
+              disabled={isReadOnly}
+              tabIndex={-1}
+              title="Toggle set class mapping as root"
+            >
+              {setImplementation.root.value ? (
+                <CheckSquareIcon />
+              ) : (
+                <EmptySquareIcon />
+              )}
+              root
+            </button>
           )}
         </div>
+        {setImplementation instanceof OperationSetImplementation && (
+          <OperationSetImplementationEditor
+            setImplementation={setImplementation}
+            isReadOnly={isReadOnly}
+          />
+        )}
+        {editorStore.graphManagerState.isInstanceSetImplementation(
+          setImplementation,
+        ) && (
+          <InstanceSetImplementationEditor
+            setImplementation={setImplementation}
+            isReadOnly={isReadOnly}
+          />
+        )}
       </div>
     );
   },

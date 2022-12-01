@@ -22,7 +22,6 @@
 @forward 'editor/command';
 @forward 'editor/auxiliary-panel';
 @forward 'editor/edit-panel';
-@forward 'editor/text-editor';
 
 .editor {
   height: 100%;
@@ -45,27 +44,5 @@
   &__content {
     position: relative;
     width: 100%;
-    max-width: 1900px;
-    border-left: 0.1rem solid var(--color-black);
-    border-right: 0.1rem solid var(--color-black);
-    @media (max-width: 1900px) {
-      border-left: none;
-      border-right: none;
-    }
-  }
-
-  &__content--expanded {
-    max-width: initial;
-    border-left: none;
-    border-right: none;
-  }
-
-  &__main {
-    height: 100%;
-  }
-
-  &-panel__header.panel__header {
-    justify-content: flex-end;
-    padding-right: 1rem;
   }
 }

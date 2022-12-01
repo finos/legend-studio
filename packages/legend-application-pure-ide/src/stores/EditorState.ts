@@ -20,7 +20,7 @@ import {
   type FileCoordinate,
   type PureFile,
   trimPathLeadingSlash,
-} from './models/PureFile.js';
+} from '../server/models/PureFile.js';
 import type { EditorStore } from './EditorStore.js';
 
 export abstract class EditorState {

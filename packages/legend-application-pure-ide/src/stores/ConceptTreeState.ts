@@ -21,11 +21,11 @@ import {
   ElementConceptAttribute,
   PropertyConceptAttribute,
   ConceptNode,
-} from './models/ConceptTree.js';
+} from '../server/models/ConceptTree.js';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from './EditorStore.js';
-import { FileCoordinate } from './models/PureFile.js';
-import type { ConceptActivity } from './models/Initialization.js';
+import { FileCoordinate } from '../server/models/PureFile.js';
+import type { ConceptActivity } from '../server/models/Initialization.js';
 import { ActionState, type GeneratorFn } from '@finos/legend-shared';
 import type { TreeData } from '@finos/legend-art';
 

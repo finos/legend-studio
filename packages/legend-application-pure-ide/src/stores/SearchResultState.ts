@@ -18,13 +18,13 @@ import { computed, makeObservable, observable } from 'mobx';
 import type {
   UnmatchedFunctionResult,
   UnmatchedResult,
-} from './models/Execution.js';
+} from '../server/models/Execution.js';
 import {
   type SearchEntry,
   SearchResultCoordinate,
   SearchResultEntry,
-} from './models/SearchEntry.js';
-import type { Usage, UsageConcept } from './models/Usage.js';
+} from '../server/models/SearchEntry.js';
+import type { Usage, UsageConcept } from '../server/models/Usage.js';
 import type { EditorStore } from './EditorStore.js';
 import { deleteEntry, guaranteeNonNullable } from '@finos/legend-shared';
 

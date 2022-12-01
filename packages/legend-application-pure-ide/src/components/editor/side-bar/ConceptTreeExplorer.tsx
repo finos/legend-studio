@@ -21,9 +21,9 @@ import {
   ElementConceptAttribute,
   PropertyConceptAttribute,
   ConceptType,
-} from '../../../stores/models/ConceptTree.js';
+} from '../../../server/models/ConceptTree.js';
 import { flowResult } from 'mobx';
-import { FileCoordinate } from '../../../stores/models/PureFile.js';
+import { FileCoordinate } from '../../../server/models/PureFile.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   type TreeNodeContainerProps,

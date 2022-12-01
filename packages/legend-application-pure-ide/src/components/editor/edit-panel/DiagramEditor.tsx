@@ -20,7 +20,7 @@ import type { DiagramEditorState } from '../../../stores/DiagramEditorState.js';
 import { DiagramRenderer, Point } from '@finos/legend-extension-dsl-diagram';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { CONCEPT_TREE_DND_TYPE } from '../side-bar/ConceptTreeExplorer.js';
-import { ConceptNode } from '../../../stores/models/ConceptTree.js';
+import { ConceptNode } from '../../../server/models/ConceptTree.js';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import { useResizeDetector } from '@finos/legend-art';

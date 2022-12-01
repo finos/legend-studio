@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flowResult, makeAutoObservable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
   ACTIVITY_MODE,
   AUX_PANEL_MODE,
@@ -27,7 +27,7 @@ import {
   FileCoordinate,
   PureFile,
   trimPathLeadingSlash,
-} from './models/PureFile.js';
+} from '../server/models/PureFile.js';
 import { DirectoryTreeState } from './DirectoryTreeState.js';
 import { ConceptTreeState } from './ConceptTreeState.js';
 import {
@@ -36,7 +36,7 @@ import {
   InitializationFailureWithSourceResult,
   InitializationFailureResult,
   deserializeInitializationnResult,
-} from './models/Initialization.js';
+} from '../server/models/Initialization.js';
 import {
   type CandidateWithPackageNotImported,
   type ExecutionActivity,
@@ -48,11 +48,11 @@ import {
   deserializeExecutionResult,
   ExecutionFailureResult,
   ExecutionSuccessResult,
-} from './models/Execution.js';
+} from '../server/models/Execution.js';
 import {
   type SearchResultEntry,
   getSearchResultEntry,
-} from './models/SearchEntry.js';
+} from '../server/models/SearchEntry.js';
 import {
   type SearchState,
   UsageResultState,
@@ -65,15 +65,13 @@ import {
   type UsageConcept,
   getUsageConceptLabel,
   Usage,
-} from './models/Usage.js';
+} from '../server/models/Usage.js';
 import {
   type CommandResult,
   CommandFailureResult,
   deserializeCommandResult,
-} from './models/Command.js';
+} from '../server/models/Command.js';
 import {
-  type ActionAlertInfo,
-  type BlockingAlertInfo,
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
@@ -90,63 +88,12 @@ import {
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
-import { PureClient as PureServerClient } from './PureServerClient.js';
+import { PureClient as PureServerClient } from '../server/PureServerClient.js';
 import { PanelDisplayState } from '@finos/legend-art';
 import { DiagramEditorState } from './DiagramEditorState.js';
-import { DiagramInfo, serializeDiagram } from './models/DiagramInfo.js';
+import { DiagramInfo, serializeDiagram } from '../server/models/DiagramInfo.js';
 import type { LegendPureIDEApplicationStore } from './LegendPureIDEBaseStore.js';
-
-class SearchCommandState {
-  text = '';
-  isCaseSensitive = false;
-  isRegExp = false;
-
-  constructor() {
-    makeAutoObservable(this, {
-      reset: action,
-      setText: action,
-      setCaseSensitive: action,
-      setRegExp: action,
-    });
-  }
-
-  reset(): void {
-    this.setText('');
-    this.setCaseSensitive(false);
-    this.setRegExp(false);
-  }
-  setText(value: string): void {
-    this.text = value;
-  }
-  setCaseSensitive(value: boolean): void {
-    this.isCaseSensitive = value;
-  }
-  toggleCaseSensitive(): void {
-    this.setCaseSensitive(!this.isCaseSensitive);
-  }
-  setRegExp(value: boolean): void {
-    this.isRegExp = value;
-  }
-  toggleRegExp(): void {
-    this.setRegExp(!this.isRegExp);
-  }
-}
-
-export class EditorHotkey {
-  name: string;
-  keyBinds: string[];
-  handler: (event?: KeyboardEvent) => void;
-
-  constructor(
-    name: string,
-    keyBinds: string[],
-    handler: (event?: KeyboardEvent) => void,
-  ) {
-    this.name = name;
-    this.keyBinds = keyBinds;
-    this.handler = handler;
-  }
-}
+import { SearchCommandState } from './SearchCommandState.js';
 
 export class EditorStore {
   readonly applicationStore: LegendPureIDEApplicationStore;
@@ -156,17 +103,10 @@ export class EditorStore {
   readonly conceptTreeState: ConceptTreeState;
   readonly client: PureServerClient;
 
-  // Hotkeys
-  defaultHotkeys: EditorHotkey[] = [];
-  hotkeys: EditorHotkey[] = [];
   // Tabs
   currentEditorState?: EditorState | undefined;
   openedEditorStates: EditorState[] = [];
   showOpenedTabsMenu = false;
-
-  // App states
-  isInExpandedMode = true; // TODO-BEFORE-PR: to be removed
-  blockGlobalHotkeys = false; // TODO-BEFORE-PR: to be removed
 
   // Aux Panel
   isMaxAuxPanelSizeSet = false;
@@ -213,21 +153,56 @@ export class EditorStore {
   testRunnerState?: TestRunnerState | undefined;
 
   constructor(applicationStore: LegendPureIDEApplicationStore) {
-    makeAutoObservable(this, {
-      resetHotkeys: action,
+    makeObservable(this, {
+      isMaxAuxPanelSizeSet: observable,
+      activeAuxPanelMode: observable,
+      activeActivity: observable,
+      consoleText: observable,
+      executionState: observable,
+      navigationStack: observable,
+      openFileSearchCommand: observable,
+      fileSearchCommandResults: observable,
+      fileSearchCommandState: observable,
+      openTextSearchCommand: observable,
+      textSearchCommandState: observable,
+      searchState: observable,
+      testRunnerState: observable,
+
       setShowOpenedTabsMenu: action,
-      setBlockGlobalHotkeys: action,
-      setExpandedMode: action,
       setOpenFileSearchCommand: action,
       setOpenTextSearchCommand: action,
       setActiveAuxPanelMode: action,
       setActiveActivity: action,
-      setActionAltertInfo: action,
       setConsoleText: action,
       setSearchState: action,
       setTestRunnerState: action,
       pullInitializationActivity: action,
       pullExecutionStatus: action,
+
+      initialize: flow,
+      checkIfSessionWakingUp: flow,
+      loadDiagram: flow,
+      loadFile: flow,
+      reloadFile: flow,
+      execute: flow,
+      executeGo: flow,
+      manageExecuteGoResult: flow,
+      executeTests: flow,
+      executeFullTestSuite: flow,
+      executeNavigation: flow,
+      navigateBack: flow,
+      executeSaveAndReset: flow,
+      fullReCompile: flow,
+      refreshTrees: flow,
+      updateFileUsingSuggestionCandidate: flow,
+      updateFile: flow,
+      searchFile: flow,
+      searchText: flow,
+      findUsages: flow,
+      command: flow,
+      createNewDirectory: flow,
+      createNewFile: flow,
+      deleteDirectoryOrFile: flow,
     });
 
     this.applicationStore = applicationStore;
@@ -241,99 +216,102 @@ export class EditorStore {
       }),
     );
 
-    // hotkeys
-    this.defaultHotkeys = [
-      new EditorHotkey(
-        IDE_HOTKEY.SEARCH_FILE,
-        IDE_HOTKEY_MAP.SEARCH_FILE,
-        this.createGlobalHotKeyAction(() => {
-          this.setOpenFileSearchCommand(true);
-        }),
-      ),
-      new EditorHotkey(
-        IDE_HOTKEY.SEARCH_TEXT,
-        IDE_HOTKEY_MAP.SEARCH_TEXT,
-        this.createGlobalHotKeyAction(() => {
-          this.setOpenTextSearchCommand(true);
-        }),
-      ),
-      new EditorHotkey(
-        IDE_HOTKEY.EXECUTE,
-        IDE_HOTKEY_MAP.EXECUTE,
-        this.createGlobalHotKeyAction(() => {
-          flowResult(this.executeGo()).catch(
-            this.applicationStore.alertUnhandledError,
-          );
-        }),
-      ),
-      new EditorHotkey(
-        IDE_HOTKEY.TOGGLE_AUX_PANEL,
-        IDE_HOTKEY_MAP.TOGGLE_AUX_PANEL,
-        this.createGlobalHotKeyAction(() => {
-          this.auxPanelDisplayState.toggle();
-        }),
-      ),
-      new EditorHotkey(
-        IDE_HOTKEY.GO_TO_FILE,
-        IDE_HOTKEY_MAP.GO_TO_FILE,
-        this.createGlobalHotKeyAction(() => {
-          const currentEditorState = this.currentEditorState;
-          if (currentEditorState instanceof FileEditorState) {
-            this.directoryTreeState.revealPath(
-              currentEditorState.filePath,
-              true,
-            );
-          }
-        }),
-      ),
-      new EditorHotkey(
-        IDE_HOTKEY.FULL_RECOMPILE,
-        IDE_HOTKEY_MAP.FULL_RECOMPILE,
-        this.createGlobalHotKeyAction((event: KeyboardEvent | undefined) => {
-          flowResult(
-            this.fullReCompile(Boolean(event?.shiftKey ?? event?.ctrlKey)),
-          ).catch(this.applicationStore.alertUnhandledError);
-        }),
-      ),
-      new EditorHotkey(
-        IDE_HOTKEY.RUN_TEST,
-        IDE_HOTKEY_MAP.RUN_TEST,
-        this.createGlobalHotKeyAction((event: KeyboardEvent | undefined) => {
-          flowResult(this.executeFullTestSuite(event?.shiftKey)).catch(
-            this.applicationStore.alertUnhandledError,
-          );
-        }),
-      ),
-      new EditorHotkey(
-        IDE_HOTKEY.TOGGLE_OPEN_TABS_MENU,
-        IDE_HOTKEY_MAP.TOGGLE_OPEN_TABS_MENU,
-        this.createGlobalHotKeyAction(() => {
-          this.setShowOpenedTabsMenu(!this.showOpenedTabsMenu);
-        }),
-      ),
-    ];
-    this.hotkeys = this.defaultHotkeys;
+    // // hotkeys
+    // this.defaultHotkeys = [
+    //   new EditorHotkey(
+    //     IDE_HOTKEY.SEARCH_FILE,
+    //     IDE_HOTKEY_MAP.SEARCH_FILE,
+    //     this.createGlobalHotKeyAction(() => {
+    //       this.setOpenFileSearchCommand(true);
+    //     }),
+    //   ),
+    //   new EditorHotkey(
+    //     IDE_HOTKEY.SEARCH_TEXT,
+    //     IDE_HOTKEY_MAP.SEARCH_TEXT,
+    //     this.createGlobalHotKeyAction(() => {
+    //       this.setOpenTextSearchCommand(true);
+    //     }),
+    //   ),
+    //   new EditorHotkey(
+    //     IDE_HOTKEY.EXECUTE,
+    //     IDE_HOTKEY_MAP.EXECUTE,
+    //     this.createGlobalHotKeyAction(() => {
+    //       flowResult(this.executeGo()).catch(
+    //         this.applicationStore.alertUnhandledError,
+    //       );
+    //     }),
+    //   ),
+    //   new EditorHotkey(
+    //     IDE_HOTKEY.TOGGLE_AUX_PANEL,
+    //     IDE_HOTKEY_MAP.TOGGLE_AUX_PANEL,
+    //     this.createGlobalHotKeyAction(() => {
+    //       this.auxPanelDisplayState.toggle();
+    //     }),
+    //   ),
+    //   new EditorHotkey(
+    //     IDE_HOTKEY.GO_TO_FILE,
+    //     IDE_HOTKEY_MAP.GO_TO_FILE,
+    //     this.createGlobalHotKeyAction(() => {
+    //       const currentEditorState = this.currentEditorState;
+    //       if (currentEditorState instanceof FileEditorState) {
+    //         this.directoryTreeState.revealPath(
+    //           currentEditorState.filePath,
+    //           true,
+    //         );
+    //       }
+    //     }),
+    //   ),
+    //   new EditorHotkey(
+    //     IDE_HOTKEY.FULL_RECOMPILE,
+    //     IDE_HOTKEY_MAP.FULL_RECOMPILE,
+    //     this.createGlobalHotKeyAction((event: KeyboardEvent | undefined) => {
+    //       flowResult(
+    //         this.fullReCompile(Boolean(event?.shiftKey ?? event?.ctrlKey)),
+    //       ).catch(this.applicationStore.alertUnhandledError);
+    //     }),
+    //   ),
+    //   new EditorHotkey(
+    //     IDE_HOTKEY.RUN_TEST,
+    //     IDE_HOTKEY_MAP.RUN_TEST,
+    //     this.createGlobalHotKeyAction((event: KeyboardEvent | undefined) => {
+    //       flowResult(this.executeFullTestSuite(event?.shiftKey)).catch(
+    //         this.applicationStore.alertUnhandledError,
+    //       );
+    //     }),
+    //   ),
+    //   new EditorHotkey(
+    //     IDE_HOTKEY.TOGGLE_OPEN_TABS_MENU,
+    //     IDE_HOTKEY_MAP.TOGGLE_OPEN_TABS_MENU,
+    //     this.createGlobalHotKeyAction(() => {
+    //       this.setShowOpenedTabsMenu(!this.showOpenedTabsMenu);
+    //     }),
+    //   ),
+    // ];
+    // this.hotkeys = this.defaultHotkeys;
   }
 
-  resetHotkeys(): void {
-    this.hotkeys = this.defaultHotkeys;
-  }
+  // ------ TODO-BEFORE-PR --------------
+
+  // createGlobalHotKeyAction =
+  //   (
+  //     handler: (event?: KeyboardEvent | undefined) => void,
+  //   ): ((event: KeyboardEvent | undefined) => void) =>
+  //   (event: KeyboardEvent | undefined): void => {
+  //     event?.preventDefault();
+  //     if (!this.blockGlobalHotkeys) {
+  //       handler(event);
+  //     }
+  //   };
 
   setShowOpenedTabsMenu(val: boolean): void {
     this.showOpenedTabsMenu = val;
-  }
-
-  setBlockGlobalHotkeys(val: boolean): void {
-    this.blockGlobalHotkeys = val;
   }
 
   setCurrentEditorState(val: EditorState | undefined): void {
     this.currentEditorState = val;
   }
 
-  setExpandedMode(val: boolean): void {
-    this.isInExpandedMode = val;
-  }
+  // ------ TODO-BEFORE-PR --------------
 
   setOpenFileSearchCommand(val: boolean): void {
     this.openFileSearchCommand = val;
@@ -347,18 +325,8 @@ export class EditorStore {
     this.activeAuxPanelMode = val;
   }
 
-  setActionAltertInfo(alertInfo: ActionAlertInfo | undefined): void {
-    // TODO-BEFORE-PR
-    // this.applicationStore.setActionAltertInfo(alertInfo);
-  }
-
   setConsoleText(value: string | undefined): void {
     this.consoleText = value;
-  }
-
-  setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
-    this.setBlockGlobalHotkeys(Boolean(alertInfo)); // block global hotkeys if alert is shown
-    this.applicationStore.setBlockingAlert(alertInfo);
   }
 
   setSearchState(val: SearchState | undefined): void {
@@ -374,8 +342,8 @@ export class EditorStore {
     // end up blocking other parts of the app
     // e.g. trying going to an unknown workspace, we will be redirected to the home page
     // but the blocking alert for not-found workspace will still block the app
-    this.setBlockingAlert(undefined);
-    this.setActionAltertInfo(undefined);
+    this.applicationStore.setBlockingAlert(undefined);
+    this.applicationStore.setActionAlertInfo(undefined);
   }
 
   /**
@@ -402,14 +370,14 @@ export class EditorStore {
     this.initState.inProgress();
     try {
       const initializationPromise = this.client.initialize(!fullInit);
-      this.setBlockingAlert({
+      this.applicationStore.setBlockingAlert({
         message: 'Loading Pure IDE...',
         prompt:
           'Please be patient as we are building the initial application state',
         showLoading: true,
       });
       yield this.pullInitializationActivity();
-      this.setBlockingAlert(undefined);
+      this.applicationStore.setBlockingAlert(undefined);
       const openWelcomeFilePromise = flowResult(this.loadFile('/welcome.pure'));
       const directoryTreeInitPromise = this.directoryTreeState.initialize();
       const conceptTreeInitPromise = this.conceptTreeState.initialize();
@@ -423,7 +391,7 @@ export class EditorStore {
       }
       if (result instanceof InitializationFailureResult) {
         if (result.sessionError) {
-          this.setBlockingAlert({
+          this.applicationStore.setBlockingAlert({
             message: 'Session corrupted',
             prompt: result.sessionError,
           });
@@ -454,7 +422,7 @@ export class EditorStore {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
       this.initState.fail();
-      this.setBlockingAlert({
+      this.applicationStore.setBlockingAlert({
         message: 'Failed to initialize IDE',
         prompt:
           'Make sure the IDE server is working, otherwise try to restart it',
@@ -465,14 +433,14 @@ export class EditorStore {
   }
 
   *checkIfSessionWakingUp(message?: string): GeneratorFn<void> {
-    this.setBlockingAlert({
+    this.applicationStore.setBlockingAlert({
       message: message ?? 'Checking IDE session...',
       showLoading: true,
     });
     yield this.pullInitializationActivity(
       (activity: InitializationActivity) => {
         if (activity.text) {
-          this.setBlockingAlert({
+          this.applicationStore.setBlockingAlert({
             message: message ?? 'Checking IDE session...',
             prompt: activity.text,
             showLoading: true,
@@ -480,7 +448,7 @@ export class EditorStore {
         }
       },
     );
-    this.setBlockingAlert(undefined);
+    this.applicationStore.setBlockingAlert(undefined);
   }
 
   async pullInitializationActivity(
@@ -698,7 +666,7 @@ export class EditorStore {
           setTimeout(
             () => {
               if (!executionPromiseFinished && checkExecutionStatus) {
-                this.setBlockingAlert({
+                this.applicationStore.setBlockingAlert({
                   message: 'Executing...',
                   prompt: 'Please do not refresh the application',
                   showLoading: true,
@@ -715,12 +683,12 @@ export class EditorStore {
       const result = deserializeExecutionResult(
         guaranteeNonNullable(executionPromiseResult),
       );
-      this.setBlockingAlert(undefined);
+      this.applicationStore.setBlockingAlert(undefined);
       this.setConsoleText(result.text);
       if (result instanceof ExecutionFailureResult) {
         this.applicationStore.notifyWarning('Execution failed!');
         if (result.sessionError) {
-          this.setBlockingAlert({
+          this.applicationStore.setBlockingAlert({
             message: 'Session corrupted',
             prompt: result.sessionError,
           });
@@ -730,7 +698,7 @@ export class EditorStore {
       } else if (result instanceof ExecutionSuccessResult) {
         this.applicationStore.notifySuccess('Execution succeeded!');
         if (result.reinit) {
-          this.setBlockingAlert({
+          this.applicationStore.setBlockingAlert({
             message: 'Reinitializing...',
             prompt: 'Please do not refresh the application',
             showLoading: true,
@@ -759,7 +727,7 @@ export class EditorStore {
         yield flowResult(manageResult(result));
       }
     } finally {
-      this.setBlockingAlert(undefined);
+      this.applicationStore.setBlockingAlert(undefined);
       this.executionState.reset();
     }
   }
@@ -769,7 +737,7 @@ export class EditorStore {
   async pullExecutionStatus(): Promise<void> {
     const result =
       (await this.client.getExecutionActivity()) as unknown as ExecutionActivity;
-    this.setBlockingAlert({
+    this.applicationStore.setBlockingAlert({
       message: 'Executing...',
       prompt: result.text
         ? result.text
@@ -789,7 +757,7 @@ export class EditorStore {
         }, 500),
       );
     }
-    this.setBlockingAlert({
+    this.applicationStore.setBlockingAlert({
       message: 'Executing...',
       prompt: 'Please do not refresh the application',
       showLoading: true,
@@ -966,12 +934,10 @@ export class EditorStore {
   }
 
   *fullReCompile(fullInit: boolean): GeneratorFn<void> {
-    this.setActionAltertInfo({
+    this.applicationStore.setActionAlertInfo({
       message: 'Are you sure you want to perform a full re-compile?',
       prompt: 'This may take a long time to complete',
       type: ActionAlertType.CAUTION,
-      onEnter: (): void => this.setBlockGlobalHotkeys(true),
-      onClose: (): void => this.setBlockGlobalHotkeys(false),
       actions: [
         {
           label: 'Perform full re-compile',
@@ -1092,7 +1058,7 @@ export class EditorStore {
       return;
     }
     try {
-      this.setBlockingAlert({
+      this.applicationStore.setBlockingAlert({
         message: 'Finding concept usages...',
         prompt: `Finding references of ${getUsageConceptLabel(concept)}`,
         showLoading: true,
@@ -1115,7 +1081,7 @@ export class EditorStore {
     } catch {
       this.applicationStore.notifyWarning(errorMessage);
     } finally {
-      this.setBlockingAlert(undefined);
+      this.applicationStore.setBlockingAlert(undefined);
     }
   }
 
@@ -1159,26 +1125,12 @@ export class EditorStore {
     }
   }
 
-  private *_deleteDirectoryOrFile(path: string): GeneratorFn<void> {
-    yield flowResult(
-      this.command(() =>
-        this.client.deleteDirectoryOrFile(trimPathLeadingSlash(path)),
-      ),
-    );
-    const editorStatesToClose = this.openedEditorStates.filter(
-      (state) =>
-        state instanceof FileEditorState && state.filePath.startsWith(path),
-    );
-    editorStatesToClose.forEach((state) => this.closeState(state));
-    yield flowResult(this.directoryTreeState.refreshTreeData());
-  }
-
   *deleteDirectoryOrFile(
     path: string,
     isDirectory: boolean,
     hasChildContent: boolean,
   ): GeneratorFn<void> {
-    this.setActionAltertInfo({
+    this.applicationStore.setActionAlertInfo({
       message: `Are you sure you would like to delete this ${
         isDirectory ? 'directory' : 'file'
       }?`,
@@ -1186,16 +1138,29 @@ export class EditorStore {
         ? 'Beware! This directory is not empty, this action is not undo-able, you have to manually revert using VCS'
         : 'Beware! This action is not undo-able, you have to manually revert using VCS',
       type: ActionAlertType.CAUTION,
-      onEnter: (): void => this.setBlockGlobalHotkeys(true),
-      onClose: (): void => this.setBlockGlobalHotkeys(false),
       actions: [
         {
           label: 'Delete anyway',
           type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-          handler: (): Promise<void> =>
-            flowResult(this._deleteDirectoryOrFile(path)).catch(
-              this.applicationStore.alertUnhandledError,
-            ),
+          handler: async (): Promise<void> => {
+            try {
+              await flowResult(
+                this.command(() =>
+                  this.client.deleteDirectoryOrFile(trimPathLeadingSlash(path)),
+                ),
+              );
+              const editorStatesToClose = this.openedEditorStates.filter(
+                (state) =>
+                  state instanceof FileEditorState &&
+                  state.filePath.startsWith(path),
+              );
+              editorStatesToClose.forEach((state) => this.closeState(state));
+              await flowResult(this.directoryTreeState.refreshTreeData());
+            } catch (error) {
+              assertErrorThrown(error);
+              this.applicationStore.alertUnhandledError(error);
+            }
+          },
         },
         {
           label: 'Abort',
@@ -1205,15 +1170,4 @@ export class EditorStore {
       ],
     });
   }
-
-  createGlobalHotKeyAction =
-    (
-      handler: (event?: KeyboardEvent | undefined) => void,
-    ): ((event: KeyboardEvent | undefined) => void) =>
-    (event: KeyboardEvent | undefined): void => {
-      event?.preventDefault();
-      if (!this.blockGlobalHotkeys) {
-        handler(event);
-      }
-    };
 }

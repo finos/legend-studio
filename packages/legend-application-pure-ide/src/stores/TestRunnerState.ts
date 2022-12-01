@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, flowResult, makeAutoObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import {
   type GeneratorFn,
@@ -27,14 +34,17 @@ import {
   promisify,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { TestExecutionResult, TestInfo } from './models/Execution.js';
+import type {
+  TestExecutionResult,
+  TestInfo,
+} from '../server/models/Execution.js';
 import {
   type TestResult,
   deserializeTestRunnerCheckResult,
   TestFailureResult,
   TestResultStatus,
   TestRunnerCheckResult,
-} from './models/Test.js';
+} from '../server/models/Test.js';
 import type { EditorStore } from '../stores/EditorStore.js';
 
 const getFullParentId = (
@@ -95,7 +105,7 @@ export const getTestTreeNodeStatus = (
 };
 
 export class TestResultInfo {
-  private _startTime: number;
+  private readonly _START_TIME: number;
   total!: number;
   time = 0; // ms
   passedTests = new Set<string>();
@@ -105,51 +115,79 @@ export class TestResultInfo {
   results = new Map<string, TestResult>();
 
   constructor(allTestIds: Set<string>) {
-    makeAutoObservable(this, {
+    makeObservable(this, {
+      total: observable,
+      time: observable,
+      passedTests: observable,
+      failedTests: observable,
+      testsWithError: observable,
+      notRunTests: observable,
+      results: observable,
+      passed: computed,
+      error: computed,
+      failed: computed,
+      passedTestIds: computed,
+      failedTestIds: computed,
+      testWithErrorIds: computed,
+      notRunTestIds: computed,
+      numberOfTestsRun: computed,
+      runPercentage: computed,
+      suiteStatus: computed,
       setTime: action,
       addResult: action,
     });
+
+    this._START_TIME = Date.now();
     this.total = allTestIds.size;
-    this._startTime = Date.now();
     this.notRunTests = new Set(allTestIds);
   }
 
-  setTime(val: number): void {
-    this.time = val;
-  }
   get passed(): number {
     return this.passedTests.size;
   }
+
   get error(): number {
     return this.testsWithError.size;
   }
+
   get failed(): number {
     return this.failedTests.size;
   }
+
   get passedTestIds(): string[] {
     return Array.from(this.passedTests.values());
   }
+
   get failedTestIds(): string[] {
     return Array.from(this.failedTests.keys());
   }
+
   get testWithErrorIds(): string[] {
     return Array.from(this.testsWithError.keys());
   }
+
   get notRunTestIds(): string[] {
     return Array.from(this.notRunTests.values());
   }
+
   get numberOfTestsRun(): number {
     return this.passed + this.error + this.failed;
   }
+
   get runPercentage(): number {
     return Math.floor((this.numberOfTestsRun * 100) / this.total);
   }
+
   get suiteStatus(): TestSuiteStatus {
     return this.failed + this.error
       ? TestSuiteStatus.FAILED
       : this.passed
       ? TestSuiteStatus.PASSED
       : TestSuiteStatus.NONE;
+  }
+
+  setTime(val: number): void {
+    this.time = val;
   }
 
   addResult(result: TestResult, testId: string): void {
@@ -177,7 +215,7 @@ export class TestResultInfo {
         );
       }
     }
-    this.time = Date.now() - this._startTime;
+    this.time = Date.now() - this._START_TIME;
   }
 }
 
@@ -199,9 +237,12 @@ export class TestRunnerState {
     editorStore: EditorStore,
     testExecutionResult: TestExecutionResult,
   ) {
-    makeAutoObservable(this, {
-      treeData: observable.ref,
+    makeObservable(this, {
       testResultInfo: observable.ref,
+      allTests: observable,
+      selectedTestId: observable,
+      selectedNode: observable,
+      treeData: observable.ref,
       setSelectedTestId: action,
       setTestResultInfo: action,
       setTreeData: action,
@@ -211,6 +252,10 @@ export class TestRunnerState {
       expandTree: action,
       buildTreeDataByLayer: action,
       pullTestRunnerResult: action,
+      buildTestTreeData: flow,
+      pollTestRunnerResult: flow,
+      rerunTestSuite: flow,
+      cancelTestRun: flow,
     });
 
     this.editorStore = editorStore;
@@ -227,15 +272,19 @@ export class TestRunnerState {
   setSelectedTestId(val: string | undefined): void {
     this.selectedTestId = val;
   }
+
   setTestResultInfo(val: TestResultInfo | undefined): void {
     this.testResultInfo = val;
   }
+
   setTreeData(data: TreeData<TestTreeNode>): void {
     this.treeData = data;
   }
+
   refreshTree(): void {
     this.setTreeData({ ...guaranteeNonNullable(this.treeData) });
   }
+
   setSelectedNode(node: TestTreeNode | undefined): void {
     if (node?.id !== this.selectedNode?.id) {
       if (this.selectedNode) {

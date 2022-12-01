@@ -39,7 +39,7 @@ import {
   FolderOpenIcon,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
-import type { DirectoryTreeNode } from '../../../stores/models/DirectoryTree.js';
+import type { DirectoryTreeNode } from '../../../server/models/DirectoryTree.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 
 const FileExplorerContextMenu = observer(

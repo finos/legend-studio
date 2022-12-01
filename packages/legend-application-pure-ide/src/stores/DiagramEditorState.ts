@@ -34,8 +34,11 @@ import {
   DiagramClassInfo,
   addClassToGraph,
   buildGraphFromDiagramInfo,
-} from './models/DiagramInfo.js';
-import { FileCoordinate, trimPathLeadingSlash } from './models/PureFile.js';
+} from '../server/models/DiagramInfo.js';
+import {
+  FileCoordinate,
+  trimPathLeadingSlash,
+} from '../server/models/PureFile.js';
 import { EditorState } from './EditorState.js';
 import type { EditorStore } from './EditorStore.js';
 

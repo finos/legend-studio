@@ -76,7 +76,6 @@ export {
   FaRegLightbulb as EmptyLightBulbIcon,
   FaList as ListIcon,
   FaCircle as CircleIcon,
-  FaRegFile as RegFileIcon,
   FaRegCircle as EmptyCircleIcon,
   FaShieldAlt as ShieldIcon,
   FaTag as TagIcon,

@@ -26,7 +26,7 @@ import {
 import {
   TestFailureResult,
   TestSuccessResult,
-} from '../../../stores/models/Test.js';
+} from '../../../server/models/Test.js';
 import { flowResult } from 'mobx';
 import {
   type TreeNodeContainerProps,

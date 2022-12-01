@@ -29,7 +29,6 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   type ResizablePanelHandlerProps,
   useResizeDetector,
-  clsx,
   ResizablePanelSplitterLine,
   ResizablePanel,
   ResizablePanelGroup,
@@ -116,11 +115,7 @@ export const Editor = withEditorStore(
         <div className="editor__body">
           <ActivityBar />
           <div className="editor__content-container" ref={ref}>
-            <div
-              className={clsx('editor__content', {
-                'editor__content--expanded': editorStore.isInExpandedMode,
-              })}
-            >
+            <div className="editor__content">
               <ResizablePanelGroup orientation="vertical">
                 <ResizablePanel
                   {...sideBarCollapsiblePanelGroupProps.collapsiblePanel}

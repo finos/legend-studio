@@ -23,7 +23,7 @@ import {
 } from 'monaco-editor';
 import type { FileEditorState } from '../../../stores/EditorState.js';
 import { flowResult } from 'mobx';
-import { FileCoordinate } from '../../../stores/models/PureFile.js';
+import { FileCoordinate } from '../../../server/models/PureFile.js';
 import {
   EDITOR_LANGUAGE,
   EDITOR_THEME,

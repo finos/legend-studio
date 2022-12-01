@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import { createModelSchema, primitive } from 'serializr';
 
 export const trimPathLeadingSlash = (path: string): string =>
@@ -51,9 +51,14 @@ export class FileCoordinate {
     column: number,
     errorMessage?: string,
   ) {
-    makeAutoObservable(this, {
+    makeObservable(this, {
+      file: observable,
+      line: observable,
+      column: observable,
+      errorMessage: observable,
       setErrorMessage: action,
     });
+
     this.file = file;
     this.line = line;
     this.column = column;

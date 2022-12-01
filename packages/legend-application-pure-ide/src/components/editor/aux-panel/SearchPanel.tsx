@@ -18,11 +18,11 @@ import { observer } from 'mobx-react-lite';
 import type {
   SearchResultCoordinate,
   SearchResultEntry,
-} from '../../../stores/models/SearchEntry.js';
+} from '../../../server/models/SearchEntry.js';
 import {
   FileCoordinate,
   trimPathLeadingSlash,
-} from '../../../stores/models/PureFile.js';
+} from '../../../server/models/PureFile.js';
 import { flowResult } from 'mobx';
 import {
   SearchResultState,
@@ -33,8 +33,8 @@ import {
 import type {
   CandidateWithPackageImported,
   CandidateWithPackageNotImported,
-} from '../../../stores/models/Execution.js';
-import { getUsageConceptLabel } from '../../../stores/models/Usage.js';
+} from '../../../server/models/Execution.js';
+import { getUsageConceptLabel } from '../../../server/models/Usage.js';
 import {
   ArrowCircleRightIcon,
   BlankPanelContent,

@@ -18,24 +18,30 @@ import type {
   ConceptActivity,
   InitializationResult,
   InitializationActivity,
-} from './models/Initialization.js';
-import type { DirectoryNode } from './models/DirectoryTree.js';
-import type { ConceptNode } from './models/ConceptTree.js';
-import type { ExecutionActivity, ExecutionResult } from './models/Execution.js';
-import type { FileData } from './models/PureFile.js';
-import type { SearchResultEntry } from './models/SearchEntry.js';
+} from '../server/models/Initialization.js';
+import type { DirectoryNode } from '../server/models/DirectoryTree.js';
+import type { ConceptNode } from '../server/models/ConceptTree.js';
+import type {
+  ExecutionActivity,
+  ExecutionResult,
+} from '../server/models/Execution.js';
+import type { FileData } from '../server/models/PureFile.js';
+import type { SearchResultEntry } from '../server/models/SearchEntry.js';
 import type {
   AbstractTestRunnerCheckResult,
   TestRunnerCancelResult,
-} from './models/Test.js';
-import type { Usage, UsageConcept } from './models/Usage.js';
-import type { CommandResult } from './models/Command.js';
+} from '../server/models/Test.js';
+import type { Usage, UsageConcept } from '../server/models/Usage.js';
+import type { CommandResult } from '../server/models/Command.js';
 import {
   guaranteeNonNullable,
   type NetworkClient,
   type PlainObject,
 } from '@finos/legend-shared';
-import type { DiagramClassInfo, DiagramInfo } from './models/DiagramInfo.js';
+import type {
+  DiagramClassInfo,
+  DiagramInfo,
+} from '../server/models/DiagramInfo.js';
 
 export class PureClient {
   private networkClient: NetworkClient;

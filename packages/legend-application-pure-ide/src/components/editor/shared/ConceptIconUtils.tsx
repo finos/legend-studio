@@ -27,7 +27,7 @@ import {
   PURE_UnknownElementTypeIcon,
   ShapesIcon,
 } from '@finos/legend-art';
-import { ConceptType } from '../../../stores/models/ConceptTree.js';
+import { ConceptType } from '../../../server/models/ConceptTree.js';
 
 const NativeFunctionIcon: React.FC = () => (
   <div className="icon icon--function color--native-function">(x)</div>

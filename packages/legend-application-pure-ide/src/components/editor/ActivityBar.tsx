@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
-import { clsx, LegendLogo, ListIcon, RegFileIcon } from '@finos/legend-art';
+import { clsx, FileAltIcon, LegendLogo, ListIcon } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider.js';
 
 interface ActivityDisplay {
@@ -41,7 +41,7 @@ export const ActivityBar = observer(() => {
     {
       mode: ACTIVITY_MODE.FILE,
       title: 'File Explorer',
-      icon: <RegFileIcon />,
+      icon: <FileAltIcon />,
     },
   ].filter((activity): activity is ActivityDisplay => Boolean(activity));
 

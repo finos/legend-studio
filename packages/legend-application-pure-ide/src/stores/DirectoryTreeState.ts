@@ -19,10 +19,10 @@ import { TreeState } from './TreeState.js';
 import {
   type DirectoryTreeNode,
   DirectoryNode,
-} from './models/DirectoryTree.js';
+} from '../server/models/DirectoryTree.js';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from './EditorStore.js';
-import type { FileCoordinate } from './models/PureFile.js';
+import type { FileCoordinate } from '../server/models/PureFile.js';
 import { ACTIVITY_MODE } from './EditorConfig.js';
 import {
   type GeneratorFn,
