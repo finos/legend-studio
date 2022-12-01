@@ -28,6 +28,7 @@
     "dev": "yarn dev:studio",
     "dev:assemblage": "node ./scripts/workflow/setupLocalDevAssemblage.js",
     "dev:mock-server": "yarn workspace @finos/legend-fixture-mock-server dev",
+    "dev:pure": "yarn workspace @finos/legend-application-pure-ide-deployment dev",
     "dev:query": "yarn workspace @finos/legend-application-query-deployment dev",
     "dev:sass": "node ./scripts/workflow/buildSassAll.js --watch",
     "dev:studio": "yarn workspace @finos/legend-application-studio-deployment dev",

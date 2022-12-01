@@ -1,0 +1,175 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+@forward 'side-bar/explorer';
+
+.side-bar {
+  height: 100%;
+
+  &__header {
+    height: 3.4rem;
+    min-height: 3.4rem;
+    background: var(--color-dark-grey-100);
+    color: var(--color-light-grey-400);
+    z-index: 0;
+  }
+
+  &__header__title__content {
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  &__header__title__viewer-mode-badge {
+    @include flexCenter;
+
+    font-size: 1.2rem;
+    color: var(--color-dark-grey-280);
+    background: var(--color-yellow-200);
+    height: 2rem;
+    margin-right: 0.5rem;
+    border-radius: 0.3rem;
+    font-weight: 700;
+    padding: 0 0.7rem;
+    cursor: default;
+  }
+
+  &__header__title__viewer-mode-badge svg {
+    font-size: 1rem;
+    margin-right: 0.3rem;
+  }
+
+  &__header__actions {
+    padding-right: 0.5rem;
+  }
+
+  &__header__action {
+    color: var(--color-light-grey-400);
+  }
+
+  &__header__action[disabled] svg {
+    color: var(--color-dark-grey-400) !important;
+  }
+
+  &__content {
+    background: var(--color-dark-grey-100);
+    color: var(--color-light-grey-400);
+    height: calc(100% - 3.4rem);
+    overflow-y: hidden;
+  }
+
+  &__view {
+    height: 100%;
+    display: none;
+  }
+
+  &__view--active {
+    display: block;
+  }
+
+  &__panel {
+    .panel {
+      &__header {
+        min-width: 9rem;
+        background: var(--color-dark-grey-200);
+        color: var(--color-light-grey-200);
+        padding-left: 1rem;
+      }
+
+      &__header__action {
+        height: 100%;
+        color: var(--color-light-grey-400);
+      }
+
+      &__header__action[disabled],
+      &__header__action[disabled] svg {
+        color: var(--color-dark-grey-300) !important;
+      }
+
+      &__header__title {
+        width: calc(100% - 3.4rem);
+      }
+
+      &__content {
+        height: 100%;
+        padding: 0.5rem 0;
+        background: var(--color-dark-grey-100);
+      }
+    }
+
+    &__title__info {
+      @include flexVCenter;
+
+      margin-left: 0.5rem;
+    }
+
+    &__header__changes-count {
+      @include flexCenter;
+
+      margin-right: 1rem;
+      background: var(--color-dark-grey-300);
+      border-radius: 0.8rem;
+      padding: 0.3rem 0.7rem;
+      height: 1.6rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: default;
+    }
+
+    &__item {
+      @include flexHSpaceBetween;
+      @include flexVCenter;
+
+      height: 2.2rem;
+      padding: 0 0.5rem 0 1rem;
+      cursor: pointer;
+      // override <button> style
+      width: 100%;
+      text-align: left;
+
+      &:hover {
+        background: var(--color-dark-blue-shade-100);
+      }
+
+      &--selected,
+      &--selected:hover {
+        background: var(--color-light-blue-450);
+      }
+    }
+  }
+
+  .panel__content__form__section__input {
+    background: var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-dark-grey-200);
+
+    &:focus {
+      border: 0.1rem solid var(--color-blue-200);
+      outline: none;
+    }
+  }
+
+  .panel__content__form__section__textarea {
+    background: var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-dark-grey-200);
+
+    &:focus {
+      border: 0.1rem solid var(--color-blue-200);
+      outline: none;
+    }
+  }
+}

@@ -26,6 +26,8 @@
     {
       "path": "packages/legend-application-taxonomy-bootstrap/tsconfig.build.json"
     },
+    // pure ide
+    { "path": "packages/legend-application-pure-ide/tsconfig.build.json" },
     // extensions
     { "path": "packages/legend-extension-tracer-zipkin/tsconfig.build.json" },
     {

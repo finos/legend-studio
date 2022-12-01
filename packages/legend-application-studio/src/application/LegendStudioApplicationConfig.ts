@@ -100,8 +100,6 @@ class LegendStudioApplicationCoreOptions {
 
 export interface LegendStudioApplicationConfigurationData
   extends LegendApplicationConfigurationData {
-  appName: string;
-  env: string;
   sdlc: { url: string; baseHeaders?: RequestHeaders };
   depot: { url: string };
   engine: { url: string; queryUrl?: string };

@@ -1,0 +1,201 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+@forward 'extensions';
+
+@forward 'components/app';
+@forward 'components/editor';
+
+:root {
+  // --color-white: #fff;
+
+  // --color-light-grey-0: #fafafa;
+  // --color-light-grey-50: #f3f3f3;
+  // --color-light-grey-100: #efefef;
+  // --color-light-grey-150: #e6e6e6;
+  // --color-light-grey-200: #ddd;
+  // --color-light-grey-250: #d4d4d4; // vscode
+  // --color-light-grey-300: #cecece;
+  // --color-light-grey-400: #bbb;
+
+  // --color-black: #000;
+
+  // --color-dark-grey-50: #1e1e1e; // vscode
+  // --color-dark-grey-80: #252525;
+  // --color-dark-grey-85: #272727;
+  // --color-dark-grey-100: #2d2d2d;
+  // --color-dark-grey-200: #353535;
+  // --color-dark-grey-250: #3e3e3e;
+  // --color-dark-grey-280: #404040; // vscode
+  // --color-dark-grey-300: #595959;
+  // --color-dark-grey-350: #606060; // vscode
+  // --color-dark-grey-400: #737373;
+  // --color-dark-grey-500: #9a9a9a;
+
+  // --color-navy-300: #45456b;
+  // --color-navy-500: #34345f;
+
+  // --color-purple-0: #d3bee0;
+  // --color-purple-50: #af90c3;
+  // --color-purple-100: #8a58ab;
+  // --color-purple-200: #804090;
+  // --color-purple-400: #5d3b73;
+
+  // --color-magenta-30: #c585c0; // vscode
+  // --color-magenta-50: #d06c99;
+  // --color-magenta-70: #f152b1;
+  // --color-magenta-100: #bb619b;
+
+  // --color-pink-0: #ffc0cb;
+  // --color-pink-200: #f05577;
+  // --color-pink-300: #d14664;
+  // --color-pink-380: #c5375f;
+  // --color-pink-400: #b33659;
+  // --color-pink-500: #af2a5b;
+
+  // --color-red-50: #ff958c;
+  // --color-red-100: #f5584b;
+  // --color-red-150: #f95252;
+  // --color-red-180: #ea4646; // vscode
+  // --color-red-200: #bf2f22;
+  // --color-red-300: #be1100;
+  // --color-red-400: #800404;
+  // --color-red-500: #5a1d1d;
+
+  // --color-skin-100: #f1b47f;
+  // --color-skin-200: #ce9178; // vscode
+
+  // --color-orange-50: #ff9900;
+  // --color-orange-100: #e97f49;
+  // --color-orange-150: #ca663a;
+  // --color-orange-200: #c95f03;
+  // --color-orange-250: #bb5803;
+  // --color-orange-400: #8a4628;
+  // --color-orange-500: #6c3f2b;
+
+  // --color-yellow-0: #ffffe0;
+  // --color-yellow-50: #dcdcaa; // vscode
+  // --color-yellow-80: #d7ba7d; // vscode
+  // --color-yellow-100: #ffca34;
+  // --color-yellow-200: #fbbc05;
+  // --color-yellow-300: #e2a700;
+  // --color-yellow-400: #dc9d2a;
+  // --color-yellow-500: #c58105;
+
+  // --color-green-80: #65d081;
+  // --color-green-100: #34a853;
+  // --color-green-200: #1e8a53;
+
+  // --color-lime-50: #a5ea81;
+  // --color-lime-75: #aad468;
+  // --color-lime-150: #6a9955; // vscode
+
+  // --color-green-neon-100: #2cca72;
+
+  // --color-medium-green-0: #7bffc8;
+  // --color-medium-green-100: #39cca2;
+  // --color-medium-green-150: #40c8ae; // vscode
+  // --color-medium-green-180: #4ec9b0; // vscode
+  // --color-medium-green-450: #139077;
+  // --color-medium-green-500: #11846d;
+
+  // --color-teal-50: #16b8bf;
+
+  // --color-light-blue-0: #9cddfe; // vscode
+  // --color-light-blue-20: #7fdbff;
+  // --color-light-blue-50: #6391d0;
+  // --color-light-blue-200: #477cc5;
+  // --color-light-blue-400: #2c4f80;
+  // --color-light-blue-450: #264f77; // vscode
+
+  // --color-blue-40: #40a6ff; // vscode
+  // --color-blue-50: #1c89d2;
+  // --color-blue-100: #007acc;
+  // --color-blue-150: #0a73b9;
+  // --color-blue-180: #0c6bab;
+  // --color-blue-200: #08629e;
+  // --color-blue-300: #014a7b;
+
+  // --color-light-shade-50: #ffffff12;
+  // --color-light-shade-100: #ffffff2e;
+  // --color-light-shade-150: #ffffff33;
+
+  // --color-dark-shade-100: #0000002e;
+  // --color-dark-shade-200: #00000030;
+  // --color-dark-shade-230: #0000003d;
+  // --color-dark-shade-250: #00000045;
+  // --color-dark-shade-280: #0000004f;
+  // --color-dark-shade-300: #00000061;
+
+  // --color-dark-blue-shade-100: #7f7ab124;
+  // --color-dark-red-shade-50: #ff00000d;
+  // --color-dark-red-shade-100: #ff00001a;
+
+  // // misc
+  // --color-eminence: #68217a; // vscode
+  // --color-mauve: #7685b9;
+  // --color-purple-TEMP: #bfbcff;
+  // --color-orange-TEMP: #ffeed3;
+  // --color-navy-TEMP: #3f51b5;
+  // --color-yellow-TEMP: #f4b400;
+  // --color-yellow-TEMP-2: #ab843b;
+  // --color-medium-green-TEMP-2: #43849c;
+
+  // --color-dnd__overlay: #63636394;
+
+  // --color-app-header: var(--color-navy-500);
+  // --color-panel-border: var(--color-light-grey-100);
+  // --color-text-label: var(--color-light-grey-100);
+  // --color-required-label: var(--color-yellow-200);
+  // --color-input: var(--color-white);
+  // --color-input-border: var(--color-light-grey-200);
+  // --color-input-border--hover: var(--color-light-grey-400);
+  // --color-input-border--focus: var(--color-light-blue-200);
+
+  // --color-test: var(--color-pink-200);
+  // --color-test--passed: var(--color-green-100);
+  // --color-test--failed: var(--color-orange-100);
+  // --color-test--error: var(--color-red-100);
+  // --color-test--skipped: var(--color-dark-grey-400);
+
+  // --color-conflict: var(--color-orange-150);
+  // --color-merge--current: var(--color-medium-green-150);
+  // --color-merge--base: var(--color-dark-grey-350);
+  // --color-merge--incoming: var(--color-blue-40);
+
+  // --color-primitive: var(--color-light-blue-200);
+  // --color-enum-value: var(--color-green-100);
+  // --color-enumeration: var(--color-medium-green-100);
+  // --color-measure: var(--color-medium-green-100); // FIXNOW
+  // --color-unit: var(--color-medium-green-100); // FIXNOW
+  // --color-class: var(--color-purple-100);
+  // --color-mapping: var(--color-teal-50);
+  // --color-function: var(--color-light-blue-20);
+  --color-native-function: var(--color-lime-75);
+  --color-diagram: var(--color-magenta-100);
+}
+
+.color {
+  &--native-function {
+    color: var(--color-native-function);
+  }
+
+  &--diagram {
+    color: var(--color-diagram);
+  }
+}

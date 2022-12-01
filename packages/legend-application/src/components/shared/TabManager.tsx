@@ -39,6 +39,7 @@ type TabDragSource = {
 };
 
 const horizontalToVerticalScroll: React.WheelEventHandler = (event) => {
+  console.log(event);
   // NOTE: only convert horizontal to vertical scroll when the scroll causes more horizontal than vertical displacement
   if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
     return;
