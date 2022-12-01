@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import { UnsupportedOperationError, guaranteeType } from '@finos/legend-shared';
 import {
   V1_buildFullPath,
   type V1_GraphBuilderContext,
@@ -34,7 +34,7 @@ import type { V1_Mapping } from '../../../model/packageableElements/mapping/V1_M
 import type { V1_Service } from '../../../model/packageableElements/service/V1_Service.js';
 import { V1_ClassMappingSecondPassBuilder } from './V1_ClassMappingSecondPassBuilder.js';
 import {
-  V1_buildMappingTest,
+  V1_buildMappingTestLegacy,
   V1_resolveClassMappingRoot,
 } from './helpers/V1_MappingBuilderHelper.js';
 import type { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime.js';
@@ -50,6 +50,8 @@ import type { V1_SectionIndex } from '../../../model/packageableElements/section
 import { V1_buildAssociationMapping } from './helpers/V1_AssociationMappingHelper.js';
 import { V1_buildMilestoningProperties } from './helpers/V1_MilestoneBuilderHelper.js';
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
+import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper.js';
+import { MappingTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
 
 export class V1_ElementFourthPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -134,9 +136,12 @@ export class V1_ElementFourthPassBuilder
         new V1_ClassMappingSecondPassBuilder(this.context, mapping),
       ),
     );
-    mapping.tests = element.tests.map((test) =>
-      V1_buildMappingTest(test, this.context),
+    mapping.test = element.tests.map((test) =>
+      V1_buildMappingTestLegacy(test, this.context),
     );
+    mapping.tests = element.testSuites
+      .map((testSuite) => V1_buildTestSuite(mapping, testSuite, this.context))
+      .map((e) => guaranteeType(e, MappingTestSuite));
     // resolve class mappings root
     V1_resolveClassMappingRoot(mapping);
   }

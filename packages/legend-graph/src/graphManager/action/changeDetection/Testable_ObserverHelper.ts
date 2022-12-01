@@ -16,6 +16,8 @@
 
 import { computed, makeObservable, observable } from 'mobx';
 import { ServiceTest } from '../../../DSL_Service_Exports.js';
+import { MappingTest } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
+import { MappingTestSuite } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
 import { ServiceTestSuite } from '../../../graph/metamodel/pure/packageableElements/service/ServiceTestSuite.js';
 import { EqualTo } from '../../../graph/metamodel/pure/test/assertion/EqualTo.js';
 import { EqualToJson } from '../../../graph/metamodel/pure/test/assertion/EqualToJson.js';
@@ -28,6 +30,10 @@ import type {
 import type { Testable_PureGraphManagerPlugin_Extension } from '../../Testable_PureGraphManagerPlugin_Extension.js';
 import { type ObserverContext, skipObserved } from './CoreObserverHelper.js';
 import { observe_ExternalFormatData } from './DSL_Data_ObserverHelper.js';
+import {
+  observe_MappingTest,
+  observe_MappingTestSuite,
+} from './DSL_Mapping_ObserverHelper.js';
 import {
   observe_ServiceTest,
   observe_ServiceTestSuite,
@@ -75,6 +81,8 @@ export function observe_AtomicTest(
 ): AtomicTest {
   if (metamodel instanceof ServiceTest) {
     return observe_ServiceTest(metamodel);
+  } else if (metamodel instanceof MappingTest) {
+    return observe_MappingTest(metamodel);
   }
   const extraAtomicTestBuilder = context.plugins.flatMap(
     (plugin) =>
@@ -110,6 +118,8 @@ export function observe_TestSuite(
 ): TestSuite {
   if (metamodel instanceof ServiceTestSuite) {
     return observe_ServiceTestSuite(metamodel, context);
+  } else if (metamodel instanceof MappingTestSuite) {
+    return observe_MappingTestSuite(metamodel, context);
   }
   return metamodel;
 }

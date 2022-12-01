@@ -57,6 +57,11 @@ export enum PRIMITIVE_TYPE {
   LATESTDATE = 'LatestDate',
 }
 
+export enum ATOMIC_TEST_TYPE {
+  Service_Test = 'serviceTest',
+  Mapping_Test = 'mappingTest',
+}
+
 // NOTE: the list of auto-import are kept in `m3.pure` file in `finos/legend-pure`,
 // this includes a more extensive list of packges which contain native functions, classes, etc.
 // See https://github.com/finos/legend-pure/blob/master/legend-pure-m3-core/src/main/resources/platform/pure/m3.pure

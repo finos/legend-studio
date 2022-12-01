@@ -17,17 +17,27 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import type { V1_RawLambda } from '../../rawValueSpecification/V1_RawLambda.js';
-import { V1_AtomicTest } from '../../test/V1_AtomicTest.js';
+import type { V1_MappingTestAssert } from './V1_MappingTestAssert.js';
+import type { V1_InputData } from './V1_InputData.js';
 
-export class V1_MappingTest extends V1_AtomicTest implements Hashable {
+export class V1_DEPRECATED__MappingTest implements Hashable {
+  name!: string;
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
   query!: V1_RawLambda;
+  inputData: V1_InputData[] = [];
+  assert!: V1_MappingTestAssert;
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.MAPPING_TEST,
+      CORE_HASH_STRUCTURE.MAPPING_TEST_LEGACY,
+      this.name,
       this.query,
-      this.id,
-      hashArray(this.assertions),
+      hashArray(this.inputData),
+      this.assert,
     ]);
   }
 }

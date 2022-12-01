@@ -39,7 +39,7 @@ import type { LocalMappingPropertyInfo } from '../../../graph/metamodel/pure/pac
 import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { MappingClass } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingClass.js';
 import type { MappingInclude } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
-import type { MappingTest } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
+import type { DEPRECATED__MappingTest } from '../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import type { MappingTestAssert } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestAssert.js';
 import type { MergeOperationSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/MergeOperationSetImplementation.js';
 import type { OperationSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/OperationSetImplementation.js';
@@ -116,6 +116,15 @@ import {
   observe_RootRelationalInstanceSetImplementation,
 } from './STO_Relational_ObserverHelper.js';
 import type { FlatDataAssociationPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
+import type { MappingTest } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
+import {
+  observe_AtomicTest,
+  observe_TestAssertion,
+  observe_TestSuite,
+} from './Testable_ObserverHelper.js';
+import type { MappingTestSuite } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
+import type { StoreTestData } from '../../../graph/metamodel/pure/packageableElements/mapping/StoreTestData.js';
+import { observe_EmbeddedData } from './DSL_Data_ObserverHelper.js';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -128,6 +137,55 @@ export const observe_Abstract_Store = (metamodel: Store): void => {
 
   metamodel.includes.forEach(observe_PackageableElementReference);
 };
+
+// ------------------------------------- TestSuite -----------------------------------
+
+export const observe_StoreTestData = skipObservedWithContext(
+  (metamodel: StoreTestData, context: ObserverContext): StoreTestData => {
+    makeObservable(metamodel, {
+      store: observable,
+      data: observable,
+      hashCode: computed,
+    });
+
+    observe_EmbeddedData(metamodel.data, context);
+
+    return metamodel;
+  },
+);
+
+export const observe_MappingTest = skipObserved(
+  (metamodel: MappingTest): MappingTest => {
+    makeObservable(metamodel, {
+      id: observable,
+      query: observable,
+      assertions: observable,
+      hashCode: computed,
+    });
+
+    metamodel.assertions.forEach(observe_TestAssertion);
+
+    return metamodel;
+  },
+);
+
+export const observe_MappingTestSuite = skipObservedWithContext(
+  (metamodel: MappingTestSuite, context: ObserverContext): MappingTestSuite => {
+    makeObservable(metamodel, {
+      id: observable,
+      tests: observable,
+      storeTestDatas: observable,
+      hashCode: computed,
+    });
+
+    metamodel.tests.forEach((test) => observe_AtomicTest(test, context));
+    metamodel.storeTestDatas.forEach((testData) =>
+      observe_StoreTestData(testData, context),
+    );
+
+    return metamodel;
+  },
+);
 
 // ------------------------------------- Mapping -------------------------------------
 
@@ -699,8 +757,8 @@ export const observe_MappingTestAssert = (
   return metamodel;
 };
 
-export const observe_MappingTest = skipObservedWithContext(
-  (metamodel: MappingTest, context): MappingTest => {
+export const observe_MappingTest_Legacy = skipObservedWithContext(
+  (metamodel: DEPRECATED__MappingTest, context): DEPRECATED__MappingTest => {
     makeObservable(metamodel, {
       name: observable,
       query: observable,
@@ -728,6 +786,7 @@ export const observe_Mapping = skipObservedWithContext(
       classMappings: observable,
       enumerationMappings: observable,
       associationMappings: observable,
+      test: observable,
       tests: observable,
       _elementHashCode: override,
     });
@@ -740,8 +799,10 @@ export const observe_Mapping = skipObservedWithContext(
     metamodel.associationMappings.forEach((associationMapping) =>
       observe_AssociationImplementation(associationMapping, context),
     );
-    metamodel.tests.forEach((test) => observe_MappingTest(test, context));
-
+    metamodel.test.forEach((t) => observe_MappingTest_Legacy(t, context));
+    metamodel.tests.forEach((testSuite) =>
+      observe_TestSuite(testSuite, context),
+    );
     return metamodel;
   },
 );

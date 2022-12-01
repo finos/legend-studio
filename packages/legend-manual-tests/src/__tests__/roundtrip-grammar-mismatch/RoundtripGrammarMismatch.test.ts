@@ -22,6 +22,7 @@ import {
   TEST__getTestGraphManagerState,
   TEST__GraphManagerPluginManager,
   type V1_PureModelContextData,
+  DSL_ExternalFormat_GraphPreset,
 } from '@finos/legend-graph';
 import {
   ContentType,
@@ -99,7 +100,7 @@ const checkGrammarRoundtripMismatch = async (
   options?: GrammarRoundtripOptions,
 ): Promise<void> => {
   const pluginManager = new TEST__GraphManagerPluginManager();
-  pluginManager.install();
+  pluginManager.usePresets([new DSL_ExternalFormat_GraphPreset()]).install();
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
 
   if (options?.debug) {

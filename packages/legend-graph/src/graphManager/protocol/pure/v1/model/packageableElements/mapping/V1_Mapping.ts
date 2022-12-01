@@ -24,14 +24,16 @@ import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
 } from '../../../model/packageableElements/V1_PackageableElement.js';
-import type { V1_MappingTest } from '../../../model/packageableElements/mapping/V1_MappingTest.js';
+import type { V1_DEPRECATED__MappingTest } from './V1_DEPRECATED__MappingTest.js';
+import type { V1_TestSuite } from '../../test/V1_TestSuite.js';
 
 export class V1_Mapping extends V1_PackageableElement implements Hashable {
   includedMappings: V1_MappingInclude[] = [];
   enumerationMappings: V1_EnumerationMapping[] = [];
   classMappings: V1_ClassMapping[] = [];
   associationMappings: V1_AssociationMapping[] = [];
-  tests: V1_MappingTest[] = [];
+  tests: V1_DEPRECATED__MappingTest[] = [];
+  testSuites: V1_TestSuite[] = [];
 
   override get hashCode(): string {
     return hashArray([
@@ -42,6 +44,7 @@ export class V1_Mapping extends V1_PackageableElement implements Hashable {
       hashArray(this.associationMappings),
       hashArray(this.tests),
       hashArray(this.includedMappings),
+      hashArray(this.testSuites),
     ]);
   }
 
