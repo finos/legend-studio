@@ -1,7 +1,6 @@
 {
   "name": "@finos/legend-application-pure-ide-deployment",
-  "version": "8.15.0",
-  "private": true,
+  "version": "8.16.0",
   "description": "Legend Pure IDE web application deployment",
   "keywords": [
     "legend",
@@ -21,7 +20,6 @@
     "bundle:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
     "bundle:fast": "cross-env NODE_ENV=production PRODUCTION_MODE=fast webpack --mode production && node ./scripts/setup.js ./dist/ide",
     "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
-    "build-dry:docker": "../../scripts/docker/dry-build-docker-image.sh legend-pure-ide ./dist/ide",
     "clean": "yarn clean:cache && rimraf \"dist\"",
     "clean:cache": "rimraf \"build\"",
     "dev": "npm-run-all --parallel dev:ts dev:webpack",
@@ -29,7 +27,8 @@
     "dev:webpack": "cross-env NODE_ENV=development webpack serve --mode development",
     "dev:webpack:debug": "cross-env NODE_ENV=development DEVELOPMENT_MODE=debug webpack serve --mode development",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./scripts/**/*.{mjs,cjs,js}\" \"./src/**/*.{js,ts,tsx}\"",
-    "publish:docker": "echo 'Building webapp content...' && yarn bundle && ../../scripts/docker/publish-docker.sh finos/legend-pure-ide",
+    "publish:prepare": "yarn bundle && node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "yarn bundle && node ../../scripts/release/publishDevSnapshot.js",
     "serve": "npx http-server ./dist -p 3000 -a localhost -g --cors -o /ide",
     "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js ./dev"
   },
@@ -48,5 +47,8 @@
     "webpack-bundle-analyzer": "4.7.0",
     "webpack-cli": "5.0.0",
     "webpack-dev-server": "4.11.1"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
   }
 }
