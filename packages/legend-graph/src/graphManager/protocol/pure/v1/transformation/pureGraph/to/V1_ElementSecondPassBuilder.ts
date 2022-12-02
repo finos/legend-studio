@@ -53,6 +53,7 @@ import {
 import {
   V1_buildServiceExecution,
   V1_buildLegacyServiceTest,
+  V1_buildPostValidation,
 } from './helpers/V1_ServiceBuilderHelper.js';
 import {
   V1_buildEnumerationMapping,
@@ -85,6 +86,7 @@ import { V1_DataElementReference } from '../../../model/data/V1_EmbeddedData.js'
 import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
 import { getFunctionName } from '../../../../../../../graph/helpers/DomainHelper.js';
 import { GraphBuilderError } from '../../../../../../GraphManagerUtils.js';
+import { PostValidation } from '../../../../../../../graph/metamodel/pure/packageableElements/service/PostValidation.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -332,6 +334,12 @@ export class V1_ElementSecondPassBuilder
     service.tests = element.testSuites
       .map((testSuite) => V1_buildTestSuite(service, testSuite, this.context))
       .map((e) => guaranteeType(e, ServiceTestSuite));
+
+    service.postValidations = element.postValidations
+      .map((postValidation) =>
+        V1_buildPostValidation(postValidation, this.context),
+      )
+      .map((e) => guaranteeType(e, PostValidation));
   }
 
   visit_SectionIndex(element: V1_SectionIndex): void {
