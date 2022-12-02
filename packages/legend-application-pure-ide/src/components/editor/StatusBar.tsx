@@ -31,10 +31,11 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
 
   // Other actions
   const toggleAuxPanel = (): void => editorStore.auxPanelDisplayState.toggle();
-  const executeGo = (): Promise<void> =>
+  const executeGo = (): void => {
     flowResult(editorStore.executeGo()).catch(
       applicationStore.alertUnhandledError,
     );
+  };
   const toggleAssistant = (): void =>
     applicationStore.assistantService.toggleAssistant();
 

@@ -61,8 +61,11 @@ const ConceptExplorerContextMenu = observer(
       applicationStore.notifyUnsupportedFeature('Rename package');
     const renameProperty = (): void =>
       applicationStore.notifyUnsupportedFeature('Rename property');
-    const runTests = (): Promise<void> =>
-      flowResult(editorStore.executeTests(node.data.li_attr.pureId));
+    const runTests = (): void => {
+      flowResult(editorStore.executeTests(node.data.li_attr.pureId)).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
     const move = (): void =>
       applicationStore.notifyUnsupportedFeature('Move file');
     const viewSource = (): void => viewConceptSource(node);
@@ -257,14 +260,16 @@ const FileExplorerTree = observer(() => {
   const treeData = editorStore.conceptTreeState.getTreeData();
   const onNodeSelect = (node: ConceptTreeNode): void =>
     treeState.setSelectedNode(node);
-  const onNodeOpen = (node: ConceptTreeNode): Promise<void> =>
+  const onNodeOpen = (node: ConceptTreeNode): void => {
     flowResult(treeState.openNode(node)).catch(
       applicationStore.alertUnhandledError,
     );
-  const onNodeExpand = (node: ConceptTreeNode): Promise<void> =>
+  };
+  const onNodeExpand = (node: ConceptTreeNode): void => {
     flowResult(treeState.expandNode(node)).catch(
       applicationStore.alertUnhandledError,
     );
+  };
   const onNodeCompress = (node: ConceptTreeNode): void => {
     node.isOpen = false;
     treeState.refreshTree();
@@ -326,10 +331,11 @@ export const ConceptTreeExplorer = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const treeState = editorStore.conceptTreeState;
-  const refreshTree = (): Promise<void> =>
+  const refreshTree = (): void => {
     flowResult(treeState.refreshTreeData()).catch(
       applicationStore.alertUnhandledError,
     );
+  };
   const collapseTree = (): void => {
     const treeData = treeState.getTreeData();
     treeData.nodes.forEach((node) => {

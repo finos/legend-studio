@@ -18,11 +18,11 @@ import {
   collectKeyedCommandConfigEntriesFromConfig,
   type KeyedCommandConfigEntry,
 } from '@finos/legend-application';
-import { LegendStudioApplicationPlugin } from '@finos/legend-application-studio';
 import packageJson from '../../package.json';
+import { LegendPureIDEApplicationPlugin } from '../stores/LegendPureIDEApplicationPlugin.js';
 import { LEGEND_PURE_IDE_COMMAND_CONFIG } from '../stores/LegendPureIDECommand.js';
 
-export class Core_LegendPureIDEApplicationPlugin extends LegendStudioApplicationPlugin {
+export class Core_LegendPureIDEApplicationPlugin extends LegendPureIDEApplicationPlugin {
   static NAME = packageJson.extensions.applicationPureIDEPlugin;
 
   constructor() {

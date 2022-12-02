@@ -284,14 +284,16 @@ const TestRunnerResultDisplay = observer(
     const runPercentage = testResultInfo?.runPercentage ?? 0;
     const collapseTree = (): void => testRunnerState.collapseTree();
     const expandTree = (): void => testRunnerState.expandTree();
-    const runSuite = (): Promise<void> =>
+    const runSuite = (): void => {
       flowResult(testRunnerState.rerunTestSuite()).catch(
         applicationStore.alertUnhandledError,
       );
-    const cancelTestRun = (): Promise<void> =>
+    };
+    const cancelTestRun = (): void => {
       flowResult(testRunnerState.cancelTestRun()).catch(
         applicationStore.alertUnhandledError,
       );
+    };
 
     return (
       <div className="test-runner-panel__content">

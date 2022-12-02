@@ -58,7 +58,7 @@ const FileExplorerContextMenu = observer(
       editorStore.directoryTreeState.setNodeForCreateNewFile(node);
     const createNewDirectory = (): void =>
       editorStore.directoryTreeState.setNodeForCreateNewDirectory(node);
-    const deleteFileOrDirectory = (): Promise<void> =>
+    const deleteFileOrDirectory = (): void => {
       flowResult(
         editorStore.deleteDirectoryOrFile(
           node.data.li_attr.path,
@@ -66,6 +66,7 @@ const FileExplorerContextMenu = observer(
           hasChildContent,
         ),
       ).catch(applicationStore.alertUnhandledError);
+    };
     const renameFile = (): void =>
       applicationStore.notifyUnsupportedFeature('Rename file');
     const moveFile = (): void =>
@@ -231,14 +232,16 @@ const FileExplorerTree = observer(() => {
   const treeData = editorStore.directoryTreeState.getTreeData();
   const onNodeSelect = (node: DirectoryTreeNode): void =>
     treeState.setSelectedNode(node);
-  const onNodeOpen = (node: DirectoryTreeNode): Promise<void> =>
+  const onNodeOpen = (node: DirectoryTreeNode): void => {
     flowResult(treeState.openNode(node)).catch(
       applicationStore.alertUnhandledError,
     );
-  const onNodeExpand = (node: DirectoryTreeNode): Promise<void> =>
+  };
+  const onNodeExpand = (node: DirectoryTreeNode): void => {
     flowResult(treeState.expandNode(node)).catch(
       applicationStore.alertUnhandledError,
     );
+  };
   const onNodeCompress = (node: DirectoryTreeNode): void => {
     node.isOpen = false;
     treeState.refreshTree();
@@ -284,10 +287,11 @@ export const DirectoryTreeExplorer = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const treeState = editorStore.directoryTreeState;
-  const refreshTree = (): Promise<void> =>
+  const refreshTree = (): void => {
     flowResult(treeState.refreshTreeData()).catch(
       applicationStore.alertUnhandledError,
     );
+  };
   const focus = (): void => {
     const currentTab = editorStore.tabManagerState.currentTab;
     if (currentTab instanceof FileEditorState) {

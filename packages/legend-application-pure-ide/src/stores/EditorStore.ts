@@ -856,8 +856,11 @@ export class EditorStore implements CommandRegistrar {
         {
           label: 'Perform full re-compile',
           type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-          handler: (): Promise<void> =>
-            flowResult(this.executeSaveAndReset(fullInit)),
+          handler: () => {
+            flowResult(this.executeSaveAndReset(fullInit)).catch(
+              this.applicationStore.alertUnhandledError,
+            );
+          },
         },
         {
           label: 'Abort',
@@ -1044,6 +1047,19 @@ export class EditorStore implements CommandRegistrar {
     isDirectory: boolean,
     hasChildContent: boolean,
   ): GeneratorFn<void> {
+    const _delete = async (): Promise<void> => {
+      await flowResult(
+        this.command(() =>
+          this.client.deleteDirectoryOrFile(trimPathLeadingSlash(path)),
+        ),
+      );
+      const editorStatesToClose = this.tabManagerState.tabs.filter(
+        (tab) =>
+          tab instanceof FileEditorState && tab.filePath.startsWith(path),
+      );
+      editorStatesToClose.forEach((tab) => this.tabManagerState.closeTab(tab));
+      await flowResult(this.directoryTreeState.refreshTreeData());
+    };
     this.applicationStore.setActionAlertInfo({
       message: `Are you sure you would like to delete this ${
         isDirectory ? 'directory' : 'file'
@@ -1056,26 +1072,8 @@ export class EditorStore implements CommandRegistrar {
         {
           label: 'Delete anyway',
           type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-          handler: async (): Promise<void> => {
-            try {
-              await flowResult(
-                this.command(() =>
-                  this.client.deleteDirectoryOrFile(trimPathLeadingSlash(path)),
-                ),
-              );
-              const editorStatesToClose = this.tabManagerState.tabs.filter(
-                (tab) =>
-                  tab instanceof FileEditorState &&
-                  tab.filePath.startsWith(path),
-              );
-              editorStatesToClose.forEach((tab) =>
-                this.tabManagerState.closeTab(tab),
-              );
-              await flowResult(this.directoryTreeState.refreshTreeData());
-            } catch (error) {
-              assertErrorThrown(error);
-              this.applicationStore.alertUnhandledError(error);
-            }
+          handler: () => {
+            _delete().catch(this.applicationStore.alertUnhandledError);
           },
         },
         {

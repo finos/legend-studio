@@ -112,9 +112,7 @@ test.only(
     // open enum_1 enumeration mapping
     fireEvent.click(getByText(mappingExplorer, 'Enum_1'));
     sourcePanel = await waitFor(() =>
-      renderResult.getByTestId(
-        LEGEND_STUDIO_TEST_ID.ENUMERATION_MAPPING_EDITOR,
-      ),
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.SOURCE_PANEL),
     );
     await waitFor(() => getByText(sourcePanel, 'String'));
     mainEditor = await waitFor(() =>

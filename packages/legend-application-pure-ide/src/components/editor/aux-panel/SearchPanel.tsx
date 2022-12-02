@@ -194,7 +194,7 @@ const CandidateWithPackageImportedDisplay = observer(
     const { candidate } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const goToResult = (): Promise<void> =>
+    const goToResult = (): void => {
       flowResult(
         editorStore.loadFile(
           candidate.sourceID,
@@ -205,6 +205,7 @@ const CandidateWithPackageImportedDisplay = observer(
           ),
         ),
       ).catch(applicationStore.alertUnhandledError);
+    };
 
     return (
       <div className="search-panel__entry__content__item">
@@ -242,7 +243,7 @@ const CandidateWithPackageNotImportedDisplay = observer(
     const { candidate } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const goToResult = (): Promise<void> =>
+    const goToResult = (): void => {
       flowResult(
         editorStore.loadFile(
           candidate.sourceID,
@@ -253,10 +254,12 @@ const CandidateWithPackageNotImportedDisplay = observer(
           ),
         ),
       ).catch(applicationStore.alertUnhandledError);
-    const useCandidate = (): Promise<void> =>
+    };
+    const useCandidate = (): void => {
       flowResult(
         editorStore.updateFileUsingSuggestionCandidate(candidate),
       ).catch(applicationStore.alertUnhandledError);
+    };
 
     return (
       <div className="search-panel__entry__content__item">
