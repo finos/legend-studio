@@ -57,6 +57,7 @@ import type { DataElement } from '../graph/metamodel/pure/packageableElements/da
 import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import type { SectionIndex } from '../graph/metamodel/pure/packageableElements/section/SectionIndex.js';
+import type { PropertyOwner } from './metamodel/pure/packageableElements/domain/AbstractProperty.js';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -388,6 +389,15 @@ export class PureModel extends BasicModel {
         this.dependencyManager.getOwnNullableAssociation(path) ??
         this.systemModel.getOwnNullableAssociation(path),
       `Can't find association '${path}'`,
+    );
+  getPropertyOwner = (path: string): PropertyOwner =>
+    guaranteeNonNullable(
+      this.getOwnNullableAssociation(path) ??
+        this.generationModel.getOwnNullableAssociation(path) ??
+        this.dependencyManager.getOwnNullableAssociation(path) ??
+        this.systemModel.getOwnNullableAssociation(path) ??
+        guaranteeType(this.getType(path), Class),
+      `Can't find property owner '${path}'`,
     );
   getFunction = (path: string): ConcreteFunctionDefinition =>
     guaranteeType(

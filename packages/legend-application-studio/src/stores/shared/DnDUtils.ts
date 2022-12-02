@@ -58,7 +58,7 @@ export enum CORE_DND_TYPE {
 // See https://github.com/react-dnd/react-dnd/issues/1094
 // See https://github.com/react-dnd/react-dnd/pull/1079
 export class TypeDragSource {
-  data: TypeTreeNodeData;
+  data: TypeTreeNodeData | undefined;
 
   constructor(data: TypeTreeNodeData) {
     this.data = data;

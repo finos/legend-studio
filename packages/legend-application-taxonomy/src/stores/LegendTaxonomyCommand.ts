@@ -23,6 +23,6 @@ export enum LEGEND_TAXONOMY_COMMAND_KEY {
 export const LEGEND_TAXONOMY_COMMAND_CONFIG: CommandConfigData = {
   [LEGEND_TAXONOMY_COMMAND_KEY.SEARCH_TAXONOMY]: {
     title: 'Search for taxonomy',
-    defaultKeyboardShortcut: 'Control+p',
+    defaultKeyboardShortcut: 'Control+KeyP',
   },
 };

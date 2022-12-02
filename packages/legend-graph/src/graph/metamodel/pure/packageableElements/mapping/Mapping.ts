@@ -23,15 +23,18 @@ import {
   type PackageableElementVisitor,
   PackageableElement,
 } from '../PackageableElement.js';
-import type { MappingTest } from './MappingTest.js';
+import type { DEPRECATED__MappingTest } from './DEPRECATED__MappingTest.js';
 import type { MappingInclude } from './MappingInclude.js';
+import type { MappingTestSuite } from './MappingTestSuite.js';
+import type { Testable } from '../../test/Testable.js';
 
-export class Mapping extends PackageableElement implements Hashable {
+export class Mapping extends PackageableElement implements Hashable, Testable {
   includes: MappingInclude[] = [];
   classMappings: SetImplementation[] = [];
   enumerationMappings: EnumerationMapping[] = [];
   associationMappings: AssociationImplementation[] = [];
-  tests: MappingTest[] = [];
+  test: DEPRECATED__MappingTest[] = [];
+  tests: MappingTestSuite[] = [];
 
   protected override get _elementHashCode(): string {
     return hashArray([
@@ -40,8 +43,9 @@ export class Mapping extends PackageableElement implements Hashable {
       hashArray(this.classMappings),
       hashArray(this.enumerationMappings),
       hashArray(this.associationMappings),
-      hashArray(this.tests),
+      hashArray(this.test),
       hashArray(this.includes),
+      hashArray(this.tests),
     ]);
   }
 

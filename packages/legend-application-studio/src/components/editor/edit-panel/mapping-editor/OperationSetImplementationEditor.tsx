@@ -72,7 +72,7 @@ export const OperationSetImplementationEditor = observer(
     const { setImplementation, isReadOnly } = props;
     const editorStore = useEditorStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const mapping = mappingEditorState.mapping;
     // Parameters
     const setImplementationOptions = getClassMappingsByClass(
@@ -169,8 +169,8 @@ export const OperationSetImplementationEditor = observer(
         const parent = param.setImplementation.value._PARENT;
         // TODO: think more about this flow. Right now we open the mapping element in the parent mapping
         if (parent !== mappingEditorState.element) {
-          editorStore.openElement(parent);
-          editorStore
+          editorStore.tabManagerState.openElementEditor(parent);
+          editorStore.tabManagerState
             .getCurrentEditorState(MappingEditorState)
             .openMappingElement(param.setImplementation.value, false);
         } else {

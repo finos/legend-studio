@@ -41,6 +41,7 @@ import {
   ExclamationTriangleIcon,
   SearchIcon,
   FileImportIcon,
+  SettingsEthernetIcon,
 } from '@finos/legend-art';
 import {
   getElementIcon,
@@ -348,11 +349,11 @@ const ExplorerContextMenu = observer(
 const ProjectConfig = observer(() => {
   const editorStore = useEditorStore();
   const openConfigurationEditor = (): void =>
-    editorStore.openSingletonEditorState(
+    editorStore.tabManagerState.openTab(
       editorStore.projectConfigurationEditorState,
     );
   const isSelected =
-    editorStore.currentEditorState ===
+    editorStore.tabManagerState.currentTab ===
       editorStore.projectConfigurationEditorState &&
     // if we select non-element like packages, we need to deselect project configuration
     // so maybe a good TODO is to move this to explorer tree state
@@ -527,7 +528,7 @@ const ExplorerTrees = observer(() => {
   const editorStore = useEditorStore();
   const { isInGrammarTextMode, isInViewerMode } = editorStore;
   const openModelImport = (): void =>
-    editorStore.openSingletonEditorState(editorStore.modelImporterState);
+    editorStore.tabManagerState.openTab(editorStore.modelImporterState);
   const graph = editorStore.graphManagerState.graph;
   // Explorer tree
   const treeData = editorStore.explorerTreeState.getTreeData();
@@ -732,7 +733,11 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
     editorStore.explorerTreeState.setTreeData({ ...treeData });
   };
   const showModelImporter = (): void =>
-    editorStore.openState(editorStore.modelImporterState);
+    editorStore.tabManagerState.openTab(editorStore.modelImporterState);
+  const openConfigurationEditor = (): void =>
+    editorStore.tabManagerState.openTab(
+      editorStore.projectConfigurationEditorState,
+    );
 
   return (
     <div className="panel__header__actions">
@@ -746,6 +751,14 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
           <FileImportIcon />
         </button>
       )}
+      <button
+        className="panel__header__action panel__header__action--config"
+        disabled={disabled}
+        title="Project Configuration Panel"
+        onClick={openConfigurationEditor}
+      >
+        <SettingsEthernetIcon />
+      </button>
       {!editorStore.isInViewerMode && (
         <DropdownMenu
           className="panel__header__action"

@@ -150,7 +150,7 @@ export const PropertyMappingEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const propertyRawType = property.genericType.value.rawType;
     const propertyBasicType = getClassPropertyType(propertyRawType);
     const isEmbedded = instanceSetImplementation._isEmbedded;
@@ -193,8 +193,8 @@ export const PropertyMappingEditor = observer(
             const parent = rootMappingElement._PARENT;
             if (parent !== mappingEditorState.element) {
               // TODO: think more about this flow. Right now we open the mapping element in the parent mapping
-              editorStore.openElement(parent);
-              editorStore
+              editorStore.tabManagerState.openElementEditor(parent);
+              editorStore.tabManagerState
                 .getCurrentEditorState(MappingEditorState)
                 .openMappingElement(rootMappingElement, false);
             }

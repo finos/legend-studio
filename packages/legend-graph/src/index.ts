@@ -56,6 +56,7 @@ export {
 } from './graph/metamodel/pure/packageableElements/domain/EnumValueReference.js';
 export { type AbstractProperty } from './graph/metamodel/pure/packageableElements/domain/AbstractProperty.js';
 export { DerivedProperty } from './graph/metamodel/pure/packageableElements/domain/DerivedProperty.js';
+export { AggregationKind } from './graph/metamodel/pure/packageableElements/domain/AggregationKind.js';
 export { Property } from './graph/metamodel/pure/packageableElements/domain/Property.js';
 export {
   PropertyReference,

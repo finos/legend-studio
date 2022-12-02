@@ -28,7 +28,6 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
-  generateMilestonedPropertyParameterValue,
   generateValueSpecificationForParameter,
   getPropertyPath,
   type QueryBuilderDerivedPropertyExpressionState,
@@ -41,11 +40,6 @@ import {
   type QueryBuilderExplorerTreePropertyNodeData,
 } from '../stores/explorer/QueryBuilderExplorerState.js';
 import { QueryBuilderPropertyInfoTooltip } from './shared/QueryBuilderPropertyInfoTooltip.js';
-import { VariableExpressionViewer } from './QueryBuilderParametersPanel.js';
-import {
-  type QueryBuilderParameterDragSource,
-  QUERY_BUILDER_PARAMETER_DND_TYPE,
-} from '../stores/QueryBuilderParametersState.js';
 import {
   type ValueSpecification,
   type VariableExpression,
@@ -53,10 +47,27 @@ import {
   Enumeration,
   PrimitiveType,
   isSuperType,
+  AbstractPropertyExpression,
+  INTERNAL__PropagatedValue,
+  getMilestoneTemporalStereotype,
 } from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
-import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import {
+  type QueryBuilderVariableDragSource,
+  BasicValueSpecificationEditor,
+  QUERY_BUILDER_VARIABLE_DND_TYPE,
+} from './shared/BasicValueSpecificationEditor.js';
 import { functionExpression_setParameterValue } from '../stores/shared/ValueSpecificationModifierHelper.js';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
+import { VariableSelector } from './shared/QueryBuilderVariableSelector.js';
+import {
+  generateMilestonedPropertyParameterValue,
+  isDefaultDatePropagationSupported,
+  matchMilestoningParameterValue,
+} from '../stores/milestoning/QueryBuilderMilestoningHelper.js';
 
 const DerivedPropertyParameterValueEditor = observer(
   (props: {
@@ -71,10 +82,10 @@ const DerivedPropertyParameterValueEditor = observer(
       derivedPropertyExpressionState.parameters[idx]?.genericType,
     ).value.rawType;
     const handleDrop = useCallback(
-      (item: QueryBuilderParameterDragSource): void => {
+      (item: QueryBuilderVariableDragSource): void => {
         functionExpression_setParameterValue(
           derivedPropertyExpressionState.propertyExpression,
-          item.variable.parameter,
+          item.variable,
           idx + 1,
           derivedPropertyExpressionState.queryBuilderState.observableContext,
         );
@@ -82,14 +93,14 @@ const DerivedPropertyParameterValueEditor = observer(
       [derivedPropertyExpressionState, idx],
     );
     const [{ isParameterValueDragOver }, dropTargetConnector] = useDrop<
-      QueryBuilderParameterDragSource,
+      QueryBuilderVariableDragSource,
       void,
       { isParameterValueDragOver: boolean }
     >(
       () => ({
-        accept: [QUERY_BUILDER_PARAMETER_DND_TYPE],
+        accept: [QUERY_BUILDER_VARIABLE_DND_TYPE],
         drop: (item, monitor): void => {
-          const itemType = item.variable.parameter.genericType?.value.rawType;
+          const itemType = item.variable.genericType?.value.rawType;
           if (
             !monitor.didDrop() &&
             // Doing a type check, which only allows dragging and dropping parameters of the same type or of child types
@@ -108,6 +119,76 @@ const DerivedPropertyParameterValueEditor = observer(
       }),
       [handleDrop],
     );
+    const queryBuilderState = derivedPropertyExpressionState.queryBuilderState;
+    // Resets the next property expression in the property chain for milestoned properties when the user changes
+    // the milestoned dates of current property expression and it propagates those dates to next property expression.
+    const resetNextExpression = (
+      nextExpression: AbstractPropertyExpression,
+    ): void => {
+      const milestoningStereotype = getMilestoneTemporalStereotype(
+        guaranteeType(
+          nextExpression.func.value.genericType.value.rawType,
+          Class,
+        ),
+        queryBuilderState.graphManagerState.graph,
+      );
+      nextExpression.parametersValues.slice(1).forEach((parameter, index) => {
+        if (
+          milestoningStereotype &&
+          parameter instanceof INTERNAL__PropagatedValue &&
+          !matchMilestoningParameterValue(
+            milestoningStereotype,
+            index,
+            parameter.getValue(),
+            queryBuilderState.milestoningState,
+          )
+        ) {
+          const newParameterValue = new INTERNAL__PropagatedValue(() =>
+            guaranteeNonNullable(
+              queryBuilderState.milestoningState
+                .getMilestoningImplementation(milestoningStereotype)
+                .getMilestoningDate(index),
+            ),
+          );
+          newParameterValue.isPropagatedValue = false;
+          functionExpression_setParameterValue(
+            guaranteeType(nextExpression, AbstractPropertyExpression),
+            guaranteeNonNullable(newParameterValue),
+            index + 1,
+            queryBuilderState.observableContext,
+          );
+        }
+      });
+    };
+    const checkDatePropagation = (
+      nextExpression: ValueSpecification | undefined,
+    ): void => {
+      if (
+        nextExpression instanceof AbstractPropertyExpression &&
+        isDefaultDatePropagationSupported(nextExpression, queryBuilderState) &&
+        nextExpression.func.value.genericType.value.rawType instanceof Class
+      ) {
+        queryBuilderState.applicationStore.setActionAlertInfo({
+          message:
+            'You have just changed a milestoning date in the property expression chain, this date will be propagated down the rest of the chain. Do you want to proceed? Otherwise, you can choose to propagate the default milestoning dates instead.',
+          type: ActionAlertType.CAUTION,
+          actions: [
+            {
+              label: 'Proceed',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              default: true,
+            },
+            {
+              label: 'Propagate default milestoning date(s)',
+              type: ActionAlertActionType.PROCEED,
+              handler: queryBuilderState.applicationStore.guardUnhandledError(
+                async () => resetNextExpression(nextExpression),
+              ),
+            },
+          ],
+        });
+      }
+    };
     const resetParameterValue = (): void => {
       functionExpression_setParameterValue(
         derivedPropertyExpressionState.propertyExpression,
@@ -123,7 +204,23 @@ const DerivedPropertyParameterValueEditor = observer(
         idx + 1,
         derivedPropertyExpressionState.queryBuilderState.observableContext,
       );
+      const derivedPropertyExpressionStates =
+        derivedPropertyExpressionState.propertyExpressionState
+          .derivedPropertyExpressionStates;
+      const currentDerivedPropertyStateindex =
+        derivedPropertyExpressionStates.indexOf(derivedPropertyExpressionState);
+      checkDatePropagation(
+        currentDerivedPropertyStateindex + 1 <
+          derivedPropertyExpressionStates.length
+          ? derivedPropertyExpressionStates[
+              currentDerivedPropertyStateindex + 1
+            ]?.propertyExpression
+          : undefined,
+      );
     };
+    const valueSpec = guaranteeNonNullable(
+      derivedPropertyExpressionState.parameterValues[idx],
+    );
 
     return (
       <div key={variable.name} className="panel__content__form__section">
@@ -133,15 +230,13 @@ const DerivedPropertyParameterValueEditor = observer(
         <div className="panel__content__form__section__header__prompt">{`${
           variable.multiplicity.lowerBound === 0 ? 'optional' : ''
         }`}</div>
-        <div className="query-builder__parameter-editor">
+        <div className="query-builder__variable-editor">
           <PanelDropZone
             isDragOver={isParameterValueDragOver}
             dropTargetConnector={dropTargetConnector}
           >
             <BasicValueSpecificationEditor
-              valueSpecification={guaranteeNonNullable(
-                derivedPropertyExpressionState.parameterValues[idx],
-              )}
+              valueSpecification={valueSpec}
               setValueSpecification={(val: ValueSpecification): void => {
                 functionExpression_setParameterValue(
                   derivedPropertyExpressionState.propertyExpression,
@@ -161,6 +256,9 @@ const DerivedPropertyParameterValueEditor = observer(
                 match: parameterType === PrimitiveType.DATETIME,
               }}
               resetValue={resetParameterValue}
+              isConstant={queryBuilderState.constantState.isValueSpecConstant(
+                valueSpec,
+              )}
             />
           </PanelDropZone>
         </div>
@@ -233,25 +331,10 @@ export const QueryBuilderPropertyExpressionEditor = observer(
                 />
               ),
             )}
-            <ModalBody className="query-builder__parameters__modal__body">
-              <div className="panel__content__form__section__header__label">
-                List of available parameters
-              </div>
-              <div className="panel__content__form__section__list__items">
-                {propertyExpressionState.queryBuilderState.parametersState.parameterStates.map(
-                  (parameter) => (
-                    <VariableExpressionViewer
-                      key={parameter.uuid}
-                      queryBuilderState={
-                        propertyExpressionState.queryBuilderState
-                      }
-                      variableExpressionState={parameter}
-                      isReadOnly={true}
-                      hideActions={true}
-                    />
-                  ),
-                )}
-              </div>
+            <ModalBody className="query-builder__variables__modal__body">
+              <VariableSelector
+                queryBuilderState={propertyExpressionState.queryBuilderState}
+              />
             </ModalBody>
           </ModalBody>
           <ModalFooter>

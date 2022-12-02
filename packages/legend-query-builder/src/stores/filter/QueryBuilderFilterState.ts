@@ -31,6 +31,7 @@ import {
   ActionState,
   type Hashable,
   hashArray,
+  isNonNullable,
 } from '@finos/legend-shared';
 import type { QueryBuilderExplorerTreeDragSource } from '../explorer/QueryBuilderExplorerState.js';
 import { QueryBuilderPropertyExpressionState } from '../QueryBuilderPropertyEditorState.js';
@@ -39,6 +40,7 @@ import {
   type ExecutionResult,
   type AbstractPropertyExpression,
   type ValueSpecification,
+  type VariableExpression,
   observe_ValueSpecification,
 } from '@finos/legend-graph';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilderConfig.js';
@@ -51,6 +53,7 @@ import {
 import type { QueryBuilderFilterOperator } from './QueryBuilderFilterOperator.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../QueryBuilderGroupOperationHelper.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../graphManager/QueryBuilderHashUtils.js';
+import { isValueExpressionReferencedInValue } from '../QueryBuilderValueSpecificationHelper.js';
 
 export enum QUERY_BUILDER_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',
@@ -789,6 +792,16 @@ export class QueryBuilderFilterState
 
   expandTree(): void {
     Array.from(this.nodes.values()).forEach((node) => node.setIsOpen(true));
+  }
+
+  isVariableUsed(variable: VariableExpression): boolean {
+    return Boolean(
+      Array.from(this.nodes.values())
+        .filter(filterByType(QueryBuilderFilterTreeConditionNodeData))
+        .map((node) => node.condition.value)
+        .filter(isNonNullable)
+        .find((value) => isValueExpressionReferencedInValue(variable, value)),
+    );
   }
 
   get hashCode(): string {

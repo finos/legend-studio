@@ -16,5 +16,5 @@
 
 export enum EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY {
   GRAMMAR_PARSER = 'es-service.grammar.parser',
-  GRAMMAR_ELEMENT_SERVICE_STORE = 'es-service.grammar.element.service-store',
+  CONCEPT_ELEMENT_SERVICE_STORE = 'es-service.concept.element.service-store',
 }

@@ -28,6 +28,7 @@ import {
   CustomSelectorInput,
   SaveIcon,
   PencilIcon,
+  DragPreviewLayer,
 } from '@finos/legend-art';
 import {
   type Enum,
@@ -80,7 +81,7 @@ type TypeCheckOption = {
   match?: boolean;
 };
 
-const ParameterInfoTooltip: React.FC<{
+export const VariableInfoTooltip: React.FC<{
   variable: VariableExpression;
   children: React.ReactElement;
   placement?: TooltipPlacement | undefined;
@@ -136,35 +137,55 @@ const ParameterInfoTooltip: React.FC<{
   );
 };
 
+export const QUERY_BUILDER_VARIABLE_DND_TYPE = 'VARIABLE';
+
+export interface QueryBuilderVariableDragSource {
+  variable: VariableExpression;
+}
+
 const VariableExpressionParameterEditor = observer(
   (props: {
     valueSpecification: VariableExpression;
-    className?: string | undefined;
     resetValue: () => void;
+    className?: string | undefined;
+    isConstant?: boolean;
   }) => {
-    const { valueSpecification, className, resetValue } = props;
+    const { valueSpecification, resetValue, isConstant, className } = props;
     const varName = valueSpecification.name;
     return (
-      <div className={clsx('value-spec-editor__parameter', className)}>
-        <div className="value-spec-editor__parameter__icon">
-          <DollarIcon />
+      <>
+        <DragPreviewLayer
+          labelGetter={(item: QueryBuilderVariableDragSource): string =>
+            item.variable.name
+          }
+          types={[QUERY_BUILDER_VARIABLE_DND_TYPE]}
+        />
+        <div
+          className={clsx('value-spec-editor__variable', className, {
+            'value-spec-editor__variable__constant': isConstant,
+          })}
+        >
+          <div className="value-spec-editor__variable__icon">
+            {isConstant ? <div className="icon">C</div> : <DollarIcon />}
+          </div>
+          <div className="value-spec-editor__variable__label">
+            <div className="value-spec-editor__variable__text">{varName}</div>
+            <VariableInfoTooltip variable={valueSpecification}>
+              <div className="value-spec-editor__variable__info">
+                <InfoCircleIcon />
+              </div>
+            </VariableInfoTooltip>
+
+            <button
+              className="value-spec-editor__variable__reset-btn"
+              title="Reset"
+              onClick={resetValue}
+            >
+              <RefreshIcon />
+            </button>
+          </div>
         </div>
-        <div className="value-spec-editor__parameter__label">
-          <div className="value-spec-editor__parameter__text">{varName}</div>
-          <ParameterInfoTooltip variable={valueSpecification}>
-            <div className="value-spec-editor__parameter__info">
-              <InfoCircleIcon />
-            </div>
-          </ParameterInfoTooltip>
-          <button
-            className="value-spec-editor__parameter__reset-btn"
-            title="Reset"
-            onClick={resetValue}
-          >
-            <RefreshIcon />
-          </button>
-        </div>
-      </div>
+      </>
     );
   },
 );
@@ -251,6 +272,7 @@ const StringPrimitiveInstanceValueEditor = observer(
             options={queryOptions}
             onChange={changeValue}
             value={selectedValue}
+            inputValue={value}
             onInputChange={handleInputChange}
             darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
             isLoading={isLoading}
@@ -682,6 +704,7 @@ export const BasicValueSpecificationEditor: React.FC<{
   className?: string | undefined;
   setValueSpecification: (val: ValueSpecification) => void;
   resetValue: () => void;
+  isConstant?: boolean;
   selectorConfig?:
     | {
         values: string[] | undefined;
@@ -702,6 +725,7 @@ export const BasicValueSpecificationEditor: React.FC<{
     setValueSpecification,
     resetValue,
     selectorConfig,
+    isConstant,
   } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
@@ -728,6 +752,7 @@ export const BasicValueSpecificationEditor: React.FC<{
       case PRIMITIVE_TYPE.NUMBER:
       case PRIMITIVE_TYPE.FLOAT:
       case PRIMITIVE_TYPE.DECIMAL:
+      case PRIMITIVE_TYPE.BINARY:
       case PRIMITIVE_TYPE.INTEGER:
         return (
           <NumberPrimitiveInstanceValueEditor
@@ -790,6 +815,7 @@ export const BasicValueSpecificationEditor: React.FC<{
         valueSpecification={valueSpecification}
         className={className}
         resetValue={resetValue}
+        isConstant={Boolean(isConstant)}
       />
     );
   } else if (valueSpecification instanceof INTERNAL__PropagatedValue) {

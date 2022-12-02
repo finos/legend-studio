@@ -16,6 +16,7 @@
 
 import { list, primitive, createModelSchema } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
+import type { ProjectConfigurationStatusReport } from './ProjectConfigurationStatus.js';
 
 export class Project {
   description!: string;
@@ -23,6 +24,7 @@ export class Project {
   projectId!: string;
   webUrl!: string;
   tags: string[] = [];
+  projectConfigurationStatus?: ProjectConfigurationStatusReport;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(Project, {
@@ -33,4 +35,8 @@ export class Project {
       webUrl: primitive(),
     }),
   );
+
+  setProjectConfigurationStatus(val: ProjectConfigurationStatusReport): void {
+    this.projectConfigurationStatus = val;
+  }
 }

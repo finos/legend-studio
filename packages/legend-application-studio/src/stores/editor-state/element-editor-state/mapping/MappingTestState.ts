@@ -42,7 +42,6 @@ import type { EditorStore } from '../../../EditorStore.js';
 import { observable, flow, action, makeObservable, flowResult } from 'mobx';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
 import {
-  type MappingTest,
   type RawLambda,
   type Runtime,
   type InputData,
@@ -76,6 +75,7 @@ import {
   stub_Class,
   generateIdentifiedConnectionId,
   DEPRECATED__validate_MappingTest,
+  type DEPRECATED__MappingTest,
   ModelStore,
 } from '@finos/legend-graph';
 import { ExecutionPlanState, TAB_SIZE } from '@finos/legend-application';
@@ -94,6 +94,7 @@ import {
   relationalInputData_setData,
 } from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
+import { MappingEditorTabState } from './MappingTabManagerState.js';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -104,11 +105,15 @@ export enum TEST_RESULT {
 
 export class MappingTestQueryState extends LambdaEditorState {
   editorStore: EditorStore;
-  test: MappingTest;
+  test: DEPRECATED__MappingTest;
   isInitializingLambda = false;
   query: RawLambda;
 
-  constructor(editorStore: EditorStore, test: MappingTest, query: RawLambda) {
+  constructor(
+    editorStore: EditorStore,
+    test: DEPRECATED__MappingTest,
+    query: RawLambda,
+  ) {
     super('', LAMBDA_PIPE);
 
     makeObservable(this, {
@@ -383,14 +388,13 @@ export enum MAPPING_TEST_EDITOR_TAB_TYPE {
   RESULT = 'Test Result',
 }
 
-export class MappingTestState {
-  readonly uuid = uuid();
+export class MappingTestState extends MappingEditorTabState {
   readonly editorStore: EditorStore;
   readonly mappingEditorState: MappingEditorState;
 
   selectedTab = MAPPING_TEST_EDITOR_TAB_TYPE.SETUP;
   result: TEST_RESULT = TEST_RESULT.NONE;
-  test: MappingTest;
+  test: DEPRECATED__MappingTest;
   runTime = 0;
   isSkipped = false;
   errorRunningTest?: Error | undefined;
@@ -406,9 +410,11 @@ export class MappingTestState {
 
   constructor(
     editorStore: EditorStore,
-    test: MappingTest,
+    test: DEPRECATED__MappingTest,
     mappingEditorState: MappingEditorState,
   ) {
+    super();
+
     makeObservable(this, {
       selectedTab: observable,
       result: observable,
@@ -454,6 +460,9 @@ export class MappingTestState {
     );
   }
 
+  get label(): string {
+    return this.test.name;
+  }
   setIsRunningTest(val: boolean): void {
     this.isRunningTest = val;
   }

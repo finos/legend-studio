@@ -57,7 +57,7 @@
   }
 }
 
-.query-builder__parameters {
+.query-builder__variables {
   .panel__header {
     border-top: 0.1rem solid var(--color-dark-grey-200);
   }
@@ -96,7 +96,14 @@
     }
   }
 
-  &__parameter {
+  &__info {
+    @include flexVCenter;
+
+    color: var(--color-light-grey-200);
+    cursor: pointer;
+  }
+
+  &__variable {
     @include flexCenter;
 
     width: 100%;
@@ -195,16 +202,22 @@
     }
   }
 
-  &__parameter:hover {
+  &__variable:hover {
     background: var(--color-dark-blue-shade-100);
   }
+}
 
-  &__value__editor {
-    height: 2.8rem;
-
-    input {
-      font-size: 1.4rem !important;
-    }
+.query-builder__constants {
+  &__value {
+    color: var(--color-blue-200);
+    font-weight: 500;
+    padding-left: 0.5rem;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-position: under;
   }
 }
 

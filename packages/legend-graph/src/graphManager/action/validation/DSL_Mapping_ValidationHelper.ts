@@ -17,7 +17,7 @@
 import { fromGrammarString, isValidJSONString } from '@finos/legend-shared';
 import { ExpectedOutputMappingTestAssert } from '../../../graph/metamodel/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert.js';
 import type { InputData } from '../../../graph/metamodel/pure/packageableElements/mapping/InputData.js';
-import type { MappingTest } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
+import type { DEPRECATED__MappingTest } from '../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import type { MappingTestAssert } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestAssert.js';
 import { FlatDataInputData } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
 import {
@@ -88,7 +88,7 @@ export const DEPRECATED__validate_InputData = (
 };
 
 export const DEPRECATED__validate_MappingTest = (
-  metamodel: MappingTest,
+  metamodel: DEPRECATED__MappingTest,
 ): ValidationIssue[] | undefined => {
   let problems: ValidationIssue[] = [];
   // query

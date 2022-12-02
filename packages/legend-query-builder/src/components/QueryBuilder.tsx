@@ -31,6 +31,7 @@ import {
   CaretDownIcon,
   DiffIcon,
   WaterDropIcon,
+  AssistantIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -56,6 +57,7 @@ import { guaranteeType } from '@finos/legend-shared';
 import { QueryBuilderGraphFetchTreeState } from '../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSPanel.js';
 import { QueryBuilderWatermarkEditor } from './watermark/QueryBuilderWatermark.js';
+import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpressionPanel.js';
 
 export const QUERY_BUILDER_BACKDROP_CONTAINER_ID =
   'query-builder.backdrop-container';
@@ -71,6 +73,8 @@ const QueryBuilderStatusBar = observer(
     const compile = applicationStore.guardUnhandledError(() =>
       flowResult(queryBuilderState.compileQuery()),
     );
+    const toggleAssistant = (): void =>
+      applicationStore.assistantService.toggleAssistant();
 
     return (
       <div className="query-builder__status-bar">
@@ -149,6 +153,20 @@ const QueryBuilderStatusBar = observer(
           >
             <HackerIcon />
           </button>
+          <button
+            className={clsx(
+              'query-builder__status-bar__action query-builder__status-bar__action__toggler',
+              {
+                'query-builder__status-bar__action__toggler--toggled':
+                  !applicationStore.assistantService.isHidden,
+              },
+            )}
+            onClick={toggleAssistant}
+            tabIndex={-1}
+            title="Toggle assistant"
+          >
+            <AssistantIcon />
+          </button>
         </div>
       </div>
     );
@@ -185,6 +203,11 @@ export const QueryBuilder = observer(
     const toggleShowParameterPanel = (): void => {
       queryBuilderState.setShowParametersPanel(
         !queryBuilderState.showParametersPanel,
+      );
+    };
+    const toggleConstantPanel = (): void => {
+      queryBuilderState.constantState.setShowConstantPanel(
+        !queryBuilderState.constantState.showConstantPanel,
       );
     };
     const toggleShowFilterPanel = (): void => {
@@ -305,6 +328,27 @@ export const QueryBuilder = observer(
                             </MenuContentItemLabel>
                           </MenuContentItem>
                         )}
+                        {
+                          <MenuContentItem
+                            onClick={toggleConstantPanel}
+                            disabled={
+                              !queryBuilderState.isQuerySupported ||
+                              queryBuilderState.constantState.constants.length >
+                                0
+                            }
+                          >
+                            <MenuContentItemIcon>
+                              {queryBuilderState.constantState
+                                .showConstantPanel ? (
+                                <CheckIcon />
+                              ) : null}
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                              Show Constant(s)
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                        }
+
                         <MenuContentItem
                           onClick={toggleShowFilterPanel}
                           disabled={
@@ -437,6 +481,17 @@ export const QueryBuilder = observer(
                             {queryBuilderState.showParametersPanel && (
                               <ResizablePanel minSize={40} direction={-1}>
                                 <QueryBuilderParametersPanel
+                                  queryBuilderState={queryBuilderState}
+                                />
+                              </ResizablePanel>
+                            )}
+                            {/* constants panel */}
+                            {queryBuilderState.constantState
+                              .showConstantPanel && <ResizablePanelSplitter />}
+                            {queryBuilderState.constantState
+                              .showConstantPanel && (
+                              <ResizablePanel minSize={40} direction={-1}>
+                                <QueryBuilderConstantExpressionPanel
                                   queryBuilderState={queryBuilderState}
                                 />
                               </ResizablePanel>

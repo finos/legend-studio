@@ -31,6 +31,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   hashArray,
+  ActionState,
 } from '@finos/legend-shared';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import {
@@ -123,28 +124,28 @@ export class ProjectConfigurationEditorState extends EditorState {
   latestProjectStructureVersion: ProjectStructureVersion | undefined;
   dependencyInfo: ProjectDependencyInfo | undefined;
   dependencyInfoModalType: DEPENDENCY_INFO_TYPE | undefined;
-  isUpdatingConfiguration = false;
-  isQueryingProjects = false;
+  fetchingDependencyInfoState = ActionState.create();
+  updatingConfigurationState = ActionState.create();
+  fetchingProjectVersionsState = ActionState.create();
   associatedProjectsAndVersionsFetched = false;
-  isFetchingAssociatedProjectsAndVersions = false;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     super(editorStore);
 
     makeObservable(this, {
       originalProjectConfiguration: observable,
-      isUpdatingConfiguration: observable,
+      updatingConfigurationState: observable,
       projectConfiguration: observable,
       selectedTab: observable,
       isReadOnly: observable,
       projects: observable,
       queryHistory: observable,
-      isQueryingProjects: observable,
       associatedProjectsAndVersionsFetched: observable,
-      isFetchingAssociatedProjectsAndVersions: observable,
+      fetchingProjectVersionsState: observable,
       latestProjectStructureVersion: observable,
       dependencyInfo: observable,
       dependencyInfoModalType: observable,
+      fetchingDependencyInfoState: observable,
       originalConfig: computed,
       setOriginalProjectConfiguration: action,
       setProjectConfiguration: action,
@@ -181,8 +182,12 @@ export class ProjectConfigurationEditorState extends EditorState {
     this.dependencyInfoModalType = type;
   }
 
-  get headerName(): string {
+  get label(): string {
     return 'config';
+  }
+
+  match(tab: EditorState): boolean {
+    return tab instanceof ProjectConfigurationEditorState;
   }
 
   get currentProjectConfiguration(): ProjectConfiguration {
@@ -208,7 +213,7 @@ export class ProjectConfigurationEditorState extends EditorState {
   }
 
   *fectchAssociatedProjectsAndVersions(): GeneratorFn<void> {
-    this.isFetchingAssociatedProjectsAndVersions = true;
+    this.fetchingProjectVersionsState.inProgress();
     try {
       (
         (yield this.editorStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
@@ -244,12 +249,13 @@ export class ProjectConfigurationEditorState extends EditorState {
         `Can't get project dependencies data. Error:\n${error.message}`,
       );
     } finally {
-      this.isFetchingAssociatedProjectsAndVersions = false;
+      this.fetchingProjectVersionsState.complete();
     }
   }
 
   *fetchDependencyInfo(): GeneratorFn<void> {
     try {
+      this.fetchingDependencyInfoState.inProgress();
       this.dependencyInfo = undefined;
       if (this.projectConfiguration?.projectDependencies) {
         const dependencyCoordinates = (yield flowResult(
@@ -268,8 +274,10 @@ export class ProjectConfigurationEditorState extends EditorState {
       } else {
         this.dependencyInfo = new ProjectDependencyInfo();
       }
+      this.fetchingDependencyInfoState.complete();
     } catch (error) {
       assertErrorThrown(error);
+      this.fetchingDependencyInfoState.fail();
       this.dependencyInfo = undefined;
       this.editorStore.applicationStore.log.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
@@ -282,7 +290,7 @@ export class ProjectConfigurationEditorState extends EditorState {
     updateConfigurationCommand: UpdateProjectConfigurationCommand,
   ): GeneratorFn<void> {
     try {
-      this.isUpdatingConfiguration = true;
+      this.updatingConfigurationState.inProgress();
       yield this.editorStore.sdlcServerClient.updateConfiguration(
         this.editorStore.sdlcState.activeProject.projectId,
         this.editorStore.sdlcState.activeWorkspace,
@@ -306,7 +314,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         ),
       );
       yield flowResult(this.editorStore.initMode());
-      this.editorStore.openSingletonEditorState(
+      this.editorStore.tabManagerState.openTab(
         this.editorStore.projectConfigurationEditorState,
       );
     } catch (error) {
@@ -317,7 +325,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
       this.editorStore.applicationStore.notifyError(error);
     } finally {
-      this.isUpdatingConfiguration = false;
+      this.updatingConfigurationState.complete();
     }
   }
 
@@ -345,7 +353,7 @@ export class ProjectConfigurationEditorState extends EditorState {
   // TODO: we will probably need to remove this in the future when we have a better strategy for change detection and persistence of project config
   // See https://github.com/finos/legend-studio/issues/952
   *updateConfigs(): GeneratorFn<void> {
-    this.isUpdatingConfiguration = true;
+    this.updatingConfigurationState.inProgress();
     this.editorStore.applicationStore.setBlockingAlert({
       message: `Updating project configuration...`,
       prompt: `Please do not reload the application`,
@@ -395,7 +403,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
       this.editorStore.applicationStore.notifyError(error);
     } finally {
-      this.isUpdatingConfiguration = false;
+      this.updatingConfigurationState.complete();
       this.editorStore.applicationStore.setBlockingAlert(undefined);
     }
   }

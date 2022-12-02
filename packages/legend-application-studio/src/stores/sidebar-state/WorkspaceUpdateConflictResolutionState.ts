@@ -157,7 +157,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       (state) => state.entityPath === conflict.entityPath,
     );
     if (existingMergeEditorState) {
-      this.editorStore.openEntityChangeConflict(existingMergeEditorState);
+      this.editorStore.tabManagerState.openTab(existingMergeEditorState);
       return;
     }
     const baseEntityGetter = (
@@ -199,11 +199,11 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       incomingChangeEntityGetter,
     );
     this.mergeEditorStates.push(mergeEditorState);
-    this.editorStore.openEntityChangeConflict(mergeEditorState);
+    this.editorStore.tabManagerState.openTab(mergeEditorState);
   }
 
   closeConflict(conflict: EntityChangeConflictEditorState): void {
-    this.editorStore.closeState(conflict);
+    this.editorStore.tabManagerState.closeTab(conflict);
   }
 
   resolveConflict(resolution: EntityChangeConflictResolution): void {
@@ -319,7 +319,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.hasResolvedAllConflicts,
       'Editor must be in conflict resolution mode and all conflicts must have been marked as resolved to call this method',
     );
-    this.editorStore.closeAllEditorTabs();
+    this.editorStore.tabManagerState.closeAllTabs();
     this.editorStore.setActiveActivity(ACTIVITY_MODE.EXPLORER, {
       keepShowingIfMatchedCurrent: true,
     });
@@ -412,7 +412,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
           ),
         ),
       );
-      this.editorStore.refreshCurrentEntityDiffEditorState();
+      this.editorStore.tabManagerState.refreshCurrentEntityDiffViewer();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -446,7 +446,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
           ),
         ),
       );
-      this.editorStore.refreshCurrentEntityDiffEditorState();
+      this.editorStore.tabManagerState.refreshCurrentEntityDiffViewer();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -698,7 +698,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
           `Can't find entity with path  '${diff.newPath}'`,
         )
       : undefined;
-    this.editorStore.openEntityDiff(
+    this.editorStore.tabManagerState.openTab(
       new EntityDiffViewState(
         this.editorStore,
         SPECIAL_REVISION_ALIAS.WORKSPACE_BASE,

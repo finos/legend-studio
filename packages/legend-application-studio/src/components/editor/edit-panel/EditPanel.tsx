@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-import { forwardRef, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
   DropdownMenu,
-  ContextMenu,
   MenuContent,
   MenuContentItem,
-  TimesIcon,
   PlusIcon,
   ArrowsAltHIcon,
   useResizeDetector,
@@ -34,7 +32,6 @@ import { UMLEditorState } from '../../../stores/editor-state/element-editor-stat
 import { ElementEditorState } from '../../../stores/editor-state/element-editor-state/ElementEditorState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { ELEMENT_NATIVE_VIEW_MODE } from '../../../stores/EditorConfig.js';
-import type { EditorState } from '../../../stores/editor-state/EditorState.js';
 import {
   DIFF_VIEW_MODE,
   EntityDiffViewState,
@@ -70,6 +67,7 @@ import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../store
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { PackageableDataEditorState } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
+import { TabManager, type TabState } from '@finos/legend-application';
 
 export const ViewerEditPanelSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -171,67 +169,26 @@ export const EditPanelSplashScreen: React.FC = () => {
   );
 };
 
-const EditPanelHeaderTabContextMenu = observer(
-  forwardRef<
-    HTMLDivElement,
-    {
-      editorState: EditorState;
-    }
-  >(function EditPanelHeaderTabContextMenu(props, ref) {
-    const { editorState } = props;
-    const editorStore = useEditorStore();
-    const close = (): void => editorStore.closeState(editorState);
-    const closeOthers = (): void =>
-      editorStore.closeAllOtherStates(editorState);
-    const closeAll = (): void => editorStore.closeAllStates();
-
-    return (
-      <div ref={ref} className="edit-panel__header__tab__context-menu">
-        <button
-          className="edit-panel__header__tab__context-menu__item"
-          onClick={close}
-        >
-          Close
-        </button>
-        <button
-          className="edit-panel__header__tab__context-menu__item"
-          disabled={editorStore.openedEditorStates.length < 2}
-          onClick={closeOthers}
-        >
-          Close Others
-        </button>
-        <button
-          className="edit-panel__header__tab__context-menu__item"
-          onClick={closeAll}
-        >
-          Close All
-        </button>
-      </div>
-    );
-  }),
-);
-
 export const EditPanel = observer(() => {
   const editorStore = useEditorStore();
-  const currentEditorState = editorStore.currentEditorState;
-  const openedEditorStates = editorStore.openedEditorStates;
+  const currentTabState = editorStore.tabManagerState.currentTab;
   const nativeViewModes =
-    currentEditorState instanceof ElementEditorState
+    currentTabState instanceof ElementEditorState
       ? Object.values(ELEMENT_NATIVE_VIEW_MODE)
       : [];
   const generationViewModes =
-    currentEditorState instanceof ElementEditorState
+    currentTabState instanceof ElementEditorState
       ? editorStore.graphState.graphGenerationState.fileGenerationConfigurations
           .slice()
           .sort((a, b): number => a.label.localeCompare(b.label))
       : [];
 
   const renderActiveElementTab = (): React.ReactNode => {
-    if (currentEditorState instanceof ElementEditorState) {
-      if (currentEditorState.generationViewMode) {
+    if (currentTabState instanceof ElementEditorState) {
+      if (currentTabState.generationViewMode) {
         const elementGenerationState = editorStore.elementGenerationStates.find(
           (state) =>
-            state.fileGenerationType === currentEditorState.generationViewMode,
+            state.fileGenerationType === currentTabState.generationViewMode,
         );
         return (
           <ElementGenerationEditor
@@ -239,44 +196,36 @@ export const EditPanel = observer(() => {
             elementGenerationState={guaranteeNonNullable(
               elementGenerationState,
             )}
-            currentElementState={currentEditorState}
+            currentElementState={currentTabState}
           />
         );
       }
-      switch (currentEditorState.editMode) {
+      switch (currentTabState.editMode) {
         case ELEMENT_NATIVE_VIEW_MODE.FORM: {
-          if (currentEditorState instanceof UMLEditorState) {
-            return <UMLEditor key={currentEditorState.uuid} />;
-          } else if (currentEditorState instanceof FunctionEditorState) {
-            return <FunctionEditor key={currentEditorState.uuid} />;
-          } else if (currentEditorState instanceof MappingEditorState) {
-            return <MappingEditor key={currentEditorState.uuid} />;
-          } else if (currentEditorState instanceof ServiceEditorState) {
-            return <ServiceEditor key={currentEditorState.uuid} />;
+          if (currentTabState instanceof UMLEditorState) {
+            return <UMLEditor key={currentTabState.uuid} />;
+          } else if (currentTabState instanceof FunctionEditorState) {
+            return <FunctionEditor key={currentTabState.uuid} />;
+          } else if (currentTabState instanceof MappingEditorState) {
+            return <MappingEditor key={currentTabState.uuid} />;
+          } else if (currentTabState instanceof ServiceEditorState) {
+            return <ServiceEditor key={currentTabState.uuid} />;
+          } else if (currentTabState instanceof PackageableRuntimeEditorState) {
+            return <PackageableRuntimeEditor key={currentTabState.uuid} />;
           } else if (
-            currentEditorState instanceof PackageableRuntimeEditorState
+            currentTabState instanceof PackageableConnectionEditorState
           ) {
-            return <PackageableRuntimeEditor key={currentEditorState.uuid} />;
+            return <PackageableConnectionEditor key={currentTabState.uuid} />;
+          } else if (currentTabState instanceof FileGenerationEditorState) {
+            return <FileGenerationEditor key={currentTabState.uuid} />;
+          } else if (currentTabState instanceof PackageableDataEditorState) {
+            return <DataElementEditor key={currentTabState.uuid} />;
           } else if (
-            currentEditorState instanceof PackageableConnectionEditorState
+            currentTabState instanceof GenerationSpecificationEditorState
           ) {
-            return (
-              <PackageableConnectionEditor key={currentEditorState.uuid} />
-            );
-          } else if (currentEditorState instanceof FileGenerationEditorState) {
-            return <FileGenerationEditor key={currentEditorState.uuid} />;
-          } else if (currentEditorState instanceof PackageableDataEditorState) {
-            return <DataElementEditor key={currentEditorState.uuid} />;
-          } else if (
-            currentEditorState instanceof GenerationSpecificationEditorState
-          ) {
-            return (
-              <GenerationSpecificationEditor key={currentEditorState.uuid} />
-            );
-          } else if (
-            currentEditorState instanceof UnsupportedElementEditorState
-          ) {
-            return <UnsupportedElementEditor key={currentEditorState.uuid} />;
+            return <GenerationSpecificationEditor key={currentTabState.uuid} />;
+          } else if (currentTabState instanceof UnsupportedElementEditorState) {
+            return <UnsupportedElementEditor key={currentTabState.uuid} />;
           }
           const extraElementEditorCreators = editorStore.pluginManager
             .getApplicationPlugins()
@@ -287,7 +236,7 @@ export const EditPanel = observer(() => {
                 ).getExtraElementEditorRenderers?.() ?? [],
             );
           for (const elementEditorCreators of extraElementEditorCreators) {
-            const elementEditor = elementEditorCreators(currentEditorState);
+            const elementEditor = elementEditorCreators(currentTabState);
             if (elementEditor) {
               return elementEditor;
             }
@@ -298,88 +247,68 @@ export const EditPanel = observer(() => {
         case ELEMENT_NATIVE_VIEW_MODE.GRAMMAR:
           return (
             <ElementNativeView
-              key={currentEditorState.uuid}
-              currentElementState={currentEditorState}
+              key={currentTabState.uuid}
+              currentElementState={currentTabState}
             />
           );
         default:
           return null;
       }
-    } else if (currentEditorState instanceof EntityDiffViewState) {
+    } else if (currentTabState instanceof EntityDiffViewState) {
       return (
         <EntityDiffView
-          key={currentEditorState.uuid}
-          entityDiffViewState={currentEditorState}
+          key={currentTabState.uuid}
+          entityDiffViewState={currentTabState}
         />
       );
-    } else if (currentEditorState instanceof EntityChangeConflictEditorState) {
+    } else if (currentTabState instanceof EntityChangeConflictEditorState) {
       return (
         <EntityChangeConflictEditor
-          key={currentEditorState.uuid}
-          conflictEditorState={currentEditorState}
+          key={currentTabState.uuid}
+          conflictEditorState={currentTabState}
         />
       );
-    } else if (currentEditorState instanceof FileGenerationViewerState) {
-      return <FileGenerationViewer key={currentEditorState.uuid} />;
-    } else if (currentEditorState instanceof ModelImporterState) {
+    } else if (currentTabState instanceof FileGenerationViewerState) {
+      return <FileGenerationViewer key={currentTabState.uuid} />;
+    } else if (currentTabState instanceof ModelImporterState) {
       return <ModelImporter />;
-    } else if (currentEditorState instanceof ProjectConfigurationEditorState) {
+    } else if (currentTabState instanceof ProjectConfigurationEditorState) {
       return <ProjectConfigurationEditor />;
     }
+    // TODO: create an editor for unsupported tab
     return null;
   };
 
-  const renderHeaderLabel = (editorState: EditorState): React.ReactNode => {
+  const renderTab = (editorState: TabState): React.ReactNode | undefined => {
     if (editorState instanceof EntityDiffViewState) {
       return (
-        <div className="edit-panel__header__tab__label__diff">
-          <div className="edit-panel__header__tab__label__diff__element-name">
-            {editorState.headerName}
-          </div>
-          <div className="edit-panel__header__tab__label__diff__text">
+        <div className="diff-tab">
+          <div className="diff-tab__element-name">{editorState.label}</div>
+          <div className="diff-tab__text">
             ({getPrettyLabelForRevision(editorState.fromRevision)}
           </div>
-          <div className="edit-panel__header__tab__label__diff__icon">
+          <div className="diff-tab__icon">
             <ArrowsAltHIcon />
           </div>
-          <div className="edit-panel__header__tab__label__diff__text">
+          <div className="diff-tab__text">
             {getPrettyLabelForRevision(editorState.toRevision)})
           </div>
         </div>
       );
     } else if (editorState instanceof EntityChangeConflictEditorState) {
       return (
-        <div className="edit-panel__header__tab__label__diff">
-          <div className="edit-panel__header__tab__label__diff__element-name">
-            {editorState.headerName}
-          </div>
-          <div className="edit-panel__header__tab__label__diff__text">
+        <div className="diff-tab">
+          <div className="diff-tab__element-name">{editorState.label}</div>
+          <div className="diff-tab__text">
             {editorState.isReadOnly ? '(Merge Preview)' : '(Merged)'}
           </div>
         </div>
       );
     }
-    return editorState.headerName;
+    return editorState.label;
   };
 
-  // actions
-  const closeTab =
-    (editorState: EditorState): React.MouseEventHandler =>
-    (event): void =>
-      editorStore.closeState(editorState);
-  const closeTabOnMiddleClick =
-    (editorState: EditorState): React.MouseEventHandler =>
-    (event): void => {
-      if (event.nativeEvent.button === 1) {
-        editorStore.closeState(editorState);
-      }
-    };
-  const openTab =
-    (editorState: EditorState): (() => void) =>
-    (): void =>
-      editorStore.openState(editorState);
-
-  if (!currentEditorState) {
+  if (!currentTabState) {
     return editorStore.isInViewerMode ? (
       <ViewerEditPanelSplashScreen />
     ) : (
@@ -391,54 +320,18 @@ export const EditPanel = observer(() => {
       data-testid={LEGEND_STUDIO_TEST_ID.EDIT_PANEL}
       className="panel edit-panel"
     >
-      <ContextMenu disabled={true} className="panel__header edit-panel__header">
+      <div className="panel__header edit-panel__header">
         <div
           data-testid={LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS}
           className="edit-panel__header__tabs"
         >
-          {openedEditorStates.map((editorState) => (
-            <div
-              key={editorState.uuid}
-              className={clsx('edit-panel__header__tab', {
-                'edit-panel__header__tab--active':
-                  editorState === currentEditorState,
-              })}
-              onMouseUp={closeTabOnMiddleClick(editorState)}
-            >
-              <ContextMenu
-                content={
-                  <EditPanelHeaderTabContextMenu editorState={editorState} />
-                }
-                className="edit-panel__header__tab__content"
-              >
-                <button
-                  className="edit-panel__header__tab__label"
-                  tabIndex={-1}
-                  onClick={openTab(editorState)}
-                  title={
-                    editorState instanceof ElementEditorState
-                      ? editorState.element.path
-                      : editorState instanceof EntityDiffViewState
-                      ? editorState.headerTooltip
-                      : editorState.headerName
-                  }
-                >
-                  {renderHeaderLabel(editorState)}
-                </button>
-                <button
-                  className="edit-panel__header__tab__close-btn"
-                  onClick={closeTab(editorState)}
-                  tabIndex={-1}
-                  title="Close"
-                >
-                  <TimesIcon />
-                </button>
-              </ContextMenu>
-            </div>
-          ))}
+          <TabManager
+            tabManagerState={editorStore.tabManagerState}
+            tabRenderer={renderTab}
+          />
         </div>
         <div className="edit-panel__header__actions">
-          {currentEditorState instanceof ElementEditorState && (
+          {currentTabState instanceof ElementEditorState && (
             <DropdownMenu
               className="edit-panel__view-mode__type"
               title="View as..."
@@ -459,7 +352,7 @@ export const EditPanel = observer(() => {
                           key={mode}
                           className="edit-panel__view-mode__option"
                           onClick={(): void =>
-                            currentEditorState.setEditMode(mode)
+                            currentTabState.setEditMode(mode)
                           }
                         >
                           {mode}
@@ -485,9 +378,7 @@ export const EditPanel = observer(() => {
                                 )
                               }
                               onClick={(): void =>
-                                currentEditorState.setGenerationViewMode(
-                                  mode.key,
-                                )
+                                currentTabState.setGenerationViewMode(mode.key)
                               }
                             >
                               {mode.label}
@@ -505,15 +396,15 @@ export const EditPanel = observer(() => {
               }}
             >
               <div className="edit-panel__view-mode__type__label">
-                {currentEditorState.generationViewMode
+                {currentTabState.generationViewMode
                   ? editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
-                      currentEditorState.generationViewMode,
+                      currentTabState.generationViewMode,
                     ).label
-                  : currentEditorState.editMode}
+                  : currentTabState.editMode}
               </div>
             </DropdownMenu>
           )}
-          {currentEditorState instanceof EntityDiffViewState && (
+          {currentTabState instanceof EntityDiffViewState && (
             <DropdownMenu
               className="edit-panel__view-mode__type"
               title="View as..."
@@ -527,7 +418,7 @@ export const EditPanel = observer(() => {
                   <MenuContentItem
                     className="edit-panel__view-mode__option"
                     onClick={(): void =>
-                      currentEditorState.setDiffMode(DIFF_VIEW_MODE.GRAMMAR)
+                      currentTabState.setDiffMode(DIFF_VIEW_MODE.GRAMMAR)
                     }
                   >
                     {DIFF_VIEW_MODE.GRAMMAR}
@@ -535,7 +426,7 @@ export const EditPanel = observer(() => {
                   <MenuContentItem
                     className="edit-panel__view-mode__option"
                     onClick={(): void =>
-                      currentEditorState.setDiffMode(DIFF_VIEW_MODE.JSON)
+                      currentTabState.setDiffMode(DIFF_VIEW_MODE.JSON)
                     }
                   >
                     {DIFF_VIEW_MODE.JSON}
@@ -548,18 +439,18 @@ export const EditPanel = observer(() => {
               }}
             >
               <div className="edit-panel__view-mode__type__label">
-                {currentEditorState.diffMode}
+                {currentTabState.diffMode}
               </div>
             </DropdownMenu>
           )}
         </div>
-      </ContextMenu>
+      </div>
       <div
         // NOTE: This is one small but extremely important line. Using `key` we effectivly force-remounting the element editor
         // component every time current element editor state is changed. This is great to control errors that has to do with stale states
         // when we `reprocess` world or when we switch tabs between 2 elements of the same type (i.e. 2 classes, 2 mappings, etc.)
         // See https://github.com/bvaughn/react-error-boundary/issues/23#issuecomment-425470511
-        key={currentEditorState.uuid}
+        key={currentTabState.uuid}
         className="panel__content edit-panel__content"
         data-testid={LEGEND_STUDIO_TEST_ID.EDIT_PANEL_CONTENT}
       >

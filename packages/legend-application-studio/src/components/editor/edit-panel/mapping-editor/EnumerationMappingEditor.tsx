@@ -198,7 +198,7 @@ export const SourceValueInput = observer(
     const handleDrop = useCallback(
       (item: TransformDropTarget): void => {
         if (!isReadOnly) {
-          if (item instanceof TypeDragSource) {
+          if (item instanceof TypeDragSource && item.data) {
             updateSourceValue(value + item.data.label);
           }
         }
@@ -344,7 +344,7 @@ export const EnumerationMappingEditor = observer(
     const { enumerationMapping, isReadOnly } = props;
     const editorStore = useEditorStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const enumeration = enumerationMapping.enumeration;
     // ID
     const showId =
@@ -401,155 +401,153 @@ export const EnumerationMappingEditor = observer(
     }, [enumerationMapping, isReadOnly, editorStore]);
     return (
       <div
-        data-testid={LEGEND_STUDIO_TEST_ID.MAIN_EDITOR}
-        className="editor__main"
+        className="mapping-element-editor enumeration-mapping-editor"
+        data-testid={LEGEND_STUDIO_TEST_ID.ENUMERATION_MAPPING_EDITOR}
       >
-        <div className="mapping-element-editor enumeration-mapping-editor">
-          <div className="mapping-element-editor__metadata">
-            {/* Target */}
-            <div className="mapping-element-editor__metadata__chunk mapping-element-editor__metadata__overview-chunk background--enumeration">
-              <div className="mapping-element-editor__metadata__sub-chunk">
-                enumeration mapping
+        <div className="mapping-element-editor__metadata">
+          {/* Target */}
+          <div className="mapping-element-editor__metadata__chunk mapping-element-editor__metadata__overview-chunk background--enumeration">
+            <div className="mapping-element-editor__metadata__sub-chunk">
+              enumeration mapping
+            </div>
+            {showId && (
+              <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__overview__id">
+                {enumerationMapping.id.isDefault
+                  ? 'default ID'
+                  : enumerationMapping.id.value}
               </div>
-              {showId && (
-                <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__overview__id">
-                  {enumerationMapping.id.isDefault
-                    ? 'default ID'
-                    : enumerationMapping.id.value}
-                </div>
-              )}
-              <div className="mapping-element-editor__metadata__sub-chunk">
-                for
+            )}
+            <div className="mapping-element-editor__metadata__sub-chunk">
+              for
+            </div>
+            <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__target">
+              <div className="mapping-element-editor__metadata__target__type icon">
+                <PURE_EnumerationIcon />
               </div>
-              <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__target">
-                <div className="mapping-element-editor__metadata__target__type icon">
-                  <PURE_EnumerationIcon />
-                </div>
-                <div className="mapping-element-editor__metadata__target__label">
-                  {enumeration.value.name}
-                </div>
+              <div className="mapping-element-editor__metadata__target__label">
+                {enumeration.value.name}
               </div>
             </div>
-            {/* Driver */}
-            {sourceType && (
-              <div
-                className={clsx(
-                  'mapping-element-editor__metadata__chunk',
-                  'mapping-element-editor__metadata__driver-chunk',
-                  'background--primitive',
-                  'mapping-element-editor__metadata__source-chunk--primitive',
-                  {
-                    'mapping-element-editor__metadata__source-chunk--none':
-                      !sourceType,
-                  },
-                )}
-              >
-                <div className="mapping-element-editor__metadata__sub-chunk">
-                  using
-                </div>
-                <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__driver__type">
-                  {sourceType.name}
-                </div>
-              </div>
-            )}
-            {!sourceType && (
-              <div
-                className={clsx(
-                  'mapping-element-editor__metadata__chunk',
-                  'mapping-element-editor__metadata__source-chunk',
-                  'mapping-element-editor__metadata__source-chunk--none',
-                )}
-              >
-                <div className="mapping-element-editor__metadata__sub-chunk">
-                  with no source
-                </div>
-              </div>
-            )}
           </div>
-          <div className="mapping-element-editor__content">
-            <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel minSize={300}>
-                <Panel>
-                  <div className="panel__header">
-                    <div className="panel__header__title">
-                      <div className="panel__header__title__content">ENUMS</div>
+          {/* Driver */}
+          {sourceType && (
+            <div
+              className={clsx(
+                'mapping-element-editor__metadata__chunk',
+                'mapping-element-editor__metadata__driver-chunk',
+                'background--primitive',
+                'mapping-element-editor__metadata__source-chunk--primitive',
+                {
+                  'mapping-element-editor__metadata__source-chunk--none':
+                    !sourceType,
+                },
+              )}
+            >
+              <div className="mapping-element-editor__metadata__sub-chunk">
+                using
+              </div>
+              <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__driver__type">
+                {sourceType.name}
+              </div>
+            </div>
+          )}
+          {!sourceType && (
+            <div
+              className={clsx(
+                'mapping-element-editor__metadata__chunk',
+                'mapping-element-editor__metadata__source-chunk',
+                'mapping-element-editor__metadata__source-chunk--none',
+              )}
+            >
+              <div className="mapping-element-editor__metadata__sub-chunk">
+                with no source
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="mapping-element-editor__content">
+          <ResizablePanelGroup orientation="vertical">
+            <ResizablePanel minSize={300}>
+              <Panel>
+                <div className="panel__header">
+                  <div className="panel__header__title">
+                    <div className="panel__header__title__content">ENUMS</div>
+                  </div>
+                </div>
+                <div className="panel__content enumeration-mapping-editor__enum-values">
+                  {enumeration.value.values.map((enumValue) => (
+                    <EnumValueMappingEditor
+                      key={enumValue.name}
+                      enumValue={enumValue}
+                      enumerationMapping={enumerationMapping}
+                      sourceType={enumerationMapping.sourceType}
+                      isReadOnly={isReadOnly}
+                    />
+                  ))}
+                </div>
+              </Panel>
+            </ResizablePanel>
+            <ResizablePanelSplitter />
+            <ResizablePanel size={300} minSize={300}>
+              <div
+                data-testid={LEGEND_STUDIO_TEST_ID.SOURCE_PANEL}
+                className="panel source-panel"
+              >
+                <div className="panel__header">
+                  <div className="panel__header__title">
+                    <div className="panel__header__title__label">source</div>
+                    <div className="panel__header__title__content">
+                      {sourceType?.name ?? '(none)'}
                     </div>
                   </div>
-                  <div className="panel__content enumeration-mapping-editor__enum-values">
-                    {enumeration.value.values.map((enumValue) => (
-                      <EnumValueMappingEditor
-                        key={enumValue.name}
-                        enumValue={enumValue}
-                        enumerationMapping={enumerationMapping}
-                        sourceType={enumerationMapping.sourceType}
-                        isReadOnly={isReadOnly}
-                      />
-                    ))}
-                  </div>
-                </Panel>
-              </ResizablePanel>
-              <ResizablePanelSplitter />
-              <ResizablePanel size={300} minSize={300}>
-                <div
-                  data-testid={LEGEND_STUDIO_TEST_ID.SOURCE_PANEL}
-                  className="panel source-panel"
-                >
-                  <div className="panel__header">
-                    <div className="panel__header__title">
-                      <div className="panel__header__title__label">source</div>
-                      <div className="panel__header__title__content">
-                        {sourceType?.name ?? '(none)'}
-                      </div>
-                    </div>
-                    <div className="panel__header__actions">
-                      <button
-                        className="panel__header__action"
-                        onClick={showSourceSelectorModal}
-                        disabled={isReadOnly}
-                        tabIndex={-1}
-                        title="Select a source..."
-                      >
-                        <PencilIcon />
-                      </button>
-                    </div>
-                  </div>
-                  <PanelContent>
-                    <PanelDropZone
-                      dropTargetConnector={dropRef}
-                      isDragOver={
-                        Boolean(sourceType) && isDragOver && !isReadOnly
-                      }
+                  <div className="panel__header__actions">
+                    <button
+                      className="panel__header__action"
+                      onClick={showSourceSelectorModal}
+                      disabled={isReadOnly}
+                      tabIndex={-1}
+                      title="Select a source..."
                     >
-                      {sourceType && (
-                        <div className="source-panel__explorer">
-                          {sourceType instanceof Enumeration && (
-                            <TypeTree type={sourceType} />
-                          )}
-                          {/* TODO?: do we need to show anything when the source type is string or integer */}
-                        </div>
-                      )}
-                      {!sourceType && (
-                        <BlankPanelPlaceholder
-                          text="Choose a source"
-                          onClick={showSourceSelectorModal}
-                          clickActionType="add"
-                          tooltipText="Drop an enumeration"
-                          isDropZoneActive={canDrop}
-                          disabled={isReadOnly}
-                          previewText="No source"
-                        />
-                      )}
-                      <EnumerationMappingSourceSelectorModal
-                        enumerationMapping={enumerationMapping}
-                        open={openSourceSelectorModal}
-                        closeModal={hideSourceSelectorModal}
-                      />
-                    </PanelDropZone>
-                  </PanelContent>
+                      <PencilIcon />
+                    </button>
+                  </div>
                 </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </div>
+                <PanelContent>
+                  <PanelDropZone
+                    dropTargetConnector={dropRef}
+                    isDragOver={
+                      Boolean(sourceType) && isDragOver && !isReadOnly
+                    }
+                  >
+                    {sourceType && (
+                      <div className="source-panel__explorer">
+                        {sourceType instanceof Enumeration && (
+                          <TypeTree type={sourceType} />
+                        )}
+                        {/* TODO?: do we need to show anything when the source type is string or integer */}
+                      </div>
+                    )}
+                    {!sourceType && (
+                      <BlankPanelPlaceholder
+                        text="Choose a source"
+                        onClick={showSourceSelectorModal}
+                        clickActionType="add"
+                        tooltipText="Drop an enumeration"
+                        isDropZoneActive={canDrop}
+                        disabled={isReadOnly}
+                        previewText="No source"
+                      />
+                    )}
+                    <EnumerationMappingSourceSelectorModal
+                      enumerationMapping={enumerationMapping}
+                      open={openSourceSelectorModal}
+                      closeModal={hideSourceSelectorModal}
+                    />
+                  </PanelDropZone>
+                </PanelContent>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
       </div>
     );

@@ -53,8 +53,14 @@ export enum DatabaseType {
 
 export abstract class DatabaseConnection extends Connection {
   declare store: PackageableElementReference<Database>;
+
+  /**
+   * For convenience, we use a Typescript enum instead of the native
+   * Pure enumeration meta::relational::runtime::DatabaseType
+   *
+   * @discrepancy model
+   */
   type: DatabaseType;
-  // debug?: boolean | undefined;
   timeZone?: string | undefined;
   quoteIdentifiers?: boolean | undefined;
   postProcessorWithParameter: unknown[] = [];

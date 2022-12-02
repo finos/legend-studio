@@ -15,10 +15,12 @@
  */
 
 import {
+  BlankPanelPlaceholder,
   clsx,
   ContextMenu,
   CustomSelectorInput,
   Dialog,
+  InfoCircleIcon,
   MaskIcon,
   MenuContent,
   MenuContentItem,
@@ -51,6 +53,7 @@ import { EmbeddedDataType } from '../../../../../stores/editor-state/ExternalFor
 import { flowResult } from 'mobx';
 import {
   buildElementOption,
+  LEGEND_APPLICATION_DOCUMENTATION_KEY,
   useApplicationStore,
 } from '@finos/legend-application';
 import { prettyCONSTName } from '@finos/legend-shared';
@@ -392,11 +395,16 @@ export const NewConnectionDataModal = observer(
 export const ServiceTestDataEditor = observer(
   (props: { testDataState: ServiceTestDataState }) => {
     const { testDataState } = props;
+    const applicationStore = useApplicationStore();
     const testData = testDataState.testData;
     const newConnectionDataState = testDataState.newConnectionDataState;
     const addConnectionTestData = (): void => {
       testDataState.newConnectionDataState.openModal();
     };
+    const seeDocumentation = (): void =>
+      applicationStore.assistantService.openDocumentationEntry(
+        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_SERVICE_CONNECTION_TEST_DATA,
+      );
     return (
       <div className="service-test-data-editor panel">
         <div className="service-test-suite-editor__header">
@@ -407,12 +415,28 @@ export const ServiceTestDataEditor = observer(
           </div>
         </div>
         <div className="service-test-data-editor__data">
+          {!testData.connectionsTestData.length && (
+            <BlankPanelPlaceholder
+              text="Add Connection Test Data"
+              onClick={addConnectionTestData}
+              clickActionType="add"
+              tooltipText="Click to add connection test data"
+            />
+          )}
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel minSize={100}>
               <div className="binding-editor__header">
                 <div className="binding-editor__header__title">
                   <div className="binding-editor__header__title__label">
                     connections test data
+                    <button
+                      className="binding-editor__header__title__label__hint"
+                      tabIndex={-1}
+                      onClick={seeDocumentation}
+                      title="click to see more details on connection test data"
+                    >
+                      <InfoCircleIcon />
+                    </button>
                   </div>
                 </div>
                 <div className="panel__header__actions">

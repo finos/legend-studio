@@ -1,5 +1,47 @@
 # @finos/legend-query-builder
 
+## 0.6.7
+
+## 0.6.6
+
+## 0.6.5
+
+## 0.6.4
+
+## 0.6.3
+
+### Patch Changes
+
+- [#1708](https://github.com/finos/legend-studio/pull/1708) [`56e287e57`](https://github.com/finos/legend-studio/commit/56e287e57bc98c37c813c5d924c01955cec38d68) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support DnD from `fetch structure` to `fitler` panel to create a new logical group.
+
+## 0.6.2
+
+### Patch Changes
+
+- [#1700](https://github.com/finos/legend-studio/pull/1700) [`9b2e9b698`](https://github.com/finos/legend-studio/commit/9b2e9b69860246faae068c219d936f68bb242302) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where datetime values are not provided with seconds.
+
+- [#1705](https://github.com/finos/legend-studio/pull/1705) [`048271628`](https://github.com/finos/legend-studio/commit/0482716286d64f6305e0a6836037751c65fcfe8f) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug with the cursor when editing `filter` and `post filter` text input value ([#1594](https://github.com/finos/legend-studio/issues/1594)).
+
+## 0.6.1
+
+## 0.6.0
+
+### Minor Changes
+
+- [#1691](https://github.com/finos/legend-studio/pull/1691) [`85aef2dfe`](https://github.com/finos/legend-studio/commit/85aef2dfe531188a87687352541e52f97d6018ec) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Disable deleting variables if used in query.
+
+## 0.5.0
+
+### Minor Changes
+
+- [#1627](https://github.com/finos/legend-studio/pull/1627) [`fac6a9cc8`](https://github.com/finos/legend-studio/commit/fac6a9cc842cb6ed7a60b65e900dc33015f5f5e9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for constants in query builder.
+
+### Patch Changes
+
+- [#1680](https://github.com/finos/legend-studio/pull/1680) [`ff01c821a`](https://github.com/finos/legend-studio/commit/ff01c821a249d87af943941e9fbb2a528016a334) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix incorrectly creating parameters for milestone date values when not required
+
+- [#1682](https://github.com/finos/legend-studio/pull/1682) [`aa6665463`](https://github.com/finos/legend-studio/commit/aa6665463c710b2e9e4f8f80aa929aa8b6a15fb1) ([@xannem](https://github.com/xannem)) - fix: keeping query states when switching service execution contexts
+
 ## 0.4.4
 
 ### Patch Changes

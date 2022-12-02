@@ -65,7 +65,6 @@ import {
 import { V1_ParameterValue } from '../../../model/packageableElements/service/V1_ParameterValue.js';
 import { V1_TestData } from '../../../model/packageableElements/service/V1_TestData.js';
 import {
-  V1_AtomicTestType,
   V1_deserializeAtomicTest,
   V1_deserializeTestAssertion,
   V1_deserializeTestSuite,
@@ -84,6 +83,7 @@ import {
 } from '../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
+import { ATOMIC_TEST_TYPE } from '../../../../../../../graph/MetaModelConst.js';
 
 export const V1_SERVICE_ELEMENT_PROTOCOL_TYPE = 'service';
 
@@ -126,7 +126,7 @@ export const V1_testDataModelSchema = (
   });
 
 export const V1_serviceTestModelSchema = createModelSchema(V1_ServiceTest, {
-  _type: usingConstantValueSchema(V1_AtomicTestType.SERVICE_TEST),
+  _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Service_Test),
   assertions: list(
     custom(
       (val) => V1_serializeTestAssertion(val),
@@ -134,6 +134,7 @@ export const V1_serviceTestModelSchema = createModelSchema(V1_ServiceTest, {
     ),
   ),
   id: primitive(),
+  keys: list(primitive()),
   parameters: custom(
     (values) =>
       serializeArray(

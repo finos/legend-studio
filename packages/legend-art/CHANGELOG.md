@@ -1,5 +1,27 @@
 # @finos/legend-art
 
+## 5.0.12
+
+## 5.0.11
+
+## 5.0.10
+
+## 5.0.9
+
+## 5.0.8
+
+### Patch Changes
+
+- [#1714](https://github.com/finos/legend-studio/pull/1714) [`59fc8c4aa`](https://github.com/finos/legend-studio/commit/59fc8c4aae608dcc7b64be59762ab248dd4666c8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fixed a regression introduced in #1705 by enabling edit of the selected tag.
+
+## 5.0.7
+
+## 5.0.6
+
+### Patch Changes
+
+- [#1678](https://github.com/finos/legend-studio/pull/1678) [`a146b94f3`](https://github.com/finos/legend-studio/commit/a146b94f31d990c4f7b4dcfc4367c71c1f46b7cc) ([@xannem](https://github.com/xannem)) - fix: create workspace group toggle
+
 ## 5.0.5
 
 ### Patch Changes

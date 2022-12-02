@@ -147,6 +147,7 @@ test(
       classForm,
       LEGEND_STUDIO_TEST_ID.PANEL,
     );
+    fireEvent.click(getByText(subPropertyPanel, 'Tagged Values'));
     expect(
       getByDisplayValue(subPropertyPanel, 'lets write a tag'),
     ).not.toBeNull();
@@ -243,7 +244,6 @@ test(integrationTest('Association editor'), async () => {
     associationEditor,
     LEGEND_STUDIO_TEST_ID.PANEL,
   );
-  getByDisplayValue(subPropertyPanel, 'association tag');
   fireEvent.click(getByText(subPropertyPanel, 'Stereotypes'));
   await waitFor(() => getByText(subPropertyPanel, 'stereotype1'));
   fireEvent.click(

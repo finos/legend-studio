@@ -40,6 +40,7 @@ import {
   getAllOwnClassProperties,
   generateMultiplicityString,
   getRawGenericType,
+  AggregationKind,
 } from '@finos/legend-graph';
 import { action, makeObservable, observable } from 'mobx';
 import type { Diagram } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
@@ -169,8 +170,8 @@ export class DiagramRenderer {
   relationshipMode: DIAGRAM_RELATIONSHIP_EDIT_MODE;
 
   // UML specific shapes
-  triangle: Point[];
-  diamond: Point[];
+  triangle: [Point, Point, Point];
+  diamond: [Point, Point, Point, Point];
 
   // Font
   fontFamily: string;
@@ -2064,60 +2065,145 @@ export class DiagramRenderer {
     });
     this.ctx.stroke();
     this.ctx.lineWidth = 1;
-    // const diamondType = 'none';
-    // const startX = fullPath[1].x;
-    // const startY = fullPath[1].y;
-    // const endX = fullPath[0].x;
-    // const endY = fullPath[0].y;
-    // const to = propertyView.from;
-    // let resultX = 0;
-    // let resultY = 0;
-    // if (endY > startY) {
-    //   const x = startX + (endX - startX) / (endY - startY) * (to.classView.position.y - startY);
-    //   if (x > to.classView.position.x && x < to.classView.position.x + to.classView.rectangle.width) {
-    //     resultX = (x - this.canvasCenter.x) * this.zoom + this.canvasCenter.x;
-    //     resultY = (to.classView.position.y - this.canvasCenter.y) * this.zoom + this.canvasCenter.y;
-    //   }
-    // } else {
-    //   const x = startX + (endX - startX) / (endY - startY) * (to.classView.position.y + to.classView.rectangle.height - startY);
-    //   if (x > to.classView.position.x && x < to.classView.position.x + to.classView.rectangle.width) {
-    //     resultX = (x - this.canvasCenter.x) * this.zoom + this.canvasCenter.x;
-    //     resultY = (to.classView.position.y + to.classView.rectangle.height - this.canvasCenter.y) * this.zoom + this.canvasCenter.y;
-    //   }
-    // }
-    // if (endX > startX) {
-    //   const y = startY + (endY - startY) / (endX - startX) * (to.classView.position.x - startX);
-    //   if (y > to.classView.position.y && y < to.classView.position.y + to.classView.rectangle.height) {
-    //     resultX = (to.classView.position.x - this.canvasCenter.x) * this.zoom + this.canvasCenter.x;
-    //     resultY = (y - this.canvasCenter.y) * this.zoom + this.canvasCenter.y;
-    //   }
-    // } else {
-    //   const y = startY + (endY - startY) / (endX - startX) * (to.classView.position.x + to.classView.rectangle.width - startX);
-    //   if (y > to.classView.position.y && y < to.classView.position.y + to.classView.rectangle.height) {
-    //     resultX = (to.classView.position.x + to.classView.rectangle.width - this.canvasCenter.x) * this.zoom + this.canvasCenter.x;
-    //     resultY = (y - this.canvasCenter.y) * this.zoom + this.canvasCenter.y;
-    //   }
-    // }
-    // if (diamondType !== 'none') {
-    //   // Draw Diamond
-    //   let angle = Math.atan((endY - startY) / (endX - startX));
-    //   angle = endX >= startX ? angle : angle + Math.PI;
-    //   this.ctx.beginPath();
-    //   this.ctx.moveTo(resultX + (this.screenOffset.x + this.diamond[0].rotateX(angle)) * this.zoom, resultY + (this.screenOffset.y + this.diamond[0].rotateY(angle)) * this.zoom);
-    //   this.ctx.lineTo(resultX + (this.screenOffset.x + this.diamond[1].rotateX(angle)) * this.zoom, resultY + (this.screenOffset.y + this.diamond[1].rotateY(angle)) * this.zoom);
-    //   this.ctx.lineTo(resultX + (this.screenOffset.x + this.diamond[2].rotateX(angle)) * this.zoom, resultY + (this.screenOffset.y + this.diamond[2].rotateY(angle)) * this.zoom);
-    //   this.ctx.lineTo(resultX + (this.screenOffset.x + this.diamond[3].rotateX(angle)) * this.zoom, resultY + (this.screenOffset.y + this.diamond[3].rotateY(angle)) * this.zoom);
-    //   this.ctx.lineTo(resultX + (this.screenOffset.x + this.diamond[0].rotateX(angle)) * this.zoom, resultY + (this.screenOffset.y + this.diamond[0].rotateY(angle)) * this.zoom);
-    //   if (diamondType === 'shared') {
-    //     this.ctx.fillStyle = this.propertyViewSharedDiamondColor;
-    //   }
-    //   if (diamondType === 'owned') {
-    //     this.ctx.fillStyle = this.propertyViewOwnedDiamondColor;
-    //   }
-    //   this.ctx.fill();
-    //   this.ctx.stroke();
-    //   this.ctx.lineWidth = 1;
-    // }
+    if (toProperty instanceof Property) {
+      const startPoint = fullPath[1] as Point;
+      const endPoint = fullPath[0] as Point;
+      const startX = startPoint.x;
+      const startY = startPoint.y;
+      const endX = endPoint.x;
+      const endY = endPoint.y;
+      const to = propertyView.from;
+      let resultX = 0;
+      let resultY = 0;
+      if (endY > startY) {
+        const x =
+          startX +
+          ((endX - startX) / (endY - startY)) *
+            (to.classView.value.position.y - startY);
+        if (
+          x > to.classView.value.position.x &&
+          x < to.classView.value.position.x + to.classView.value.rectangle.width
+        ) {
+          resultX = (x - this.canvasCenter.x) * this.zoom + this.canvasCenter.x;
+          resultY =
+            (to.classView.value.position.y - this.canvasCenter.y) * this.zoom +
+            this.canvasCenter.y;
+        }
+      } else {
+        const x =
+          startX +
+          ((endX - startX) / (endY - startY)) *
+            (to.classView.value.position.y +
+              to.classView.value.rectangle.height -
+              startY);
+        if (
+          x > to.classView.value.position.x &&
+          x < to.classView.value.position.x + to.classView.value.rectangle.width
+        ) {
+          resultX = (x - this.canvasCenter.x) * this.zoom + this.canvasCenter.x;
+          resultY =
+            (to.classView.value.position.y +
+              to.classView.value.rectangle.height -
+              this.canvasCenter.y) *
+              this.zoom +
+            this.canvasCenter.y;
+        }
+      }
+      if (endX > startX) {
+        const y =
+          startY +
+          ((endY - startY) / (endX - startX)) *
+            (to.classView.value.position.x - startX);
+        if (
+          y > to.classView.value.position.y &&
+          y <
+            to.classView.value.position.y + to.classView.value.rectangle.height
+        ) {
+          resultX =
+            (to.classView.value.position.x - this.canvasCenter.x) * this.zoom +
+            this.canvasCenter.x;
+          resultY = (y - this.canvasCenter.y) * this.zoom + this.canvasCenter.y;
+        }
+      } else {
+        const y =
+          startY +
+          ((endY - startY) / (endX - startX)) *
+            (to.classView.value.position.x +
+              to.classView.value.rectangle.width -
+              startX);
+        if (
+          y > to.classView.value.position.y &&
+          y <
+            to.classView.value.position.y + to.classView.value.rectangle.height
+        ) {
+          resultX =
+            (to.classView.value.position.x +
+              to.classView.value.rectangle.width -
+              this.canvasCenter.x) *
+              this.zoom +
+            this.canvasCenter.x;
+          resultY = (y - this.canvasCenter.y) * this.zoom + this.canvasCenter.y;
+        }
+      }
+      if (
+        toProperty.aggregation === AggregationKind.COMPOSITE ||
+        toProperty.aggregation === AggregationKind.SHARED
+      ) {
+        // Draw Diamond
+        let angle = Math.atan((endY - startY) / (endX - startX));
+        angle = endX >= startX ? angle : angle + Math.PI;
+        this.ctx.beginPath();
+        this.ctx.moveTo(
+          resultX +
+            (this.screenOffset.x + rotatePointX(this.diamond[0], angle)) *
+              this.zoom,
+          resultY +
+            (this.screenOffset.y + rotatePointY(this.diamond[0], angle)) *
+              this.zoom,
+        );
+        this.ctx.lineTo(
+          resultX +
+            (this.screenOffset.x + rotatePointX(this.diamond[1], angle)) *
+              this.zoom,
+          resultY +
+            (this.screenOffset.y + rotatePointY(this.diamond[1], angle)) *
+              this.zoom,
+        );
+        this.ctx.lineTo(
+          resultX +
+            (this.screenOffset.x + rotatePointX(this.diamond[2], angle)) *
+              this.zoom,
+          resultY +
+            (this.screenOffset.y + rotatePointY(this.diamond[2], angle)) *
+              this.zoom,
+        );
+        this.ctx.lineTo(
+          resultX +
+            (this.screenOffset.x + rotatePointX(this.diamond[3], angle)) *
+              this.zoom,
+          resultY +
+            (this.screenOffset.y + rotatePointY(this.diamond[3], angle)) *
+              this.zoom,
+        );
+        this.ctx.lineTo(
+          resultX +
+            (this.screenOffset.x + rotatePointX(this.diamond[0], angle)) *
+              this.zoom,
+          resultY +
+            (this.screenOffset.y + rotatePointY(this.diamond[0], angle)) *
+              this.zoom,
+        );
+        if (toProperty.aggregation === AggregationKind.SHARED) {
+          this.ctx.fillStyle = this.propertyViewSharedDiamondColor;
+        }
+        if (toProperty.aggregation === AggregationKind.COMPOSITE) {
+          this.ctx.fillStyle = this.propertyViewOwnedDiamondColor;
+        }
+        this.ctx.fill();
+        this.ctx.stroke();
+        this.ctx.lineWidth = 1;
+      }
+    }
   }
 
   private drawInheritance(inheritance: GeneralizationView): void {
@@ -2217,34 +2303,34 @@ export class DiagramRenderer {
     this.ctx.beginPath();
     this.ctx.moveTo(
       resultX +
-        (this.screenOffset.x + rotatePointX(this.triangle[0] as Point, angle)) *
+        (this.screenOffset.x + rotatePointX(this.triangle[0], angle)) *
           this.zoom,
       resultY +
-        (this.screenOffset.y + rotatePointY(this.triangle[0] as Point, angle)) *
+        (this.screenOffset.y + rotatePointY(this.triangle[0], angle)) *
           this.zoom,
     );
     this.ctx.lineTo(
       resultX +
-        (this.screenOffset.x + rotatePointX(this.triangle[1] as Point, angle)) *
+        (this.screenOffset.x + rotatePointX(this.triangle[1], angle)) *
           this.zoom,
       resultY +
-        (this.screenOffset.y + rotatePointY(this.triangle[1] as Point, angle)) *
+        (this.screenOffset.y + rotatePointY(this.triangle[1], angle)) *
           this.zoom,
     );
     this.ctx.lineTo(
       resultX +
-        (this.screenOffset.x + rotatePointX(this.triangle[2] as Point, angle)) *
+        (this.screenOffset.x + rotatePointX(this.triangle[2], angle)) *
           this.zoom,
       resultY +
-        (this.screenOffset.y + rotatePointY(this.triangle[2] as Point, angle)) *
+        (this.screenOffset.y + rotatePointY(this.triangle[2], angle)) *
           this.zoom,
     );
     this.ctx.lineTo(
       resultX +
-        (this.screenOffset.x + rotatePointX(this.triangle[0] as Point, angle)) *
+        (this.screenOffset.x + rotatePointX(this.triangle[0], angle)) *
           this.zoom,
       resultY +
-        (this.screenOffset.y + rotatePointY(this.triangle[0] as Point, angle)) *
+        (this.screenOffset.y + rotatePointY(this.triangle[0], angle)) *
           this.zoom,
     );
     this.ctx.fillStyle = this.generalizationViewInheritanceTriangeFillColor;
@@ -2397,7 +2483,7 @@ export class DiagramRenderer {
     forceDispatchKeyboardEvent(e);
 
     // Remove selected view(s)
-    if ('Delete' === e.key) {
+    if ('Delete' === e.code) {
       if (!this.isReadOnly) {
         this.selectedClasses.forEach((classView) => {
           diagram_deleteClassView(this.diagram, classView);
@@ -2468,7 +2554,7 @@ export class DiagramRenderer {
     // NOTE: since the current behavior when editing property is to immediately
     // focus on the property name input when the inline editor pops up
     // we need to call `preventDefault` to avoid typing `e` in the property name input
-    else if ('e' === e.key) {
+    else if ('KeyE' === e.code) {
       if (this.selectedClassProperty) {
         this.handleEditProperty(
           this.selectedClassProperty.property,
@@ -2538,7 +2624,7 @@ export class DiagramRenderer {
     }
 
     // Add supertypes of selected classes to the diagram
-    else if ('ArrowUp' === e.key) {
+    else if ('ArrowUp' === e.code) {
       const views = this.getSuperTypeLevels(
         this.selectedClasses,
         this.diagram,
@@ -2553,7 +2639,7 @@ export class DiagramRenderer {
     }
 
     // Add subtypes of selected classes to the diagram
-    else if ('ArrowDown' === e.key) {
+    else if ('ArrowDown' === e.code) {
       const views = uniqBy(
         this.selectedClasses.flatMap((x) =>
           x.class.value._subclasses.flatMap(

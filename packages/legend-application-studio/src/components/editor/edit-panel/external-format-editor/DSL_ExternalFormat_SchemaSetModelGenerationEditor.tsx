@@ -125,7 +125,7 @@ export const SchemaSetModelGenerationEditor = observer(
                       }
                     </div>
                     <InputWithInlineValidation
-                      className="query-builder__parameters__parameter__name__input input-group__input"
+                      className="query-builder__variables__variable__name__input input-group__input"
                       spellCheck={false}
                       value={modelGenerationState.targetBinding}
                       onChange={changeTargetBindingPath}

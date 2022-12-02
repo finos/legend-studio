@@ -38,8 +38,7 @@ export const SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET = `MasterRecordDefinition \
    }
    recordSources:
    [
-     {
-       id: 'test-source-id';
+     test-source-id: {
        status: Development;
        description: 'Test Source Description';
        parseService: \${5:model::SomeParseService};
@@ -49,8 +48,7 @@ export const SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET = `MasterRecordDefinition \
        stagedLoad: false;
        sequentialData: false;
        partitions: [
-         {
-           id: 'test-partition-1';
+         test-partition-1: {
            tags: [];
          }
        ]

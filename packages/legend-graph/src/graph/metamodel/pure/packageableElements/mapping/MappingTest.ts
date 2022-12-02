@@ -14,44 +14,20 @@
  * limitations under the License.
  */
 
-import { uuid, hashArray, type Hashable } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
-import type { MappingTestAssert } from './MappingTestAssert.js';
-import type { InputData } from './InputData.js';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
+import { AtomicTest } from '../../test/Test.js';
 
-export class MappingTest implements Hashable {
-  readonly _UUID = uuid();
-
-  name: string;
-  /**
-   * Studio does not process value specification, they are left in raw JSON form
-   *
-   * @discrepancy model
-   */
-  query: RawLambda;
-  inputData: InputData[] = [];
-  assert: MappingTestAssert;
-
-  constructor(
-    name: string,
-    query: RawLambda,
-    inputData: InputData[],
-    assert: MappingTestAssert,
-  ) {
-    this.name = name;
-    this.query = query;
-    this.inputData = inputData;
-    this.assert = assert;
-  }
+export class MappingTest extends AtomicTest implements Hashable {
+  query!: RawLambda;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING_TEST,
-      this.name,
       this.query,
-      hashArray(this.inputData),
-      this.assert,
+      this.id,
+      hashArray(this.assertions),
     ]);
   }
 }

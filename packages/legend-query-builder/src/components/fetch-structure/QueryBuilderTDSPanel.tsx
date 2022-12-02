@@ -56,10 +56,6 @@ import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import {
-  type QueryBuilderParameterDragSource,
-  QUERY_BUILDER_PARAMETER_DND_TYPE,
-} from '../../stores/QueryBuilderParametersState.js';
-import {
   type ConcreteFunctionDefinition,
   generateFunctionCallString,
   LAMBDA_PIPE,
@@ -73,6 +69,10 @@ import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../stores/QueryBuilderConfig.js
 import type { QueryBuilderAggregateOperator } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregateOperator.js';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { LambdaEditor } from '../shared/LambdaEditor.js';
+import {
+  type QueryBuilderVariableDragSource,
+  QUERY_BUILDER_VARIABLE_DND_TYPE,
+} from '../shared/BasicValueSpecificationEditor.js';
 
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<
@@ -146,16 +146,16 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
       (
         item:
           | QueryBuilderExplorerTreeDragSource
-          | QueryBuilderParameterDragSource
+          | QueryBuilderVariableDragSource
           | QueryBuilderFunctionsExplorerDragSource,
         type: string,
       ): void => {
-        if (type === QUERY_BUILDER_PARAMETER_DND_TYPE) {
+        if (type === QUERY_BUILDER_VARIABLE_DND_TYPE) {
           projectionColumnState.derivationLambdaEditorState.setLambdaString(
             `${
               projectionColumnState.derivationLambdaEditorState.lambdaString
             }${VARIABLE_REFERENCE_TOKEN}${
-              (item as QueryBuilderParameterDragSource).variable.variableName
+              (item as QueryBuilderVariableDragSource).variable.name
             }`,
           );
         } else if (type === QUERY_BUILDER_FUNCTION_DND_TYPE) {
@@ -178,7 +178,7 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
     );
     const [, dropConnector] = useDrop<
       | QueryBuilderExplorerTreeDragSource
-      | QueryBuilderParameterDragSource
+      | QueryBuilderVariableDragSource
       | QueryBuilderFunctionsExplorerDragSource
     >(
       () => ({
@@ -187,7 +187,7 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-          QUERY_BUILDER_PARAMETER_DND_TYPE,
+          QUERY_BUILDER_VARIABLE_DND_TYPE,
           QUERY_BUILDER_FUNCTION_DND_TYPE,
         ],
         drop: (item, monitor): void => {

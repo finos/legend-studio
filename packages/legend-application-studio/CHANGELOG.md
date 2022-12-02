@@ -1,5 +1,57 @@
 # @finos/legend-application-studio
 
+## 21.0.0
+
+### Major Changes
+
+- [#1455](https://github.com/finos/legend-studio/pull/1455) [`b9a3a0ea9`](https://github.com/finos/legend-studio/commit/b9a3a0ea9aa7ba09cd58a3b52f5d3238a53544e5) ([@gs-gunjan](https://github.com/gs-gunjan)) - Extending testing framework for mapping
+
+### Patch Changes
+
+- [#1735](https://github.com/finos/legend-studio/pull/1735) [`44fe24048`](https://github.com/finos/legend-studio/commit/44fe240486b32de01cf17aeb80969f9aaae9a576) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where the `keys` dropdown is not updated correctly when switching tests.
+
+## 20.2.0
+
+### Minor Changes
+
+- [#1711](https://github.com/finos/legend-studio/pull/1711) [`b0c0e5053`](https://github.com/finos/legend-studio/commit/b0c0e50534162f23ac1430c707226ad4d9bddbb5) ([@xannem](https://github.com/xannem)) - Allow re-arranging editor tabs by drag-and-drop and opening last closed editor tab #130 ([#1474](https://github.com/finos/legend-studio/pull/1474)).
+
+## 20.1.2
+
+## 20.1.1
+
+### Patch Changes
+
+- [#1717](https://github.com/finos/legend-studio/pull/1717) [`c641e0781`](https://github.com/finos/legend-studio/commit/c641e0781eb76100ee2ce6cac4b0bd16736ab20e) ([@gayathrir11](https://github.com/gayathrir11)) - Fix with `Studio` not closing editor tabs for deleted elements
+
+- [#1719](https://github.com/finos/legend-studio/pull/1719) [`52c69421f`](https://github.com/finos/legend-studio/commit/52c69421f39e9677da261200ba226bd95a93b8fe) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support env keys selection for each test in multiexec services([#1718](https://github.com/finos/legend-studio/issues/1718)).
+
+## 20.1.0
+
+### Minor Changes
+
+- [#1511](https://github.com/finos/legend-studio/pull/1511) [`9311cd4ba`](https://github.com/finos/legend-studio/commit/9311cd4bab703c65e590f1b1eed6cd89a5387d4d) ([@gayathrir11](https://github.com/gayathrir11)) - Improve user experience when they import gitlab projects in studio
+
+## 20.0.10
+
+## 20.0.9
+
+### Patch Changes
+
+- [#1697](https://github.com/finos/legend-studio/pull/1697) [`44b5ff5ab`](https://github.com/finos/legend-studio/commit/44b5ff5ab1a187176f2dd8991b05241c40429361) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Remove Service's parameter icon and added the prompt below the header.
+
+- [#1679](https://github.com/finos/legend-studio/pull/1679) [`478092e7c`](https://github.com/finos/legend-studio/commit/478092e7c55da1a96380d2c7815958d5310898e8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support contextual documentation for service test and data element editor, and add a doc icon for connection test data.
+
+## 20.0.8
+
+## 20.0.7
+
+### Patch Changes
+
+- [#1658](https://github.com/finos/legend-studio/pull/1658) [`b4bbdb774`](https://github.com/finos/legend-studio/commit/b4bbdb7742d3ae3b7952cecedeee4694840c4345) ([@xannem](https://github.com/xannem)) - fix: toggle text mode shortcut in viewer mode
+
+- [#1676](https://github.com/finos/legend-studio/pull/1676) [`eb12c94ae`](https://github.com/finos/legend-studio/commit/eb12c94ae243c01c9ee86d563caa081349c3a771) ([@gayathrir11](https://github.com/gayathrir11)) - Add project configuration panel shortcut to project explorer action panel.
+
 ## 20.0.6
 
 ### Patch Changes

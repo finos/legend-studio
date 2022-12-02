@@ -25,6 +25,7 @@ import {
 import {
   editor as monacoEditorAPI,
   KeyCode,
+  KeyMod,
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
 import { EDITOR_LANGUAGE, EDITOR_THEME } from '../const.js';
@@ -361,6 +362,21 @@ export const setupPureLanguageService = (
   // Override `monaco-editor` native hotkeys
   // See https://github.com/microsoft/monaco-editor/issues/102#issuecomment-1282897640
   monacoEditorAPI.addKeybindingRules([
+    {
+      // disable cursor move (core command)
+      keybinding: KeyMod.WinCtrl | KeyCode.KeyB,
+      command: null,
+    },
+    {
+      // disable cursor move (core command)
+      keybinding: KeyMod.WinCtrl | KeyCode.KeyO,
+      command: null,
+    },
+    {
+      // disable cursor move (core command)
+      keybinding: KeyMod.WinCtrl | KeyCode.KeyP,
+      command: null,
+    },
     {
       // disable show command center
       keybinding: KeyCode.F1,

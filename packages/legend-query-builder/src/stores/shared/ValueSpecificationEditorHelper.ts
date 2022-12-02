@@ -17,7 +17,10 @@
 import {
   type PureModel,
   type InstanceValue,
-  type VariableExpression,
+  VariableExpression,
+  type ValueSpecification,
+  type Type,
+  type Enum,
   CollectionInstanceValue,
   DATE_FORMAT,
   DATE_TIME_FORMAT,
@@ -30,8 +33,16 @@ import {
   PrimitiveInstanceValue,
   PrimitiveType,
   PRIMITIVE_TYPE,
+  INTERNAL__PropagatedValue,
+  SimpleFunctionExpression,
 } from '@finos/legend-graph';
-import { addDays, formatDate, Randomizer } from '@finos/legend-shared';
+import {
+  addDays,
+  formatDate,
+  Randomizer,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
+import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationHelper.js';
 import { instanceValue_setValues } from './ValueSpecificationModifierHelper.js';
 
 const createMockPrimitiveProperty = (
@@ -92,6 +103,55 @@ export const buildPrimitiveInstanceValue = (
   return instance;
 };
 
+export const buildDefaultInstanceValue = (
+  graph: PureModel,
+  type: Type,
+): ValueSpecification => {
+  const path = type.path;
+  switch (path) {
+    case PRIMITIVE_TYPE.STRING:
+    case PRIMITIVE_TYPE.BOOLEAN:
+    case PRIMITIVE_TYPE.STRICTDATE:
+    case PRIMITIVE_TYPE.DATETIME:
+    case PRIMITIVE_TYPE.NUMBER:
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.FLOAT:
+    case PRIMITIVE_TYPE.BINARY:
+    case PRIMITIVE_TYPE.INTEGER: {
+      return buildPrimitiveInstanceValue(
+        graph,
+        path,
+        generateDefaultValueForPrimitiveType(path),
+      );
+    }
+    case PRIMITIVE_TYPE.DATE: {
+      return buildPrimitiveInstanceValue(
+        graph,
+        PRIMITIVE_TYPE.STRICTDATE,
+        generateDefaultValueForPrimitiveType(path),
+      );
+    }
+    default:
+      if (type instanceof Enumeration) {
+        if (type.values.length > 0) {
+          const enumValueInstanceValue = new EnumValueInstanceValue(
+            GenericTypeExplicitReference.create(new GenericType(type)),
+          );
+          instanceValue_setValues(enumValueInstanceValue, [
+            EnumValueExplicitReference.create(type.values[0] as Enum),
+          ]);
+          return enumValueInstanceValue;
+        }
+        throw new UnsupportedOperationError(
+          `Can't get default value for enumeration since enumeration '${path}' has no value`,
+        );
+      }
+      throw new UnsupportedOperationError(
+        `Can't get default value for type'${path}'`,
+      );
+  }
+};
+
 export const generateVariableExpressionMockValue = (
   parameter: VariableExpression,
   graph: PureModel,
@@ -130,6 +190,28 @@ export const generateVariableExpressionMockValue = (
       ]);
     }
     return enumValueInstance;
+  }
+  return undefined;
+};
+
+export const getValueSpecificationStringValue = (
+  valueSpecification: ValueSpecification,
+): string | undefined => {
+  if (valueSpecification instanceof PrimitiveInstanceValue) {
+    return valueSpecification.values[0]?.toString();
+  } else if (valueSpecification instanceof EnumValueInstanceValue) {
+    const _enum = valueSpecification.values[0];
+    return `${_enum?.ownerReference.value.name}.${_enum?.value.name}`;
+  } else if (valueSpecification instanceof VariableExpression) {
+    return valueSpecification.name;
+  } else if (valueSpecification instanceof INTERNAL__PropagatedValue) {
+    return getValueSpecificationStringValue(valueSpecification.getValue());
+  } else if (valueSpecification instanceof SimpleFunctionExpression) {
+    return valueSpecification.functionName;
+  } else if (valueSpecification instanceof CollectionInstanceValue) {
+    return valueSpecification.values
+      .map(getValueSpecificationStringValue)
+      .join(',');
   }
   return undefined;
 };

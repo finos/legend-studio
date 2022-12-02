@@ -24,6 +24,7 @@
 // - Association mapping - stores
 // - MappingTest - inputData - flatdata
 // - MappingTest - inputData - class
+// - MappingTestData - storeTestData - class
 export const TEST_DATA__MappingRoundtrip = [
   {
     path: 'test::tClass',
@@ -1294,5 +1295,514 @@ export const TEST_DATA__Relational_LocalPropertyMappingRoundtrip = [
       tests: [],
     },
     classifierPath: 'meta::pure::mapping::Mapping',
+  },
+];
+
+export const TEST_DATA__MappingTestSuiteRoundtrip = [
+  {
+    path: 'data::RelationalData',
+    content: {
+      _type: 'dataElement',
+      data: {
+        _type: 'relationalCSVData',
+        tables: [
+          {
+            schema: 'default',
+            table: 'PersonTable',
+            values:
+              'id,firm_id,firstName,lastName\n1,1,John,Doe\n2,1,Nicole,Smith\n3,2,Time,Smith\n',
+          },
+          {
+            schema: 'default',
+            table: 'FirmTable',
+            values: 'id,legal_name\n1,Finos\n2,Apple',
+          },
+        ],
+      },
+      name: 'RelationalData',
+      package: 'data',
+    },
+    classifierPath: 'meta::pure::data::DataElement',
+  },
+  {
+    path: 'execution::RelationalMapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'relational',
+          class: 'model::Person',
+          distinct: false,
+          mainTable: {
+            _type: 'Table',
+            database: 'store::TestDB',
+            mainTableDb: 'store::TestDB',
+            schema: 'default',
+            table: 'PersonTable',
+          },
+          primaryKey: [
+            {
+              _type: 'column',
+              column: 'id',
+              table: {
+                _type: 'Table',
+                database: 'store::TestDB',
+                mainTableDb: 'store::TestDB',
+                schema: 'default',
+                table: 'PersonTable',
+              },
+              tableAlias: 'PersonTable',
+            },
+          ],
+          propertyMappings: [
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'model::Person',
+                property: 'firstName',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'firstName',
+                table: {
+                  _type: 'Table',
+                  database: 'store::TestDB',
+                  mainTableDb: 'store::TestDB',
+                  schema: 'default',
+                  table: 'PersonTable',
+                },
+                tableAlias: 'PersonTable',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'model::Person',
+                property: 'lastName',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'lastName',
+                table: {
+                  _type: 'Table',
+                  database: 'store::TestDB',
+                  mainTableDb: 'store::TestDB',
+                  schema: 'default',
+                  table: 'PersonTable',
+                },
+                tableAlias: 'PersonTable',
+              },
+            },
+          ],
+          root: true,
+        },
+        {
+          _type: 'relational',
+          class: 'model::Firm',
+          distinct: false,
+          mainTable: {
+            _type: 'Table',
+            database: 'store::TestDB',
+            mainTableDb: 'store::TestDB',
+            schema: 'default',
+            table: 'FirmTable',
+          },
+          primaryKey: [
+            {
+              _type: 'column',
+              column: 'id',
+              table: {
+                _type: 'Table',
+                database: 'store::TestDB',
+                mainTableDb: 'store::TestDB',
+                schema: 'default',
+                table: 'FirmTable',
+              },
+              tableAlias: 'FirmTable',
+            },
+          ],
+          propertyMappings: [
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'model::Firm',
+                property: 'legalName',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'legal_name',
+                table: {
+                  _type: 'Table',
+                  database: 'store::TestDB',
+                  mainTableDb: 'store::TestDB',
+                  schema: 'default',
+                  table: 'FirmTable',
+                },
+                tableAlias: 'FirmTable',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'model::Firm',
+                property: 'employees',
+              },
+              relationalOperation: {
+                _type: 'elemtWithJoins',
+                joins: [
+                  {
+                    db: 'store::TestDB',
+                    name: 'FirmPerson',
+                  },
+                ],
+              },
+              target: 'model_Person',
+            },
+          ],
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'RelationalMapping',
+      package: 'execution',
+      testSuites: [
+        {
+          _type: 'mappingTestSuite',
+          id: 'testSuite1',
+          storeTestDatas: [
+            {
+              data: {
+                _type: 'reference',
+                dataElement: 'data::RelationalData',
+              },
+              store: 'store::TestDB',
+            },
+          ],
+          tests: [
+            {
+              _type: 'mappingTest',
+              assertions: [
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '{"columns":[{"name":"Employees/First Name","type":"String"},{"name":"Employees/Last Name","type":"String"},{"name":"Legal Name","type":"String"}],"rows":[{"values":["John","Doe","Finos"]},{"values":["Nicole","Smith","Finos"]},{"values":["Time","Smith","Apple"]}]}',
+                  },
+                  id: 'shouldPass',
+                },
+              ],
+              id: 'test1',
+              query: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'func',
+                    function: 'project',
+                    parameters: [
+                      {
+                        _type: 'func',
+                        function: 'getAll',
+                        parameters: [
+                          {
+                            _type: 'packageableElementPtr',
+                            fullPath: 'model::Firm',
+                          },
+                        ],
+                      },
+                      {
+                        _type: 'collection',
+                        multiplicity: {
+                          lowerBound: 3,
+                          upperBound: 3,
+                        },
+                        values: [
+                          {
+                            _type: 'lambda',
+                            body: [
+                              {
+                                _type: 'property',
+                                parameters: [
+                                  {
+                                    _type: 'property',
+                                    parameters: [
+                                      {
+                                        _type: 'var',
+                                        name: 'x',
+                                      },
+                                    ],
+                                    property: 'employees',
+                                  },
+                                ],
+                                property: 'firstName',
+                              },
+                            ],
+                            parameters: [
+                              {
+                                _type: 'var',
+                                name: 'x',
+                              },
+                            ],
+                          },
+                          {
+                            _type: 'lambda',
+                            body: [
+                              {
+                                _type: 'property',
+                                parameters: [
+                                  {
+                                    _type: 'property',
+                                    parameters: [
+                                      {
+                                        _type: 'var',
+                                        name: 'x',
+                                      },
+                                    ],
+                                    property: 'employees',
+                                  },
+                                ],
+                                property: 'lastName',
+                              },
+                            ],
+                            parameters: [
+                              {
+                                _type: 'var',
+                                name: 'x',
+                              },
+                            ],
+                          },
+                          {
+                            _type: 'lambda',
+                            body: [
+                              {
+                                _type: 'property',
+                                parameters: [
+                                  {
+                                    _type: 'var',
+                                    name: 'x',
+                                  },
+                                ],
+                                property: 'legalName',
+                              },
+                            ],
+                            parameters: [
+                              {
+                                _type: 'var',
+                                name: 'x',
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                      {
+                        _type: 'collection',
+                        multiplicity: {
+                          lowerBound: 3,
+                          upperBound: 3,
+                        },
+                        values: [
+                          {
+                            _type: 'string',
+                            multiplicity: {
+                              lowerBound: 1,
+                              upperBound: 1,
+                            },
+                            values: ['Employees/First Name'],
+                          },
+                          {
+                            _type: 'string',
+                            multiplicity: {
+                              lowerBound: 1,
+                              upperBound: 1,
+                            },
+                            values: ['Employees/Last Name'],
+                          },
+                          {
+                            _type: 'string',
+                            multiplicity: {
+                              lowerBound: 1,
+                              upperBound: 1,
+                            },
+                            values: ['Legal Name'],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+        },
+      ],
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'model::Firm',
+    content: {
+      _type: 'class',
+      name: 'Firm',
+      package: 'model',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'legalName',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 0,
+          },
+          name: 'employees',
+          type: 'model::Person',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'model::Person',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'model',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'firstName',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'lastName',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'store::TestDB',
+    content: {
+      _type: 'relational',
+      filters: [],
+      includedStores: [],
+      joins: [
+        {
+          name: 'FirmPerson',
+          operation: {
+            _type: 'dynaFunc',
+            funcName: 'equal',
+            parameters: [
+              {
+                _type: 'column',
+                column: 'firm_id',
+                table: {
+                  _type: 'Table',
+                  database: 'store::TestDB',
+                  mainTableDb: 'store::TestDB',
+                  schema: 'default',
+                  table: 'PersonTable',
+                },
+                tableAlias: 'PersonTable',
+              },
+              {
+                _type: 'column',
+                column: 'id',
+                table: {
+                  _type: 'Table',
+                  database: 'store::TestDB',
+                  mainTableDb: 'store::TestDB',
+                  schema: 'default',
+                  table: 'FirmTable',
+                },
+                tableAlias: 'FirmTable',
+              },
+            ],
+          },
+        },
+      ],
+      name: 'TestDB',
+      package: 'store',
+      schemas: [
+        {
+          name: 'default',
+          tables: [
+            {
+              columns: [
+                {
+                  name: 'id',
+                  nullable: false,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'legal_name',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 200,
+                  },
+                },
+              ],
+              name: 'FirmTable',
+              primaryKey: ['id'],
+            },
+            {
+              columns: [
+                {
+                  name: 'id',
+                  nullable: false,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'firm_id',
+                  nullable: true,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'firstName',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 200,
+                  },
+                },
+                {
+                  name: 'lastName',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 200,
+                  },
+                },
+              ],
+              name: 'PersonTable',
+              primaryKey: ['id'],
+            },
+          ],
+          views: [],
+        },
+      ],
+    },
+    classifierPath: 'meta::relational::metamodel::Database',
   },
 ];

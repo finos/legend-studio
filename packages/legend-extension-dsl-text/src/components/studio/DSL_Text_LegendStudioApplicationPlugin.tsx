@@ -64,7 +64,7 @@ export class DSL_Text_LegendStudioApplicationPlugin
 
   override getExtraRequiredDocumentationKeys(): string[] {
     return [
-      DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_TEXT,
+      DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_TEXT,
       DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
     ];
   }
@@ -170,7 +170,7 @@ export class DSL_Text_LegendStudioApplicationPlugin
         if (parserKeyword === PURE_GRAMMAR_TEXT_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL) {
             return editorStore.applicationStore.documentationService.getDocEntry(
-              DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_TEXT,
+              DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_TEXT,
             );
           }
         }

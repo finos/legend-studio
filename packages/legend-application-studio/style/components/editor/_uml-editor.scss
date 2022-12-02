@@ -24,4 +24,8 @@
 .uml-editor {
   height: 100%;
   position: relative;
+
+  .panel__content__form__section__header__label {
+    color: var(--color-dark-grey-350);
+  }
 }

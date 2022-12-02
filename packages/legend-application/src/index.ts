@@ -25,9 +25,6 @@ export * from './components/useApplicationNavigationContext.js';
 export * from './components/useCommands.js';
 export * from './components/ApplicationStoreProviderTestUtils.js';
 export * from './components/WebApplicationNavigatorProviderTestUtils.js';
-// TODO: consider moving this to `LegendApplicationComponentFrameworkProvider`
-// once we think we can add virtual assistant support for all apps
-export * from './components/VirtualAssistant.js';
 
 export * from './stores/ApplicationStore.js';
 export * from './stores/ApplicationTelemetry.js';
@@ -53,8 +50,10 @@ export * from './stores/WebApplicationRouter.js';
 export * from './components/shared/DocumentationLink.js';
 export * from './components/shared/TextInputEditor.js';
 export * from './components/shared/PackageableElementOptionLabel.js';
+export * from './components/shared/TabManager.js';
 
 export * from './stores/shared/PackageableElementOption.js';
+export * from './stores/shared/TabManagerState.js';
 
 /**
  * @modularize

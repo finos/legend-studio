@@ -46,6 +46,13 @@
     overflow-x: overlay;
   }
 
+  &__header__tab__label {
+    display: flex;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   &__header__tab {
     @include flexVCenter;
 

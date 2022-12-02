@@ -113,7 +113,7 @@ const EnumerationPropertyMappingEditor = observer(
       props;
     const editorStore = useEditorStore();
     const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
+      editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const propertyMapping = guaranteeType(
       propertyMappingState.propertyMapping,
       FlatDataPropertyMapping,

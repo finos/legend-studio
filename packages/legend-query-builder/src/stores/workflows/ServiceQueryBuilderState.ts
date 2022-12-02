@@ -145,7 +145,7 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
     executionContext: ServiceExecutionContext,
   ): void {
     const mapping = executionContext.mapping;
-    this.changeMapping(mapping);
+    this.changeMapping(mapping, { keepQueryContent: true });
     this.changeRuntime(executionContext.runtimeValue);
 
     const compatibleClasses = getMappingCompatibleClasses(

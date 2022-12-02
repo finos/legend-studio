@@ -113,7 +113,11 @@ const CreateWorkspaceModal = observer((props: { selectedProject: Project }) => {
     ),
   );
   const createWorkspace = (): void => {
-    if (workspaceName && !workspaceAlreadyExists) {
+    if (
+      workspaceName &&
+      !workspaceAlreadyExists &&
+      setupStore.currentProjectConfigurationStatus?.isConfigured
+    ) {
       flowResult(
         setupStore.createWorkspace(selectedProject.projectId, workspaceName),
       ).catch(applicationStore.alertUnhandledError);
@@ -231,7 +235,9 @@ export const UpdateProjectServiceQuerySetup =
       const disableProceedButton =
         !setupStore.currentProject ||
         !setupStore.currentGroupWorkspace ||
-        !setupStore.currentService;
+        !setupStore.currentService ||
+        !setupStore.currentProjectConfigurationStatus ||
+        !setupStore.currentProjectConfigurationStatus.isConfigured;
       const handleProceed = (): void => {
         if (
           setupStore.currentProject &&
@@ -293,6 +299,11 @@ export const UpdateProjectServiceQuerySetup =
           flowResult(setupStore.changeWorkspace(option.value)).catch(
             applicationStore.alertUnhandledError,
           );
+          if (!setupStore.currentProjectConfigurationStatus?.isConfigured) {
+            applicationStore.notifyIllegalState(
+              `Can't edit service query as the project is not configured`,
+            );
+          }
         } else {
           setupStore.resetCurrentGroupWorkspace();
         }
@@ -308,6 +319,11 @@ export const UpdateProjectServiceQuerySetup =
       const onServiceOptionChange = (option: ServiceOption | null): void => {
         if (option) {
           setupStore.changeService(option.value.entity);
+          if (!setupStore.currentProjectConfigurationStatus?.isConfigured) {
+            applicationStore.notifyIllegalState(
+              `Can't edit current service query as the current project is not configured`,
+            );
+          }
         } else {
           setupStore.resetCurrentService();
         }
@@ -361,6 +377,7 @@ export const UpdateProjectServiceQuerySetup =
                       escapeClearsValue={true}
                       formatOptionLabel={getProjectOptionLabelFormatter(
                         applicationStore,
+                        setupStore.currentProjectConfigurationStatus,
                       )}
                     />
                   </div>
@@ -376,6 +393,9 @@ export const UpdateProjectServiceQuerySetup =
                       options={workspaceOptions}
                       disabled={
                         !setupStore.currentProject ||
+                        !setupStore.currentProjectConfigurationStatus ||
+                        !setupStore.currentProjectConfigurationStatus
+                          .isConfigured ||
                         setupStore.loadWorkspacesState.isInProgress
                       }
                       isLoading={setupStore.loadWorkspacesState.isInProgress}

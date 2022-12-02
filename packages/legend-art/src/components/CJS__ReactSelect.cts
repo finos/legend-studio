@@ -30,4 +30,6 @@ export {
   default as Select,
   createFilter,
   type InputActionMeta,
+  components as baseComponents,
+  type InputProps,
 } from 'react-select';

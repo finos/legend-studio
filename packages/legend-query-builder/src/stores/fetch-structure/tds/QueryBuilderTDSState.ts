@@ -39,14 +39,15 @@ import {
 import type { QueryBuilderState } from '../../QueryBuilderState.js';
 import {
   type CompilationError,
+  type LambdaFunction,
+  type ValueSpecification,
+  type VariableExpression,
   GRAPH_MANAGER_EVENT,
   extractSourceInformationCoordinates,
   LAMBDA_PIPE,
   RawLambda,
   isStubbed_RawLambda,
   Class,
-  type LambdaFunction,
-  type ValueSpecification,
   AbstractPropertyExpression,
   matchFunctionName,
   SimpleFunctionExpression,
@@ -91,9 +92,9 @@ import type { LambdaFunctionBuilderOption } from '../../QueryBuilderValueSpecifi
 import { appendProjection } from './projection/QueryBuilderProjectionValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
-import { QueryBuilderOLAPGroupByState } from './olapGroupBy/QueryBuilderOLAPGroupByState_.js';
+import { QueryBuilderOLAPGroupByState } from './olapGroupBy/QueryBuilderOLAPGroupByState.js';
 import type { QueryBuilderTDS_OLAPOperator } from './olapGroupBy/operators/QueryBuilderTDS_OLAPOperator.js';
-import { getQueryBuilderCoreOLAPGroupByOperators } from './olapGroupBy/QueryBuilderOLAPGroupByOperatorLoader_.js';
+import { getQueryBuilderCoreOLAPGroupByOperators } from './olapGroupBy/QueryBuilderOLAPGroupByOperatorLoader.js';
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
 
 export class QueryBuilderTDSState
@@ -634,6 +635,22 @@ export class QueryBuilderTDSState
     } else {
       onChange();
     }
+  }
+
+  isVariableUsed(variable: VariableExpression): boolean {
+    const columns = this.projectionColumns;
+    const derivationColumns = columns.filter(
+      filterByType(QueryBuilderDerivationProjectionColumnState),
+    );
+    if (derivationColumns.length) {
+      // we will return false if any derivation cols are present as we can't verify is the variable is ued
+      return false;
+    }
+    const usedInProjection = columns
+      .filter(filterByType(QueryBuilderSimpleProjectionColumnState))
+      .find((col) => col.isVariableUsed(variable));
+    const usedInPostFilter = this.postFilterState.isVariableUsed(variable);
+    return Boolean(usedInProjection ?? usedInPostFilter);
   }
 
   get hashCode(): string {

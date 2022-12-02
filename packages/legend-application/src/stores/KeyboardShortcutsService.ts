@@ -19,37 +19,13 @@ import { action, makeObservable, observable } from 'mobx';
 import { APPLICATION_EVENT } from './ApplicationEvent.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 
-/**
- * List of keyboard named key
- * See https://www.w3.org/TR/uievents-key/#named-key-attribute-values
- * See https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
- */
-export enum KEYBOARD_NAMED_KEY {
-  TAB = 'Tab',
-
-  CAPSLOCK = 'CapsLock',
-
-  SHIFT = 'Shift',
-  META = 'Meta',
-  ALT = 'Alt',
-  CTRL = 'Control',
-
-  SPACE = 'Space',
-
-  ESC = 'Escape',
-
-  LEFT = 'ArrowLeft',
-  RIGHT = 'ArrowRight',
-  UP = 'ArrowUp',
-  DOWN = 'ArrowDown',
-
-  ENTER = 'Enter',
-  DELETE = 'Delete',
-  BACKSPACE = 'Backspace',
-}
-
 export class KeyboardShortcutsService {
   readonly applicationStore: GenericLegendApplicationStore;
+  /**
+   * NOTE: with this design, the relationship between command and key is many-to-one
+   * We can have multiple commands being mapped to the same key combination, not the other
+   * way around
+   */
   readonly keyMap = new Map<string, string[]>();
   /**
    * NOTE: we want to leave the value of the map as optional because we want

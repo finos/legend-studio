@@ -16,7 +16,6 @@
 
 import { configure as configureMobx } from 'mobx';
 import { editor as monacoEditorAPI } from 'monaco-editor';
-import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { MONOSPACED_FONT_FAMILY } from '../const.js';
 import type {
   LegendApplicationConfig,
@@ -33,6 +32,7 @@ import {
   NetworkClient,
   type Writable,
   type ExtensionsConfigurationData,
+  createRegExpPatternFromWildcardPattern,
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../stores/ApplicationEvent.js';
 import { configureComponents } from '@finos/legend-art';
@@ -131,13 +131,6 @@ export const setupLegendApplicationUILibrary = async (
     // However, no warning will shown in production mode
     // See https://mobx.js.org/configuration.html#enforceactions
     enforceActions: 'observed',
-  });
-
-  configureReactHotkeys({
-    // By default, `react-hotkeys` will avoid capturing keys from input tags like <input>, <textarea>, <select>
-    // We want to listen to hotkey from every where in the app so we disable that
-    // See https://github.com/greena13/react-hotkeys#ignoring-events
-    ignoreTags: [],
   });
 
   configureComponents();
@@ -305,10 +298,16 @@ export abstract class LegendApplication {
             docData.entries,
             `Can't load documentation registry data: 'entries' field is missing`,
           );
+
+          const patterns = entry.includes?.map((filter) =>
+            createRegExpPatternFromWildcardPattern(filter),
+          );
           Object.entries(docData.entries).forEach(([key, docEntry]) => {
-            // NOTE: entries will NOT override
-            if (!entries[key]) {
-              entries[key] = docEntry;
+            if (!patterns || patterns.some((pattern) => pattern.test(key))) {
+              // NOTE: entries will NOT override
+              if (!entries[key]) {
+                entries[key] = docEntry;
+              }
             }
           });
         } catch (error) {

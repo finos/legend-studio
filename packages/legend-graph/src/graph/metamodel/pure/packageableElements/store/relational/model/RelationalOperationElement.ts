@@ -83,13 +83,28 @@ export enum JoinType {
   INNER = 'INNER',
   LEFT_OUTER = 'LEFT_OUTER',
   RIGHT_OUTER = 'RIGHT_OUTER',
+  // NOTE: this is not technically part of the join type enumeration
+  // but Engine expose it as an alias for which can be resolved into either outer join types
+  // for simplicity sake
+  OUTER = 'OUTER',
 }
 
 // TODO: create RelationalTreeNode like in PURE?
 export class JoinTreeNode {
-  alias?: TableAlias | undefined; // required in PURE
+  /**
+   * This field is required in PURE
+   *
+   * @discrepancy model
+   */
+  alias?: TableAlias | undefined;
   children: JoinTreeNode[] = [];
   join: JoinReference;
+  /**
+   * For convenience, we use a Typescript enum instead of the native
+   * Pure enumeration meta::relational::metamodel::join::JoinType
+   *
+   * @discrepancy model
+   */
   joinType?: JoinType | undefined;
 
   constructor(join: JoinReference, joinType?: JoinType, alias?: TableAlias) {

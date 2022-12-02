@@ -18,25 +18,34 @@ import { Backdrop, LegendStyleProvider, Portal } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { type KeyMap, GlobalHotKeys } from 'react-hotkeys';
 import { ActionAlert } from './ActionAlert.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
 import { BlockingAlert } from './BlockingAlert.js';
 import { NotificationManager } from './NotificationManager.js';
+import { useEffect } from 'react';
+import {
+  createKeybindingsHandler,
+  type KeyBindingConfig,
+} from '@finos/legend-shared';
+import { VirtualAssistant } from './VirtualAssistant.js';
 
 const APP_CONTAINER_ID = 'app.container';
 const APP_BACKDROP_CONTAINER_ID = 'app.backdrop-container';
 
 const PLATFORM_NATIVE_KEYBOARD_SHORTCUTS = [
+  'Meta+KeyP', // Print
+  'Control+KeyP',
+  'Meta+KeyS', // Save
+  'Control+KeyS',
   'F8', // Chrome: Developer Tools > Sources: Run or pause script
   'F10', // Chrome: Developer Tools > Sources: Step over next function call
   'F11', // Chrome: Developer Tools > Sources: Step into next function call
-  'Meta+Shift+p', // Chrome: Developer Tools: Open Command Prompt inside developer tools
-  'Control+Shift+p',
-  'Meta+p', // Print
-  'Control+p',
-  'Meta+s', // Save
-  'Control+s',
+  'Meta+Shift+KeyP', // Chrome: Developer Tools: Open Command Prompt inside developer tools
+  'Control+Shift+KeyP',
+  'Meta+KeyB', // Firefox: Open bookmark sidebar
+  'Control+KeyB',
+  'F7', // Firefox: Caret browsing
+  'Alt+F7', // Firefox: Caret browsing (Mac)
 ];
 
 const buildReactHotkeysConfiguration = (
@@ -44,30 +53,29 @@ const buildReactHotkeysConfiguration = (
   handlerCreator: (
     keyCombination: string,
   ) => (keyEvent?: KeyboardEvent) => void,
-): [KeyMap, { [key: string]: (keyEvent?: KeyboardEvent) => void }] => {
-  const keyMap: Record<PropertyKey, string[]> = {};
+): KeyBindingConfig => {
+  const keyMap: KeyBindingConfig = {};
   commandKeyMap.forEach((keyCombination, commandKey) => {
     if (keyCombination) {
-      keyMap[commandKey] = [keyCombination];
-    }
-  });
-  const handlers: Record<PropertyKey, (keyEvent?: KeyboardEvent) => void> = {};
-  commandKeyMap.forEach((keyCombination, commandKey) => {
-    if (keyCombination) {
-      handlers[commandKey] = handlerCreator(keyCombination);
+      keyMap[commandKey] = {
+        combinations: [keyCombination],
+        handler: handlerCreator(keyCombination),
+      };
     }
   });
 
   // Disable platform native keyboard shortcuts
   const PLATFORM_NATIVE_KEYBOARD_COMMAND =
     'INTERNAL__PLATFORM_NATIVE_KEYBOARD_COMMAND';
-  keyMap[PLATFORM_NATIVE_KEYBOARD_COMMAND] = PLATFORM_NATIVE_KEYBOARD_SHORTCUTS;
-  handlers[PLATFORM_NATIVE_KEYBOARD_COMMAND] = (event?: KeyboardEvent) => {
-    // prevent default from potentially clashing key combinations
-    event?.preventDefault();
+  keyMap[PLATFORM_NATIVE_KEYBOARD_COMMAND] = {
+    combinations: PLATFORM_NATIVE_KEYBOARD_SHORTCUTS,
+    handler: (event?: KeyboardEvent) => {
+      // prevent default from potentially clashing key combinations
+      event?.preventDefault();
+    },
   };
 
-  return [keyMap, handlers];
+  return keyMap;
 };
 
 export const forceDispatchKeyboardEvent = (event: KeyboardEvent): void => {
@@ -90,12 +98,16 @@ export const LegendApplicationComponentFrameworkProvider = observer(
   (props: { children: React.ReactNode }) => {
     const { children } = props;
     const applicationStore = useApplicationStore();
+    const disableContextMenu: React.MouseEventHandler = (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+    };
     const backdropContainer = applicationStore.backdropContainerElementID
       ? document.getElementById(applicationStore.backdropContainerElementID) ??
         document.getElementById(APP_BACKDROP_CONTAINER_ID)
       : document.getElementById(APP_BACKDROP_CONTAINER_ID);
 
-    const [keyMap, hotkeyHandlerMap] = buildReactHotkeysConfiguration(
+    const keyBindingMap = buildReactHotkeysConfiguration(
       applicationStore.keyboardShortcutsService.commandKeyMap,
       (keyCombination: string) => (event?: KeyboardEvent) => {
         // prevent default from potentially clashing key combinations with platform native keyboard shortcuts
@@ -109,6 +121,14 @@ export const LegendApplicationComponentFrameworkProvider = observer(
         applicationStore.keyboardShortcutsService.dispatch(keyCombination);
       },
     );
+
+    useEffect(() => {
+      const onKeyEvent = createKeybindingsHandler(keyBindingMap);
+      document.addEventListener('keydown', onKeyEvent);
+      return () => {
+        document.removeEventListener('keydown', onKeyEvent);
+      };
+    }, [keyBindingMap]);
 
     return (
       <LegendStyleProvider>
@@ -130,21 +150,18 @@ export const LegendApplicationComponentFrameworkProvider = observer(
           </Portal>
         )}
         <DndProvider backend={HTML5Backend}>
-          <GlobalHotKeys
-            keyMap={keyMap}
-            handlers={hotkeyHandlerMap}
-            allowChanges={true}
+          <div
+            className="app__container"
+            // NOTE: this `id` is used to quickly identify this DOM node so we could manually
+            // dispatch keyboard event here in order to be captured by our global hotkeys matchers
+            id={APP_CONTAINER_ID}
+            // Disable global context menu so that only places in the app that supports context-menu will be effective
+            onContextMenu={disableContextMenu}
           >
-            <div
-              className="app__container"
-              // NOTE: this `id` is used to quickly identify this DOM node so we could manually
-              // dispatch keyboard event here in order to be captured by our global hotkeys matchers
-              id={APP_CONTAINER_ID}
-            >
-              <BackdropContainer elementID={APP_BACKDROP_CONTAINER_ID} />
-              {children}
-            </div>
-          </GlobalHotKeys>
+            <BackdropContainer elementID={APP_BACKDROP_CONTAINER_ID} />
+            <VirtualAssistant />
+            {children}
+          </div>
         </DndProvider>
       </LegendStyleProvider>
     );

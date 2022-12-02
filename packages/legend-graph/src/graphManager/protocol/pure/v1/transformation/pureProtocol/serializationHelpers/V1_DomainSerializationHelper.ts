@@ -190,6 +190,7 @@ export const V1_measureSchema = createModelSchema(V1_Measure, {
 // ------------------------------------- Class -------------------------------------
 
 export const V1_propertySchema = createModelSchema(V1_Property, {
+  aggregation: optional(primitive()),
   multiplicity: usingModelSchema(V1_multiplicitySchema),
   name: primitive(),
   stereotypes: custom(

@@ -21,7 +21,6 @@ import DOCUMENTATION_DATA from './DummyDocumentationData.json' assert { type: 'j
 
 const PORT = 9999;
 const API_BASE_URL = '/api';
-const STUDIO_BASE_URL = '/studio';
 
 const server = fastify({
   logger: true,
@@ -38,7 +37,7 @@ server.get(`${API_BASE_URL}/taxonomy/taxonomy-tree`, async (request, reply) => {
   await reply.send(TAXONOMY_TREE_DATA);
 });
 
-server.get(`${STUDIO_BASE_URL}/documentation.json`, async (request, reply) => {
+server.get(`/documentation.json`, async (request, reply) => {
   await reply.send(DOCUMENTATION_DATA);
 });
 

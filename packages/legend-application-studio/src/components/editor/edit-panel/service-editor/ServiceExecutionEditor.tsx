@@ -64,6 +64,7 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type KeyedExecutionParameter,
   type Runtime,
+  type ServiceTest,
   Mapping,
   RuntimePointer,
   PackageableRuntime,
@@ -84,7 +85,8 @@ const PureExecutionContextConfigurationEditor = observer(
     const { executionContextState, pureExecutionState } = props;
     const executionContext = executionContextState.executionContext;
     const editorStore = useEditorStore();
-    const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
+    const serviceState =
+      editorStore.tabManagerState.getCurrentEditorState(ServiceEditorState);
     const isReadOnly = serviceState.isReadOnly;
     // mapping
     // TODO: this is not generic error handling, as there could be other problems
@@ -118,7 +120,8 @@ const PureExecutionContextConfigurationEditor = observer(
         pureExecutionState.autoSelectRuntimeOnMappingChange(val.value);
       }
     };
-    const visitMapping = (): void => editorStore.openElement(mapping);
+    const visitMapping = (): void =>
+      editorStore.tabManagerState.openElementEditor(mapping);
     // runtime
     const runtime = executionContext.runtime;
     const isRuntimePointer = runtime instanceof RuntimePointer;
@@ -199,7 +202,9 @@ const PureExecutionContextConfigurationEditor = observer(
     };
     const visitRuntime = (): void => {
       if (runtime instanceof RuntimePointer) {
-        editorStore.openElement(runtime.packageableRuntime.value);
+        editorStore.tabManagerState.openElementEditor(
+          runtime.packageableRuntime.value,
+        );
       }
     };
     const openRuntimeEditor = (): void =>
@@ -773,6 +778,10 @@ const ServicePureExecutionEditor = observer(
       servicePureExecutionState instanceof MultiServicePureExecutionState;
     const showChangeExecutionModal = (): void => {
       if (servicePureExecutionState instanceof MultiServicePureExecutionState) {
+        servicePureExecutionState.serviceEditorState.service.tests.forEach(
+          (suite) =>
+            suite.tests.forEach((st) => ((st as ServiceTest).keys = [])),
+        );
         servicePureExecutionState.setSingleExecutionKey(
           servicePureExecutionState.execution.executionParameters[0],
         );
@@ -873,7 +882,8 @@ const ServicePureExecutionEditor = observer(
 
 export const ServiceExecutionEditor = observer(() => {
   const editorStore = useEditorStore();
-  const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
+  const serviceState =
+    editorStore.tabManagerState.getCurrentEditorState(ServiceEditorState);
   const executionState = serviceState.executionState;
   const isReadOnly = serviceState.isReadOnly;
   if (executionState instanceof ServicePureExecutionState) {

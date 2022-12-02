@@ -23,11 +23,13 @@ import {
   ParameterValue,
   buildLambdaVariableExpressions,
   VariableExpression,
+  PureMultiExecution,
 } from '@finos/legend-graph';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { TestableTestEditorState } from '../../testable/TestableEditorState.js';
 import type { ServiceTestSuiteState } from './ServiceTestableState.js';
 import {
+  service_addAssertKeyForTest,
   service_addParameterValue,
   service_deleteParameterValue,
   service_setParameterName,
@@ -73,6 +75,11 @@ const getSerializationFormatLabel = (val: string): string => {
 };
 
 export type SerializationFormatOption = {
+  value: string;
+  label: string;
+};
+
+export type KeyOption = {
   value: string;
   label: string;
 };
@@ -167,6 +174,7 @@ export class ServiceTestSetupState {
       setShowNewParameterModal: action,
       openNewParamModal: action,
       addParameterValue: action,
+      addServiceTestAssertKeys: action,
       syncWithQuery: action,
       removeParamValueState: action,
     });
@@ -191,6 +199,30 @@ export class ServiceTestSetupState {
       value: e,
       label: getSerializationFormatLabel(e),
     }));
+  }
+
+  get keyOptions(): KeyOption[] {
+    const keys =
+      this.testState.testable.execution instanceof PureMultiExecution
+        ? this.testState.testable.execution.executionParameters.map(
+            (p) => p.key,
+          )
+        : [];
+    return keys.map((k) => ({
+      value: k,
+      label: k,
+    }));
+  }
+
+  getSelectedKeyOptions(): KeyOption[] {
+    return this.testState.test.keys.map((k) => ({
+      value: k,
+      label: k,
+    }));
+  }
+
+  addServiceTestAssertKeys(val: string[]): void {
+    service_addAssertKeyForTest(this.testState.test, val);
   }
 
   get newParamOptions(): { value: string; label: string }[] {

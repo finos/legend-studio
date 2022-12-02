@@ -25,6 +25,12 @@
       color: var(--color-light-grey-400);
     }
 
+    &__header__action--config {
+      svg {
+        font-size: 1.6rem;
+      }
+    }
+
     &__header__action[disabled],
     &__header__action[disabled] svg {
       color: var(--color-dark-grey-300) !important;

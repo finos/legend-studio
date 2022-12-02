@@ -288,7 +288,7 @@ export class LocalChangesState {
           `Can't find entity with path  '${diff.newPath}'`,
         )
       : undefined;
-    this.editorStore.openEntityDiff(
+    this.editorStore.tabManagerState.openTab(
       new EntityDiffViewState(
         this.editorStore,
         SPECIAL_REVISION_ALIAS.WORKSPACE_HEAD,
@@ -336,7 +336,7 @@ export class LocalChangesState {
           `Can't find entity with path  '${diff.newPath}'`,
         )
       : undefined;
-    this.editorStore.openEntityDiff(
+    this.editorStore.tabManagerState.openTab(
       new EntityDiffViewState(
         this.editorStore,
         SPECIAL_REVISION_ALIAS.LOCAL,
@@ -395,7 +395,7 @@ export class LocalChangesState {
       incomingChangeEntityGetter,
     );
     conflictEditorState.setReadOnly(true);
-    this.editorStore.openEntityChangeConflict(conflictEditorState);
+    this.editorStore.tabManagerState.openTab(conflictEditorState);
   }
 
   *refreshLocalChanges(): GeneratorFn<void> {
@@ -636,7 +636,7 @@ export class LocalChangesState {
             ),
           ),
         );
-        this.editorStore.refreshCurrentEntityDiffEditorState();
+        this.editorStore.tabManagerState.refreshCurrentEntityDiffViewer();
       } catch (error) {
         assertErrorThrown(error);
         /**

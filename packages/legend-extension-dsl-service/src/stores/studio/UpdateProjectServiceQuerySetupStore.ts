@@ -31,7 +31,9 @@ import {
 } from '@finos/legend-server-sdlc';
 import {
   type LegendStudioApplicationStore,
+  type ProjectConfigurationStatus,
   LEGEND_STUDIO_APP_EVENT,
+  fetchProjectConfigurationStatus,
 } from '@finos/legend-application-studio';
 import { generateProjectServiceQueryUpdaterSetupRoute } from './DSL_Service_LegendStudioRouter.js';
 import { CORE_PURE_PATH } from '@finos/legend-graph';
@@ -50,6 +52,7 @@ export class UpdateProjectServiceQuerySetupStore {
   readonly loadProjectsState = ActionState.create();
   projects: Project[] = [];
   currentProject?: Project | undefined;
+  currentProjectConfigurationStatus?: ProjectConfigurationStatus | undefined;
 
   readonly loadWorkspacesState = ActionState.create();
   readonly createWorkspaceState = ActionState.create();
@@ -67,6 +70,7 @@ export class UpdateProjectServiceQuerySetupStore {
     makeObservable(this, {
       projects: observable,
       currentProject: observable,
+      currentProjectConfigurationStatus: observable,
       groupWorkspaces: observable,
       currentGroupWorkspace: observable,
       showCreateWorkspaceModal: observable,
@@ -99,6 +103,7 @@ export class UpdateProjectServiceQuerySetupStore {
     this.applicationStore.navigator.updateCurrentLocation(
       generateProjectServiceQueryUpdaterSetupRoute(undefined),
     );
+    this.currentProjectConfigurationStatus = undefined;
   }
 
   resetCurrentGroupWorkspace(): void {
@@ -171,12 +176,19 @@ export class UpdateProjectServiceQuerySetupStore {
 
   *changeProject(project: Project): GeneratorFn<void> {
     this.currentProject = project;
+    this.currentProjectConfigurationStatus = undefined;
     this.applicationStore.navigator.updateCurrentLocation(
       generateProjectServiceQueryUpdaterSetupRoute(project.projectId),
     );
 
     this.loadWorkspacesState.inProgress();
     try {
+      this.currentProjectConfigurationStatus =
+        (yield fetchProjectConfigurationStatus(
+          project.projectId,
+          this.applicationStore,
+          this.sdlcServerClient,
+        )) as ProjectConfigurationStatus;
       const workspacesInConflictResolutionIds = (
         (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(
           project.projectId,

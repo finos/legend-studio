@@ -21,7 +21,7 @@ import {
   type InputData,
   type InstanceSetImplementation,
   type Mapping,
-  type MappingTest,
+  type DEPRECATED__MappingTest,
   type MappingTestAssert,
   type PropertyMapping,
   type RawLambda,
@@ -54,7 +54,7 @@ import {
   observe_SetImplementation,
   observe_EnumerationMapping,
   observe_AssociationImplementation,
-  observe_MappingTest,
+  observe_MappingTest_Legacy,
   observe_SourceValue,
   observe_MappingTestAssert,
   observe_SetImplementationContainer,
@@ -158,17 +158,20 @@ export const mapping_deleteAssociationMapping = action(
   },
 );
 export const mapping_deleteTest = action(
-  (mapping: Mapping, val: MappingTest): void => {
-    deleteEntry(mapping.tests, val);
+  (mapping: Mapping, val: DEPRECATED__MappingTest): void => {
+    deleteEntry(mapping.test, val);
   },
 );
 export const mapping_addTest = action(
   (
     mapping: Mapping,
-    val: MappingTest,
+    val: DEPRECATED__MappingTest,
     observerContext: ObserverContext,
   ): void => {
-    addUniqueEntry(mapping.tests, observe_MappingTest(val, observerContext));
+    addUniqueEntry(
+      mapping.test,
+      observe_MappingTest_Legacy(val, observerContext),
+    );
   },
 );
 
@@ -266,14 +269,14 @@ export const enumValueMapping_updateSourceValue = action(
 // --------------------------------------------- Mapping Test -------------------------------------
 
 export const mappingTest_setName = action(
-  (test: MappingTest, value: string): void => {
+  (test: DEPRECATED__MappingTest, value: string): void => {
     test.name = value;
   },
 );
 
 export const mappingTest_setInputData = action(
   (
-    test: MappingTest,
+    test: DEPRECATED__MappingTest,
     value: InputData[],
     observeContext: ObserverContext,
   ): void => {
@@ -282,14 +285,14 @@ export const mappingTest_setInputData = action(
 );
 
 export const mappingTest_setQuery = action(
-  (test: MappingTest, value: RawLambda): void => {
+  (test: DEPRECATED__MappingTest, value: RawLambda): void => {
     test.query = observe_RawLambda(value);
   },
 );
 
 export const mappingTest_setAssert = action(
   (
-    test: MappingTest,
+    test: DEPRECATED__MappingTest,
     value: MappingTestAssert,
     observerContext: ObserverContext,
   ): void => {

@@ -181,7 +181,9 @@ test(
     );
     fireEvent.click(getByText(editPanel, 'Registration'));
     const serviceEditorState =
-      MOCK__editorStore.getCurrentEditorState(ServiceEditorState);
+      MOCK__editorStore.tabManagerState.getCurrentEditorState(
+        ServiceEditorState,
+      );
     const registrationEditor = await waitFor(() =>
       renderResult.getByTestId(
         LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_EDITOR,
@@ -205,14 +207,14 @@ test(
     // we will then change env from `int` to `prod`
     await waitFor(() => getByText(registrationEditor, 'INT'));
 
-    act(() => {
+    await act(async () => {
       registrationState.updateEnv('prod');
     });
     await waitFor(() => getByText(registrationEditor, 'PROD'));
 
     // select version
     await waitFor(() => getByText(registrationEditor, 'Select...'));
-    act(() => {
+    await act(async () => {
       registrationState.setProjectVersion(
         versions.find((v) => v.id.id === '1.0.1'),
       );
@@ -222,7 +224,7 @@ test(
     expect(registrationState.executionModes[0]).toBe(ServiceExecutionMode.PROD);
 
     // change env
-    act(() => {
+    await act(async () => {
       registrationState.updateEnv('int');
     });
     // change from full to semi
@@ -232,7 +234,7 @@ test(
         prettyCONSTName(ServiceExecutionMode.FULL_INTERACTIVE),
       ),
     );
-    act(() => {
+    await act(async () => {
       registrationState.updateType(ServiceExecutionMode.SEMI_INTERACTIVE);
     });
     await waitFor(() =>
@@ -294,7 +296,9 @@ test(
     await waitFor(() => getByText(editPanel, 'owner2'));
     // add owner
     const serviceEditorState =
-      MOCK__editorStore.getCurrentEditorState(ServiceEditorState);
+      MOCK__editorStore.tabManagerState.getCurrentEditorState(
+        ServiceEditorState,
+      );
     const service = serviceEditorState.service;
     expect(service.owners).toHaveLength(2);
     fireEvent.click(getByTitle(editPanel, 'Add owner'));

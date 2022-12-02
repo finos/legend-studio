@@ -80,7 +80,7 @@ export class DSL_Diagram_LegendStudioApplicationPlugin
 
   override getExtraRequiredDocumentationKeys(): string[] {
     return [
-      DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DIAGRAM,
+      DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_DIAGRAM,
       DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
     ];
   }
@@ -188,8 +188,10 @@ export class DSL_Diagram_LegendStudioApplicationPlugin
     return [
       (editorStore: EditorStore, element: PackageableElement): void => {
         // rerender currently opened diagram
-        if (editorStore.currentEditorState instanceof DiagramEditorState) {
-          editorStore.currentEditorState.renderer.render();
+        if (
+          editorStore.tabManagerState.currentTab instanceof DiagramEditorState
+        ) {
+          editorStore.tabManagerState.currentTab.renderer.render();
         }
       },
     ];
@@ -199,8 +201,10 @@ export class DSL_Diagram_LegendStudioApplicationPlugin
     return [
       (editorStore: EditorStore, element: PackageableElement): void => {
         // rerender currently opened diagram
-        if (editorStore.currentEditorState instanceof DiagramEditorState) {
-          editorStore.currentEditorState.renderer.render();
+        if (
+          editorStore.tabManagerState.currentTab instanceof DiagramEditorState
+        ) {
+          editorStore.tabManagerState.currentTab.renderer.render();
         }
       },
     ];
@@ -216,7 +220,7 @@ export class DSL_Diagram_LegendStudioApplicationPlugin
         if (parserKeyword === PURE_GRAMMAR_DIAGRAM_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL) {
             return editorStore.applicationStore.documentationService.getDocEntry(
-              DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DIAGRAM,
+              DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_DIAGRAM,
             );
           }
         }

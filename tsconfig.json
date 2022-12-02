@@ -35,6 +35,9 @@
     { "path": "packages/legend-application-taxonomy" },
     { "path": "packages/legend-application-taxonomy-bootstrap" },
     { "path": "packages/legend-application-taxonomy-deployment" },
+    // pure ide
+    { "path": "packages/legend-application-pure-ide" },
+    { "path": "packages/legend-application-pure-ide-deployment" },
     // extensions
     { "path": "packages/legend-extension-tracer-zipkin" },
     {

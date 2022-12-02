@@ -34,15 +34,15 @@ export enum LEGEND_STUDIO_COMMAND_KEY {
 export const LEGEND_STUDIO_COMMAND_CONFIG: CommandConfigData = {
   [LEGEND_STUDIO_COMMAND_KEY.SYNC_WITH_WORKSPACE]: {
     title: 'Sync with workspace',
-    defaultKeyboardShortcut: 'Control+s',
+    defaultKeyboardShortcut: 'Control+KeyS',
   },
   [LEGEND_STUDIO_COMMAND_KEY.CREATE_ELEMENT]: {
     title: 'Create new element',
-    defaultKeyboardShortcut: 'Control+Shift+n',
+    defaultKeyboardShortcut: 'Control+Shift+KeyN',
   },
   [LEGEND_STUDIO_COMMAND_KEY.SEARCH_ELEMENT]: {
     title: 'Search for element',
-    defaultKeyboardShortcut: 'Control+p',
+    defaultKeyboardShortcut: 'Control+KeyP',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_MODEL_LOADER]: {
     title: 'Toggle model loader',
@@ -62,22 +62,22 @@ export const LEGEND_STUDIO_COMMAND_CONFIG: CommandConfigData = {
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_AUX_PANEL]: {
     title: 'Toggle auxiliary panel',
-    defaultKeyboardShortcut: 'Control+`',
+    defaultKeyboardShortcut: 'Control+Backquote',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_EXPLORER]: {
     title: 'Toggle explorer sidebar',
-    defaultKeyboardShortcut: 'Control+Shift+x',
+    defaultKeyboardShortcut: 'Control+Shift+KeyX',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_LOCAL_CHANGES]: {
     title: 'Toggle local changes sidebar',
-    defaultKeyboardShortcut: 'Control+Shift+g',
+    defaultKeyboardShortcut: 'Control+Shift+KeyG',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW]: {
     title: 'Toggle workspace review sidebar',
-    defaultKeyboardShortcut: 'Control+Shift+m',
+    defaultKeyboardShortcut: 'Control+Shift+KeyM',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER]: {
     title: 'Toggle workspace updater sidebar',
-    defaultKeyboardShortcut: 'Control+Shift+u',
+    defaultKeyboardShortcut: 'Control+Shift+KeyU',
   },
 };

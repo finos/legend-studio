@@ -26,6 +26,7 @@
  * See https://github.com/microsoft/TypeScript/issues/49298
  */
 export {
+  FaCrosshairs as CrosshairsIcon,
   FaLayerGroup as LayerGroupIcon,
   FaGhost as GhostIcon,
   FaLock as LockIcon,
@@ -121,6 +122,7 @@ export {
   FaPauseCircle as PauseCircleIcon,
   FaShare as ShareIcon,
   FaRegCopy as CopyIcon,
+  FaFileAlt as FileAltIcon, // to be reviewed/combined
   FaEdit as PencilEditIcon, // to be reviewed/combined
   FaArrowsAltH as ArrowsAltHIcon, // to be reviewed/combined
   FaRegWindowMaximize as WindowMaximizeIcon, // to be reviewed/combined
@@ -181,6 +183,8 @@ export {
   VscRunErrors as RunErrorsIcon,
   VscOpenPreview as OpenPreviewIcon,
   VscDiff as DiffIcon,
+  VscRegex as RegexIcon,
+  VscCaseSensitive as CaseSensitiveIcon,
 } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,
@@ -219,7 +223,10 @@ export {
   BsDistributeHorizontal as DistributeHorizontalIcon,
   BsDistributeVertical as DistributeVerticalIcon,
 } from 'react-icons/bs';
-export { BiShapeTriangle as ShapeTriangleIcon } from 'react-icons/bi';
+export {
+  BiShapeTriangle as ShapeTriangleIcon,
+  BiAtom as AtomIcon,
+} from 'react-icons/bi';
 export { CgOptions as OptionsIcon } from 'react-icons/cg';
 export {
   FiPackage as PackageIcon,

@@ -1,5 +1,31 @@
 # @finos/legend-extension-dsl-diagram
 
+## 7.1.8
+
+## 7.1.7
+
+## 7.1.6
+
+## 7.1.5
+
+## 7.1.4
+
+## 7.1.3
+
+## 7.1.2
+
+## 7.1.1
+
+## 7.1.0
+
+### Minor Changes
+
+- [#1677](https://github.com/finos/legend-studio/pull/1677) [`45962dcc8`](https://github.com/finos/legend-studio/commit/45962dcc8dedbc72af1bb9f598e2380d6d1c037c) ([@akphi](https://github.com/akphi)) - Support rendering property aggregation kind (composite, shared, none) in diagram.
+
+### Patch Changes
+
+- [#1684](https://github.com/finos/legend-studio/pull/1684) [`0135a9d0f`](https://github.com/finos/legend-studio/commit/0135a9d0f6ccb223e9f8a531ac2509d6702fe5e9) ([@gayathrir11](https://github.com/gayathrir11)) - Fix a bug with diagram property view referencing association ([#1593](https://github.com/finos/legend-studio/issues/1593)).
+
 ## 7.0.12
 
 ## 7.0.11

@@ -134,6 +134,8 @@
   }
 
   &__header__title__label {
+    @include flexVCenter;
+
     height: 1.8rem;
     line-height: 1.8rem;
     border-radius: 0.1rem;
@@ -144,6 +146,18 @@
     cursor: default;
     margin-right: 0.5rem;
     white-space: nowrap;
+
+    &__hint {
+      @include flexCenter;
+
+      border-radius: 0.2rem;
+      margin-left: 0.5rem;
+      color: var(--color-light-grey-300);
+
+      svg {
+        font-size: 1rem;
+      }
+    }
   }
 
   &__header__title__content {

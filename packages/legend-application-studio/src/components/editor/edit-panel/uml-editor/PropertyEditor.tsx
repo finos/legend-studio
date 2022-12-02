@@ -24,9 +24,12 @@ import {
 } from '../../../../stores/shared/DnDUtils.js';
 import {
   clsx,
+  CustomSelectorInput,
   LockIcon,
   PanelContent,
   PanelDropZone,
+  PanelForm,
+  PanelFormSection,
   PlusIcon,
   TimesIcon,
 } from '@finos/legend-art';
@@ -39,7 +42,7 @@ import {
   TaggedValueEditor,
 } from './TaggedValueEditor.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
-import { prettyCONSTName } from '@finos/legend-shared';
+import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import {
   type AbstractProperty,
@@ -51,13 +54,24 @@ import {
   stub_Tag,
   stub_Profile,
   stub_Stereotype,
+  Property,
+  AggregationKind,
 } from '@finos/legend-graph';
 import {
   annotatedElement_deleteTaggedValue,
   annotatedElement_addTaggedValue,
   annotatedElement_addStereotype,
   annotatedElement_deleteStereotype,
+  property_setAggregationKind,
 } from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
+
+type AggregationKindOption = { label: string; value: AggregationKind };
+const buildAggregationKindOption = (
+  val: AggregationKind,
+): AggregationKindOption => ({
+  label: prettyCONSTName(val),
+  value: val,
+});
 
 export const PropertyEditor = observer(
   (props: {
@@ -68,9 +82,17 @@ export const PropertyEditor = observer(
     const { property, deselectProperty, isReadOnly } = props;
     // Tab
     const [selectedTab, setSelectedTab] = useState<UML_EDITOR_TAB>(
-      UML_EDITOR_TAB.TAGGED_VALUES,
+      property instanceof Property
+        ? UML_EDITOR_TAB.PROPERTY_AGGREGATION
+        : UML_EDITOR_TAB.TAGGED_VALUES,
     );
-    const tabs = [UML_EDITOR_TAB.TAGGED_VALUES, UML_EDITOR_TAB.STEREOTYPES];
+    const tabs = [
+      property instanceof Property
+        ? UML_EDITOR_TAB.PROPERTY_AGGREGATION
+        : undefined,
+      UML_EDITOR_TAB.TAGGED_VALUES,
+      UML_EDITOR_TAB.STEREOTYPES,
+    ].filter(isNonNullable);
     const changeTab =
       (tab: UML_EDITOR_TAB): (() => void) =>
       (): void =>
@@ -83,6 +105,9 @@ export const PropertyEditor = observer(
         break;
       case UML_EDITOR_TAB.STEREOTYPES:
         addButtonTitle = 'Add stereotype';
+        break;
+      case UML_EDITOR_TAB.PROPERTY_AGGREGATION:
+        addButtonTitle = 'Configure property aggregation kind';
         break;
       default:
         break;
@@ -207,7 +232,13 @@ export const PropertyEditor = observer(
             <div className="panel__header__actions">
               <button
                 className="panel__header__action"
-                disabled={isReadOnly}
+                disabled={
+                  isReadOnly ||
+                  ![
+                    UML_EDITOR_TAB.TAGGED_VALUES,
+                    UML_EDITOR_TAB.STEREOTYPES,
+                  ].includes(selectedTab)
+                }
                 onClick={addValue}
                 tabIndex={-1}
                 title={addButtonTitle}
@@ -217,6 +248,33 @@ export const PropertyEditor = observer(
             </div>
           </div>
           <PanelContent>
+            {selectedTab === UML_EDITOR_TAB.PROPERTY_AGGREGATION &&
+              property instanceof Property && (
+                <PanelForm>
+                  <PanelFormSection>
+                    <div className="panel__content__form__section__header__label">
+                      Aggregation Kind
+                    </div>
+                    <CustomSelectorInput
+                      className="panel__content__form__section__dropdown"
+                      options={Object.values(AggregationKind).map(
+                        buildAggregationKindOption,
+                      )}
+                      onChange={(option: AggregationKindOption | null) =>
+                        property_setAggregationKind(property, option?.value)
+                      }
+                      value={
+                        property.aggregation
+                          ? buildAggregationKindOption(property.aggregation)
+                          : null
+                      }
+                      escapeClearsValue={true}
+                      isClearable={true}
+                      disable={isReadOnly}
+                    />
+                  </PanelFormSection>
+                </PanelForm>
+              )}
             {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
               <PanelDropZone
                 isDragOver={isTaggedValueDragOver && !isReadOnly}

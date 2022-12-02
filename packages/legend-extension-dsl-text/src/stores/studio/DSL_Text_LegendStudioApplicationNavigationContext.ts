@@ -15,5 +15,5 @@
  */
 
 export enum DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
-  TEXT_EDITOR = 'dsl-text.studiop.editor.text-editor',
+  TEXT_EDITOR = 'dsl-text.studio.editor.text-editor',
 }

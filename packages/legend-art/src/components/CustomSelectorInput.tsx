@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {
+import React, {
   type CSSProperties,
   useRef,
   useEffect,
@@ -29,6 +29,8 @@ import {
   CreatableSelect,
   Select,
   createFilter as _createFilter,
+  baseComponents,
+  type InputProps,
 } from './CJS__ReactSelect.cjs';
 import type { PlainObject } from '@finos/legend-shared';
 
@@ -39,6 +41,16 @@ interface ListChildComponentProps {
   style: React.CSSProperties;
   isFocused?: boolean;
 }
+
+// Create props for buttons within selector input option to ensure
+// we don't trigger selector dropdown menu when clicking on these buttons
+// NOTE: react-selector uses `mousedown` event instead of `onclick`
+// See https://stackoverflow.com/a/55663995
+export const getSelectorInputOptionEmbeddedButtonProps = (): {
+  onMouseDown: React.MouseEventHandler;
+} => ({
+  onMouseDown: (event) => event.stopPropagation(),
+});
 
 /**
  * This custom list component uses virtualization from `react-window` to help improve performance of
@@ -144,6 +156,12 @@ const ClearIndicator: React.FC<{
   );
 };
 
+// Enable edit of the selected tag
+// See https://github.com/JedWatson/react-select/issues/1558
+const CustomInput: React.FC<InputProps> = (props) => (
+  <baseComponents.Input {...props} isHidden={false} />
+);
+
 export interface SelectOption {
   label: string;
   value?: string;
@@ -214,6 +232,7 @@ export const CustomSelectorInput = forwardRef<
         DropdownIndicator,
         LoadingIndicator,
         MenuList: CustomMenuList,
+        Input: CustomInput,
         ...components,
       }}
       {...{ ...innerProps, darkMode, noMatchMessage }}

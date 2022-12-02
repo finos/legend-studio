@@ -50,7 +50,9 @@ export * from './graph/metamodel/pure/packageableElements/mapping/InferableMappi
 export * from './graph/metamodel/pure/packageableElements/mapping/InferableMappingElementRoot.js';
 export { SetImplementationExplicitReference } from './graph/metamodel/pure/packageableElements/mapping/SetImplementationReference.js';
 export * from './graph/metamodel/pure/packageableElements/mapping/EnumerationMappingReference.js';
+export { DEPRECATED__MappingTest } from './graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 export { MappingTest } from './graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
+export { MappingTestSuite } from './graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
 export { InputData } from './graph/metamodel/pure/packageableElements/mapping/InputData.js';
 export { MappingTestAssert } from './graph/metamodel/pure/packageableElements/mapping/MappingTestAssert.js';
 export { ExpectedOutputMappingTestAssert } from './graph/metamodel/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert.js';

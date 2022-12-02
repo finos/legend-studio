@@ -23,8 +23,6 @@ export enum LEGEND_STUDIO_TEST_ID {
   PANEL_CONTENT_LIST = 'panel__content__list', // TODO: revise
   PANEL_CONTENT_FORM_SECTION_LIST_ITEMS = 'panel__content__form__section__list__items', // TODO: revise
 
-  MAIN_EDITOR = 'main-editor',
-
   ACTIVITY_BAR_ITEM_ICON_INDICATOR = 'activity-bar__item__icon__indicator', // TODO: revise
 
   SIDEBAR_PANEL_HEADER__CHANGES_COUNT = 'side-bar__panel__header__changes-count',
@@ -53,6 +51,7 @@ export enum LEGEND_STUDIO_TEST_ID {
 
   SERVICE_REGISTRATION_EDITOR = 'service_registration_editor', // TODO: revise
 
+  ENUMERATION_MAPPING_EDITOR = 'enumeration-mapping-editor', // TODO: revise
   MAPPING_EXPLORER = 'mapping-explorer', // TODO: revise
   SOURCE_PANEL = 'source-panel', // TODO: revise
   TYPE_VISIT = 'type-visit', // TODO: revise

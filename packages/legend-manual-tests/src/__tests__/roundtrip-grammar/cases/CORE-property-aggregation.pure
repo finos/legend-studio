@@ -1,0 +1,39 @@
+Class model::Student
+{
+  name: String[1];
+  age: Integer[1];
+  (composite) profile: model::StudentProfile[1];
+  (composite) theses: model::Thesis[*];
+  (shared) locker: model::Locker[1];
+  (shared) reservedLibrarySpace: model::LibrarySpace[*];
+  (shared) clubs: model::Club[*];
+}
+
+Class model::StudentProfile
+{
+  gpa: Float[1];
+}
+
+Class model::Thesis
+{
+  title: String[1];
+  year: Integer[1];
+}
+
+Class model::Locker
+{
+  block: Integer[1];
+  row: Integer[1];
+  column: Integer[1];
+}
+
+Class model::LibrarySpace
+{
+  floor: Integer[1];
+}
+
+Class model::Club
+{
+  name: String[1];
+  (shared) members: model::Student[*];
+}

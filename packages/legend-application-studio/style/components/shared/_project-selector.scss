@@ -23,12 +23,20 @@
 
   &__label {
     display: flex;
-    width: calc(100% - 6.5rem);
+    width: 100%;
 
     &__name {
       @include flexVCenter;
 
       height: 1.8rem;
+    }
+
+    &--selected {
+      width: calc(100% - 6.5rem);
+    }
+
+    &--not-configured {
+      width: calc(100% - 10.5rem);
     }
   }
 
@@ -66,6 +74,52 @@
     &:hover &__label,
     &:hover &__icon {
       background: var(--color-light-grey-400);
+    }
+  }
+
+  &__configure-btn {
+    display: flex;
+    width: 10rem;
+    margin-right: 0.5rem;
+
+    &__label {
+      @include flexCenter;
+
+      width: 6.4rem;
+      height: 1.8rem;
+      background: var(--color-yellow-100);
+      font-size: 1.2rem;
+      color: var(--color-dark-grey-200);
+      font-weight: 500;
+    }
+
+    &__warning-icon {
+      @include flexCenter;
+
+      height: 1.8rem;
+      width: 1.8rem;
+      background: var(--color-yellow-100);
+      border-radius: 0.2rem 0 0 0.2rem;
+
+      svg {
+        font-size: 1.2rem;
+        color: var(--color-dark-grey-200);
+      }
+    }
+
+    &__icon {
+      @include flexCenter;
+
+      height: 1.8rem;
+      width: 1.8rem;
+      background: var(--color-yellow-100);
+      border-radius: 0 50% 50% 0;
+
+      svg {
+        font-size: 1.6rem;
+        // color: var(--color-dark-shade-250);
+        color: var(--color-dark-grey-200);
+      }
     }
   }
 }

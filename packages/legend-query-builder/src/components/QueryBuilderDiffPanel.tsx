@@ -15,7 +15,6 @@
  */
 
 import {
-  createPassThroughOnKeyHandler,
   EDITOR_LANGUAGE,
   EDITOR_THEME,
   TAB_SIZE,
@@ -70,7 +69,6 @@ const TextDiffView = observer(
           readOnly: true,
           wordWrap: 'on',
         });
-        _editor.getOriginalEditor().onKeyDown(createPassThroughOnKeyHandler());
         setEditor(_editor);
       }
     }, [applicationStore, editor]);

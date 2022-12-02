@@ -16,12 +16,9 @@
 
 import {
   AbstractPropertyExpression,
-  Class,
   DerivedProperty,
-  getMilestoneTemporalStereotype,
   INTERNAL__PropagatedValue,
   matchFunctionName,
-  MILESTONING_STEREOTYPE,
   SimpleFunctionExpression,
   VariableExpression,
   type ValueSpecification,
@@ -32,103 +29,21 @@ import {
   guaranteeType,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
-import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
+import { variableExpression_setName } from './shared/ValueSpecificationModifierHelper.js';
 
 /**
- * Checks if the provided property expression match the criteria for default
- * date propagation so we know whether we need to fill in values for the parameter
- * or just propgate values from the parent's expression
- *
- * NOTE: this takes date propgation into account. See the table below for all
- * the combination:
- *
- *             | [source] |          |          |          |          |
- * ----------------------------------------------------------------------
- *   [target]  |          |   NONE   |  PR_TMP  |  BI_TMP  |  BU_TMP  |
- * ----------------------------------------------------------------------
- *             |   NONE   |   N.A.   |   PRD    | PRD,BUD  |    BUD   |
- * ----------------------------------------------------------------------
- *             |  PR_TMP  |   N.A.   |    X     | PRD,BUD  |    BUD   |
- * ----------------------------------------------------------------------
- *             |  BI_TMP  |   N.A.   |    X     |    X     |    X     |
- * ----------------------------------------------------------------------
- *             |  BU_TMP  |   N.A.   |   PRD    | PRD,BUD  |    X     |
- * ----------------------------------------------------------------------
- *
- * Annotations:
- *
- * [source]: source temporal type
- * [target]: target temporal type
- *
- * PR_TMP  : processing temporal
- * BI_TMP  : bitemporal
- * BU_TMP  : business temporal
- *
- * X       : no default date propagated
- * PRD     : default processing date is propagated
- * BUD     : default business date is propgated
+ * Gets the value of ValueSpecification given INTERNAL__PropagatedValue is pointing to.
  */
-const isDefaultDatePropagationSupported = (
-  currentPropertyExpression: AbstractPropertyExpression,
-  queryBuilderState: QueryBuilderState,
-  prevPropertyExpression?: AbstractPropertyExpression | undefined,
-): boolean => {
-  const property = currentPropertyExpression.func.value;
-  const graph = queryBuilderState.graphManagerState.graph;
-  // Default date propagation is not supported for current expression when the previous property expression is a derived property.
-  if (
-    prevPropertyExpression &&
-    prevPropertyExpression.func.value instanceof DerivedProperty &&
-    prevPropertyExpression.func.value._OWNER.derivedProperties.includes(
-      prevPropertyExpression.func.value,
-    )
-  ) {
-    return false;
-  }
-  // Default date propagation is not supported for current expression when the milestonedParameterValues of
-  // the previous property expression doesn't match with the global milestonedParameterValues
-  if (
-    prevPropertyExpression &&
-    prevPropertyExpression.func.value.genericType.value.rawType instanceof Class
-  ) {
-    const milestoningStereotype = getMilestoneTemporalStereotype(
-      prevPropertyExpression.func.value.genericType.value.rawType,
-      graph,
+const getValueOfInternalPropagatedValue = (
+  valueSpec: INTERNAL__PropagatedValue,
+): ValueSpecification => {
+  if (valueSpec.getValue() instanceof INTERNAL__PropagatedValue) {
+    return getValueOfInternalPropagatedValue(
+      guaranteeType(valueSpec.getValue(), INTERNAL__PropagatedValue),
     );
-    if (
-      milestoningStereotype &&
-      !prevPropertyExpression.parametersValues
-        .slice(1)
-        .every(
-          (parameterValue) =>
-            parameterValue instanceof INTERNAL__PropagatedValue,
-        )
-    ) {
-      return false;
-    }
   }
-  if (property.genericType.value.rawType instanceof Class) {
-    // the stereotype of source class of current property expression.
-    const sourceStereotype =
-      property instanceof DerivedProperty
-        ? getDerivedPropertyMilestoningSteoreotype(property, graph)
-        : undefined;
-    // Default date propagation is always supported if the source is `bitemporal`
-    if (sourceStereotype === MILESTONING_STEREOTYPE.BITEMPORAL) {
-      return true;
-    }
-    // the stereotype (if exists) of the generic type of current property expression.
-    const targetStereotype = getMilestoneTemporalStereotype(
-      property.genericType.value.rawType,
-      graph,
-    );
-    // Default date propagation is supported when stereotype of both source and target matches
-    if (sourceStereotype && targetStereotype) {
-      return sourceStereotype === targetStereotype;
-    }
-  }
-  return false;
+  return valueSpec.getValue();
 };
 
 export const buildPropertyExpressionChain = (
@@ -173,13 +88,7 @@ export const buildPropertyExpressionChain = (
           // Replace with argumentless derived property expression only when default date propagation is supported
           if (
             !TEMPORARY__disableDatePropagation &&
-            isDefaultDatePropagationSupported(
-              currentPropertyExpression,
-              queryBuilderState,
-              nextExpression instanceof AbstractPropertyExpression
-                ? nextExpression
-                : undefined,
-            )
+            parameterValue.isPropagatedValue
           ) {
             // NOTE: For `bitemporal` property check if the property expression has parameters which are not instance of
             // `INTERNAL_PropagatedValue` then pass the parameters as user explicitly changed values of either of the parameters.
@@ -190,11 +99,13 @@ export const buildPropertyExpressionChain = (
                 currentPropertyExpression.parametersValues.length === 3 &&
                 !(
                   currentPropertyExpression.parametersValues[2] instanceof
-                  INTERNAL__PropagatedValue
+                    INTERNAL__PropagatedValue &&
+                  currentPropertyExpression.parametersValues[2]
+                    .isPropagatedValue === true
                 ))
             ) {
               currentPropertyExpression.parametersValues[index + 1] =
-                parameterValue.getValue();
+                getValueOfInternalPropagatedValue(parameterValue);
             } else {
               currentPropertyExpression.parametersValues = [
                 guaranteeNonNullable(
@@ -205,7 +116,7 @@ export const buildPropertyExpressionChain = (
             }
           } else {
             currentPropertyExpression.parametersValues[index + 1] =
-              parameterValue.getValue();
+              getValueOfInternalPropagatedValue(parameterValue);
           }
         }
       });
@@ -228,7 +139,7 @@ export const buildPropertyExpressionChain = (
 
   // Update the root lambda name based on the parent's lambda parameter name.
   if (currentExpression instanceof VariableExpression) {
-    currentExpression.name = lambdaParameterName;
+    variableExpression_setName(currentExpression, lambdaParameterName);
   }
   return newPropertyExpression;
 };

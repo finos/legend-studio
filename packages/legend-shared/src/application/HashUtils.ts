@@ -15,7 +15,18 @@
  */
 
 import hash from 'hash.js';
-import type { Clazz } from '../CommonUtils.js';
+import {
+  default as objectHash,
+  type NormalOption as HashObjectOption,
+} from 'object-hash';
+import {
+  assertTrue,
+  isObject,
+  isBoolean,
+  isNumber,
+  isString,
+} from '../error/AssertionUtils.js';
+import type { Clazz, PlainObject } from '../CommonUtils.js';
 
 /**
  * NOTE: despite the push to adopt visitor pattern across the code-base, hashing implementation for now will remain within
@@ -48,6 +59,13 @@ export interface Hashable {
 
 export const hashValue = (val: string | boolean | number): string =>
   hash.sha1().update(val).digest('hex');
+export const hashUnknownValue = (val: unknown): string => {
+  assertTrue(
+    isString(val) || isBoolean(val) || isNumber(val),
+    `Can't hash non-primitive value`,
+  );
+  return hashValue(val as string | boolean | number);
+};
 
 export const hashArray = (
   arr: (string | boolean | number | Hashable)[],
@@ -70,7 +88,13 @@ export const hashArray = (
  * If this object-hashing becomes the performance bottle-neck, we should think about adopting this hashing library
  * See https://www.npmjs.com/package/node-object-hash
  */
-export { default as hashObject } from 'object-hash';
+export const hashObject = (
+  value: unknown,
+  options?: HashObjectOption,
+): string => {
+  assertTrue(isObject(value), `Can't hash non-object value`);
+  return objectHash(value as PlainObject, options);
+};
 
 /**
  * This method can be used to debug hashing.

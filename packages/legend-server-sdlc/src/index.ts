@@ -29,6 +29,7 @@ export * from './models/workflow/Workflow.js';
 export * from './models/workflow/WorkflowJob.js';
 
 export * from './models/project/Project.js';
+export * from './models/project/ProjectConfigurationStatus.js';
 export * from './models/project/ImportReport.js';
 export * from './models/project/ProjectCommands.js';
 

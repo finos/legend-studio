@@ -20,6 +20,7 @@ import {
   type Type,
   type ValueSpecification,
   type ExecutionResult,
+  type VariableExpression,
   Enumeration,
   PRIMITIVE_TYPE,
   observe_ValueSpecification,
@@ -42,6 +43,7 @@ import {
   hashArray,
   uniq,
   type Hashable,
+  isNonNullable,
 } from '@finos/legend-shared';
 import {
   action,
@@ -68,6 +70,7 @@ import { QUERY_BUILDER_GROUP_OPERATION } from '../../../QueryBuilderGroupOperati
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
 import type { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
+import { isValueExpressionReferencedInValue } from '../../../QueryBuilderValueSpecificationHelper.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',
@@ -874,6 +877,16 @@ export class QueryBuilderPostFilterState
 
   expandTree(): void {
     Array.from(this.nodes.values()).forEach((node) => node.setIsOpen(true));
+  }
+
+  isVariableUsed(variable: VariableExpression): boolean {
+    return Boolean(
+      Array.from(this.nodes.values())
+        .filter(filterByType(QueryBuilderPostFilterTreeConditionNodeData))
+        .map((node) => node.condition.value)
+        .filter(isNonNullable)
+        .find((value) => isValueExpressionReferencedInValue(variable, value)),
+    );
   }
 
   get hashCode(): string {

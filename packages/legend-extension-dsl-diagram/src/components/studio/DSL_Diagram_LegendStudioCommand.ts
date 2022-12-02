@@ -30,31 +30,31 @@ export enum DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY {
 export const DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_CONFIG: CommandConfigData = {
   [DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.RECENTER]: {
     title: 'Diagram Editor: Recenter',
-    defaultKeyboardShortcut: 'r',
+    defaultKeyboardShortcut: 'KeyR',
   },
   [DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_ZOOM_TOOL]: {
     title: 'Diagram Editor: Use zoom tool',
-    defaultKeyboardShortcut: 'z',
+    defaultKeyboardShortcut: 'KeyZ',
   },
   [DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_VIEW_TOOL]: {
     title: 'Diagram Editor: Use view tool',
-    defaultKeyboardShortcut: 'v',
+    defaultKeyboardShortcut: 'KeyV',
   },
   [DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_PAN_TOOL]: {
     title: 'Diagram Editor: Use pan tool',
-    defaultKeyboardShortcut: 'm',
+    defaultKeyboardShortcut: 'KeyM',
   },
   [DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_PROPERTY_TOOL]: {
     title: 'Diagram Editor: Use property tool',
-    defaultKeyboardShortcut: 'p',
+    defaultKeyboardShortcut: 'KeyP',
   },
   [DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_INHERITANCE_TOOL]: {
     title: 'Diagram Editor: Use inheritance tool',
-    defaultKeyboardShortcut: 'i',
+    defaultKeyboardShortcut: 'KeyI',
   },
   [DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.ADD_CLASS]: {
     title: 'Diagram Editor: Add class',
-    defaultKeyboardShortcut: 'c',
+    defaultKeyboardShortcut: 'KeyC',
   },
   [DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.EJECT_PROPERTY]: {
     title: 'Diagram Editor: Eject Property',

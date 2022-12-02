@@ -18,10 +18,11 @@ import type { QueryBuilderState } from '../../QueryBuilderState.js';
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
   type CompilationError,
-  PackageableElementExplicitReference,
-  RootGraphFetchTree,
   type Class,
   type LambdaFunction,
+  type VariableExpression,
+  PackageableElementExplicitReference,
+  RootGraphFetchTree,
   getAllSuperclasses,
 } from '@finos/legend-graph';
 import {
@@ -51,6 +52,7 @@ import {
   type Hashable,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { isValueExpressionReferencedInValue } from '../../QueryBuilderValueSpecificationHelper.js';
 
 export class QueryBuilderGraphFetchTreeState
   extends QueryBuilderFetchStructureImplementationState
@@ -245,6 +247,16 @@ export class QueryBuilderGraphFetchTreeState
     } else {
       onChange();
     }
+  }
+
+  isVariableUsed(variable: VariableExpression): boolean {
+    return Boolean(
+      Array.from(this.treeData?.nodes.values() ?? []).find((node) =>
+        node.tree.parameters.find((p) =>
+          isValueExpressionReferencedInValue(variable, p),
+        ),
+      ),
+    );
   }
 
   get hashCode(): string {

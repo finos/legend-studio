@@ -32,6 +32,10 @@ export class INTERNAL__PropagatedValue
   implements Hashable
 {
   readonly getValue!: () => ValueSpecification;
+  /**
+   * Tells whether we need to replace the `INTERNAL__PropagatedValue` with actual `ValueSpecification` or not.
+   */
+  isPropagatedValue = true;
 
   constructor(getValue: () => ValueSpecification) {
     super(Multiplicity.ZERO);

@@ -53,8 +53,6 @@ type LegendStudioApplicationInstanceConfigurationData = {
 
 export interface LegendTaxonomyApplicationConfigurationData
   extends LegendApplicationConfigurationData {
-  appName: string;
-  env: string;
   depot: {
     url: string;
   };

@@ -17,7 +17,10 @@
 import { test } from '@jest/globals';
 import type { Entity } from '@finos/legend-storage';
 import { unitTest } from '@finos/legend-shared';
-import { TEST_DATA__roundtrip } from './TEST_DATA__DSL_Diagram_Roundtrip.js';
+import {
+  TEST_DATA__roundtrip,
+  TEST_DATA__diagramWithAssociationProperty,
+} from './TEST_DATA__DSL_Diagram_Roundtrip.js';
 import { DSL_Diagram_GraphManagerPreset } from '../../DSL_Diagram_Extension.js';
 import {
   TEST__GraphManagerPluginManager,
@@ -33,3 +36,13 @@ test(unitTest('Diagram import resolution roundtrip'), async () => {
     pluginManager,
   );
 });
+
+test(
+  unitTest('Diagram with association property import resolution roundtrip'),
+  async () => {
+    await TEST__checkBuildingElementsRoundtrip(
+      TEST_DATA__diagramWithAssociationProperty as Entity[],
+      pluginManager,
+    );
+  },
+);

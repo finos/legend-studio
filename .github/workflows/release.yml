@@ -13,7 +13,7 @@ on:
 jobs:
   release:
     name: Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-16-cores
     if: github.repository == 'finos/legend-studio' # prevent running this action in forks
     steps:
       - name: Checkout code
@@ -44,7 +44,7 @@ jobs:
         run: node ./scripts/release/createNewReleasePRTitle.js
       - name: Create new release pull request or Publish to NPM
         id: changesets
-        uses: changesets/action@v1.4.0
+        uses: changesets/action@v1.4.1
         with:
           version: yarn release:version
           commit: 'chore: bump versions and release'
