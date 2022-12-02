@@ -95,7 +95,7 @@
     "@finos/eslint-plugin-legend-studio": "workspace:*",
     "@finos/legend-dev-utils": "workspace:*",
     "@finos/stylelint-config-legend-studio": "workspace:*",
-    "@types/node": "18.11.9",
+    "@types/node": "18.11.10",
     "chalk": "5.1.2",
     "cross-env": "7.0.3",
     "envinfo": "7.8.1",
