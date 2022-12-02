@@ -1,0 +1,231 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.test-runner-panel {
+  height: 100%;
+  width: 100%;
+
+  &__content {
+    height: 100%;
+    width: 100%;
+    position: relative;
+  }
+
+  &__content .Resizer.vertical {
+    background: padding-box var(--color-dark-grey-100);
+    width: 1.1rem;
+    min-width: 1.1rem;
+    border-left: 0.5rem solid transparent;
+    border-right: 0.5rem solid transparent;
+  }
+
+  .panel {
+    height: 100%;
+
+    &__header {
+      @include flexVCenter;
+
+      font-weight: bold;
+      color: var(--color-light-grey-100);
+      border-top: 0.1rem solid var(--color-dark-grey-100);
+    }
+
+    &__header__title__label {
+      background: var(--color-dark-grey-200);
+    }
+
+    &__header__action svg {
+      color: var(--color-light-grey-400);
+    }
+
+    &__header__action[disabled] svg {
+      color: var(--color-dark-grey-250) !important;
+    }
+
+    &__content {
+      background: var(--color-dark-grey-50);
+    }
+
+    &__content--dnd-over {
+      filter: brightness(105%) blur(0.05rem);
+      border: 0.1rem solid var(--color-light-blue-200);
+    }
+  }
+
+  &__explorer,
+  &__parameters {
+    .panel__content {
+      padding: 0.5rem 0;
+    }
+  }
+
+  &__explorer__report {
+    display: flex;
+    align-items: center;
+  }
+
+  &__explorer__report__overview {
+    display: flex;
+    align-items: center;
+  }
+
+  &__explorer__report__overview__stat {
+    @include flexCenter;
+
+    color: var(--color-light-grey-100);
+    font-size: 1rem;
+    height: 1.8rem;
+    border-radius: 0.1rem;
+    padding: 0 0.4rem;
+    font-weight: 500;
+    margin-left: 0.5rem;
+    user-select: none;
+
+    &--total {
+      border-left: 0.5rem solid var(--color-pink-500);
+      background: var(--color-dark-grey-250);
+      margin-left: 0;
+    }
+
+    &--failed {
+      background: var(--color-test--failed);
+
+      svg {
+        margin-left: 0.3rem;
+        font-size: 1.1rem;
+      }
+    }
+
+    &--passed {
+      background: var(--color-test--passed);
+
+      svg {
+        margin-left: 0.3rem;
+        font-size: 1.1rem;
+      }
+    }
+
+    &--error {
+      background: var(--color-test--error);
+
+      svg {
+        margin-left: 0.3rem;
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  &__explorer__report__summary {
+    display: flex;
+    align-items: center;
+
+    svg {
+      font-size: 1.5rem;
+      margin-right: 1rem;
+    }
+  }
+
+  &__explorer__report__time {
+    @include flexCenter;
+
+    color: var(--color-dark-grey-100);
+    background: var(--color-light-grey-400);
+    font-size: 1rem;
+    height: 1.8rem;
+    border-radius: 0.1rem;
+    padding: 0 0.4rem;
+    font-weight: 500;
+    margin-left: 0.5rem;
+    user-select: none;
+  }
+
+  &__progress-bar {
+    width: 100%;
+    height: 0.4rem !important;
+
+    &--failed {
+      background: var(--color-red-50) !important;
+    }
+
+    &--passed {
+      background: var(--color-green-80) !important;
+    }
+
+    &--none {
+      background: var(--color-dark-grey-200) !important;
+    }
+
+    &__bar--failed {
+      background: var(--color-test--error) !important;
+    }
+
+    &__bar--passed {
+      background: var(--color-test--passed) !important;
+    }
+
+    &__bar--none {
+      background: var(--color-dark-grey-200) !important;
+    }
+  }
+
+  &__parameters,
+  &__expected-result {
+    .panel__header {
+      border-top: none;
+    }
+  }
+
+  &__expected-result__editor {
+    overflow-y: hidden;
+    padding: 0 !important;
+    position: relative;
+  }
+
+  &__explorer__package-tree__status {
+    &--passed svg {
+      color: var(--color-test--passed);
+    }
+
+    &--error svg {
+      color: var(--color-test--error);
+    }
+
+    &--failed svg {
+      color: var(--color-test--failed);
+    }
+
+    &--running svg {
+      animation: spin 1s infinite ease;
+      color: var(--color-blue-200);
+    }
+  }
+
+  &__result {
+    height: 100%;
+    width: 100%;
+
+    &__content {
+      height: 100%;
+      overflow: overlay;
+      padding: 1.5rem;
+      line-height: 2rem;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.2rem;
+    }
+  }
+}

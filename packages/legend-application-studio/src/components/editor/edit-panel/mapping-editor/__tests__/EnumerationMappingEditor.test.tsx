@@ -68,7 +68,9 @@ test.only(
     await waitFor(() => getByText(sourcePanel, 'zero'));
     await waitFor(() => getByText(sourcePanel, 'one'));
     let mainEditor = await waitFor(() =>
-      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.MAIN_EDITOR),
+      renderResult.getByTestId(
+        LEGEND_STUDIO_TEST_ID.ENUMERATION_MAPPING_EDITOR,
+      ),
     );
     // Enum_1 [enumToEnum] mapping source value labels
     await waitFor(() => getByText(mainEditor, '_0'));
@@ -90,7 +92,9 @@ test.only(
     );
     await waitFor(() => getByText(sourcePanel, 'String'));
     mainEditor = await waitFor(() =>
-      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.MAIN_EDITOR),
+      renderResult.getByTestId(
+        LEGEND_STUDIO_TEST_ID.ENUMERATION_MAPPING_EDITOR,
+      ),
     );
     // enum_2 mapping source value labels
     await waitFor(() => getByText(mainEditor, 'one'));
@@ -112,7 +116,9 @@ test.only(
     );
     await waitFor(() => getByText(sourcePanel, 'String'));
     mainEditor = await waitFor(() =>
-      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.MAIN_EDITOR),
+      renderResult.getByTestId(
+        LEGEND_STUDIO_TEST_ID.ENUMERATION_MAPPING_EDITOR,
+      ),
     );
     // enum_2 mapping source value labels
     await waitFor(() => getByText(mainEditor, '_0'));
@@ -145,7 +151,9 @@ test.only(
     );
     fireEvent.click(getByText(mappingTabs, 'Enum_1 [enumToEnum]'));
     mainEditor = await waitFor(() =>
-      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.MAIN_EDITOR),
+      renderResult.getByTestId(
+        LEGEND_STUDIO_TEST_ID.ENUMERATION_MAPPING_EDITOR,
+      ),
     );
     await waitFor(() => getAllByText(mainEditor, 'Enum_2'));
     // close

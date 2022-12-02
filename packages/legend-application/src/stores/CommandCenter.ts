@@ -25,6 +25,11 @@ export interface CommandRegistrar {
 }
 export type CommandConfigEntry = {
   title?: string;
+  /**
+   * NOTE: only support keyboard code instead of key
+   * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
+   * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
+   */
   defaultKeyboardShortcut?: string;
   when?: string;
 };
@@ -40,10 +45,13 @@ export const collectKeyedCommandConfigEntriesFromConfig = (
     key: entry[0],
     content: entry[1],
   }));
+export type CommandArguments = {
+  event?: Event;
+};
 export type Command = {
   key: string;
   trigger?: () => boolean;
-  action?: () => void;
+  action?: (args?: CommandArguments) => void;
 };
 
 export class CommandCenter {
@@ -78,10 +86,10 @@ export class CommandCenter {
     this.commandRegistry.delete(commandKey);
   }
 
-  runCommand(commandKey: string): boolean {
+  runCommand(commandKey: string, args?: CommandArguments): boolean {
     const command = this.commandRegistry.get(commandKey);
     if (command && (!command.trigger || command.trigger())) {
-      command.action?.();
+      command.action?.(args);
       return true;
     }
     return false;

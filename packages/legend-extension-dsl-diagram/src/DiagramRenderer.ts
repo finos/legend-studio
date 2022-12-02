@@ -2483,7 +2483,7 @@ export class DiagramRenderer {
     forceDispatchKeyboardEvent(e);
 
     // Remove selected view(s)
-    if ('Delete' === e.key) {
+    if ('Delete' === e.code) {
       if (!this.isReadOnly) {
         this.selectedClasses.forEach((classView) => {
           diagram_deleteClassView(this.diagram, classView);
@@ -2554,7 +2554,7 @@ export class DiagramRenderer {
     // NOTE: since the current behavior when editing property is to immediately
     // focus on the property name input when the inline editor pops up
     // we need to call `preventDefault` to avoid typing `e` in the property name input
-    else if ('e' === e.key) {
+    else if ('KeyE' === e.code) {
       if (this.selectedClassProperty) {
         this.handleEditProperty(
           this.selectedClassProperty.property,
@@ -2580,7 +2580,7 @@ export class DiagramRenderer {
     }
 
     // Hide/show properties for selected element(s)
-    else if (e.altKey && 'p' === e.key) {
+    else if (e.altKey && 'KeyP' === e.code) {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
@@ -2591,7 +2591,7 @@ export class DiagramRenderer {
       }
     }
     // Hide/show stereotypes for selected element(s)
-    else if (e.altKey && 's' === e.key) {
+    else if (e.altKey && 'KeyS' === e.code) {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
@@ -2602,7 +2602,7 @@ export class DiagramRenderer {
       }
     }
     // Hide/show tagged values for selected element(s)
-    else if (e.altKey && 't' === e.key) {
+    else if (e.altKey && 'KeyT' === e.code) {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
@@ -2617,14 +2617,14 @@ export class DiagramRenderer {
     }
 
     // Add a new simple property to selected class
-    else if (e.altKey && 'ArrowDown' === e.key) {
+    else if (e.altKey && 'ArrowDown' === e.code) {
       if (!this.isReadOnly && this.selectedClasses.length === 1) {
         this.handleAddSimpleProperty(this.selectedClasses[0] as ClassView);
       }
     }
 
     // Add supertypes of selected classes to the diagram
-    else if ('ArrowUp' === e.key) {
+    else if ('ArrowUp' === e.code) {
       const views = this.getSuperTypeLevels(
         this.selectedClasses,
         this.diagram,
@@ -2639,7 +2639,7 @@ export class DiagramRenderer {
     }
 
     // Add subtypes of selected classes to the diagram
-    else if ('ArrowDown' === e.key) {
+    else if ('ArrowDown' === e.code) {
       const views = uniqBy(
         this.selectedClasses.flatMap((x) =>
           x.class.value._subclasses.flatMap(

@@ -21,6 +21,11 @@ import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 
 export class KeyboardShortcutsService {
   readonly applicationStore: GenericLegendApplicationStore;
+  /**
+   * NOTE: with this design, the relationship between command and key is many-to-one
+   * We can have multiple commands being mapped to the same key combination, not the other
+   * way around
+   */
   readonly keyMap = new Map<string, string[]>();
   /**
    * NOTE: we want to leave the value of the map as optional because we want

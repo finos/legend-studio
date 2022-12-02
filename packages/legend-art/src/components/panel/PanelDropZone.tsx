@@ -22,8 +22,8 @@ import {
   useDragLayer,
 } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
+import { Portal } from '../../utils/ComponentUtils.js';
 import { VerticalDragHandleIcon } from '../CJS__Icon.cjs';
-import { Portal } from '../Portal.js';
 
 export const PanelDropZone: React.FC<{
   children: React.ReactNode;

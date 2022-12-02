@@ -33,15 +33,19 @@ const APP_CONTAINER_ID = 'app.container';
 const APP_BACKDROP_CONTAINER_ID = 'app.backdrop-container';
 
 const PLATFORM_NATIVE_KEYBOARD_SHORTCUTS = [
+  'Meta+KeyP', // Print
+  'Control+KeyP',
+  'Meta+KeyS', // Save
+  'Control+KeyS',
   'F8', // Chrome: Developer Tools > Sources: Run or pause script
   'F10', // Chrome: Developer Tools > Sources: Step over next function call
   'F11', // Chrome: Developer Tools > Sources: Step into next function call
-  'Meta+Shift+p', // Chrome: Developer Tools: Open Command Prompt inside developer tools
-  'Control+Shift+p',
-  'Meta+p', // Print
-  'Control+p',
-  'Meta+s', // Save
-  'Control+s',
+  'Meta+Shift+KeyP', // Chrome: Developer Tools: Open Command Prompt inside developer tools
+  'Control+Shift+KeyP',
+  'Meta+KeyB', // Firefox: Open bookmark sidebar
+  'Control+KeyB',
+  'F7', // Firefox: Caret browsing
+  'Alt+F7', // Firefox: Caret browsing (Mac)
 ];
 
 const buildReactHotkeysConfiguration = (
