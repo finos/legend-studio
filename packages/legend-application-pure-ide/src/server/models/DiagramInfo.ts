@@ -423,7 +423,7 @@ const getOrCreateClass = (
   diagramClasses: Map<string, DiagramClassMetadata>,
   sourceInformation: SourceInformation | undefined,
 ): Class => {
-  const existingClass = graph.getOwnClass(path);
+  const existingClass = graph.getOwnNullableClass(path);
   if (!existingClass) {
     const [_package, name] = resolvePackagePathAndElementName(path);
     const _class = new Class(name);
@@ -519,7 +519,7 @@ const buildClass = (
           parseMultiplicty(propertyData.multiplicity),
           GenericTypeExplicitReference.create(
             new GenericType(
-              graph.getOwnEnumeration(
+              graph.getOwnNullableEnumeration(
                 guaranteeNonNullable(propertyData.genericType.rawType),
               ) ??
                 getOrCreateClass(
@@ -544,7 +544,7 @@ const buildClass = (
           parseMultiplicty(propertyData.multiplicity),
           GenericTypeExplicitReference.create(
             new GenericType(
-              graph.getOwnEnumeration(
+              graph.getOwnNullableEnumeration(
                 guaranteeNonNullable(propertyData.genericType.rawType),
               ) ??
                 getOrCreateClass(
@@ -707,7 +707,7 @@ export const addClassToGraph = (
     const fullPath = `${profileData.package}${
       profileData.package === '' ? '' : ELEMENT_PATH_DELIMITER
     }${profileData.name}`;
-    if (!graph.getOwnProfile(fullPath)) {
+    if (!graph.getOwnNullableProfile(fullPath)) {
       const profile = new Profile(profileData.name);
       addElementToPackage(
         getOrCreatePackage(graph.root, profileData.package, true, new Map()),
@@ -728,7 +728,7 @@ export const addClassToGraph = (
     const fullPath = `${enumerationData.package}${
       enumerationData.package === '' ? '' : ELEMENT_PATH_DELIMITER
     }${enumerationData.name}`;
-    if (!graph.getOwnEnumeration(fullPath)) {
+    if (!graph.getOwnNullableEnumeration(fullPath)) {
       const enumeration = new Enumeration(enumerationData.name);
       addElementToPackage(
         getOrCreatePackage(
@@ -748,7 +748,7 @@ export const addClassToGraph = (
   const fullPath = `${classData.package}${
     classData.package === '' ? '' : ELEMENT_PATH_DELIMITER
   }${classData.name}`;
-  let _class = graph.getOwnClass(fullPath);
+  let _class = graph.getOwnNullableClass(fullPath);
   if (!_class) {
     _class = new Class(classData.name);
     addElementToPackage(

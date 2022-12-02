@@ -16,6 +16,7 @@
 
 import {
   AtomIcon,
+  FunctionIcon,
   PURE_AssociationIcon,
   PURE_ClassIcon,
   PURE_EnumerationIcon,
@@ -30,7 +31,9 @@ import {
 import { ConceptType } from '../../../server/models/ConceptTree.js';
 
 const NativeFunctionIcon: React.FC = () => (
-  <div className="icon icon--function color--native-function">(x)</div>
+  <div className="icon icon--function color--native-function">
+    <FunctionIcon />
+  </div>
 );
 
 const PropertyIcon: React.FC = () => (
