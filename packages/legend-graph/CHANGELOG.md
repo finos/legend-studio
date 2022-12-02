@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 21.0.0
+
+### Major Changes
+
+- [#1455](https://github.com/finos/legend-studio/pull/1455) [`b9a3a0ea9`](https://github.com/finos/legend-studio/commit/b9a3a0ea9aa7ba09cd58a3b52f5d3238a53544e5) ([@gs-gunjan](https://github.com/gs-gunjan)) - Extending testing framework for mapping
+
 ## 20.1.7
 
 ## 20.1.6

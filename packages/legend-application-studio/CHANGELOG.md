@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 21.0.0
+
+### Major Changes
+
+- [#1455](https://github.com/finos/legend-studio/pull/1455) [`b9a3a0ea9`](https://github.com/finos/legend-studio/commit/b9a3a0ea9aa7ba09cd58a3b52f5d3238a53544e5) ([@gs-gunjan](https://github.com/gs-gunjan)) - Extending testing framework for mapping
+
+### Patch Changes
+
+- [#1735](https://github.com/finos/legend-studio/pull/1735) [`44fe24048`](https://github.com/finos/legend-studio/commit/44fe240486b32de01cf17aeb80969f9aaae9a576) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where the `keys` dropdown is not updated correctly when switching tests.
+
 ## 20.2.0
 
 ### Minor Changes
