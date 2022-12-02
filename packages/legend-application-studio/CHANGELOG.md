@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 21.0.1
+
+### Patch Changes
+
+- [#1740](https://github.com/finos/legend-studio/pull/1740) [`510f517df`](https://github.com/finos/legend-studio/commit/510f517df4b0979887a8bb2c4b8a122b292e66bf) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - View dependency SDLC project with selected version.
+
 ## 21.0.0
 
 ### Major Changes
