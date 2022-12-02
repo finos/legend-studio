@@ -8,6 +8,10 @@
     "legend-pure-ide",
     "deployment"
   ],
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-application-pure-ide-deployment",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
@@ -16,9 +20,9 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
-    "bundle": "yarn clean && yarn build:webpack && node ./scripts/setup.js ./dist/ide",
+    "bundle": "yarn clean && yarn build:webpack && node ./scripts/setup.js --dir ./dist/ide",
     "bundle:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
-    "bundle:fast": "cross-env NODE_ENV=production PRODUCTION_MODE=fast webpack --mode production && node ./scripts/setup.js ./dist/ide",
+    "bundle:fast": "cross-env NODE_ENV=production PRODUCTION_MODE=fast webpack --mode production && node ./scripts/setup.js --dir ./dist/ide",
     "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
     "clean": "yarn clean:cache && rimraf \"dist\"",
     "clean:cache": "rimraf \"build\"",
@@ -27,10 +31,11 @@
     "dev:webpack": "cross-env NODE_ENV=development webpack serve --mode development",
     "dev:webpack:debug": "cross-env NODE_ENV=development DEVELOPMENT_MODE=debug webpack serve --mode development",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./scripts/**/*.{mjs,cjs,js}\" \"./src/**/*.{js,ts,tsx}\"",
-    "publish:prepare": "yarn bundle && node ../../scripts/release/preparePublishContent.js",
-    "publish:snapshot": "yarn bundle && node ../../scripts/release/publishDevSnapshot.js",
+    "publish:pre-prepare": "yarn clean && yarn build:webpack && node ./scripts/setup.js --dir ./dist/ide --use-dynamic-pure-server",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
     "serve": "npx http-server ./dist -p 3000 -a localhost -g --cors -o /ide",
-    "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js ./dev"
+    "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js --dir ./dev"
   },
   "dependencies": {
     "@finos/legend-application-pure-ide": "workspace:*"

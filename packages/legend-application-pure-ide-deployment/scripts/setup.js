@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
+import * as yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const argv = yargs.default(hideBin(process.argv)).argv;
 
 const setup = (outputDir) => {
   if (!existsSync(outputDir)) {
@@ -44,6 +50,7 @@ const setup = (outputDir) => {
         env: 'local',
         pure: {
           url: 'http://localhost:9200',
+          dynamic: argv['use-dynamic-pure-server'] ? true : undefined,
         },
       },
       undefined,
@@ -52,8 +59,4 @@ const setup = (outputDir) => {
   );
 };
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const outputDir = process.argv[2];
-
-setup(resolve(__dirname, `../${outputDir}`));
+setup(resolve(__dirname, `../${argv.dir}`));
