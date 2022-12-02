@@ -81,7 +81,7 @@ const TestTreeNodeContainer = observer(
     const nodeTestStatus = testResultInfo
       ? getTestTreeNodeStatus(node, testResultInfo)
       : undefined;
-    let nodeIcon = <QuestionCircleIcon />;
+    let nodeIcon;
     switch (nodeTestStatus) {
       case TestResultType.PASSED: {
         nodeIcon = (

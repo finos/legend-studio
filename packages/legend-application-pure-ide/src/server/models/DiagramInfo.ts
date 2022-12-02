@@ -704,10 +704,10 @@ export const addClassToGraph = (
 ): Class => {
   // profiles
   diagramClassInfo.profiles.forEach((profileData) => {
-    const fullPath = `${profileData.package}${
+    const profilePath = `${profileData.package}${
       profileData.package === '' ? '' : ELEMENT_PATH_DELIMITER
     }${profileData.name}`;
-    if (!graph.getOwnNullableProfile(fullPath)) {
+    if (!graph.getOwnNullableProfile(profilePath)) {
       const profile = new Profile(profileData.name);
       addElementToPackage(
         getOrCreatePackage(graph.root, profileData.package, true, new Map()),
@@ -725,10 +725,10 @@ export const addClassToGraph = (
 
   // enumerations
   diagramClassInfo.enumerations.forEach((enumerationData) => {
-    const fullPath = `${enumerationData.package}${
+    const enumerationPath = `${enumerationData.package}${
       enumerationData.package === '' ? '' : ELEMENT_PATH_DELIMITER
     }${enumerationData.name}`;
-    if (!graph.getOwnNullableEnumeration(fullPath)) {
+    if (!graph.getOwnNullableEnumeration(enumerationPath)) {
       const enumeration = new Enumeration(enumerationData.name);
       addElementToPackage(
         getOrCreatePackage(
@@ -745,10 +745,10 @@ export const addClassToGraph = (
   });
 
   const classData = diagramClassInfo.class;
-  const fullPath = `${classData.package}${
+  const classPath = `${classData.package}${
     classData.package === '' ? '' : ELEMENT_PATH_DELIMITER
   }${classData.name}`;
-  let _class = graph.getOwnNullableClass(fullPath);
+  let _class = graph.getOwnNullableClass(classPath);
   if (!_class) {
     _class = new Class(classData.name);
     addElementToPackage(

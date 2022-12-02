@@ -45,7 +45,7 @@ const horizontalToVerticalScroll: React.WheelEventHandler = (event) => {
     return;
   }
   event.stopPropagation();
-  let deltaX = event.deltaX;
+  let deltaX;
   // NOTE: only convert horizontal to vertical scroll when the scroll causes more horizontal than vertical displacement
   // let the direction of `deltaY` be the direction of the scroll, i.e.
   // - if we scroll upward, that translate to a left scroll
