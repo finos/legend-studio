@@ -80,7 +80,7 @@ import {
 } from '@finos/legend-server-depot';
 import {
   generateViewProjectByGAVRoute,
-  generateViewProjectRoute,
+  generateViewVersionRoute,
 } from '../../../../stores/LegendStudioRouter.js';
 import { compareSemVerVersions } from '@finos/legend-storage';
 
@@ -348,7 +348,7 @@ const ProjectDependencyEditor = observer(
       if (projectDependencyData) {
         applicationStore.navigator.visitAddress(
           applicationStore.navigator.generateAddress(
-            generateViewProjectRoute(projectDependencyData.projectId),
+            generateViewVersionRoute(projectDependencyData.projectId, version),
           ),
         );
       }
