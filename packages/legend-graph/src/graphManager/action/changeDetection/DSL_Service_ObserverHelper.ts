@@ -53,6 +53,8 @@ import {
   observe_AtomicTest,
   observe_TestAssertion,
 } from './Testable_ObserverHelper.js';
+import type { PostValidation } from '../../../graph/metamodel/pure/packageableElements/service/PostValidation.js';
+import type { PostValidationAssertion } from '../../../graph/metamodel/pure/packageableElements/service/PostValidationAssertion.js';
 
 export const observe_ConnectionTestData = skipObservedWithContext(
   (
@@ -79,6 +81,34 @@ export const observe_ParameterValue = skipObserved(
       hashCode: computed,
     });
 
+    return metamodel;
+  },
+);
+
+const observe_PostValidationAssertion = skipObserved(
+  (metamodel: PostValidationAssertion): PostValidationAssertion => {
+    makeObservable(metamodel, {
+      assertion: observable,
+      hashCode: computed,
+      id: observable,
+    });
+
+    observe_RawLambda(metamodel.assertion);
+    return metamodel;
+  },
+);
+
+const observe_PostValidation = skipObserved(
+  (metamodel: PostValidation): PostValidation => {
+    makeObservable(metamodel, {
+      assertions: observable,
+      description: observable,
+      parameters: observable,
+      hashCode: computed,
+    });
+
+    metamodel.assertions.forEach(observe_PostValidationAssertion);
+    metamodel.parameters.forEach(observe_RawLambda);
     return metamodel;
   },
 );
@@ -284,6 +314,7 @@ export const observe_Service = skipObservedWithContext(
       execution: observable,
       test: observable,
       tests: observable,
+      postValidations: observable,
       patternParameters: computed,
       _elementHashCode: override,
     });
@@ -295,6 +326,7 @@ export const observe_Service = skipObservedWithContext(
       observe_ServiceTest_Legacy(metamodel.test);
     }
     metamodel.tests.forEach((m) => observe_ServiceTestSuite(m, context));
+    metamodel.postValidations.forEach((m) => observe_PostValidation(m));
     return metamodel;
   },
 );

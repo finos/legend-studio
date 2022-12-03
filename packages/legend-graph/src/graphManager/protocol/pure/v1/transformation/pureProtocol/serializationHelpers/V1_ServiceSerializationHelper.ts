@@ -84,6 +84,8 @@ import {
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
 import { ATOMIC_TEST_TYPE } from '../../../../../../../graph/MetaModelConst.js';
+import { V1_PostValidation } from '../../../model/packageableElements/service/V1_PostValidation.js';
+import { V1_PostValidationAssertion } from '../../../model/packageableElements/service/V1_PostValidationAssertion.js';
 
 export const V1_SERVICE_ELEMENT_PROTOCOL_TYPE = 'service';
 
@@ -113,6 +115,28 @@ export const V1_parameterValueModelSchema = createModelSchema(
   {
     name: primitive(),
     value: raw(),
+  },
+);
+
+const V1_servicePostValidationAssertionModelSchema = createModelSchema(
+  V1_PostValidationAssertion,
+  {
+    assertion: usingModelSchema(V1_rawLambdaModelSchema),
+    id: primitive(),
+  },
+);
+
+const V1_servicePostValidationModelSchema = createModelSchema(
+  V1_PostValidation,
+  {
+    assertions: list(
+      custom(
+        (val) => serialize(V1_servicePostValidationAssertionModelSchema, val),
+        (val) => deserialize(V1_servicePostValidationAssertionModelSchema, val),
+      ),
+    ),
+    description: primitive(),
+    parameters: list(usingModelSchema(V1_rawLambdaModelSchema)),
   },
 );
 
@@ -407,5 +431,25 @@ export const V1_serviceModelSchema = (
         deserializeArray(values, (v) => V1_deserializeTestSuite(v, plugins), {
           skipIfEmpty: false,
         }),
+    ),
+    postValidations: custom(
+      (values) =>
+        serializeArray(
+          values,
+          (value: V1_PostValidation) =>
+            serialize(V1_servicePostValidationModelSchema, value),
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
+        ),
+      (values) =>
+        deserializeArray(
+          values,
+          (v) => deserialize(V1_servicePostValidationModelSchema, v),
+          {
+            skipIfEmpty: false,
+          },
+        ),
     ),
   });

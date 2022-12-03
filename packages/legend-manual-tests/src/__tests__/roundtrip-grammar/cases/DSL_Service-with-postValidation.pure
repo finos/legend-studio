@@ -1,0 +1,109 @@
+###Service
+Service meta::validation::test::DemoServiceWithStaticParam
+{
+  pattern: '/validation/demoServiceWithParams/{minAge}';
+  owners:
+  [
+    'xyz',
+    'abc'
+  ];
+  documentation: 'Some helpful docs';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: minAge: Integer[1]|meta::validation::test::Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])->filter(row|$row.getInteger('age') >= $minAge);
+    mapping: meta::validation::test::PersonMapping;
+    runtime: meta::validation::test::TestRuntime;
+  }
+  testSuites:
+  [
+
+  ]
+  postValidations:
+  [
+    {
+      description: 'A good description of the validation';
+      params:[
+        |18
+      ];
+      assertions:[
+        noFirstNamesWithLetterT: tds: TabularDataSet[1]|$tds->filter(row|$row.getString('firstName')->startsWith('T'))->meta::legend::service::validation::assertTabularDataSetEmpty('Expected no first names to begin with the letter T'),
+        rowCountGreaterThan10: tds: TabularDataSet[1]|$tds->groupBy([], 'count'->agg(r: TDSRow[1]|$r, y|$y->count()))->filter(row|$row.getInteger('count') <= 10)->meta::legend::service::validation::assertTabularDataSetEmpty('Expected row count to be greater than 10')
+      ];
+    }
+  ]
+}
+
+
+###Relational
+Database meta::validation::test::TestDB
+(
+  Table PersonTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER
+  )
+)
+
+
+###Pure
+Class meta::validation::test::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  age: Integer[1];
+}
+
+
+###Mapping
+Mapping meta::validation::test::PersonMapping
+(
+  meta::validation::test::Person: Relational
+  {
+    ~primaryKey
+    (
+      [meta::validation::test::TestDB]PersonTable.ID
+    )
+    ~mainTable [meta::validation::test::TestDB]PersonTable
+    firstName: [meta::validation::test::TestDB]PersonTable.FIRSTNAME,
+    lastName: [meta::validation::test::TestDB]PersonTable.LASTNAME,
+    age: [meta::validation::test::TestDB]PersonTable.AGE
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection meta::validation::test::TestConnection
+{
+  store: meta::validation::test::TestDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'DROP TABLE IF EXISTS PersonTable;',
+      'CREATE TABLE PersonTable (ID int, FIRSTNAME varchar(200), LASTNAME varchar(200), AGE int);',
+      'INSERT INTO PersonTable VALUES (1, \'Tom\', \'Wilson\', 24);',
+      'INSERT INTO PersonTable VALUES (2, \'Dihui\', \'Bao\', 32);'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime meta::validation::test::TestRuntime
+{
+  mappings:
+  [
+    meta::validation::test::PersonMapping
+  ];
+  connections:
+  [
+    meta::validation::test::TestDB:
+    [
+      connection_1: meta::validation::test::TestConnection
+    ]
+  ];
+}
