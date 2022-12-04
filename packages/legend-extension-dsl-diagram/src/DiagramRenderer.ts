@@ -3129,6 +3129,14 @@ export class DiagramRenderer {
   }
 
   mousewheel(e: WheelEvent): void {
+    // no scrolling to be done since we want to convert scroll into zoom
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    // if scrolling is more horizontal than vertical, i.e. zoom using trackpad
+    // we don't want to treat this as zooming
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) {
+      return;
+    }
     // scroll down to zoom in and up to zoom out
     const newZoomLevel = this.zoom - (e.deltaY / 120) * 0.05;
     this.executeZoom(newZoomLevel, new Point(e.x, e.y));
