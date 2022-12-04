@@ -55,6 +55,7 @@ import {
   UnmatchedFunctionExecutionResultState,
   UnmatchExecutionResultState,
   SearchResultState,
+  TextSearchResultState,
 } from './SearchResultState.js';
 import { TestRunnerState } from './TestRunnerState.js';
 import {
@@ -959,7 +960,7 @@ export class EditorStore implements CommandRegistrar {
           this.textSearchCommandState.isRegExp,
         )) as PlainObject<SearchResultEntry>[]
       ).map((result) => getSearchResultEntry(result));
-      this.setSearchState(new SearchResultState(this, results));
+      this.setSearchState(new TextSearchResultState(this, results));
       this.textSearchCommandLoadingState.pass();
     } catch (error) {
       assertErrorThrown(error);
