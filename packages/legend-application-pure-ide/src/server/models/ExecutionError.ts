@@ -14,14 +14,6 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore.js';
-import { TabState } from '@finos/legend-application';
+import { ApplicationError } from '@finos/legend-shared';
 
-export abstract class EditorState extends TabState {
-  readonly editorStore: EditorStore;
-
-  constructor(editorStore: EditorStore) {
-    super();
-    this.editorStore = editorStore;
-  }
-}
+export class ExecutionError extends ApplicationError {}

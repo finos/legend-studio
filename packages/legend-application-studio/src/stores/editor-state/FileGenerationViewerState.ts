@@ -68,7 +68,7 @@ export class FileGenerationViewerState extends EditorState {
     return this.file.name;
   }
 
-  match(tab: EditorState): boolean {
+  override match(tab: EditorState): boolean {
     return tab instanceof FileGenerationViewerState && tab.file === this.file;
   }
 }

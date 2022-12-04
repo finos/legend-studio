@@ -328,7 +328,7 @@ export class EntityChangeConflictEditorState extends EntityDiffViewerState {
     );
   }
 
-  match(tab: EditorState): boolean {
+  override match(tab: EditorState): boolean {
     return (
       tab instanceof EntityChangeConflictEditorState &&
       tab.entityPath === this.entityPath

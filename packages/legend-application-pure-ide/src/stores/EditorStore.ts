@@ -20,6 +20,7 @@ import { FileEditorState } from './FileEditorState.js';
 import { deserialize } from 'serializr';
 import {
   FileCoordinate,
+  FileErrorCoordinate,
   PureFile,
   trimPathLeadingSlash,
 } from '../server/models/PureFile.js';
@@ -88,6 +89,7 @@ import type { LegendPureIDEApplicationStore } from './LegendPureIDEBaseStore.js'
 import { SearchCommandState } from './SearchCommandState.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
 import { LEGEND_PURE_IDE_COMMAND_KEY } from './LegendPureIDECommand.js';
+import { ExecutionError } from '../server/models/ExecutionError.js';
 
 export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
@@ -284,11 +286,13 @@ export class EditorStore implements CommandRegistrar {
           yield flowResult(
             this.loadFile(
               result.source,
-              new FileCoordinate(
+              new FileErrorCoordinate(
                 result.source,
                 result.line,
                 result.column,
-                (result.text ?? '').split('\n').filter(Boolean)[0],
+                new ExecutionError(
+                  (result.text ?? '').split('\n').filter(Boolean)[0],
+                ),
               ),
             ),
           );
@@ -456,43 +460,44 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *loadDiagram(filePath: string, diagramPath: string): GeneratorFn<void> {
-    const existingDiagramEditorState = this.tabManagerState.tabs.find(
+    let editorState = this.tabManagerState.tabs.find(
       (tab): tab is DiagramEditorState =>
         tab instanceof DiagramEditorState && tab.filePath === filePath,
     );
-    if (existingDiagramEditorState) {
-      this.tabManagerState.openTab(existingDiagramEditorState);
-    } else {
+    if (!editorState) {
       yield flowResult(this.checkIfSessionWakingUp());
-      const newDiagramEditorState = new DiagramEditorState(
+      editorState = new DiagramEditorState(
         this,
         deserialize(DiagramInfo, yield this.client.getDiagramInfo(diagramPath)),
         diagramPath,
         filePath,
       );
-      this.tabManagerState.openTab(newDiagramEditorState);
     }
+    this.tabManagerState.openTab(editorState);
   }
 
   *loadFile(path: string, coordinate?: FileCoordinate): GeneratorFn<void> {
-    const existingFileEditorState = this.tabManagerState.tabs.find(
+    let editorState = this.tabManagerState.tabs.find(
       (tab): tab is FileEditorState =>
         tab instanceof FileEditorState && tab.filePath === path,
     );
-    if (existingFileEditorState) {
-      if (coordinate) {
-        existingFileEditorState.setCoordinate(coordinate);
-      }
-      this.tabManagerState.openTab(existingFileEditorState);
-    } else {
+    if (!editorState) {
       yield flowResult(this.checkIfSessionWakingUp());
-      const newFileEditorState = new FileEditorState(
+      editorState = new FileEditorState(
         this,
         deserialize(PureFile, yield this.client.getFile(path)),
         path,
-        coordinate,
       );
-      this.tabManagerState.openTab(newFileEditorState);
+    }
+    this.tabManagerState.openTab(editorState);
+    if (coordinate) {
+      editorState.textEditorState.setForcedPosition({
+        lineNumber: coordinate.line,
+        column: coordinate.column,
+      });
+      if (coordinate instanceof FileErrorCoordinate) {
+        editorState.showError(coordinate);
+      }
     }
   }
 
@@ -503,7 +508,6 @@ export class EditorStore implements CommandRegistrar {
           tab.setFile(
             deserialize(PureFile, await this.client.getFile(filePath)),
           );
-          tab.setCoordinate(undefined);
         } else if (
           tab instanceof DiagramEditorState &&
           tab.filePath === filePath
@@ -693,11 +697,13 @@ export class EditorStore implements CommandRegistrar {
       yield flowResult(
         this.loadFile(
           result.source,
-          new FileCoordinate(
+          new FileErrorCoordinate(
             result.source,
             result.line,
             result.column,
-            result.text.split('\n').filter(Boolean)[0],
+            new ExecutionError(
+              (result.text ?? '').split('\n').filter(Boolean)[0],
+            ),
           ),
         ),
       );
@@ -744,11 +750,13 @@ export class EditorStore implements CommandRegistrar {
             await flowResult(
               this.loadFile(
                 result.source,
-                new FileCoordinate(
+                new FileErrorCoordinate(
                   result.source,
                   result.line,
                   result.column,
-                  result.text.split('\n').filter(Boolean)[0],
+                  new ExecutionError(
+                    (result.text ?? '').split('\n').filter(Boolean)[0],
+                  ),
                 ),
               ),
             );

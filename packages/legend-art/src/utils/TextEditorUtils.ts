@@ -99,10 +99,11 @@ export const setErrorMarkers = (
     endLineNumber: number;
     endColumn: number;
   }[],
+  ownerId?: string,
 ): void => {
   monacoEditorAPI.setModelMarkers(
     editorModel,
-    INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
+    ownerId ?? INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
     errors.map((error) => ({
       startLineNumber: error.startLineNumber,
       startColumn: error.startColumn,
@@ -124,10 +125,11 @@ export const setWarningMarkers = (
     endLineNumber: number;
     endColumn: number;
   }[],
+  ownerId?: string,
 ): void => {
   monacoEditorAPI.setModelMarkers(
     editorModel,
-    INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
+    ownerId ?? INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
     warnings.map((warning) => ({
       startLineNumber: warning.startLineNumber,
       startColumn: warning.startColumn,
@@ -140,8 +142,10 @@ export const setWarningMarkers = (
   );
 };
 
-export const clearMarkers = (): void => {
-  monacoEditorAPI.removeAllMarkers(INTERNAL__DUMMY_PROBLEM_MARKER_OWNER);
+export const clearMarkers = (ownerId?: string): void => {
+  monacoEditorAPI.removeAllMarkers(
+    ownerId ?? INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
+  );
 };
 
 /**

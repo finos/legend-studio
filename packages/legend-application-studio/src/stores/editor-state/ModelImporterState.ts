@@ -477,7 +477,7 @@ export class ModelImporterState extends EditorState {
     return 'Model Importer';
   }
 
-  match(tab: EditorState): boolean {
+  override match(tab: EditorState): boolean {
     return tab instanceof ModelImporterEditorState;
   }
 

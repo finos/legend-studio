@@ -15,7 +15,6 @@
  */
 
 import { TabManagerState, TabState } from '@finos/legend-application';
-import { assertTrue } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore.js';
 
 export abstract class EditorTabState extends TabState {
@@ -41,34 +40,5 @@ export class EditorTabManagerState extends TabManagerState {
 
   get dndType(): string {
     return 'editor.tab-manager.tab';
-  }
-
-  closeTab(tab: EditorTabState): void {
-    const elementIndex = this.tabs.findIndex((e) => e === tab);
-    assertTrue(elementIndex !== -1, `Can't close a tab which is not opened`);
-    this.tabs.splice(elementIndex, 1);
-    if (this.currentTab === tab) {
-      if (this.tabs.length) {
-        const openIndex = elementIndex - 1;
-        this.setCurrentTab(
-          openIndex >= 0 ? this.tabs[openIndex] : this.tabs[0],
-        );
-      } else {
-        this.setCurrentTab(undefined);
-      }
-    }
-  }
-
-  openTab(tab: EditorTabState): void {
-    const existingTab = this.tabs.find((t) => t === tab);
-    if (!existingTab) {
-      if (this.currentTab) {
-        const currIndex = this.tabs.findIndex((e) => e === this.currentTab);
-        this.tabs.splice(currIndex + 1, 0, tab);
-      } else {
-        this.tabs.push(tab);
-      }
-    }
-    this.setCurrentTab(tab);
   }
 }

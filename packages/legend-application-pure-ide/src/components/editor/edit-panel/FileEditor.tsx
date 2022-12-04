@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI, type Position } from 'monaco-editor';
 import type { FileEditorState } from '../../../stores/FileEditorState.js';
-import { FileCoordinate } from '../../../server/models/PureFile.js';
 import {
   EDITOR_LANGUAGE,
   EDITOR_THEME,
-  TAB_SIZE,
   useApplicationStore,
   useCommands,
 } from '@finos/legend-application';
 import {
-  disposeEditor,
   getBaseTextEditorOptions,
   moveCursorToPosition,
-  setErrorMarkers,
   useResizeDetector,
 } from '@finos/legend-art';
 import { useEditorStore } from '../EditorStoreProvider.js';
@@ -39,7 +35,9 @@ export const FileEditor = observer(
   (props: { editorState: FileEditorState }) => {
     const { editorState } = props;
     const currentCursorPosition = useRef<Position | undefined>(undefined);
-    const editor = editorState._textEditor;
+    const [editor, setEditor] = useState<
+      monacoEditorAPI.IStandaloneCodeEditor | undefined
+    >();
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const content = editorState.file.content;
@@ -47,31 +45,37 @@ export const FileEditor = observer(
     const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
     useEffect(() => {
-      if (textInput.current) {
+      if (!editor && textInput.current) {
         const element = textInput.current;
-        const _editor = monacoEditorAPI.create(element, {
+        const newEditor = monacoEditorAPI.create(element, {
           ...getBaseTextEditorOptions(),
           language: EDITOR_LANGUAGE.PURE,
           theme: EDITOR_THEME.LEGEND,
         });
-        _editor.onDidChangeCursorPosition(() => {
-          const currentPosition = _editor.getPosition();
+        newEditor.onDidChangeCursorPosition(() => {
+          const currentPosition = newEditor.getPosition();
           if (currentPosition) {
             currentCursorPosition.current = currentPosition;
           }
         });
-        _editor.onDidChangeModelContent(() => {
-          const currentVal = _editor.getValue();
+        newEditor.onDidChangeModelContent(() => {
+          const currentVal = newEditor.getValue();
           if (currentVal !== editorState.file.content) {
             // the assertion above is to ensure we don't accidentally clear error on initialization of the editor
             editorState.clearError(); // clear error on content change/typing
           }
           editorState.file.setContent(currentVal);
         });
-        _editor.focus(); // focus on the editor initially
-        editorState.setTextEditor(_editor);
+        // Restore the editor model and view state
+        newEditor.setModel(editorState.textEditorState.model);
+        if (editorState.textEditorState.viewState) {
+          newEditor.restoreViewState(editorState.textEditorState.viewState);
+        }
+        newEditor.focus(); // focus on the editor initially
+        editorState.textEditorState.setEditor(newEditor);
+        setEditor(newEditor);
       }
-    }, [editorStore, applicationStore, editorState]);
+    }, [editorStore, applicationStore, editorState, editor]);
 
     if (editor) {
       // Set the value of the editor
@@ -79,23 +83,12 @@ export const FileEditor = observer(
       if (currentValue !== content) {
         editor.setValue(content);
       }
-      const editorModel = editor.getModel();
-      if (editorModel) {
-        editorModel.updateOptions({ tabSize: TAB_SIZE });
-        const pos = editorState.coordinate;
-        if (pos?.errorMessage) {
-          setErrorMarkers(editorModel, [
-            {
-              message: pos.errorMessage,
-              startLineNumber: pos.line,
-              startColumn: pos.column,
-              endLineNumber: pos.line,
-              endColumn: pos.column,
-            },
-          ]);
-        } else {
-          monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
-        }
+      if (editorState.textEditorState.forcedPosition) {
+        moveCursorToPosition(
+          editor,
+          editorState.textEditorState.forcedPosition,
+        );
+        editorState.textEditorState.setForcedPosition(undefined);
       }
     }
 
@@ -107,40 +100,19 @@ export const FileEditor = observer(
       }
     }, [editor, width, height]);
 
-    useEffect(() => {
-      const pos = editorState.coordinate;
-      if (editor && pos) {
-        moveCursorToPosition(editor, {
-          lineNumber: pos.line,
-          column: pos.column,
-        });
-      }
-    }, [editor, editorState.coordinate]);
-
-    // NOTE: dispose the editor to prevent potential memory-leak
+    // clean up
     useEffect(
       () => (): void => {
         if (editor) {
-          disposeEditor(editor);
-        }
-      },
-      [editor],
-    );
-
-    // remember the line the editor is on when we switch to another tab
-    useEffect(
-      () => (): void => {
-        if (currentCursorPosition.current) {
-          editorState.setCoordinate(
-            new FileCoordinate(
-              editorState.filePath,
-              currentCursorPosition.current.lineNumber,
-              currentCursorPosition.current.column,
-            ),
+          // persist editor view state (cursor, scroll, etc.) to restore on re-open
+          editorState.textEditorState.setViewState(
+            editor.saveViewState() ?? undefined,
           );
+          // NOTE: dispose the editor to prevent potential memory-leak
+          editor.dispose();
         }
       },
-      [editorState],
+      [editorState, editor],
     );
 
     return (

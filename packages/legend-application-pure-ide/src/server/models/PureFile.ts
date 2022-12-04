@@ -16,6 +16,7 @@
 
 import { action, makeObservable, observable } from 'mobx';
 import { createModelSchema, primitive } from 'serializr';
+import type { ExecutionError } from './ExecutionError.js';
 
 export const trimPathLeadingSlash = (path: string): string =>
   path.startsWith('/') ? path.substring(1, path.length) : path;
@@ -40,33 +41,29 @@ createModelSchema(PureFile, {
 });
 
 export class FileCoordinate {
-  file: string;
-  line: number;
-  column: number;
-  errorMessage?: string | undefined; // we might need to support different level of severity like warning
+  readonly file: string;
+  readonly line: number;
+  readonly column: number;
+
+  constructor(file: string, line: number, column: number) {
+    this.file = file;
+    this.line = line;
+    this.column = column;
+  }
+}
+
+export class FileErrorCoordinate extends FileCoordinate {
+  readonly error: ExecutionError;
 
   constructor(
     file: string,
     line: number,
     column: number,
-    errorMessage?: string,
+    error: ExecutionError,
   ) {
-    makeObservable(this, {
-      file: observable,
-      line: observable,
-      column: observable,
-      errorMessage: observable,
-      setErrorMessage: action,
-    });
+    super(file, line, column);
 
-    this.file = file;
-    this.line = line;
-    this.column = column;
-    this.errorMessage = errorMessage;
-  }
-
-  setErrorMessage(value: string | undefined): void {
-    this.errorMessage = value;
+    this.error = error;
   }
 }
 

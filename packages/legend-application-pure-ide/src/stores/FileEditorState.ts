@@ -14,48 +14,83 @@
  * limitations under the License.
  */
 
-import type { CommandRegistrar } from '@finos/legend-application';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  type CommandRegistrar,
+  EDITOR_LANGUAGE,
+  TAB_SIZE,
+} from '@finos/legend-application';
+import {
+  clearMarkers,
+  setErrorMarkers,
+  type TextEditorPosition,
+} from '@finos/legend-art';
 import { action, flowResult, makeObservable, observable } from 'mobx';
-import type { editor as monacoEditorAPI } from 'monaco-editor';
+import { editor as monacoEditorAPI } from 'monaco-editor';
 import {
   FileCoordinate,
   type PureFile,
   trimPathLeadingSlash,
+  type FileErrorCoordinate,
 } from '../server/models/PureFile.js';
 import type { EditorStore } from './EditorStore.js';
 import { EditorTabState } from './EditorTabManagerState.js';
 import { LEGEND_PURE_IDE_COMMAND_KEY } from './LegendPureIDECommand.js';
 
+class FileTextEditorState {
+  readonly model: monacoEditorAPI.ITextModel;
+
+  forcedPosition: TextEditorPosition | undefined;
+
+  editor?: monacoEditorAPI.IStandaloneCodeEditor | undefined;
+  viewState?: monacoEditorAPI.ICodeEditorViewState | undefined;
+
+  constructor(fileEditorState: FileEditorState) {
+    makeObservable(this, {
+      viewState: observable.ref,
+      editor: observable.ref,
+      forcedPosition: observable.ref,
+      setViewState: action,
+      setEditor: action,
+    });
+
+    this.model = monacoEditorAPI.createModel(
+      fileEditorState.uuid,
+      EDITOR_LANGUAGE.PURE,
+    );
+    this.model.updateOptions({ tabSize: TAB_SIZE });
+  }
+
+  setViewState(val: monacoEditorAPI.ICodeEditorViewState | undefined): void {
+    this.viewState = val;
+  }
+
+  setEditor(val: monacoEditorAPI.IStandaloneCodeEditor | undefined): void {
+    this.editor = val;
+  }
+
+  setForcedPosition(val: TextEditorPosition | undefined): void {
+    this.forcedPosition = val;
+  }
+}
+
 export class FileEditorState
   extends EditorTabState
   implements CommandRegistrar
 {
-  _textEditor?: monacoEditorAPI.IStandaloneCodeEditor | undefined;
   file: PureFile;
-  filePath: string;
-  coordinate?: FileCoordinate | undefined;
+  readonly filePath: string;
+  readonly textEditorState = new FileTextEditorState(this);
 
-  constructor(
-    editorStore: EditorStore,
-    file: PureFile,
-    filePath: string,
-    coordinate?: FileCoordinate,
-  ) {
+  constructor(editorStore: EditorStore, file: PureFile, filePath: string) {
     super(editorStore);
 
     makeObservable(this, {
-      _textEditor: observable,
       file: observable,
-      coordinate: observable,
-      setTextEditor: action,
       setFile: action,
-      setCoordinate: action,
     });
 
     this.file = file;
     this.filePath = filePath;
-    this.coordinate = coordinate;
   }
 
   get label(): string {
@@ -66,36 +101,43 @@ export class FileEditorState
     return trimPathLeadingSlash(this.filePath);
   }
 
-  get textEditor(): monacoEditorAPI.IStandaloneCodeEditor {
-    return guaranteeNonNullable(
-      this._textEditor,
-      `Text editor must be initialized (this is likely caused by calling this method at the wrong place)`,
-    );
-  }
-
-  setTextEditor(val: monacoEditorAPI.IStandaloneCodeEditor): void {
-    this._textEditor = val;
+  override onClose(): void {
+    // dispose text model to avoid memory leak
+    this.textEditorState.model.dispose();
   }
 
   setFile(value: PureFile): void {
     this.file = value;
   }
 
-  setCoordinate(value: FileCoordinate | undefined): void {
-    this.coordinate = value;
+  showError(coordinate: FileErrorCoordinate): void {
+    setErrorMarkers(
+      this.textEditorState.model,
+      [
+        {
+          message: coordinate.error.message,
+          startLineNumber: coordinate.line,
+          startColumn: coordinate.column,
+          endLineNumber: coordinate.line,
+          endColumn: coordinate.column,
+        },
+      ],
+      this.uuid,
+    );
   }
 
   clearError(): void {
-    this.coordinate?.setErrorMessage(undefined);
+    clearMarkers(this.uuid);
   }
 
   registerCommands(): void {
     this.editorStore.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.GO_TO_DEFINITION,
       trigger: () =>
-        this._textEditor !== undefined && this.textEditor.hasTextFocus(),
+        this.textEditorState.editor !== undefined &&
+        this.textEditorState.editor.hasTextFocus(),
       action: () => {
-        const currentPosition = this.textEditor.getPosition();
+        const currentPosition = this.textEditorState.editor?.getPosition();
         if (currentPosition) {
           const coordinate = new FileCoordinate(
             this.filePath,
@@ -119,9 +161,10 @@ export class FileEditorState
     this.editorStore.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.FIND_USAGES,
       trigger: () =>
-        this._textEditor !== undefined && this.textEditor.hasTextFocus(),
+        this.textEditorState.editor !== undefined &&
+        this.textEditorState.editor.hasTextFocus(),
       action: () => {
-        const currentPosition = this.textEditor.getPosition();
+        const currentPosition = this.textEditorState.editor?.getPosition();
         if (currentPosition) {
           const coordinate = new FileCoordinate(
             this.filePath,
