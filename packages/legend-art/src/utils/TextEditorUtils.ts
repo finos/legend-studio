@@ -74,6 +74,7 @@ export const getBaseTextEditorOptions =
     fontLigatures: true,
     // Make sure hover or widget shown near boundary are not truncated by setting their position to `fixed`
     fixedOverflowWidgets: true,
+    bracketPairColorization: { enabled: false }, // turn off initial bracket pair coloring
   });
 
 export const moveCursorToPosition = (

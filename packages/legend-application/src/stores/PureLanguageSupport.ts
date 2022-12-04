@@ -36,14 +36,19 @@ const theme: monacoEditorAPI.IStandaloneThemeData = {
   colors: {},
   rules: [
     // NOTE: unfortunately, `monaco-editor` only accepts HEX values, not CSS variables
+    { token: 'identifier', foreground: 'dcdcaa' },
+    { token: 'number', foreground: 'b5cea8' },
+    { token: 'date', foreground: 'b5cea8' },
     { token: 'package', foreground: '808080' },
     { token: 'parser-marker', foreground: 'c586c0' },
-    { token: 'property', foreground: 'dcdcaa' },
     { token: 'function', foreground: 'dcdcaa' },
     { token: 'language-struct', foreground: 'c586c0' },
     { token: 'multiplicity', foreground: '2d796b' },
-    { token: 'attribute', foreground: '9cdcfe' },
-    { token: 'cast', foreground: '569cd6' },
+    { token: 'generics', foreground: '2d796b' },
+    { token: 'property', foreground: '9cdcfe' },
+    { token: 'variable', foreground: '4fc1ff' },
+    { token: 'type', foreground: '3dc9b0' },
+    { token: 'type-operator', foreground: '3dc9b0' },
   ],
 };
 
@@ -184,7 +189,7 @@ const generateLanguageMonarch = (
       '@',
     ],
 
-    languageStructs: ['import', 'native', 'if', 'fold'],
+    languageStructs: ['import', 'native'],
 
     parsers: (
       [
@@ -204,6 +209,7 @@ const generateLanguageMonarch = (
       .map((parser) => `${PARSER_SECTION_MARKER}${parser}`),
 
     // common regular expressions to be used in tokenizer
+    identifier: /[a-zA-Z_$][\w$]*/,
     symbols: /[=><!~?:&|+\-*/^%#@]+/,
     escapes:
       /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
@@ -213,17 +219,23 @@ const generateLanguageMonarch = (
     hexdigits: /[[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
     multiplicity: /\[(?:\d+(?:\.\.(?:\d+|\*|))?|\*)\]/,
     package: /(?:[\w_]+::)+/,
+    generics: /<.+>/,
+    date: /%-?\d+(?:-\d+(?:-\d+(?:T(?:\d+(?::\d+(?::\d+(?:.\d+)?)?)?)(?:[+-][0-9]{4})?)))/,
+    time: /%\d+(?::\d+(?::\d+(?:.\d+)?)?)?/,
 
     tokenizer: {
       root: [
-        // packages
-        { include: '@package' },
-
-        // properties
-        [/(\.)([\w_]+)/, ['delimiter', 'property']],
-
-        // functions
-        { include: '@function' },
+        // NOTE: since `monaco-editor` Monarch is only meant for tokenizing
+        // and the need to highlight Pure syntax is more than just token-based,
+        // but semantic/syntax-based we have to create these complex rules.
+        // the things to note here is these are not meant to match multilines
+        // and they must be placed before identifier rules since token matching
+        // is run in order
+        // See https://github.com/microsoft/monaco-editor/issues/316#issuecomment-273555698
+        // See https://github.com/microsoft/monaco-editor/issues/571#issuecomment-342555050
+        // See https://microsoft.github.io/monaco-editor/monarch.html
+        { include: '@pure' },
+        { include: '@date' },
 
         // parser markers
         [
@@ -239,11 +251,12 @@ const generateLanguageMonarch = (
 
         // identifiers and keywords
         [
-          /[a-zA-Z_$][\w$]*/,
+          /(@identifier)/,
           {
             cases: {
               '@languageStructs': 'language-struct',
               '@keywords': 'keyword.$0',
+              '[A-Z][\\w$]*': 'type',
               '@default': 'identifier',
             },
           },
@@ -260,12 +273,11 @@ const generateLanguageMonarch = (
           {
             cases: {
               '@operators': 'operator',
-              '@default': '',
+              '@default': 'identifier',
             },
           },
         ],
 
-        // numbers
         { include: '@number' },
 
         // delimiter: after number because of .\d floats
@@ -276,8 +288,40 @@ const generateLanguageMonarch = (
         [/'([^'\\]|\\.)*$/, 'string.invalid'],
         [/'/, 'string', '@string'],
 
-        // characters
         { include: '@characters' },
+      ],
+
+      pure: [
+        // type
+        [/(@package)(\*)/, ['package', 'package']], // import path
+        [
+          /(@package?)(@identifier)(@generics?)(\s*)(@multiplicity)/,
+          ['package', 'type', 'generics', '', 'multiplicity'],
+        ],
+        [
+          /(@package)(@identifier)(@generics?)/,
+          ['package', 'type', 'generics'],
+        ],
+
+        // special operators that uses type (e.g. constructor, cast)
+        [
+          /([@^])(?:\s*)(@package?)(@identifier)(@generics?)(@multiplicity?)/,
+          ['type-operator', 'package', 'type', 'generics', 'multiplicity'],
+        ],
+
+        // property / parameter
+        [/(\.\s*)(@identifier)/, ['delimiter', 'property']],
+        [/(@identifier)(\s*[:=])/, ['property', '']],
+
+        // variables
+        [/(let)(\s*)(@identifier)(\s*[:=])/, ['keyword', '', 'variable', '']],
+        [/(\$@identifier)/, ['variable']],
+      ],
+
+      date: [
+        [/(%latest)/, ['date']],
+        [/(@date)/, ['date']],
+        [/(@time)/, ['date']],
       ],
 
       number: [
@@ -288,31 +332,6 @@ const generateLanguageMonarch = (
         [/0[bB](@binarydigits)[Ll]?/, 'number.binary'],
         [/(@digits)[fFdD]/, 'number.float'],
         [/(@digits)[lL]?/, 'number'],
-      ],
-
-      function: [
-        [/(cast)(\()(@)/, ['function', '', 'cast']],
-        [/(->\s*)(cast)(\()(@)/, ['', 'function', '', 'cast']],
-        [/(->\s*)([\w_]+)(\s*\()/, ['', 'function', '']],
-        [/([\w_]+)(\s*\()/, ['function', '']],
-        [/(->\s*)([\w_]+)/, ['', 'function']],
-      ],
-
-      package: [
-        [/(@package)(\*)/, ['package', 'tag']],
-        [/(@package)([\w_]+)/, ['package', 'type']],
-        [
-          /(@package)([\w_]+)(\s*)(@multiplicity)/,
-          ['package', 'type', '', 'multiplicity'],
-        ],
-        [
-          /([\w_]+)(\s*:\s*)(@package)([\w_]+)(\s*)(@multiplicity)/,
-          ['attribute', '', 'package', 'type', '', 'multiplicity'],
-        ],
-        [
-          /(:\s*)([\w_]+)(\s*)(@multiplicity)/,
-          ['', 'type', '', 'multiplicity'],
-        ],
       ],
 
       whitespace: [
