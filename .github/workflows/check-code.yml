@@ -19,6 +19,7 @@ concurrency:
 jobs:
   check-code:
     name: Run Code Checks
+    # Disable usage of large runner on default branch of forks
     runs-on: ${{ (github.repository != 'finos/legend-studio' && github.ref == 'refs/heads/master') && 'ubuntu-latest' || 'ubuntu-latest-16-cores' }}
     steps:
       - name: Checkout code
@@ -47,6 +48,7 @@ jobs:
 
   check-codebase-maintenance:
     name: Run Codebase Maintenance Checks
+    # Disable usage of large runner on default branch of forks
     runs-on: ${{ (github.repository != 'finos/legend-studio' && github.ref == 'refs/heads/master') && 'ubuntu-latest' || 'ubuntu-latest-16-cores' }}
     steps:
       - name: Checkout code
