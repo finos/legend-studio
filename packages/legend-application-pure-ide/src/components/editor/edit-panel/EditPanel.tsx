@@ -83,7 +83,7 @@ export const EditPanel = observer(() => {
     if (currentTab instanceof FileEditorState) {
       return <FileEditor editorState={currentTab} />;
     } else if (currentTab instanceof DiagramEditorState) {
-      return <DiagramEditor editorState={currentTab} />;
+      return <DiagramEditor diagramEditorState={currentTab} />;
     }
     return null;
   };

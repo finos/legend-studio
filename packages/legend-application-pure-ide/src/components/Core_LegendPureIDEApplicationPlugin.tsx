@@ -20,7 +20,10 @@ import {
 } from '@finos/legend-application';
 import packageJson from '../../package.json';
 import { LegendPureIDEApplicationPlugin } from '../stores/LegendPureIDEApplicationPlugin.js';
-import { LEGEND_PURE_IDE_COMMAND_CONFIG } from '../stores/LegendPureIDECommand.js';
+import {
+  LEGEND_PURE_IDE_COMMAND_CONFIG,
+  LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_CONFIG,
+} from '../stores/LegendPureIDECommand.js';
 
 export class Core_LegendPureIDEApplicationPlugin extends LegendPureIDEApplicationPlugin {
   static NAME = packageJson.extensions.applicationPureIDEPlugin;
@@ -30,8 +33,9 @@ export class Core_LegendPureIDEApplicationPlugin extends LegendPureIDEApplicatio
   }
 
   override getExtraKeyedCommandConfigEntries(): KeyedCommandConfigEntry[] {
-    return collectKeyedCommandConfigEntriesFromConfig(
+    return [
       LEGEND_PURE_IDE_COMMAND_CONFIG,
-    );
+      LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_CONFIG,
+    ].flatMap((data) => collectKeyedCommandConfigEntriesFromConfig(data));
   }
 }

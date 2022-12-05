@@ -82,3 +82,30 @@ export const LEGEND_PURE_IDE_COMMAND_CONFIG: CommandConfigData = {
     defaultKeyboardShortcut: 'Alt+F7',
   },
 };
+
+export enum LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY {
+  RECENTER = 'editor.diagram-editor.recenter',
+  USE_ZOOM_TOOL = 'editor.diagram-editor.use-zoom-tool',
+  USE_VIEW_TOOL = 'editor.diagram-editor.use-view-tool',
+  USE_PAN_TOOL = 'editor.diagram-editor.use-pan-tool',
+}
+
+export const LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_CONFIG: CommandConfigData =
+  {
+    [LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.RECENTER]: {
+      title: 'Diagram Editor: Recenter',
+      defaultKeyboardShortcut: 'KeyR',
+    },
+    [LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_ZOOM_TOOL]: {
+      title: 'Diagram Editor: Use zoom tool',
+      defaultKeyboardShortcut: 'KeyZ',
+    },
+    [LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_VIEW_TOOL]: {
+      title: 'Diagram Editor: Use view tool',
+      defaultKeyboardShortcut: 'KeyV',
+    },
+    [LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_PAN_TOOL]: {
+      title: 'Diagram Editor: Use pan tool',
+      defaultKeyboardShortcut: 'KeyM',
+    },
+  };

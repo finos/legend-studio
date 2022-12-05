@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-import type {
-  ClassView,
-  Diagram,
-  DiagramRenderer,
-  Point,
+import type { CommandRegistrar } from '@finos/legend-application';
+import {
+  type ClassView,
+  type Diagram,
+  type DiagramRenderer,
+  DIAGRAM_INTERACTION_MODE,
+  type Point,
 } from '@finos/legend-extension-dsl-diagram';
 import type { PureModel } from '@finos/legend-graph';
 import {
@@ -26,7 +28,14 @@ import {
   generateEnumerableNameFromToken,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { action, flow, flowResult, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import { deserialize } from 'serializr';
 import {
   type DiagramInfo,
@@ -41,8 +50,12 @@ import {
 } from '../server/models/PureFile.js';
 import type { EditorStore } from './EditorStore.js';
 import { EditorTabState } from './EditorTabManagerState.js';
+import { LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY } from './LegendPureIDECommand.js';
 
-export class DiagramEditorState extends EditorTabState {
+export class DiagramEditorState
+  extends EditorTabState
+  implements CommandRegistrar
+{
   diagramInfo: DiagramInfo;
   _renderer?: DiagramRenderer | undefined;
   diagram: Diagram;
@@ -63,6 +76,7 @@ export class DiagramEditorState extends EditorTabState {
       _renderer: observable,
       diagram: observable,
       diagramInfo: observable,
+      diagramCursorClass: computed,
       addClassView: flow,
       rebuild: action,
       setRenderer: action,
@@ -95,6 +109,47 @@ export class DiagramEditorState extends EditorTabState {
 
   get isDiagramRendererInitialized(): boolean {
     return Boolean(this._renderer);
+  }
+
+  // NOTE: we have tried to use React to control the cursor and
+  // could not overcome the jank/lag problem, so we settle with CSS-based approach
+  // See https://css-tricks.com/using-css-cursors/
+  // See https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
+  get diagramCursorClass(): string {
+    if (!this.isDiagramRendererInitialized) {
+      return '';
+    }
+    if (this.renderer.middleClick || this.renderer.rightClick) {
+      return 'diagram-editor__cursor--grabbing';
+    }
+    switch (this.renderer.interactionMode) {
+      case DIAGRAM_INTERACTION_MODE.PAN: {
+        return this.renderer.leftClick
+          ? 'diagram-editor__cursor--grabbing'
+          : 'diagram-editor__cursor--grab';
+      }
+      case DIAGRAM_INTERACTION_MODE.ZOOM_IN: {
+        return 'diagram-editor__cursor--zoom-in';
+      }
+      case DIAGRAM_INTERACTION_MODE.ZOOM_OUT: {
+        return 'diagram-editor__cursor--zoom-out';
+      }
+      case DIAGRAM_INTERACTION_MODE.LAYOUT: {
+        if (this.renderer.selectionStart) {
+          return 'diagram-editor__cursor--crosshair';
+        } else if (
+          this.renderer.mouseOverClassCorner ||
+          this.renderer.selectedClassCorner
+        ) {
+          return 'diagram-editor__cursor--resize';
+        } else if (this.renderer.mouseOverClassView) {
+          return 'diagram-editor__cursor--pointer';
+        }
+        return '';
+      }
+      default:
+        return '';
+    }
   }
 
   rebuild(value: DiagramInfo): void {
@@ -146,5 +201,46 @@ export class DiagramEditorState extends EditorTabState {
         'cview',
       );
     }
+  }
+
+  registerCommands(): void {
+    const DEFAULT_TRIGGER = (): boolean =>
+      // make sure the current active editor is this diagram editor
+      this.editorStore.tabManagerState.currentTab === this &&
+      // make sure the renderer is initialized
+      this.isDiagramRendererInitialized;
+    this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.RECENTER,
+      trigger: DEFAULT_TRIGGER,
+      action: () => this.renderer.recenter(),
+    });
+    this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_ZOOM_TOOL,
+      trigger: DEFAULT_TRIGGER,
+      action: () => this.renderer.switchToZoomMode(),
+    });
+    this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_VIEW_TOOL,
+      trigger: DEFAULT_TRIGGER,
+      action: () => this.renderer.switchToViewMode(),
+    });
+    this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_PAN_TOOL,
+      trigger: DEFAULT_TRIGGER,
+      action: () => this.renderer.switchToPanMode(),
+    });
+  }
+
+  deregisterCommands(): void {
+    [
+      LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.RECENTER,
+      LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_ZOOM_TOOL,
+      LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_VIEW_TOOL,
+      LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_PAN_TOOL,
+    ].forEach((commandKey) =>
+      this.editorStore.applicationStore.commandCenter.deregisterCommand(
+        commandKey,
+      ),
+    );
   }
 }

@@ -108,7 +108,7 @@ export enum DIAGRAM_RELATIONSHIP_EDIT_MODE {
   NONE,
 }
 
-export enum ALIGNER_OPERATOR {
+export enum DIAGRAM_ALIGNER_OPERATOR {
   ALIGN_LEFT,
   ALIGN_CENTER,
   ALIGN_RIGHT,
@@ -697,12 +697,12 @@ export class DiagramRenderer {
     }
   }
 
-  align(op: ALIGNER_OPERATOR): void {
+  align(op: DIAGRAM_ALIGNER_OPERATOR): void {
     if (this.selectedClasses.length < 2) {
       return;
     }
     switch (op) {
-      case ALIGNER_OPERATOR.ALIGN_LEFT: {
+      case DIAGRAM_ALIGNER_OPERATOR.ALIGN_LEFT: {
         const leftBound = this.selectedClasses.reduce(
           (val, view) => Math.min(val, view.position.x),
           Number.MAX_SAFE_INTEGER,
@@ -715,7 +715,7 @@ export class DiagramRenderer {
         );
         break;
       }
-      case ALIGNER_OPERATOR.ALIGN_CENTER: {
+      case DIAGRAM_ALIGNER_OPERATOR.ALIGN_CENTER: {
         const center =
           this.selectedClasses.reduce(
             (val, view) => val + view.position.x + view.rectangle.width,
@@ -729,7 +729,7 @@ export class DiagramRenderer {
         );
         break;
       }
-      case ALIGNER_OPERATOR.ALIGN_RIGHT: {
+      case DIAGRAM_ALIGNER_OPERATOR.ALIGN_RIGHT: {
         const rightBound = this.selectedClasses.reduce(
           (val, view) => Math.max(val, view.position.x + view.rectangle.width),
           -Number.MAX_SAFE_INTEGER,
@@ -742,7 +742,7 @@ export class DiagramRenderer {
         );
         break;
       }
-      case ALIGNER_OPERATOR.ALIGN_TOP: {
+      case DIAGRAM_ALIGNER_OPERATOR.ALIGN_TOP: {
         const topBound = this.selectedClasses.reduce(
           (val, view) => Math.min(val, view.position.y),
           Number.MAX_SAFE_INTEGER,
@@ -755,7 +755,7 @@ export class DiagramRenderer {
         );
         break;
       }
-      case ALIGNER_OPERATOR.ALIGN_MIDDLE: {
+      case DIAGRAM_ALIGNER_OPERATOR.ALIGN_MIDDLE: {
         const middle =
           this.selectedClasses.reduce(
             (val, view) => val + view.position.y + view.rectangle.height,
@@ -769,7 +769,7 @@ export class DiagramRenderer {
         );
         break;
       }
-      case ALIGNER_OPERATOR.ALIGN_BOTTOM: {
+      case DIAGRAM_ALIGNER_OPERATOR.ALIGN_BOTTOM: {
         const bottomBound = this.selectedClasses.reduce(
           (val, view) => Math.max(val, view.position.y + view.rectangle.height),
           -Number.MAX_SAFE_INTEGER,
@@ -782,7 +782,7 @@ export class DiagramRenderer {
         );
         break;
       }
-      case ALIGNER_OPERATOR.SPACE_HORIZONTALLY: {
+      case DIAGRAM_ALIGNER_OPERATOR.SPACE_HORIZONTALLY: {
         const sorted = this.selectedClasses
           .slice()
           .sort((a, b) => a.position.x - b.position.x);
@@ -826,7 +826,7 @@ export class DiagramRenderer {
         }
         break;
       }
-      case ALIGNER_OPERATOR.SPACE_VERTICALLY: {
+      case DIAGRAM_ALIGNER_OPERATOR.SPACE_VERTICALLY: {
         const sorted = this.selectedClasses
           .slice()
           .sort((a, b) => a.position.y - b.position.y);
