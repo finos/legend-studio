@@ -228,4 +228,34 @@
       font-size: 1.2rem;
     }
   }
+
+  &__icon {
+    &--tree-view,
+    &--list-view {
+      font-size: 1.8rem;
+    }
+  }
+}
+
+.test-runner-list__item__label {
+  @include flexVCenter;
+
+  &__path {
+    @include flexVCenter;
+
+    color: var(--color-dark-grey-250);
+    background: var(--color-dark-grey-400);
+    margin-left: 1rem;
+    border-radius: 0.2rem;
+    font-size: 1rem;
+    padding: 0 0.5rem;
+    height: 1.6rem;
+    font-weight: 500;
+  }
+
+  &__name {
+    @include flexVCenter;
+
+    height: 1.8rem;
+  }
 }

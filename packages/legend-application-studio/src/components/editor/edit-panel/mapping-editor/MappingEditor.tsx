@@ -243,10 +243,7 @@ export const MappingEditor = observer(() => {
         <ResizablePanelSplitter />
         <ResizablePanel>
           <Panel>
-            <ContextMenu
-              className="panel__header mapping-editor__header"
-              disabled={true}
-            >
+            <div className="panel__header mapping-editor__header">
               <div
                 data-testid={LEGEND_STUDIO_TEST_ID.EDITOR__TABS__HEADER}
                 className="mapping-editor__header__tabs"
@@ -337,7 +334,7 @@ export const MappingEditor = observer(() => {
                   </div>
                 ))}
               </div>
-            </ContextMenu>
+            </div>
             <div className="panel__content mapping-editor__content">
               {renderActiveMappingElementTab()}
             </div>

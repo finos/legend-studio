@@ -19,8 +19,6 @@
 .packageable-element-option-label {
   @include flexVCenter;
 
-  display: flex;
-
   &__tag {
     @include flexVCenter;
 

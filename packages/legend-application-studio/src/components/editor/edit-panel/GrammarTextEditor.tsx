@@ -1210,7 +1210,7 @@ export const GrammarTextEditor = observer(() => {
 
   return (
     <div className="panel edit-panel">
-      <ContextMenu className="panel__header edit-panel__header" disabled={true}>
+      <div className="panel__header edit-panel__header">
         <div className="edit-panel__header__tabs">
           <div className="edit-panel__text-mode__tab">
             <button
@@ -1245,7 +1245,7 @@ export const GrammarTextEditor = observer(() => {
             <WordWrapIcon className="edit-panel__icon__word-wrap" />
           </button>
         </div>
-      </ContextMenu>
+      </div>
       <PanelContent className="edit-panel__content">
         <div ref={ref} className="text-editor__container">
           <div className="text-editor__body" ref={textEditorRef} />

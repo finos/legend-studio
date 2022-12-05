@@ -257,29 +257,23 @@ const FileExplorerTree = observer(() => {
   const deselectTreeNode = (): void => treeState.setSelectedNode(undefined);
 
   return (
-    <ContextMenu
-      className="explorer__content"
-      disabled={true}
-      menuProps={{ elevation: 7 }}
-    >
-      <div className="explorer__content__inner" onClick={deselectTreeNode}>
-        <TreeView
-          components={{
-            TreeNodeContainer: FileTreeNodeContainer,
-          }}
-          treeData={treeData}
-          onNodeSelect={onNodeSelect}
-          getChildNodes={getChildNodes}
-          innerProps={{
-            onNodeOpen,
-            onNodeExpand,
-            onNodeCompress,
-          }}
-        />
-        <CreateNewFileCommand />
-        <CreateNewDirectoryCommand />
-      </div>
-    </ContextMenu>
+    <div className="explorer__content" onClick={deselectTreeNode}>
+      <TreeView
+        components={{
+          TreeNodeContainer: FileTreeNodeContainer,
+        }}
+        treeData={treeData}
+        onNodeSelect={onNodeSelect}
+        getChildNodes={getChildNodes}
+        innerProps={{
+          onNodeOpen,
+          onNodeExpand,
+          onNodeCompress,
+        }}
+      />
+      <CreateNewFileCommand />
+      <CreateNewDirectoryCommand />
+    </div>
   );
 });
 

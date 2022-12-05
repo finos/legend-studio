@@ -230,8 +230,8 @@ export class TestRunnerState {
 
   // explorer tree
   readonly treeBuildingState = ActionState.create();
-  selectedNode?: TestTreeNode | undefined;
   treeData?: TreeData<TestTreeNode> | undefined;
+  viewAsList = false;
 
   constructor(
     editorStore: EditorStore,
@@ -241,13 +241,13 @@ export class TestRunnerState {
       testResultInfo: observable.ref,
       allTests: observable,
       selectedTestId: observable,
-      selectedNode: observable,
       treeData: observable.ref,
+      viewAsList: observable,
+      setViewAsList: action,
       setSelectedTestId: action,
       setTestResultInfo: action,
       setTreeData: action,
       refreshTree: action,
-      setSelectedNode: action,
       collapseTree: action,
       expandTree: action,
       buildTreeDataByLayer: action,
@@ -269,6 +269,10 @@ export class TestRunnerState {
     );
   }
 
+  setViewAsList(val: boolean): void {
+    this.viewAsList = val;
+  }
+
   setSelectedTestId(val: string | undefined): void {
     this.selectedTestId = val;
   }
@@ -283,19 +287,6 @@ export class TestRunnerState {
 
   refreshTree(): void {
     this.setTreeData({ ...guaranteeNonNullable(this.treeData) });
-  }
-
-  setSelectedNode(node: TestTreeNode | undefined): void {
-    if (node?.id !== this.selectedNode?.id) {
-      if (this.selectedNode) {
-        this.selectedNode.isSelected = false;
-      }
-      if (node) {
-        node.isSelected = true;
-      }
-      this.selectedNode = node;
-      this.refreshTree();
-    }
   }
 
   *buildTestTreeData(): GeneratorFn<void> {
@@ -321,7 +312,6 @@ export class TestRunnerState {
     treeData.nodes.forEach((node) => {
       node.isOpen = false;
     });
-    this.setSelectedNode(undefined);
     this.refreshTree();
   }
 
@@ -330,7 +320,6 @@ export class TestRunnerState {
     treeData.nodes.forEach((node) => {
       node.isOpen = true;
     });
-    this.setSelectedNode(undefined);
     this.refreshTree();
   }
 
