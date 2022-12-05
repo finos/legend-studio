@@ -373,6 +373,7 @@ const UnmatchExecutionResultDisplay = observer(
 
 export const SearchPanel = observer(() => {
   const editorStore = useEditorStore();
+
   return (
     <div className="search-panel">
       <PanelLoadingIndicator

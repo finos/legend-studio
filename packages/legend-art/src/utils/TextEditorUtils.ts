@@ -75,6 +75,7 @@ export const getBaseTextEditorOptions =
     // Make sure hover or widget shown near boundary are not truncated by setting their position to `fixed`
     fixedOverflowWidgets: true,
     bracketPairColorization: { enabled: false }, // turn off initial bracket pair coloring
+    detectIndentation: false, // i.e. so we can force tab-size
   });
 
 export const moveCursorToPosition = (
