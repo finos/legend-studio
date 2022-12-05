@@ -529,6 +529,13 @@ export class EditorStore implements CommandRegistrar {
     extraParams: Record<PropertyKey, unknown>,
     checkExecutionStatus: boolean,
     manageResult: (result: ExecutionResult) => Promise<void>,
+    options?: {
+      /**
+       * Some execution, such as find concept produces no output
+       * so we should not reset the console text in that case
+       */
+      avoidUpdatingConsoleText?: boolean;
+    },
   ): GeneratorFn<void> {
     if (!this.initState.hasSucceeded) {
       this.applicationStore.notifyWarning(
@@ -603,7 +610,9 @@ export class EditorStore implements CommandRegistrar {
         guaranteeNonNullable(executionPromiseResult),
       );
       this.applicationStore.setBlockingAlert(undefined);
-      this.setConsoleText(result.text);
+      if (!options?.avoidUpdatingConsoleText) {
+        this.setConsoleText(result.text);
+      }
       if (result instanceof ExecutionFailureResult) {
         this.applicationStore.notifyWarning('Execution failed!');
         if (result.sessionError) {
@@ -811,6 +820,7 @@ export class EditorStore implements CommandRegistrar {
             );
           }
         },
+        { avoidUpdatingConsoleText: true },
       ),
     );
   }
