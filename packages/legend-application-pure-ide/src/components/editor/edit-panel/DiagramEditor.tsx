@@ -99,7 +99,8 @@ export const DiagramEditor = observer(
 
     return (
       <div className="panel edit-panel">
-        <div className="panel__content edit-panel__content edit-panel__content--headless">
+        <div className="panel__header"></div>
+        <div className="panel__content edit-panel__content">
           <DiagramCanvas diagramEditorState={editorState} />
         </div>
       </div>

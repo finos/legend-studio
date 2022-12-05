@@ -39,18 +39,22 @@ import { LEGEND_PURE_IDE_COMMAND_KEY } from './LegendPureIDECommand.js';
 class FileTextEditorState {
   readonly model: monacoEditorAPI.ITextModel;
 
-  forcedPosition: TextEditorPosition | undefined;
-
   editor?: monacoEditorAPI.IStandaloneCodeEditor | undefined;
   viewState?: monacoEditorAPI.ICodeEditorViewState | undefined;
+
+  forcedCursorPosition: TextEditorPosition | undefined;
+  wrapText = false;
 
   constructor(fileEditorState: FileEditorState) {
     makeObservable(this, {
       viewState: observable.ref,
       editor: observable.ref,
-      forcedPosition: observable.ref,
+      forcedCursorPosition: observable.ref,
+      wrapText: observable,
       setViewState: action,
       setEditor: action,
+      setForcedCursorPosition: action,
+      setWrapText: action,
     });
 
     this.model = monacoEditorAPI.createModel(
@@ -68,8 +72,19 @@ class FileTextEditorState {
     this.editor = val;
   }
 
-  setForcedPosition(val: TextEditorPosition | undefined): void {
-    this.forcedPosition = val;
+  setForcedCursorPosition(val: TextEditorPosition | undefined): void {
+    this.forcedCursorPosition = val;
+  }
+
+  setWrapText(val: boolean): void {
+    const oldVal = this.wrapText;
+    this.wrapText = val;
+    if (oldVal !== val && this.editor) {
+      this.editor.updateOptions({
+        wordWrap: val ? 'on' : 'off',
+      });
+      this.editor.focus();
+    }
   }
 }
 

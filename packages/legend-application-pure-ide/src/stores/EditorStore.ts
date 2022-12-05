@@ -492,7 +492,7 @@ export class EditorStore implements CommandRegistrar {
     }
     this.tabManagerState.openTab(editorState);
     if (coordinate) {
-      editorState.textEditorState.setForcedPosition({
+      editorState.textEditorState.setForcedCursorPosition({
         lineNumber: coordinate.line,
         column: coordinate.column,
       });

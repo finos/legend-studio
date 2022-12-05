@@ -25,9 +25,11 @@ import {
   useCommands,
 } from '@finos/legend-application';
 import {
+  clsx,
   getBaseTextEditorOptions,
   moveCursorToPosition,
   useResizeDetector,
+  WordWrapIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from '../EditorStoreProvider.js';
 
@@ -51,6 +53,7 @@ export const FileEditor = observer(
           ...getBaseTextEditorOptions(),
           language: EDITOR_LANGUAGE.PURE,
           theme: EDITOR_THEME.LEGEND,
+          wordWrap: editorState.textEditorState.wrapText ? 'on' : 'off',
         });
         newEditor.onDidChangeCursorPosition(() => {
           const currentPosition = newEditor.getPosition();
@@ -83,12 +86,12 @@ export const FileEditor = observer(
       if (currentValue !== content) {
         editor.setValue(content);
       }
-      if (editorState.textEditorState.forcedPosition) {
+      if (editorState.textEditorState.forcedCursorPosition) {
         moveCursorToPosition(
           editor,
-          editorState.textEditorState.forcedPosition,
+          editorState.textEditorState.forcedCursorPosition,
         );
-        editorState.textEditorState.setForcedPosition(undefined);
+        editorState.textEditorState.setForcedCursorPosition(undefined);
       }
     }
 
@@ -116,8 +119,27 @@ export const FileEditor = observer(
     );
 
     return (
-      <div className="panel edit-panel">
-        <div className="panel__content edit-panel__content edit-panel__content--headless">
+      <div className="panel edit-panel file-editor">
+        <div className="panel__header file-editor__header">
+          <div className="file-editor__header__actions">
+            <button
+              className={clsx('file-editor__header__action', {
+                'file-editor__header__action--active':
+                  editorState.textEditorState.wrapText,
+              })}
+              tabIndex={-1}
+              onClick={(): void =>
+                editorState.textEditorState.setWrapText(
+                  !editorState.textEditorState.wrapText,
+                )
+              }
+              title="Toggle Text Wrap"
+            >
+              <WordWrapIcon className="file-editor__icon--text-wrap" />
+            </button>
+          </div>
+        </div>
+        <div className="panel__content file-editor__content">
           <div ref={ref} className="text-editor__container">
             <div className="text-editor__body" ref={textInput} />
           </div>
