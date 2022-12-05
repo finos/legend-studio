@@ -49,6 +49,7 @@ import {
   getTag,
   getStereotype,
   getOwnProperty,
+  AggregationKind,
 } from '@finos/legend-graph';
 import { addUniqueEntry, guaranteeNonNullable } from '@finos/legend-shared';
 import {
@@ -126,13 +127,14 @@ class PURE__Property {
   stereotypes: PURE__Steoreotype[] = [];
   taggedValues: PURE__TaggedValue[] = [];
 
-  // aggregation!: string;
+  aggregation!: string;
   multiplicity!: string;
   // parameters // this is meant for qualified properties only
   genericType!: PURE__GenericType;
 }
 
 createModelSchema(PURE__Property, {
+  aggregation: primitive(),
   genericType: object(PURE__GenericType),
   multiplicity: primitive(),
   name: primitive(),
@@ -512,27 +514,31 @@ const buildClass = (
   classData.properties
     .filter((propertyData) => Boolean(propertyData.genericType.rawType))
     .forEach((propertyData) => {
-      addUniqueEntry(
-        _class.properties,
-        new Property(
-          propertyData.name,
-          parseMultiplicty(propertyData.multiplicity),
-          GenericTypeExplicitReference.create(
-            new GenericType(
-              graph.getOwnNullableEnumeration(
+      const newProperty = new Property(
+        propertyData.name,
+        parseMultiplicty(propertyData.multiplicity),
+        GenericTypeExplicitReference.create(
+          new GenericType(
+            graph.getOwnNullableEnumeration(
+              guaranteeNonNullable(propertyData.genericType.rawType),
+            ) ??
+              getOrCreateClass(
                 guaranteeNonNullable(propertyData.genericType.rawType),
-              ) ??
-                getOrCreateClass(
-                  guaranteeNonNullable(propertyData.genericType.rawType),
-                  graph,
-                  diagramClasses,
-                  undefined,
-                ),
-            ),
+                graph,
+                diagramClasses,
+                undefined,
+              ),
           ),
-          _class,
         ),
+        _class,
       );
+      newProperty.aggregation =
+        propertyData.aggregation === 'Composite'
+          ? AggregationKind.COMPOSITE
+          : propertyData.aggregation === 'Shared'
+          ? AggregationKind.SHARED
+          : undefined;
+      addUniqueEntry(_class.properties, newProperty);
     });
   classData.qualifiedProperties
     .filter((propertyData) => propertyData.genericType.rawType)
