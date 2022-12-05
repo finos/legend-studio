@@ -133,9 +133,7 @@ export class FileEditorState
   registerCommands(): void {
     this.editorStore.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.GO_TO_DEFINITION,
-      trigger: () =>
-        this.textEditorState.editor !== undefined &&
-        this.textEditorState.editor.hasTextFocus(),
+      trigger: () => Boolean(this.textEditorState.editor?.hasTextFocus()),
       action: () => {
         const currentPosition = this.textEditorState.editor?.getPosition();
         if (currentPosition) {
@@ -160,9 +158,7 @@ export class FileEditorState
     });
     this.editorStore.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.FIND_USAGES,
-      trigger: () =>
-        this.textEditorState.editor !== undefined &&
-        this.textEditorState.editor.hasTextFocus(),
+      trigger: () => Boolean(this.textEditorState.editor?.hasTextFocus()),
       action: () => {
         const currentPosition = this.textEditorState.editor?.getPosition();
         if (currentPosition) {

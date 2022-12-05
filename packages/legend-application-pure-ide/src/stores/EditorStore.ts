@@ -702,9 +702,7 @@ export class EditorStore implements CommandRegistrar {
             result.source,
             result.line,
             result.column,
-            new ExecutionError(
-              (result.text ?? '').split('\n').filter(Boolean)[0],
-            ),
+            new ExecutionError(result.text.split('\n').filter(Boolean)[0]),
           ),
         ),
       );
@@ -756,7 +754,7 @@ export class EditorStore implements CommandRegistrar {
                   result.line,
                   result.column,
                   new ExecutionError(
-                    (result.text ?? '').split('\n').filter(Boolean)[0],
+                    result.text.split('\n').filter(Boolean)[0],
                   ),
                 ),
               ),
