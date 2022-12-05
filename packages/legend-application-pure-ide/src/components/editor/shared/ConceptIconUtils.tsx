@@ -16,11 +16,13 @@
 
 import {
   AtomIcon,
+  DatabaseIcon,
   FunctionIcon,
   PURE_AssociationIcon,
   PURE_ClassIcon,
   PURE_EnumerationIcon,
   PURE_FunctionIcon,
+  PURE_MappingIcon,
   PURE_MeasureIcon,
   PURE_PackageIcon,
   PURE_ProfileIcon,
@@ -72,6 +74,14 @@ export const getConceptIcon = (type: string): React.ReactNode => {
       return <NativeFunctionIcon />;
     case ConceptType.DIAGRAM:
       return <DiagramIcon />;
+    case ConceptType.DATABASE:
+      return (
+        <div className="icon icon--database">
+          <DatabaseIcon />
+        </div>
+      );
+    case ConceptType.MAPPING:
+      return <PURE_MappingIcon />;
     default:
       return <PURE_UnknownElementTypeIcon />;
   }

@@ -172,9 +172,9 @@ const ConceptTreeNodeContainer: React.FC<
     }
     if (isExpandable) {
       toggleExpansion();
-    } else {
-      onNodeOpen(node);
     }
+    onNodeSelect?.(node);
+    onNodeOpen(node);
   };
   const [, dragRef] = useDrag(
     () => ({

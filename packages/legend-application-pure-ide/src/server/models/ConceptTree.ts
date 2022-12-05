@@ -39,6 +39,8 @@ export enum ConceptType {
   FUNCTION = 'ConcreteFunctionDefinition',
   NATIVE_FUNCTION = 'NativeFunction',
   DIAGRAM = 'Diagram',
+  DATABASE = 'Database',
+  MAPPING = 'Mapping',
 }
 
 abstract class ConceptAttribute {
