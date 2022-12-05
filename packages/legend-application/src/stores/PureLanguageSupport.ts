@@ -416,6 +416,11 @@ export const setupPureLanguageService = (
       keybinding: KeyCode.F9,
       command: null,
     },
+    {
+      // disable toggle debugger breakpoint
+      keybinding: KeyMod.Shift | KeyCode.F10,
+      command: null,
+    },
   ]);
   monacoLanguagesAPI.register({ id: EDITOR_LANGUAGE.PURE });
   monacoLanguagesAPI.setLanguageConfiguration(

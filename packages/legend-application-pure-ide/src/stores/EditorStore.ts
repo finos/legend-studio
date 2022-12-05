@@ -737,6 +737,10 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *executeTests(path: string, relevantTestsOnly?: boolean): GeneratorFn<void> {
+    if (relevantTestsOnly) {
+      this.applicationStore.notifyUnsupportedFeature(`Run relevant tests`);
+      return;
+    }
     if (this.testRunState.isInProgress) {
       this.applicationStore.notifyWarning(
         'Test runner is working. Please try again later',
