@@ -78,6 +78,7 @@ const configuration: monacoLanguagesAPI.LanguageConfiguration = {
     { open: '"', close: '"' },
     { open: "'", close: "'" },
     { open: '<', close: '>' },
+    { open: '<<', close: '>>' },
   ],
   folding: {
     markers: {
@@ -187,6 +188,8 @@ const generateLanguageMonarch = (
       '#{',
       '}#',
       '@',
+      '<<',
+      '>>',
     ],
 
     languageStructs: ['import', 'native'],
@@ -312,6 +315,8 @@ const generateLanguageMonarch = (
         // property / parameter
         [/(\.\s*)(@identifier)/, ['delimiter', 'property']],
         [/(@identifier)(\s*[:=])/, ['property', '']],
+        [/(^\s*)(@identifier)(\s*,\s*)/, ['', 'property', '']], // enum value, although this will not cover the last enum value
+        [/(@identifier)(\.)(@identifier)/, ['type', '', 'property']], // profile tag and stereotype
 
         // variables
         [/(let)(\s*)(@identifier)(\s*[:=])/, ['keyword', '', 'variable', '']],
