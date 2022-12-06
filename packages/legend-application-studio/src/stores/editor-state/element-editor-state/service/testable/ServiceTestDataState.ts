@@ -196,7 +196,7 @@ export class ConnectionTestDataState {
         .service;
     const execution = service.execution;
     let runtimes: Runtime[] = [];
-    if (execution instanceof PureSingleExecution) {
+    if (execution instanceof PureSingleExecution && execution.runtime) {
       runtimes = [execution.runtime];
     } else if (execution instanceof PureMultiExecution) {
       runtimes = execution.executionParameters.map((t) => t.runtime);
@@ -366,7 +366,10 @@ export class ServiceTestDataState {
       this.testSuiteState.testableState.serviceEditorState.service;
     const execution = service.execution;
     let runtimes: Runtime[] = [];
-    if (execution instanceof PureSingleExecution) {
+    if (
+      execution instanceof PureSingleExecution &&
+      execution.runtime !== undefined
+    ) {
       runtimes = [execution.runtime];
     } else if (execution instanceof PureMultiExecution) {
       runtimes = execution.executionParameters.map((t) => t.runtime);

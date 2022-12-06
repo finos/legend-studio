@@ -249,9 +249,12 @@ export const observe_PureSingleExecution = skipObservedWithContext(
       runtime: observable,
       hashCode: computed,
     });
-
-    observe_PackageableElementReference(metamodel.mapping);
-    observe_Runtime(metamodel.runtime, context);
+    if (metamodel.mapping) {
+      observe_PackageableElementReference(metamodel.mapping);
+    }
+    if (metamodel.runtime) {
+      observe_Runtime(metamodel.runtime, context);
+    }
 
     return metamodel;
   },

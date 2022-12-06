@@ -172,8 +172,12 @@ const transformSingleExecution = (
   execution.func = element.func.accept_RawValueSpecificationVisitor(
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
-  execution.mapping = element.mapping.valueForSerialization ?? '';
-  execution.runtime = V1_transformRuntime(element.runtime, context);
+  if (element.mapping) {
+    execution.mapping = element.mapping.valueForSerialization ?? '';
+  }
+  if (element.runtime) {
+    execution.runtime = V1_transformRuntime(element.runtime, context);
+  }
   return execution;
 };
 

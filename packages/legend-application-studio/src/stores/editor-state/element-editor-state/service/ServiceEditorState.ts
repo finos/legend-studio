@@ -22,6 +22,7 @@ import {
   UnsupportedServiceExecutionState,
   SingleServicePureExecutionState,
   MultiServicePureExecutionState,
+  InlineServicePureExecutionState,
 } from './ServiceExecutionState.js';
 import { ServiceRegistrationState } from '../../../editor-state/element-editor-state/service/ServiceRegistrationState.js';
 import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState.js';
@@ -80,8 +81,18 @@ export class ServiceEditorState extends ElementEditorState {
 
   buildExecutionState(): ServiceExecutionState {
     const execution = this.service.execution;
-    if (execution instanceof PureSingleExecution) {
+    if (
+      execution instanceof PureSingleExecution &&
+      execution.mapping &&
+      execution.runtime
+    ) {
       return new SingleServicePureExecutionState(
+        this.editorStore,
+        this,
+        execution,
+      );
+    } else if (execution instanceof PureSingleExecution) {
+      return new InlineServicePureExecutionState(
         this.editorStore,
         this,
         execution,

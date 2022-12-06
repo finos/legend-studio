@@ -1134,3 +1134,566 @@ export const TEST_DATA__ServiceRoundtrip = [
     classifierPath: 'meta::pure::runtime::PackageableConnection',
   },
 ];
+
+export const TEST_DATA__SERVICE_WITH_ONLY_QUERY_Roundtrip = [
+  {
+    classifierPath: 'meta::pure::metamodel::type::Enumeration',
+    content: {
+      _type: 'Enumeration',
+      name: 'EmployeeType',
+      package: 'model',
+      values: [
+        {
+          value: 'CONTRACT',
+        },
+        {
+          value: 'FULL_TIME',
+        },
+      ],
+    },
+    path: 'model::EmployeeType',
+  },
+  {
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'model',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'firstName',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'lastName',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'employeeType',
+          type: 'model::EmployeeType',
+        },
+      ],
+    },
+    path: 'model::Person',
+  },
+  {
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Firm',
+      package: 'model',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'legalName',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 0,
+          },
+          name: 'employees',
+          type: 'model::Person',
+        },
+      ],
+    },
+    path: 'model::Firm',
+  },
+  {
+    classifierPath: 'meta::relational::metamodel::Database',
+    content: {
+      _type: 'relational',
+      filters: [],
+      includedStores: [],
+      joins: [
+        {
+          name: 'FirmPerson',
+          operation: {
+            _type: 'dynaFunc',
+            funcName: 'equal',
+            parameters: [
+              {
+                _type: 'column',
+                column: 'firm_id',
+                table: {
+                  _type: 'Table',
+                  database: 'store::TestDB',
+                  mainTableDb: 'store::TestDB',
+                  schema: 'default',
+                  table: 'PersonTable',
+                },
+                tableAlias: 'PersonTable',
+              },
+              {
+                _type: 'column',
+                column: 'id',
+                table: {
+                  _type: 'Table',
+                  database: 'store::TestDB',
+                  mainTableDb: 'store::TestDB',
+                  schema: 'default',
+                  table: 'FirmTable',
+                },
+                tableAlias: 'FirmTable',
+              },
+            ],
+          },
+        },
+      ],
+      name: 'TestDB',
+      package: 'store',
+      schemas: [
+        {
+          name: 'default',
+          tables: [
+            {
+              columns: [
+                {
+                  name: 'id',
+                  nullable: false,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'legal_name',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 200,
+                  },
+                },
+              ],
+              name: 'FirmTable',
+              primaryKey: ['id'],
+            },
+            {
+              columns: [
+                {
+                  name: 'id',
+                  nullable: false,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'firm_id',
+                  nullable: true,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'firstName',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 200,
+                  },
+                },
+                {
+                  name: 'lastName',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 200,
+                  },
+                },
+                {
+                  name: 'employeeType',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 200,
+                  },
+                },
+              ],
+              name: 'PersonTable',
+              primaryKey: ['id'],
+            },
+          ],
+          views: [],
+        },
+      ],
+    },
+    path: 'store::TestDB',
+  },
+  {
+    classifierPath: 'meta::pure::mapping::Mapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'relational',
+          class: 'model::Person',
+          distinct: false,
+          mainTable: {
+            _type: 'Table',
+            database: 'store::TestDB',
+            mainTableDb: 'store::TestDB',
+            schema: 'default',
+            table: 'PersonTable',
+          },
+          primaryKey: [
+            {
+              _type: 'column',
+              column: 'id',
+              table: {
+                _type: 'Table',
+                database: 'store::TestDB',
+                mainTableDb: 'store::TestDB',
+                schema: 'default',
+                table: 'PersonTable',
+              },
+              tableAlias: 'PersonTable',
+            },
+          ],
+          propertyMappings: [
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'model::Person',
+                property: 'firstName',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'firstName',
+                table: {
+                  _type: 'Table',
+                  database: 'store::TestDB',
+                  mainTableDb: 'store::TestDB',
+                  schema: 'default',
+                  table: 'PersonTable',
+                },
+                tableAlias: 'PersonTable',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'model::Person',
+                property: 'lastName',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'lastName',
+                table: {
+                  _type: 'Table',
+                  database: 'store::TestDB',
+                  mainTableDb: 'store::TestDB',
+                  schema: 'default',
+                  table: 'PersonTable',
+                },
+                tableAlias: 'PersonTable',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              enumMappingId: 'EmployeeTypeMapping',
+              property: {
+                class: 'model::Person',
+                property: 'employeeType',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'employeeType',
+                table: {
+                  _type: 'Table',
+                  database: 'store::TestDB',
+                  mainTableDb: 'store::TestDB',
+                  schema: 'default',
+                  table: 'PersonTable',
+                },
+                tableAlias: 'PersonTable',
+              },
+            },
+          ],
+          root: true,
+        },
+        {
+          _type: 'relational',
+          class: 'model::Firm',
+          distinct: false,
+          mainTable: {
+            _type: 'Table',
+            database: 'store::TestDB',
+            mainTableDb: 'store::TestDB',
+            schema: 'default',
+            table: 'FirmTable',
+          },
+          primaryKey: [
+            {
+              _type: 'column',
+              column: 'id',
+              table: {
+                _type: 'Table',
+                database: 'store::TestDB',
+                mainTableDb: 'store::TestDB',
+                schema: 'default',
+                table: 'FirmTable',
+              },
+              tableAlias: 'FirmTable',
+            },
+          ],
+          propertyMappings: [
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'model::Firm',
+                property: 'legalName',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'legal_name',
+                table: {
+                  _type: 'Table',
+                  database: 'store::TestDB',
+                  mainTableDb: 'store::TestDB',
+                  schema: 'default',
+                  table: 'FirmTable',
+                },
+                tableAlias: 'FirmTable',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'model::Firm',
+                property: 'employees',
+              },
+              relationalOperation: {
+                _type: 'elemtWithJoins',
+                joins: [
+                  {
+                    db: 'store::TestDB',
+                    name: 'FirmPerson',
+                  },
+                ],
+              },
+              target: 'model_Person',
+            },
+          ],
+          root: true,
+        },
+      ],
+      enumerationMappings: [
+        {
+          enumValueMappings: [
+            {
+              enumValue: 'CONTRACT',
+              sourceValues: [
+                {
+                  _type: 'stringSourceValue',
+                  value: 'FTC',
+                },
+                {
+                  _type: 'stringSourceValue',
+                  value: 'FTO',
+                },
+              ],
+            },
+            {
+              enumValue: 'FULL_TIME',
+              sourceValues: [
+                {
+                  _type: 'stringSourceValue',
+                  value: 'FTE',
+                },
+              ],
+            },
+          ],
+          enumeration: 'model::EmployeeType',
+          id: 'EmployeeTypeMapping',
+        },
+      ],
+      includedMappings: [],
+      name: 'RelationalMapping',
+      package: 'execution',
+      tests: [],
+    },
+    path: 'execution::RelationalMapping',
+  },
+  {
+    classifierPath: 'meta::legend::service::metamodel::Service',
+    content: {
+      _type: 'service',
+      autoActivateUpdates: true,
+      documentation: '',
+      execution: {
+        _type: 'pureSingleExecution',
+        func: {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'from',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'project',
+                  parameters: [[Object], [Object], [Object]],
+                },
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'execution::RelationalMapping',
+                },
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'execution::Runtime',
+                },
+              ],
+            },
+          ],
+          parameters: [],
+        },
+      },
+      name: 'SimpleRelationalPassFailing',
+      owners: [],
+      package: 'service',
+      pattern: '/d2c48a9c-70fa-46e3-8173-c355e774004f',
+      testSuites: [
+        {
+          _type: 'serviceTestSuite',
+          id: 'testSuite1',
+          testData: {
+            connectionsTestData: [
+              {
+                data: {
+                  _type: 'reference',
+                  dataElement: 'data::RelationalData',
+                },
+                id: 'connection_1',
+              },
+            ],
+          },
+          tests: [
+            {
+              _type: 'serviceTest',
+              assertions: [
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '[{"Employees/First Name":"John","Employees/Last Name":"Doe","Legal Name":"Finos"},{"Employees/First Name":"Nicole","Employees/Last Name":"Smith","Legal Name":"Finos"},{"Employees/First Name":"Time","Employees/Last Name":"Smith","Legal Name":"Apple"}]',
+                  },
+                  id: 'shouldPass',
+                },
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '[{"Employees/First Name":"JohnDIFF","Employees/Last Name":"Doe","Legal Name":"Finos"},{"Employees/First Name":"Nicole","Employees/Last Name":"Smith","Legal Name":"Finos"},{"Employees/First Name":"Time","Employees/Last Name":"Smith","Legal Name":"Apple"}]',
+                  },
+                  id: 'shouldFail',
+                },
+              ],
+              id: 'test1',
+              keys: [],
+              serializationFormat: 'PURE_TDSOBJECT',
+            },
+          ],
+        },
+      ],
+    },
+    path: 'service::SimpleRelationalPassFailing',
+  },
+  {
+    classifierPath: 'meta::pure::runtime::PackageableRuntime',
+    content: {
+      _type: 'runtime',
+      name: 'Runtime',
+      package: 'execution',
+      runtimeValue: {
+        _type: 'engineRuntime',
+        connections: [
+          {
+            store: {
+              path: 'store::TestDB',
+              type: 'STORE',
+            },
+            storeConnections: [
+              {
+                connection: {
+                  _type: 'connectionPointer',
+                  connection: 'model::MyConnection',
+                },
+                id: 'connection_1',
+              },
+            ],
+          },
+        ],
+        mappings: [
+          {
+            path: 'execution::RelationalMapping',
+            type: 'MAPPING',
+          },
+        ],
+      },
+    },
+    path: 'execution::Runtime',
+  },
+  {
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'h2Default',
+        },
+        databaseType: 'H2',
+        datasourceSpecification: {
+          _type: 'h2Local',
+          testDataSetupSqls: [''],
+        },
+        element: 'store::TestDB',
+        type: 'H2',
+      },
+      name: 'MyConnection',
+      package: 'model',
+    },
+    path: 'model::MyConnection',
+  },
+  {
+    classifierPath: 'meta::pure::data::DataElement',
+    content: {
+      _type: 'dataElement',
+      data: {
+        _type: 'relationalCSVData',
+        tables: [
+          {
+            schema: 'default',
+            table: 'PersonTable',
+            values:
+              'id,firm_id,firstName,lastName,employeeType\n1,1,John,Doe,FTO\n2,1,Nicole,Smith,FTC\n3,2,Time,Smith,FTE',
+          },
+          {
+            schema: 'default',
+            table: 'FirmTable',
+            values: 'id,legal_name\n1,Finos\n2,Apple',
+          },
+        ],
+      },
+      name: 'RelationalData',
+      package: 'data',
+    },
+    path: 'data::RelationalData',
+  },
+];
