@@ -718,7 +718,7 @@ export class DiagramRenderer {
       case DIAGRAM_ALIGNER_OPERATOR.ALIGN_CENTER: {
         const center =
           this.selectedClasses.reduce(
-            (val, view) => val + view.position.x + view.rectangle.width,
+            (val, view) => val + view.position.x + view.rectangle.width / 2,
             0,
           ) / this.selectedClasses.length;
         this.selectedClasses.forEach((view) =>
@@ -758,7 +758,7 @@ export class DiagramRenderer {
       case DIAGRAM_ALIGNER_OPERATOR.ALIGN_MIDDLE: {
         const middle =
           this.selectedClasses.reduce(
-            (val, view) => val + view.position.y + view.rectangle.height,
+            (val, view) => val + view.position.y + view.rectangle.height / 2,
             0,
           ) / this.selectedClasses.length;
         this.selectedClasses.forEach((view) =>
