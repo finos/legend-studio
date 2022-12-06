@@ -39,6 +39,7 @@ const theme: monacoEditorAPI.IStandaloneThemeData = {
     { token: 'identifier', foreground: 'dcdcaa' },
     { token: 'number', foreground: 'b5cea8' },
     { token: 'date', foreground: 'b5cea8' },
+    { token: 'color', foreground: 'b5cea8' },
     { token: 'package', foreground: '808080' },
     { token: 'parser-marker', foreground: 'c586c0' },
     { token: 'function', foreground: 'dcdcaa' },
@@ -124,6 +125,8 @@ const generateLanguageMonarch = (
       // native
       'let',
       'extends',
+      'true',
+      'false',
       'projects',
       // elements
       PURE_ELEMENT_NAME.CLASS,
@@ -238,7 +241,9 @@ const generateLanguageMonarch = (
         // See https://github.com/microsoft/monaco-editor/issues/571#issuecomment-342555050
         // See https://microsoft.github.io/monaco-editor/monarch.html
         { include: '@pure' },
+
         { include: '@date' },
+        { include: '@color' },
 
         // parser markers
         [
@@ -315,7 +320,6 @@ const generateLanguageMonarch = (
         // property / parameter
         [/(\.\s*)(@identifier)/, ['delimiter', 'property']],
         [/(@identifier)(\s*[:=])/, ['property', '']],
-        [/(^\s*)(@identifier)(\s*,\s*)/, ['', 'property', '']], // enum value, although this will not cover the last enum value
         [/(@identifier)(\.)(@identifier)/, ['type', '', 'property']], // profile tag and stereotype
 
         // variables
@@ -328,6 +332,8 @@ const generateLanguageMonarch = (
         [/(@date)/, ['date']],
         [/(@time)/, ['date']],
       ],
+
+      color: [[/(#[0-9a-fA-F]{6})/, ['color']]],
 
       number: [
         [/(@digits)[eE]([-+]?(@digits))?[fFdD]?/, 'number.float'],

@@ -42,6 +42,7 @@ import {
   DistributeHorizontalIcon,
   DistributeVerticalIcon,
   DropdownMenu,
+  GoToFileIcon,
   MenuContent,
   MenuContentDivider,
   MenuContentItem,
@@ -51,6 +52,8 @@ import {
   ZoomInIcon,
   ZoomOutIcon,
 } from '@finos/legend-art';
+import { useEditorStore } from '../EditorStoreProvider.js';
+import { FileCoordinate } from '../../../server/models/PureFile.js';
 
 const DiagramEditorDiagramCanvas = observer(
   forwardRef<
@@ -131,13 +134,26 @@ const DiagramEditorDiagramCanvas = observer(
 const DiagramEditorHeader = observer(
   (props: { diagramEditorState: DiagramEditorState }) => {
     const { diagramEditorState } = props;
+    const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
+    const goToFile = (): void => {
+      flowResult(
+        editorStore.loadFile(
+          diagramEditorState.filePath,
+          new FileCoordinate(
+            diagramEditorState.filePath,
+            diagramEditorState.fileLine,
+            diagramEditorState.fileColumn,
+          ),
+        ),
+      ).catch(applicationStore.alertUnhandledError);
+    };
     const createCenterZoomer =
       (zoomLevel: number): (() => void) =>
       (): void => {
         diagramEditorState.renderer.zoomCenter(zoomLevel / 100);
       };
     const zoomToFit = (): void => diagramEditorState.renderer.zoomToFit();
-
     const isAlignerDisabled =
       diagramEditorState.renderer.selectedClasses.length < 2;
 
@@ -291,6 +307,15 @@ const DiagramEditorHeader = observer(
             <CaretDownIcon />
           </div>
         </DropdownMenu>
+        <div className="diagram-editor__header__actions">
+          <button
+            className="diagram-editor__header__action"
+            tabIndex={-1}
+            onClick={goToFile}
+          >
+            <GoToFileIcon className="diagram-editor__icon--go-to-file" />
+          </button>
+        </div>
       </>
     );
   },

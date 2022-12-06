@@ -461,7 +461,12 @@ export class EditorStore implements CommandRegistrar {
     this.activeActivity = activity;
   }
 
-  *loadDiagram(filePath: string, diagramPath: string): GeneratorFn<void> {
+  *loadDiagram(
+    filePath: string,
+    diagramPath: string,
+    line: number,
+    column: number,
+  ): GeneratorFn<void> {
     let editorState = this.tabManagerState.tabs.find(
       (tab): tab is DiagramEditorState =>
         tab instanceof DiagramEditorState && tab.diagramPath === diagramPath,
@@ -473,22 +478,24 @@ export class EditorStore implements CommandRegistrar {
         deserialize(DiagramInfo, yield this.client.getDiagramInfo(diagramPath)),
         diagramPath,
         filePath,
+        line,
+        column,
       );
     }
     this.tabManagerState.openTab(editorState);
   }
 
-  *loadFile(path: string, coordinate?: FileCoordinate): GeneratorFn<void> {
+  *loadFile(filePath: string, coordinate?: FileCoordinate): GeneratorFn<void> {
     let editorState = this.tabManagerState.tabs.find(
       (tab): tab is FileEditorState =>
-        tab instanceof FileEditorState && tab.filePath === path,
+        tab instanceof FileEditorState && tab.filePath === filePath,
     );
     if (!editorState) {
       yield flowResult(this.checkIfSessionWakingUp());
       editorState = new FileEditorState(
         this,
-        deserialize(PureFile, yield this.client.getFile(path)),
-        path,
+        deserialize(PureFile, yield this.client.getFile(filePath)),
+        filePath,
       );
     }
     this.tabManagerState.openTab(editorState);

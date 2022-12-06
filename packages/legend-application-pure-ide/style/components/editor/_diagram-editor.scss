@@ -49,8 +49,7 @@
       color: var(--color-dark-grey-400);
     }
 
-    &:hover,
-    &--active {
+    &:hover {
       svg {
         color: var(--color-light-grey-300);
       }

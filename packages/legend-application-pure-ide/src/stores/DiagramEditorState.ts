@@ -66,12 +66,16 @@ export class DiagramEditorState
   graph: PureModel;
   diagramPath: string;
   filePath: string;
+  fileLine: number;
+  fileColumn: number;
 
   constructor(
     editorStore: EditorStore,
     diagramInfo: DiagramInfo,
     diagramPath: string,
     filePath: string,
+    fileLine: number,
+    fileColumn: number,
   ) {
     super(editorStore);
 
@@ -88,6 +92,8 @@ export class DiagramEditorState
 
     this.diagramPath = diagramPath;
     this.filePath = filePath;
+    this.fileLine = fileLine;
+    this.fileColumn = fileColumn;
     this.diagramInfo = diagramInfo;
     const [diagram, graph, diagramClasses] =
       buildGraphFromDiagramInfo(diagramInfo);
@@ -172,6 +178,8 @@ export class DiagramEditorState
     this.diagram = diagram;
     this.graph = graph;
     this.diagramClasses = diagramClasses;
+    this.fileLine = value.diagram.sourceInformation.line;
+    this.fileColumn = value.diagram.sourceInformation.column;
   }
 
   setupRenderer(): void {

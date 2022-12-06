@@ -286,6 +286,7 @@ class PURE__Diagram {
   generalizationViews: PURE__GeneralizationView[] = [];
   propertyViews: PURE__PropertyView[] = [];
   typeViews: PURE__TypeView[] = [];
+  sourceInformation!: SourceInformation;
 }
 
 createModelSchema(PURE__Diagram, {
@@ -293,6 +294,7 @@ createModelSchema(PURE__Diagram, {
   generalizationViews: list(object(PURE__GeneralizationView)),
   package: primitive(),
   propertyViews: list(object(PURE__PropertyView)),
+  sourceInformation: object(SourceInformation),
   stereotypes: list(object(PURE__Steoreotype)),
   taggedValues: list(object(PURE__TaggedValue)),
   typeViews: list(object(PURE__TypeView)),
@@ -387,7 +389,7 @@ export const serializeDiagram = (diagram: Diagram): string => {
       `    PropertyView pview_${idx}(\n` +
       `        property=${pv.property.value._OWNER.path}.${pv.property.value.name},\n` +
       `        source=${pv.from.classView.value.id},\n` +
-      `        target=${pv.to.classView.value.id}\n,` +
+      `        target=${pv.to.classView.value.id},\n` +
       `        points=[${pv
         .buildFullPath()
         .map((pos) => `(${pos.x.toFixed(5)},${pos.y.toFixed(5)})`)
