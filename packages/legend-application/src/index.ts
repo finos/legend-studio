@@ -44,6 +44,7 @@ export * from './stores/LegendApplicationDocumentation.js';
 
 export * from './stores/ApplicationStoreTestUtils.js';
 export * from './stores/WebApplicationRouter.js';
+export * from './stores/PureLanguageTextEditorUtils.js';
 
 // ------------------------------------------- Shared components -------------------------------------------
 

@@ -264,7 +264,6 @@ const generateLanguageMonarch = (
             cases: {
               '@languageStructs': 'language-struct',
               '@keywords': 'keyword.$0',
-              '[A-Z][\\w$]*': 'type',
               '@default': 'identifier',
             },
           },
@@ -323,7 +322,7 @@ const generateLanguageMonarch = (
         [/(@identifier)(\.)(@identifier)/, ['type', '', 'property']], // profile tag and stereotype
 
         // variables
-        [/(let)(\s*)(@identifier)(\s*[:=])/, ['keyword', '', 'variable', '']],
+        [/(let)(\s+)(@identifier)(\s*[:=])/, ['keyword', '', 'variable', '']],
         [/(\$@identifier)/, ['variable']],
       ],
 

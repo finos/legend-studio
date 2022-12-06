@@ -43,18 +43,20 @@ import {
   EDITOR_THEME,
   EDITOR_LANGUAGE,
   useApplicationStore,
-  type DocumentationEntry,
   useApplicationNavigationContext,
+  getInlineSnippetSuggestions,
+  type DocumentationEntry,
+  type PureGrammarTextSuggestion,
+  getParserKeywordSuggestions,
+  getParserElementSnippetSuggestions,
+  getSectionParserNameFromLineText,
 } from '@finos/legend-application';
 import {
   type ElementDragSource,
   CORE_DND_TYPE,
 } from '../../../stores/shared/DnDUtils.js';
 import { useDrop } from 'react-dnd';
-import type {
-  DSL_LegendStudioApplicationPlugin_Extension,
-  PureGrammarTextSuggestion,
-} from '../../../stores/LegendStudioApplicationPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
@@ -104,16 +106,6 @@ import {
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
-
-const getSectionParserNameFromLineText = (
-  lineText: string,
-): string | undefined => {
-  if (lineText.startsWith(PARSER_SECTION_MARKER)) {
-    return lineText.substring(PARSER_SECTION_MARKER.length).split(' ')[0];
-  }
-  // NOTE: since leading whitespace to parser name is considered invalid, we will return `undefined`
-  return undefined;
-};
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   forwardRef<HTMLDivElement, { children?: React.ReactNode }>(
@@ -343,7 +335,7 @@ const getParserElementDocumentation = (
   return undefined;
 };
 
-const getParserKeywordSuggestions = (
+const collectParserKeywordSuggestions = (
   editorStore: EditorStore,
 ): PureGrammarTextSuggestion[] => {
   const parserKeywordSuggestions = editorStore.pluginManager
@@ -441,7 +433,7 @@ const getParserKeywordSuggestions = (
   ];
 };
 
-const getParserElementSnippetSuggestions = (
+const collectParserElementSnippetSuggestions = (
   editorStore: EditorStore,
   parserKeyword: string,
 ): PureGrammarTextSuggestion[] => {
@@ -671,104 +663,6 @@ const getParserElementSnippetSuggestions = (
   }
   return [];
 };
-
-const getInlineSnippetSuggestions = (
-  editorStore: EditorStore,
-): PureGrammarTextSuggestion[] => [
-  {
-    text: 'let',
-    description: 'new variable',
-    insertText: `let \${1:} = \${2:};`,
-  },
-  {
-    text: 'let',
-    description: 'new collection',
-    insertText: `let \${1:} = [\${2:}];`,
-  },
-  {
-    text: 'cast',
-    description: 'type casting',
-    insertText: `cast(@\${1:model::SomeClass})`,
-  },
-  // conditionals
-  {
-    text: 'if',
-    description: '(conditional)',
-    insertText: `if(\${1:'true'}, | \${2:/* if true do this */}, | \${3:/* if false do this */})`,
-  },
-  {
-    text: 'case',
-    description: '(conditional)',
-    insertText: `case(\${1:}, \${2:'true'}, \${3:'false'})`,
-  },
-  {
-    text: 'match',
-    description: '(conditional)',
-    insertText: `match([x:\${1:String[1]}, \${2:''}])`,
-  },
-  // collection
-  {
-    text: 'map',
-    description: '(collection)',
-    insertText: `map(x|\${1:})`,
-  },
-  {
-    text: 'filter',
-    description: '(collection)',
-    insertText: `filter(x|\${1:})`,
-  },
-  {
-    text: 'fold',
-    description: '(collection)',
-    insertText: `fold({a, b| \${1:$a + $b}}, \${2:0})`,
-  },
-  {
-    text: 'filter',
-    description: '(collection)',
-    insertText: `filter(x|\${1:})`,
-  },
-  {
-    text: 'sort',
-    description: '(collection)',
-    insertText: `sort()`,
-  },
-  {
-    text: 'in',
-    description: '(collection)',
-    insertText: `in()`,
-  },
-  {
-    text: 'slice',
-    description: '(collection)',
-    insertText: `slice(\${1:1},$\{2:2})`,
-  },
-  {
-    text: 'removeDuplicates',
-    description: '(collection)',
-    insertText: `removeDuplicates()`,
-  },
-  {
-    text: 'toOne',
-    description: '(collection)',
-    insertText: `toOne()`,
-  },
-  {
-    text: 'isEmpty',
-    description: '(collection)',
-    insertText: `isEmpty()`,
-  },
-  // string
-  {
-    text: 'endsWith',
-    description: '(string)',
-    insertText: `endsWith()`,
-  },
-  {
-    text: 'startsWith',
-    description: '(string)',
-    insertText: `startsWith()`,
-  },
-];
 
 export const GrammarTextEditor = observer(() => {
   const [editor, setEditor] = useState<
@@ -1026,7 +920,6 @@ export const GrammarTextEditor = observer(() => {
   );
 
   // suggestion
-  const parserKeywordSuggestions = getParserKeywordSuggestions(editorStore);
   suggestionProviderDisposer.current?.dispose();
   suggestionProviderDisposer.current =
     monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
@@ -1036,114 +929,30 @@ export const GrammarTextEditor = observer(() => {
       // See https://github.com/microsoft/monaco-editor/issues/2530#issuecomment-861757198
       triggerCharacters: ['#'],
       provideCompletionItems: (model, position) => {
-        const suggestions: monacoLanguagesAPI.CompletionItem[] = [];
-        const currentWord = model.getWordUntilPosition(position);
+        let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
 
         // suggestions for parser keyword
-        const lineTextIncludingWordRange = {
-          startLineNumber: position.lineNumber,
-          startColumn: 1,
-          endLineNumber: position.lineNumber,
-          endColumn: currentWord.endColumn,
-        };
-        const lineTextIncludingWord = model.getValueInRange(
-          lineTextIncludingWordRange,
+        suggestions = suggestions.concat(
+          getParserKeywordSuggestions(
+            position,
+            model,
+            collectParserKeywordSuggestions(editorStore),
+          ),
         );
-        // NOTE: make sure parser keyword suggestions only show up when the current word is the
-        // the first word of the line since parser section header must not be preceded by anything
-        if (!hasWhiteSpace(lineTextIncludingWord.trim())) {
-          parserKeywordSuggestions.forEach((suggestion) => {
-            suggestions.push({
-              label: {
-                label: `${PARSER_SECTION_MARKER}${suggestion.text}`,
-                description: suggestion.description,
-              },
-              kind: monacoLanguagesAPI.CompletionItemKind.Keyword,
-              insertText: `${PARSER_SECTION_MARKER}${suggestion.insertText}\n`,
-              range: lineTextIncludingWordRange,
-              documentation: suggestion.documentation
-                ? suggestion.documentation.markdownText
-                  ? {
-                      value: suggestion.documentation.markdownText.value,
-                    }
-                  : suggestion.documentation.text
-                : undefined,
-            } as monacoLanguagesAPI.CompletionItem);
-          });
-        }
 
         // suggestions for parser element snippets
-        const textUntilPosition = model.getValueInRange({
-          startLineNumber: 1,
-          startColumn: 1,
-          endLineNumber: position.lineNumber,
-          endColumn: position.column,
-        });
-        const allParserSectionHeaders =
-          // NOTE: since `###Pure` is implicitly considered as the first section, we prepend it to the text
-          `${PARSER_SECTION_MARKER}${PURE_PARSER.PURE}\n${textUntilPosition}`
-            .split('\n')
-            .filter((line) => line.startsWith(PARSER_SECTION_MARKER));
-        const currentSectionParserKeyword = getSectionParserNameFromLineText(
-          allParserSectionHeaders[allParserSectionHeaders.length - 1] ?? '',
-        );
-        if (currentSectionParserKeyword) {
+        suggestions = suggestions.concat(
           getParserElementSnippetSuggestions(
-            editorStore,
-            currentSectionParserKeyword,
-          ).forEach((snippetSuggestion) => {
-            suggestions.push({
-              label: {
-                label: snippetSuggestion.text,
-                description: snippetSuggestion.description,
-              },
-              kind: monacoLanguagesAPI.CompletionItemKind.Snippet,
-              insertTextRules:
-                monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
-              insertText: `${snippetSuggestion.insertText}\n`,
-              range: {
-                startLineNumber: position.lineNumber,
-                startColumn: currentWord.startColumn,
-                endLineNumber: position.lineNumber,
-                endColumn: currentWord.endColumn,
-              },
-              documentation: snippetSuggestion.documentation
-                ? snippetSuggestion.documentation.markdownText
-                  ? {
-                      value: snippetSuggestion.documentation.markdownText.value,
-                    }
-                  : snippetSuggestion.documentation.text
-                : undefined,
-            } as monacoLanguagesAPI.CompletionItem);
-          });
-        }
+            position,
+            model,
+            (parserName: string) =>
+              collectParserElementSnippetSuggestions(editorStore, parserName),
+          ),
+        );
 
-        getInlineSnippetSuggestions(editorStore).forEach(
-          (snippetSuggestion) => {
-            suggestions.push({
-              label: {
-                label: snippetSuggestion.text,
-                description: snippetSuggestion.description,
-              },
-              kind: monacoLanguagesAPI.CompletionItemKind.Snippet,
-              insertTextRules:
-                monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
-              insertText: snippetSuggestion.insertText,
-              range: {
-                startLineNumber: position.lineNumber,
-                startColumn: currentWord.startColumn,
-                endLineNumber: position.lineNumber,
-                endColumn: currentWord.endColumn,
-              },
-              documentation: snippetSuggestion.documentation
-                ? snippetSuggestion.documentation.markdownText
-                  ? {
-                      value: snippetSuggestion.documentation.markdownText.value,
-                    }
-                  : snippetSuggestion.documentation.text
-                : undefined,
-            } as monacoLanguagesAPI.CompletionItem);
-          },
+        // inline code snippet suggestions
+        suggestions = suggestions.concat(
+          getInlineSnippetSuggestions(position, model),
         );
 
         return { suggestions };

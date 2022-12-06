@@ -29,7 +29,6 @@ import {
   type NewElementState,
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
-  type PureGrammarTextSuggestion,
   type PureGrammarParserElementSnippetSuggestionsGetter,
   type PureGrammarParserElementDocumentationGetter,
 } from '@finos/legend-application-studio';
@@ -48,7 +47,10 @@ import {
   PLAIN_TEXT_SNIPPET,
 } from './DSL_Text_CodeSnippets.js';
 import { create_TextElement } from '../../graph/helpers/DSL_Text_Helper.js';
-import type { DocumentationEntry } from '@finos/legend-application';
+import type {
+  DocumentationEntry,
+  PureGrammarTextSuggestion,
+} from '@finos/legend-application';
 import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSL_Text_LegendStudioApplicationNavigationContext.js';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';

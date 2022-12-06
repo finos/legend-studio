@@ -16,11 +16,19 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { editor as monacoEditorAPI, type Position } from 'monaco-editor';
+import {
+  editor as monacoEditorAPI,
+  languages as monacoLanguagesAPI,
+  type IDisposable,
+  type Position,
+} from 'monaco-editor';
 import type { FileEditorState } from '../../../stores/FileEditorState.js';
 import {
   EDITOR_LANGUAGE,
   EDITOR_THEME,
+  getInlineSnippetSuggestions,
+  getParserElementSnippetSuggestions,
+  getParserKeywordSuggestions,
   useApplicationStore,
   useCommands,
 } from '@finos/legend-application';
@@ -32,10 +40,18 @@ import {
   WordWrapIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from '../EditorStoreProvider.js';
+import {
+  collectExtraInlineSnippetSuggestions,
+  collectParserElementSnippetSuggestions,
+  collectParserKeywordSuggestions,
+} from '../../../stores/PureTextEditorUtils.js';
 
 export const FileEditor = observer(
   (props: { editorState: FileEditorState }) => {
     const { editorState } = props;
+    const suggestionProviderDisposer = useRef<IDisposable | undefined>(
+      undefined,
+    );
     const currentCursorPosition = useRef<Position | undefined>(undefined);
     const [editor, setEditor] = useState<
       monacoEditorAPI.IStandaloneCodeEditor | undefined
@@ -94,6 +110,49 @@ export const FileEditor = observer(
         editorState.textEditorState.setForcedCursorPosition(undefined);
       }
     }
+
+    suggestionProviderDisposer.current?.dispose();
+    suggestionProviderDisposer.current =
+      monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
+        // NOTE: we need to specify this to show suggestions for section
+        // because by default, only alphanumeric characters trigger completion item provider
+        // See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionContext.html#triggerCharacter
+        // See https://github.com/microsoft/monaco-editor/issues/2530#issuecomment-861757198
+        triggerCharacters: ['#'],
+        provideCompletionItems: (model, position) => {
+          let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+
+          // suggestions for parser keyword
+          suggestions = suggestions.concat(
+            getParserKeywordSuggestions(
+              position,
+              model,
+              collectParserKeywordSuggestions(),
+            ),
+          );
+
+          // suggestions for parser element snippets
+          suggestions = suggestions.concat(
+            getParserElementSnippetSuggestions(
+              position,
+              model,
+              (parserName: string) =>
+                collectParserElementSnippetSuggestions(parserName),
+            ),
+          );
+
+          // add inline code snippet suggestions
+          suggestions = suggestions.concat(
+            getInlineSnippetSuggestions(
+              position,
+              model,
+              collectExtraInlineSnippetSuggestions(),
+            ),
+          );
+
+          return { suggestions };
+        },
+      });
 
     useCommands(editorState);
 
