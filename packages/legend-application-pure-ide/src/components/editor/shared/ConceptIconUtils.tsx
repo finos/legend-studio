@@ -32,21 +32,27 @@ import {
 } from '@finos/legend-art';
 import { ConceptType } from '../../../server/models/ConceptTree.js';
 
-const NativeFunctionIcon: React.FC = () => (
+const PURE_NativeFunctionIcon: React.FC = () => (
   <div className="icon icon--function color--native-function">
     <FunctionIcon />
   </div>
 );
 
-const PropertyIcon: React.FC = () => (
+const PURE_PropertyIcon: React.FC = () => (
   <div className="icon icon--property color--property">
     <AtomIcon />
   </div>
 );
 
-const DiagramIcon: React.FC = () => (
+export const PURE_DiagramIcon: React.FC = () => (
   <div className="icon color--diagram">
     <ShapesIcon />
+  </div>
+);
+
+const PURE_DatabaseIcon: React.FC = () => (
+  <div className="icon icon--database">
+    <DatabaseIcon />
   </div>
 );
 
@@ -61,7 +67,7 @@ export const getConceptIcon = (type: string): React.ReactNode => {
     case ConceptType.ASSOCIATION:
       return <PURE_AssociationIcon />;
     case ConceptType.PROPERTY:
-      return <PropertyIcon />;
+      return <PURE_PropertyIcon />;
     case ConceptType.ENUMERATION:
       return <PURE_EnumerationIcon />;
     case ConceptType.MEASURE:
@@ -71,15 +77,11 @@ export const getConceptIcon = (type: string): React.ReactNode => {
     case ConceptType.FUNCTION:
       return <PURE_FunctionIcon />;
     case ConceptType.NATIVE_FUNCTION:
-      return <NativeFunctionIcon />;
+      return <PURE_NativeFunctionIcon />;
     case ConceptType.DIAGRAM:
-      return <DiagramIcon />;
+      return <PURE_DiagramIcon />;
     case ConceptType.DATABASE:
-      return (
-        <div className="icon icon--database">
-          <DatabaseIcon />
-        </div>
-      );
+      return <PURE_DatabaseIcon />;
     case ConceptType.MAPPING:
       return <PURE_MappingIcon />;
     default:

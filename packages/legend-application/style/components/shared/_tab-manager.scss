@@ -73,13 +73,13 @@
       }
     }
 
-    &--active svg {
-      color: var(--color-light-grey-100);
-    }
-
     &--active &__close-btn,
     &:hover &__close-btn {
       visibility: visible;
+
+      svg {
+        color: var(--color-light-grey-100);
+      }
     }
 
     &__dnd__placeholder {

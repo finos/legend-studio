@@ -18,11 +18,17 @@ import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FileEditorState } from '../../../stores/FileEditorState.js';
 import { FileEditor } from './FileEditor.js';
-import { clsx, PlusIcon, useResizeDetector } from '@finos/legend-art';
+import {
+  clsx,
+  FileAltIcon,
+  PlusIcon,
+  useResizeDetector,
+} from '@finos/legend-art';
 import { DiagramEditorState } from '../../../stores/DiagramEditorState.js';
 import { DiagramEditor } from './DiagramEditor.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import { TabManager } from '@finos/legend-application';
+import { TabManager, type TabState } from '@finos/legend-application';
+import { PURE_DiagramIcon } from '../shared/ConceptIconUtils.js';
 
 export const EditPanelSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -87,6 +93,54 @@ export const EditPanel = observer(() => {
     }
     return null;
   };
+  const renderTab = (editorState: TabState): React.ReactNode | undefined => {
+    if (editorState instanceof FileEditorState) {
+      const showMoreInfo =
+        editorStore.tabManagerState.tabs.filter(
+          (tab) =>
+            tab instanceof FileEditorState &&
+            tab.fileName === editorState.fileName,
+        ).length > 1;
+      return (
+        <div className="edit-panel__header__tab">
+          <div className="edit-panel__header__tab__icon">
+            <FileAltIcon className="edit-panel__header__tab__icon--file" />
+          </div>
+          <div className="edit-panel__header__tab__label">
+            {editorState.fileName}
+          </div>
+          {showMoreInfo && (
+            <div className="edit-panel__header__tab__path">
+              {editorState.filePath}
+            </div>
+          )}
+        </div>
+      );
+    } else if (editorState instanceof DiagramEditorState) {
+      const showMoreInfo =
+        editorStore.tabManagerState.tabs.filter(
+          (tab) =>
+            tab instanceof DiagramEditorState &&
+            tab.diagramName === editorState.diagramName,
+        ).length > 1;
+      return (
+        <div className="edit-panel__header__tab">
+          <div className="edit-panel__header__tab__icon">
+            <PURE_DiagramIcon />
+          </div>
+          <div className="edit-panel__header__tab__label">
+            {editorState.diagramName}
+          </div>
+          {showMoreInfo && (
+            <div className="edit-panel__header__tab__path">
+              {editorState.diagramPath}
+            </div>
+          )}
+        </div>
+      );
+    }
+    return editorState.label;
+  };
 
   if (!currentTab) {
     return <EditPanelSplashScreen />;
@@ -95,7 +149,10 @@ export const EditPanel = observer(() => {
     <div className="panel edit-panel">
       <div className="panel__header edit-panel__header">
         <div className="edit-panel__header__tabs">
-          <TabManager tabManagerState={editorStore.tabManagerState} />
+          <TabManager
+            tabManagerState={editorStore.tabManagerState}
+            tabRenderer={renderTab}
+          />
         </div>
         <div className="panel__header__actions"></div>
       </div>

@@ -71,6 +71,7 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
+  type TabState,
   type CommandRegistrar,
 } from '@finos/legend-application';
 import {
@@ -463,7 +464,7 @@ export class EditorStore implements CommandRegistrar {
   *loadDiagram(filePath: string, diagramPath: string): GeneratorFn<void> {
     let editorState = this.tabManagerState.tabs.find(
       (tab): tab is DiagramEditorState =>
-        tab instanceof DiagramEditorState && tab.filePath === filePath,
+        tab instanceof DiagramEditorState && tab.diagramPath === diagramPath,
     );
     if (!editorState) {
       yield flowResult(this.checkIfSessionWakingUp());
@@ -503,6 +504,7 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *reloadFile(filePath: string): GeneratorFn<void> {
+    const tabsToClose: TabState[] = [];
     yield Promise.all(
       this.tabManagerState.tabs.map(async (tab) => {
         if (tab instanceof FileEditorState && tab.filePath === filePath) {
@@ -513,15 +515,22 @@ export class EditorStore implements CommandRegistrar {
           tab instanceof DiagramEditorState &&
           tab.filePath === filePath
         ) {
-          tab.rebuild(
-            deserialize(
-              DiagramInfo,
-              await this.client.getDiagramInfo(tab.diagramPath),
-            ),
-          );
+          try {
+            tab.rebuild(
+              deserialize(
+                DiagramInfo,
+                await this.client.getDiagramInfo(tab.diagramPath),
+              ),
+            );
+          } catch {
+            // something happened, most likely the diagram has been removed or renamed,
+            // we should close the tab then
+            tabsToClose.push(tab);
+          }
         }
       }),
     );
+    tabsToClose.forEach((tab) => this.tabManagerState.closeTab(tab));
   }
 
   *execute(

@@ -87,6 +87,7 @@ const TestTreeNodeContainer = observer(
       renderNodeLabel,
     } = innerProps;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     const testResultInfo = testRunnerState.testResultInfo;
     const isExpandable = !node.data.type;
     // NOTE: the quirky thing here is since we make the node container an `observer`, effectively, we wrap `memo`
@@ -165,7 +166,7 @@ const TestTreeNodeContainer = observer(
               Number.parseInt(node.data.li_attr.column, 10),
             ),
           ),
-        );
+        ).catch(applicationStore.alertUnhandledError);
       }
     };
 
@@ -217,12 +218,13 @@ const TestRunnerList = observer(
     const onNodeOpen = (node: TestTreeNode): void =>
       testRunnerState.setSelectedTestId(node.id);
     const renderNodeLabel = (node: TestTreeNode): React.ReactNode => {
-      let path = node.id.split('__')?.[0];
+      let path = node.id.split('__')[0];
       if (!path) {
         return node.label;
       }
       const parts = path.split('_');
       path = parts.slice(1, parts.length).join(ELEMENT_PATH_DELIMITER);
+
       return (
         <div className="test-runner-list__item__label">
           <div className="test-runner-list__item__label__name">
@@ -314,6 +316,7 @@ const TestResultViewer = observer(
   }) => {
     const { testRunnerState, selectedTestId, testResultInfo } = props;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     const result = testResultInfo.results.get(selectedTestId);
     const testInfo = guaranteeNonNullable(
       testRunnerState.allTests.get(selectedTestId),
@@ -329,7 +332,7 @@ const TestResultViewer = observer(
             Number.parseInt(testInfo.li_attr.column, 10),
           ),
         ),
-      );
+      ).catch(applicationStore.alertUnhandledError);
     };
 
     return (

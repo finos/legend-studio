@@ -46,6 +46,33 @@
     overflow: hidden;
   }
 
+  &__header__tab {
+    @include flexVCenter;
+
+    &__icon {
+      &--file {
+        color: var(--color-file);
+      }
+    }
+
+    &__label {
+      margin-left: 0.5rem;
+    }
+
+    &__path {
+      @include flexVCenter;
+
+      color: var(--color-dark-grey-350);
+      margin-left: 0.5rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      padding: 0 0.5rem;
+      height: 1.6rem;
+      font-weight: 500;
+      font-family: 'Roboto Mono', monospace;
+    }
+  }
+
   &__header__actions {
     display: flex;
     height: 100%;

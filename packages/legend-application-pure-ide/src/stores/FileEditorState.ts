@@ -18,12 +18,18 @@ import {
   type CommandRegistrar,
   EDITOR_LANGUAGE,
   TAB_SIZE,
+  type TabState,
 } from '@finos/legend-application';
 import {
   clearMarkers,
   setErrorMarkers,
   type TextEditorPosition,
 } from '@finos/legend-art';
+import { DIRECTORY_PATH_DELIMITER } from '@finos/legend-graph';
+import {
+  getNullableLastElement,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { action, flowResult, makeObservable, observable } from 'mobx';
 import { editor as monacoEditorAPI } from 'monaco-editor';
 import {
@@ -113,7 +119,16 @@ export class FileEditorState
   }
 
   override get description(): string | undefined {
-    return trimPathLeadingSlash(this.filePath);
+    return `File: ${trimPathLeadingSlash(this.filePath)}`;
+  }
+  get fileName(): string {
+    return guaranteeNonNullable(
+      getNullableLastElement(this.filePath.split(DIRECTORY_PATH_DELIMITER)),
+    );
+  }
+
+  override match(tab: TabState): boolean {
+    return tab instanceof FileEditorState && this.filePath === tab.filePath;
   }
 
   override onClose(): void {

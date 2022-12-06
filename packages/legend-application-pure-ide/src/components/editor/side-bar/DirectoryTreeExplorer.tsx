@@ -134,7 +134,7 @@ const FileTreeNodeContainer: React.FC<
       </div>
     )
   ) : (
-    <FileAltIcon />
+    <FileAltIcon className="explorer__icon--file" />
   );
   const selectNode: React.MouseEventHandler = (event) => {
     event.stopPropagation();

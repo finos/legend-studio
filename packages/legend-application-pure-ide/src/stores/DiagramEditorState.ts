@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { CommandRegistrar } from '@finos/legend-application';
+import type { CommandRegistrar, TabState } from '@finos/legend-application';
 import {
   type ClassView,
   type Diagram,
@@ -22,7 +22,10 @@ import {
   DIAGRAM_INTERACTION_MODE,
   type Point,
 } from '@finos/legend-extension-dsl-diagram';
-import type { PureModel } from '@finos/legend-graph';
+import {
+  extractElementNameFromPath,
+  type PureModel,
+} from '@finos/legend-graph';
 import {
   type GeneratorFn,
   generateEnumerableNameFromToken,
@@ -76,6 +79,7 @@ export class DiagramEditorState
       _renderer: observable,
       diagram: observable,
       diagramInfo: observable,
+      diagramName: computed,
       diagramCursorClass: computed,
       addClassView: flow,
       rebuild: action,
@@ -97,7 +101,17 @@ export class DiagramEditorState
   }
 
   override get description(): string | undefined {
-    return trimPathLeadingSlash(this.diagramPath);
+    return `Diagram: ${trimPathLeadingSlash(this.diagramPath)}`;
+  }
+
+  get diagramName(): string {
+    return extractElementNameFromPath(this.diagramPath);
+  }
+
+  override match(tab: TabState): boolean {
+    return (
+      tab instanceof DiagramEditorState && this.diagramPath === tab.diagramPath
+    );
   }
 
   get renderer(): DiagramRenderer {
