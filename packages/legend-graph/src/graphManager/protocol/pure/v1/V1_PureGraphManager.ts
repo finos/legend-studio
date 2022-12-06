@@ -2183,12 +2183,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         // and not embedded.
         const execution = service.execution;
         if (execution instanceof PureSingleExecution) {
-          sdlcInfo.packageableElementPointers = [
-            new V1_PackageableElementPointer(
-              PackageableElementPointerType.MAPPING,
-              execution.mapping.value.path,
-            ),
-          ];
+          if (execution.mapping) {
+            sdlcInfo.packageableElementPointers = [
+              new V1_PackageableElementPointer(
+                PackageableElementPointerType.MAPPING,
+                execution.mapping.value.path,
+              ),
+            ];
+          }
         } else if (execution instanceof PureMultiExecution) {
           sdlcInfo.packageableElementPointers =
             execution.executionParameters.map(

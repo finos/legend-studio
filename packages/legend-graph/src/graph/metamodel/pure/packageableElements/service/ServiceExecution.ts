@@ -48,14 +48,14 @@ export class PureExecution extends ServiceExecution implements Hashable {
 }
 
 export class PureSingleExecution extends PureExecution implements Hashable {
-  mapping: PackageableElementReference<Mapping>;
-  runtime: Runtime;
+  mapping: PackageableElementReference<Mapping> | undefined;
+  runtime: Runtime | undefined;
 
   constructor(
     func: RawLambda,
     owner: Service,
-    mapping: PackageableElementReference<Mapping>,
-    runtime: Runtime,
+    mapping: PackageableElementReference<Mapping> | undefined,
+    runtime: Runtime | undefined,
   ) {
     super(func, owner);
     this.mapping = mapping;
@@ -66,8 +66,8 @@ export class PureSingleExecution extends PureExecution implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_PURE_SINGLE_EXECUTION,
       super.hashCode,
-      this.mapping.valueForSerialization ?? '',
-      this.runtime,
+      this.mapping?.valueForSerialization ?? '',
+      this.runtime ?? '',
     ]);
   }
 }

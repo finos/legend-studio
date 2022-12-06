@@ -58,7 +58,10 @@ import {
   TEST_DATA__RelationalAssociationMapping,
   TEST_DATA__XStoreAssociationMapping,
 } from './roundtripTestData/TEST_DATA__RelationalRoundtrip.js';
-import { TEST_DATA__ServiceRoundtrip } from './roundtripTestData/TEST_DATA__ServiceRoundtrip.js';
+import {
+  TEST_DATA__SERVICE_WITH_ONLY_QUERY_Roundtrip,
+  TEST_DATA__ServiceRoundtrip,
+} from './roundtripTestData/TEST_DATA__ServiceRoundtrip.js';
 import {
   TEST_DATA__AggregationAwareMappingRoundtrip,
   TEST_DATA__Relational_LocalPropertyMappingRoundtrip,
@@ -222,12 +225,15 @@ describe(
 );
 
 describe(unitTest('Service import resolution roundtrip'), () => {
-  test.each([['Simple service', TEST_DATA__ServiceRoundtrip]])(
-    '%s',
-    async (testName, entities) => {
-      await TEST__checkBuildingElementsRoundtrip(entities);
-    },
-  );
+  test.each([
+    ['Simple service', TEST_DATA__ServiceRoundtrip],
+    [
+      'Relational service with only query and no mapping and runtime',
+      TEST_DATA__SERVICE_WITH_ONLY_QUERY_Roundtrip,
+    ],
+  ])('%s', async (testName, entities) => {
+    await TEST__checkBuildingElementsRoundtrip(entities);
+  });
 });
 
 describe(unitTest('DSL Data import resolution roundtrip'), () => {

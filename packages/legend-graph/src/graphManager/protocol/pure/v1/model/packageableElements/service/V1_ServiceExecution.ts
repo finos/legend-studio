@@ -43,15 +43,15 @@ export class V1_PureSingleExecution
   extends V1_PureExecution
   implements Hashable
 {
-  mapping!: string;
-  runtime!: V1_Runtime;
+  mapping: string | undefined;
+  runtime: V1_Runtime | undefined;
 
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_PURE_SINGLE_EXECUTION,
       super.hashCode,
-      this.mapping,
-      this.runtime,
+      this.mapping ?? '',
+      this.runtime ?? '',
     ]);
   }
 }

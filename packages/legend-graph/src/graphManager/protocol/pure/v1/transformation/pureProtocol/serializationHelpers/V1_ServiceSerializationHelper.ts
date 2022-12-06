@@ -236,8 +236,8 @@ const pureSingleExecutionModelSchema = createModelSchema(
       V1_ServiceExecutionType.PURE_SINGLE_EXECUTION,
     ),
     func: usingModelSchema(V1_rawLambdaModelSchema),
-    mapping: primitive(),
-    runtime: custom(
+    mapping: optional(primitive()),
+    runtime: optionalCustom(
       (val) => V1_serializeRuntimeValue(val),
       (val) => V1_deserializeRuntimeValue(val),
     ),

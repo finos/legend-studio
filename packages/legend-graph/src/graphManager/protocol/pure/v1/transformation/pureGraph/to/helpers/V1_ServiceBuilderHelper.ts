@@ -364,6 +364,22 @@ export const V1_buildServiceExecution = (
       serviceExecution.func,
       `Service Pure execution 'func' field is missing`,
     );
+    if (serviceExecution.mapping && serviceExecution.runtime) {
+      return new PureSingleExecution(
+        V1_buildRawLambdaWithResolvedPaths(
+          serviceExecution.func.parameters,
+          serviceExecution.func.body,
+          context,
+        ),
+        parentService,
+        context.resolveMapping(serviceExecution.mapping),
+        buildServiceExecutionRuntime(
+          serviceExecution.runtime,
+          serviceExecution.mapping,
+          context,
+        ),
+      );
+    }
     return new PureSingleExecution(
       V1_buildRawLambdaWithResolvedPaths(
         serviceExecution.func.parameters,
@@ -371,12 +387,8 @@ export const V1_buildServiceExecution = (
         context,
       ),
       parentService,
-      context.resolveMapping(serviceExecution.mapping),
-      buildServiceExecutionRuntime(
-        serviceExecution.runtime,
-        serviceExecution.mapping,
-        context,
-      ),
+      undefined,
+      undefined,
     );
   } else if (serviceExecution instanceof V1_PureMultiExecution) {
     if (!serviceExecution.executionParameters.length) {
