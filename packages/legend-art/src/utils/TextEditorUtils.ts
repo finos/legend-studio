@@ -78,6 +78,7 @@ export const getBaseTextEditorOptions =
     fixedOverflowWidgets: true,
     bracketPairColorization: { enabled: false }, // turn off initial bracket pair coloring
     detectIndentation: false, // i.e. so we can force tab-size
+    tabSize: 2,
   });
 
 export const moveCursorToPosition = (
