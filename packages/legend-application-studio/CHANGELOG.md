@@ -1,5 +1,19 @@
 # @finos/legend-application-studio
 
+## 22.0.0
+
+### Major Changes
+
+- [#1747](https://github.com/finos/legend-studio/pull/1747) [`65cae8687`](https://github.com/finos/legend-studio/commit/65cae8687c5a35371438d372f18a41f4c7df549f) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Moved `getInlineSnippetSuggestions()`, `PureGrammarTextSuggestion` and `ElementEmbeddedContentSnippetSuggestion` types to `@finos/legend-application`.
+
+### Minor Changes
+
+- [#1570](https://github.com/finos/legend-studio/pull/1570) [`324ef980b`](https://github.com/finos/legend-studio/commit/324ef980be7258f28508f14d46cdccde4c303610) ([@gs-gunjan](https://github.com/gs-gunjan)) - Support service queries with optional runtime and mapping.
+
+### Patch Changes
+
+- [#1736](https://github.com/finos/legend-studio/pull/1736) [`a2ff10b0d`](https://github.com/finos/legend-studio/commit/a2ff10b0d09b9ac84e057208f64673cf4ecf4f5a) ([@gayathrir11](https://github.com/gayathrir11)) - Add default serialization format for service tests.
+
 ## 21.0.1
 
 ### Patch Changes

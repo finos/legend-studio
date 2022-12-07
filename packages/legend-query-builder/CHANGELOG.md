@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 0.6.8
+
+### Patch Changes
+
+- [#1570](https://github.com/finos/legend-studio/pull/1570) [`324ef980b`](https://github.com/finos/legend-studio/commit/324ef980be7258f28508f14d46cdccde4c303610) ([@gs-gunjan](https://github.com/gs-gunjan)) - Support service queries with optional mapping and runtime.
+
 ## 0.6.7
 
 ## 0.6.6
