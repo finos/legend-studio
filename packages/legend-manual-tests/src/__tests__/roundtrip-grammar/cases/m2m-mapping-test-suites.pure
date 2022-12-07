@@ -1,0 +1,74 @@
+###Data
+Data test::data::MyData
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '{""name":"john doe","id":"77"}';
+  }#
+}
+
+
+###Pure
+Class test::model
+{
+  name: String[1];
+  id: String[1];
+}
+
+Class test::changedModel
+{
+  name: String[1];
+  id: Integer[1];
+}
+
+
+###Mapping
+Mapping test::modelToModelMapping
+(
+  *test::changedModel: Pure
+  {
+    ~src test::model
+    name: $src.name,
+    id: $src.id->parseInteger()
+  }
+
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        ModelStore:
+          ModelStore
+          #{
+            test::model:
+              Reference
+              #{
+                test::data::MyData
+              }#
+          }#
+      ];
+      tests:
+      [
+        test1:
+        {
+          query: |test::changedModel.all()->graphFetch(#{test::changedModel{id,name}}#)->serialize(#{test::changedModel{id,name}}#);
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"id" : 77, "name" : "john doe"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
