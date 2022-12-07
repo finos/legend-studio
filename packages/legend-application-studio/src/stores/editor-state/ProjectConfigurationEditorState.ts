@@ -186,7 +186,7 @@ export class ProjectConfigurationEditorState extends EditorState {
     return 'config';
   }
 
-  match(tab: EditorState): boolean {
+  override match(tab: EditorState): boolean {
     return tab instanceof ProjectConfigurationEditorState;
   }
 

@@ -23,6 +23,7 @@
 :root {
   --color-native-function: var(--color-lime-75);
   --color-diagram: var(--color-magenta-100);
+  --color-file: var(--color-blue-150);
 }
 
 .color {
@@ -32,5 +33,12 @@
 
   &--diagram {
     color: var(--color-diagram);
+  }
+}
+
+.icon--database {
+  svg {
+    color: var(--color-yellow-100);
+    font-size: 1.2rem;
   }
 }

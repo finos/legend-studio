@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
+import type { ElementEmbeddedContentSnippetSuggestion } from '@finos/legend-application';
 import type { EmbeddedData } from '@finos/legend-graph';
 import type { EmbeddedDataTypeOption } from './editor-state/element-editor-state/data/DataEditorState.js';
 import type { EmbeddedDataState } from './editor-state/element-editor-state/data/EmbeddedDataState.js';
 import type { EditorStore } from './EditorStore.js';
-import type {
-  DSL_LegendStudioApplicationPlugin_Extension,
-  ElementEmbeddedContentSnippetSuggestion,
-} from './LegendStudioApplicationPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 
 export type EmbeddedDataEditorStateBuilder = (
   editorStore: EditorStore,

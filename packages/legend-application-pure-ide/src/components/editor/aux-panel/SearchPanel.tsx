@@ -25,7 +25,8 @@ import {
 } from '../../../server/models/PureFile.js';
 import { flowResult } from 'mobx';
 import {
-  SearchResultState,
+  type SearchResultState,
+  TextSearchResultState,
   UnmatchedFunctionExecutionResultState,
   UnmatchExecutionResultState,
   UsageResultState,
@@ -136,8 +137,8 @@ const SearchResultEntryDisplay = observer(
   },
 );
 
-const SearchResultDisplay = observer(
-  (props: { searchState: SearchResultState }) => {
+const TextSearchResultDisplay = observer(
+  (props: { searchState: TextSearchResultState }) => {
     const { searchState } = props;
     const editorStore = useEditorStore();
     if (!searchState.searchEntries.length) {
@@ -372,6 +373,7 @@ const UnmatchExecutionResultDisplay = observer(
 
 export const SearchPanel = observer(() => {
   const editorStore = useEditorStore();
+
   return (
     <div className="search-panel">
       <PanelLoadingIndicator
@@ -404,8 +406,8 @@ export const SearchPanel = observer(() => {
       {editorStore.searchState instanceof UsageResultState && (
         <UsageResultDisplay usageState={editorStore.searchState} />
       )}
-      {editorStore.searchState instanceof SearchResultState && (
-        <SearchResultDisplay searchState={editorStore.searchState} />
+      {editorStore.searchState instanceof TextSearchResultState && (
+        <TextSearchResultDisplay searchState={editorStore.searchState} />
       )}
       {editorStore.searchState instanceof
         UnmatchedFunctionExecutionResultState && (

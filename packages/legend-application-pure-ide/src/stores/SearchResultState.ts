@@ -36,7 +36,7 @@ export abstract class SearchState {
   }
 }
 
-export class SearchResultState extends SearchState {
+export abstract class SearchResultState extends SearchState {
   searchEntries: SearchResultEntry[] = [];
 
   constructor(editorStore: EditorStore, searchEntries: SearchResultEntry[]) {
@@ -65,6 +65,8 @@ export class SearchResultState extends SearchState {
     return this.searchEntries.flatMap((entry) => entry.coordinates).length;
   }
 }
+
+export class TextSearchResultState extends SearchResultState {}
 
 export class UsageResultState extends SearchResultState {
   usageConcept: UsageConcept;

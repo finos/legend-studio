@@ -24,6 +24,7 @@ import type {
 import type { Class, PackageableElement, Testable } from '@finos/legend-graph';
 import {
   type DocumentationEntry,
+  type PureGrammarTextSuggestion,
   LegendApplicationPlugin,
 } from '@finos/legend-application';
 import type { TestableMetadata } from './sidebar-state/testable/GlobalTestRunnerState.js';
@@ -179,55 +180,6 @@ export type PureGrammarParserElementDocumentationGetter = (
   parserKeyword: string,
   elementKeyword: string,
 ) => DocumentationEntry | undefined;
-
-/**
- * This snippet suggestion is meant for an embedded content of an element
- * In other words, it is used to construct element snippet suggestions
- *
- * Because of that, it is expected that there are text content wrapping around
- * this snippet, so the first suggestion might not start from index 1.
- */
-export interface ElementEmbeddedContentSnippetSuggestion {
-  /**
-   * Brief description about the suggestion item to enable the users to quickly
-   * differentiate between one suggestions from another
-   */
-  description?: string | undefined;
-  /**
-   * The snippet text to be embedded in the full snippet suggestion text for the element
-   *
-   * NOTE: The snippet syntax follows that of `monaco-editor`
-   * See https://code.visualstudio.com/docs/editor/userdefinedsnippets#_create-your-own-snippets
-   */
-  text: string;
-}
-
-/**
- * This mirrors `monaco-editor` completion item structure
- * See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionItem.html
- */
-export interface PureGrammarTextSuggestion {
-  /**
-   * The text label of the suggestion.
-   */
-  text: string;
-  /**
-   * Brief description about the suggestion item to enable the users to quickly
-   * differentiate between one suggestions from another
-   */
-  description?: string | undefined;
-  /**
-   * Detailed documentation that explains/elaborates the suggestion item.
-   */
-  documentation?: DocumentationEntry | undefined;
-  /**
-   * A string or snippet that should be inserted when selecting this suggestion.
-   *
-   * NOTE: The snippet syntax follows that of `monaco-editor`
-   * See https://code.visualstudio.com/docs/editor/userdefinedsnippets#_create-your-own-snippets
-   */
-  insertText: string;
-}
 
 export type PureGrammarParserKeywordSuggestionGetter = (
   editorStore: EditorStore,

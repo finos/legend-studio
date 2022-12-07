@@ -172,9 +172,9 @@ const ConceptTreeNodeContainer: React.FC<
     }
     if (isExpandable) {
       toggleExpansion();
-    } else {
-      onNodeOpen(node);
     }
+    onNodeSelect?.(node);
+    onNodeOpen(node);
   };
   const [, dragRef] = useDrag(
     () => ({
@@ -246,8 +246,9 @@ const ConceptTreeNodeContainer: React.FC<
         <button
           className="tree-view__node__label explorer__package-tree__node__label"
           tabIndex={-1}
-          dangerouslySetInnerHTML={{ __html: node.label }}
-        />
+        >
+          {node.label}
+        </button>
       </div>
     </ContextMenu>
   );
@@ -302,28 +303,22 @@ const FileExplorerTree = observer(() => {
   };
 
   return (
-    <ContextMenu
-      className="explorer__content"
-      disabled={true}
-      menuProps={{ elevation: 7 }}
-    >
-      <div className="explorer__content__inner" onClick={deselectTreeNode}>
-        <TreeView
-          components={{
-            TreeNodeContainer: ConceptTreeNodeContainer,
-          }}
-          treeData={treeData}
-          onNodeSelect={onNodeSelect}
-          getChildNodes={getChildNodes}
-          innerProps={{
-            onNodeOpen,
-            onNodeExpand,
-            onNodeCompress,
-            viewConceptSource,
-          }}
-        />
-      </div>
-    </ContextMenu>
+    <div className="explorer__content" onClick={deselectTreeNode}>
+      <TreeView
+        components={{
+          TreeNodeContainer: ConceptTreeNodeContainer,
+        }}
+        treeData={treeData}
+        onNodeSelect={onNodeSelect}
+        getChildNodes={getChildNodes}
+        innerProps={{
+          onNodeOpen,
+          onNodeExpand,
+          onNodeCompress,
+          viewConceptSource,
+        }}
+      />
+    </div>
   );
 });
 

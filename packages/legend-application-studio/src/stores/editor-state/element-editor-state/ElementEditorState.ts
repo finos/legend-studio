@@ -74,7 +74,7 @@ export abstract class ElementEditorState extends EditorState {
     return this.element.path;
   }
 
-  match(tab: EditorState): boolean {
+  override match(tab: EditorState): boolean {
     return tab instanceof ElementEditorState && tab.element === this.element;
   }
 
@@ -156,6 +156,10 @@ export abstract class ElementEditorState extends EditorState {
 
   clearCompilationError(): void {
     return;
+  }
+
+  override onOpen(): void {
+    this.editorStore.explorerTreeState.openNode(this.element);
   }
 
   /**

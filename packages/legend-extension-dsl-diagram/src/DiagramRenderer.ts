@@ -108,7 +108,7 @@ export enum DIAGRAM_RELATIONSHIP_EDIT_MODE {
   NONE,
 }
 
-export enum ALIGNER_OPERATOR {
+export enum DIAGRAM_ALIGNER_OPERATOR {
   ALIGN_LEFT,
   ALIGN_CENTER,
   ALIGN_RIGHT,
@@ -697,12 +697,12 @@ export class DiagramRenderer {
     }
   }
 
-  align(op: ALIGNER_OPERATOR): void {
+  align(op: DIAGRAM_ALIGNER_OPERATOR): void {
     if (this.selectedClasses.length < 2) {
       return;
     }
     switch (op) {
-      case ALIGNER_OPERATOR.ALIGN_LEFT: {
+      case DIAGRAM_ALIGNER_OPERATOR.ALIGN_LEFT: {
         const leftBound = this.selectedClasses.reduce(
           (val, view) => Math.min(val, view.position.x),
           Number.MAX_SAFE_INTEGER,
@@ -715,10 +715,10 @@ export class DiagramRenderer {
         );
         break;
       }
-      case ALIGNER_OPERATOR.ALIGN_CENTER: {
+      case DIAGRAM_ALIGNER_OPERATOR.ALIGN_CENTER: {
         const center =
           this.selectedClasses.reduce(
-            (val, view) => val + view.position.x + view.rectangle.width,
+            (val, view) => val + view.position.x + view.rectangle.width / 2,
             0,
           ) / this.selectedClasses.length;
         this.selectedClasses.forEach((view) =>
@@ -729,7 +729,7 @@ export class DiagramRenderer {
         );
         break;
       }
-      case ALIGNER_OPERATOR.ALIGN_RIGHT: {
+      case DIAGRAM_ALIGNER_OPERATOR.ALIGN_RIGHT: {
         const rightBound = this.selectedClasses.reduce(
           (val, view) => Math.max(val, view.position.x + view.rectangle.width),
           -Number.MAX_SAFE_INTEGER,
@@ -742,7 +742,7 @@ export class DiagramRenderer {
         );
         break;
       }
-      case ALIGNER_OPERATOR.ALIGN_TOP: {
+      case DIAGRAM_ALIGNER_OPERATOR.ALIGN_TOP: {
         const topBound = this.selectedClasses.reduce(
           (val, view) => Math.min(val, view.position.y),
           Number.MAX_SAFE_INTEGER,
@@ -755,10 +755,10 @@ export class DiagramRenderer {
         );
         break;
       }
-      case ALIGNER_OPERATOR.ALIGN_MIDDLE: {
+      case DIAGRAM_ALIGNER_OPERATOR.ALIGN_MIDDLE: {
         const middle =
           this.selectedClasses.reduce(
-            (val, view) => val + view.position.y + view.rectangle.height,
+            (val, view) => val + view.position.y + view.rectangle.height / 2,
             0,
           ) / this.selectedClasses.length;
         this.selectedClasses.forEach((view) =>
@@ -769,7 +769,7 @@ export class DiagramRenderer {
         );
         break;
       }
-      case ALIGNER_OPERATOR.ALIGN_BOTTOM: {
+      case DIAGRAM_ALIGNER_OPERATOR.ALIGN_BOTTOM: {
         const bottomBound = this.selectedClasses.reduce(
           (val, view) => Math.max(val, view.position.y + view.rectangle.height),
           -Number.MAX_SAFE_INTEGER,
@@ -782,7 +782,7 @@ export class DiagramRenderer {
         );
         break;
       }
-      case ALIGNER_OPERATOR.SPACE_HORIZONTALLY: {
+      case DIAGRAM_ALIGNER_OPERATOR.SPACE_HORIZONTALLY: {
         const sorted = this.selectedClasses
           .slice()
           .sort((a, b) => a.position.x - b.position.x);
@@ -826,7 +826,7 @@ export class DiagramRenderer {
         }
         break;
       }
-      case ALIGNER_OPERATOR.SPACE_VERTICALLY: {
+      case DIAGRAM_ALIGNER_OPERATOR.SPACE_VERTICALLY: {
         const sorted = this.selectedClasses
           .slice()
           .sort((a, b) => a.position.y - b.position.y);
@@ -3129,6 +3129,14 @@ export class DiagramRenderer {
   }
 
   mousewheel(e: WheelEvent): void {
+    // no scrolling to be done since we want to convert scroll into zoom
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    // if scrolling is more horizontal than vertical, i.e. zoom using trackpad
+    // we don't want to treat this as zooming
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) {
+      return;
+    }
     // scroll down to zoom in and up to zoom out
     const newZoomLevel = this.zoom - (e.deltaY / 120) * 0.05;
     this.executeZoom(newZoomLevel, new Point(e.x, e.y));

@@ -79,12 +79,7 @@ export const ClassDiagramPreview = observer((props: { _class: Class }) => {
       className="class-editor__diagram-preview"
       data-testid={DSL_DIAGRAM_TEST_ID.CLASS_DIAGRAM_PREVIEW}
     >
-      <div
-        ref={canvas}
-        className="diagram-canvas"
-        tabIndex={0}
-        onContextMenu={(event): void => event.preventDefault()}
-      />
+      <div ref={canvas} className="diagram-canvas" tabIndex={0} />
     </div>
   );
 });

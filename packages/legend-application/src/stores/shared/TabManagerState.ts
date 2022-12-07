@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { assertNonNullable, swapEntry, uuid } from '@finos/legend-shared';
+import {
+  assertNonNullable,
+  assertTrue,
+  swapEntry,
+  uuid,
+} from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 
 export abstract class TabState {
@@ -24,6 +29,18 @@ export abstract class TabState {
 
   get description(): string | undefined {
     return undefined;
+  }
+
+  match(tab: TabState): boolean {
+    return this === tab;
+  }
+
+  onOpen(): void {
+    // do nothing
+  }
+
+  onClose(): void {
+    // do nothing
   }
 }
 
@@ -72,6 +89,36 @@ export abstract class TabManagerState {
    */
   abstract get dndType(): string;
 
-  abstract openTab(tab: TabState): void;
-  abstract closeTab(tab: TabState): void;
+  openTab(tab: TabState): void {
+    const existingTab = this.tabs.find((t) => t.match(tab));
+    if (!existingTab) {
+      if (this.currentTab) {
+        const currIndex = this.tabs.findIndex((e) => e === this.currentTab);
+        this.tabs.splice(currIndex + 1, 0, tab);
+      } else {
+        this.tabs.push(tab);
+      }
+    }
+    this.setCurrentTab(tab);
+
+    tab.onOpen();
+  }
+
+  closeTab(tab: TabState): void {
+    const tabIndex = this.tabs.findIndex((t) => t.match(tab));
+    assertTrue(tabIndex !== -1, `Can't close a tab which is not opened`);
+    this.tabs.splice(tabIndex, 1);
+    if (this.currentTab === tab) {
+      if (this.tabs.length) {
+        const openIndex = tabIndex - 1;
+        this.setCurrentTab(
+          openIndex >= 0 ? this.tabs[openIndex] : this.tabs[0],
+        );
+      } else {
+        this.setCurrentTab(undefined);
+      }
+    }
+
+    tab.onClose();
+  }
 }

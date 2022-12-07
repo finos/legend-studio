@@ -28,6 +28,7 @@ export const ARROW_FUNCTION_TOKEN = '->';
 export const LATEST_DATE = '%latest';
 export const PARSER_SECTION_MARKER = '###';
 export const FUNCTION_SIGNATURE_MULTIPLICITY_INFINITE_TOKEN = 'MANY';
+export const DIRECTORY_PATH_DELIMITER = '/';
 export const SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX = 'sourceInformation';
 
 export const RESERVERD_PACKAGE_NAMES = ['$implicit'];

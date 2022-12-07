@@ -20,6 +20,7 @@ import { FileEditorState } from './FileEditorState.js';
 import { deserialize } from 'serializr';
 import {
   FileCoordinate,
+  FileErrorCoordinate,
   PureFile,
   trimPathLeadingSlash,
 } from '../server/models/PureFile.js';
@@ -54,6 +55,7 @@ import {
   UnmatchedFunctionExecutionResultState,
   UnmatchExecutionResultState,
   SearchResultState,
+  TextSearchResultState,
 } from './SearchResultState.js';
 import { TestRunnerState } from './TestRunnerState.js';
 import {
@@ -69,6 +71,7 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
+  type TabState,
   type CommandRegistrar,
 } from '@finos/legend-application';
 import {
@@ -88,6 +91,7 @@ import type { LegendPureIDEApplicationStore } from './LegendPureIDEBaseStore.js'
 import { SearchCommandState } from './SearchCommandState.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
 import { LEGEND_PURE_IDE_COMMAND_KEY } from './LegendPureIDECommand.js';
+import { ExecutionError } from '../server/models/ExecutionError.js';
 
 export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
@@ -284,11 +288,13 @@ export class EditorStore implements CommandRegistrar {
           yield flowResult(
             this.loadFile(
               result.source,
-              new FileCoordinate(
+              new FileErrorCoordinate(
                 result.source,
                 result.line,
                 result.column,
-                (result.text ?? '').split('\n').filter(Boolean)[0],
+                new ExecutionError(
+                  (result.text ?? '').split('\n').filter(Boolean)[0],
+                ),
               ),
             ),
           );
@@ -455,68 +461,83 @@ export class EditorStore implements CommandRegistrar {
     this.activeActivity = activity;
   }
 
-  *loadDiagram(filePath: string, diagramPath: string): GeneratorFn<void> {
-    const existingDiagramEditorState = this.tabManagerState.tabs.find(
+  *loadDiagram(
+    filePath: string,
+    diagramPath: string,
+    line: number,
+    column: number,
+  ): GeneratorFn<void> {
+    let editorState = this.tabManagerState.tabs.find(
       (tab): tab is DiagramEditorState =>
-        tab instanceof DiagramEditorState && tab.filePath === filePath,
+        tab instanceof DiagramEditorState && tab.diagramPath === diagramPath,
     );
-    if (existingDiagramEditorState) {
-      this.tabManagerState.openTab(existingDiagramEditorState);
-    } else {
+    if (!editorState) {
       yield flowResult(this.checkIfSessionWakingUp());
-      const newDiagramEditorState = new DiagramEditorState(
+      editorState = new DiagramEditorState(
         this,
         deserialize(DiagramInfo, yield this.client.getDiagramInfo(diagramPath)),
         diagramPath,
         filePath,
+        line,
+        column,
       );
-      this.tabManagerState.openTab(newDiagramEditorState);
     }
+    this.tabManagerState.openTab(editorState);
   }
 
-  *loadFile(path: string, coordinate?: FileCoordinate): GeneratorFn<void> {
-    const existingFileEditorState = this.tabManagerState.tabs.find(
+  *loadFile(filePath: string, coordinate?: FileCoordinate): GeneratorFn<void> {
+    let editorState = this.tabManagerState.tabs.find(
       (tab): tab is FileEditorState =>
-        tab instanceof FileEditorState && tab.filePath === path,
+        tab instanceof FileEditorState && tab.filePath === filePath,
     );
-    if (existingFileEditorState) {
-      if (coordinate) {
-        existingFileEditorState.setCoordinate(coordinate);
-      }
-      this.tabManagerState.openTab(existingFileEditorState);
-    } else {
+    if (!editorState) {
       yield flowResult(this.checkIfSessionWakingUp());
-      const newFileEditorState = new FileEditorState(
+      editorState = new FileEditorState(
         this,
-        deserialize(PureFile, yield this.client.getFile(path)),
-        path,
-        coordinate,
+        deserialize(PureFile, yield this.client.getFile(filePath)),
+        filePath,
       );
-      this.tabManagerState.openTab(newFileEditorState);
+    }
+    this.tabManagerState.openTab(editorState);
+    if (coordinate) {
+      editorState.textEditorState.setForcedCursorPosition({
+        lineNumber: coordinate.line,
+        column: coordinate.column,
+      });
+      if (coordinate instanceof FileErrorCoordinate) {
+        editorState.showError(coordinate);
+      }
     }
   }
 
   *reloadFile(filePath: string): GeneratorFn<void> {
+    const tabsToClose: TabState[] = [];
     yield Promise.all(
       this.tabManagerState.tabs.map(async (tab) => {
         if (tab instanceof FileEditorState && tab.filePath === filePath) {
           tab.setFile(
             deserialize(PureFile, await this.client.getFile(filePath)),
           );
-          tab.setCoordinate(undefined);
         } else if (
           tab instanceof DiagramEditorState &&
           tab.filePath === filePath
         ) {
-          tab.rebuild(
-            deserialize(
-              DiagramInfo,
-              await this.client.getDiagramInfo(tab.diagramPath),
-            ),
-          );
+          try {
+            tab.rebuild(
+              deserialize(
+                DiagramInfo,
+                await this.client.getDiagramInfo(tab.diagramPath),
+              ),
+            );
+          } catch {
+            // something happened, most likely the diagram has been removed or renamed,
+            // we should close the tab then
+            tabsToClose.push(tab);
+          }
         }
       }),
     );
+    tabsToClose.forEach((tab) => this.tabManagerState.closeTab(tab));
   }
 
   *execute(
@@ -524,6 +545,13 @@ export class EditorStore implements CommandRegistrar {
     extraParams: Record<PropertyKey, unknown>,
     checkExecutionStatus: boolean,
     manageResult: (result: ExecutionResult) => Promise<void>,
+    options?: {
+      /**
+       * Some execution, such as find concept produces no output
+       * so we should not reset the console text in that case
+       */
+      avoidUpdatingConsoleText?: boolean;
+    },
   ): GeneratorFn<void> {
     if (!this.initState.hasSucceeded) {
       this.applicationStore.notifyWarning(
@@ -598,7 +626,9 @@ export class EditorStore implements CommandRegistrar {
         guaranteeNonNullable(executionPromiseResult),
       );
       this.applicationStore.setBlockingAlert(undefined);
-      this.setConsoleText(result.text);
+      if (!options?.avoidUpdatingConsoleText) {
+        this.setConsoleText(result.text);
+      }
       if (result instanceof ExecutionFailureResult) {
         this.applicationStore.notifyWarning('Execution failed!');
         if (result.sessionError) {
@@ -693,11 +723,11 @@ export class EditorStore implements CommandRegistrar {
       yield flowResult(
         this.loadFile(
           result.source,
-          new FileCoordinate(
+          new FileErrorCoordinate(
             result.source,
             result.line,
             result.column,
-            result.text.split('\n').filter(Boolean)[0],
+            new ExecutionError(result.text.split('\n').filter(Boolean)[0]),
           ),
         ),
       );
@@ -723,6 +753,10 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *executeTests(path: string, relevantTestsOnly?: boolean): GeneratorFn<void> {
+    if (relevantTestsOnly) {
+      this.applicationStore.notifyUnsupportedFeature(`Run relevant tests`);
+      return;
+    }
     if (this.testRunState.isInProgress) {
       this.applicationStore.notifyWarning(
         'Test runner is working. Please try again later',
@@ -744,11 +778,13 @@ export class EditorStore implements CommandRegistrar {
             await flowResult(
               this.loadFile(
                 result.source,
-                new FileCoordinate(
+                new FileErrorCoordinate(
                   result.source,
                   result.line,
                   result.column,
-                  result.text.split('\n').filter(Boolean)[0],
+                  new ExecutionError(
+                    result.text.split('\n').filter(Boolean)[0],
+                  ),
                 ),
               ),
             );
@@ -804,6 +840,7 @@ export class EditorStore implements CommandRegistrar {
             );
           }
         },
+        { avoidUpdatingConsoleText: true },
       ),
     );
   }
@@ -951,7 +988,7 @@ export class EditorStore implements CommandRegistrar {
           this.textSearchCommandState.isRegExp,
         )) as PlainObject<SearchResultEntry>[]
       ).map((result) => getSearchResultEntry(result));
-      this.setSearchState(new SearchResultState(this, results));
+      this.setSearchState(new TextSearchResultState(this, results));
       this.textSearchCommandLoadingState.pass();
     } catch (error) {
       assertErrorThrown(error);

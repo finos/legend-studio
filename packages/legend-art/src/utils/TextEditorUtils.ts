@@ -71,9 +71,14 @@ export const getBaseTextEditorOptions =
     // Enforce a fixed font-family to make cross platform display consistent (i.e. Mac defaults to use `Menlo` which is bigger than
     // `Consolas` on Windows, etc.)
     fontFamily: 'Roboto Mono',
+    // Enable font ligature: glyphs which combine the shapes of certain sequences of characters into a new form that makes for
+    //  a more harmonious reading experience.
     fontLigatures: true,
     // Make sure hover or widget shown near boundary are not truncated by setting their position to `fixed`
     fixedOverflowWidgets: true,
+    bracketPairColorization: { enabled: false }, // turn off initial bracket pair coloring
+    detectIndentation: false, // i.e. so we can force tab-size
+    tabSize: 2,
   });
 
 export const moveCursorToPosition = (
@@ -98,10 +103,11 @@ export const setErrorMarkers = (
     endLineNumber: number;
     endColumn: number;
   }[],
+  ownerId?: string,
 ): void => {
   monacoEditorAPI.setModelMarkers(
     editorModel,
-    INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
+    ownerId ?? INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
     errors.map((error) => ({
       startLineNumber: error.startLineNumber,
       startColumn: error.startColumn,
@@ -123,10 +129,11 @@ export const setWarningMarkers = (
     endLineNumber: number;
     endColumn: number;
   }[],
+  ownerId?: string,
 ): void => {
   monacoEditorAPI.setModelMarkers(
     editorModel,
-    INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
+    ownerId ?? INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
     warnings.map((warning) => ({
       startLineNumber: warning.startLineNumber,
       startColumn: warning.startColumn,
@@ -139,8 +146,10 @@ export const setWarningMarkers = (
   );
 };
 
-export const clearMarkers = (): void => {
-  monacoEditorAPI.removeAllMarkers(INTERNAL__DUMMY_PROBLEM_MARKER_OWNER);
+export const clearMarkers = (ownerId?: string): void => {
+  monacoEditorAPI.removeAllMarkers(
+    ownerId ?? INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
+  );
 };
 
 /**

@@ -52,7 +52,6 @@ import {
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
-  type PureGrammarTextSuggestion,
   LegendStudioApplicationPlugin,
 } from '../stores/LegendStudioApplicationPlugin.js';
 import type {
@@ -72,7 +71,10 @@ import {
   externalFormat_Binding_setContentType,
   externalFormat_urlStream_setUrl,
 } from '../stores/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
-import type { DocumentationEntry } from '@finos/legend-application';
+import type {
+  DocumentationEntry,
+  PureGrammarTextSuggestion,
+} from '@finos/legend-application';
 import { DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSL_ExternalFormat_LegendStudioDocumentation.js';
 import {
   BASIC_BINDING_SNIPPET,

@@ -103,6 +103,8 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
           this.editorStore.loadDiagram(
             node.data.li_attr.file,
             node.data.li_attr.pureId,
+            Number.parseInt(node.data.li_attr.line, 10),
+            Number.parseInt(node.data.li_attr.column, 10),
           ),
         );
       } else {

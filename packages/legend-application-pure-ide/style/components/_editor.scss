@@ -22,6 +22,8 @@
 @forward 'editor/command';
 @forward 'editor/auxiliary-panel';
 @forward 'editor/edit-panel';
+@forward 'editor/file-editor';
+@forward 'editor/diagram-editor';
 
 .editor {
   height: 100%;

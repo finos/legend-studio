@@ -35,7 +35,6 @@ import {
   type ElementIconGetter,
   type DSL_Data_LegendStudioApplicationPlugin_Extension,
   type EmbeddedDataTypeOption,
-  type PureGrammarTextSuggestion,
   type PureGrammarParserElementSnippetSuggestionsGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarParserDocumentationGetter,
@@ -71,7 +70,10 @@ import {
 import { ServiceStoreEmbeddedData } from '../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceStoreEmbeddedData.js';
 import { ServiceStoreEmbeddedDataState } from '../stores/studio/STO_ServiceStore_ServiceStoreEmbeddedDataEditorState.js';
 import { ServiceStoreEmbeddedDataEditor } from './STO_ServiceStore_ServiceStoreEmbeddedDataEditor.js';
-import type { DocumentationEntry } from '@finos/legend-application';
+import type {
+  DocumentationEntry,
+  PureGrammarTextSuggestion,
+} from '@finos/legend-application';
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICE_STORE';
 const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

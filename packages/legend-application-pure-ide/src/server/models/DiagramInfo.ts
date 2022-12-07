@@ -49,6 +49,7 @@ import {
   getTag,
   getStereotype,
   getOwnProperty,
+  AggregationKind,
 } from '@finos/legend-graph';
 import { addUniqueEntry, guaranteeNonNullable } from '@finos/legend-shared';
 import {
@@ -126,13 +127,14 @@ class PURE__Property {
   stereotypes: PURE__Steoreotype[] = [];
   taggedValues: PURE__TaggedValue[] = [];
 
-  // aggregation!: string;
+  aggregation!: string;
   multiplicity!: string;
   // parameters // this is meant for qualified properties only
   genericType!: PURE__GenericType;
 }
 
 createModelSchema(PURE__Property, {
+  aggregation: primitive(),
   genericType: object(PURE__GenericType),
   multiplicity: primitive(),
   name: primitive(),
@@ -284,6 +286,7 @@ class PURE__Diagram {
   generalizationViews: PURE__GeneralizationView[] = [];
   propertyViews: PURE__PropertyView[] = [];
   typeViews: PURE__TypeView[] = [];
+  sourceInformation!: SourceInformation;
 }
 
 createModelSchema(PURE__Diagram, {
@@ -291,6 +294,7 @@ createModelSchema(PURE__Diagram, {
   generalizationViews: list(object(PURE__GeneralizationView)),
   package: primitive(),
   propertyViews: list(object(PURE__PropertyView)),
+  sourceInformation: object(SourceInformation),
   stereotypes: list(object(PURE__Steoreotype)),
   taggedValues: list(object(PURE__TaggedValue)),
   typeViews: list(object(PURE__TypeView)),
@@ -385,7 +389,7 @@ export const serializeDiagram = (diagram: Diagram): string => {
       `    PropertyView pview_${idx}(\n` +
       `        property=${pv.property.value._OWNER.path}.${pv.property.value.name},\n` +
       `        source=${pv.from.classView.value.id},\n` +
-      `        target=${pv.to.classView.value.id}\n,` +
+      `        target=${pv.to.classView.value.id},\n` +
       `        points=[${pv
         .buildFullPath()
         .map((pos) => `(${pos.x.toFixed(5)},${pos.y.toFixed(5)})`)
@@ -512,27 +516,31 @@ const buildClass = (
   classData.properties
     .filter((propertyData) => Boolean(propertyData.genericType.rawType))
     .forEach((propertyData) => {
-      addUniqueEntry(
-        _class.properties,
-        new Property(
-          propertyData.name,
-          parseMultiplicty(propertyData.multiplicity),
-          GenericTypeExplicitReference.create(
-            new GenericType(
-              graph.getOwnNullableEnumeration(
+      const newProperty = new Property(
+        propertyData.name,
+        parseMultiplicty(propertyData.multiplicity),
+        GenericTypeExplicitReference.create(
+          new GenericType(
+            graph.getOwnNullableEnumeration(
+              guaranteeNonNullable(propertyData.genericType.rawType),
+            ) ??
+              getOrCreateClass(
                 guaranteeNonNullable(propertyData.genericType.rawType),
-              ) ??
-                getOrCreateClass(
-                  guaranteeNonNullable(propertyData.genericType.rawType),
-                  graph,
-                  diagramClasses,
-                  undefined,
-                ),
-            ),
+                graph,
+                diagramClasses,
+                undefined,
+              ),
           ),
-          _class,
         ),
+        _class,
       );
+      newProperty.aggregation =
+        propertyData.aggregation === 'Composite'
+          ? AggregationKind.COMPOSITE
+          : propertyData.aggregation === 'Shared'
+          ? AggregationKind.SHARED
+          : undefined;
+      addUniqueEntry(_class.properties, newProperty);
     });
   classData.qualifiedProperties
     .filter((propertyData) => propertyData.genericType.rawType)
@@ -704,10 +712,10 @@ export const addClassToGraph = (
 ): Class => {
   // profiles
   diagramClassInfo.profiles.forEach((profileData) => {
-    const fullPath = `${profileData.package}${
+    const profilePath = `${profileData.package}${
       profileData.package === '' ? '' : ELEMENT_PATH_DELIMITER
     }${profileData.name}`;
-    if (!graph.getOwnNullableProfile(fullPath)) {
+    if (!graph.getOwnNullableProfile(profilePath)) {
       const profile = new Profile(profileData.name);
       addElementToPackage(
         getOrCreatePackage(graph.root, profileData.package, true, new Map()),
@@ -725,10 +733,10 @@ export const addClassToGraph = (
 
   // enumerations
   diagramClassInfo.enumerations.forEach((enumerationData) => {
-    const fullPath = `${enumerationData.package}${
+    const enumerationPath = `${enumerationData.package}${
       enumerationData.package === '' ? '' : ELEMENT_PATH_DELIMITER
     }${enumerationData.name}`;
-    if (!graph.getOwnNullableEnumeration(fullPath)) {
+    if (!graph.getOwnNullableEnumeration(enumerationPath)) {
       const enumeration = new Enumeration(enumerationData.name);
       addElementToPackage(
         getOrCreatePackage(
@@ -745,10 +753,10 @@ export const addClassToGraph = (
   });
 
   const classData = diagramClassInfo.class;
-  const fullPath = `${classData.package}${
+  const classPath = `${classData.package}${
     classData.package === '' ? '' : ELEMENT_PATH_DELIMITER
   }${classData.name}`;
-  let _class = graph.getOwnNullableClass(fullPath);
+  let _class = graph.getOwnNullableClass(classPath);
   if (!_class) {
     _class = new Class(classData.name);
     addElementToPackage(

@@ -14,29 +14,81 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { forwardRef, useCallback, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { DiagramEditorState } from '../../../stores/DiagramEditorState.js';
-import { DiagramRenderer, Point } from '@finos/legend-extension-dsl-diagram';
+import {
+  DIAGRAM_ALIGNER_OPERATOR,
+  DiagramRenderer,
+  Point,
+  DIAGRAM_ZOOM_LEVELS,
+  DIAGRAM_INTERACTION_MODE,
+  DIAGRAM_RELATIONSHIP_EDIT_MODE,
+} from '@finos/legend-extension-dsl-diagram';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { CONCEPT_TREE_DND_TYPE } from '../side-bar/ConceptTreeExplorer.js';
 import { ConceptNode } from '../../../server/models/ConceptTree.js';
 import { flowResult } from 'mobx';
-import { useApplicationStore } from '@finos/legend-application';
-import { useResizeDetector } from '@finos/legend-art';
+import { useApplicationStore, useCommands } from '@finos/legend-application';
+import {
+  AlignBottomIcon,
+  AlignCenterIcon,
+  AlignEndIcon,
+  AlignMiddleIcon,
+  AlignStartIcon,
+  AlignTopIcon,
+  CaretDownIcon,
+  clsx,
+  DistributeHorizontalIcon,
+  DistributeVerticalIcon,
+  DropdownMenu,
+  GoToFileIcon,
+  MenuContent,
+  MenuContentDivider,
+  MenuContentItem,
+  MousePointerIcon,
+  MoveIcon,
+  useResizeDetector,
+  ZoomInIcon,
+  ZoomOutIcon,
+} from '@finos/legend-art';
+import { useEditorStore } from '../EditorStoreProvider.js';
+import { FileCoordinate } from '../../../server/models/PureFile.js';
 
-const DiagramCanvas = observer(
-  (props: { diagramEditorState: DiagramEditorState }) => {
+const DiagramEditorDiagramCanvas = observer(
+  forwardRef<
+    HTMLDivElement,
+    {
+      diagramEditorState: DiagramEditorState;
+    }
+  >(function DiagramEditorDiagramCanvas(props, ref) {
     const { diagramEditorState } = props;
     const applicationStore = useApplicationStore();
     const diagram = diagramEditorState.diagram;
-    const diagramCanvasRef = useRef<HTMLDivElement>(null);
+    const diagramCanvasRef =
+      ref as React.MutableRefObject<HTMLDivElement | null>;
 
     const { width, height } = useResizeDetector<HTMLDivElement>({
       refreshMode: 'debounce',
       refreshRate: 50,
       targetRef: diagramCanvasRef,
     });
+
+    useEffect(() => {
+      if (diagramCanvasRef.current) {
+        const renderer = new DiagramRenderer(diagramCanvasRef.current, diagram);
+        diagramEditorState.setRenderer(renderer);
+        diagramEditorState.setupRenderer();
+        renderer.render();
+        renderer.autoRecenter();
+      }
+    }, [diagramCanvasRef, diagramEditorState, diagram]);
+
+    useEffect(() => {
+      if (diagramEditorState.isDiagramRendererInitialized) {
+        diagramEditorState.renderer.refresh();
+      }
+    }, [diagramEditorState, width, height]);
 
     // Drag and Drop
     const handleDrop = useCallback(
@@ -66,41 +118,308 @@ const DiagramCanvas = observer(
     );
     dropConnector(diagramCanvasRef);
 
-    useEffect(() => {
-      if (diagramCanvasRef.current) {
-        const renderer = new DiagramRenderer(diagramCanvasRef.current, diagram);
-        diagramEditorState.setRenderer(renderer);
-        diagramEditorState.setupRenderer();
-        renderer.render();
-        renderer.autoRecenter();
-      }
-    }, [diagramCanvasRef, diagramEditorState, diagram]);
-
-    useEffect(() => {
-      if (diagramEditorState.isDiagramRendererInitialized) {
-        diagramEditorState.renderer.refresh();
-      }
-    }, [diagramEditorState, width, height]);
-
     return (
       <div
         ref={diagramCanvasRef}
-        className="diagram-canvas"
+        className={clsx(
+          'diagram-canvas diagram-editor__canvas',
+          diagramEditorState.diagramCursorClass,
+        )}
         tabIndex={0}
-        onContextMenu={(event): void => event.preventDefault()}
       />
+    );
+  }),
+);
+
+const DiagramEditorHeader = observer(
+  (props: { diagramEditorState: DiagramEditorState }) => {
+    const { diagramEditorState } = props;
+    const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
+    const goToFile = (): void => {
+      flowResult(
+        editorStore.loadFile(
+          diagramEditorState.filePath,
+          new FileCoordinate(
+            diagramEditorState.filePath,
+            diagramEditorState.fileLine,
+            diagramEditorState.fileColumn,
+          ),
+        ),
+      ).catch(applicationStore.alertUnhandledError);
+    };
+    const createCenterZoomer =
+      (zoomLevel: number): (() => void) =>
+      (): void => {
+        diagramEditorState.renderer.zoomCenter(zoomLevel / 100);
+      };
+    const zoomToFit = (): void => diagramEditorState.renderer.zoomToFit();
+    const isAlignerDisabled =
+      diagramEditorState.renderer.selectedClasses.length < 2;
+
+    return (
+      <>
+        <div className="diagram-editor__header__group">
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Align left"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(
+                DIAGRAM_ALIGNER_OPERATOR.ALIGN_LEFT,
+              )
+            }
+          >
+            <AlignStartIcon className="diagram-editor__icon--aligner" />
+          </button>
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Align center"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(
+                DIAGRAM_ALIGNER_OPERATOR.ALIGN_CENTER,
+              )
+            }
+          >
+            <AlignCenterIcon className="diagram-editor__icon--aligner" />
+          </button>
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Align right"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(
+                DIAGRAM_ALIGNER_OPERATOR.ALIGN_RIGHT,
+              )
+            }
+          >
+            <AlignEndIcon className="diagram-editor__icon--aligner" />
+          </button>
+        </div>
+        <div className="diagram-editor__header__group__separator" />
+        <div className="diagram-editor__header__group">
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Align top"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(
+                DIAGRAM_ALIGNER_OPERATOR.ALIGN_TOP,
+              )
+            }
+          >
+            <AlignTopIcon className="diagram-editor__icon--aligner" />
+          </button>
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Align middle"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(
+                DIAGRAM_ALIGNER_OPERATOR.ALIGN_MIDDLE,
+              )
+            }
+          >
+            <AlignMiddleIcon className="diagram-editor__icon--aligner" />
+          </button>
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Align bottom"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(
+                DIAGRAM_ALIGNER_OPERATOR.ALIGN_BOTTOM,
+              )
+            }
+          >
+            <AlignBottomIcon className="diagram-editor__icon--aligner" />
+          </button>
+        </div>
+        <div className="diagram-editor__header__group__separator" />
+        <div className="diagram-editor__header__group">
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Space horizontally"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(
+                DIAGRAM_ALIGNER_OPERATOR.SPACE_HORIZONTALLY,
+              )
+            }
+          >
+            <DistributeHorizontalIcon className="diagram-editor__icon--aligner" />
+          </button>
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Space vertically"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(
+                DIAGRAM_ALIGNER_OPERATOR.SPACE_VERTICALLY,
+              )
+            }
+          >
+            <DistributeVerticalIcon className="diagram-editor__icon--aligner" />
+          </button>
+        </div>
+        <DropdownMenu
+          className="diagram-editor__header__dropdown"
+          title="Zoom..."
+          content={
+            <MenuContent>
+              <MenuContentItem
+                className="diagram-editor__header__zoomer__dropdown__menu__item"
+                onClick={zoomToFit}
+              >
+                Fit
+              </MenuContentItem>
+              <MenuContentDivider />
+              {DIAGRAM_ZOOM_LEVELS.map((zoomLevel) => (
+                <MenuContentItem
+                  key={zoomLevel}
+                  className="diagram-editor__header__zoomer__dropdown__menu__item"
+                  onClick={createCenterZoomer(zoomLevel)}
+                >
+                  {zoomLevel}%
+                </MenuContentItem>
+              ))}
+            </MenuContent>
+          }
+          menuProps={{
+            anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+            transformOrigin: { vertical: 'top', horizontal: 'right' },
+            elevation: 7,
+          }}
+        >
+          <div className="diagram-editor__header__dropdown__label diagram-editor__header__zoomer__dropdown__label">
+            {Math.round(diagramEditorState.renderer.zoom * 100)}%
+          </div>
+          <div className="diagram-editor__header__dropdown__trigger diagram-editor__header__zoomer__dropdown__trigger">
+            <CaretDownIcon />
+          </div>
+        </DropdownMenu>
+        <div className="diagram-editor__header__actions">
+          <button
+            className="diagram-editor__header__action"
+            tabIndex={-1}
+            onClick={goToFile}
+          >
+            <GoToFileIcon className="diagram-editor__icon--go-to-file" />
+          </button>
+        </div>
+      </>
+    );
+  },
+);
+
+const DiagramEditorToolPanel = observer(
+  (props: { diagramEditorState: DiagramEditorState }) => {
+    const { diagramEditorState } = props;
+    const renderer = diagramEditorState.renderer;
+    const createModeSwitcher =
+      (
+        editMode: DIAGRAM_INTERACTION_MODE,
+        relationshipMode: DIAGRAM_RELATIONSHIP_EDIT_MODE,
+      ): (() => void) =>
+      (): void =>
+        renderer.changeMode(editMode, relationshipMode);
+
+    return (
+      <div className="diagram-editor__tools">
+        <button
+          className={clsx('diagram-editor__tool', {
+            'diagram-editor__tool--active':
+              renderer.interactionMode === DIAGRAM_INTERACTION_MODE.LAYOUT,
+          })}
+          tabIndex={-1}
+          onClick={createModeSwitcher(
+            DIAGRAM_INTERACTION_MODE.LAYOUT,
+            DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+          )}
+          title="View Tool (V)"
+        >
+          <MousePointerIcon className="diagram-editor__icon--layout" />
+        </button>
+        <button
+          className={clsx('diagram-editor__tool', {
+            'diagram-editor__tool--active':
+              renderer.interactionMode === DIAGRAM_INTERACTION_MODE.PAN,
+          })}
+          tabIndex={-1}
+          onClick={createModeSwitcher(
+            DIAGRAM_INTERACTION_MODE.PAN,
+            DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+          )}
+          title="Pan Tool (M)"
+        >
+          <MoveIcon className="diagram-editor__icon--pan" />
+        </button>
+        <button
+          className={clsx('diagram-editor__tool', {
+            'diagram-editor__tool--active':
+              renderer.interactionMode === DIAGRAM_INTERACTION_MODE.ZOOM_IN,
+          })}
+          tabIndex={-1}
+          title="Zoom In (Z)"
+          onClick={createModeSwitcher(
+            DIAGRAM_INTERACTION_MODE.ZOOM_IN,
+            DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+          )}
+        >
+          <ZoomInIcon className="diagram-editor__icon--zoom-in" />
+        </button>
+        <button
+          className={clsx('diagram-editor__tool', {
+            'diagram-editor__tool--active':
+              renderer.interactionMode === DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
+          })}
+          tabIndex={-1}
+          title="Zoom Out (Z)"
+          onClick={createModeSwitcher(
+            DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
+            DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+          )}
+        >
+          <ZoomOutIcon className="diagram-editor__icon--zoom-out" />
+        </button>
+      </div>
     );
   },
 );
 
 export const DiagramEditor = observer(
-  (props: { editorState: DiagramEditorState }) => {
-    const { editorState } = props;
+  (props: { diagramEditorState: DiagramEditorState }) => {
+    const { diagramEditorState } = props;
+    const diagramCanvasRef = useRef<HTMLDivElement>(null);
+
+    useCommands(diagramEditorState);
 
     return (
-      <div className="panel edit-panel">
-        <div className="panel__content edit-panel__content edit-panel__content--headless">
-          <DiagramCanvas diagramEditorState={editorState} />
+      <div className="diagram-editor">
+        <div className="diagram-editor__header">
+          {diagramEditorState.isDiagramRendererInitialized && (
+            <DiagramEditorHeader diagramEditorState={diagramEditorState} />
+          )}
+        </div>
+        <div className="diagram-editor__content">
+          <div className="diagram-editor__stage">
+            {diagramEditorState.isDiagramRendererInitialized && (
+              <DiagramEditorToolPanel diagramEditorState={diagramEditorState} />
+            )}
+            <DiagramEditorDiagramCanvas
+              diagramEditorState={diagramEditorState}
+              ref={diagramCanvasRef}
+            />
+          </div>
         </div>
       </div>
     );

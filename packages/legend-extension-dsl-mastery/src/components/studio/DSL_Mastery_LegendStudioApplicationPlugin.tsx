@@ -28,7 +28,6 @@ import {
   type NewElementFromStateCreator,
   type NewElementState,
   type PureGrammarParserElementSnippetSuggestionsGetter,
-  type PureGrammarTextSuggestion,
   type ElementTypeLabelGetter,
   LegendStudioApplicationPlugin,
   UnsupportedElementEditorState,
@@ -39,6 +38,7 @@ import {
   PURE_GRAMMAR_MASTERY_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_MASTERY_PARSER_NAME,
 } from '../../graphManager/DSL_Mastery_PureGraphManagerPlugin.js';
+import type { PureGrammarTextSuggestion } from '@finos/legend-application';
 
 const MASTERY_ELEMENT_TYPE = 'MASTERY';
 const MASTERY_CONTEXT_ELEMENT_TYPE = 'MASTERY_CONTEXT';
