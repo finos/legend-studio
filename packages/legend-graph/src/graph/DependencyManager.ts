@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { ROOT_PACKAGE_NAME } from '../graph/MetaModelConst.js';
 import { type Clazz, guaranteeNonNullable } from '@finos/legend-shared';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import type { Enumeration } from '../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
@@ -43,7 +42,7 @@ class DependencyModel extends BasicModel {
     extensionElementClasses: Clazz<PackageableElement>[],
     root: Package,
   ) {
-    super(ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT, extensionElementClasses);
+    super(root.name, extensionElementClasses);
     this.root = root;
   }
 }
@@ -64,7 +63,7 @@ const buildDependencyElementGetter =
   };
 
 export class DependencyManager {
-  root = new Package(ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT);
+  roots: Package[] = [];
   projectDependencyModelsIndex = new Map<string, BasicModel>();
 
   private readonly extensionElementClasses: Clazz<PackageableElement>[];
@@ -78,10 +77,12 @@ export class DependencyManager {
    */
   initialize(dependencyEntitiesIndex: Map<string, Entity[]>): void {
     Array.from(dependencyEntitiesIndex.keys()).forEach((dependencyKey) => {
+      const pkg = new Package(dependencyKey);
+      this.roots.push(pkg);
       // NOTE: all dependency models will share the dependency manager root package.
       this.projectDependencyModelsIndex.set(
         dependencyKey,
-        new DependencyModel(this.extensionElementClasses, this.root),
+        new DependencyModel(this.extensionElementClasses, pkg),
       );
     });
   }

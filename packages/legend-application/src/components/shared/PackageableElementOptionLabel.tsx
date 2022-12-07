@@ -19,31 +19,37 @@ import {
   isSystemElement,
   isGeneratedElement,
   isDependencyElement,
+  type PureModel,
 } from '@finos/legend-graph';
 import type { PackageableElementOption } from '../../stores/shared/PackageableElementOption.js';
 
-const getElementColorCode = (element: PackageableElement): string =>
+const getElementColorCode = (
+  element: PackageableElement,
+  pureModel: PureModel,
+): string =>
   isSystemElement(element)
     ? 'system'
     : isGeneratedElement(element)
     ? 'generated'
-    : isDependencyElement(element)
+    : isDependencyElement(element, pureModel)
     ? 'dependency'
     : '';
 
 const generateOptionTooltipText = (
   element: PackageableElement,
+  pureModel: PureModel,
 ): string | undefined =>
   isSystemElement(element)
     ? 'system element'
     : isGeneratedElement(element)
     ? 'generated element'
-    : isDependencyElement(element)
+    : isDependencyElement(element, pureModel)
     ? 'dependency element'
     : undefined;
 
 export const getPackageableElementOptionFormatter = (props: {
   darkMode?: boolean;
+  pureModel: PureModel;
 }): ((
   option: PackageableElementOption<PackageableElement>,
 ) => React.ReactNode) =>
@@ -53,12 +59,12 @@ export const getPackageableElementOptionFormatter = (props: {
     const className = props.darkMode
       ? 'packageable-element-option-label--dark'
       : 'packageable-element-option-label';
-    const colorCode = getElementColorCode(option.value);
+    const colorCode = getElementColorCode(option.value, props.pureModel);
 
     return (
       <div className={className}>
         <div
-          title={generateOptionTooltipText(option.value)}
+          title={generateOptionTooltipText(option.value, props.pureModel)}
           className={`packageable-element-option-label__type ${
             colorCode
               ? `packageable-element-option-label__type--${colorCode}`

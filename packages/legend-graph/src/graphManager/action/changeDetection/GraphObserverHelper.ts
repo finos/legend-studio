@@ -96,7 +96,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
 export const observe_DependencyManager = skipObserved(
   (metamodel: DependencyManager): DependencyManager =>
     makeObservable(metamodel, {
-      root: observable,
+      roots: observable,
       projectDependencyModelsIndex: observable,
 
       dependencyGraphs: computed,
