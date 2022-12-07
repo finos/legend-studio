@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, observable, makeObservable } from 'mobx';
+import { action, observable, makeObservable, flowResult, flow } from 'mobx';
 import type { EditorStore } from './EditorStore.js';
 import {
   LogEvent,
@@ -23,6 +23,7 @@ import {
   UnsupportedOperationError,
   guaranteeNonNullable,
   ActionState,
+  GeneratorFn,
 } from '@finos/legend-shared';
 import {
   getPackableElementTreeData,
@@ -66,6 +67,7 @@ export class ExplorerTreeState {
   fileGenerationTreeData?: TreeData<GenerationTreeNodeData> | undefined;
   elementToRename?: PackageableElement | undefined;
   buildState = ActionState.create();
+  showDependencyProjects?: boolean | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -77,6 +79,7 @@ export class ExplorerTreeState {
       selectedNode: observable.ref,
       fileGenerationTreeData: observable.ref,
       elementToRename: observable,
+      showDependencyProjects: observable,
       setTreeData: action,
       setGenerationTreeData: action,
       setSystemTreeData: action,
@@ -85,8 +88,10 @@ export class ExplorerTreeState {
       setFileGenerationTreeData: action,
       setSelectedNode: action,
       setElementToRename: action,
+      setShowDependencyProjects: action,
       build: action,
       buildImmutableModelTrees: action,
+      buildDependencyTree: flow,
       reprocess: action,
       onTreeNodeSelect: action,
       openNode: action,
@@ -166,6 +171,10 @@ export class ExplorerTreeState {
     this.selectedNode = node;
   }
 
+  setShowDependencyProjects(val: boolean | undefined): void {
+    this.showDependencyProjects = val;
+  }
+
   build(): void {
     this.buildState.reset();
     this.treeData = getPackableElementTreeData(
@@ -192,6 +201,23 @@ export class ExplorerTreeState {
       this.editorStore.graphManagerState.systemModel.root,
       ExplorerTreeRootPackageLabel.SYSTEM,
     );
+    this.dependencyTreeData = getPackableElementTreeData(
+      this.editorStore,
+      this.editorStore.graphManagerState.graph.dependencyManager.root,
+      ExplorerTreeRootPackageLabel.PROJECT_DEPENDENCY,
+    );
+  }
+
+  *buildDependencyTree(includeDependencyProject?: boolean | undefined): GeneratorFn<void> {
+    if (includeDependencyProject) {
+      yield flowResult(
+        this.editorStore.graphState.buildDependecyGraphWithProjectInformation(),
+      );
+    } else {
+      yield flowResult(
+        this.editorStore.graphState.buildDependecyGraph(),
+      );
+    }
     this.dependencyTreeData = getPackableElementTreeData(
       this.editorStore,
       this.editorStore.graphManagerState.graph.dependencyManager.root,

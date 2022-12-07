@@ -168,6 +168,8 @@ export class EditorGraphState {
       clearProblems: action,
       setEnableStrictMode: action,
       buildGraph: flow,
+      buildDependecyGraphWithProjectInformation: flow,
+      buildDependecyGraph: flow,
       loadEntityChangesToGraph: flow,
       globalCompileInFormMode: flow,
       globalCompileInTextMode: flow,
@@ -859,6 +861,50 @@ export class EditorGraphState {
       this.isApplicationLeavingTextMode = false;
       this.editorStore.applicationStore.setBlockingAlert(undefined);
     }
+  }
+
+  *buildDependecyGraphWithProjectInformation(): GeneratorFn<void> {
+    const dependencyManager =
+      this.editorStore.graphManagerState.createEmptyDependencyManager();
+      this.editorStore.graphManagerState.graph.dependencyManager = dependencyManager;
+    const dependenciesBuildState = ActionState.create();
+    this.editorStore.graphManagerState.dependenciesBuildState.inProgress();
+    yield this.editorStore.graphManagerState.graphManager.buildDependencies(
+      this.editorStore.graphManagerState.coreModel,
+      this.editorStore.graphManagerState.systemModel,
+      dependencyManager,
+      (yield flowResult(this.getIndexedDependencyEntities())) as Map<
+        string,
+        Entity[]
+      >,
+      dependenciesBuildState,
+      undefined,
+      true,
+    );
+    this.editorStore.graphManagerState.dependenciesBuildState.pass();
+    this.editorStore.graphManagerState.dependenciesBuildState =
+      dependenciesBuildState;
+  }
+
+  *buildDependecyGraph(): GeneratorFn<void> {
+    const dependencyManager =
+      this.editorStore.graphManagerState.createEmptyDependencyManager();
+      this.editorStore.graphManagerState.graph.dependencyManager = dependencyManager;
+    const dependenciesBuildState = ActionState.create();
+    this.editorStore.graphManagerState.dependenciesBuildState.inProgress();
+    yield this.editorStore.graphManagerState.graphManager.buildDependencies(
+      this.editorStore.graphManagerState.coreModel,
+      this.editorStore.graphManagerState.systemModel,
+      dependencyManager,
+      (yield flowResult(this.getIndexedDependencyEntities())) as Map<
+        string,
+        Entity[]
+      >,
+      dependenciesBuildState,
+    );
+    this.editorStore.graphManagerState.dependenciesBuildState.pass();
+    this.editorStore.graphManagerState.dependenciesBuildState =
+      dependenciesBuildState;
   }
 
   /**

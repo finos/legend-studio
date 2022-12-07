@@ -229,3 +229,32 @@ export const generateViewRevisionRoute = (
         revisionId,
         entityPath,
       });
+
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
+  studioUrl: string,
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  entityPath: string | undefined,
+): string =>
+  `${studioUrl}view/archive/${generateGAVCoordinates(
+    groupId,
+    artifactId,
+    versionId,
+  )}${entityPath ? `/entity/${entityPath}` : ''}`;
+
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
+  (
+    studioUrl: string,
+    projectId: string,
+    entityPath: string | undefined,
+  ): string =>
+    `${studioUrl}view/${projectId}${
+      entityPath ? `/entity/${entityPath}` : ''
+    }`;

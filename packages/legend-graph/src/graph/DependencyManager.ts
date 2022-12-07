@@ -37,6 +37,7 @@ import type { SectionIndex } from '../graph/metamodel/pure/packageableElements/s
 import type { Entity } from '@finos/legend-storage';
 import type { Database } from '../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import type { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
+import { addElementToPackage } from './helpers/DomainHelper.js';
 
 class DependencyModel extends BasicModel {
   constructor(
@@ -76,13 +77,26 @@ export class DependencyManager {
   /**
    * Here we create and index a graph for each dependency
    */
-  initialize(dependencyEntitiesIndex: Map<string, Entity[]>): void {
+  initialize(
+    dependencyEntitiesIndex: Map<string, Entity[]>,
+    includeDependencyProject?: boolean | undefined,
+  ): void {
     Array.from(dependencyEntitiesIndex.keys()).forEach((dependencyKey) => {
-      // NOTE: all dependency models will share the dependency manager root package.
-      this.projectDependencyModelsIndex.set(
-        dependencyKey,
-        new DependencyModel(this.extensionElementClasses, this.root),
-      );
+      if (includeDependencyProject) {
+        const pkg = new Package(dependencyKey);
+        addElementToPackage(this.root, pkg);
+        // NOTE: all dependency models will share the dependency manager root package.
+        this.projectDependencyModelsIndex.set(
+          dependencyKey,
+          new DependencyModel(this.extensionElementClasses, pkg),
+        );
+      } else {
+        // NOTE: all dependency models will share the dependency manager root package.
+        this.projectDependencyModelsIndex.set(
+          dependencyKey,
+          new DependencyModel(this.extensionElementClasses, this.root),
+        );
+      }
     });
   }
 

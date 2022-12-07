@@ -194,6 +194,7 @@ export abstract class AbstractPureGraphManager {
     dependencyEntitiesIndex: Map<string, Entity[]>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
+    includeDependencyProject?: boolean | undefined,
   ): Promise<GraphBuilderReport>;
 
   /**

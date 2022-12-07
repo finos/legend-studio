@@ -560,6 +560,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     dependencyEntitiesIndex: Map<string, Entity[]>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
+    includeDependencyProject?: boolean | undefined,
   ): Promise<GraphBuilderReport> {
     const stopWatch = new StopWatch();
     const report = new GraphBuilderReport();
@@ -574,7 +575,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph.dependencyManager = dependencyManager;
 
     try {
-      dependencyManager.initialize(dependencyEntitiesIndex);
+      dependencyManager.initialize(
+        dependencyEntitiesIndex,
+        includeDependencyProject,
+      );
 
       // deserialize
       buildState.setMessage(`Partitioning and deserializing elements...`);

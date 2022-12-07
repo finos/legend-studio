@@ -42,6 +42,8 @@ import {
   SearchIcon,
   FileImportIcon,
   SettingsEthernetIcon,
+  MoreVerticalIcon,
+  CheckIcon,
 } from '@finos/legend-art';
 import {
   getElementIcon,
@@ -66,7 +68,7 @@ import {
 } from '../../../stores/shared/FileGenerationTreeUtils.js';
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor.js';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter.js';
-import { toTitleCase } from '@finos/legend-shared';
+import { guaranteeNonEmptyString, toTitleCase } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
@@ -85,10 +87,17 @@ import {
   getFunctionSignature,
   getFunctionNameWithPath,
 } from '@finos/legend-graph';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  useWebApplicationNavigator,
+} from '@finos/legend-application';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
 import { queryClass } from '../edit-panel/uml-editor/ClassQueryBuilder.js';
+import {
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
+} from '../../../stores/DependencyProjectViewerHelper.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -291,6 +300,55 @@ const ExplorerContextMenu = observer(
       (type: string): (() => void) =>
       (): void =>
         editorStore.newElementState.openModal(type, _package);
+    const isDependencyProjectRoot = (): boolean =>
+      editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
+        (dependency) => dependency.projectId === node?.id,
+      ) !== undefined ?? false;
+    const viewProject = (): void => {
+      const dependency =
+        editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
+          (dependency) => dependency.projectId === node?.id,
+        );
+      if (dependency) {
+        createViewProjectHandler(applicationStore)(
+          guaranteeNonEmptyString(dependency.groupId),
+          guaranteeNonEmptyString(dependency.artifactId),
+          dependency.versionId,
+          undefined,
+        );
+      }
+    };
+    const viewSDLCProject = (): void => {
+      const dependency =
+        editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
+          (dependency) => dependency.projectId === node?.id,
+        );
+      if (dependency) {
+        createViewSDLCProjectHandler(
+          applicationStore,
+          editorStore.depotServerClient,
+        )(
+          guaranteeNonEmptyString(dependency.groupId),
+          guaranteeNonEmptyString(dependency.artifactId),
+          undefined,
+        ).catch(applicationStore.alertUnhandledError);
+      }
+    };
+
+    if (isDependencyProjectRoot()) {
+      return (
+        <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+          <MenuContentItem onClick={viewProject}>
+            <MenuContentItemLabel>View Project</MenuContentItemLabel>
+          </MenuContentItem>
+          {node && (
+            <MenuContentItem onClick={viewSDLCProject}>
+              <MenuContentItemLabel>View SDLC Project</MenuContentItemLabel>
+            </MenuContentItem>
+          )}
+        </MenuContent>
+      );
+    }
 
     if (_package && !isReadOnly) {
       return (
@@ -725,6 +783,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
     editorStore.searchElementCommandState.open();
   // Explorer tree
   const selectedTreeNode = editorStore.explorerTreeState.selectedNode;
+  const explorerTreeState = editorStore.explorerTreeState;
   const collapseTree = (): void => {
     const treeData = editorStore.explorerTreeState.getTreeData();
     treeData.nodes.forEach((node) => {
@@ -738,6 +797,21 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
     editorStore.openSingletonEditorState(
       editorStore.projectConfigurationEditorState,
     );
+  const toggleShowDependencyProjects = (): void =>
+    explorerTreeState.setShowDependencyProjects(
+      !explorerTreeState.showDependencyProjects,
+    );
+  useEffect(() => {
+    if (explorerTreeState.showDependencyProjects) {
+      flowResult(explorerTreeState.buildDependencyTree(true));
+    } else if (explorerTreeState.showDependencyProjects === false) {
+      flowResult(explorerTreeState.buildDependencyTree());
+    }
+  }, [
+    editorStore,
+    explorerTreeState.showDependencyProjects,
+    explorerTreeState,
+  ]);
 
   return (
     <div className="panel__header__actions">
@@ -797,6 +871,32 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
       >
         <SearchIcon />
       </button>
+      <DropdownMenu
+        className="panel__header__action"
+        disabled={disabled}
+        title="Show Options Menu..."
+        content={
+          <MenuContent>
+            <MenuContentItem onClick={toggleShowDependencyProjects}>
+              <MenuContentItemIcon>
+                {explorerTreeState.showDependencyProjects ? (
+                  <CheckIcon />
+                ) : null}
+              </MenuContentItemIcon>
+              <MenuContentItemLabel>
+                Show dependency projects
+              </MenuContentItemLabel>
+            </MenuContentItem>
+          </MenuContent>
+        }
+        menuProps={{
+          anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+          transformOrigin: { vertical: 'top', horizontal: 'left' },
+          elevation: 7,
+        }}
+      >
+        <MoreVerticalIcon className="query-builder__icon__more-options" />
+      </DropdownMenu>
     </div>
   );
 });
@@ -806,10 +906,11 @@ export const Explorer = observer(() => {
   const applicationStore = useApplicationStore();
   const sdlcState = editorStore.sdlcState;
   const isLoading =
-    ((!editorStore.explorerTreeState.buildState.hasCompleted &&
+    (((!editorStore.explorerTreeState.buildState.hasCompleted &&
       !editorStore.isInGrammarTextMode) ||
       editorStore.graphState.isUpdatingGraph) &&
-    !editorStore.graphManagerState.graphBuildState.hasFailed;
+      !editorStore.graphManagerState.graphBuildState.hasFailed) ||
+    editorStore.graphManagerState.dependenciesBuildState.isInProgress;
   const showExplorerTrees =
     editorStore.graphManagerState.graphBuildState.hasSucceeded &&
     editorStore.explorerTreeState.buildState.hasCompleted &&
