@@ -167,14 +167,15 @@ export class FileEditorState
       action: () => {
         const currentPosition = this.textEditorState.editor?.getPosition();
         if (currentPosition) {
-          const coordinate = new FileCoordinate(
-            this.filePath,
-            currentPosition.lineNumber,
-            currentPosition.column,
-          );
-          flowResult(this.editorStore.executeNavigation(coordinate)).catch(
-            this.editorStore.applicationStore.alertUnhandledError,
-          );
+          flowResult(
+            this.editorStore.executeNavigation(
+              new FileCoordinate(
+                this.filePath,
+                currentPosition.lineNumber,
+                currentPosition.column,
+              ),
+            ),
+          ).catch(this.editorStore.applicationStore.alertUnhandledError);
         }
       },
     });

@@ -46,7 +46,7 @@ export const LEGEND_PURE_IDE_COMMAND_CONFIG: CommandConfigData = {
   },
   [LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_AUX_PANEL]: {
     title: 'Toggle auxiliary panel',
-    defaultKeyboardShortcut: 'Control+`',
+    defaultKeyboardShortcut: 'Control+Backquote',
   },
   [LEGEND_PURE_IDE_COMMAND_KEY.EXECUTE]: {
     title: 'Execute',

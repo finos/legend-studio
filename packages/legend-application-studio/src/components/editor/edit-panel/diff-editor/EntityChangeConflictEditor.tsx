@@ -576,9 +576,13 @@ const MergeConflictEditor = observer(
     useEffect(
       () => (): void => {
         if (editor) {
-          mergeConflictResolutionCodeLensDisposer.current?.dispose(); // dispose codeLens provider so we don't see duplicated commands
           disposeEditor(editor);
         }
+        onDidChangeModelContentEventDisposer.current?.dispose();
+        onDidChangeCursorPositionEventDisposer.current?.dispose();
+        onDidBlurEditorTextEventDisposer.current?.dispose();
+        onDidFocusEditorTextEventDisposer.current?.dispose();
+        mergeConflictResolutionCodeLensDisposer.current?.dispose();
       },
       [editor],
     ); // dispose editor

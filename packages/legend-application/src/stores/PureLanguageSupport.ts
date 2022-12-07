@@ -30,26 +30,55 @@ import {
 } from 'monaco-editor';
 import { EDITOR_LANGUAGE, EDITOR_THEME } from '../const.js';
 
+/**
+ * The postfix to be added to all token types, i.e. identifier.pure, number.pure, etc.
+ */
+const PURE_GRAMMAR_TOKEN_POSTFIX = '.pure';
+
+export enum PURE_GRAMMAR_TOKEN {
+  WHITESPACE = '',
+
+  KEYWORD = 'keyword',
+  IDENTIFIER = 'identifier',
+  OPERATOR = 'operator',
+  DELIMITER = 'delimiter',
+
+  PARSER = 'parser',
+  NUMBER = 'number',
+  DATE = 'date',
+  COLOR = 'color',
+  PACKAGE = 'package',
+  STRING = 'string',
+  COMMENT = 'comment',
+
+  LANGUAGE_STRUCT = 'language-struct',
+  MULTIPLICITY = 'multiplicity',
+  GENERICS = 'generics',
+  PROPERTY = 'property',
+  VARIABLE = 'variable',
+  TYPE = 'type',
+
+  INVALID = 'invalid',
+}
+
 const theme: monacoEditorAPI.IStandaloneThemeData = {
   base: 'vs-dark', // can also be vs-dark or hc-black
   inherit: true, // can also be false to completely replace the builtin rules
   colors: {},
   rules: [
     // NOTE: unfortunately, `monaco-editor` only accepts HEX values, not CSS variables
-    { token: 'identifier', foreground: 'dcdcaa' },
-    { token: 'number', foreground: 'b5cea8' },
-    { token: 'date', foreground: 'b5cea8' },
-    { token: 'color', foreground: 'b5cea8' },
-    { token: 'package', foreground: '808080' },
-    { token: 'parser-marker', foreground: 'c586c0' },
-    { token: 'function', foreground: 'dcdcaa' },
-    { token: 'language-struct', foreground: 'c586c0' },
-    { token: 'multiplicity', foreground: '2d796b' },
-    { token: 'generics', foreground: '2d796b' },
-    { token: 'property', foreground: '9cdcfe' },
-    { token: 'variable', foreground: '4fc1ff' },
-    { token: 'type', foreground: '3dc9b0' },
-    { token: 'type-operator', foreground: '3dc9b0' },
+    { token: PURE_GRAMMAR_TOKEN.IDENTIFIER, foreground: 'dcdcaa' },
+    { token: PURE_GRAMMAR_TOKEN.NUMBER, foreground: 'b5cea8' },
+    { token: PURE_GRAMMAR_TOKEN.DATE, foreground: 'b5cea8' },
+    { token: PURE_GRAMMAR_TOKEN.COLOR, foreground: 'b5cea8' },
+    { token: PURE_GRAMMAR_TOKEN.PACKAGE, foreground: '808080' },
+    { token: PURE_GRAMMAR_TOKEN.PARSER, foreground: 'c586c0' },
+    { token: PURE_GRAMMAR_TOKEN.LANGUAGE_STRUCT, foreground: 'c586c0' },
+    { token: PURE_GRAMMAR_TOKEN.MULTIPLICITY, foreground: '2d796b' },
+    { token: PURE_GRAMMAR_TOKEN.GENERICS, foreground: '2d796b' },
+    { token: PURE_GRAMMAR_TOKEN.PROPERTY, foreground: '9cdcfe' },
+    { token: PURE_GRAMMAR_TOKEN.VARIABLE, foreground: '4fc1ff' },
+    { token: PURE_GRAMMAR_TOKEN.TYPE, foreground: '3dc9b0' },
   ],
 };
 
@@ -110,7 +139,7 @@ const generateLanguageMonarch = (
   // TODO: add syntax highlighting for modules/plugins (come up with a plugin mechanism to do this).
   ({
     defaultToken: 'invalid',
-    tokenPostfix: '.pure',
+    tokenPostfix: PURE_GRAMMAR_TOKEN_POSTFIX,
 
     keywords: [
       ...extraKeywords,
@@ -251,8 +280,8 @@ const generateLanguageMonarch = (
           /^\s*###[\w]+/,
           {
             cases: {
-              '@parsers': 'parser-marker',
-              '@default': 'invalid',
+              '@parsers': PURE_GRAMMAR_TOKEN.PARSER,
+              '@default': PURE_GRAMMAR_TOKEN.INVALID,
             },
           },
         ],
@@ -262,9 +291,9 @@ const generateLanguageMonarch = (
           /(@identifier)/,
           {
             cases: {
-              '@languageStructs': 'language-struct',
-              '@keywords': 'keyword.$0',
-              '@default': 'identifier',
+              '@languageStructs': PURE_GRAMMAR_TOKEN.LANGUAGE_STRUCT,
+              '@keywords': `${PURE_GRAMMAR_TOKEN.KEYWORD}.$0`,
+              '@default': PURE_GRAMMAR_TOKEN.IDENTIFIER,
             },
           },
         ],
@@ -279,8 +308,8 @@ const generateLanguageMonarch = (
           /@symbols/,
           {
             cases: {
-              '@operators': 'operator',
-              '@default': 'identifier',
+              '@operators': PURE_GRAMMAR_TOKEN.OPERATOR,
+              '@default': PURE_GRAMMAR_TOKEN.IDENTIFIER,
             },
           },
         ],
@@ -288,97 +317,147 @@ const generateLanguageMonarch = (
         { include: '@number' },
 
         // delimiter: after number because of .\d floats
-        [/[;,.]/, 'delimiter'],
+        [/[;,.]/, PURE_GRAMMAR_TOKEN.DELIMITER],
 
         // strings
         // NOTE: including non-teminated string so as people type ', we can start showing them that they're working on a string
-        [/'([^'\\]|\\.)*$/, 'string.invalid'],
-        [/'/, 'string', '@string'],
+        [/'([^'\\]|\\.)*$/, `${PURE_GRAMMAR_TOKEN.STRING}.invalid`],
+        [/'/, PURE_GRAMMAR_TOKEN.STRING, '@string'],
 
         { include: '@characters' },
       ],
 
       pure: [
         // type
-        [/(@package)(\*)/, ['package', 'package']], // import path
+        [/(@package\*)/, [PURE_GRAMMAR_TOKEN.PACKAGE]], // import path
         [
           /(@package?)(@identifier)(@generics?)(\s*)(@multiplicity)/,
-          ['package', 'type', 'generics', '', 'multiplicity'],
+          [
+            PURE_GRAMMAR_TOKEN.PACKAGE,
+            PURE_GRAMMAR_TOKEN.TYPE,
+            PURE_GRAMMAR_TOKEN.GENERICS,
+            PURE_GRAMMAR_TOKEN.WHITESPACE,
+            PURE_GRAMMAR_TOKEN.MULTIPLICITY,
+          ],
         ],
         [
           /(@package)(@identifier)(@generics?)/,
-          ['package', 'type', 'generics'],
+          [
+            PURE_GRAMMAR_TOKEN.PACKAGE,
+            PURE_GRAMMAR_TOKEN.TYPE,
+            PURE_GRAMMAR_TOKEN.GENERICS,
+          ],
         ],
 
         // special operators that uses type (e.g. constructor, cast)
         [
           /([@^])(?:\s*)(@package?)(@identifier)(@generics?)(@multiplicity?)/,
-          ['type-operator', 'package', 'type', 'generics', 'multiplicity'],
+          [
+            `${PURE_GRAMMAR_TOKEN.TYPE}.operator`,
+            PURE_GRAMMAR_TOKEN.PACKAGE,
+            PURE_GRAMMAR_TOKEN.TYPE,
+            PURE_GRAMMAR_TOKEN.GENERICS,
+            PURE_GRAMMAR_TOKEN.MULTIPLICITY,
+          ],
         ],
 
         // property / parameter
-        [/(\.\s*)(@identifier)/, ['delimiter', 'property']],
-        [/(@identifier)(\s*[:=])/, ['property', '']],
-        [/(@identifier)(\.)(@identifier)/, ['type', '', 'property']], // profile tag and stereotype
+        [
+          /(\.\s*)(@identifier)/,
+          [PURE_GRAMMAR_TOKEN.DELIMITER, PURE_GRAMMAR_TOKEN.PROPERTY],
+        ],
+        [
+          /(@identifier)(\s*[:=])/,
+          [PURE_GRAMMAR_TOKEN.PROPERTY, PURE_GRAMMAR_TOKEN.OPERATOR],
+        ],
+        [
+          /(@identifier)(\.)(@identifier)/,
+          [
+            PURE_GRAMMAR_TOKEN.TYPE,
+            PURE_GRAMMAR_TOKEN.OPERATOR,
+            PURE_GRAMMAR_TOKEN.PROPERTY,
+          ],
+        ], // profile tag and stereotype
 
         // variables
-        [/(let)(\s+)(@identifier)(\s*[:=])/, ['keyword', '', 'variable', '']],
-        [/(\$@identifier)/, ['variable']],
+        [
+          /(let)(\s+)(@identifier)(\s*[:=])/,
+          [
+            PURE_GRAMMAR_TOKEN.KEYWORD,
+            PURE_GRAMMAR_TOKEN.WHITESPACE,
+            PURE_GRAMMAR_TOKEN.VARIABLE,
+            PURE_GRAMMAR_TOKEN.OPERATOR,
+          ],
+        ],
+        [/(\$@identifier)/, [PURE_GRAMMAR_TOKEN.VARIABLE]],
       ],
 
       date: [
-        [/(%latest)/, ['date']],
-        [/(@date)/, ['date']],
-        [/(@time)/, ['date']],
+        [/(%latest)/, [`${PURE_GRAMMAR_TOKEN.DATE}.latest`]],
+        [/(@date)/, [PURE_GRAMMAR_TOKEN.DATE]],
+        [/(@time)/, [`${PURE_GRAMMAR_TOKEN.DATE}.time`]],
       ],
 
-      color: [[/(#[0-9a-fA-F]{6})/, ['color']]],
+      color: [[/(#[0-9a-fA-F]{6})/, [PURE_GRAMMAR_TOKEN.COLOR]]],
 
       number: [
-        [/(@digits)[eE]([-+]?(@digits))?[fFdD]?/, 'number.float'],
-        [/(@digits)\.(@digits)([eE][-+]?(@digits))?[fFdD]?/, 'number.float'],
-        [/0[xX](@hexdigits)[Ll]?/, 'number.hex'],
-        [/0(@octaldigits)[Ll]?/, 'number.octal'],
-        [/0[bB](@binarydigits)[Ll]?/, 'number.binary'],
-        [/(@digits)[fFdD]/, 'number.float'],
-        [/(@digits)[lL]?/, 'number'],
+        [
+          /(@digits)[eE]([-+]?(@digits))?[fFdD]?/,
+          `${PURE_GRAMMAR_TOKEN.NUMBER}.float`,
+        ],
+        [
+          /(@digits)\.(@digits)([eE][-+]?(@digits))?[fFdD]?/,
+          `${PURE_GRAMMAR_TOKEN.NUMBER}.float`,
+        ],
+        [/0[xX](@hexdigits)[Ll]?/, `${PURE_GRAMMAR_TOKEN.NUMBER}.hex`],
+        [/0(@octaldigits)[Ll]?/, `${PURE_GRAMMAR_TOKEN.NUMBER}.octal`],
+        [/0[bB](@binarydigits)[Ll]?/, `${PURE_GRAMMAR_TOKEN.NUMBER}.binary`],
+        [/(@digits)[fFdD]/, `${PURE_GRAMMAR_TOKEN.NUMBER}.float`],
+        [/(@digits)[lL]?/, PURE_GRAMMAR_TOKEN.NUMBER],
       ],
 
       whitespace: [
-        [/[ \t\r\n]+/, ''],
-        [/\/\*\*(?!\/)/, 'comment.doc', '@doc'],
-        [/\/\*/, 'comment', '@comment'],
-        [/\/\/.*$/, 'comment'],
+        [/[ \t\r\n]+/, PURE_GRAMMAR_TOKEN.WHITESPACE],
+        [/\/\*\*(?!\/)/, `${PURE_GRAMMAR_TOKEN.COMMENT}.doc`, '@doc'],
+        [/\/\*/, PURE_GRAMMAR_TOKEN.COMMENT, '@comment'],
+        [/\/\/.*$/, PURE_GRAMMAR_TOKEN.COMMENT],
       ],
 
       comment: [
-        [/[^/*]+/, 'comment'],
-        // [/\/\*/, 'comment', '@push' ],    // nested comment not allowed :-(
-        // [/\/\*/,    'comment.invalid' ],    // this breaks block comments in the shape of /* //*/
-        [/\*\//, 'comment', '@pop'],
-        [/[/*]/, 'comment'],
+        [/[^/*]+/, PURE_GRAMMAR_TOKEN.COMMENT],
+        // [/\/\*/, PURE_GRAMMAR_TOKEN.COMMENT, '@push' ],    // nested comment not allowed :-(
+        // [/\/\*/, ${PURE_GRAMMAR_TOKEN.COMMENT}.invalid` ],    // this breaks block comments in the shape of /* //*/
+        [/\*\//, PURE_GRAMMAR_TOKEN.COMMENT, '@pop'],
+        [/[/*]/, PURE_GRAMMAR_TOKEN.COMMENT],
       ],
 
       // Identical copy of comment above, except for the addition of .doc
       doc: [
-        [/[^/*]+/, 'comment.doc'],
-        // [/\/\*/, 'comment.doc', '@push' ],    // nested comment not allowed :-(
-        [/\/\*/, 'comment.doc.invalid'],
-        [/\*\//, 'comment.doc', '@pop'],
-        [/[/*]/, 'comment.doc'],
+        [/[^/*]+/, `${PURE_GRAMMAR_TOKEN.COMMENT}.doc`],
+        // [/\/\*/, `${PURE_GRAMMAR_TOKEN.COMMENT}.doc`, '@push' ],    // nested comment not allowed :-(
+        [/\/\*/, `${PURE_GRAMMAR_TOKEN.COMMENT}.doc.invalid`],
+        [/\*\//, `${PURE_GRAMMAR_TOKEN.COMMENT}.doc`, '@pop'],
+        [/[/*]/, `${PURE_GRAMMAR_TOKEN.COMMENT}.doc`],
       ],
 
       string: [
-        [/[^\\']+/, 'string'],
-        [/@escapes/, 'string.escape'],
-        [/\\./, 'string.escape.invalid'],
-        [/'/, 'string', '@pop'],
+        [/[^\\']+/, PURE_GRAMMAR_TOKEN.STRING],
+        [/@escapes/, `${PURE_GRAMMAR_TOKEN.STRING}.escape`],
+        [/\\./, `${PURE_GRAMMAR_TOKEN.STRING}.escape.invalid`],
+        [/'/, PURE_GRAMMAR_TOKEN.STRING, '@pop'],
       ],
 
       characters: [
-        [/'[^\\']'/, 'string'],
-        [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
-        [/'/, 'string.invalid'],
+        [/'[^\\']'/, PURE_GRAMMAR_TOKEN.STRING],
+        [
+          /(')(@escapes)(')/,
+          [
+            PURE_GRAMMAR_TOKEN.STRING,
+            `${PURE_GRAMMAR_TOKEN.STRING}.escape`,
+            PURE_GRAMMAR_TOKEN.STRING,
+          ],
+        ],
+        [/'/, `${PURE_GRAMMAR_TOKEN.STRING}.invalid`],
       ],
     },
   } as monacoLanguagesAPI.IMonarchLanguage);

@@ -44,7 +44,8 @@ export * from './stores/LegendApplicationDocumentation.js';
 
 export * from './stores/ApplicationStoreTestUtils.js';
 export * from './stores/WebApplicationRouter.js';
-export * from './stores/PureLanguageTextEditorUtils.js';
+export { PURE_GRAMMAR_TOKEN } from './stores/PureLanguageSupport.js';
+export * from './stores/PureLanguageTextEditorSupport.js';
 
 // ------------------------------------------- Shared components -------------------------------------------
 

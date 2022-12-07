@@ -71,6 +71,8 @@ export const getBaseTextEditorOptions =
     // Enforce a fixed font-family to make cross platform display consistent (i.e. Mac defaults to use `Menlo` which is bigger than
     // `Consolas` on Windows, etc.)
     fontFamily: 'Roboto Mono',
+    // Enable font ligature: glyphs which combine the shapes of certain sequences of characters into a new form that makes for
+    //  a more harmonious reading experience.
     fontLigatures: true,
     // Make sure hover or widget shown near boundary are not truncated by setting their position to `fixed`
     fixedOverflowWidgets: true,

@@ -15,7 +15,11 @@
  */
 
 import { PARSER_SECTION_MARKER, PURE_PARSER } from '@finos/legend-graph';
-import { hasWhiteSpace } from '@finos/legend-shared';
+import {
+  getNullableFirstElement,
+  guaranteeNonNullable,
+  hasWhiteSpace,
+} from '@finos/legend-shared';
 import {
   type editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
@@ -318,3 +322,6 @@ export const getInlineSnippetSuggestions = (
       } as monacoLanguagesAPI.CompletionItem),
   );
 };
+
+export const getBaseTokenType = (token: string): string =>
+  guaranteeNonNullable(getNullableFirstElement(token.split('.')));

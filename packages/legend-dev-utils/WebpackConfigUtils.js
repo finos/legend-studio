@@ -360,6 +360,7 @@ export const getWebAppBaseWebpackConfig = (
           'snippetController2',
           'suggest',
           'wordHighlighter',
+          'gotoSymbol',
         ],
       }),
     ].filter(Boolean),

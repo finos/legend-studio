@@ -19,16 +19,19 @@ import { observer } from 'mobx-react-lite';
 import {
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
+  type IRange,
+  type Token,
   type IDisposable,
-  type Position,
 } from 'monaco-editor';
 import type { FileEditorState } from '../../../stores/FileEditorState.js';
 import {
   EDITOR_LANGUAGE,
   EDITOR_THEME,
+  getBaseTokenType,
   getInlineSnippetSuggestions,
   getParserElementSnippetSuggestions,
   getParserKeywordSuggestions,
+  PURE_GRAMMAR_TOKEN,
   useApplicationStore,
   useCommands,
 } from '@finos/legend-application';
@@ -44,7 +47,10 @@ import {
   collectExtraInlineSnippetSuggestions,
   collectParserElementSnippetSuggestions,
   collectParserKeywordSuggestions,
-} from '../../../stores/PureTextEditorUtils.js';
+} from '../../../stores/FileEditorUtils.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
+import { FileCoordinate } from '../../../server/models/PureFile.js';
 
 export const FileEditor = observer(
   (props: { editorState: FileEditorState }) => {
@@ -52,31 +58,63 @@ export const FileEditor = observer(
     const suggestionProviderDisposer = useRef<IDisposable | undefined>(
       undefined,
     );
-    const currentCursorPosition = useRef<Position | undefined>(undefined);
+    const definitionProviderDisposer = useRef<IDisposable | undefined>(
+      undefined,
+    );
+    const textInputRef = useRef<HTMLDivElement>(null);
     const [editor, setEditor] = useState<
       monacoEditorAPI.IStandaloneCodeEditor | undefined
     >();
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const content = editorState.file.content;
-    const textInput = useRef<HTMLDivElement>(null);
     const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
     useEffect(() => {
-      if (!editor && textInput.current) {
-        const element = textInput.current;
+      if (!editor && textInputRef.current) {
+        const element = textInputRef.current;
         const newEditor = monacoEditorAPI.create(element, {
           ...getBaseTextEditorOptions(),
           language: EDITOR_LANGUAGE.PURE,
           theme: EDITOR_THEME.LEGEND,
           wordWrap: editorState.textEditorState.wrapText ? 'on' : 'off',
         });
-        newEditor.onDidChangeCursorPosition(() => {
+        // NOTE: (hacky) hijack the editor service so we can alternate the behavior of goto definition
+        // since we cannot really override the editor service anymore, but must provide a full editor service
+        // implementation in place, which is not practical for now
+        // See https://github.com/microsoft/monaco-editor/issues/852
+        // See https://github.com/microsoft/monaco-editor/issues/2000#issuecomment-649622966
+        (
+          newEditor as monacoEditorAPI.IEditorOverrideServices
+        )._codeEditorService.openCodeEditor = async () => {
           const currentPosition = newEditor.getPosition();
           if (currentPosition) {
-            currentCursorPosition.current = currentPosition;
+            flowResult(
+              editorStore.executeNavigation(
+                new FileCoordinate(
+                  editorState.filePath,
+                  currentPosition.lineNumber,
+                  currentPosition.column,
+                ),
+              ),
+            ).catch(applicationStore.alertUnhandledError);
           }
+        };
+        // NOTE: with the way we create suggestion tokens, there's a problem
+        // where for the definition coming from the same URI, the goto-definition
+        // action will by default just go to the token, i.e. do nothing in our case
+        // as such, we have to override `gotoLocation.alternativeDefinitionCommand`
+        // in order for `editorService.openCodeEditor` to be called
+        // See https://github.com/microsoft/vscode/issues/110060
+        // See https://github.com/microsoft/vscode/issues/107841
+        newEditor.updateOptions({
+          gotoLocation: {
+            multiple: 'goto',
+            multipleDefinitions: 'goto',
+            alternativeDefinitionCommand: 'DUMMY',
+          },
         });
+
         newEditor.onDidChangeModelContent(() => {
           const currentVal = newEditor.getValue();
           if (currentVal !== editorState.file.content) {
@@ -111,6 +149,63 @@ export const FileEditor = observer(
       }
     }
 
+    const textTokens = editor
+      ? monacoEditorAPI.tokenize(editor.getValue(), EDITOR_LANGUAGE.PURE)
+      : [];
+    definitionProviderDisposer.current?.dispose();
+    definitionProviderDisposer.current =
+      monacoLanguagesAPI.registerDefinitionProvider(EDITOR_LANGUAGE.PURE, {
+        provideDefinition: (model, position) => {
+          // NOTE: there is a quirky problem with monaco-editor or our integration with it
+          // where sometimes, hovering the mouse on the right half of the last character of a definition token
+          // and then hitting Ctrl/Cmd key will not be trigger definition provider. We're not quite sure what
+          // to do with that for the time being.
+          const lineTokens = guaranteeNonNullable(
+            textTokens[position.lineNumber - 1],
+          );
+          let currentToken: Token | undefined = undefined;
+          let currentTokenRange: IRange | undefined = undefined;
+          for (let i = 1; i < lineTokens.length; ++i) {
+            const token = guaranteeNonNullable(lineTokens[i]);
+            if (token.offset + 1 > position.column) {
+              currentToken = guaranteeNonNullable(lineTokens[i - 1]);
+              // this is the selection of text from another file for peeking/preview the definition
+              // We can't really do much here since we do goto-definition asynchronously, we will
+              // show the token itself
+              currentTokenRange = {
+                startLineNumber: position.lineNumber,
+                startColumn: currentToken.offset + 1,
+                endLineNumber: position.lineNumber,
+                endColumn: token.offset + 1, // NOTE: seems like this needs to be exclusive
+              };
+              break;
+            }
+          }
+          if (
+            currentToken &&
+            currentTokenRange &&
+            // NOTE: only allow goto definition for these tokens
+            (
+              [
+                PURE_GRAMMAR_TOKEN.TYPE,
+                PURE_GRAMMAR_TOKEN.VARIABLE,
+                PURE_GRAMMAR_TOKEN.PROPERTY,
+                PURE_GRAMMAR_TOKEN.IDENTIFIER,
+              ] as string[]
+            ).includes(getBaseTokenType(currentToken.type))
+          ) {
+            return [
+              {
+                uri: editorState.textEditorState.model.uri,
+                range: currentTokenRange,
+              },
+            ];
+          }
+          return [];
+        },
+      });
+
+    // suggestion
     suggestionProviderDisposer.current?.dispose();
     suggestionProviderDisposer.current =
       monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
@@ -173,6 +268,9 @@ export const FileEditor = observer(
           // NOTE: dispose the editor to prevent potential memory-leak
           editor.dispose();
         }
+
+        definitionProviderDisposer.current?.dispose();
+        suggestionProviderDisposer.current?.dispose();
       },
       [editorState, editor],
     );
@@ -200,7 +298,7 @@ export const FileEditor = observer(
         </div>
         <div className="panel__content file-editor__content">
           <div ref={ref} className="text-editor__container">
-            <div className="text-editor__body" ref={textInput} />
+            <div className="text-editor__body" ref={textInputRef} />
           </div>
         </div>
       </div>
