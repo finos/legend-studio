@@ -1092,7 +1092,10 @@ export class EditorStore implements CommandRegistrar {
       );
       const editorStatesToClose = this.tabManagerState.tabs.filter(
         (tab) =>
-          tab instanceof FileEditorState && tab.filePath.startsWith(path),
+          tab instanceof FileEditorState &&
+          (isDirectory
+            ? tab.filePath.startsWith(`${path}/`)
+            : tab.filePath === path),
       );
       editorStatesToClose.forEach((tab) => this.tabManagerState.closeTab(tab));
       await flowResult(this.directoryTreeState.refreshTreeData());
