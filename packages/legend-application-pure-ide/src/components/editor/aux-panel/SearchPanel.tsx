@@ -117,7 +117,29 @@ const SearchResultEntryDisplay = observer(
                 title="Go to Result"
                 onClick={goToResult(coordinate)}
               >
-                {`line: ${coordinate.startLine} - column: ${coordinate.startColumn}`}
+                {coordinate.preview && (
+                  <div className="search-panel__entry__content__item__label__content">
+                    <div className="search-panel__entry__content__item__label__coordinates">
+                      {`[${coordinate.startLine}:${coordinate.startColumn}]`}
+                    </div>
+                    <div className="search-panel__entry__content__item__label__preview">
+                      <span className="search-panel__entry__content__item__label__preview__text">
+                        {coordinate.preview.before}
+                      </span>
+                      <span className="search-panel__entry__content__item__label__preview__text--found">
+                        {coordinate.preview.found.replaceAll(/\n/g, '\u21B5')}
+                      </span>
+                      <span className="search-panel__entry__content__item__label__preview__text">
+                        {coordinate.preview.after}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {!coordinate.preview && (
+                  <>
+                    {`line: ${coordinate.startLine} - column: ${coordinate.startColumn}`}
+                  </>
+                )}
               </div>
               <div className="search-panel__entry__content__item__actions">
                 <button

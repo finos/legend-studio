@@ -26,7 +26,10 @@ import type {
   ExecutionResult,
 } from '../server/models/Execution.js';
 import type { FileData } from '../server/models/PureFile.js';
-import type { SearchResultEntry } from '../server/models/SearchEntry.js';
+import type {
+  SearchResultCoordinate,
+  SearchResultEntry,
+} from '../server/models/SearchEntry.js';
 import type {
   AbstractTestRunnerCheckResult,
   TestRunnerCancelResult,
@@ -183,6 +186,14 @@ export class PureClient {
         regex: isRegExp,
         limit,
       },
+    );
+
+  getTextSearchPreview = (
+    coordinates: SearchResultCoordinate[],
+  ): Promise<PlainObject<SearchResultCoordinate>[]> =>
+    this.networkClient.post(
+      `${this.baseUrl}/getTextSearchPreview`,
+      coordinates,
     );
 
   checkTestRunner = (

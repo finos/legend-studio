@@ -17,7 +17,7 @@
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { ACTIVITY_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
 import { FileEditorState } from './FileEditorState.js';
-import { deserialize } from 'serializr';
+import { serialize, deserialize } from 'serializr';
 import {
   FileCoordinate,
   FileErrorCoordinate,
@@ -48,6 +48,7 @@ import {
 import {
   type SearchResultEntry,
   getSearchResultEntry,
+  SearchResultCoordinate,
 } from '../server/models/SearchEntry.js';
 import {
   type SearchState,
@@ -1077,7 +1078,25 @@ export class EditorStore implements CommandRegistrar {
           ),
         )) as PlainObject<Usage>[]
       ).map((usage) => deserialize(Usage, usage));
-      this.setSearchState(new UsageResultState(this, concept, usages));
+      const searchResultCoordinates = (
+        (yield this.client.getTextSearchPreview(
+          usages.map((usage) =>
+            serialize(
+              SearchResultCoordinate,
+              new SearchResultCoordinate(
+                usage.source,
+                usage.startLine,
+                usage.startColumn,
+                usage.endLine,
+                usage.endColumn,
+              ),
+            ),
+          ),
+        )) as PlainObject<SearchResultCoordinate>[]
+      ).map((preview) => deserialize(SearchResultCoordinate, preview));
+      this.setSearchState(
+        new UsageResultState(this, concept, usages, searchResultCoordinates),
+      );
       this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH_RESULT);
       this.auxPanelDisplayState.open();
     } catch {
