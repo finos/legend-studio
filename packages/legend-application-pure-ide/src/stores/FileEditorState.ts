@@ -188,6 +188,24 @@ export class FileEditorState
       },
     });
     this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE,
+      trigger: () => Boolean(this.textEditorState.editor?.hasTextFocus()),
+      action: () => {
+        const currentPosition = this.textEditorState.editor?.getPosition();
+        if (currentPosition) {
+          this.editorStore
+            .revealConceptInTree(
+              new FileCoordinate(
+                this.filePath,
+                currentPosition.lineNumber,
+                currentPosition.column,
+              ),
+            )
+            .catch(this.editorStore.applicationStore.alertUnhandledError);
+        }
+      },
+    });
+    this.editorStore.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.FIND_USAGES,
       trigger: () => Boolean(this.textEditorState.editor?.hasTextFocus()),
       action: () => {
@@ -210,6 +228,7 @@ export class FileEditorState
     [
       LEGEND_PURE_IDE_COMMAND_KEY.GO_TO_DEFINITION,
       LEGEND_PURE_IDE_COMMAND_KEY.GO_BACK,
+      LEGEND_PURE_IDE_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE,
       LEGEND_PURE_IDE_COMMAND_KEY.FIND_USAGES,
     ].forEach((key) =>
       this.editorStore.applicationStore.commandCenter.deregisterCommand(key),

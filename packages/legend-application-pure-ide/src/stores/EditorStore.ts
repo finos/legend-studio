@@ -92,6 +92,7 @@ import { SearchCommandState } from './SearchCommandState.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
 import { LEGEND_PURE_IDE_COMMAND_KEY } from './LegendPureIDECommand.js';
 import { ExecutionError } from '../server/models/ExecutionError.js';
+import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 
 export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
@@ -994,6 +995,53 @@ export class EditorStore implements CommandRegistrar {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
       this.textSearchCommandLoadingState.fail();
+    }
+  }
+
+  async revealConceptInTree(coordinate: FileCoordinate): Promise<void> {
+    const errorMessage =
+      'Error revealing concept. Please make sure that the code compiles and that you are looking for a valid concept';
+    let concept: UsageConcept;
+    try {
+      concept = (await this.client.getConceptPath(
+        coordinate.file,
+        coordinate.line,
+        coordinate.column,
+      )) as unknown as UsageConcept;
+    } catch {
+      this.applicationStore.notifyWarning(errorMessage);
+      return;
+    }
+    if (!concept.path) {
+      return;
+    }
+    this.applicationStore.setBlockingAlert({
+      message: 'Revealing concept in tree...',
+      showLoading: true,
+    });
+    try {
+      if (this.activeActivity !== ACTIVITY_MODE.CONCEPT) {
+        this.setActiveActivity(ACTIVITY_MODE.CONCEPT);
+      }
+      const parts = concept.path.split(ELEMENT_PATH_DELIMITER);
+      let currentPath = guaranteeNonNullable(parts[0]);
+      let currentNode = guaranteeNonNullable(
+        this.conceptTreeState.getTreeData().nodes.get(currentPath),
+      );
+      for (let i = 1; i < parts.length; ++i) {
+        currentPath = `${currentPath}${ELEMENT_PATH_DELIMITER}${parts[i]}`;
+        if (!this.conceptTreeState.getTreeData().nodes.get(currentPath)) {
+          await flowResult(this.conceptTreeState.expandNode(currentNode));
+        }
+        currentNode = guaranteeNonNullable(
+          this.conceptTreeState.getTreeData().nodes.get(currentPath),
+        );
+      }
+      this.conceptTreeState.setSelectedNode(currentNode);
+    } catch {
+      this.applicationStore.notifyWarning(errorMessage);
+    } finally {
+      this.applicationStore.setBlockingAlert(undefined);
     }
   }
 

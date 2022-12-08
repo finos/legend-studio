@@ -47,6 +47,7 @@ import {
   collectExtraInlineSnippetSuggestions,
   collectParserElementSnippetSuggestions,
   collectParserKeywordSuggestions,
+  getCopyrightHeaderSuggestions,
 } from '../../../stores/FileEditorUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -216,6 +217,8 @@ export const FileEditor = observer(
         triggerCharacters: ['#'],
         provideCompletionItems: (model, position) => {
           let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+
+          suggestions = suggestions.concat(getCopyrightHeaderSuggestions());
 
           // suggestions for parser keyword
           suggestions = suggestions.concat(

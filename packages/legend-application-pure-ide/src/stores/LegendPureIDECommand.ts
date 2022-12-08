@@ -26,6 +26,7 @@ export enum LEGEND_PURE_IDE_COMMAND_KEY {
   FULL_RECOMPILE_WITH_FULL_INIT = 'editor.full-compile.with-init',
   RUN_ALL_TESTS = 'editor.run-all-tests',
   RUN_RELAVANT_TESTS = 'editor.run-relavant-tests',
+  REVEAL_CONCEPT_IN_TREE = 'editor.file-editor.reveal-concept-in-tree',
   GO_TO_DEFINITION = 'editor.file-editor.go-to-definition',
   GO_BACK = 'editor.file-editor.go-back',
   FIND_USAGES = 'editor.file-editor.find-usage',
@@ -67,6 +68,10 @@ export const LEGEND_PURE_IDE_COMMAND_CONFIG: CommandConfigData = {
   [LEGEND_PURE_IDE_COMMAND_KEY.RUN_RELAVANT_TESTS]: {
     title: 'Run relavant tests',
     defaultKeyboardShortcut: 'Shift+F10',
+  },
+  [LEGEND_PURE_IDE_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE]: {
+    title: 'Reveal concept in tree (File)',
+    defaultKeyboardShortcut: 'Control+Shift+KeyB',
   },
   [LEGEND_PURE_IDE_COMMAND_KEY.GO_TO_DEFINITION]: {
     title: 'Go to definition (File)',
