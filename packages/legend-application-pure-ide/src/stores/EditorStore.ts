@@ -94,6 +94,7 @@ import { EditorTabManagerState } from './EditorTabManagerState.js';
 import { LEGEND_PURE_IDE_COMMAND_KEY } from './LegendPureIDECommand.js';
 import { ExecutionError } from '../server/models/ExecutionError.js';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
+import type { SourceModificationResult } from '../server/models/Source.js';
 
 export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
@@ -941,26 +942,25 @@ export class EditorStore implements CommandRegistrar {
     add: boolean,
     message: string,
   ): GeneratorFn<void> {
-    yield flowResult(
-      this.execute(
-        'updateSource',
+    try {
+      const result = (yield this.client.updateSource([
         {
-          updatePath: path,
-          updateSources: [
-            {
-              path,
-              line,
-              column,
-              add,
-              message,
-            },
-          ],
+          path,
+          line,
+          column,
+          message,
+          add,
         },
-        false,
-        (result: ExecutionResult) =>
-          flowResult(this.manageExecuteGoResult(result)),
-      ),
-    );
+      ])) as unknown as SourceModificationResult;
+      this.setConsoleText(result.text);
+      if (result.modifiedFiles.length) {
+        for (const file of result.modifiedFiles) {
+          yield flowResult(this.reloadFile(file));
+        }
+      }
+    } catch {
+      this.applicationStore.notifyError(`Can't update file: ${path}`);
+    }
   }
 
   *searchFile(): GeneratorFn<void> {

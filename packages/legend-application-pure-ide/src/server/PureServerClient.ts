@@ -45,6 +45,10 @@ import type {
   DiagramClassInfo,
   DiagramInfo,
 } from '../server/models/DiagramInfo.js';
+import type {
+  SourceModificationResult,
+  UpdateSourceInput,
+} from './models/Source.js';
 
 export class PureClient {
   private networkClient: NetworkClient;
@@ -243,6 +247,11 @@ export class PureClient {
       func,
       param,
     });
+
+  updateSource = (
+    updateInputs: UpdateSourceInput[],
+  ): Promise<PlainObject<SourceModificationResult>> =>
+    this.networkClient.post(`${this.baseUrl}/updateSource`, updateInputs);
 
   createFile = (path: string): Promise<PlainObject<CommandResult>> =>
     this.networkClient.get(
