@@ -37,7 +37,9 @@ import {
 } from '@finos/legend-application';
 import {
   clsx,
+  ContextMenu,
   getBaseTextEditorOptions,
+  MenuContent,
   moveCursorToPosition,
   useResizeDetector,
   WordWrapIcon,
@@ -66,6 +68,7 @@ export const FileEditor = observer(
     const [editor, setEditor] = useState<
       monacoEditorAPI.IStandaloneCodeEditor | undefined
     >();
+    const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const content = editorState.file.content;
@@ -79,6 +82,13 @@ export const FileEditor = observer(
           language: EDITOR_LANGUAGE.PURE,
           theme: EDITOR_THEME.LEGEND,
           wordWrap: editorState.textEditorState.wrapText ? 'on' : 'off',
+          contextmenu: true,
+          // NOTE: since things like context-menus, tooltips are mounted into Shadow DOM
+          // by default, we can't override their CSS by design, we need to disable Shadow DOM
+          // to style them to our needs
+          // See https://github.com/microsoft/monaco-editor/issues/2396
+          // See https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM
+          useShadowDOM: false,
         });
         // NOTE: (hacky) hijack the editor service so we can alternate the behavior of goto definition
         // since we cannot really override the editor service anymore, but must provide a full editor service
@@ -113,6 +123,56 @@ export const FileEditor = observer(
             multiple: 'goto',
             multipleDefinitions: 'goto',
             alternativeDefinitionCommand: 'DUMMY',
+          },
+        });
+
+        // NOTE: we need to find a way to remove some items in context-menu
+        // but currently there's no API exposed by monaco-editor to do so
+        // hence, we have to use this hack where we will hijack the mounted context-menu
+        // and remove undesired DOM nodes
+        // See https://github.com/microsoft/monaco-editor/issues/1567
+        // However, it's not enough to just do the DOM surgery in `onContextMenu`
+        // since at this point, the context menu is not rendered yet, so we have to
+        // make use of `useState` and `useEffect` to achieve this goal
+        // as `useEffect` is called after DOM rendering occurs
+        newEditor.onContextMenu(() => setIsContextMenuOpen(true));
+        newEditor.addAction({
+          id: 'editor.action.pure.find-usages',
+          label: 'Find Usages',
+          contextMenuGroupId: 'navigation',
+          contextMenuOrder: 1000,
+          run: function (_editor) {
+            const currentPosition = _editor.getPosition();
+            if (currentPosition) {
+              const coordinate = new FileCoordinate(
+                editorState.filePath,
+                currentPosition.lineNumber,
+                currentPosition.column,
+              );
+              flowResult(editorStore.findUsages(coordinate)).catch(
+                applicationStore.alertUnhandledError,
+              );
+            }
+          },
+        });
+        newEditor.addAction({
+          id: 'editor.action.pure.reveal-concept-in-tree',
+          label: 'Reveal Concept',
+          contextMenuGroupId: 'navigation',
+          contextMenuOrder: 1000,
+          run: function (_editor) {
+            const currentPosition = _editor.getPosition();
+            if (currentPosition) {
+              editorStore
+                .revealConceptInTree(
+                  new FileCoordinate(
+                    editorState.filePath,
+                    currentPosition.lineNumber,
+                    currentPosition.column,
+                  ),
+                )
+                .catch(applicationStore.alertUnhandledError);
+            }
           },
         });
 
@@ -255,6 +315,38 @@ export const FileEditor = observer(
     useCommands(editorState);
 
     useEffect(() => {
+      // NOTE: we have tried to remove the DOM node, but since the context-menu height is computed
+      // this causes a problem with the UI, so we just can disable the item until an official API
+      // is supported and we can removed this hack
+      // See https://github.com/microsoft/monaco-editor/issues/1567
+      if (isContextMenuOpen) {
+        const contextMenuNode = document.querySelector(
+          '.file-editor .monaco-menu',
+        );
+        if (contextMenuNode) {
+          const MENU_ITEMS_TO_DISABLE = ['Peek'];
+          Array.from(
+            document.querySelectorAll(
+              '.file-editor .monaco-menu .action-label',
+            ),
+          )
+            .filter((element) =>
+              MENU_ITEMS_TO_DISABLE.includes(element.innerHTML),
+            )
+            .forEach((element) => {
+              const menuItem = element.parentElement?.parentElement;
+              if (menuItem) {
+                menuItem.classList.add('disabled');
+                menuItem.style.opacity = '0.3';
+                menuItem.style.pointerEvents = 'none';
+              }
+            });
+        }
+        setIsContextMenuOpen(false);
+      }
+    }, [isContextMenuOpen]);
+
+    useEffect(() => {
       if (width !== undefined && height !== undefined) {
         editor?.layout({ width, height });
       }
@@ -299,11 +391,14 @@ export const FileEditor = observer(
             </button>
           </div>
         </div>
-        <div className="panel__content file-editor__content">
+        <ContextMenu
+          className="panel__content file-editor__content"
+          content={<MenuContent>asd</MenuContent>}
+        >
           <div ref={ref} className="text-editor__container">
             <div className="text-editor__body" ref={textInputRef} />
           </div>
-        </div>
+        </ContextMenu>
       </div>
     );
   },

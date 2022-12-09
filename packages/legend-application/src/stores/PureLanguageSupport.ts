@@ -501,8 +501,18 @@ export const setupPureLanguageService = (
       command: null,
     },
     {
+      // disable change all instances
+      keybinding: KeyMod.CtrlCmd | KeyCode.F2,
+      command: null,
+    },
+    {
       // disable toggle debugger breakpoint
       keybinding: KeyMod.Shift | KeyCode.F10,
+      command: null,
+    },
+    {
+      // disable go-to definition
+      keybinding: KeyMod.CtrlCmd | KeyCode.F12,
       command: null,
     },
   ]);
