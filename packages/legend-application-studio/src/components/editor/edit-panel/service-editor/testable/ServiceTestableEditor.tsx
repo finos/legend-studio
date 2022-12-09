@@ -27,6 +27,8 @@ import {
   Panel,
   LockIcon,
   ModalTitle,
+  MenuContent,
+  MenuContentItem,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
@@ -83,20 +85,10 @@ const ServiceSuiteHeaderTabContextMenu = observer(
     const rename = (): void => testableState.setSuiteToRename(testSuite);
 
     return (
-      <div ref={ref} className="mapping-editor__header__tab__context-menu">
-        <button
-          className="mapping-editor__header__tab__context-menu__item"
-          onClick={rename}
-        >
-          Rename
-        </button>
-        <button
-          className="mapping-editor__header__tab__context-menu__item"
-          onClick={deleteSuite}
-        >
-          Delete
-        </button>
-      </div>
+      <MenuContent ref={ref}>
+        <MenuContentItem onClick={rename}>Rename</MenuContentItem>
+        <MenuContentItem onClick={deleteSuite}>Delete</MenuContentItem>
+      </MenuContent>
     );
   }),
 );

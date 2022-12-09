@@ -25,7 +25,7 @@ import type {
   ExecutionActivity,
   ExecutionResult,
 } from '../server/models/Execution.js';
-import type { FileData } from '../server/models/PureFile.js';
+import type { FileData } from './models/File.js';
 import type {
   SearchResultCoordinate,
   SearchResultEntry,

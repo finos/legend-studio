@@ -21,15 +21,15 @@ import { useApplicationStore } from '@finos/legend-application';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { Dialog } from '@finos/legend-art';
 
-export const CreateNewFileCommand = observer(() => {
+export const CreateNewDirectoryPrompt = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const currentNode = editorStore.directoryTreeState.nodeForCreateNewFile;
+  const currentNode = editorStore.directoryTreeState.nodeForCreateNewDirectory;
   const [value, setValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   // actions
   const closeModal = (): void =>
-    editorStore.directoryTreeState.setNodeForCreateNewFile(undefined);
+    editorStore.directoryTreeState.setNodeForCreateNewDirectory(undefined);
   const onValueChange: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ): void => setValue(event.target.value);
@@ -42,7 +42,9 @@ export const CreateNewFileCommand = observer(() => {
     event.preventDefault();
     closeModal();
     flowResult(
-      editorStore.createNewFile(`${currentNode.data.li_attr.path}/${value}`),
+      editorStore.createNewDirectory(
+        `${currentNode.data.li_attr.path}/${value}`,
+      ),
     ).catch(applicationStore.alertUnhandledError);
   };
   const handleEnter = (): void => {
@@ -61,7 +63,7 @@ export const CreateNewFileCommand = observer(() => {
       PaperProps={{ classes: { root: 'command-modal__inner-container' } }}
     >
       <div className="modal modal--dark command-modal">
-        <div className="modal__title">Create a new file</div>
+        <div className="modal__title">Create a new directory</div>
         <div className="command-modal__content">
           <form className="command-modal__content__form" onSubmit={create}>
             <input

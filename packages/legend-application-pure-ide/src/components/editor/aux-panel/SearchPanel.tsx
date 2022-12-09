@@ -22,7 +22,7 @@ import type {
 import {
   FileCoordinate,
   trimPathLeadingSlash,
-} from '../../../server/models/PureFile.js';
+} from '../../../server/models/File.js';
 import { flowResult } from 'mobx';
 import {
   type SearchResultState,

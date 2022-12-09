@@ -15,7 +15,14 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { clsx, DropdownMenu, ContextMenu, TimesIcon } from '@finos/legend-art';
+import {
+  clsx,
+  DropdownMenu,
+  ContextMenu,
+  TimesIcon,
+  MenuContentItem,
+  MenuContent,
+} from '@finos/legend-art';
 import { filterByType } from '@finos/legend-shared';
 import {
   EntityDiffViewState,
@@ -44,30 +51,16 @@ const WorkspaceReviewPanelHeaderTabContextMenu = observer(
     const closeAll = (): void => editorStore.tabManagerState.closeAllTabs();
 
     return (
-      <div
-        ref={ref}
-        className="workspace-review-panel__header__tab__context-menu"
-      >
-        <button
-          className="workspace-review-panel__header__tab__context-menu__item"
-          onClick={close}
-        >
-          Close
-        </button>
-        <button
-          className="workspace-review-panel__header__tab__context-menu__item"
+      <MenuContent ref={ref}>
+        <MenuContentItem onClick={close}>Close</MenuContentItem>
+        <MenuContentItem
           disabled={editorStore.tabManagerState.tabs.length < 2}
           onClick={closeOthers}
         >
           Close Others
-        </button>
-        <button
-          className="workspace-review-panel__header__tab__context-menu__item"
-          onClick={closeAll}
-        >
-          Close All
-        </button>
-      </div>
+        </MenuContentItem>
+        <MenuContentItem onClick={closeAll}>Close All</MenuContentItem>
+      </MenuContent>
     );
   }),
 );

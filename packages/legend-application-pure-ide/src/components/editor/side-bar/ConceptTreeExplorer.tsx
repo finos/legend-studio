@@ -23,7 +23,7 @@ import {
   ConceptType,
 } from '../../../server/models/ConceptTree.js';
 import { flowResult } from 'mobx';
-import { FileCoordinate } from '../../../server/models/PureFile.js';
+import { FileCoordinate } from '../../../server/models/File.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   type TreeNodeContainerProps,
@@ -37,6 +37,8 @@ import {
   CircleNotchIcon,
   RefreshIcon,
   CompressIcon,
+  MenuContent,
+  MenuContentItem,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import { useDrag } from 'react-dnd';
@@ -66,8 +68,6 @@ const ConceptExplorerContextMenu = observer(
         applicationStore.alertUnhandledError,
       );
     };
-    const move = (): void =>
-      applicationStore.notifyUnsupportedFeature('Move file');
     const viewSource = (): void => viewConceptSource(node);
     const serviceJSON = (): void => {
       window.open(
@@ -77,48 +77,29 @@ const ConceptExplorerContextMenu = observer(
     };
 
     return (
-      <div ref={ref} className="explorer__context-menu">
+      <MenuContent ref={ref}>
         {nodeType === ConceptType.PACKAGE && (
-          <div className="explorer__context-menu__item" onClick={renamePackage}>
-            Rename
-          </div>
+          <MenuContentItem onClick={renamePackage}>Rename</MenuContentItem>
         )}
         {nodeType === ConceptType.PROPERTY && (
-          <div
-            className="explorer__context-menu__item"
-            onClick={renameProperty}
-          >
-            Rename
-          </div>
+          <MenuContentItem onClick={renameProperty}>Rename</MenuContentItem>
         )}
         {nodeType !== ConceptType.PACKAGE &&
           nodeType !== ConceptType.PROPERTY && (
-            <div className="explorer__context-menu__item" onClick={rename}>
-              Rename
-            </div>
+            <MenuContentItem onClick={rename}>Rename</MenuContentItem>
           )}
         {nodeType === ConceptType.PACKAGE && (
-          <div className="explorer__context-menu__item" onClick={runTests}>
-            Run tests
-          </div>
+          <MenuContentItem onClick={runTests}>Run tests</MenuContentItem>
         )}
-        {nodeType !== ConceptType.PACKAGE &&
-          nodeType !== ConceptType.PROPERTY && (
-            <div className="explorer__context-menu__item" onClick={move}>
-              Move
-            </div>
-          )}
         {nodeType === ConceptType.FUNCTION && (
-          <div className="explorer__context-menu__item" onClick={serviceJSON}>
+          <MenuContentItem onClick={serviceJSON}>
             Service (JSON)
-          </div>
+          </MenuContentItem>
         )}
         {nodeType !== ConceptType.PACKAGE && (
-          <div className="explorer__context-menu__item" onClick={viewSource}>
-            View Source
-          </div>
+          <MenuContentItem onClick={viewSource}>View Source</MenuContentItem>
         )}
-      </div>
+      </MenuContent>
     );
   }),
 );

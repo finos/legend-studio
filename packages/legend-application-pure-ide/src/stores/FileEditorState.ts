@@ -34,10 +34,10 @@ import { action, flowResult, makeObservable, observable } from 'mobx';
 import { editor as monacoEditorAPI } from 'monaco-editor';
 import {
   FileCoordinate,
-  type PureFile,
+  type File,
   trimPathLeadingSlash,
   type FileErrorCoordinate,
-} from '../server/models/PureFile.js';
+} from '../server/models/File.js';
 import type { EditorStore } from './EditorStore.js';
 import { EditorTabState } from './EditorTabManagerState.js';
 import { LEGEND_PURE_IDE_COMMAND_KEY } from './LegendPureIDECommand.js';
@@ -98,11 +98,11 @@ export class FileEditorState
   extends EditorTabState
   implements CommandRegistrar
 {
-  file: PureFile;
+  file: File;
   readonly filePath: string;
   readonly textEditorState = new FileTextEditorState(this);
 
-  constructor(editorStore: EditorStore, file: PureFile, filePath: string) {
+  constructor(editorStore: EditorStore, file: File, filePath: string) {
     super(editorStore);
 
     makeObservable(this, {
@@ -121,6 +121,7 @@ export class FileEditorState
   override get description(): string | undefined {
     return `File: ${trimPathLeadingSlash(this.filePath)}`;
   }
+
   get fileName(): string {
     return guaranteeNonNullable(
       getNullableLastElement(this.filePath.split(DIRECTORY_PATH_DELIMITER)),
@@ -136,7 +137,7 @@ export class FileEditorState
     this.textEditorState.model.dispose();
   }
 
-  setFile(value: PureFile): void {
+  setFile(value: File): void {
     this.file = value;
   }
 

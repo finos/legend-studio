@@ -18,8 +18,8 @@ import { forwardRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import { FileEditorState } from '../../../stores/FileEditorState.js';
-import { CreateNewFileCommand } from '../command-center/CreateNewFileCommand.js';
-import { CreateNewDirectoryCommand } from '../command-center/CreateNewDirectoryCommand.js';
+import { CreateNewFilePrompt } from './CreateNewFilePrompt.js';
+import { CreateNewDirectoryPrompt } from './CreateNewDirectoryPrompt.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   type TreeNodeContainerProps,
@@ -38,9 +38,14 @@ import {
   FolderIcon,
   FolderOpenIcon,
   WrenchIcon,
+  MenuContent,
+  MenuContentItem,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
-import type { DirectoryTreeNode } from '../../../server/models/DirectoryTree.js';
+import {
+  DirectoryNode,
+  type DirectoryTreeNode,
+} from '../../../server/models/DirectoryTree.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 
 const FileExplorerContextMenu = observer(
@@ -69,42 +74,30 @@ const FileExplorerContextMenu = observer(
       ).catch(applicationStore.alertUnhandledError);
     };
     const renameFile = (): void =>
-      applicationStore.notifyUnsupportedFeature('Rename file');
-    const moveFile = (): void =>
-      applicationStore.notifyUnsupportedFeature('Move file');
+      applicationStore.notifyUnsupportedFeature('Rename');
 
     return (
-      <div ref={ref} className="explorer__context-menu">
+      <MenuContent ref={ref}>
         {isDir && (
-          <div className="explorer__context-menu__item" onClick={createNewFile}>
-            New File
-          </div>
+          <MenuContentItem onClick={createNewFile}>New File</MenuContentItem>
         )}
         {isDir && (
-          <div
-            className="explorer__context-menu__item"
-            onClick={createNewDirectory}
-          >
-            New Folder
-          </div>
+          <MenuContentItem onClick={createNewDirectory}>
+            New Directory
+          </MenuContentItem>
         )}
         {!isDir && (
-          <div className="explorer__context-menu__item" onClick={renameFile}>
-            Rename
-          </div>
+          <MenuContentItem onClick={renameFile}>Rename</MenuContentItem>
         )}
-        <div
-          className="explorer__context-menu__item"
+        <MenuContentItem
+          disabled={Boolean(
+            node.data instanceof DirectoryNode && node.data.children,
+          )}
           onClick={deleteFileOrDirectory}
         >
           Delete
-        </div>
-        {!isDir && (
-          <div className="explorer__context-menu__item" onClick={moveFile}>
-            Move
-          </div>
-        )}
-      </div>
+        </MenuContentItem>
+      </MenuContent>
     );
   }),
 );
@@ -123,19 +116,21 @@ const FileTreeNodeContainer: React.FC<
   const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
     useState(false);
   const { onNodeOpen, onNodeExpand, onNodeCompress } = innerProps;
-  const isPlatformDirectory = node.data.li_attr.path === '/platform';
-  const isFolder = node.data.isFolderNode;
+  const isPlatformDirectory =
+    node.data instanceof DirectoryNode &&
+    node.data.li_attr.path === '/platform';
+  const isDirectory = node.data.isFolderNode;
+  const isChildlessDirectory =
+    node.data instanceof DirectoryNode && !node.data.children;
   const nodeIcon = isPlatformDirectory ? (
     <WrenchIcon className="explorer__icon--platform" />
-  ) : isFolder ? (
-    node.isOpen ? (
-      <div>
-        <FolderOpenIcon />
-      </div>
+  ) : isDirectory ? (
+    isChildlessDirectory ? (
+      <FolderIcon />
+    ) : node.isOpen ? (
+      <FolderOpenIcon />
     ) : (
-      <div>
-        <FolderIcon />
-      </div>
+      <FolderIcon />
     )
   ) : (
     <FileAltIcon className="explorer__icon--file" />
@@ -148,6 +143,9 @@ const FileTreeNodeContainer: React.FC<
   const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
   const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
   const toggleExpansion = (): void => {
+    if (isChildlessDirectory) {
+      return;
+    }
     if (node.isLoading) {
       return;
     }
@@ -161,7 +159,7 @@ const FileTreeNodeContainer: React.FC<
     if (node.isLoading) {
       return;
     }
-    if (isFolder) {
+    if (isDirectory) {
       toggleExpansion();
     } else {
       onNodeOpen(node);
@@ -205,7 +203,7 @@ const FileTreeNodeContainer: React.FC<
               className="explorer__package-tree__node__icon__expand"
               onClick={toggleExpansion}
             >
-              {!isFolder ? (
+              {!isDirectory || isChildlessDirectory ? (
                 <div />
               ) : node.isOpen ? (
                 <ChevronDownIcon />
@@ -275,8 +273,8 @@ const FileExplorerTree = observer(() => {
           onNodeCompress,
         }}
       />
-      <CreateNewFileCommand />
-      <CreateNewDirectoryCommand />
+      <CreateNewFilePrompt />
+      <CreateNewDirectoryPrompt />
     </div>
   );
 });

@@ -21,9 +21,9 @@ import { serialize, deserialize } from 'serializr';
 import {
   FileCoordinate,
   FileErrorCoordinate,
-  PureFile,
+  File,
   trimPathLeadingSlash,
-} from '../server/models/PureFile.js';
+} from '../server/models/File.js';
 import { DirectoryTreeState } from './DirectoryTreeState.js';
 import { ConceptTreeState } from './ConceptTreeState.js';
 import {
@@ -497,7 +497,7 @@ export class EditorStore implements CommandRegistrar {
       yield flowResult(this.checkIfSessionWakingUp());
       editorState = new FileEditorState(
         this,
-        deserialize(PureFile, yield this.client.getFile(filePath)),
+        deserialize(File, yield this.client.getFile(filePath)),
         filePath,
       );
     }
@@ -518,9 +518,7 @@ export class EditorStore implements CommandRegistrar {
     yield Promise.all(
       this.tabManagerState.tabs.map(async (tab) => {
         if (tab instanceof FileEditorState && tab.filePath === filePath) {
-          tab.setFile(
-            deserialize(PureFile, await this.client.getFile(filePath)),
-          );
+          tab.setFile(deserialize(File, await this.client.getFile(filePath)));
         } else if (
           tab instanceof DiagramEditorState &&
           tab.filePath === filePath

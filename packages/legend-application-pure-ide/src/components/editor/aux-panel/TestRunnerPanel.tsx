@@ -62,7 +62,7 @@ import {
 } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import { FileCoordinate } from '../../../server/models/PureFile.js';
+import { FileCoordinate } from '../../../server/models/File.js';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 
 const TestTreeNodeContainer = observer(

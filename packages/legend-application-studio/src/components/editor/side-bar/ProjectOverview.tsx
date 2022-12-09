@@ -35,6 +35,8 @@ import {
   Modal,
   ModalBody,
   ModalFooter,
+  MenuContentItem,
+  MenuContent,
 } from '@finos/legend-art';
 import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState.js';
 import {
@@ -167,14 +169,9 @@ const WorkspaceViewerContextMenu = observer(
     );
 
     return (
-      <div ref={ref} className="project-overview__context-menu">
-        <div
-          className="project-overview__context-menu__item"
-          onClick={deleteWorkspace}
-        >
-          Delete
-        </div>
-      </div>
+      <MenuContent ref={ref}>
+        <MenuContentItem onClick={deleteWorkspace}>Delete</MenuContentItem>
+      </MenuContent>
     );
   }),
 );

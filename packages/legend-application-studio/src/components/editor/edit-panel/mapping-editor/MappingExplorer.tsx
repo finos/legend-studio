@@ -36,6 +36,8 @@ import {
   FilterIcon,
   PanelDropZone,
   BlankPanelPlaceholder,
+  MenuContent,
+  MenuContentItem,
 } from '@finos/legend-art';
 import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
 import { useDrop, useDrag } from 'react-dnd';
@@ -169,56 +171,36 @@ export const MappingExplorerContextMenu = observer(
       !!mappingElement.filter;
 
     return (
-      <div ref={ref} className="mapping-explorer__context-menu">
+      <MenuContent ref={ref}>
         {mappingElement instanceof SetImplementation && (
-          <div
-            className="mapping-explorer__context-menu__item"
-            onClick={queryMappingElement}
-          >
-            Query
-          </div>
+          <MenuContentItem onClick={queryMappingElement}>Query</MenuContentItem>
         )}
         {mappingElement instanceof SetImplementation && (
-          <div
-            className="mapping-explorer__context-menu__item"
-            onClick={createTestForMappingElement}
-          >
+          <MenuContentItem onClick={createTestForMappingElement}>
             Test
-          </div>
+          </MenuContentItem>
         )}
         {allowAddFilter && (
-          <div
-            className="mapping-explorer__context-menu__item"
-            onClick={addMappingFilter}
-          >
+          <MenuContentItem onClick={addMappingFilter}>
             Add Filter
-          </div>
+          </MenuContentItem>
         )}
         {allowRemoveFilter && (
-          <div
-            className="mapping-explorer__context-menu__item"
-            onClick={removeMappingFilter}
-          >
+          <MenuContentItem onClick={removeMappingFilter}>
             Remove Filter
-          </div>
+          </MenuContentItem>
         )}
         {mappingElement && (
-          <div
-            className="mapping-explorer__context-menu__item"
-            onClick={removeMappingElement}
-          >
+          <MenuContentItem onClick={removeMappingElement}>
             Delete
-          </div>
+          </MenuContentItem>
         )}
         {!mappingElement && openNewMapingModal && (
-          <div
-            className="mapping-explorer__context-menu__item"
-            onClick={openNewMapingModal}
-          >
+          <MenuContentItem onClick={openNewMapingModal}>
             Create new mapping element
-          </div>
+          </MenuContentItem>
         )}
-      </div>
+      </MenuContent>
     );
   }),
 );

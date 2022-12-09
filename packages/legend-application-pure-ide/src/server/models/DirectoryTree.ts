@@ -65,9 +65,11 @@ export class DirectoryNode {
   get isFolderNode(): boolean {
     return this.li_attr instanceof FolderDirectoryAttribute;
   }
+
   get isFileNode(): boolean {
     return this.li_attr instanceof FileDirectoryAttribute;
   }
+
   getNodeAttribute<T extends DirectoryAttribute>(clazz: Clazz<T>): T {
     return guaranteeType(
       this.li_attr,

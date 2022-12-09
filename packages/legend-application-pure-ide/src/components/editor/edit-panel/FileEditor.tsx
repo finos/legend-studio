@@ -53,7 +53,7 @@ import {
 } from '../../../stores/FileEditorUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { FileCoordinate } from '../../../server/models/PureFile.js';
+import { FileCoordinate } from '../../../server/models/File.js';
 
 export const FileEditor = observer(
   (props: { editorState: FileEditorState }) => {
