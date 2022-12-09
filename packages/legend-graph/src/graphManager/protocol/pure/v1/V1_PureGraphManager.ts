@@ -1691,6 +1691,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           this.pluginManager.getPureGraphManagerPlugins(),
         ),
       );
+      runTestableInput.unitTestIds = [unitAtomicTest];
       runTestsInput.testables = [runTestableInput];
       const parent = test.__parent;
       unitAtomicTest.testSuiteId =
