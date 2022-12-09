@@ -29,7 +29,7 @@ import {
   ProjectVersionEntities,
 } from './models/ProjectVersionEntities.js';
 import type { StoredEntity } from './models/StoredEntity.js';
-import type { ProjectDependencyInfo } from './models/ProjectDependencyInfo.js';
+import type { RawProjectDependencyReport } from './models/RawProjectDependencyReport.js';
 
 export interface DepotServerClientConfig {
   serverUrl: string;
@@ -217,7 +217,7 @@ export class DepotServerClient extends AbstractServerClient {
      * List of (direct) dependencies.
      */
     dependencies: PlainObject<ProjectDependencyCoordinates>[],
-  ): Promise<PlainObject<ProjectDependencyInfo>> =>
+  ): Promise<PlainObject<RawProjectDependencyReport>> =>
     this.post(`${this._projects()}/analyzeDependencyTree`, dependencies);
 
   // ------------------------------------------- File Generation -------------------------------------------

@@ -59,7 +59,7 @@ import {
   type ProjectVersionEntities,
   TEST__DepotServerClientProvider,
   TEST__getTestDepotServerClient,
-  type ProjectDependencyInfo,
+  type RawProjectDependencyReport,
 } from '@finos/legend-server-depot';
 import { LegendStudioBaseStoreProvider } from './LegendStudioBaseStoreProvider.js';
 import {
@@ -128,9 +128,12 @@ export const TEST_DATA__DefaultSDLCInfo = {
   ],
 };
 
-export const TEST_DATA__DefaultDepotInfo = {
-  dependencyInfo: {
-    tree: [],
+export const TEST_DATA__DefaultDepotReport = {
+  dependencyReport: {
+    graph: {
+      nodes: [],
+      rootNodes: [],
+    },
     conflicts: [],
   },
 };
@@ -228,7 +231,7 @@ export const TEST__setUpEditor = async (
     projects: PlainObject<ProjectData>[];
     projectData: PlainObject<ProjectData>[];
     projectDependency: PlainObject<ProjectVersionEntities>[];
-    projectDependencyInfo: PlainObject<ProjectDependencyInfo>;
+    dependencyReport: PlainObject<RawProjectDependencyReport>;
   },
 ): Promise<RenderResult> => {
   const {
@@ -243,7 +246,7 @@ export const TEST__setUpEditor = async (
     projectData,
     projects,
     projectDependency,
-    projectDependencyInfo,
+    dependencyReport,
   } = data;
 
   // SDLC
@@ -305,7 +308,7 @@ export const TEST__setUpEditor = async (
   createSpy(
     MOCK__editorStore.depotServerClient,
     'analyzeDependencyTree',
-  ).mockResolvedValue(projectDependencyInfo);
+  ).mockResolvedValue(dependencyReport);
 
   // TODO: we need to think of how we will mock these calls when we modularize
   const graphManagerState = MOCK__editorStore.graphManagerState;
@@ -406,7 +409,7 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
     projects?: PlainObject<ProjectData>[];
     projectData?: PlainObject<ProjectData>[];
     projectDependency?: PlainObject<ProjectVersionEntities>[];
-    projectDependencyInfo?: PlainObject<ProjectDependencyInfo>;
+    dependencyReport?: PlainObject<RawProjectDependencyReport>;
   },
 ): Promise<RenderResult> =>
   TEST__setUpEditor(MOCK__editorStore, {
@@ -425,6 +428,6 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
     projects: [],
     projectData: [],
     projectDependency: [],
-    projectDependencyInfo: TEST_DATA__DefaultDepotInfo.dependencyInfo,
+    dependencyReport: TEST_DATA__DefaultDepotReport.dependencyReport,
     ...overrides,
   });
