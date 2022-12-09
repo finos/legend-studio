@@ -1,5 +1,7 @@
 # @finos/legend-application-studio-deployment
 
+## 8.20.0
+
 ## 8.19.0
 
 ### Patch Changes

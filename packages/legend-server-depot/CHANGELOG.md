@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 4.2.0
+
+### Minor Changes
+
+- [#1755](https://github.com/finos/legend-studio/pull/1755) [`58e35aae8`](https://github.com/finos/legend-studio/commit/58e35aae8c126e700407db368efaa6c7975c6d6b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Introduce `ProjectDependencyReport` with dependency graph and conflicts. Build dependency graph with serialized graph from depot.
+
 ## 4.1.12
 
 ## 4.1.11
