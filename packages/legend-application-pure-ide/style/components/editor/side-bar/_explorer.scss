@@ -214,7 +214,13 @@
     font-size: 1.8rem;
   }
 
-  &__icon--file {
-    color: var(--color-file);
+  &__icon {
+    &--file {
+      color: var(--color-file);
+    }
+
+    &--platform {
+      color: var(--color-lime-75);
+    }
   }
 }

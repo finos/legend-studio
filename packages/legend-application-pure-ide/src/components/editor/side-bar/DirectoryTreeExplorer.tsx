@@ -37,6 +37,7 @@ import {
   FileAltIcon,
   FolderIcon,
   FolderOpenIcon,
+  WrenchIcon,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import type { DirectoryTreeNode } from '../../../server/models/DirectoryTree.js';
@@ -122,8 +123,11 @@ const FileTreeNodeContainer: React.FC<
   const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
     useState(false);
   const { onNodeOpen, onNodeExpand, onNodeCompress } = innerProps;
+  const isPlatformDirectory = node.data.li_attr.path === '/platform';
   const isFolder = node.data.isFolderNode;
-  const nodeIcon = isFolder ? (
+  const nodeIcon = isPlatformDirectory ? (
+    <WrenchIcon className="explorer__icon--platform" />
+  ) : isFolder ? (
     node.isOpen ? (
       <div>
         <FolderOpenIcon />
@@ -218,7 +222,7 @@ const FileTreeNodeContainer: React.FC<
           className="tree-view__node__label explorer__package-tree__node__label"
           tabIndex={-1}
         >
-          {node.label}
+          {isPlatformDirectory ? 'platform' : node.label}
         </button>
       </div>
     </ContextMenu>
