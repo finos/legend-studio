@@ -42,14 +42,16 @@ import {
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import {
-  type ProjectVersionDependencies,
+  type ProjectDependencyGraphReport,
+  type ProjectDependencyVersionNode,
   MASTER_SNAPSHOT_ALIAS,
   ProjectData,
-  ProjectDependencyInfo,
   ProjectDependencyCoordinates,
+  RawProjectDependencyReport,
+  buildDependencyReport,
+  buildConflictsPaths,
 } from '@finos/legend-server-depot';
-import { TAB_SIZE } from '@finos/legend-application';
-import { generateGAVCoordinates } from '@finos/legend-storage';
+import type { TreeData, TreeNodeData } from '@finos/legend-art';
 
 export enum CONFIGURATION_EDITOR_TAB {
   PROJECT_STRUCTURE = 'PROJECT_STRUCTURE',
@@ -57,61 +59,65 @@ export enum CONFIGURATION_EDITOR_TAB {
   PLATFORM_CONFIGURATIONS = 'PLATFORM_CONFIGURATIONS',
 }
 
-export enum DEPENDENCY_INFO_TYPE {
-  DEPENDENCY_TREE = 'dependency tree',
-  CONFLICTS = 'conflicts',
+export class DependencyTreeNodeData implements TreeNodeData {
+  value: ProjectDependencyVersionNode;
+  id: string;
+  label: string;
+  childrenIds?: string[] | undefined;
+
+  constructor(id: string, value: ProjectDependencyVersionNode) {
+    this.id = id;
+    this.value = value;
+    this.label = value.id;
+  }
+  isSelected?: boolean | undefined;
+  isOpen?: boolean | undefined;
 }
 
-const getDependencyTreeString = (
-  dependant: ProjectVersionDependencies,
-  tab: string,
-): string => {
-  const prefix = tab + (dependant.dependencies.length ? '+-' : '\\-');
-  const gav = generateGAVCoordinates(
-    dependant.groupId,
-    dependant.artifactId,
-    dependant.versionId,
-  );
-  return `${prefix + gav}\n${dependant.dependencies
-    .map((e) => getDependencyTreeString(e, tab + ' '.repeat(TAB_SIZE)))
-    .join('')}`;
+export const buildDependencyNodeChildren = (
+  parentNode: DependencyTreeNodeData,
+  treeNodes: Map<string, DependencyTreeNodeData>,
+): void => {
+  if (!parentNode.childrenIds) {
+    const value = parentNode.value;
+    const childrenNodes = value.dependencies.map((projectVersion) => {
+      const childId = `${parentNode.id}.${projectVersion.id}`;
+      const childNode = new DependencyTreeNodeData(childId, projectVersion);
+      treeNodes.set(childId, childNode);
+      return childNode;
+    });
+    parentNode.childrenIds = childrenNodes.map((c) => c.id);
+  }
 };
 
-export const getDependencyTreeStringFromInfo = (
-  info: ProjectDependencyInfo,
-): string => info.tree.map((e) => getDependencyTreeString(e, '')).join('\n');
-
-const getConflictPathString = (path: string): string => {
-  const seperator = '>';
-  const projects = path.split(seperator);
-  let result = '';
-  let currentTab = ' '.repeat(TAB_SIZE);
-  projects.forEach((p) => {
-    result += `${currentTab + p}\n`;
-    currentTab = currentTab + ' '.repeat(TAB_SIZE);
+const buildDependencyTreeData = (
+  report: ProjectDependencyGraphReport,
+): TreeData<DependencyTreeNodeData> => {
+  const nodes = new Map<string, DependencyTreeNodeData>();
+  const rootNodes = report.graph.rootNodes.map((versionNode) => {
+    const node = new DependencyTreeNodeData(versionNode.id, versionNode);
+    nodes.set(node.id, node);
+    buildDependencyNodeChildren(node, nodes);
+    return node;
   });
-  return result;
+  const rootIds = rootNodes.map((node) => node.id);
+  return { rootIds, nodes };
 };
 
-export const getConflictsString = (info: ProjectDependencyInfo): string =>
-  info.conflicts
-    .map((c) => {
-      const base = `project:\n${
-        ' '.repeat(TAB_SIZE) +
-        generateGAVCoordinates(c.groupId, c.artifactId, undefined)
-      }`;
-      const versions = `versions:\n${c.versions
-        .map((v) => ' '.repeat(TAB_SIZE) + v)
-        .join('\n')}`;
-      const paths = `paths:\n${c.conflictPaths
-        .map(
-          (p, idx) =>
-            `${' '.repeat(TAB_SIZE) + (idx + 1)}:\n${getConflictPathString(p)}`,
-        )
-        .join('')}`;
-      return `${base}\n${versions}\n${paths}`;
-    })
-    .join('\n\n');
+const buildFlattenDependencyTreeData = (
+  report: ProjectDependencyGraphReport,
+): TreeData<DependencyTreeNodeData> => {
+  const nodes = new Map<string, DependencyTreeNodeData>();
+  const rootIds: string[] = [];
+  Array.from(report.graph.nodes.entries()).forEach(([key, value]) => {
+    const id = value.id;
+    const node = new DependencyTreeNodeData(id, value);
+    nodes.set(id, node);
+    rootIds.push(id);
+    buildDependencyNodeChildren(node, nodes);
+  });
+  return { rootIds, nodes };
+};
 
 export class ProjectConfigurationEditorState extends EditorState {
   sdlcState: EditorSDLCState;
@@ -122,8 +128,11 @@ export class ProjectConfigurationEditorState extends EditorState {
   projects = new Map<string, ProjectData>();
   queryHistory = new Set<string>();
   latestProjectStructureVersion: ProjectStructureVersion | undefined;
-  dependencyInfo: ProjectDependencyInfo | undefined;
-  dependencyInfoModalType: DEPENDENCY_INFO_TYPE | undefined;
+  dependencyReport: ProjectDependencyGraphReport | undefined;
+  dependencyTreeData: TreeData<DependencyTreeNodeData> | undefined;
+  flattenDependencyTreeData: TreeData<DependencyTreeNodeData> | undefined;
+  dependencyTreeReportModal = false;
+  dependencyConflictModal = false;
   fetchingDependencyInfoState = ActionState.create();
   updatingConfigurationState = ActionState.create();
   fetchingProjectVersionsState = ActionState.create();
@@ -143,14 +152,20 @@ export class ProjectConfigurationEditorState extends EditorState {
       associatedProjectsAndVersionsFetched: observable,
       fetchingProjectVersionsState: observable,
       latestProjectStructureVersion: observable,
-      dependencyInfo: observable,
-      dependencyInfoModalType: observable,
+      dependencyReport: observable,
+      dependencyTreeReportModal: observable,
       fetchingDependencyInfoState: observable,
+      dependencyConflictModal: observable,
+      dependencyTreeData: observable.ref,
+      flattenDependencyTreeData: observable.ref,
       originalConfig: computed,
       setOriginalProjectConfiguration: action,
+      setDependencyConflictModal: action,
+      clearTrees: action,
       setProjectConfiguration: action,
-      setDependencyInfoModal: action,
+      setDependencyTreeReportModal: action,
       setSelectedTab: action,
+      setDependencyTreeData: action,
       fectchAssociatedProjectsAndVersions: flow,
       updateProjectConfiguration: flow,
       updateToLatestStructure: flow,
@@ -178,8 +193,29 @@ export class ProjectConfigurationEditorState extends EditorState {
     this.selectedTab = tab;
   }
 
-  setDependencyInfoModal(type: DEPENDENCY_INFO_TYPE | undefined): void {
-    this.dependencyInfoModalType = type;
+  setDependencyConflictModal(showModal: boolean): void {
+    this.dependencyConflictModal = showModal;
+  }
+
+  setDependencyTreeReportModal(showModal: boolean): void {
+    this.dependencyTreeReportModal = showModal;
+  }
+
+  setFlattenDependencyTreeData(
+    tree: TreeData<DependencyTreeNodeData> | undefined,
+  ): void {
+    this.flattenDependencyTreeData = tree;
+  }
+
+  clearTrees(): void {
+    this.flattenDependencyTreeData = undefined;
+    this.dependencyTreeData = undefined;
+  }
+
+  setDependencyTreeData(
+    tree: TreeData<DependencyTreeNodeData> | undefined,
+  ): void {
+    this.dependencyTreeData = tree;
   }
 
   get label(): string {
@@ -256,7 +292,8 @@ export class ProjectConfigurationEditorState extends EditorState {
   *fetchDependencyInfo(): GeneratorFn<void> {
     try {
       this.fetchingDependencyInfoState.inProgress();
-      this.dependencyInfo = undefined;
+      this.dependencyReport = undefined;
+      this.clearTrees();
       if (this.projectConfiguration?.projectDependencies) {
         const dependencyCoordinates = (yield flowResult(
           this.editorStore.graphState.buildProjectDependencyCoordinates(
@@ -268,20 +305,34 @@ export class ProjectConfigurationEditorState extends EditorState {
             dependencyCoordinates.map((e) =>
               ProjectDependencyCoordinates.serialization.toJson(e),
             ),
-          )) as PlainObject<ProjectDependencyInfo>;
-        this.dependencyInfo =
-          ProjectDependencyInfo.serialization.fromJson(dependencyInfoRaw);
-      } else {
-        this.dependencyInfo = new ProjectDependencyInfo();
+          )) as PlainObject<RawProjectDependencyReport>;
+        const rawdependencyReport =
+          RawProjectDependencyReport.serialization.fromJson(dependencyInfoRaw);
+        const report = buildDependencyReport(rawdependencyReport);
+        this.dependencyReport = report;
+        this.processReport(report);
       }
       this.fetchingDependencyInfoState.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.fetchingDependencyInfoState.fail();
-      this.dependencyInfo = undefined;
+      this.dependencyReport = undefined;
       this.editorStore.applicationStore.log.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
+      );
+    }
+  }
+
+  processReport(report: ProjectDependencyGraphReport): void {
+    this.setDependencyTreeData(buildDependencyTreeData(report));
+    this.setFlattenDependencyTreeData(buildFlattenDependencyTreeData(report));
+    try {
+      report.conflictPaths = buildConflictsPaths(report);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notifyError(
+        `Unable to build conflict paths ${error.message}`,
       );
     }
   }

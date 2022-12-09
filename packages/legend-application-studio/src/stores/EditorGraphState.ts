@@ -53,10 +53,12 @@ import {
   applyEntityChanges,
 } from '@finos/legend-server-sdlc';
 import {
+  type ProjectDependencyGraphReport,
   ProjectVersionEntities,
   ProjectData,
   ProjectDependencyCoordinates,
-  ProjectDependencyInfo,
+  RawProjectDependencyReport,
+  buildDependencyReport,
 } from '@finos/legend-server-depot';
 import {
   GRAPH_MANAGER_EVENT,
@@ -96,10 +98,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
-import {
-  CONFIGURATION_EDITOR_TAB,
-  getConflictsString,
-} from './editor-state/ProjectConfigurationEditorState.js';
+import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState.js';
 import { graph_dispose } from './shared/modifier/GraphModifierHelper.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
@@ -1179,7 +1178,7 @@ export class EditorGraphState {
           ([k, v]) => v.size > 1,
         );
         if (hasConflicts) {
-          let dependencyInfo: ProjectDependencyInfo | undefined;
+          let dependencyInfo: ProjectDependencyGraphReport | undefined;
           try {
             const dependencyTree =
               await this.editorStore.depotServerClient.analyzeDependencyTree(
@@ -1187,8 +1186,9 @@ export class EditorGraphState {
                   ProjectDependencyCoordinates.serialization.toJson(e),
                 ),
               );
-            dependencyInfo =
-              ProjectDependencyInfo.serialization.fromJson(dependencyTree);
+            const rawReport =
+              RawProjectDependencyReport.serialization.fromJson(dependencyTree);
+            dependencyInfo = buildDependencyReport(rawReport);
           } catch (error) {
             assertErrorThrown(error);
             this.editorStore.applicationStore.log.error(
@@ -1198,9 +1198,15 @@ export class EditorGraphState {
           }
           const startErrorMessage =
             'Depending on multiple versions of a project is not supported. Found conflicts:\n';
-          if (dependencyInfo?.conflicts) {
+          if (dependencyInfo?.conflicts.length) {
+            const conflictingProjects = dependencyInfo.conflicts.map(
+              (c) =>
+                `project: ${c.groupId}:${c.artifactId}\nverions:[${c.versions
+                  .map((v) => v.versionId)
+                  .join(',')}]`,
+            );
             throw new UnsupportedOperationError(
-              startErrorMessage + getConflictsString(dependencyInfo),
+              startErrorMessage + conflictingProjects,
             );
           } else {
             const conflictMessages = Array.from(dependencyProjects.entries())
