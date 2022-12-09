@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 22.1.0
+
+### Minor Changes
+
+- [#1755](https://github.com/finos/legend-studio/pull/1755) [`58e35aae8`](https://github.com/finos/legend-studio/commit/58e35aae8c126e700407db368efaa6c7975c6d6b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Introduce dependency explorer to lazily explore dependency through tree or flatten view.
+
 ## 22.0.0
 
 ### Major Changes
