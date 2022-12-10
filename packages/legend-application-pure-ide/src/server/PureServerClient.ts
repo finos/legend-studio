@@ -254,8 +254,9 @@ export class PureClient {
     this.networkClient.post(`${this.baseUrl}/updateSource`, updateInputs);
 
   createFile = (path: string): Promise<PlainObject<CommandResult>> =>
-    this.networkClient.get(
+    this.networkClient.post(
       `${this.baseUrl}/newFile/${path}`,
+      undefined,
       undefined,
       undefined,
       {
@@ -266,8 +267,9 @@ export class PureClient {
     );
 
   createFolder = (path: string): Promise<PlainObject<CommandResult>> =>
-    this.networkClient.get(
+    this.networkClient.post(
       `${this.baseUrl}/newFolder/${path}`,
+      undefined,
       undefined,
       undefined,
       {
@@ -277,9 +279,23 @@ export class PureClient {
       },
     );
 
+  renameFile = (
+    oldPath: string,
+    newPath: string,
+  ): Promise<PlainObject<CommandResult>> =>
+    this.networkClient.post(
+      `${this.baseUrl}/renameFile`,
+      {
+        oldPath,
+        newPath,
+      },
+      undefined,
+    );
+
   deleteDirectoryOrFile = (path: string): Promise<PlainObject<CommandResult>> =>
-    this.networkClient.get(
+    this.networkClient.delete(
       `${this.baseUrl}/deleteFile/${path}`,
+      undefined,
       undefined,
       undefined,
       {

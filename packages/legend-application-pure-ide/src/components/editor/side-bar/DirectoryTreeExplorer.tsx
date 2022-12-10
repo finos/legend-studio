@@ -47,6 +47,7 @@ import {
   type DirectoryTreeNode,
 } from '../../../server/models/DirectoryTree.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
+import { RenameFilePrompt } from './RenameFilePrompt.js';
 
 const FileExplorerContextMenu = observer(
   forwardRef<
@@ -74,7 +75,7 @@ const FileExplorerContextMenu = observer(
       ).catch(applicationStore.alertUnhandledError);
     };
     const renameFile = (): void =>
-      applicationStore.notifyUnsupportedFeature('Rename');
+      editorStore.directoryTreeState.setNodeForRenameFile(node);
 
     return (
       <MenuContent ref={ref}>
@@ -273,8 +274,15 @@ const FileExplorerTree = observer(() => {
           onNodeCompress,
         }}
       />
-      <CreateNewFilePrompt />
-      <CreateNewDirectoryPrompt />
+      {treeState.nodeForCreateNewFile && (
+        <CreateNewFilePrompt node={treeState.nodeForCreateNewFile} />
+      )}
+      {treeState.nodeForCreateNewDirectory && (
+        <CreateNewDirectoryPrompt node={treeState.nodeForCreateNewDirectory} />
+      )}
+      {treeState.nodeForRenameFile && (
+        <RenameFilePrompt node={treeState.nodeForRenameFile} />
+      )}
     </div>
   );
 });

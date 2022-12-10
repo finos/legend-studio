@@ -190,6 +190,7 @@ export class EditorStore implements CommandRegistrar {
       command: flow,
       createNewDirectory: flow,
       createNewFile: flow,
+      renameFile: flow,
       deleteDirectoryOrFile: flow,
     });
 
@@ -1128,19 +1129,50 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *createNewDirectory(path: string): GeneratorFn<void> {
-    yield flowResult(
-      this.command(() => this.client.createFolder(trimPathLeadingSlash(path))),
-    );
-    yield flowResult(this.directoryTreeState.refreshTreeData());
+    try {
+      yield flowResult(
+        this.command(() =>
+          this.client.createFolder(trimPathLeadingSlash(path)),
+        ),
+      );
+
+      yield flowResult(this.directoryTreeState.refreshTreeData());
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
+    }
   }
 
   *createNewFile(path: string): GeneratorFn<void> {
-    const result = (yield flowResult(
-      this.command(() => this.client.createFile(trimPathLeadingSlash(path))),
-    )) as boolean;
-    yield flowResult(this.directoryTreeState.refreshTreeData());
-    if (result) {
-      yield flowResult(this.loadFile(path));
+    try {
+      const result = (yield flowResult(
+        this.command(() => this.client.createFile(trimPathLeadingSlash(path))),
+      )) as boolean;
+      yield flowResult(this.directoryTreeState.refreshTreeData());
+      if (result) {
+        yield flowResult(this.loadFile(path));
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
+    }
+  }
+
+  *renameFile(oldPath: string, newPath: string): GeneratorFn<void> {
+    try {
+      yield flowResult(
+        this.command(() => this.client.renameFile(oldPath, newPath)),
+      );
+      yield flowResult(this.directoryTreeState.refreshTreeData());
+      const openTab = this.tabManagerState.tabs.find(
+        (tab) => tab instanceof FileEditorState && tab.filePath === oldPath,
+      );
+      if (openTab) {
+        this.tabManagerState.closeTab(openTab);
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
     }
   }
 

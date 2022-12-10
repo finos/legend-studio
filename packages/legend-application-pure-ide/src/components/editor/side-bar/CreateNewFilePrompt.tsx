@@ -20,65 +20,83 @@ import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { Dialog } from '@finos/legend-art';
+import type { DirectoryTreeNode } from '../../../server/models/DirectoryTree.js';
 
-export const CreateNewFilePrompt = observer(() => {
-  const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
-  const currentNode = editorStore.directoryTreeState.nodeForCreateNewFile;
-  const [value, setValue] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-  // actions
-  const closeModal = (): void =>
-    editorStore.directoryTreeState.setNodeForCreateNewFile(undefined);
-  const onValueChange: React.ChangeEventHandler<HTMLInputElement> = (
-    event,
-  ): void => setValue(event.target.value);
-  const create = (
-    event: React.FormEvent<HTMLFormElement | HTMLButtonElement>,
-  ): void => {
-    if (!currentNode) {
-      return;
-    }
-    event.preventDefault();
-    closeModal();
-    flowResult(
-      editorStore.createNewFile(`${currentNode.data.li_attr.path}/${value}`),
-    ).catch(applicationStore.alertUnhandledError);
-  };
-  const handleEnter = (): void => {
-    setValue('');
-    inputRef.current?.focus();
-  };
+const FILE_NAME_PATTERN = /[a-zA-z0-9_]+(?:.[a-zA-z0-9_]+)*/;
+const DEFAULT_FILE_NAME = 'untitled.pure';
 
-  return (
-    <Dialog
-      open={Boolean(currentNode)}
-      onClose={closeModal}
-      TransitionProps={{
-        onEnter: handleEnter,
-      }}
-      classes={{ container: 'command-modal__container' }}
-      PaperProps={{ classes: { root: 'command-modal__inner-container' } }}
-    >
-      <div className="modal modal--dark command-modal">
-        <div className="modal__title">Create a new file</div>
-        <div className="command-modal__content">
-          <form className="command-modal__content__form" onSubmit={create}>
-            <input
-              ref={inputRef}
-              className="command-modal__content__input input--dark"
-              onChange={onValueChange}
-              value={value}
-            />
-          </form>
-          <button
-            className="command-modal__content__submit-btn btn--dark"
-            onClick={create}
-          >
-            Create
-          </button>
+export const CreateNewFilePrompt = observer(
+  (props: { node: DirectoryTreeNode }) => {
+    const { node } = props;
+    const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
+    const [value, setValue] = useState(DEFAULT_FILE_NAME);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    // validation
+    const isValidValue = Boolean(value.match(FILE_NAME_PATTERN));
+    const isUnique = !node.childrenIds
+      ?.map((id) => editorStore.directoryTreeState.getTreeData().nodes.get(id))
+      .filter((n) => n?.data.text === value).length;
+    const error = !isValidValue
+      ? 'Invalid file name'
+      : !isUnique
+      ? 'Already existed'
+      : undefined;
+
+    // actions
+    const closeModal = (): void =>
+      editorStore.directoryTreeState.setNodeForCreateNewFile(undefined);
+    const onValueChange: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ): void => setValue(event.target.value);
+    const create = (
+      event: React.FormEvent<HTMLFormElement | HTMLButtonElement>,
+    ): void => {
+      event.preventDefault();
+      closeModal();
+      flowResult(
+        editorStore.createNewFile(`${node.data.li_attr.path}/${value}`),
+      ).catch(applicationStore.alertUnhandledError);
+    };
+    const handleEnter = (): void => inputRef.current?.focus();
+
+    return (
+      <Dialog
+        open={true}
+        onClose={closeModal}
+        TransitionProps={{
+          onEnter: handleEnter,
+        }}
+        classes={{ container: 'command-modal__container' }}
+        PaperProps={{ classes: { root: 'command-modal__inner-container' } }}
+      >
+        <div className="modal modal--dark command-modal">
+          <div className="modal__title">Create a new file</div>
+          <div className="command-modal__content">
+            <form className="command-modal__content__form" onSubmit={create}>
+              <div className="input-group command-modal__content__input">
+                <input
+                  ref={inputRef}
+                  className="input input--dark"
+                  onChange={onValueChange}
+                  value={value}
+                  spellCheck={false}
+                />
+                {error && (
+                  <div className="input-group__error-message">{error}</div>
+                )}
+              </div>
+            </form>
+            <button
+              className="command-modal__content__submit-btn btn--dark"
+              onClick={create}
+            >
+              Create
+            </button>
+          </div>
         </div>
-      </div>
-    </Dialog>
-  );
-});
+      </Dialog>
+    );
+  },
+);
