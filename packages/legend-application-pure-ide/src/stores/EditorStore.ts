@@ -950,7 +950,7 @@ export class EditorStore implements CommandRegistrar {
           message,
           add,
         },
-      ])) as unknown as SourceModificationResult;
+      ])) as SourceModificationResult;
       this.setConsoleText(result.text);
       if (result.modifiedFiles.length) {
         for (const file of result.modifiedFiles) {
