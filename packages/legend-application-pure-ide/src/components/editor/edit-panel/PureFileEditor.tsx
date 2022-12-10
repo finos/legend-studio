@@ -37,9 +37,7 @@ import {
 } from '@finos/legend-application';
 import {
   clsx,
-  ContextMenu,
   getBaseTextEditorOptions,
-  MenuContent,
   moveCursorToPosition,
   useResizeDetector,
   WordWrapIcon,
@@ -55,7 +53,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { FileCoordinate } from '../../../server/models/File.js';
 
-export const FileEditor = observer(
+export const PureFileEditor = observer(
   (props: { editorState: FileEditorState }) => {
     const { editorState } = props;
     const suggestionProviderDisposer = useRef<IDisposable | undefined>(
@@ -391,14 +389,11 @@ export const FileEditor = observer(
             </button>
           </div>
         </div>
-        <ContextMenu
-          className="panel__content file-editor__content"
-          content={<MenuContent>asd</MenuContent>}
-        >
+        <div className="panel__content file-editor__content">
           <div ref={ref} className="text-editor__container">
             <div className="text-editor__body" ref={textInputRef} />
           </div>
-        </ContextMenu>
+        </div>
       </div>
     );
   },

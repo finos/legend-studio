@@ -42,10 +42,29 @@ import type { EditorStore } from './EditorStore.js';
 import { EditorTabState } from './EditorTabManagerState.js';
 import { LEGEND_PURE_IDE_COMMAND_KEY } from './LegendPureIDECommand.js';
 
+const getFileEditorLanguage = (filePath: string): string => {
+  const extension = getNullableLastElement(filePath.split('.'));
+  switch (extension) {
+    case 'pure':
+      return EDITOR_LANGUAGE.PURE;
+    case 'json':
+      return EDITOR_LANGUAGE.JSON;
+    case 'sql':
+      return EDITOR_LANGUAGE.SQL;
+    case 'md':
+      return EDITOR_LANGUAGE.MARKDOWN;
+    case 'java':
+      return EDITOR_LANGUAGE.JAVA;
+    default:
+      return EDITOR_LANGUAGE.TEXT;
+  }
+};
+
 class FileTextEditorState {
   readonly model: monacoEditorAPI.ITextModel;
 
   editor?: monacoEditorAPI.IStandaloneCodeEditor | undefined;
+  language!: string;
   viewState?: monacoEditorAPI.ICodeEditorViewState | undefined;
 
   forcedCursorPosition: TextEditorPosition | undefined;
@@ -63,9 +82,10 @@ class FileTextEditorState {
       setWrapText: action,
     });
 
+    this.language = getFileEditorLanguage(fileEditorState.filePath);
     this.model = monacoEditorAPI.createModel(
       fileEditorState.uuid,
-      EDITOR_LANGUAGE.PURE,
+      this.language,
     );
     this.model.updateOptions({ tabSize: TAB_SIZE });
   }
@@ -100,7 +120,7 @@ export class FileEditorState
 {
   file: File;
   readonly filePath: string;
-  readonly textEditorState = new FileTextEditorState(this);
+  readonly textEditorState!: FileTextEditorState;
 
   constructor(editorStore: EditorStore, file: File, filePath: string) {
     super(editorStore);
@@ -112,6 +132,7 @@ export class FileEditorState
 
     this.file = file;
     this.filePath = filePath;
+    this.textEditorState = new FileTextEditorState(this);
   }
 
   get label(): string {
