@@ -58,6 +58,9 @@ import {
   object,
   list,
   optional,
+  deserialize,
+  custom,
+  SKIP,
 } from 'serializr';
 import { SourceInformation } from './SourceInformation.js';
 
@@ -66,6 +69,18 @@ import { SourceInformation } from './SourceInformation.js';
 // We don't intend to build Pure graph from these serialization models, hence, we never really want to export them
 // to use outside of this file; their sole purpose is to get the result from the diagram info endpoints
 // to convert to Legend protocol model to use in Legend Studio diagram renderer
+
+/**
+ * Unfortunately, diagram analysis endpoint now return malformed source-information so we need to have this hacky
+ * surgery before properly deserialize it.
+ */
+const TEMPORARY__diagramInfoSourceInformationSerializationSchema = custom(
+  () => SKIP,
+  (json): SourceInformation => {
+    json.sourceId = json.source;
+    return deserialize(SourceInformation, json);
+  },
+);
 
 class PURE__Profile {
   package!: string;
@@ -151,7 +166,7 @@ class PURE__PackageableElementPointer {
 createModelSchema(PURE__PackageableElementPointer, {
   name: primitive(),
   package: primitive(),
-  sourceInformation: object(SourceInformation),
+  sourceInformation: TEMPORARY__diagramInfoSourceInformationSerializationSchema,
 });
 
 class PURE__Class {
@@ -173,7 +188,7 @@ createModelSchema(PURE__Class, {
   package: primitive(),
   properties: list(object(PURE__Property)),
   qualifiedProperties: list(object(PURE__Property)),
-  sourceInformation: object(SourceInformation),
+  sourceInformation: TEMPORARY__diagramInfoSourceInformationSerializationSchema,
   stereotypes: list(object(PURE__Steoreotype)),
   taggedValues: list(object(PURE__TaggedValue)),
 });
@@ -294,7 +309,7 @@ createModelSchema(PURE__Diagram, {
   generalizationViews: list(object(PURE__GeneralizationView)),
   package: primitive(),
   propertyViews: list(object(PURE__PropertyView)),
-  sourceInformation: object(SourceInformation),
+  sourceInformation: TEMPORARY__diagramInfoSourceInformationSerializationSchema,
   stereotypes: list(object(PURE__Steoreotype)),
   taggedValues: list(object(PURE__TaggedValue)),
   typeViews: list(object(PURE__TypeView)),

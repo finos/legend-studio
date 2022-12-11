@@ -213,44 +213,6 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
         // sourceEdit(sourceInformations, oldName, newName, pureType)
         return;
       }
-      case ConceptType.ENUM_VALUE: {
-        console.log(attr);
-        // const usages = await this.editorStore.findConceptUsages(
-        //   FIND_USAGE_FUNCTION_PATH.PROPERTY,
-        //   [`'${attr.classPath}'`, `'${attr.pureId}'`],
-        // );
-        // await flowResult(
-        //   this.editorStore.renameConcept(
-        //     oldName,
-        //     newName,
-        //     attr.pureType,
-        //     usages.map(usageToSourceInformation),
-        //   ),
-        // );
-
-        // source!: string;
-        // line!: number;
-        // column!: number;
-        // startLine!: number;
-        // startColumn!: number;
-        // endLine!: number;
-        // endColumn!: number;
-        // concept.type === 'enum'
-        //   ? FIND_USAGE_FUNCTION_PATH.ENUM
-        //   : concept.type === 'property'
-        //   ? FIND_USAGE_FUNCTION_PATH.PROPERTY
-        //   : FIND_USAGE_FUNCTION_PATH.PATH,
-        // (concept.owner ? [`'${concept.owner}'`] : []).concat(
-        //   `'${concept.path}'`,
-        // oldName: pureName
-        // pureIde
-        // pureType
-        // classPath
-        // newName: value
-
-        // sourceEdit(sourceInformations, oldName, newName, pureType)
-        return;
-      }
       case ConceptType.PACKAGE: {
         return;
       }
