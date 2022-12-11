@@ -186,7 +186,7 @@ export class DiagramEditorState
       )?.sourceInformation;
       if (sourceInformation) {
         const coordinate = new FileCoordinate(
-          sourceInformation.source,
+          sourceInformation.sourceId,
           sourceInformation.startLine,
           sourceInformation.startColumn,
         );

@@ -35,7 +35,7 @@ import type {
   CandidateWithPackageImported,
   CandidateWithPackageNotImported,
 } from '../../../server/models/Execution.js';
-import { getUsageConceptLabel } from '../../../server/models/Usage.js';
+import { getConceptInfoLabel } from '../../../server/models/Usage.js';
 import {
   ArrowCircleRightIcon,
   BlankPanelContent,
@@ -188,7 +188,7 @@ const UsageResultDisplay = observer(
     const { usageState } = props;
     if (!usageState.searchEntries.length) {
       return (
-        <BlankPanelContent>{`No usages found for ${getUsageConceptLabel(
+        <BlankPanelContent>{`No usages found for ${getConceptInfoLabel(
           usageState.usageConcept,
         )}`}</BlankPanelContent>
       );
@@ -199,7 +199,7 @@ const UsageResultDisplay = observer(
           usageState.numberOfResults
         } usages(s) in ${
           usageState.numberOfFiles
-        } files for ${getUsageConceptLabel(usageState.usageConcept)}`}</div>
+        } files for ${getConceptInfoLabel(usageState.usageConcept)}`}</div>
         {usageState.searchEntries.map((searchEntry) => (
           <SearchResultEntryDisplay
             key={searchEntry.uuid}

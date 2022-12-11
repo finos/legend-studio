@@ -34,7 +34,7 @@ import type {
   AbstractTestRunnerCheckResult,
   TestRunnerCancelResult,
 } from '../server/models/Test.js';
-import type { Usage, UsageConcept } from '../server/models/Usage.js';
+import type { Usage, ConceptInfo } from '../server/models/Usage.js';
 import type { CommandResult } from '../server/models/Command.js';
 import {
   guaranteeNonNullable,
@@ -49,6 +49,7 @@ import type {
   SourceModificationResult,
   UpdateSourceInput,
 } from './models/Source.js';
+import type { RenameConceptInput } from './models/RenameConcept.js';
 
 export class PureClient {
   private networkClient: NetworkClient;
@@ -213,9 +214,7 @@ export class PureClient {
       },
     );
 
-  cancelTestRunner = (
-    testRunnerId: number,
-  ): Promise<PlainObject<TestRunnerCancelResult>> =>
+  cancelTestRunner = (testRunnerId: number): Promise<TestRunnerCancelResult> =>
     this.networkClient.get(
       `${this.baseUrl}/testRunnerCancel`,
       undefined,
@@ -226,13 +225,13 @@ export class PureClient {
       },
     );
 
-  getConceptPath = (
+  getConceptInfo = (
     file: string,
     line: number,
     column: number,
-  ): Promise<PlainObject<UsageConcept>> =>
+  ): Promise<ConceptInfo> =>
     this.networkClient.get(
-      `${this.baseUrl}/getConceptPath`,
+      `${this.baseUrl}/getConceptInfo`,
       undefined,
       undefined,
       {
@@ -242,16 +241,22 @@ export class PureClient {
       },
     );
 
-  getUsages = (func: string, param: string[]): Promise<PlainObject<Usage>[]> =>
+  getUsages = (
+    func: string,
+    param: string[],
+  ): Promise<PlainObject<Usage>[] | PlainObject<Usage>> =>
     this.networkClient.get(`${this.baseUrl}/execute`, undefined, undefined, {
       func,
       param,
     });
 
+  renameConcept = (input: RenameConceptInput): Promise<void> =>
+    this.networkClient.put(`${this.baseUrl}/renameConcept`, input);
+
   updateSource = (
     updateInputs: UpdateSourceInput[],
   ): Promise<PlainObject<SourceModificationResult>> =>
-    this.networkClient.post(`${this.baseUrl}/updateSource`, updateInputs);
+    this.networkClient.put(`${this.baseUrl}/updateSource`, updateInputs);
 
   createFile = (path: string): Promise<PlainObject<CommandResult>> =>
     this.networkClient.post(
@@ -283,7 +288,7 @@ export class PureClient {
     oldPath: string,
     newPath: string,
   ): Promise<PlainObject<CommandResult>> =>
-    this.networkClient.post(
+    this.networkClient.put(
       `${this.baseUrl}/renameFile`,
       {
         oldPath,

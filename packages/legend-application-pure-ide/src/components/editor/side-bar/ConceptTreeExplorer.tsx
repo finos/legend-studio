@@ -44,6 +44,7 @@ import { isNonNullable } from '@finos/legend-shared';
 import { useDrag } from 'react-dnd';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { getConceptIcon } from '../shared/ConceptIconUtils.js';
+import { RenameConceptPrompt } from './RenameConceptPrompt.js';
 
 const ConceptExplorerContextMenu = observer(
   forwardRef<
@@ -58,11 +59,11 @@ const ConceptExplorerContextMenu = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const rename = (): void =>
-      applicationStore.notifyUnsupportedFeature('Rename');
-    const renamePackage = (): void =>
-      applicationStore.notifyUnsupportedFeature('Rename package');
-    const renameProperty = (): void =>
-      applicationStore.notifyUnsupportedFeature('Rename property');
+      editorStore.conceptTreeState.setNodeForRenameConcept(node);
+    //  {
+    //   flowResult(editorStore.rename)
+    // };
+    // applicationStore.notifyUnsupportedFeature('Rename property');
     const runTests = (): void => {
       flowResult(editorStore.executeTests(node.data.li_attr.pureId)).catch(
         applicationStore.alertUnhandledError,
@@ -78,16 +79,7 @@ const ConceptExplorerContextMenu = observer(
 
     return (
       <MenuContent ref={ref}>
-        {nodeType === ConceptType.PACKAGE && (
-          <MenuContentItem onClick={renamePackage}>Rename</MenuContentItem>
-        )}
-        {nodeType === ConceptType.PROPERTY && (
-          <MenuContentItem onClick={renameProperty}>Rename</MenuContentItem>
-        )}
-        {nodeType !== ConceptType.PACKAGE &&
-          nodeType !== ConceptType.PROPERTY && (
-            <MenuContentItem onClick={rename}>Rename</MenuContentItem>
-          )}
+        <MenuContentItem onClick={rename}>Rename</MenuContentItem>
         {nodeType === ConceptType.PACKAGE && (
           <MenuContentItem onClick={runTests}>Run tests</MenuContentItem>
         )}
@@ -125,11 +117,9 @@ const ConceptTreeNodeContainer: React.FC<
     useState(false);
   const { onNodeOpen, onNodeExpand, onNodeCompress, viewConceptSource } =
     innerProps;
-  const isExpandable = [
-    ConceptType.PACKAGE,
-    ConceptType.CLASS,
-    ConceptType.ASSOCIATION,
-  ].includes(node.data.li_attr.pureType as ConceptType);
+  const isExpandable = [ConceptType.PACKAGE, ConceptType.CLASS].includes(
+    node.data.li_attr.pureType as ConceptType,
+  );
   const selectNode: React.MouseEventHandler = (event) => {
     event.stopPropagation();
     event.preventDefault();
@@ -299,6 +289,9 @@ const FileExplorerTree = observer(() => {
           viewConceptSource,
         }}
       />
+      {treeState.nodeForRenameConcept && (
+        <RenameConceptPrompt node={treeState.nodeForRenameConcept} />
+      )}
     </div>
   );
 });

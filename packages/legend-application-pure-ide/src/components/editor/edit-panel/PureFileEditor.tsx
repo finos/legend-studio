@@ -199,13 +199,13 @@ export const PureFileEditor = observer(
       if (currentValue !== content) {
         editor.setValue(content);
       }
-      if (editorState.textEditorState.forcedCursorPosition) {
-        moveCursorToPosition(
-          editor,
-          editorState.textEditorState.forcedCursorPosition,
-        );
-        editorState.textEditorState.setForcedCursorPosition(undefined);
-      }
+      // if (editorState.textEditorState.forcedCursorPosition) {
+      //   moveCursorToPosition(
+      //     editor,
+      //     editorState.textEditorState.forcedCursorPosition,
+      //   );
+      //   editorState.textEditorState.setForcedCursorPosition(undefined);
+      // }
     }
 
     const textTokens = editor
@@ -349,6 +349,18 @@ export const PureFileEditor = observer(
         editor?.layout({ width, height });
       }
     }, [editor, width, height]);
+
+    useEffect(() => {
+      if (editor) {
+        if (editorState.textEditorState.forcedCursorPosition) {
+          moveCursorToPosition(
+            editor,
+            editorState.textEditorState.forcedCursorPosition,
+          );
+          editorState.textEditorState.setForcedCursorPosition(undefined);
+        }
+      }
+    }, [editor, editorState, editorState.textEditorState.forcedCursorPosition]);
 
     // clean up
     useEffect(

@@ -67,6 +67,7 @@ export const getConceptIcon = (type: string): React.ReactNode => {
     case ConceptType.ASSOCIATION:
       return <PURE_AssociationIcon />;
     case ConceptType.PROPERTY:
+    case ConceptType.QUALIFIED_PROPERTY:
       return <PURE_PropertyIcon />;
     case ConceptType.ENUMERATION:
       return <PURE_EnumerationIcon />;

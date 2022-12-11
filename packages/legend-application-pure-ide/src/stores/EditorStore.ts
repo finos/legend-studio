@@ -60,9 +60,10 @@ import {
 } from './SearchResultState.js';
 import { TestRunnerState } from './TestRunnerState.js';
 import {
-  type UsageConcept,
-  getUsageConceptLabel,
+  type ConceptInfo,
+  getConceptInfoLabel,
   Usage,
+  FIND_USAGE_FUNCTION_PATH,
 } from '../server/models/Usage.js';
 import {
   type CommandResult,
@@ -182,12 +183,16 @@ export class EditorStore implements CommandRegistrar {
       executeSaveAndReset: flow,
       fullReCompile: flow,
       refreshTrees: flow,
+      command: flow,
+
+      findUsages: flow,
+      renameConcept: flow,
+
       updateFileUsingSuggestionCandidate: flow,
       updateFile: flow,
       searchFile: flow,
       searchText: flow,
-      findUsages: flow,
-      command: flow,
+
       createNewDirectory: flow,
       createNewFile: flow,
       renameFile: flow,
@@ -917,6 +922,180 @@ export class EditorStore implements CommandRegistrar {
     ]);
   }
 
+  async revealConceptInTree(coordinate: FileCoordinate): Promise<void> {
+    const errorMessage =
+      'Error revealing concept. Please make sure that the code compiles and that you are looking for a valid concept';
+    let concept: ConceptInfo;
+    try {
+      concept = (await this.client.getConceptInfo(
+        coordinate.file,
+        coordinate.line,
+        coordinate.column,
+      )) as unknown as ConceptInfo;
+    } catch {
+      this.applicationStore.notifyWarning(errorMessage);
+      return;
+    }
+    if (!concept.path) {
+      return;
+    }
+    this.applicationStore.setBlockingAlert({
+      message: 'Revealing concept in tree...',
+      showLoading: true,
+    });
+    try {
+      if (this.activeActivity !== ACTIVITY_MODE.CONCEPT) {
+        this.setActiveActivity(ACTIVITY_MODE.CONCEPT);
+      }
+      const parts = concept.path.split(ELEMENT_PATH_DELIMITER);
+      let currentPath = guaranteeNonNullable(parts[0]);
+      let currentNode = guaranteeNonNullable(
+        this.conceptTreeState.getTreeData().nodes.get(currentPath),
+      );
+      for (let i = 1; i < parts.length; ++i) {
+        currentPath = `${currentPath}${ELEMENT_PATH_DELIMITER}${parts[i]}`;
+        if (!this.conceptTreeState.getTreeData().nodes.get(currentPath)) {
+          await flowResult(this.conceptTreeState.expandNode(currentNode));
+        }
+        currentNode = guaranteeNonNullable(
+          this.conceptTreeState.getTreeData().nodes.get(currentPath),
+        );
+      }
+      this.conceptTreeState.setSelectedNode(currentNode);
+    } catch {
+      this.applicationStore.notifyWarning(errorMessage);
+    } finally {
+      this.applicationStore.setBlockingAlert(undefined);
+    }
+  }
+
+  *command(
+    cmd: () => Promise<PlainObject<CommandResult>>,
+  ): GeneratorFn<boolean> {
+    try {
+      const result = deserializeCommandResult(
+        (yield cmd()) as PlainObject<CommandResult>,
+      );
+      if (result instanceof CommandFailureResult) {
+        if (result.errorDialog) {
+          this.applicationStore.notifyWarning(`Error: ${result.text}`);
+        } else {
+          this.setConsoleText(result.text);
+        }
+        return false;
+      }
+      return true;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
+      return false;
+    }
+  }
+
+  private async getConceptInfo(
+    coordinate: FileCoordinate,
+  ): Promise<ConceptInfo | undefined> {
+    try {
+      return this.client.getConceptInfo(
+        coordinate.file,
+        coordinate.line,
+        coordinate.column,
+      );
+    } catch {
+      this.applicationStore.notifyWarning(
+        `Can't find concept info. Please make sure that the code compiles and that you are looking for references of non primitive types!`,
+      );
+      return undefined;
+    }
+  }
+
+  async findConceptUsages(func: string, param: string[]): Promise<Usage[]> {
+    const result = await this.client.getUsages(func, param);
+    return (Array.isArray(result) ? result : [result]).map((usage) =>
+      deserialize(Usage, usage),
+    );
+  }
+
+  *findUsages(coordinate: FileCoordinate): GeneratorFn<void> {
+    const concept = (yield this.getConceptInfo(coordinate)) as ConceptInfo;
+    if (!concept) {
+      return;
+    }
+    try {
+      this.applicationStore.setBlockingAlert({
+        message: 'Finding concept usages...',
+        prompt: `Finding references of ${getConceptInfoLabel(concept)}`,
+        showLoading: true,
+      });
+      const usages = (yield this.findConceptUsages(
+        concept.type === 'enum'
+          ? FIND_USAGE_FUNCTION_PATH.ENUM
+          : concept.type === 'property'
+          ? FIND_USAGE_FUNCTION_PATH.PROPERTY
+          : FIND_USAGE_FUNCTION_PATH.PATH,
+        (concept.owner ? [`'${concept.owner}'`] : []).concat(
+          `'${concept.path}'`,
+        ),
+      )) as Usage[];
+      const searchResultCoordinates = (
+        (yield this.client.getTextSearchPreview(
+          usages.map((usage) =>
+            serialize(
+              SearchResultCoordinate,
+              new SearchResultCoordinate(
+                usage.source,
+                usage.startLine,
+                usage.startColumn,
+                usage.endLine,
+                usage.endColumn,
+              ),
+            ),
+          ),
+        )) as PlainObject<SearchResultCoordinate>[]
+      ).map((preview) => deserialize(SearchResultCoordinate, preview));
+      this.setSearchState(
+        new UsageResultState(this, concept, usages, searchResultCoordinates),
+      );
+      this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH_RESULT);
+      this.auxPanelDisplayState.open();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
+    } finally {
+      this.applicationStore.setBlockingAlert(undefined);
+    }
+  }
+
+  *renameConcept(
+    oldName: string,
+    newName: string,
+    pureType: string,
+    usages: Usage[],
+  ): GeneratorFn<void> {
+    try {
+      yield this.client.renameConcept({
+        oldName,
+        newName,
+        pureType,
+        sourceInformations: usages.map((usage) => ({
+          sourceId: usage.source,
+          line: usage.line,
+          column: usage.column,
+        })),
+      });
+      const potentiallyModifiedFiles = usages.map((usage) => usage.source);
+      for (const file of potentiallyModifiedFiles) {
+        yield flowResult(this.reloadFile(file));
+      }
+      yield flowResult(this.refreshTrees());
+      this.setConsoleText(
+        `Sucessfully renamed concept. Please re-compile the code`,
+      );
+    } catch {
+      this.applicationStore.notifyError(`Can't rename concept '${oldName}'`);
+    }
+  }
+
   *updateFileUsingSuggestionCandidate(
     candidate: CandidateWithPackageNotImported,
   ): GeneratorFn<void> {
@@ -933,7 +1112,6 @@ export class EditorStore implements CommandRegistrar {
     this.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
     this.auxPanelDisplayState.open();
   }
-
   *updateFile(
     path: string,
     line: number,
@@ -951,7 +1129,9 @@ export class EditorStore implements CommandRegistrar {
           add,
         },
       ])) as SourceModificationResult;
-      this.setConsoleText(result.text);
+      this.setConsoleText(
+        `Sucessfully updated file. Please re-compile the code`,
+      );
       if (result.modifiedFiles.length) {
         for (const file of result.modifiedFiles) {
           yield flowResult(this.reloadFile(file));
@@ -995,136 +1175,6 @@ export class EditorStore implements CommandRegistrar {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
       this.textSearchCommandLoadingState.fail();
-    }
-  }
-
-  async revealConceptInTree(coordinate: FileCoordinate): Promise<void> {
-    const errorMessage =
-      'Error revealing concept. Please make sure that the code compiles and that you are looking for a valid concept';
-    let concept: UsageConcept;
-    try {
-      concept = (await this.client.getConceptPath(
-        coordinate.file,
-        coordinate.line,
-        coordinate.column,
-      )) as unknown as UsageConcept;
-    } catch {
-      this.applicationStore.notifyWarning(errorMessage);
-      return;
-    }
-    if (!concept.path) {
-      return;
-    }
-    this.applicationStore.setBlockingAlert({
-      message: 'Revealing concept in tree...',
-      showLoading: true,
-    });
-    try {
-      if (this.activeActivity !== ACTIVITY_MODE.CONCEPT) {
-        this.setActiveActivity(ACTIVITY_MODE.CONCEPT);
-      }
-      const parts = concept.path.split(ELEMENT_PATH_DELIMITER);
-      let currentPath = guaranteeNonNullable(parts[0]);
-      let currentNode = guaranteeNonNullable(
-        this.conceptTreeState.getTreeData().nodes.get(currentPath),
-      );
-      for (let i = 1; i < parts.length; ++i) {
-        currentPath = `${currentPath}${ELEMENT_PATH_DELIMITER}${parts[i]}`;
-        if (!this.conceptTreeState.getTreeData().nodes.get(currentPath)) {
-          await flowResult(this.conceptTreeState.expandNode(currentNode));
-        }
-        currentNode = guaranteeNonNullable(
-          this.conceptTreeState.getTreeData().nodes.get(currentPath),
-        );
-      }
-      this.conceptTreeState.setSelectedNode(currentNode);
-    } catch {
-      this.applicationStore.notifyWarning(errorMessage);
-    } finally {
-      this.applicationStore.setBlockingAlert(undefined);
-    }
-  }
-
-  *findUsages(coordinate: FileCoordinate): GeneratorFn<void> {
-    const errorMessage =
-      'Error finding references. Please make sure that the code compiles and that you are looking for references of non primitive types!';
-    let concept: UsageConcept;
-    try {
-      concept = (yield this.client.getConceptPath(
-        coordinate.file,
-        coordinate.line,
-        coordinate.column,
-      )) as UsageConcept;
-    } catch {
-      this.applicationStore.notifyWarning(errorMessage);
-      return;
-    }
-    try {
-      this.applicationStore.setBlockingAlert({
-        message: 'Finding concept usages...',
-        prompt: `Finding references of ${getUsageConceptLabel(concept)}`,
-        showLoading: true,
-      });
-      const usages = (
-        (yield this.client.getUsages(
-          concept.owner
-            ? concept.type
-              ? 'meta::pure::ide::findusages::findUsagesForEnum_String_1__String_1__SourceInformation_MANY_'
-              : 'meta::pure::ide::findusages::findUsagesForProperty_String_1__String_1__SourceInformation_MANY_'
-            : 'meta::pure::ide::findusages::findUsagesForPath_String_1__SourceInformation_MANY_',
-          (concept.owner ? [`'${concept.owner}'`] : []).concat(
-            `'${concept.path}'`,
-          ),
-        )) as PlainObject<Usage>[]
-      ).map((usage) => deserialize(Usage, usage));
-      const searchResultCoordinates = (
-        (yield this.client.getTextSearchPreview(
-          usages.map((usage) =>
-            serialize(
-              SearchResultCoordinate,
-              new SearchResultCoordinate(
-                usage.source,
-                usage.startLine,
-                usage.startColumn,
-                usage.endLine,
-                usage.endColumn,
-              ),
-            ),
-          ),
-        )) as PlainObject<SearchResultCoordinate>[]
-      ).map((preview) => deserialize(SearchResultCoordinate, preview));
-      this.setSearchState(
-        new UsageResultState(this, concept, usages, searchResultCoordinates),
-      );
-      this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH_RESULT);
-      this.auxPanelDisplayState.open();
-    } catch {
-      this.applicationStore.notifyWarning(errorMessage);
-    } finally {
-      this.applicationStore.setBlockingAlert(undefined);
-    }
-  }
-
-  *command(
-    cmd: () => Promise<PlainObject<CommandResult>>,
-  ): GeneratorFn<boolean> {
-    try {
-      const result = deserializeCommandResult(
-        (yield cmd()) as PlainObject<CommandResult>,
-      );
-      if (result instanceof CommandFailureResult) {
-        if (result.errorDialog) {
-          this.applicationStore.notifyWarning(`Error: ${result.text}`);
-        } else {
-          this.setConsoleText(result.text);
-        }
-        return false;
-      }
-      return true;
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
-      return false;
     }
   }
 

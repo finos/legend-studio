@@ -15,14 +15,21 @@
  */
 
 import { createModelSchema, primitive } from 'serializr';
+import { SourceInformation } from './SourceInformation.js';
 
-export interface UsageConcept {
+export interface ConceptInfo {
   path: string;
   owner?: string;
   type?: string;
 }
 
-export const getUsageConceptLabel = (usageConcept: UsageConcept): string =>
+export enum FIND_USAGE_FUNCTION_PATH {
+  ENUM = 'meta::pure::ide::findusages::findUsagesForEnum_String_1__String_1__SourceInformation_MANY_',
+  PROPERTY = 'meta::pure::ide::findusages::findUsagesForProperty_String_1__String_1__SourceInformation_MANY_',
+  PATH = 'meta::pure::ide::findusages::findUsagesForPath_String_1__SourceInformation_MANY_',
+}
+
+export const getConceptInfoLabel = (usageConcept: ConceptInfo): string =>
   `'${usageConcept.path}'${
     usageConcept.owner ? ` of '${usageConcept.owner}'` : ''
   }`;
@@ -35,7 +42,6 @@ export class Usage {
   startColumn!: number;
   endLine!: number;
   endColumn!: number;
-  // __TYPE: "meta::pure::functions::meta::SourceInformation"
 }
 
 createModelSchema(Usage, {

@@ -14,24 +14,13 @@
  * limitations under the License.
  */
 
-import { createModelSchema, primitive } from 'serializr';
-
-export class SourceInformation {
-  sourceId!: string;
-  line!: number;
-  column!: number;
-  startLine!: number;
-  startColumn!: number;
-  endLine!: number;
-  endColumn!: number;
+export interface RenameConceptInput {
+  oldName: string;
+  newName: string;
+  pureType: string;
+  sourceInformations: {
+    sourceId: string;
+    line: number;
+    column: number;
+  }[];
 }
-
-createModelSchema(SourceInformation, {
-  column: primitive(),
-  endLine: primitive(),
-  endColumn: primitive(),
-  line: primitive(),
-  sourceId: primitive(),
-  startLine: primitive(),
-  startColumn: primitive(),
-});

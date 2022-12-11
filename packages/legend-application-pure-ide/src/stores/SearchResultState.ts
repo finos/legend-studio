@@ -24,7 +24,7 @@ import {
   SearchResultCoordinate,
   SearchResultEntry,
 } from '../server/models/SearchEntry.js';
-import type { Usage, UsageConcept } from '../server/models/Usage.js';
+import type { Usage, ConceptInfo } from '../server/models/Usage.js';
 import type { EditorStore } from './EditorStore.js';
 import { deleteEntry, guaranteeNonNullable } from '@finos/legend-shared';
 
@@ -69,11 +69,11 @@ export abstract class SearchResultState extends SearchState {
 export class TextSearchResultState extends SearchResultState {}
 
 export class UsageResultState extends SearchResultState {
-  usageConcept: UsageConcept;
+  usageConcept: ConceptInfo;
 
   constructor(
     editorStore: EditorStore,
-    usageConcept: UsageConcept,
+    usageConcept: ConceptInfo,
     references: Usage[],
     searchResultCoordinates: SearchResultCoordinate[],
   ) {

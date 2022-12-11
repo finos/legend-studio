@@ -74,13 +74,6 @@ export const GenericFileEditor = observer(
       if (currentValue !== content) {
         editor.setValue(content);
       }
-      if (editorState.textEditorState.forcedCursorPosition) {
-        moveCursorToPosition(
-          editor,
-          editorState.textEditorState.forcedCursorPosition,
-        );
-        editorState.textEditorState.setForcedCursorPosition(undefined);
-      }
     }
 
     useEffect(() => {
@@ -88,6 +81,18 @@ export const GenericFileEditor = observer(
         editor?.layout({ width, height });
       }
     }, [editor, width, height]);
+
+    useEffect(() => {
+      if (editor) {
+        if (editorState.textEditorState.forcedCursorPosition) {
+          moveCursorToPosition(
+            editor,
+            editorState.textEditorState.forcedCursorPosition,
+          );
+          editorState.textEditorState.setForcedCursorPosition(undefined);
+        }
+      }
+    }, [editor, editorState, editorState.textEditorState.forcedCursorPosition]);
 
     // clean up
     useEffect(

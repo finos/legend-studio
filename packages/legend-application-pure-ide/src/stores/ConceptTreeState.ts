@@ -21,24 +21,34 @@ import {
   ElementConceptAttribute,
   PropertyConceptAttribute,
   ConceptNode,
+  ConceptType,
 } from '../server/models/ConceptTree.js';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from './EditorStore.js';
 import { FileCoordinate } from '../server/models/File.js';
 import type { ConceptActivity } from '../server/models/Initialization.js';
-import { ActionState, type GeneratorFn } from '@finos/legend-shared';
+import {
+  ActionState,
+  assertType,
+  type GeneratorFn,
+} from '@finos/legend-shared';
 import type { TreeData } from '@finos/legend-art';
+import { FIND_USAGE_FUNCTION_PATH } from '../server/models/Usage.js';
 
 export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
   readonly loadConceptActivity = ActionState.create();
+
   statusText?: string | undefined;
+  nodeForRenameConcept?: ConceptTreeNode | undefined;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
 
     makeObservable(this, {
       statusText: observable,
+      nodeForRenameConcept: observable,
       setStatusText: action,
+      setNodeForRenameConcept: action,
       pullConceptsActivity: action,
       pollConceptsActivity: flow,
     });
@@ -46,6 +56,10 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
 
   setStatusText(value: string | undefined): void {
     this.statusText = value;
+  }
+
+  setNodeForRenameConcept(value: ConceptTreeNode | undefined): void {
+    this.nodeForRenameConcept = value;
   }
 
   async getRootNodes(): Promise<ConceptNode[]> {
@@ -154,5 +168,95 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
       );
     }
     return Promise.resolve();
+  }
+
+  async renameConcept(node: ConceptTreeNode, newName: string): Promise<void> {
+    const attr = node.data.li_attr;
+    const oldName = attr.pureName ?? attr.pureId;
+    switch (attr.pureType) {
+      case ConceptType.PROPERTY:
+      case ConceptType.QUALIFIED_PROPERTY: {
+        assertType(attr, PropertyConceptAttribute);
+        const usages = await this.editorStore.findConceptUsages(
+          FIND_USAGE_FUNCTION_PATH.PROPERTY,
+          [`'${attr.classPath}'`, `'${attr.pureId}'`],
+        );
+        await flowResult(
+          this.editorStore.renameConcept(
+            oldName,
+            newName,
+            attr.pureType,
+            usages,
+          ),
+        );
+
+        // source!: string;
+        // line!: number;
+        // column!: number;
+        // startLine!: number;
+        // startColumn!: number;
+        // endLine!: number;
+        // endColumn!: number;
+        // concept.type === 'enum'
+        //   ? FIND_USAGE_FUNCTION_PATH.ENUM
+        //   : concept.type === 'property'
+        //   ? FIND_USAGE_FUNCTION_PATH.PROPERTY
+        //   : FIND_USAGE_FUNCTION_PATH.PATH,
+        // (concept.owner ? [`'${concept.owner}'`] : []).concat(
+        //   `'${concept.path}'`,
+        // oldName: pureName
+        // pureIde
+        // pureType
+        // classPath
+        // newName: value
+
+        // sourceEdit(sourceInformations, oldName, newName, pureType)
+        return;
+      }
+      case ConceptType.ENUM_VALUE: {
+        console.log(attr);
+        // const usages = await this.editorStore.findConceptUsages(
+        //   FIND_USAGE_FUNCTION_PATH.PROPERTY,
+        //   [`'${attr.classPath}'`, `'${attr.pureId}'`],
+        // );
+        // await flowResult(
+        //   this.editorStore.renameConcept(
+        //     oldName,
+        //     newName,
+        //     attr.pureType,
+        //     usages.map(usageToSourceInformation),
+        //   ),
+        // );
+
+        // source!: string;
+        // line!: number;
+        // column!: number;
+        // startLine!: number;
+        // startColumn!: number;
+        // endLine!: number;
+        // endColumn!: number;
+        // concept.type === 'enum'
+        //   ? FIND_USAGE_FUNCTION_PATH.ENUM
+        //   : concept.type === 'property'
+        //   ? FIND_USAGE_FUNCTION_PATH.PROPERTY
+        //   : FIND_USAGE_FUNCTION_PATH.PATH,
+        // (concept.owner ? [`'${concept.owner}'`] : []).concat(
+        //   `'${concept.path}'`,
+        // oldName: pureName
+        // pureIde
+        // pureType
+        // classPath
+        // newName: value
+
+        // sourceEdit(sourceInformations, oldName, newName, pureType)
+        return;
+      }
+      case ConceptType.PACKAGE: {
+        return;
+      }
+      default: {
+        return;
+      }
+    }
   }
 }
