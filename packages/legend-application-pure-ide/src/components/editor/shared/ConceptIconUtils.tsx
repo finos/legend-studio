@@ -18,7 +18,6 @@ import {
   AtomIcon,
   DatabaseIcon,
   FunctionIcon,
-  PURE_AssociationIcon,
   PURE_ClassIcon,
   PURE_EnumerationIcon,
   PURE_FunctionIcon,
@@ -54,6 +53,10 @@ const PURE_DatabaseIcon: React.FC = () => (
   <div className="icon icon--database">
     <DatabaseIcon />
   </div>
+);
+
+export const PURE_AssociationIcon: React.FC = () => (
+  <div className="icon color--association color--pure-association">A</div>
 );
 
 export const getConceptIcon = (type: string): React.ReactNode => {

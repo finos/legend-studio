@@ -106,6 +106,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
         id,
         label: childNode.text,
         isLoading: false,
+        parent: node,
       });
     });
     node.childrenIds = childrenIds;

@@ -129,6 +129,12 @@
     @include flexHCenter;
   }
 
+  &__package-tree__node__icon__type--property-from-association {
+    svg {
+      color: var(--color-pure-association) !important;
+    }
+  }
+
   &__package-tree__node__icon__expand svg {
     font-size: 1rem;
   }
@@ -148,6 +154,18 @@
   &__package-tree__node__label {
     color: inherit;
     user-select: none;
+
+    &__property-from-association-tag {
+      color: var(--color-dark-grey-250);
+      background: var(--color-dark-grey-400);
+      margin-left: 0.5rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      padding: 0 0.5rem;
+      height: 1.6rem;
+      line-height: 1.6rem;
+      font-weight: 500;
+    }
   }
 
   &__new-element-modal__name-input {

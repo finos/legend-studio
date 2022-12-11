@@ -40,11 +40,12 @@ import {
   MenuContent,
   MenuContentItem,
 } from '@finos/legend-art';
-import { isNonNullable } from '@finos/legend-shared';
+import { guaranteeType, isNonNullable } from '@finos/legend-shared';
 import { useDrag } from 'react-dnd';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { getConceptIcon } from '../shared/ConceptIconUtils.js';
 import { RenameConceptPrompt } from './RenameConceptPrompt.js';
+import { extractElementNameFromPath } from '@finos/legend-graph';
 
 const ConceptExplorerContextMenu = observer(
   forwardRef<
@@ -117,9 +118,29 @@ const ConceptTreeNodeContainer: React.FC<
     useState(false);
   const { onNodeOpen, onNodeExpand, onNodeCompress, viewConceptSource } =
     innerProps;
-  const isExpandable = [ConceptType.PACKAGE, ConceptType.CLASS].includes(
-    node.data.li_attr.pureType as ConceptType,
-  );
+  const isAssociationPropertyNode =
+    node.parent &&
+    node.data.li_attr instanceof PropertyConceptAttribute &&
+    node.data.li_attr.classPath !== node.parent.id;
+  const isExpandable = (
+    [ConceptType.PACKAGE, ConceptType.CLASS] as string[]
+  ).includes(node.data.li_attr.pureType);
+  const nodeLabel =
+    node.data.li_attr.pureType === ConceptType.QUALIFIED_PROPERTY ? (
+      `${node.label}(...)`
+    ) : isAssociationPropertyNode ? (
+      <>
+        {node.label}
+        <span className="explorer__package-tree__node__label__property-from-association-tag">
+          {extractElementNameFromPath(
+            guaranteeType(node.data.li_attr, PropertyConceptAttribute)
+              .classPath,
+          )}
+        </span>
+      </>
+    ) : (
+      node.label
+    );
   const selectNode: React.MouseEventHandler = (event) => {
     event.stopPropagation();
     event.preventDefault();
@@ -210,7 +231,12 @@ const ConceptTreeNodeContainer: React.FC<
               )}
             </div>
           )}
-          <div className="explorer__package-tree__node__icon__type">
+          <div
+            className={clsx('explorer__package-tree__node__icon__type', {
+              'explorer__package-tree__node__icon__type--property-from-association':
+                isAssociationPropertyNode,
+            })}
+          >
             {getConceptIcon(node.data.li_attr.pureType)}
           </div>
         </div>
@@ -218,7 +244,7 @@ const ConceptTreeNodeContainer: React.FC<
           className="tree-view__node__label explorer__package-tree__node__label"
           tabIndex={-1}
         >
-          {node.label}
+          {nodeLabel}
         </button>
       </div>
     </ContextMenu>

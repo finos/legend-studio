@@ -157,4 +157,5 @@ createModelSchema(ConceptNode, {
 export interface ConceptTreeNode extends TreeNodeData {
   data: ConceptNode;
   isLoading: boolean;
+  parent?: ConceptTreeNode;
 }
