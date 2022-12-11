@@ -366,10 +366,7 @@ export class ServiceTestDataState {
       this.testSuiteState.testableState.serviceEditorState.service;
     const execution = service.execution;
     let runtimes: Runtime[] = [];
-    if (
-      execution instanceof PureSingleExecution &&
-      execution.runtime !== undefined
-    ) {
+    if (execution instanceof PureSingleExecution && execution.runtime) {
       runtimes = [execution.runtime];
     } else if (execution instanceof PureMultiExecution) {
       runtimes = execution.executionParameters.map((t) => t.runtime);

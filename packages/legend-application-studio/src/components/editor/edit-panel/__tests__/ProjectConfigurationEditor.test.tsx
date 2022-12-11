@@ -31,7 +31,7 @@ import { TEST_DATA__ProjectDependencyInfo } from './TEST_DATA__ProjectDependency
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
 import type { ProjectDependency } from '@finos/legend-server-sdlc';
-import { ProjectConfigurationEditorState } from '../../../../stores/editor-state/ProjectConfigurationEditorState.js';
+import { ProjectConfigurationEditorState } from '../../../../stores/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 
 let renderResult: RenderResult;
 
@@ -154,7 +154,8 @@ test.skip(integrationTest('Test Project DependencyInfo'), async () => {
       ProjectConfigurationEditorState,
     );
   await waitFor(() => getByText(editPanel, 'View Conflicts'));
-  const dependencyReport = currentEditorStore.dependencyReport;
+  const dependencyReport =
+    currentEditorStore.projectDependencyEditorState.dependencyReport;
   expect(dependencyReport).toBeDefined();
 });
 

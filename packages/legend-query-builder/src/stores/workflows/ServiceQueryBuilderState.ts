@@ -79,8 +79,7 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
 
     if (service.execution instanceof PureSingleExecution) {
       assertTrue(
-        service.execution.mapping !== undefined &&
-          service.execution.runtime !== undefined,
+        Boolean(service.execution.mapping && service.execution.runtime),
         'Service queries without runtime/mapping are not supported',
       );
       this.mapping = service.execution.mapping?.value;

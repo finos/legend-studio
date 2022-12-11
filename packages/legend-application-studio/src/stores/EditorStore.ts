@@ -61,7 +61,7 @@ import { ServiceEditorState } from './editor-state/element-editor-state/service/
 import { EditorSDLCState } from './EditorSDLCState.js';
 import { ModelImporterState } from './editor-state/ModelImporterState.js';
 import { FunctionEditorState } from './editor-state/element-editor-state/FunctionEditorState.js';
-import { ProjectConfigurationEditorState } from './editor-state/ProjectConfigurationEditorState.js';
+import { ProjectConfigurationEditorState } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { PackageableRuntimeEditorState } from './editor-state/element-editor-state/RuntimeEditorState.js';
 import { PackageableConnectionEditorState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { PackageableDataEditorState } from './editor-state/element-editor-state/data/DataEditorState.js';

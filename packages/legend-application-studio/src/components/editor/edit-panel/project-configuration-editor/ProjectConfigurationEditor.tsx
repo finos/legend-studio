@@ -20,7 +20,7 @@ import { observer } from 'mobx-react-lite';
 import {
   ProjectConfigurationEditorState,
   CONFIGURATION_EDITOR_TAB,
-} from '../../../../stores/editor-state/ProjectConfigurationEditorState.js';
+} from '../../../../stores/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import {
   clsx,
   PlusIcon,
@@ -347,9 +347,9 @@ export const ProjectConfigurationEditor = observer(() => {
           );
           dependencyToAdd.setVersionId(projectToAdd.latestVersion);
           currentProjectConfiguration.addProjectDependency(dependencyToAdd);
-          flowResult(configState.fetchDependencyInfo()).catch(
-            applicationStore.alertUnhandledError,
-          );
+          flowResult(
+            configState.projectDependencyEditorState.fetchDependencyReport(),
+          ).catch(applicationStore.alertUnhandledError);
         } else {
           currentProjectConfiguration.addProjectDependency(
             new ProjectDependency(''),
@@ -376,9 +376,9 @@ export const ProjectConfigurationEditor = observer(() => {
       flowResult(configState.fectchAssociatedProjectsAndVersions()).catch(
         applicationStore.alertUnhandledError,
       );
-      flowResult(configState.fetchDependencyInfo()).catch(
-        applicationStore.alertUnhandledError,
-      );
+      flowResult(
+        configState.projectDependencyEditorState.fetchDependencyReport(),
+      ).catch(applicationStore.alertUnhandledError);
     }
   }, [applicationStore, configState, selectedTab]);
 
