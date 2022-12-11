@@ -17,13 +17,13 @@
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { ACTIVITY_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
 import { FileEditorState } from './FileEditorState.js';
-import { deserialize } from 'serializr';
+import { serialize, deserialize } from 'serializr';
 import {
   FileCoordinate,
   FileErrorCoordinate,
-  PureFile,
+  File,
   trimPathLeadingSlash,
-} from '../server/models/PureFile.js';
+} from '../server/models/File.js';
 import { DirectoryTreeState } from './DirectoryTreeState.js';
 import { ConceptTreeState } from './ConceptTreeState.js';
 import {
@@ -48,6 +48,7 @@ import {
 import {
   type SearchResultEntry,
   getSearchResultEntry,
+  SearchResultCoordinate,
 } from '../server/models/SearchEntry.js';
 import {
   type SearchState,
@@ -59,9 +60,10 @@ import {
 } from './SearchResultState.js';
 import { TestRunnerState } from './TestRunnerState.js';
 import {
-  type UsageConcept,
-  getUsageConceptLabel,
+  type ConceptInfo,
+  getConceptInfoLabel,
   Usage,
+  FIND_USAGE_FUNCTION_PATH,
 } from '../server/models/Usage.js';
 import {
   type CommandResult,
@@ -82,6 +84,7 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  uniq,
 } from '@finos/legend-shared';
 import { PureClient as PureServerClient } from '../server/PureServerClient.js';
 import { PanelDisplayState } from '@finos/legend-art';
@@ -92,6 +95,9 @@ import { SearchCommandState } from './SearchCommandState.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
 import { LEGEND_PURE_IDE_COMMAND_KEY } from './LegendPureIDECommand.js';
 import { ExecutionError } from '../server/models/ExecutionError.js';
+import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
+import type { SourceModificationResult } from '../server/models/Source.js';
+import { ConceptType } from '../server/models/ConceptTree.js';
 
 export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
@@ -179,14 +185,20 @@ export class EditorStore implements CommandRegistrar {
       executeSaveAndReset: flow,
       fullReCompile: flow,
       refreshTrees: flow,
+      command: flow,
+
+      findUsages: flow,
+      renameConcept: flow,
+      movePackageableElements: flow,
+
       updateFileUsingSuggestionCandidate: flow,
       updateFile: flow,
       searchFile: flow,
       searchText: flow,
-      findUsages: flow,
-      command: flow,
+
       createNewDirectory: flow,
       createNewFile: flow,
+      renameFile: flow,
       deleteDirectoryOrFile: flow,
     });
 
@@ -494,7 +506,7 @@ export class EditorStore implements CommandRegistrar {
       yield flowResult(this.checkIfSessionWakingUp());
       editorState = new FileEditorState(
         this,
-        deserialize(PureFile, yield this.client.getFile(filePath)),
+        deserialize(File, yield this.client.getFile(filePath)),
         filePath,
       );
     }
@@ -515,9 +527,7 @@ export class EditorStore implements CommandRegistrar {
     yield Promise.all(
       this.tabManagerState.tabs.map(async (tab) => {
         if (tab instanceof FileEditorState && tab.filePath === filePath) {
-          tab.setFile(
-            deserialize(PureFile, await this.client.getFile(filePath)),
-          );
+          tab.setFile(deserialize(File, await this.client.getFile(filePath)));
         } else if (
           tab instanceof DiagramEditorState &&
           tab.filePath === filePath
@@ -754,7 +764,9 @@ export class EditorStore implements CommandRegistrar {
 
   *executeTests(path: string, relevantTestsOnly?: boolean): GeneratorFn<void> {
     if (relevantTestsOnly) {
-      this.applicationStore.notifyUnsupportedFeature(`Run relevant tests`);
+      this.applicationStore.notifyUnsupportedFeature(
+        `Run relevant tests! (reason: VCS required)`,
+      );
       return;
     }
     if (this.testRunState.isInProgress) {
@@ -915,6 +927,226 @@ export class EditorStore implements CommandRegistrar {
     ]);
   }
 
+  async revealConceptInTree(coordinate: FileCoordinate): Promise<void> {
+    const errorMessage =
+      'Error revealing concept. Please make sure that the code compiles and that you are looking for a valid concept';
+    let concept: ConceptInfo;
+    try {
+      concept = (await this.client.getConceptInfo(
+        coordinate.file,
+        coordinate.line,
+        coordinate.column,
+      )) as unknown as ConceptInfo;
+    } catch {
+      this.applicationStore.notifyWarning(errorMessage);
+      return;
+    }
+    if (!concept.path) {
+      return;
+    }
+    this.applicationStore.setBlockingAlert({
+      message: 'Revealing concept in tree...',
+      showLoading: true,
+    });
+    try {
+      if (this.activeActivity !== ACTIVITY_MODE.CONCEPT) {
+        this.setActiveActivity(ACTIVITY_MODE.CONCEPT);
+      }
+      const parts = concept.path.split(ELEMENT_PATH_DELIMITER);
+      let currentPath = guaranteeNonNullable(parts[0]);
+      let currentNode = guaranteeNonNullable(
+        this.conceptTreeState.getTreeData().nodes.get(currentPath),
+      );
+      for (let i = 1; i < parts.length; ++i) {
+        currentPath = `${currentPath}${ELEMENT_PATH_DELIMITER}${parts[i]}`;
+        if (!this.conceptTreeState.getTreeData().nodes.get(currentPath)) {
+          await flowResult(this.conceptTreeState.expandNode(currentNode));
+        }
+        currentNode = guaranteeNonNullable(
+          this.conceptTreeState.getTreeData().nodes.get(currentPath),
+        );
+      }
+      this.conceptTreeState.setSelectedNode(currentNode);
+    } catch {
+      this.applicationStore.notifyWarning(errorMessage);
+    } finally {
+      this.applicationStore.setBlockingAlert(undefined);
+    }
+  }
+
+  *command(
+    cmd: () => Promise<PlainObject<CommandResult>>,
+  ): GeneratorFn<boolean> {
+    try {
+      const result = deserializeCommandResult(
+        (yield cmd()) as PlainObject<CommandResult>,
+      );
+      if (result instanceof CommandFailureResult) {
+        if (result.errorDialog) {
+          this.applicationStore.notifyWarning(`Error: ${result.text}`);
+        } else {
+          this.setConsoleText(result.text);
+        }
+        return false;
+      }
+      return true;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
+      return false;
+    }
+  }
+
+  async getConceptInfo(
+    coordinate: FileCoordinate,
+  ): Promise<ConceptInfo | undefined> {
+    try {
+      return this.client.getConceptInfo(
+        coordinate.file,
+        coordinate.line,
+        coordinate.column,
+      );
+    } catch {
+      this.applicationStore.notifyWarning(
+        `Can't find concept info. Please make sure that the code compiles and that you are looking for references of non primitive types!`,
+      );
+      return undefined;
+    }
+  }
+
+  async findConceptUsages(func: string, param: string[]): Promise<Usage[]> {
+    return (await this.client.getUsages(func, param)).map((usage) =>
+      deserialize(Usage, usage),
+    );
+  }
+
+  *findUsages(coordinate: FileCoordinate): GeneratorFn<void> {
+    const concept = (yield this.getConceptInfo(coordinate)) as
+      | ConceptInfo
+      | undefined;
+    if (!concept) {
+      return;
+    }
+    try {
+      this.applicationStore.setBlockingAlert({
+        message: 'Finding concept usages...',
+        prompt: `Finding references of ${getConceptInfoLabel(concept)}`,
+        showLoading: true,
+      });
+      const usages = (yield this.findConceptUsages(
+        concept.pureType === ConceptType.ENUM_VALUE
+          ? FIND_USAGE_FUNCTION_PATH.ENUM
+          : concept.pureType === ConceptType.PROPERTY ||
+            concept.pureType === ConceptType.QUALIFIED_PROPERTY
+          ? FIND_USAGE_FUNCTION_PATH.PROPERTY
+          : FIND_USAGE_FUNCTION_PATH.ELEMENT,
+        (concept.owner ? [`'${concept.owner}'`] : []).concat(
+          `'${concept.path}'`,
+        ),
+      )) as Usage[];
+      const searchResultCoordinates = (
+        (yield this.client.getTextSearchPreview(
+          usages.map((usage) =>
+            serialize(
+              SearchResultCoordinate,
+              new SearchResultCoordinate(
+                usage.source,
+                usage.startLine,
+                usage.startColumn,
+                usage.endLine,
+                usage.endColumn,
+              ),
+            ),
+          ),
+        )) as PlainObject<SearchResultCoordinate>[]
+      ).map((preview) => deserialize(SearchResultCoordinate, preview));
+      this.setSearchState(
+        new UsageResultState(this, concept, usages, searchResultCoordinates),
+      );
+      this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH_RESULT);
+      this.auxPanelDisplayState.open();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
+    } finally {
+      this.applicationStore.setBlockingAlert(undefined);
+    }
+  }
+
+  *renameConcept(
+    oldName: string,
+    newName: string,
+    pureType: string,
+    usages: Usage[],
+  ): GeneratorFn<void> {
+    try {
+      yield this.client.renameConcept({
+        oldName,
+        newName,
+        pureType,
+        sourceInformations: usages.map((usage) => ({
+          sourceId: usage.source,
+          line: usage.line,
+          column: usage.column,
+        })),
+      });
+      const potentiallyModifiedFiles = usages.map((usage) => usage.source);
+      for (const file of potentiallyModifiedFiles) {
+        yield flowResult(this.reloadFile(file));
+      }
+      yield flowResult(this.refreshTrees());
+      this.setConsoleText(
+        `Sucessfully renamed concept. Please re-compile the code`,
+      );
+      this.applicationStore.notifyWarning(
+        `Please re-compile the code after refacting`,
+      );
+    } catch {
+      this.applicationStore.notifyError(`Can't rename concept '${oldName}'`);
+    }
+  }
+
+  *movePackageableElements(
+    inputs: {
+      pureName: string;
+      pureType: string;
+      sourcePackage: string;
+      destinationPackage: string;
+      usages: Usage[];
+    }[],
+  ): GeneratorFn<void> {
+    try {
+      yield this.client.movePackageableElements(
+        inputs.map((input) => ({
+          pureName: input.pureName,
+          pureType: input.pureType,
+          sourcePackage: input.sourcePackage,
+          destinationPackage: input.destinationPackage,
+          sourceInformations: input.usages.map((usage) => ({
+            sourceId: usage.source,
+            line: usage.line,
+            column: usage.column,
+          })),
+        })),
+      );
+      const potentiallyModifiedFiles = uniq(
+        inputs.flatMap((input) => input.usages.map((usage) => usage.source)),
+      );
+      for (const file of potentiallyModifiedFiles) {
+        yield flowResult(this.reloadFile(file));
+      }
+      yield flowResult(this.refreshTrees());
+      this.setConsoleText(
+        `Sucessfully moved packageble elements. Please re-compile the code`,
+      );
+      this.applicationStore.notifyWarning(
+        `Please re-compile the code after refacting`,
+      );
+    } catch {
+      this.applicationStore.notifyError(`Can't move packageable elements`);
+    }
+  }
+
   *updateFileUsingSuggestionCandidate(
     candidate: CandidateWithPackageNotImported,
   ): GeneratorFn<void> {
@@ -931,7 +1163,6 @@ export class EditorStore implements CommandRegistrar {
     this.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
     this.auxPanelDisplayState.open();
   }
-
   *updateFile(
     path: string,
     line: number,
@@ -939,26 +1170,30 @@ export class EditorStore implements CommandRegistrar {
     add: boolean,
     message: string,
   ): GeneratorFn<void> {
-    yield flowResult(
-      this.execute(
-        'updateSource',
+    try {
+      const result = (yield this.client.updateSource([
         {
-          updatePath: path,
-          updateSources: [
-            {
-              path,
-              line,
-              column,
-              add,
-              message,
-            },
-          ],
+          path,
+          line,
+          column,
+          message,
+          add,
         },
-        false,
-        (result: ExecutionResult) =>
-          flowResult(this.manageExecuteGoResult(result)),
-      ),
-    );
+      ])) as SourceModificationResult;
+      if (result.modifiedFiles.length) {
+        for (const file of result.modifiedFiles) {
+          yield flowResult(this.reloadFile(file));
+        }
+      }
+      this.setConsoleText(
+        `Sucessfully updated file. Please re-compile the code`,
+      );
+      this.applicationStore.notifyWarning(
+        `Please re-compile the code after refacting`,
+      );
+    } catch {
+      this.applicationStore.notifyError(`Can't update file: ${path}`);
+    }
   }
 
   *searchFile(): GeneratorFn<void> {
@@ -997,85 +1232,51 @@ export class EditorStore implements CommandRegistrar {
     }
   }
 
-  *findUsages(coordinate: FileCoordinate): GeneratorFn<void> {
-    const errorMessage =
-      'Error finding references. Please make sure that the code compiles and that you are looking for references of non primitive types!';
-    let concept: UsageConcept;
+  *createNewDirectory(path: string): GeneratorFn<void> {
     try {
-      concept = (yield this.client.getConceptPath(
-        coordinate.file,
-        coordinate.line,
-        coordinate.column,
-      )) as UsageConcept;
-    } catch {
-      this.applicationStore.notifyWarning(errorMessage);
-      return;
-    }
-    try {
-      this.applicationStore.setBlockingAlert({
-        message: 'Finding concept usages...',
-        prompt: `Finding references of ${getUsageConceptLabel(concept)}`,
-        showLoading: true,
-      });
-      const usages = (
-        (yield this.client.getUsages(
-          concept.owner
-            ? concept.type
-              ? 'meta::pure::ide::findusages::findUsagesForEnum_String_1__String_1__SourceInformation_MANY_'
-              : 'meta::pure::ide::findusages::findUsagesForProperty_String_1__String_1__SourceInformation_MANY_'
-            : 'meta::pure::ide::findusages::findUsagesForPath_String_1__SourceInformation_MANY_',
-          (concept.owner ? [`'${concept.owner}'`] : []).concat(
-            `'${concept.path}'`,
-          ),
-        )) as PlainObject<Usage>[]
-      ).map((usage) => deserialize(Usage, usage));
-      this.setSearchState(new UsageResultState(this, concept, usages));
-      this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH_RESULT);
-      this.auxPanelDisplayState.open();
-    } catch {
-      this.applicationStore.notifyWarning(errorMessage);
-    } finally {
-      this.applicationStore.setBlockingAlert(undefined);
-    }
-  }
-
-  *command(
-    cmd: () => Promise<PlainObject<CommandResult>>,
-  ): GeneratorFn<boolean> {
-    try {
-      const result = deserializeCommandResult(
-        (yield cmd()) as PlainObject<CommandResult>,
+      yield flowResult(
+        this.command(() =>
+          this.client.createFolder(trimPathLeadingSlash(path)),
+        ),
       );
-      if (result instanceof CommandFailureResult) {
-        if (result.errorDialog) {
-          this.applicationStore.notifyWarning(`Error: ${result.text}`);
-        } else {
-          this.setConsoleText(result.text);
-        }
-        return false;
-      }
-      return true;
+
+      yield flowResult(this.directoryTreeState.refreshTreeData());
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
-      return false;
     }
   }
 
-  *createNewDirectory(path: string): GeneratorFn<void> {
-    yield flowResult(
-      this.command(() => this.client.createFolder(trimPathLeadingSlash(path))),
-    );
-    yield flowResult(this.directoryTreeState.refreshTreeData());
+  *createNewFile(path: string): GeneratorFn<void> {
+    try {
+      const result = (yield flowResult(
+        this.command(() => this.client.createFile(trimPathLeadingSlash(path))),
+      )) as boolean;
+      yield flowResult(this.directoryTreeState.refreshTreeData());
+      if (result) {
+        yield flowResult(this.loadFile(path));
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
+    }
   }
 
-  *createNewFile(path: string): GeneratorFn<void> {
-    const result = (yield flowResult(
-      this.command(() => this.client.createFile(trimPathLeadingSlash(path))),
-    )) as boolean;
-    yield flowResult(this.directoryTreeState.refreshTreeData());
-    if (result) {
-      yield flowResult(this.loadFile(path));
+  *renameFile(oldPath: string, newPath: string): GeneratorFn<void> {
+    try {
+      yield flowResult(
+        this.command(() => this.client.renameFile(oldPath, newPath)),
+      );
+      yield flowResult(this.directoryTreeState.refreshTreeData());
+      const openTab = this.tabManagerState.tabs.find(
+        (tab) => tab instanceof FileEditorState && tab.filePath === oldPath,
+      );
+      if (openTab) {
+        this.tabManagerState.closeTab(openTab);
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
     }
   }
 
@@ -1092,7 +1293,10 @@ export class EditorStore implements CommandRegistrar {
       );
       const editorStatesToClose = this.tabManagerState.tabs.filter(
         (tab) =>
-          tab instanceof FileEditorState && tab.filePath.startsWith(path),
+          tab instanceof FileEditorState &&
+          (isDirectory
+            ? tab.filePath.startsWith(`${path}/`)
+            : tab.filePath === path),
       );
       editorStatesToClose.forEach((tab) => this.tabManagerState.closeTab(tab));
       await flowResult(this.directoryTreeState.refreshTreeData());

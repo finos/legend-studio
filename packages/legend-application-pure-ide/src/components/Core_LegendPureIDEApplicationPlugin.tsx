@@ -23,6 +23,7 @@ import { LegendPureIDEApplicationPlugin } from '../stores/LegendPureIDEApplicati
 import {
   LEGEND_PURE_IDE_COMMAND_CONFIG,
   LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_CONFIG,
+  LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_CONFIG,
 } from '../stores/LegendPureIDECommand.js';
 
 export class Core_LegendPureIDEApplicationPlugin extends LegendPureIDEApplicationPlugin {
@@ -35,6 +36,7 @@ export class Core_LegendPureIDEApplicationPlugin extends LegendPureIDEApplicatio
   override getExtraKeyedCommandConfigEntries(): KeyedCommandConfigEntry[] {
     return [
       LEGEND_PURE_IDE_COMMAND_CONFIG,
+      LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_CONFIG,
       LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_CONFIG,
     ].flatMap((data) => collectKeyedCommandConfigEntriesFromConfig(data));
   }

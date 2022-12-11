@@ -33,6 +33,7 @@
     line-height: 2rem;
     background: var(--color-dark-grey-85);
     margin-bottom: 1rem;
+    user-select: none;
   }
 
   &__entry {
@@ -148,6 +149,38 @@
 
     &__label--full {
       width: calc(100% - 2.8rem);
+    }
+
+    &__label__content {
+      @include flexVCenter;
+    }
+
+    &__label__coordinates {
+      line-height: 2rem;
+      font-size: 1.2rem;
+      font-family: 'Roboto Mono', monospace;
+      color: var(--color-dark-grey-300);
+      margin-right: 0.5rem;
+    }
+
+    &__label__preview {
+      display: inline-block;
+      line-height: 2rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: pre;
+    }
+
+    &__label__preview__text {
+      line-height: 2rem;
+      font-size: 1.2rem;
+      font-family: 'Roboto Mono', monospace;
+      white-space: pre;
+    }
+
+    &__label__preview__text--found {
+      font-weight: 700;
+      color: var(--color-blue-150);
     }
 
     &__label__candidate {

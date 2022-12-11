@@ -61,7 +61,7 @@
     "react-draggable": "4.4.5",
     "react-router": "5.3.4",
     "react-router-dom": "5.3.4",
-    "serializr": "3.0.1",
+    "serializr": "3.0.2",
     "sql-formatter": "12.0.3"
   },
   "devDependencies": {

@@ -16,6 +16,7 @@
 
 import type { PureGrammarTextSuggestion } from '@finos/legend-application';
 import { PURE_ELEMENT_NAME, PURE_PARSER } from '@finos/legend-graph';
+import { languages as monacoLanguagesAPI } from 'monaco-editor';
 import {
   BLANK_CLASS_SNIPPET,
   BLANK_FUNCTION_SNIPPET,
@@ -32,6 +33,7 @@ import {
   SIMPLE_FUNCTION_SNIPPET,
   SIMPLE_PROFILE_SNIPPET,
   BLANK_DIAGRAM_SNIPPET,
+  COPYRIGHT_HEADER_SNIPPET,
 } from './LegendPureIDECodeSnippets.js';
 
 // NOTE: these are technically different parsers compared to the ones we have in `Legend Engine` so we will
@@ -190,3 +192,28 @@ export const collectExtraInlineSnippetSuggestions =
       insertText: `println(\${1:})`,
     },
   ];
+
+export const getCopyrightHeaderSuggestions =
+  (): monacoLanguagesAPI.CompletionItem[] => {
+    const results: monacoLanguagesAPI.CompletionItem[] = [];
+
+    results.push({
+      label: {
+        label: `#copyright`,
+        description: `(copyright header)`,
+      },
+      kind: monacoLanguagesAPI.CompletionItemKind.Snippet,
+      insertTextRules:
+        monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+      insertText: COPYRIGHT_HEADER_SNIPPET,
+      // NOTE: only show this suggestion when the cursor is on the first line of the file
+      range: {
+        startLineNumber: 1,
+        startColumn: 1,
+        endLineNumber: 1,
+        endColumn: 1000,
+      },
+    } as monacoLanguagesAPI.CompletionItem);
+
+    return results;
+  };

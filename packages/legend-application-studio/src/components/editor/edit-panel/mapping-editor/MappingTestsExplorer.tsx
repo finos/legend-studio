@@ -37,6 +37,8 @@ import {
   PauseCircleIcon,
   PanelDropZone,
   BlankPanelPlaceholder,
+  MenuContent,
+  MenuContentItem,
 } from '@finos/legend-art';
 import {
   type MappingElementDragSource,
@@ -99,56 +101,32 @@ export const MappingTestExplorerContextMenu = observer(
     };
 
     return (
-      <div ref={ref} className="mapping-test-explorer__context-menu">
+      <MenuContent ref={ref}>
         {mappingTestState && (
-          <div
-            className="mapping-test-explorer__context-menu__item"
-            onClick={runMappingTest}
-          >
-            Run
-          </div>
+          <MenuContentItem onClick={runMappingTest}>Run</MenuContentItem>
         )}
         {mappingTestState && mappingTestState.result !== TEST_RESULT.NONE && (
-          <div
-            className="mapping-test-explorer__context-menu__item"
-            onClick={viewTestResult}
-          >
+          <MenuContentItem onClick={viewTestResult}>
             View Result
-          </div>
+          </MenuContentItem>
         )}
         {mappingTestState && (
-          <div
-            className="mapping-test-explorer__context-menu__item"
-            onClick={editTest}
-          >
-            Edit
-          </div>
+          <MenuContentItem onClick={editTest}>Edit</MenuContentItem>
         )}
         {mappingTestState && (
-          <div
-            className="mapping-test-explorer__context-menu__item"
-            onClick={toggleSkipTest}
-          >
+          <MenuContentItem onClick={toggleSkipTest}>
             {mappingTestState.isSkipped ? 'Unskip' : 'Skip'}
-          </div>
+          </MenuContentItem>
         )}
         {!isReadOnly && mappingTestState && (
-          <div
-            className="mapping-test-explorer__context-menu__item"
-            onClick={removeMappingTest}
-          >
-            Delete
-          </div>
+          <MenuContentItem onClick={removeMappingTest}>Delete</MenuContentItem>
         )}
-        {!isReadOnly && !mappingTestState && (
-          <div
-            className="mapping-test-explorer__context-menu__item"
-            onClick={showCreateNewTestModal}
-          >
+        {!isReadOnly && !mappingTestState && showCreateNewTestModal && (
+          <MenuContentItem onClick={showCreateNewTestModal}>
             Create new test
-          </div>
+          </MenuContentItem>
         )}
-      </div>
+      </MenuContent>
     );
   }),
 );

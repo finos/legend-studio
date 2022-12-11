@@ -17,7 +17,8 @@
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FileEditorState } from '../../../stores/FileEditorState.js';
-import { FileEditor } from './FileEditor.js';
+import { GenericFileEditor } from './GenericFileEditor.js';
+import { PureFileEditor } from './PureFileEditor.js';
 import {
   clsx,
   FileAltIcon,
@@ -27,7 +28,11 @@ import {
 import { DiagramEditorState } from '../../../stores/DiagramEditorState.js';
 import { DiagramEditor } from './DiagramEditor.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import { TabManager, type TabState } from '@finos/legend-application';
+import {
+  EDITOR_LANGUAGE,
+  TabManager,
+  type TabState,
+} from '@finos/legend-application';
 import { PURE_DiagramIcon } from '../shared/ConceptIconUtils.js';
 
 export const EditPanelSplashScreen: React.FC = () => {
@@ -87,7 +92,10 @@ export const EditPanel = observer(() => {
   const currentTab = editorStore.tabManagerState.currentTab;
   const renderActiveEditorState = (): React.ReactNode => {
     if (currentTab instanceof FileEditorState) {
-      return <FileEditor editorState={currentTab} />;
+      if (currentTab.textEditorState.language === EDITOR_LANGUAGE.PURE) {
+        return <PureFileEditor editorState={currentTab} />;
+      }
+      return <GenericFileEditor editorState={currentTab} />;
     } else if (currentTab instanceof DiagramEditorState) {
       return <DiagramEditor diagramEditorState={currentTab} />;
     }

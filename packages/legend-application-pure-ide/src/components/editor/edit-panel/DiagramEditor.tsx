@@ -53,7 +53,7 @@ import {
   ZoomOutIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import { FileCoordinate } from '../../../server/models/PureFile.js';
+import { FileCoordinate } from '../../../server/models/File.js';
 
 const DiagramEditorDiagramCanvas = observer(
   forwardRef<

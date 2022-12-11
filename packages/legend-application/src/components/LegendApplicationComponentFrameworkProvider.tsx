@@ -46,6 +46,7 @@ const PLATFORM_NATIVE_KEYBOARD_SHORTCUTS = [
   'Control+KeyB',
   'F7', // Firefox: Caret browsing
   'Alt+F7', // Firefox: Caret browsing (Mac)
+  'Control+Shift+KeyB',
 ];
 
 const buildReactHotkeysConfiguration = (

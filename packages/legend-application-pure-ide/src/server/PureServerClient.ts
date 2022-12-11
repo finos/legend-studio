@@ -25,13 +25,21 @@ import type {
   ExecutionActivity,
   ExecutionResult,
 } from '../server/models/Execution.js';
-import type { FileData } from '../server/models/PureFile.js';
-import type { SearchResultEntry } from '../server/models/SearchEntry.js';
+import type { FileData } from './models/File.js';
+import type {
+  SearchResultCoordinate,
+  SearchResultEntry,
+} from '../server/models/SearchEntry.js';
 import type {
   AbstractTestRunnerCheckResult,
   TestRunnerCancelResult,
 } from '../server/models/Test.js';
-import type { Usage, UsageConcept } from '../server/models/Usage.js';
+import {
+  type Usage,
+  type ConceptInfo,
+  type PackageableElementUsage,
+  FIND_USAGE_FUNCTION_PATH,
+} from '../server/models/Usage.js';
 import type { CommandResult } from '../server/models/Command.js';
 import {
   guaranteeNonNullable,
@@ -42,6 +50,15 @@ import type {
   DiagramClassInfo,
   DiagramInfo,
 } from '../server/models/DiagramInfo.js';
+import type {
+  SourceModificationResult,
+  UpdateSourceInput,
+} from './models/Source.js';
+import type { RenameConceptInput } from './models/RenameConcept.js';
+import type {
+  ChildPackageableElementInfo,
+  MovePackageableElementsInput,
+} from './models/MovePackageableElements.js';
 
 export class PureClient {
   private networkClient: NetworkClient;
@@ -185,6 +202,14 @@ export class PureClient {
       },
     );
 
+  getTextSearchPreview = (
+    coordinates: SearchResultCoordinate[],
+  ): Promise<PlainObject<SearchResultCoordinate>[]> =>
+    this.networkClient.post(
+      `${this.baseUrl}/getTextSearchPreview`,
+      coordinates,
+    );
+
   checkTestRunner = (
     testRunnerId: number,
   ): Promise<PlainObject<AbstractTestRunnerCheckResult>> =>
@@ -198,9 +223,7 @@ export class PureClient {
       },
     );
 
-  cancelTestRunner = (
-    testRunnerId: number,
-  ): Promise<PlainObject<TestRunnerCancelResult>> =>
+  cancelTestRunner = (testRunnerId: number): Promise<TestRunnerCancelResult> =>
     this.networkClient.get(
       `${this.baseUrl}/testRunnerCancel`,
       undefined,
@@ -211,13 +234,13 @@ export class PureClient {
       },
     );
 
-  getConceptPath = (
+  getConceptInfo = (
     file: string,
     line: number,
     column: number,
-  ): Promise<PlainObject<UsageConcept>> =>
+  ): Promise<ConceptInfo> =>
     this.networkClient.get(
-      `${this.baseUrl}/getConceptPath`,
+      `${this.baseUrl}/getConceptInfo`,
       undefined,
       undefined,
       {
@@ -227,15 +250,71 @@ export class PureClient {
       },
     );
 
-  getUsages = (func: string, param: string[]): Promise<PlainObject<Usage>[]> =>
-    this.networkClient.get(`${this.baseUrl}/execute`, undefined, undefined, {
-      func,
-      param,
-    });
+  getUsages = async (
+    func: string,
+    param: string[],
+  ): Promise<PlainObject<Usage>[]> => {
+    const result = await this.networkClient.get(
+      `${this.baseUrl}/execute`,
+      undefined,
+      undefined,
+      {
+        func,
+        param,
+      },
+    );
+    return Array.isArray(result) ? result : [result];
+  };
+
+  renameConcept = (input: RenameConceptInput): Promise<void> =>
+    this.networkClient.put(`${this.baseUrl}/renameConcept`, input);
+
+  movePackageableElements = (
+    inputs: MovePackageableElementsInput[],
+  ): Promise<void> =>
+    this.networkClient.put(`${this.baseUrl}/movePackageableElements`, inputs);
+
+  getPackageableElementsUsage = async (
+    paths: string[],
+  ): Promise<PlainObject<PackageableElementUsage>[]> => {
+    const result = await this.networkClient.get(
+      `${this.baseUrl}/execute`,
+      undefined,
+      undefined,
+      {
+        func: FIND_USAGE_FUNCTION_PATH.MULTIPLE_PATHS,
+        param: [`'${paths.join(',')}'`],
+      },
+    );
+    return Array.isArray(result) ? result : [result];
+  };
+
+  getChildPackageableElements = async (
+    packagePath: string,
+  ): Promise<ChildPackageableElementInfo[]> => {
+    const result = await this.networkClient.get(
+      `${this.baseUrl}/execute`,
+      undefined,
+      undefined,
+      {
+        func: 'meta::pure::ide::getChildPackageableElements_String_1__String_MANY_',
+        param: [`'${packagePath}'`],
+      },
+    );
+    return (Array.isArray(result) ? result : [result]).map((child) =>
+      JSON.parse(child),
+    );
+  };
+
+  updateSource = (
+    updateInputs: UpdateSourceInput[],
+  ): Promise<PlainObject<SourceModificationResult>> =>
+    this.networkClient.put(`${this.baseUrl}/updateSource`, updateInputs);
 
   createFile = (path: string): Promise<PlainObject<CommandResult>> =>
-    this.networkClient.get(
+    this.networkClient.post(
       `${this.baseUrl}/newFile/${path}`,
+      undefined,
       undefined,
       undefined,
       {
@@ -246,8 +325,9 @@ export class PureClient {
     );
 
   createFolder = (path: string): Promise<PlainObject<CommandResult>> =>
-    this.networkClient.get(
+    this.networkClient.post(
       `${this.baseUrl}/newFolder/${path}`,
+      undefined,
       undefined,
       undefined,
       {
@@ -257,9 +337,23 @@ export class PureClient {
       },
     );
 
+  renameFile = (
+    oldPath: string,
+    newPath: string,
+  ): Promise<PlainObject<CommandResult>> =>
+    this.networkClient.put(
+      `${this.baseUrl}/renameFile`,
+      {
+        oldPath,
+        newPath,
+      },
+      undefined,
+    );
+
   deleteDirectoryOrFile = (path: string): Promise<PlainObject<CommandResult>> =>
-    this.networkClient.get(
+    this.networkClient.delete(
       `${this.baseUrl}/deleteFile/${path}`,
+      undefined,
       undefined,
       undefined,
       {

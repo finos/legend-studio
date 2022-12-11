@@ -18,7 +18,6 @@ import {
   AtomIcon,
   DatabaseIcon,
   FunctionIcon,
-  PURE_AssociationIcon,
   PURE_ClassIcon,
   PURE_EnumerationIcon,
   PURE_FunctionIcon,
@@ -56,6 +55,10 @@ const PURE_DatabaseIcon: React.FC = () => (
   </div>
 );
 
+export const PURE_AssociationIcon: React.FC = () => (
+  <div className="icon color--association color--pure-association">A</div>
+);
+
 export const getConceptIcon = (type: string): React.ReactNode => {
   switch (type) {
     case ConceptType.PACKAGE:
@@ -67,6 +70,7 @@ export const getConceptIcon = (type: string): React.ReactNode => {
     case ConceptType.ASSOCIATION:
       return <PURE_AssociationIcon />;
     case ConceptType.PROPERTY:
+    case ConceptType.QUALIFIED_PROPERTY:
       return <PURE_PropertyIcon />;
     case ConceptType.ENUMERATION:
       return <PURE_EnumerationIcon />;

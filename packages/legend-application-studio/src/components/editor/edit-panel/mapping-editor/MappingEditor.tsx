@@ -34,6 +34,8 @@ import {
   PURE_AssociationIcon,
   Panel,
   useResizeDetector,
+  MenuContentItem,
+  MenuContent,
 } from '@finos/legend-art';
 import { ClassMappingEditor } from './ClassMappingEditor.js';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor.js';
@@ -113,27 +115,16 @@ const MappingEditorHeaderTabContextMenu = observer(
     const closeAll = (): void => mappingEditorState.closeAllTabs();
 
     return (
-      <div ref={ref} className="mapping-editor__header__tab__context-menu">
-        <button
-          className="mapping-editor__header__tab__context-menu__item"
-          onClick={close}
-        >
-          Close
-        </button>
-        <button
-          className="mapping-editor__header__tab__context-menu__item"
+      <MenuContent ref={ref}>
+        <MenuContentItem onClick={close}>Close</MenuContentItem>
+        <MenuContentItem
           disabled={mappingEditorState.openedTabStates.length < 2}
           onClick={closeOthers}
         >
           Close Others
-        </button>
-        <button
-          className="mapping-editor__header__tab__context-menu__item"
-          onClick={closeAll}
-        >
-          Close All
-        </button>
-      </div>
+        </MenuContentItem>
+        <MenuContentItem onClick={closeAll}>Close All</MenuContentItem>
+      </MenuContent>
     );
   }),
 );

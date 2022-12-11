@@ -14,36 +14,20 @@
  * limitations under the License.
  */
 
-@use 'mixins' as *;
-
-@forward 'extensions';
-
-@forward 'components/editor';
-
-:root {
-  --color-pure-association: var(--color-magenta-100);
-  --color-native-function: var(--color-lime-75);
-  --color-diagram: var(--color-magenta-100);
-  --color-file: var(--color-blue-150);
+export interface MovePackageableElementsInput {
+  pureName: string;
+  pureType: string;
+  sourcePackage: string;
+  destinationPackage: string;
+  sourceInformations: {
+    sourceId: string;
+    line: number;
+    column: number;
+  }[];
 }
 
-.color {
-  &--native-function {
-    color: var(--color-native-function);
-  }
-
-  &--pure-association {
-    color: var(--color-pure-association);
-  }
-
-  &--diagram {
-    color: var(--color-diagram);
-  }
-}
-
-.icon--database {
-  svg {
-    color: var(--color-yellow-100);
-    font-size: 1.2rem;
-  }
+export interface ChildPackageableElementInfo {
+  pureName: string;
+  pureId: string;
+  pureType: string;
 }

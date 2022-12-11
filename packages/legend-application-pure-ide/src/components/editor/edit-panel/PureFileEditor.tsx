@@ -23,7 +23,10 @@ import {
   type Token,
   type IDisposable,
 } from 'monaco-editor';
-import type { FileEditorState } from '../../../stores/FileEditorState.js';
+import type {
+  FileEditorRenameConceptState,
+  FileEditorState,
+} from '../../../stores/FileEditorState.js';
 import {
   EDITOR_LANGUAGE,
   EDITOR_THEME,
@@ -37,6 +40,7 @@ import {
 } from '@finos/legend-application';
 import {
   clsx,
+  Dialog,
   getBaseTextEditorOptions,
   moveCursorToPosition,
   useResizeDetector,
@@ -47,12 +51,94 @@ import {
   collectExtraInlineSnippetSuggestions,
   collectParserElementSnippetSuggestions,
   collectParserKeywordSuggestions,
+  getCopyrightHeaderSuggestions,
 } from '../../../stores/FileEditorUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { FileCoordinate } from '../../../server/models/PureFile.js';
+import { FileCoordinate } from '../../../server/models/File.js';
+import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../../../stores/LegendPureIDECommand.js';
 
-export const FileEditor = observer(
+const IDENTIFIER_PATTERN = /^[a-zA-Z0-9_][a-zA-Z0-9_$]*/;
+
+const RenameConceptPrompt = observer(
+  (props: { renameConceptState: FileEditorRenameConceptState }) => {
+    const { renameConceptState } = props;
+    const applicationStore = useApplicationStore();
+    const fileEditorState = renameConceptState.fileEditorState;
+    const conceptName = renameConceptState.concept.pureName;
+    const [value, setValue] = useState(conceptName);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    // validation
+    const isValidValue = Boolean(value.match(IDENTIFIER_PATTERN));
+    const isSameValue = conceptName === value;
+    const error = !isValidValue ? 'Invalid path' : undefined;
+
+    // actions
+    const closeModal = (): void => {
+      flowResult(fileEditorState.setConceptToRenameState(undefined)).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
+    const onValueChange: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ): void => setValue(event.target.value);
+    const rename = (
+      event: React.FormEvent<HTMLFormElement | HTMLButtonElement>,
+    ): void => {
+      event.preventDefault();
+      if (isSameValue) {
+        return;
+      }
+      fileEditorState
+        .renameConcept(value)
+        .catch(applicationStore.alertUnhandledError)
+        .finally(() => closeModal());
+    };
+    const handleEnter = (): void => inputRef.current?.focus();
+
+    return (
+      <Dialog
+        open={true}
+        onClose={closeModal}
+        TransitionProps={{
+          onEnter: handleEnter,
+        }}
+        classes={{ container: 'command-modal__container' }}
+        PaperProps={{ classes: { root: 'command-modal__inner-container' } }}
+      >
+        <div className="modal modal--dark command-modal">
+          <div className="modal__title">Rename concept</div>
+          <div className="command-modal__content">
+            <form className="command-modal__content__form" onSubmit={rename}>
+              <div className="input-group command-modal__content__input">
+                <input
+                  ref={inputRef}
+                  className="input input--dark"
+                  onChange={onValueChange}
+                  value={value}
+                  spellCheck={false}
+                />
+                {error && (
+                  <div className="input-group__error-message">{error}</div>
+                )}
+              </div>
+            </form>
+            <button
+              disabled={isSameValue}
+              className="command-modal__content__submit-btn btn--dark"
+              onClick={rename}
+            >
+              Rename
+            </button>
+          </div>
+        </div>
+      </Dialog>
+    );
+  },
+);
+
+export const PureFileEditor = observer(
   (props: { editorState: FileEditorState }) => {
     const { editorState } = props;
     const suggestionProviderDisposer = useRef<IDisposable | undefined>(
@@ -65,6 +151,7 @@ export const FileEditor = observer(
     const [editor, setEditor] = useState<
       monacoEditorAPI.IStandaloneCodeEditor | undefined
     >();
+    const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const content = editorState.file.content;
@@ -78,6 +165,13 @@ export const FileEditor = observer(
           language: EDITOR_LANGUAGE.PURE,
           theme: EDITOR_THEME.LEGEND,
           wordWrap: editorState.textEditorState.wrapText ? 'on' : 'off',
+          contextmenu: true,
+          // NOTE: since things like context-menus, tooltips are mounted into Shadow DOM
+          // by default, we can't override their CSS by design, we need to disable Shadow DOM
+          // to style them to our needs
+          // See https://github.com/microsoft/monaco-editor/issues/2396
+          // See https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM
+          useShadowDOM: false,
         });
         // NOTE: (hacky) hijack the editor service so we can alternate the behavior of goto definition
         // since we cannot really override the editor service anymore, but must provide a full editor service
@@ -115,6 +209,75 @@ export const FileEditor = observer(
           },
         });
 
+        // NOTE: we need to find a way to remove some items in context-menu
+        // but currently there's no API exposed by monaco-editor to do so
+        // hence, we have to use this hack where we will hijack the mounted context-menu
+        // and remove undesired DOM nodes
+        // See https://github.com/microsoft/monaco-editor/issues/1567
+        // However, it's not enough to just do the DOM surgery in `onContextMenu`
+        // since at this point, the context menu is not rendered yet, so we have to
+        // make use of `useState` and `useEffect` to achieve this goal
+        // as `useEffect` is called after DOM rendering occurs
+        newEditor.onContextMenu(() => setIsContextMenuOpen(true));
+        newEditor.addAction({
+          id: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.FIND_USAGES,
+          label: 'Find Usages',
+          contextMenuGroupId: 'navigation',
+          contextMenuOrder: 1000,
+          run: function (_editor) {
+            const currentPosition = _editor.getPosition();
+            if (currentPosition) {
+              const coordinate = new FileCoordinate(
+                editorState.filePath,
+                currentPosition.lineNumber,
+                currentPosition.column,
+              );
+              flowResult(editorStore.findUsages(coordinate)).catch(
+                applicationStore.alertUnhandledError,
+              );
+            }
+          },
+        });
+        newEditor.addAction({
+          id: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE,
+          label: 'Reveal Concept',
+          contextMenuGroupId: 'navigation',
+          contextMenuOrder: 1000,
+          run: function (_editor) {
+            const currentPosition = _editor.getPosition();
+            if (currentPosition) {
+              editorStore
+                .revealConceptInTree(
+                  new FileCoordinate(
+                    editorState.filePath,
+                    currentPosition.lineNumber,
+                    currentPosition.column,
+                  ),
+                )
+                .catch(applicationStore.alertUnhandledError);
+            }
+          },
+        });
+        newEditor.addAction({
+          id: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
+          label: 'Rename',
+          contextMenuGroupId: 'navigation',
+          contextMenuOrder: 1000,
+          run: function (_editor) {
+            const currentPosition = _editor.getPosition();
+            if (currentPosition) {
+              const coordinate = new FileCoordinate(
+                editorState.filePath,
+                currentPosition.lineNumber,
+                currentPosition.column,
+              );
+              flowResult(editorState.setConceptToRenameState(coordinate)).catch(
+                editorStore.applicationStore.alertUnhandledError,
+              );
+            }
+          },
+        });
+
         newEditor.onDidChangeModelContent(() => {
           const currentVal = newEditor.getValue();
           if (currentVal !== editorState.file.content) {
@@ -140,13 +303,13 @@ export const FileEditor = observer(
       if (currentValue !== content) {
         editor.setValue(content);
       }
-      if (editorState.textEditorState.forcedCursorPosition) {
-        moveCursorToPosition(
-          editor,
-          editorState.textEditorState.forcedCursorPosition,
-        );
-        editorState.textEditorState.setForcedCursorPosition(undefined);
-      }
+      // if (editorState.textEditorState.forcedCursorPosition) {
+      //   moveCursorToPosition(
+      //     editor,
+      //     editorState.textEditorState.forcedCursorPosition,
+      //   );
+      //   editorState.textEditorState.setForcedCursorPosition(undefined);
+      // }
     }
 
     const textTokens = editor
@@ -217,6 +380,8 @@ export const FileEditor = observer(
         provideCompletionItems: (model, position) => {
           let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
 
+          suggestions = suggestions.concat(getCopyrightHeaderSuggestions());
+
           // suggestions for parser keyword
           suggestions = suggestions.concat(
             getParserKeywordSuggestions(
@@ -252,10 +417,54 @@ export const FileEditor = observer(
     useCommands(editorState);
 
     useEffect(() => {
+      // NOTE: we have tried to remove the DOM node, but since the context-menu height is computed
+      // this causes a problem with the UI, so we just can disable the item until an official API
+      // is supported and we can removed this hack
+      // See https://github.com/microsoft/monaco-editor/issues/1567
+      if (isContextMenuOpen) {
+        const contextMenuNode = document.querySelector(
+          '.file-editor .monaco-menu',
+        );
+        if (contextMenuNode) {
+          const MENU_ITEMS_TO_DISABLE = ['Peek'];
+          Array.from(
+            document.querySelectorAll(
+              '.file-editor .monaco-menu .action-label',
+            ),
+          )
+            .filter((element) =>
+              MENU_ITEMS_TO_DISABLE.includes(element.innerHTML),
+            )
+            .forEach((element) => {
+              const menuItem = element.parentElement?.parentElement;
+              if (menuItem) {
+                menuItem.classList.add('disabled');
+                menuItem.style.opacity = '0.3';
+                menuItem.style.pointerEvents = 'none';
+              }
+            });
+        }
+        setIsContextMenuOpen(false);
+      }
+    }, [isContextMenuOpen]);
+
+    useEffect(() => {
       if (width !== undefined && height !== undefined) {
         editor?.layout({ width, height });
       }
     }, [editor, width, height]);
+
+    useEffect(() => {
+      if (editor) {
+        if (editorState.textEditorState.forcedCursorPosition) {
+          moveCursorToPosition(
+            editor,
+            editorState.textEditorState.forcedCursorPosition,
+          );
+          editorState.textEditorState.setForcedCursorPosition(undefined);
+        }
+      }
+    }, [editor, editorState, editorState.textEditorState.forcedCursorPosition]);
 
     // clean up
     useEffect(
@@ -294,6 +503,11 @@ export const FileEditor = observer(
             >
               <WordWrapIcon className="file-editor__icon--text-wrap" />
             </button>
+            {editorState.renameConceptState && (
+              <RenameConceptPrompt
+                renameConceptState={editorState.renameConceptState}
+              />
+            )}
           </div>
         </div>
         <div className="panel__content file-editor__content">

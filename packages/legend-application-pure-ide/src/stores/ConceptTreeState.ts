@@ -21,24 +21,49 @@ import {
   ElementConceptAttribute,
   PropertyConceptAttribute,
   ConceptNode,
+  ConceptType,
 } from '../server/models/ConceptTree.js';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from './EditorStore.js';
-import { FileCoordinate } from '../server/models/PureFile.js';
+import { FileCoordinate } from '../server/models/File.js';
 import type { ConceptActivity } from '../server/models/Initialization.js';
-import { ActionState, type GeneratorFn } from '@finos/legend-shared';
+import {
+  ActionState,
+  assertErrorThrown,
+  assertTrue,
+  assertType,
+  guaranteeNonNullable,
+  type GeneratorFn,
+} from '@finos/legend-shared';
 import type { TreeData } from '@finos/legend-art';
+import {
+  FIND_USAGE_FUNCTION_PATH,
+  PackageableElementUsage,
+  type Usage,
+} from '../server/models/Usage.js';
+import type { ChildPackageableElementInfo } from '../server/models/MovePackageableElements.js';
+import {
+  ELEMENT_PATH_DELIMITER,
+  extractPackagePathFromPath,
+} from '@finos/legend-graph';
 
 export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
   readonly loadConceptActivity = ActionState.create();
+
   statusText?: string | undefined;
+  nodeForRenameConcept?: ConceptTreeNode | undefined;
+  nodeForMoveElement?: ConceptTreeNode | undefined;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
 
     makeObservable(this, {
       statusText: observable,
+      nodeForRenameConcept: observable,
+      nodeForMoveElement: observable,
       setStatusText: action,
+      setNodeForRenameConcept: action,
+      setNodeForMoveElement: action,
       pullConceptsActivity: action,
       pollConceptsActivity: flow,
     });
@@ -46,6 +71,14 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
 
   setStatusText(value: string | undefined): void {
     this.statusText = value;
+  }
+
+  setNodeForRenameConcept(value: ConceptTreeNode | undefined): void {
+    this.nodeForRenameConcept = value;
+  }
+
+  setNodeForMoveElement(value: ConceptTreeNode | undefined): void {
+    this.nodeForMoveElement = value;
   }
 
   async getRootNodes(): Promise<ConceptNode[]> {
@@ -88,6 +121,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
         id,
         label: childNode.text,
         isLoading: false,
+        parent: node,
       });
     });
     node.childrenIds = childrenIds;
@@ -154,5 +188,135 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
       );
     }
     return Promise.resolve();
+  }
+
+  async movePackageableElements(
+    elementNodeAttributes: ElementConceptAttribute[],
+    destinationPackage: string,
+  ): Promise<void> {
+    let elementsUsage: PackageableElementUsage[] = [];
+    try {
+      elementsUsage = (
+        await this.editorStore.client.getPackageableElementsUsage(
+          elementNodeAttributes.map((attr) => attr.pureId),
+        )
+      ).map((usage) => deserialize(PackageableElementUsage, usage));
+    } catch {
+      this.editorStore.applicationStore.notifyError(
+        `Can't find usage for child packageable elements`,
+      );
+      return;
+    } finally {
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
+    }
+    const inputs = [];
+    assertTrue(
+      elementsUsage.length === elementNodeAttributes.length,
+      `Can't find matching usages for packageable elements`,
+    );
+    for (let i = 0; i < elementsUsage.length; ++i) {
+      const elementInfo = guaranteeNonNullable(elementNodeAttributes[i]);
+      inputs.push({
+        pureName: elementInfo.pureName,
+        pureType: elementInfo.pureType,
+        sourcePackage: guaranteeNonNullable(
+          extractPackagePathFromPath(elementInfo.pureId),
+        ),
+        destinationPackage,
+        usages: guaranteeNonNullable(elementsUsage[i]).second,
+      });
+    }
+    await flowResult(this.editorStore.movePackageableElements(inputs));
+  }
+
+  async renameConcept(node: ConceptTreeNode, newName: string): Promise<void> {
+    const attr = node.data.li_attr;
+    const oldName = attr.pureName ?? attr.pureId;
+    let usages: Usage[] = [];
+    try {
+      this.editorStore.applicationStore.setBlockingAlert({
+        message: 'Finding concept usages...',
+        showLoading: true,
+      });
+      switch (attr.pureType) {
+        case ConceptType.PROPERTY:
+        case ConceptType.QUALIFIED_PROPERTY: {
+          assertType(attr, PropertyConceptAttribute);
+          usages = await this.editorStore.findConceptUsages(
+            FIND_USAGE_FUNCTION_PATH.PROPERTY,
+            [`'${attr.classPath}'`, `'${attr.pureId}'`],
+          );
+          break;
+        }
+        case ConceptType.PACKAGE: {
+          let elementsUsage: PackageableElementUsage[] = [];
+          let childElementsInfo: ChildPackageableElementInfo[] = [];
+          try {
+            childElementsInfo =
+              await this.editorStore.client.getChildPackageableElements(
+                oldName,
+              );
+            elementsUsage = (
+              await this.editorStore.client.getPackageableElementsUsage(
+                childElementsInfo.map((info) => info.pureId),
+              )
+            ).map((usage) => deserialize(PackageableElementUsage, usage));
+          } catch {
+            this.editorStore.applicationStore.notifyError(
+              `Can't find usage for child packageable elements`,
+            );
+            return;
+          } finally {
+            this.editorStore.applicationStore.setBlockingAlert(undefined);
+          }
+          const inputs = [];
+          assertTrue(
+            elementsUsage.length === childElementsInfo.length,
+            `Can't find matching usages for child packageable elements`,
+          );
+          const newPackage =
+            extractPackagePathFromPath(oldName)
+              ?.concat(ELEMENT_PATH_DELIMITER)
+              .concat(newName) ?? newName;
+          for (let i = 0; i < elementsUsage.length; ++i) {
+            const elementInfo = guaranteeNonNullable(childElementsInfo[i]);
+            const sourcePackage = guaranteeNonNullable(
+              extractPackagePathFromPath(elementInfo.pureId),
+            );
+            const destinationPackage = newPackage.concat(
+              sourcePackage.substring(
+                sourcePackage.indexOf(oldName) + oldName.length,
+              ),
+            );
+            inputs.push({
+              pureName: elementInfo.pureName,
+              pureType: elementInfo.pureType,
+              sourcePackage,
+              destinationPackage,
+              usages: guaranteeNonNullable(elementsUsage[i]).second,
+            });
+          }
+          await flowResult(this.editorStore.movePackageableElements(inputs));
+          return;
+        }
+
+        default: {
+          usages = await this.editorStore.findConceptUsages(
+            FIND_USAGE_FUNCTION_PATH.ELEMENT,
+            [`'${attr.pureId}'`],
+          );
+          break;
+        }
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notifyError(error);
+      return;
+    } finally {
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
+    }
+    await flowResult(
+      this.editorStore.renameConcept(oldName, newName, attr.pureType, usages),
+    );
   }
 }

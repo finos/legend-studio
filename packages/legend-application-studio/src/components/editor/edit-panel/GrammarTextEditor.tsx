@@ -37,6 +37,8 @@ import {
   clearMarkers,
   setErrorMarkers,
   moveCursorToPosition,
+  MenuContent,
+  MenuContentItem,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -117,14 +119,11 @@ export const GrammarTextEditorHeaderTabContextMenu = observer(
       );
 
       return (
-        <div ref={ref} className="edit-panel__header__tab__context-menu">
-          <button
-            className="edit-panel__header__tab__context-menu__item"
-            onClick={leaveTextMode}
-          >
+        <MenuContent ref={ref}>
+          <MenuContentItem onClick={leaveTextMode}>
             Leave Text Mode
-          </button>
-        </div>
+          </MenuContentItem>
+        </MenuContent>
       );
     },
   ),

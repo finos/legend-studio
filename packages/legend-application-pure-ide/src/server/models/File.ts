@@ -21,7 +21,7 @@ import type { ExecutionError } from './ExecutionError.js';
 export const trimPathLeadingSlash = (path: string): string =>
   path.startsWith('/') ? path.substring(1, path.length) : path;
 
-export class PureFile {
+export class File {
   content!: string;
 
   constructor() {
@@ -36,7 +36,7 @@ export class PureFile {
   }
 }
 
-createModelSchema(PureFile, {
+createModelSchema(File, {
   content: primitive(),
 });
 
