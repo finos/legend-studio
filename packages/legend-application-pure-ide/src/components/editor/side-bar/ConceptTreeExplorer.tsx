@@ -142,15 +142,25 @@ const ConceptTreeNodeContainer: React.FC<
   ).includes(node.data.li_attr.pureType);
   const nodeLabel =
     node.data.li_attr.pureType === ConceptType.QUALIFIED_PROPERTY ? (
-      `${node.label}(...)`
+      <>
+        {node.label}
+        <span className="explorer__package-tree__node__label__tag">(...)</span>
+      </>
     ) : isAssociationPropertyNode ? (
       <>
         {node.label}
-        <span className="explorer__package-tree__node__label__property-from-association-tag">
+        <span className="explorer__package-tree__node__label__tag">
           {extractElementNameFromPath(
             guaranteeType(node.data.li_attr, PropertyConceptAttribute)
               .classPath,
           )}
+        </span>
+      </>
+    ) : node.label.includes('(') ? (
+      <>
+        {node.label.substring(0, node.label.indexOf('('))}
+        <span className="explorer__package-tree__node__label__tag">
+          {node.label.substring(node.label.indexOf('('))}
         </span>
       </>
     ) : (
