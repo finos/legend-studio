@@ -2049,7 +2049,7 @@ __metadata:
     react-dom: 18.2.0
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2131,7 +2131,7 @@ __metadata:
     react-dom: 18.2.0
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2219,7 +2219,7 @@ __metadata:
     react-dom: 18.2.0
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2293,7 +2293,7 @@ __metadata:
     react-dom: 18.2.0
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2330,7 +2330,7 @@ __metadata:
     react-router-dom: 5.3.4
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     sql-formatter: 12.0.3
     typescript: 4.9.4
   peerDependencies:
@@ -2421,7 +2421,7 @@ __metadata:
     mini-css-extract-plugin: 2.7.2
     monaco-editor: 0.34.1
     monaco-editor-webpack-plugin: 7.0.1
-    postcss: 8.4.19
+    postcss: 8.4.20
     postcss-loader: 7.0.2
     react-refresh: 0.14.0
     resolve: 1.22.1
@@ -2460,7 +2460,7 @@ __metadata:
     react-dom: 18.2.0
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2493,7 +2493,7 @@ __metadata:
     react-dom: 18.2.0
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2521,7 +2521,7 @@ __metadata:
     react: 18.2.0
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2548,7 +2548,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 3.0.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2576,7 +2576,7 @@ __metadata:
     react: 18.2.0
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2610,7 +2610,7 @@ __metadata:
     react-dom: 18.2.0
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2639,7 +2639,7 @@ __metadata:
     react: 18.2.0
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2704,7 +2704,7 @@ __metadata:
     react: 18.2.0
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2733,7 +2733,7 @@ __metadata:
     react: 18.2.0
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2762,7 +2762,7 @@ __metadata:
     react: 18.2.0
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2822,7 +2822,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 3.0.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   languageName: unknown
   linkType: soft
@@ -2848,7 +2848,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 3.0.2
-    typedoc: 0.23.21
+    typedoc: 0.23.22
     typescript: 4.9.4
   languageName: unknown
   linkType: soft
@@ -2911,7 +2911,7 @@ __metadata:
     react-dom: 18.2.0
     rimraf: 3.0.2
     sass: 1.56.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
     react: ^18.0.0
@@ -2934,7 +2934,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 3.0.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   languageName: unknown
   linkType: soft
@@ -2955,7 +2955,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 3.0.2
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
   languageName: unknown
   linkType: soft
@@ -2989,7 +2989,7 @@ __metadata:
     query-string: 7.1.3
     rimraf: 3.0.2
     seedrandom: 3.0.5
-    serializr: 3.0.1
+    serializr: 3.0.2
     typescript: 4.9.4
     uuid: 9.0.0
   languageName: unknown
@@ -3018,7 +3018,7 @@ __metadata:
   dependencies:
     cross-env: 7.0.3
     eslint: 8.29.0
-    postcss: 8.4.19
+    postcss: 8.4.20
     postcss-scss: 4.0.6
     rimraf: 3.0.2
     stylelint-config-prettier: 9.0.4
@@ -4235,10 +4235,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:18.11.12":
-  version: 18.11.12
-  resolution: "@types/node@npm:18.11.12"
-  checksum: 6c67f0998a9ad8ef0f357fcc0d72841c579576c746cfbac67c9d0229e1cd219d3b96297c2caaeaa4084ba7e9ad112b412e64af4066e522faa0be4ef9ad0a613a
+"@types/node@npm:18.11.13":
+  version: 18.11.13
+  resolution: "@types/node@npm:18.11.13"
+  checksum: b0c1aa3bd2f5df8240e61096a49d6d4be600109b824d23408ec4ba1ec057dc0c60588e09f73b8a60455ad26d367e9c5562fad8403099f885cbc7b4cace83ec4c
   languageName: node
   linkType: hard
 
@@ -10155,7 +10155,7 @@ __metadata:
     "@finos/eslint-plugin-legend-studio": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
-    "@types/node": 18.11.12
+    "@types/node": 18.11.13
     chalk: 5.2.0
     cross-env: 7.0.3
     envinfo: 7.8.1
@@ -10173,7 +10173,7 @@ __metadata:
     semver: 7.3.8
     sort-package-json: 2.1.0
     stylelint: 14.16.0
-    typedoc: 0.23.21
+    typedoc: 0.23.22
     typescript: 4.9.4
     yargs: 17.6.2
   languageName: unknown
@@ -12791,7 +12791,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:8.4.19, postcss@npm:^8.4.18, postcss@npm:^8.4.19":
+"postcss@npm:8.4.20":
+  version: 8.4.20
+  resolution: "postcss@npm:8.4.20"
+  dependencies:
+    nanoid: ^3.3.4
+    picocolors: ^1.0.0
+    source-map-js: ^1.0.2
+  checksum: 1a5609ea1c1b204f9c2974a0019ae9eef2d99bf645c2c9aac675166c4cb1005be7b5e2ba196160bc771f5d9ac896ed883f236f888c891e835e59d28fff6651aa
+  languageName: node
+  linkType: hard
+
+"postcss@npm:^8.4.18, postcss@npm:^8.4.19":
   version: 8.4.19
   resolution: "postcss@npm:8.4.19"
   dependencies:
@@ -14089,10 +14100,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"serializr@npm:3.0.1":
-  version: 3.0.1
-  resolution: "serializr@npm:3.0.1"
-  checksum: edfa984ad392be1571ff12f528c9fdda7789bb0f95982610accdc7f76f6ba18a148a8f12befaab4245068b83d6bdf19bde9a2451cd4260f9f5a77cf106cd6f1e
+"serializr@npm:3.0.2":
+  version: 3.0.2
+  resolution: "serializr@npm:3.0.2"
+  checksum: 4276e0418eef9e30aab9557d299f028396e448a2ec8f4838bffb04e757f7d03bc012d85ff5a60e9260fb9cce6f52b6fba80266f5634eece8f48dc3b9f948dfb9
   languageName: node
   linkType: hard
 
@@ -15389,9 +15400,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedoc@npm:0.23.21":
-  version: 0.23.21
-  resolution: "typedoc@npm:0.23.21"
+"typedoc@npm:0.23.22":
+  version: 0.23.22
+  resolution: "typedoc@npm:0.23.22"
   dependencies:
     lunr: ^2.3.9
     marked: ^4.0.19
@@ -15401,7 +15412,7 @@ __metadata:
     typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x
   bin:
     typedoc: bin/typedoc
-  checksum: 931520b21ae25ba8ea86111ea7c66f474468bb83cbe1d04c0ea19490f130ea44ba58b7ee4d12f7f02368cfe053ed1fa291c8843c466c8af383ef956de177360d
+  checksum: ac3a015e72d5e2dc6a3a2cca64572932a6d9d0ea26ee08e87c05e2244795087371a12b103f5f4c4f72d006f8893cd4dccd9addfbbce18577e2fb36c9c1d71be4
   languageName: node
   linkType: hard
 

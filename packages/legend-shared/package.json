@@ -56,7 +56,7 @@
     "pretty-format": "29.3.1",
     "query-string": "7.1.3",
     "seedrandom": "3.0.5",
-    "serializr": "3.0.1",
+    "serializr": "3.0.2",
     "uuid": "9.0.0"
   },
   "devDependencies": {
