@@ -15,7 +15,6 @@
  */
 
 import { createModelSchema, primitive } from 'serializr';
-import { SourceInformation } from './SourceInformation.js';
 
 export interface ConceptInfo {
   path: string;

@@ -1091,6 +1091,9 @@ export class EditorStore implements CommandRegistrar {
       this.setConsoleText(
         `Sucessfully renamed concept. Please re-compile the code`,
       );
+      this.applicationStore.notifyWarning(
+        `Please re-compile the code after refacting`,
+      );
     } catch {
       this.applicationStore.notifyError(`Can't rename concept '${oldName}'`);
     }
@@ -1129,14 +1132,17 @@ export class EditorStore implements CommandRegistrar {
           add,
         },
       ])) as SourceModificationResult;
-      this.setConsoleText(
-        `Sucessfully updated file. Please re-compile the code`,
-      );
       if (result.modifiedFiles.length) {
         for (const file of result.modifiedFiles) {
           yield flowResult(this.reloadFile(file));
         }
       }
+      this.setConsoleText(
+        `Sucessfully updated file. Please re-compile the code`,
+      );
+      this.applicationStore.notifyWarning(
+        `Please re-compile the code after refacting`,
+      );
     } catch {
       this.applicationStore.notifyError(`Can't update file: ${path}`);
     }
