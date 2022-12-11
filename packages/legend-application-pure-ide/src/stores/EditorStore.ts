@@ -96,6 +96,7 @@ import { LEGEND_PURE_IDE_COMMAND_KEY } from './LegendPureIDECommand.js';
 import { ExecutionError } from '../server/models/ExecutionError.js';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import type { SourceModificationResult } from '../server/models/Source.js';
+import { ConceptType } from '../server/models/ConceptTree.js';
 
 export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
@@ -992,7 +993,7 @@ export class EditorStore implements CommandRegistrar {
     }
   }
 
-  private async getConceptInfo(
+  async getConceptInfo(
     coordinate: FileCoordinate,
   ): Promise<ConceptInfo | undefined> {
     try {
@@ -1017,7 +1018,9 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *findUsages(coordinate: FileCoordinate): GeneratorFn<void> {
-    const concept = (yield this.getConceptInfo(coordinate)) as ConceptInfo;
+    const concept = (yield this.getConceptInfo(coordinate)) as
+      | ConceptInfo
+      | undefined;
     if (!concept) {
       return;
     }
@@ -1028,11 +1031,12 @@ export class EditorStore implements CommandRegistrar {
         showLoading: true,
       });
       const usages = (yield this.findConceptUsages(
-        concept.type === 'enum'
+        concept.pureType === ConceptType.ENUM_VALUE
           ? FIND_USAGE_FUNCTION_PATH.ENUM
-          : concept.type === 'property'
+          : concept.pureType === ConceptType.PROPERTY ||
+            concept.pureType === ConceptType.QUALIFIED_PROPERTY
           ? FIND_USAGE_FUNCTION_PATH.PROPERTY
-          : FIND_USAGE_FUNCTION_PATH.PATH,
+          : FIND_USAGE_FUNCTION_PATH.ELEMENT,
         (concept.owner ? [`'${concept.owner}'`] : []).concat(
           `'${concept.path}'`,
         ),

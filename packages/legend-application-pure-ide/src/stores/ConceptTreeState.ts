@@ -29,6 +29,7 @@ import { FileCoordinate } from '../server/models/File.js';
 import type { ConceptActivity } from '../server/models/Initialization.js';
 import {
   ActionState,
+  assertErrorThrown,
   assertType,
   type GeneratorFn,
 } from '@finos/legend-shared';
@@ -177,27 +178,39 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
     const attr = node.data.li_attr;
     const oldName = attr.pureName ?? attr.pureId;
     let usages: Usage[] = [];
-    switch (attr.pureType) {
-      case ConceptType.PROPERTY:
-      case ConceptType.QUALIFIED_PROPERTY: {
-        assertType(attr, PropertyConceptAttribute);
-        usages = await this.editorStore.findConceptUsages(
-          FIND_USAGE_FUNCTION_PATH.PROPERTY,
-          [`'${attr.classPath}'`, `'${attr.pureId}'`],
-        );
-        break;
+    try {
+      this.editorStore.applicationStore.setBlockingAlert({
+        message: 'Finding concept usages...',
+        showLoading: true,
+      });
+      switch (attr.pureType) {
+        case ConceptType.PROPERTY:
+        case ConceptType.QUALIFIED_PROPERTY: {
+          assertType(attr, PropertyConceptAttribute);
+          usages = await this.editorStore.findConceptUsages(
+            FIND_USAGE_FUNCTION_PATH.PROPERTY,
+            [`'${attr.classPath}'`, `'${attr.pureId}'`],
+          );
+          break;
+        }
+        case ConceptType.PACKAGE: {
+          // unsupported!
+          return;
+        }
+        default: {
+          usages = await this.editorStore.findConceptUsages(
+            FIND_USAGE_FUNCTION_PATH.ELEMENT,
+            [`'${attr.pureId}'`],
+          );
+          break;
+        }
       }
-      case ConceptType.PACKAGE: {
-        // unsupported!
-        return;
-      }
-      default: {
-        usages = await this.editorStore.findConceptUsages(
-          FIND_USAGE_FUNCTION_PATH.PATH,
-          [`'${attr.pureId}'`],
-        );
-        break;
-      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notifyError(error);
+      return;
+    } finally {
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
     }
     await flowResult(
       this.editorStore.renameConcept(oldName, newName, attr.pureType, usages),

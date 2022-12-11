@@ -23,7 +23,10 @@ import {
   type Token,
   type IDisposable,
 } from 'monaco-editor';
-import type { FileEditorState } from '../../../stores/FileEditorState.js';
+import type {
+  FileEditorRenameConceptState,
+  FileEditorState,
+} from '../../../stores/FileEditorState.js';
 import {
   EDITOR_LANGUAGE,
   EDITOR_THEME,
@@ -37,6 +40,7 @@ import {
 } from '@finos/legend-application';
 import {
   clsx,
+  Dialog,
   getBaseTextEditorOptions,
   moveCursorToPosition,
   useResizeDetector,
@@ -52,6 +56,87 @@ import {
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { FileCoordinate } from '../../../server/models/File.js';
+import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../../../stores/LegendPureIDECommand.js';
+
+const IDENTIFIER_PATTERN = /^[a-zA-Z0-9_][a-zA-Z0-9_$]*/;
+
+const RenameConceptPrompt = observer(
+  (props: { renameConceptState: FileEditorRenameConceptState }) => {
+    const { renameConceptState } = props;
+    const applicationStore = useApplicationStore();
+    const fileEditorState = renameConceptState.fileEditorState;
+    const conceptName = renameConceptState.concept.pureName;
+    const [value, setValue] = useState(conceptName);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    // validation
+    const isValidValue = Boolean(value.match(IDENTIFIER_PATTERN));
+    const isSameValue = conceptName === value;
+    const error = !isValidValue ? 'Invalid path' : undefined;
+
+    // actions
+    const closeModal = (): void => {
+      flowResult(fileEditorState.setConceptToRenameState(undefined)).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
+    const onValueChange: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ): void => setValue(event.target.value);
+    const rename = (
+      event: React.FormEvent<HTMLFormElement | HTMLButtonElement>,
+    ): void => {
+      event.preventDefault();
+      if (isSameValue) {
+        return;
+      }
+      fileEditorState
+        .renameConcept(value)
+        .catch(applicationStore.alertUnhandledError)
+        .finally(() => closeModal());
+    };
+    const handleEnter = (): void => inputRef.current?.focus();
+
+    return (
+      <Dialog
+        open={true}
+        onClose={closeModal}
+        TransitionProps={{
+          onEnter: handleEnter,
+        }}
+        classes={{ container: 'command-modal__container' }}
+        PaperProps={{ classes: { root: 'command-modal__inner-container' } }}
+      >
+        <div className="modal modal--dark command-modal">
+          <div className="modal__title">Rename concept</div>
+          <div className="command-modal__content">
+            <form className="command-modal__content__form" onSubmit={rename}>
+              <div className="input-group command-modal__content__input">
+                <input
+                  ref={inputRef}
+                  className="input input--dark"
+                  onChange={onValueChange}
+                  value={value}
+                  spellCheck={false}
+                />
+                {error && (
+                  <div className="input-group__error-message">{error}</div>
+                )}
+              </div>
+            </form>
+            <button
+              disabled={isSameValue}
+              className="command-modal__content__submit-btn btn--dark"
+              onClick={rename}
+            >
+              Rename
+            </button>
+          </div>
+        </div>
+      </Dialog>
+    );
+  },
+);
 
 export const PureFileEditor = observer(
   (props: { editorState: FileEditorState }) => {
@@ -135,7 +220,7 @@ export const PureFileEditor = observer(
         // as `useEffect` is called after DOM rendering occurs
         newEditor.onContextMenu(() => setIsContextMenuOpen(true));
         newEditor.addAction({
-          id: 'editor.action.pure.find-usages',
+          id: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.FIND_USAGES,
           label: 'Find Usages',
           contextMenuGroupId: 'navigation',
           contextMenuOrder: 1000,
@@ -154,7 +239,7 @@ export const PureFileEditor = observer(
           },
         });
         newEditor.addAction({
-          id: 'editor.action.pure.reveal-concept-in-tree',
+          id: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE,
           label: 'Reveal Concept',
           contextMenuGroupId: 'navigation',
           contextMenuOrder: 1000,
@@ -170,6 +255,25 @@ export const PureFileEditor = observer(
                   ),
                 )
                 .catch(applicationStore.alertUnhandledError);
+            }
+          },
+        });
+        newEditor.addAction({
+          id: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
+          label: 'Rename',
+          contextMenuGroupId: 'navigation',
+          contextMenuOrder: 1000,
+          run: function (_editor) {
+            const currentPosition = _editor.getPosition();
+            if (currentPosition) {
+              const coordinate = new FileCoordinate(
+                editorState.filePath,
+                currentPosition.lineNumber,
+                currentPosition.column,
+              );
+              flowResult(editorState.setConceptToRenameState(coordinate)).catch(
+                editorStore.applicationStore.alertUnhandledError,
+              );
             }
           },
         });
@@ -399,6 +503,11 @@ export const PureFileEditor = observer(
             >
               <WordWrapIcon className="file-editor__icon--text-wrap" />
             </button>
+            {editorState.renameConceptState && (
+              <RenameConceptPrompt
+                renameConceptState={editorState.renameConceptState}
+              />
+            )}
           </div>
         </div>
         <div className="panel__content file-editor__content">

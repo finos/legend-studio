@@ -19,13 +19,14 @@ import { createModelSchema, primitive } from 'serializr';
 export interface ConceptInfo {
   path: string;
   owner?: string;
-  type?: string;
+  pureName: string;
+  pureType: string;
 }
 
 export enum FIND_USAGE_FUNCTION_PATH {
   ENUM = 'meta::pure::ide::findusages::findUsagesForEnum_String_1__String_1__SourceInformation_MANY_',
   PROPERTY = 'meta::pure::ide::findusages::findUsagesForProperty_String_1__String_1__SourceInformation_MANY_',
-  PATH = 'meta::pure::ide::findusages::findUsagesForPath_String_1__SourceInformation_MANY_',
+  ELEMENT = 'meta::pure::ide::findusages::findUsagesForPath_String_1__SourceInformation_MANY_',
 }
 
 export const getConceptInfoLabel = (usageConcept: ConceptInfo): string =>

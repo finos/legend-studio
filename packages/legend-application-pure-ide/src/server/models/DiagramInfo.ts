@@ -51,7 +51,11 @@ import {
   getOwnProperty,
   AggregationKind,
 } from '@finos/legend-graph';
-import { addUniqueEntry, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  addUniqueEntry,
+  guaranteeNonNullable,
+  type PlainObject,
+} from '@finos/legend-shared';
 import {
   createModelSchema,
   primitive,
@@ -76,7 +80,7 @@ import { SourceInformation } from './SourceInformation.js';
  */
 const TEMPORARY__diagramInfoSourceInformationSerializationSchema = custom(
   () => SKIP,
-  (json): SourceInformation => {
+  (json: PlainObject): SourceInformation => {
     json.sourceId = json.source;
     return deserialize(SourceInformation, json);
   },
