@@ -46,6 +46,7 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 import { getConceptIcon } from '../shared/ConceptIconUtils.js';
 import { RenameConceptPrompt } from './RenameConceptPrompt.js';
 import { extractElementNameFromPath } from '@finos/legend-graph';
+import { MoveElementPrompt } from './MoveElementPrompt.js';
 
 const ConceptExplorerContextMenu = observer(
   forwardRef<
@@ -59,8 +60,10 @@ const ConceptExplorerContextMenu = observer(
     const nodeType = node.data.li_attr.pureType;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const rename = (): void =>
+    const renameConcept = (): void =>
       editorStore.conceptTreeState.setNodeForRenameConcept(node);
+    const moveElement = (): void =>
+      editorStore.conceptTreeState.setNodeForMoveElement(node);
     const runTests = (): void => {
       flowResult(editorStore.executeTests(node.data.li_attr.pureId)).catch(
         applicationStore.alertUnhandledError,
@@ -91,7 +94,10 @@ const ConceptExplorerContextMenu = observer(
 
     return (
       <MenuContent ref={ref}>
-        <MenuContentItem onClick={rename}>Rename</MenuContentItem>
+        <MenuContentItem onClick={renameConcept}>Rename</MenuContentItem>
+        {node.data.li_attr instanceof ElementConceptAttribute && (
+          <MenuContentItem onClick={moveElement}>Move</MenuContentItem>
+        )}
         {nodeType === ConceptType.PACKAGE && (
           <MenuContentItem onClick={runTests}>Run tests</MenuContentItem>
         )}
@@ -342,6 +348,9 @@ const FileExplorerTree = observer(() => {
       />
       {treeState.nodeForRenameConcept && (
         <RenameConceptPrompt node={treeState.nodeForRenameConcept} />
+      )}
+      {treeState.nodeForMoveElement && (
+        <MoveElementPrompt node={treeState.nodeForMoveElement} />
       )}
     </div>
   );

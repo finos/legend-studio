@@ -52,6 +52,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
 
   statusText?: string | undefined;
   nodeForRenameConcept?: ConceptTreeNode | undefined;
+  nodeForMoveElement?: ConceptTreeNode | undefined;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
@@ -59,8 +60,10 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
     makeObservable(this, {
       statusText: observable,
       nodeForRenameConcept: observable,
+      nodeForMoveElement: observable,
       setStatusText: action,
       setNodeForRenameConcept: action,
+      setNodeForMoveElement: action,
       pullConceptsActivity: action,
       pollConceptsActivity: flow,
     });
@@ -72,6 +75,10 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
 
   setNodeForRenameConcept(value: ConceptTreeNode | undefined): void {
     this.nodeForRenameConcept = value;
+  }
+
+  setNodeForMoveElement(value: ConceptTreeNode | undefined): void {
+    this.nodeForMoveElement = value;
   }
 
   async getRootNodes(): Promise<ConceptNode[]> {
@@ -183,6 +190,45 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
     return Promise.resolve();
   }
 
+  async movePackageableElements(
+    elementNodeAttributes: ElementConceptAttribute[],
+    destinationPackage: string,
+  ): Promise<void> {
+    let elementsUsage: PackageableElementUsage[] = [];
+    try {
+      elementsUsage = (
+        await this.editorStore.client.getPackageableElementsUsage(
+          elementNodeAttributes.map((attr) => attr.pureId),
+        )
+      ).map((usage) => deserialize(PackageableElementUsage, usage));
+    } catch {
+      this.editorStore.applicationStore.notifyError(
+        `Can't find usage for child packageable elements`,
+      );
+      return;
+    } finally {
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
+    }
+    const inputs = [];
+    assertTrue(
+      elementsUsage.length === elementNodeAttributes.length,
+      `Can't find matching usages for packageable elements`,
+    );
+    for (let i = 0; i < elementsUsage.length; ++i) {
+      const elementInfo = guaranteeNonNullable(elementNodeAttributes[i]);
+      inputs.push({
+        pureName: elementInfo.pureName,
+        pureType: elementInfo.pureType,
+        sourcePackage: guaranteeNonNullable(
+          extractPackagePathFromPath(elementInfo.pureId),
+        ),
+        destinationPackage,
+        usages: guaranteeNonNullable(elementsUsage[i]).second,
+      });
+    }
+    await flowResult(this.editorStore.movePackageableElements(inputs));
+  }
+
   async renameConcept(node: ConceptTreeNode, newName: string): Promise<void> {
     const attr = node.data.li_attr;
     const oldName = attr.pureName ?? attr.pureId;
@@ -203,11 +249,6 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
           break;
         }
         case ConceptType.PACKAGE: {
-          const newPackage =
-            extractPackagePathFromPath(oldName)
-              ?.concat(ELEMENT_PATH_DELIMITER)
-              .concat(newName) ?? newName;
-
           let elementsUsage: PackageableElementUsage[] = [];
           let childElementsInfo: ChildPackageableElementInfo[] = [];
           try {
@@ -225,13 +266,18 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
               `Can't find usage for child packageable elements`,
             );
             return;
+          } finally {
+            this.editorStore.applicationStore.setBlockingAlert(undefined);
           }
-          this.editorStore.applicationStore.setBlockingAlert(undefined);
           const inputs = [];
           assertTrue(
             elementsUsage.length === childElementsInfo.length,
             `Can't find matching usages for child packageable elements`,
           );
+          const newPackage =
+            extractPackagePathFromPath(oldName)
+              ?.concat(ELEMENT_PATH_DELIMITER)
+              .concat(newName) ?? newName;
           for (let i = 0; i < elementsUsage.length; ++i) {
             const elementInfo = guaranteeNonNullable(childElementsInfo[i]);
             const sourcePackage = guaranteeNonNullable(

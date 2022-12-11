@@ -96,6 +96,7 @@ createModelSchema(PropertyConceptAttribute, {
 
 export class ElementConceptAttribute extends ConceptAttribute {
   declare pureId: string;
+  declare pureName: string;
   declare pureType: string;
   RO!: string; // boolean
   notpublic!: boolean;

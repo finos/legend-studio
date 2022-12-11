@@ -98,7 +98,6 @@ import { ExecutionError } from '../server/models/ExecutionError.js';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import type { SourceModificationResult } from '../server/models/Source.js';
 import { ConceptType } from '../server/models/ConceptTree.js';
-import type { ChildPackageableElementInfo } from '../server/models/MovePackageableElements.js';
 
 export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
@@ -765,7 +764,9 @@ export class EditorStore implements CommandRegistrar {
 
   *executeTests(path: string, relevantTestsOnly?: boolean): GeneratorFn<void> {
     if (relevantTestsOnly) {
-      this.applicationStore.notifyUnsupportedFeature(`Run relevant tests`);
+      this.applicationStore.notifyUnsupportedFeature(
+        `Run relevant tests! (reason: VCS required)`,
+      );
       return;
     }
     if (this.testRunState.isInProgress) {
