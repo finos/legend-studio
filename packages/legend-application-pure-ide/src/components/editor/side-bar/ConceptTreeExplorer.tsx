@@ -61,14 +61,25 @@ const ConceptExplorerContextMenu = observer(
     const applicationStore = useApplicationStore();
     const rename = (): void =>
       editorStore.conceptTreeState.setNodeForRenameConcept(node);
-    //  {
-    //   flowResult(editorStore.rename)
-    // };
-    // applicationStore.notifyUnsupportedFeature('Rename property');
     const runTests = (): void => {
       flowResult(editorStore.executeTests(node.data.li_attr.pureId)).catch(
         applicationStore.alertUnhandledError,
       );
+    };
+    const findUsages = (): void => {
+      const nodeAttribute = node.data.li_attr;
+      if (
+        nodeAttribute instanceof ElementConceptAttribute ||
+        nodeAttribute instanceof PropertyConceptAttribute
+      ) {
+        editorStore.findUsages(
+          new FileCoordinate(
+            nodeAttribute.file,
+            Number.parseInt(nodeAttribute.line, 10),
+            Number.parseInt(nodeAttribute.column, 10),
+          ),
+        );
+      }
     };
     const viewSource = (): void => viewConceptSource(node);
     const serviceJSON = (): void => {
@@ -88,6 +99,10 @@ const ConceptExplorerContextMenu = observer(
           <MenuContentItem onClick={serviceJSON}>
             Service (JSON)
           </MenuContentItem>
+        )}
+        {(node.data.li_attr instanceof PropertyConceptAttribute ||
+          node.data.li_attr instanceof ElementConceptAttribute) && (
+          <MenuContentItem onClick={findUsages}>Find Usages</MenuContentItem>
         )}
         {nodeType !== ConceptType.PACKAGE && (
           <MenuContentItem onClick={viewSource}>View Source</MenuContentItem>
