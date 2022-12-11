@@ -23,7 +23,7 @@ import { ElementEditorState } from './editor-state/element-editor-state/ElementE
 import { EntityDiffViewerState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { FileGenerationViewerState } from './editor-state/FileGenerationViewerState.js';
 import { ModelImporterState } from './editor-state/ModelImporterState.js';
-import { ProjectConfigurationEditorState } from './editor-state/ProjectConfigurationEditorState.js';
+import { ProjectConfigurationEditorState } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import type { EditorStore } from './EditorStore.js';
 
 export class EditorTabManagerState extends TabManagerState {

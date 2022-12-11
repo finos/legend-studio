@@ -68,11 +68,12 @@ import {
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useRef, useState } from 'react';
+import { ProjectConfigurationEditorState } from '../../../../stores/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import {
-  type DependencyTreeNodeData,
   buildDependencyNodeChildren,
-  ProjectConfigurationEditorState,
-} from '../../../../stores/editor-state/ProjectConfigurationEditorState.js';
+  type DependencyTreeNodeData,
+  type ProjectDependencyEditorState,
+} from '../../../../stores/editor-state/project-configuration-editor-state/ProjectDependencyEditorState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../stores/LegendStudioAppEvent.js';
 import {
   generateViewProjectByGAVRoute,
@@ -96,17 +97,18 @@ const buildProjectOption = (project: ProjectData): ProjectOption => ({
 });
 
 const ProjectDependencyActions = observer(
-  (props: { config: ProjectConfigurationEditorState }) => {
-    const { config } = props;
-    const hasConflicts = config.dependencyReport?.conflicts.length;
+  (props: { dependencyEditorState: ProjectDependencyEditorState }) => {
+    const { dependencyEditorState: dependencyEditorState } = props;
+    const hasConflicts =
+      dependencyEditorState.dependencyReport?.conflicts.length;
     const viewTree = (): void => {
-      if (config.dependencyReport) {
-        config.setDependencyTreeReportModal(true);
+      if (dependencyEditorState.dependencyReport) {
+        dependencyEditorState.setDependencyTreeReportModal(true);
       }
     };
     const viewConflict = (): void => {
-      if (config.dependencyReport) {
-        config.setDependencyConflictModal(true);
+      if (dependencyEditorState.dependencyReport) {
+        dependencyEditorState.setDependencyConflictModal(true);
       }
     };
     return (
@@ -115,7 +117,7 @@ const ProjectDependencyActions = observer(
           className="btn btn--dark"
           tabIndex={-1}
           onClick={viewTree}
-          disabled={!config.dependencyReport}
+          disabled={!dependencyEditorState.dependencyReport}
           title="View Dependency Explorer"
         >
           View Dependency Explorer
@@ -126,7 +128,9 @@ const ProjectDependencyActions = observer(
             className="project-dependency-editor__conflicts-btn"
             tabIndex={-1}
             onClick={viewConflict}
-            disabled={!config.dependencyReport?.conflictPaths.size}
+            disabled={
+              !dependencyEditorState.dependencyReport?.conflictPaths.size
+            }
             title="View any conflicts in your dependencies"
           >
             View Conflicts
@@ -261,7 +265,7 @@ const DependencyTreeNodeContainer: React.FC<
 };
 
 const DependencyTreeView: React.FC<{
-  configState: ProjectConfigurationEditorState;
+  configState: ProjectDependencyEditorState;
   treeData: TreeData<DependencyTreeNodeData>;
   setTreeData: (treeData: TreeData<DependencyTreeNodeData>) => void;
 }> = (props) => {
@@ -309,24 +313,24 @@ const DependencyTreeView: React.FC<{
 };
 
 const ProjectDependencyExplorer = observer(
-  (props: { configState: ProjectConfigurationEditorState }) => {
-    const { configState } = props;
+  (props: { dependencyEditorState: ProjectDependencyEditorState }) => {
+    const { dependencyEditorState } = props;
     const closeModal = (): void =>
-      configState.setDependencyTreeReportModal(false);
+      dependencyEditorState.setDependencyTreeReportModal(false);
     const [viewAsTree, setViewAsTree] = useState(true);
     const setTreeData = (treeData: TreeData<DependencyTreeNodeData>): void => {
       if (viewAsTree) {
-        configState.setDependencyTreeData(treeData);
+        dependencyEditorState.setDependencyTreeData(treeData);
       } else {
-        configState.setFlattenDependencyTreeData(treeData);
+        dependencyEditorState.setFlattenDependencyTreeData(treeData);
       }
     };
     const toggleViewAsListOrAsTree = (): void => {
       setViewAsTree(!viewAsTree);
     };
     const treeData = viewAsTree
-      ? configState.dependencyTreeData
-      : configState.flattenDependencyTreeData;
+      ? dependencyEditorState.dependencyTreeData
+      : dependencyEditorState.flattenDependencyTreeData;
     const collapseTree = (): void => {
       if (treeData) {
         Array.from(treeData.nodes.values()).forEach((node) => {
@@ -336,7 +340,7 @@ const ProjectDependencyExplorer = observer(
     };
     return (
       <Dialog
-        open={Boolean(configState.dependencyTreeReportModal)}
+        open={Boolean(dependencyEditorState.dependencyTreeReportModal)}
         onClose={closeModal}
         classes={{
           root: 'editor-modal__root-container',
@@ -378,7 +382,7 @@ const ProjectDependencyExplorer = observer(
               <div className="project-dependency-explorer__content">
                 {treeData && (
                   <DependencyTreeView
-                    configState={configState}
+                    configState={dependencyEditorState}
                     treeData={treeData}
                     setTreeData={setTreeData}
                   />
@@ -429,14 +433,14 @@ export const getConflictsString = (
     .join('\n\n');
 
 const ProjectDependencyConflictModal = observer(
-  (props: { configState: ProjectConfigurationEditorState }) => {
-    const { configState } = props;
-    const report = configState.dependencyReport;
+  (props: { dependencyEditorState: ProjectDependencyEditorState }) => {
+    const { dependencyEditorState } = props;
+    const report = dependencyEditorState.dependencyReport;
     const closeModal = (): void =>
-      configState.setDependencyConflictModal(false);
+      dependencyEditorState.setDependencyConflictModal(false);
     return (
       <Dialog
-        open={Boolean(configState.dependencyConflictModal)}
+        open={Boolean(dependencyEditorState.dependencyConflictModal)}
         onClose={closeModal}
         classes={{
           root: 'editor-modal__root-container',
@@ -485,6 +489,7 @@ const ProjectVersionDependencyEditor = observer(
     const projectSelectorRef = useRef<SelectComponent>(null);
     const versionSelectorRef = useRef<SelectComponent>(null);
     const configState = editorStore.projectConfigurationEditorState;
+    const dependencyEditorState = configState.projectDependencyEditorState;
     // project
     const selectedProject = configState.projects.get(
       projectDependency.projectId,
@@ -508,7 +513,7 @@ const ProjectVersionDependencyEditor = observer(
         projectDependency.setProjectId(val?.value.coordinates ?? '');
         if (val) {
           projectDependency.setVersionId(val.value.latestVersion);
-          flowResult(configState.fetchDependencyInfo()).catch(
+          flowResult(dependencyEditorState.fetchDependencyReport()).catch(
             applicationStore.alertUnhandledError,
           );
         }
@@ -541,7 +546,7 @@ const ProjectVersionDependencyEditor = observer(
       ) {
         try {
           projectDependency.setVersionId(val?.value ?? '');
-          flowResult(configState.fetchDependencyInfo()).catch(
+          flowResult(dependencyEditorState.fetchDependencyReport()).catch(
             applicationStore.alertUnhandledError,
           );
         } catch (error) {
@@ -671,12 +676,13 @@ export const ProjectDependencyEditor = observer(() => {
   const configState = editorStore.tabManagerState.getCurrentEditorState(
     ProjectConfigurationEditorState,
   );
+  const dependencyEditorState = configState.projectDependencyEditorState;
   const currentProjectConfiguration = configState.currentProjectConfiguration;
   const deleteProjectDependency =
     (val: ProjectDependency): (() => void) =>
     (): void => {
       currentProjectConfiguration.deleteProjectDependency(val);
-      flowResult(configState.fetchDependencyInfo()).catch(
+      flowResult(dependencyEditorState.fetchDependencyReport()).catch(
         applicationStore.alertUnhandledError,
       );
     };
@@ -684,7 +690,7 @@ export const ProjectDependencyEditor = observer(() => {
   const isLoading =
     configState.updatingConfigurationState.isInProgress ||
     configState.fetchingProjectVersionsState.isInProgress ||
-    configState.fetchingDependencyInfoState.isInProgress;
+    dependencyEditorState.fetchingDependencyInfoState.isInProgress;
 
   return (
     <div className="panel__content__lists">
@@ -698,7 +704,7 @@ export const ProjectDependencyEditor = observer(() => {
             : 'Updating project dependency tree and potential conflicts'}
         </div>
       )}
-      <ProjectDependencyActions config={configState} />
+      <ProjectDependencyActions dependencyEditorState={dependencyEditorState} />
       {currentProjectConfiguration.projectDependencies.map(
         (projectDependency) => (
           <ProjectVersionDependencyEditor
@@ -710,14 +716,18 @@ export const ProjectDependencyEditor = observer(() => {
           />
         ),
       )}
-      {configState.dependencyReport &&
-        configState.dependencyTreeData &&
-        configState.dependencyTreeReportModal && (
-          <ProjectDependencyExplorer configState={configState} />
+      {dependencyEditorState.dependencyReport &&
+        dependencyEditorState.dependencyTreeData &&
+        dependencyEditorState.dependencyTreeReportModal && (
+          <ProjectDependencyExplorer
+            dependencyEditorState={dependencyEditorState}
+          />
         )}
-      {configState.dependencyConflictModal &&
-        configState.dependencyReport?.conflictPaths.size && (
-          <ProjectDependencyConflictModal configState={configState} />
+      {dependencyEditorState.dependencyConflictModal &&
+        dependencyEditorState.dependencyReport?.conflictPaths.size && (
+          <ProjectDependencyConflictModal
+            dependencyEditorState={dependencyEditorState}
+          />
         )}
     </div>
   );
