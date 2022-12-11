@@ -84,6 +84,7 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  uniq,
 } from '@finos/legend-shared';
 import { PureClient as PureServerClient } from '../server/PureServerClient.js';
 import { PanelDisplayState } from '@finos/legend-art';
@@ -97,6 +98,7 @@ import { ExecutionError } from '../server/models/ExecutionError.js';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import type { SourceModificationResult } from '../server/models/Source.js';
 import { ConceptType } from '../server/models/ConceptTree.js';
+import type { ChildPackageableElementInfo } from '../server/models/MovePackageableElements.js';
 
 export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
@@ -188,6 +190,7 @@ export class EditorStore implements CommandRegistrar {
 
       findUsages: flow,
       renameConcept: flow,
+      movePackageableElements: flow,
 
       updateFileUsingSuggestionCandidate: flow,
       updateFile: flow,
@@ -1011,8 +1014,7 @@ export class EditorStore implements CommandRegistrar {
   }
 
   async findConceptUsages(func: string, param: string[]): Promise<Usage[]> {
-    const result = await this.client.getUsages(func, param);
-    return (Array.isArray(result) ? result : [result]).map((usage) =>
+    return (await this.client.getUsages(func, param)).map((usage) =>
       deserialize(Usage, usage),
     );
   }
@@ -1100,6 +1102,47 @@ export class EditorStore implements CommandRegistrar {
       );
     } catch {
       this.applicationStore.notifyError(`Can't rename concept '${oldName}'`);
+    }
+  }
+
+  *movePackageableElements(
+    inputs: {
+      pureName: string;
+      pureType: string;
+      sourcePackage: string;
+      destinationPackage: string;
+      usages: Usage[];
+    }[],
+  ): GeneratorFn<void> {
+    try {
+      yield this.client.movePackageableElements(
+        inputs.map((input) => ({
+          pureName: input.pureName,
+          pureType: input.pureType,
+          sourcePackage: input.sourcePackage,
+          destinationPackage: input.destinationPackage,
+          sourceInformations: input.usages.map((usage) => ({
+            sourceId: usage.source,
+            line: usage.line,
+            column: usage.column,
+          })),
+        })),
+      );
+      const potentiallyModifiedFiles = uniq(
+        inputs.flatMap((input) => input.usages.map((usage) => usage.source)),
+      );
+      for (const file of potentiallyModifiedFiles) {
+        yield flowResult(this.reloadFile(file));
+      }
+      yield flowResult(this.refreshTrees());
+      this.setConsoleText(
+        `Sucessfully moved packageble elements. Please re-compile the code`,
+      );
+      this.applicationStore.notifyWarning(
+        `Please re-compile the code after refacting`,
+      );
+    } catch {
+      this.applicationStore.notifyError(`Can't move packageable elements`);
     }
   }
 

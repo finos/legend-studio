@@ -30,14 +30,22 @@ import type { ConceptActivity } from '../server/models/Initialization.js';
 import {
   ActionState,
   assertErrorThrown,
+  assertTrue,
   assertType,
+  guaranteeNonNullable,
   type GeneratorFn,
 } from '@finos/legend-shared';
 import type { TreeData } from '@finos/legend-art';
 import {
   FIND_USAGE_FUNCTION_PATH,
+  PackageableElementUsage,
   type Usage,
 } from '../server/models/Usage.js';
+import type { ChildPackageableElementInfo } from '../server/models/MovePackageableElements.js';
+import {
+  ELEMENT_PATH_DELIMITER,
+  extractPackagePathFromPath,
+} from '@finos/legend-graph';
 
 export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
   readonly loadConceptActivity = ActionState.create();
@@ -195,9 +203,57 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
           break;
         }
         case ConceptType.PACKAGE: {
-          // unsupported!
+          const newPackage =
+            extractPackagePathFromPath(oldName)
+              ?.concat(ELEMENT_PATH_DELIMITER)
+              .concat(newName) ?? newName;
+
+          let elementsUsage: PackageableElementUsage[] = [];
+          let childElementsInfo: ChildPackageableElementInfo[] = [];
+          try {
+            childElementsInfo =
+              await this.editorStore.client.getChildPackageableElements(
+                oldName,
+              );
+            elementsUsage = (
+              await this.editorStore.client.getPackageableElementsUsage(
+                childElementsInfo.map((info) => info.pureId),
+              )
+            ).map((usage) => deserialize(PackageableElementUsage, usage));
+          } catch {
+            this.editorStore.applicationStore.notifyError(
+              `Can't find usage for child packageable elements`,
+            );
+            return;
+          }
+          this.editorStore.applicationStore.setBlockingAlert(undefined);
+          const inputs = [];
+          assertTrue(
+            elementsUsage.length === childElementsInfo.length,
+            `Can't find matching usages for child packageable elements`,
+          );
+          for (let i = 0; i < elementsUsage.length; ++i) {
+            const elementInfo = guaranteeNonNullable(childElementsInfo[i]);
+            const sourcePackage = guaranteeNonNullable(
+              extractPackagePathFromPath(elementInfo.pureId),
+            );
+            const destinationPackage = newPackage.concat(
+              sourcePackage.substring(
+                sourcePackage.indexOf(oldName) + oldName.length,
+              ),
+            );
+            inputs.push({
+              pureName: elementInfo.pureName,
+              pureType: elementInfo.pureType,
+              sourcePackage,
+              destinationPackage,
+              usages: guaranteeNonNullable(elementsUsage[i]).second,
+            });
+          }
+          await flowResult(this.editorStore.movePackageableElements(inputs));
           return;
         }
+
         default: {
           usages = await this.editorStore.findConceptUsages(
             FIND_USAGE_FUNCTION_PATH.ELEMENT,

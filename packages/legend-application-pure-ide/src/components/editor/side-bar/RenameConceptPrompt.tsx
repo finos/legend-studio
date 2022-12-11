@@ -19,9 +19,15 @@ import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { Dialog } from '@finos/legend-art';
-import type { ConceptTreeNode } from '../../../server/models/ConceptTree.js';
+import {
+  type ConceptTreeNode,
+  ConceptType,
+} from '../../../server/models/ConceptTree.js';
+import { extractElementNameFromPath } from '@finos/legend-graph';
 
-const IDENTIFIER_PATTERN = /^[a-zA-Z0-9_][a-zA-Z0-9_$]*/;
+const IDENTIFIER_PATTERN = /^[a-zA-Z0-9_][a-zA-Z0-9_$]*$/;
+const PACKAGE_PATH_PATTERN =
+  /^(?:(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)*::)*[a-zA-Z0-9_][a-zA-Z0-9_$]*$/;
 
 export const RenameConceptPrompt = observer(
   (props: { node: ConceptTreeNode }) => {
@@ -29,12 +35,19 @@ export const RenameConceptPrompt = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const conceptName = node.data.li_attr.pureName ?? node.data.li_attr.pureId;
-    const [value, setValue] = useState(conceptName);
+    const isPackage = node.data.li_attr.pureType === ConceptType.PACKAGE;
+    const [value, setValue] = useState(
+      isPackage ? extractElementNameFromPath(conceptName) : conceptName,
+    );
     const inputRef = useRef<HTMLInputElement>(null);
 
     // validation
-    const isValidValue = Boolean(value.match(IDENTIFIER_PATTERN));
-    const isSameValue = conceptName === value;
+    const isValidValue = Boolean(
+      value.match(isPackage ? PACKAGE_PATH_PATTERN : IDENTIFIER_PATTERN),
+    );
+    const isSameValue =
+      (isPackage ? extractElementNameFromPath(conceptName) : conceptName) ===
+      value;
     const error = !isValidValue ? 'Invalid path' : undefined;
 
     // actions

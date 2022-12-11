@@ -34,7 +34,12 @@ import type {
   AbstractTestRunnerCheckResult,
   TestRunnerCancelResult,
 } from '../server/models/Test.js';
-import type { Usage, ConceptInfo } from '../server/models/Usage.js';
+import {
+  type Usage,
+  type ConceptInfo,
+  type PackageableElementUsage,
+  FIND_USAGE_FUNCTION_PATH,
+} from '../server/models/Usage.js';
 import type { CommandResult } from '../server/models/Command.js';
 import {
   guaranteeNonNullable,
@@ -50,6 +55,10 @@ import type {
   UpdateSourceInput,
 } from './models/Source.js';
 import type { RenameConceptInput } from './models/RenameConcept.js';
+import type {
+  ChildPackageableElementInfo,
+  MovePackageableElementsInput,
+} from './models/MovePackageableElements.js';
 
 export class PureClient {
   private networkClient: NetworkClient;
@@ -241,17 +250,61 @@ export class PureClient {
       },
     );
 
-  getUsages = (
+  getUsages = async (
     func: string,
     param: string[],
-  ): Promise<PlainObject<Usage>[] | PlainObject<Usage>> =>
-    this.networkClient.get(`${this.baseUrl}/execute`, undefined, undefined, {
-      func,
-      param,
-    });
+  ): Promise<PlainObject<Usage>[]> => {
+    const result = await this.networkClient.get(
+      `${this.baseUrl}/execute`,
+      undefined,
+      undefined,
+      {
+        func,
+        param,
+      },
+    );
+    return Array.isArray(result) ? result : [result];
+  };
 
   renameConcept = (input: RenameConceptInput): Promise<void> =>
     this.networkClient.put(`${this.baseUrl}/renameConcept`, input);
+
+  movePackageableElements = (
+    inputs: MovePackageableElementsInput[],
+  ): Promise<void> =>
+    this.networkClient.put(`${this.baseUrl}/movePackageableElements`, inputs);
+
+  getPackageableElementsUsage = async (
+    paths: string[],
+  ): Promise<PlainObject<PackageableElementUsage>[]> => {
+    const result = await this.networkClient.get(
+      `${this.baseUrl}/execute`,
+      undefined,
+      undefined,
+      {
+        func: FIND_USAGE_FUNCTION_PATH.MULTIPLE_PATHS,
+        param: [`'${paths.join(',')}'`],
+      },
+    );
+    return Array.isArray(result) ? result : [result];
+  };
+
+  getChildPackageableElements = async (
+    packagePath: string,
+  ): Promise<ChildPackageableElementInfo[]> => {
+    const result = await this.networkClient.get(
+      `${this.baseUrl}/execute`,
+      undefined,
+      undefined,
+      {
+        func: 'meta::pure::ide::getChildPackageableElements_String_1__String_MANY_',
+        param: [`'${packagePath}'`],
+      },
+    );
+    return (Array.isArray(result) ? result : [result]).map((child) =>
+      JSON.parse(child),
+    );
+  };
 
   updateSource = (
     updateInputs: UpdateSourceInput[],

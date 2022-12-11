@@ -126,7 +126,7 @@ const SearchResultEntryDisplay = observer(
                       <span className="search-panel__entry__content__item__label__preview__text">
                         {coordinate.preview.before}
                       </span>
-                      <span className="search-panel__entry__content__item__label__preview__text--found">
+                      <span className="search-panel__entry__content__item__label__preview__text search-panel__entry__content__item__label__preview__text--found">
                         {coordinate.preview.found.replaceAll(/\n/g, '\u21B5')}
                       </span>
                       <span className="search-panel__entry__content__item__label__preview__text">

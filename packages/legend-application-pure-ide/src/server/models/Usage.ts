@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createModelSchema, primitive } from 'serializr';
+import { createModelSchema, list, object, primitive } from 'serializr';
 
 export interface ConceptInfo {
   path: string;
@@ -27,6 +27,7 @@ export enum FIND_USAGE_FUNCTION_PATH {
   ENUM = 'meta::pure::ide::findusages::findUsagesForEnum_String_1__String_1__SourceInformation_MANY_',
   PROPERTY = 'meta::pure::ide::findusages::findUsagesForProperty_String_1__String_1__SourceInformation_MANY_',
   ELEMENT = 'meta::pure::ide::findusages::findUsagesForPath_String_1__SourceInformation_MANY_',
+  MULTIPLE_PATHS = 'meta::pure::ide::findusages::findUsagesForMultiplePaths_String_1__Pair_MANY_',
 }
 
 export const getConceptInfoLabel = (usageConcept: ConceptInfo): string =>
@@ -52,4 +53,14 @@ createModelSchema(Usage, {
   startColumn: primitive(),
   endLine: primitive(),
   endColumn: primitive(),
+});
+
+export class PackageableElementUsage {
+  first!: string;
+  second!: Usage[];
+}
+
+createModelSchema(PackageableElementUsage, {
+  first: primitive(),
+  second: list(object(Usage)),
 });

@@ -38,6 +38,13 @@ import {
 export const extractElementNameFromPath = (fullPath: string): string =>
   guaranteeNonNullable(findLast(fullPath.split(ELEMENT_PATH_DELIMITER)));
 
+export const extractPackagePathFromPath = (
+  fullPath: string,
+): string | undefined => {
+  const idx = fullPath.lastIndexOf(ELEMENT_PATH_DELIMITER);
+  return idx === -1 ? undefined : fullPath.substring(0, idx);
+};
+
 export const matchFunctionName = (
   functionName: string,
   functionFullPaths: string | string[],
