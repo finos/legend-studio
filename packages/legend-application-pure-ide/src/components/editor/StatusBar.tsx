@@ -41,7 +41,7 @@ const FileEditorStatusBar = observer(
 
     return (
       <div className="file-editor__status-bar">
-        {currentCursorInfo && currentCursorInfo.position && (
+        {currentCursorInfo?.position && (
           <button
             className="editor__status-bar__action file-editor__status-bar__cursor-info"
             onClick={goToLine}
