@@ -22,8 +22,6 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   PanelLoadingIndicator,
-  SaveIcon,
-  FireIcon,
   clsx,
   TreeView,
   PURE_DatabaseSchemaIcon,
@@ -315,16 +313,16 @@ export const DatabaseBuilder = observer(
                     </div>
                     <div className="panel__header__actions">
                       <button
-                        className="panel__header__action"
+                        className="database-builder__action--btn database-builder__generate--btn"
                         disabled={isReadOnly || isExecutingAction}
                         tabIndex={-1}
                         onClick={buildDb}
                         title="Build database..."
                       >
-                        <FireIcon />
+                        Generate
                       </button>
                       <button
-                        className="panel__header__action"
+                        className="database-builder__action--btn"
                         disabled={isReadOnly || isExecutingAction}
                         tabIndex={-1}
                         onClick={saveOrUpdateDatabase}
@@ -334,7 +332,7 @@ export const DatabaseBuilder = observer(
                             : 'Import database...'
                         }
                       >
-                        <SaveIcon />
+                        Save
                       </button>
                     </div>
                   </div>

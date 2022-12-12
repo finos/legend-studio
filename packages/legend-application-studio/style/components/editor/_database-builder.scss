@@ -64,6 +64,33 @@
     }
   }
 
+  &__action--btn {
+    @include flexCenter;
+
+    border-radius: 0.1rem;
+    padding: 0.5rem;
+    background: var(--color-blue-200);
+    color: var(--color-light-grey-50);
+
+    &:hover {
+      background: var(--color-blue-180);
+    }
+
+    &[disabled] {
+      background: var(--color-dark-grey-200);
+      color: var(--color-dark-grey-500);
+    }
+
+    &:focus {
+      outline: 0.1rem solid var(--color-blue-200);
+      outline-offset: 0.1rem;
+    }
+  }
+
+  &__generate--btn {
+    margin-right: 0.3rem;
+  }
+
   &__heading {
     display: flex;
     margin-bottom: 1rem;
