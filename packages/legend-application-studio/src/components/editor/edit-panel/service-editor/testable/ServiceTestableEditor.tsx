@@ -30,6 +30,7 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
+  PureMultiExecution,
   PureSingleExecution,
   type ServiceExecution,
   type ServiceTestSuite,
@@ -282,8 +283,9 @@ export const ServiceTestableWrapperEditor = observer(
     serviceExecution: ServiceExecution;
   }) => {
     if (
-      props.serviceExecution instanceof PureSingleExecution &&
-      props.serviceExecution.runtime
+      (props.serviceExecution instanceof PureSingleExecution &&
+        props.serviceExecution.runtime) ||
+      props.serviceExecution instanceof PureMultiExecution
     ) {
       return (
         <ServiceTestableEditor
