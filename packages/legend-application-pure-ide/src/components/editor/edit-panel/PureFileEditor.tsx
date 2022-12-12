@@ -57,6 +57,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { FileCoordinate } from '../../../server/models/File.js';
 import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../../../stores/LegendPureIDECommand.js';
+import { GoToLinePrompt } from './GenericFileEditor.js';
 
 const IDENTIFIER_PATTERN = /^[a-zA-Z0-9_][a-zA-Z0-9_$]*/;
 
@@ -125,8 +126,8 @@ const RenameConceptPrompt = observer(
               </div>
             </form>
             <button
-              disabled={isSameValue}
               className="command-modal__content__submit-btn btn--dark"
+              disabled={Boolean(error)}
               onClick={rename}
             >
               Rename
@@ -285,6 +286,13 @@ export const PureFileEditor = observer(
             editorState.clearError(); // clear error on content change/typing
           }
           editorState.file.setContent(currentVal);
+        });
+        // manual trigger to support cursor observability
+        newEditor.onDidChangeCursorPosition(() => {
+          editorState.textEditorState.notifyCursorObserver();
+        });
+        newEditor.onDidChangeCursorSelection(() => {
+          editorState.textEditorState.notifyCursorObserver();
         });
         // Restore the editor model and view state
         newEditor.setModel(editorState.textEditorState.model);
@@ -507,6 +515,9 @@ export const PureFileEditor = observer(
               <RenameConceptPrompt
                 renameConceptState={editorState.renameConceptState}
               />
+            )}
+            {editorState.showGoToLinePrompt && (
+              <GoToLinePrompt fileEditorState={editorState} />
             )}
           </div>
         </div>

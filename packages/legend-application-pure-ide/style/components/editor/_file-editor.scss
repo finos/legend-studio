@@ -95,3 +95,18 @@
     }
   }
 }
+
+.file-editor__status-bar {
+  @include flexVCenter;
+
+  height: 100%;
+
+  &__cursor-info {
+    width: initial;
+    font-size: 1.2rem;
+    color: var(--color-light-grey-0);
+    cursor: pointer;
+    user-select: none;
+    padding: 0 1rem;
+  }
+}
