@@ -21,12 +21,126 @@ import type { FileEditorState } from '../../../stores/FileEditorState.js';
 import { EDITOR_THEME, useApplicationStore } from '@finos/legend-application';
 import {
   clsx,
+  Dialog,
   getBaseTextEditorOptions,
   moveCursorToPosition,
   useResizeDetector,
   WordWrapIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from '../EditorStoreProvider.js';
+import {
+  getNullableFirstElement,
+  getNullableLastElement,
+  guaranteeNonNullable,
+  returnUndefOnError,
+} from '@finos/legend-shared';
+
+const POSITION_PATTERN = /[0-9]+(?::[0-9]+)?/;
+
+const getPositionFromGoToLinePromptInputValue = (
+  val: string,
+): [number, number | undefined] => {
+  const parts = val.split(':');
+  if (parts.length < 1 || parts.length > 2) {
+    return [1, undefined];
+  }
+  return [
+    returnUndefOnError(() =>
+      parseInt(guaranteeNonNullable(getNullableFirstElement(parts))),
+    ) ?? 1,
+    returnUndefOnError(() =>
+      parseInt(guaranteeNonNullable(getNullableLastElement(parts))),
+    ),
+  ];
+};
+
+export const GoToLinePrompt = observer(
+  (props: { fileEditorState: FileEditorState }) => {
+    const { fileEditorState } = props;
+    const [value, setValue] = useState('');
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    // validation
+    const isValidValue = Boolean(value.match(POSITION_PATTERN));
+    const currentEditorCursorPosition =
+      fileEditorState.textEditorState.editor?.getPosition();
+    const [currentLine, currentColumn] =
+      getPositionFromGoToLinePromptInputValue(value);
+    const isValidLineNumber =
+      1 <= currentLine &&
+      currentLine <= fileEditorState.textEditorState.model.getLineCount();
+    const error = !isValidValue
+      ? 'Invalid value (format [line:column] - e.g. 123:45)'
+      : !isValidLineNumber
+      ? `Invalid line number`
+      : undefined;
+
+    // actions
+    const closeModal = (): void => fileEditorState.setShowGoToLinePrompt(false);
+    const onValueChange: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ): void => setValue(event.target.value);
+    const create = (
+      event: React.FormEvent<HTMLFormElement | HTMLButtonElement>,
+    ): void => {
+      event.preventDefault();
+      closeModal();
+      fileEditorState.textEditorState.setForcedCursorPosition({
+        lineNumber: currentLine,
+        column: currentColumn ?? 1,
+      });
+    };
+    const handleEnter = (): void => inputRef.current?.focus();
+
+    return (
+      <Dialog
+        open={true}
+        onClose={closeModal}
+        TransitionProps={{
+          onEnter: handleEnter,
+        }}
+        classes={{ container: 'command-modal__container' }}
+        PaperProps={{ classes: { root: 'command-modal__inner-container' } }}
+      >
+        <div className="modal modal--dark command-modal">
+          <div className="modal__title">Go to...</div>
+          <div className="command-modal__content">
+            <form className="command-modal__content__form" onSubmit={create}>
+              <div className="input-group command-modal__content__input">
+                <input
+                  ref={inputRef}
+                  className="input input--dark"
+                  onChange={onValueChange}
+                  placeholder={
+                    currentEditorCursorPosition
+                      ? `Current Line: ${
+                          currentEditorCursorPosition.lineNumber
+                        }, Col: ${
+                          currentEditorCursorPosition.column
+                        }. Type a line between 1 and ${fileEditorState.textEditorState.model.getLineCount()} to navigate to`
+                      : undefined
+                  }
+                  value={value}
+                  spellCheck={false}
+                />
+                {value !== '' && error && (
+                  <div className="input-group__error-message">{error}</div>
+                )}
+              </div>
+            </form>
+            <button
+              className="command-modal__content__submit-btn btn--dark"
+              disabled={value === '' || Boolean(error)}
+              onClick={create}
+            >
+              Go
+            </button>
+          </div>
+        </div>
+      </Dialog>
+    );
+  },
+);
 
 export const GenericFileEditor = observer(
   (props: { editorState: FileEditorState }) => {
@@ -56,6 +170,13 @@ export const GenericFileEditor = observer(
             editorState.clearError(); // clear error on content change/typing
           }
           editorState.file.setContent(currentVal);
+        });
+        // manual trigger to support cursor observability
+        newEditor.onDidChangeCursorPosition(() => {
+          editorState.textEditorState.notifyCursorObserver();
+        });
+        newEditor.onDidChangeCursorSelection(() => {
+          editorState.textEditorState.notifyCursorObserver();
         });
         // Restore the editor model and view state
         newEditor.setModel(editorState.textEditorState.model);
@@ -128,6 +249,9 @@ export const GenericFileEditor = observer(
             >
               <WordWrapIcon className="file-editor__icon--text-wrap" />
             </button>
+            {editorState.showGoToLinePrompt && (
+              <GoToLinePrompt fileEditorState={editorState} />
+            )}
           </div>
         </div>
         <div className="panel__content file-editor__content">

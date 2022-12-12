@@ -90,6 +90,7 @@ export const CreateNewFilePrompt = observer(
             </form>
             <button
               className="command-modal__content__submit-btn btn--dark"
+              disabled={Boolean(error)}
               onClick={create}
             >
               Create

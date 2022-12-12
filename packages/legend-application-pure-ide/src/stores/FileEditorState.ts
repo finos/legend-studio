@@ -33,8 +33,19 @@ import {
   IllegalStateError,
   type GeneratorFn,
 } from '@finos/legend-shared';
-import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import { editor as monacoEditorAPI } from 'monaco-editor';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
+import {
+  editor as monacoEditorAPI,
+  type Position,
+  type Selection,
+} from 'monaco-editor';
 import { ConceptType } from '../server/models/ConceptTree.js';
 import {
   FileCoordinate,
@@ -72,6 +83,8 @@ class FileTextEditorState {
   readonly model: monacoEditorAPI.ITextModel;
 
   editor?: monacoEditorAPI.IStandaloneCodeEditor | undefined;
+  private _dummyCursorObservable = {};
+
   language!: string;
   viewState?: monacoEditorAPI.ICodeEditorViewState | undefined;
 
@@ -79,11 +92,14 @@ class FileTextEditorState {
   wrapText = false;
 
   constructor(fileEditorState: FileEditorState) {
-    makeObservable(this, {
+    makeObservable<FileTextEditorState, '_dummyCursorObservable'>(this, {
       viewState: observable.ref,
       editor: observable.ref,
+      _dummyCursorObservable: observable.ref,
       forcedCursorPosition: observable.ref,
       wrapText: observable,
+      cursorObserver: computed,
+      notifyCursorObserver: action,
       setViewState: action,
       setEditor: action,
       setForcedCursorPosition: action,
@@ -96,6 +112,27 @@ class FileTextEditorState {
       this.language,
     );
     this.model.updateOptions({ tabSize: TAB_SIZE });
+  }
+
+  // trigger for the manual observer of editor cursor
+  notifyCursorObserver(): void {
+    this._dummyCursorObservable = {};
+  }
+
+  // subscriber for the manual observer of editor cursor
+  get cursorObserver():
+    | {
+        position: Position | undefined;
+        selection: Selection | undefined;
+      }
+    | undefined {
+    this._dummyCursorObservable; // manually trigger cursor observer
+    return this.editor
+      ? {
+          position: this.editor.getPosition() ?? undefined,
+          selection: this.editor.getSelection() ?? undefined,
+        }
+      : undefined;
   }
 
   setViewState(val: monacoEditorAPI.ICodeEditorViewState | undefined): void {
@@ -147,6 +184,7 @@ export class FileEditorState
 
   file: File;
   renameConceptState: FileEditorRenameConceptState | undefined;
+  showGoToLinePrompt = false;
 
   constructor(editorStore: EditorStore, file: File, filePath: string) {
     super(editorStore);
@@ -154,7 +192,9 @@ export class FileEditorState
     makeObservable(this, {
       file: observable,
       renameConceptState: observable,
+      showGoToLinePrompt: observable,
       setFile: action,
+      setShowGoToLinePrompt: action,
       setConceptToRenameState: flow,
     });
 
@@ -186,8 +226,12 @@ export class FileEditorState
     this.textEditorState.model.dispose();
   }
 
-  setFile(value: File): void {
-    this.file = value;
+  setFile(val: File): void {
+    this.file = val;
+  }
+
+  setShowGoToLinePrompt(val: boolean): void {
+    this.showGoToLinePrompt = val;
   }
 
   *setConceptToRenameState(
@@ -233,7 +277,9 @@ export class FileEditorState
     }
     this.editorStore.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_DEFINITION,
-      trigger: () => Boolean(this.textEditorState.editor?.hasTextFocus()),
+      trigger: () =>
+        this.editorStore.tabManagerState.currentTab === this &&
+        Boolean(this.textEditorState.editor?.hasTextFocus()),
       action: () => {
         const currentPosition = this.textEditorState.editor?.getPosition();
         if (currentPosition) {
@@ -259,7 +305,9 @@ export class FileEditorState
     });
     this.editorStore.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE,
-      trigger: () => Boolean(this.textEditorState.editor?.hasTextFocus()),
+      trigger: () =>
+        this.editorStore.tabManagerState.currentTab === this &&
+        Boolean(this.textEditorState.editor?.hasTextFocus()),
       action: () => {
         const currentPosition = this.textEditorState.editor?.getPosition();
         if (currentPosition) {
@@ -277,7 +325,9 @@ export class FileEditorState
     });
     this.editorStore.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.FIND_USAGES,
-      trigger: () => Boolean(this.textEditorState.editor?.hasTextFocus()),
+      trigger: () =>
+        this.editorStore.tabManagerState.currentTab === this &&
+        Boolean(this.textEditorState.editor?.hasTextFocus()),
       action: () => {
         const currentPosition = this.textEditorState.editor?.getPosition();
         if (currentPosition) {
@@ -294,7 +344,9 @@ export class FileEditorState
     });
     this.editorStore.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
-      trigger: () => Boolean(this.textEditorState.editor?.hasTextFocus()),
+      trigger: () =>
+        this.editorStore.tabManagerState.currentTab === this &&
+        Boolean(this.textEditorState.editor?.hasTextFocus()),
       action: () => {
         const currentPosition = this.textEditorState.editor?.getPosition();
         if (currentPosition) {
@@ -307,6 +359,13 @@ export class FileEditorState
             this.editorStore.applicationStore.alertUnhandledError,
           );
         }
+      },
+    });
+    this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_LINE,
+      trigger: () => this.editorStore.tabManagerState.currentTab === this,
+      action: () => {
+        this.setShowGoToLinePrompt(true);
       },
     });
   }
@@ -364,6 +423,7 @@ export class FileEditorState
       LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE,
       LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.FIND_USAGES,
       LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
+      LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_LINE,
     ].forEach((key) =>
       this.editorStore.applicationStore.commandCenter.deregisterCommand(key),
     );

@@ -471,6 +471,11 @@ export const setupPureLanguageService = (
   // See https://github.com/microsoft/monaco-editor/issues/102#issuecomment-1282897640
   monacoEditorAPI.addKeybindingRules([
     {
+      // disable showing go-to-line command
+      keybinding: KeyMod.WinCtrl | KeyCode.KeyG,
+      command: null,
+    },
+    {
       // disable cursor move (core command)
       keybinding: KeyMod.WinCtrl | KeyCode.KeyB,
       command: null,

@@ -100,6 +100,7 @@ export enum LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY {
   GO_BACK = 'editor.file-editor.go-back',
   FIND_USAGES = 'editor.file-editor.find-usage',
   RENAME_CONCEPT = 'editor.file-editor.rename-concept',
+  GO_TO_LINE = 'editor.file-editor.go-to-line',
 }
 
 export const LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_CONFIG: CommandConfigData =
@@ -123,5 +124,9 @@ export const LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_CONFIG: CommandConfigData 
     [LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT]: {
       title: 'Rename Concept (File)',
       defaultKeyboardShortcut: 'F2',
+    },
+    [LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_LINE]: {
+      title: 'Go to Line (File)',
+      defaultKeyboardShortcut: 'Control+KeyG',
     },
   };

@@ -95,8 +95,8 @@ export const MoveElementPrompt = observer(
               </div>
             </form>
             <button
-              disabled={isSameValue}
               className="command-modal__content__submit-btn btn--dark"
+              disabled={Boolean(error)}
               onClick={rename}
             >
               Move
