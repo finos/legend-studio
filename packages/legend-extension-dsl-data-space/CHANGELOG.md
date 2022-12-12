@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-data-space
 
+## 9.0.22
+
 ## 9.0.21
 
 ## 9.0.20

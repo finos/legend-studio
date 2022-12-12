@@ -1,5 +1,7 @@
 # @finos/legend-application-studio
 
+## 22.1.2
+
 ## 22.1.1
 
 ## 22.1.0
