@@ -23,9 +23,11 @@ import {
   NewPureModelConnectionDriver,
   NewFileGenerationDriver,
   resolvePackageAndElementName,
-  CONNECTION_TYPE,
   NewDataElementDriver,
   NewServiceDriver,
+  PURE_MODEL_CONNECTION,
+  FLAT_DATA_CONNECTION,
+  RELATIONAL_CONNECTION,
 } from '../../../stores/editor/NewElementState.js';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore.js';
@@ -50,6 +52,7 @@ import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/elemen
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
 import { EmbeddedDataType } from '../../../stores/editor-state/ExternalFormatState.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 
 export const getElementTypeLabel = (
   editorStore: EditorStore,
@@ -200,25 +203,6 @@ const NewPureModelConnectionDriverEditor = observer(
   }) => {
     const { newConnectionDriver, newConnectionValueDriver } = props;
     const editorStore = useEditorStore();
-    // store
-    const store = newConnectionDriver.store;
-    let storeOptions: { label: string; value?: Store | undefined }[] = [
-      { label: 'ModelStore', value: undefined },
-    ];
-    storeOptions = storeOptions.concat(
-      editorStore.graphManagerState.usableStores
-        .map(buildElementOption)
-        .slice()
-        .sort(compareLabelFn),
-    );
-    const selectedStoreOption = {
-      label: store?.path ?? 'ModelStore',
-      value: store,
-    };
-    const onStoreSelectionChange = (val: {
-      label: string;
-      value?: Store;
-    }): void => newConnectionDriver.setStore(val.value);
     // class
     const _class = newConnectionValueDriver.class;
     const classOptions = editorStore.graphManagerState.usableClasses
@@ -242,18 +226,6 @@ const NewPureModelConnectionDriverEditor = observer(
     }
     return (
       <>
-        <div className="panel__content__form__section__header__label">
-          Source Store
-        </div>
-        <div className="explorer__new-element-modal__driver">
-          <CustomSelectorInput
-            className="explorer__new-element-modal__driver__dropdown"
-            options={storeOptions}
-            onChange={onStoreSelectionChange}
-            value={selectedStoreOption}
-            darkMode={true}
-          />
-        </div>
         <div className="panel__content__form__section__header__label">
           Source Class
         </div>
@@ -302,17 +274,50 @@ const NewConnectionDriverEditor = observer(() => {
     label: prettyCONSTName(currentConnectionType),
     value: currentConnectionType,
   };
-  const connectionOptions = Object.values(CONNECTION_TYPE).map((e) => ({
-    label: prettyCONSTName(e),
-    value: e,
-  }));
+  const extraOptionTypes = editorStore.pluginManager
+    .getApplicationPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
+        ).getExtraConnectionTypeOptions?.() ?? [],
+    );
+  const connectionOptions = [
+    PURE_MODEL_CONNECTION,
+    FLAT_DATA_CONNECTION,
+    RELATIONAL_CONNECTION,
+  ]
+    .map((typeOption) => ({
+      label: prettyCONSTName(typeOption),
+      value: typeOption,
+    }))
+    .concat(extraOptionTypes);
   const onConnectionChange = (
-    val: { label: CONNECTION_TYPE; value: CONNECTION_TYPE } | null,
+    val: { label: string; value: string } | null,
   ): void => {
     if (val?.value && currentConnectionTypeOption.value !== val.value) {
       newConnectionDriver.changeConnectionState(val.value);
     }
   };
+
+  // store
+  const store = newConnectionDriver.store;
+  let storeOptions: { label: string; value?: Store | undefined }[] = [
+    { label: 'ModelStore', value: undefined },
+  ];
+  storeOptions = storeOptions.concat(
+    editorStore.graphManagerState.usableStores
+      .map(buildElementOption)
+      .slice()
+      .sort(compareLabelFn),
+  );
+  const selectedStoreOption = {
+    label: store?.path ?? 'ModelStore',
+    value: store,
+  };
+  const onStoreSelectionChange = (val: { label: string; value: Store }): void =>
+    newConnectionDriver.setStore(val.value);
+
   return (
     <>
       <div className="panel__content__form__section__header__label">
@@ -324,6 +329,18 @@ const NewConnectionDriverEditor = observer(() => {
           options={connectionOptions}
           onChange={onConnectionChange}
           value={currentConnectionTypeOption}
+          darkMode={true}
+        />
+      </div>
+      <div className="panel__content__form__section__header__label">
+        Source Store
+      </div>
+      <div className="explorer__new-element-modal__driver">
+        <CustomSelectorInput
+          className="explorer__new-element-modal__driver__dropdown"
+          options={storeOptions}
+          onChange={onStoreSelectionChange}
+          value={selectedStoreOption}
           darkMode={true}
         />
       </div>

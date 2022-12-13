@@ -17,6 +17,8 @@
 import {
   type ExternalFormatData,
   observe_ExternalFormatData,
+  PackageableElementReference,
+  observe_PackageableElementReference,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -33,7 +35,24 @@ import type { ServiceRequestPattern } from '../../graph/metamodel/pure/model/dat
 import type { ServiceResponseDefinition } from '../../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceResponseDefinition.js';
 import type { ServiceStoreEmbeddedData } from '../../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceStoreEmbeddedData.js';
 import type { ServiceStubMapping } from '../../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceStubMapping.js';
+import type { ServiceStoreConnection } from '../../graph/metamodel/pure/model/packageableElements/store/serviceStore/connection/STO_ServiceStore_ServiceStoreConnection.js';
 import { HTTP_METHOD } from '../../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_ServiceStoreService.js';
+import type { ServiceStore } from '../../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_ServiceStore.js';
+
+export const service_store_connection_setStore = action(
+  (
+    con: ServiceStoreConnection,
+    val: PackageableElementReference<ServiceStore>,
+  ): void => {
+    con.store = observe_PackageableElementReference(val);
+  },
+);
+
+export const serviceStore_connection_setBaseUrl = action(
+  (conn: ServiceStoreConnection, baseUrl: string): void => {
+    conn.baseUrl = baseUrl;
+  },
+);
 
 export const serviceStore_embeddedData_addServiceStubMapping = action(
   (
