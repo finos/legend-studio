@@ -29,8 +29,8 @@ import {
   type EmbeddedData,
   type EmbeddedDataObserver,
   type EmbeddedData_PureGraphManagerPlugin_Extension,
-  ConnectionObserver,
-  Connection,
+  type ConnectionObserver,
+  type Connection,
 } from '@finos/legend-graph';
 import { ServiceStoreConnection } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/connection/STO_ServiceStore_ServiceStoreConnection.js';
 import {

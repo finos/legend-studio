@@ -201,7 +201,7 @@ const NewPureModelConnectionDriverEditor = observer(
     newConnectionDriver: NewPackageableConnectionDriver;
     newConnectionValueDriver: NewPureModelConnectionDriver;
   }) => {
-    const { newConnectionDriver, newConnectionValueDriver } = props;
+    const newConnectionValueDriver = props.newConnectionValueDriver;
     const editorStore = useEditorStore();
     // class
     const _class = newConnectionValueDriver.class;
@@ -312,7 +312,7 @@ const NewConnectionDriverEditor = observer(() => {
       .sort(compareLabelFn),
   );
   const selectedStoreOption = {
-    label: store?.path ?? 'ModelStore',
+    label: store.path,
     value: store,
   };
   const onStoreSelectionChange = (val: { label: string; value: Store }): void =>

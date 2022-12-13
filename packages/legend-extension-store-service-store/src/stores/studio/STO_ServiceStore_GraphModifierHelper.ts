@@ -15,10 +15,10 @@
  */
 
 import {
-  type ExternalFormatData,
   observe_ExternalFormatData,
-  PackageableElementReference,
   observe_PackageableElementReference,
+  type ExternalFormatData,
+  type PackageableElementReference,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,

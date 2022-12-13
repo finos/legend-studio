@@ -373,7 +373,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
         this.newConnectionValueDriver =
           new NewRelationalDatabaseConnectionDriver(this.editorStore);
         return;
-      default:
+      default: {
         const extraNewConnectionDriverCreators = this.editorStore.pluginManager
           .getApplicationPlugins()
           .flatMap(
@@ -393,6 +393,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
           `Can't create new connection driver for type: no compatible creator available from plugins`,
           val,
         );
+      }
     }
   }
 

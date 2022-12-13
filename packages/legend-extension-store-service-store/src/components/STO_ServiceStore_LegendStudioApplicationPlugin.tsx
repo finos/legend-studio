@@ -16,9 +16,9 @@
 
 import packageJson from '../../package.json';
 import {
-  LegendStudioApplicationPlugin,
   UnsupportedElementEditorState,
   UnsupportedInstanceSetImplementationState,
+  LegendStudioApplicationPlugin,
   type NewElementFromStateCreator,
   type RuntimeConnectionTooltipTextBuilder,
   type NewConnectionSnippetSuggestion,
@@ -52,7 +52,7 @@ import {
   type EmbeddedDataEditorRenderer,
   type EmbeddedDataCreator,
   type MappingElementSource,
-  ConnectionTypeOption,
+  type ConnectionTypeOption,
 } from '@finos/legend-application-studio';
 import { SwaggerIcon } from '@finos/legend-art';
 import {

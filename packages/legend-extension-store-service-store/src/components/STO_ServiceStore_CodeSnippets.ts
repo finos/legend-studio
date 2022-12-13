@@ -66,7 +66,7 @@ export const SERVICE_STORE_WITH_DESCRIPTION = `ServiceStore \${1:model::NewServi
 export const SERVICE_STORE_CONNECTION_SNIPPET = `ServiceStoreConnection \${1:model::NewServiceStoreConnection}
 (
   store: \${2:model::SomeStore};
-  baseUrl: \${3:\'http://localhost:9090/somePath\'};
+  baseUrl: \${3:'http://localhost:9090/somePath'};
 )`;
 
 export const SERVICE_STORE_EMBEDDED_DATA = `ServiceStore

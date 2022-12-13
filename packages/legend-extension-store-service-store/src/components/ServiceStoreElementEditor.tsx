@@ -16,8 +16,8 @@
 import { observer } from 'mobx-react-lite';
 import {
   PackageableElementExplicitReference,
-  PackageableElementReference,
-  Store,
+  type PackageableElementReference,
+  type Store,
 } from '@finos/legend-graph';
 import { ServiceStoreConnection } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/connection/STO_ServiceStore_ServiceStoreConnection.js';
 import { ServiceStore } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_ServiceStore.js';
@@ -28,13 +28,13 @@ import {
 import { computed, makeObservable } from 'mobx';
 import {
   buildElementOption,
-  PackageableElementOption,
+  type PackageableElementOption,
 } from '@finos/legend-application';
 import {
   ConnectionValueState,
   NewConnectionValueDriver,
+  type EditorStore,
 } from '@finos/legend-application-studio';
-import type { EditorStore } from '@finos/legend-application-studio';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { SERVICE_STORE_CONNECTION } from './STO_ServiceStore_LegendStudioApplicationPlugin.js';
 
@@ -97,7 +97,6 @@ export const ServiceStoreConnectionEditor = observer(
             value={selectedStore}
             darkMode={true}
             disabled={isReadOnly}
-            hasError={connection.store === undefined}
           />
         </div>
         <div className="service-store-connection-editor__section">
