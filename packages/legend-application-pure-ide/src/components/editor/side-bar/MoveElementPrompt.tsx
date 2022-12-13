@@ -27,7 +27,7 @@ import { extractPackagePathFromPath } from '@finos/legend-graph';
 import { guaranteeType } from '@finos/legend-shared';
 
 const PACKAGE_PATH_PATTERN =
-  /^(?:(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)*::)*[a-zA-Z0-9_][a-zA-Z0-9_$]*$/;
+  /^(?:(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)::)*[a-zA-Z0-9_][a-zA-Z0-9_$]*$/;
 
 export const MoveElementPrompt = observer(
   (props: { node: ConceptTreeNode }) => {

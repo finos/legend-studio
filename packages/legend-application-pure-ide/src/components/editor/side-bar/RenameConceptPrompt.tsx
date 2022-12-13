@@ -27,7 +27,7 @@ import { extractElementNameFromPath } from '@finos/legend-graph';
 
 const IDENTIFIER_PATTERN = /^[a-zA-Z0-9_][a-zA-Z0-9_$]*$/;
 const PACKAGE_PATH_PATTERN =
-  /^(?:(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)*::)*[a-zA-Z0-9_][a-zA-Z0-9_$]*$/;
+  /^(?:(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)::)*[a-zA-Z0-9_][a-zA-Z0-9_$]*$/;
 
 export const RenameConceptPrompt = observer(
   (props: { node: ConceptTreeNode }) => {

@@ -23,7 +23,7 @@ import { Dialog } from '@finos/legend-art';
 import type { DirectoryTreeNode } from '../../../server/models/DirectoryTree.js';
 
 const FILE_PATH_PATTERN =
-  /\/?(?:[a-zA-z0-9_]\/)*[a-zA-z0-9_]+(?:.[a-zA-z0-9_]+)*/;
+  /\/?(?:[a-zA-Z0-9_]\/)*[a-zA-Z0-9_]+(?:.[a-zA-Z0-9_]+)*/;
 
 export const RenameFilePrompt = observer(
   (props: { node: DirectoryTreeNode }) => {

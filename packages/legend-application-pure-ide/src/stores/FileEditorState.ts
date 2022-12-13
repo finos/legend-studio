@@ -66,14 +66,21 @@ const getFileEditorLanguage = (filePath: string): string => {
   switch (extension) {
     case 'pure':
       return EDITOR_LANGUAGE.PURE;
-    case 'json':
-      return EDITOR_LANGUAGE.JSON;
-    case 'sql':
-      return EDITOR_LANGUAGE.SQL;
-    case 'md':
-      return EDITOR_LANGUAGE.MARKDOWN;
     case 'java':
       return EDITOR_LANGUAGE.JAVA;
+    case 'md':
+      return EDITOR_LANGUAGE.MARKDOWN;
+    case 'sql':
+      return EDITOR_LANGUAGE.SQL;
+    case 'json':
+      return EDITOR_LANGUAGE.JSON;
+    case 'xml':
+      return EDITOR_LANGUAGE.MARKDOWN;
+    case 'yml':
+    case 'yaml':
+      return EDITOR_LANGUAGE.YAML;
+    case 'graphql':
+      return EDITOR_LANGUAGE.GRAPHQL;
     default:
       return EDITOR_LANGUAGE.TEXT;
   }
