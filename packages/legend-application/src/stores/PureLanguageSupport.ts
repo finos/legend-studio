@@ -252,7 +252,7 @@ const generateLanguageMonarch = (
     octaldigits: /[0-7]+(_+[0-7]+)*/,
     binarydigits: /[0-1]+(_+[0-1]+)*/,
     hexdigits: /[[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
-    multiplicity: /\[(?:\d+(?:\.\.(?:\d+|\*|))?|\*)\]/,
+    multiplicity: /\[(?:[a-zA-Z0-9]+(?:\.\.(?:[a-zA-Z0-9]+|\*|))?|\*)\]/,
     package: /(?:[\w_]+::)+/,
     generics: /<.+>/,
     date: /%-?\d+(?:-\d+(?:-\d+(?:T(?:\d+(?::\d+(?::\d+(?:.\d+)?)?)?)(?:[+-][0-9]{4})?)))/,
