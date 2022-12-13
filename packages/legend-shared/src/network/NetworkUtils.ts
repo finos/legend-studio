@@ -23,11 +23,7 @@ import {
   assertTrue,
 } from '../error/AssertionUtils.js';
 import { deflate } from 'pako';
-import {
-  parse as _getQueryParams,
-  parseUrl as _getQueryParamsFromUrl,
-  stringify as _stringifyQueryParams,
-} from 'query-string';
+import queryString from 'query-string';
 import { returnUndefOnError } from '../error/ErrorUtils.js';
 import { sanitizeUrl } from '@braintree/sanitize-url';
 import type { PlainObject } from '../CommonUtils.js';
@@ -533,8 +529,8 @@ export const createUrlStringFromData = (
 // See https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
 export const getQueryParameters = <T>(url: string, isFullUrl = false): T => {
   const params = isFullUrl
-    ? _getQueryParamsFromUrl(url).query
-    : _getQueryParams(url);
+    ? queryString.parseUrl(url).query
+    : queryString.parse(url);
   return params as unknown as T;
 };
 
@@ -554,7 +550,7 @@ export const stringifyQueryParams = (params: PlainObject): string => {
     }
     data[key] = value.toString();
   });
-  return _stringifyQueryParams(data);
+  return queryString.stringify(data);
 };
 
 export const addQueryParamsStringToUrl = (
