@@ -39,6 +39,7 @@ import {
   CompressIcon,
   MenuContent,
   MenuContentItem,
+  MenuContentDivider,
 } from '@finos/legend-art';
 import { guaranteeType, isNonNullable } from '@finos/legend-shared';
 import { useDrag } from 'react-dnd';
@@ -57,7 +58,8 @@ const ConceptExplorerContextMenu = observer(
     }
   >(function ConceptExplorerContextMenu(props, ref) {
     const { node, viewConceptSource } = props;
-    const nodeType = node.data.li_attr.pureType;
+    const nodeAttribute = node.data.li_attr;
+    const nodeType = nodeAttribute.pureType;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const renameConcept = (): void =>
@@ -70,7 +72,6 @@ const ConceptExplorerContextMenu = observer(
       );
     };
     const findUsages = (): void => {
-      const nodeAttribute = node.data.li_attr;
       if (
         nodeAttribute instanceof ElementConceptAttribute ||
         nodeAttribute instanceof PropertyConceptAttribute
@@ -87,31 +88,41 @@ const ConceptExplorerContextMenu = observer(
     const viewSource = (): void => viewConceptSource(node);
     const serviceJSON = (): void => {
       window.open(
-        `${editorStore.client.baseUrl}/execute?func=${node.data.li_attr.pureId}&mode=${editorStore.client.mode}`,
+        `${editorStore.client.baseUrl}/execute?func=${nodeAttribute.pureId}&mode=${editorStore.client.mode}`,
         '_blank',
       );
+    };
+    const copyPath = (): void => {
+      applicationStore
+        .copyTextToClipboard(nodeAttribute.pureId)
+        .catch(applicationStore.alertUnhandledError);
     };
 
     return (
       <MenuContent ref={ref}>
-        <MenuContentItem onClick={renameConcept}>Rename</MenuContentItem>
-        {node.data.li_attr instanceof ElementConceptAttribute && (
-          <MenuContentItem onClick={moveElement}>Move</MenuContentItem>
-        )}
+        {nodeAttribute.pureType !== ConceptType.PROPERTY &&
+          nodeAttribute.pureType !== ConceptType.QUALIFIED_PROPERTY && (
+            <MenuContentItem onClick={copyPath}>Copy Path</MenuContentItem>
+          )}
         {nodeType === ConceptType.PACKAGE && (
-          <MenuContentItem onClick={runTests}>Run tests</MenuContentItem>
+          <MenuContentItem onClick={runTests}>Run Tests</MenuContentItem>
         )}
         {nodeType === ConceptType.FUNCTION && (
           <MenuContentItem onClick={serviceJSON}>
             Service (JSON)
           </MenuContentItem>
         )}
-        {(node.data.li_attr instanceof PropertyConceptAttribute ||
-          node.data.li_attr instanceof ElementConceptAttribute) && (
+        {(nodeAttribute instanceof PropertyConceptAttribute ||
+          nodeAttribute instanceof ElementConceptAttribute) && (
           <MenuContentItem onClick={findUsages}>Find Usages</MenuContentItem>
         )}
         {nodeType !== ConceptType.PACKAGE && (
           <MenuContentItem onClick={viewSource}>View Source</MenuContentItem>
+        )}
+        <MenuContentDivider />
+        <MenuContentItem onClick={renameConcept}>Rename</MenuContentItem>
+        {nodeAttribute instanceof ElementConceptAttribute && (
+          <MenuContentItem onClick={moveElement}>Move</MenuContentItem>
         )}
       </MenuContent>
     );
