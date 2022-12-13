@@ -17,7 +17,6 @@
 import {
   type CommandRegistrar,
   EDITOR_LANGUAGE,
-  TAB_SIZE,
   type TabState,
 } from '@finos/legend-application';
 import {
@@ -118,7 +117,6 @@ class FileTextEditorState {
       fileEditorState.uuid,
       this.language,
     );
-    this.model.updateOptions({ tabSize: TAB_SIZE });
   }
 
   // trigger for the manual observer of editor cursor
