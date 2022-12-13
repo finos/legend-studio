@@ -311,13 +311,6 @@ export const PureFileEditor = observer(
       if (currentValue !== content) {
         editor.setValue(content);
       }
-      // if (editorState.textEditorState.forcedCursorPosition) {
-      //   moveCursorToPosition(
-      //     editor,
-      //     editorState.textEditorState.forcedCursorPosition,
-      //   );
-      //   editorState.textEditorState.setForcedCursorPosition(undefined);
-      // }
     }
 
     const textTokens = editor

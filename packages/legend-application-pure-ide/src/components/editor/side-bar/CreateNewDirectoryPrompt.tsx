@@ -22,7 +22,7 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 import { Dialog } from '@finos/legend-art';
 import type { DirectoryTreeNode } from '../../../server/models/DirectoryTree.js';
 
-const DIRECTORY_NAME_PATTERN = /[a-zA-z0-9_]+/;
+const DIRECTORY_NAME_PATTERN = /[a-zA-Z0-9_]+/;
 const DEFAULT_DIRECTORY_NAME = 'untitled';
 
 export const CreateNewDirectoryPrompt = observer(
