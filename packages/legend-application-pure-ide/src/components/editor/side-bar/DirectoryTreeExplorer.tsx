@@ -40,6 +40,7 @@ import {
   WrenchIcon,
   MenuContent,
   MenuContentItem,
+  MenuContentDivider,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import {
@@ -76,9 +77,16 @@ const FileExplorerContextMenu = observer(
     };
     const renameFile = (): void =>
       editorStore.directoryTreeState.setNodeForRenameFile(node);
+    const copyPath = (): void => {
+      applicationStore
+        .copyTextToClipboard(node.data.li_attr.path)
+        .catch(applicationStore.alertUnhandledError);
+    };
 
     return (
       <MenuContent ref={ref}>
+        <MenuContentItem onClick={copyPath}>Copy Path</MenuContentItem>
+        <MenuContentDivider />
         {isDir && (
           <MenuContentItem onClick={createNewFile}>New File</MenuContentItem>
         )}
