@@ -117,6 +117,7 @@ class FileTextEditorState {
       fileEditorState.uuid,
       this.language,
     );
+    this.model.setValue(fileEditorState.file.content);
   }
 
   // trigger for the manual observer of editor cursor
@@ -233,6 +234,7 @@ export class FileEditorState
 
   setFile(val: File): void {
     this.file = val;
+    this.textEditorState.model.setValue(val.content);
   }
 
   setShowGoToLinePrompt(val: boolean): void {

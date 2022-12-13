@@ -15,8 +15,24 @@
  */
 
 import type { PureGrammarTextSuggestion } from '@finos/legend-application';
-import { PURE_ELEMENT_NAME, PURE_PARSER } from '@finos/legend-graph';
-import { languages as monacoLanguagesAPI } from 'monaco-editor';
+import {
+  ELEMENT_PATH_DELIMITER,
+  PURE_ELEMENT_NAME,
+  PURE_PARSER,
+} from '@finos/legend-graph';
+import {
+  languages as monacoLanguagesAPI,
+  type IPosition,
+  type editor as monacoEditorAPI,
+} from 'monaco-editor';
+import { deserialize } from 'serializr';
+import {
+  ConceptNode,
+  ConceptType,
+  ElementConceptAttribute,
+  PropertyConceptAttribute,
+} from '../server/models/ConceptTree.js';
+import type { EditorStore } from './EditorStore.js';
 import {
   BLANK_CLASS_SNIPPET,
   BLANK_FUNCTION_SNIPPET,
@@ -217,3 +233,81 @@ export const getCopyrightHeaderSuggestions =
 
     return results;
   };
+
+export const getIncompletePathSuggestions = async (
+  position: IPosition,
+  model: monacoEditorAPI.ITextModel,
+  editorStore: EditorStore,
+): Promise<monacoLanguagesAPI.CompletionItem[]> => {
+  const incompletePath = model
+    .getLineContent(position.lineNumber)
+    .match(/(?<incompletePath>(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*::)+$)/);
+  if (incompletePath?.groups?.incompletePath) {
+    const path = incompletePath.groups.incompletePath.substring(
+      0,
+      incompletePath.groups.incompletePath.length -
+        ELEMENT_PATH_DELIMITER.length,
+    );
+    let childrenConcept: ConceptNode[] = [];
+    try {
+      childrenConcept = (await editorStore.client.getConceptChildren(path)).map(
+        (child) => deserialize(ConceptNode, child),
+      );
+    } catch {
+      // do nothing: provide no suggestions when error ocurred
+    }
+
+    return (
+      childrenConcept
+        // NOTE: do not account for properties
+        .filter(
+          (concept) => !(concept.li_attr instanceof PropertyConceptAttribute),
+        )
+        .map((concept) => {
+          const conceptAttribute = concept.li_attr;
+          const conceptType = conceptAttribute.pureType;
+          const insertText =
+            conceptAttribute instanceof ElementConceptAttribute
+              ? conceptType === ConceptType.FUNCTION ||
+                conceptType === ConceptType.NATIVE_FUNCTION
+                ? `${conceptAttribute.pureName}(\${1:})`
+                : conceptAttribute.pureName
+              : concept.text;
+          const kind =
+            conceptType === ConceptType.PACKAGE
+              ? monacoLanguagesAPI.CompletionItemKind.Folder
+              : conceptType === ConceptType.CLASS
+              ? monacoLanguagesAPI.CompletionItemKind.Class
+              : conceptType === ConceptType.FUNCTION
+              ? monacoLanguagesAPI.CompletionItemKind.Function
+              : conceptType === ConceptType.ENUMERATION
+              ? monacoLanguagesAPI.CompletionItemKind.Enum
+              : conceptType === ConceptType.PROFILE
+              ? monacoLanguagesAPI.CompletionItemKind.Module
+              : conceptType === ConceptType.ASSOCIATION
+              ? monacoLanguagesAPI.CompletionItemKind.Interface
+              : monacoLanguagesAPI.CompletionItemKind.Value;
+          return {
+            label: concept.text,
+            kind,
+            insertTextRules:
+              monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+            insertText,
+            // attempt to push package suggestions to the bottom of the list
+            sortText:
+              conceptType === ConceptType.PACKAGE
+                ? `zzzz_${concept.text}`
+                : concept.text,
+            range: {
+              startLineNumber: position.lineNumber,
+              startColumn: position.lineNumber,
+              endLineNumber: position.lineNumber,
+              endColumn: position.lineNumber + insertText.length,
+            },
+          } as monacoLanguagesAPI.CompletionItem;
+        })
+    );
+  }
+
+  return [];
+};

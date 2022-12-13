@@ -52,7 +52,8 @@ import {
   collectParserElementSnippetSuggestions,
   collectParserKeywordSuggestions,
   getCopyrightHeaderSuggestions,
-} from '../../../stores/FileEditorUtils.js';
+  getIncompletePathSuggestions,
+} from '../../../stores/PureFileEditorUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { FileCoordinate } from '../../../server/models/File.js';
@@ -142,12 +143,21 @@ const RenameConceptPrompt = observer(
 export const PureFileEditor = observer(
   (props: { editorState: FileEditorState }) => {
     const { editorState } = props;
-    const suggestionProviderDisposer = useRef<IDisposable | undefined>(
-      undefined,
-    );
     const definitionProviderDisposer = useRef<IDisposable | undefined>(
       undefined,
     );
+    const commonPureConstructSuggestionProviderDisposer = useRef<
+      IDisposable | undefined
+    >(undefined);
+    const pureSectionSuggestionProviderDisposer = useRef<
+      IDisposable | undefined
+    >(undefined);
+    const pureAutoImportsSuggestionProviderDisposer = useRef<
+      IDisposable | undefined
+    >(undefined);
+    const pureIncompletePathSuggestionProviderDisposer = useRef<
+      IDisposable | undefined
+    >(undefined);
     const textInputRef = useRef<HTMLDivElement>(null);
     const [editor, setEditor] = useState<
       monacoEditorAPI.IStandaloneCodeEditor | undefined
@@ -155,7 +165,7 @@ export const PureFileEditor = observer(
     const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const content = editorState.file.content;
+    // const content = editorState.file.content;
     const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
     useEffect(() => {
@@ -294,6 +304,7 @@ export const PureFileEditor = observer(
         newEditor.onDidChangeCursorSelection(() => {
           editorState.textEditorState.notifyCursorObserver();
         });
+
         // Restore the editor model and view state
         newEditor.setModel(editorState.textEditorState.model);
         if (editorState.textEditorState.viewState) {
@@ -304,14 +315,6 @@ export const PureFileEditor = observer(
         setEditor(newEditor);
       }
     }, [editorStore, applicationStore, editorState, editor]);
-
-    if (editor) {
-      // Set the value of the editor
-      const currentValue = editor.getValue();
-      if (currentValue !== content) {
-        editor.setValue(content);
-      }
-    }
 
     const textTokens = editor
       ? monacoEditorAPI.tokenize(editor.getValue(), EDITOR_LANGUAGE.PURE)
@@ -369,28 +372,14 @@ export const PureFileEditor = observer(
         },
       });
 
-    // suggestion
-    suggestionProviderDisposer.current?.dispose();
-    suggestionProviderDisposer.current =
+    // suggestions
+    commonPureConstructSuggestionProviderDisposer.current?.dispose();
+    commonPureConstructSuggestionProviderDisposer.current =
       monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
-        // NOTE: we need to specify this to show suggestions for section
-        // because by default, only alphanumeric characters trigger completion item provider
-        // See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionContext.html#triggerCharacter
-        // See https://github.com/microsoft/monaco-editor/issues/2530#issuecomment-861757198
-        triggerCharacters: ['#'],
         provideCompletionItems: (model, position) => {
           let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
 
           suggestions = suggestions.concat(getCopyrightHeaderSuggestions());
-
-          // suggestions for parser keyword
-          suggestions = suggestions.concat(
-            getParserKeywordSuggestions(
-              position,
-              model,
-              collectParserKeywordSuggestions(),
-            ),
-          );
 
           // suggestions for parser element snippets
           suggestions = suggestions.concat(
@@ -409,6 +398,106 @@ export const PureFileEditor = observer(
               model,
               collectExtraInlineSnippetSuggestions(),
             ),
+          );
+
+          return { suggestions };
+        },
+      });
+
+    pureSectionSuggestionProviderDisposer.current?.dispose();
+    pureSectionSuggestionProviderDisposer.current =
+      monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
+        triggerCharacters: ['#'],
+        provideCompletionItems: (model, position) => {
+          let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+
+          // suggestions for parser keyword
+          suggestions = suggestions.concat(
+            getParserKeywordSuggestions(
+              position,
+              model,
+              collectParserKeywordSuggestions(),
+            ),
+          );
+
+          return { suggestions };
+        },
+      });
+
+    // pureAutoImportsSuggestionProviderDisposer.current?.dispose();
+    // pureAutoImportsSuggestionProviderDisposer.current =
+    //   monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
+    //     provideCompletionItems: async (model, position) => {
+    //       let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+    //       const currentWord = model.getWordUntilPosition(position);
+
+    //       let childrenConcept: ConceptNode[] = [];
+    //       try {
+    //         childrenConcept =
+    //           // await editorStore.client.getConceptChildren(path)
+    //           (await editorStore.client.getConceptsChildren([])).flatMap(
+    //             (child) => deserialize(ConceptNode, child),
+    //           );
+    //       } catch {
+    //         // do nothing: provide no suggestions when error ocurred
+    //       }
+
+    //       suggestions = suggestions.concat(
+    //         childrenConcept
+    //           // NOTE: do not account for properties
+    //           .filter(
+    //             (concept) =>
+    //               !(concept.li_attr instanceof PropertyConceptAttribute),
+    //           )
+    //           .map((concept) => {
+    //             const conceptAttribute = concept.li_attr;
+    //             const conceptType = conceptAttribute.pureType;
+    //             const insertText =
+    //               conceptAttribute instanceof ElementConceptAttribute
+    //                 ? conceptType === ConceptType.FUNCTION ||
+    //                   conceptType === ConceptType.NATIVE_FUNCTION
+    //                   ? `${conceptAttribute.pureName}(\${1:})`
+    //                   : conceptAttribute.pureName
+    //                 : concept.text;
+    //             return {
+    //               label: concept.text,
+    //               filterText: insertText,
+    //               kind:
+    //                 conceptType === ConceptType.PACKAGE
+    //                   ? monacoLanguagesAPI.CompletionItemKind.Folder
+    //                   : conceptType === ConceptType.FUNCTION
+    //                   ? monacoLanguagesAPI.CompletionItemKind.Function
+    //                   : conceptType === ConceptType.CLASS
+    //                   ? monacoLanguagesAPI.CompletionItemKind.Class
+    //                   : conceptType === ConceptType.ENUMERATION
+    //                   ? monacoLanguagesAPI.CompletionItemKind.Enum
+    //                   : monacoLanguagesAPI.CompletionItemKind.Enum,
+    //               insertTextRules:
+    //                 monacoLanguagesAPI.CompletionItemInsertTextRule
+    //                   .InsertAsSnippet,
+    //               insertText,
+    //               range: {
+    //                 startLineNumber: position.lineNumber,
+    //                 startColumn: currentWord.startColumn,
+    //                 endLineNumber: position.lineNumber,
+    //                 endColumn: currentWord.endColumn,
+    //               },
+    //             } as monacoLanguagesAPI.CompletionItem;
+    //           }),
+    //       );
+
+    //       return { suggestions };
+    //     },
+    //   });
+
+    pureIncompletePathSuggestionProviderDisposer.current?.dispose();
+    pureIncompletePathSuggestionProviderDisposer.current =
+      monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
+        triggerCharacters: [':'],
+        provideCompletionItems: async (model, position) => {
+          let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+          suggestions = suggestions.concat(
+            await getIncompletePathSuggestions(position, model, editorStore),
           );
 
           return { suggestions };
@@ -480,7 +569,10 @@ export const PureFileEditor = observer(
         }
 
         definitionProviderDisposer.current?.dispose();
-        suggestionProviderDisposer.current?.dispose();
+        commonPureConstructSuggestionProviderDisposer.current?.dispose();
+        pureAutoImportsSuggestionProviderDisposer.current?.dispose();
+        pureSectionSuggestionProviderDisposer.current?.dispose();
+        pureIncompletePathSuggestionProviderDisposer.current?.dispose();
       },
       [editorState, editor],
     );
