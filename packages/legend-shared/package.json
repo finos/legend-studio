@@ -54,7 +54,7 @@
     "object-hash": "3.0.0",
     "pako": "2.1.0",
     "pretty-format": "29.3.1",
-    "query-string": "8.0.0",
+    "query-string": "8.0.3",
     "seedrandom": "3.0.5",
     "serializr": "3.0.2",
     "uuid": "9.0.0"
