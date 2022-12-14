@@ -478,7 +478,7 @@ export class ModelImporterState extends EditorState {
   }
 
   override match(tab: EditorState): boolean {
-    return tab instanceof ModelImporterEditorState;
+    return tab instanceof ModelImporterState;
   }
 
   setReplaceFlag(val: boolean): void {
