@@ -1,5 +1,11 @@
 # @finos/legend-extension-store-service-store
 
+## 1.0.30
+
+### Patch Changes
+
+- [#1766](https://github.com/finos/legend-studio/pull/1766) [`dc9ed1590`](https://github.com/finos/legend-studio/commit/dc9ed1590cbcdefe23d1c4f166bad9db55d2fbf8) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Add `ServiceStore Connection` editor and snippet suggestion.
+
 ## 1.0.29
 
 ## 1.0.28
