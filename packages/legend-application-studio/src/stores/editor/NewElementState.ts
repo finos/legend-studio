@@ -232,6 +232,12 @@ export abstract class NewConnectionValueDriver<T extends Connection> {
   abstract createConnection(store: Store): T;
 }
 
+export enum CONNECTION_TYPE {
+  PURE_MODEL_CONNECTION = 'MODEL_CONNECTION',
+  FLAT_DATA_CONNECTION = 'FLAT_DATA_CONNECTION',
+  RELATIONAL_CONNECTION = 'RELATIONAL_CONNECTION',
+}
+
 export class NewPureModelConnectionDriver extends NewConnectionValueDriver<PureModelConnection> {
   class?: Class | undefined;
 
@@ -328,12 +334,6 @@ export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDri
       new DefaultH2AuthenticationStrategy(),
     );
   }
-}
-
-export enum CONNECTION_TYPE {
-  PURE_MODEL_CONNECTION = 'MODEL_CONNECTION',
-  FLAT_DATA_CONNECTION = 'FLAT_DATA_CONNECTION',
-  RELATIONAL_CONNECTION = 'RELATIONAL_CONNECTION',
 }
 
 export class NewPackageableConnectionDriver extends NewElementDriver<PackageableConnection> {
