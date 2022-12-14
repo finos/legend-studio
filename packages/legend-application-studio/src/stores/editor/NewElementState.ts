@@ -220,10 +220,6 @@ export class NewPackageableRuntimeDriver extends NewElementDriver<PackageableRun
   }
 }
 
-export const PURE_MODEL_CONNECTION = 'MODEL_CONNECTION';
-export const FLAT_DATA_CONNECTION = 'FLAT_DATA_CONNECTION';
-export const RELATIONAL_CONNECTION = 'RELATIONAL_CONNECTION';
-
 export abstract class NewConnectionValueDriver<T extends Connection> {
   editorStore: EditorStore;
 
@@ -263,7 +259,7 @@ export class NewPureModelConnectionDriver extends NewConnectionValueDriver<PureM
   }
 
   getConnectionType(): string {
-    return PURE_MODEL_CONNECTION;
+    return CONNECTION_TYPE.PURE_MODEL_CONNECTION;
   }
 
   createConnection(store: ModelStore): PureModelConnection {
@@ -290,7 +286,7 @@ export class NewFlatDataConnectionDriver extends NewConnectionValueDriver<FlatDa
   }
 
   getConnectionType(): string {
-    return FLAT_DATA_CONNECTION;
+    return CONNECTION_TYPE.FLAT_DATA_CONNECTION;
   }
 
   createConnection(store: FlatData): FlatDataConnection {
@@ -314,7 +310,7 @@ export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDri
   }
 
   getConnectionType(): string {
-    return RELATIONAL_CONNECTION;
+    return CONNECTION_TYPE.RELATIONAL_CONNECTION;
   }
 
   createConnection(store: Store): RelationalDatabaseConnection {
@@ -332,6 +328,12 @@ export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDri
       new DefaultH2AuthenticationStrategy(),
     );
   }
+}
+
+export enum CONNECTION_TYPE {
+  PURE_MODEL_CONNECTION = 'MODEL_CONNECTION',
+  FLAT_DATA_CONNECTION = 'FLAT_DATA_CONNECTION',
+  RELATIONAL_CONNECTION = 'RELATIONAL_CONNECTION',
 }
 
 export class NewPackageableConnectionDriver extends NewElementDriver<PackageableConnection> {
@@ -359,17 +361,17 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
 
   changeConnectionState(val: string): void {
     switch (val) {
-      case PURE_MODEL_CONNECTION:
+      case CONNECTION_TYPE.PURE_MODEL_CONNECTION:
         this.newConnectionValueDriver = new NewPureModelConnectionDriver(
           this.editorStore,
         );
         return;
-      case FLAT_DATA_CONNECTION:
+      case CONNECTION_TYPE.FLAT_DATA_CONNECTION:
         this.newConnectionValueDriver = new NewFlatDataConnectionDriver(
           this.editorStore,
         );
         return;
-      case RELATIONAL_CONNECTION:
+      case CONNECTION_TYPE.RELATIONAL_CONNECTION:
         this.newConnectionValueDriver =
           new NewRelationalDatabaseConnectionDriver(this.editorStore);
         return;

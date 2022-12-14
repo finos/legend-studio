@@ -25,9 +25,7 @@ import {
   resolvePackageAndElementName,
   NewDataElementDriver,
   NewServiceDriver,
-  PURE_MODEL_CONNECTION,
-  FLAT_DATA_CONNECTION,
-  RELATIONAL_CONNECTION,
+  CONNECTION_TYPE,
 } from '../../../stores/editor/NewElementState.js';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore.js';
@@ -197,11 +195,8 @@ const NewRuntimeDriverEditor = observer(() => {
 });
 
 const NewPureModelConnectionDriverEditor = observer(
-  (props: {
-    newConnectionDriver: NewPackageableConnectionDriver;
-    newConnectionValueDriver: NewPureModelConnectionDriver;
-  }) => {
-    const newConnectionValueDriver = props.newConnectionValueDriver;
+  (props: { newConnectionValueDriver: NewPureModelConnectionDriver }) => {
+    const { newConnectionValueDriver } = props;
     const editorStore = useEditorStore();
     // class
     const _class = newConnectionValueDriver.class;
@@ -255,7 +250,6 @@ const NewConnectionValueDriverEditor = observer(() => {
   if (newConnectionValueDriver instanceof NewPureModelConnectionDriver) {
     return (
       <NewPureModelConnectionDriverEditor
-        newConnectionDriver={newConnectionDriver}
         newConnectionValueDriver={newConnectionValueDriver}
       />
     );
@@ -282,14 +276,10 @@ const NewConnectionDriverEditor = observer(() => {
           plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
         ).getExtraConnectionTypeOptions?.() ?? [],
     );
-  const connectionOptions = [
-    PURE_MODEL_CONNECTION,
-    FLAT_DATA_CONNECTION,
-    RELATIONAL_CONNECTION,
-  ]
+  const connectionOptions = Object.values(CONNECTION_TYPE)
     .map((typeOption) => ({
       label: prettyCONSTName(typeOption),
-      value: typeOption,
+      value: typeOption.toString(),
     }))
     .concat(extraOptionTypes);
   const onConnectionChange = (
