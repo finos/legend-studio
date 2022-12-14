@@ -17,11 +17,12 @@
 import type { PureGrammarTextSuggestion } from '@finos/legend-application';
 import {
   ELEMENT_PATH_DELIMITER,
+  extractElementNameFromPath,
   PARSER_SECTION_MARKER,
   PURE_ELEMENT_NAME,
   PURE_PARSER,
 } from '@finos/legend-graph';
-import { isNonNullable } from '@finos/legend-shared';
+import { isNonNullable, returnUndefOnError } from '@finos/legend-shared';
 import {
   languages as monacoLanguagesAPI,
   type IPosition,
@@ -237,15 +238,40 @@ export const getCopyrightHeaderSuggestions =
     return results;
   };
 
+const createFunctionInvocationSnippet = (
+  functionName: string,
+  functionPureId: string,
+  useArrowForm: boolean,
+): string => {
+  const fn = extractElementNameFromPath(functionPureId);
+  const functionType = returnUndefOnError(() =>
+    fn.substring(fn.indexOf('_'), fn.length - 1),
+  );
+  // NOTE: remove the return type and if use arrow function form, remove the first parameter
+  const parameters = functionType?.split('__') ?? [];
+  parameters.pop();
+  if (useArrowForm) {
+    parameters.shift();
+  }
+  return `${functionName}(${parameters
+    .map((param, idx) => `\${${idx + 1}}`)
+    .join(',')})`;
+};
+
 const elementSuggestionToCompletionItem = (
   suggestion: ElementSuggestion,
-  position: IPosition,
-  currentWord?: monacoEditorAPI.IWordAtPosition | undefined,
+  options?: {
+    preferArrowFunctionForm?: boolean;
+  },
 ): monacoLanguagesAPI.CompletionItem => {
   const type = suggestion.pureType;
   const insertText =
     type === ConceptType.FUNCTION || type === ConceptType.NATIVE_FUNCTION
-      ? `${suggestion.pureName}(\${1:})`
+      ? createFunctionInvocationSnippet(
+          suggestion.pureName,
+          suggestion.pureId,
+          Boolean(options?.preferArrowFunctionForm),
+        )
       : suggestion.pureName;
   const kind =
     type === ConceptType.PACKAGE
@@ -270,7 +296,7 @@ const elementSuggestionToCompletionItem = (
     filterText: suggestion.pureName,
     insertTextRules:
       monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
-    insertText: insertText,
+    insertText,
     // attempt to push package suggestions to the bottom of the list
     sortText:
       type === ConceptType.PACKAGE
@@ -282,6 +308,8 @@ const elementSuggestionToCompletionItem = (
 const INCOMPLETE_PATH_PATTERN =
   /(?<incompletePath>(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*::)+$)/;
 
+const ARROW_FUNCTION_USAGE_PATTERN = /->\s*(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)?$/;
+
 export const getIncompletePathSuggestions = async (
   position: IPosition,
   model: monacoEditorAPI.ITextModel,
@@ -291,22 +319,35 @@ export const getIncompletePathSuggestions = async (
     .getLineContent(position.lineNumber)
     .match(INCOMPLETE_PATH_PATTERN);
   if (incompletePathMatch?.groups?.incompletePath) {
-    const path = incompletePathMatch.groups.incompletePath.substring(
-      0,
-      incompletePathMatch.groups.incompletePath.length -
-        ELEMENT_PATH_DELIMITER.length,
+    const incompletePath = incompletePathMatch.groups.incompletePath;
+    const currentLine = model.getLineContent(position.lineNumber);
+    const isUsingArrowFunction = Boolean(
+      currentLine
+        .substring(0, currentLine.length - incompletePath.length)
+        .match(ARROW_FUNCTION_USAGE_PATTERN),
     );
+
     let suggestions: ElementSuggestion[] = [];
     try {
       suggestions = (
-        await editorStore.client.getSuggestionsForIncompletePath(path)
+        await editorStore.client.getSuggestionsForIncompletePath(
+          incompletePathMatch.groups.incompletePath.substring(
+            0,
+            incompletePathMatch.groups.incompletePath.length -
+              ELEMENT_PATH_DELIMITER.length,
+          ),
+          isUsingArrowFunction
+            ? [ConceptType.FUNCTION, ConceptType.NATIVE_FUNCTION]
+            : [],
+        )
       ).map((child) => deserialize(ElementSuggestion, child));
     } catch {
       // do nothing: provide no suggestions when error ocurred
     }
-
     return suggestions.map((suggestion) =>
-      elementSuggestionToCompletionItem(suggestion, position),
+      elementSuggestionToCompletionItem(suggestion, {
+        preferArrowFunctionForm: isUsingArrowFunction,
+      }),
     );
   }
 
@@ -314,7 +355,7 @@ export const getIncompletePathSuggestions = async (
 };
 
 const IMPORT_STATEMENT_PATTERN =
-  /import\s+(?:(?<importPath>(?:(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)::)*[a-zA-Z0-9_][a-zA-Z0-9_$]*)::*)/;
+  /^\s*import\s+(?:(?<importPath>(?:(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)::)*[a-zA-Z0-9_][a-zA-Z0-9_$]*)::*)/;
 
 const getCurrentSectionImportPaths = (
   position: IPosition,
@@ -347,16 +388,53 @@ export const getIdentifierSuggestions = async (
   editorStore: EditorStore,
 ): Promise<monacoLanguagesAPI.CompletionItem[]> => {
   const importPaths = getCurrentSectionImportPaths(position, model);
+  const isUsingArrowFunction = Boolean(
+    model
+      .getLineContent(position.lineNumber)
+      .match(ARROW_FUNCTION_USAGE_PATTERN),
+  );
+
   let suggestions: ElementSuggestion[] = [];
   try {
     suggestions = (
-      await editorStore.client.getSuggestionsForIdentifier(importPaths, [])
+      await editorStore.client.getSuggestionsForIdentifier(
+        importPaths,
+        isUsingArrowFunction
+          ? [ConceptType.FUNCTION, ConceptType.NATIVE_FUNCTION]
+          : [],
+      )
+    ).map((child) => deserialize(ElementSuggestion, child));
+  } catch {
+    // do nothing: provide no suggestions when error ocurred
+  }
+  return suggestions.map((suggestion) =>
+    elementSuggestionToCompletionItem(suggestion, {
+      preferArrowFunctionForm: isUsingArrowFunction,
+    }),
+  );
+};
+
+export const getArrowFunctionSuggestions = async (
+  position: IPosition,
+  model: monacoEditorAPI.ITextModel,
+  editorStore: EditorStore,
+): Promise<monacoLanguagesAPI.CompletionItem[]> => {
+  const importPaths = getCurrentSectionImportPaths(position, model);
+  let suggestions: ElementSuggestion[] = [];
+  try {
+    suggestions = (
+      await editorStore.client.getSuggestionsForIdentifier(importPaths, [
+        ConceptType.FUNCTION,
+        ConceptType.NATIVE_FUNCTION,
+      ])
     ).map((child) => deserialize(ElementSuggestion, child));
   } catch {
     // do nothing: provide no suggestions when error ocurred
   }
 
   return suggestions.map((suggestion) =>
-    elementSuggestionToCompletionItem(suggestion, position),
+    elementSuggestionToCompletionItem(suggestion, {
+      preferArrowFunctionForm: true,
+    }),
   );
 };

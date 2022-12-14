@@ -14,16 +14,46 @@
  * limitations under the License.
  */
 
-import { createModelSchema, primitive } from 'serializr';
+import { createModelSchema, list, optional, primitive } from 'serializr';
 
 export class ElementSuggestion {
   pureType!: string;
+  pureId!: string;
   pureName!: string;
   text!: string;
+  requiredClassProperties: string[] = [];
 }
 
 createModelSchema(ElementSuggestion, {
   pureType: primitive(),
+  pureId: primitive(),
   pureName: primitive(),
   text: primitive(),
+  requiredClassProperties: optional(list(primitive())),
+});
+
+export class AttributeSuggestion {
+  pureType!: string;
+  pureName!: string;
+  owner!: string;
+  ownerPureType!: string;
+}
+
+createModelSchema(AttributeSuggestion, {
+  pureType: primitive(),
+  pureName: primitive(),
+  owner: primitive(),
+  ownerPureType: primitive(),
+});
+
+export class ClassSuggestion {
+  pureId!: string;
+  pureName!: string;
+  requiredClassProperties: string[] = [];
+}
+
+createModelSchema(ClassSuggestion, {
+  pureId: primitive(),
+  pureName: primitive(),
+  requiredClassProperties: optional(list(primitive())),
 });

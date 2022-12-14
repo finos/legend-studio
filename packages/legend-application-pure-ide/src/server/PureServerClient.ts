@@ -59,7 +59,11 @@ import type {
   ChildPackageableElementInfo,
   MovePackageableElementsInput,
 } from './models/MovePackageableElements.js';
-import type { ElementSuggestion } from './models/Suggestion.js';
+import type {
+  AttributeSuggestion,
+  ClassSuggestion,
+  ElementSuggestion,
+} from './models/Suggestion.js';
 
 export class PureClient {
   private networkClient: NetworkClient;
@@ -405,10 +409,12 @@ export class PureClient {
   // ------------------------------------------- Suggestion -------------------------------------------
 
   getSuggestionsForIncompletePath = (
-    currentPath: string,
+    currentPackagePath: string,
+    types: string[],
   ): Promise<PlainObject<ElementSuggestion>[]> =>
     this.networkClient.post(`${this.baseUrl}/suggestion/incompletePath`, {
-      path: currentPath,
+      path: currentPackagePath,
+      types,
     });
 
   getSuggestionsForIdentifier = (
@@ -423,9 +429,18 @@ export class PureClient {
   getSuggestionsForAttribute = (
     importPaths: string[],
     path: string,
-  ): Promise<PlainObject<ElementSuggestion>[]> =>
+  ): Promise<PlainObject<AttributeSuggestion>[]> =>
     this.networkClient.post(`${this.baseUrl}/suggestion/attribute`, {
       importPaths,
       path,
+    });
+
+  getSuggestionsForClass = (
+    importPaths: string[],
+    packagePath: string | undefined,
+  ): Promise<PlainObject<ClassSuggestion>[]> =>
+    this.networkClient.post(`${this.baseUrl}/suggestion/attribute`, {
+      importPaths,
+      packagePath,
     });
 }

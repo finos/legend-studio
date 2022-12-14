@@ -351,9 +351,10 @@ const generateLanguageMonarch = (
 
         // special operators that uses type (e.g. constructor, cast)
         [
-          /([@^])(?:\s*)(@package?)(@identifier)(@generics?)(@multiplicity?)/,
+          /([@^])(\s*)(@package?)(@identifier)(@generics?)(@multiplicity?)/,
           [
             `${PURE_GRAMMAR_TOKEN.TYPE}.operator`,
+            PURE_GRAMMAR_TOKEN.WHITESPACE,
             PURE_GRAMMAR_TOKEN.PACKAGE,
             PURE_GRAMMAR_TOKEN.TYPE,
             PURE_GRAMMAR_TOKEN.GENERICS,
