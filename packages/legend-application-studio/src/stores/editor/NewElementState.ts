@@ -228,7 +228,14 @@ export abstract class NewConnectionValueDriver<T extends Connection> {
   }
 
   abstract get isValid(): boolean;
+  abstract getConnectionType(): string;
   abstract createConnection(store: Store): T;
+}
+
+export enum CONNECTION_TYPE {
+  PURE_MODEL_CONNECTION = 'MODEL_CONNECTION',
+  FLAT_DATA_CONNECTION = 'FLAT_DATA_CONNECTION',
+  RELATIONAL_CONNECTION = 'RELATIONAL_CONNECTION',
 }
 
 export class NewPureModelConnectionDriver extends NewConnectionValueDriver<PureModelConnection> {
@@ -257,6 +264,10 @@ export class NewPureModelConnectionDriver extends NewConnectionValueDriver<PureM
     return Boolean(this.class);
   }
 
+  getConnectionType(): string {
+    return CONNECTION_TYPE.PURE_MODEL_CONNECTION;
+  }
+
   createConnection(store: ModelStore): PureModelConnection {
     return new JsonModelConnection(
       PackageableElementExplicitReference.create(store),
@@ -280,6 +291,10 @@ export class NewFlatDataConnectionDriver extends NewConnectionValueDriver<FlatDa
     return true;
   }
 
+  getConnectionType(): string {
+    return CONNECTION_TYPE.FLAT_DATA_CONNECTION;
+  }
+
   createConnection(store: FlatData): FlatDataConnection {
     return new FlatDataConnection(
       PackageableElementExplicitReference.create(store),
@@ -300,6 +315,10 @@ export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDri
     return true;
   }
 
+  getConnectionType(): string {
+    return CONNECTION_TYPE.RELATIONAL_CONNECTION;
+  }
+
   createConnection(store: Store): RelationalDatabaseConnection {
     let selectedStore: Database;
     if (store instanceof Database) {
@@ -317,22 +336,8 @@ export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDri
   }
 }
 
-export enum CONNECTION_TYPE {
-  RELATIONAL = 'RELATIONAL',
-  MODEL_CONNECTION = 'MODEL_CONNECTION',
-}
-
-const getConnectionType = (
-  val: NewConnectionValueDriver<Connection>,
-): CONNECTION_TYPE => {
-  if (val instanceof NewPureModelConnectionDriver) {
-    return CONNECTION_TYPE.MODEL_CONNECTION;
-  }
-  return CONNECTION_TYPE.RELATIONAL;
-};
-
 export class NewPackageableConnectionDriver extends NewElementDriver<PackageableConnection> {
-  store?: Store | undefined;
+  store: Store;
   newConnectionValueDriver: NewConnectionValueDriver<Connection>;
 
   constructor(editorStore: EditorStore) {
@@ -345,35 +350,59 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
       changeConnectionState: action,
       isValid: computed,
     });
-
+    this.store = ModelStore.INSTANCE;
     this.newConnectionValueDriver =
-      this.getNewConnectionValueDriverBasedOnStore(undefined);
+      this.getNewConnectionValueDriverBasedOnStore(this.store);
   }
 
-  geDriverConnectionType(): CONNECTION_TYPE {
-    return getConnectionType(this.newConnectionValueDriver);
+  geDriverConnectionType(): string {
+    return this.newConnectionValueDriver.getConnectionType();
   }
 
-  changeConnectionState(val: CONNECTION_TYPE): void {
+  changeConnectionState(val: string): void {
     switch (val) {
-      case CONNECTION_TYPE.MODEL_CONNECTION:
+      case CONNECTION_TYPE.PURE_MODEL_CONNECTION:
         this.newConnectionValueDriver = new NewPureModelConnectionDriver(
           this.editorStore,
         );
         return;
-      case CONNECTION_TYPE.RELATIONAL:
+      case CONNECTION_TYPE.FLAT_DATA_CONNECTION:
+        this.newConnectionValueDriver = new NewFlatDataConnectionDriver(
+          this.editorStore,
+        );
+        return;
+      case CONNECTION_TYPE.RELATIONAL_CONNECTION:
         this.newConnectionValueDriver =
           new NewRelationalDatabaseConnectionDriver(this.editorStore);
         return;
-      default:
-        return;
+      default: {
+        const extraNewConnectionDriverCreators = this.editorStore.pluginManager
+          .getApplicationPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
+              ).getExtraNewConnectionDriverCreators?.() ?? [],
+          );
+        for (const creator of extraNewConnectionDriverCreators) {
+          const driver = creator(this.editorStore, val);
+          if (driver) {
+            this.newConnectionValueDriver = driver;
+            return;
+          }
+        }
+        throw new UnsupportedOperationError(
+          `Can't create new connection driver for type: no compatible creator available from plugins`,
+          val,
+        );
+      }
     }
   }
 
   getNewConnectionValueDriverBasedOnStore(
-    store: Store | undefined,
+    store: Store,
   ): NewConnectionValueDriver<Connection> {
-    if (store === undefined) {
+    if (store instanceof ModelStore) {
       return new NewPureModelConnectionDriver(this.editorStore);
     } else if (store instanceof FlatData) {
       return new NewFlatDataConnectionDriver(this.editorStore);
@@ -400,7 +429,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
     );
   }
 
-  setStore(store: Store | undefined): void {
+  setStore(store: Store): void {
     this.store = store;
     this.newConnectionValueDriver =
       this.getNewConnectionValueDriverBasedOnStore(store);
@@ -414,7 +443,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
     const connection = new PackageableConnection(name);
     packageableConnection_setConnectionValue(
       connection,
-      this.newConnectionValueDriver.createConnection(ModelStore.INSTANCE),
+      this.newConnectionValueDriver.createConnection(this.store),
       this.editorStore.changeDetectionState.observerContext,
     ); // default to model store
     return connection;

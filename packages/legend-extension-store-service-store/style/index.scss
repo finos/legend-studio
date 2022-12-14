@@ -470,3 +470,59 @@
     height: 2rem;
   }
 }
+
+.service-store-connection-editor {
+  padding: 2rem;
+
+  & > div:last-child {
+    margin-bottom: 0;
+  }
+
+  &__section {
+    cursor: default;
+    margin: 0.5rem 0 3rem;
+  }
+
+  &__section__header__label {
+    @include flexVCenter;
+
+    font-weight: 500;
+    color: var(--color-light-grey-50);
+    margin-bottom: 0.5rem;
+    line-height: 2rem;
+    cursor: default;
+  }
+
+  &__section__header__prompt {
+    word-break: break-word;
+    font-size: 1.4rem;
+    color: var(--color-light-grey-400);
+    line-height: 2rem;
+    margin-bottom: 0.8rem;
+    cursor: default;
+  }
+
+  &__section__textarea {
+    width: 100%;
+    min-width: 5rem;
+    max-width: 45rem;
+    background: var(--color-dark-grey-100);
+    color: var(--color-light-grey-200);
+    padding: 1rem;
+    border-radius: 0.1rem;
+    height: 4rem !important;
+    resize: none;
+    line-height: 2rem;
+    border: 0.1rem solid var(--color-dark-grey-100);
+
+    &:focus {
+      border: 0.1rem solid var(--color-blue-200);
+      outline: none;
+    }
+
+    &[disabled] {
+      color: var(--color-dark-grey-500);
+      cursor: not-allowed;
+    }
+  }
+}
