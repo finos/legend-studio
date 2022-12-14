@@ -208,6 +208,56 @@
       margin-left: 0.5rem;
     }
   }
+
+  &__generate-btn {
+    @include flexVCenter;
+
+    height: 100%;
+    width: 10rem;
+    padding-right: 0.5rem;
+
+    &__label {
+      @include flexVCenter;
+
+      height: 2.2rem;
+      background: var(--color-blue-200);
+      padding: 1rem;
+      border-radius: 0.2rem;
+    }
+
+    &__label__icon {
+      font-size: 1.6rem;
+      color: var(--color-light-grey-180);
+    }
+
+    &__label__title {
+      margin-left: 0.5rem;
+      color: var(--color-light-grey-180);
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
+    &__label:hover &__label__icon,
+    &__label:hover &__label__title,
+    &__dropdown-btn:hover svg {
+      color: var(--color-light-grey-50);
+    }
+
+    &__option {
+      width: 12rem;
+    }
+
+    &[disabled] &__label,
+    &[disabled] &__dropdown-btn {
+      background: var(--color-dark-grey-250);
+    }
+
+    &[disabled] &__label__icon,
+    &[disabled] &__label__title,
+    &[disabled] &__dropdown-btn svg {
+      color: var(--color-dark-grey-500);
+    }
+  }
 }
 
 .element-generation-editor {

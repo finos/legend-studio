@@ -51,7 +51,7 @@ import {
 } from '@finos/legend-graph';
 import {
   configurationProperty_setValue,
-  fileGeneration_addConfigurationProperty,
+  configurationProperty_addConfigurationProperty,
   fileGeneration_addScopeElement,
   fileGeneration_deleteScopeElement,
 } from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
@@ -294,7 +294,10 @@ export class FileGenerationState {
             generationProperty.name,
             newValue,
           );
-          fileGeneration_addConfigurationProperty(fileGeneration, newItem);
+          configurationProperty_addConfigurationProperty(
+            fileGeneration.configurationProperties,
+            newItem,
+          );
         }
       }
     } else {
@@ -317,7 +320,10 @@ export class FileGenerationState {
             generationProperty.name,
             newConfigValue,
           );
-          fileGeneration_addConfigurationProperty(fileGeneration, newItem);
+          configurationProperty_addConfigurationProperty(
+            fileGeneration.configurationProperties,
+            newItem,
+          );
         }
       } else {
         fileGeneration.configurationProperties =
