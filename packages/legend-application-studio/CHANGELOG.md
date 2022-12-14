@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 22.1.5
+
+### Patch Changes
+
+- [#1775](https://github.com/finos/legend-studio/pull/1775) [`0c8443b7b`](https://github.com/finos/legend-studio/commit/0c8443b7b8eb05a6a3cb1327899e4ca7e7bb5812) ([@xannem](https://github.com/xannem)) - fix: model importer tab behavior
+
 ## 22.1.4
 
 ### Patch Changes
