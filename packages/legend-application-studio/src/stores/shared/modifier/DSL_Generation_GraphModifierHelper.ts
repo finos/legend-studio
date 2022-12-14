@@ -43,18 +43,19 @@ export const configurationProperty_setValue = action(
     cp.value = value;
   },
 );
-export const fileGeneration_setType = action(
-  (fg: FileGenerationSpecification, value: string): void => {
-    fg.type = value;
+
+export const configurationProperty_addConfigurationProperty = action(
+  (
+    configurationProperties: ConfigurationProperty[],
+    cp: ConfigurationProperty,
+  ): void => {
+    addUniqueEntry(configurationProperties, observe_ConfigurationProperty(cp));
   },
 );
 
-export const fileGeneration_addConfigurationProperty = action(
-  (fg: FileGenerationSpecification, cp: ConfigurationProperty): void => {
-    addUniqueEntry(
-      fg.configurationProperties,
-      observe_ConfigurationProperty(cp),
-    );
+export const fileGeneration_setType = action(
+  (fg: FileGenerationSpecification, value: string): void => {
+    fg.type = value;
   },
 );
 
