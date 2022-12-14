@@ -30,6 +30,8 @@ export enum ConceptType {
   // PRIMITIVE = 'Primitive',
   PACKAGE = 'Package',
   PROFILE = 'Profile',
+  TAG = 'Tag',
+  STEREOTYPE = 'Stereotype',
   CLASS = 'Class',
   ASSOCIATION = 'Association',
   PROPERTY = 'Property',

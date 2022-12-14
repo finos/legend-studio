@@ -51,8 +51,14 @@ import {
   collectExtraInlineSnippetSuggestions,
   collectParserElementSnippetSuggestions,
   collectParserKeywordSuggestions,
+  getArrowFunctionSuggestions,
+  getAttributeSuggestions,
+  getCastingClassSuggestions,
+  getConstructorClassSuggestions,
   getCopyrightHeaderSuggestions,
-} from '../../../stores/FileEditorUtils.js';
+  getIdentifierSuggestions,
+  getIncompletePathSuggestions,
+} from '../../../stores/PureFileEditorUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { FileCoordinate } from '../../../server/models/File.js';
@@ -142,12 +148,15 @@ const RenameConceptPrompt = observer(
 export const PureFileEditor = observer(
   (props: { editorState: FileEditorState }) => {
     const { editorState } = props;
-    const suggestionProviderDisposer = useRef<IDisposable | undefined>(
-      undefined,
-    );
     const definitionProviderDisposer = useRef<IDisposable | undefined>(
       undefined,
     );
+    const pureConstructSuggestionProviderDisposer = useRef<
+      IDisposable | undefined
+    >(undefined);
+    const pureIdentifierSuggestionProviderDisposer = useRef<
+      IDisposable | undefined
+    >(undefined);
     const textInputRef = useRef<HTMLDivElement>(null);
     const [editor, setEditor] = useState<
       monacoEditorAPI.IStandaloneCodeEditor | undefined
@@ -155,7 +164,6 @@ export const PureFileEditor = observer(
     const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const content = editorState.file.content;
     const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
     useEffect(() => {
@@ -294,6 +302,7 @@ export const PureFileEditor = observer(
         newEditor.onDidChangeCursorSelection(() => {
           editorState.textEditorState.notifyCursorObserver();
         });
+
         // Restore the editor model and view state
         newEditor.setModel(editorState.textEditorState.model);
         if (editorState.textEditorState.viewState) {
@@ -304,14 +313,6 @@ export const PureFileEditor = observer(
         setEditor(newEditor);
       }
     }, [editorStore, applicationStore, editorState, editor]);
-
-    if (editor) {
-      // Set the value of the editor
-      const currentValue = editor.getValue();
-      if (currentValue !== content) {
-        editor.setValue(content);
-      }
-    }
 
     const textTokens = editor
       ? monacoEditorAPI.tokenize(editor.getValue(), EDITOR_LANGUAGE.PURE)
@@ -324,9 +325,10 @@ export const PureFileEditor = observer(
           // where sometimes, hovering the mouse on the right half of the last character of a definition token
           // and then hitting Ctrl/Cmd key will not be trigger definition provider. We're not quite sure what
           // to do with that for the time being.
-          const lineTokens = guaranteeNonNullable(
-            textTokens[position.lineNumber - 1],
-          );
+          const lineTokens = textTokens[position.lineNumber - 1];
+          if (!lineTokens) {
+            return [];
+          }
           let currentToken: Token | undefined = undefined;
           let currentTokenRange: IRange | undefined = undefined;
           for (let i = 1; i < lineTokens.length; ++i) {
@@ -369,47 +371,122 @@ export const PureFileEditor = observer(
         },
       });
 
-    // suggestion
-    suggestionProviderDisposer.current?.dispose();
-    suggestionProviderDisposer.current =
+    // suggestions
+    pureConstructSuggestionProviderDisposer.current?.dispose();
+    pureConstructSuggestionProviderDisposer.current =
       monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
-        // NOTE: we need to specify this to show suggestions for section
-        // because by default, only alphanumeric characters trigger completion item provider
-        // See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionContext.html#triggerCharacter
-        // See https://github.com/microsoft/monaco-editor/issues/2530#issuecomment-861757198
-        triggerCharacters: ['#'],
-        provideCompletionItems: (model, position) => {
+        triggerCharacters: ['#', ':', '>', '.', '@', '^'],
+        provideCompletionItems: async (model, position, context) => {
           let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
 
-          suggestions = suggestions.concat(getCopyrightHeaderSuggestions());
+          if (
+            context.triggerKind ===
+            monacoLanguagesAPI.CompletionTriggerKind.TriggerCharacter
+          ) {
+            switch (context.triggerCharacter) {
+              case '#': {
+                suggestions = suggestions.concat(
+                  getParserKeywordSuggestions(
+                    position,
+                    model,
+                    collectParserKeywordSuggestions(),
+                  ),
+                );
+                break;
+              }
+              case ':': {
+                suggestions = suggestions.concat(
+                  await getIncompletePathSuggestions(
+                    position,
+                    model,
+                    editorStore,
+                  ),
+                );
+                break;
+              }
+              case '>': {
+                suggestions = suggestions.concat(
+                  await getArrowFunctionSuggestions(
+                    position,
+                    model,
+                    editorStore,
+                  ),
+                );
+                break;
+              }
+              case '.': {
+                suggestions = suggestions.concat(
+                  await getAttributeSuggestions(position, model, editorStore),
+                );
+                break;
+              }
+              case '^': {
+                suggestions = suggestions.concat(
+                  await getConstructorClassSuggestions(
+                    position,
+                    model,
+                    editorStore,
+                  ),
+                );
+                break;
+              }
+              case '@': {
+                suggestions = suggestions.concat(
+                  await getCastingClassSuggestions(
+                    position,
+                    model,
+                    editorStore,
+                  ),
+                );
+                break;
+              }
+              default:
+                break;
+            }
+          }
 
-          // suggestions for parser keyword
-          suggestions = suggestions.concat(
-            getParserKeywordSuggestions(
-              position,
-              model,
-              collectParserKeywordSuggestions(),
-            ),
-          );
+          return { suggestions };
+        },
+      });
 
-          // suggestions for parser element snippets
-          suggestions = suggestions.concat(
-            getParserElementSnippetSuggestions(
-              position,
-              model,
-              (parserName: string) =>
-                collectParserElementSnippetSuggestions(parserName),
-            ),
-          );
+    pureIdentifierSuggestionProviderDisposer.current?.dispose();
+    pureIdentifierSuggestionProviderDisposer.current =
+      monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
+        triggerCharacters: [],
+        provideCompletionItems: async (model, position, context) => {
+          let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
 
-          // add inline code snippet suggestions
-          suggestions = suggestions.concat(
-            getInlineSnippetSuggestions(
-              position,
-              model,
-              collectExtraInlineSnippetSuggestions(),
-            ),
-          );
+          if (
+            context.triggerKind ===
+            monacoLanguagesAPI.CompletionTriggerKind.Invoke
+          ) {
+            // copyright header
+            suggestions = suggestions.concat(getCopyrightHeaderSuggestions());
+
+            // suggestions for parser element snippets
+            suggestions = suggestions.concat(
+              getParserElementSnippetSuggestions(
+                position,
+                model,
+                (parserName: string) =>
+                  collectParserElementSnippetSuggestions(parserName),
+              ),
+            );
+
+            // code snippet suggestions
+            suggestions = suggestions.concat(
+              getInlineSnippetSuggestions(
+                position,
+                model,
+                collectExtraInlineSnippetSuggestions(),
+              ),
+            );
+
+            // identifier suggestions (fetched asynchronously)
+            suggestions = suggestions.concat(
+              await getIdentifierSuggestions(position, model, editorStore),
+            );
+          }
 
           return { suggestions };
         },
@@ -480,7 +557,9 @@ export const PureFileEditor = observer(
         }
 
         definitionProviderDisposer.current?.dispose();
-        suggestionProviderDisposer.current?.dispose();
+
+        pureConstructSuggestionProviderDisposer.current?.dispose();
+        pureIdentifierSuggestionProviderDisposer.current?.dispose();
       },
       [editorState, editor],
     );

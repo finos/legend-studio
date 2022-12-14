@@ -252,7 +252,7 @@ const generateLanguageMonarch = (
     octaldigits: /[0-7]+(_+[0-7]+)*/,
     binarydigits: /[0-1]+(_+[0-1]+)*/,
     hexdigits: /[[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
-    multiplicity: /\[(?:\d+(?:\.\.(?:\d+|\*|))?|\*)\]/,
+    multiplicity: /\[(?:[a-zA-Z0-9]+(?:\.\.(?:[a-zA-Z0-9]+|\*|))?|\*)\]/,
     package: /(?:[\w_]+::)+/,
     generics: /<.+>/,
     date: /%-?\d+(?:-\d+(?:-\d+(?:T(?:\d+(?::\d+(?::\d+(?:.\d+)?)?)?)(?:[+-][0-9]{4})?)))/,
@@ -351,9 +351,10 @@ const generateLanguageMonarch = (
 
         // special operators that uses type (e.g. constructor, cast)
         [
-          /([@^])(?:\s*)(@package?)(@identifier)(@generics?)(@multiplicity?)/,
+          /([@^])(\s*)(@package?)(@identifier)(@generics?)(@multiplicity?)/,
           [
             `${PURE_GRAMMAR_TOKEN.TYPE}.operator`,
+            PURE_GRAMMAR_TOKEN.WHITESPACE,
             PURE_GRAMMAR_TOKEN.PACKAGE,
             PURE_GRAMMAR_TOKEN.TYPE,
             PURE_GRAMMAR_TOKEN.GENERICS,
