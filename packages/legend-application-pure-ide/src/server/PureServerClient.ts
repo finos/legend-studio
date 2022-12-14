@@ -437,10 +437,8 @@ export class PureClient {
 
   getSuggestionsForClass = (
     importPaths: string[],
-    packagePath: string | undefined,
   ): Promise<PlainObject<ClassSuggestion>[]> =>
     this.networkClient.post(`${this.baseUrl}/suggestion/class`, {
       importPaths,
-      packagePath,
     });
 }

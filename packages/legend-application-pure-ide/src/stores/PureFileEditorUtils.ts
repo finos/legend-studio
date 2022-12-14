@@ -242,6 +242,25 @@ export const getCopyrightHeaderSuggestions =
     return results;
   };
 
+const constructorClassSuggestionToCompletionItem = (suggestion: {
+  pureId: string;
+  pureName: string;
+  requiredClassProperties: string[];
+}): monacoLanguagesAPI.CompletionItem =>
+  ({
+    label: {
+      label: suggestion.pureName,
+      description: suggestion.pureId,
+    },
+    kind: monacoLanguagesAPI.CompletionItemKind.Class,
+    filterText: suggestion.pureName,
+    insertTextRules:
+      monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+    insertText: `${suggestion.pureName}(${suggestion.requiredClassProperties
+      .map((property, idx) => `${property}=\${${idx + 1}:}`)
+      .join(',')})`,
+  } as monacoLanguagesAPI.CompletionItem);
+
 const createFunctionInvocationSnippet = (
   functionName: string,
   functionPureId: string,
@@ -258,7 +277,7 @@ const createFunctionInvocationSnippet = (
     parameters.shift();
   }
   return `${functionName}(${parameters
-    .map((param, idx) => `\${${idx + 1}}`)
+    .map((param, idx) => `\${${idx + 1}:}`)
     .join(',')})`;
 };
 
@@ -312,7 +331,10 @@ const elementSuggestionToCompletionItem = (
 const INCOMPLETE_PATH_PATTERN =
   /(?<incompletePath>(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*::)+$)/;
 
-const ARROW_FUNCTION_USAGE_PATTERN = /->\s*(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)?$/;
+const ARROW_FUNCTION_USAGE_WITH_INCOMPLETE_PATH_PATTERN =
+  /->\s*(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*::)+$/;
+const CONSTRUCTOR_USAGE_WITH_INCOMPLETE_PATH_PATTERN =
+  /\^\s*(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*::)+$/;
 
 export const getIncompletePathSuggestions = async (
   position: IPosition,
@@ -324,12 +346,17 @@ export const getIncompletePathSuggestions = async (
     .substring(0, position.column - 1)
     .match(INCOMPLETE_PATH_PATTERN);
   if (incompletePathMatch?.groups?.incompletePath) {
-    const incompletePath = incompletePathMatch.groups.incompletePath;
-    const currentLine = model.getLineContent(position.lineNumber);
     const isUsingArrowFunction = Boolean(
-      currentLine
-        .substring(0, currentLine.length - incompletePath.length)
-        .match(ARROW_FUNCTION_USAGE_PATTERN),
+      model
+        .getLineContent(position.lineNumber)
+        .substring(0, position.column - 1)
+        .match(ARROW_FUNCTION_USAGE_WITH_INCOMPLETE_PATH_PATTERN),
+    );
+    const isUsingConstructor = Boolean(
+      model
+        .getLineContent(position.lineNumber)
+        .substring(0, position.column - 1)
+        .match(CONSTRUCTOR_USAGE_WITH_INCOMPLETE_PATH_PATTERN),
     );
 
     let suggestions: ElementSuggestion[] = [];
@@ -341,7 +368,9 @@ export const getIncompletePathSuggestions = async (
             incompletePathMatch.groups.incompletePath.length -
               ELEMENT_PATH_DELIMITER.length,
           ),
-          isUsingArrowFunction
+          isUsingConstructor
+            ? [ConceptType.CLASS]
+            : isUsingArrowFunction
             ? [ConceptType.FUNCTION, ConceptType.NATIVE_FUNCTION]
             : [],
         )
@@ -350,9 +379,11 @@ export const getIncompletePathSuggestions = async (
       // do nothing: provide no suggestions when error ocurred
     }
     return suggestions.map((suggestion) =>
-      elementSuggestionToCompletionItem(suggestion, {
-        preferArrowFunctionForm: isUsingArrowFunction,
-      }),
+      isUsingConstructor
+        ? constructorClassSuggestionToCompletionItem(suggestion)
+        : elementSuggestionToCompletionItem(suggestion, {
+            preferArrowFunctionForm: isUsingArrowFunction,
+          }),
     );
   }
 
@@ -387,6 +418,9 @@ const getCurrentSectionImportPaths = (
     .filter(isNonNullable);
 };
 
+const ARROW_FUNCTION_USAGE_PATTERN = /->\s*(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)?$/;
+const CONSTRUCTOR_USAGE_PATTERN = /\^\s*(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)?$/;
+
 export const getIdentifierSuggestions = async (
   position: IPosition,
   model: monacoEditorAPI.ITextModel,
@@ -396,7 +430,14 @@ export const getIdentifierSuggestions = async (
   const isUsingArrowFunction = Boolean(
     model
       .getLineContent(position.lineNumber)
+      .substring(0, position.column - 1)
       .match(ARROW_FUNCTION_USAGE_PATTERN),
+  );
+  const isUsingConstructor = Boolean(
+    model
+      .getLineContent(position.lineNumber)
+      .substring(0, position.column - 1)
+      .match(CONSTRUCTOR_USAGE_PATTERN),
   );
 
   let suggestions: ElementSuggestion[] = [];
@@ -404,7 +445,9 @@ export const getIdentifierSuggestions = async (
     suggestions = (
       await editorStore.client.getSuggestionsForIdentifier(
         importPaths,
-        isUsingArrowFunction
+        isUsingConstructor
+          ? [ConceptType.CLASS]
+          : isUsingArrowFunction
           ? [ConceptType.FUNCTION, ConceptType.NATIVE_FUNCTION]
           : [],
       )
@@ -413,9 +456,11 @@ export const getIdentifierSuggestions = async (
     // do nothing: provide no suggestions when error ocurred
   }
   return suggestions.map((suggestion) =>
-    elementSuggestionToCompletionItem(suggestion, {
-      preferArrowFunctionForm: isUsingArrowFunction,
-    }),
+    isUsingConstructor
+      ? constructorClassSuggestionToCompletionItem(suggestion)
+      : elementSuggestionToCompletionItem(suggestion, {
+          preferArrowFunctionForm: isUsingArrowFunction,
+        }),
   );
 };
 
@@ -512,21 +557,6 @@ export const getAttributeSuggestions = async (
   return [];
 };
 
-const constructorClassSuggestionToCompletionItem = (
-  suggestion: ClassSuggestion,
-): monacoLanguagesAPI.CompletionItem =>
-  ({
-    label: {
-      label: suggestion.pureName,
-      description: suggestion.pureId,
-    },
-    kind: monacoLanguagesAPI.CompletionItemKind.Class,
-    filterText: suggestion.pureName,
-    insertTextRules:
-      monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
-    insertText: suggestion.pureName,
-  } as monacoLanguagesAPI.CompletionItem);
-
 export const getConstructorClassSuggestions = async (
   position: IPosition,
   model: monacoEditorAPI.ITextModel,
@@ -536,7 +566,7 @@ export const getConstructorClassSuggestions = async (
   let suggestions: ClassSuggestion[] = [];
   try {
     suggestions = (
-      await editorStore.client.getSuggestionsForClass(importPaths, undefined)
+      await editorStore.client.getSuggestionsForClass(importPaths)
     ).map((child) => deserialize(ClassSuggestion, child));
   } catch {
     // do nothing: provide no suggestions when error ocurred
@@ -571,7 +601,7 @@ export const getCastingClassSuggestions = async (
   let suggestions: ClassSuggestion[] = [];
   try {
     suggestions = (
-      await editorStore.client.getSuggestionsForClass(importPaths, undefined)
+      await editorStore.client.getSuggestionsForClass(importPaths)
     ).map((child) => deserialize(ClassSuggestion, child));
   } catch {
     // do nothing: provide no suggestions when error ocurred
