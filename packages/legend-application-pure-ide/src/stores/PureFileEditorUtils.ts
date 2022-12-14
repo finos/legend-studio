@@ -30,7 +30,11 @@ import {
 } from 'monaco-editor';
 import { deserialize } from 'serializr';
 import { ConceptType } from '../server/models/ConceptTree.js';
-import { ElementSuggestion } from '../server/models/Suggestion.js';
+import {
+  AttributeSuggestion,
+  ClassSuggestion,
+  ElementSuggestion,
+} from '../server/models/Suggestion.js';
 import type { EditorStore } from './EditorStore.js';
 import {
   BLANK_CLASS_SNIPPET,
@@ -317,6 +321,7 @@ export const getIncompletePathSuggestions = async (
 ): Promise<monacoLanguagesAPI.CompletionItem[]> => {
   const incompletePathMatch = model
     .getLineContent(position.lineNumber)
+    .substring(0, position.column - 1)
     .match(INCOMPLETE_PATH_PATTERN);
   if (incompletePathMatch?.groups?.incompletePath) {
     const incompletePath = incompletePathMatch.groups.incompletePath;
@@ -436,5 +441,143 @@ export const getArrowFunctionSuggestions = async (
     elementSuggestionToCompletionItem(suggestion, {
       preferArrowFunctionForm: true,
     }),
+  );
+};
+
+const attributeSuggestionToCompletionItem = (
+  suggestion: AttributeSuggestion,
+): monacoLanguagesAPI.CompletionItem => {
+  const type = suggestion.pureType;
+  const insertText =
+    type === ConceptType.PROPERTY || type === ConceptType.QUALIFIED_PROPERTY
+      ? `${suggestion.pureName}(\${1:})`
+      : suggestion.pureName;
+  const kind =
+    type === ConceptType.PROPERTY
+      ? monacoLanguagesAPI.CompletionItemKind.Property
+      : type === ConceptType.QUALIFIED_PROPERTY
+      ? monacoLanguagesAPI.CompletionItemKind.Method
+      : type === ConceptType.TAG
+      ? monacoLanguagesAPI.CompletionItemKind.Constant
+      : type === ConceptType.STEREOTYPE
+      ? monacoLanguagesAPI.CompletionItemKind.Value
+      : type === ConceptType.ENUM_VALUE
+      ? monacoLanguagesAPI.CompletionItemKind.Enum
+      : monacoLanguagesAPI.CompletionItemKind.Value;
+  return {
+    label: {
+      label: suggestion.pureName,
+      description: `${suggestion.owner}.${suggestion.pureName}`,
+    },
+    kind,
+    filterText: suggestion.pureName,
+    insertTextRules:
+      monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+    insertText,
+  } as monacoLanguagesAPI.CompletionItem;
+};
+
+const ATTRIBUTE_ACCESSOR_PATTERN =
+  /^(?<owner>(?:(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)::)*[a-zA-Z0-9_][a-zA-Z0-9_$]*)\s*.$/;
+
+export const getAttributeSuggestions = async (
+  position: IPosition,
+  model: monacoEditorAPI.ITextModel,
+  editorStore: EditorStore,
+): Promise<monacoLanguagesAPI.CompletionItem[]> => {
+  const attributeAccessorMatch = model
+    .getLineContent(position.lineNumber)
+    .substring(0, position.column - 1)
+    .match(ATTRIBUTE_ACCESSOR_PATTERN);
+  const importPaths = getCurrentSectionImportPaths(position, model);
+
+  if (attributeAccessorMatch?.groups?.owner) {
+    let suggestions: AttributeSuggestion[] = [];
+    try {
+      suggestions = (
+        await editorStore.client.getSuggestionsForAttribute(
+          importPaths,
+          attributeAccessorMatch.groups.owner,
+        )
+      ).map((child) => deserialize(AttributeSuggestion, child));
+    } catch {
+      // do nothing: provide no suggestions when error ocurred
+    }
+
+    return suggestions.map((suggestion) =>
+      attributeSuggestionToCompletionItem(suggestion),
+    );
+  }
+
+  return [];
+};
+
+const constructorClassSuggestionToCompletionItem = (
+  suggestion: ClassSuggestion,
+): monacoLanguagesAPI.CompletionItem =>
+  ({
+    label: {
+      label: suggestion.pureName,
+      description: suggestion.pureId,
+    },
+    kind: monacoLanguagesAPI.CompletionItemKind.Class,
+    filterText: suggestion.pureName,
+    insertTextRules:
+      monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+    insertText: suggestion.pureName,
+  } as monacoLanguagesAPI.CompletionItem);
+
+export const getConstructorClassSuggestions = async (
+  position: IPosition,
+  model: monacoEditorAPI.ITextModel,
+  editorStore: EditorStore,
+): Promise<monacoLanguagesAPI.CompletionItem[]> => {
+  const importPaths = getCurrentSectionImportPaths(position, model);
+  let suggestions: ClassSuggestion[] = [];
+  try {
+    suggestions = (
+      await editorStore.client.getSuggestionsForClass(importPaths, undefined)
+    ).map((child) => deserialize(ClassSuggestion, child));
+  } catch {
+    // do nothing: provide no suggestions when error ocurred
+  }
+
+  return suggestions.map((suggestion) =>
+    constructorClassSuggestionToCompletionItem(suggestion),
+  );
+};
+
+const castingClassSuggestionToCompletionItem = (
+  suggestion: ClassSuggestion,
+): monacoLanguagesAPI.CompletionItem =>
+  ({
+    label: {
+      label: suggestion.pureName,
+      description: suggestion.pureId,
+    },
+    kind: monacoLanguagesAPI.CompletionItemKind.Class,
+    filterText: suggestion.pureName,
+    insertTextRules:
+      monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+    insertText: suggestion.pureName,
+  } as monacoLanguagesAPI.CompletionItem);
+
+export const getCastingClassSuggestions = async (
+  position: IPosition,
+  model: monacoEditorAPI.ITextModel,
+  editorStore: EditorStore,
+): Promise<monacoLanguagesAPI.CompletionItem[]> => {
+  const importPaths = getCurrentSectionImportPaths(position, model);
+  let suggestions: ClassSuggestion[] = [];
+  try {
+    suggestions = (
+      await editorStore.client.getSuggestionsForClass(importPaths, undefined)
+    ).map((child) => deserialize(ClassSuggestion, child));
+  } catch {
+    // do nothing: provide no suggestions when error ocurred
+  }
+
+  return suggestions.map((suggestion) =>
+    castingClassSuggestionToCompletionItem(suggestion),
   );
 };
