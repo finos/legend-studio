@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 22.1.4
+
+### Patch Changes
+
+- [`a68882116`](https://github.com/finos/legend-studio/commit/a68882116104914fb1f0edfe45d818d0b35f350a) ([@gayathrir11](https://github.com/gayathrir11)) - Fix bug when opening dependency element does not open corresponding element tree node in the dependency explorer
+
 ## 22.1.3
 
 ## 22.1.2
