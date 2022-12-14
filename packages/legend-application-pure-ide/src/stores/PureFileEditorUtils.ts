@@ -205,6 +205,11 @@ export const collectExtraInlineSnippetSuggestions =
       description: '(io)',
       insertText: `println(\${1:})`,
     },
+    {
+      text: 'NULL',
+      description: '(nullish value)',
+      insertText: `[]`,
+    },
   ];
 
 export const getCopyrightHeaderSuggestions =
