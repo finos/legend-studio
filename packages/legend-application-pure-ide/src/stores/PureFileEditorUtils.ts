@@ -17,21 +17,19 @@
 import type { PureGrammarTextSuggestion } from '@finos/legend-application';
 import {
   ELEMENT_PATH_DELIMITER,
+  PARSER_SECTION_MARKER,
   PURE_ELEMENT_NAME,
   PURE_PARSER,
 } from '@finos/legend-graph';
+import { isNonNullable } from '@finos/legend-shared';
 import {
   languages as monacoLanguagesAPI,
   type IPosition,
   type editor as monacoEditorAPI,
 } from 'monaco-editor';
 import { deserialize } from 'serializr';
-import {
-  ConceptNode,
-  ConceptType,
-  ElementConceptAttribute,
-  PropertyConceptAttribute,
-} from '../server/models/ConceptTree.js';
+import { ConceptType } from '../server/models/ConceptTree.js';
+import { ElementSuggestion } from '../server/models/Suggestion.js';
 import type { EditorStore } from './EditorStore.js';
 import {
   BLANK_CLASS_SNIPPET,
@@ -234,80 +232,126 @@ export const getCopyrightHeaderSuggestions =
     return results;
   };
 
+const elementSuggestionToCompletionItem = (
+  suggestion: ElementSuggestion,
+  position: IPosition,
+  currentWord?: monacoEditorAPI.IWordAtPosition | undefined,
+): monacoLanguagesAPI.CompletionItem => {
+  const type = suggestion.pureType;
+  const insertText =
+    type === ConceptType.FUNCTION || type === ConceptType.NATIVE_FUNCTION
+      ? `${suggestion.pureName}(\${1:})`
+      : suggestion.pureName;
+  const kind =
+    type === ConceptType.PACKAGE
+      ? monacoLanguagesAPI.CompletionItemKind.Folder
+      : type === ConceptType.CLASS
+      ? monacoLanguagesAPI.CompletionItemKind.Class
+      : type === ConceptType.FUNCTION
+      ? monacoLanguagesAPI.CompletionItemKind.Function
+      : type === ConceptType.ENUMERATION
+      ? monacoLanguagesAPI.CompletionItemKind.Enum
+      : type === ConceptType.PROFILE
+      ? monacoLanguagesAPI.CompletionItemKind.Module
+      : type === ConceptType.ASSOCIATION
+      ? monacoLanguagesAPI.CompletionItemKind.Interface
+      : monacoLanguagesAPI.CompletionItemKind.Value;
+  return {
+    label: {
+      label: suggestion.pureName,
+      description: suggestion.text,
+    },
+    kind,
+    filterText: suggestion.pureName,
+    insertTextRules:
+      monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+    insertText: insertText,
+    // attempt to push package suggestions to the bottom of the list
+    sortText:
+      type === ConceptType.PACKAGE
+        ? `zzzz_${suggestion.text}`
+        : suggestion.text,
+  } as monacoLanguagesAPI.CompletionItem;
+};
+
+const INCOMPLETE_PATH_PATTERN =
+  /(?<incompletePath>(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*::)+$)/;
+
 export const getIncompletePathSuggestions = async (
   position: IPosition,
   model: monacoEditorAPI.ITextModel,
   editorStore: EditorStore,
 ): Promise<monacoLanguagesAPI.CompletionItem[]> => {
-  const incompletePath = model
+  const incompletePathMatch = model
     .getLineContent(position.lineNumber)
-    .match(/(?<incompletePath>(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*::)+$)/);
-  if (incompletePath?.groups?.incompletePath) {
-    const path = incompletePath.groups.incompletePath.substring(
+    .match(INCOMPLETE_PATH_PATTERN);
+  if (incompletePathMatch?.groups?.incompletePath) {
+    const path = incompletePathMatch.groups.incompletePath.substring(
       0,
-      incompletePath.groups.incompletePath.length -
+      incompletePathMatch.groups.incompletePath.length -
         ELEMENT_PATH_DELIMITER.length,
     );
-    let childrenConcept: ConceptNode[] = [];
+    let suggestions: ElementSuggestion[] = [];
     try {
-      childrenConcept = (await editorStore.client.getConceptChildren(path)).map(
-        (child) => deserialize(ConceptNode, child),
-      );
+      suggestions = (
+        await editorStore.client.getSuggestionsForIncompletePath(path)
+      ).map((child) => deserialize(ElementSuggestion, child));
     } catch {
       // do nothing: provide no suggestions when error ocurred
     }
 
-    return (
-      childrenConcept
-        // NOTE: do not account for properties
-        .filter(
-          (concept) => !(concept.li_attr instanceof PropertyConceptAttribute),
-        )
-        .map((concept) => {
-          const conceptAttribute = concept.li_attr;
-          const conceptType = conceptAttribute.pureType;
-          const insertText =
-            conceptAttribute instanceof ElementConceptAttribute
-              ? conceptType === ConceptType.FUNCTION ||
-                conceptType === ConceptType.NATIVE_FUNCTION
-                ? `${conceptAttribute.pureName}(\${1:})`
-                : conceptAttribute.pureName
-              : concept.text;
-          const kind =
-            conceptType === ConceptType.PACKAGE
-              ? monacoLanguagesAPI.CompletionItemKind.Folder
-              : conceptType === ConceptType.CLASS
-              ? monacoLanguagesAPI.CompletionItemKind.Class
-              : conceptType === ConceptType.FUNCTION
-              ? monacoLanguagesAPI.CompletionItemKind.Function
-              : conceptType === ConceptType.ENUMERATION
-              ? monacoLanguagesAPI.CompletionItemKind.Enum
-              : conceptType === ConceptType.PROFILE
-              ? monacoLanguagesAPI.CompletionItemKind.Module
-              : conceptType === ConceptType.ASSOCIATION
-              ? monacoLanguagesAPI.CompletionItemKind.Interface
-              : monacoLanguagesAPI.CompletionItemKind.Value;
-          return {
-            label: concept.text,
-            kind,
-            insertTextRules:
-              monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
-            insertText,
-            // attempt to push package suggestions to the bottom of the list
-            sortText:
-              conceptType === ConceptType.PACKAGE
-                ? `zzzz_${concept.text}`
-                : concept.text,
-            range: {
-              startLineNumber: position.lineNumber,
-              startColumn: position.lineNumber,
-              endLineNumber: position.lineNumber,
-              endColumn: position.lineNumber + insertText.length,
-            },
-          } as monacoLanguagesAPI.CompletionItem;
-        })
+    return suggestions.map((suggestion) =>
+      elementSuggestionToCompletionItem(suggestion, position),
     );
   }
 
   return [];
+};
+
+const IMPORT_STATEMENT_PATTERN =
+  /import\s+(?:(?<importPath>(?:(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)::)*[a-zA-Z0-9_][a-zA-Z0-9_$]*)::*)/;
+
+const getCurrentSectionImportPaths = (
+  position: IPosition,
+  model: monacoEditorAPI.ITextModel,
+): string[] => {
+  const textUntilPosition = model.getValueInRange({
+    startLineNumber: 1,
+    startColumn: 1,
+    endLineNumber: position.lineNumber,
+    endColumn: position.column,
+  });
+  const lines =
+    // NOTE: since `###Pure` is implicitly considered as the first section, we prepend it to the text
+    `${PARSER_SECTION_MARKER}${PURE_PARSER.PURE}\n${textUntilPosition}`.split(
+      '\n',
+    );
+  return lines
+    .slice(
+      lines
+        .map((line) => line.startsWith(PARSER_SECTION_MARKER))
+        .lastIndexOf(true),
+    )
+    .map((line) => line.match(IMPORT_STATEMENT_PATTERN)?.groups?.importPath)
+    .filter(isNonNullable);
+};
+
+export const getIdentifierSuggestions = async (
+  position: IPosition,
+  model: monacoEditorAPI.ITextModel,
+  editorStore: EditorStore,
+): Promise<monacoLanguagesAPI.CompletionItem[]> => {
+  const importPaths = getCurrentSectionImportPaths(position, model);
+  let suggestions: ElementSuggestion[] = [];
+  try {
+    suggestions = (
+      await editorStore.client.getSuggestionsForIdentifier(importPaths, [])
+    ).map((child) => deserialize(ElementSuggestion, child));
+  } catch {
+    // do nothing: provide no suggestions when error ocurred
+  }
+
+  return suggestions.map((suggestion) =>
+    elementSuggestionToCompletionItem(suggestion, position),
+  );
 };

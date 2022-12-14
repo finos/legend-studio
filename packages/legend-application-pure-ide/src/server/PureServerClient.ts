@@ -59,37 +59,7 @@ import type {
   ChildPackageableElementInfo,
   MovePackageableElementsInput,
 } from './models/MovePackageableElements.js';
-
-const AUTO_IMPORT_PACKAGES = [
-  'meta::pure::metamodel',
-  'meta::pure::metamodel::type',
-  'meta::pure::metamodel::type::generics',
-  'meta::pure::metamodel::relationship',
-  'meta::pure::metamodel::valuespecification',
-  'meta::pure::metamodel::multiplicity',
-  'meta::pure::metamodel::function',
-  'meta::pure::metamodel::function::property',
-  'meta::pure::metamodel::extension',
-  'meta::pure::metamodel::import',
-  'meta::pure::functions::date',
-  'meta::pure::functions::string',
-  'meta::pure::functions::collection',
-  'meta::pure::functions::meta',
-  'meta::pure::functions::constraints',
-  'meta::pure::functions::lang',
-  'meta::pure::functions::boolean',
-  'meta::pure::functions::tools',
-  'meta::pure::functions::io',
-  'meta::pure::functions::math',
-  'meta::pure::functions::asserts',
-  'meta::pure::functions::test',
-  'meta::pure::functions::multiplicity',
-  'meta::pure::router',
-  'meta::pure::service',
-  'meta::pure::tds',
-  'meta::pure::tools',
-  'meta::pure::profiles',
-];
+import type { ElementSuggestion } from './models/Suggestion.js';
 
 export class PureClient {
   private networkClient: NetworkClient;
@@ -134,47 +104,6 @@ export class PureClient {
       },
     );
 
-  getFile = (path: string): Promise<PlainObject<File>> =>
-    this.networkClient.get(
-      `${this.baseUrl}/fileAsJson/${path}`,
-      undefined,
-      undefined,
-      {
-        sessionId: this.sessionId,
-        mode: this.mode,
-        fastCompile: this.compilerMode,
-      },
-    );
-
-  getDirectoryChildren = (
-    path?: string,
-  ): Promise<PlainObject<DirectoryNode>[]> =>
-    this.networkClient.get(`${this.baseUrl}/dir`, undefined, undefined, {
-      parameters: path ?? '/',
-      mode: this.mode,
-      sessionId: this.sessionId,
-    });
-
-  getConceptChildren = (path?: string): Promise<PlainObject<ConceptNode>[]> =>
-    this.networkClient.get(`${this.baseUrl}/execute`, undefined, undefined, {
-      func: 'meta::pure::ide::display_ide(String[1]):String[1]',
-      param: path ? `'${path}'` : "'::'",
-      format: 'raw',
-      mode: this.mode,
-      sessionId: this.sessionId,
-    });
-
-  getConceptsChildren = (
-    paths: string[],
-  ): Promise<PlainObject<ConceptNode>[]> =>
-    this.networkClient.get(`${this.baseUrl}/execute`, undefined, undefined, {
-      func: 'meta::pure::ide::display_ide_multiple(String[1]):String[1]',
-      param: `'${[...paths, ...AUTO_IMPORT_PACKAGES].join(',')}'`,
-      format: 'raw',
-      mode: this.mode,
-      sessionId: this.sessionId,
-    });
-
   getConceptActivity = (): Promise<PlainObject<ConceptActivity>> =>
     this.networkClient.get(
       `${this.baseUrl}/conceptsActivity`,
@@ -215,6 +144,8 @@ export class PureClient {
       },
     );
 
+  // ------------------------------------------- Search -------------------------------------------
+
   findFiles = (searchText: string, isRegExp: boolean): Promise<string[]> =>
     this.networkClient.get(
       `${this.baseUrl}/findPureFiles`,
@@ -252,6 +183,8 @@ export class PureClient {
       coordinates,
     );
 
+  // ------------------------------------------- Test -------------------------------------------
+
   checkTestRunner = (
     testRunnerId: number,
   ): Promise<PlainObject<AbstractTestRunnerCheckResult>> =>
@@ -275,6 +208,17 @@ export class PureClient {
         testRunnerId,
       },
     );
+
+  // ------------------------------------------- Concept -------------------------------------------
+
+  getConceptChildren = (path?: string): Promise<PlainObject<ConceptNode>[]> =>
+    this.networkClient.get(`${this.baseUrl}/execute`, undefined, undefined, {
+      func: 'meta::pure::ide::display_ide(String[1]):String[1]',
+      param: path ? `'${path}'` : "'::'",
+      format: 'raw',
+      mode: this.mode,
+      sessionId: this.sessionId,
+    });
 
   getConceptInfo = (
     file: string,
@@ -348,6 +292,29 @@ export class PureClient {
     );
   };
 
+  // ------------------------------------------- IO / File Management -------------------------------------------
+
+  getFile = (path: string): Promise<PlainObject<File>> =>
+    this.networkClient.get(
+      `${this.baseUrl}/fileAsJson/${path}`,
+      undefined,
+      undefined,
+      {
+        sessionId: this.sessionId,
+        mode: this.mode,
+        fastCompile: this.compilerMode,
+      },
+    );
+
+  getDirectoryChildren = (
+    path?: string,
+  ): Promise<PlainObject<DirectoryNode>[]> =>
+    this.networkClient.get(`${this.baseUrl}/dir`, undefined, undefined, {
+      parameters: path ?? '/',
+      mode: this.mode,
+      sessionId: this.sessionId,
+    });
+
   updateSource = (
     updateInputs: UpdateSourceInput[],
   ): Promise<PlainObject<SourceModificationResult>> =>
@@ -403,6 +370,8 @@ export class PureClient {
       },
     );
 
+  // ------------------------------------------- Diagram -------------------------------------------
+
   getDiagramInfo = async (
     diagramPath: string,
   ): Promise<PlainObject<DiagramInfo>> =>
@@ -432,4 +401,31 @@ export class PureClient {
         },
       ),
     );
+
+  // ------------------------------------------- Suggestion -------------------------------------------
+
+  getSuggestionsForIncompletePath = (
+    currentPath: string,
+  ): Promise<PlainObject<ElementSuggestion>[]> =>
+    this.networkClient.post(`${this.baseUrl}/suggestion/incompletePath`, {
+      path: currentPath,
+    });
+
+  getSuggestionsForIdentifier = (
+    importPaths: string[],
+    types: string[],
+  ): Promise<PlainObject<ElementSuggestion>[]> =>
+    this.networkClient.post(`${this.baseUrl}/suggestion/identifier`, {
+      importPaths,
+      types,
+    });
+
+  getSuggestionsForAttribute = (
+    importPaths: string[],
+    path: string,
+  ): Promise<PlainObject<ElementSuggestion>[]> =>
+    this.networkClient.post(`${this.baseUrl}/suggestion/attribute`, {
+      importPaths,
+      path,
+    });
 }

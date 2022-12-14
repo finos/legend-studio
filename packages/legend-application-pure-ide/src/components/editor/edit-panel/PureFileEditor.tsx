@@ -52,6 +52,7 @@ import {
   collectParserElementSnippetSuggestions,
   collectParserKeywordSuggestions,
   getCopyrightHeaderSuggestions,
+  getIdentifierSuggestions,
   getIncompletePathSuggestions,
 } from '../../../stores/PureFileEditorUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
@@ -146,13 +147,10 @@ export const PureFileEditor = observer(
     const definitionProviderDisposer = useRef<IDisposable | undefined>(
       undefined,
     );
-    const commonPureConstructSuggestionProviderDisposer = useRef<
-      IDisposable | undefined
-    >(undefined);
+    const pureAnySuggestionProviderDisposer = useRef<IDisposable | undefined>(
+      undefined,
+    );
     const pureSectionSuggestionProviderDisposer = useRef<
-      IDisposable | undefined
-    >(undefined);
-    const pureAutoImportsSuggestionProviderDisposer = useRef<
       IDisposable | undefined
     >(undefined);
     const pureIncompletePathSuggestionProviderDisposer = useRef<
@@ -327,9 +325,10 @@ export const PureFileEditor = observer(
           // where sometimes, hovering the mouse on the right half of the last character of a definition token
           // and then hitting Ctrl/Cmd key will not be trigger definition provider. We're not quite sure what
           // to do with that for the time being.
-          const lineTokens = guaranteeNonNullable(
-            textTokens[position.lineNumber - 1],
-          );
+          const lineTokens = textTokens[position.lineNumber - 1];
+          if (!lineTokens) {
+            return [];
+          }
           let currentToken: Token | undefined = undefined;
           let currentTokenRange: IRange | undefined = undefined;
           for (let i = 1; i < lineTokens.length; ++i) {
@@ -373,12 +372,14 @@ export const PureFileEditor = observer(
       });
 
     // suggestions
-    commonPureConstructSuggestionProviderDisposer.current?.dispose();
-    commonPureConstructSuggestionProviderDisposer.current =
+    pureAnySuggestionProviderDisposer.current?.dispose();
+    pureAnySuggestionProviderDisposer.current =
       monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
-        provideCompletionItems: (model, position) => {
+        triggerCharacters: [],
+        provideCompletionItems: async (model, position) => {
           let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
 
+          // copyright header
           suggestions = suggestions.concat(getCopyrightHeaderSuggestions());
 
           // suggestions for parser element snippets
@@ -391,13 +392,18 @@ export const PureFileEditor = observer(
             ),
           );
 
-          // add inline code snippet suggestions
+          // code snippet suggestions
           suggestions = suggestions.concat(
             getInlineSnippetSuggestions(
               position,
               model,
               collectExtraInlineSnippetSuggestions(),
             ),
+          );
+
+          // identifier suggestions (fetched asynchronously)
+          suggestions = suggestions.concat(
+            await getIdentifierSuggestions(position, model, editorStore),
           );
 
           return { suggestions };
@@ -411,7 +417,6 @@ export const PureFileEditor = observer(
         provideCompletionItems: (model, position) => {
           let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
 
-          // suggestions for parser keyword
           suggestions = suggestions.concat(
             getParserKeywordSuggestions(
               position,
@@ -424,78 +429,13 @@ export const PureFileEditor = observer(
         },
       });
 
-    // pureAutoImportsSuggestionProviderDisposer.current?.dispose();
-    // pureAutoImportsSuggestionProviderDisposer.current =
-    //   monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
-    //     provideCompletionItems: async (model, position) => {
-    //       let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
-    //       const currentWord = model.getWordUntilPosition(position);
-
-    //       let childrenConcept: ConceptNode[] = [];
-    //       try {
-    //         childrenConcept =
-    //           // await editorStore.client.getConceptChildren(path)
-    //           (await editorStore.client.getConceptsChildren([])).flatMap(
-    //             (child) => deserialize(ConceptNode, child),
-    //           );
-    //       } catch {
-    //         // do nothing: provide no suggestions when error ocurred
-    //       }
-
-    //       suggestions = suggestions.concat(
-    //         childrenConcept
-    //           // NOTE: do not account for properties
-    //           .filter(
-    //             (concept) =>
-    //               !(concept.li_attr instanceof PropertyConceptAttribute),
-    //           )
-    //           .map((concept) => {
-    //             const conceptAttribute = concept.li_attr;
-    //             const conceptType = conceptAttribute.pureType;
-    //             const insertText =
-    //               conceptAttribute instanceof ElementConceptAttribute
-    //                 ? conceptType === ConceptType.FUNCTION ||
-    //                   conceptType === ConceptType.NATIVE_FUNCTION
-    //                   ? `${conceptAttribute.pureName}(\${1:})`
-    //                   : conceptAttribute.pureName
-    //                 : concept.text;
-    //             return {
-    //               label: concept.text,
-    //               filterText: insertText,
-    //               kind:
-    //                 conceptType === ConceptType.PACKAGE
-    //                   ? monacoLanguagesAPI.CompletionItemKind.Folder
-    //                   : conceptType === ConceptType.FUNCTION
-    //                   ? monacoLanguagesAPI.CompletionItemKind.Function
-    //                   : conceptType === ConceptType.CLASS
-    //                   ? monacoLanguagesAPI.CompletionItemKind.Class
-    //                   : conceptType === ConceptType.ENUMERATION
-    //                   ? monacoLanguagesAPI.CompletionItemKind.Enum
-    //                   : monacoLanguagesAPI.CompletionItemKind.Enum,
-    //               insertTextRules:
-    //                 monacoLanguagesAPI.CompletionItemInsertTextRule
-    //                   .InsertAsSnippet,
-    //               insertText,
-    //               range: {
-    //                 startLineNumber: position.lineNumber,
-    //                 startColumn: currentWord.startColumn,
-    //                 endLineNumber: position.lineNumber,
-    //                 endColumn: currentWord.endColumn,
-    //               },
-    //             } as monacoLanguagesAPI.CompletionItem;
-    //           }),
-    //       );
-
-    //       return { suggestions };
-    //     },
-    //   });
-
     pureIncompletePathSuggestionProviderDisposer.current?.dispose();
     pureIncompletePathSuggestionProviderDisposer.current =
       monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
         triggerCharacters: [':'],
         provideCompletionItems: async (model, position) => {
           let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+
           suggestions = suggestions.concat(
             await getIncompletePathSuggestions(position, model, editorStore),
           );
@@ -569,8 +509,8 @@ export const PureFileEditor = observer(
         }
 
         definitionProviderDisposer.current?.dispose();
-        commonPureConstructSuggestionProviderDisposer.current?.dispose();
-        pureAutoImportsSuggestionProviderDisposer.current?.dispose();
+
+        pureAnySuggestionProviderDisposer.current?.dispose();
         pureSectionSuggestionProviderDisposer.current?.dispose();
         pureIncompletePathSuggestionProviderDisposer.current?.dispose();
       },
