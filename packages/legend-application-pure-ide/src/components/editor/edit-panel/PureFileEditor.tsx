@@ -314,13 +314,14 @@ export const PureFileEditor = observer(
       }
     }, [editorStore, applicationStore, editorState, editor]);
 
-    const textTokens = editor
-      ? monacoEditorAPI.tokenize(editor.getValue(), EDITOR_LANGUAGE.PURE)
-      : [];
     definitionProviderDisposer.current?.dispose();
     definitionProviderDisposer.current =
       monacoLanguagesAPI.registerDefinitionProvider(EDITOR_LANGUAGE.PURE, {
         provideDefinition: (model, position) => {
+          const textTokens = monacoEditorAPI.tokenize(
+            model.getValue(),
+            EDITOR_LANGUAGE.PURE,
+          );
           // NOTE: there is a quirky problem with monaco-editor or our integration with it
           // where sometimes, hovering the mouse on the right half of the last character of a definition token
           // and then hitting Ctrl/Cmd key will not be trigger definition provider. We're not quite sure what
@@ -384,6 +385,7 @@ export const PureFileEditor = observer(
             monacoLanguagesAPI.CompletionTriggerKind.TriggerCharacter
           ) {
             switch (context.triggerCharacter) {
+              // parser section header
               case '#': {
                 suggestions = suggestions.concat(
                   getParserKeywordSuggestions(
@@ -394,6 +396,7 @@ export const PureFileEditor = observer(
                 );
                 break;
               }
+              // incomplete path (::)
               case ':': {
                 suggestions = suggestions.concat(
                   await getIncompletePathSuggestions(
@@ -404,6 +407,11 @@ export const PureFileEditor = observer(
                 );
                 break;
               }
+              // arrow function (->)
+              // NOTE: we can't really do type matching on document being edited
+              // since in order to get the semantics of these token, we need the
+              // currently typed text to compile, but that's not always possible
+              // especially mid typing an expression sequence
               case '>': {
                 suggestions = suggestions.concat(
                   await getArrowFunctionSuggestions(
@@ -414,12 +422,18 @@ export const PureFileEditor = observer(
                 );
                 break;
               }
+              // calling property, attribute, enum value, tag, stereotype, etc.
+              // NOTE: we can't really do type matching on document being edited
+              // since in order to get the semantics of these token, we need the
+              // currently typed text to compile, but that's not always possible
+              // especially mid typing an expression sequence
               case '.': {
                 suggestions = suggestions.concat(
                   await getAttributeSuggestions(position, model, editorStore),
                 );
                 break;
               }
+              // constructing a new class instance
               case '^': {
                 suggestions = suggestions.concat(
                   await getConstructorClassSuggestions(
@@ -430,6 +444,7 @@ export const PureFileEditor = observer(
                 );
                 break;
               }
+              // casting to a class
               case '@': {
                 suggestions = suggestions.concat(
                   await getCastingClassSuggestions(
