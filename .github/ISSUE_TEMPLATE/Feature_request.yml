@@ -1,5 +1,5 @@
 name: '🚀 Feature Request'
-description: 'I have a specific suggestion for Studio!'
+description: 'I have a specific suggestion for Legend application(s)!'
 title: 'Feature request: <title>'
 labels: ['Type: Feature Request']
 body:
@@ -17,12 +17,13 @@ body:
           required: true
   - type: dropdown
     attributes:
-      label: How are you using Studio?
+      label: How are you using Legend?
       multiple: true
       options:
         - Legend Studio
         - Legend Query
         - Legend Taxonomy
+        - Legend Pure IDE
         - Docker images (e.g. finos/legend-studio)
         - NPM libraries (e.g. @finos/legend-shared)
 
