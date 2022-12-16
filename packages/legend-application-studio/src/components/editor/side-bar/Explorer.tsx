@@ -819,6 +819,7 @@ export const Explorer = observer(() => {
     // don't edit elements that fast in form mode, but this could throw off
     // test runner
     (editorStore.isInViewerMode ||
+      editorStore.isInGrammarTextMode ||
       editorStore.changeDetectionState.graphObserveState.hasSucceeded);
   // conflict resolution
   const showConflictResolutionContent =

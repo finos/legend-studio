@@ -666,6 +666,13 @@ export class EditorGraphState {
           return FormModeCompilationOutcome.FAILED;
         }
         this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
+        // Stop change detection as we don't need the actual change detection in text mode
+        this.editorStore.changeDetectionState.stop();
+        this.editorStore.changeDetectionState.computeLocalChangesInTextMode(
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
+            this.editorStore.grammarTextEditorState.graphGrammarText,
+          )) as Entity[],
+        );
         yield flowResult(
           this.globalCompileInTextMode({
             ignoreBlocking: true,

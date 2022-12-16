@@ -190,6 +190,20 @@ export class ExplorerTreeState {
 
   buildTreeInTextMode(): void {
     this.buildState.reset();
+    if (!this.systemTreeData) {
+      this.systemTreeData = getPackableElementTreeData(
+        this.editorStore,
+        this.editorStore.graphManagerState.systemModel.root,
+        ExplorerTreeRootPackageLabel.SYSTEM,
+      );
+    }
+    if (!this.dependencyTreeData) {
+      this.dependencyTreeData = getPackableElementTreeData(
+        this.editorStore,
+        this.editorStore.graphManagerState.graph.dependencyManager.root,
+        ExplorerTreeRootPackageLabel.PROJECT_DEPENDENCY,
+      );
+    }
     this.treeData = getPackableElementTreeData(
       this.editorStore,
       this.editorStore.graphManagerState.graph.root,
@@ -200,6 +214,12 @@ export class ExplorerTreeState {
       this.editorStore.graphManagerState.graph.generationModel.root,
       ExplorerTreeRootPackageLabel.MODEL_GENERATION,
     );
+    if (!this.fileGenerationTreeData) {
+      this.fileGenerationTreeData = getGenerationTreeData(
+        this.editorStore.graphState.graphGenerationState.rootFileDirectory,
+        ExplorerTreeRootPackageLabel.FILE_GENERATION,
+      );
+    }
     this.setSelectedNode(undefined);
     this.buildState.complete();
   }
