@@ -55,6 +55,7 @@ export abstract class ElementEditorState extends EditorState {
       isReadOnly: observable,
       label: computed,
       description: computed,
+      elementPath: computed,
       setTextContent: action,
       setEditMode: action,
       setGenerationViewMode: action,
@@ -68,6 +69,10 @@ export abstract class ElementEditorState extends EditorState {
 
   get label(): string {
     return this.element.name;
+  }
+
+  get elementPath(): string {
+    return this.element.path;
   }
 
   override get description(): string | undefined {

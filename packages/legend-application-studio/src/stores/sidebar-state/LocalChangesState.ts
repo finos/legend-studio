@@ -174,7 +174,7 @@ class PatchLoaderState {
   }
 }
 
-export class LocalChangesState {
+export abstract class LocalChangesState {
   readonly editorStore: EditorStore;
   readonly sdlcState: EditorSDLCState;
   readonly workspaceSyncState: WorkspaceSyncState;
@@ -186,7 +186,6 @@ export class LocalChangesState {
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     makeObservable(this, {
       hasUnpushedChanges: computed,
-      openPotentialWorkspacePullConflict: action,
       refreshWorkspaceSyncStatus: flow,
       refreshLocalChanges: flow,
       pushLocalChanges: flow,
@@ -245,6 +244,78 @@ export class LocalChangesState {
     }
   }
 
+  *refreshWorkspaceSyncStatus(): GeneratorFn<void> {
+    try {
+      this.refreshWorkspaceSyncStatusState.inProgress();
+      const currentRemoteRevision =
+        this.sdlcState.activeRemoteWorkspaceRevision;
+      yield flowResult(
+        this.sdlcState.fetchRemoteWorkspaceRevision(
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
+        ),
+      );
+      if (
+        currentRemoteRevision.id !==
+        this.sdlcState.activeRemoteWorkspaceRevision.id
+      ) {
+        if (this.sdlcState.isWorkspaceOutOfSync) {
+          this.editorStore.localChangesState.workspaceSyncState.fetchIncomingRevisions();
+          const remoteWorkspaceEntities =
+            (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
+              this.sdlcState.activeProject.projectId,
+              this.sdlcState.activeWorkspace,
+              this.sdlcState.activeRemoteWorkspaceRevision.id,
+            )) as Entity[];
+          this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
+            remoteWorkspaceEntities,
+          );
+          yield flowResult(
+            this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.buildEntityHashesIndex(
+              remoteWorkspaceEntities,
+              LogEvent.create(
+                CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+              ),
+            ),
+          );
+          yield flowResult(
+            this.editorStore.changeDetectionState.computeAggregatedWorkspaceRemoteChanges(),
+          );
+        } else {
+          this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
+            [],
+          );
+          this.editorStore.changeDetectionState.setPotentialWorkspacePullConflicts(
+            [],
+          );
+          this.editorStore.changeDetectionState.setAggregatedWorkspaceRemoteChanges(
+            [],
+          );
+        }
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
+    } finally {
+      this.refreshWorkspaceSyncStatusState.complete();
+    }
+  }
+
+  abstract refreshLocalChanges(): GeneratorFn<void>;
+
+  abstract pushLocalChanges(pushMessage?: string): GeneratorFn<void>;
+}
+
+export class FormLocalChangesState extends LocalChangesState {
+  constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
+    super(editorStore, sdlcState);
+    makeObservable(this, {
+      openPotentialWorkspacePullConflict: action,
+    });
+  }
   openLocalChange(diff: EntityDiff): void {
     const fromEntityGetter = (
       entityPath: string | undefined,
@@ -428,66 +499,6 @@ export class LocalChangesState {
     }
   }
 
-  *refreshWorkspaceSyncStatus(): GeneratorFn<void> {
-    try {
-      this.refreshWorkspaceSyncStatusState.inProgress();
-      const currentRemoteRevision =
-        this.sdlcState.activeRemoteWorkspaceRevision;
-      yield flowResult(
-        this.sdlcState.fetchRemoteWorkspaceRevision(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-        ),
-      );
-      if (
-        currentRemoteRevision.id !==
-        this.sdlcState.activeRemoteWorkspaceRevision.id
-      ) {
-        if (this.sdlcState.isWorkspaceOutOfSync) {
-          this.editorStore.localChangesState.workspaceSyncState.fetchIncomingRevisions();
-          const remoteWorkspaceEntities =
-            (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
-              this.sdlcState.activeProject.projectId,
-              this.sdlcState.activeWorkspace,
-              this.sdlcState.activeRemoteWorkspaceRevision.id,
-            )) as Entity[];
-          this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
-            remoteWorkspaceEntities,
-          );
-          yield flowResult(
-            this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.buildEntityHashesIndex(
-              remoteWorkspaceEntities,
-              LogEvent.create(
-                CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
-              ),
-            ),
-          );
-          yield flowResult(
-            this.editorStore.changeDetectionState.computeAggregatedWorkspaceRemoteChanges(),
-          );
-        } else {
-          this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
-            [],
-          );
-          this.editorStore.changeDetectionState.setPotentialWorkspacePullConflicts(
-            [],
-          );
-          this.editorStore.changeDetectionState.setAggregatedWorkspaceRemoteChanges(
-            [],
-          );
-        }
-      }
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
-        error,
-      );
-    } finally {
-      this.refreshWorkspaceSyncStatusState.complete();
-    }
-  }
-
   *pushLocalChanges(pushMessage?: string): GeneratorFn<void> {
     if (
       this.pushChangesState.isInProgress ||
@@ -578,6 +589,7 @@ export class LocalChangesState {
     }
     const currentHashesIndex =
       this.editorStore.changeDetectionState.snapshotLocalEntityHashesIndex();
+
     try {
       const nullableRevisionChange =
         (yield this.editorStore.sdlcServerClient.performEntityChanges(
@@ -613,7 +625,9 @@ export class LocalChangesState {
       );
 
       // ======= (RE)START CHANGE DETECTION =======
+
       this.editorStore.changeDetectionState.stop();
+
       try {
         /**
          * Here we try to rebuild local hash index. If failed, we will use local hash index, but for veracity, it's best to use entities
@@ -693,6 +707,268 @@ export class LocalChangesState {
           true,
         ),
       ]);
+
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
+        Date.now() - syncFinishedTime,
+        'ms',
+      );
+      // ======= FINISHED (RE)START CHANGE DETECTION =======
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.CONFLICT
+      ) {
+        // NOTE: a confict here indicates that the reference revision ID sent along with update call
+        // does not match the HEAD of the workspace, therefore, we need to prompt user to refresh the application
+        this.editorStore.applicationStore.notifyWarning(
+          'Syncing failed. Current workspace revision is not the latest. Please backup your work and refresh the application',
+        );
+        // TODO: maybe we should do more here, e.g. prompt the user to download the patch, but that is for later
+      } else {
+        this.editorStore.applicationStore.notifyError(error);
+      }
+    } finally {
+      this.pushChangesState.complete();
+    }
+  }
+}
+
+export class TextLocalChangesState extends LocalChangesState {
+  localChanges: EntityChange[] = [];
+
+  constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
+    super(editorStore, sdlcState);
+    makeObservable(this, {
+      setLocalChanges: action,
+    });
+  }
+
+  setLocalChanges(val: EntityChange[]): void {
+    this.localChanges = val;
+  }
+
+  *refreshLocalChanges(): GeneratorFn<void> {
+    const startTime = Date.now();
+    this.refreshLocalChangesDetectorState.inProgress();
+    try {
+      // ======= (RE)START CHANGE DETECTION =======
+      yield Promise.all([
+        this.sdlcState.buildWorkspaceLatestRevisionEntityHashesIndex(),
+        this.editorStore.changeDetectionState.preComputeGraphElementHashes(),
+      ]);
+      this.editorStore.changeDetectionState.computeLocalChangesInTextMode(
+        this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
+          .entities,
+      );
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
+        Date.now() - startTime,
+        'ms',
+      );
+      // ======= FINISHED (RE)START CHANGE DETECTION =======
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notifyError(error);
+      this.sdlcState.handleChangeDetectionRefreshIssue(error);
+    } finally {
+      this.refreshLocalChangesDetectorState.complete();
+    }
+  }
+
+  *pushLocalChanges(pushMessage?: string): GeneratorFn<void> {
+    if (
+      this.pushChangesState.isInProgress ||
+      this.editorStore.workspaceUpdaterState.isUpdatingWorkspace
+    ) {
+      return;
+    }
+
+    this.pushChangesState.inProgress();
+    const startTime = Date.now();
+    if (!this.localChanges.length) {
+      this.pushChangesState.complete();
+      return;
+    }
+    yield flowResult(
+      this.sdlcState.fetchRemoteWorkspaceRevision(
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
+      ),
+    );
+    if (this.sdlcState.isWorkspaceOutOfSync) {
+      // ensure changes have been computed for latest remote version
+      const remoteWorkspaceEntities =
+        (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
+          this.sdlcState.activeRemoteWorkspaceRevision.id,
+        )) as Entity[];
+      this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
+        remoteWorkspaceEntities,
+      );
+      yield flowResult(
+        this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.buildEntityHashesIndex(
+          remoteWorkspaceEntities,
+          LogEvent.create(
+            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          ),
+        ),
+      );
+      yield flowResult(
+        this.editorStore.changeDetectionState.computeAggregatedWorkspaceRemoteChanges(),
+      );
+      this.editorStore.applicationStore.setActionAlertInfo({
+        message: 'Local workspace is out-of-sync',
+        prompt: 'Please pull remote changes before pushing your local changes',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Pull remote changes',
+            type: ActionAlertActionType.STANDARD,
+            default: true,
+            handler: (): void => {
+              this.editorStore.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES);
+              flowResult(
+                this.editorStore.localChangesState.workspaceSyncState.pullChanges(),
+              ).catch(this.editorStore.applicationStore.alertUnhandledError);
+            },
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+          },
+        ],
+      });
+      this.pushChangesState.complete();
+      return;
+    }
+    const currentHashesIndex =
+      this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
+        .currentEntityHashesIndex;
+    try {
+      const nullableRevisionChange =
+        (yield this.editorStore.sdlcServerClient.performEntityChanges(
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
+          {
+            message:
+              pushMessage ??
+              `pushed new changes from ${
+                this.editorStore.applicationStore.config.appName
+              } [potentially affected ${
+                this.localChanges.length === 1
+                  ? '1 entity'
+                  : `${this.localChanges.length} entities`
+              }]`,
+            entityChanges: this.localChanges,
+            revisionId: this.sdlcState.activeRevision.id,
+          },
+        )) as PlainObject<Revision> | undefined;
+      const revisionChange = guaranteeNonNullable(
+        nullableRevisionChange,
+        `Can't push an empty change set. This may be due to an error with change detection`,
+      );
+      const latestRevision = Revision.serialization.fromJson(revisionChange);
+      this.sdlcState.setCurrentRevision(latestRevision); // update current revision to the latest
+      this.sdlcState.setWorkspaceLatestRevision(latestRevision);
+      const syncFinishedTime = Date.now();
+
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_LOCAL_CHANGES_PUSHED),
+        syncFinishedTime - startTime,
+        'ms',
+      );
+      this.localChanges = [];
+
+      // ======= (RE)START CHANGE DETECTION =======
+      try {
+        /**
+         * Here we try to rebuild local hash index. If failed, we will use local hash index, but for veracity, it's best to use entities
+         * coming from the server.
+         */
+        const entities =
+          (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
+            this.sdlcState.activeProject.projectId,
+            this.sdlcState.activeWorkspace,
+            latestRevision.id,
+          )) as Entity[];
+        this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
+          entities,
+        );
+        yield flowResult(
+          this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
+            entities,
+            LogEvent.create(
+              CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+            ),
+          ),
+        );
+        this.editorStore.tabManagerState.refreshCurrentEntityDiffViewer();
+      } catch (error) {
+        assertErrorThrown(error);
+        /**
+         * NOTE: there is a known problem with the SDLC server where if we try to fetch the entities right after syncing, there is a chance
+         * that we get entities from the older commit (i.e. potentially some caching issue). As such, to account for this case, we will
+         * not try to get entities for the workspace HEAD, but for the revision returned from the syncing call (i.e. this must be the latest revision)
+         * if we get a 404, we will do a refresh and warn user about this. Otherwise, if we get other types of error, we will assume this is a network
+         * failure and use local workspace hashes index
+         */
+        if (error instanceof NetworkClientError) {
+          if (error.response.status === HttpStatus.NOT_FOUND) {
+            this.editorStore.applicationStore.log.error(
+              LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
+              `Can't fetch entities for the latest workspace revision immediately after syncing`,
+              error,
+            );
+          }
+          this.editorStore.applicationStore.setActionAlertInfo({
+            message: `Change detection engine failed to build hashes index for workspace after syncing`,
+            prompt:
+              'To fix this, you can either try to keep refreshing local changes until success or trust and reuse current workspace hashes index',
+            type: ActionAlertType.CAUTION,
+            actions: [
+              {
+                label: 'Use local hashes index',
+                type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+                handler: (): void => {
+                  this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntityHashesIndex(
+                    currentHashesIndex,
+                  );
+                  this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setIsBuildingEntityHashesIndex(
+                    false,
+                  );
+                },
+              },
+              {
+                label: 'Refresh changes',
+                type: ActionAlertActionType.STANDARD,
+                default: true,
+                handler: this.editorStore.applicationStore.guardUnhandledError(
+                  () => flowResult(this.refreshLocalChanges()),
+                ),
+              },
+            ],
+          });
+        } else {
+          throw error;
+        }
+      }
+      // compute the changes in text mode
+      this.editorStore.changeDetectionState.computeLocalChangesInTextMode(
+        this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
+          .entities,
+      );
+
       this.editorStore.applicationStore.log.info(
         LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
         Date.now() - syncFinishedTime,

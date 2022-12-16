@@ -59,6 +59,7 @@ export class FileGenerationViewerState extends EditorState {
     makeObservable(this, {
       file: observable,
       label: computed,
+      generatedFilePath: computed,
     });
 
     this.file = file;
@@ -70,5 +71,9 @@ export class FileGenerationViewerState extends EditorState {
 
   override match(tab: EditorState): boolean {
     return tab instanceof FileGenerationViewerState && tab.file === this.file;
+  }
+
+  get generatedFilePath(): string {
+    return this.file.path;
   }
 }
