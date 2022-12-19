@@ -18,18 +18,20 @@ import type { EditorStore } from '../../EditorStore.js';
 import type { ProjectConfigurationEditorState } from './ProjectConfigurationEditorState.js';
 import { flow, observable, makeObservable, flowResult, action } from 'mobx';
 import {
-  type PlainObject,
   type GeneratorFn,
+  type PlainObject,
   ActionState,
   assertErrorThrown,
   LogEvent,
+  isNonNullable,
 } from '@finos/legend-shared';
 import {
   type ProjectDependencyGraphReport,
   type ProjectDependencyVersionNode,
+  ProjectDependencyCoordinates,
+  type ProjectDependencyGraph,
   buildConflictsPaths,
   buildDependencyReport,
-  ProjectDependencyCoordinates,
   RawProjectDependencyReport,
 } from '@finos/legend-server-depot';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
@@ -67,6 +69,47 @@ export const buildDependencyNodeChildren = (
   }
 };
 
+const findRootNode = (
+  versionNode: ProjectDependencyVersionNode,
+  treeData: TreeData<DependencyTreeNodeData>,
+): DependencyTreeNodeData | undefined => {
+  if (!treeData.rootIds.includes(versionNode.id)) {
+    return undefined;
+  }
+  return Array.from(treeData.nodes.values()).find(
+    (node) => node.id === versionNode.id && node.value === versionNode,
+  );
+};
+
+const walkNode = (
+  node: DependencyTreeNodeData,
+  visited: Set<ProjectDependencyVersionNode>,
+  treeData: TreeData<DependencyTreeNodeData>,
+): void => {
+  if (!visited.has(node.value)) {
+    node.isOpen = true;
+    buildDependencyNodeChildren(node, treeData.nodes);
+    visited.add(node.value);
+    node.childrenIds
+      ?.map((nodeId) => treeData.nodes.get(nodeId))
+      .filter(isNonNullable)
+      .forEach((n) => walkNode(n, visited, treeData));
+  } else {
+    buildDependencyNodeChildren(node, treeData.nodes);
+  }
+};
+
+export const openAllDependencyNodesInTree = (
+  treeData: TreeData<DependencyTreeNodeData>,
+  graph: ProjectDependencyGraph,
+): void => {
+  const visited = new Set<ProjectDependencyVersionNode>();
+  graph.rootNodes
+    .map((node) => findRootNode(node, treeData))
+    .filter(isNonNullable)
+    .forEach((node) => walkNode(node, visited, treeData));
+};
+
 const buildDependencyTreeData = (
   report: ProjectDependencyGraphReport,
 ): TreeData<DependencyTreeNodeData> => {
@@ -96,13 +139,17 @@ const buildFlattenDependencyTreeData = (
   return { rootIds, nodes };
 };
 
+export enum DEPENDENCY_REPORT_TAB {
+  EXPLORER = 'EXPLORER',
+  CONFLICT = 'CONFLICT',
+}
+
 export class ProjectDependencyEditorState {
   configState: ProjectConfigurationEditorState;
   editorStore: EditorStore;
   isReadOnly: boolean;
 
-  dependencyTreeReportModal = false;
-  dependencyConflictModal = false;
+  reportTab: DEPENDENCY_REPORT_TAB | undefined;
   fetchingDependencyInfoState = ActionState.create();
   dependencyReport: ProjectDependencyGraphReport | undefined;
   dependencyTreeData: TreeData<DependencyTreeNodeData> | undefined;
@@ -114,14 +161,13 @@ export class ProjectDependencyEditorState {
   ) {
     makeObservable(this, {
       dependencyReport: observable,
-      dependencyTreeReportModal: observable,
       fetchingDependencyInfoState: observable,
-      dependencyConflictModal: observable,
       dependencyTreeData: observable.ref,
       flattenDependencyTreeData: observable.ref,
-      setDependencyConflictModal: action,
+      reportTab: observable,
+      setDependencyReport: action,
       clearTrees: action,
-      setDependencyTreeReportModal: action,
+      setTreeData: action,
       setDependencyTreeData: action,
       fetchDependencyReport: flow,
     });
@@ -130,18 +176,25 @@ export class ProjectDependencyEditorState {
     this.isReadOnly = editorStore.isInViewerMode;
   }
 
+  setTreeData(
+    treeData: TreeData<DependencyTreeNodeData>,
+    flattenView?: boolean,
+  ): void {
+    if (flattenView) {
+      this.setFlattenDependencyTreeData(treeData);
+    } else {
+      this.setDependencyTreeData(treeData);
+    }
+  }
+
+  setDependencyReport(tab: DEPENDENCY_REPORT_TAB | undefined): void {
+    this.reportTab = tab;
+  }
+
   setDependencyTreeData(
     tree: TreeData<DependencyTreeNodeData> | undefined,
   ): void {
     this.dependencyTreeData = tree;
-  }
-
-  setDependencyConflictModal(showModal: boolean): void {
-    this.dependencyConflictModal = showModal;
-  }
-
-  setDependencyTreeReportModal(showModal: boolean): void {
-    this.dependencyTreeReportModal = showModal;
   }
 
   setFlattenDependencyTreeData(

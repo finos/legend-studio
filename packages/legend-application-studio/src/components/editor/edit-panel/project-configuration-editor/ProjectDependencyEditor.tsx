@@ -43,10 +43,11 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   ContextMenu,
-  RepoIcon,
   CompressIcon,
   SubjectIcon,
   ViewHeadlineIcon,
+  ExpandAllIcon,
+  BlankPanelContent,
 } from '@finos/legend-art';
 import {
   MASTER_SNAPSHOT_ALIAS,
@@ -60,6 +61,7 @@ import {
   guaranteeNonNullable,
   isNonNullable,
   LogEvent,
+  prettyCONSTName,
 } from '@finos/legend-shared';
 import {
   compareSemVerVersions,
@@ -71,6 +73,8 @@ import { forwardRef, useRef, useState } from 'react';
 import { ProjectConfigurationEditorState } from '../../../../stores/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import {
   buildDependencyNodeChildren,
+  DEPENDENCY_REPORT_TAB,
+  openAllDependencyNodesInTree,
   type DependencyTreeNodeData,
   type ProjectDependencyEditorState,
 } from '../../../../stores/editor-state/project-configuration-editor-state/ProjectDependencyEditorState.js';
@@ -103,12 +107,16 @@ const ProjectDependencyActions = observer(
       dependencyEditorState.dependencyReport?.conflicts.length;
     const viewTree = (): void => {
       if (dependencyEditorState.dependencyReport) {
-        dependencyEditorState.setDependencyTreeReportModal(true);
+        dependencyEditorState.setDependencyReport(
+          DEPENDENCY_REPORT_TAB.EXPLORER,
+        );
       }
     };
     const viewConflict = (): void => {
       if (dependencyEditorState.dependencyReport) {
-        dependencyEditorState.setDependencyConflictModal(true);
+        dependencyEditorState.setDependencyReport(
+          DEPENDENCY_REPORT_TAB.CONFLICT,
+        );
       }
     };
     return (
@@ -122,7 +130,6 @@ const ProjectDependencyActions = observer(
         >
           View Dependency Explorer
         </button>
-
         {Boolean(hasConflicts) && (
           <button
             className="project-dependency-editor__conflicts-btn"
@@ -208,7 +215,6 @@ const DependencyTreeNodeContainer: React.FC<
   const selectNode = (): void => onNodeSelect?.(node);
   const expandNode = (): void => onNodeExpand(node);
   const value = node.value;
-  const label = `${value.artifactId}:${value.versionId}`;
   const nodeExpandIcon = isExpandable ? (
     node.isOpen ? (
       <ChevronDownIcon />
@@ -218,7 +224,6 @@ const DependencyTreeNodeContainer: React.FC<
   ) : (
     <div />
   );
-
   return (
     <ContextMenu
       content={<DependencyTreeNodeContextMenu node={node} />}
@@ -247,18 +252,23 @@ const DependencyTreeNodeContainer: React.FC<
           >
             {nodeExpandIcon}
           </div>
-          <div className="project-dependency-explorer-tree__node__icon__type">
-            <RepoIcon />
-          </div>
         </div>
-
         <button
           className="tree-view__node__label project-dependency-explorer-tree__node__label"
           tabIndex={-1}
-          title={node.id}
+          title={value.id}
         >
-          {label}
+          {value.artifactId}
         </button>
+        <div className="project-dependency-explorer-tree__node__version">
+          <button
+            className="project-dependency-explorer-tree__node__version-btn"
+            title={value.versionId}
+            tabIndex={-1}
+          >
+            {value.versionId}
+          </button>
+        </div>
       </div>
     </ContextMenu>
   );
@@ -312,97 +322,11 @@ const DependencyTreeView: React.FC<{
   );
 };
 
-const ProjectDependencyExplorer = observer(
-  (props: { dependencyEditorState: ProjectDependencyEditorState }) => {
-    const { dependencyEditorState } = props;
-    const closeModal = (): void =>
-      dependencyEditorState.setDependencyTreeReportModal(false);
-    const [viewAsTree, setViewAsTree] = useState(true);
-    const setTreeData = (treeData: TreeData<DependencyTreeNodeData>): void => {
-      if (viewAsTree) {
-        dependencyEditorState.setDependencyTreeData(treeData);
-      } else {
-        dependencyEditorState.setFlattenDependencyTreeData(treeData);
-      }
-    };
-    const toggleViewAsListOrAsTree = (): void => {
-      setViewAsTree(!viewAsTree);
-    };
-    const treeData = viewAsTree
-      ? dependencyEditorState.dependencyTreeData
-      : dependencyEditorState.flattenDependencyTreeData;
-    const collapseTree = (): void => {
-      if (treeData) {
-        Array.from(treeData.nodes.values()).forEach((node) => {
-          node.isOpen = false;
-        });
-      }
-    };
-    return (
-      <Dialog
-        open={Boolean(dependencyEditorState.dependencyTreeReportModal)}
-        onClose={closeModal}
-        classes={{
-          root: 'editor-modal__root-container',
-          container: 'editor-modal__container',
-          paper: 'editor-modal__content',
-        }}
-      >
-        <Modal darkMode={true} className="editor-modal">
-          <ModalHeader title="Dependency Explorer" />
-          <ModalBody>
-            <div className="panel project-dependency-explorer">
-              <div className="panel__header">
-                <div className="panel__header__title">
-                  <div className="panel__header__title__label">explorer</div>
-                </div>
-                <div className="panel__header__actions">
-                  <button
-                    className="panel__header__action"
-                    onClick={collapseTree}
-                    tabIndex={-1}
-                  >
-                    {viewAsTree && <CompressIcon title="Collapse Tree" />}
-                  </button>
-                  <div className="panel__header__action query-builder__functions-explorer__custom-icon">
-                    {!viewAsTree ? (
-                      <SubjectIcon
-                        title="View as Tree"
-                        onClick={toggleViewAsListOrAsTree}
-                      />
-                    ) : (
-                      <ViewHeadlineIcon
-                        title="View as Flatten List"
-                        onClick={toggleViewAsListOrAsTree}
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="project-dependency-explorer__content">
-                {treeData && (
-                  <DependencyTreeView
-                    configState={dependencyEditorState}
-                    treeData={treeData}
-                    setTreeData={setTreeData}
-                  />
-                )}
-              </div>
-            </div>
-          </ModalBody>
-          <ModalFooter>
-            <button
-              className="btn modal__footer__close-btn"
-              onClick={closeModal}
-            >
-              Close
-            </button>
-          </ModalFooter>
-        </Modal>
-      </Dialog>
-    );
-  },
-);
+const collapseTreeData = (treeData: TreeData<DependencyTreeNodeData>): void => {
+  Array.from(treeData.nodes.values()).forEach((node) => {
+    node.isOpen = false;
+  });
+};
 
 export const getConflictsString = (
   report: ProjectDependencyGraphReport,
@@ -432,15 +356,77 @@ export const getConflictsString = (
     })
     .join('\n\n');
 
-const ProjectDependencyConflictModal = observer(
-  (props: { dependencyEditorState: ProjectDependencyEditorState }) => {
+const ProjectDependencyConflictViewer = observer(
+  (props: {
+    dependencyEditorState: ProjectDependencyEditorState;
+    report: ProjectDependencyGraphReport;
+  }) => {
+    const { report } = props;
+    const hasConflict = Boolean(report.conflicts.length);
+    return (
+      <div className="panel project-dependency-explorer">
+        <div className="panel__header">
+          <div className="panel__header__title">
+            <div className="panel__header__title__label">conflicts</div>
+          </div>
+        </div>
+        <div className="project-dependency-explorer__content">
+          {hasConflict ? (
+            <TextInputEditor
+              inputValue={getConflictsString(report)}
+              isReadOnly={true}
+              language={EDITOR_LANGUAGE.TEXT}
+              showMiniMap={true}
+            />
+          ) : (
+            <BlankPanelContent>No Conflicts</BlankPanelContent>
+          )}
+        </div>
+      </div>
+    );
+  },
+);
+
+const ProjectDependencyReportModal = observer(
+  (props: {
+    dependencyEditorState: ProjectDependencyEditorState;
+    tab: DEPENDENCY_REPORT_TAB;
+  }) => {
     const { dependencyEditorState } = props;
-    const report = dependencyEditorState.dependencyReport;
+    const reportTab = dependencyEditorState.reportTab;
+    const tabs = Object.values(DEPENDENCY_REPORT_TAB);
+    const changeTab =
+      (tab: DEPENDENCY_REPORT_TAB): (() => void) =>
+      (): void =>
+        dependencyEditorState.setDependencyReport(tab);
+    const dependencyReport = dependencyEditorState.dependencyReport;
     const closeModal = (): void =>
-      dependencyEditorState.setDependencyConflictModal(false);
+      dependencyEditorState.setDependencyReport(undefined);
+    const [flattenView, setFlattenView] = useState(false);
+    const setTreeData = (treeData: TreeData<DependencyTreeNodeData>): void => {
+      dependencyEditorState.setTreeData(treeData, flattenView);
+    };
+    const toggleViewAsListOrAsTree = (): void => {
+      setFlattenView(!flattenView);
+    };
+    const treeData = flattenView
+      ? dependencyEditorState.flattenDependencyTreeData
+      : dependencyEditorState.dependencyTreeData;
+    const collapseTree = (): void => {
+      if (treeData) {
+        collapseTreeData(treeData);
+        setTreeData({ ...treeData });
+      }
+    };
+    const openAllDependencyNodes = (): void => {
+      if (treeData && dependencyReport) {
+        openAllDependencyNodesInTree(treeData, dependencyReport.graph);
+        setTreeData({ ...treeData });
+      }
+    };
     return (
       <Dialog
-        open={Boolean(dependencyEditorState.dependencyConflictModal)}
+        open={Boolean(dependencyEditorState.reportTab)}
         onClose={closeModal}
         classes={{
           root: 'editor-modal__root-container',
@@ -449,16 +435,88 @@ const ProjectDependencyConflictModal = observer(
         }}
       >
         <Modal darkMode={true} className="editor-modal">
-          <ModalHeader title="Conflict Viewer" />
+          <ModalHeader title="Dependency Explorer" />
           <ModalBody>
-            {report && (
-              <TextInputEditor
-                inputValue={getConflictsString(report)}
-                isReadOnly={true}
-                language={EDITOR_LANGUAGE.TEXT}
-                showMiniMap={true}
-              />
-            )}
+            <div className="panel project-dependency-report">
+              <div className="panel__header project-dependency-report__tabs__header">
+                <div className="project-dependency-report__tabs">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={changeTab(tab)}
+                      className={clsx('project-dependency-report__tab', {
+                        'project-dependency-report__tab--active':
+                          tab === reportTab,
+                      })}
+                    >
+                      {prettyCONSTName(tab)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {reportTab === DEPENDENCY_REPORT_TAB.EXPLORER && (
+                <div className="panel project-dependency-explorer">
+                  <div className="panel__header">
+                    <div className="panel__header__title">
+                      <div className="panel__header__title__label">
+                        explorer
+                      </div>
+                    </div>
+                    <div className="panel__header__actions">
+                      {!flattenView && (
+                        <>
+                          <button
+                            className="panel__header__action"
+                            disabled={!treeData}
+                            onClick={collapseTree}
+                            tabIndex={-1}
+                          >
+                            <CompressIcon title="Collapse Tree" />
+                          </button>
+                          <button
+                            className="panel__header__action"
+                            disabled={!treeData || !dependencyReport}
+                            onClick={openAllDependencyNodes}
+                            tabIndex={-1}
+                          >
+                            <ExpandAllIcon title="Expand All Dependencies" />
+                          </button>
+                        </>
+                      )}
+                      <div className="panel__header__action query-builder__functions-explorer__custom-icon">
+                        {flattenView ? (
+                          <SubjectIcon
+                            title="View as Tree"
+                            onClick={toggleViewAsListOrAsTree}
+                          />
+                        ) : (
+                          <ViewHeadlineIcon
+                            title="View as Flatten List"
+                            onClick={toggleViewAsListOrAsTree}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="project-dependency-explorer__content">
+                    {treeData && (
+                      <DependencyTreeView
+                        configState={dependencyEditorState}
+                        treeData={treeData}
+                        setTreeData={setTreeData}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+              {reportTab === DEPENDENCY_REPORT_TAB.CONFLICT &&
+                dependencyReport && (
+                  <ProjectDependencyConflictViewer
+                    report={dependencyReport}
+                    dependencyEditorState={dependencyEditorState}
+                  />
+                )}
+            </div>
           </ModalBody>
           <ModalFooter>
             <button
@@ -716,19 +774,12 @@ export const ProjectDependencyEditor = observer(() => {
           />
         ),
       )}
-      {dependencyEditorState.dependencyReport &&
-        dependencyEditorState.dependencyTreeData &&
-        dependencyEditorState.dependencyTreeReportModal && (
-          <ProjectDependencyExplorer
-            dependencyEditorState={dependencyEditorState}
-          />
-        )}
-      {dependencyEditorState.dependencyConflictModal &&
-        dependencyEditorState.dependencyReport?.conflictPaths.size && (
-          <ProjectDependencyConflictModal
-            dependencyEditorState={dependencyEditorState}
-          />
-        )}
+      {dependencyEditorState.reportTab && (
+        <ProjectDependencyReportModal
+          tab={dependencyEditorState.reportTab}
+          dependencyEditorState={dependencyEditorState}
+        />
+      )}
     </div>
   );
 });

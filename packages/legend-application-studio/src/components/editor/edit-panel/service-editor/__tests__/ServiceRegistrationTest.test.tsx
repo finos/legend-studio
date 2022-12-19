@@ -24,7 +24,7 @@ import {
   fireEvent,
   act,
 } from '@testing-library/react';
-import TEST_DATA__serviceEntities from '../../../../editor/edit-panel/service-editor/__tests__/TEST_DATA__ServiceRegistration.json';
+import { TEST_DATA__serviceEntities } from './TEST_DATA__ServiceEditor.js';
 import {
   type PlainObject,
   integrationTest,
