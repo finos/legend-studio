@@ -105,7 +105,6 @@ import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import { ExplorerTreeState } from './ExplorerTreeState.js';
-import { FileGenerationViewerState } from './editor-state/FileGenerationViewerState.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -469,7 +468,9 @@ export class EditorGraphState {
             };
           }
         }
-        this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
+        yield flowResult(
+          this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT),
+        );
         yield flowResult(
           this.globalCompileInTextMode({
             ignoreBlocking: true,
@@ -665,13 +666,8 @@ export class EditorGraphState {
           );
           return FormModeCompilationOutcome.FAILED;
         }
-        this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
-        // Stop change detection as we don't need the actual change detection in text mode
-        this.editorStore.changeDetectionState.stop();
-        this.editorStore.changeDetectionState.computeLocalChangesInTextMode(
-          (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
-            this.editorStore.grammarTextEditorState.graphGrammarText,
-          )) as Entity[],
+        yield flowResult(
+          this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT),
         );
         yield flowResult(
           this.globalCompileInTextMode({
@@ -829,7 +825,9 @@ export class EditorGraphState {
           this.editorStore.changeDetectionState.getCurrentGraphHash();
         this.editorStore.grammarTextEditorState.setGraphGrammarText('');
         this.editorStore.grammarTextEditorState.resetCurrentElementLabelRegexString();
-        this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.FORM);
+        yield flowResult(
+          this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.FORM),
+        );
         if (this.editorStore.tabManagerState.currentTab) {
           this.editorStore.tabManagerState.openTab(
             this.editorStore.tabManagerState.currentTab,
@@ -867,8 +865,13 @@ export class EditorGraphState {
             actions: [
               {
                 label: 'Discard Changes',
-                handler: (): void =>
-                  this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.FORM),
+                handler: () => {
+                  flowResult(
+                    this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.FORM),
+                  ).catch(
+                    this.editorStore.applicationStore.alertUnhandledError,
+                  );
+                },
                 type: ActionAlertActionType.PROCEED_WITH_CAUTION,
               },
               {
@@ -919,15 +922,12 @@ export class EditorGraphState {
     const systemTreeData = this.editorStore.explorerTreeState.systemTreeData;
     const dependencyTreeData =
       this.editorStore.explorerTreeState.dependencyTreeData;
-    const fileGenTreeData =
-      this.editorStore.explorerTreeState.fileGenerationTreeData;
     const selectedNodeId = this.editorStore.explorerTreeState.selectedNode?.id;
     this.editorStore.explorerTreeState = new ExplorerTreeState(
       this.editorStore,
     );
     this.editorStore.explorerTreeState.systemTreeData = systemTreeData;
     this.editorStore.explorerTreeState.dependencyTreeData = dependencyTreeData;
-    this.editorStore.explorerTreeState.fileGenerationTreeData = fileGenTreeData;
     this.editorStore.explorerTreeState.buildTreeInTextMode();
     this.editorStore.explorerTreeState.openExplorerTreeNodes(
       mainTreeOpenedNodeIds,
@@ -1027,14 +1027,9 @@ export class EditorGraphState {
        * hold any reference to the actual graph.
        */
       const openedTabPaths: string[] = [];
-      // We can store file genration editor states as is as they don't hold any references to the graph.
-      const openedGeneratedFileTabStates: FileGenerationViewerState[] = [];
       this.editorStore.tabManagerState.tabs.forEach((state: TabState) => {
         if (state instanceof ElementEditorState) {
           openedTabPaths.push(state.elementPath);
-        } else if (state instanceof FileGenerationViewerState) {
-          openedTabPaths.push(state.generatedFilePath);
-          openedGeneratedFileTabStates.push(state);
         }
       });
       // Only stores editor state for file generation editors as they don't hold any references to the
@@ -1104,7 +1099,6 @@ export class EditorGraphState {
        */
       this.editorStore.tabManagerState.recoverTabs(
         openedTabPaths,
-        openedGeneratedFileTabStates,
         currentTabState,
         currentTabElementPath,
         true,
@@ -1213,14 +1207,9 @@ export class EditorGraphState {
        * hold any reference to the actual graph.
        */
       const openedTabPaths: string[] = [];
-      // We can store file genration editor states as is as they don't hold any references to the graph.
-      const openedGeneratedFileTabStates: FileGenerationViewerState[] = [];
       this.editorStore.tabManagerState.tabs.forEach((state: TabState) => {
         if (state instanceof ElementEditorState) {
           openedTabPaths.push(state.elementPath);
-        } else if (state instanceof FileGenerationViewerState) {
-          openedTabPaths.push(state.generatedFilePath);
-          openedGeneratedFileTabStates.push(state);
         }
       });
       // Only stores editor state for file generation editors as they don't hold any references to the
@@ -1287,7 +1276,6 @@ export class EditorGraphState {
        */
       this.editorStore.tabManagerState.recoverTabs(
         openedTabPaths,
-        openedGeneratedFileTabStates,
         currentTabState,
         currentTabElementPath,
         false,
@@ -1306,24 +1294,10 @@ export class EditorGraphState {
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.changeDetectionState.stop(true); // force stop change detection
       this.isUpdatingGraph = false;
-      // Note: in the future this function will probably be ideal to refactor when we have different classes for each mode
-      // as we would handle this error differently in `text` mode and `form` mode.
-      if (error instanceof GraphBuilderError && this.editorStore.isInFormMode) {
-        this.editorStore.applicationStore.setBlockingAlert({
-          message: `Can't build graph: ${error.message}`,
-          prompt: 'Refreshing full application...',
-          showLoading: true,
-        });
-        this.editorStore.tabManagerState.closeAllTabs();
-        this.editorStore.cleanUp();
-        yield flowResult(this.editorStore.buildGraph(entities));
-      } else {
-        this.editorStore.applicationStore.notifyError(
-          `Can't build graph: ${error.message}`,
-        );
-      }
+      this.editorStore.applicationStore.notifyError(
+        `Can't build graph: ${error.message}`,
+      );
     } finally {
       this.isUpdatingApplication = false;
       this.editorStore.applicationStore.setBlockingAlert(undefined);
@@ -1346,13 +1320,9 @@ export class EditorGraphState {
        * Backup and editor states info before resetting
        */
       const openedTabEditorPaths: string[] = [];
-      const openedGeneratedFileTabStates: FileGenerationViewerState[] = [];
       this.editorStore.tabManagerState.tabs.forEach((state: TabState) => {
         if (state instanceof ElementEditorState) {
           openedTabEditorPaths.push(state.elementPath);
-        } else if (state instanceof FileGenerationViewerState) {
-          openedTabEditorPaths.push(state.generatedFilePath);
-          openedGeneratedFileTabStates.push(state);
         }
       });
       const currentTabState =
@@ -1381,7 +1351,6 @@ export class EditorGraphState {
       this.updateExplorerTree();
       this.editorStore.tabManagerState.recoverTabs(
         openedTabEditorPaths,
-        openedGeneratedFileTabStates,
         currentTabState,
         currentTabElementPath,
         true,

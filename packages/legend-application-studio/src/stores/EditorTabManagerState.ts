@@ -21,7 +21,6 @@ import { makeObservable, action } from 'mobx';
 import type { EditorState } from './editor-state/EditorState.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import { EntityDiffViewerState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
-import type { FileGenerationViewerState } from './editor-state/FileGenerationViewerState.js';
 import type { EditorStore } from './EditorStore.js';
 
 export class EditorTabManagerState extends TabManagerState {
@@ -94,21 +93,10 @@ export class EditorTabManagerState extends TabManagerState {
    */
   recoverTabs = (
     openedTabEditorPaths: string[],
-    openedGeneratedFileTabStates: FileGenerationViewerState[],
     currentTabState: EditorState | undefined,
     currentTabElementPath: string | undefined,
     shouldRecoverTabs: boolean,
   ): void => {
-    const getElemenetPathFromFilePath = (filePath: string): string => {
-      const paths = filePath.split('/');
-      let elementPath = '';
-      const fileName = paths.slice(-1)[0]?.split('.')[0];
-      paths
-        .slice(1, paths.length - 1)
-        .forEach((path) => (elementPath = `${elementPath + path}::`));
-      elementPath = `${elementPath + fileName}`;
-      return elementPath;
-    };
     if (shouldRecoverTabs) {
       this.tabs = openedTabEditorPaths
         .map((editorPath) => {
@@ -121,14 +109,7 @@ export class EditorTabManagerState extends TabManagerState {
               correspondingElement,
             );
           }
-          const fileGenerationViewerEditor = openedGeneratedFileTabStates.find(
-            (editorState) =>
-              editorState.generatedFilePath === editorPath &&
-              this.editorStore.graphManagerState.graph.getNullableElement(
-                getElemenetPathFromFilePath(editorState.file.path),
-              ) !== undefined,
-          );
-          return fileGenerationViewerEditor;
+          return undefined;
         })
         .filter(isNonNullable);
       this.setCurrentTab(
