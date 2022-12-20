@@ -41,6 +41,7 @@ import {
   populateDirectoryTreeNodeChildren,
   buildGenerationDirectory,
   reprocessOpenNodes,
+  getGenerationTreeData,
 } from '../shared/FileGenerationTreeUtils.js';
 import type { TreeData } from '@finos/legend-art';
 import type { EditorStore } from '../EditorStore.js';
@@ -65,6 +66,7 @@ import {
   generationSpecification_addFileGeneration,
   generationSpecification_addGenerationElement,
 } from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
+import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState.js';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';
@@ -443,6 +445,13 @@ export class GraphGenerationState {
       this.rootFileDirectory,
       generationResultIndex,
       this.filesIndex,
+    );
+    // after building root directory set the generation tree data
+    this.editorStore.graphState.editorStore.explorerTreeState.setFileGenerationTreeData(
+      getGenerationTreeData(
+        this.editorStore.graphState.graphGenerationState.rootFileDirectory,
+        ExplorerTreeRootPackageLabel.FILE_GENERATION,
+      ),
     );
     this.editorStore.graphState.editorStore.explorerTreeState.setFileGenerationTreeData(
       this.reprocessNodeTree(
