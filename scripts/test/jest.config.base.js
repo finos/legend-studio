@@ -31,6 +31,8 @@ const baseConfig = getBaseConfig({
     // See https://github.com/sindresorhus/query-string/releases/tag/v8.0.0
     'query-string',
     'filter-obj',
+    'decode-uri-component',
+    'split-on-first',
   ],
 });
 
