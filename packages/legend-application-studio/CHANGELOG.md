@@ -1,5 +1,17 @@
 # @finos/legend-application-studio
 
+## 22.2.0
+
+### Minor Changes
+
+- [#1693](https://github.com/finos/legend-studio/pull/1693) [`bf2487fbb`](https://github.com/finos/legend-studio/commit/bf2487fbb590bc2c025f746d2393785762b71434) ([@gayathrir11](https://github.com/gayathrir11)) - Remove graph building from text mode ([#966](https://github.com/finos/legend-studio/issues/966)).
+
+### Patch Changes
+
+- [#1789](https://github.com/finos/legend-studio/pull/1789) [`47ced9dd2`](https://github.com/finos/legend-studio/commit/47ced9dd2278dc8e3bbd527b9f77356b4e1a6cd6) ([@gayathrir11](https://github.com/gayathrir11)) - Fix a bug with unable to open file generation tree data after hitting F10
+
+- [#1791](https://github.com/finos/legend-studio/pull/1791) [`70c785e5b`](https://github.com/finos/legend-studio/commit/70c785e5bb2011b6b71d4b70e6291464466933d0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add tree view for dependency conflicts in dependency editor.
+
 ## 22.1.6
 
 ### Patch Changes
