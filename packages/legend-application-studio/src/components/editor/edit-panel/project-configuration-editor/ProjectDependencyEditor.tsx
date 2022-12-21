@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  EDITOR_LANGUAGE,
-  TextInputEditor,
-  useApplicationStore,
-  TAB_SIZE,
-} from '@finos/legend-application';
+import { useApplicationStore, TAB_SIZE } from '@finos/legend-application';
 import {
   type SelectComponent,
   type TreeData,
@@ -48,6 +43,8 @@ import {
   ViewHeadlineIcon,
   ExpandAllIcon,
   BlankPanelContent,
+  VersionsIcon,
+  RepoIcon,
 } from '@finos/legend-art';
 import {
   MASTER_SNAPSHOT_ALIAS,
@@ -72,15 +69,19 @@ import { observer } from 'mobx-react-lite';
 import { forwardRef, useRef, useState } from 'react';
 import { ProjectConfigurationEditorState } from '../../../../stores/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import {
+  type ProjectDependencyConflictTreeNodeData,
+  ConflictTreeNodeData,
+  ConflictVersionNodeData,
   buildDependencyNodeChildren,
   DEPENDENCY_REPORT_TAB,
   openAllDependencyNodesInTree,
-  type DependencyTreeNodeData,
+  ProjectDependencyTreeNodeData,
   type ProjectDependencyEditorState,
 } from '../../../../stores/editor-state/project-configuration-editor-state/ProjectDependencyEditorState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../stores/LegendStudioAppEvent.js';
 import {
   generateViewProjectByGAVRoute,
+  generateViewProjectRoute,
   generateViewVersionRoute,
 } from '../../../../stores/LegendStudioRouter.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
@@ -136,7 +137,7 @@ const ProjectDependencyActions = observer(
             tabIndex={-1}
             onClick={viewConflict}
             disabled={
-              !dependencyEditorState.dependencyReport?.conflictPaths.size
+              !dependencyEditorState.dependencyReport?.conflictInfo.size
             }
             title="View any conflicts in your dependencies"
           >
@@ -163,37 +164,75 @@ const DependencyTreeNodeContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
-      node: DependencyTreeNodeData;
+      node: ProjectDependencyConflictTreeNodeData;
     }
-  >(function WorkflowExplorerContextMenu(props, ref) {
+  >(function DependencyTreeNodeContextMenu(props, ref) {
     const { node } = props;
-    const value = node.value;
     const applicationStore = useApplicationStore();
+    const getViewProjectUrl = (): string => {
+      let groupId: string | undefined;
+      let artifactId: string | undefined;
+      let versionId: string | undefined;
+      if (node instanceof ConflictTreeNodeData) {
+        groupId = node.conflict.groupId;
+        artifactId = node.conflict.artifactId;
+      } else if (node instanceof ConflictVersionNodeData) {
+        groupId = node.versionConflict.conflict.groupId;
+        artifactId = node.versionConflict.conflict.artifactId;
+        versionId = node.versionConflict.version.versionId;
+      } else if (node instanceof ProjectDependencyTreeNodeData) {
+        groupId = node.value.groupId;
+        artifactId = node.value.artifactId;
+        versionId = node.value.versionId;
+      }
+      return generateViewProjectByGAVRoute(
+        guaranteeNonNullable(groupId),
+        guaranteeNonNullable(artifactId),
+        versionId === MASTER_SNAPSHOT_ALIAS
+          ? SNAPSHOT_VERSION_ALIAS
+          : versionId,
+      );
+    };
+    const getSDLCProjectUrl = (): string | undefined => {
+      if (node instanceof ConflictTreeNodeData) {
+        const version = node.conflict.versions[0];
+        return version
+          ? generateViewProjectRoute(version.projectId)
+          : undefined;
+      } else if (node instanceof ConflictVersionNodeData) {
+        return generateViewVersionRoute(
+          node.versionConflict.version.projectId,
+          node.versionConflict.version.artifactId,
+        );
+      } else if (node instanceof ProjectDependencyTreeNodeData) {
+        return generateViewVersionRoute(
+          node.value.projectId,
+          node.value.versionId,
+        );
+      }
+      return undefined;
+    };
+
+    const sdlcProjectUrl = getSDLCProjectUrl();
+    const viewProjectUrl = getViewProjectUrl();
+
     const viewProject = (): void => {
       applicationStore.navigator.visitAddress(
-        applicationStore.navigator.generateAddress(
-          generateViewProjectByGAVRoute(
-            guaranteeNonNullable(value.groupId),
-            guaranteeNonNullable(value.artifactId),
-            value.versionId === MASTER_SNAPSHOT_ALIAS
-              ? SNAPSHOT_VERSION_ALIAS
-              : value.versionId,
-          ),
-        ),
+        applicationStore.navigator.generateAddress(viewProjectUrl),
       );
     };
     const viewSDLCProject = (): void => {
-      applicationStore.navigator.visitAddress(
-        applicationStore.navigator.generateAddress(
-          generateViewVersionRoute(value.projectId, value.versionId),
-        ),
-      );
+      if (sdlcProjectUrl) {
+        applicationStore.navigator.visitAddress(
+          applicationStore.navigator.generateAddress(sdlcProjectUrl),
+        );
+      }
     };
 
     return (
       <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         <MenuContentItem onClick={viewProject}>Visit Project</MenuContentItem>
-        <MenuContentItem onClick={viewSDLCProject}>
+        <MenuContentItem disabled={!sdlcProjectUrl} onClick={viewSDLCProject}>
           Visit SDLC Project
         </MenuContentItem>
       </MenuContent>
@@ -203,9 +242,9 @@ const DependencyTreeNodeContextMenu = observer(
 
 const DependencyTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
-    DependencyTreeNodeData,
+    ProjectDependencyTreeNodeData,
     {
-      onNodeExpand: (node: DependencyTreeNodeData) => void;
+      onNodeExpand: (node: ProjectDependencyTreeNodeData) => void;
     }
   >
 > = (props) => {
@@ -275,12 +314,11 @@ const DependencyTreeNodeContainer: React.FC<
 };
 
 const DependencyTreeView: React.FC<{
-  configState: ProjectDependencyEditorState;
-  treeData: TreeData<DependencyTreeNodeData>;
-  setTreeData: (treeData: TreeData<DependencyTreeNodeData>) => void;
+  treeData: TreeData<ProjectDependencyTreeNodeData>;
+  setTreeData: (treeData: TreeData<ProjectDependencyTreeNodeData>) => void;
 }> = (props) => {
   const { treeData, setTreeData } = props;
-  const onNodeExpand = (node: DependencyTreeNodeData): void => {
+  const onNodeExpand = (node: ProjectDependencyTreeNodeData): void => {
     if (node.childrenIds?.length) {
       node.isOpen = !node.isOpen;
       node.childrenIds
@@ -290,15 +328,14 @@ const DependencyTreeView: React.FC<{
     }
     setTreeData({ ...treeData });
   };
-  const onNodeSelect = (node: DependencyTreeNodeData): void => {
+  const onNodeSelect = (node: ProjectDependencyTreeNodeData): void => {
     buildDependencyNodeChildren(node, treeData.nodes);
     onNodeExpand(node);
     setTreeData({ ...treeData });
   };
-
   const getChildNodes = (
-    node: DependencyTreeNodeData,
-  ): DependencyTreeNodeData[] => {
+    node: ProjectDependencyTreeNodeData,
+  ): ProjectDependencyTreeNodeData[] => {
     if (!node.childrenIds || node.childrenIds.length === 0) {
       return [];
     }
@@ -322,7 +359,136 @@ const DependencyTreeView: React.FC<{
   );
 };
 
-const collapseTreeData = (treeData: TreeData<DependencyTreeNodeData>): void => {
+const ConflictTreeNodeContainer: React.FC<
+  TreeNodeContainerProps<
+    ProjectDependencyConflictTreeNodeData,
+    {
+      onNodeExpand: (node: ProjectDependencyConflictTreeNodeData) => void;
+    }
+  >
+> = (props) => {
+  const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
+  const { onNodeExpand } = innerProps;
+  const isExpandable = Boolean(node.childrenIds?.length);
+  const selectNode = (): void => onNodeSelect?.(node);
+  const expandNode = (): void => onNodeExpand(node);
+  const nodeExpandIcon = isExpandable ? (
+    node.isOpen ? (
+      <ChevronDownIcon />
+    ) : (
+      <ChevronRightIcon />
+    )
+  ) : (
+    <div />
+  );
+  return (
+    <ContextMenu
+      content={<DependencyTreeNodeContextMenu node={node} />}
+      menuProps={{ elevation: 7 }}
+    >
+      <div
+        className={clsx(
+          'tree-view__node__container project-dependency-explorer-tree__node__container',
+          {
+            'menu__trigger--on-menu-open': !node.isSelected,
+          },
+          {
+            'project-dependency-explorer-tree__node__container--selected':
+              node.isSelected,
+          },
+        )}
+        style={{
+          paddingLeft: `${(level - 1) * (stepPaddingInRem ?? 1)}rem`,
+        }}
+        onClick={selectNode}
+      >
+        <div className="tree-view__node__icon project-dependency-explorer-tree__node__icon">
+          <div
+            onClick={expandNode}
+            className="project-dependency-explorer-tree__node__icon__expand"
+          >
+            {nodeExpandIcon}
+          </div>
+          {node instanceof ConflictTreeNodeData && (
+            <div className="project-dependency-explorer-tree__node__icon__type">
+              <RepoIcon />
+            </div>
+          )}
+          {node instanceof ConflictVersionNodeData && (
+            <div className="project-dependency-explorer-tree__node__icon__type">
+              <VersionsIcon />
+            </div>
+          )}
+        </div>
+        <button
+          className="tree-view__node__label project-dependency-explorer-tree__node__label"
+          tabIndex={-1}
+          title={node.description}
+        >
+          {node.label}
+        </button>
+        {node instanceof ProjectDependencyTreeNodeData && (
+          <div className="project-dependency-explorer-tree__node__version">
+            <button
+              className="project-dependency-explorer-tree__node__version-btn"
+              title={node.value.versionId}
+              tabIndex={-1}
+            >
+              {node.value.versionId}
+            </button>
+          </div>
+        )}
+      </div>
+    </ContextMenu>
+  );
+};
+
+const ConflictDependencyTreeView: React.FC<{
+  treeData: TreeData<ProjectDependencyConflictTreeNodeData>;
+  setTreeData: (
+    treeData: TreeData<ProjectDependencyConflictTreeNodeData>,
+  ) => void;
+}> = (props) => {
+  const { treeData, setTreeData } = props;
+  const onNodeExpand = (node: ProjectDependencyConflictTreeNodeData): void => {
+    if (node.childrenIds?.length) {
+      node.isOpen = !node.isOpen;
+    }
+    setTreeData({ ...treeData });
+  };
+  const onNodeSelect = (node: ProjectDependencyConflictTreeNodeData): void => {
+    onNodeExpand(node);
+    setTreeData({ ...treeData });
+  };
+  const getChildNodes = (
+    node: ProjectDependencyConflictTreeNodeData,
+  ): ProjectDependencyConflictTreeNodeData[] => {
+    if (!node.childrenIds || node.childrenIds.length === 0) {
+      return [];
+    }
+    const childrenNodes = node.childrenIds
+      .map((id) => treeData.nodes.get(id))
+      .filter(isNonNullable);
+    return childrenNodes;
+  };
+  return (
+    <TreeView
+      components={{
+        TreeNodeContainer: ConflictTreeNodeContainer,
+      }}
+      treeData={treeData}
+      getChildNodes={getChildNodes}
+      onNodeSelect={onNodeSelect}
+      innerProps={{
+        onNodeExpand,
+      }}
+    />
+  );
+};
+
+const collapseTreeData = (
+  treeData: TreeData<ProjectDependencyTreeNodeData>,
+): void => {
   Array.from(treeData.nodes.values()).forEach((node) => {
     node.isOpen = false;
   });
@@ -331,7 +497,7 @@ const collapseTreeData = (treeData: TreeData<DependencyTreeNodeData>): void => {
 export const getConflictsString = (
   report: ProjectDependencyGraphReport,
 ): string =>
-  Array.from(report.conflictPaths.entries())
+  Array.from(report.conflictInfo.entries())
     .map(([k, conflictVersionPaths]) => {
       const base = `project:\n${
         ' '.repeat(TAB_SIZE) +
@@ -339,8 +505,8 @@ export const getConflictsString = (
       }`;
       const versionConflictString = conflictVersionPaths
         .map((conflictVersion) => {
-          const versions = `version: ${conflictVersion.versionNode.versionId}\n`;
-          const paths = `paths:\n${conflictVersion.paths
+          const versions = `version: ${conflictVersion.version.versionId}\n`;
+          const paths = `paths:\n${conflictVersion.pathsToVersion
             .map(
               (p, idx) =>
                 `${' '.repeat(TAB_SIZE) + (idx + 1)}:\n${p
@@ -361,26 +527,58 @@ const ProjectDependencyConflictViewer = observer(
     dependencyEditorState: ProjectDependencyEditorState;
     report: ProjectDependencyGraphReport;
   }) => {
-    const { report } = props;
+    const { report, dependencyEditorState } = props;
     const hasConflict = Boolean(report.conflicts.length);
+    const collapseTree = (): void => {
+      dependencyEditorState.conflictStates.forEach((c) => {
+        const treeData = c.treeData;
+        Array.from(treeData.nodes.values()).forEach((n) => (n.isOpen = false));
+        c.setTreeData({ ...treeData });
+      });
+    };
+    const expandAllNodes = (): void => {
+      dependencyEditorState.expandAllConflicts();
+    };
     return (
       <div className="panel project-dependency-explorer">
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">conflicts</div>
           </div>
+          <div className="panel__header__actions">
+            <button
+              className="panel__header__action"
+              disabled={!hasConflict}
+              onClick={collapseTree}
+              tabIndex={-1}
+            >
+              <CompressIcon title="Collapse Tree" />
+            </button>
+            <button
+              className="panel__header__action"
+              disabled={!hasConflict}
+              onClick={expandAllNodes}
+              tabIndex={-1}
+            >
+              <ExpandAllIcon title="Expand All Dependencies" />
+            </button>
+          </div>
         </div>
         <div className="project-dependency-explorer__content">
-          {hasConflict ? (
-            <TextInputEditor
-              inputValue={getConflictsString(report)}
-              isReadOnly={true}
-              language={EDITOR_LANGUAGE.TEXT}
-              showMiniMap={true}
-            />
-          ) : (
-            <BlankPanelContent>No Conflicts</BlankPanelContent>
+          {hasConflict && (
+            <div>
+              {dependencyEditorState.conflictStates.map((c) => (
+                <ConflictDependencyTreeView
+                  key={c.uuid}
+                  treeData={c.treeData}
+                  setTreeData={(
+                    treeData: TreeData<ProjectDependencyConflictTreeNodeData>,
+                  ) => c.setTreeData(treeData)}
+                />
+              ))}
+            </div>
           )}
+          {!hasConflict && <BlankPanelContent>No Conflicts</BlankPanelContent>}
         </div>
       </div>
     );
@@ -403,7 +601,11 @@ const ProjectDependencyReportModal = observer(
     const closeModal = (): void =>
       dependencyEditorState.setDependencyReport(undefined);
     const [flattenView, setFlattenView] = useState(false);
-    const setTreeData = (treeData: TreeData<DependencyTreeNodeData>): void => {
+    const [isExpandingDependencies, setIsExpandingDependencies] =
+      useState(false);
+    const setTreeData = (
+      treeData: TreeData<ProjectDependencyTreeNodeData>,
+    ): void => {
       dependencyEditorState.setTreeData(treeData, flattenView);
     };
     const toggleViewAsListOrAsTree = (): void => {
@@ -420,8 +622,10 @@ const ProjectDependencyReportModal = observer(
     };
     const openAllDependencyNodes = (): void => {
       if (treeData && dependencyReport) {
+        setIsExpandingDependencies(true);
         openAllDependencyNodesInTree(treeData, dependencyReport.graph);
         setTreeData({ ...treeData });
+        setIsExpandingDependencies(false);
       }
     };
     return (
@@ -436,8 +640,16 @@ const ProjectDependencyReportModal = observer(
       >
         <Modal darkMode={true} className="editor-modal">
           <ModalHeader title="Dependency Explorer" />
+
           <ModalBody>
             <div className="panel project-dependency-report">
+              <PanelLoadingIndicator
+                isLoading={Boolean(
+                  isExpandingDependencies ||
+                    dependencyEditorState.expandConflictsState.isInProgress,
+                )}
+              />
+
               <div className="panel__header project-dependency-report__tabs__header">
                 <div className="project-dependency-report__tabs">
                   {tabs.map((tab) => (
@@ -501,7 +713,6 @@ const ProjectDependencyReportModal = observer(
                   <div className="project-dependency-explorer__content">
                     {treeData && (
                       <DependencyTreeView
-                        configState={dependencyEditorState}
                         treeData={treeData}
                         setTreeData={setTreeData}
                       />

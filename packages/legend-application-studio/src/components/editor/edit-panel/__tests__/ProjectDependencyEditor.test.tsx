@@ -238,7 +238,7 @@ test(integrationTest('Test Building of Dependency Report'), async () => {
   const report = buildDependencyReport(rawdependencyReport);
   const graph = report.graph;
   expect(report.conflicts.length).toBe(0);
-  expect(report.conflictPaths.size).toBe(0);
+  expect(report.conflictInfo.size).toBe(0);
   expect(graph.rootNodes.length).toBe(1);
   expect(graph.nodes.size).toBe(68);
   const rootNode = guaranteeNonNullable(graph.rootNodes[0]);

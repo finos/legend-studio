@@ -21,7 +21,7 @@ import {
 } from '@finos/legend-shared';
 import {
   ProjectDependencyConflict,
-  ProjectDependencyConflictPath,
+  ProjectDependencyVersionConflictInfo,
   ProjectDependencyGraph,
   ProjectDependencyGraphReport,
   ProjectDependencyVersionNode,
@@ -47,21 +47,21 @@ const walkBackWardEdges = (
     return [];
   }
   const result: ProjectDependencyVersionNode[][] = [];
-  node.dependants.forEach((child) => {
-    const childPaths = walkBackWardEdges(
-      child,
+  node.dependants.forEach((dependant) => {
+    const dependantPaths = walkBackWardEdges(
+      dependant,
       graph,
       paths,
       depth + 1,
       maxDepth,
     );
-    if (childPaths.length) {
-      childPaths.forEach((p) => {
-        p.push(child);
+    if (dependantPaths.length) {
+      dependantPaths.forEach((p) => {
+        p.push(dependant);
         result.push(p);
       });
     } else {
-      result.push([child]);
+      result.push([dependant]);
     }
   });
   return result;
@@ -69,19 +69,19 @@ const walkBackWardEdges = (
 
 export const buildConflictsPaths = (
   report: ProjectDependencyGraphReport,
-): Map<ProjectDependencyConflict, ProjectDependencyConflictPath[]> => {
+): Map<ProjectDependencyConflict, ProjectDependencyVersionConflictInfo[]> => {
   const result: Map<
     ProjectDependencyConflict,
-    ProjectDependencyConflictPath[]
+    ProjectDependencyVersionConflictInfo[]
   > = new Map();
   report.conflicts.forEach((conflict) => {
-    const versionReportPath: ProjectDependencyConflictPath[] = [];
+    const versionReportPath: ProjectDependencyVersionConflictInfo[] = [];
     conflict.versions.forEach((conflictNode) => {
-      const conflictVersionPath = new ProjectDependencyConflictPath(
+      const conflictVersionPath = new ProjectDependencyVersionConflictInfo(
         conflict,
         conflictNode,
       );
-      conflictVersionPath.paths = walkBackWardEdges(
+      conflictVersionPath.pathsToVersion = walkBackWardEdges(
         conflictNode,
         report.graph,
         [],

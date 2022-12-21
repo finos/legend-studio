@@ -58,9 +58,9 @@ export class ProjectDependencyConflict {
 export class ProjectDependencyGraphReport {
   graph: ProjectDependencyGraph;
   conflicts: ProjectDependencyConflict[] = [];
-  conflictPaths: Map<
+  conflictInfo: Map<
     ProjectDependencyConflict,
-    ProjectDependencyConflictPath[]
+    ProjectDependencyVersionConflictInfo[]
   > = new Map();
 
   constructor(graph: ProjectDependencyGraph) {
@@ -68,17 +68,16 @@ export class ProjectDependencyGraphReport {
   }
 }
 
-export class ProjectDependencyConflictPath {
+export class ProjectDependencyVersionConflictInfo {
   conflict: ProjectDependencyConflict;
-  versionNode: ProjectDependencyVersionNode;
-
-  paths: ProjectDependencyVersionNode[][] = [];
+  version: ProjectDependencyVersionNode;
+  pathsToVersion: ProjectDependencyVersionNode[][] = [];
 
   constructor(
     conflict: ProjectDependencyConflict,
     versionNode: ProjectDependencyVersionNode,
   ) {
     this.conflict = conflict;
-    this.versionNode = versionNode;
+    this.version = versionNode;
   }
 }

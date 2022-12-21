@@ -185,6 +185,7 @@ export {
   VscOpenPreview as OpenPreviewIcon,
   VscDiff as DiffIcon,
   VscRegex as RegexIcon,
+  VscVersions as VersionsIcon,
   VscCaseSensitive as CaseSensitiveIcon,
 } from 'react-icons/vsc';
 export {

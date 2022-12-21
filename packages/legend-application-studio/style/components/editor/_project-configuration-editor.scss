@@ -566,13 +566,14 @@
   }
 
   &-tree__node__icon {
-    width: 2rem;
+    width: 3rem;
     min-width: 2rem;
   }
 
   &-tree__node__icon__expand,
   &-tree__node__icon__type {
     width: 2rem;
+    margin-right: 0.5rem;
 
     @include flexHCenter;
   }
