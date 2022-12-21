@@ -18,48 +18,104 @@ import type { EditorStore } from '../../EditorStore.js';
 import type { ProjectConfigurationEditorState } from './ProjectConfigurationEditorState.js';
 import { flow, observable, makeObservable, flowResult, action } from 'mobx';
 import {
-  type PlainObject,
   type GeneratorFn,
+  type PlainObject,
   ActionState,
   assertErrorThrown,
   LogEvent,
+  isNonNullable,
+  uuid,
 } from '@finos/legend-shared';
 import {
   type ProjectDependencyGraphReport,
   type ProjectDependencyVersionNode,
+  ProjectDependencyCoordinates,
+  type ProjectDependencyGraph,
+  type ProjectDependencyConflict,
+  type ProjectDependencyVersionConflictInfo,
   buildConflictsPaths,
   buildDependencyReport,
-  ProjectDependencyCoordinates,
   RawProjectDependencyReport,
 } from '@finos/legend-server-depot';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import { LEGEND_STUDIO_APP_EVENT } from '../../LegendStudioAppEvent.js';
 import type { ProjectConfiguration } from '@finos/legend-server-sdlc';
 
-export class DependencyTreeNodeData implements TreeNodeData {
-  value: ProjectDependencyVersionNode;
+export abstract class ProjectDependencyConflictTreeNodeData
+  implements TreeNodeData
+{
   id: string;
   label: string;
   childrenIds?: string[] | undefined;
-
-  constructor(id: string, value: ProjectDependencyVersionNode) {
-    this.id = id;
-    this.value = value;
-    this.label = value.id;
-  }
   isSelected?: boolean | undefined;
   isOpen?: boolean | undefined;
+
+  constructor(id: string) {
+    this.id = id;
+    this.label = id;
+  }
+
+  abstract get description(): string;
+}
+
+export class ConflictTreeNodeData extends ProjectDependencyConflictTreeNodeData {
+  conflict: ProjectDependencyConflict;
+
+  constructor(conflict: ProjectDependencyConflict) {
+    super(`${conflict.groupId}:${conflict.artifactId}`);
+    this.conflict = conflict;
+  }
+
+  get description(): string {
+    return this.id;
+  }
+}
+
+export class ConflictVersionNodeData extends ProjectDependencyConflictTreeNodeData {
+  versionConflict: ProjectDependencyVersionConflictInfo;
+
+  constructor(conflict: ProjectDependencyVersionConflictInfo) {
+    super(
+      `${conflict.version.groupId}:${conflict.version.artifactId}.${conflict.version.versionId}`,
+    );
+    this.versionConflict = conflict;
+    this.label = this.versionConflict.version.versionId;
+  }
+
+  get description(): string {
+    return this.id;
+  }
+}
+
+export class ProjectDependencyTreeNodeData
+  extends ProjectDependencyConflictTreeNodeData
+  implements TreeNodeData
+{
+  value: ProjectDependencyVersionNode;
+
+  constructor(id: string, value: ProjectDependencyVersionNode) {
+    super(id);
+    this.value = value;
+    this.label = value.artifactId;
+  }
+
+  get description(): string {
+    return `${this.value.groupId}:${this.value.artifactId}:${this.value.versionId}`;
+  }
 }
 
 export const buildDependencyNodeChildren = (
-  parentNode: DependencyTreeNodeData,
-  treeNodes: Map<string, DependencyTreeNodeData>,
+  parentNode: ProjectDependencyTreeNodeData,
+  treeNodes: Map<string, ProjectDependencyTreeNodeData>,
 ): void => {
   if (!parentNode.childrenIds) {
     const value = parentNode.value;
     const childrenNodes = value.dependencies.map((projectVersion) => {
       const childId = `${parentNode.id}.${projectVersion.id}`;
-      const childNode = new DependencyTreeNodeData(childId, projectVersion);
+      const childNode = new ProjectDependencyTreeNodeData(
+        childId,
+        projectVersion,
+      );
       treeNodes.set(childId, childNode);
       return childNode;
     });
@@ -67,12 +123,53 @@ export const buildDependencyNodeChildren = (
   }
 };
 
+const findRootNode = (
+  versionNode: ProjectDependencyVersionNode,
+  treeData: TreeData<ProjectDependencyTreeNodeData>,
+): ProjectDependencyTreeNodeData | undefined => {
+  if (!treeData.rootIds.includes(versionNode.id)) {
+    return undefined;
+  }
+  return Array.from(treeData.nodes.values()).find(
+    (node) => node.id === versionNode.id && node.value === versionNode,
+  );
+};
+
+const walkNode = (
+  node: ProjectDependencyTreeNodeData,
+  visited: Set<ProjectDependencyVersionNode>,
+  treeData: TreeData<ProjectDependencyTreeNodeData>,
+): void => {
+  if (!visited.has(node.value)) {
+    node.isOpen = true;
+    buildDependencyNodeChildren(node, treeData.nodes);
+    visited.add(node.value);
+    node.childrenIds
+      ?.map((nodeId) => treeData.nodes.get(nodeId))
+      .filter(isNonNullable)
+      .forEach((n) => walkNode(n, visited, treeData));
+  } else {
+    buildDependencyNodeChildren(node, treeData.nodes);
+  }
+};
+
+export const openAllDependencyNodesInTree = (
+  treeData: TreeData<ProjectDependencyTreeNodeData>,
+  graph: ProjectDependencyGraph,
+): void => {
+  const visited = new Set<ProjectDependencyVersionNode>();
+  graph.rootNodes
+    .map((node) => findRootNode(node, treeData))
+    .filter(isNonNullable)
+    .forEach((node) => walkNode(node, visited, treeData));
+};
+
 const buildDependencyTreeData = (
   report: ProjectDependencyGraphReport,
-): TreeData<DependencyTreeNodeData> => {
-  const nodes = new Map<string, DependencyTreeNodeData>();
+): TreeData<ProjectDependencyTreeNodeData> => {
+  const nodes = new Map<string, ProjectDependencyTreeNodeData>();
   const rootNodes = report.graph.rootNodes.map((versionNode) => {
-    const node = new DependencyTreeNodeData(versionNode.id, versionNode);
+    const node = new ProjectDependencyTreeNodeData(versionNode.id, versionNode);
     nodes.set(node.id, node);
     buildDependencyNodeChildren(node, nodes);
     return node;
@@ -83,12 +180,12 @@ const buildDependencyTreeData = (
 
 const buildFlattenDependencyTreeData = (
   report: ProjectDependencyGraphReport,
-): TreeData<DependencyTreeNodeData> => {
-  const nodes = new Map<string, DependencyTreeNodeData>();
+): TreeData<ProjectDependencyTreeNodeData> => {
+  const nodes = new Map<string, ProjectDependencyTreeNodeData>();
   const rootIds: string[] = [];
   Array.from(report.graph.nodes.entries()).forEach(([key, value]) => {
     const id = value.id;
-    const node = new DependencyTreeNodeData(id, value);
+    const node = new ProjectDependencyTreeNodeData(id, value);
     nodes.set(id, node);
     rootIds.push(id);
     buildDependencyNodeChildren(node, nodes);
@@ -96,17 +193,112 @@ const buildFlattenDependencyTreeData = (
   return { rootIds, nodes };
 };
 
+export enum DEPENDENCY_REPORT_TAB {
+  EXPLORER = 'EXPLORER',
+  CONFLICTS = 'CONFLICTS',
+}
+
+const buildTreeDataFromConflictVersion = (
+  conflictVersionNode: ConflictVersionNodeData,
+  nodes: Map<string, ProjectDependencyConflictTreeNodeData>,
+): ProjectDependencyTreeNodeData[] =>
+  conflictVersionNode.versionConflict.pathsToVersion
+    .map((path, idx) => {
+      if (!path.length) {
+        return undefined;
+      }
+      const pathIterator = path.values();
+      let rootNode: ProjectDependencyTreeNodeData | undefined;
+      let parentNode: ProjectDependencyTreeNodeData | undefined;
+      let currentVersion: ProjectDependencyVersionNode | undefined;
+      while (
+        (currentVersion = pathIterator.next().value as
+          | ProjectDependencyVersionNode
+          | undefined)
+      ) {
+        const id: string = parentNode
+          ? `${parentNode.id}.${currentVersion.id}`
+          : `path${idx}_${currentVersion.id}`;
+        const node = new ProjectDependencyTreeNodeData(id, currentVersion);
+        node.childrenIds = [];
+        nodes.set(id, node);
+        if (parentNode) {
+          parentNode.childrenIds = [node.id];
+        } else {
+          rootNode = node;
+        }
+        parentNode = node;
+      }
+      return rootNode;
+    })
+    .filter(isNonNullable);
+
+const buildTreeDataFromConflict = (
+  conflict: ProjectDependencyConflict,
+  paths: ProjectDependencyVersionConflictInfo[],
+): TreeData<ProjectDependencyConflictTreeNodeData> => {
+  const rootNode = new ConflictTreeNodeData(conflict);
+  const rootIds = [rootNode.id];
+  const nodes = new Map<string, ProjectDependencyConflictTreeNodeData>();
+  nodes.set(rootNode.id, rootNode);
+  const versionConflictNodes = paths.map((versionConflict) => {
+    const projectVersionNode = new ConflictVersionNodeData(versionConflict);
+    nodes.set(projectVersionNode.id, projectVersionNode);
+    const pathNodes = buildTreeDataFromConflictVersion(
+      projectVersionNode,
+      nodes,
+    );
+    projectVersionNode.childrenIds = pathNodes.map((n) => n.id);
+    return projectVersionNode;
+  });
+  rootNode.childrenIds = versionConflictNodes.map((n) => n.id);
+  return { rootIds, nodes };
+};
+
+export class ProjectDependencyConflictState {
+  readonly uuid = uuid();
+  readonly report: ProjectDependencyGraphReport;
+  readonly conflict: ProjectDependencyConflict;
+  paths: ProjectDependencyVersionConflictInfo[];
+  treeData: TreeData<ProjectDependencyConflictTreeNodeData>;
+
+  constructor(
+    report: ProjectDependencyGraphReport,
+    conflict: ProjectDependencyConflict,
+    paths: ProjectDependencyVersionConflictInfo[],
+  ) {
+    makeObservable(this, {
+      treeData: observable.ref,
+    });
+    this.report = report;
+    this.conflict = conflict;
+    this.paths = paths;
+    this.treeData = buildTreeDataFromConflict(conflict, paths);
+  }
+
+  setTreeData(treeData: TreeData<ProjectDependencyConflictTreeNodeData>): void {
+    this.treeData = treeData;
+  }
+
+  get versionNodes(): ProjectDependencyVersionNode[] {
+    return this.paths.map((e) => e.version);
+  }
+}
+
 export class ProjectDependencyEditorState {
   configState: ProjectConfigurationEditorState;
   editorStore: EditorStore;
   isReadOnly: boolean;
 
-  dependencyTreeReportModal = false;
-  dependencyConflictModal = false;
+  reportTab: DEPENDENCY_REPORT_TAB | undefined;
   fetchingDependencyInfoState = ActionState.create();
   dependencyReport: ProjectDependencyGraphReport | undefined;
-  dependencyTreeData: TreeData<DependencyTreeNodeData> | undefined;
-  flattenDependencyTreeData: TreeData<DependencyTreeNodeData> | undefined;
+  dependencyTreeData: TreeData<ProjectDependencyTreeNodeData> | undefined;
+  flattenDependencyTreeData:
+    | TreeData<ProjectDependencyTreeNodeData>
+    | undefined;
+  conflictStates: ProjectDependencyConflictState[] = [];
+  expandConflictsState = ActionState.create();
 
   constructor(
     configState: ProjectConfigurationEditorState,
@@ -114,15 +306,19 @@ export class ProjectDependencyEditorState {
   ) {
     makeObservable(this, {
       dependencyReport: observable,
-      dependencyTreeReportModal: observable,
       fetchingDependencyInfoState: observable,
-      dependencyConflictModal: observable,
       dependencyTreeData: observable.ref,
       flattenDependencyTreeData: observable.ref,
-      setDependencyConflictModal: action,
+      conflictStates: observable,
+      reportTab: observable,
+      expandConflictsState: observable,
+      setDependencyReport: action,
+      expandAllConflicts: action,
+      setFlattenDependencyTreeData: action,
       clearTrees: action,
-      setDependencyTreeReportModal: action,
+      setTreeData: action,
       setDependencyTreeData: action,
+      setConflictStates: action,
       fetchDependencyReport: flow,
     });
     this.configState = configState;
@@ -130,22 +326,45 @@ export class ProjectDependencyEditorState {
     this.isReadOnly = editorStore.isInViewerMode;
   }
 
+  expandAllConflicts(): void {
+    this.expandConflictsState.inProgress();
+    this.conflictStates.forEach((c) => {
+      const treeData = c.treeData;
+      Array.from(treeData.nodes.values()).forEach((n) => (n.isOpen = true));
+    });
+    this.conflictStates.forEach((c) => {
+      c.setTreeData({ ...c.treeData });
+    });
+    this.expandConflictsState.complete();
+  }
+
+  setTreeData(
+    treeData: TreeData<ProjectDependencyTreeNodeData>,
+    flattenView?: boolean,
+  ): void {
+    if (flattenView) {
+      this.setFlattenDependencyTreeData(treeData);
+    } else {
+      this.setDependencyTreeData(treeData);
+    }
+  }
+
+  setDependencyReport(tab: DEPENDENCY_REPORT_TAB | undefined): void {
+    this.reportTab = tab;
+  }
+
   setDependencyTreeData(
-    tree: TreeData<DependencyTreeNodeData> | undefined,
+    tree: TreeData<ProjectDependencyTreeNodeData> | undefined,
   ): void {
     this.dependencyTreeData = tree;
   }
 
-  setDependencyConflictModal(showModal: boolean): void {
-    this.dependencyConflictModal = showModal;
-  }
-
-  setDependencyTreeReportModal(showModal: boolean): void {
-    this.dependencyTreeReportModal = showModal;
+  setConflictStates(val: ProjectDependencyConflictState[]): void {
+    this.conflictStates = val;
   }
 
   setFlattenDependencyTreeData(
-    tree: TreeData<DependencyTreeNodeData> | undefined,
+    tree: TreeData<ProjectDependencyTreeNodeData> | undefined,
   ): void {
     this.flattenDependencyTreeData = tree;
   }
@@ -192,8 +411,14 @@ export class ProjectDependencyEditorState {
   processReport(report: ProjectDependencyGraphReport): void {
     this.setDependencyTreeData(buildDependencyTreeData(report));
     this.setFlattenDependencyTreeData(buildFlattenDependencyTreeData(report));
+    this.setConflictStates([]);
     try {
-      report.conflictPaths = buildConflictsPaths(report);
+      report.conflictInfo = buildConflictsPaths(report);
+      const conflictStates = Array.from(report.conflictInfo.entries()).map(
+        ([conflict, paths]) =>
+          new ProjectDependencyConflictState(report, conflict, paths),
+      );
+      this.setConflictStates(conflictStates);
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notifyError(

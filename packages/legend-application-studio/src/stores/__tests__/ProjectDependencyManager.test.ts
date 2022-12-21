@@ -36,6 +36,7 @@ import {
   PackageableElementReference,
 } from '@finos/legend-graph';
 import TEST_DATA__M2MGraphEntities from './TEST_DATA__M2MGraphEntities.json';
+import { TEST_DATA__ProjectDependencyReportWithConflict } from '../../components/editor/edit-panel/__tests__/TEST_DATA__ProjectDependencyReport.js';
 
 const testDependingOnDifferentProjectVersions = [
   {
@@ -163,21 +164,6 @@ const MULTI_PROJECT_DATA = [
     latestVersion: '2.0.0',
   },
 ];
-
-const DEPENDENCY_INFO_DATA = {
-  tree: [],
-  conflicts: [
-    {
-      groupId: 'org.finos.legend',
-      artifactId: 'prod-a',
-      versions: ['1.0.0', '2.0.0'],
-      conflictPaths: [
-        'org.finos.legend:prod-a:1.0.0',
-        'org.finos.legend:prod-a:2.0.0',
-      ],
-    },
-  ],
-};
 
 const FILE_GENERATION_PATH = 'model::myFileGeneration';
 const buildFileGenerationDepentOnDependencyElements = (
@@ -374,29 +360,52 @@ test(
   },
 );
 
-// TODO: readd test when dependency explorer/conflict complete
-test.skip(
+test(
   unitTest('Same project different versions dependency error check'),
   async () => {
     const expectedError =
-      'Depending on multiple versions of a project is not supported. Found conflicts:\n' +
-      'project:\n' +
-      '  org.finos.legend:prod-a\n' +
-      'versions:\n' +
-      '  1.0.0\n' +
-      '  2.0.0\n' +
-      'paths:\n' +
-      '  1:\n' +
-      '  org.finos.legend:prod-a:1.0.0\n' +
-      '  2:\n' +
-      '  org.finos.legend:prod-a:2.0.0\n';
+      'Depending on multiple versions of a project is not supported. Found conflicts:\n';
+    'project: com.company0:artifact0\n' +
+      'versions:[2.0.0,3.0.0]\n' +
+      'project: com.company0:artifact11\n' +
+      'versions:[65.0.0,66.0.0]\n' +
+      'project: com.company0:artifact33\n' +
+      'versions:[20.0.0,21.0.0]\n' +
+      'project: com.company6:artifact44\n' +
+      'versions:[62.0.0,63.0.0]\n' +
+      'project: com.company3:artifact8\n' +
+      'versions:[5.0.0,6.0.0]\n' +
+      'project: com.company6:artifact43\n' +
+      'versions:[58.0.0,59.0.0]\n' +
+      'project: com.company9:artifact41\n' +
+      'versions:[65.0.0,66.0.0]\n' +
+      'project: com.company6:artifact47\n' +
+      'versions:[72.0.0,73.0.0]\n' +
+      'project: com.company0:artifact57\n' +
+      'versions:[19.0.0,20.0.0]\n' +
+      'project: com.company1:artifact18\n' +
+      'versions:[5.0.0,6.0.0]\n' +
+      'project: com.company0:artifact4\n' +
+      'versions:[2.0.0,3.0.0]\n' +
+      'project: com.company5:artifact14\n' +
+      'versions:[40.0.0,41.0.0]\n' +
+      'project: com.company0:artifact27\n' +
+      'versions:[84.0.0,85.0.0]\n' +
+      'project: com.company3:artifact36\n' +
+      'versions:[2.0.0,3.0.0]\n' +
+      'project: com.company7:artifact25\n' +
+      'versions:[64.0.0,65.0.0]\n' +
+      'project: com.company0:artifact16\n' +
+      'versions:[3.0.0,4.0.0]\n' +
+      'project: com.company0:artifact13\n' +
+      'versions:[14.0.0,15.0.0]';
     await expect(
       testDependencyElements(
         [] as Entity[],
         testDependingOnDifferentProjectVersions,
         PROJECT_DATA,
         true,
-        DEPENDENCY_INFO_DATA,
+        TEST_DATA__ProjectDependencyReportWithConflict,
       ),
     ).rejects.toThrowError(expectedError);
   },

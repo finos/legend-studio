@@ -1474,12 +1474,14 @@ export class EditorGraphState {
           const startErrorMessage =
             'Depending on multiple versions of a project is not supported. Found conflicts:\n';
           if (dependencyInfo?.conflicts.length) {
-            const conflictingProjects = dependencyInfo.conflicts.map(
-              (c) =>
-                `project: ${c.groupId}:${c.artifactId}\nverions:[${c.versions
-                  .map((v) => v.versionId)
-                  .join(',')}]`,
-            );
+            const conflictingProjects = dependencyInfo.conflicts
+              .map(
+                (c) =>
+                  `project: ${c.groupId}:${c.artifactId}\nversions:[${c.versions
+                    .map((v) => v.versionId)
+                    .join(',')}]`,
+              )
+              .join('\n');
             throw new UnsupportedOperationError(
               startErrorMessage + conflictingProjects,
             );

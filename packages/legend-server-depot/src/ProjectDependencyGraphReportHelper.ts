@@ -21,7 +21,7 @@ import {
 } from '@finos/legend-shared';
 import {
   ProjectDependencyConflict,
-  ProjectDependencyConflictPath,
+  ProjectDependencyVersionConflictInfo,
   ProjectDependencyGraph,
   ProjectDependencyGraphReport,
   ProjectDependencyVersionNode,
@@ -44,44 +44,33 @@ const walkBackWardEdges = (
   maxDepth: number,
 ): ProjectDependencyVersionNode[][] => {
   if (isRootNode(node, graph) || depth > maxDepth || !node.dependants.length) {
-    return [];
+    return [[node]];
   }
-  const result: ProjectDependencyVersionNode[][] = [];
-  node.dependants.forEach((child) => {
-    const childPaths = walkBackWardEdges(
-      child,
-      graph,
-      paths,
-      depth + 1,
-      maxDepth,
-    );
-    if (childPaths.length) {
-      childPaths.forEach((p) => {
-        p.push(child);
-        result.push(p);
-      });
-    } else {
-      result.push([child]);
-    }
-  });
-  return result;
+  const dependantPaths = node.dependants
+    .map((dependant) =>
+      walkBackWardEdges(dependant, graph, paths, depth + 1, maxDepth),
+    )
+    .flat();
+  dependantPaths.forEach((r) => r.push(node));
+  return dependantPaths;
 };
 
+// Here we are rebuilding all the paths to said project dependency version which are causing conflicts
 export const buildConflictsPaths = (
   report: ProjectDependencyGraphReport,
-): Map<ProjectDependencyConflict, ProjectDependencyConflictPath[]> => {
+): Map<ProjectDependencyConflict, ProjectDependencyVersionConflictInfo[]> => {
   const result: Map<
     ProjectDependencyConflict,
-    ProjectDependencyConflictPath[]
+    ProjectDependencyVersionConflictInfo[]
   > = new Map();
   report.conflicts.forEach((conflict) => {
-    const versionReportPath: ProjectDependencyConflictPath[] = [];
+    const versionReportPath: ProjectDependencyVersionConflictInfo[] = [];
     conflict.versions.forEach((conflictNode) => {
-      const conflictVersionPath = new ProjectDependencyConflictPath(
+      const conflictVersionPath = new ProjectDependencyVersionConflictInfo(
         conflict,
         conflictNode,
       );
-      conflictVersionPath.paths = walkBackWardEdges(
+      conflictVersionPath.pathsToVersion = walkBackWardEdges(
         conflictNode,
         report.graph,
         [],
