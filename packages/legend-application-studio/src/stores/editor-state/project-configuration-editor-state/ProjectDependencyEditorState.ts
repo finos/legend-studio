@@ -29,7 +29,7 @@ import {
 import {
   type ProjectDependencyGraphReport,
   type ProjectDependencyVersionNode,
-  type ProjectDependencyCoordinates,
+  ProjectDependencyCoordinates,
   type ProjectDependencyGraph,
   type ProjectDependencyConflict,
   type ProjectDependencyVersionConflictInfo,
@@ -40,7 +40,6 @@ import {
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import { LEGEND_STUDIO_APP_EVENT } from '../../LegendStudioAppEvent.js';
 import type { ProjectConfiguration } from '@finos/legend-server-sdlc';
-import { TEST_DATA__ProjectDependencyReportWithConflict } from '../../../components/editor/edit-panel/__tests__/TEST_DATA__ProjectDependencyReport.js';
 
 export abstract class ProjectDependencyConflictTreeNodeData
   implements TreeNodeData
@@ -196,7 +195,7 @@ const buildFlattenDependencyTreeData = (
 
 export enum DEPENDENCY_REPORT_TAB {
   EXPLORER = 'EXPLORER',
-  CONFLICT = 'CONFLICT',
+  CONFLICTS = 'CONFLICTS',
 }
 
 const buildTreeDataFromConflictVersion = (
@@ -212,7 +211,11 @@ const buildTreeDataFromConflictVersion = (
       let rootNode: ProjectDependencyTreeNodeData | undefined;
       let parentNode: ProjectDependencyTreeNodeData | undefined;
       let currentVersion: ProjectDependencyVersionNode | undefined;
-      while ((currentVersion = pathIterator.next().value)) {
+      while (
+        (currentVersion = pathIterator.next().value as
+          | ProjectDependencyVersionNode
+          | undefined)
+      ) {
         const id: string = parentNode
           ? `${parentNode.id}.${currentVersion.id}`
           : `path${idx}_${currentVersion.id}`;
@@ -311,6 +314,7 @@ export class ProjectDependencyEditorState {
       expandConflictsState: observable,
       setDependencyReport: action,
       expandAllConflicts: action,
+      setFlattenDependencyTreeData: action,
       clearTrees: action,
       setTreeData: action,
       setDependencyTreeData: action,
@@ -380,16 +384,14 @@ export class ProjectDependencyEditorState {
             this.projectConfiguration.projectDependencies,
           ),
         )) as ProjectDependencyCoordinates[];
-        // const dependencyInfoRaw =
-        //   (yield this.editorStore.depotServerClient.analyzeDependencyTree(
-        //     dependencyCoordinates.map((e) =>
-        //       ProjectDependencyCoordinates.serialization.toJson(e),
-        //     ),
-        //   )) as PlainObject<RawProjectDependencyReport>;
+        const dependencyInfoRaw =
+          (yield this.editorStore.depotServerClient.analyzeDependencyTree(
+            dependencyCoordinates.map((e) =>
+              ProjectDependencyCoordinates.serialization.toJson(e),
+            ),
+          )) as PlainObject<RawProjectDependencyReport>;
         const rawdependencyReport =
-          RawProjectDependencyReport.serialization.fromJson(
-            TEST_DATA__ProjectDependencyReportWithConflict as PlainObject<RawProjectDependencyReport>,
-          );
+          RawProjectDependencyReport.serialization.fromJson(dependencyInfoRaw);
         const report = buildDependencyReport(rawdependencyReport);
         this.dependencyReport = report;
         this.processReport(report);

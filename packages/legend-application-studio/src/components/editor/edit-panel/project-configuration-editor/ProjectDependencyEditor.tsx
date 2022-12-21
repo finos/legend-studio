@@ -116,7 +116,7 @@ const ProjectDependencyActions = observer(
     const viewConflict = (): void => {
       if (dependencyEditorState.dependencyReport) {
         dependencyEditorState.setDependencyReport(
-          DEPENDENCY_REPORT_TAB.CONFLICT,
+          DEPENDENCY_REPORT_TAB.CONFLICTS,
         );
       }
     };
@@ -248,11 +248,9 @@ const DependencyTreeNodeContainer: React.FC<
     }
   >
 > = (props) => {
-  const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
-  const { onNodeExpand } = innerProps;
+  const { node, level, stepPaddingInRem, onNodeSelect } = props;
   const isExpandable = Boolean(node.childrenIds?.length);
   const selectNode = (): void => onNodeSelect?.(node);
-  const expandNode = (): void => onNodeExpand(node);
   const value = node.value;
   const nodeExpandIcon = isExpandable ? (
     node.isOpen ? (
@@ -285,10 +283,7 @@ const DependencyTreeNodeContainer: React.FC<
         onClick={selectNode}
       >
         <div className="tree-view__node__icon project-dependency-explorer-tree__node__icon">
-          <div
-            onClick={expandNode}
-            className="project-dependency-explorer-tree__node__icon__expand"
-          >
+          <div className="project-dependency-explorer-tree__node__icon__expand">
             {nodeExpandIcon}
           </div>
         </div>
@@ -367,11 +362,9 @@ const ConflictTreeNodeContainer: React.FC<
     }
   >
 > = (props) => {
-  const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
-  const { onNodeExpand } = innerProps;
+  const { node, level, stepPaddingInRem, onNodeSelect } = props;
   const isExpandable = Boolean(node.childrenIds?.length);
   const selectNode = (): void => onNodeSelect?.(node);
-  const expandNode = (): void => onNodeExpand(node);
   const nodeExpandIcon = isExpandable ? (
     node.isOpen ? (
       <ChevronDownIcon />
@@ -402,11 +395,17 @@ const ConflictTreeNodeContainer: React.FC<
         }}
         onClick={selectNode}
       >
-        <div className="tree-view__node__icon project-dependency-explorer-tree__node__icon">
-          <div
-            onClick={expandNode}
-            className="project-dependency-explorer-tree__node__icon__expand"
-          >
+        <div
+          className={clsx(
+            'tree-view__node__icon project-dependency-explorer-tree__node__icon',
+            {
+              'tree-view__node__icon project-dependency-explorer-tree__node__icon__with__type':
+                node instanceof ConflictTreeNodeData ||
+                node instanceof ConflictVersionNodeData,
+            },
+          )}
+        >
+          <div className="project-dependency-explorer-tree__node__icon__expand">
             {nodeExpandIcon}
           </div>
           {node instanceof ConflictTreeNodeData && (
@@ -560,7 +559,7 @@ const ProjectDependencyConflictViewer = observer(
               onClick={expandAllNodes}
               tabIndex={-1}
             >
-              <ExpandAllIcon title="Expand All Dependencies" />
+              <ExpandAllIcon title="Expand All Conflict Paths" />
             </button>
           </div>
         </div>
@@ -720,7 +719,7 @@ const ProjectDependencyReportModal = observer(
                   </div>
                 </div>
               )}
-              {reportTab === DEPENDENCY_REPORT_TAB.CONFLICT &&
+              {reportTab === DEPENDENCY_REPORT_TAB.CONFLICTS &&
                 dependencyReport && (
                   <ProjectDependencyConflictViewer
                     report={dependencyReport}

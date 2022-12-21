@@ -229,6 +229,8 @@ test(integrationTest('Test Project Report'), async () => {
       expect(queryByText(dependencyExplorer, artifact)).toBeNull();
     }
   });
+  fireEvent.click(getByText(dependencyExplorer, 'Conflicts'));
+  expect(getByText(dependencyExplorer, 'No Conflicts')).toBeDefined();
 });
 
 test(integrationTest('Test Building of Dependency Report'), async () => {

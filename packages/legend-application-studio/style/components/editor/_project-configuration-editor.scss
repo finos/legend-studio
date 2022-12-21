@@ -566,8 +566,12 @@
   }
 
   &-tree__node__icon {
-    width: 3rem;
+    width: 2rem;
     min-width: 2rem;
+  }
+
+  &-tree__node__icon__with__type {
+    width: 3rem;
   }
 
   &-tree__node__icon__expand,

@@ -44,29 +44,18 @@ const walkBackWardEdges = (
   maxDepth: number,
 ): ProjectDependencyVersionNode[][] => {
   if (isRootNode(node, graph) || depth > maxDepth || !node.dependants.length) {
-    return [];
+    return [[node]];
   }
-  const result: ProjectDependencyVersionNode[][] = [];
-  node.dependants.forEach((dependant) => {
-    const dependantPaths = walkBackWardEdges(
-      dependant,
-      graph,
-      paths,
-      depth + 1,
-      maxDepth,
-    );
-    if (dependantPaths.length) {
-      dependantPaths.forEach((p) => {
-        p.push(dependant);
-        result.push(p);
-      });
-    } else {
-      result.push([dependant]);
-    }
-  });
-  return result;
+  const dependantPaths = node.dependants
+    .map((dependant) =>
+      walkBackWardEdges(dependant, graph, paths, depth + 1, maxDepth),
+    )
+    .flat();
+  dependantPaths.forEach((r) => r.push(node));
+  return dependantPaths;
 };
 
+// Here we are rebuilding all the paths to said project dependency version which are causing conflicts
 export const buildConflictsPaths = (
   report: ProjectDependencyGraphReport,
 ): Map<ProjectDependencyConflict, ProjectDependencyVersionConflictInfo[]> => {
