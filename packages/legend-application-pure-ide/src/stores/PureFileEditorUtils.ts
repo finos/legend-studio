@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import type { PureGrammarTextSuggestion } from '@finos/legend-application';
+import {
+  type PureGrammarTextSuggestion,
+  EDITOR_LANGUAGE,
+  isTokenOneOf,
+  PURE_GRAMMAR_TOKEN,
+} from '@finos/legend-application';
 import {
   ELEMENT_PATH_DELIMITER,
   extractElementNameFromPath,
@@ -22,11 +27,15 @@ import {
   PURE_ELEMENT_NAME,
   PURE_PARSER,
 } from '@finos/legend-graph';
-import { isNonNullable, returnUndefOnError } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  isNonNullable,
+  returnUndefOnError,
+} from '@finos/legend-shared';
 import {
   languages as monacoLanguagesAPI,
   type IPosition,
-  type editor as monacoEditorAPI,
+  editor as monacoEditorAPI,
 } from 'monaco-editor';
 import { deserialize } from 'serializr';
 import { ConceptType } from '../server/models/ConceptTree.js';
@@ -34,6 +43,7 @@ import {
   AttributeSuggestion,
   ClassSuggestion,
   ElementSuggestion,
+  VariableSuggestion,
 } from '../server/models/Suggestion.js';
 import type { EditorStore } from './EditorStore.js';
 import {
@@ -610,4 +620,115 @@ export const getCastingClassSuggestions = async (
   return suggestions.map((suggestion) =>
     castingClassSuggestionToCompletionItem(suggestion),
   );
+};
+
+const variableSuggestionToCompletionItem = (
+  suggestion: VariableSuggestion,
+  isFromCompiledSource: boolean,
+): monacoLanguagesAPI.CompletionItem =>
+  ({
+    label: suggestion.name,
+    kind: monacoLanguagesAPI.CompletionItemKind.Variable,
+    insertTextRules:
+      monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+    // if suggestions coming from compiled source, they are ranked higher
+    sortText: !isFromCompiledSource
+      ? `zzzz_${suggestion.name}`
+      : suggestion.name,
+    insertText: suggestion.name,
+  } as monacoLanguagesAPI.CompletionItem);
+
+const VARIABLE_SUGGESTION_SCANNING_RANGE = 10;
+
+export const getVariableSuggestions = async (
+  position: IPosition,
+  model: monacoEditorAPI.ITextModel,
+  filePath: string,
+  editorStore: EditorStore,
+): Promise<monacoLanguagesAPI.CompletionItem[]> => {
+  let suggestions: VariableSuggestion[] = [];
+
+  // get suggestions from compiled source
+  try {
+    suggestions = (
+      await editorStore.client.getSuggestionsForVariable(
+        filePath,
+        position.lineNumber,
+        position.column,
+      )
+    ).map((child) => deserialize(VariableSuggestion, child));
+  } catch {
+    // do nothing: provide no suggestions when error ocurred
+  }
+  // NOTE: potentially, we could scan for all tokens that come before the current position
+  // and filter out variable suggestions that nolonger available
+
+  // get suggestions from current (potentially non-compiled) source
+  const varNames = new Set<string>();
+
+  let stopSearching = false;
+  for (
+    let i = position.lineNumber - 1;
+    i >
+    Math.max(0, position.lineNumber - 1 - VARIABLE_SUGGESTION_SCANNING_RANGE);
+    --i
+  ) {
+    // NOTE: stop searching after reaching function definition or section marker
+    if (stopSearching) {
+      break;
+    }
+    const line = model.getLineContent(i + 1);
+    if (line.match(/^\s*function\s+/) || line.match(/^\s*###\w+/)) {
+      stopSearching = true;
+    }
+
+    // scan for potential variable/parameter declarations
+    const lineTokens = guaranteeNonNullable(
+      monacoEditorAPI.tokenize(
+        model.getLineContent(i + 1),
+        EDITOR_LANGUAGE.PURE,
+      )[0],
+    );
+    lineTokens.forEach((token, lineIndex) => {
+      if (
+        // must come before the current position
+        (i !== position.lineNumber - 1 || token.offset < position.column) &&
+        isTokenOneOf(
+          token.type,
+          [PURE_GRAMMAR_TOKEN.VARIABLE, PURE_GRAMMAR_TOKEN.PARAMETER],
+          true,
+        )
+      ) {
+        varNames.add(
+          model.getValueInRange({
+            startLineNumber: i + 1,
+            startColumn: token.offset + 1,
+            endLineNumber: i + 1,
+            endColumn:
+              lineIndex === lineTokens.length - 1
+                ? Number.MAX_SAFE_INTEGER
+                : guaranteeNonNullable(lineTokens[lineIndex + 1]).offset + 1,
+          }),
+        );
+      }
+    });
+  }
+  const variablesFoundFromSuggestions = suggestions.map(
+    (suggestion) => suggestion.name,
+  );
+
+  return suggestions
+    .map((suggestion) => variableSuggestionToCompletionItem(suggestion, true))
+    .concat(
+      Array.from(varNames)
+        .filter((varName) => !variablesFoundFromSuggestions.includes(varName))
+        .map((varName) => {
+          const suggestion = new VariableSuggestion();
+          suggestion.name = varName;
+          return suggestion;
+        })
+        .map((suggestion) =>
+          variableSuggestionToCompletionItem(suggestion, false),
+        ),
+    );
 };

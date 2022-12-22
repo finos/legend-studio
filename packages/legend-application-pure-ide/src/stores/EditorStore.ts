@@ -182,7 +182,6 @@ export class EditorStore implements CommandRegistrar {
       executeFullTestSuite: flow,
       executeNavigation: flow,
       navigateBack: flow,
-      executeSaveAndReset: flow,
       fullReCompile: flow,
       refreshTrees: flow,
       command: flow,
@@ -872,30 +871,6 @@ export class EditorStore implements CommandRegistrar {
     }
   }
 
-  *executeSaveAndReset(fullInit: boolean): GeneratorFn<void> {
-    yield flowResult(
-      this.execute(
-        'executeSaveAndReset',
-        {},
-        true,
-        async (result: ExecutionResult) => {
-          this.initState.reset();
-          await flowResult(
-            this.initialize(
-              fullInit,
-              undefined,
-              this.client.mode,
-              this.client.compilerMode,
-            ),
-          );
-          this.setActiveActivity(ACTIVITY_MODE.CONCEPT, {
-            keepShowingIfMatchedCurrent: true,
-          });
-        },
-      ),
-    );
-  }
-
   *fullReCompile(fullInit: boolean): GeneratorFn<void> {
     this.applicationStore.setActionAlertInfo({
       message: 'Are you sure you want to perform a full re-compile?',
@@ -906,9 +881,27 @@ export class EditorStore implements CommandRegistrar {
           label: 'Perform full re-compile',
           type: ActionAlertActionType.PROCEED_WITH_CAUTION,
           handler: () => {
-            flowResult(this.executeSaveAndReset(fullInit)).catch(
-              this.applicationStore.alertUnhandledError,
-            );
+            flowResult(
+              this.execute(
+                'executeSaveAndReset',
+                {},
+                true,
+                async (result: ExecutionResult) => {
+                  this.initState.reset();
+                  await flowResult(
+                    this.initialize(
+                      fullInit,
+                      undefined,
+                      this.client.mode,
+                      this.client.compilerMode,
+                    ),
+                  );
+                  this.setActiveActivity(ACTIVITY_MODE.CONCEPT, {
+                    keepShowingIfMatchedCurrent: true,
+                  });
+                },
+              ),
+            ).catch(this.applicationStore.alertUnhandledError);
           },
         },
         {

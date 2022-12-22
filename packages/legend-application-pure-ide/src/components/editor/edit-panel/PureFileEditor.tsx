@@ -30,10 +30,10 @@ import type {
 import {
   EDITOR_LANGUAGE,
   EDITOR_THEME,
-  getBaseTokenType,
   getInlineSnippetSuggestions,
   getParserElementSnippetSuggestions,
   getParserKeywordSuggestions,
+  isTokenOneOf,
   PURE_GRAMMAR_TOKEN,
   useApplicationStore,
   useCommands,
@@ -58,6 +58,7 @@ import {
   getCopyrightHeaderSuggestions,
   getIdentifierSuggestions,
   getIncompletePathSuggestions,
+  getVariableSuggestions,
 } from '../../../stores/PureFileEditorUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -318,15 +319,14 @@ export const PureFileEditor = observer(
     definitionProviderDisposer.current =
       monacoLanguagesAPI.registerDefinitionProvider(EDITOR_LANGUAGE.PURE, {
         provideDefinition: (model, position) => {
-          const textTokens = monacoEditorAPI.tokenize(
-            model.getValue(),
-            EDITOR_LANGUAGE.PURE,
-          );
           // NOTE: there is a quirky problem with monaco-editor or our integration with it
           // where sometimes, hovering the mouse on the right half of the last character of a definition token
           // and then hitting Ctrl/Cmd key will not be trigger definition provider. We're not quite sure what
           // to do with that for the time being.
-          const lineTokens = textTokens[position.lineNumber - 1];
+          const lineTokens = monacoEditorAPI.tokenize(
+            model.getLineContent(position.lineNumber),
+            EDITOR_LANGUAGE.PURE,
+          )[0];
           if (!lineTokens) {
             return [];
           }
@@ -352,14 +352,13 @@ export const PureFileEditor = observer(
             currentToken &&
             currentTokenRange &&
             // NOTE: only allow goto definition for these tokens
-            (
-              [
-                PURE_GRAMMAR_TOKEN.TYPE,
-                PURE_GRAMMAR_TOKEN.VARIABLE,
-                PURE_GRAMMAR_TOKEN.PROPERTY,
-                PURE_GRAMMAR_TOKEN.IDENTIFIER,
-              ] as string[]
-            ).includes(getBaseTokenType(currentToken.type))
+            isTokenOneOf(currentToken.type, [
+              PURE_GRAMMAR_TOKEN.TYPE,
+              PURE_GRAMMAR_TOKEN.VARIABLE,
+              PURE_GRAMMAR_TOKEN.PROPERTY,
+              PURE_GRAMMAR_TOKEN.PARAMETER,
+              PURE_GRAMMAR_TOKEN.IDENTIFIER,
+            ])
           ) {
             return [
               {
@@ -376,7 +375,7 @@ export const PureFileEditor = observer(
     pureConstructSuggestionProviderDisposer.current?.dispose();
     pureConstructSuggestionProviderDisposer.current =
       monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
-        triggerCharacters: ['#', ':', '>', '.', '@', '^'],
+        triggerCharacters: ['#', ':', '>', '.', '@', '^', '$'],
         provideCompletionItems: async (model, position, context) => {
           let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
 
@@ -450,6 +449,18 @@ export const PureFileEditor = observer(
                   await getCastingClassSuggestions(
                     position,
                     model,
+                    editorStore,
+                  ),
+                );
+                break;
+              }
+              // variables
+              case '$': {
+                suggestions = suggestions.concat(
+                  await getVariableSuggestions(
+                    position,
+                    model,
+                    editorState.filePath,
                     editorStore,
                   ),
                 );

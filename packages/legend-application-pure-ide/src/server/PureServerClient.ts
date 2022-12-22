@@ -63,6 +63,7 @@ import type {
   AttributeSuggestion,
   ClassSuggestion,
   ElementSuggestion,
+  VariableSuggestion,
 } from './models/Suggestion.js';
 
 export class PureClient {
@@ -440,5 +441,16 @@ export class PureClient {
   ): Promise<PlainObject<ClassSuggestion>[]> =>
     this.networkClient.post(`${this.baseUrl}/suggestion/class`, {
       importPaths,
+    });
+
+  getSuggestionsForVariable = (
+    sourceId: string,
+    line: number,
+    column: number,
+  ): Promise<PlainObject<VariableSuggestion>[]> =>
+    this.networkClient.post(`${this.baseUrl}/suggestion/variable`, {
+      sourceId,
+      line,
+      column,
     });
 }

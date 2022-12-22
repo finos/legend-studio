@@ -57,3 +57,11 @@ createModelSchema(ClassSuggestion, {
   pureName: primitive(),
   requiredClassProperties: optional(list(primitive())),
 });
+
+export class VariableSuggestion {
+  name!: string;
+}
+
+createModelSchema(VariableSuggestion, {
+  name: primitive(),
+});
