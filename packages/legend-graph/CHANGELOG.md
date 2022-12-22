@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 22.1.0
+
+### Minor Changes
+
+- [#1693](https://github.com/finos/legend-studio/pull/1693) [`bf2487fbb`](https://github.com/finos/legend-studio/commit/bf2487fbb590bc2c025f746d2393785762b71434) ([@gayathrir11](https://github.com/gayathrir11)) - Remove graph building from text mode ([#966](https://github.com/finos/legend-studio/issues/966)).
+
 ## 22.0.2
 
 ## 22.0.1
