@@ -214,12 +214,10 @@ export class ExplorerTreeState {
       this.editorStore.graphManagerState.graph.generationModel.root,
       ExplorerTreeRootPackageLabel.MODEL_GENERATION,
     );
-    if (!this.fileGenerationTreeData) {
-      this.fileGenerationTreeData = getGenerationTreeData(
-        this.editorStore.graphState.graphGenerationState.rootFileDirectory,
-        ExplorerTreeRootPackageLabel.FILE_GENERATION,
-      );
-    }
+    this.fileGenerationTreeData = getGenerationTreeData(
+      this.editorStore.graphState.graphGenerationState.rootFileDirectory,
+      ExplorerTreeRootPackageLabel.FILE_GENERATION,
+    );
     this.setSelectedNode(undefined);
     this.buildState.complete();
   }

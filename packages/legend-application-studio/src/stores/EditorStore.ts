@@ -231,7 +231,7 @@ export class EditorStore implements CommandRegistrar {
       setActiveAuxPanelMode: action,
       cleanUp: action,
       reset: action,
-      setGraphEditMode: action,
+      setGraphEditMode: flow,
       setActiveActivity: action,
 
       initialize: flow,
@@ -340,10 +340,19 @@ export class EditorStore implements CommandRegistrar {
     this.mode = val;
   }
 
-  setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): void {
+  *setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): GeneratorFn<void> {
     this.graphEditMode = graphEditor;
     this.changeLocalChangesState();
     this.graphState.clearProblems();
+    if (graphEditor === GRAPH_EDITOR_MODE.GRAMMAR_TEXT) {
+      // Stop change detection as we don't need the actual change detection in text mode
+      this.changeDetectionState.stop();
+      this.changeDetectionState.computeLocalChangesInTextMode(
+        (yield this.graphManagerState.graphManager.pureCodeToEntities(
+          this.grammarTextEditorState.graphGrammarText,
+        )) as Entity[],
+      );
+    }
   }
 
   cleanUp(): void {
@@ -1113,20 +1122,13 @@ export class EditorStore implements CommandRegistrar {
         return;
       }
       this.applicationStore.setBlockingAlert(undefined);
-      this.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
+      yield flowResult(this.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT));
       // navigate to the currently opened element immediately after entering text mode editor
       if (this.tabManagerState.currentTab instanceof ElementEditorState) {
         this.grammarTextEditorState.setCurrentElementLabelRegexString(
           this.tabManagerState.currentTab.element,
         );
       }
-      // Stop change detection as we don't need the actual change detection in text mode
-      this.changeDetectionState.stop();
-      this.changeDetectionState.computeLocalChangesInTextMode(
-        (yield this.graphManagerState.graphManager.pureCodeToEntities(
-          this.grammarTextEditorState.graphGrammarText,
-        )) as Entity[],
-      );
     } else if (this.isInGrammarTextMode) {
       yield flowResult(this.graphState.leaveTextMode());
     } else {
