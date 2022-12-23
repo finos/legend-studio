@@ -230,16 +230,13 @@ export class PureClient {
     line: number,
     column: number,
   ): Promise<ConceptInfo> => {
-    const result = (await this.networkClient.get(
-      `${this.baseUrl}/getConceptInfo`,
-      undefined,
-      undefined,
-      {
-        file,
-        line,
-        column,
-      },
-    )) as ConceptInfo & { error: boolean; text: string };
+    const result = await this.networkClient.get<
+      ConceptInfo & { error: boolean; text: string }
+    >(`${this.baseUrl}/getConceptInfo`, undefined, undefined, {
+      file,
+      line,
+      column,
+    });
     if (result.error) {
       throw new Error(result.text);
     }
