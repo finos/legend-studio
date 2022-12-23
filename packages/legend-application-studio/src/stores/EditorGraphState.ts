@@ -898,12 +898,12 @@ export class EditorGraphState {
   }
 
   /**
-   * It creates a new explorer tree state when we compile in text mode. It resets the explorer state properly
+   * Creates a new explorer tree state when compiling in text mode. It resets the explorer state properly
    * after the new graph is built. It tries to maintain the explorer state similar to what it was before compilation.
    * To achieve that we store node ids of the opened nodes before creating a new explorer state. After creating a
    * new state we open the nodes which were opened before so that user see the same explorer state as before.
    */
-  updateExplorerTree(): void {
+  reprocessExplorerTreeInTextMode(): void {
     const mainTreeOpenedNodeIds = this.editorStore.explorerTreeState.treeData
       ? Array.from(this.editorStore.explorerTreeState.treeData.nodes.values())
           .filter((node) => node.isOpen)
@@ -1091,7 +1091,7 @@ export class EditorGraphState {
       this.editorStore.graphManagerState.generationsBuildState =
         generationsBuildState;
 
-      this.updateExplorerTree();
+      this.editorStore.explorerTreeState.reprocess();
 
       /**
        * Re-build the editor states which were opened before from the information we have stored before
@@ -1268,7 +1268,7 @@ export class EditorGraphState {
       this.editorStore.graphManagerState.generationsBuildState =
         generationsBuildState;
 
-      this.updateExplorerTree();
+      this.reprocessExplorerTreeInTextMode();
 
       /**
        * Re-build the editor states which were opened before from the information we have stored before
@@ -1348,7 +1348,7 @@ export class EditorGraphState {
         this.graphGenerationState.generatedEntities,
         this.editorStore.graphManagerState.generationsBuildState,
       );
-      this.updateExplorerTree();
+      this.editorStore.explorerTreeState.reprocess();
       this.editorStore.tabManagerState.recoverTabs(
         openedTabEditorPaths,
         currentTabState,
