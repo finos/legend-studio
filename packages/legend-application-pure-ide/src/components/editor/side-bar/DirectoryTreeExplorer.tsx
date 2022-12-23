@@ -128,6 +128,9 @@ const FileTreeNodeContainer: React.FC<
   const isPlatformDirectory =
     node.data instanceof DirectoryNode &&
     node.data.li_attr.path === '/platform';
+  const isChildPlatformDirectory =
+    node.data instanceof DirectoryNode &&
+    node.data.li_attr.path.startsWith('/platform');
   const isDirectory = node.data.isFolderNode;
   const isChildlessDirectory =
     node.data instanceof DirectoryNode && !node.data.children;
@@ -135,11 +138,23 @@ const FileTreeNodeContainer: React.FC<
     <WrenchIcon className="explorer__icon--platform" />
   ) : isDirectory ? (
     isChildlessDirectory ? (
-      <FolderIcon />
+      <FolderIcon
+        className={clsx({
+          'explorer__icon--platform': isChildPlatformDirectory,
+        })}
+      />
     ) : node.isOpen ? (
-      <FolderOpenIcon />
+      <FolderOpenIcon
+        className={clsx({
+          'explorer__icon--platform': isChildPlatformDirectory,
+        })}
+      />
     ) : (
-      <FolderIcon />
+      <FolderIcon
+        className={clsx({
+          'explorer__icon--platform': isChildPlatformDirectory,
+        })}
+      />
     )
   ) : (
     <FileAltIcon className="explorer__icon--file" />

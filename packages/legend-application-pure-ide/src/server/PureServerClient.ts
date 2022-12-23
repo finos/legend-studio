@@ -63,6 +63,7 @@ import type {
   AttributeSuggestion,
   ClassSuggestion,
   ElementSuggestion,
+  VariableSuggestion,
 } from './models/Suggestion.js';
 
 export class PureClient {
@@ -224,21 +225,23 @@ export class PureClient {
       sessionId: this.sessionId,
     });
 
-  getConceptInfo = (
+  getConceptInfo = async (
     file: string,
     line: number,
     column: number,
-  ): Promise<ConceptInfo> =>
-    this.networkClient.get(
-      `${this.baseUrl}/getConceptInfo`,
-      undefined,
-      undefined,
-      {
-        file,
-        line,
-        column,
-      },
-    );
+  ): Promise<ConceptInfo> => {
+    const result = await this.networkClient.get<
+      ConceptInfo & { error: boolean; text: string }
+    >(`${this.baseUrl}/getConceptInfo`, undefined, undefined, {
+      file,
+      line,
+      column,
+    });
+    if (result.error) {
+      throw new Error(result.text);
+    }
+    return result;
+  };
 
   getUsages = async (
     func: string,
@@ -440,5 +443,16 @@ export class PureClient {
   ): Promise<PlainObject<ClassSuggestion>[]> =>
     this.networkClient.post(`${this.baseUrl}/suggestion/class`, {
       importPaths,
+    });
+
+  getSuggestionsForVariable = (
+    sourceId: string,
+    line: number,
+    column: number,
+  ): Promise<PlainObject<VariableSuggestion>[]> =>
+    this.networkClient.post(`${this.baseUrl}/suggestion/variable`, {
+      sourceId,
+      line,
+      column,
     });
 }

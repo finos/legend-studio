@@ -131,4 +131,8 @@
       }
     }
   }
+
+  .tab-manager__tab--active {
+    border-bottom: 0.1rem solid var(--color-yellow-400);
+  }
 }

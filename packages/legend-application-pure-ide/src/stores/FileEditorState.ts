@@ -18,6 +18,8 @@ import {
   type CommandRegistrar,
   EDITOR_LANGUAGE,
   type TabState,
+  ActionAlertActionType,
+  ActionAlertType,
 } from '@finos/legend-application';
 import {
   clearMarkers,
@@ -187,6 +189,7 @@ export class FileEditorState
 {
   readonly filePath: string;
   readonly textEditorState!: FileTextEditorState;
+  private _currentHashCode: string;
 
   file: File;
   renameConceptState: FileEditorRenameConceptState | undefined;
@@ -195,16 +198,20 @@ export class FileEditorState
   constructor(editorStore: EditorStore, file: File, filePath: string) {
     super(editorStore);
 
-    makeObservable(this, {
+    makeObservable<FileEditorState, '_currentHashCode'>(this, {
+      _currentHashCode: observable,
       file: observable,
       renameConceptState: observable,
       showGoToLinePrompt: observable,
+      hasChanged: computed,
+      resetChangeDetection: action,
       setFile: action,
       setShowGoToLinePrompt: action,
       setConceptToRenameState: flow,
     });
 
     this.file = file;
+    this._currentHashCode = file.hashCode;
     this.filePath = filePath;
     this.textEditorState = new FileTextEditorState(this);
   }
@@ -232,9 +239,18 @@ export class FileEditorState
     this.textEditorState.model.dispose();
   }
 
+  get hasChanged(): boolean {
+    return this._currentHashCode !== this.file.hashCode;
+  }
+
+  resetChangeDetection(): void {
+    this._currentHashCode = this.file.hashCode;
+  }
+
   setFile(val: File): void {
     this.file = val;
     this.textEditorState.model.setValue(val.content);
+    this.resetChangeDetection();
   }
 
   setShowGoToLinePrompt(val: boolean): void {
@@ -246,6 +262,12 @@ export class FileEditorState
   ): GeneratorFn<void> {
     if (!coordinate) {
       this.renameConceptState = undefined;
+      return;
+    }
+    if (this.hasChanged) {
+      this.editorStore.applicationStore.notifyWarning(
+        `Can't rename concept: source is not compiled`,
+      );
       return;
     }
     const concept = (yield this.editorStore.getConceptInfo(coordinate)) as
@@ -343,9 +365,7 @@ export class FileEditorState
             currentPosition.lineNumber,
             currentPosition.column,
           );
-          flowResult(this.editorStore.findUsages(coordinate)).catch(
-            this.editorStore.applicationStore.alertUnhandledError,
-          );
+          this.findConceptUsages(coordinate);
         }
       },
     });
@@ -357,6 +377,11 @@ export class FileEditorState
       action: () => {
         const currentPosition = this.textEditorState.editor?.getPosition();
         if (currentPosition) {
+          const currentWord =
+            this.textEditorState.model.getWordAtPosition(currentPosition);
+          if (!currentWord) {
+            return;
+          }
           const coordinate = new FileCoordinate(
             this.filePath,
             currentPosition.lineNumber,
@@ -375,6 +400,39 @@ export class FileEditorState
         this.setShowGoToLinePrompt(true);
       },
     });
+  }
+
+  findConceptUsages(coordinate: FileCoordinate): void {
+    const proceed = (): void => {
+      flowResult(this.editorStore.findUsages(coordinate)).catch(
+        this.editorStore.applicationStore.alertUnhandledError,
+      );
+    };
+    if (this.hasChanged) {
+      this.editorStore.applicationStore.setActionAlertInfo({
+        message:
+          'Source is not compiled, finding concept usages might be inaccurate. Do you want compile to proceed?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Compile and Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => {
+              flowResult(this.editorStore.executeGo())
+                .then(proceed)
+                .catch(this.editorStore.applicationStore.alertUnhandledError);
+            },
+          },
+          {
+            label: 'Abort',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    } else {
+      proceed();
+    }
   }
 
   async renameConcept(newName: string): Promise<void> {

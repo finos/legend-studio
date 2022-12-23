@@ -55,6 +55,7 @@ export enum PURE_GRAMMAR_TOKEN {
   MULTIPLICITY = 'multiplicity',
   GENERICS = 'generics',
   PROPERTY = 'property',
+  PARAMETER = 'property',
   VARIABLE = 'variable',
   TYPE = 'type',
 
@@ -77,6 +78,7 @@ const theme: monacoEditorAPI.IStandaloneThemeData = {
     { token: PURE_GRAMMAR_TOKEN.MULTIPLICITY, foreground: '2d796b' },
     { token: PURE_GRAMMAR_TOKEN.GENERICS, foreground: '2d796b' },
     { token: PURE_GRAMMAR_TOKEN.PROPERTY, foreground: '9cdcfe' },
+    { token: PURE_GRAMMAR_TOKEN.PARAMETER, foreground: '9cdcfe' },
     { token: PURE_GRAMMAR_TOKEN.VARIABLE, foreground: '4fc1ff' },
     { token: PURE_GRAMMAR_TOKEN.TYPE, foreground: '3dc9b0' },
   ],
@@ -368,7 +370,7 @@ const generateLanguageMonarch = (
           [PURE_GRAMMAR_TOKEN.DELIMITER, PURE_GRAMMAR_TOKEN.PROPERTY],
         ],
         [
-          /(@identifier)(\s*[:=])/,
+          /(@identifier)(\s*=)/,
           [PURE_GRAMMAR_TOKEN.PROPERTY, PURE_GRAMMAR_TOKEN.OPERATOR],
         ],
         [
@@ -378,11 +380,15 @@ const generateLanguageMonarch = (
             PURE_GRAMMAR_TOKEN.OPERATOR,
             PURE_GRAMMAR_TOKEN.PROPERTY,
           ],
-        ], // profile tag and stereotype
+        ], // could be: property chain, profile tag, and stereotype
+        [
+          /(@identifier)(\s*:)/,
+          [PURE_GRAMMAR_TOKEN.PARAMETER, PURE_GRAMMAR_TOKEN.OPERATOR],
+        ],
 
         // variables
         [
-          /(let)(\s+)(@identifier)(\s*[:=])/,
+          /(let)(\s+)(@identifier)(\s*=)/,
           [
             PURE_GRAMMAR_TOKEN.KEYWORD,
             PURE_GRAMMAR_TOKEN.WHITESPACE,
@@ -390,7 +396,7 @@ const generateLanguageMonarch = (
             PURE_GRAMMAR_TOKEN.OPERATOR,
           ],
         ],
-        [/(\$@identifier)/, [PURE_GRAMMAR_TOKEN.VARIABLE]],
+        [/(\$@identifier)/, [`${PURE_GRAMMAR_TOKEN.VARIABLE}.reference`]],
       ],
 
       date: [

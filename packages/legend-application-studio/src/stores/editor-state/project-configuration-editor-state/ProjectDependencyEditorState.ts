@@ -269,7 +269,9 @@ export class ProjectDependencyConflictState {
   ) {
     makeObservable(this, {
       treeData: observable.ref,
+      setTreeData: action,
     });
+
     this.report = report;
     this.conflict = conflict;
     this.paths = paths;
