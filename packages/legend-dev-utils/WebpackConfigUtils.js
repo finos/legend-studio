@@ -336,7 +336,15 @@ export const getWebAppBaseWebpackConfig = (
       new MonacoWebpackPlugin({
         // Only include what we need to lessen the bundle loads
         // See https://github.com/microsoft/monaco-editor-webpack-plugin
-        languages: ['json', 'java', 'markdown', 'sql'],
+        languages: [
+          'json',
+          'java',
+          'markdown',
+          'sql',
+          'yaml',
+          'xml',
+          'graphql',
+        ],
         // Exclude/include features
         // NOTE: the downside to this is that sometimes `monaco-editor` changes their
         // bundling or list of features and we could end up with features suddenly not
@@ -353,10 +361,14 @@ export const getWebAppBaseWebpackConfig = (
           'folding',
           'gotoLine',
           'hover',
+          'links',
+          'smartSelect',
           'multicursor',
           'snippet',
+          'snippetController2',
           'suggest',
           'wordHighlighter',
+          'gotoSymbol',
         ],
       }),
     ].filter(Boolean),

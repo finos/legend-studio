@@ -24,6 +24,7 @@ import {
 import type { DEPRECATED__ServiceTest } from './DEPRECATED__ServiceTest.js';
 import type { ServiceTestSuite } from './ServiceTestSuite.js';
 import type { Testable } from '../../test/Testable.js';
+import type { PostValidation } from './PostValidation.js';
 
 export const DEFAULT_SERVICE_PATTERN = '/';
 
@@ -35,6 +36,7 @@ export class Service extends PackageableElement implements Hashable, Testable {
   execution!: ServiceExecution;
   test?: DEPRECATED__ServiceTest | undefined;
   tests: ServiceTestSuite[] = [];
+  postValidations: PostValidation[] = [];
 
   get patternParameters(): string[] {
     return uniq(
@@ -59,6 +61,7 @@ export class Service extends PackageableElement implements Hashable, Testable {
       this.execution,
       this.test ?? '',
       hashArray(this.tests),
+      hashArray(this.postValidations),
     ]);
   }
 

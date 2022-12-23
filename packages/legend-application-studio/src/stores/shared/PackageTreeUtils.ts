@@ -252,6 +252,11 @@ export const openNode = (
     openingNode = !openingNode ? node : openingNode;
     currentElement = currentElement.package;
   }
+  // Open the dependency root
+  const node = treeData.nodes.get(currentElement.path);
+  if (node) {
+    node.isOpen = currentElement instanceof Package;
+  }
   return openingNode;
 };
 

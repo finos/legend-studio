@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { PureGrammarTextSuggestion } from '@finos/legend-application';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 import type { ConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import type { EditorStore } from './EditorStore.js';
@@ -86,8 +87,15 @@ export type RuntimeConnectionTooltipTextBuilder = (
 
 export type NewConnectionDriverCreator = (
   editorStore: EditorStore,
-  store: Store,
+  typeOrStore: Store | string,
 ) => NewConnectionValueDriver<Connection> | undefined;
+
+export type ConnectionTypeOption = {
+  value: string;
+  label: string;
+};
+
+export type NewConnectionSnippetSuggestion = PureGrammarTextSuggestion;
 
 /**
  * @returns a boolean indicating whether the update has ocurred or not
@@ -142,6 +150,11 @@ export interface DSL_Mapping_LegendStudioApplicationPlugin_Extension
   getExtraMappingElementSourceExtractors?(): MappingElementSourceExtractor[];
 
   /**
+   * Get extra connection type options.
+   */
+  getExtraConnectionTypeOptions?(): ConnectionTypeOption[];
+
+  /**
    * Get the list of the default connection value builder for a specified store.
    */
   getExtraDefaultConnectionValueBuilders?(): DefaultConnectionValueBuilder[];
@@ -165,6 +178,11 @@ export interface DSL_Mapping_LegendStudioApplicationPlugin_Extension
    * Get the list of creators for connection creation state driver given the store.
    */
   getExtraNewConnectionDriverCreators?(): NewConnectionDriverCreator[];
+
+  /**
+   * Get the list of creators for connection creation state driver given the store.
+   */
+  getExtraNewConnectionSnippetSuggestions?(): NewConnectionSnippetSuggestion[];
 
   /**
    * Get the list of instance set implementation source updaters.

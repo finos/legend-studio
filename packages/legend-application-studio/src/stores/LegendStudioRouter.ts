@@ -183,7 +183,7 @@ export const generateViewEntityRoute = (
 export const generateViewProjectByGAVRoute = (
   groupId: string,
   artifactId: string,
-  versionId: string,
+  versionId: string | undefined,
   entityPath?: string | undefined,
 ): string =>
   !entityPath

@@ -41,7 +41,7 @@ import { ModelImporter } from './ModelImporter.js';
 import { ModelImporterState } from '../../../stores/editor-state/ModelImporterState.js';
 import { FunctionEditorState } from '../../../stores/editor-state/element-editor-state/FunctionEditorState.js';
 import { ServiceEditorState } from '../../../stores/editor-state/element-editor-state/service/ServiceEditorState.js';
-import { ProjectConfigurationEditorState } from '../../../stores/editor-state/ProjectConfigurationEditorState.js';
+import { ProjectConfigurationEditorState } from '../../../stores/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { ProjectConfigurationEditor } from '../../editor/edit-panel/project-configuration-editor/ProjectConfigurationEditor.js';
 import { ElementGenerationEditor } from './element-generation-editor/ElementGenerationEditor.js';
 import { FunctionEditor } from './FunctionEditor.js';

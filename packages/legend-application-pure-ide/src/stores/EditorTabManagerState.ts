@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-import { TabManagerState, TabState } from '@finos/legend-application';
-import { assertTrue } from '@finos/legend-shared';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  TabManagerState,
+  TabState,
+} from '@finos/legend-application';
+import { flowResult } from 'mobx';
 import type { EditorStore } from './EditorStore.js';
+import { FileEditorState } from './FileEditorState.js';
 
 export abstract class EditorTabState extends TabState {
   readonly editorStore: EditorStore;
@@ -43,32 +49,39 @@ export class EditorTabManagerState extends TabManagerState {
     return 'editor.tab-manager.tab';
   }
 
-  closeTab(tab: EditorTabState): void {
-    const elementIndex = this.tabs.findIndex((e) => e === tab);
-    assertTrue(elementIndex !== -1, `Can't close a tab which is not opened`);
-    this.tabs.splice(elementIndex, 1);
-    if (this.currentTab === tab) {
-      if (this.tabs.length) {
-        const openIndex = elementIndex - 1;
-        this.setCurrentTab(
-          openIndex >= 0 ? this.tabs[openIndex] : this.tabs[0],
-        );
-      } else {
-        this.setCurrentTab(undefined);
-      }
+  override closeTab(tab: TabState): void {
+    if (tab instanceof FileEditorState && tab.hasChanged) {
+      this.editorStore.applicationStore.setActionAlertInfo({
+        message:
+          'Unsaved changes will be lost if you continue. Do you still want to proceed?',
+        prompt: 'To save changes, abort and compile',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => super.closeTab(tab),
+          },
+          {
+            label: 'Save changes',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => {
+              flowResult(this.editorStore.executeGo())
+                .then(() => {
+                  super.closeTab(tab);
+                })
+                .catch(this.editorStore.applicationStore.alertUnhandledError);
+            },
+          },
+          {
+            label: 'Abort',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    } else {
+      super.closeTab(tab);
     }
-  }
-
-  openTab(tab: EditorTabState): void {
-    const existingTab = this.tabs.find((t) => t === tab);
-    if (!existingTab) {
-      if (this.currentTab) {
-        const currIndex = this.tabs.findIndex((e) => e === this.currentTab);
-        this.tabs.splice(currIndex + 1, 0, tab);
-      } else {
-        this.tabs.push(tab);
-      }
-    }
-    this.setCurrentTab(tab);
   }
 }

@@ -16,16 +16,23 @@
 
 import packageJson from '../../package.json';
 import {
-  LegendStudioApplicationPlugin,
   UnsupportedElementEditorState,
   UnsupportedInstanceSetImplementationState,
+  LegendStudioApplicationPlugin,
   type NewElementFromStateCreator,
   type RuntimeConnectionTooltipTextBuilder,
+  type NewConnectionSnippetSuggestion,
+  type ConnectionValueState,
+  type ConnectionEditorRenderer,
+  type ConnectionValueEditorStateBuilder,
+  type NewConnectionDriverCreator,
   type EditorStore,
   type ElementEditorState,
   type ElementEditorStateCreator,
   type ElementClassifier,
   type DragElementClassifier,
+  type DefaultConnectionValueBuilder,
+  type NewConnectionValueDriver,
   type NewElementState,
   type DSL_Mapping_LegendStudioApplicationPlugin_Extension,
   type MappingElementStateCreator,
@@ -35,7 +42,6 @@ import {
   type ElementIconGetter,
   type DSL_Data_LegendStudioApplicationPlugin_Extension,
   type EmbeddedDataTypeOption,
-  type PureGrammarTextSuggestion,
   type PureGrammarParserElementSnippetSuggestionsGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarParserDocumentationGetter,
@@ -46,17 +52,21 @@ import {
   type EmbeddedDataEditorRenderer,
   type EmbeddedDataCreator,
   type MappingElementSource,
+  type ConnectionTypeOption,
 } from '@finos/legend-application-studio';
 import { SwaggerIcon } from '@finos/legend-art';
-import type {
-  Connection,
-  EmbeddedData,
-  PackageableElement,
+import {
+  type Connection,
+  type EmbeddedData,
+  type PackageableElement,
+  type Store,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { ServiceStore } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_ServiceStore.js';
 import { RootServiceInstanceSetImplementation } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/mapping/STO_ServiceStore_RootServiceInstanceSetImplementation.js';
 import { ServiceStoreConnection } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/connection/STO_ServiceStore_ServiceStoreConnection.js';
 import {
+  PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL,
   PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
 } from '../graphManager/STO_ServiceStore_PureGraphManagerPlugin.js';
@@ -67,16 +77,27 @@ import {
   SERVICE_STORE_WITH_DESCRIPTION,
   SERVICE_STORE_WITH_SERVICE,
   SERVICE_STORE_WITH_SERVICE_GROUP,
+  SERVICE_STORE_CONNECTION_SNIPPET,
 } from './STO_ServiceStore_CodeSnippets.js';
 import { ServiceStoreEmbeddedData } from '../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceStoreEmbeddedData.js';
 import { ServiceStoreEmbeddedDataState } from '../stores/studio/STO_ServiceStore_ServiceStoreEmbeddedDataEditorState.js';
 import { ServiceStoreEmbeddedDataEditor } from './STO_ServiceStore_ServiceStoreEmbeddedDataEditor.js';
-import type { DocumentationEntry } from '@finos/legend-application';
+import {
+  ServiceStoreConnectionValueState,
+  ServiceStoreConnectionEditor,
+  NewServiceStoreConnectionDriver,
+} from './ServiceStoreElementEditor.js';
+import type {
+  DocumentationEntry,
+  PureGrammarTextSuggestion,
+} from '@finos/legend-application';
+import { prettyCONSTName } from '@finos/legend-shared';
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICE_STORE';
 const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_SERVICE_STORE';
 const SERVICE_STORE_EMBEDDED_DATA_TYPE = 'ServiceStore';
+export const SERVICE_STORE_CONNECTION = 'SERVICE_STORE_CONNECTION';
 
 export class STO_ServiceStore_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -212,6 +233,90 @@ export class STO_ServiceStore_LegendStudioApplicationPlugin
           return `Service store connection \u2022 store ${connection.store.value.path}`;
         }
         return undefined;
+      },
+    ];
+  }
+
+  getExtraDefaultConnectionValueBuilders(): DefaultConnectionValueBuilder[] {
+    return [
+      (store: Store): Connection | undefined => {
+        if (store instanceof ServiceStore) {
+          const serviceStoreConnection = new ServiceStoreConnection(
+            PackageableElementExplicitReference.create(store),
+          );
+          serviceStoreConnection.baseUrl = '';
+          return serviceStoreConnection;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraConnectionValueEditorStateBuilders(): ConnectionValueEditorStateBuilder[] {
+    return [
+      (
+        editorStore: EditorStore,
+        connection: Connection,
+      ): ConnectionValueState | undefined => {
+        if (connection instanceof ServiceStoreConnection) {
+          return new ServiceStoreConnectionValueState(editorStore, connection);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraConnectionEditorRenderers(): ConnectionEditorRenderer[] {
+    return [
+      (
+        connectionValueState: ConnectionValueState,
+        isReadOnly: boolean,
+      ): React.ReactNode | undefined => {
+        if (connectionValueState instanceof ServiceStoreConnectionValueState) {
+          return (
+            <ServiceStoreConnectionEditor
+              connectionValueState={connectionValueState}
+              isReadOnly={isReadOnly}
+            />
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraNewConnectionDriverCreators(): NewConnectionDriverCreator[] {
+    return [
+      (
+        editorStore: EditorStore,
+        typeOrStore: Store | string,
+      ): NewConnectionValueDriver<Connection> | undefined => {
+        if (typeOrStore instanceof ServiceStore) {
+          return new NewServiceStoreConnectionDriver(editorStore);
+        }
+        if (typeOrStore === SERVICE_STORE_CONNECTION) {
+          return new NewServiceStoreConnectionDriver(editorStore);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraNewConnectionSnippetSuggestions(): NewConnectionSnippetSuggestion[] {
+    return [
+      {
+        text: PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL,
+        description: 'service store connection',
+        insertText: SERVICE_STORE_CONNECTION_SNIPPET,
+      },
+    ];
+  }
+
+  getExtraConnectionTypeOptions(): ConnectionTypeOption[] {
+    return [
+      {
+        value: SERVICE_STORE_CONNECTION,
+        label: prettyCONSTName(SERVICE_STORE_CONNECTION),
       },
     ];
   }

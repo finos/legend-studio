@@ -23,15 +23,19 @@ import {
   custom,
   SKIP,
   deserialize,
+  optional,
 } from 'serializr';
 
 export enum ConceptType {
   // PRIMITIVE = 'Primitive',
   PACKAGE = 'Package',
   PROFILE = 'Profile',
+  TAG = 'Tag',
+  STEREOTYPE = 'Stereotype',
   CLASS = 'Class',
   ASSOCIATION = 'Association',
   PROPERTY = 'Property',
+  QUALIFIED_PROPERTY = 'QualifiedProperty',
   ENUMERATION = 'Enumeration',
   ENUM_VALUE = 'Enum',
   MEASURE = 'Measure',
@@ -39,11 +43,14 @@ export enum ConceptType {
   FUNCTION = 'ConcreteFunctionDefinition',
   NATIVE_FUNCTION = 'NativeFunction',
   DIAGRAM = 'Diagram',
+  DATABASE = 'Database',
+  MAPPING = 'Mapping',
 }
 
 abstract class ConceptAttribute {
   pureId!: string;
   pureType!: string;
+  pureName?: string;
   // test?: string; // boolean
 
   get id(): string {
@@ -65,6 +72,7 @@ createModelSchema(PackageConceptAttribute, {
 
 export class PropertyConceptAttribute extends ConceptAttribute {
   declare pureId: string;
+  declare pureName: string;
   declare pureType: string;
   RO!: string; // boolean
   classPath!: string;
@@ -79,6 +87,7 @@ export class PropertyConceptAttribute extends ConceptAttribute {
 
 createModelSchema(PropertyConceptAttribute, {
   pureId: primitive(),
+  pureName: primitive(),
   pureType: primitive(),
   RO: primitive(),
   classPath: primitive(),
@@ -89,6 +98,7 @@ createModelSchema(PropertyConceptAttribute, {
 
 export class ElementConceptAttribute extends ConceptAttribute {
   declare pureId: string;
+  declare pureName: string;
   declare pureType: string;
   RO!: string; // boolean
   notpublic!: boolean;
@@ -100,6 +110,7 @@ export class ElementConceptAttribute extends ConceptAttribute {
 
 createModelSchema(ElementConceptAttribute, {
   pureId: primitive(),
+  pureName: optional(primitive()),
   pureType: primitive(),
   RO: primitive(),
   notpublic: primitive(),
@@ -149,4 +160,5 @@ createModelSchema(ConceptNode, {
 export interface ConceptTreeNode extends TreeNodeData {
   data: ConceptNode;
   isLoading: boolean;
+  parent?: ConceptTreeNode;
 }

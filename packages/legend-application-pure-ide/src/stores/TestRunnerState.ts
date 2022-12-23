@@ -96,10 +96,12 @@ export const getTestTreeNodeStatus = (
     return getTestResultById(id, testResultInfo);
   }
   // order matters here, also if one test fail/error the whole sub-tree (package) will be marked as failed
-  return testResultInfo.failedTestIds.some((i) => i.startsWith(id)) ||
-    testResultInfo.testWithErrorIds.some((i) => i.startsWith(id))
+  // NOTE: here, we have to check `startsWith(`${id}_`)` to guarantee we grab the right package, if we just use `startsWith(id)`
+  // we might mark `meta::test` and `meta::test2` both as failed when `meta::test::someTest` fails
+  return testResultInfo.failedTestIds.some((i) => i.startsWith(`${id}_`)) ||
+    testResultInfo.testWithErrorIds.some((i) => i.startsWith(`${id}_`))
     ? TestResultType.FAILED
-    : testResultInfo.notRunTestIds.some((i) => i.startsWith(id))
+    : testResultInfo.notRunTestIds.some((i) => i.startsWith(`${id}_`))
     ? TestResultType.RUNNING
     : TestResultType.PASSED;
 };
@@ -230,8 +232,8 @@ export class TestRunnerState {
 
   // explorer tree
   readonly treeBuildingState = ActionState.create();
-  selectedNode?: TestTreeNode | undefined;
   treeData?: TreeData<TestTreeNode> | undefined;
+  viewAsList = false;
 
   constructor(
     editorStore: EditorStore,
@@ -241,13 +243,13 @@ export class TestRunnerState {
       testResultInfo: observable.ref,
       allTests: observable,
       selectedTestId: observable,
-      selectedNode: observable,
       treeData: observable.ref,
+      viewAsList: observable,
+      setViewAsList: action,
       setSelectedTestId: action,
       setTestResultInfo: action,
       setTreeData: action,
       refreshTree: action,
-      setSelectedNode: action,
       collapseTree: action,
       expandTree: action,
       buildTreeDataByLayer: action,
@@ -269,6 +271,10 @@ export class TestRunnerState {
     );
   }
 
+  setViewAsList(val: boolean): void {
+    this.viewAsList = val;
+  }
+
   setSelectedTestId(val: string | undefined): void {
     this.selectedTestId = val;
   }
@@ -283,19 +289,6 @@ export class TestRunnerState {
 
   refreshTree(): void {
     this.setTreeData({ ...guaranteeNonNullable(this.treeData) });
-  }
-
-  setSelectedNode(node: TestTreeNode | undefined): void {
-    if (node?.id !== this.selectedNode?.id) {
-      if (this.selectedNode) {
-        this.selectedNode.isSelected = false;
-      }
-      if (node) {
-        node.isSelected = true;
-      }
-      this.selectedNode = node;
-      this.refreshTree();
-    }
   }
 
   *buildTestTreeData(): GeneratorFn<void> {
@@ -321,7 +314,6 @@ export class TestRunnerState {
     treeData.nodes.forEach((node) => {
       node.isOpen = false;
     });
-    this.setSelectedNode(undefined);
     this.refreshTree();
   }
 
@@ -330,7 +322,6 @@ export class TestRunnerState {
     treeData.nodes.forEach((node) => {
       node.isOpen = true;
     });
-    this.setSelectedNode(undefined);
     this.refreshTree();
   }
 

@@ -64,7 +64,6 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type KeyedExecutionParameter,
   type Runtime,
-  type ServiceTest,
   Mapping,
   RuntimePointer,
   PackageableRuntime,
@@ -778,10 +777,6 @@ const ServicePureExecutionEditor = observer(
       servicePureExecutionState instanceof MultiServicePureExecutionState;
     const showChangeExecutionModal = (): void => {
       if (servicePureExecutionState instanceof MultiServicePureExecutionState) {
-        servicePureExecutionState.serviceEditorState.service.tests.forEach(
-          (suite) =>
-            suite.tests.forEach((st) => ((st as ServiceTest).keys = [])),
-        );
         servicePureExecutionState.setSingleExecutionKey(
           servicePureExecutionState.execution.executionParameters[0],
         );

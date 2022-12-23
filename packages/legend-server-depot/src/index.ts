@@ -18,7 +18,8 @@ export { ProjectData } from './models/ProjectData.js';
 export * from './models/ProjectVersionEntities.js';
 export { StoredEntity } from './models/StoredEntity.js';
 export { DepotScope } from './models/DepotScope.js';
-export * from './models/ProjectDependencyInfo.js';
+export * from './models/ProjectDependencyGraph.js';
+export * from './models/RawProjectDependencyReport.js';
 
 export { DepotServerClient } from './DepotServerClient.js';
 export * from './DepotServerClientProvider.js';
@@ -28,3 +29,5 @@ export * from './DepotServerClientTestUtils.js';
 export * from './DepotVersionAliases.js';
 
 export * from './DepotEntityHelper.js';
+
+export * from './ProjectDependencyGraphReportHelper.js';

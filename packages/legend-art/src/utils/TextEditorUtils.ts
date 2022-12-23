@@ -57,24 +57,32 @@ export const getEditorValue = (
   editor.getModel()?.getValue(monacoEditorAPI.EndOfLinePreference.LF) ?? '';
 
 export const getBaseTextEditorOptions =
-  (): monacoEditorAPI.IStandaloneEditorConstructionOptions => ({
-    contextmenu: false,
-    copyWithSyntaxHighlighting: false,
-    // NOTE: These following font options are needed (and CSS font-size option `.monaco-editor * { font-size: ... }` as well)
-    // in order to make the editor appear properly on multiple platform, the ligatures option is needed for Mac to display properly
-    // otherwise the cursor position relatively to text would be off
-    // Another potential cause for this misaligment is that the fonts are being lazy-loaded and made available after `monaco-editor`
-    // calculated the font-width, for this, we can use `remeasureFonts`, but our case here, `fontLigatures: true` seems
-    // to do the trick
-    // See https://github.com/microsoft/monaco-editor/issues/392
-    fontSize: 14,
-    // Enforce a fixed font-family to make cross platform display consistent (i.e. Mac defaults to use `Menlo` which is bigger than
-    // `Consolas` on Windows, etc.)
-    fontFamily: 'Roboto Mono',
-    fontLigatures: true,
-    // Make sure hover or widget shown near boundary are not truncated by setting their position to `fixed`
-    fixedOverflowWidgets: true,
-  });
+  (): monacoEditorAPI.IStandaloneEditorConstructionOptions =>
+    ({
+      contextmenu: false,
+      copyWithSyntaxHighlighting: false,
+      // NOTE: These following font options are needed (and CSS font-size option `.monaco-editor * { font-size: ... }` as well)
+      // in order to make the editor appear properly on multiple platform, the ligatures option is needed for Mac to display properly
+      // otherwise the cursor position relatively to text would be off
+      // Another potential cause for this misaligment is that the fonts are being lazy-loaded and made available after `monaco-editor`
+      // calculated the font-width, for this, we can use `remeasureFonts`, but our case here, `fontLigatures: true` seems
+      // to do the trick
+      // See https://github.com/microsoft/monaco-editor/issues/392
+      fontSize: 14,
+      // Enforce a fixed font-family to make cross platform display consistent (i.e. Mac defaults to use `Menlo` which is bigger than
+      // `Consolas` on Windows, etc.)
+      fontFamily: 'Roboto Mono',
+      // Enable font ligature: glyphs which combine the shapes of certain sequences of characters into a new form that makes for
+      //  a more harmonious reading experience.
+      fontLigatures: true,
+      // Make sure hover or widget shown near boundary are not truncated by setting their position to `fixed`
+      fixedOverflowWidgets: true,
+      detectIndentation: false, // i.e. so we can force tab-size
+      tabSize: 2,
+      // The typing is currently not correct for `bracketPairColorization`, until this is fixed, we will remove the cast
+      // See https://github.com/microsoft/monaco-editor/issues/3013
+      'bracketPairColorization.enabled': false,
+    } as monacoEditorAPI.IStandaloneEditorConstructionOptions);
 
 export const moveCursorToPosition = (
   editor: monacoEditorAPI.ICodeEditor,
@@ -98,10 +106,11 @@ export const setErrorMarkers = (
     endLineNumber: number;
     endColumn: number;
   }[],
+  ownerId?: string,
 ): void => {
   monacoEditorAPI.setModelMarkers(
     editorModel,
-    INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
+    ownerId ?? INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
     errors.map((error) => ({
       startLineNumber: error.startLineNumber,
       startColumn: error.startColumn,
@@ -123,10 +132,11 @@ export const setWarningMarkers = (
     endLineNumber: number;
     endColumn: number;
   }[],
+  ownerId?: string,
 ): void => {
   monacoEditorAPI.setModelMarkers(
     editorModel,
-    INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
+    ownerId ?? INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
     warnings.map((warning) => ({
       startLineNumber: warning.startLineNumber,
       startColumn: warning.startColumn,
@@ -139,8 +149,10 @@ export const setWarningMarkers = (
   );
 };
 
-export const clearMarkers = (): void => {
-  monacoEditorAPI.removeAllMarkers(INTERNAL__DUMMY_PROBLEM_MARKER_OWNER);
+export const clearMarkers = (ownerId?: string): void => {
+  monacoEditorAPI.removeAllMarkers(
+    ownerId ?? INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
+  );
 };
 
 /**

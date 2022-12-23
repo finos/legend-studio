@@ -25,6 +25,7 @@ import type { V1_StereotypePtr } from '../../../model/packageableElements/domain
 import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
 import type { V1_DEPRECATED__ServiceTest } from './V1_DEPRECATED__ServiceTest.js';
 import type { V1_TestSuite } from '../../test/V1_TestSuite.js';
+import type { V1_PostValidation } from './V1_PostValidation.js';
 
 export class V1_Service extends V1_PackageableElement implements Hashable {
   stereotypes: V1_StereotypePtr[] = [];
@@ -36,6 +37,7 @@ export class V1_Service extends V1_PackageableElement implements Hashable {
   execution!: V1_ServiceExecution;
   test?: V1_DEPRECATED__ServiceTest | undefined;
   testSuites: V1_TestSuite[] = [];
+  postValidations: V1_PostValidation[] = [];
 
   override get hashCode(): string {
     return hashArray([
@@ -50,6 +52,7 @@ export class V1_Service extends V1_PackageableElement implements Hashable {
       this.execution,
       this.test ?? '',
       hashArray(this.testSuites),
+      hashArray(this.postValidations),
     ]);
   }
 

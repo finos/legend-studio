@@ -87,6 +87,8 @@ export class ExplorerTreeState {
       setElementToRename: action,
       build: action,
       buildImmutableModelTrees: action,
+      buildTreeInTextMode: action,
+      openExplorerTreeNodes: action,
       reprocess: action,
       onTreeNodeSelect: action,
       openNode: action,
@@ -186,6 +188,40 @@ export class ExplorerTreeState {
     this.buildState.complete();
   }
 
+  buildTreeInTextMode(): void {
+    this.buildState.reset();
+    if (!this.systemTreeData) {
+      this.systemTreeData = getPackableElementTreeData(
+        this.editorStore,
+        this.editorStore.graphManagerState.systemModel.root,
+        ExplorerTreeRootPackageLabel.SYSTEM,
+      );
+    }
+    if (!this.dependencyTreeData) {
+      this.dependencyTreeData = getPackableElementTreeData(
+        this.editorStore,
+        this.editorStore.graphManagerState.graph.dependencyManager.root,
+        ExplorerTreeRootPackageLabel.PROJECT_DEPENDENCY,
+      );
+    }
+    this.treeData = getPackableElementTreeData(
+      this.editorStore,
+      this.editorStore.graphManagerState.graph.root,
+      '',
+    );
+    this.generationTreeData = getPackableElementTreeData(
+      this.editorStore,
+      this.editorStore.graphManagerState.graph.generationModel.root,
+      ExplorerTreeRootPackageLabel.MODEL_GENERATION,
+    );
+    this.fileGenerationTreeData = getGenerationTreeData(
+      this.editorStore.graphState.graphGenerationState.rootFileDirectory,
+      ExplorerTreeRootPackageLabel.FILE_GENERATION,
+    );
+    this.setSelectedNode(undefined);
+    this.buildState.complete();
+  }
+
   buildImmutableModelTrees(): void {
     this.systemTreeData = getPackableElementTreeData(
       this.editorStore,
@@ -197,6 +233,86 @@ export class ExplorerTreeState {
       this.editorStore.graphManagerState.graph.dependencyManager.root,
       ExplorerTreeRootPackageLabel.PROJECT_DEPENDENCY,
     );
+  }
+
+  openExplorerTreeNodes(
+    mainTreeOpenedNodeIds: string[],
+    generationTreeOpenedNodeIds: string[],
+    selectedNodeId: string | undefined,
+  ): void {
+    // Main tree
+    {
+      const openElements = new Set(
+        mainTreeOpenedNodeIds
+          .map((id) =>
+            this.editorStore.graphManagerState.graph.getNullableElement(
+              id,
+              true,
+            ),
+          )
+          .filter(isNonNullable),
+      );
+      openNodes(
+        this.editorStore,
+        this.editorStore.graphManagerState.graph.root,
+        openElements,
+        guaranteeNonNullable(this.treeData),
+      );
+    }
+    // Generated tree
+    {
+      const openElements = new Set(
+        generationTreeOpenedNodeIds
+          .map((id) =>
+            this.editorStore.graphManagerState.graph.generationModel.getOwnNullableElement(
+              id,
+              true,
+            ),
+          )
+          .filter(isNonNullable),
+      );
+      openNodes(
+        this.editorStore,
+        this.editorStore.graphManagerState.graph.generationModel.root,
+        openElements,
+        guaranteeNonNullable(this.generationTreeData),
+      );
+      if (
+        generationTreeOpenedNodeIds.includes(ROOT_PACKAGE_NAME.MODEL_GENERATION)
+      ) {
+        openNodeById(
+          ROOT_PACKAGE_NAME.MODEL_GENERATION,
+          this.generationTreeData,
+        );
+      }
+    }
+    {
+      if (selectedNodeId) {
+        const element =
+          this.editorStore.graphManagerState.graph.getNullableElement(
+            selectedNodeId,
+          );
+        if (element) {
+          const openingNode =
+            openNode(
+              this.editorStore,
+              element,
+              guaranteeNonNullable(this.treeData),
+            ) ??
+            openNode(
+              this.editorStore,
+              element,
+              guaranteeNonNullable(this.generationTreeData),
+            );
+          // ?? openNode(element, this.systemTreeData)
+          // ?? openNode(element, this.legalTreeData)
+          // ?? openNode(element, this.dependencyTreeData);
+          this.setSelectedNode(openingNode);
+        } else {
+          this.setSelectedNode(undefined);
+        }
+      }
+    }
   }
 
   /**

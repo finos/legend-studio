@@ -479,6 +479,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return PureClientVersion.V1_0_0;
   }
 
+  getElementEntities(entities: Entity[]): Entity[] {
+    return entities.filter(
+      (entity) => entity.classifierPath !== CORE_PURE_PATH.SECTION_INDEX,
+    );
+  }
+
   // --------------------------------------------- Graph Builder ---------------------------------------------
 
   async buildSystem(
@@ -716,6 +722,83 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
   }
 
+  async buildLightGraph(
+    graph: PureModel,
+    entities: Entity[],
+    buildState: ActionState,
+    options?: GraphBuilderOptions,
+  ): Promise<GraphBuilderReport> {
+    const stopWatch = new StopWatch();
+    const report = new GraphBuilderReport();
+    buildState.reset();
+
+    try {
+      // deserialize
+      buildState.setMessage(`Deserializing elements...`);
+      const data = new V1_PureModelContextData();
+      await V1_entitiesToPureModelContextData(
+        entities,
+        data,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      );
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
+
+      // prepare build inputs
+      const buildInputs: V1_PureGraphBuilderInput[] = [
+        {
+          model: graph,
+          data: V1_indexPureModelContextData(
+            report,
+            data,
+            this.graphBuilderExtensions,
+          ),
+        },
+      ];
+
+      // build
+      await this.buildLightGraphFromInputs(
+        graph,
+        buildInputs,
+        report,
+        stopWatch,
+        buildState,
+        options,
+      );
+
+      /**
+       * For now, we delete the section index. We are able to read both resolved and unresolved element paths
+       * but when we write (serialize) we write only resolved paths. In the future once the issue with dependency is solved we will
+       * perserve the element path both resolved and unresolved
+       */
+      if (!options?.TEMPORARY__preserveSectionIndex) {
+        graph.TEMPORARY__deleteOwnSectionIndex();
+      }
+
+      buildState.pass();
+      report.timings = {
+        ...Object.fromEntries(stopWatch.records),
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+      };
+      return report;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.log.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
+      );
+      buildState.fail();
+      /**
+       * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
+       * But we might want to rethink this decision in the future and throw appropriate type of error
+       */
+      throw error instanceof GraphBuilderError
+        ? error
+        : new GraphBuilderError(error);
+    } finally {
+      buildState.setMessage(undefined);
+    }
+  }
+
   async buildGenerations(
     graph: PureModel,
     generatedEntities: Map<string, Entity[]>,
@@ -855,6 +938,22 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.buildGenerationSpecifications(graph, inputs, options);
     await this.buildOtherElements(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_OTHER_ELEMENTS_BUILT);
+  }
+
+  private async buildLightGraphFromInputs(
+    graph: PureModel,
+    inputs: V1_PureGraphBuilderInput[],
+    report: GraphBuilderReport,
+    stopWatch: StopWatch,
+    graphBuilderState: ActionState,
+    options?: GraphBuilderOptions,
+  ): Promise<void> {
+    // index
+    graphBuilderState.setMessage(
+      `Indexing ${report.elementCount.total} elements...`,
+    );
+    await this.initializeAndIndexElements(graph, inputs, options);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_INDEXED);
   }
 
   private getBuilderContext(
@@ -1691,6 +1790,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           this.pluginManager.getPureGraphManagerPlugins(),
         ),
       );
+      runTestableInput.unitTestIds = [unitAtomicTest];
       runTestsInput.testables = [runTestableInput];
       const parent = test.__parent;
       unitAtomicTest.testSuiteId =
@@ -2183,12 +2283,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         // and not embedded.
         const execution = service.execution;
         if (execution instanceof PureSingleExecution) {
-          sdlcInfo.packageableElementPointers = [
-            new V1_PackageableElementPointer(
-              PackageableElementPointerType.MAPPING,
-              execution.mapping.value.path,
-            ),
-          ];
+          if (execution.mapping) {
+            sdlcInfo.packageableElementPointers = [
+              new V1_PackageableElementPointer(
+                PackageableElementPointerType.MAPPING,
+                execution.mapping.value.path,
+              ),
+            ];
+          }
         } else if (execution instanceof PureMultiExecution) {
           sdlcInfo.packageableElementPointers =
             execution.executionParameters.map(

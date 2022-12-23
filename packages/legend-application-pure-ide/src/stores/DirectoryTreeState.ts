@@ -22,7 +22,7 @@ import {
 } from '../server/models/DirectoryTree.js';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from './EditorStore.js';
-import type { FileCoordinate } from '../server/models/PureFile.js';
+import type { FileCoordinate } from '../server/models/File.js';
 import { ACTIVITY_MODE } from './EditorConfig.js';
 import {
   type GeneratorFn,
@@ -49,14 +49,17 @@ export class DirectoryTreeState extends TreeState<
 > {
   nodeForCreateNewFile?: DirectoryTreeNode | undefined;
   nodeForCreateNewDirectory?: DirectoryTreeNode | undefined;
+  nodeForRenameFile?: DirectoryTreeNode | undefined;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
     makeObservable(this, {
       nodeForCreateNewFile: observable,
       nodeForCreateNewDirectory: observable,
+      nodeForRenameFile: observable,
       setNodeForCreateNewFile: action,
       setNodeForCreateNewDirectory: action,
+      setNodeForRenameFile: action,
       revealPath: flow,
     });
   }
@@ -77,6 +80,14 @@ export class DirectoryTreeState extends TreeState<
       'Node selected for creating a new directory from must be a directory',
     );
     this.nodeForCreateNewDirectory = value;
+  };
+
+  setNodeForRenameFile = (value: DirectoryTreeNode | undefined): void => {
+    assertTrue(
+      !value || value.data.isFileNode,
+      'Node selected for renaming must be a file',
+    );
+    this.nodeForRenameFile = value;
   };
 
   async getRootNodes(): Promise<DirectoryNode[]> {

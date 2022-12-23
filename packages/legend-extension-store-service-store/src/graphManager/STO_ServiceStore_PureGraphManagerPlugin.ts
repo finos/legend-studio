@@ -29,11 +29,14 @@ import {
   type EmbeddedData,
   type EmbeddedDataObserver,
   type EmbeddedData_PureGraphManagerPlugin_Extension,
+  type ConnectionObserver,
+  type Connection,
 } from '@finos/legend-graph';
 import { ServiceStoreConnection } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/connection/STO_ServiceStore_ServiceStoreConnection.js';
 import {
   observe_RootServiceInstanceSetImplementation,
   observe_ServiceStore,
+  observe_ServiceStoreConnection,
   observe_ServiceStoreEmbeddedData,
 } from './action/changeDetection/STO_ServiceStore_ObserverHelper.js';
 import { RootServiceInstanceSetImplementation } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/mapping/STO_ServiceStore_RootServiceInstanceSetImplementation.js';
@@ -41,7 +44,7 @@ import { ServiceStoreEmbeddedData } from '../graph/metamodel/pure/model/data/STO
 
 export const PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME = 'ServiceStore';
 export const PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL = 'ServiceStore';
-const PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL =
+export const PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL =
   'ServiceStoreConnection';
 const PURE_GRAMMAR_SERVICE_STORE_SERVICE_GROUP_LABEL = 'ServiceGroup';
 
@@ -128,6 +131,20 @@ export class STO_ServiceStore_PureGraphManagerPlugin
       ): EmbeddedData | undefined => {
         if (metamodel instanceof ServiceStoreEmbeddedData) {
           return observe_ServiceStoreEmbeddedData(metamodel);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraConnectionObservers(): ConnectionObserver[] {
+    return [
+      (
+        connection: Connection,
+        context: ObserverContext,
+      ): Connection | undefined => {
+        if (connection instanceof ServiceStoreConnection) {
+          return observe_ServiceStoreConnection(connection);
         }
         return undefined;
       },

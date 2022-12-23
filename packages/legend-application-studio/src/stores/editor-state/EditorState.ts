@@ -24,10 +24,4 @@ export abstract class EditorState extends TabState {
     super();
     this.editorStore = editorStore;
   }
-
-  /**
-   * Check if the specified tab this tab or not.
-   * This is often used when checking if a tab is already opened.
-   */
-  abstract match(tab: EditorState): boolean;
 }

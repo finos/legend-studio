@@ -24,7 +24,7 @@ import {
   fireEvent,
   act,
 } from '@testing-library/react';
-import TEST_DATA__serviceEntities from '../../../../editor/edit-panel/service-editor/__tests__/TEST_DATA__ServiceRegistration.json';
+import { TEST_DATA__serviceEntities } from './TEST_DATA__ServiceEditor.js';
 import {
   type PlainObject,
   integrationTest,
@@ -32,7 +32,7 @@ import {
   createSpy,
 } from '@finos/legend-shared';
 import {
-  TEST_DATA__DefaultDepotInfo,
+  TEST_DATA__DefaultDepotReport,
   TEST_DATA__DefaultSDLCInfo,
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
@@ -116,7 +116,7 @@ const setup = async (
     projects: [],
     projectData: [],
     projectDependency: [],
-    projectDependencyInfo: TEST_DATA__DefaultDepotInfo.dependencyInfo,
+    dependencyReport: TEST_DATA__DefaultDepotReport.dependencyReport,
   });
   return MOCK__editorStore;
 };

@@ -327,6 +327,8 @@ const LambdaEditorInline = observer(
         if (editor) {
           disposeEditor(editor);
         }
+        onDidChangeModelContentEventDisposer.current?.dispose();
+        onDidFocusEditorWidgetDisposer.current?.dispose();
       },
       [editor],
     ); // dispose editor
@@ -562,6 +564,7 @@ const LambdaEditorPopUp = observer(
         if (editor) {
           disposeEditor(editor);
         }
+        onDidChangeModelContentEventDisposer.current?.dispose();
       },
       [editor],
     ); // dispose editor

@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-import { ELEMENT_PATH_DELIMITER } from '../MetaModelConst.js';
-
-const DIR_PATH_DELIMITER = '/';
+import {
+  DIRECTORY_PATH_DELIMITER,
+  ELEMENT_PATH_DELIMITER,
+} from '../MetaModelConst.js';
 
 export const getExpectedArtifactGenerationExtensionOutputPath = (
   elementPath: string,
   extensionKey: string,
   filePath: string,
 ): string =>
-  DIR_PATH_DELIMITER +
-  elementPath.replaceAll(ELEMENT_PATH_DELIMITER, DIR_PATH_DELIMITER) +
-  DIR_PATH_DELIMITER +
+  DIRECTORY_PATH_DELIMITER +
+  elementPath.replaceAll(ELEMENT_PATH_DELIMITER, DIRECTORY_PATH_DELIMITER) +
+  DIRECTORY_PATH_DELIMITER +
   extensionKey +
-  DIR_PATH_DELIMITER +
+  DIRECTORY_PATH_DELIMITER +
   filePath;

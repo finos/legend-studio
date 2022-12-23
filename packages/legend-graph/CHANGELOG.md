@@ -1,5 +1,27 @@
 # @finos/legend-graph
 
+## 22.1.1
+
+## 22.1.0
+
+### Minor Changes
+
+- [#1693](https://github.com/finos/legend-studio/pull/1693) [`bf2487fbb`](https://github.com/finos/legend-studio/commit/bf2487fbb590bc2c025f746d2393785762b71434) ([@gayathrir11](https://github.com/gayathrir11)) - Remove graph building from text mode ([#966](https://github.com/finos/legend-studio/issues/966)).
+
+## 22.0.2
+
+## 22.0.1
+
+## 22.0.0
+
+### Major Changes
+
+- [#1570](https://github.com/finos/legend-studio/pull/1570) [`324ef980b`](https://github.com/finos/legend-studio/commit/324ef980be7258f28508f14d46cdccde4c303610) ([@gs-gunjan](https://github.com/gs-gunjan)) - Support service queries with optional runtime and mapping.
+
+### Patch Changes
+
+- [#1739](https://github.com/finos/legend-studio/pull/1739) [`e112c2aae`](https://github.com/finos/legend-studio/commit/e112c2aaead92382df4be16d5acc20609fce71a5) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add graph support for service postValidation.
+
 ## 21.0.0
 
 ### Major Changes

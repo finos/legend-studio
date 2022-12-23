@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-studio-bootstrap",
-  "version": "8.17.0",
+  "version": "8.28.0",
   "description": "Legend Studio application bootrap",
   "keywords": [
     "legend",
@@ -59,17 +59,17 @@
     "@finos/legend-extension-store-service-store": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@types/react": "18.0.25",
+    "@types/react": "18.0.26",
     "react": "18.2.0"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.28.0",
+    "eslint": "8.30.0",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.56.1",
-    "typescript": "4.9.3"
+    "sass": "1.57.1",
+    "typescript": "4.9.4"
   },
   "publishConfig": {
     "directory": "build/publishContent"

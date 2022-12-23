@@ -33,7 +33,6 @@ import {
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
-  type PureGrammarTextSuggestion,
   type PureGrammarParserElementSnippetSuggestionsGetter,
 } from '@finos/legend-application-studio';
 import { ShapesIcon } from '@finos/legend-art';
@@ -55,6 +54,7 @@ import {
 } from './DSL_Diagram_CodeSnippets.js';
 import {
   collectKeyedCommandConfigEntriesFromConfig,
+  type PureGrammarTextSuggestion,
   type DocumentationEntry,
   type KeyedCommandConfigEntry,
 } from '@finos/legend-application';

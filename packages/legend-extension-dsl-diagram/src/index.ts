@@ -21,7 +21,10 @@ export { DiagramEditorState } from './stores/studio/DiagramEditorState.js';
 
 export {
   DiagramRenderer,
+  DIAGRAM_ALIGNER_OPERATOR,
+  DIAGRAM_ZOOM_LEVELS,
   DIAGRAM_INTERACTION_MODE,
+  DIAGRAM_RELATIONSHIP_EDIT_MODE,
 } from './DiagramRenderer.js';
 
 export { Diagram } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';

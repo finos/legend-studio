@@ -1,5 +1,69 @@
 # @finos/legend-application-studio
 
+## 22.2.1
+
+## 22.2.0
+
+### Minor Changes
+
+- [#1693](https://github.com/finos/legend-studio/pull/1693) [`bf2487fbb`](https://github.com/finos/legend-studio/commit/bf2487fbb590bc2c025f746d2393785762b71434) ([@gayathrir11](https://github.com/gayathrir11)) - Remove graph building from text mode ([#966](https://github.com/finos/legend-studio/issues/966)).
+
+### Patch Changes
+
+- [#1789](https://github.com/finos/legend-studio/pull/1789) [`47ced9dd2`](https://github.com/finos/legend-studio/commit/47ced9dd2278dc8e3bbd527b9f77356b4e1a6cd6) ([@gayathrir11](https://github.com/gayathrir11)) - Fix a bug with unable to open file generation tree data after hitting F10
+
+- [#1791](https://github.com/finos/legend-studio/pull/1791) [`70c785e5b`](https://github.com/finos/legend-studio/commit/70c785e5bb2011b6b71d4b70e6291464466933d0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add tree view for dependency conflicts in dependency editor.
+
+## 22.1.6
+
+### Patch Changes
+
+- [#1766](https://github.com/finos/legend-studio/pull/1766) [`dc9ed1590`](https://github.com/finos/legend-studio/commit/dc9ed1590cbcdefe23d1c4f166bad9db55d2fbf8) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Fix `NewPackageableConnectionEditor`.
+
+## 22.1.5
+
+### Patch Changes
+
+- [#1775](https://github.com/finos/legend-studio/pull/1775) [`0c8443b7b`](https://github.com/finos/legend-studio/commit/0c8443b7b8eb05a6a3cb1327899e4ca7e7bb5812) ([@xannem](https://github.com/xannem)) - fix: model importer tab behavior
+
+## 22.1.4
+
+### Patch Changes
+
+- [`a68882116`](https://github.com/finos/legend-studio/commit/a68882116104914fb1f0edfe45d818d0b35f350a) ([@gayathrir11](https://github.com/gayathrir11)) - Fix bug when opening dependency element does not open corresponding element tree node in the dependency explorer
+
+## 22.1.3
+
+## 22.1.2
+
+## 22.1.1
+
+## 22.1.0
+
+### Minor Changes
+
+- [#1755](https://github.com/finos/legend-studio/pull/1755) [`58e35aae8`](https://github.com/finos/legend-studio/commit/58e35aae8c126e700407db368efaa6c7975c6d6b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Introduce dependency explorer to lazily explore dependency through tree or flatten view.
+
+## 22.0.0
+
+### Major Changes
+
+- [#1747](https://github.com/finos/legend-studio/pull/1747) [`65cae8687`](https://github.com/finos/legend-studio/commit/65cae8687c5a35371438d372f18a41f4c7df549f) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Moved `getInlineSnippetSuggestions()`, `PureGrammarTextSuggestion` and `ElementEmbeddedContentSnippetSuggestion` types to `@finos/legend-application`.
+
+### Minor Changes
+
+- [#1570](https://github.com/finos/legend-studio/pull/1570) [`324ef980b`](https://github.com/finos/legend-studio/commit/324ef980be7258f28508f14d46cdccde4c303610) ([@gs-gunjan](https://github.com/gs-gunjan)) - Support service queries with optional runtime and mapping.
+
+### Patch Changes
+
+- [#1736](https://github.com/finos/legend-studio/pull/1736) [`a2ff10b0d`](https://github.com/finos/legend-studio/commit/a2ff10b0d09b9ac84e057208f64673cf4ecf4f5a) ([@gayathrir11](https://github.com/gayathrir11)) - Add default serialization format for service tests.
+
+## 21.0.1
+
+### Patch Changes
+
+- [#1740](https://github.com/finos/legend-studio/pull/1740) [`510f517df`](https://github.com/finos/legend-studio/commit/510f517df4b0979887a8bb2c4b8a122b292e66bf) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - View dependency SDLC project with selected version.
+
 ## 21.0.0
 
 ### Major Changes

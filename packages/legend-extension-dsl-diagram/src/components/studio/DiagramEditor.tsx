@@ -18,7 +18,7 @@ import { useRef, useState, useEffect, useCallback, forwardRef } from 'react';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { observer } from 'mobx-react-lite';
 import {
-  ALIGNER_OPERATOR,
+  DIAGRAM_ALIGNER_OPERATOR,
   DiagramRenderer,
   DIAGRAM_INTERACTION_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
@@ -1245,7 +1245,6 @@ const DiagramEditorDiagramCanvas = observer(
           diagramEditorState.diagramCursorClass,
         )}
         tabIndex={0}
-        onContextMenu={(event): void => event.preventDefault()}
       />
     );
   }),
@@ -1279,7 +1278,9 @@ const DiagramEditorHeader = observer(
             disabled={isAlignerDisabled}
             tabIndex={-1}
             onClick={(): void =>
-              diagramEditorState.renderer.align(ALIGNER_OPERATOR.ALIGN_LEFT)
+              diagramEditorState.renderer.align(
+                DIAGRAM_ALIGNER_OPERATOR.ALIGN_LEFT,
+              )
             }
           >
             <AlignStartIcon className="diagram-editor__icon--aligner" />
@@ -1290,7 +1291,9 @@ const DiagramEditorHeader = observer(
             disabled={isAlignerDisabled}
             tabIndex={-1}
             onClick={(): void =>
-              diagramEditorState.renderer.align(ALIGNER_OPERATOR.ALIGN_CENTER)
+              diagramEditorState.renderer.align(
+                DIAGRAM_ALIGNER_OPERATOR.ALIGN_CENTER,
+              )
             }
           >
             <AlignCenterIcon className="diagram-editor__icon--aligner" />
@@ -1301,7 +1304,9 @@ const DiagramEditorHeader = observer(
             disabled={isAlignerDisabled}
             tabIndex={-1}
             onClick={(): void =>
-              diagramEditorState.renderer.align(ALIGNER_OPERATOR.ALIGN_RIGHT)
+              diagramEditorState.renderer.align(
+                DIAGRAM_ALIGNER_OPERATOR.ALIGN_RIGHT,
+              )
             }
           >
             <AlignEndIcon className="diagram-editor__icon--aligner" />
@@ -1315,7 +1320,9 @@ const DiagramEditorHeader = observer(
             disabled={isAlignerDisabled}
             tabIndex={-1}
             onClick={(): void =>
-              diagramEditorState.renderer.align(ALIGNER_OPERATOR.ALIGN_TOP)
+              diagramEditorState.renderer.align(
+                DIAGRAM_ALIGNER_OPERATOR.ALIGN_TOP,
+              )
             }
           >
             <AlignTopIcon className="diagram-editor__icon--aligner" />
@@ -1326,7 +1333,9 @@ const DiagramEditorHeader = observer(
             disabled={isAlignerDisabled}
             tabIndex={-1}
             onClick={(): void =>
-              diagramEditorState.renderer.align(ALIGNER_OPERATOR.ALIGN_MIDDLE)
+              diagramEditorState.renderer.align(
+                DIAGRAM_ALIGNER_OPERATOR.ALIGN_MIDDLE,
+              )
             }
           >
             <AlignMiddleIcon className="diagram-editor__icon--aligner" />
@@ -1337,7 +1346,9 @@ const DiagramEditorHeader = observer(
             disabled={isAlignerDisabled}
             tabIndex={-1}
             onClick={(): void =>
-              diagramEditorState.renderer.align(ALIGNER_OPERATOR.ALIGN_BOTTOM)
+              diagramEditorState.renderer.align(
+                DIAGRAM_ALIGNER_OPERATOR.ALIGN_BOTTOM,
+              )
             }
           >
             <AlignBottomIcon className="diagram-editor__icon--aligner" />
@@ -1352,7 +1363,7 @@ const DiagramEditorHeader = observer(
             tabIndex={-1}
             onClick={(): void =>
               diagramEditorState.renderer.align(
-                ALIGNER_OPERATOR.SPACE_HORIZONTALLY,
+                DIAGRAM_ALIGNER_OPERATOR.SPACE_HORIZONTALLY,
               )
             }
           >
@@ -1365,7 +1376,7 @@ const DiagramEditorHeader = observer(
             tabIndex={-1}
             onClick={(): void =>
               diagramEditorState.renderer.align(
-                ALIGNER_OPERATOR.SPACE_VERTICALLY,
+                DIAGRAM_ALIGNER_OPERATOR.SPACE_VERTICALLY,
               )
             }
           >

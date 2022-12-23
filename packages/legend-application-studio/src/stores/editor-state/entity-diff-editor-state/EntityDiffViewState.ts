@@ -177,7 +177,7 @@ export class EntityDiffViewState extends EntityDiffViewerState {
     this.fromGrammarText = text;
   }
 
-  match(tab: EditorState): boolean {
+  override match(tab: EditorState): boolean {
     return (
       tab instanceof EntityDiffViewState &&
       tab.fromEntityPath === this.fromEntityPath &&

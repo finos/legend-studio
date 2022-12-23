@@ -474,7 +474,9 @@ export class ProjectViewerStore {
           });
           return false;
         }
-        this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
+        yield flowResult(
+          this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT),
+        );
         yield flowResult(
           this.editorStore.graphState.globalCompileInTextMode({
             ignoreBlocking: true,

@@ -45,7 +45,7 @@ const horizontalToVerticalScroll: React.WheelEventHandler = (event) => {
     return;
   }
   event.stopPropagation();
-  let deltaX = event.deltaX;
+  let deltaX;
   // NOTE: only convert horizontal to vertical scroll when the scroll causes more horizontal than vertical displacement
   // let the direction of `deltaY` be the direction of the scroll, i.e.
   // - if we scroll upward, that translate to a left scroll
@@ -220,7 +220,10 @@ const TabMenu = observer((props: { managerTabState: TabManagerState }) => {
           {managerTabState.tabs.map((tabState) => (
             <MenuContentItem
               key={tabState.uuid}
-              className="tab-manager__menu__item"
+              className={clsx('tab-manager__menu__item', {
+                'tab-manager__menu__item--active':
+                  tabState === managerTabState.currentTab,
+              })}
               onClick={() => managerTabState.openTab(tabState)}
             >
               <div className="tab-manager__menu__item__label">

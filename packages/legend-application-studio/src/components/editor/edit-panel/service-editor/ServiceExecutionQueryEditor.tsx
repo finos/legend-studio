@@ -257,7 +257,12 @@ export const ServiceExecutionQueryEditor = observer(
         const service = executionState.serviceEditorState.service;
         const selectedExecutionState =
           executionState.selectedExecutionContextState;
-        if (selectedExecutionState) {
+        if (selectedExecutionState?.executionContext.mapping === undefined) {
+          applicationStore.notifyError(
+            'Editing query without runtime and mapping is unsupported via query builder, please leverage the text mode to edit query',
+          );
+          executionState.setOpeningQueryEditor(false);
+        } else {
           const mapping = selectedExecutionState.executionContext.mapping.value;
           if (!isStubbed_PackageableElement(mapping)) {
             await flowResult(
@@ -327,11 +332,11 @@ export const ServiceExecutionQueryEditor = observer(
             executionState.setOpeningQueryEditor(false);
             return;
           }
+          applicationStore.notifyWarning(
+            'Please specify a mapping and a runtime for the execution context to edit with query builder',
+          );
+          executionState.setOpeningQueryEditor(false);
         }
-        applicationStore.notifyWarning(
-          'Please specify a mapping and a runtime for the execution context to edit with query builder',
-        );
-        executionState.setOpeningQueryEditor(false);
       },
     );
     const importQuery = (): void => {

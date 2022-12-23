@@ -24,7 +24,7 @@ import {
   SearchResultCoordinate,
   SearchResultEntry,
 } from '../server/models/SearchEntry.js';
-import type { Usage, UsageConcept } from '../server/models/Usage.js';
+import type { Usage, ConceptInfo } from '../server/models/Usage.js';
 import type { EditorStore } from './EditorStore.js';
 import { deleteEntry, guaranteeNonNullable } from '@finos/legend-shared';
 
@@ -36,7 +36,7 @@ export abstract class SearchState {
   }
 }
 
-export class SearchResultState extends SearchState {
+export abstract class SearchResultState extends SearchState {
   searchEntries: SearchResultEntry[] = [];
 
   constructor(editorStore: EditorStore, searchEntries: SearchResultEntry[]) {
@@ -66,16 +66,19 @@ export class SearchResultState extends SearchState {
   }
 }
 
+export class TextSearchResultState extends SearchResultState {}
+
 export class UsageResultState extends SearchResultState {
-  usageConcept: UsageConcept;
+  usageConcept: ConceptInfo;
 
   constructor(
     editorStore: EditorStore,
-    usageConcept: UsageConcept,
+    usageConcept: ConceptInfo,
     references: Usage[],
+    searchResultCoordinates: SearchResultCoordinate[],
   ) {
     const fileMap = new Map<string, SearchResultEntry>();
-    references.forEach((ref) => {
+    references.forEach((ref, idx) => {
       let entry: SearchResultEntry;
       if (fileMap.has(ref.source)) {
         entry = guaranteeNonNullable(fileMap.get(ref.source));
@@ -84,14 +87,22 @@ export class UsageResultState extends SearchResultState {
         entry.sourceId = ref.source;
         fileMap.set(ref.source, entry);
       }
-      entry.coordinates.push(
-        new SearchResultCoordinate(
-          ref.startLine,
-          ref.startColumn,
-          ref.endLine,
-          ref.endColumn,
-        ),
+      const coordinates = new SearchResultCoordinate(
+        ref.source,
+        ref.startLine,
+        ref.startColumn,
+        ref.endLine,
+        ref.endColumn,
       );
+      coordinates.preview = searchResultCoordinates.find(
+        (result) =>
+          result.sourceId === ref.source &&
+          result.startLine === ref.startLine &&
+          result.startColumn === ref.startColumn &&
+          result.endLine === ref.endLine &&
+          result.endColumn === ref.endColumn,
+      )?.preview;
+      entry.coordinates.push(coordinates);
     });
     super(
       editorStore,

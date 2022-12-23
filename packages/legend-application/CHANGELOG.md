@@ -1,5 +1,23 @@
 # @finos/legend-application
 
+## 10.2.6
+
+## 10.2.5
+
+## 10.2.4
+
+## 10.2.3
+
+## 10.2.2
+
+## 10.2.1
+
+## 10.2.0
+
+### Minor Changes
+
+- [#1747](https://github.com/finos/legend-studio/pull/1747) [`65cae8687`](https://github.com/finos/legend-studio/commit/65cae8687c5a35371438d372f18a41f4c7df549f) ([@akphi](https://github.com/akphi)) - Improve `Pure` grammar syntax highlighting.
+
 ## 10.1.1
 
 ## 10.1.0

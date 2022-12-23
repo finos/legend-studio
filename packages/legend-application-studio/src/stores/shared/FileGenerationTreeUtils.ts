@@ -20,13 +20,15 @@ import {
   returnUndefOnError,
   addUniqueEntry,
 } from '@finos/legend-shared';
-import type { GenerationOutput } from '@finos/legend-graph';
+import {
+  DIRECTORY_PATH_DELIMITER,
+  type GenerationOutput,
+} from '@finos/legend-graph';
 
 export interface GenerationOutputResult {
   generationOutput: GenerationOutput;
   parentId?: string | undefined;
 }
-export const DIRECTORY_PATH_DELIMITER = '/';
 export const GENERATION_FILE_ROOT_NAME = 'GENERATION_FILE_ROOT';
 
 // Generation Directory Model

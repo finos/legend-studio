@@ -105,7 +105,6 @@ const DataSpaceDiagramCanvas = observer(
           dataSpaceViewerState.diagramCursorClass,
         )}
         tabIndex={0}
-        onContextMenu={(event): void => event.preventDefault()}
       />
     );
   }),

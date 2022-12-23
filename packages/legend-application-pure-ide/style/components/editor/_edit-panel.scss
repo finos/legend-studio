@@ -38,16 +38,39 @@
     height: calc(100% - 3.4rem);
   }
 
-  &__content--headless {
-    height: calc(100%);
-  }
-
   &__header__tabs {
     display: flex;
     height: 100%;
     // NOTE: these allow the header actions to be of whatever width
     flex: 1;
     overflow: hidden;
+  }
+
+  &__header__tab {
+    @include flexVCenter;
+
+    &__icon {
+      &--file {
+        color: var(--color-file);
+      }
+    }
+
+    &__label {
+      margin-left: 0.5rem;
+    }
+
+    &__path {
+      @include flexVCenter;
+
+      color: var(--color-dark-grey-350);
+      margin-left: 0.5rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      padding: 0 0.5rem;
+      height: 1.6rem;
+      font-weight: 500;
+      font-family: 'Roboto Mono', monospace;
+    }
   }
 
   &__header__actions {
@@ -107,5 +130,9 @@
         color: var(--color-light-grey-400);
       }
     }
+  }
+
+  .tab-manager__tab--active {
+    border-bottom: 0.1rem solid var(--color-yellow-400);
   }
 }

@@ -28,7 +28,6 @@ import {
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
-  type PureGrammarTextSuggestion,
   type PureGrammarParserElementSnippetSuggestionsGetter,
   UnsupportedElementEditorState,
   LegendStudioApplicationPlugin,
@@ -49,7 +48,10 @@ import {
   PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
 } from '../../graphManager/DSL_DataSpace_PureGraphManagerPlugin.js';
 import { SIMPLE_DATA_SPACE_SNIPPET } from './DSL_DataSpace_CodeSnippets.js';
-import type { DocumentationEntry } from '@finos/legend-application';
+import type {
+  DocumentationEntry,
+  PureGrammarTextSuggestion,
+} from '@finos/legend-application';
 import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';

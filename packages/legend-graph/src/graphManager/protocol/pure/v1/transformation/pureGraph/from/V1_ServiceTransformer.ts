@@ -32,7 +32,10 @@ import {
   V1_KeyedExecutionParameter,
 } from '../../../model/packageableElements/service/V1_ServiceExecution.js';
 import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest.js';
-import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationTransformer.js';
+import {
+  V1_RawValueSpecificationTransformer,
+  V1_transformRawLambda,
+} from './V1_RawValueSpecificationTransformer.js';
 import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda.js';
 import { V1_transformRuntime } from './V1_RuntimeTransformer.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
@@ -68,6 +71,10 @@ import {
   V1_transformTestAssertion,
   V1_transformTestSuite,
 } from './V1_TestTransformer.js';
+import type { PostValidation } from '../../../../../../../graph/metamodel/pure/packageableElements/service/PostValidation.js';
+import { V1_PostValidation } from '../../../model/packageableElements/service/V1_PostValidation.js';
+import type { PostValidationAssertion } from '../../../../../../../graph/metamodel/pure/packageableElements/service/PostValidationAssertion.js';
+import { V1_PostValidationAssertion } from '../../../model/packageableElements/service/V1_PostValidationAssertion.js';
 
 const transformConnectionTestData = (
   element: ConnectionTestData,
@@ -86,6 +93,34 @@ export const V1_transformParameterValue = (
   parameterValue.name = element.name;
   parameterValue.value = element.value;
   return parameterValue;
+};
+
+const V1_transformPostValidationAssertion = (
+  element: PostValidationAssertion,
+  context: V1_GraphTransformerContext,
+): V1_PostValidationAssertion => {
+  const postValidationAssertion = new V1_PostValidationAssertion();
+  postValidationAssertion.id = element.id;
+  postValidationAssertion.assertion = V1_transformRawLambda(
+    element.assertion,
+    context,
+  );
+  return postValidationAssertion;
+};
+
+const V1_transformPostValidation = (
+  element: PostValidation,
+  context: V1_GraphTransformerContext,
+): V1_PostValidation => {
+  const postValidation = new V1_PostValidation();
+  postValidation.description = element.description;
+  postValidation.parameters = element.parameters.map((p) =>
+    V1_transformRawLambda(p, context),
+  );
+  postValidation.assertions = element.assertions.map((a) =>
+    V1_transformPostValidationAssertion(a, context),
+  );
+  return postValidation;
 };
 
 const transformTestData = (
@@ -137,8 +172,12 @@ const transformSingleExecution = (
   execution.func = element.func.accept_RawValueSpecificationVisitor(
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
-  execution.mapping = element.mapping.valueForSerialization ?? '';
-  execution.runtime = V1_transformRuntime(element.runtime, context);
+  if (element.mapping) {
+    execution.mapping = element.mapping.valueForSerialization ?? '';
+  }
+  if (element.runtime) {
+    execution.runtime = V1_transformRuntime(element.runtime, context);
+  }
   return execution;
 };
 
@@ -261,6 +300,9 @@ export const V1_transformService = (
   }
   service.testSuites = element.tests.map((testSuite) =>
     V1_transformTestSuite(testSuite, context),
+  );
+  service.postValidations = element.postValidations.map((postValidation) =>
+    V1_transformPostValidation(postValidation, context),
   );
   return service;
 };

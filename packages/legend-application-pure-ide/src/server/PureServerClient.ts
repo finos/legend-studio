@@ -25,13 +25,21 @@ import type {
   ExecutionActivity,
   ExecutionResult,
 } from '../server/models/Execution.js';
-import type { FileData } from '../server/models/PureFile.js';
-import type { SearchResultEntry } from '../server/models/SearchEntry.js';
+import type { FileData } from './models/File.js';
+import type {
+  SearchResultCoordinate,
+  SearchResultEntry,
+} from '../server/models/SearchEntry.js';
 import type {
   AbstractTestRunnerCheckResult,
   TestRunnerCancelResult,
 } from '../server/models/Test.js';
-import type { Usage, UsageConcept } from '../server/models/Usage.js';
+import {
+  type Usage,
+  type ConceptInfo,
+  type PackageableElementUsage,
+  FIND_USAGE_FUNCTION_PATH,
+} from '../server/models/Usage.js';
 import type { CommandResult } from '../server/models/Command.js';
 import {
   guaranteeNonNullable,
@@ -42,6 +50,21 @@ import type {
   DiagramClassInfo,
   DiagramInfo,
 } from '../server/models/DiagramInfo.js';
+import type {
+  SourceModificationResult,
+  UpdateSourceInput,
+} from './models/Source.js';
+import type { RenameConceptInput } from './models/RenameConcept.js';
+import type {
+  ChildPackageableElementInfo,
+  MovePackageableElementsInput,
+} from './models/MovePackageableElements.js';
+import type {
+  AttributeSuggestion,
+  ClassSuggestion,
+  ElementSuggestion,
+  VariableSuggestion,
+} from './models/Suggestion.js';
 
 export class PureClient {
   private networkClient: NetworkClient;
@@ -86,36 +109,6 @@ export class PureClient {
       },
     );
 
-  getFile = (path: string): Promise<PlainObject<File>> =>
-    this.networkClient.get(
-      `${this.baseUrl}/fileAsJson/${path}`,
-      undefined,
-      undefined,
-      {
-        sessionId: this.sessionId,
-        mode: this.mode,
-        fastCompile: this.compilerMode,
-      },
-    );
-
-  getDirectoryChildren = (
-    path?: string,
-  ): Promise<PlainObject<DirectoryNode>[]> =>
-    this.networkClient.get(`${this.baseUrl}/dir`, undefined, undefined, {
-      parameters: path ?? '/',
-      mode: this.mode,
-      sessionId: this.sessionId,
-    });
-
-  getConceptChildren = (path?: string): Promise<PlainObject<ConceptNode>[]> =>
-    this.networkClient.get(`${this.baseUrl}/execute`, undefined, undefined, {
-      func: 'meta::pure::ide::display_ide(String[1]):String[1]',
-      param: path ? `'${path}'` : "'::'",
-      format: 'raw',
-      mode: this.mode,
-      sessionId: this.sessionId,
-    });
-
   getConceptActivity = (): Promise<PlainObject<ConceptActivity>> =>
     this.networkClient.get(
       `${this.baseUrl}/conceptsActivity`,
@@ -156,6 +149,8 @@ export class PureClient {
       },
     );
 
+  // ------------------------------------------- Search -------------------------------------------
+
   findFiles = (searchText: string, isRegExp: boolean): Promise<string[]> =>
     this.networkClient.get(
       `${this.baseUrl}/findPureFiles`,
@@ -185,6 +180,16 @@ export class PureClient {
       },
     );
 
+  getTextSearchPreview = (
+    coordinates: SearchResultCoordinate[],
+  ): Promise<PlainObject<SearchResultCoordinate>[]> =>
+    this.networkClient.post(
+      `${this.baseUrl}/getTextSearchPreview`,
+      coordinates,
+    );
+
+  // ------------------------------------------- Test -------------------------------------------
+
   checkTestRunner = (
     testRunnerId: number,
   ): Promise<PlainObject<AbstractTestRunnerCheckResult>> =>
@@ -198,9 +203,7 @@ export class PureClient {
       },
     );
 
-  cancelTestRunner = (
-    testRunnerId: number,
-  ): Promise<PlainObject<TestRunnerCancelResult>> =>
+  cancelTestRunner = (testRunnerId: number): Promise<TestRunnerCancelResult> =>
     this.networkClient.get(
       `${this.baseUrl}/testRunnerCancel`,
       undefined,
@@ -211,31 +214,123 @@ export class PureClient {
       },
     );
 
-  getConceptPath = (
+  // ------------------------------------------- Concept -------------------------------------------
+
+  getConceptChildren = (path?: string): Promise<PlainObject<ConceptNode>[]> =>
+    this.networkClient.get(`${this.baseUrl}/execute`, undefined, undefined, {
+      func: 'meta::pure::ide::display_ide(String[1]):String[1]',
+      param: path ? `'${path}'` : "'::'",
+      format: 'raw',
+      mode: this.mode,
+      sessionId: this.sessionId,
+    });
+
+  getConceptInfo = async (
     file: string,
     line: number,
     column: number,
-  ): Promise<PlainObject<UsageConcept>> =>
-    this.networkClient.get(
-      `${this.baseUrl}/getConceptPath`,
+  ): Promise<ConceptInfo> => {
+    const result = await this.networkClient.get<
+      ConceptInfo & { error: boolean; text: string }
+    >(`${this.baseUrl}/getConceptInfo`, undefined, undefined, {
+      file,
+      line,
+      column,
+    });
+    if (result.error) {
+      throw new Error(result.text);
+    }
+    return result;
+  };
+
+  getUsages = async (
+    func: string,
+    param: string[],
+  ): Promise<PlainObject<Usage>[]> => {
+    const result = await this.networkClient.get(
+      `${this.baseUrl}/execute`,
       undefined,
       undefined,
       {
-        file,
-        line,
-        column,
+        func,
+        param,
+      },
+    );
+    return Array.isArray(result) ? result : [result];
+  };
+
+  renameConcept = (input: RenameConceptInput): Promise<void> =>
+    this.networkClient.put(`${this.baseUrl}/renameConcept`, input);
+
+  movePackageableElements = (
+    inputs: MovePackageableElementsInput[],
+  ): Promise<void> =>
+    this.networkClient.put(`${this.baseUrl}/movePackageableElements`, inputs);
+
+  getPackageableElementsUsage = async (
+    paths: string[],
+  ): Promise<PlainObject<PackageableElementUsage>[]> => {
+    const result = await this.networkClient.get(
+      `${this.baseUrl}/execute`,
+      undefined,
+      undefined,
+      {
+        func: FIND_USAGE_FUNCTION_PATH.MULTIPLE_PATHS,
+        param: [`'${paths.join(',')}'`],
+      },
+    );
+    return Array.isArray(result) ? result : [result];
+  };
+
+  getChildPackageableElements = async (
+    packagePath: string,
+  ): Promise<ChildPackageableElementInfo[]> => {
+    const result = await this.networkClient.get(
+      `${this.baseUrl}/execute`,
+      undefined,
+      undefined,
+      {
+        func: 'meta::pure::ide::getChildPackageableElements_String_1__String_MANY_',
+        param: [`'${packagePath}'`],
+      },
+    );
+    return (Array.isArray(result) ? result : [result]).map((child) =>
+      JSON.parse(child),
+    );
+  };
+
+  // ------------------------------------------- IO / File Management -------------------------------------------
+
+  getFile = (path: string): Promise<PlainObject<File>> =>
+    this.networkClient.get(
+      `${this.baseUrl}/fileAsJson/${path}`,
+      undefined,
+      undefined,
+      {
+        sessionId: this.sessionId,
+        mode: this.mode,
+        fastCompile: this.compilerMode,
       },
     );
 
-  getUsages = (func: string, param: string[]): Promise<PlainObject<Usage>[]> =>
-    this.networkClient.get(`${this.baseUrl}/execute`, undefined, undefined, {
-      func,
-      param,
+  getDirectoryChildren = (
+    path?: string,
+  ): Promise<PlainObject<DirectoryNode>[]> =>
+    this.networkClient.get(`${this.baseUrl}/dir`, undefined, undefined, {
+      parameters: path ?? '/',
+      mode: this.mode,
+      sessionId: this.sessionId,
     });
 
+  updateSource = (
+    updateInputs: UpdateSourceInput[],
+  ): Promise<PlainObject<SourceModificationResult>> =>
+    this.networkClient.put(`${this.baseUrl}/updateSource`, updateInputs);
+
   createFile = (path: string): Promise<PlainObject<CommandResult>> =>
-    this.networkClient.get(
+    this.networkClient.post(
       `${this.baseUrl}/newFile/${path}`,
+      undefined,
       undefined,
       undefined,
       {
@@ -246,8 +341,9 @@ export class PureClient {
     );
 
   createFolder = (path: string): Promise<PlainObject<CommandResult>> =>
-    this.networkClient.get(
+    this.networkClient.post(
       `${this.baseUrl}/newFolder/${path}`,
+      undefined,
       undefined,
       undefined,
       {
@@ -257,15 +353,31 @@ export class PureClient {
       },
     );
 
+  renameFile = (
+    oldPath: string,
+    newPath: string,
+  ): Promise<PlainObject<CommandResult>> =>
+    this.networkClient.put(
+      `${this.baseUrl}/renameFile`,
+      {
+        oldPath,
+        newPath,
+      },
+      undefined,
+    );
+
   deleteDirectoryOrFile = (path: string): Promise<PlainObject<CommandResult>> =>
-    this.networkClient.get(
+    this.networkClient.delete(
       `${this.baseUrl}/deleteFile/${path}`,
+      undefined,
       undefined,
       undefined,
       {
         sessionId: this.sessionId,
       },
     );
+
+  // ------------------------------------------- Diagram -------------------------------------------
 
   getDiagramInfo = async (
     diagramPath: string,
@@ -296,4 +408,51 @@ export class PureClient {
         },
       ),
     );
+
+  // ------------------------------------------- Suggestion -------------------------------------------
+
+  getSuggestionsForIncompletePath = (
+    currentPackagePath: string,
+    types: string[],
+  ): Promise<PlainObject<ElementSuggestion>[]> =>
+    this.networkClient.post(`${this.baseUrl}/suggestion/incompletePath`, {
+      path: currentPackagePath,
+      types,
+    });
+
+  getSuggestionsForIdentifier = (
+    importPaths: string[],
+    types: string[],
+  ): Promise<PlainObject<ElementSuggestion>[]> =>
+    this.networkClient.post(`${this.baseUrl}/suggestion/identifier`, {
+      importPaths,
+      types,
+    });
+
+  getSuggestionsForAttribute = (
+    importPaths: string[],
+    path: string,
+  ): Promise<PlainObject<AttributeSuggestion>[]> =>
+    this.networkClient.post(`${this.baseUrl}/suggestion/attribute`, {
+      importPaths,
+      path,
+    });
+
+  getSuggestionsForClass = (
+    importPaths: string[],
+  ): Promise<PlainObject<ClassSuggestion>[]> =>
+    this.networkClient.post(`${this.baseUrl}/suggestion/class`, {
+      importPaths,
+    });
+
+  getSuggestionsForVariable = (
+    sourceId: string,
+    line: number,
+    column: number,
+  ): Promise<PlainObject<VariableSuggestion>[]> =>
+    this.networkClient.post(`${this.baseUrl}/suggestion/variable`, {
+      sourceId,
+      line,
+      column,
+    });
 }

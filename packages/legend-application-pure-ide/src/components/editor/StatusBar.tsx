@@ -24,12 +24,46 @@ import {
   TerminalIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider.js';
+import { FileEditorState } from '../../stores/FileEditorState.js';
+
+const FileEditorStatusBar = observer(
+  (props: { fileEditorState: FileEditorState }) => {
+    const { fileEditorState } = props;
+    const currentCursorInfo = fileEditorState.textEditorState.cursorObserver;
+    const selectionLength = currentCursorInfo?.selection
+      ? fileEditorState.textEditorState.model.getValueInRange(
+          currentCursorInfo.selection,
+        ).length
+      : 0;
+
+    // actions
+    const goToLine = (): void => fileEditorState.setShowGoToLinePrompt(true);
+
+    return (
+      <div className="file-editor__status-bar">
+        {currentCursorInfo?.position && (
+          <button
+            className="editor__status-bar__action file-editor__status-bar__cursor-info"
+            onClick={goToLine}
+            tabIndex={-1}
+            title="Go to Line/Column"
+          >
+            {`Ln ${currentCursorInfo.position.lineNumber}, Col ${
+              currentCursorInfo.position.column
+            } ${selectionLength ? ` (${selectionLength} selected)` : ''}`}
+          </button>
+        )}
+      </div>
+    );
+  },
+);
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
+  const { actionsDisabled } = props;
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
 
-  // Other actions
+  // actions
   const toggleAuxPanel = (): void => editorStore.auxPanelDisplayState.toggle();
   const executeGo = (): void => {
     flowResult(editorStore.executeGo()).catch(
@@ -45,6 +79,11 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
         <div className="editor__status-bar__workspace"></div>
       </div>
       <div className="editor__status-bar__right">
+        {editorStore.tabManagerState.currentTab instanceof FileEditorState && (
+          <FileEditorStatusBar
+            fileEditorState={editorStore.tabManagerState.currentTab}
+          />
+        )}
         <button
           className={clsx(
             'editor__status-bar__action editor__status-bar__compile-btn',
@@ -53,7 +92,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
                 editorStore.executionState.isInProgress,
             },
           )}
-          disabled={editorStore.executionState.isInProgress}
+          disabled={actionsDisabled || editorStore.executionState.isInProgress}
           onClick={executeGo}
           tabIndex={-1}
           title="Execute (F9)"

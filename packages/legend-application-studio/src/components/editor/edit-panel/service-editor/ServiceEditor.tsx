@@ -46,13 +46,13 @@ import {
   service_setPattern,
   service_updateOwner,
 } from '../../../../stores/shared/modifier/DSL_Service_GraphModifierHelper.js';
-import { validate_ServicePattern } from '@finos/legend-graph';
-import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
 import {
   LEGEND_APPLICATION_DOCUMENTATION_KEY,
   useApplicationNavigationContext,
   useApplicationStore,
 } from '@finos/legend-application';
+import { validate_ServicePattern } from '@finos/legend-graph';
+import { ServiceTestableWrapperEditor } from './testable/ServiceTestableEditor.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const ServiceGeneralEditor = observer(() => {
@@ -475,8 +475,9 @@ export const ServiceEditor = observer(() => {
             <ServiceRegistrationEditor />
           )}
           {selectedTab === SERVICE_TAB.TEST && (
-            <ServiceTestableEditor
+            <ServiceTestableWrapperEditor
               serviceTestableState={serviceState.testableState}
+              serviceExecution={service.execution}
             />
           )}
         </div>

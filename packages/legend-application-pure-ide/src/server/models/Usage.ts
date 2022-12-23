@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-import { createModelSchema, primitive } from 'serializr';
+import { createModelSchema, list, object, primitive } from 'serializr';
 
-export interface UsageConcept {
+export interface ConceptInfo {
   path: string;
   owner?: string;
-  type?: string;
+  pureName: string;
+  pureType: string;
 }
 
-export const getUsageConceptLabel = (usageConcept: UsageConcept): string =>
+export enum FIND_USAGE_FUNCTION_PATH {
+  ENUM = 'meta::pure::ide::findusages::findUsagesForEnum_String_1__String_1__SourceInformation_MANY_',
+  PROPERTY = 'meta::pure::ide::findusages::findUsagesForProperty_String_1__String_1__SourceInformation_MANY_',
+  ELEMENT = 'meta::pure::ide::findusages::findUsagesForPath_String_1__SourceInformation_MANY_',
+  MULTIPLE_PATHS = 'meta::pure::ide::findusages::findUsagesForMultiplePaths_String_1__Pair_MANY_',
+}
+
+export const getConceptInfoLabel = (usageConcept: ConceptInfo): string =>
   `'${usageConcept.path}'${
     usageConcept.owner ? ` of '${usageConcept.owner}'` : ''
   }`;
@@ -35,7 +43,6 @@ export class Usage {
   startColumn!: number;
   endLine!: number;
   endColumn!: number;
-  // __TYPE: "meta::pure::functions::meta::SourceInformation"
 }
 
 createModelSchema(Usage, {
@@ -46,4 +53,14 @@ createModelSchema(Usage, {
   startColumn: primitive(),
   endLine: primitive(),
   endColumn: primitive(),
+});
+
+export class PackageableElementUsage {
+  first!: string;
+  second!: Usage[];
+}
+
+createModelSchema(PackageableElementUsage, {
+  first: primitive(),
+  second: list(object(Usage)),
 });

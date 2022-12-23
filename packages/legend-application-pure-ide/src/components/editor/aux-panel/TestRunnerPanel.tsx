@@ -35,7 +35,6 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   BlankPanelContent,
-  ContextMenu,
   PanelLoadingIndicator,
   TreeView,
   ProgressBar,
@@ -52,10 +51,19 @@ import {
   PlayIcon,
   PlusIcon,
   ResizablePanelSplitterLine,
+  GoToFileIcon,
+  SubjectIcon,
+  ViewHeadlineIcon,
 } from '@finos/legend-art';
-import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  isNonNullable,
+  noop,
+} from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import { useEditorStore } from '../EditorStoreProvider.js';
+import { FileCoordinate } from '../../../server/models/File.js';
+import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 
 const TestTreeNodeContainer = observer(
   (
@@ -66,22 +74,30 @@ const TestTreeNodeContainer = observer(
         onNodeOpen: (node: TestTreeNode) => void;
         onNodeExpand: (node: TestTreeNode) => void;
         onNodeCompress: (node: TestTreeNode) => void;
+        renderNodeLabel?: (node: TestTreeNode) => React.ReactNode;
       }
     >,
   ) => {
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
-    const { testRunnerState, onNodeOpen, onNodeExpand, onNodeCompress } =
-      innerProps;
+    const {
+      testRunnerState,
+      onNodeOpen,
+      onNodeExpand,
+      onNodeCompress,
+      renderNodeLabel,
+    } = innerProps;
+    const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     const testResultInfo = testRunnerState.testResultInfo;
     const isExpandable = !node.data.type;
     // NOTE: the quirky thing here is since we make the node container an `observer`, effectively, we wrap `memo`
     // around this component, so since we use `isSelected = node.isSelected`, changing selection will not trigger
     // a re-render, hence, we have to make it observes the currently selected node to derive its `isSelected` state
-    const isSelected = node.id === testRunnerState.selectedNode?.id;
+    const isSelected = node.id === testRunnerState.selectedTestId;
     const nodeTestStatus = testResultInfo
       ? getTestTreeNodeStatus(node, testResultInfo)
       : undefined;
-    let nodeIcon = <QuestionCircleIcon />;
+    let nodeIcon;
     switch (nodeTestStatus) {
       case TestResultType.PASSED: {
         nodeIcon = (
@@ -120,11 +136,6 @@ const TestTreeNodeContainer = observer(
         break;
       }
     }
-    const selectNode: React.MouseEventHandler = (event) => {
-      event.stopPropagation();
-      event.preventDefault();
-      onNodeSelect?.(node);
-    };
     const toggleExpansion = (): void => {
       if (node.isOpen) {
         onNodeCompress(node);
@@ -132,11 +143,30 @@ const TestTreeNodeContainer = observer(
         onNodeExpand(node);
       }
     };
-    const onDoubleClick: React.MouseEventHandler<HTMLDivElement> = () => {
+    const selectNode: React.MouseEventHandler = (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+      onNodeSelect?.(node);
       if (isExpandable) {
         toggleExpansion();
       } else {
         onNodeOpen(node);
+      }
+    };
+    const onDoubleClick: React.MouseEventHandler<HTMLDivElement> = () => {
+      if (isExpandable) {
+        toggleExpansion();
+      } else {
+        flowResult(
+          editorStore.loadFile(
+            node.data.li_attr.file,
+            new FileCoordinate(
+              node.data.li_attr.file,
+              Number.parseInt(node.data.li_attr.line, 10),
+              Number.parseInt(node.data.li_attr.column, 10),
+            ),
+          ),
+        ).catch(applicationStore.alertUnhandledError);
       }
     };
 
@@ -173,8 +203,58 @@ const TestTreeNodeContainer = observer(
         <button
           className="tree-view__node__label explorer__package-tree__node__label"
           tabIndex={-1}
-          dangerouslySetInnerHTML={{ __html: node.label }}
-        />
+        >
+          {renderNodeLabel?.(node) ?? node.label}
+        </button>
+      </div>
+    );
+  },
+);
+
+const TestRunnerList = observer(
+  (props: { testRunnerState: TestRunnerState }) => {
+    const { testRunnerState } = props;
+    const treeData = testRunnerState.getTreeData();
+    const onNodeOpen = (node: TestTreeNode): void =>
+      testRunnerState.setSelectedTestId(node.id);
+    const renderNodeLabel = (node: TestTreeNode): React.ReactNode => {
+      let path = node.id.split('__')[0];
+      if (!path) {
+        return node.label;
+      }
+      const parts = path.split('_');
+      path = parts.slice(1, parts.length).join(ELEMENT_PATH_DELIMITER);
+
+      return (
+        <div className="test-runner-list__item__label">
+          <div className="test-runner-list__item__label__name">
+            {node.label}
+          </div>
+          <div className="test-runner-list__item__label__path">{path}</div>
+        </div>
+      );
+    };
+
+    return (
+      <div className="explorer__content">
+        {Array.from(testRunnerState.allTests.keys())
+          .map((id) => treeData.nodes.get(id))
+          .filter(isNonNullable)
+          .map((node) => (
+            <TestTreeNodeContainer
+              key={node.id}
+              node={node}
+              level={0}
+              onNodeSelect={noop()}
+              innerProps={{
+                testRunnerState,
+                onNodeOpen,
+                renderNodeLabel,
+                onNodeExpand: noop(),
+                onNodeCompress: noop(),
+              }}
+            />
+          ))}
       </div>
     );
   },
@@ -185,8 +265,6 @@ const TestRunnerTree = observer(
     const { testRunnerState } = props;
     const treeData = testRunnerState.getTreeData();
     const isEmptyTree = treeData.nodes.size === 0;
-    const onNodeSelect = (node: TestTreeNode): void =>
-      testRunnerState.setSelectedNode(node);
     const onNodeOpen = (node: TestTreeNode): void =>
       testRunnerState.setSelectedTestId(node.id);
     const onNodeExpand = (node: TestTreeNode): void => {
@@ -205,31 +283,27 @@ const TestRunnerTree = observer(
         .map((childId) => treeData.nodes.get(childId))
         .filter(isNonNullable);
     };
-    const deselectTreeNode = (): void =>
-      testRunnerState.setSelectedNode(undefined);
 
     return (
-      <ContextMenu className="explorer__content" disabled={true}>
-        <div className="explorer__content__inner" onClick={deselectTreeNode}>
-          {isEmptyTree && <BlankPanelContent>No tests found</BlankPanelContent>}
-          {!isEmptyTree && (
-            <TreeView
-              components={{
-                TreeNodeContainer: TestTreeNodeContainer,
-              }}
-              treeData={treeData}
-              onNodeSelect={onNodeSelect}
-              getChildNodes={getChildNodes}
-              innerProps={{
-                testRunnerState,
-                onNodeOpen,
-                onNodeExpand,
-                onNodeCompress,
-              }}
-            />
-          )}
-        </div>
-      </ContextMenu>
+      <div className="explorer__content">
+        {isEmptyTree && <BlankPanelContent>No tests found</BlankPanelContent>}
+        {!isEmptyTree && (
+          <TreeView
+            components={{
+              TreeNodeContainer: TestTreeNodeContainer,
+            }}
+            treeData={treeData}
+            onNodeSelect={noop()}
+            getChildNodes={getChildNodes}
+            innerProps={{
+              testRunnerState,
+              onNodeOpen,
+              onNodeExpand,
+              onNodeCompress,
+            }}
+          />
+        )}
+      </div>
     );
   },
 );
@@ -241,16 +315,41 @@ const TestResultViewer = observer(
     selectedTestId: string;
   }) => {
     const { testRunnerState, selectedTestId, testResultInfo } = props;
+    const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     const result = testResultInfo.results.get(selectedTestId);
     const testInfo = guaranteeNonNullable(
       testRunnerState.allTests.get(selectedTestId),
       `Can't find info for test with ID '${selectedTestId}'`,
     );
+    const goToFile = (): void => {
+      flowResult(
+        editorStore.loadFile(
+          testInfo.li_attr.file,
+          new FileCoordinate(
+            testInfo.li_attr.file,
+            Number.parseInt(testInfo.li_attr.line, 10),
+            Number.parseInt(testInfo.li_attr.column, 10),
+          ),
+        ),
+      ).catch(applicationStore.alertUnhandledError);
+    };
+
     return (
       <div className="panel">
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">{testInfo.text}</div>
+          </div>
+          <div className="panel__header__actions">
+            <button
+              className="panel__header__action"
+              tabIndex={-1}
+              title="Open File"
+              onClick={goToFile}
+            >
+              <GoToFileIcon />
+            </button>
           </div>
         </div>
         <div className="panel__content test-runner-panel__result">
@@ -294,6 +393,8 @@ const TestRunnerResultDisplay = observer(
         applicationStore.alertUnhandledError,
       );
     };
+    const toggleViewMode = (): void =>
+      testRunnerState.setViewAsList(!testRunnerState.viewAsList);
 
     return (
       <div className="test-runner-panel__content">
@@ -328,6 +429,21 @@ const TestRunnerResultDisplay = observer(
                   </div>
                 </div>
                 <div className="panel__header__actions">
+                  <button
+                    className="panel__header__action"
+                    onClick={toggleViewMode}
+                    title={
+                      testRunnerState.viewAsList
+                        ? 'View As Tree'
+                        : 'View As List'
+                    }
+                  >
+                    {testRunnerState.viewAsList ? (
+                      <SubjectIcon className="test-runner-panel__icon--tree-view" />
+                    ) : (
+                      <ViewHeadlineIcon className="test-runner-panel__icon--list-view" />
+                    )}
+                  </button>
                   <button
                     className="panel__header__action"
                     onClick={expandTree}
@@ -374,7 +490,14 @@ const TestRunnerResultDisplay = observer(
               </div>
               <div className="panel__content">
                 {testRunnerState.treeData && (
-                  <TestRunnerTree testRunnerState={testRunnerState} />
+                  <>
+                    {!testRunnerState.viewAsList && (
+                      <TestRunnerTree testRunnerState={testRunnerState} />
+                    )}
+                    {testRunnerState.viewAsList && (
+                      <TestRunnerList testRunnerState={testRunnerState} />
+                    )}
+                  </>
                 )}
               </div>
             </div>

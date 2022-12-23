@@ -37,7 +37,7 @@ import {
   NewExternalFormatConnectionDriver,
 } from './editor/edit-panel/external-format-editor/DSL_ExternalFormat_ExternalFormatConnectionEditor.js';
 import { BindingEditor } from './editor/edit-panel/external-format-editor/DSL_ExternalFormat_BindingElementEditor.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import type { ReactNode } from 'react';
 import {
   type ElementEditorRenderer,
@@ -52,11 +52,11 @@ import {
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
-  type PureGrammarTextSuggestion,
   LegendStudioApplicationPlugin,
 } from '../stores/LegendStudioApplicationPlugin.js';
 import type {
   ConnectionEditorRenderer,
+  ConnectionTypeOption,
   ConnectionValueEditorStateBuilder,
   DefaultConnectionValueBuilder,
   DSL_Mapping_LegendStudioApplicationPlugin_Extension,
@@ -72,7 +72,10 @@ import {
   externalFormat_Binding_setContentType,
   externalFormat_urlStream_setUrl,
 } from '../stores/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
-import type { DocumentationEntry } from '@finos/legend-application';
+import type {
+  DocumentationEntry,
+  PureGrammarTextSuggestion,
+} from '@finos/legend-application';
 import { DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSL_ExternalFormat_LegendStudioDocumentation.js';
 import {
   BASIC_BINDING_SNIPPET,
@@ -96,6 +99,7 @@ const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_SCHEMA_SET';
 const BINDING_ELEMENT_TYPE = 'BINDING';
 const BINDING_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_BINDING';
+export const EXTERNAL_FORMAT_CONNECTION = 'EXTERNAL_FORMAT_CONNECTION';
 
 export class DSL_ExternalFormat_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -328,12 +332,24 @@ export class DSL_ExternalFormat_LegendStudioApplicationPlugin
     return [
       (
         editorStore: EditorStore,
-        store: Store,
+        typeOrStore: Store | string,
       ): NewConnectionValueDriver<Connection> | undefined => {
-        if (store instanceof Binding) {
+        if (typeOrStore instanceof Binding) {
+          return new NewExternalFormatConnectionDriver(editorStore);
+        }
+        if (typeOrStore === EXTERNAL_FORMAT_CONNECTION) {
           return new NewExternalFormatConnectionDriver(editorStore);
         }
         return undefined;
+      },
+    ];
+  }
+
+  getExtraConnectionTypeOptions(): ConnectionTypeOption[] {
+    return [
+      {
+        value: EXTERNAL_FORMAT_CONNECTION,
+        label: prettyCONSTName(EXTERNAL_FORMAT_CONNECTION),
       },
     ];
   }

@@ -22,10 +22,11 @@ import type {
 import {
   FileCoordinate,
   trimPathLeadingSlash,
-} from '../../../server/models/PureFile.js';
+} from '../../../server/models/File.js';
 import { flowResult } from 'mobx';
 import {
-  SearchResultState,
+  type SearchResultState,
+  TextSearchResultState,
   UnmatchedFunctionExecutionResultState,
   UnmatchExecutionResultState,
   UsageResultState,
@@ -34,7 +35,7 @@ import type {
   CandidateWithPackageImported,
   CandidateWithPackageNotImported,
 } from '../../../server/models/Execution.js';
-import { getUsageConceptLabel } from '../../../server/models/Usage.js';
+import { getConceptInfoLabel } from '../../../server/models/Usage.js';
 import {
   ArrowCircleRightIcon,
   BlankPanelContent,
@@ -116,7 +117,29 @@ const SearchResultEntryDisplay = observer(
                 title="Go to Result"
                 onClick={goToResult(coordinate)}
               >
-                {`line: ${coordinate.startLine} - column: ${coordinate.startColumn}`}
+                {coordinate.preview && (
+                  <div className="search-panel__entry__content__item__label__content">
+                    <div className="search-panel__entry__content__item__label__coordinates">
+                      {`[${coordinate.startLine}:${coordinate.startColumn}]`}
+                    </div>
+                    <div className="search-panel__entry__content__item__label__preview">
+                      <span className="search-panel__entry__content__item__label__preview__text">
+                        {coordinate.preview.before}
+                      </span>
+                      <span className="search-panel__entry__content__item__label__preview__text search-panel__entry__content__item__label__preview__text--found">
+                        {coordinate.preview.found.replaceAll(/\n/g, '\u21B5')}
+                      </span>
+                      <span className="search-panel__entry__content__item__label__preview__text">
+                        {coordinate.preview.after}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {!coordinate.preview && (
+                  <>
+                    {`line: ${coordinate.startLine} - column: ${coordinate.startColumn}`}
+                  </>
+                )}
               </div>
               <div className="search-panel__entry__content__item__actions">
                 <button
@@ -136,8 +159,8 @@ const SearchResultEntryDisplay = observer(
   },
 );
 
-const SearchResultDisplay = observer(
-  (props: { searchState: SearchResultState }) => {
+const TextSearchResultDisplay = observer(
+  (props: { searchState: TextSearchResultState }) => {
     const { searchState } = props;
     const editorStore = useEditorStore();
     if (!searchState.searchEntries.length) {
@@ -165,7 +188,7 @@ const UsageResultDisplay = observer(
     const { usageState } = props;
     if (!usageState.searchEntries.length) {
       return (
-        <BlankPanelContent>{`No usages found for ${getUsageConceptLabel(
+        <BlankPanelContent>{`No usages found for ${getConceptInfoLabel(
           usageState.usageConcept,
         )}`}</BlankPanelContent>
       );
@@ -176,7 +199,7 @@ const UsageResultDisplay = observer(
           usageState.numberOfResults
         } usages(s) in ${
           usageState.numberOfFiles
-        } files for ${getUsageConceptLabel(usageState.usageConcept)}`}</div>
+        } files for ${getConceptInfoLabel(usageState.usageConcept)}`}</div>
         {usageState.searchEntries.map((searchEntry) => (
           <SearchResultEntryDisplay
             key={searchEntry.uuid}
@@ -372,6 +395,7 @@ const UnmatchExecutionResultDisplay = observer(
 
 export const SearchPanel = observer(() => {
   const editorStore = useEditorStore();
+
   return (
     <div className="search-panel">
       <PanelLoadingIndicator
@@ -404,8 +428,8 @@ export const SearchPanel = observer(() => {
       {editorStore.searchState instanceof UsageResultState && (
         <UsageResultDisplay usageState={editorStore.searchState} />
       )}
-      {editorStore.searchState instanceof SearchResultState && (
-        <SearchResultDisplay searchState={editorStore.searchState} />
+      {editorStore.searchState instanceof TextSearchResultState && (
+        <TextSearchResultDisplay searchState={editorStore.searchState} />
       )}
       {editorStore.searchState instanceof
         UnmatchedFunctionExecutionResultState && (

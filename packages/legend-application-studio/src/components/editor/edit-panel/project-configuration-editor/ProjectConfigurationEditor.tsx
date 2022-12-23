@@ -14,47 +14,24 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef } from 'react';
-import {
-  LogEvent,
-  prettyCONSTName,
-  assertErrorThrown,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { useEffect } from 'react';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
   ProjectConfigurationEditorState,
   CONFIGURATION_EDITOR_TAB,
-  DEPENDENCY_INFO_TYPE,
-  getDependencyTreeStringFromInfo,
-  getConflictsString,
-} from '../../../../stores/editor-state/ProjectConfigurationEditorState.js';
+} from '../../../../stores/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import {
-  type SelectComponent,
-  compareLabelFn,
   clsx,
-  CustomSelectorInput,
   PlusIcon,
-  TimesIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
-  ExternalLinkSquareIcon,
-  Dialog,
   Panel,
   PanelForm,
   PanelFormTextField,
   CheckSquareIcon,
   SquareIcon,
   ExclamationTriangleIcon,
-  DropdownMenu,
-  CaretDownIcon,
-  MenuContentItem,
-  MenuContent,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-  PanelLoadingIndicator,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -66,37 +43,11 @@ import {
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   DocumentationPreview,
-  EDITOR_LANGUAGE,
   LEGEND_APPLICATION_DOCUMENTATION_KEY,
-  TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../../stores/LegendStudioAppEvent.js';
-import {
-  SNAPSHOT_VERSION_ALIAS,
-  MASTER_SNAPSHOT_ALIAS,
-  type ProjectData,
-  type ProjectDependencyInfo,
-} from '@finos/legend-server-depot';
-import {
-  generateViewProjectByGAVRoute,
-  generateViewProjectRoute,
-} from '../../../../stores/LegendStudioRouter.js';
-import { compareSemVerVersions } from '@finos/legend-storage';
-
-interface VersionOption {
-  label: string;
-  value: string;
-}
-interface ProjectOption {
-  label: string;
-  value: ProjectData;
-}
-
-const buildProjectOption = (project: ProjectData): ProjectOption => ({
-  label: project.coordinates,
-  value: project,
-});
+import { ProjectDependencyEditor } from './ProjectDependencyEditor.js';
+import type { ProjectData } from '@finos/legend-server-depot';
 
 const ProjectStructureEditor = observer(
   (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
@@ -176,264 +127,6 @@ const ProjectStructureEditor = observer(
             }
           />
         </PanelForm>
-      </div>
-    );
-  },
-);
-
-const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
-  <div className="project-dependency-editor__label">
-    <div className="project-dependency-editor__label__tag">
-      {option.value.projectId}
-    </div>
-    <div className="project-dependency-editor__label__name">
-      {option.value.coordinates}
-    </div>
-  </div>
-);
-
-const ProjectDependencyInfoModal = observer(
-  (props: {
-    configState: ProjectConfigurationEditorState;
-    info: ProjectDependencyInfo;
-    type: DEPENDENCY_INFO_TYPE;
-  }) => {
-    const { configState, info, type } = props;
-    const closeModal = (): void =>
-      configState.setDependencyInfoModal(undefined);
-    return (
-      <Dialog
-        open={Boolean(configState.dependencyInfoModalType)}
-        onClose={closeModal}
-        classes={{
-          root: 'editor-modal__root-container',
-          container: 'editor-modal__container',
-          paper: 'editor-modal__content',
-        }}
-      >
-        <Modal darkMode={true} className="editor-modal">
-          <ModalHeader title={type} />
-          <ModalBody>
-            {type === DEPENDENCY_INFO_TYPE.DEPENDENCY_TREE ? (
-              <TextInputEditor
-                inputValue={getDependencyTreeStringFromInfo(info)}
-                isReadOnly={true}
-                language={EDITOR_LANGUAGE.TEXT}
-                showMiniMap={true}
-              />
-            ) : (
-              <TextInputEditor
-                inputValue={getConflictsString(info)}
-                isReadOnly={true}
-                language={EDITOR_LANGUAGE.TEXT}
-                showMiniMap={true}
-              />
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <button
-              className="btn modal__footer__close-btn"
-              onClick={closeModal}
-            >
-              Close
-            </button>
-          </ModalFooter>
-        </Modal>
-      </Dialog>
-    );
-  },
-);
-
-const ProjectDependencyEditor = observer(
-  (props: {
-    projectDependency: ProjectDependency;
-    deleteValue: () => void;
-    isReadOnly: boolean;
-    projects: Map<string, ProjectData>;
-  }) => {
-    // init
-    const { projectDependency, deleteValue, isReadOnly, projects } = props;
-    const projectDependencyData = projects.get(projectDependency.projectId);
-    const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore();
-    const projectSelectorRef = useRef<SelectComponent>(null);
-    const versionSelectorRef = useRef<SelectComponent>(null);
-    const configState = editorStore.projectConfigurationEditorState;
-    // project
-    const selectedProject = configState.projects.get(
-      projectDependency.projectId,
-    );
-    const selectedProjectOption = selectedProject
-      ? buildProjectOption(selectedProject)
-      : null;
-    const projectDisabled =
-      !configState.associatedProjectsAndVersionsFetched ||
-      configState.isReadOnly;
-    const projectsOptions = Array.from(configState.projects.values())
-      .map(buildProjectOption)
-      .sort(compareLabelFn);
-    const onProjectSelectionChange = (val: ProjectOption | null): void => {
-      if (
-        (val !== null || selectedProjectOption !== null) &&
-        (!val ||
-          !selectedProjectOption ||
-          val.value !== selectedProjectOption.value)
-      ) {
-        projectDependency.setProjectId(val?.value.coordinates ?? '');
-        if (val) {
-          projectDependency.setVersionId(val.value.latestVersion);
-          flowResult(configState.fetchDependencyInfo()).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }
-      }
-    };
-    // version
-    const version = projectDependency.versionId;
-    const versions = selectedProject?.versions ?? [];
-    let versionOptions = versions
-      .slice()
-      .sort((v1, v2) => compareSemVerVersions(v2, v1))
-      .map((v) => ({ value: v, label: v }));
-    versionOptions = [
-      { label: SNAPSHOT_VERSION_ALIAS, value: MASTER_SNAPSHOT_ALIAS },
-      ...versionOptions,
-    ];
-    const selectedVersionOption: VersionOption | null =
-      versionOptions.find((v) => v.value === version) ?? null;
-    const versionDisabled =
-      Boolean(!versions.length || !projectDependency.projectId.length) ||
-      !configState.associatedProjectsAndVersionsFetched ||
-      isReadOnly;
-
-    const onVersionSelectionChange = (val: VersionOption | null): void => {
-      if (
-        (val !== null || selectedVersionOption !== null) &&
-        (!val ||
-          !selectedVersionOption ||
-          val.value !== selectedVersionOption.value)
-      ) {
-        try {
-          projectDependency.setVersionId(val?.value ?? '');
-          flowResult(configState.fetchDependencyInfo()).catch(
-            applicationStore.alertUnhandledError,
-          );
-        } catch (error) {
-          assertErrorThrown(error);
-          applicationStore.log.error(
-            LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
-            error,
-          );
-        }
-      }
-    };
-    const viewProject = (): void => {
-      if (!projectDependency.isLegacyDependency) {
-        applicationStore.navigator.visitAddress(
-          applicationStore.navigator.generateAddress(
-            generateViewProjectByGAVRoute(
-              guaranteeNonNullable(projectDependency.groupId),
-              guaranteeNonNullable(projectDependency.artifactId),
-              projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
-                ? SNAPSHOT_VERSION_ALIAS
-                : projectDependency.versionId,
-            ),
-          ),
-        );
-      }
-    };
-    // NOTE: This assumes that the dependant project is in the same studio instance as the current project
-    // In the future, the studio instance may be part of the project data
-    const viewSDLCProject = (): void => {
-      if (projectDependencyData) {
-        applicationStore.navigator.visitAddress(
-          applicationStore.navigator.generateAddress(
-            generateViewProjectRoute(projectDependencyData.projectId),
-          ),
-        );
-      }
-    };
-    const projectSelectorPlaceholder = !projectDependency.projectId.length
-      ? 'Choose project'
-      : versionDisabled
-      ? 'No project version found. Please create a new one.'
-      : 'Select version';
-
-    return (
-      <div className="project-dependency-editor">
-        <CustomSelectorInput
-          className="project-dependency-editor__selector"
-          ref={projectSelectorRef}
-          disabled={projectDisabled}
-          options={projectsOptions}
-          isClearable={true}
-          escapeClearsValue={true}
-          onChange={onProjectSelectionChange}
-          value={selectedProjectOption}
-          isLoading={configState.fetchingProjectVersionsState.isInProgress}
-          formatOptionLabel={formatOptionLabel}
-          darkMode={true}
-        />
-        <CustomSelectorInput
-          className="project-dependency-editor__selector"
-          ref={versionSelectorRef}
-          options={versionOptions}
-          isClearable={true}
-          escapeClearsValue={true}
-          onChange={onVersionSelectionChange}
-          value={selectedVersionOption}
-          disabled={versionDisabled}
-          placeholder={projectSelectorPlaceholder}
-          isLoading={
-            editorStore.projectConfigurationEditorState
-              .fetchingProjectVersionsState.isInProgress
-          }
-          darkMode={true}
-        />
-        <div className="project-dependency-editor__visit-project-btn">
-          <button
-            className="project-dependency-editor__visit-project-btn__btn btn--dark"
-            disabled={
-              projectDependency.isLegacyDependency ||
-              !selectedProject ||
-              !selectedVersionOption
-            }
-            onClick={viewProject}
-            tabIndex={-1}
-            title="View project"
-          >
-            <ExternalLinkSquareIcon />
-          </button>
-          <DropdownMenu
-            className="project-dependency-editor__visit-project-btn__dropdown-trigger btn--dark"
-            content={
-              <MenuContent>
-                <MenuContentItem
-                  disabled={
-                    projectDependency.isLegacyDependency ||
-                    !selectedProject ||
-                    !selectedVersionOption ||
-                    !projectDependencyData
-                  }
-                  onClick={viewSDLCProject}
-                >
-                  View SDLC project
-                </MenuContentItem>
-              </MenuContent>
-            }
-          >
-            <CaretDownIcon title="Show more options..." />
-          </DropdownMenu>
-        </div>
-        <button
-          className="project-dependency-editor__remove-btn btn--dark btn--caution"
-          disabled={isReadOnly}
-          onClick={deleteValue}
-          tabIndex={-1}
-          title="Close"
-        >
-          <TimesIcon />
-        </button>
       </div>
     );
   },
@@ -616,48 +309,6 @@ const ProjectPlatformVersionEditor = observer(
   },
 );
 
-const ProjectDependencyActions = observer(
-  (props: { config: ProjectConfigurationEditorState }) => {
-    const { config } = props;
-    const hasConflicts = config.dependencyInfo?.conflicts.length;
-    const viewTree = (): void => {
-      if (config.dependencyInfo) {
-        config.setDependencyInfoModal(DEPENDENCY_INFO_TYPE.DEPENDENCY_TREE);
-      }
-    };
-    const viewConflict = (): void => {
-      if (config.dependencyInfo) {
-        config.setDependencyInfoModal(DEPENDENCY_INFO_TYPE.CONFLICTS);
-      }
-    };
-    return (
-      <div className="project-dependency-editor__info">
-        <button
-          className="btn btn--dark"
-          tabIndex={-1}
-          onClick={viewTree}
-          disabled={!config.dependencyInfo}
-          title="View dependency tree"
-        >
-          View Dependency Tree
-        </button>
-
-        {Boolean(hasConflicts) && (
-          <button
-            className="project-dependency-editor__conflicts-btn"
-            tabIndex={-1}
-            onClick={viewConflict}
-            disabled={!config.dependencyInfo?.conflicts.length}
-            title="View any conflicts in your dependencies"
-          >
-            View Conflicts
-          </button>
-        )}
-      </div>
-    );
-  },
-);
-
 export const ProjectConfigurationEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
@@ -685,14 +336,6 @@ export const ProjectConfigurationEditor = observer(() => {
       break;
   }
   const currentProjectConfiguration = configState.currentProjectConfiguration;
-  const deleteProjectDependency =
-    (val: ProjectDependency): (() => void) =>
-    (): void => {
-      currentProjectConfiguration.deleteProjectDependency(val);
-      flowResult(configState.fetchDependencyInfo()).catch(
-        applicationStore.alertUnhandledError,
-      );
-    };
   const addValue = (): void => {
     if (!isReadOnly) {
       if (selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES) {
@@ -704,9 +347,9 @@ export const ProjectConfigurationEditor = observer(() => {
           );
           dependencyToAdd.setVersionId(projectToAdd.latestVersion);
           currentProjectConfiguration.addProjectDependency(dependencyToAdd);
-          flowResult(configState.fetchDependencyInfo()).catch(
-            applicationStore.alertUnhandledError,
-          );
+          flowResult(
+            configState.projectDependencyEditorState.fetchDependencyReport(),
+          ).catch(applicationStore.alertUnhandledError);
         } else {
           currentProjectConfiguration.addProjectDependency(
             new ProjectDependency(''),
@@ -717,10 +360,6 @@ export const ProjectConfigurationEditor = observer(() => {
   };
   const disableAddButton =
     selectedTab !== CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES || isReadOnly;
-  const isLoading =
-    configState.updatingConfigurationState.isInProgress ||
-    configState.fetchingProjectVersionsState.isInProgress ||
-    configState.fetchingDependencyInfoState.isInProgress;
   const updateConfigs = (): void => {
     editorStore.localChangesState.alertUnsavedChanges((): void => {
       flowResult(configState.updateConfigs()).catch(
@@ -737,9 +376,9 @@ export const ProjectConfigurationEditor = observer(() => {
       flowResult(configState.fectchAssociatedProjectsAndVersions()).catch(
         applicationStore.alertUnhandledError,
       );
-      flowResult(configState.fetchDependencyInfo()).catch(
-        applicationStore.alertUnhandledError,
-      );
+      flowResult(
+        configState.projectDependencyEditorState.fetchDependencyReport(),
+      ).catch(applicationStore.alertUnhandledError);
     }
   }, [applicationStore, configState, selectedTab]);
 
@@ -808,30 +447,7 @@ export const ProjectConfigurationEditor = observer(() => {
             />
           )}
           {selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES && (
-            <div className="panel__content__lists">
-              <PanelLoadingIndicator isLoading={isLoading} />
-              {isLoading && (
-                <div className="project-dependency-editor__progress-msg">
-                  {configState.updatingConfigurationState.isInProgress
-                    ? `Updating configuration...`
-                    : configState.fetchingProjectVersionsState.isInProgress
-                    ? `Fetching dependency versions`
-                    : 'Updating project dependency tree and potential conflicts'}
-                </div>
-              )}
-              <ProjectDependencyActions config={configState} />
-              {currentProjectConfiguration.projectDependencies.map(
-                (projectDependency) => (
-                  <ProjectDependencyEditor
-                    key={projectDependency._UUID}
-                    projectDependency={projectDependency}
-                    deleteValue={deleteProjectDependency(projectDependency)}
-                    isReadOnly={isReadOnly}
-                    projects={configState.projects}
-                  />
-                ),
-              )}
-            </div>
+            <ProjectDependencyEditor />
           )}
           {selectedTab === CONFIGURATION_EDITOR_TAB.PLATFORM_CONFIGURATIONS && (
             <ProjectPlatformVersionEditor
@@ -839,14 +455,6 @@ export const ProjectConfigurationEditor = observer(() => {
               isReadOnly={isReadOnly}
             />
           )}
-          {configState.dependencyInfo &&
-            configState.dependencyInfoModalType && (
-              <ProjectDependencyInfoModal
-                configState={configState}
-                info={configState.dependencyInfo}
-                type={configState.dependencyInfoModalType}
-              />
-            )}
         </div>
       </Panel>
     </div>

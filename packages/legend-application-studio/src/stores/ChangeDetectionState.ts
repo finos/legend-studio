@@ -35,6 +35,8 @@ import {
   hashObject,
   promisify,
   ActionState,
+  guaranteeNonNullable,
+  guaranteeType,
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore.js';
 import type { EditorGraphState } from './EditorGraphState.js';
@@ -44,6 +46,7 @@ import {
   EntityChangeConflict,
   EntityChangeType,
   EntityDiff,
+  type EntityChange,
 } from '@finos/legend-server-sdlc';
 import {
   ObserverContext,
@@ -51,6 +54,7 @@ import {
   observe_GraphElements,
 } from '@finos/legend-graph';
 import { type IDisposer, keepAlive } from 'mobx-utils';
+import { TextLocalChangesState } from './sidebar-state/LocalChangesState.js';
 
 class RevisionChangeDetectionState {
   editorStore: EditorStore;
@@ -59,6 +63,7 @@ class RevisionChangeDetectionState {
   entityHashesIndex = new Map<string, string>();
   isBuildingEntityHashesIndex = false;
   entities: Entity[] = [];
+  currentEntityHashesIndex = new Map<string, string>();
 
   setEntityHashesIndex(hashesIndex: Map<string, string>): void {
     this.entityHashesIndex = hashesIndex;
@@ -80,6 +85,7 @@ class RevisionChangeDetectionState {
       setIsBuildingEntityHashesIndex: action,
       setEntities: action,
       computeChanges: flow,
+      computeChangesInTextMode: flow,
       buildEntityHashesIndex: flow,
     });
 
@@ -129,6 +135,95 @@ class RevisionChangeDetectionState {
       );
     }
     this.changes = changes;
+    if (!quiet) {
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+        ),
+        Date.now() - startTime,
+        'ms',
+      );
+    }
+  }
+
+  *computeChangesInTextMode(
+    currentEntities: Entity[],
+    quiet?: boolean,
+  ): GeneratorFn<void> {
+    const startTime = Date.now();
+    const changes: EntityDiff[] = [];
+    const entityChanges: EntityChange[] = [];
+    if (!this.isBuildingEntityHashesIndex) {
+      let currentHashesIndex;
+      if (currentEntities.length) {
+        currentHashesIndex =
+          (yield this.editorStore.graphManagerState.graphManager.buildHashesIndex(
+            currentEntities,
+          )) as Map<string, string>;
+        this.currentEntityHashesIndex = currentHashesIndex;
+      }
+      const originalPaths = new Set(Array.from(this.entityHashesIndex.keys()));
+      if (currentHashesIndex) {
+        yield Promise.all<void>(
+          Array.from(currentHashesIndex.entries()).map(
+            ([elementPath, elementHash]) =>
+              promisify(() => {
+                const entity = currentEntities.find(
+                  (e) => e.path === elementPath,
+                );
+                const originalElementHash =
+                  this.entityHashesIndex.get(elementPath);
+                if (!originalElementHash) {
+                  changes.push(
+                    new EntityDiff(
+                      undefined,
+                      elementPath,
+                      EntityChangeType.CREATE,
+                    ),
+                  );
+                  entityChanges.push({
+                    classifierPath: guaranteeNonNullable(entity).classifierPath,
+                    entityPath: guaranteeNonNullable(entity).path,
+                    content: guaranteeNonNullable(entity).content,
+                    type: EntityChangeType.CREATE,
+                  });
+                } else if (originalElementHash !== elementHash) {
+                  changes.push(
+                    new EntityDiff(
+                      elementPath,
+                      elementPath,
+                      EntityChangeType.MODIFY,
+                    ),
+                  );
+                  entityChanges.push({
+                    classifierPath: guaranteeNonNullable(entity).classifierPath,
+                    entityPath: guaranteeNonNullable(entity).path,
+                    content: guaranteeNonNullable(entity).content,
+                    type: EntityChangeType.MODIFY,
+                  });
+                }
+                originalPaths.delete(elementPath);
+              }),
+          ),
+        );
+      }
+      yield promisify(() => {
+        Array.from(originalPaths).forEach((path) => {
+          changes.push(
+            new EntityDiff(path, undefined, EntityChangeType.DELETE),
+          );
+          entityChanges.push({
+            type: EntityChangeType.DELETE,
+            entityPath: path,
+          });
+        });
+      });
+    }
+    this.changes = changes;
+    guaranteeType(
+      this.editorStore.localChangesState,
+      TextLocalChangesState,
+    ).localChanges = entityChanges;
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(
@@ -303,6 +398,7 @@ export class ChangeDetectionState {
       computeConflictResolutionConflicts: flow,
       computeEntityChangeConflicts: flow,
       computeLocalChanges: flow,
+      computeLocalChangesInTextMode: flow,
       computeAggregatedWorkspaceRemoteChanges: flow,
       observeGraph: flow,
     });
@@ -757,6 +853,29 @@ export class ChangeDetectionState {
         'ms',
       );
     }
+  }
+
+  *computeLocalChangesInTextMode(
+    currentEntities: Entity[],
+    quiet?: boolean,
+  ): GeneratorFn<void> {
+    const startTime = Date.now();
+    yield Promise.all([
+      this.workspaceLocalLatestRevisionState.computeChangesInTextMode(
+        currentEntities,
+        quiet,
+      ),
+    ]);
+    if (!quiet) {
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+        ),
+        Date.now() - startTime,
+        'ms',
+      );
+    }
+    this.initState.pass();
   }
 
   *observeGraph(): GeneratorFn<void> {

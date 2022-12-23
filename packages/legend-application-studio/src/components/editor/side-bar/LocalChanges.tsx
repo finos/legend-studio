@@ -51,6 +51,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import { useEffect } from 'react';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import { EntityChangeConflictSideBarItem } from '../edit-panel/diff-editor/EntityChangeConflictEditor.js';
+import { FormLocalChangesState } from '../../../stores/sidebar-state/LocalChangesState.js';
 
 const PatchLoader = observer(() => {
   const editorStore = useEditorStore();
@@ -172,8 +173,11 @@ export const LocalChanges = observer(() => {
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes;
   const openChange =
     (diff: EntityDiff): (() => void) =>
-    (): void =>
-      localChangesState.openLocalChange(diff);
+    (): void => {
+      if (localChangesState instanceof FormLocalChangesState) {
+        localChangesState.openLocalChange(diff);
+      }
+    };
   // Local/Remote Workspace Conflicts
   const conflicts =
     editorStore.changeDetectionState.potentialWorkspacePullConflicts;
@@ -182,8 +186,11 @@ export const LocalChanges = observer(() => {
     conflict.entityPath === currentTabState.entityPath;
   const openPotentialConflict =
     (conflict: EntityChangeConflict): (() => void) =>
-    (): void =>
-      localChangesState.openPotentialWorkspacePullConflict(conflict);
+    (): void => {
+      if (localChangesState instanceof FormLocalChangesState) {
+        localChangesState.openPotentialWorkspacePullConflict(conflict);
+      }
+    };
   // Local/Remote Workspace Changes
   const workspacePullChanges =
     editorStore.changeDetectionState.aggregatedWorkspaceRemoteChanges;
@@ -195,8 +202,11 @@ export const LocalChanges = observer(() => {
   );
   const openWorkspacePullChange =
     (diff: EntityDiff): (() => void) =>
-    (): void =>
-      localChangesState.openWorkspacePullChange(diff);
+    (): void => {
+      if (localChangesState instanceof FormLocalChangesState) {
+        localChangesState.openWorkspacePullChange(diff);
+      }
+    };
 
   // check if workspace is still in-sync
   useEffect(() => {

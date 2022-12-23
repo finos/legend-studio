@@ -1,5 +1,31 @@
 # @finos/legend-extension-dsl-diagram
 
+## 7.1.19
+
+## 7.1.18
+
+## 7.1.17
+
+## 7.1.16
+
+## 7.1.15
+
+## 7.1.14
+
+## 7.1.13
+
+## 7.1.12
+
+## 7.1.11
+
+## 7.1.10
+
+### Patch Changes
+
+- [#1747](https://github.com/finos/legend-studio/pull/1747) [`65cae8687`](https://github.com/finos/legend-studio/commit/65cae8687c5a35371438d372f18a41f4c7df549f) ([@akphi](https://github.com/akphi)) - Handle touch-pad zoom and horizontal scrolling in diagram renderer.
+
+## 7.1.9
+
 ## 7.1.8
 
 ## 7.1.7

@@ -78,6 +78,10 @@ import {
   DEPRECATED__MultiExecutionTest,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/service/DEPRECATED__ServiceTest.js';
 import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
+import type { V1_PostValidation } from '../../../../model/packageableElements/service/V1_PostValidation.js';
+import { PostValidation } from '../../../../../../../../graph/metamodel/pure/packageableElements/service/PostValidation.js';
+import type { V1_PostValidationAssertion } from '../../../../model/packageableElements/service/V1_PostValidationAssertion.js';
+import { PostValidationAssertion } from '../../../../../../../../graph/metamodel/pure/packageableElements/service/PostValidationAssertion.js';
 
 const buildConnectionTestData = (
   element: V1_ConnectionTestData,
@@ -94,6 +98,35 @@ const buildParameterValue = (element: V1_ParameterValue): ParameterValue => {
   parameterValue.name = element.name;
   parameterValue.value = element.value;
   return parameterValue;
+};
+
+const buildPostValidationAssertion = (
+  element: V1_PostValidationAssertion,
+  context: V1_GraphBuilderContext,
+): PostValidationAssertion => {
+  const postValidationAssertion = new PostValidationAssertion();
+  postValidationAssertion.id = element.id;
+  postValidationAssertion.assertion = V1_buildRawLambdaWithResolvedPaths(
+    element.assertion.parameters,
+    element.assertion.body,
+    context,
+  );
+  return postValidationAssertion;
+};
+
+export const V1_buildPostValidation = (
+  element: V1_PostValidation,
+  context: V1_GraphBuilderContext,
+): PostValidation => {
+  const postValidation = new PostValidation();
+  postValidation.description = element.description;
+  postValidation.assertions = element.assertions.map((a) =>
+    buildPostValidationAssertion(a, context),
+  );
+  postValidation.parameters = element.parameters.map((rq) =>
+    V1_buildRawLambdaWithResolvedPaths(rq.parameters, rq.body, context),
+  );
+  return postValidation;
 };
 
 const buildTestData = (
@@ -331,6 +364,22 @@ export const V1_buildServiceExecution = (
       serviceExecution.func,
       `Service Pure execution 'func' field is missing`,
     );
+    if (serviceExecution.mapping && serviceExecution.runtime) {
+      return new PureSingleExecution(
+        V1_buildRawLambdaWithResolvedPaths(
+          serviceExecution.func.parameters,
+          serviceExecution.func.body,
+          context,
+        ),
+        parentService,
+        context.resolveMapping(serviceExecution.mapping),
+        buildServiceExecutionRuntime(
+          serviceExecution.runtime,
+          serviceExecution.mapping,
+          context,
+        ),
+      );
+    }
     return new PureSingleExecution(
       V1_buildRawLambdaWithResolvedPaths(
         serviceExecution.func.parameters,
@@ -338,12 +387,8 @@ export const V1_buildServiceExecution = (
         context,
       ),
       parentService,
-      context.resolveMapping(serviceExecution.mapping),
-      buildServiceExecutionRuntime(
-        serviceExecution.runtime,
-        serviceExecution.mapping,
-        context,
-      ),
+      undefined,
+      undefined,
     );
   } else if (serviceExecution instanceof V1_PureMultiExecution) {
     if (!serviceExecution.executionParameters.length) {

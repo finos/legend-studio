@@ -15,7 +15,10 @@
  */
 
 import packageJson from '../../../package.json';
-import type { DocumentationEntry } from '@finos/legend-application';
+import type {
+  DocumentationEntry,
+  PureGrammarTextSuggestion,
+} from '@finos/legend-application';
 import { MeteorIcon, PuzzlePieceIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
@@ -32,7 +35,6 @@ import {
   type NewElementState,
   type PureGrammarParserElementSnippetSuggestionsGetter,
   type PureGrammarParserKeywordSuggestionGetter,
-  type PureGrammarTextSuggestion,
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
   type ElementTypeLabelGetter,
