@@ -29,6 +29,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   isNonNullable,
+  ActionState,
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import {
@@ -80,7 +81,7 @@ export class GraphGenerationState {
   editorStore: EditorStore;
   isRunningGlobalGenerate = false;
   generatedEntities = new Map<string, Entity[]>();
-  isClearingGenerationEntities = false;
+  clearingGenerationEntitiesState = ActionState.create();
   externalFormatState: ExternalFormatState;
   // NOTE: this will eventually be removed once we also do model/schema import using external format
   // See https://github.com/finos/legend-studio/issues/866
@@ -94,7 +95,7 @@ export class GraphGenerationState {
     makeObservable<GraphGenerationState>(this, {
       isRunningGlobalGenerate: observable,
       generatedEntities: observable.shallow,
-      isClearingGenerationEntities: observable,
+      clearingGenerationEntitiesState: observable,
       fileGenerationConfigurations: observable,
       externalFormatState: observable,
       rootFileDirectory: observable,
@@ -349,13 +350,13 @@ export class GraphGenerationState {
    * Used to clear generation entities as well as the generation model
    */
   *clearGenerations(): GeneratorFn<void> {
-    this.isClearingGenerationEntities = true;
+    this.clearingGenerationEntitiesState.inProgress();
     this.generatedEntities = new Map<string, Entity[]>();
     this.emptyFileGeneration();
     yield flowResult(
       this.editorStore.graphState.updateGenerationGraphAndApplication(),
     );
-    this.isClearingGenerationEntities = false;
+    this.clearingGenerationEntitiesState.complete();
   }
 
   /**
