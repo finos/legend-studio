@@ -644,7 +644,9 @@ export class EditorStore implements CommandRegistrar {
         this.setConsoleText(result.text);
       }
       if (result instanceof ExecutionFailureResult) {
-        this.applicationStore.notifyWarning('Execution failed!');
+        this.applicationStore.notifyWarning(
+          `Execution failed${result.text ? `: ${result.text}` : ''}`,
+        );
         if (result.sessionError) {
           this.applicationStore.setBlockingAlert({
             message: 'Session corrupted',
