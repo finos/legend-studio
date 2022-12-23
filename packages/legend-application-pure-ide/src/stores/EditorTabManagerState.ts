@@ -20,6 +20,7 @@ import {
   TabManagerState,
   TabState,
 } from '@finos/legend-application';
+import { flowResult } from 'mobx';
 import type { EditorStore } from './EditorStore.js';
 import { FileEditorState } from './FileEditorState.js';
 
@@ -60,6 +61,17 @@ export class EditorTabManagerState extends TabManagerState {
             label: 'Proceed',
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: (): void => super.closeTab(tab),
+          },
+          {
+            label: 'Save changes',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => {
+              flowResult(this.editorStore.executeGo())
+                .then(() => {
+                  super.closeTab(tab);
+                })
+                .catch(this.editorStore.applicationStore.alertUnhandledError);
+            },
           },
           {
             label: 'Abort',

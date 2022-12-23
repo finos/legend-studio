@@ -242,9 +242,7 @@ export const PureFileEditor = observer(
                 currentPosition.lineNumber,
                 currentPosition.column,
               );
-              flowResult(editorStore.findUsages(coordinate)).catch(
-                applicationStore.alertUnhandledError,
-              );
+              editorState.findConceptUsages(coordinate);
             }
           },
         });

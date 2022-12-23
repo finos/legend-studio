@@ -18,6 +18,8 @@ import {
   type CommandRegistrar,
   EDITOR_LANGUAGE,
   type TabState,
+  ActionAlertActionType,
+  ActionAlertType,
 } from '@finos/legend-application';
 import {
   clearMarkers,
@@ -262,6 +264,12 @@ export class FileEditorState
       this.renameConceptState = undefined;
       return;
     }
+    if (this.hasChanged) {
+      this.editorStore.applicationStore.notifyWarning(
+        `Can't rename concept: source is not compiled`,
+      );
+      return;
+    }
     const concept = (yield this.editorStore.getConceptInfo(coordinate)) as
       | ConceptInfo
       | undefined;
@@ -357,9 +365,7 @@ export class FileEditorState
             currentPosition.lineNumber,
             currentPosition.column,
           );
-          flowResult(this.editorStore.findUsages(coordinate)).catch(
-            this.editorStore.applicationStore.alertUnhandledError,
-          );
+          this.findConceptUsages(coordinate);
         }
       },
     });
@@ -394,6 +400,39 @@ export class FileEditorState
         this.setShowGoToLinePrompt(true);
       },
     });
+  }
+
+  findConceptUsages(coordinate: FileCoordinate): void {
+    const proceed = (): void => {
+      flowResult(this.editorStore.findUsages(coordinate)).catch(
+        this.editorStore.applicationStore.alertUnhandledError,
+      );
+    };
+    if (this.hasChanged) {
+      this.editorStore.applicationStore.setActionAlertInfo({
+        message:
+          'Source is not compiled, finding concept usages might be inaccurate. Do you want compile to proceed?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Compile and Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => {
+              flowResult(this.editorStore.executeGo())
+                .then(proceed)
+                .catch(this.editorStore.applicationStore.alertUnhandledError);
+            },
+          },
+          {
+            label: 'Abort',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    } else {
+      proceed();
+    }
   }
 
   async renameConcept(newName: string): Promise<void> {
