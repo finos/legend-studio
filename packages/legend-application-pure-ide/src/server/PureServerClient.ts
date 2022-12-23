@@ -225,12 +225,12 @@ export class PureClient {
       sessionId: this.sessionId,
     });
 
-  getConceptInfo = (
+  getConceptInfo = async (
     file: string,
     line: number,
     column: number,
-  ): Promise<ConceptInfo> =>
-    this.networkClient.get(
+  ): Promise<ConceptInfo> => {
+    const result = (await this.networkClient.get(
       `${this.baseUrl}/getConceptInfo`,
       undefined,
       undefined,
@@ -239,7 +239,12 @@ export class PureClient {
         line,
         column,
       },
-    );
+    )) as ConceptInfo & { error: boolean; text: string };
+    if (result.error) {
+      throw new Error(result.text);
+    }
+    return result;
+  };
 
   getUsages = async (
     func: string,

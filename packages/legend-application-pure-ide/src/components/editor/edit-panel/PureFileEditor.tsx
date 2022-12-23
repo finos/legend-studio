@@ -276,6 +276,13 @@ export const PureFileEditor = observer(
           run: function (_editor) {
             const currentPosition = _editor.getPosition();
             if (currentPosition) {
+              const currentWord =
+                editorState.textEditorState.model.getWordAtPosition(
+                  currentPosition,
+                );
+              if (!currentWord) {
+                return;
+              }
               const coordinate = new FileCoordinate(
                 editorState.filePath,
                 currentPosition.lineNumber,

@@ -187,6 +187,7 @@ export class FileEditorState
 {
   readonly filePath: string;
   readonly textEditorState!: FileTextEditorState;
+  private _currentHashCode: string;
 
   file: File;
   renameConceptState: FileEditorRenameConceptState | undefined;
@@ -195,16 +196,20 @@ export class FileEditorState
   constructor(editorStore: EditorStore, file: File, filePath: string) {
     super(editorStore);
 
-    makeObservable(this, {
+    makeObservable<FileEditorState, '_currentHashCode'>(this, {
+      _currentHashCode: observable,
       file: observable,
       renameConceptState: observable,
       showGoToLinePrompt: observable,
+      hasChanged: computed,
+      resetChangeDetection: action,
       setFile: action,
       setShowGoToLinePrompt: action,
       setConceptToRenameState: flow,
     });
 
     this.file = file;
+    this._currentHashCode = file.hashCode;
     this.filePath = filePath;
     this.textEditorState = new FileTextEditorState(this);
   }
@@ -232,9 +237,18 @@ export class FileEditorState
     this.textEditorState.model.dispose();
   }
 
+  get hasChanged(): boolean {
+    return this._currentHashCode !== this.file.hashCode;
+  }
+
+  resetChangeDetection(): void {
+    this._currentHashCode = this.file.hashCode;
+  }
+
   setFile(val: File): void {
     this.file = val;
     this.textEditorState.model.setValue(val.content);
+    this.resetChangeDetection();
   }
 
   setShowGoToLinePrompt(val: boolean): void {
@@ -357,6 +371,11 @@ export class FileEditorState
       action: () => {
         const currentPosition = this.textEditorState.editor?.getPosition();
         if (currentPosition) {
+          const currentWord =
+            this.textEditorState.model.getWordAtPosition(currentPosition);
+          if (!currentWord) {
+            return;
+          }
           const coordinate = new FileCoordinate(
             this.filePath,
             currentPosition.lineNumber,

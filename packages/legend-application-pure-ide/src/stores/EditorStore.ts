@@ -85,6 +85,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   uniq,
+  filterByType,
 } from '@finos/legend-shared';
 import { PureClient as PureServerClient } from '../server/PureServerClient.js';
 import { PanelDisplayState } from '@finos/legend-art';
@@ -174,7 +175,6 @@ export class EditorStore implements CommandRegistrar {
       checkIfSessionWakingUp: flow,
       loadDiagram: flow,
       loadFile: flow,
-      reloadFile: flow,
       execute: flow,
       executeGo: flow,
       manageExecuteGoResult: flow,
@@ -183,7 +183,6 @@ export class EditorStore implements CommandRegistrar {
       executeNavigation: flow,
       navigateBack: flow,
       fullReCompile: flow,
-      refreshTrees: flow,
       command: flow,
 
       findUsages: flow,
@@ -521,9 +520,9 @@ export class EditorStore implements CommandRegistrar {
     }
   }
 
-  *reloadFile(filePath: string): GeneratorFn<void> {
+  async reloadFile(filePath: string): Promise<void> {
     const tabsToClose: TabState[] = [];
-    yield Promise.all(
+    await Promise.all(
       this.tabManagerState.tabs.map(async (tab) => {
         if (tab instanceof FileEditorState && tab.filePath === filePath) {
           tab.setFile(deserialize(File, await this.client.getFile(filePath)));
@@ -553,7 +552,10 @@ export class EditorStore implements CommandRegistrar {
     url: string,
     extraParams: Record<PropertyKey, unknown>,
     checkExecutionStatus: boolean,
-    manageResult: (result: ExecutionResult) => Promise<void>,
+    manageResult: (
+      result: ExecutionResult,
+      potentiallyAffectedFiles: string[],
+    ) => Promise<void>,
     options?: {
       /**
        * Some execution, such as find concept produces no output
@@ -579,6 +581,9 @@ export class EditorStore implements CommandRegistrar {
       this.setSearchState(undefined);
     }
     this.executionState.inProgress();
+    const potentiallyAffectedFiles = this.tabManagerState.tabs
+      .filter(filterByType(FileEditorState))
+      .map((tab) => tab.filePath);
     try {
       const openedFiles = this.tabManagerState.tabs
         .map((tab) => {
@@ -646,7 +651,7 @@ export class EditorStore implements CommandRegistrar {
             prompt: result.sessionError,
           });
         } else {
-          yield flowResult(manageResult(result));
+          yield flowResult(manageResult(result, potentiallyAffectedFiles));
         }
       } else if (result instanceof ExecutionSuccessResult) {
         this.applicationStore.notifySuccess('Execution succeeded!');
@@ -674,10 +679,10 @@ export class EditorStore implements CommandRegistrar {
             ),
           );
         } else {
-          yield flowResult(manageResult(result));
+          yield flowResult(manageResult(result, potentiallyAffectedFiles));
         }
       } else {
-        yield flowResult(manageResult(result));
+        yield flowResult(manageResult(result, potentiallyAffectedFiles));
       }
     } finally {
       this.applicationStore.setBlockingAlert(undefined);
@@ -720,14 +725,23 @@ export class EditorStore implements CommandRegistrar {
 
   *executeGo(): GeneratorFn<void> {
     yield flowResult(
-      this.execute('executeGo', {}, true, (result: ExecutionResult) =>
-        flowResult(this.manageExecuteGoResult(result)),
+      this.execute(
+        'executeGo',
+        {},
+        true,
+        (result: ExecutionResult, potentiallyAffectedFiles: string[]) =>
+          flowResult(
+            this.manageExecuteGoResult(result, potentiallyAffectedFiles),
+          ),
       ),
     );
   }
 
-  *manageExecuteGoResult(result: ExecutionResult): GeneratorFn<void> {
-    const refreshTreesPromise = flowResult(this.refreshTrees());
+  *manageExecuteGoResult(
+    result: ExecutionResult,
+    potentiallyAffectedFiles: string[],
+  ): GeneratorFn<void> {
+    const refreshTreesPromise = this.refreshTrees();
     if (result instanceof ExecutionFailureResult) {
       yield flowResult(
         this.loadFile(
@@ -751,12 +765,16 @@ export class EditorStore implements CommandRegistrar {
         this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH_RESULT);
         this.auxPanelDisplayState.open();
       }
+      this.resetChangeDetection(potentiallyAffectedFiles);
     } else if (result instanceof ExecutionSuccessResult) {
       if (result.modifiedFiles.length) {
         for (const path of result.modifiedFiles) {
-          yield flowResult(this.reloadFile(path));
+          yield this.reloadFile(path);
         }
       }
+      this.resetChangeDetection(
+        potentiallyAffectedFiles.concat(result.modifiedFiles),
+      );
     }
     yield refreshTreesPromise;
   }
@@ -783,8 +801,8 @@ export class EditorStore implements CommandRegistrar {
           relevantTestsOnly,
         },
         false,
-        async (result: ExecutionResult) => {
-          const refreshTreesPromise = flowResult(this.refreshTrees());
+        async (result: ExecutionResult, potentiallyAffectedFiles: string[]) => {
+          const refreshTreesPromise = this.refreshTrees();
           if (result instanceof ExecutionFailureResult) {
             await flowResult(
               this.loadFile(
@@ -815,6 +833,7 @@ export class EditorStore implements CommandRegistrar {
             await flowResult(testRunnerState.pollTestRunnerResult());
             this.testRunState.pass();
           }
+          this.resetChangeDetection(potentiallyAffectedFiles);
           // do nothing?
           await refreshTreesPromise;
         },
@@ -837,7 +856,7 @@ export class EditorStore implements CommandRegistrar {
           column: coordinate.column,
         },
         false,
-        async (result: ExecutionResult) => {
+        async (result: ExecutionResult, potentiallyAffectedFiles: string[]) => {
           if (result instanceof GetConceptResult) {
             await flowResult(
               this.loadFile(
@@ -850,6 +869,7 @@ export class EditorStore implements CommandRegistrar {
               ),
             );
           }
+          this.resetChangeDetection(potentiallyAffectedFiles);
         },
         { avoidUpdatingConsoleText: true },
       ),
@@ -886,7 +906,10 @@ export class EditorStore implements CommandRegistrar {
                 'executeSaveAndReset',
                 {},
                 true,
-                async (result: ExecutionResult) => {
+                async (
+                  result: ExecutionResult,
+                  potentiallyAffectedFiles: string[],
+                ) => {
                   this.initState.reset();
                   await flowResult(
                     this.initialize(
@@ -896,6 +919,7 @@ export class EditorStore implements CommandRegistrar {
                       this.client.compilerMode,
                     ),
                   );
+                  this.resetChangeDetection(potentiallyAffectedFiles);
                   this.setActiveActivity(ACTIVITY_MODE.CONCEPT, {
                     keepShowingIfMatchedCurrent: true,
                   });
@@ -913,8 +937,15 @@ export class EditorStore implements CommandRegistrar {
     });
   }
 
-  *refreshTrees(): GeneratorFn<void> {
-    yield Promise.all([
+  resetChangeDetection(files: string[]): void {
+    this.tabManagerState.tabs
+      .filter(filterByType(FileEditorState))
+      .filter((tab) => files.includes(tab.filePath))
+      .forEach((tab) => tab.resetChangeDetection());
+  }
+
+  async refreshTrees(): Promise<void> {
+    await Promise.all([
       this.directoryTreeState.refreshTreeData(),
       this.conceptTreeState.refreshTreeData(),
     ]);
@@ -925,13 +956,15 @@ export class EditorStore implements CommandRegistrar {
       'Error revealing concept. Please make sure that the code compiles and that you are looking for a valid concept';
     let concept: ConceptInfo;
     try {
-      concept = (await this.client.getConceptInfo(
+      concept = await this.client.getConceptInfo(
         coordinate.file,
         coordinate.line,
         coordinate.column,
-      )) as unknown as ConceptInfo;
+      );
     } catch {
-      this.applicationStore.notifyWarning(errorMessage);
+      this.applicationStore.notifyWarning(
+        `Can't find concept info. Please make sure that the code compiles and that you are looking for references of non primitive types!`,
+      );
       return;
     }
     if (!concept.path) {
@@ -994,11 +1027,12 @@ export class EditorStore implements CommandRegistrar {
     coordinate: FileCoordinate,
   ): Promise<ConceptInfo | undefined> {
     try {
-      return this.client.getConceptInfo(
+      const concept = await this.client.getConceptInfo(
         coordinate.file,
         coordinate.line,
         coordinate.column,
       );
+      return concept;
     } catch {
       this.applicationStore.notifyWarning(
         `Can't find concept info. Please make sure that the code compiles and that you are looking for references of non primitive types!`,
@@ -1085,9 +1119,9 @@ export class EditorStore implements CommandRegistrar {
       });
       const potentiallyModifiedFiles = usages.map((usage) => usage.source);
       for (const file of potentiallyModifiedFiles) {
-        yield flowResult(this.reloadFile(file));
+        yield this.reloadFile(file);
       }
-      yield flowResult(this.refreshTrees());
+      yield this.refreshTrees();
       this.setConsoleText(
         `Sucessfully renamed concept. Please re-compile the code`,
       );
@@ -1126,9 +1160,9 @@ export class EditorStore implements CommandRegistrar {
         inputs.flatMap((input) => input.usages.map((usage) => usage.source)),
       );
       for (const file of potentiallyModifiedFiles) {
-        yield flowResult(this.reloadFile(file));
+        yield this.reloadFile(file);
       }
-      yield flowResult(this.refreshTrees());
+      yield this.refreshTrees();
       this.setConsoleText(
         `Sucessfully moved packageble elements. Please re-compile the code`,
       );
@@ -1156,6 +1190,7 @@ export class EditorStore implements CommandRegistrar {
     this.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
     this.auxPanelDisplayState.open();
   }
+
   *updateFile(
     path: string,
     line: number,
@@ -1175,7 +1210,7 @@ export class EditorStore implements CommandRegistrar {
       ])) as SourceModificationResult;
       if (result.modifiedFiles.length) {
         for (const file of result.modifiedFiles) {
-          yield flowResult(this.reloadFile(file));
+          yield this.reloadFile(file);
         }
       }
       this.setConsoleText(

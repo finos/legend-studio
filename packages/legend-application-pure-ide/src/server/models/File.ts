@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable } from 'mobx';
+import { hashValue } from '@finos/legend-shared';
+import { action, computed, makeObservable, observable } from 'mobx';
 import { createModelSchema, primitive } from 'serializr';
 import type { ExecutionError } from './ExecutionError.js';
 
@@ -27,12 +28,17 @@ export class File {
   constructor() {
     makeObservable(this, {
       content: observable,
+      hashCode: computed,
       setContent: action,
     });
   }
 
   setContent(value: string): void {
     this.content = value;
+  }
+
+  get hashCode(): string {
+    return hashValue(this.content);
   }
 }
 

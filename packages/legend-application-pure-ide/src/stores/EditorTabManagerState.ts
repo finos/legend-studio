@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-import { TabManagerState, TabState } from '@finos/legend-application';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  TabManagerState,
+  TabState,
+} from '@finos/legend-application';
 import type { EditorStore } from './EditorStore.js';
+import { FileEditorState } from './FileEditorState.js';
 
 export abstract class EditorTabState extends TabState {
   readonly editorStore: EditorStore;
@@ -40,5 +46,30 @@ export class EditorTabManagerState extends TabManagerState {
 
   get dndType(): string {
     return 'editor.tab-manager.tab';
+  }
+
+  override closeTab(tab: TabState): void {
+    if (tab instanceof FileEditorState && tab.hasChanged) {
+      this.editorStore.applicationStore.setActionAlertInfo({
+        message:
+          'Unsaved changes will be lost if you continue. Do you still want to proceed?',
+        prompt: 'To save changes, abort and compile',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => super.closeTab(tab),
+          },
+          {
+            label: 'Abort',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    } else {
+      super.closeTab(tab);
+    }
   }
 }
