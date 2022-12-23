@@ -20,104 +20,112 @@ import { getBaseConfig } from '@finos/legend-dev-utils/JestConfigUtils';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const baseConfig = getBaseConfig({
-  babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
-  TEMPORARY__esmPackagesToTransform: [
-    // These packages went full ESM so we would need to transpile them until we can switch to run Jest in ESM mode
-    // See https://github.com/react-dnd/react-dnd/issues/3443
-    'react-dnd',
-    'dnd-core',
-    '@react-dnd',
-    // See https://github.com/sindresorhus/query-string/releases/tag/v8.0.0
-    'query-string',
-    'filter-obj',
-    'decode-uri-component',
-    'split-on-first',
-  ],
-});
+export const getBaseJestConfig = (isGlobal) => {
+  const baseConfig = getBaseConfig({
+    isGlobal,
+    babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
+    TEMPORARY__esmPackagesToTransform: [
+      // These packages went full ESM so we would need to transpile them until we can switch to run Jest in ESM mode
+      // See https://github.com/react-dnd/react-dnd/issues/3443
+      'react-dnd',
+      'dnd-core',
+      '@react-dnd',
+      // See https://github.com/sindresorhus/query-string/releases/tag/v8.0.0
+      'query-string',
+      'filter-obj',
+      'decode-uri-component',
+      'split-on-first',
+    ],
+  });
 
-export const baseJestConfig = {
-  ...baseConfig,
-  setupFiles: [
-    '@finos/legend-dev-utils/jest/disallowConsoleError',
-    '@finos/legend-dev-utils/jest/handleUnhandledRejection',
-    // TODO: remove this when we no longer need to mock `Window.fetch()` for tests
-    // See https://github.com/finos/legend-studio/issues/758
-    '@finos/legend-dev-utils/jest/blockFetch',
-  ],
-  // Setup to run immediately after the test framework has been installed in the environment
-  // before each test file in the suite is executed
-  // See https://jestjs.io/docs/en/configuration#setupfilesafterenv-array
-  setupFilesAfterEnv: [
-    ...baseConfig.setupFilesAfterEnv,
-    '@finos/legend-dev-utils/jest/setupTestEnvironment',
-    '@finos/legend-dev-utils/jest/setupJestExpectExtension',
-  ],
-  moduleNameMapper: {
-    ...baseConfig.moduleNameMapper,
-    // TODO: problem with ESM - remove this and `lodash` dependency when `lodash`
-    // natively support ESM and hence, work well with `jest-resolve`
-    // See https://github.com/lodash/lodash/issues/5107
-    // See https://github.com/finos/legend-studio/issues/502
-    '^lodash-es$': 'lodash',
-  },
-  modulePathIgnorePatterns: [
-    'packages/.*/lib/',
-    'packages/.*/build/',
-    'packages/.*/build/publishContent/',
-  ],
-  testPathIgnorePatterns: [
-    ...baseConfig.testPathIgnorePatterns,
-    '/packages/.*/lib/',
-  ],
-  collectCoverageFrom: [
-    '<rootDir>/packages/*/**/*.[jt]s?(x)',
-    '!<rootDir>/packages/*/*.js',
-    '!<rootDir>/packages/*/build/**',
-    '!<rootDir>/packages/*/lib/**',
-    '!<rootDir>/packages/*/dev/**',
-    '!<rootDir>/build/**',
-    '!**/node_modules/**',
-    '!**/__mocks__/**',
-    '!**/__tests__/**',
-    '!**/vendor/**',
-    '!**/scripts/**',
-    '!**/fixtures/**',
-    '!<rootDir>/packages/legend-dev-utils/WebpackConfigUtils.js', // TODO: remove this when Jest supports `import.meta.url`
-    '!<rootDir>/packages/legend-manual-tests/cypress/**', // TODO: update this when restructure `e2e` test suite
-  ],
-  coverageDirectory: '<rootDir>/build/coverage',
-  watchPathIgnorePatterns: [
-    ...baseConfig.watchPathIgnorePatterns,
-    '<rootDir>/packages/.*/build',
-    '<rootDir>/packages/.*/lib',
-    '<rootDir>/packages/.*/dist',
-    '<rootDir>/packages/.*/dev',
-    '<rootDir>/build/',
-    '<rootDir>/docs/',
-    '<rootDir>/temp/',
-  ],
+  const config = {
+    ...baseConfig,
+    setupFiles: [
+      '@finos/legend-dev-utils/jest/disallowConsoleError',
+      '@finos/legend-dev-utils/jest/handleUnhandledRejection',
+      // TODO: remove this when we no longer need to mock `Window.fetch()` for tests
+      // See https://github.com/finos/legend-studio/issues/758
+      '@finos/legend-dev-utils/jest/blockFetch',
+    ],
+    // Setup to run immediately after the test framework has been installed in the environment
+    // before each test file in the suite is executed
+    // See https://jestjs.io/docs/en/configuration#setupfilesafterenv-array
+    setupFilesAfterEnv: [
+      ...baseConfig.setupFilesAfterEnv,
+      '@finos/legend-dev-utils/jest/setupTestEnvironment',
+      '@finos/legend-dev-utils/jest/setupJestExpectExtension',
+    ],
+    moduleNameMapper: {
+      ...baseConfig.moduleNameMapper,
+      // TODO: problem with ESM - remove this and `lodash` dependency when `lodash`
+      // natively support ESM and hence, work well with `jest-resolve`
+      // See https://github.com/lodash/lodash/issues/5107
+      // See https://github.com/finos/legend-studio/issues/502
+      '^lodash-es$': 'lodash',
+    },
+    modulePathIgnorePatterns: [
+      'packages/.*/lib/',
+      'packages/.*/build/',
+      'packages/.*/build/publishContent/',
+    ],
+    testPathIgnorePatterns: [
+      ...baseConfig.testPathIgnorePatterns,
+      '/packages/.*/lib/',
+    ],
+  };
+  return isGlobal
+    ? {
+        ...config,
+        collectCoverageFrom: [
+          '<rootDir>/packages/*/**/*.[jt]s?(x)',
+          '!<rootDir>/packages/*/*.js',
+          '!<rootDir>/packages/*/build/**',
+          '!<rootDir>/packages/*/lib/**',
+          '!<rootDir>/packages/*/dev/**',
+          '!<rootDir>/build/**',
+          '!**/node_modules/**',
+          '!**/__mocks__/**',
+          '!**/__tests__/**',
+          '!**/vendor/**',
+          '!**/scripts/**',
+          '!**/fixtures/**',
+          '!<rootDir>/packages/legend-dev-utils/WebpackConfigUtils.js', // TODO: remove this when Jest supports `import.meta.url`
+          '!<rootDir>/packages/legend-manual-tests/cypress/**', // TODO: update this when restructure `e2e` test suite
+        ],
+        coverageDirectory: '<rootDir>/build/coverage',
+        watchPathIgnorePatterns: [
+          ...baseConfig.watchPathIgnorePatterns,
+          '<rootDir>/packages/.*/build',
+          '<rootDir>/packages/.*/lib',
+          '<rootDir>/packages/.*/dist',
+          '<rootDir>/packages/.*/dev',
+          '<rootDir>/build/',
+          '<rootDir>/docs/',
+          '<rootDir>/temp/',
+        ],
+      }
+    : config;
 };
 
 export const getBaseJestProjectConfig = (projectName, packageDir) => ({
-  ...baseJestConfig,
+  ...getBaseJestConfig(false),
   displayName: projectName,
   rootDir: '../..',
   testMatch: [`<rootDir>/${packageDir}/**/__tests__/**/*(*.)test.[jt]s?(x)`],
 });
 
 export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
-  const base = getBaseJestProjectConfig(projectName, packageDir);
+  const config = getBaseJestProjectConfig(projectName, packageDir);
 
   return {
-    ...base,
+    ...config,
     testEnvironment: 'jsdom',
     setupFiles: [
-      ...base.setupFiles,
+      ...config.setupFiles,
       '@finos/legend-dev-utils/jest/setupDOMPolyfills',
     ],
     moduleNameMapper: {
-      ...base.moduleNameMapper,
+      ...config.moduleNameMapper,
       '^monaco-editor$':
         '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
       /**

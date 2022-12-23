@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { baseJestConfig } from './scripts/test/jest.config.base.js';
+import { getBaseJestConfig } from './scripts/test/jest.config.base.js';
 
 export default {
-  ...baseJestConfig,
+  ...getBaseJestConfig(true),
   projects: ['<rootDir>/packages/*'],
 };
