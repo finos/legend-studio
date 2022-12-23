@@ -49,7 +49,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@babel/core": "7.20.5",
+    "@babel/core": "7.20.7",
     "@changesets/assemble-release-plan": "5.2.3",
     "@changesets/changelog-github": "0.4.8",
     "@changesets/config": "2.3.0",
