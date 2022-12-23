@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-query-builder",
-  "version": "0.6.14",
+  "version": "0.6.15",
   "description": "Legend query builder core",
   "keywords": [
     "legend",
