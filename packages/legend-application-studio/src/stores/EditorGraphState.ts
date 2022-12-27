@@ -93,6 +93,7 @@ import {
   type CompilationWarning,
   type TextCompilationResult,
   type CompilationResult,
+  type PureModel,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -152,6 +153,7 @@ export class EditorGraphState {
       | 'updateGraphAndApplicationInTextMode'
       | 'mostRecentFormModeCompilationGraphHash'
       | 'mostRecentTextModeCompilationGraphHash'
+      | 'buildDependencies'
     >(this, {
       isInitializingGraph: observable,
       isRunningGlobalCompile: observable,
@@ -177,6 +179,7 @@ export class EditorGraphState {
       updateGraphAndApplicationInFormMode: flow,
       updateGraphAndApplicationInTextMode: flow,
       updateGenerationGraphAndApplication: flow,
+      buildDependencies: flow,
     });
 
     this.editorStore = editorStore;
@@ -898,6 +901,46 @@ export class EditorGraphState {
   }
 
   /**
+   * NOTE: this can post memory-leak issue if we start having immutable elements referencing current graph elements:
+   * e.g. subclass analytics on the immutable class, etc.
+   *
+   * @risk memory-leak
+   */
+  private *buildDependencies(newGraph: PureModel): GeneratorFn<void> {
+    if (
+      this.editorStore.graphManagerState.dependenciesBuildState.hasSucceeded
+    ) {
+      newGraph.dependencyManager =
+        this.editorStore.graphManagerState.graph.dependencyManager;
+    } else {
+      this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
+        ProjectConfiguration.serialization.fromJson(
+          (yield this.editorStore.sdlcServerClient.getConfiguration(
+            this.editorStore.sdlcState.activeProject.projectId,
+            this.editorStore.sdlcState.activeWorkspace,
+          )) as PlainObject<ProjectConfiguration>,
+        ),
+      );
+      const dependencyManager =
+        this.editorStore.graphManagerState.createEmptyDependencyManager();
+      newGraph.dependencyManager = dependencyManager;
+      const dependenciesBuildState = ActionState.create();
+      yield this.editorStore.graphManagerState.graphManager.buildDependencies(
+        this.editorStore.graphManagerState.coreModel,
+        this.editorStore.graphManagerState.systemModel,
+        dependencyManager,
+        (yield flowResult(this.getIndexedDependencyEntities())) as Map<
+          string,
+          Entity[]
+        >,
+        dependenciesBuildState,
+      );
+      this.editorStore.graphManagerState.dependenciesBuildState =
+        dependenciesBuildState;
+    }
+  }
+
+  /**
    * Creates a new explorer tree state when compiling in text mode. It resets the explorer state properly
    * after the new graph is built. It tries to maintain the explorer state similar to what it was before compilation.
    * To achieve that we store node ids of the opened nodes before creating a new explorer state. After creating a
@@ -981,43 +1024,7 @@ export class EditorGraphState {
     this.isUpdatingGraph = true;
     try {
       const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
-      /**
-       * NOTE: this can post memory-leak issue if we start having immutable elements referencing current graph elements:
-       * e.g. subclass analytics on the immutable class, etc.
-       *
-       * @risk memory-leak
-       */
-      if (
-        this.editorStore.graphManagerState.dependenciesBuildState.hasSucceeded
-      ) {
-        newGraph.dependencyManager =
-          this.editorStore.graphManagerState.graph.dependencyManager;
-      } else {
-        this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
-          ProjectConfiguration.serialization.fromJson(
-            (yield this.editorStore.sdlcServerClient.getConfiguration(
-              this.editorStore.sdlcState.activeProject.projectId,
-              this.editorStore.sdlcState.activeWorkspace,
-            )) as PlainObject<ProjectConfiguration>,
-          ),
-        );
-        const dependencyManager =
-          this.editorStore.graphManagerState.createEmptyDependencyManager();
-        newGraph.dependencyManager = dependencyManager;
-        const dependenciesBuildState = ActionState.create();
-        yield this.editorStore.graphManagerState.graphManager.buildDependencies(
-          this.editorStore.graphManagerState.coreModel,
-          this.editorStore.graphManagerState.systemModel,
-          dependencyManager,
-          (yield flowResult(this.getIndexedDependencyEntities())) as Map<
-            string,
-            Entity[]
-          >,
-          dependenciesBuildState,
-        );
-        this.editorStore.graphManagerState.dependenciesBuildState =
-          dependenciesBuildState;
-      }
+      yield flowResult(this.buildDependencies(newGraph));
 
       /**
        * Backup and editor states info before resetting. Here we store the element paths of the
@@ -1101,7 +1108,6 @@ export class EditorGraphState {
         openedTabPaths,
         currentTabState,
         currentTabElementPath,
-        true,
       );
 
       this.editorStore.applicationStore.log.info(
@@ -1133,7 +1139,7 @@ export class EditorGraphState {
       this.isUpdatingGraph = false;
       // Note: in the future this function will probably be ideal to refactor when we have different classes for each mode
       // as we would handle this error differently in `text` mode and `form` mode.
-      if (error instanceof GraphBuilderError && this.editorStore.isInFormMode) {
+      if (error instanceof GraphBuilderError) {
         this.editorStore.applicationStore.setBlockingAlert({
           message: `Can't build graph: ${error.message}`,
           prompt: 'Refreshing full application...',
@@ -1142,10 +1148,6 @@ export class EditorGraphState {
         this.editorStore.tabManagerState.closeAllTabs();
         this.editorStore.cleanUp();
         yield flowResult(this.editorStore.buildGraph(entities));
-      } else {
-        this.editorStore.applicationStore.notifyError(
-          `Can't build graph: ${error.message}`,
-        );
       }
     } finally {
       this.isUpdatingApplication = false;
@@ -1161,79 +1163,7 @@ export class EditorGraphState {
     this.isUpdatingGraph = true;
     try {
       const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
-      /**
-       * NOTE: this can post memory-leak issue if we start having immutable elements referencing current graph elements:
-       * e.g. subclass analytics on the immutable class, etc.
-       *
-       * @risk memory-leak
-       */
-      if (
-        this.editorStore.graphManagerState.dependenciesBuildState.hasSucceeded
-      ) {
-        newGraph.dependencyManager =
-          this.editorStore.graphManagerState.graph.dependencyManager;
-      } else {
-        this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
-          ProjectConfiguration.serialization.fromJson(
-            (yield this.editorStore.sdlcServerClient.getConfiguration(
-              this.editorStore.sdlcState.activeProject.projectId,
-              this.editorStore.sdlcState.activeWorkspace,
-            )) as PlainObject<ProjectConfiguration>,
-          ),
-        );
-        const dependencyManager =
-          this.editorStore.graphManagerState.createEmptyDependencyManager();
-        newGraph.dependencyManager = dependencyManager;
-        const dependenciesBuildState = ActionState.create();
-        yield this.editorStore.graphManagerState.graphManager.buildDependencies(
-          this.editorStore.graphManagerState.coreModel,
-          this.editorStore.graphManagerState.systemModel,
-          dependencyManager,
-          (yield flowResult(this.getIndexedDependencyEntities())) as Map<
-            string,
-            Entity[]
-          >,
-          dependenciesBuildState,
-        );
-        this.editorStore.graphManagerState.dependenciesBuildState =
-          dependenciesBuildState;
-      }
-
-      /**
-       * Backup and editor states info before resetting. Here we store the element paths of the
-       * elements editors as element paths don't refer to the actual graph. We can find the element
-       * from the new graph that is built by using element path and can reprocess the element editor states.
-       * The other kind of editors we reprocess are file generation editors, we store them as is as they don't
-       * hold any reference to the actual graph.
-       */
-      const openedTabPaths: string[] = [];
-      this.editorStore.tabManagerState.tabs.forEach((state: TabState) => {
-        if (state instanceof ElementEditorState) {
-          openedTabPaths.push(state.elementPath);
-        }
-      });
-      // Only stores editor state for file generation editors as they don't hold any references to the
-      // actual graph.
-      const currentTabState =
-        this.editorStore.tabManagerState.currentTab instanceof
-        ElementEditorState
-          ? undefined
-          : this.editorStore.tabManagerState.currentTab;
-      const currentTabElementPath =
-        this.editorStore.tabManagerState.currentTab instanceof
-        ElementEditorState
-          ? this.editorStore.tabManagerState.currentTab.elementPath
-          : undefined;
-      /**
-       * We remove the current editor state so that we no longer let React displays the element that belongs to the old graph
-       * NOTE: this causes an UI flash, but this is in many way, acceptable since the user probably should know that we are
-       * refreshing the memory graph anyway.
-       *
-       * If this is really bothering, we can handle it by building mocked replica of the current editor state using stub element
-       * e.g. if the current editor is a class, we stub the class, create a new class editor state around it and copy over
-       * navigation information, etc.
-       */
-      this.editorStore.tabManagerState.closeAllTabs();
+      yield flowResult(this.buildDependencies(newGraph));
       yield flowResult(graph_dispose(this.editorStore.graphManagerState.graph));
 
       const graphBuildState = ActionState.create();
@@ -1249,37 +1179,7 @@ export class EditorGraphState {
         },
       );
 
-      // Activity States
-      this.editorStore.globalTestRunnerState = new GlobalTestRunnerState(
-        this.editorStore,
-        this.editorStore.sdlcState,
-      );
-
-      // NOTE: build model generation entities every-time we rebuild the graph - should we do this?
-      const generationsBuildState = ActionState.create();
-      yield this.editorStore.graphManagerState.graphManager.buildGenerations(
-        newGraph,
-        this.graphGenerationState.generatedEntities,
-        generationsBuildState,
-      );
-
-      this.editorStore.graphManagerState.graph = newGraph;
-      this.editorStore.graphManagerState.graphBuildState = graphBuildState;
-      this.editorStore.graphManagerState.generationsBuildState =
-        generationsBuildState;
-
       this.reprocessExplorerTreeInTextMode();
-
-      /**
-       * Re-build the editor states which were opened before from the information we have stored before
-       * creating the new graph
-       */
-      this.editorStore.tabManagerState.recoverTabs(
-        openedTabPaths,
-        currentTabState,
-        currentTabElementPath,
-        false,
-      );
 
       this.editorStore.applicationStore.log.info(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_UPDATED_AND_REBUILT),
@@ -1295,9 +1195,11 @@ export class EditorGraphState {
         error,
       );
       this.isUpdatingGraph = false;
-      this.editorStore.applicationStore.notifyError(
-        `Can't build graph: ${error.message}`,
-      );
+      if (error instanceof GraphBuilderError) {
+        this.editorStore.applicationStore.notifyError(
+          `Can't build graph: ${error.message}`,
+        );
+      }
     } finally {
       this.isUpdatingApplication = false;
       this.editorStore.applicationStore.setBlockingAlert(undefined);
@@ -1353,7 +1255,6 @@ export class EditorGraphState {
         openedTabEditorPaths,
         currentTabState,
         currentTabElementPath,
-        true,
       );
     } catch (error) {
       assertErrorThrown(error);
