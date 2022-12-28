@@ -379,69 +379,70 @@ export interface ServiceExecutionContext {
 }
 
 export abstract class ServiceExecutionContextState {
-  executionContext: ServiceExecutionContext;
   executionState: ServiceExecutionState;
 
-  constructor(
-    executionContext: ServiceExecutionContext,
-    executionState: ServiceExecutionState,
-  ) {
-    this.executionContext = executionContext;
+  constructor(executionState: ServiceExecutionState) {
     this.executionState = executionState;
   }
 
+  abstract get executionContext(): ServiceExecutionContext;
   abstract setMapping(value: Mapping): void;
   abstract setRuntime(value: Runtime): void;
 }
 
 export class SingleExecutionContextState extends ServiceExecutionContextState {
-  declare executionContext1: PureSingleExecution;
+  declare executionState: SingleServicePureExecutionState;
 
-  constructor(
-    executionContext: PureSingleExecution,
-    executionState: ServiceExecutionState,
-  ) {
-    super(
-      {
-        mapping:
-          executionContext.mapping as PackageableElementReference<Mapping>,
-        runtime: executionContext.runtime as Runtime,
-      },
-      executionState,
-    );
-    this.executionContext1 = executionContext;
+  constructor(executionState: SingleServicePureExecutionState) {
+    super(executionState);
     makeObservable(this, {
-      executionContext: observable,
       setMapping: action,
       setRuntime: action,
     });
+    this.executionState = executionState;
   }
 
   setMapping(value: Mapping): void {
-    this.executionContext.mapping =
-      PackageableElementExplicitReference.create(value);
     pureSingleExecution_setMapping(
-      this.executionContext1,
+      this.executionState.execution,
       value,
       this.executionState.editorStore.changeDetectionState.observerContext,
     );
   }
   setRuntime(value: Runtime): void {
-    this.executionContext.runtime = value;
     pureSingleExecution_setRuntime(
-      this.executionContext1,
+      this.executionState.execution,
       value,
       this.executionState.editorStore.changeDetectionState.observerContext,
     );
+  }
+
+  get executionContext(): ServiceExecutionContext {
+    return {
+      mapping: guaranteeNonNullable(this.executionState.execution.mapping),
+      runtime: guaranteeNonNullable(this.executionState.execution.runtime),
+    };
   }
 }
 
 export class KeyedExecutionContextState extends ServiceExecutionContextState {
-  declare executionContext: KeyedExecutionParameter;
+  keyedExecutionParameter: KeyedExecutionParameter;
+
+  constructor(
+    keyedExecutionParameter: KeyedExecutionParameter,
+    executionState: MultiServicePureExecutionState,
+  ) {
+    super(executionState);
+    makeObservable(this, {
+      setMapping: action,
+      setRuntime: action,
+    });
+    this.keyedExecutionParameter = keyedExecutionParameter;
+  }
 
   setMapping(value: Mapping): void {
     pureSingleExecution_setMapping(
-      this.executionContext,
+      this.keyedExecutionParameter,
       value,
       this.executionState.editorStore.changeDetectionState.observerContext,
     );
@@ -449,10 +450,14 @@ export class KeyedExecutionContextState extends ServiceExecutionContextState {
 
   setRuntime(value: Runtime): void {
     pureSingleExecution_setRuntime(
-      this.executionContext,
+      this.keyedExecutionParameter,
       value,
       this.executionState.editorStore.changeDetectionState.observerContext,
     );
+  }
+
+  get executionContext(): ServiceExecutionContext {
+    return this.keyedExecutionParameter;
   }
 }
 
@@ -767,6 +772,7 @@ export class SingleServicePureExecutionState extends ServicePureExecutionState {
     makeObservable(this, {
       queryState: observable,
       getInitiallySelectedExecutionContextState: observable,
+      selectedExecutionContextState: observable,
       runtimeEditorState: observable,
       isRunningQuery: observable,
       isGeneratingPlan: observable,
@@ -801,7 +807,7 @@ export class SingleServicePureExecutionState extends ServicePureExecutionState {
   }
 
   getInitiallySelectedExecutionContextState(): ServiceExecutionContextState {
-    return new SingleExecutionContextState(this.execution, this);
+    return new SingleExecutionContextState(this);
   }
 
   setMultiExecutionKey(val: string): void {

@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-import { test, beforeEach } from '@jest/globals';
-import { fireEvent, type RenderResult, waitFor } from '@testing-library/react';
+import { test, beforeEach, expect } from '@jest/globals';
+import {
+  type RenderResult,
+  waitFor,
+  fireEvent,
+  getByText,
+  getByTitle,
+  queryByText,
+} from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared';
 import {
   TEST__openElementFromExplorerTree,
@@ -23,36 +30,59 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../../EditorComponentTestUtils.js';
 import { TEST_DATA__multiEXecutionService } from './TEST_DATA__ServiceEditor.js';
+import type { EditorStore } from '../../../../../stores/EditorStore.js';
+import { MockedMonacoEditorInstance } from '@finos/legend-art';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID.js';
 
 let renderResult: RenderResult;
-
+let MOCK__editorStore: EditorStore;
 beforeEach(async () => {
-  const MOCK__editorStore = TEST__provideMockedEditorStore();
+  MOCK__editorStore = TEST__provideMockedEditorStore();
   renderResult = await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore, {
     entities: TEST_DATA__multiEXecutionService,
   });
 });
-
-// TODO: fix issue with monaco not reading lambda value. probably need to mock jsonToGrammar result
-test.skip(integrationTest('Service Multi Execution Editor'), async () => {
+test(integrationTest('Service Multi Execution Editor'), async () => {
+  MockedMonacoEditorInstance.getValue.mockReturnValue(
+    '|testModelStoreTestSuites::model::Doc.all()',
+  );
   await TEST__openElementFromExplorerTree(
     'testModelStoreTestSuites::service::DocM2MService',
     renderResult,
   );
-  await waitFor(() => renderResult.getByText('Service to test refiner flow'));
-  await waitFor(() => renderResult.getByText('dummy1'));
-  await waitFor(() => renderResult.getByText('dummy'));
-  fireEvent.click(renderResult.getByText('Execution'));
-  // TODO: fix issue with monaco not reading value
-  await waitFor(() => renderResult.getByText('Execution Contexts'));
-  await waitFor(() => renderResult.getByText('env'));
-  await waitFor(() => renderResult.getByText('QA'));
-  await waitFor(() =>
-    renderResult.getByText('testModelStoreTestSuites::runtime::DocM2MRuntime'),
+  const editPanel = await waitFor(() =>
+    renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDIT_PANEL),
   );
-  await waitFor(() => renderResult.getByText('UAT'));
-  fireEvent.click(renderResult.getByText('UAT'));
+
+  await waitFor(() => getByText(editPanel, 'Service to test refiner flow'));
+  await waitFor(() => getByText(editPanel, 'dummy1'));
+  await waitFor(() => getByText(editPanel, 'dummy'));
+  await waitFor(() => getByText(editPanel, 'Execution'));
+
+  fireEvent.click(getByText(editPanel, 'Execution'));
+  await waitFor(() => getByText(editPanel, 'context'));
+  await waitFor(() => getByText(editPanel, 'Execution Contexts'));
+  expect(
+    await waitFor(() => editPanel.querySelector(`input[value="env"]`)),
+  ).toBeTruthy();
+  await waitFor(() => getByText(editPanel, 'QA'));
   await waitFor(() =>
-    renderResult.getByText('testModelStoreTestSuites::runtime::DocM2MRuntime3'),
+    getByText(editPanel, 'testModelStoreTestSuites::runtime::DocM2MRuntime'),
   );
+  await waitFor(() =>
+    getByText(editPanel, 'testModelStoreTestSuites::mapping::DocM2MMapping'),
+  );
+  await waitFor(() => getByText(editPanel, 'UAT'));
+  fireEvent.click(getByText(editPanel, 'UAT'));
+  await waitFor(() =>
+    getByText(editPanel, 'testModelStoreTestSuites::runtime::DocM2MRuntime3'),
+  );
+  expect(
+    queryByText(editPanel, 'testModelStoreTestSuites::runtime::DocM2MRuntime'),
+  ).toBeNull();
+  fireEvent.click(getByText(editPanel, 'QA'));
+  fireEvent.click(getByTitle(editPanel, 'Switch to single execution'));
+  const changeDialog = await waitFor(() => renderResult.getByRole('dialog'));
+  await waitFor(() => getByText(changeDialog, 'QA'));
+  await waitFor(() => getByText(changeDialog, 'Change'));
 });
