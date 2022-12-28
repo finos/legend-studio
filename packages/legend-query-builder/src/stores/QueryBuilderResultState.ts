@@ -154,7 +154,7 @@ export class QueryBuilderResultState {
       );
       const query = this.buildExecutionRawLambda();
       const result =
-        (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
+        (yield this.queryBuilderState.graphManagerState.graphManager.runQuery(
           query,
           mapping,
           runtime,
@@ -212,7 +212,7 @@ export class QueryBuilderResultState {
       const query = this.buildExecutionRawLambda();
       const startTime = Date.now();
       const promise =
-        this.queryBuilderState.graphManagerState.graphManager.executeMapping(
+        this.queryBuilderState.graphManagerState.graphManager.runQuery(
           query,
           mapping,
           runtime,

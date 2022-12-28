@@ -344,8 +344,13 @@ export const ServiceExecutionQueryEditor = observer(
     };
 
     const runQuery = applicationStore.guardUnhandledError(() =>
-      flowResult(executionState.handleExecute()),
+      flowResult(executionState.handleRunQuery()),
     );
+
+    const executionIsRunning =
+      executionState.isRunningQuery ||
+      executionState.isGeneratingPlan ||
+      executionState.isGeneratingPlan;
 
     const cancelQuery = (): void => {
       executionState.setIsRunningQuery(false);
@@ -410,7 +415,7 @@ export const ServiceExecutionQueryEditor = observer(
                   className="service-editor__execution__execute-btn__label"
                   onClick={runQuery}
                   title="Run Query"
-                  disabled={executionState.isGeneratingPlan}
+                  disabled={executionIsRunning}
                   tabIndex={-1}
                 >
                   <PlayIcon className="service-editor__execution__execute-btn__label__icon" />
@@ -420,7 +425,7 @@ export const ServiceExecutionQueryEditor = observer(
                 </button>
                 <DropdownMenu
                   className="service-editor__execution__execute-btn__dropdown-btn"
-                  disabled={executionState.isGeneratingPlan}
+                  disabled={executionIsRunning}
                   content={
                     <MenuContent>
                       <MenuContentItem
@@ -451,9 +456,7 @@ export const ServiceExecutionQueryEditor = observer(
         <div className="panel__content property-mapping-editor__entry__container">
           <PanelLoadingIndicator
             isLoading={
-              executionState.isOpeningQueryEditor ||
-              executionState.isRunningQuery ||
-              executionState.isGeneratingPlan
+              executionState.isOpeningQueryEditor || executionIsRunning
             }
           />
           <div className="service-execution-query-editor__content">

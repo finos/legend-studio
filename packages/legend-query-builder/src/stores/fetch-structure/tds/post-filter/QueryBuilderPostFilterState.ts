@@ -373,7 +373,7 @@ export class PostFilterConditionState implements Hashable {
       const columnState = guaranteeNonNullable(_columnState);
       if (performTypeahead(this.value)) {
         const result =
-          (yield this.postFilterState.tdsState.queryBuilderState.graphManagerState.graphManager.executeMapping(
+          (yield this.postFilterState.tdsState.queryBuilderState.graphManagerState.graphManager.runQuery(
             buildProjectionColumnTypeaheadQuery(
               this.postFilterState.tdsState.queryBuilderState,
               columnState,

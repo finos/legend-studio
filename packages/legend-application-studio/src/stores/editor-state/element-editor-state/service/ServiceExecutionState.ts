@@ -527,7 +527,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   };
 
   *generatePlan(debug: boolean): GeneratorFn<void> {
-    if (!this.selectedExecutionContextState || this.isGeneratingPlan) {
+    if (this.isGeneratingPlan) {
       return;
     }
     try {
@@ -538,8 +538,8 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         const debugResult =
           (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
             query,
-            this.selectedExecutionContextState.executionContext.mapping.value,
-            this.selectedExecutionContextState.executionContext.runtime,
+            this.selectedExecutionContextState?.executionContext.mapping.value,
+            this.selectedExecutionContextState?.executionContext.runtime,
             this.editorStore.graphManagerState.graph,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
@@ -548,8 +548,8 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         rawPlan =
           (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
             query,
-            this.selectedExecutionContextState.executionContext.mapping.value,
-            this.selectedExecutionContextState.executionContext.runtime,
+            this.selectedExecutionContextState?.executionContext.mapping.value,
+            this.selectedExecutionContextState?.executionContext.runtime,
             this.editorStore.graphManagerState.graph,
           )) as object;
       }
@@ -576,8 +576,8 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     }
   }
 
-  *handleExecute(): GeneratorFn<void> {
-    if (!this.selectedExecutionContextState || this.isRunningQuery) {
+  *handleRunQuery(): GeneratorFn<void> {
+    if (this.isRunningQuery) {
       return;
     }
     const query = this.queryState.query;
@@ -590,25 +590,24 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   }
 
   *runQuery(): GeneratorFn<void> {
-    if (!this.selectedExecutionContextState || this.isRunningQuery) {
+    if (this.isRunningQuery) {
       return;
     }
     try {
       this.isRunningQuery = true;
-      const promise =
-        this.editorStore.graphManagerState.graphManager.executeMapping(
-          this.getExecutionQuery(),
-          this.selectedExecutionContextState.executionContext.mapping.value,
-          this.selectedExecutionContextState.executionContext.runtime,
-          this.editorStore.graphManagerState.graph,
-          {
-            useLosslessParse: true,
-            parameterValues: buildExecutionParameterValues(
-              this.parameterState.parameterStates,
-              this.editorStore.graphManagerState,
-            ),
-          },
-        );
+      const promise = this.editorStore.graphManagerState.graphManager.runQuery(
+        this.getExecutionQuery(),
+        this.selectedExecutionContextState?.executionContext.mapping.value,
+        this.selectedExecutionContextState?.executionContext.runtime,
+        this.editorStore.graphManagerState.graph,
+        {
+          useLosslessParse: true,
+          parameterValues: buildExecutionParameterValues(
+            this.parameterState.parameterStates,
+            this.editorStore.graphManagerState,
+          ),
+        },
+      );
       this.setQueryRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
       if (this.queryRunPromise === promise) {
@@ -739,7 +738,7 @@ export class InlineServicePureExecutionState extends ServicePureExecutionState {
       updateExecutionQuery: action,
       setOpeningQueryEditor: action,
       generatePlan: flow,
-      handleExecute: flow,
+      handleRunQuery: flow,
       runQuery: flow,
     });
     this.selectedExecutionContextState =
@@ -795,7 +794,7 @@ export class SingleServicePureExecutionState extends ServicePureExecutionState {
       setShowChangeExecModal: action,
       setIsRunningQuery: action,
       generatePlan: flow,
-      handleExecute: flow,
+      handleRunQuery: flow,
       runQuery: flow,
     });
     this.selectedExecutionContextState =
@@ -883,7 +882,7 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
       setIsRunningQuery: action,
       changeExecution: action,
       generatePlan: flow,
-      handleExecute: flow,
+      handleRunQuery: flow,
       runQuery: flow,
     });
 

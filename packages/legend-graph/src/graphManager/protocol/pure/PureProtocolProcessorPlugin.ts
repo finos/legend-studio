@@ -60,8 +60,8 @@ export type V1_FunctionExpressionBuilder = (
 
 export type V1_ExecutionInputCollector = (
   graph: PureModel,
-  mapping: Mapping,
-  runtime: Runtime,
+  mapping: Mapping | undefined,
+  runtime: Runtime | undefined,
   protocolGraph: V1_PureModelContextData,
 ) => V1_PackageableElement[];
 

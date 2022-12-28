@@ -717,7 +717,7 @@ export class QueryBuilderExplorerState {
         case PRIMITIVE_TYPE.DECIMAL:
         case PRIMITIVE_TYPE.FLOAT: {
           const previewResult =
-            (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
+            (yield this.queryBuilderState.graphManagerState.graphManager.runQuery(
               buildNumericPreviewDataQuery(
                 this.queryBuilderState,
                 propertyExpression,
@@ -754,7 +754,7 @@ export class QueryBuilderExplorerState {
         case PRIMITIVE_TYPE.STRICTDATE:
         case PRIMITIVE_TYPE.DATETIME: {
           const previewResult =
-            (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
+            (yield this.queryBuilderState.graphManagerState.graphManager.runQuery(
               buildNonNumericPreviewDataQuery(
                 this.queryBuilderState,
                 propertyExpression,

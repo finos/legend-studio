@@ -361,25 +361,25 @@ export abstract class AbstractPureGraphManager {
 
   // ------------------------------------------- Execute -------------------------------------------
 
-  abstract executeMapping(
+  abstract runQuery(
     lambda: RawLambda,
-    mapping: Mapping,
-    runtime: Runtime,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
     graph: PureModel,
     options?: ExecutionOptions,
   ): Promise<ExecutionResult>;
 
   abstract generateExecutionPlan(
     lambda: RawLambda,
-    mapping: Mapping,
-    runtime: Runtime,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
     graph: PureModel,
   ): Promise<RawExecutionPlan>;
 
   abstract debugExecutionPlanGeneration(
     lambda: RawLambda,
-    mapping: Mapping,
-    runtime: Runtime,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
     graph: PureModel,
   ): Promise<{ plan: RawExecutionPlan; debug: string }>;
 

@@ -128,7 +128,7 @@ export class FilterConditionState implements Hashable {
       this.typeaheadSearchResults = undefined;
       if (performTypeahead(this.value)) {
         const result =
-          (yield this.filterState.queryBuilderState.graphManagerState.graphManager.executeMapping(
+          (yield this.filterState.queryBuilderState.graphManagerState.graphManager.runQuery(
             buildPropertyTypeaheadQuery(
               this.filterState.queryBuilderState,
               this.propertyExpressionState.propertyExpression,

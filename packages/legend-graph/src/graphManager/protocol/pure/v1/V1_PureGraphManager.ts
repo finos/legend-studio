@@ -2018,9 +2018,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private createExecutionInput = (
     graph: PureModel,
-    mapping: Mapping,
+    mapping: Mapping | undefined,
     lambda: RawLambda,
-    runtime: Runtime,
+    runtime: Runtime | undefined,
     clientVersion: string,
     parameterValues?: ParameterValue[],
   ): V1_ExecuteInput =>
@@ -2036,9 +2036,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private buildExecutionInput = (
     graph: PureModel,
-    mapping: Mapping,
+    mapping: Mapping | undefined,
     lambda: RawLambda,
-    runtime: Runtime,
+    runtime: Runtime | undefined,
     clientVersion: string,
     executeInput: V1_ExecuteInput,
     parameterValues?: ParameterValue[],
@@ -2090,13 +2090,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         this.pluginManager.getPureProtocolProcessorPlugins(),
       ).build(),
     );
-    executeInput.mapping = mapping.path;
-    executeInput.runtime = V1_transformRuntime(
-      runtime,
-      new V1_GraphTransformerContextBuilder(
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      ).build(),
-    );
+    executeInput.mapping = mapping?.path;
+    executeInput.runtime = runtime
+      ? V1_transformRuntime(
+          runtime,
+          new V1_GraphTransformerContextBuilder(
+            this.pluginManager.getPureProtocolProcessorPlugins(),
+          ).build(),
+        )
+      : undefined;
     executeInput.model = prunedGraphData;
     executeInput.context = new V1_RawBaseExecutionContext(); // TODO: potentially need to support more types
     if (parameterValues) {
@@ -2107,7 +2109,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return executeInput;
   };
 
-  async executeMapping(
+  async runQuery(
     lambda: RawLambda,
     mapping: Mapping,
     runtime: Runtime,
@@ -2158,8 +2160,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   generateExecutionPlan(
     lambda: RawLambda,
-    mapping: Mapping,
-    runtime: Runtime,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
     graph: PureModel,
   ): Promise<RawExecutionPlan> {
     return this.engine.generateExecutionPlan(
@@ -2175,8 +2177,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   async debugExecutionPlanGeneration(
     lambda: RawLambda,
-    mapping: Mapping,
-    runtime: Runtime,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
     graph: PureModel,
   ): Promise<{ plan: RawExecutionPlan; debug: string }> {
     const result = await this.engine.debugExecutionPlanGeneration(

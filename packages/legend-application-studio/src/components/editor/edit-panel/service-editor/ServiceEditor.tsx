@@ -52,8 +52,8 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { validate_ServicePattern } from '@finos/legend-graph';
-import { ServiceTestableWrapperEditor } from './testable/ServiceTestableEditor.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -475,9 +475,8 @@ export const ServiceEditor = observer(() => {
             <ServiceRegistrationEditor />
           )}
           {selectedTab === SERVICE_TAB.TEST && (
-            <ServiceTestableWrapperEditor
+            <ServiceTestableEditor
               serviceTestableState={serviceState.testableState}
-              serviceExecution={service.execution}
             />
           )}
         </div>
