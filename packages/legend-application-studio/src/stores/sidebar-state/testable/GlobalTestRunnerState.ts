@@ -16,7 +16,7 @@
 
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import {
-  type AssertionStatus,
+  AssertionStatus,
   type Test,
   type Testable,
   type TestBatch,
@@ -225,10 +225,25 @@ const getAssertion_TestResult = (
 export const getAssertionStatus = (
   assertion: TestAssertion,
   results: Map<AtomicTest, TestResult>,
-): AssertionStatus | undefined => {
+): AssertionStatus | Map<string, AssertionStatus> | undefined => {
   const result = getAssertion_TestResult(assertion, results);
   if (result instanceof TestFailed) {
     return result.assertStatuses.find((s) => s.assertion === assertion);
+  } else if (result instanceof MultiExecutionServiceTestResult) {
+    const testAssertionStatus = new Map<string, AssertionStatus>();
+    Array.from(result.keyIndexedTestResults.entries()).forEach(
+      ([key, testResult]) => {
+        if (testResult instanceof TestFailed) {
+          const testAssertion = testResult.assertStatuses.find(
+            (s) => s.assertion === assertion,
+          );
+          if (testAssertion) {
+            testAssertionStatus.set(key, testAssertion);
+          }
+        }
+      },
+    );
+    return testAssertionStatus;
   }
   return undefined;
 };
@@ -286,12 +301,19 @@ export const getTestableResultFromTestResult = (
 };
 
 export const getTestableResultFromAssertionStatus = (
-  assertionStatus: AssertionStatus | undefined,
+  assertionStatus: AssertionStatus | Map<string, AssertionStatus> | undefined,
 ): TESTABLE_RESULT => {
   if (assertionStatus instanceof AssertPass) {
     return TESTABLE_RESULT.PASSED;
   } else if (assertionStatus instanceof AssertFail) {
     return TESTABLE_RESULT.FAILED;
+  } else if (assertionStatus && !(assertionStatus instanceof AssertionStatus)) {
+    const assertionStatuses = Array.from(assertionStatus.values());
+    if (assertionStatuses.every((t) => t instanceof AssertPass)) {
+      return TESTABLE_RESULT.PASSED;
+    } else if (assertionStatuses.find((t) => t instanceof AssertFail)) {
+      return TESTABLE_RESULT.FAILED;
+    }
   }
   return TESTABLE_RESULT.DID_NOT_RUN;
 };
@@ -303,6 +325,23 @@ export const getTestableResultFromTestResults = (
   } else if (testResults.find((t) => t instanceof TestError)) {
     return TESTABLE_RESULT.ERROR;
   } else if (testResults.find((t) => t instanceof TestFailed)) {
+    return TESTABLE_RESULT.FAILED;
+  } else if (
+    testResults.find((t) => t instanceof MultiExecutionServiceTestResult)
+  ) {
+    let result: TestResult[] = [];
+    testResults.forEach((testResult) => {
+      if (testResult instanceof MultiExecutionServiceTestResult) {
+        result = result.concat(
+          Array.from(testResult.keyIndexedTestResults.values()),
+        );
+      }
+    });
+    if (result.every((t) => t instanceof TestPassed)) {
+      return TESTABLE_RESULT.PASSED;
+    } else if (result.some((t) => t instanceof TestError)) {
+      return TESTABLE_RESULT.ERROR;
+    }
     return TESTABLE_RESULT.FAILED;
   }
   return TESTABLE_RESULT.DID_NOT_RUN;
