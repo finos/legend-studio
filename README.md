@@ -1,6 +1,6 @@
 [![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating)
-[![build](https://img.shields.io/github/workflow/status/finos/legend-studio/Check%20Build)](https://github.com/finos/legend-studio/actions/workflows/check-build.yml)
-[![docker security](https://img.shields.io/github/workflow/status/finos/legend-studio/Check%20Docker?label=docker%20security)](https://github.com/finos/legend-studio/actions/workflows/check-docker.yml)
+[![build](https://img.shields.io/github/actions/workflow/status/finos/legend-studio/check-build.yml?branch=master)](https://github.com/finos/legend-studio/actions/workflows/check-build.yml)
+[![docker security](https://img.shields.io/github/actions/workflow/status/finos/legend-studio/check-docker.yml?branch=master&label=docker%20security)](https://github.com/finos/legend-studio/actions/workflows/check-docker.yml)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=legend-studio&metric=security_rating&token=1649412014267d7d7a6833643cb3133afe0137b0)](https://sonarcloud.io/dashboard?id=legend-studio)
 [![GitHub license](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/finos/legend-studio/blob/master/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/finos/legend-studio/blob/master/CONTRIBUTING.md)
