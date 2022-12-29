@@ -48,7 +48,7 @@
     "@finos/legend-shared": "workspace:*",
     "@types/css-font-loading-module": "0.0.7",
     "@types/react": "18.0.26",
-    "@types/react-dom": "18.0.9",
+    "@types/react-dom": "18.0.10",
     "@types/react-router-dom": "5.3.3",
     "history": "5.3.0",
     "mobx": "6.7.0",
