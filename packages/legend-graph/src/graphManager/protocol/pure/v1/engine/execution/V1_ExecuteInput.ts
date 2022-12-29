@@ -51,9 +51,9 @@ export class V1_ExecuteInput {
    * @discrepancy model
    */
   function!: V1_RawLambda;
-  mapping!: string;
+  mapping: string | undefined;
   model!: V1_PureModelContextData;
-  runtime!: V1_Runtime;
+  runtime: V1_Runtime | undefined;
   context!: V1_RawExecutionContext;
   parameterValues: V1_ParameterValue[] = [];
 
@@ -61,10 +61,10 @@ export class V1_ExecuteInput {
     createModelSchema(V1_ExecuteInput, {
       clientVersion: optional(primitive()),
       function: usingModelSchema(V1_rawLambdaModelSchema),
-      mapping: primitive(),
+      mapping: optional(primitive()),
       model: object(V1_PureModelContextData),
       runtime: custom(
-        (val) => V1_serializeRuntime(val),
+        (val) => (val ? V1_serializeRuntime(val) : SKIP),
         () => SKIP,
       ),
       context: usingModelSchema(V1_rawBaseExecutionContextModelSchema),

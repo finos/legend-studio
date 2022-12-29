@@ -24,19 +24,12 @@ import {
   ContextMenu,
   Dialog,
   BlankPanelPlaceholder,
-  Panel,
-  LockIcon,
   ModalTitle,
   MenuContent,
   MenuContentItem,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import {
-  PureMultiExecution,
-  PureSingleExecution,
-  type ServiceExecution,
-  type ServiceTestSuite,
-} from '@finos/legend-graph';
+import type { ServiceTestSuite } from '@finos/legend-graph';
 import { ServiceTestDataEditor } from './ServiceTestDataEditor.js';
 import { ServiceTestsEditor } from './ServiceTestsEditor.js';
 import { forwardRef, useState } from 'react';
@@ -48,7 +41,6 @@ import type {
 } from '../../../../../stores/editor-state/element-editor-state/service/testable/ServiceTestableState.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../../stores/LegendStudioApplicationNavigationContext.js';
-import { UnsupportedEditorPanel } from '../../UnsupportedElementEditor.js';
 
 export const ServiceTestSuiteEditor = observer(
   (props: { serviceTestSuiteState: ServiceTestSuiteState }) => {
@@ -143,7 +135,7 @@ export const RenameModal = observer(
   },
 );
 
-const ServiceTestableEditor = observer(
+export const ServiceTestableEditor = observer(
   (props: { serviceTestableState: ServiceTestableState }) => {
     const { serviceTestableState } = props;
     const serviceEditorState = serviceTestableState.serviceEditorState;
@@ -236,60 +228,5 @@ const ServiceTestableEditor = observer(
         </div>
       </div>
     );
-  },
-);
-
-const ServiceTestableUnsupportedEditor = observer(
-  (props: { serviceTestableState: ServiceTestableState }) => {
-    const { serviceTestableState } = props;
-    const serviceEditorState = serviceTestableState.serviceEditorState;
-    const isReadOnly = serviceEditorState.isReadOnly;
-    return (
-      <div className="unsupported-element-editor">
-        <Panel>
-          <div className="panel__header">
-            <div className="panel__header__title">
-              {isReadOnly && (
-                <div className="uml-element-editor__header__lock">
-                  <LockIcon />
-                </div>
-              )}
-              <div className="panel__header__title__label">Service Tests</div>
-            </div>
-          </div>
-          <div className="panel__content unsupported-element-editor__content">
-            <UnsupportedEditorPanel
-              text="Service Test Editor does not support services with no mapping and runtime. Please edit in text mode."
-              isReadOnly={isReadOnly}
-            />
-          </div>
-        </Panel>
-      </div>
-    );
-  },
-);
-
-export const ServiceTestableWrapperEditor = observer(
-  (props: {
-    serviceTestableState: ServiceTestableState;
-    serviceExecution: ServiceExecution;
-  }) => {
-    if (
-      (props.serviceExecution instanceof PureSingleExecution &&
-        props.serviceExecution.runtime) ||
-      props.serviceExecution instanceof PureMultiExecution
-    ) {
-      return (
-        <ServiceTestableEditor
-          serviceTestableState={props.serviceTestableState}
-        />
-      );
-    } else {
-      return (
-        <ServiceTestableUnsupportedEditor
-          serviceTestableState={props.serviceTestableState}
-        />
-      );
-    }
   },
 );

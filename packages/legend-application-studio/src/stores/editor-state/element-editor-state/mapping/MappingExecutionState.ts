@@ -760,7 +760,7 @@ export class MappingExecutionState extends MappingEditorTabState {
       ) {
         this.isExecuting = true;
         const result =
-          (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+          (yield this.editorStore.graphManagerState.graphManager.runQuery(
             query,
             this.mappingEditorState.mapping,
             runtime,

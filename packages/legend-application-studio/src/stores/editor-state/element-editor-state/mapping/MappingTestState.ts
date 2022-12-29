@@ -647,7 +647,7 @@ export class MappingTestState extends MappingEditorTabState {
       const runtime = this.inputDataState.runtime;
       this.isExecutingTest = true;
       const result =
-        (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+        (yield this.editorStore.graphManagerState.graphManager.runQuery(
           query,
           this.mappingEditorState.mapping,
           runtime,
@@ -707,7 +707,7 @@ export class MappingTestState extends MappingEditorTabState {
     try {
       const runtime = this.inputDataState.runtime;
       this.isRunningTest = true;
-      promise = this.editorStore.graphManagerState.graphManager.executeMapping(
+      promise = this.editorStore.graphManagerState.graphManager.runQuery(
         this.test.query,
         this.mappingEditorState.mapping,
         runtime,
