@@ -1,0 +1,35 @@
+name: (Bot) Milestone New Issue
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  label-new-issue:
+    name: Milestone New Issue
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - name: Setup Yarn cache
+        uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install dependencies
+        run: yarn workspaces focus --production @finos/legend-internal-github-bot
+      - name: Milestone new issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FALLBACK_MILESTONE: 'Backlog'
+        working-directory: ./scripts/github-bot
+        run: node ./milestoneNewIssue.js
