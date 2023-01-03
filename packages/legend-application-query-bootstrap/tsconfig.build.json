@@ -22,6 +22,9 @@
       "path": "../legend-extension-format-json-schema/tsconfig.build.json"
     },
     {
+      "path": "../legend-extension-query-graphql/tsconfig.build.json"
+    },
+    {
       "path": "../legend-extension-store-service-store/tsconfig.build.json"
     }
   ]

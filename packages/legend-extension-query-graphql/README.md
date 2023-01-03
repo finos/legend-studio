@@ -1,0 +1,1 @@
+# legend-extension-query-graphql
