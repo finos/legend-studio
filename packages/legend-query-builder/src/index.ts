@@ -46,6 +46,8 @@ export * from './stores/ServiceInfo.js';
 export * from './components/ServiceQuerySetupUtils.js';
 export * from './components/QuerySetupUtils.js';
 
+export { TEST__setUpQueryBuilder } from './components/QueryBuilderComponentTestUtils.js';
+
 // ------------------------------------------- Shared components -------------------------------------------
 
 export * from './components/shared/LambdaEditor.js';

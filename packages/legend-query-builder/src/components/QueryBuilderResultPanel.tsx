@@ -15,6 +15,7 @@
  */
 
 import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
   BlankPanelContent,
   PanelLoadingIndicator,
@@ -85,6 +86,7 @@ import {
   instanceValue_setValues,
 } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { PARAMETER_SUBMIT_ACTION } from '../stores/shared/LambdaParameterState.js';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 
 const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
@@ -356,6 +358,7 @@ const QueryBuilderGridResult = observer(
       >
         <AgGridReact
           rowData={rowData}
+          modules={[ClientSideRowModelModule]}
           onCellMouseOver={(event): void => {
             setCellDoubleClickedEvent(event);
           }}
@@ -505,7 +508,10 @@ export const QueryBuilderResultPanel = observer(
         : '';
 
     return (
-      <div className="panel query-builder__result">
+      <div
+        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL}
+        className="panel query-builder__result"
+      >
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">result</div>

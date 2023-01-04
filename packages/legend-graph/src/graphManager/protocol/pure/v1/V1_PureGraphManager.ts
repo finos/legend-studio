@@ -2016,7 +2016,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Execution ---------------------------------------------
 
-  private createExecutionInput = (
+  public createExecutionInput = (
     graph: PureModel,
     mapping: Mapping | undefined,
     lambda: RawLambda,

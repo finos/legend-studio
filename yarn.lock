@@ -2871,8 +2871,10 @@ __metadata:
     "@finos/legend-extension-dsl-text": "workspace:*"
     "@finos/legend-extension-store-service-store": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-query-builder": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.3.1
+    "@testing-library/react": 13.4.0
     axios: 1.2.1
     cross-env: 7.0.3
     eslint: 8.30.0

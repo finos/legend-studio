@@ -26,4 +26,5 @@ export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER_OLAP_GROUPBY = 'query__builder__olap-groupby',
   QUERY_BUILDER_EXPLORER = 'query__builder__explorer',
   QUERY_BUILDER_PROPERTY_SEARCH_PANEL = 'query__builder__property__search__panel',
+  QUERY_BUILDER_RESULT_PANEL = 'query__builder__result__panel',
 }
