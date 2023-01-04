@@ -119,35 +119,29 @@
     padding-left: 2rem;
   }
 
-  &__pattern.panel__content__form__section {
-    margin-bottom: 2rem;
+  &__pattern {
+    .panel__content__form__section {
+      margin-bottom: 2rem;
+    }
+
+    &__edit {
+      display: flex;
+    }
+
+    &__input__save-btn {
+      margin-left: 0.5rem;
+      width: 3rem;
+    }
+
+    &__example__param {
+      color: var(--color-pink-200);
+    }
   }
 
-  &__pattern__edit {
-    display: flex;
-  }
-
-  &__pattern__input__group,
-  &__pattern__input,
-  &__documentation__input {
-    width: 50rem;
-    max-width: 50rem;
-  }
-
-  &__pattern__input__save-btn {
-    margin-left: 0.5rem;
-    width: 3rem;
-  }
-
-  &__pattern__example__param {
-    color: var(--color-pink-200);
-  }
-
-  &__pattern__parameters {
+  &__parameters {
     cursor: default;
-    padding-left: 2rem;
     padding-bottom: 0.5rem;
-    margin-bottom: 3rem;
+    margin-left: -0.3rem;
     border-left: 0.3rem solid var(--color-pink-200);
 
     &__list {
@@ -165,7 +159,7 @@
     }
   }
 
-  &__pattern__parameter {
+  &__parameter {
     @include flexVCenter;
     @include flexHSpaceBetween;
 
@@ -203,121 +197,130 @@
     }
   }
 
-  &__execution__stop-btn {
-    @include flexVCenter;
-
-    height: 100%;
-    width: 12rem;
-    margin: 0 0.3rem;
-
-    &__label {
-      @include flexVCenter;
-
-      height: 2.2rem;
-      width: 12rem;
-      padding: 1rem;
-      border-radius: 0.2rem 0 0 0.2rem;
-      justify-content: left;
-    }
-
-    &__label__icon {
-      font-size: 1.2rem;
-      color: var(--color-light-grey-180);
-    }
-
-    &__label__title {
-      margin-left: 0.7rem;
-      color: var(--color-light-grey-180);
-      font-size: 1.2rem;
-      font-weight: 500;
-    }
-
-    &__label:hover &__label__icon,
-    &__label:hover &__label__title {
-      color: var(--color-light-grey-50);
-    }
+  &__pattern__input__group,
+  &__pattern__input,
+  &__documentation__input {
+    width: 50rem;
+    max-width: 50rem;
   }
 
-  &__execution__execute-btn {
-    @include flexVCenter;
-
-    height: 100%;
-    margin: 0 0.3rem;
-
-    &__label {
+  &__execution {
+    &__stop-btn {
       @include flexVCenter;
 
-      height: 2.2rem;
-      background: var(--color-blue-200);
-      padding: 1rem;
-      border-radius: 0.2rem 0 0 0.2rem;
-    }
+      height: 100%;
+      width: 12rem;
+      margin: 0 0.3rem;
 
-    &__label__icon {
-      font-size: 1.2rem;
-      color: var(--color-light-grey-180);
-    }
+      &__label {
+        @include flexVCenter;
 
-    &__label__title {
-      margin-left: 0.7rem;
-      color: var(--color-light-grey-180);
-      font-size: 1.2rem;
-      font-weight: 500;
-    }
+        height: 2.2rem;
+        width: 12rem;
+        padding: 1rem;
+        border-radius: 0.2rem 0 0 0.2rem;
+        justify-content: left;
+      }
 
-    &__dropdown-btn {
-      @include flexCenter;
-
-      height: 2.2rem;
-      width: 2rem;
-      background: var(--color-blue-200);
-      border-radius: 0 0.2rem 0.2rem 0;
-      border-left: 0.1rem solid var(--color-dark-shade-280);
-
-      svg {
+      &__label__icon {
+        font-size: 1.2rem;
         color: var(--color-light-grey-180);
+      }
+
+      &__label__title {
+        margin-left: 0.7rem;
+        color: var(--color-light-grey-180);
+        font-size: 1.2rem;
+        font-weight: 500;
+      }
+
+      &__label:hover &__label__icon,
+      &__label:hover &__label__title {
+        color: var(--color-light-grey-50);
       }
     }
 
-    &__label:hover &__label__icon,
-    &__label:hover &__label__title,
-    &__dropdown-btn:hover svg {
-      color: var(--color-light-grey-50);
+    &__execute-btn {
+      @include flexVCenter;
+
+      height: 100%;
+      margin: 0 0.3rem;
+
+      &__label {
+        @include flexVCenter;
+
+        height: 2.2rem;
+        background: var(--color-blue-200);
+        padding: 1rem;
+        border-radius: 0.2rem 0 0 0.2rem;
+      }
+
+      &__label__icon {
+        font-size: 1.2rem;
+        color: var(--color-light-grey-180);
+      }
+
+      &__label__title {
+        margin-left: 0.7rem;
+        color: var(--color-light-grey-180);
+        font-size: 1.2rem;
+        font-weight: 500;
+      }
+
+      &__dropdown-btn {
+        @include flexCenter;
+
+        height: 2.2rem;
+        width: 2rem;
+        background: var(--color-blue-200);
+        border-radius: 0 0.2rem 0.2rem 0;
+        border-left: 0.1rem solid var(--color-dark-shade-280);
+
+        svg {
+          color: var(--color-light-grey-180);
+        }
+      }
+
+      &__label:hover &__label__icon,
+      &__label:hover &__label__title,
+      &__dropdown-btn:hover svg {
+        color: var(--color-light-grey-50);
+      }
+
+      &__option {
+        width: 12rem;
+      }
+
+      &__label[disabled],
+      &__dropdown-btn[disabled] {
+        background: var(--color-dark-grey-250);
+      }
+
+      &__label[disabled] &__label__icon,
+      &__label[disabled] &__label__title,
+      &__dropdown-btn[disabled] svg {
+        color: var(--color-dark-grey-500);
+      }
     }
 
-    &__option {
-      width: 12rem;
+    &__label {
+      &--query {
+        background: var(--color-blue-200) !important;
+      }
+
+      &--test {
+        background: var(--color-pink-500) !important;
+      }
     }
 
-    &__label[disabled],
-    &__dropdown-btn[disabled] {
-      background: var(--color-dark-grey-250);
-    }
+    &__sub-label {
+      &--query {
+        border-left: 0.5rem solid var(--color-blue-200);
+      }
 
-    &__label[disabled] &__label__icon,
-    &__label[disabled] &__label__title,
-    &__dropdown-btn[disabled] svg {
-      color: var(--color-dark-grey-500);
-    }
-  }
-
-  &__execution__label {
-    &--query {
-      background: var(--color-blue-200) !important;
-    }
-
-    &--test {
-      background: var(--color-pink-500) !important;
-    }
-  }
-
-  &__execution__sub-label {
-    &--query {
-      border-left: 0.5rem solid var(--color-blue-200);
-    }
-
-    &--test {
-      border-left: 0.5rem solid var(--color-pink-500);
+      &--test {
+        border-left: 0.5rem solid var(--color-pink-500);
+      }
     }
   }
 
@@ -332,32 +335,34 @@
     }
   }
 
-  &__owner__selector {
-    overflow-y: scroll;
-    width: 100%;
-    max-width: unset;
-    margin-right: 0.5rem;
-  }
-
-  &__owner__action {
-    height: 2.8rem;
-  }
-
-  &__owner__validation {
-    display: flex;
-    align-items: center;
-    cursor: help;
-
-    svg {
-      color: var(--color-red-100);
-      stroke-width: 0.4;
-      stroke: var(--color-red-100);
+  &__owner {
+    &__selector {
+      overflow-y: scroll;
+      width: 100%;
+      max-width: unset;
+      margin-right: 0.5rem;
     }
-  }
 
-  &__owner__validation-label {
-    color: var(--color-red-100);
-    margin-left: 0.5rem;
+    &__action {
+      height: 2.8rem;
+    }
+
+    &__validation {
+      display: flex;
+      align-items: center;
+      cursor: help;
+
+      svg {
+        color: var(--color-red-100);
+        stroke-width: 0.4;
+        stroke: var(--color-red-100);
+      }
+    }
+
+    &__validation-label {
+      color: var(--color-red-100);
+      margin-left: 0.5rem;
+    }
   }
 }
 
