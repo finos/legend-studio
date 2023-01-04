@@ -332,6 +332,17 @@
     }
   }
 
+  &__owner__selector {
+    overflow-y: scroll;
+    width: 100%;
+    max-width: unset;
+    margin-right: 0.5rem;
+  }
+
+  &__owner__action {
+    height: 2.8rem;
+  }
+
   &__owner__validation {
     display: flex;
     align-items: center;

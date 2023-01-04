@@ -60,6 +60,7 @@ import {
   ProjectDependency,
   UpdateProjectConfigurationCommand,
   EntityChangeType,
+  User,
 } from '@finos/legend-server-sdlc';
 import {
   type GeneratorFn,
@@ -103,6 +104,7 @@ const projectDependencyToProjectCoordinates = (
 const createServiceEntity = async (
   servicePath: string,
   servicePattern: string,
+  serviceOwners: string[],
   queryContent: string,
   mappingPath: string,
   runtimePath: string,
@@ -115,6 +117,7 @@ const createServiceEntity = async (
     servicePackagePath,
   );
   service.pattern = servicePattern;
+  service.owners = serviceOwners;
   const [mappingPackagePath, mappingName] =
     resolvePackagePathAndElementName(mappingPath);
   const mapping = stub_ElementhWithPackagePath(
@@ -176,6 +179,7 @@ export class QueryProductionizerStore {
   workspaceName = '';
   servicePath = 'model::QueryService';
   servicePattern = `/${uuid()}`;
+  serviceOwners: string[] = [];
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
@@ -197,6 +201,7 @@ export class QueryProductionizerStore {
       workspaceName: observable,
       servicePath: observable,
       servicePattern: observable,
+      serviceOwners: observable,
       isWorkspaceNameValid: computed,
       isServicePathValid: computed,
       isServiceUrlPatternValid: computed,
@@ -207,11 +212,13 @@ export class QueryProductionizerStore {
       setWorkspaceName: action,
       setServicePath: action,
       setServicePattern: action,
+      setServiceOwners: action,
       initialize: flow,
       loadQueries: flow,
       changeQuery: flow,
       loadProjects: flow,
       changeProject: flow,
+      searchUsers: flow,
     });
 
     this.applicationStore = applicationStore;
@@ -238,6 +245,10 @@ export class QueryProductionizerStore {
 
   setServicePattern(val: string): void {
     this.servicePattern = val;
+  }
+
+  setServiceOwners(val: string[]): void {
+    this.serviceOwners = val;
   }
 
   resetCurrentQuery(): void {
@@ -324,6 +335,18 @@ export class QueryProductionizerStore {
     }
   }
 
+  *searchUsers(name: string): GeneratorFn<User[]> {
+    try {
+      return (
+        (yield this.sdlcServerClient.getUsers(name)) as PlainObject<User>[]
+      ).map((p) => User.serialization.fromJson(p));
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
+      return [];
+    }
+  }
+
   *changeQuery(query: LightQuery): GeneratorFn<void> {
     this.currentQuery = query;
 
@@ -339,7 +362,6 @@ export class QueryProductionizerStore {
           this.currentQuery.artifactId,
         )) as PlainObject<ProjectData>,
       );
-
       this.setWorkspaceName(`${DEFAULT_WORKSPACE_NAME_PREFIX}-${query.id}`);
       this.applicationStore.navigator.updateCurrentLocation(
         generateQueryProductionizerRoute(query.id),
@@ -491,6 +513,7 @@ export class QueryProductionizerStore {
       const serviceEntity = await createServiceEntity(
         this.servicePath,
         this.servicePattern,
+        this.serviceOwners,
         this.currentQueryInfo.content,
         this.currentQueryInfo.mapping,
         this.currentQueryInfo.runtime,

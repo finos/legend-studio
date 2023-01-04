@@ -17,7 +17,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
-import { useSDLCServerClient } from '@finos/legend-server-sdlc';
+import { type User, useSDLCServerClient } from '@finos/legend-server-sdlc';
 import {
   type ProjectOption,
   ActivityBarMenu,
@@ -59,6 +59,13 @@ import {
   useParams,
 } from '@finos/legend-application';
 import { DSL_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/studio/DSL_Service_LegendStudioDocumentation.js';
+
+type UserOption = { label: string; value: string };
+
+const buildUserOption = (userValue: User): UserOption => ({
+  value: userValue.userId,
+  label: userValue.userId,
+});
 
 const QueryProductionizerStoreContext = createContext<
   QueryProductionizerStore | undefined
@@ -167,6 +174,20 @@ const QueryPreviewModal = observer((props: { queryInfo: QueryInfo }) => {
 const QueryProductionizerContent = observer(() => {
   const productionizerStore = useQueryProductionizerStore();
   const applicationStore = useLegendStudioApplicationStore();
+  const [searchText, setSearchText] = useState('');
+  const [userOptions, setUserOptions] = useState<UserOption[]>([]);
+  const [selectedOwners, setSelectedOwners] = useState<UserOption[]>(
+    productionizerStore.sdlcServerClient.currentUser
+      ? [
+          buildUserOption(
+            guaranteeNonNullable(
+              productionizerStore.sdlcServerClient.currentUser,
+            ),
+          ),
+        ]
+      : [],
+  );
+  const [isLoadingUsers, setIsLoadingUsers] = useState<boolean>(false);
 
   // queries
   const queryOptions = productionizerStore.queries.map(buildQueryOption);
@@ -301,6 +322,37 @@ const QueryProductionizerContent = observer(() => {
     productionizerStore
       .productionizeQuery()
       .catch(applicationStore.alertUnhandledError);
+  };
+
+  const debouncedSearchUsers = useMemo(
+    () =>
+      debounce((input: string): void => {
+        setIsLoadingUsers(true);
+        flowResult(productionizerStore.searchUsers(input))
+          .then((users) => setUserOptions(users.map((u) => buildUserOption(u))))
+          .then(() => setIsLoadingUsers(false))
+          .catch(productionizerStore.applicationStore.alertUnhandledError);
+      }, 500),
+    [productionizerStore],
+  );
+
+  const onSearchTextChange = (value: string): void => {
+    if (value !== searchText) {
+      setSearchText(value);
+      debouncedSearchUsers.cancel();
+      if (value.length >= 3) {
+        debouncedSearchUsers(value);
+      } else if (value.length === 0) {
+        setUserOptions([]);
+        setIsLoadingUsers(false);
+      }
+    }
+  };
+
+  const onUserOptionChange = (options: UserOption[]): void => {
+    productionizerStore.setServiceOwners(options.map((op) => op.label));
+    setSelectedOwners(options);
+    setUserOptions([]);
   };
 
   useEffect(() => {
@@ -518,6 +570,27 @@ const QueryProductionizerContent = observer(() => {
                           URL pattern is not valid
                         </div>
                       )}
+                    </div>
+                  </div>
+                  <div className="query-productionizer__input">
+                    <div className="query-productionizer__input__label">
+                      OWNERS
+                    </div>
+                    <div className="input-group query-productionizer__input__input">
+                      <CustomSelectorInput
+                        className="service-editor__owner__selector"
+                        placeholder={'Enter an owner...'}
+                        isLoading={isLoadingUsers}
+                        spellCheck={false}
+                        inputValue={searchText}
+                        options={userOptions}
+                        darkMode={true}
+                        onInputChange={onSearchTextChange}
+                        onChange={onUserOptionChange}
+                        isMulti={true}
+                        allowCreating={true}
+                        value={selectedOwners}
+                      />
                     </div>
                   </div>
                 </div>
