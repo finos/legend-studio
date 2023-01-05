@@ -161,13 +161,15 @@ export class SDLCServerClient extends AbstractServerClient {
   get currentUserUrl(): string {
     return `${this.baseUrl}/currentUser`;
   }
-  getUsersUrl(name: string): string {
-    return `${this.baseUrl}/users/?search=${name}`;
+
+  get usersUrl(): string {
+    return `${this.baseUrl}/users`;
   }
+
   getCurrentUser = (): Promise<PlainObject<User>> =>
     this.get(this.currentUserUrl);
   getUsers = (name: string): Promise<PlainObject<User>[]> =>
-    this.get(this.getUsersUrl(name));
+    this.get(`${this.usersUrl}/?search=${encodeURIComponent(name)}`);
 
   // ------------------------------------------- Project -------------------------------------------
 
