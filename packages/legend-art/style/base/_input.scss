@@ -66,6 +66,7 @@
   &__error-message {
     width: 100%;
     position: absolute;
+    z-index: 1;
     top: calc(100% - 0.2rem);
     line-height: 2.2rem;
     font-size: 1.2rem;
