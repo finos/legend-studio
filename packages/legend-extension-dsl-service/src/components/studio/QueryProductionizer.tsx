@@ -576,9 +576,9 @@ const QueryProductionizerContent = observer(() => {
                     <div className="query-productionizer__input__label">
                       OWNERS
                     </div>
-                    <div className="input-group query-productionizer__input__input">
+                    <div className="input-group query-productionizer__input__selector">
                       <CustomSelectorInput
-                        className="service-editor__owner__selector"
+                        className="query-productionizer___service-owner__selector"
                         placeholder={'Enter an owner...'}
                         isLoading={isLoadingUsers}
                         spellCheck={false}
