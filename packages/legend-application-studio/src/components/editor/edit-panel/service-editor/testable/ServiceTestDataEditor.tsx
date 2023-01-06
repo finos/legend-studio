@@ -85,7 +85,7 @@ const getIdentifiedConnectionWithRuntimeOptionFormatter = (props: {
     return (
       <div className={className}>
         <div className={`${className}__name`}>{option.label}</div>
-        {(option.value?.runtime as RuntimePointer).packageableRuntime.value && (
+        {
           <div className={`${className}__tag`}>
             {`${
               (option.value?.runtime as RuntimePointer).packageableRuntime.value
@@ -94,7 +94,7 @@ const getIdentifiedConnectionWithRuntimeOptionFormatter = (props: {
               option.value?.identifiedConnection.connection.store.value.path
             }/${option.label}`}
           </div>
-        )}
+        }
       </div>
     );
   };
