@@ -17,11 +17,11 @@
 import {
   type TestData,
   type Connection,
-  type IdentifiedConnection,
   type Runtime,
   type EmbeddedData,
   type RawLambda,
   type DataElement,
+  type IdentifiedConnection,
   ConnectionTestData,
   PureSingleExecution,
   PureMultiExecution,
@@ -69,6 +69,11 @@ import {
 } from '../../data/DataEditorState.js';
 import { createEmbeddedData } from '../../data/EmbeddedDataState.js';
 import type { ServiceTestSuiteState } from './ServiceTestableState.js';
+
+export type IdentifiedConnectionWithRuntime = {
+  runtime: Runtime;
+  identifiedConnection: IdentifiedConnection;
+};
 
 const buildTestDataParameters = (
   rawLambda: RawLambda,
@@ -209,7 +214,7 @@ export class NewConnectionDataState {
   readonly editorStore: EditorStore;
   readonly testSuiteState: ServiceTestDataState;
   showModal = false;
-  connection: IdentifiedConnection | undefined;
+  connectionWithRuntime: IdentifiedConnectionWithRuntime | undefined;
   embeddedDataType: EmbeddedDataTypeOption | undefined;
   dataElement: DataElement | undefined;
 
@@ -219,13 +224,13 @@ export class NewConnectionDataState {
   ) {
     makeObservable(this, {
       showModal: observable,
-      connection: observable,
+      connectionWithRuntime: observable,
       embeddedDataType: observable,
       dataElement: observable,
       setModal: action,
       openModal: action,
       setEmbeddedDataType: action,
-      handleConnectionChange: action,
+      handleConnectionWithRuntimeChange: action,
       setDataElement: action,
     });
 
@@ -248,18 +253,23 @@ export class NewConnectionDataState {
 
   openModal(): void {
     this.setModal(true);
-    this.connection = this.testSuiteState.allIdentifiedConnections[0];
-    if (this.connection) {
-      this.handleConnectionChange(this.connection);
+    this.connectionWithRuntime =
+      this.testSuiteState.allIdentifiedConnectionWithRuntimes[0];
+    if (this.connectionWithRuntime) {
+      this.handleConnectionWithRuntimeChange(this.connectionWithRuntime);
     }
   }
 
-  setConnection(val: IdentifiedConnection | undefined): void {
-    this.connection = val;
+  setConnectionWithRuntime(
+    val: IdentifiedConnectionWithRuntime | undefined,
+  ): void {
+    this.connectionWithRuntime = val;
   }
 
-  handleConnectionChange(val: IdentifiedConnection): void {
-    const connectionValue = val.connection;
+  handleConnectionWithRuntimeChange(
+    val: IdentifiedConnectionWithRuntime,
+  ): void {
+    const connectionValue = val.identifiedConnection.connection;
     const type = returnUndefOnError(() =>
       connectionValue.accept_ConnectionVisitor(
         new EmbeddedDataConnectionTypeVisitor(this.testSuiteState.editorStore),
@@ -269,7 +279,9 @@ export class NewConnectionDataState {
   }
 
   createConnectionTestData(): ConnectionTestData {
-    const val = guaranteeNonNullable(this.connection);
+    const val = guaranteeNonNullable(
+      this.connectionWithRuntime?.identifiedConnection,
+    );
     const embeddedDataType = guaranteeNonNullable(this.embeddedDataType);
     const connectionTestData = new ConnectionTestData();
     connectionTestData.connectionId = val.id;
@@ -372,5 +384,25 @@ export class ServiceTestDataState {
       runtimes = execution.executionParameters.map((t) => t.runtime);
     }
     return uniq(runtimes.flatMap(getAllIdentifiedConnectionsFromRuntime));
+  }
+
+  get allIdentifiedConnectionWithRuntimes(): IdentifiedConnectionWithRuntime[] {
+    const service =
+      this.testSuiteState.testableState.serviceEditorState.service;
+    const execution = service.execution;
+    let runtimes: Runtime[] = [];
+    if (execution instanceof PureSingleExecution && execution.runtime) {
+      runtimes = [execution.runtime];
+    } else if (execution instanceof PureMultiExecution) {
+      runtimes = execution.executionParameters.map((t) => t.runtime);
+    }
+    return uniq(
+      runtimes.map((r) =>
+        getAllIdentifiedConnectionsFromRuntime(r).map((e) => ({
+          runtime: r,
+          identifiedConnection: e,
+        })),
+      ),
+    ).flat();
   }
 }

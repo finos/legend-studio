@@ -37,14 +37,17 @@ import {
   ResizablePanelSplitterLine,
 } from '@finos/legend-art';
 import type {
-  IdentifiedConnection,
   ConnectionTestData,
   DataElement,
+  IdentifiedConnection,
+  Runtime,
+  RuntimePointer,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useState } from 'react';
 import type {
   ConnectionTestDataState,
+  IdentifiedConnectionWithRuntime,
   ServiceTestDataState,
 } from '../../../../../stores/editor-state/element-editor-state/service/testable/ServiceTestDataState.js';
 import type { EmbeddedDataTypeOption } from '../../../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
@@ -59,6 +62,42 @@ import {
 import { prettyCONSTName } from '@finos/legend-shared';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { useEditorStore } from '../../../EditorStoreProvider.js';
+
+const getIdentifiedConnectionWithRuntimeOptionFormatter = (props: {
+  darkMode?: boolean;
+}): ((option: {
+  label: string;
+  value?: {
+    runtime: Runtime;
+    identifiedConnection: IdentifiedConnection;
+  };
+}) => React.ReactNode) =>
+  function IdentifiedConnectionWithRuntimeOptionLabel(option: {
+    label: string;
+    value?: {
+      runtime: Runtime;
+      identifiedConnection: IdentifiedConnection;
+    };
+  }): React.ReactNode {
+    const className = props.darkMode
+      ? 'packageable-element-option-label--dark'
+      : 'packageable-element-option-label';
+    return (
+      <div className={className}>
+        <div className={`${className}__name`}>{option.label}</div>
+        {(option.value?.runtime as RuntimePointer).packageableRuntime.value && (
+          <div className={`${className}__tag`}>
+            {`${
+              (option.value?.runtime as RuntimePointer).packageableRuntime.value
+                .path
+            }/${
+              option.value?.identifiedConnection.connection.store.value.path
+            }/${option.label}`}
+          </div>
+        )}
+      </div>
+    );
+  };
 
 export const ConnectionTestDataEditor = observer(
   (props: { connectionTestDataState: ConnectionTestDataState }) => {
@@ -239,34 +278,44 @@ export const NewConnectionDataModal = observer(
     const isReadOnly =
       testDataState.testSuiteState.testableState.serviceEditorState.isReadOnly;
     const closeModal = (): void => newConnectionState.setModal(false);
-    const connectionOptions = testDataState.allIdentifiedConnections.map(
-      (e) => ({
-        label: e.id,
+    const connectionOptions =
+      testDataState.allIdentifiedConnectionWithRuntimes.map((e) => ({
+        label: e.identifiedConnection.id,
         value: e,
-      }),
-    );
-    const selectedConnection = newConnectionState.connection
-      ? {
-          label: newConnectionState.connection.id,
-          value: newConnectionState.connection,
-        }
-      : undefined;
+      }));
+    const selectedConnectionWithRuntime =
+      newConnectionState.connectionWithRuntime
+        ? {
+            label:
+              newConnectionState.connectionWithRuntime.identifiedConnection.id,
+            value: {
+              runtime: newConnectionState.connectionWithRuntime.runtime,
+              identifiedConnection:
+                newConnectionState.connectionWithRuntime.identifiedConnection,
+            },
+          }
+        : undefined;
     const isDisabled =
       isReadOnly ||
       !testDataState.allIdentifiedConnections.length ||
       Boolean(
         testDataState.testData.connectionsTestData.find(
-          (c) => c.connectionId === selectedConnection?.value.id,
+          (c) =>
+            c.connectionId ===
+            selectedConnectionWithRuntime?.value.identifiedConnection.id,
         ),
       );
     const onConnectionSelectionChange = (val: {
       label: string;
-      value?: IdentifiedConnection;
+      value?: IdentifiedConnectionWithRuntime;
     }): void => {
       if (val.value === undefined) {
-        newConnectionState.setConnection(undefined);
-      } else if (val.value !== selectedConnection?.value) {
-        newConnectionState.setConnection(val.value);
+        newConnectionState.setConnectionWithRuntime(undefined);
+      } else if (
+        val.value.identifiedConnection !==
+        selectedConnectionWithRuntime?.value.identifiedConnection
+      ) {
+        newConnectionState.setConnectionWithRuntime(val.value);
       }
     };
     // external format
@@ -309,7 +358,8 @@ export const NewConnectionDataModal = observer(
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            const connection = newConnectionState.connection;
+            const connection =
+              newConnectionState.connectionWithRuntime?.identifiedConnection;
             const data = newConnectionState.embeddedDataType;
             if (connection && data) {
               testDataState.createConnectionTestData();
@@ -332,9 +382,14 @@ export const NewConnectionDataModal = observer(
                   className="explorer__new-element-modal__driver__dropdown"
                   options={connectionOptions}
                   onChange={onConnectionSelectionChange}
-                  value={selectedConnection}
+                  value={selectedConnectionWithRuntime}
                   isClearable={false}
                   darkMode={true}
+                  formatOptionLabel={getIdentifiedConnectionWithRuntimeOptionFormatter(
+                    {
+                      darkMode: true,
+                    },
+                  )}
                 />
               </div>
             </div>
