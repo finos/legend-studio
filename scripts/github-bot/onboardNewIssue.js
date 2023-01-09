@@ -19,10 +19,13 @@ import * as githubActionCore from '@actions/core';
 import chalk from 'chalk';
 
 /**
- * This script will automatically label new issue. Labelling rules are:
- * - If the issue creator is a member of the team, add the team label
+ * This script will automatically onboard new issue.
+ * Labelling rules are:
+ *  - If the issue creator is a member of the team, add the team label
+ * Setting milestone rules are:
+ *  - If there is no milestone addded to the issue, add the fallback milestone
  */
-const labelNewIssue = async () => {
+const onboardNewIssue = async () => {
   const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
   const octokitWithOrganizationReadScope = github.getOctokit(
     process.env.ORGANIZATION_READ_TOKEN,
@@ -30,6 +33,7 @@ const labelNewIssue = async () => {
   const orgName = process.env.ORGANIZATION_NAME;
   const teamName = process.env.TEAM_NAME;
   const teamLabel = process.env.TEAM_LABEL;
+  const fallbackMilestoneTitle = process.env.FALLBACK_MILESTONE;
   const issueEventPayload = github.context.payload.issue;
 
   if (!issueEventPayload) {
@@ -41,7 +45,7 @@ const labelNewIssue = async () => {
 
   const issueNumber = issueEventPayload.number;
 
-  console.log(`Labelling new issue...`);
+  console.log(`Onboarding new issue...`);
 
   try {
     const issue = (
@@ -92,10 +96,69 @@ const labelNewIssue = async () => {
         `(skipped) User '${issue.user.login}' is not a member of team '${teamName}'`,
       );
     }
+
+    // Setting fallback milestone to the issue.
+    if (fallbackMilestoneTitle && !issue.milestone) {
+      console.log(`Checking if fallback milestone exists...`);
+
+      let openMilestones;
+      try {
+        openMilestones = (
+          await octokit.rest.issues.listMilestones({
+            state: 'open',
+            ...github.context.repo,
+          })
+        ).data;
+      } catch (error) {
+        openMilestones = undefined;
+      }
+      if (openMilestones) {
+        const fallbackMilestone = openMilestones.find(
+          (milestone) => milestone.title === fallbackMilestoneTitle,
+        );
+
+        if (fallbackMilestone) {
+          console.log(
+            `Setting milestone ${fallbackMilestone}' for issue '${issue.title}'`,
+          );
+
+          try {
+            await octokit.rest.issues.update({
+              issue_number: issueNumber,
+              milestone: fallbackMilestone.number,
+              ...github.context.repo,
+            });
+            console.log(
+              chalk.green(
+                `Set milestone '${fallbackMilestoneTitle}' for issue '${issue.title}'`,
+              ),
+            );
+          } catch (error) {
+            githubActionCore.error(
+              `Can't set milestone '${fallbackMilestoneTitle}' for issue '${issue.title}'. Error:\n${error.message}\nPlease manually do so.`,
+            );
+          }
+        } else {
+          githubActionCore.warning(
+            `'${fallbackMilestoneTitle}' does not exist in the project`,
+          );
+        }
+      } else {
+        githubActionCore.warning(
+          `Can't get the list of open milestones in the project`,
+        );
+      }
+    } else {
+      githubActionCore.warning(
+        fallbackMilestoneTitle
+          ? `(skipped) Milestone already exists for the issue: ${issueNumber}`
+          : `(skipped) No fallback milestone exists`,
+      );
+    }
   } catch (error) {
-    githubActionCore.error(`Can't label issue. Error:\n${error.message}`);
+    githubActionCore.error(`Can't onboard issue. Error:\n${error.message}`);
     process.exit(1);
   }
 };
 
-labelNewIssue();
+onboardNewIssue();
