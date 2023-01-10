@@ -97,6 +97,7 @@ import type {
   V1_TextCompilationResult,
 } from './compilation/V1_CompilationResult.js';
 import { V1_CompilationWarning } from './compilation/V1_CompilationWarning.js';
+import { V1_GenerateSchemaInput } from './externalFormat/V1_GenerateSchemaInput.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -622,6 +623,16 @@ export class V1_Engine {
       V1_RenderStyle.STANDARD,
     );
     return pureCode;
+  }
+
+  async generateSchema(
+    input: V1_GenerateSchemaInput,
+  ): Promise<V1_PureModelContextData> {
+    return V1_deserializePureModelContextData(
+      (await this.engineServerClient.generateSchema(
+        V1_GenerateSchemaInput.serialization.toJson(input),
+      )) as unknown as PlainObject<V1_PureModelContextData>,
+    );
   }
 
   // ------------------------------------------- Service -------------------------------------------

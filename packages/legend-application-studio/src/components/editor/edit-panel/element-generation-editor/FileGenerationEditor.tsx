@@ -19,10 +19,6 @@ import { observer } from 'mobx-react-lite';
 import { flowResult, runInAction } from 'mobx';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import { useDrop } from 'react-dnd';
-import {
-  getTextContent,
-  getEditorLanguageForFormat,
-} from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import { FileGenerationEditorState } from '../../../../stores/editor-state/element-editor-state/FileGenerationEditorState.js';
 import {
   type DebouncedFunc,
@@ -32,28 +28,17 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import {
-  type TreeNodeContainerProps,
-  type TreeData,
-  type TreeNodeData,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   clsx,
-  TreeView,
-  BlankPanelContent,
-  PanelLoadingIndicator,
   CustomSelectorInput,
   PencilIcon,
   RefreshIcon,
   TimesIcon,
   CheckSquareIcon,
   SquareIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  FolderOpenIcon,
-  FolderIcon,
-  FileCodeIcon,
   LockIcon,
   SaveIcon,
   PanelDropZone,
@@ -68,12 +53,6 @@ import {
 } from '../../../../stores/shared/DnDUtils.js';
 import type { FileGenerationState } from '../../../../stores/editor-state/FileGenerationState.js';
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState.js';
-import {
-  type GenerationTreeNodeData,
-  GenerationDirectory,
-  GenerationFile,
-  getFileGenerationChildNodes,
-} from '../../../../stores/shared/FileGenerationTreeUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -86,256 +65,14 @@ import {
   resolvePackagePathAndElementName,
   getNullableFileGenerationConfig,
 } from '@finos/legend-graph';
-import {
-  TextInputEditor,
-  useApplicationStore,
-} from '@finos/legend-application';
-import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   fileGeneration_addScopeElement,
   fileGeneration_changeScopeElement,
   fileGeneration_deleteScopeElement,
   fileGeneration_setGenerationOutputPath,
 } from '../../../../stores/shared/modifier/DSL_Generation_GraphModifierHelper.js';
-
-export const FileGenerationTreeNodeContainer: React.FC<
-  TreeNodeContainerProps<
-    GenerationTreeNodeData,
-    {
-      selectedNode?: TreeNodeData | undefined;
-    }
-  >
-> = (props) => {
-  const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
-  const { selectedNode } = innerProps;
-  const isSelected = selectedNode === node;
-  const isDirectory = node.fileNode instanceof GenerationDirectory;
-  const expandIcon = !isDirectory ? (
-    <div />
-  ) : node.isOpen ? (
-    <ChevronDownIcon />
-  ) : (
-    <ChevronRightIcon />
-  );
-  const iconPackageColor = 'color--generated';
-  const nodeIcon = isDirectory ? (
-    node.isOpen ? (
-      <div className={iconPackageColor}>
-        <FolderOpenIcon />
-      </div>
-    ) : (
-      <div className={iconPackageColor}>
-        <FolderIcon />
-      </div>
-    )
-  ) : (
-    <div className="icon">
-      <FileCodeIcon />
-    </div>
-  );
-  const selectNode: React.MouseEventHandler = (event) => onNodeSelect?.(node);
-
-  return (
-    <div
-      className={clsx(
-        'tree-view__node__container generation-result-viewer__explorer__package-tree__node__container',
-        {
-          'generation-result-viewer__explorer__package-tree__node__container--selected':
-            isSelected,
-        },
-      )}
-      onClick={selectNode}
-      style={{
-        paddingLeft: `${level * (stepPaddingInRem ?? 1)}rem`,
-        display: 'flex',
-      }}
-    >
-      <div className="tree-view__node__icon generation-result-viewer__explorer__package-tree__node__icon">
-        <div className="generation-result-viewer__explorer__package-tree__node__icon__expand">
-          {expandIcon}
-        </div>
-        <div className="generation-result-viewer__explorer__package-tree__node__icon__type">
-          {nodeIcon}
-        </div>
-      </div>
-      <button
-        className="tree-view__node__label generation-result-viewer__explorer__package-tree__node__label"
-        tabIndex={-1}
-        title={node.fileNode.path}
-      >
-        {node.label}
-      </button>
-    </div>
-  );
-};
-
-export const FileGenerationTree = observer(
-  (props: {
-    selectedNode?: TreeNodeData | undefined;
-    directoryTreeData: TreeData<GenerationTreeNodeData>;
-    onNodeSelect: (node: GenerationTreeNodeData) => void;
-    getFileElementTreeChildNodes: (
-      node: GenerationTreeNodeData,
-    ) => GenerationTreeNodeData[];
-  }) => {
-    const {
-      directoryTreeData,
-      onNodeSelect,
-      getFileElementTreeChildNodes,
-      selectedNode,
-    } = props;
-
-    return (
-      <TreeView
-        components={{
-          TreeNodeContainer: FileGenerationTreeNodeContainer,
-        }}
-        treeData={directoryTreeData}
-        onNodeSelect={onNodeSelect}
-        getChildNodes={getFileElementTreeChildNodes}
-        innerProps={{
-          selectedNode: selectedNode,
-        }}
-      />
-    );
-  },
-);
-
-export const GenerationResultExplorer = observer(
-  (props: { fileGenerationState: FileGenerationState }) => {
-    const { fileGenerationState } = props;
-    const treeData = guaranteeNonNullable(
-      fileGenerationState.directoryTreeData,
-    );
-    const onNodeSelect = (node: GenerationTreeNodeData): void =>
-      fileGenerationState.onTreeNodeSelect(node, treeData);
-    const getMappingElementTreeChildNodes = (
-      node: GenerationTreeNodeData,
-    ): GenerationTreeNodeData[] => getFileGenerationChildNodes(node, treeData);
-
-    if (!treeData.nodes.size) {
-      return <BlankPanelContent>No content</BlankPanelContent>;
-    }
-    return (
-      <div className="generation-result-viewer__explorer__content">
-        <FileGenerationTree
-          selectedNode={fileGenerationState.selectedNode}
-          directoryTreeData={treeData}
-          onNodeSelect={onNodeSelect}
-          getFileElementTreeChildNodes={getMappingElementTreeChildNodes}
-        />
-      </div>
-    );
-  },
-);
-
-export const GenerationResultViewer = observer(
-  (props: { fileGenerationState: FileGenerationState }) => {
-    const { fileGenerationState } = props;
-    const applicationStore = useApplicationStore();
-    const selectedNode = fileGenerationState.selectedNode;
-    const fileNode = selectedNode?.fileNode;
-    const regenerate = applicationStore.guardUnhandledError(() =>
-      flowResult(fileGenerationState.generate()),
-    );
-    const extraFileGenerationResultViewerActions =
-      fileNode instanceof GenerationFile
-        ? fileGenerationState.editorStore.pluginManager
-            .getApplicationPlugins()
-            .flatMap(
-              (plugin) =>
-                (
-                  plugin as DSL_Generation_LegendStudioApplicationPlugin_Extension
-                ).getExtraFileGenerationResultViewerActionConfigurations?.() ??
-                [],
-            )
-            .map((config) => (
-              <Fragment key={config.key}>
-                {config.renderer(fileGenerationState)}
-              </Fragment>
-            ))
-        : null;
-    return (
-      <ResizablePanelGroup orientation="vertical">
-        <ResizablePanel size={250} minSize={250}>
-          <div className="generation-result-viewer__side-bar">
-            <div className="panel generation-result-viewer__explorer">
-              <div className="panel__header">
-                <div className="panel__header__title">
-                  <div className="panel__header__title__label">result</div>
-                </div>
-                <div className="panel__header__actions">
-                  <button
-                    className={clsx(
-                      'panel__header__action  generation-result-viewer__regenerate-btn',
-                      {
-                        ' generation-result-viewer__regenerate-btn--loading':
-                          fileGenerationState.isGenerating,
-                      },
-                    )}
-                    tabIndex={-1}
-                    disabled={fileGenerationState.isGenerating}
-                    onClick={regenerate}
-                    title="Regenerate"
-                  >
-                    <RefreshIcon />
-                  </button>
-                </div>
-              </div>
-              <PanelContent>
-                <PanelLoadingIndicator
-                  isLoading={fileGenerationState.isGenerating}
-                />
-                {Boolean(fileGenerationState.directoryTreeData) && (
-                  <GenerationResultExplorer
-                    fileGenerationState={fileGenerationState}
-                  />
-                )}
-                {Boolean(!fileGenerationState.directoryTreeData) && (
-                  <BlankPanelContent>
-                    Generation result not available
-                  </BlankPanelContent>
-                )}
-              </PanelContent>
-            </div>
-          </div>
-        </ResizablePanel>
-        <ResizablePanelSplitter>
-          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-        </ResizablePanelSplitter>
-        <ResizablePanel>
-          <div className="panel generation-result-viewer__file">
-            <div className="panel__header">
-              {fileNode && !(fileNode instanceof GenerationDirectory) && (
-                <div className="panel__header__title">
-                  <div className="panel__header__title__label">file</div>
-                  <div className="panel__header__title__content generation-result-viewer__file__header__name">
-                    {fileNode.name}
-                  </div>
-                </div>
-              )}
-              <div className="panel__header__actions">
-                {extraFileGenerationResultViewerActions}
-              </div>
-            </div>
-            <PanelContent>
-              {fileNode instanceof GenerationFile && (
-                <TextInputEditor
-                  inputValue={getTextContent(fileNode.content, fileNode.format)}
-                  isReadOnly={true}
-                  language={getEditorLanguageForFormat(fileNode.format)}
-                />
-              )}
-              {!(fileNode instanceof GenerationFile) && (
-                <BlankPanelContent>No file selected</BlankPanelContent>
-              )}
-            </PanelContent>
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    );
-  },
-);
+import { FileSystemViewer } from './FileSystemViewer.js';
 
 const FileGenerationScopeEditor = observer(
   (props: {
@@ -1299,7 +1036,7 @@ export const FileGenerationConfigurationEditor = observer(
     };
     const resetDefaultConfiguration = (): void => {
       debouncedRegenerate.cancel();
-      fileGenerationState.resetFileGeneration();
+      fileGenerationState.resetGenerator();
       debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);
     };
 
@@ -1474,10 +1211,9 @@ export const FileGenerationEditor = observer(() => {
             <ResizablePanelSplitter>
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
             </ResizablePanelSplitter>
-
             <ResizablePanel>
-              <GenerationResultViewer
-                fileGenerationState={
+              <FileSystemViewer
+                generatedFileState={
                   fileGenerationEditorState.fileGenerationState
                 }
               />

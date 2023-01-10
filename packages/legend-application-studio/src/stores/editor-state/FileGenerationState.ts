@@ -17,25 +17,21 @@
 import type { EditorStore } from '../EditorStore.js';
 import { observable, action, makeObservable, flow } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
-import type { TreeData } from '@finos/legend-art';
 import {
-  type GenerationTreeNodeData,
-  type GenerationFile,
-  type GenerationOutputResult,
-  GenerationDirectory,
+  type FileSystem_File,
+  type FileResult,
+  FileSystem_Directory,
   GENERATION_FILE_ROOT_NAME,
-  getGenerationTreeData,
-  openNode,
-  populateDirectoryTreeNodeChildren,
-  buildGenerationDirectory,
-  reprocessOpenNodes,
-} from '../shared/FileGenerationTreeUtils.js';
+  getFileSystemTreeData,
+  buildFileSystemDirectory,
+} from '../shared/FileSystemTreeUtils.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
   deepEqual,
   isEmpty,
   LogEvent,
+  ActionState,
 } from '@finos/legend-shared';
 import {
   type FileGenerationSpecification,
@@ -55,113 +51,40 @@ import {
   fileGeneration_addScopeElement,
   fileGeneration_deleteScopeElement,
 } from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
+import { FileSystemState } from './FileSystemState.js';
 
-export class FileGenerationState {
+export abstract class GeneratedFileStructureState {
   readonly editorStore: EditorStore;
-  readonly fileGeneration: FileGenerationSpecification;
+  fileSystemState: FileSystemState;
+  generatingAction = ActionState.create();
+  rootDirectoryName: string;
 
-  isGenerating = false;
-  root: GenerationDirectory;
-  directoryTreeData?: TreeData<GenerationTreeNodeData> | undefined;
-  selectedNode?: GenerationTreeNodeData | undefined;
-  filesIndex = new Map<string, GenerationFile>();
-
-  constructor(
-    editorStore: EditorStore,
-    fileGeneration: FileGenerationSpecification,
-  ) {
-    makeObservable(this, {
-      isGenerating: observable,
-      root: observable,
-      directoryTreeData: observable.ref,
-      selectedNode: observable.ref,
-      filesIndex: observable,
-      resetFileGeneration: action,
-      setIsGeneration: action,
-      setDirectoryTreeData: action,
-      processGenerationResult: action,
-      reprocessNodeTree: action,
-      setSelectedNode: action,
-      onTreeNodeSelect: action,
-      addScopeElement: action,
-      deleteScopeElement: action,
-      updateFileGenerationParameters: action,
-      generate: flow,
-    });
-
+  constructor(rootDirectory: string, editorStore: EditorStore) {
+    this.rootDirectoryName = rootDirectory;
+    this.fileSystemState = new FileSystemState(rootDirectory);
     this.editorStore = editorStore;
-    this.fileGeneration = fileGeneration;
-    this.root = new GenerationDirectory(GENERATION_FILE_ROOT_NAME);
   }
 
-  getOrCreateDirectory(directoryName: string): GenerationDirectory {
-    return GenerationDirectory.getOrCreateDirectory(
-      this.root,
-      directoryName,
-      true,
-    );
-  }
+  abstract resetGenerator(): void;
 
-  resetFileGeneration(): void {
-    this.fileGeneration.configurationProperties = [];
-  }
+  abstract generate(): GeneratorFn<void>;
 
-  setIsGeneration(isGenerating: boolean): void {
-    this.isGenerating = isGenerating;
-  }
+  abstract get rootFolder(): string;
 
-  setDirectoryTreeData(
-    directoryTreeData: TreeData<GenerationTreeNodeData>,
-  ): void {
-    this.directoryTreeData = directoryTreeData;
-  }
-
-  *generate(): GeneratorFn<void> {
-    this.isGenerating = true;
-    try {
-      // avoid wasting a network call when the scope is empty, we can short-circuit this
-      if (!this.fileGeneration.scopeElements.length) {
-        this.selectedNode = undefined;
-        this.processGenerationResult([]);
-        return;
-      }
-      const mode =
-        this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
-          this.fileGeneration.type,
-        ).generationMode;
-      const result =
-        (yield this.editorStore.graphManagerState.graphManager.generateFile(
-          this.fileGeneration,
-          mode,
-          this.editorStore.graphManagerState.graph,
-        )) as GenerationOutput[];
-      this.processGenerationResult(result);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.selectedNode = undefined;
-      this.processGenerationResult([]);
-      this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
-        error,
-      );
-      this.editorStore.applicationStore.notifyError(error);
-    } finally {
-      this.isGenerating = false;
-    }
-  }
+  abstract get generationParentId(): string | undefined;
 
   processGenerationResult(output: GenerationOutput[]): void {
-    this.root = new GenerationDirectory(GENERATION_FILE_ROOT_NAME);
-    this.filesIndex = new Map<string, GenerationFile>();
-    const openedNodeIds = this.directoryTreeData
-      ? Array.from(this.directoryTreeData.nodes.values())
+    this.fileSystemState.root = new FileSystem_Directory(
+      this.rootDirectoryName,
+    );
+    this.fileSystemState.filesIndex = new Map<string, FileSystem_File>();
+    const openedNodeIds = this.fileSystemState.directoryTreeData
+      ? Array.from(this.fileSystemState.directoryTreeData.nodes.values())
           .filter((node) => node.isOpen)
           .map((node) => node.id)
       : [];
-    const generationResultIndex = new Map<string, GenerationOutputResult>();
-    const rootFolder =
-      this.fileGeneration.generationOutputPath ??
-      this.fileGeneration.path.split(ELEMENT_PATH_DELIMITER).join('_');
+    const generationResultIndex = new Map<string, FileResult>();
+    const rootFolder = this.rootFolder;
     output.forEach((entry) => {
       entry.cleanFileName(rootFolder);
       if (generationResultIndex.has(entry.fileName)) {
@@ -171,98 +94,61 @@ export class FileGenerationState {
         );
       }
       generationResultIndex.set(entry.fileName, {
-        generationOutput: entry,
-        parentId: this.fileGeneration.path,
+        value: entry,
+        parentId: this.generationParentId,
       });
     });
     // take generation outputs and put them into the root directory
-    buildGenerationDirectory(this.root, generationResultIndex, this.filesIndex);
-    this.directoryTreeData = getGenerationTreeData(this.root);
-    this.reprocessNodeTree(
+    buildFileSystemDirectory(
+      this.fileSystemState.root,
+      generationResultIndex,
+      this.fileSystemState.filesIndex,
+    );
+    this.fileSystemState.directoryTreeData = getFileSystemTreeData(
+      this.fileSystemState.root,
+    );
+    this.fileSystemState.reprocessNodeTree(
       Array.from(generationResultIndex.values()),
-      this.directoryTreeData,
+      this.fileSystemState.directoryTreeData,
       openedNodeIds,
     );
   }
+}
 
-  reprocessNodeTree(
-    generationResult: GenerationOutputResult[],
-    treeData: TreeData<GenerationTreeNodeData>,
-    openedNodeIds: string[],
-  ): void {
-    reprocessOpenNodes(treeData, this.filesIndex, this.root, openedNodeIds);
-    // select the current file node if available, else select the first output
-    const selectedFileNodePath =
-      generationResult.length === 1 ||
-      (this.selectedNode === undefined && generationResult.length !== 0)
-        ? (generationResult[0] as GenerationOutputResult).generationOutput
-            .fileName
-        : this.selectedNode?.fileNode.path;
-    if (selectedFileNodePath) {
-      const file = this.filesIndex.get(selectedFileNodePath);
-      if (file) {
-        const node = openNode(file, treeData);
-        if (node) {
-          this.onTreeNodeSelect(node, treeData);
-        }
-      } else {
-        this.selectedNode = undefined;
-      }
-    }
-    this.setDirectoryTreeData({ ...treeData });
+export class FileGenerationState extends GeneratedFileStructureState {
+  readonly fileGeneration: FileGenerationSpecification;
+
+  constructor(
+    editorStore: EditorStore,
+    fileGeneration: FileGenerationSpecification,
+  ) {
+    super(GENERATION_FILE_ROOT_NAME, editorStore);
+    makeObservable(this, {
+      generatingAction: observable,
+      fileSystemState: observable,
+      resetGenerator: action,
+      processGenerationResult: action,
+      addScopeElement: action,
+      deleteScopeElement: action,
+      updateFileGenerationParameters: action,
+      generate: flow,
+    });
+    this.fileGeneration = fileGeneration;
   }
 
-  setSelectedNode(node?: GenerationTreeNodeData): void {
-    if (this.selectedNode) {
-      this.selectedNode.isSelected = false;
-    }
-    if (node) {
-      node.isSelected = true;
-    }
-    this.selectedNode = node;
-  }
-
-  onTreeNodeSelect(
-    node: GenerationTreeNodeData,
-    treeData: TreeData<GenerationTreeNodeData>,
-  ): void {
-    if (node.childrenIds?.length) {
-      node.isOpen = !node.isOpen;
-      if (node.fileNode instanceof GenerationDirectory) {
-        populateDirectoryTreeNodeChildren(node, treeData);
-      }
-    }
-    this.setSelectedNode(node);
-    this.setDirectoryTreeData({ ...treeData });
-  }
-
-  getScopeElement(
-    element: PackageableElement | string,
-  ): PackageableElementReference<PackageableElement> | string | undefined {
-    return this.fileGeneration.scopeElements.find((el) =>
-      el instanceof PackageableElementReference
-        ? el.value === element
-        : element === el,
+  get rootFolder(): string {
+    return (
+      this.fileGeneration.generationOutputPath ??
+      this.fileGeneration.path.split(ELEMENT_PATH_DELIMITER).join('_')
     );
   }
 
-  addScopeElement(element: PackageableElement | string): void {
-    const el = this.getScopeElement(element);
-    if (!el) {
-      fileGeneration_addScopeElement(
-        this.fileGeneration,
-        element instanceof PackageableElement
-          ? PackageableElementExplicitReference.create(element)
-          : element,
-      );
-    }
+  get generationParentId(): string | undefined {
+    return this.fileGeneration.path;
   }
 
-  deleteScopeElement(element: PackageableElement | string): void {
-    const el = this.getScopeElement(element);
-    if (el) {
-      fileGeneration_deleteScopeElement(this.fileGeneration, el);
-    }
+  resetGenerator(): void {
+    this.fileGeneration.configurationProperties = [];
   }
 
   updateFileGenerationParameters(
@@ -331,6 +217,69 @@ export class FileGenerationState {
             (e) => e.name !== generationProperty.name,
           );
       }
+    }
+  }
+
+  *generate(): GeneratorFn<void> {
+    this.generatingAction.inProgress();
+    try {
+      // avoid wasting a network call when the scope is empty, we can short-circuit this
+      if (!this.fileGeneration.scopeElements.length) {
+        this.fileSystemState.selectedNode = undefined;
+        this.processGenerationResult([]);
+        return;
+      }
+      const mode =
+        this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
+          this.fileGeneration.type,
+        ).generationMode;
+      const result =
+        (yield this.editorStore.graphManagerState.graphManager.generateFile(
+          this.fileGeneration,
+          mode,
+          this.editorStore.graphManagerState.graph,
+        )) as GenerationOutput[];
+      this.processGenerationResult(result);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.fileSystemState.selectedNode = undefined;
+      this.processGenerationResult([]);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notifyError(error);
+    } finally {
+      this.generatingAction.complete();
+    }
+  }
+
+  getScopeElement(
+    element: PackageableElement | string,
+  ): PackageableElementReference<PackageableElement> | string | undefined {
+    return this.fileGeneration.scopeElements.find((el) =>
+      el instanceof PackageableElementReference
+        ? el.value === element
+        : element === el,
+    );
+  }
+
+  addScopeElement(element: PackageableElement | string): void {
+    const el = this.getScopeElement(element);
+    if (!el) {
+      fileGeneration_addScopeElement(
+        this.fileGeneration,
+        element instanceof PackageableElement
+          ? PackageableElementExplicitReference.create(element)
+          : element,
+      );
+    }
+  }
+
+  deleteScopeElement(element: PackageableElement | string): void {
+    const el = this.getScopeElement(element);
+    if (el) {
+      fileGeneration_deleteScopeElement(this.fileGeneration, el);
     }
   }
 }

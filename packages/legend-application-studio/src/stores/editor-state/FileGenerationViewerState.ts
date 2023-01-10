@@ -17,7 +17,7 @@
 import type { EditorStore } from '../EditorStore.js';
 import { EditorState } from './EditorState.js';
 import { observable, makeObservable, computed } from 'mobx';
-import type { GenerationFile } from '../shared/FileGenerationTreeUtils.js';
+import type { FileSystem_File } from '../shared/FileSystemTreeUtils.js';
 import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
 import { returnUndefOnError } from '@finos/legend-shared';
 
@@ -51,9 +51,9 @@ export const getEditorLanguageForFormat = (
 };
 
 export class FileGenerationViewerState extends EditorState {
-  file: GenerationFile;
+  file: FileSystem_File;
 
-  constructor(editorStore: EditorStore, file: GenerationFile) {
+  constructor(editorStore: EditorStore, file: FileSystem_File) {
     super(editorStore);
 
     makeObservable(this, {

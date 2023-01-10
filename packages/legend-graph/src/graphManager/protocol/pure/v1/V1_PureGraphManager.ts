@@ -24,7 +24,7 @@ import {
   type Log,
   type PlainObject,
   type ServerClientConfig,
-  type ActionState,
+  ActionState,
   TracerService,
   LogEvent,
   getClass,
@@ -39,6 +39,7 @@ import {
   deleteEntry,
   uniq,
   IllegalStateError,
+  filterByType,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -210,6 +211,7 @@ import type { QuerySearchSpecification } from '../../../../graphManager/action/q
 import type { ExternalFormatDescription } from '../../../../graphManager/action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../../../../graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
 import { V1_ExternalFormatModelGenerationInput } from './engine/externalFormat/V1_ExternalFormatModelGeneration.js';
+import { V1_GenerateSchemaInput } from './engine/externalFormat/V1_GenerateSchemaInput.js';
 import { GraphBuilderReport } from '../../../../graphManager/GraphBuilderReport.js';
 import type { Package } from '../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
 import { V1_DataElement } from './model/packageableElements/data/V1_DataElement.js';
@@ -252,13 +254,15 @@ import type {
   RawMappingModelCoverageAnalysisResult,
 } from '../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
-import type { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
+import { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
 import type {
   CompilationResult,
   TextCompilationResult,
 } from '../../../action/compilation/CompilationResult.js';
 import { CompilationWarning } from '../../../action/compilation/CompilationWarning.js';
 import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_ServiceTransformer.js';
+import { V1_transformModelUnit } from './transformation/pureGraph/from/V1_DSL_ExternalFormat_Transformer.js';
+import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -1971,6 +1975,46 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     // TODO: once api defaults to latest prod pure client version
     input.clientVersion = PureClientVersion.VX_X_X;
     return this.engine.generateModel(input);
+  }
+
+  async generateSchemaFromExternalFormatConfig(
+    modelUnit: ModelUnit,
+    targetBinding: string | undefined,
+    configurationProperties: ConfigurationProperty[],
+    currentGraph: PureModel,
+  ): Promise<SchemaSet[]> {
+    const config: PlainObject = {};
+    configurationProperties.forEach((property) => {
+      config[property.name] = property.value as PlainObject;
+    });
+    const input = new V1_GenerateSchemaInput(
+      V1_transformModelUnit(modelUnit),
+      this.getFullGraphModelData(currentGraph),
+      Boolean(targetBinding),
+      config,
+    );
+    input.targetBindingPath = targetBinding;
+    const genPMCD = await this.engine.generateSchema(input);
+    const genGraph = await this.createEmptyGraph();
+    const report = new GraphBuilderReport();
+    const mainGraphBuilderInput: V1_PureGraphBuilderInput[] = [
+      {
+        model: genGraph,
+        data: V1_indexPureModelContextData(
+          report,
+          genPMCD,
+          this.graphBuilderExtensions,
+        ),
+      },
+    ];
+    await this.buildGraphFromInputs(
+      genGraph,
+      mainGraphBuilderInput,
+      report,
+      new StopWatch(),
+      ActionState.create(),
+    );
+    return genGraph.allElements.filter(filterByType(SchemaSet));
   }
 
   // ------------------------------------------- Import -------------------------------------------
