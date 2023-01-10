@@ -74,6 +74,7 @@ import type {
   TextCompilationResult,
 } from './action/compilation/CompilationResult.js';
 import type { ParameterValue } from '../DSL_Service_Exports.js';
+import type { ModelUnit } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -352,6 +353,13 @@ export abstract class AbstractPureGraphManager {
     configs: ConfigurationProperty[],
     graph: PureModel,
   ): Promise<string>;
+
+  abstract generateSchemaFromExternalFormatConfig(
+    modelUnit: ModelUnit,
+    targetBinding: string | undefined,
+    configurationProperties: ConfigurationProperty[],
+    graph: PureModel,
+  ): Promise<SchemaSet[]>;
 
   // ------------------------------------------- Import -------------------------------------------
   abstract getExamplePureProtocolText(): string;

@@ -43,6 +43,7 @@ import type { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecific
 import type { EXECUTION_SERIALIZATION_FORMAT } from '../../../../../graphManager/action/execution/ExecutionResult.js';
 import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
 import type { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration.js';
+import type { V1_GenerateSchemaInput } from './externalFormat/V1_GenerateSchemaInput.js';
 import type { V1_RunTestsInput } from './test/V1_RunTestsInput.js';
 import type { V1_TestResult } from '../model/test/result/V1_TestResult.js';
 import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
@@ -344,10 +345,23 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   generateModel = (
     input: PlainObject<V1_ExternalFormatModelGenerationInput>,
-  ): Promise<PlainObject<V1_GenerationOutput>[]> =>
+  ): Promise<PlainObject<V1_PureModelContextData>[]> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_FILE),
       `${this._externalFormats()}/generateModel`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
+  generateSchema = (
+    input: PlainObject<V1_GenerateSchemaInput>,
+  ): Promise<PlainObject<V1_PureModelContextData>[]> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_FILE),
+      `${this._externalFormats()}/generateSchema`,
       input,
       {},
       undefined,

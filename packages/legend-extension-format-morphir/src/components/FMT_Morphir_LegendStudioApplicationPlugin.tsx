@@ -16,17 +16,19 @@
 
 import packageJson from '../../package.json';
 import {
-  LegendStudioApplicationPlugin,
   type DSL_LegendStudioApplicationPlugin_Extension,
   type GenerationFile,
-  type FileGenerationState,
   type FileGenerationResultViewerActionConfiguration,
   type FileGenerationScopeFilterConfiguration,
+  type GeneratedFileStructureState,
+  LegendStudioApplicationPlugin,
+  FileGenerationState,
 } from '@finos/legend-application-studio';
 import {
   NetworkClient,
   guaranteeNonEmptyString,
   assertErrorThrown,
+  guaranteeType,
 } from '@finos/legend-shared';
 import {
   type PackageableElement,
@@ -100,43 +102,50 @@ export class FMT_Morphir_LegendStudioApplicationPlugin
       {
         key: 'visualize-morphir-IR-action',
         renderer: (
-          fileGenerationState: FileGenerationState,
+          generatedFileStructureState: GeneratedFileStructureState,
         ): React.ReactNode | undefined => {
-          const fileNode = fileGenerationState.selectedNode
-            ?.fileNode as GenerationFile;
-          const applicationStore =
-            fileGenerationState.editorStore.applicationStore;
-          const visualizeMorphir =
-            (file: GenerationFile): (() => void) =>
-            async (): Promise<void> => {
-              try {
-                await this.networkClient.post(
-                  this.morphirVisualizerUrl,
-                  file.content,
-                );
-                applicationStore.navigator.visitAddress(
-                  this.morphirVisualizerUrl,
-                );
-              } catch (error) {
-                assertErrorThrown(error);
-                applicationStore.notifyError(error);
-              }
-            };
-          if (
-            fileGenerationState.fileGeneration.type.toLowerCase() ===
-            MORPHIR_TYPE_NAME
-          ) {
-            return (
-              <div className="panel__header__title__content generation-result-viewer__file__header__action">
-                <button
-                  className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                  onClick={visualizeMorphir(fileNode)}
-                  tabIndex={-1}
-                >
-                  Visualize Generated IR
-                </button>
-              </div>
+          if (generatedFileStructureState instanceof FileGenerationState) {
+            const fileGenerationState = guaranteeType(
+              generatedFileStructureState,
+              FileGenerationState,
             );
+            const fileNode = fileGenerationState.fileSystemState.selectedNode
+              ?.fileNode as GenerationFile;
+            const applicationStore =
+              fileGenerationState.editorStore.applicationStore;
+            const visualizeMorphir =
+              (file: GenerationFile): (() => void) =>
+              async (): Promise<void> => {
+                try {
+                  await this.networkClient.post(
+                    this.morphirVisualizerUrl,
+                    file.content,
+                  );
+                  applicationStore.navigator.visitAddress(
+                    this.morphirVisualizerUrl,
+                  );
+                } catch (error) {
+                  assertErrorThrown(error);
+                  applicationStore.notifyError(error);
+                }
+              };
+            if (
+              fileGenerationState.fileGeneration.type.toLowerCase() ===
+              MORPHIR_TYPE_NAME
+            ) {
+              return (
+                <div className="panel__header__title__content generation-result-viewer__file__header__action">
+                  <button
+                    className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                    onClick={visualizeMorphir(fileNode)}
+                    tabIndex={-1}
+                  >
+                    Visualize Generated IR
+                  </button>
+                </div>
+              );
+            }
+            return undefined;
           }
           return undefined;
         },
@@ -144,48 +153,55 @@ export class FMT_Morphir_LegendStudioApplicationPlugin
       {
         key: 'view-bosque-feedback-action',
         renderer: (
-          fileGenerationState: FileGenerationState,
+          generatedFileStructureState: GeneratedFileStructureState,
         ): React.ReactNode | undefined => {
-          const fileNode = fileGenerationState.selectedNode
-            ?.fileNode as GenerationFile;
-          const applicationStore =
-            fileGenerationState.editorStore.applicationStore;
-          const visualizeBosque =
-            (
-              fileGenState: FileGenerationState,
-              file: GenerationFile,
-            ): (() => void) =>
-            async (): Promise<void> => {
-              try {
-                const code =
-                  fileGenState.editorStore.graphManagerState.graphManager.graphToPureCode(
-                    fileGenState.editorStore.graphManagerState.graph,
-                  );
-                await this.networkClient.post(this.linterServerUrl, {
-                  ir: file.content,
-                  src: await code,
-                });
-                applicationStore.navigator.visitAddress(this.linterAppUrl);
-              } catch (error) {
-                assertErrorThrown(error);
-                applicationStore.notifyError(error);
-              }
-            };
-          if (
-            fileGenerationState.fileGeneration.type.toLowerCase() ===
-            MORPHIR_TYPE_NAME
-          ) {
-            return (
-              <div className="panel__header__title__content generation-result-viewer__file__header__action">
-                <button
-                  className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                  onClick={visualizeBosque(fileGenerationState, fileNode)}
-                  tabIndex={-1}
-                >
-                  View Bosque Feedback
-                </button>
-              </div>
+          if (generatedFileStructureState instanceof FileGenerationState) {
+            const fileGenerationState = guaranteeType(
+              generatedFileStructureState,
+              FileGenerationState,
             );
+            const fileNode = fileGenerationState.fileSystemState.selectedNode
+              ?.fileNode as GenerationFile;
+            const applicationStore =
+              fileGenerationState.editorStore.applicationStore;
+            const visualizeBosque =
+              (
+                fileGenState: FileGenerationState,
+                file: GenerationFile,
+              ): (() => void) =>
+              async (): Promise<void> => {
+                try {
+                  const code =
+                    fileGenState.editorStore.graphManagerState.graphManager.graphToPureCode(
+                      fileGenState.editorStore.graphManagerState.graph,
+                    );
+                  await this.networkClient.post(this.linterServerUrl, {
+                    ir: file.content,
+                    src: await code,
+                  });
+                  applicationStore.navigator.visitAddress(this.linterAppUrl);
+                } catch (error) {
+                  assertErrorThrown(error);
+                  applicationStore.notifyError(error);
+                }
+              };
+            if (
+              fileGenerationState.fileGeneration.type.toLowerCase() ===
+              MORPHIR_TYPE_NAME
+            ) {
+              return (
+                <div className="panel__header__title__content generation-result-viewer__file__header__action">
+                  <button
+                    className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                    onClick={visualizeBosque(fileGenerationState, fileNode)}
+                    tabIndex={-1}
+                  >
+                    View Bosque Feedback
+                  </button>
+                </div>
+              );
+            }
+            return undefined;
           }
           return undefined;
         },

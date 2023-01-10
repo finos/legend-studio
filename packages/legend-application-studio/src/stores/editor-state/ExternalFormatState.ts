@@ -24,6 +24,7 @@ import {
 import { flow, action, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
+import { ElementXTSchemaGenerationState } from './element-editor-state/ElementExternalFormatGenerationState.js';
 
 export type ExternalFormatTypeOption = {
   value: string;
@@ -41,10 +42,12 @@ export class ExternalFormatState {
   fetchingDescriptionsState = ActionState.create();
   editorStore: EditorStore;
   externalFormatsDescriptions: ExternalFormatDescription[] = [];
+  schemaGenerationStates: ElementXTSchemaGenerationState[] = [];
 
   constructor(editorStore: EditorStore) {
     makeObservable<ExternalFormatState>(this, {
       externalFormatsDescriptions: observable,
+      schemaGenerationStates: observable,
       setExternalFormatsDescriptions: action,
       fetchExternalFormatsDescriptions: flow,
     });
@@ -92,6 +95,12 @@ export class ExternalFormatState {
       const externalFormatDescriptions =
         (yield this.editorStore.graphManagerState.graphManager.getAvailableExternalFormatsDescriptions()) as ExternalFormatDescription[];
       this.setExternalFormatsDescriptions(externalFormatDescriptions);
+      this.schemaGenerationStates = externalFormatDescriptions
+        .filter((s) => s.supportsSchemaGeneration)
+        .map(
+          (descr) =>
+            new ElementXTSchemaGenerationState(this.editorStore, descr),
+        );
       this.fetchingDescriptionsState.complete();
     } catch (error) {
       assertErrorThrown(error);

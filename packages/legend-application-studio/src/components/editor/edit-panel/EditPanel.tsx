@@ -29,7 +29,12 @@ import { MappingEditor } from './mapping-editor/MappingEditor.js';
 import { UMLEditor } from './uml-editor/UMLEditor.js';
 import { MappingEditorState } from '../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { UMLEditorState } from '../../../stores/editor-state/element-editor-state/UMLEditorState.js';
-import { ElementEditorState } from '../../../stores/editor-state/element-editor-state/ElementEditorState.js';
+import {
+  ElementEditorState,
+  ELEMENT_GENERATION_MODE,
+  ExternalFormatElementGenerationViewModeState,
+  FileGenerationViewModeState,
+} from '../../../stores/editor-state/element-editor-state/ElementEditorState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { ELEMENT_NATIVE_VIEW_MODE } from '../../../stores/EditorConfig.js';
 import {
@@ -53,7 +58,6 @@ import { PackageableConnectionEditorState } from '../../../stores/editor-state/e
 import { PackageableConnectionEditor } from './connection-editor/ConnectionEditor.js';
 import { FileGenerationEditorState } from '../../../stores/editor-state/element-editor-state/FileGenerationEditorState.js';
 import { FileGenerationEditor } from './element-generation-editor/FileGenerationEditor.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import { EntityChangeConflictEditor } from './diff-editor/EntityChangeConflictEditor.js';
 import { UnsupportedElementEditorState } from '../../../stores/editor-state/UnsupportedElementEditorState.js';
@@ -68,6 +72,7 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 import { PackageableDataEditorState } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
 import { TabManager, type TabState } from '@finos/legend-application';
+import { ElementXTGenerationEditor } from './element-generation-editor/ElementXTGenerationEditor.js';
 
 export const ViewerEditPanelSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -176,29 +181,52 @@ export const EditPanel = observer(() => {
     currentTabState instanceof ElementEditorState
       ? Object.values(ELEMENT_NATIVE_VIEW_MODE)
       : [];
-  const generationViewModes =
+  const externalformatViewModes =
+    currentTabState instanceof ElementEditorState
+      ? editorStore.graphState.graphGenerationState.externalFormatState.externalFormatsDescriptions
+          .filter((f) => f.supportsSchemaGeneration)
+          .slice()
+          .sort((a, b): number => a.name.localeCompare(b.name))
+      : [];
+  const generationViewModes = (
     currentTabState instanceof ElementEditorState
       ? editorStore.graphState.graphGenerationState.fileGenerationConfigurations
           .slice()
           .sort((a, b): number => a.label.localeCompare(b.label))
-      : [];
+      : []
+  ).filter(
+    (file) =>
+      !externalformatViewModes
+        .map((e) => e.name.toLowerCase())
+        .includes(file.key.toLowerCase()),
+  );
 
   const renderActiveElementTab = (): React.ReactNode => {
     if (currentTabState instanceof ElementEditorState) {
-      if (currentTabState.generationViewMode) {
-        const elementGenerationState = editorStore.elementGenerationStates.find(
-          (state) =>
-            state.fileGenerationType === currentTabState.generationViewMode,
-        );
-        return (
-          <ElementGenerationEditor
-            key={elementGenerationState?.uuid}
-            elementGenerationState={guaranteeNonNullable(
-              elementGenerationState,
-            )}
-            currentElementState={currentTabState}
-          />
-        );
+      const generationViewState = currentTabState.generationModeState;
+      if (generationViewState) {
+        if (generationViewState instanceof FileGenerationViewModeState) {
+          return (
+            <ElementGenerationEditor
+              key={generationViewState.elementGenerationState.uuid}
+              elementGenerationState={
+                generationViewState.elementGenerationState
+              }
+              currentElementState={currentTabState}
+            />
+          );
+        } else if (
+          generationViewState instanceof
+          ExternalFormatElementGenerationViewModeState
+        ) {
+          return (
+            <ElementXTGenerationEditor
+              key={generationViewState.generationState.uuid}
+              elementXTState={generationViewState.generationState}
+              currentElementState={currentTabState}
+            />
+          );
+        }
       }
       switch (currentTabState.editMode) {
         case ELEMENT_NATIVE_VIEW_MODE.FORM: {
@@ -360,12 +388,38 @@ export const EditPanel = observer(() => {
                       ))}
                     </div>
                   </div>
+                  {Boolean(externalformatViewModes.length) && (
+                    <>
+                      <div className="edit-panel__view-mode__option__group__separator" />
+                      <div className="edit-panel__view-mode__option__group edit-panel__view-mode__option__group--generation">
+                        <div className="edit-panel__view-mode__option__group__name">
+                          external format
+                        </div>
+                        <div className="edit-panel__view-mode__option__group__options">
+                          {externalformatViewModes.map((mode) => (
+                            <MenuContentItem
+                              key={mode.name}
+                              className="edit-panel__view-mode__option"
+                              onClick={(): void =>
+                                currentTabState.changeGenerationModeState(
+                                  mode.name,
+                                  ELEMENT_GENERATION_MODE.EXTERNAL_FORMAT,
+                                )
+                              }
+                            >
+                              {mode.name}
+                            </MenuContentItem>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
                   {Boolean(generationViewModes.length) && (
                     <>
                       <div className="edit-panel__view-mode__option__group__separator" />
                       <div className="edit-panel__view-mode__option__group edit-panel__view-mode__option__group--generation">
                         <div className="edit-panel__view-mode__option__group__name">
-                          generation
+                          file
                         </div>
                         <div className="edit-panel__view-mode__option__group__options">
                           {generationViewModes.map((mode) => (
@@ -378,7 +432,10 @@ export const EditPanel = observer(() => {
                                 )
                               }
                               onClick={(): void =>
-                                currentTabState.setGenerationViewMode(mode.key)
+                                currentTabState.changeGenerationModeState(
+                                  mode.key,
+                                  ELEMENT_GENERATION_MODE.FILE_GENERATION,
+                                )
                               }
                             >
                               {mode.label}
@@ -396,11 +453,8 @@ export const EditPanel = observer(() => {
               }}
             >
               <div className="edit-panel__view-mode__type__label">
-                {currentTabState.generationViewMode
-                  ? editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
-                      currentTabState.generationViewMode,
-                    ).label
-                  : currentTabState.editMode}
+                {currentTabState.generationModeState?.label ??
+                  currentTabState.editMode}
               </div>
             </DropdownMenu>
           )}

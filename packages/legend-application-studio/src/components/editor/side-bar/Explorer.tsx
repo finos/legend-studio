@@ -61,10 +61,10 @@ import {
 } from '../../../stores/shared/PackageTreeUtils.js';
 import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtils.js';
 import {
-  type GenerationTreeNodeData,
-  getFileGenerationChildNodes,
-} from '../../../stores/shared/FileGenerationTreeUtils.js';
-import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor.js';
+  type FileSystemTreeNodeData,
+  getFileSystemChildNodes,
+} from '../../../stores/shared/FileSystemTreeUtils.js';
+import { FileSystemTree } from '../edit-panel/element-generation-editor/FileSystemViewer.js';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter.js';
 import { toTitleCase } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -562,15 +562,15 @@ const ExplorerTrees = observer(() => {
   // Generated Files Tree
   const generationFileTreeData =
     editorStore.explorerTreeState.getFileGenerationTreeData();
-  const onGenerationFileTreeNodeSelect = (node: GenerationTreeNodeData): void =>
+  const onGenerationFileTreeNodeSelect = (node: FileSystemTreeNodeData): void =>
     editorStore.graphState.graphGenerationState.onTreeNodeSelect(
       node,
       generationFileTreeData,
     );
   const getGenerationFileTreeChildNodes = (
-    node: GenerationTreeNodeData,
-  ): GenerationTreeNodeData[] =>
-    getFileGenerationChildNodes(node, generationFileTreeData);
+    node: FileSystemTreeNodeData,
+  ): FileSystemTreeNodeData[] =>
+    getFileSystemChildNodes(node, generationFileTreeData);
 
   // System Tree
   const systemTreeData = editorStore.explorerTreeState.getTreeData(
@@ -684,7 +684,7 @@ const ExplorerTrees = observer(() => {
               ) && (
                 <>
                   <div className="explorer__content__separator" />
-                  <FileGenerationTree
+                  <FileSystemTree
                     selectedNode={editorStore.explorerTreeState.selectedNode}
                     directoryTreeData={generationFileTreeData}
                     onNodeSelect={onGenerationFileTreeNodeSelect}

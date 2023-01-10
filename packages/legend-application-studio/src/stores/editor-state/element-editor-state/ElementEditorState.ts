@@ -22,6 +22,7 @@ import {
   type GeneratorFn,
   LogEvent,
   assertErrorThrown,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import {
   type CompilationError,
@@ -30,6 +31,8 @@ import {
   isElementReadOnly,
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
+import type { ElementFileGenerationState } from './ElementFileGenerationState.js';
+import type { ElementXTSchemaGenerationState } from './ElementExternalFormatGenerationState.js';
 
 const generateMultiLineCommentForError = (
   message: string,
@@ -37,10 +40,64 @@ const generateMultiLineCommentForError = (
 ): string =>
   `/**\n * ${message}. Error: ${error.message.replace(/\n/gu, '\n * ')}\n */`;
 
+export enum ELEMENT_GENERATION_MODE {
+  FILE_GENERATION = 'FILE_GENERATION',
+  EXTERNAL_FORMAT = 'EXTERNAL_FORMAT',
+}
+export abstract class ElementGenerationModeState {
+  elementEditorState: ElementEditorState;
+  editorStore: EditorStore;
+
+  constructor(
+    editorStore: EditorStore,
+    elementEditorState: ElementEditorState,
+  ) {
+    this.elementEditorState = elementEditorState;
+    this.editorStore = editorStore;
+  }
+
+  abstract get label(): string;
+}
+
+export class ExternalFormatElementGenerationViewModeState extends ElementGenerationModeState {
+  generationState: ElementXTSchemaGenerationState;
+
+  constructor(
+    editorStore: EditorStore,
+    elementEditorState: ElementEditorState,
+    generationState: ElementXTSchemaGenerationState,
+  ) {
+    super(editorStore, elementEditorState);
+    this.generationState = generationState;
+  }
+  get label(): string {
+    return this.generationState.description.name;
+  }
+}
+
+export class FileGenerationViewModeState extends ElementGenerationModeState {
+  elementGenerationState: ElementFileGenerationState;
+
+  constructor(
+    editorStore: EditorStore,
+    elementEditorState: ElementEditorState,
+    elementGenerationState: ElementFileGenerationState,
+  ) {
+    super(editorStore, elementEditorState);
+    this.elementGenerationState = elementGenerationState;
+  }
+
+  get label(): string {
+    return this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
+      this.elementGenerationState.fileGenerationType,
+    ).label;
+  }
+}
+
 export abstract class ElementEditorState extends EditorState {
   element: PackageableElement;
   editMode = ELEMENT_NATIVE_VIEW_MODE.FORM;
-  generationViewMode?: string | undefined;
+  generationModeState: ElementGenerationModeState | undefined;
   textContent = '';
   isReadOnly = false;
 
@@ -50,15 +107,15 @@ export abstract class ElementEditorState extends EditorState {
     makeObservable(this, {
       element: observable,
       editMode: observable,
-      generationViewMode: observable,
       textContent: observable,
       isReadOnly: observable,
+      generationModeState: observable,
       label: computed,
       description: computed,
       elementPath: computed,
       setTextContent: action,
       setEditMode: action,
-      setGenerationViewMode: action,
+      changeGenerationModeState: action,
       generateElementProtocol: action,
       generateElementGrammar: flow,
     });
@@ -91,11 +148,39 @@ export abstract class ElementEditorState extends EditorState {
     this.editMode = mode;
     // changing edit mode will clear any existing generation view mode
     // as edit mode always takes precedence
-    this.setGenerationViewMode(undefined);
+    this.setGenerationModeState(undefined);
   }
 
-  setGenerationViewMode(mode: string | undefined): void {
-    this.generationViewMode = mode;
+  setGenerationModeState(state: ElementGenerationModeState | undefined): void {
+    this.generationModeState = state;
+  }
+
+  changeGenerationModeState(mode: string, type: ELEMENT_GENERATION_MODE): void {
+    if (type === ELEMENT_GENERATION_MODE.FILE_GENERATION) {
+      const elementGenerationState =
+        this.editorStore.elementGenerationStates.find(
+          (state) => state.fileGenerationType === mode,
+        );
+      this.setGenerationModeState(
+        new FileGenerationViewModeState(
+          this.editorStore,
+          this,
+          guaranteeNonNullable(elementGenerationState),
+        ),
+      );
+    } else {
+      const xt =
+        this.editorStore.graphState.graphGenerationState.externalFormatState.schemaGenerationStates.find(
+          (e) => e.description.name === mode,
+        );
+      this.setGenerationModeState(
+        new ExternalFormatElementGenerationViewModeState(
+          this.editorStore,
+          this,
+          guaranteeNonNullable(xt),
+        ),
+      );
+    }
   }
 
   generateElementProtocol(): void {
