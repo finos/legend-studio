@@ -347,11 +347,21 @@ export class EditorStore implements CommandRegistrar {
     if (graphEditor === GRAPH_EDITOR_MODE.GRAMMAR_TEXT) {
       // Stop change detection as we don't need the actual change detection in text mode
       this.changeDetectionState.stop();
-      this.changeDetectionState.computeLocalChangesInTextMode(
-        (yield this.graphManagerState.graphManager.pureCodeToEntities(
-          this.grammarTextEditorState.graphGrammarText,
-        )) as Entity[],
-      );
+      try {
+        yield flowResult(
+          this.changeDetectionState.computeLocalChangesInTextMode(
+            (yield this.graphManagerState.graphManager.pureCodeToEntities(
+              this.grammarTextEditorState.graphGrammarText,
+            )) as Entity[],
+          ),
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.log.warn(
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
+          error,
+        );
+      }
     }
   }
 
