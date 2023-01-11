@@ -25,6 +25,7 @@ import {
   ActionState,
 } from '@finos/legend-shared';
 import {
+  getDependenciesPackableElementTreeData,
   getPackableElementTreeData,
   openNode,
   openNodeById,
@@ -45,6 +46,7 @@ import {
   Unit,
   PrimitiveType,
   getElementRootPackage,
+  isDependencyElement,
 } from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 
@@ -76,7 +78,6 @@ export class ExplorerTreeState {
       dependencyTreeData: observable.ref,
       selectedNode: observable.ref,
       fileGenerationTreeData: observable.ref,
-      elementToRename: observable,
       setTreeData: action,
       setGenerationTreeData: action,
       setSystemTreeData: action,
@@ -198,9 +199,9 @@ export class ExplorerTreeState {
       );
     }
     if (!this.dependencyTreeData) {
-      this.dependencyTreeData = getPackableElementTreeData(
+      this.dependencyTreeData = getDependenciesPackableElementTreeData(
         this.editorStore,
-        this.editorStore.graphManagerState.graph.dependencyManager.root,
+        this.editorStore.graphManagerState.graph.dependencyManager.roots,
         ExplorerTreeRootPackageLabel.PROJECT_DEPENDENCY,
       );
     }
@@ -228,9 +229,9 @@ export class ExplorerTreeState {
       this.editorStore.graphManagerState.systemModel.root,
       ExplorerTreeRootPackageLabel.SYSTEM,
     );
-    this.dependencyTreeData = getPackableElementTreeData(
+    this.dependencyTreeData = getDependenciesPackableElementTreeData(
       this.editorStore,
-      this.editorStore.graphManagerState.graph.dependencyManager.root,
+      this.editorStore.graphManagerState.graph.dependencyManager.roots,
       ExplorerTreeRootPackageLabel.PROJECT_DEPENDENCY,
     );
   }
@@ -332,9 +333,9 @@ export class ExplorerTreeState {
       );
     }
     if (!this.dependencyTreeData) {
-      this.dependencyTreeData = getPackableElementTreeData(
+      this.dependencyTreeData = getDependenciesPackableElementTreeData(
         this.editorStore,
-        this.editorStore.graphManagerState.graph.dependencyManager.root,
+        this.editorStore.graphManagerState.graph.dependencyManager.roots,
         ExplorerTreeRootPackageLabel.PROJECT_DEPENDENCY,
       );
     }
@@ -445,7 +446,12 @@ export class ExplorerTreeState {
     if (node.childrenIds?.length) {
       node.isOpen = !node.isOpen;
       if (node.packageableElement instanceof Package) {
-        populatePackageTreeNodeChildren(this.editorStore, node, treeData);
+        populatePackageTreeNodeChildren(
+          this.editorStore,
+          node,
+          treeData,
+          rootPackageName === ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT,
+        );
       }
     }
     this.setSelectedNode(node);
@@ -503,13 +509,15 @@ export class ExplorerTreeState {
       this.setSelectedNode(openingNode);
       opened = true;
     } else if (
-      rootPackageName === ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT &&
+      isDependencyElement(element, this.editorStore.graphManagerState.graph) &&
       this.dependencyTreeData
     ) {
       const openingNode = openNode(
         this.editorStore,
         element,
         this.dependencyTreeData,
+        undefined,
+        true,
       );
       this.setSelectedNode(openingNode);
       opened = true;

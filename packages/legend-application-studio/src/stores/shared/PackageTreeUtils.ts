@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { isNonNullable, addUniqueEntry } from '@finos/legend-shared';
+import {
+  isNonNullable,
+  addUniqueEntry,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import type { PackageTreeNodeData } from './TreeUtils.js';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import type { EditorStore } from '../EditorStore.js';
@@ -41,7 +45,9 @@ import {
   GenerationSpecification,
   DataElement,
   generateFunctionPrettyName,
+  getElementRootPackage,
 } from '@finos/legend-graph';
+import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState.js';
 
 const getElementProjectExplorerDnDType = (
   editorStore: EditorStore,
@@ -135,6 +141,29 @@ export const getPackableElementTreeNodeData = (
   packageableElement: element,
 });
 
+export const getDependencyPackableElementTreeNodeData = (
+  editorStore: EditorStore,
+  element: PackageableElement,
+  rootName: string,
+  isDependencyRoot: boolean,
+  childFilter?: (childElement: PackageableElement) => boolean,
+): PackageTreeNodeData => ({
+  id: isDependencyRoot ? element.path : `${rootName}::${element.path}`,
+  dndType: getElementProjectExplorerDnDType(editorStore, element),
+  label: generatePackageableElementTreeNodeDataLabel(element),
+  childrenIds:
+    element instanceof Package
+      ? element.children
+          .filter((child) => !(child instanceof Unit)) // remove unit from package tree
+          .filter(
+            (child) =>
+              child instanceof Package || !childFilter || childFilter(child),
+          )
+          .map((child) => `${rootName}::${child.path}`)
+      : undefined,
+  packageableElement: element,
+});
+
 export const getPackableElementTreeData = (
   editorStore: EditorStore,
   _package: Package,
@@ -175,6 +204,48 @@ export const getPackableElementTreeData = (
   return { rootIds, nodes };
 };
 
+export const getDependenciesPackableElementTreeData = (
+  editorStore: EditorStore,
+  _packages: Package[],
+  rootWrapperName: string,
+  childFilter?: (childElement: PackageableElement) => boolean,
+): TreeData<PackageTreeNodeData> => {
+  const rootIds: string[] = [];
+  // Here we warp all the dependency roots with an new root node 'dependencies'
+  // We push all the dependency roots as children nodes of this new node so that
+  // we can show the tree structure of dependencies wrapped with the label 'dependencies'.
+  // In future we would want to support a new tree node type to accomodate these
+  // excpetions to the existing structure.
+  const root = new Package(ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT);
+  const nodes = new Map<string, PackageTreeNodeData>();
+  _packages.forEach((_package) => {
+    const childRootNode = getDependencyPackableElementTreeNodeData(
+      editorStore,
+      _package,
+      _package.name,
+      true,
+      childFilter,
+    );
+    childRootNode.label = _package.name;
+    childRootNode.id = _package.name;
+    addUniqueEntry(rootIds, childRootNode.id);
+    nodes.set(childRootNode.id, childRootNode);
+    root.children.push(_package);
+  });
+  const rootNode = {
+    id: rootWrapperName,
+    dndType: getElementProjectExplorerDnDType(editorStore, root),
+    label: rootWrapperName,
+    childrenIds: rootIds,
+    packageableElement: root,
+  };
+  rootNode.label = rootWrapperName;
+  nodes.set(rootNode.id, rootNode);
+  const ids: string[] = [];
+  ids.push(rootNode.id);
+  return { rootIds: ids, nodes };
+};
+
 /**
  * Resolve all children of a node
  */
@@ -182,8 +253,44 @@ export const populatePackageTreeNodeChildren = (
   editorStore: EditorStore,
   node: PackageTreeNodeData,
   treeData: TreeData<PackageTreeNodeData>,
+  isDependencyTree?: boolean | undefined,
 ): void => {
-  if (node.childrenIds && node.packageableElement instanceof Package) {
+  if (
+    node.childrenIds &&
+    node.packageableElement instanceof Package &&
+    node.id === ExplorerTreeRootPackageLabel.PROJECT_DEPENDENCY
+  ) {
+    // do nothing
+  } else if (
+    node.childrenIds &&
+    node.packageableElement instanceof Package &&
+    isDependencyTree
+  ) {
+    const rootNodeName = node.id.split('::')[0] ?? node.id;
+    node.childrenIds = node.packageableElement.children
+      .filter((child) => !(child instanceof Unit)) // remove unit from package tree
+      .map((child) => `${rootNodeName}::${child.path}`);
+    node.packageableElement.children
+      .filter((child) => !(child instanceof Unit)) // remove unit from package tree
+      .map((child) =>
+        getDependencyPackableElementTreeNodeData(
+          editorStore,
+          child,
+          rootNodeName,
+          false,
+        ),
+      )
+      .forEach((childNode) => {
+        const currentNode = treeData.nodes.get(childNode.id);
+        if (currentNode) {
+          // Note here that we keep track of isSelected status using reference, we cannot swap out the currentNode to use new childNode
+          currentNode.childrenIds = childNode.childrenIds;
+          currentNode.label = childNode.label;
+        } else {
+          treeData.nodes.set(childNode.id, childNode);
+        }
+      });
+  } else if (node.childrenIds && node.packageableElement instanceof Package) {
     node.childrenIds = node.packageableElement.children
       .filter((child) => !(child instanceof Unit)) // remove unit from package tree
       .map((child) => child.path);
@@ -208,12 +315,18 @@ export const addNode = (
   element: PackageableElement,
   treeData: TreeData<PackageTreeNodeData>,
   childFilter?: (childElement: PackageableElement) => boolean,
+  isDependencyTreeNode?: boolean | undefined,
 ): PackageTreeNodeData => {
-  const newNode = getPackableElementTreeNodeData(
-    editorStore,
-    element,
-    childFilter,
-  );
+  const rootNodeName = getElementRootPackage(element).name;
+  const newNode = isDependencyTreeNode
+    ? getDependencyPackableElementTreeNodeData(
+        editorStore,
+        element,
+        rootNodeName,
+        false,
+        childFilter,
+      )
+    : getPackableElementTreeNodeData(editorStore, element, childFilter);
   treeData.nodes.set(newNode.id, newNode);
   if (!element.package || element.package.path === ROOT_PACKAGE_NAME.MAIN) {
     treeData.rootIds = Array.from(new Set(treeData.rootIds).add(newNode.id));
@@ -241,21 +354,36 @@ export const openNode = (
   element: PackageableElement,
   treeData: TreeData<PackageTreeNodeData>,
   childFilter?: (childElement: PackageableElement) => boolean,
+  isDependencyElement?: boolean,
 ): PackageTreeNodeData | undefined => {
   let currentElement: PackageableElement | undefined = element;
   let openingNode: PackageTreeNodeData | undefined;
   while (currentElement.package) {
     const node: PackageTreeNodeData =
       treeData.nodes.get(currentElement.path) ??
-      addNode(editorStore, currentElement, treeData, childFilter);
+      addNode(
+        editorStore,
+        currentElement,
+        treeData,
+        childFilter,
+        isDependencyElement,
+      );
     node.isOpen = currentElement instanceof Package;
     openingNode = !openingNode ? node : openingNode;
     currentElement = currentElement.package;
   }
   // Open the dependency root
-  const node = treeData.nodes.get(currentElement.path);
+  const node = treeData.nodes.get(currentElement.name);
   if (node) {
     node.isOpen = currentElement instanceof Package;
+    if (node.isOpen && treeData.rootIds.length) {
+      const rootNode = treeData.nodes.get(
+        guaranteeNonNullable(treeData.rootIds[0]),
+      );
+      if (rootNode) {
+        rootNode.isOpen = true;
+      }
+    }
   }
   return openingNode;
 };
@@ -304,9 +432,15 @@ export const getTreeChildNodes = (
   editorStore: EditorStore,
   node: PackageTreeNodeData,
   treeData: TreeData<PackageTreeNodeData>,
+  isDependencyTree?: boolean | undefined,
 ): PackageTreeNodeData[] => {
   if (node.childrenIds && node.packageableElement instanceof Package) {
-    populatePackageTreeNodeChildren(editorStore, node, treeData);
+    populatePackageTreeNodeChildren(
+      editorStore,
+      node,
+      treeData,
+      isDependencyTree,
+    );
     return (
       node.childrenIds
         .map((id) => treeData.nodes.get(id))
