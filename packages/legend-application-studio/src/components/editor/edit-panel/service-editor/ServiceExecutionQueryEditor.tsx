@@ -60,6 +60,8 @@ import {
   type QueryBuilderState,
   ServiceQueryBuilderState,
   LambdaParameterValuesEditor,
+  QueryBuilderTextEditorMode,
+  QueryBuilderTextEditor,
 } from '@finos/legend-query-builder';
 
 const ServiceExecutionResultViewer = observer(
@@ -248,12 +250,12 @@ export const ServiceExecutionQueryEditor = observer(
     const applicationStore = useApplicationStore();
     const editorStore = useEditorStore();
     const queryState = executionState.queryState;
-
+    const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
     // actions
-    const editWithQueryBuilder = applicationStore.guardUnhandledError(
-      async () => {
-        const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
-        executionState.setOpeningQueryEditor(true);
+    const editWithQueryBuilder = (
+      openQueryBuilderTextEditor: boolean,
+    ): (() => void) =>
+      applicationStore.guardUnhandledError(async () => {
         const service = executionState.serviceEditorState.service;
         const selectedExecutionState =
           executionState.selectedExecutionContextState;
@@ -329,6 +331,14 @@ export const ServiceExecutionQueryEditor = observer(
                 ),
               }),
             );
+            if (
+              openQueryBuilderTextEditor &&
+              !embeddedQueryBuilderState.queryBuilderState?.isQuerySupported
+            ) {
+              embeddedQueryBuilderState.queryBuilderState?.textEditorState.openModal(
+                QueryBuilderTextEditorMode.TEXT,
+              );
+            }
             executionState.setOpeningQueryEditor(false);
             return;
           }
@@ -337,8 +347,7 @@ export const ServiceExecutionQueryEditor = observer(
           );
           executionState.setOpeningQueryEditor(false);
         }
-      },
-    );
+      });
     const importQuery = (): void => {
       queryState.setOpenQueryImporter(true);
     };
@@ -382,7 +391,7 @@ export const ServiceExecutionQueryEditor = observer(
             <button
               className="panel__header__action"
               tabIndex={-1}
-              onClick={editWithQueryBuilder}
+              onClick={editWithQueryBuilder(false)}
               title="Edit query..."
             >
               <PencilIcon />
@@ -459,7 +468,17 @@ export const ServiceExecutionQueryEditor = observer(
               executionState.isOpeningQueryEditor || executionIsRunning
             }
           />
-          <div className="service-execution-query-editor__content">
+          <div
+            className="service-execution-query-editor__content"
+            title={
+              'double click to edit query in query builder form mode or text mode'
+            }
+            onDoubleClick={(event) => {
+              event.stopPropagation();
+              event.preventDefault();
+              editWithQueryBuilder(true)();
+            }}
+          >
             <TextInputEditor
               inputValue={queryState.lambdaString}
               isReadOnly={true}
@@ -485,6 +504,11 @@ export const ServiceExecutionQueryEditor = observer(
             />
           )}
         </div>
+        {embeddedQueryBuilderState.queryBuilderState?.textEditorState.mode && (
+          <QueryBuilderTextEditor
+            queryBuilderState={embeddedQueryBuilderState.queryBuilderState}
+          />
+        )}
       </div>
     );
   },
