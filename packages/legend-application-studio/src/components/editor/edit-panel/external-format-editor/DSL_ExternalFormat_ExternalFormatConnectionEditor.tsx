@@ -25,6 +25,7 @@ import { ConnectionValueState } from '../../../../stores/editor-state/element-ed
 import type { EditorStore } from '../../../../stores/EditorStore.js';
 import { NewConnectionValueDriver } from '../../../../stores/editor/NewElementState.js';
 import { externalFormat_urlStream_setUrl } from '../../../../stores/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+import { EXTERNAL_FORMAT_CONNECTION } from '../../../DSL_ExternalFormat_LegendStudioApplicationPlugin.js';
 
 export class ExternalFormatConnectionValueState extends ConnectionValueState {
   override connection: ExternalFormatConnection;
@@ -84,6 +85,10 @@ export class NewExternalFormatConnectionDriver extends NewConnectionValueDriver<
 
   get isValid(): boolean {
     return true;
+  }
+
+  getConnectionType(): string {
+    return EXTERNAL_FORMAT_CONNECTION;
   }
 
   createConnection(store: Binding): ExternalFormatConnection {

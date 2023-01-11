@@ -54,7 +54,7 @@ export const V1_schemaSetModelSchema = createModelSchema(V1_SchemaSet, {
   schemas: list(usingModelSchema(V1_schemaModelSchema)),
 });
 
-const V1_modelUnitModelSchema = createModelSchema(V1_ModelUnit, {
+export const V1_modelUnitModelSchema = createModelSchema(V1_ModelUnit, {
   packageableElementExcludes: list(primitive()),
   packageableElementIncludes: list(primitive()),
 });

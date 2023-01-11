@@ -24,6 +24,7 @@ import {
   buildLambdaVariableExpressions,
   VariableExpression,
   PureMultiExecution,
+  PureExecution,
 } from '@finos/legend-graph';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { TestableTestEditorState } from '../../testable/TestableEditorState.js';
@@ -183,8 +184,11 @@ export class ServiceTestSetupState {
   }
 
   get serviceQuery(): RawLambda | undefined {
-    return this.testState.suiteState.testableState.serviceEditorState
-      .executionState.serviceExecutionParameters?.query;
+    const execution = this.testState.testable.execution;
+    if (execution instanceof PureExecution) {
+      return execution.func;
+    }
+    return undefined;
   }
 
   get queryVariableExpressions(): VariableExpression[] {

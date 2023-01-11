@@ -161,30 +161,6 @@
     background: var(--color-light-grey-300);
   }
 
-  &__context-menu {
-    background: var(--color-light-grey-100);
-    padding: 0.5rem 0;
-    min-width: 15rem;
-  }
-
-  &__context-menu__item {
-    @include flexVCenter;
-
-    cursor: default;
-    color: var(--color-dark-grey-300);
-    height: 2.8rem;
-    padding: 0 1rem;
-  }
-
-  &__context-menu__item__label {
-    padding-left: 1rem;
-  }
-
-  &__context-menu__item:hover {
-    background: var(--color-light-blue-200);
-    color: var(--color-light-grey-0);
-  }
-
   &__content {
     height: 100%;
     padding-top: 0.5rem;

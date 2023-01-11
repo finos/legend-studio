@@ -74,6 +74,7 @@ import type {
   TextCompilationResult,
 } from './action/compilation/CompilationResult.js';
 import type { ParameterValue } from '../DSL_Service_Exports.js';
+import type { ModelUnit } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -148,6 +149,11 @@ export abstract class AbstractPureGraphManager {
   abstract getSupportedProtocolVersion(): string;
 
   /**
+   * Removes the SectionIndex from the list of enitites
+   */
+  abstract getElementEntities(entities: Entity[]): Entity[];
+
+  /**
    * TODO: we should not expose a fixed config like this, we probably
    * should not mention anything about engine because it is an internal construct
    * used by the graph manager, different graph manager may not need engine.
@@ -200,6 +206,16 @@ export abstract class AbstractPureGraphManager {
    * Process entities and build the main graph.
    */
   abstract buildGraph(
+    graph: PureModel,
+    entities: Entity[],
+    buildState: ActionState,
+    options?: GraphBuilderOptions,
+  ): Promise<GraphBuilderReport>;
+
+  /**
+   * Process entities and build the light graph.
+   */
+  abstract buildLightGraph(
     graph: PureModel,
     entities: Entity[],
     buildState: ActionState,
@@ -338,6 +354,13 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): Promise<string>;
 
+  abstract generateSchemaFromExternalFormatConfig(
+    modelUnit: ModelUnit,
+    targetBinding: string | undefined,
+    configurationProperties: ConfigurationProperty[],
+    graph: PureModel,
+  ): Promise<SchemaSet[]>;
+
   // ------------------------------------------- Import -------------------------------------------
   abstract getExamplePureProtocolText(): string;
   abstract getExampleExternalFormatImportText(): string;
@@ -346,25 +369,25 @@ export abstract class AbstractPureGraphManager {
 
   // ------------------------------------------- Execute -------------------------------------------
 
-  abstract executeMapping(
+  abstract runQuery(
     lambda: RawLambda,
-    mapping: Mapping,
-    runtime: Runtime,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
     graph: PureModel,
     options?: ExecutionOptions,
   ): Promise<ExecutionResult>;
 
   abstract generateExecutionPlan(
     lambda: RawLambda,
-    mapping: Mapping,
-    runtime: Runtime,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
     graph: PureModel,
   ): Promise<RawExecutionPlan>;
 
   abstract debugExecutionPlanGeneration(
     lambda: RawLambda,
-    mapping: Mapping,
-    runtime: Runtime,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
     graph: PureModel,
   ): Promise<{ plan: RawExecutionPlan; debug: string }>;
 

@@ -17,14 +17,13 @@
 import { test, expect } from '@jest/globals';
 import {
   type RenderResult,
-  getByPlaceholderText,
   getByTitle,
   waitFor,
   getByText,
   fireEvent,
   act,
 } from '@testing-library/react';
-import TEST_DATA__serviceEntities from '../../../../editor/edit-panel/service-editor/__tests__/TEST_DATA__ServiceRegistration.json';
+import { TEST_DATA__serviceEntities } from './TEST_DATA__ServiceEditor.js';
 import {
   type PlainObject,
   integrationTest,
@@ -32,7 +31,7 @@ import {
   createSpy,
 } from '@finos/legend-shared';
 import {
-  TEST_DATA__DefaultDepotInfo,
+  TEST_DATA__DefaultDepotReport,
   TEST_DATA__DefaultSDLCInfo,
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
@@ -116,7 +115,7 @@ const setup = async (
     projects: [],
     projectData: [],
     projectDependency: [],
-    projectDependencyInfo: TEST_DATA__DefaultDepotInfo.dependencyInfo,
+    dependencyReport: TEST_DATA__DefaultDepotReport.dependencyReport,
   });
   return MOCK__editorStore;
 };
@@ -301,14 +300,6 @@ test(
       );
     const service = serviceEditorState.service;
     expect(service.owners).toHaveLength(2);
-    fireEvent.click(getByTitle(editPanel, 'Add owner'));
-    const ownerInput = await waitFor(() =>
-      getByPlaceholderText(editPanel, 'Enter an owner...'),
-    );
-    fireEvent.change(ownerInput, { target: { value: 'owner3' } });
-    fireEvent.click(getByText(editPanel, 'Save'));
-    await waitFor(() => getByText(editPanel, 'owner3'));
-    expect(service.owners).toHaveLength(3);
     // registration
     fireEvent.click(getByText(editPanel, 'Registration'));
     const registrationEditor = await waitFor(() =>

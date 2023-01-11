@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
-import { guaranteeType } from '@finos/legend-shared';
+import { observable, computed, action, makeObservable, flow } from 'mobx';
+import {
+  type GeneratorFn,
+  type PlainObject,
+  assertErrorThrown,
+  guaranteeType,
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   type ServiceExecutionState,
@@ -33,6 +38,7 @@ import {
   PureMultiExecution,
 } from '@finos/legend-graph';
 import { ServiceTestableState } from './testable/ServiceTestableState.js';
+import { User } from '@finos/legend-server-sdlc';
 
 export enum SERVICE_TAB {
   GENERAL = 'GENERAL',
@@ -59,6 +65,7 @@ export class ServiceEditorState extends ElementEditorState {
       resetExecutionState: action,
       service: computed,
       reprocess: action,
+      searchUsers: flow,
     });
 
     this.executionState = this.buildExecutionState();
@@ -117,6 +124,20 @@ export class ServiceEditorState extends ElementEditorState {
       Service,
       'Element inside service editor state must be a service',
     );
+  }
+
+  *searchUsers(name: string): GeneratorFn<User[]> {
+    try {
+      return (
+        (yield this.editorStore.sdlcServerClient.getUsers(
+          name,
+        )) as PlainObject<User>[]
+      ).map((p) => User.serialization.fromJson(p));
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notifyError(error);
+      return [];
+    }
   }
 
   reprocess(

@@ -42,7 +42,11 @@ import { NewElementState } from './editor/NewElementState.js';
 import { WorkspaceUpdaterState } from './sidebar-state/WorkspaceUpdaterState.js';
 import { ProjectOverviewState } from './sidebar-state/ProjectOverviewState.js';
 import { WorkspaceReviewState } from './sidebar-state/WorkspaceReviewState.js';
-import { LocalChangesState } from './sidebar-state/LocalChangesState.js';
+import {
+  FormLocalChangesState,
+  type LocalChangesState,
+  TextLocalChangesState,
+} from './sidebar-state/LocalChangesState.js';
 import { WorkspaceWorkflowManagerState } from './sidebar-state/WorkflowManagerState.js';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState.js';
 import {
@@ -61,7 +65,7 @@ import { ServiceEditorState } from './editor-state/element-editor-state/service/
 import { EditorSDLCState } from './EditorSDLCState.js';
 import { ModelImporterState } from './editor-state/ModelImporterState.js';
 import { FunctionEditorState } from './editor-state/element-editor-state/FunctionEditorState.js';
-import { ProjectConfigurationEditorState } from './editor-state/ProjectConfigurationEditorState.js';
+import { ProjectConfigurationEditorState } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { PackageableRuntimeEditorState } from './editor-state/element-editor-state/RuntimeEditorState.js';
 import { PackageableConnectionEditorState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { PackageableDataEditorState } from './editor-state/element-editor-state/data/DataEditorState.js';
@@ -227,7 +231,7 @@ export class EditorStore implements CommandRegistrar {
       setActiveAuxPanelMode: action,
       cleanUp: action,
       reset: action,
-      setGraphEditMode: action,
+      setGraphEditMode: flow,
       setActiveActivity: action,
 
       initialize: flow,
@@ -270,7 +274,7 @@ export class EditorStore implements CommandRegistrar {
       this.sdlcState,
     );
     this.workspaceReviewState = new WorkspaceReviewState(this, this.sdlcState);
-    this.localChangesState = new LocalChangesState(this, this.sdlcState);
+    this.localChangesState = new FormLocalChangesState(this, this.sdlcState);
     this.conflictResolutionState = new WorkspaceUpdateConflictResolutionState(
       this,
       this.sdlcState,
@@ -336,9 +340,29 @@ export class EditorStore implements CommandRegistrar {
     this.mode = val;
   }
 
-  setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): void {
+  *setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): GeneratorFn<void> {
     this.graphEditMode = graphEditor;
+    this.changeLocalChangesState();
     this.graphState.clearProblems();
+    if (graphEditor === GRAPH_EDITOR_MODE.GRAMMAR_TEXT) {
+      // Stop change detection as we don't need the actual change detection in text mode
+      this.changeDetectionState.stop();
+      try {
+        yield flowResult(
+          this.changeDetectionState.computeLocalChangesInTextMode(
+            (yield this.graphManagerState.graphManager.pureCodeToEntities(
+              this.grammarTextEditorState.graphGrammarText,
+            )) as Entity[],
+          ),
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.log.warn(
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
+          error,
+        );
+      }
+    }
   }
 
   cleanUp(): void {
@@ -1108,7 +1132,7 @@ export class EditorStore implements CommandRegistrar {
         return;
       }
       this.applicationStore.setBlockingAlert(undefined);
-      this.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
+      yield flowResult(this.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT));
       // navigate to the currently opened element immediately after entering text mode editor
       if (this.tabManagerState.currentTab instanceof ElementEditorState) {
         this.grammarTextEditorState.setCurrentElementLabelRegexString(
@@ -1153,5 +1177,13 @@ export class EditorStore implements CommandRegistrar {
             ).getExtraSupportedElementTypes?.() ?? [],
         ),
     );
+  }
+
+  changeLocalChangesState(): void {
+    if (this.isInFormMode) {
+      this.localChangesState = new FormLocalChangesState(this, this.sdlcState);
+    } else {
+      this.localChangesState = new TextLocalChangesState(this, this.sdlcState);
+    }
   }
 }

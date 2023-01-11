@@ -232,9 +232,15 @@ export const isElementReadOnly = (element: PackageableElement): boolean =>
 
 export const isDependencyElement = (
   element: PackageableElement,
-): element is PackageableElement =>
-  returnUndefOnError(() => getElementRootPackage(element))?.name ===
-  ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT;
+  pureModel: PureModel,
+): element is PackageableElement => {
+  const rootPackage = returnUndefOnError(() => getElementRootPackage(element));
+  return (
+    rootPackage?.name === ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT ||
+    (rootPackage !== undefined &&
+      pureModel.dependencyManager.roots.includes(rootPackage))
+  );
+};
 
 export const isGeneratedElement = (
   element: PackageableElement,

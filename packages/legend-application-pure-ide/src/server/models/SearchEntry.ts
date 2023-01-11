@@ -21,6 +21,7 @@ import {
   deserialize,
   list,
   object,
+  optional,
   primitive,
 } from 'serializr';
 
@@ -28,19 +29,35 @@ export abstract class SearchEntry {
   uuid = uuid();
 }
 
+export class SearchResultPreview {
+  before!: string;
+  found!: string;
+  after!: string;
+}
+
+createModelSchema(SearchResultPreview, {
+  after: primitive(),
+  before: primitive(),
+  found: primitive(),
+});
+
 export class SearchResultCoordinate {
   uuid = uuid();
+  sourceId!: string;
   startLine!: number;
   startColumn!: number;
   endLine!: number;
   endColumn!: number;
+  preview?: SearchResultPreview | undefined;
 
   constructor(
+    sourceId: string,
     startLine: number,
     startColumn: number,
     endLine: number,
     endColumn: number,
   ) {
+    this.sourceId = sourceId;
     this.startLine = startLine;
     this.startColumn = startColumn;
     this.endLine = endLine;
@@ -49,10 +66,12 @@ export class SearchResultCoordinate {
 }
 
 createModelSchema(SearchResultCoordinate, {
+  sourceId: primitive(),
   startLine: primitive(),
   startColumn: primitive(),
   endLine: primitive(),
   endColumn: primitive(),
+  preview: optional(object(SearchResultPreview)),
 });
 
 export class SearchResultEntry extends SearchEntry {

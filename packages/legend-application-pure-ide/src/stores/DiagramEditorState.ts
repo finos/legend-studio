@@ -47,10 +47,7 @@ import {
   addClassToGraph,
   buildGraphFromDiagramInfo,
 } from '../server/models/DiagramInfo.js';
-import {
-  FileCoordinate,
-  trimPathLeadingSlash,
-} from '../server/models/PureFile.js';
+import { FileCoordinate, trimPathLeadingSlash } from '../server/models/File.js';
 import type { EditorStore } from './EditorStore.js';
 import { EditorTabState } from './EditorTabManagerState.js';
 import { LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY } from './LegendPureIDECommand.js';
@@ -189,7 +186,7 @@ export class DiagramEditorState
       )?.sourceInformation;
       if (sourceInformation) {
         const coordinate = new FileCoordinate(
-          sourceInformation.source,
+          sourceInformation.sourceId,
           sourceInformation.startLine,
           sourceInformation.startColumn,
         );

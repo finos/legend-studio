@@ -299,8 +299,8 @@ export class DSL_ExternalFormat_PureProtocolProcessorPlugin
     return [
       (
         graph: PureModel,
-        mapping: Mapping,
-        runtime: Runtime,
+        mapping: Mapping | undefined,
+        runtime: Runtime | undefined,
         protocolGraph: V1_PureModelContextData,
       ): V1_PackageableElement[] =>
         protocolGraph.elements.filter(

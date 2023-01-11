@@ -85,6 +85,7 @@ const ModelConnectionEditor = observer(
             darkMode={true}
             formatOptionLabel={getPackageableElementOptionFormatter({
               darkMode: true,
+              pureModel: editorStore.graphManagerState.graph,
             })}
           />
         </div>

@@ -61,12 +61,19 @@ import {
 } from '../../../stores/shared/PackageTreeUtils.js';
 import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtils.js';
 import {
-  type GenerationTreeNodeData,
-  getFileGenerationChildNodes,
-} from '../../../stores/shared/FileGenerationTreeUtils.js';
-import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor.js';
-import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter.js';
-import { toTitleCase } from '@finos/legend-shared';
+  type FileSystemTreeNodeData,
+  getFileSystemChildNodes,
+} from '../../../stores/shared/FileSystemTreeUtils.js';
+import { FileSystemTree } from '../edit-panel/element-generation-editor/FileSystemViewer.js';
+import {
+  generateViewEntityRoute,
+  generateViewProjectByGAVRoute,
+} from '../../../stores/LegendStudioRouter.js';
+import {
+  guaranteeNonEmptyString,
+  guaranteeNonNullable,
+  toTitleCase,
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
@@ -89,6 +96,11 @@ import { useApplicationStore } from '@finos/legend-application';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
 import { queryClass } from '../edit-panel/uml-editor/ClassQueryBuilder.js';
+import { createViewSDLCProjectHandler } from '../../../stores/DependencyProjectViewerHelper.js';
+import {
+  MASTER_SNAPSHOT_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -291,6 +303,60 @@ const ExplorerContextMenu = observer(
       (type: string): (() => void) =>
       (): void =>
         editorStore.newElementState.openModal(type, _package);
+    const isDependencyProjectRoot = (): boolean =>
+      node?.packageableElement instanceof Package &&
+      editorStore.graphManagerState.graph.dependencyManager.roots.includes(
+        node.packageableElement,
+      );
+    const viewProject = (): void => {
+      const projectDependency =
+        editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
+          (dep) => dep.projectId === node?.label,
+        );
+      if (projectDependency && !projectDependency.isLegacyDependency) {
+        applicationStore.navigator.visitAddress(
+          applicationStore.navigator.generateAddress(
+            generateViewProjectByGAVRoute(
+              guaranteeNonNullable(projectDependency.groupId),
+              guaranteeNonNullable(projectDependency.artifactId),
+              projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
+                ? SNAPSHOT_VERSION_ALIAS
+                : projectDependency.versionId,
+            ),
+          ),
+        );
+      }
+    };
+    const viewSDLCProject = (): void => {
+      const dependency =
+        editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
+          (dep) => dep.projectId === node?.label,
+        );
+      if (dependency) {
+        createViewSDLCProjectHandler(
+          applicationStore,
+          editorStore.depotServerClient,
+        )(
+          guaranteeNonEmptyString(dependency.groupId),
+          guaranteeNonEmptyString(dependency.artifactId),
+        ).catch(applicationStore.alertUnhandledError);
+      }
+    };
+
+    if (isDependencyProjectRoot()) {
+      return (
+        <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+          <MenuContentItem onClick={viewProject}>
+            <MenuContentItemLabel>View Project</MenuContentItemLabel>
+          </MenuContentItem>
+          {node && (
+            <MenuContentItem onClick={viewSDLCProject}>
+              <MenuContentItemLabel>View SDLC Project</MenuContentItemLabel>
+            </MenuContentItem>
+          )}
+        </MenuContent>
+      );
+    }
 
     if (_package && !isReadOnly) {
       return (
@@ -414,7 +480,10 @@ const PackageTreeNodeContainer = observer(
       ? 'color--generated'
       : isSystemElement(node.packageableElement)
       ? 'color--system'
-      : isDependencyElement(node.packageableElement)
+      : isDependencyElement(
+          node.packageableElement,
+          editorStore.graphManagerState.graph,
+        )
       ? 'color--dependency'
       : '';
 
@@ -562,15 +631,15 @@ const ExplorerTrees = observer(() => {
   // Generated Files Tree
   const generationFileTreeData =
     editorStore.explorerTreeState.getFileGenerationTreeData();
-  const onGenerationFileTreeNodeSelect = (node: GenerationTreeNodeData): void =>
+  const onGenerationFileTreeNodeSelect = (node: FileSystemTreeNodeData): void =>
     editorStore.graphState.graphGenerationState.onTreeNodeSelect(
       node,
       generationFileTreeData,
     );
   const getGenerationFileTreeChildNodes = (
-    node: GenerationTreeNodeData,
-  ): GenerationTreeNodeData[] =>
-    getFileGenerationChildNodes(node, generationFileTreeData);
+    node: FileSystemTreeNodeData,
+  ): FileSystemTreeNodeData[] =>
+    getFileSystemChildNodes(node, generationFileTreeData);
 
   // System Tree
   const systemTreeData = editorStore.explorerTreeState.getTreeData(
@@ -600,7 +669,7 @@ const ExplorerTrees = observer(() => {
   const getDependencyTreeChildNodes = (
     node: PackageTreeNodeData,
   ): PackageTreeNodeData[] =>
-    getTreeChildNodes(editorStore, node, dependencyTreeData);
+    getTreeChildNodes(editorStore, node, dependencyTreeData, true);
   const showPackageTrees =
     treeData.nodes.size || graph.dependencyManager.hasDependencies;
 
@@ -684,7 +753,7 @@ const ExplorerTrees = observer(() => {
               ) && (
                 <>
                   <div className="explorer__content__separator" />
-                  <FileGenerationTree
+                  <FileSystemTree
                     selectedNode={editorStore.explorerTreeState.selectedNode}
                     directoryTreeData={generationFileTreeData}
                     onNodeSelect={onGenerationFileTreeNodeSelect}
@@ -819,6 +888,7 @@ export const Explorer = observer(() => {
     // don't edit elements that fast in form mode, but this could throw off
     // test runner
     (editorStore.isInViewerMode ||
+      editorStore.isInGrammarTextMode ||
       editorStore.changeDetectionState.graphObserveState.hasSucceeded);
   // conflict resolution
   const showConflictResolutionContent =

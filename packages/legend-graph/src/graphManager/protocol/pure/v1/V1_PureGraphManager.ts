@@ -24,7 +24,7 @@ import {
   type Log,
   type PlainObject,
   type ServerClientConfig,
-  type ActionState,
+  ActionState,
   TracerService,
   LogEvent,
   getClass,
@@ -39,6 +39,7 @@ import {
   deleteEntry,
   uniq,
   IllegalStateError,
+  filterByType,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -210,6 +211,7 @@ import type { QuerySearchSpecification } from '../../../../graphManager/action/q
 import type { ExternalFormatDescription } from '../../../../graphManager/action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../../../../graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
 import { V1_ExternalFormatModelGenerationInput } from './engine/externalFormat/V1_ExternalFormatModelGeneration.js';
+import { V1_GenerateSchemaInput } from './engine/externalFormat/V1_GenerateSchemaInput.js';
 import { GraphBuilderReport } from '../../../../graphManager/GraphBuilderReport.js';
 import type { Package } from '../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
 import { V1_DataElement } from './model/packageableElements/data/V1_DataElement.js';
@@ -252,13 +254,15 @@ import type {
   RawMappingModelCoverageAnalysisResult,
 } from '../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
-import type { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
+import { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
 import type {
   CompilationResult,
   TextCompilationResult,
 } from '../../../action/compilation/CompilationResult.js';
 import { CompilationWarning } from '../../../action/compilation/CompilationWarning.js';
 import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_ServiceTransformer.js';
+import { V1_transformModelUnit } from './transformation/pureGraph/from/V1_DSL_ExternalFormat_Transformer.js';
+import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -477,6 +481,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   getSupportedProtocolVersion(): string {
     return PureClientVersion.V1_0_0;
+  }
+
+  getElementEntities(entities: Entity[]): Entity[] {
+    return entities.filter(
+      (entity) => entity.classifierPath !== CORE_PURE_PATH.SECTION_INDEX,
+    );
   }
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
@@ -716,6 +726,83 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
   }
 
+  async buildLightGraph(
+    graph: PureModel,
+    entities: Entity[],
+    buildState: ActionState,
+    options?: GraphBuilderOptions,
+  ): Promise<GraphBuilderReport> {
+    const stopWatch = new StopWatch();
+    const report = new GraphBuilderReport();
+    buildState.reset();
+
+    try {
+      // deserialize
+      buildState.setMessage(`Deserializing elements...`);
+      const data = new V1_PureModelContextData();
+      await V1_entitiesToPureModelContextData(
+        entities,
+        data,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      );
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
+
+      // prepare build inputs
+      const buildInputs: V1_PureGraphBuilderInput[] = [
+        {
+          model: graph,
+          data: V1_indexPureModelContextData(
+            report,
+            data,
+            this.graphBuilderExtensions,
+          ),
+        },
+      ];
+
+      // build
+      await this.buildLightGraphFromInputs(
+        graph,
+        buildInputs,
+        report,
+        stopWatch,
+        buildState,
+        options,
+      );
+
+      /**
+       * For now, we delete the section index. We are able to read both resolved and unresolved element paths
+       * but when we write (serialize) we write only resolved paths. In the future once the issue with dependency is solved we will
+       * perserve the element path both resolved and unresolved
+       */
+      if (!options?.TEMPORARY__preserveSectionIndex) {
+        graph.TEMPORARY__deleteOwnSectionIndex();
+      }
+
+      buildState.pass();
+      report.timings = {
+        ...Object.fromEntries(stopWatch.records),
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+      };
+      return report;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.log.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
+      );
+      buildState.fail();
+      /**
+       * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
+       * But we might want to rethink this decision in the future and throw appropriate type of error
+       */
+      throw error instanceof GraphBuilderError
+        ? error
+        : new GraphBuilderError(error);
+    } finally {
+      buildState.setMessage(undefined);
+    }
+  }
+
   async buildGenerations(
     graph: PureModel,
     generatedEntities: Map<string, Entity[]>,
@@ -855,6 +942,22 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.buildGenerationSpecifications(graph, inputs, options);
     await this.buildOtherElements(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_OTHER_ELEMENTS_BUILT);
+  }
+
+  private async buildLightGraphFromInputs(
+    graph: PureModel,
+    inputs: V1_PureGraphBuilderInput[],
+    report: GraphBuilderReport,
+    stopWatch: StopWatch,
+    graphBuilderState: ActionState,
+    options?: GraphBuilderOptions,
+  ): Promise<void> {
+    // index
+    graphBuilderState.setMessage(
+      `Indexing ${report.elementCount.total} elements...`,
+    );
+    await this.initializeAndIndexElements(graph, inputs, options);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_INDEXED);
   }
 
   private getBuilderContext(
@@ -1691,6 +1794,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           this.pluginManager.getPureGraphManagerPlugins(),
         ),
       );
+      runTestableInput.unitTestIds = [unitAtomicTest];
       runTestsInput.testables = [runTestableInput];
       const parent = test.__parent;
       unitAtomicTest.testSuiteId =
@@ -1873,6 +1977,46 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return this.engine.generateModel(input);
   }
 
+  async generateSchemaFromExternalFormatConfig(
+    modelUnit: ModelUnit,
+    targetBinding: string | undefined,
+    configurationProperties: ConfigurationProperty[],
+    currentGraph: PureModel,
+  ): Promise<SchemaSet[]> {
+    const config: PlainObject = {};
+    configurationProperties.forEach((property) => {
+      config[property.name] = property.value as PlainObject;
+    });
+    const input = new V1_GenerateSchemaInput(
+      V1_transformModelUnit(modelUnit),
+      this.getFullGraphModelData(currentGraph),
+      Boolean(targetBinding),
+      config,
+    );
+    input.targetBindingPath = targetBinding;
+    const genPMCD = await this.engine.generateSchema(input);
+    const genGraph = await this.createEmptyGraph();
+    const report = new GraphBuilderReport();
+    const mainGraphBuilderInput: V1_PureGraphBuilderInput[] = [
+      {
+        model: genGraph,
+        data: V1_indexPureModelContextData(
+          report,
+          genPMCD,
+          this.graphBuilderExtensions,
+        ),
+      },
+    ];
+    await this.buildGraphFromInputs(
+      genGraph,
+      mainGraphBuilderInput,
+      report,
+      new StopWatch(),
+      ActionState.create(),
+    );
+    return genGraph.allElements.filter(filterByType(SchemaSet));
+  }
+
   // ------------------------------------------- Import -------------------------------------------
 
   getExamplePureProtocolText(): string {
@@ -1916,11 +2060,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Execution ---------------------------------------------
 
-  private createExecutionInput = (
+  public createExecutionInput = (
     graph: PureModel,
-    mapping: Mapping,
+    mapping: Mapping | undefined,
     lambda: RawLambda,
-    runtime: Runtime,
+    runtime: Runtime | undefined,
     clientVersion: string,
     parameterValues?: ParameterValue[],
   ): V1_ExecuteInput =>
@@ -1936,9 +2080,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private buildExecutionInput = (
     graph: PureModel,
-    mapping: Mapping,
+    mapping: Mapping | undefined,
     lambda: RawLambda,
-    runtime: Runtime,
+    runtime: Runtime | undefined,
     clientVersion: string,
     executeInput: V1_ExecuteInput,
     parameterValues?: ParameterValue[],
@@ -1990,13 +2134,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         this.pluginManager.getPureProtocolProcessorPlugins(),
       ).build(),
     );
-    executeInput.mapping = mapping.path;
-    executeInput.runtime = V1_transformRuntime(
-      runtime,
-      new V1_GraphTransformerContextBuilder(
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      ).build(),
-    );
+    executeInput.mapping = mapping?.path;
+    executeInput.runtime = runtime
+      ? V1_transformRuntime(
+          runtime,
+          new V1_GraphTransformerContextBuilder(
+            this.pluginManager.getPureProtocolProcessorPlugins(),
+          ).build(),
+        )
+      : undefined;
     executeInput.model = prunedGraphData;
     executeInput.context = new V1_RawBaseExecutionContext(); // TODO: potentially need to support more types
     if (parameterValues) {
@@ -2007,7 +2153,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return executeInput;
   };
 
-  async executeMapping(
+  async runQuery(
     lambda: RawLambda,
     mapping: Mapping,
     runtime: Runtime,
@@ -2058,8 +2204,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   generateExecutionPlan(
     lambda: RawLambda,
-    mapping: Mapping,
-    runtime: Runtime,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
     graph: PureModel,
   ): Promise<RawExecutionPlan> {
     return this.engine.generateExecutionPlan(
@@ -2075,8 +2221,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   async debugExecutionPlanGeneration(
     lambda: RawLambda,
-    mapping: Mapping,
-    runtime: Runtime,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
     graph: PureModel,
   ): Promise<{ plan: RawExecutionPlan; debug: string }> {
     const result = await this.engine.debugExecutionPlanGeneration(

@@ -23,7 +23,7 @@ import {
   ConceptType,
 } from '../../../server/models/ConceptTree.js';
 import { flowResult } from 'mobx';
-import { FileCoordinate } from '../../../server/models/PureFile.js';
+import { FileCoordinate } from '../../../server/models/File.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   type TreeNodeContainerProps,
@@ -37,11 +37,17 @@ import {
   CircleNotchIcon,
   RefreshIcon,
   CompressIcon,
+  MenuContent,
+  MenuContentItem,
+  MenuContentDivider,
 } from '@finos/legend-art';
-import { isNonNullable } from '@finos/legend-shared';
+import { guaranteeType, isNonNullable } from '@finos/legend-shared';
 import { useDrag } from 'react-dnd';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { getConceptIcon } from '../shared/ConceptIconUtils.js';
+import { RenameConceptPrompt } from './RenameConceptPrompt.js';
+import { extractElementNameFromPath } from '@finos/legend-graph';
+import { MoveElementPrompt } from './MoveElementPrompt.js';
 
 const ConceptExplorerContextMenu = observer(
   forwardRef<
@@ -52,73 +58,73 @@ const ConceptExplorerContextMenu = observer(
     }
   >(function ConceptExplorerContextMenu(props, ref) {
     const { node, viewConceptSource } = props;
-    const nodeType = node.data.li_attr.pureType;
+    const nodeAttribute = node.data.li_attr;
+    const nodeType = nodeAttribute.pureType;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const rename = (): void =>
-      applicationStore.notifyUnsupportedFeature('Rename');
-    const renamePackage = (): void =>
-      applicationStore.notifyUnsupportedFeature('Rename package');
-    const renameProperty = (): void =>
-      applicationStore.notifyUnsupportedFeature('Rename property');
+    const renameConcept = (): void =>
+      editorStore.conceptTreeState.setNodeForRenameConcept(node);
+    const moveElement = (): void =>
+      editorStore.conceptTreeState.setNodeForMoveElement(node);
     const runTests = (): void => {
       flowResult(editorStore.executeTests(node.data.li_attr.pureId)).catch(
         applicationStore.alertUnhandledError,
       );
     };
-    const move = (): void =>
-      applicationStore.notifyUnsupportedFeature('Move file');
+    const findUsages = (): void => {
+      if (
+        nodeAttribute instanceof ElementConceptAttribute ||
+        nodeAttribute instanceof PropertyConceptAttribute
+      ) {
+        editorStore.findUsages(
+          new FileCoordinate(
+            nodeAttribute.file,
+            Number.parseInt(nodeAttribute.line, 10),
+            Number.parseInt(nodeAttribute.column, 10),
+          ),
+        );
+      }
+    };
     const viewSource = (): void => viewConceptSource(node);
     const serviceJSON = (): void => {
       window.open(
-        `${editorStore.client.baseUrl}/execute?func=${node.data.li_attr.pureId}&mode=${editorStore.client.mode}`,
+        `${editorStore.client.baseUrl}/execute?func=${nodeAttribute.pureId}&mode=${editorStore.client.mode}`,
         '_blank',
       );
     };
+    const copyPath = (): void => {
+      applicationStore
+        .copyTextToClipboard(nodeAttribute.pureId)
+        .catch(applicationStore.alertUnhandledError);
+    };
 
     return (
-      <div ref={ref} className="explorer__context-menu">
-        {nodeType === ConceptType.PACKAGE && (
-          <div className="explorer__context-menu__item" onClick={renamePackage}>
-            Rename
-          </div>
-        )}
-        {nodeType === ConceptType.PROPERTY && (
-          <div
-            className="explorer__context-menu__item"
-            onClick={renameProperty}
-          >
-            Rename
-          </div>
-        )}
-        {nodeType !== ConceptType.PACKAGE &&
-          nodeType !== ConceptType.PROPERTY && (
-            <div className="explorer__context-menu__item" onClick={rename}>
-              Rename
-            </div>
+      <MenuContent ref={ref}>
+        {nodeAttribute.pureType !== ConceptType.PROPERTY &&
+          nodeAttribute.pureType !== ConceptType.QUALIFIED_PROPERTY && (
+            <MenuContentItem onClick={copyPath}>Copy Path</MenuContentItem>
           )}
         {nodeType === ConceptType.PACKAGE && (
-          <div className="explorer__context-menu__item" onClick={runTests}>
-            Run tests
-          </div>
+          <MenuContentItem onClick={runTests}>Run Tests</MenuContentItem>
         )}
-        {nodeType !== ConceptType.PACKAGE &&
-          nodeType !== ConceptType.PROPERTY && (
-            <div className="explorer__context-menu__item" onClick={move}>
-              Move
-            </div>
-          )}
         {nodeType === ConceptType.FUNCTION && (
-          <div className="explorer__context-menu__item" onClick={serviceJSON}>
+          <MenuContentItem onClick={serviceJSON}>
             Service (JSON)
-          </div>
+          </MenuContentItem>
+        )}
+        {(nodeAttribute instanceof PropertyConceptAttribute ||
+          nodeAttribute instanceof ElementConceptAttribute) && (
+          <MenuContentItem onClick={findUsages}>Find Usages</MenuContentItem>
         )}
         {nodeType !== ConceptType.PACKAGE && (
-          <div className="explorer__context-menu__item" onClick={viewSource}>
-            View Source
-          </div>
+          <MenuContentItem onClick={viewSource}>View Source</MenuContentItem>
         )}
-      </div>
+        <MenuContentDivider />
+        <MenuContentItem onClick={renameConcept}>Rename</MenuContentItem>
+        {nodeAttribute instanceof ElementConceptAttribute && (
+          <MenuContentItem onClick={moveElement}>Move</MenuContentItem>
+        )}
+      </MenuContent>
     );
   }),
 );
@@ -144,11 +150,39 @@ const ConceptTreeNodeContainer: React.FC<
     useState(false);
   const { onNodeOpen, onNodeExpand, onNodeCompress, viewConceptSource } =
     innerProps;
-  const isExpandable = [
-    ConceptType.PACKAGE,
-    ConceptType.CLASS,
-    ConceptType.ASSOCIATION,
-  ].includes(node.data.li_attr.pureType as ConceptType);
+  const isAssociationPropertyNode =
+    node.parent &&
+    node.data.li_attr instanceof PropertyConceptAttribute &&
+    node.data.li_attr.classPath !== node.parent.id;
+  const isExpandable = (
+    [ConceptType.PACKAGE, ConceptType.CLASS] as string[]
+  ).includes(node.data.li_attr.pureType);
+  const nodeLabel =
+    node.data.li_attr.pureType === ConceptType.QUALIFIED_PROPERTY ? (
+      <>
+        {node.label}
+        <span className="explorer__package-tree__node__label__tag">(...)</span>
+      </>
+    ) : isAssociationPropertyNode ? (
+      <>
+        {node.label}
+        <span className="explorer__package-tree__node__label__tag">
+          {extractElementNameFromPath(
+            guaranteeType(node.data.li_attr, PropertyConceptAttribute)
+              .classPath,
+          )}
+        </span>
+      </>
+    ) : node.label.includes('(') ? (
+      <>
+        {node.label.substring(0, node.label.indexOf('('))}
+        <span className="explorer__package-tree__node__label__tag">
+          {node.label.substring(node.label.indexOf('('))}
+        </span>
+      </>
+    ) : (
+      node.label
+    );
   const selectNode: React.MouseEventHandler = (event) => {
     event.stopPropagation();
     event.preventDefault();
@@ -239,7 +273,12 @@ const ConceptTreeNodeContainer: React.FC<
               )}
             </div>
           )}
-          <div className="explorer__package-tree__node__icon__type">
+          <div
+            className={clsx('explorer__package-tree__node__icon__type', {
+              'explorer__package-tree__node__icon__type--property-from-association':
+                isAssociationPropertyNode,
+            })}
+          >
             {getConceptIcon(node.data.li_attr.pureType)}
           </div>
         </div>
@@ -247,7 +286,7 @@ const ConceptTreeNodeContainer: React.FC<
           className="tree-view__node__label explorer__package-tree__node__label"
           tabIndex={-1}
         >
-          {node.label}
+          {nodeLabel}
         </button>
       </div>
     </ContextMenu>
@@ -318,6 +357,12 @@ const FileExplorerTree = observer(() => {
           viewConceptSource,
         }}
       />
+      {treeState.nodeForRenameConcept && (
+        <RenameConceptPrompt node={treeState.nodeForRenameConcept} />
+      )}
+      {treeState.nodeForMoveElement && (
+        <MoveElementPrompt node={treeState.nodeForMoveElement} />
+      )}
     </div>
   );
 });

@@ -29,19 +29,7 @@ import {
   HttpHeader,
   type PlainObject,
 } from '@finos/legend-shared';
-/**
- * Previously, these exports rely on ES module interop to expose `default` export
- * properly. But since we use `ESM` for Typescript resolution now, we lose this
- * so we have to workaround by importing these and re-export them from CJS
- *
- * TODO: remove these when the package properly work with Typescript's nodenext
- * module resolution
- *
- * @workaround ESM
- * See https://github.com/microsoft/TypeScript/issues/49298
- * See https://github.com/axios/axios/pull/5104
- */
-import { default as axios, type AxiosResponse } from 'axios';
+import axios, { type AxiosResponse } from 'axios';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {

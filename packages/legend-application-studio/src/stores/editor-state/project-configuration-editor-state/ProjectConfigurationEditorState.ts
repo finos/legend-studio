@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore.js';
-import { EditorState } from '../editor-state/EditorState.js';
+import type { EditorStore } from '../../EditorStore.js';
+import { EditorState } from '../EditorState.js';
 import {
   action,
   computed,
@@ -33,23 +33,16 @@ import {
   hashArray,
   ActionState,
 } from '@finos/legend-shared';
-import type { EditorSDLCState } from '../EditorSDLCState.js';
+import type { EditorSDLCState } from '../../EditorSDLCState.js';
 import {
   type ProjectConfiguration,
   ProjectStructureVersion,
   UpdateProjectConfigurationCommand,
   UpdatePlatformConfigurationsCommand,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
-import {
-  type ProjectVersionDependencies,
-  MASTER_SNAPSHOT_ALIAS,
-  ProjectData,
-  ProjectDependencyInfo,
-  ProjectDependencyCoordinates,
-} from '@finos/legend-server-depot';
-import { TAB_SIZE } from '@finos/legend-application';
-import { generateGAVCoordinates } from '@finos/legend-storage';
+import { LEGEND_STUDIO_APP_EVENT } from '../../LegendStudioAppEvent.js';
+import { MASTER_SNAPSHOT_ALIAS, ProjectData } from '@finos/legend-server-depot';
+import { ProjectDependencyEditorState } from './ProjectDependencyEditorState.js';
 
 export enum CONFIGURATION_EDITOR_TAB {
   PROJECT_STRUCTURE = 'PROJECT_STRUCTURE',
@@ -57,64 +50,9 @@ export enum CONFIGURATION_EDITOR_TAB {
   PLATFORM_CONFIGURATIONS = 'PLATFORM_CONFIGURATIONS',
 }
 
-export enum DEPENDENCY_INFO_TYPE {
-  DEPENDENCY_TREE = 'dependency tree',
-  CONFLICTS = 'conflicts',
-}
-
-const getDependencyTreeString = (
-  dependant: ProjectVersionDependencies,
-  tab: string,
-): string => {
-  const prefix = tab + (dependant.dependencies.length ? '+-' : '\\-');
-  const gav = generateGAVCoordinates(
-    dependant.groupId,
-    dependant.artifactId,
-    dependant.versionId,
-  );
-  return `${prefix + gav}\n${dependant.dependencies
-    .map((e) => getDependencyTreeString(e, tab + ' '.repeat(TAB_SIZE)))
-    .join('')}`;
-};
-
-export const getDependencyTreeStringFromInfo = (
-  info: ProjectDependencyInfo,
-): string => info.tree.map((e) => getDependencyTreeString(e, '')).join('\n');
-
-const getConflictPathString = (path: string): string => {
-  const seperator = '>';
-  const projects = path.split(seperator);
-  let result = '';
-  let currentTab = ' '.repeat(TAB_SIZE);
-  projects.forEach((p) => {
-    result += `${currentTab + p}\n`;
-    currentTab = currentTab + ' '.repeat(TAB_SIZE);
-  });
-  return result;
-};
-
-export const getConflictsString = (info: ProjectDependencyInfo): string =>
-  info.conflicts
-    .map((c) => {
-      const base = `project:\n${
-        ' '.repeat(TAB_SIZE) +
-        generateGAVCoordinates(c.groupId, c.artifactId, undefined)
-      }`;
-      const versions = `versions:\n${c.versions
-        .map((v) => ' '.repeat(TAB_SIZE) + v)
-        .join('\n')}`;
-      const paths = `paths:\n${c.conflictPaths
-        .map(
-          (p, idx) =>
-            `${' '.repeat(TAB_SIZE) + (idx + 1)}:\n${getConflictPathString(p)}`,
-        )
-        .join('')}`;
-      return `${base}\n${versions}\n${paths}`;
-    })
-    .join('\n\n');
-
 export class ProjectConfigurationEditorState extends EditorState {
   sdlcState: EditorSDLCState;
+  projectDependencyEditorState: ProjectDependencyEditorState;
   originalProjectConfiguration?: ProjectConfiguration | undefined; // TODO: we might want to remove this when we do change detection for project configuration
   projectConfiguration?: ProjectConfiguration | undefined;
   selectedTab: CONFIGURATION_EDITOR_TAB;
@@ -122,9 +60,7 @@ export class ProjectConfigurationEditorState extends EditorState {
   projects = new Map<string, ProjectData>();
   queryHistory = new Set<string>();
   latestProjectStructureVersion: ProjectStructureVersion | undefined;
-  dependencyInfo: ProjectDependencyInfo | undefined;
-  dependencyInfoModalType: DEPENDENCY_INFO_TYPE | undefined;
-  fetchingDependencyInfoState = ActionState.create();
+
   updatingConfigurationState = ActionState.create();
   fetchingProjectVersionsState = ActionState.create();
   associatedProjectsAndVersionsFetched = false;
@@ -143,22 +79,22 @@ export class ProjectConfigurationEditorState extends EditorState {
       associatedProjectsAndVersionsFetched: observable,
       fetchingProjectVersionsState: observable,
       latestProjectStructureVersion: observable,
-      dependencyInfo: observable,
-      dependencyInfoModalType: observable,
-      fetchingDependencyInfoState: observable,
+      projectDependencyEditorState: observable,
       originalConfig: computed,
       setOriginalProjectConfiguration: action,
       setProjectConfiguration: action,
-      setDependencyInfoModal: action,
       setSelectedTab: action,
       fectchAssociatedProjectsAndVersions: flow,
       updateProjectConfiguration: flow,
       updateToLatestStructure: flow,
       updateConfigs: flow,
       fetchLatestProjectStructureVersion: flow,
-      fetchDependencyInfo: flow,
     });
 
+    this.projectDependencyEditorState = new ProjectDependencyEditorState(
+      this,
+      this.editorStore,
+    );
     this.selectedTab = CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE;
     this.isReadOnly = editorStore.isInViewerMode;
     this.sdlcState = sdlcState;
@@ -176,10 +112,6 @@ export class ProjectConfigurationEditorState extends EditorState {
 
   setSelectedTab(tab: CONFIGURATION_EDITOR_TAB): void {
     this.selectedTab = tab;
-  }
-
-  setDependencyInfoModal(type: DEPENDENCY_INFO_TYPE | undefined): void {
-    this.dependencyInfoModalType = type;
   }
 
   get label(): string {
@@ -250,39 +182,6 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
     } finally {
       this.fetchingProjectVersionsState.complete();
-    }
-  }
-
-  *fetchDependencyInfo(): GeneratorFn<void> {
-    try {
-      this.fetchingDependencyInfoState.inProgress();
-      this.dependencyInfo = undefined;
-      if (this.projectConfiguration?.projectDependencies) {
-        const dependencyCoordinates = (yield flowResult(
-          this.editorStore.graphState.buildProjectDependencyCoordinates(
-            this.projectConfiguration.projectDependencies,
-          ),
-        )) as ProjectDependencyCoordinates[];
-        const dependencyInfoRaw =
-          (yield this.editorStore.depotServerClient.analyzeDependencyTree(
-            dependencyCoordinates.map((e) =>
-              ProjectDependencyCoordinates.serialization.toJson(e),
-            ),
-          )) as PlainObject<ProjectDependencyInfo>;
-        this.dependencyInfo =
-          ProjectDependencyInfo.serialization.fromJson(dependencyInfoRaw);
-      } else {
-        this.dependencyInfo = new ProjectDependencyInfo();
-      }
-      this.fetchingDependencyInfoState.complete();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.fetchingDependencyInfoState.fail();
-      this.dependencyInfo = undefined;
-      this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
-        error,
-      );
     }
   }
 

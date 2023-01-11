@@ -27,7 +27,6 @@ import {
   readFileAsText,
   assertErrorThrown,
   LogEvent,
-  addUniqueEntry,
   deepEqual,
   guaranteeType,
   isEmpty,
@@ -55,7 +54,10 @@ import { type EntityChange, EntityChangeType } from '@finos/legend-server-sdlc';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent.js';
-import { configurationProperty_setValue } from '../../../shared/modifier/DSL_Generation_GraphModifierHelper.js';
+import {
+  configurationProperty_addConfigurationProperty,
+  configurationProperty_setValue,
+} from '../../../shared/modifier/DSL_Generation_GraphModifierHelper.js';
 
 export enum SCHEMA_SET_TAB_TYPE {
   SCHEMAS = 'SCHEMAS',
@@ -92,8 +94,9 @@ export class SchemaSetModelGenerationState {
       setGenerationValue: action,
       setTargetBindingPath: action,
       handleTargetBindingPathChange: action,
+      updateGenerationParameters: action,
       canGenerate: computed,
-      generateModel: flow,
+      generate: flow,
       importGeneratedModelsIntoGraph: flow,
       getImportEntities: flow,
     });
@@ -197,7 +200,10 @@ export class SchemaSetModelGenerationState {
             generationProperty.name,
             newValue,
           );
-          addUniqueEntry(this.configurationProperties, newItem);
+          configurationProperty_addConfigurationProperty(
+            this.configurationProperties,
+            newItem,
+          );
         }
       }
     } else {
@@ -208,7 +214,8 @@ export class SchemaSetModelGenerationState {
           (generationProperty.defaultValue === 'true') ===
           (newValue as boolean);
       }
-      const newConfigValue = useDefaultValue ? undefined : newValue;
+      const newConfigValue =
+        useDefaultValue && !generationProperty.required ? undefined : newValue;
       if (newConfigValue !== undefined) {
         if (configProperty) {
           configurationProperty_setValue(configProperty, newConfigValue);
@@ -217,7 +224,10 @@ export class SchemaSetModelGenerationState {
             generationProperty.name,
             newConfigValue,
           );
-          addUniqueEntry(this.configurationProperties, newItem);
+          configurationProperty_addConfigurationProperty(
+            this.configurationProperties,
+            newItem,
+          );
         }
       } else {
         this.configurationProperties = this.configurationProperties.filter(
@@ -227,18 +237,37 @@ export class SchemaSetModelGenerationState {
     }
   }
 
-  *generateModel(): GeneratorFn<boolean> {
+  addInferredConfigurationProperties(
+    properties: ConfigurationProperty[],
+  ): void {
+    const modelGenerationProperties = this.modelGenerationProperties;
+    const SCHEMA_FORMAT_PROPERTY_NAME = 'format';
+    if (!properties.find((e) => e.name === SCHEMA_FORMAT_PROPERTY_NAME)) {
+      const genProperty = new ConfigurationProperty(
+        SCHEMA_FORMAT_PROPERTY_NAME,
+        this.schemaSet.format,
+      );
+      properties.push(genProperty);
+    }
+    modelGenerationProperties
+      .filter(
+        (property) =>
+          property.required &&
+          property.defaultValue &&
+          !properties.find((pv) => pv.name === property.name),
+      )
+      .forEach((toAdd) => {
+        const value = new ConfigurationProperty(toAdd.name, toAdd.defaultValue);
+        configurationProperty_addConfigurationProperty(properties, value);
+      });
+  }
+
+  *generate(): GeneratorFn<boolean> {
     this.generatingModelsState.inProgress();
+    this.editorStore.applicationStore.setNotification(undefined);
     try {
-      const SCHEMA_FORMAT_PROPERTY_NAME = 'format';
       const properties = [...this.configurationProperties];
-      if (!properties.find((e) => e.name === SCHEMA_FORMAT_PROPERTY_NAME)) {
-        const genProperty = new ConfigurationProperty(
-          SCHEMA_FORMAT_PROPERTY_NAME,
-          this.schemaSet.format,
-        );
-        properties.push(genProperty);
-      }
+      this.addInferredConfigurationProperties(properties);
       const val =
         (yield this.editorStore.graphManagerState.graphManager.generateModelFromExternalFormat(
           this.schemaSet,

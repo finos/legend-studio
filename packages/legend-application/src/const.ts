@@ -32,4 +32,7 @@ export enum EDITOR_LANGUAGE {
   JAVA = 'java',
   MARKDOWN = 'markdown',
   SQL = 'sql',
+  XML = 'xml',
+  YAML = 'yaml',
+  GRAPHQL = 'graphql',
 }

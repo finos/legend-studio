@@ -553,7 +553,8 @@ export const GenerationSpecificationEditor = observer(() => {
                 'editor__status-bar__action editor__status-bar__generate-btn',
                 {
                   'local-changes__refresh-btn--loading':
-                    modelGenerationState.isClearingGenerationEntities,
+                    modelGenerationState.clearingGenerationEntitiesState
+                      .isInProgress,
                 },
               )}
               onClick={emptyGenerationEntities}

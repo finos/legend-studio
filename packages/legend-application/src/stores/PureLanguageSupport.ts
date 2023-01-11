@@ -55,6 +55,7 @@ export enum PURE_GRAMMAR_TOKEN {
   MULTIPLICITY = 'multiplicity',
   GENERICS = 'generics',
   PROPERTY = 'property',
+  PARAMETER = 'property',
   VARIABLE = 'variable',
   TYPE = 'type',
 
@@ -77,6 +78,7 @@ const theme: monacoEditorAPI.IStandaloneThemeData = {
     { token: PURE_GRAMMAR_TOKEN.MULTIPLICITY, foreground: '2d796b' },
     { token: PURE_GRAMMAR_TOKEN.GENERICS, foreground: '2d796b' },
     { token: PURE_GRAMMAR_TOKEN.PROPERTY, foreground: '9cdcfe' },
+    { token: PURE_GRAMMAR_TOKEN.PARAMETER, foreground: '9cdcfe' },
     { token: PURE_GRAMMAR_TOKEN.VARIABLE, foreground: '4fc1ff' },
     { token: PURE_GRAMMAR_TOKEN.TYPE, foreground: '3dc9b0' },
   ],
@@ -252,7 +254,7 @@ const generateLanguageMonarch = (
     octaldigits: /[0-7]+(_+[0-7]+)*/,
     binarydigits: /[0-1]+(_+[0-1]+)*/,
     hexdigits: /[[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
-    multiplicity: /\[(?:\d+(?:\.\.(?:\d+|\*|))?|\*)\]/,
+    multiplicity: /\[(?:[a-zA-Z0-9]+(?:\.\.(?:[a-zA-Z0-9]+|\*|))?|\*)\]/,
     package: /(?:[\w_]+::)+/,
     generics: /<.+>/,
     date: /%-?\d+(?:-\d+(?:-\d+(?:T(?:\d+(?::\d+(?::\d+(?:.\d+)?)?)?)(?:[+-][0-9]{4})?)))/,
@@ -351,9 +353,10 @@ const generateLanguageMonarch = (
 
         // special operators that uses type (e.g. constructor, cast)
         [
-          /([@^])(?:\s*)(@package?)(@identifier)(@generics?)(@multiplicity?)/,
+          /([@^])(\s*)(@package?)(@identifier)(@generics?)(@multiplicity?)/,
           [
             `${PURE_GRAMMAR_TOKEN.TYPE}.operator`,
+            PURE_GRAMMAR_TOKEN.WHITESPACE,
             PURE_GRAMMAR_TOKEN.PACKAGE,
             PURE_GRAMMAR_TOKEN.TYPE,
             PURE_GRAMMAR_TOKEN.GENERICS,
@@ -367,7 +370,7 @@ const generateLanguageMonarch = (
           [PURE_GRAMMAR_TOKEN.DELIMITER, PURE_GRAMMAR_TOKEN.PROPERTY],
         ],
         [
-          /(@identifier)(\s*[:=])/,
+          /(@identifier)(\s*=)/,
           [PURE_GRAMMAR_TOKEN.PROPERTY, PURE_GRAMMAR_TOKEN.OPERATOR],
         ],
         [
@@ -377,11 +380,15 @@ const generateLanguageMonarch = (
             PURE_GRAMMAR_TOKEN.OPERATOR,
             PURE_GRAMMAR_TOKEN.PROPERTY,
           ],
-        ], // profile tag and stereotype
+        ], // could be: property chain, profile tag, and stereotype
+        [
+          /(@identifier)(\s*:)/,
+          [PURE_GRAMMAR_TOKEN.PARAMETER, PURE_GRAMMAR_TOKEN.OPERATOR],
+        ],
 
         // variables
         [
-          /(let)(\s+)(@identifier)(\s*[:=])/,
+          /(let)(\s+)(@identifier)(\s*=)/,
           [
             PURE_GRAMMAR_TOKEN.KEYWORD,
             PURE_GRAMMAR_TOKEN.WHITESPACE,
@@ -389,7 +396,7 @@ const generateLanguageMonarch = (
             PURE_GRAMMAR_TOKEN.OPERATOR,
           ],
         ],
-        [/(\$@identifier)/, [PURE_GRAMMAR_TOKEN.VARIABLE]],
+        [/(\$@identifier)/, [`${PURE_GRAMMAR_TOKEN.VARIABLE}.reference`]],
       ],
 
       date: [
@@ -471,6 +478,11 @@ export const setupPureLanguageService = (
   // See https://github.com/microsoft/monaco-editor/issues/102#issuecomment-1282897640
   monacoEditorAPI.addKeybindingRules([
     {
+      // disable showing go-to-line command
+      keybinding: KeyMod.WinCtrl | KeyCode.KeyG,
+      command: null,
+    },
+    {
       // disable cursor move (core command)
       keybinding: KeyMod.WinCtrl | KeyCode.KeyB,
       command: null,
@@ -501,8 +513,18 @@ export const setupPureLanguageService = (
       command: null,
     },
     {
+      // disable change all instances
+      keybinding: KeyMod.CtrlCmd | KeyCode.F2,
+      command: null,
+    },
+    {
       // disable toggle debugger breakpoint
       keybinding: KeyMod.Shift | KeyCode.F10,
+      command: null,
+    },
+    {
+      // disable go-to definition
+      keybinding: KeyMod.CtrlCmd | KeyCode.F12,
       command: null,
     },
   ]);

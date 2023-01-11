@@ -17,7 +17,7 @@
 import { createModelSchema, primitive } from 'serializr';
 
 export class SourceInformation {
-  source!: string;
+  sourceId!: string;
   line!: number;
   column!: number;
   startLine!: number;
@@ -31,7 +31,7 @@ createModelSchema(SourceInformation, {
   endLine: primitive(),
   endColumn: primitive(),
   line: primitive(),
-  source: primitive(),
+  sourceId: primitive(),
   startLine: primitive(),
   startColumn: primitive(),
 });

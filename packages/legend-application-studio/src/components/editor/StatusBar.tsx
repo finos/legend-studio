@@ -330,7 +330,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             {
               'editor__status-bar__action editor__status-bar__clear__generation-btn--wiggling':
                 editorStore.graphState.graphGenerationState
-                  .isClearingGenerationEntities,
+                  .clearingGenerationEntitiesState.isInProgress,
             },
           )}
           disabled={

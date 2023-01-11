@@ -21,7 +21,6 @@ import { useMemo } from 'react';
 import type { SchemaSetModelGenerationState } from '../../../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
 import { debounce } from '@finos/legend-shared';
 import {
-  clsx,
   InputWithInlineValidation,
   PanelContent,
   PanelLoadingIndicator,
@@ -49,8 +48,7 @@ export const SchemaSetModelGenerationEditor = observer(
     const description = modelGenerationState.description;
     const properties = description?.modelGenerationProperties ?? [];
     const debouncedRegenerate = useMemo(
-      () =>
-        debounce(() => flowResult(modelGenerationState.generateModel()), 500),
+      () => debounce(() => flowResult(modelGenerationState.generate()), 500),
       [modelGenerationState],
     );
     const update = (
@@ -65,7 +63,10 @@ export const SchemaSetModelGenerationEditor = observer(
       debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);
     };
     const regenerate = (): void => {
-      modelGenerationState.generateModel();
+      modelGenerationState.generate();
+    };
+    const resetProperties = (): void => {
+      modelGenerationState.setConfigurationProperty([]);
     };
     const getConfigValue = (name: string): unknown | undefined =>
       modelGenerationState.getConfigValue(name);
@@ -102,15 +103,18 @@ export const SchemaSetModelGenerationEditor = observer(
                   <div className="panel__header__title__label">{`${format} configuration`}</div>
                 </div>
                 <div className="panel__header__actions">
-                  <button
-                    className="panel__header__action file-generation-editor__configuration__reset-btn"
-                    tabIndex={-1}
-                    disabled={isReadOnly || !properties.length}
-                    onClick={regenerate}
-                    title="Reset to default configuration"
-                  >
-                    <RefreshIcon />
-                  </button>
+                  <div className="panel__header__actions">
+                    <div className="panel__header__actions"></div>
+                    <button
+                      className="panel__header__action file-generation-editor__configuration__reset-btn"
+                      tabIndex={-1}
+                      disabled={isReadOnly || !properties.length}
+                      onClick={resetProperties}
+                      title="Reset to default configuration"
+                    >
+                      <RefreshIcon />
+                    </button>
+                  </div>
                 </div>
               </div>
               <PanelContent>
@@ -169,27 +173,24 @@ export const SchemaSetModelGenerationEditor = observer(
                 </div>
                 <div className="panel__header__actions">
                   <button
-                    className={clsx(
-                      'panel__header__action  generation-result-viewer__regenerate-btn',
-                      {
-                        ' generation-result-viewer__regenerate-btn--loading':
-                          modelGenerationState.generatingModelsState
-                            .isInProgress ||
-                          modelGenerationState.importGeneratedElementsState
-                            .isInProgress,
-                      },
-                    )}
-                    tabIndex={-1}
+                    className="panel__header__action generation-result-viewer__generate-btn"
+                    onClick={regenerate}
                     disabled={
                       modelGenerationState.generatingModelsState.isInProgress ||
                       modelGenerationState.importGeneratedElementsState
                         .isInProgress
                     }
-                    onClick={regenerate}
                     title="Regenerate"
+                    tabIndex={-1}
                   >
-                    <RefreshIcon />
+                    <div className="generation-result-viewer__generate-btn__label">
+                      <RefreshIcon className="generation-result-viewer__generate-btn__label__icon" />
+                      <div className="generation-result-viewer__generate-btn__label__title">
+                        Generate
+                      </div>
+                    </div>
                   </button>
+
                   {!modelGenerationState.isolatedGraph && (
                     <button
                       className="btn--dark model-loader__header__load-btn"

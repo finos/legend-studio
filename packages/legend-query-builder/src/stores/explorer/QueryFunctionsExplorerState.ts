@@ -139,7 +139,7 @@ const generateFunctionsExplorerTreeNodeChilrdren = (
 };
 
 export const getFunctionsExplorerTreeData = (
-  root: Package,
+  roots: Package[],
   queryBuilderState: QueryBuilderState,
   rootPackageName = ROOT_PACKAGE_NAME.MAIN,
 ): TreeData<QueryBuilderFunctionsExplorerTreeNodeData> => {
@@ -164,26 +164,29 @@ export const getFunctionsExplorerTreeData = (
       }
   }
 
-  root.children
-    .slice()
-    .filter((child) => !(child instanceof Unit))
-    .filter(
-      (child) =>
-        child instanceof Package && validDisplayablePackageSet.has(child),
-    )
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .sort(
-      (a, b) => (b instanceof Package ? 1 : 0) - (a instanceof Package ? 1 : 0),
-    )
-    .forEach((childPackage) => {
-      const childTreeNodeData = generateFunctionsExplorerTreeNodeData(
-        queryBuilderState,
-        childPackage,
-        rootPackageName,
-      );
-      addUniqueEntry(rootIds, childTreeNodeData.id);
-      nodes.set(childTreeNodeData.id, childTreeNodeData);
-    });
+  roots.forEach((root) => {
+    root.children
+      .slice()
+      .filter((child) => !(child instanceof Unit))
+      .filter(
+        (child) =>
+          child instanceof Package && validDisplayablePackageSet.has(child),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .sort(
+        (a, b) =>
+          (b instanceof Package ? 1 : 0) - (a instanceof Package ? 1 : 0),
+      )
+      .forEach((childPackage) => {
+        const childTreeNodeData = generateFunctionsExplorerTreeNodeData(
+          queryBuilderState,
+          childPackage,
+          rootPackageName,
+        );
+        addUniqueEntry(rootIds, childTreeNodeData.id);
+        nodes.set(childTreeNodeData.id, childTreeNodeData);
+      });
+  });
   return { rootIds, nodes };
 };
 
@@ -343,7 +346,7 @@ export class QueryFunctionsExplorerState {
     this.initializeDisplayablePackagesSet().finally(() => {
       this.setTreeData(
         getFunctionsExplorerTreeData(
-          this.queryBuilderState.graphManagerState.graph.root,
+          [this.queryBuilderState.graphManagerState.graph.root],
           this.queryBuilderState,
         ),
       );
@@ -360,7 +363,7 @@ export class QueryFunctionsExplorerState {
         this.setDependencyTreeData(
           getFunctionsExplorerTreeData(
             this.queryBuilderState.graphManagerState.graph.dependencyManager
-              .root,
+              .roots,
             this.queryBuilderState,
             ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT,
           ),

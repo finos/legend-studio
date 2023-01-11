@@ -335,6 +335,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                   filterOption={runtimeFilterOption}
                   formatOptionLabel={getRuntimeOptionFormatter({
                     darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
+                    pureModel: queryBuilderState.graphManagerState.graph,
                   })}
                 />
               </div>

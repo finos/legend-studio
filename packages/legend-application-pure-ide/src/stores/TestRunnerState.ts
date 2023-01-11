@@ -96,10 +96,12 @@ export const getTestTreeNodeStatus = (
     return getTestResultById(id, testResultInfo);
   }
   // order matters here, also if one test fail/error the whole sub-tree (package) will be marked as failed
-  return testResultInfo.failedTestIds.some((i) => i.startsWith(id)) ||
-    testResultInfo.testWithErrorIds.some((i) => i.startsWith(id))
+  // NOTE: here, we have to check `startsWith(`${id}_`)` to guarantee we grab the right package, if we just use `startsWith(id)`
+  // we might mark `meta::test` and `meta::test2` both as failed when `meta::test::someTest` fails
+  return testResultInfo.failedTestIds.some((i) => i.startsWith(`${id}_`)) ||
+    testResultInfo.testWithErrorIds.some((i) => i.startsWith(`${id}_`))
     ? TestResultType.FAILED
-    : testResultInfo.notRunTestIds.some((i) => i.startsWith(id))
+    : testResultInfo.notRunTestIds.some((i) => i.startsWith(`${id}_`))
     ? TestResultType.RUNNING
     : TestResultType.PASSED;
 };

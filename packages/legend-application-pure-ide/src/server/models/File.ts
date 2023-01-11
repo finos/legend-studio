@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable } from 'mobx';
+import { hashValue } from '@finos/legend-shared';
+import { action, computed, makeObservable, observable } from 'mobx';
 import { createModelSchema, primitive } from 'serializr';
 import type { ExecutionError } from './ExecutionError.js';
 
 export const trimPathLeadingSlash = (path: string): string =>
   path.startsWith('/') ? path.substring(1, path.length) : path;
 
-export class PureFile {
+export class File {
   content!: string;
 
   constructor() {
     makeObservable(this, {
       content: observable,
+      hashCode: computed,
       setContent: action,
     });
   }
@@ -34,9 +36,13 @@ export class PureFile {
   setContent(value: string): void {
     this.content = value;
   }
+
+  get hashCode(): string {
+    return hashValue(this.content);
+  }
 }
 
-createModelSchema(PureFile, {
+createModelSchema(File, {
   content: primitive(),
 });
 

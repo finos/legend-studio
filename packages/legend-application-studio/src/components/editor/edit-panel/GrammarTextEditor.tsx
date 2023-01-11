@@ -37,6 +37,8 @@ import {
   clearMarkers,
   setErrorMarkers,
   moveCursorToPosition,
+  MenuContent,
+  MenuContentItem,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -105,6 +107,7 @@ import {
 } from '../../../stores/LegendStudioCodeSnippets.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
@@ -117,14 +120,11 @@ export const GrammarTextEditorHeaderTabContextMenu = observer(
       );
 
       return (
-        <div ref={ref} className="edit-panel__header__tab__context-menu">
-          <button
-            className="edit-panel__header__tab__context-menu__item"
-            onClick={leaveTextMode}
-          >
+        <MenuContent ref={ref}>
+          <MenuContentItem onClick={leaveTextMode}>
             Leave Text Mode
-          </button>
-        </div>
+          </MenuContentItem>
+        </MenuContent>
       );
     },
   ),
@@ -526,6 +526,14 @@ const collectParserElementSnippetSuggestions = (
               plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
             ).getExtraPostProcessorSnippetSuggestions?.() ?? [],
         );
+      const connectionSnippetSuggestions = editorStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
+            ).getExtraNewConnectionSnippetSuggestions?.() ?? [],
+        );
       return [
         {
           text: PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION,
@@ -552,6 +560,11 @@ const collectParserElementSnippetSuggestions = (
           description: 'relational database connection with post-processor',
           insertText: POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET,
         },
+        ...connectionSnippetSuggestions.map((suggestion) => ({
+          text: suggestion.text,
+          description: suggestion.description,
+          insertText: suggestion.insertText,
+        })),
         ...embeddedPostProcessorSnippetSuggestions.map((suggestion) => ({
           text: PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
           description: suggestion.description,

@@ -29,19 +29,21 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   isNonNullable,
+  ActionState,
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import {
-  type GenerationTreeNodeData,
-  type GenerationOutputResult,
-  GenerationDirectory,
+  type FileSystemTreeNodeData,
+  type FileResult,
+  FileSystem_Directory,
   GENERATION_FILE_ROOT_NAME,
-  GenerationFile,
+  FileSystem_File,
   openNode,
   populateDirectoryTreeNodeChildren,
-  buildGenerationDirectory,
+  buildFileSystemDirectory,
   reprocessOpenNodes,
-} from '../shared/FileGenerationTreeUtils.js';
+  getFileSystemTreeData,
+} from '../shared/FileSystemTreeUtils.js';
 import type { TreeData } from '@finos/legend-art';
 import type { EditorStore } from '../EditorStore.js';
 import { FileGenerationViewerState } from './FileGenerationViewerState.js';
@@ -65,6 +67,7 @@ import {
   generationSpecification_addFileGeneration,
   generationSpecification_addGenerationElement,
 } from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
+import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState.js';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';
@@ -78,21 +81,21 @@ export class GraphGenerationState {
   editorStore: EditorStore;
   isRunningGlobalGenerate = false;
   generatedEntities = new Map<string, Entity[]>();
-  isClearingGenerationEntities = false;
+  clearingGenerationEntitiesState = ActionState.create();
   externalFormatState: ExternalFormatState;
   // NOTE: this will eventually be removed once we also do model/schema import using external format
   // See https://github.com/finos/legend-studio/issues/866
   fileGenerationConfigurations: GenerationConfigurationDescription[] = [];
   // file generation output
-  rootFileDirectory: GenerationDirectory;
-  filesIndex = new Map<string, GenerationFile>();
-  selectedNode?: GenerationTreeNodeData | undefined;
+  rootFileDirectory: FileSystem_Directory;
+  filesIndex = new Map<string, FileSystem_File>();
+  selectedNode?: FileSystemTreeNodeData | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable<GraphGenerationState>(this, {
       isRunningGlobalGenerate: observable,
       generatedEntities: observable.shallow,
-      isClearingGenerationEntities: observable,
+      clearingGenerationEntitiesState: observable,
       fileGenerationConfigurations: observable,
       externalFormatState: observable,
       rootFileDirectory: observable,
@@ -116,7 +119,9 @@ export class GraphGenerationState {
     });
 
     this.editorStore = editorStore;
-    this.rootFileDirectory = new GenerationDirectory(GENERATION_FILE_ROOT_NAME);
+    this.rootFileDirectory = new FileSystem_Directory(
+      GENERATION_FILE_ROOT_NAME,
+    );
     this.externalFormatState = new ExternalFormatState(editorStore);
   }
 
@@ -347,13 +352,13 @@ export class GraphGenerationState {
    * Used to clear generation entities as well as the generation model
    */
   *clearGenerations(): GeneratorFn<void> {
-    this.isClearingGenerationEntities = true;
+    this.clearingGenerationEntitiesState.inProgress();
     this.generatedEntities = new Map<string, Entity[]>();
     this.emptyFileGeneration();
     yield flowResult(
       this.editorStore.graphState.updateGenerationGraphAndApplication(),
     );
-    this.isClearingGenerationEntities = false;
+    this.clearingGenerationEntitiesState.complete();
   }
 
   /**
@@ -414,7 +419,7 @@ export class GraphGenerationState {
           .map((node) => node.id)
       : [];
     // we read the generation outputs and clean
-    const generationResultIndex = new Map<string, GenerationOutputResult>();
+    const generationResultIndex = new Map<string, FileResult>();
     Array.from(generationOutputIndex.entries()).forEach((entry) => {
       const fileGeneration =
         this.editorStore.graphManagerState.graph.getNullableFileGeneration(
@@ -433,16 +438,23 @@ export class GraphGenerationState {
           );
         }
         generationResultIndex.set(genOutput.fileName, {
-          generationOutput: genOutput,
+          value: genOutput,
           parentId: fileGeneration?.path,
         });
       });
     });
     // take generation outputs and put them into the root directory
-    buildGenerationDirectory(
+    buildFileSystemDirectory(
       this.rootFileDirectory,
       generationResultIndex,
       this.filesIndex,
+    );
+    // after building root directory set the generation tree data
+    this.editorStore.graphState.editorStore.explorerTreeState.setFileGenerationTreeData(
+      getFileSystemTreeData(
+        this.editorStore.graphState.graphGenerationState.rootFileDirectory,
+        ExplorerTreeRootPackageLabel.FILE_GENERATION,
+      ),
     );
     this.editorStore.graphState.editorStore.explorerTreeState.setFileGenerationTreeData(
       this.reprocessNodeTree(
@@ -473,10 +485,10 @@ export class GraphGenerationState {
   }
 
   reprocessNodeTree(
-    generationResult: GenerationOutputResult[],
-    treeData: TreeData<GenerationTreeNodeData>,
+    generationResult: FileResult[],
+    treeData: TreeData<FileSystemTreeNodeData>,
     openedNodeIds: string[],
-  ): TreeData<GenerationTreeNodeData> {
+  ): TreeData<FileSystemTreeNodeData> {
     reprocessOpenNodes(
       treeData,
       this.filesIndex,
@@ -487,8 +499,7 @@ export class GraphGenerationState {
     const selectedFileNodePath =
       this.selectedNode?.fileNode.path ??
       (generationResult.length === 1
-        ? (generationResult[0] as GenerationOutputResult).generationOutput
-            .fileName
+        ? (generationResult[0] as FileResult).value.fileName
         : undefined);
     if (selectedFileNodePath) {
       const file = this.filesIndex.get(selectedFileNodePath);
@@ -505,17 +516,17 @@ export class GraphGenerationState {
   }
 
   onTreeNodeSelect(
-    node: GenerationTreeNodeData,
-    treeData: TreeData<GenerationTreeNodeData>,
+    node: FileSystemTreeNodeData,
+    treeData: TreeData<FileSystemTreeNodeData>,
     reprocess?: boolean,
   ): void {
     if (node.childrenIds?.length) {
       node.isOpen = !node.isOpen;
-      if (node.fileNode instanceof GenerationDirectory) {
+      if (node.fileNode instanceof FileSystem_Directory) {
         populateDirectoryTreeNodeChildren(node, treeData);
       }
     }
-    if (!reprocess && node.fileNode instanceof GenerationFile) {
+    if (!reprocess && node.fileNode instanceof FileSystem_File) {
       this.editorStore.tabManagerState.openTab(
         new FileGenerationViewerState(this.editorStore, node.fileNode),
       );
@@ -526,7 +537,7 @@ export class GraphGenerationState {
     );
   }
 
-  setSelectedNode(node?: GenerationTreeNodeData): void {
+  setSelectedNode(node?: FileSystemTreeNodeData): void {
     if (this.selectedNode) {
       this.selectedNode.isSelected = false;
     }
@@ -537,7 +548,9 @@ export class GraphGenerationState {
   }
 
   emptyFileGeneration(): void {
-    this.filesIndex = new Map<string, GenerationFile>();
-    this.rootFileDirectory = new GenerationDirectory(GENERATION_FILE_ROOT_NAME);
+    this.filesIndex = new Map<string, FileSystem_File>();
+    this.rootFileDirectory = new FileSystem_Directory(
+      GENERATION_FILE_ROOT_NAME,
+    );
   }
 }

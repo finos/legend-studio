@@ -25,7 +25,6 @@ import {
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
-import type { ROOT_PACKAGE_NAME } from '../graph/MetaModelConst.js';
 import { Package } from '../graph/metamodel/pure/packageableElements/domain/Package.js';
 import { Type } from '../graph/metamodel/pure/packageableElements/domain/Type.js';
 import { Association } from '../graph/metamodel/pure/packageableElements/domain/Association.js';
@@ -128,7 +127,7 @@ export abstract class BasicModel {
   private readonly dataElementsIndex = new Map<string, DataElement>();
 
   constructor(
-    rootPackageName: ROOT_PACKAGE_NAME,
+    rootPackageName: string,
     extensionElementClasses: Clazz<PackageableElement>[],
   ) {
     this.root = new Package(rootPackageName);

@@ -323,5 +323,16 @@ export const getInlineSnippetSuggestions = (
   );
 };
 
-export const getBaseTokenType = (token: string): string =>
-  guaranteeNonNullable(getNullableFirstElement(token.split('.')));
+export const isTokenOneOf = (
+  token: string,
+  baseTokens: string[],
+  exact = false,
+): boolean => {
+  if (exact) {
+    return baseTokens.map((baseToken) => `${baseToken}.pure`).includes(token);
+  }
+  const baseToken = guaranteeNonNullable(
+    getNullableFirstElement(token.split('.')),
+  );
+  return baseTokens.includes(baseToken);
+};

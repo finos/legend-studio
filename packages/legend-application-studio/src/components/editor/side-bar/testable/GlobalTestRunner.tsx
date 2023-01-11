@@ -42,6 +42,7 @@ import {
 } from '@finos/legend-art';
 import {
   AssertFail,
+  AssertionStatus,
   EqualToJsonAssertFail,
   PackageableElement,
   TestError,
@@ -122,7 +123,7 @@ export const getTestableResultIcon = (
 const getOptionalError = (
   node: TestableExplorerTreeNodeData,
   testableState: TestableState,
-): TestError | AssertFail | undefined => {
+): TestError | AssertFail | Map<string, AssertFail> | undefined => {
   if (node instanceof AtomicTestTreeNodeData) {
     const result = getAtomicTest_TestResult(
       node.atomicTest,
@@ -135,6 +136,14 @@ const getOptionalError = (
     const status = getAssertionStatus(node.assertion, testableState.results);
     if (status instanceof AssertFail) {
       return status;
+    } else if (status && !(status instanceof AssertionStatus)) {
+      const errorState = new Map<string, AssertFail>();
+      Array.from(status.entries()).forEach(([key, assertionStatus]) => {
+        if (assertionStatus instanceof AssertFail) {
+          errorState.set(key, assertionStatus);
+        }
+      });
+      return errorState;
     }
   }
   return undefined;
@@ -215,15 +224,15 @@ const TestableExplorerContextMenu = observer(
       testableState: TestableState;
       node: TestableExplorerTreeNodeData;
       treeData: TreeData<TestableExplorerTreeNodeData>;
-      error?: TestError | AssertFail | undefined;
+      error?: TestError | AssertFail | Map<string, AssertFail> | undefined;
     }
   >(function TestableExplorerContextMenu(props, ref) {
     const { node, error, globalTestRunnerState, testableState } = props;
     const runTest = (): void => {
       testableState.run(node);
     };
-    const viewError = (): void =>
-      globalTestRunnerState.setFailureViewing(error);
+    const viewError = (err: TestError | AssertFail): void =>
+      globalTestRunnerState.setFailureViewing(err);
     return (
       <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         <MenuContentItem
@@ -232,11 +241,24 @@ const TestableExplorerContextMenu = observer(
         >
           Run
         </MenuContentItem>
-        {error && (
-          <MenuContentItem onClick={viewError}>
-            {error instanceof TestError ? 'View Error' : 'View assert fail'}
-          </MenuContentItem>
-        )}
+        {error &&
+          (error instanceof TestError || error instanceof AssertFail) && (
+            <MenuContentItem onClick={(): void => viewError(error)}>
+              {error instanceof TestError ? 'View Error' : 'View assert fail'}
+            </MenuContentItem>
+          )}
+        {error &&
+          !(error instanceof TestError || error instanceof AssertFail) &&
+          Array.from(error.entries()).map(([key, testError]) => (
+            <MenuContentItem
+              key={key}
+              onClick={(): void => viewError(testError)}
+            >
+              {testError instanceof TestError
+                ? `View Error for ${key}`
+                : `View assert fail for ${key}`}
+            </MenuContentItem>
+          ))}
       </MenuContent>
     );
   }),

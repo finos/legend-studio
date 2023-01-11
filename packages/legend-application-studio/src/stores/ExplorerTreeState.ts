@@ -25,6 +25,7 @@ import {
   ActionState,
 } from '@finos/legend-shared';
 import {
+  getDependenciesPackableElementTreeData,
   getPackableElementTreeData,
   openNode,
   openNodeById,
@@ -35,9 +36,9 @@ import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import type { PackageTreeNodeData } from './shared/TreeUtils.js';
 import type { TreeData } from '@finos/legend-art';
 import {
-  type GenerationTreeNodeData,
-  getGenerationTreeData,
-} from './shared/FileGenerationTreeUtils.js';
+  type FileSystemTreeNodeData,
+  getFileSystemTreeData,
+} from './shared/FileSystemTreeUtils.js';
 import {
   type PackageableElement,
   ROOT_PACKAGE_NAME,
@@ -45,6 +46,7 @@ import {
   Unit,
   PrimitiveType,
   getElementRootPackage,
+  isDependencyElement,
 } from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 
@@ -63,7 +65,7 @@ export class ExplorerTreeState {
   legalTreeData?: TreeData<PackageTreeNodeData> | undefined;
   dependencyTreeData?: TreeData<PackageTreeNodeData> | undefined;
   selectedNode?: PackageTreeNodeData | undefined;
-  fileGenerationTreeData?: TreeData<GenerationTreeNodeData> | undefined;
+  fileGenerationTreeData?: TreeData<FileSystemTreeNodeData> | undefined;
   elementToRename?: PackageableElement | undefined;
   buildState = ActionState.create();
 
@@ -76,7 +78,6 @@ export class ExplorerTreeState {
       dependencyTreeData: observable.ref,
       selectedNode: observable.ref,
       fileGenerationTreeData: observable.ref,
-      elementToRename: observable,
       setTreeData: action,
       setGenerationTreeData: action,
       setSystemTreeData: action,
@@ -87,6 +88,8 @@ export class ExplorerTreeState {
       setElementToRename: action,
       build: action,
       buildImmutableModelTrees: action,
+      buildTreeInTextMode: action,
+      openExplorerTreeNodes: action,
       reprocess: action,
       onTreeNodeSelect: action,
       openNode: action,
@@ -149,7 +152,7 @@ export class ExplorerTreeState {
   setDependencyTreeData(data: TreeData<PackageTreeNodeData>): void {
     this.dependencyTreeData = data;
   }
-  setFileGenerationTreeData(data: TreeData<GenerationTreeNodeData>): void {
+  setFileGenerationTreeData(data: TreeData<FileSystemTreeNodeData>): void {
     this.fileGenerationTreeData = data;
   }
   setElementToRename(val: PackageableElement | undefined): void {
@@ -178,7 +181,41 @@ export class ExplorerTreeState {
       this.editorStore.graphManagerState.graph.generationModel.root,
       ExplorerTreeRootPackageLabel.MODEL_GENERATION,
     );
-    this.fileGenerationTreeData = getGenerationTreeData(
+    this.fileGenerationTreeData = getFileSystemTreeData(
+      this.editorStore.graphState.graphGenerationState.rootFileDirectory,
+      ExplorerTreeRootPackageLabel.FILE_GENERATION,
+    );
+    this.setSelectedNode(undefined);
+    this.buildState.complete();
+  }
+
+  buildTreeInTextMode(): void {
+    this.buildState.reset();
+    if (!this.systemTreeData) {
+      this.systemTreeData = getPackableElementTreeData(
+        this.editorStore,
+        this.editorStore.graphManagerState.systemModel.root,
+        ExplorerTreeRootPackageLabel.SYSTEM,
+      );
+    }
+    if (!this.dependencyTreeData) {
+      this.dependencyTreeData = getDependenciesPackableElementTreeData(
+        this.editorStore,
+        this.editorStore.graphManagerState.graph.dependencyManager.roots,
+        ExplorerTreeRootPackageLabel.PROJECT_DEPENDENCY,
+      );
+    }
+    this.treeData = getPackableElementTreeData(
+      this.editorStore,
+      this.editorStore.graphManagerState.graph.root,
+      '',
+    );
+    this.generationTreeData = getPackableElementTreeData(
+      this.editorStore,
+      this.editorStore.graphManagerState.graph.generationModel.root,
+      ExplorerTreeRootPackageLabel.MODEL_GENERATION,
+    );
+    this.fileGenerationTreeData = getFileSystemTreeData(
       this.editorStore.graphState.graphGenerationState.rootFileDirectory,
       ExplorerTreeRootPackageLabel.FILE_GENERATION,
     );
@@ -192,11 +229,91 @@ export class ExplorerTreeState {
       this.editorStore.graphManagerState.systemModel.root,
       ExplorerTreeRootPackageLabel.SYSTEM,
     );
-    this.dependencyTreeData = getPackableElementTreeData(
+    this.dependencyTreeData = getDependenciesPackableElementTreeData(
       this.editorStore,
-      this.editorStore.graphManagerState.graph.dependencyManager.root,
+      this.editorStore.graphManagerState.graph.dependencyManager.roots,
       ExplorerTreeRootPackageLabel.PROJECT_DEPENDENCY,
     );
+  }
+
+  openExplorerTreeNodes(
+    mainTreeOpenedNodeIds: string[],
+    generationTreeOpenedNodeIds: string[],
+    selectedNodeId: string | undefined,
+  ): void {
+    // Main tree
+    {
+      const openElements = new Set(
+        mainTreeOpenedNodeIds
+          .map((id) =>
+            this.editorStore.graphManagerState.graph.getNullableElement(
+              id,
+              true,
+            ),
+          )
+          .filter(isNonNullable),
+      );
+      openNodes(
+        this.editorStore,
+        this.editorStore.graphManagerState.graph.root,
+        openElements,
+        guaranteeNonNullable(this.treeData),
+      );
+    }
+    // Generated tree
+    {
+      const openElements = new Set(
+        generationTreeOpenedNodeIds
+          .map((id) =>
+            this.editorStore.graphManagerState.graph.generationModel.getOwnNullableElement(
+              id,
+              true,
+            ),
+          )
+          .filter(isNonNullable),
+      );
+      openNodes(
+        this.editorStore,
+        this.editorStore.graphManagerState.graph.generationModel.root,
+        openElements,
+        guaranteeNonNullable(this.generationTreeData),
+      );
+      if (
+        generationTreeOpenedNodeIds.includes(ROOT_PACKAGE_NAME.MODEL_GENERATION)
+      ) {
+        openNodeById(
+          ROOT_PACKAGE_NAME.MODEL_GENERATION,
+          this.generationTreeData,
+        );
+      }
+    }
+    {
+      if (selectedNodeId) {
+        const element =
+          this.editorStore.graphManagerState.graph.getNullableElement(
+            selectedNodeId,
+          );
+        if (element) {
+          const openingNode =
+            openNode(
+              this.editorStore,
+              element,
+              guaranteeNonNullable(this.treeData),
+            ) ??
+            openNode(
+              this.editorStore,
+              element,
+              guaranteeNonNullable(this.generationTreeData),
+            );
+          // ?? openNode(element, this.systemTreeData)
+          // ?? openNode(element, this.legalTreeData)
+          // ?? openNode(element, this.dependencyTreeData);
+          this.setSelectedNode(openingNode);
+        } else {
+          this.setSelectedNode(undefined);
+        }
+      }
+    }
   }
 
   /**
@@ -216,9 +333,9 @@ export class ExplorerTreeState {
       );
     }
     if (!this.dependencyTreeData) {
-      this.dependencyTreeData = getPackableElementTreeData(
+      this.dependencyTreeData = getDependenciesPackableElementTreeData(
         this.editorStore,
-        this.editorStore.graphManagerState.graph.dependencyManager.root,
+        this.editorStore.graphManagerState.graph.dependencyManager.roots,
         ExplorerTreeRootPackageLabel.PROJECT_DEPENDENCY,
       );
     }
@@ -288,7 +405,7 @@ export class ExplorerTreeState {
     }
     // File generation tree
     // TODO: fix this so it does proper reprocessing, right now it just rebuilds
-    this.fileGenerationTreeData = getGenerationTreeData(
+    this.fileGenerationTreeData = getFileSystemTreeData(
       this.editorStore.graphState.graphGenerationState.rootFileDirectory,
       ExplorerTreeRootPackageLabel.FILE_GENERATION,
     );
@@ -329,7 +446,12 @@ export class ExplorerTreeState {
     if (node.childrenIds?.length) {
       node.isOpen = !node.isOpen;
       if (node.packageableElement instanceof Package) {
-        populatePackageTreeNodeChildren(this.editorStore, node, treeData);
+        populatePackageTreeNodeChildren(
+          this.editorStore,
+          node,
+          treeData,
+          rootPackageName === ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT,
+        );
       }
     }
     this.setSelectedNode(node);
@@ -387,13 +509,15 @@ export class ExplorerTreeState {
       this.setSelectedNode(openingNode);
       opened = true;
     } else if (
-      rootPackageName === ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT &&
+      isDependencyElement(element, this.editorStore.graphManagerState.graph) &&
       this.dependencyTreeData
     ) {
       const openingNode = openNode(
         this.editorStore,
         element,
         this.dependencyTreeData,
+        undefined,
+        true,
       );
       this.setSelectedNode(openingNode);
       opened = true;
@@ -406,7 +530,7 @@ export class ExplorerTreeState {
     }
   }
 
-  getFileGenerationTreeData(): TreeData<GenerationTreeNodeData> {
+  getFileGenerationTreeData(): TreeData<FileSystemTreeNodeData> {
     return guaranteeNonNullable(
       this.fileGenerationTreeData,
       'File generation tree data has not been initialized',

@@ -90,6 +90,7 @@ export {
   FaBuffer as BufferIcon, // to be reviewed, moved to LegendIcon
   FaSitemap as SitemapIcon, // to be reviewed, moved to LegendIcon
   FaExpand as ExpandIcon,
+  FaExpandArrowsAlt as ExpandAllIcon,
   FaBrush as BrushIcon,
   FaSortAlphaDown as SortDownIcon,
   FaSort as SortIcon,
@@ -184,6 +185,7 @@ export {
   VscOpenPreview as OpenPreviewIcon,
   VscDiff as DiffIcon,
   VscRegex as RegexIcon,
+  VscVersions as VersionsIcon,
   VscCaseSensitive as CaseSensitiveIcon,
 } from 'react-icons/vsc';
 export {

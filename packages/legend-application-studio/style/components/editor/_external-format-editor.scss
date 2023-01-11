@@ -213,6 +213,10 @@
     background: var(--color-light-grey-100);
     color: var(--color-light-grey-50);
   }
+
+  &__model-unit-editor {
+    padding: 2rem;
+  }
 }
 
 .schema-set-panel {
@@ -524,8 +528,7 @@
   }
 }
 
-.binding-scope-editor {
-  height: 48rem;
+.model-unit-editor {
   background: var(--color-dark-grey-50);
 
   &__panel__header {
@@ -544,8 +547,6 @@
   }
 
   &__panel__content__form {
-    padding: 0 2rem 2rem;
-
     &__section {
       cursor: default;
       margin: 0.5rem 0 3rem;
@@ -576,7 +577,7 @@
   }
 }
 
-.binding-scope-entry-editor {
+.model-unit-entry-editor {
   display: flex;
 
   &__element {
