@@ -1,0 +1,47 @@
+###Relational
+Database model::Test
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY
+  )
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+
+  Join FirmPerson(PersonTable.firm_id = FirmTable.id)
+)
+
+
+###Pure
+Class model::Firm
+{
+  name: String[1];
+  employees: model::Person[1..*];
+}
+
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+
+###Mapping
+Mapping model::NewMapping
+(
+  *model::Firm: Relational
+  {
+    ~groupBy
+    (
+      [model::Test]FirmTable.id,
+      [model::Test]PersonTable.firstName
+    )
+    ~mainTable [model::Test]PersonTable
+    name: [model::Test]PersonTable.firstName
+  }
+)
