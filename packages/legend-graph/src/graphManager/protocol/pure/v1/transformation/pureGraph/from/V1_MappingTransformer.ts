@@ -950,6 +950,13 @@ const transformRootRelationalSetImpl = (
   classMapping.primaryKey = element.primaryKey.map((pk) =>
     V1_transformRelationalOperationElement(pk, context),
   );
+
+  if (element.groupBy) {
+    classMapping.groupBy = element.groupBy.columns.map((pk) =>
+      V1_transformRelationalOperationElement(pk, context),
+    );
+  }
+
   if (element.filter) {
     const filter = new V1_FilterMapping();
     const filterPointer = new V1_FilterPointer();

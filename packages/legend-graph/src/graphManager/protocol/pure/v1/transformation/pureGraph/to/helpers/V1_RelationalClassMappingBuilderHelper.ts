@@ -53,9 +53,11 @@ export const V1_buildRelationalClassMapping = (
     ? context.resolveClass(relationalClassMapping.class)
     : immediateParent.class;
   // TODO localMappingProperties
+
   immediateParent.primaryKey = relationalClassMapping.primaryKey.map((key) =>
     V1_buildRelationalOperationElement(key, context, tableAliasIndex, []),
   );
+
   immediateParent.propertyMappings =
     relationalClassMapping.propertyMappings.map((propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(
@@ -76,9 +78,7 @@ export const V1_buildRelationalPrimaryKey = (
   rootRelational: RootRelationalInstanceSetImplementation,
 ): void => {
   // TODO handle distinct
-  if (rootRelational.groupBy) {
-    rootRelational.primaryKey = rootRelational.groupBy.columns;
-  } else if (!rootRelational.primaryKey.length) {
+  if (!rootRelational.groupBy && !rootRelational.primaryKey.length) {
     const relation = rootRelational.mainTableAlias?.relation.value;
     const mainTable = rootRelational.mainTableAlias;
     let columns: Column[] = [];
