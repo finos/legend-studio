@@ -594,7 +594,7 @@ const LambdaEditorPopUp = observer(
               ),
             },
             {
-              'query-editor--light':
+              'lambda-editor--light':
                 applicationStore.TEMPORARY__isLightThemeEnabled,
             },
           )}

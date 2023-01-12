@@ -27,6 +27,7 @@ import {
   toTitleCase,
   TITLE_CASE_EXCEPTION_WORDS,
   isCamelCase,
+  parseCSVString,
 } from '../FormatterUtils.js';
 import { unitTest } from '../../application/TestUtils.js';
 
@@ -128,4 +129,22 @@ test(unitTest('Format lossless JSON'), () => {
   expect(tryToMinifyLosslessJSONString('{"a": "1.00000"}')).toEqual(
     '{"a":"1.00000"}',
   );
+});
+
+test(unitTest('Separate String to List'), () => {
+  const stringSingleWord = 'value';
+  expect(parseCSVString(stringSingleWord)).toEqual(['value']);
+
+  const stringSeparatedByComma = '5,2,8';
+  expect(parseCSVString(stringSeparatedByComma)).toEqual(['5', '2', '8']);
+
+  const stringSeparatedByNewLine = '4\n9\n1';
+  expect(parseCSVString(stringSeparatedByNewLine)).toEqual(['4', '9', '1']);
+
+  const stringNewLinesAndCommas = '5,2,8,4\n2,0,1,0\n9,1';
+  expect(parseCSVString(stringNewLinesAndCommas)).toEqual([
+    '5,2,8,4',
+    '2,0,1,0',
+    '9,1',
+  ]);
 });

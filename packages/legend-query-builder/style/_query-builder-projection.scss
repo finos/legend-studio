@@ -248,6 +248,10 @@
     padding: 2rem;
     width: 100%;
 
+    .panel__content__form__section__list__item:hover {
+      background: unset;
+    }
+
     &__sort {
       display: flex;
       width: 100%;

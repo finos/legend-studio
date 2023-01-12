@@ -29,6 +29,9 @@ import {
   SaveIcon,
   PencilIcon,
   DragPreviewLayer,
+  FilledWindowMaximizeIcon,
+  BasePopover,
+  PanelFormSection,
 } from '@finos/legend-art';
 import {
   type Enum,
@@ -58,6 +61,7 @@ import {
   isNonNullable,
   returnUndefOnError,
   uniq,
+  parseCSVString,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -465,31 +469,14 @@ const setCollectionValue = (
     return;
   }
   let result: unknown[] = [];
-  let parseResult = CSVParser.parse<string[]>(value.trim(), {
-    delimiter: ',',
-  });
-  if (parseResult.data[0]?.length === 1) {
-    parseResult = CSVParser.parse<string[]>(value.trim(), {
-      delimiter: '\\n',
-    });
+
+  const parseData = parseCSVString(value);
+
+  if (!parseData) {
+    return;
   }
-  const parseData = parseResult.data[0] as string[]; // only take the first line
-  if (parseResult.errors.length) {
-    if (
-      parseResult.errors[0] &&
-      parseResult.errors[0].code === 'UndetectableDelimiter' &&
-      parseResult.errors[0].type === 'Delimiter' &&
-      parseResult.data.length === 1
-    ) {
-      // NOTE: this happens when the user only put one item in the value input
-      // we can go the other way by ensure the input has a comma but this is arguably neater
-      // as it tinkers with the parser
-    } else {
-      // there were some parsing error, escape
-      // NOTE: ideally, we could show a warning here
-      return;
-    }
-  } else if (expectedType instanceof PrimitiveType) {
+
+  if (expectedType instanceof PrimitiveType) {
     switch (expectedType.path) {
       case PRIMITIVE_TYPE.STRING: {
         result = uniq(parseData)
@@ -573,6 +560,8 @@ const CollectionValueInstanceValueEditor = observer(
     const inputRef = useRef<HTMLInputElement>(null);
     const [text, setText] = useState(stringifyValue(valueSpecification.values));
     const [editable, setEditable] = useState(false);
+    const [showAdvancedEditorPopover, setShowAdvancedEditorPopover] =
+      useState(false);
     const valueText = stringifyValue(valueSpecification.values);
     const previewText = `List(${
       valueSpecification.values.length === 0
@@ -590,12 +579,19 @@ const CollectionValueInstanceValueEditor = observer(
     const enableEdit = (): void => setEditable(true);
     const saveEdit = (): void => {
       setEditable(false);
+      setShowAdvancedEditorPopover(false);
       setCollectionValue(valueSpecification, expectedType, text);
       setText(stringifyValue(valueSpecification.values));
       setValueSpecification(valueSpecification);
     };
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       setText(event.target.value);
+    };
+    const changeValueTextArea: React.ChangeEventHandler<HTMLTextAreaElement> = (
+      event,
+    ) => {
+      setText(event.target.value);
+    };
 
     // focus the input box when edit is enabled
     useEffect(() => {
@@ -606,29 +602,66 @@ const CollectionValueInstanceValueEditor = observer(
 
     if (editable) {
       return (
-        <div className={clsx('value-spec-editor', className)}>
-          <input
-            ref={inputRef}
-            className="panel__content__form__section__input value-spec-editor__input"
-            spellCheck={false}
-            value={text}
-            placeholder={text === '' ? '(empty)' : undefined}
-            onChange={changeValue}
-          />
-          <button
-            className="value-spec-editor__list-editor__save-button btn--dark"
-            onClick={saveEdit}
-          >
-            <SaveIcon />
-          </button>
-          <button
-            className="value-spec-editor__reset-btn"
-            title="Reset"
-            onClick={resetValue}
-          >
-            <RefreshIcon />
-          </button>
-        </div>
+        <>
+          {showAdvancedEditorPopover && (
+            <BasePopover
+              onClose={() => setShowAdvancedEditorPopover(false)}
+              open={showAdvancedEditorPopover}
+              anchorEl={inputRef.current}
+            >
+              <textarea
+                className="panel__content__form__section__input value-spec-editor__list-editor__textarea"
+                spellCheck={false}
+                value={text}
+                placeholder={text === '' ? '(empty)' : undefined}
+                onChange={changeValueTextArea}
+                onKeyDown={(event): void => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    saveEdit();
+                  }
+                }}
+              />
+              <PanelFormSection>
+                <div className="value-spec-editor__list-editor__textarea__description">
+                  Hit Enter to Apply Change
+                </div>
+              </PanelFormSection>
+            </BasePopover>
+          )}
+          <div className={clsx('value-spec-editor', className)}>
+            <input
+              ref={inputRef}
+              className={clsx(
+                'panel__content__form__section__input value-spec-editor__input',
+              )}
+              spellCheck={false}
+              value={text}
+              placeholder={text === '' ? '(empty)' : undefined}
+              onChange={changeValue}
+            />
+            <button
+              className="value-spec-editor__list-editor__expand-button btn--dark"
+              onClick={() => setShowAdvancedEditorPopover(true)}
+              tabIndex={-1}
+              title="Expand window..."
+            >
+              <FilledWindowMaximizeIcon />
+            </button>
+            <button
+              className="value-spec-editor__list-editor__save-button btn--dark"
+              onClick={saveEdit}
+            >
+              <SaveIcon />
+            </button>
+            <button
+              className="value-spec-editor__reset-btn"
+              title="Reset"
+              onClick={resetValue}
+            >
+              <RefreshIcon />
+            </button>
+          </div>
+        </>
       );
     }
     return (

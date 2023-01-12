@@ -20,14 +20,13 @@ import {
   Dialog,
   CustomSelectorInput,
   CheckSquareIcon,
-  SortDownIcon,
-  SortDownAltIcon,
   SquareIcon,
   TimesIcon,
   Modal,
   ModalBody,
   ModalFooter,
   ModalHeader,
+  SortIcon,
 } from '@finos/legend-art';
 import {
   COLUMN_SORT_TYPE,
@@ -93,11 +92,7 @@ const ColumnSortEditor = observer(
           tabIndex={-1}
           onClick={toggleSortType}
         >
-          {sortType === COLUMN_SORT_TYPE.ASC ? (
-            <SortDownIcon />
-          ) : (
-            <SortDownAltIcon />
-          )}
+          <SortIcon />
         </button>
         <button
           className="query-builder__projection__options__sort__remove-btn btn--dark btn--caution"
