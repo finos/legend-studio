@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 0.6.16
+
+### Patch Changes
+
+- [#1730](https://github.com/finos/legend-studio/pull/1730) [`0026b7986`](https://github.com/finos/legend-studio/commit/0026b79867b8783fc507618e8a0131c7021b018e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Improve query execution test flow.
+
+- [#1669](https://github.com/finos/legend-studio/pull/1669) [`04bec8146`](https://github.com/finos/legend-studio/commit/04bec8146730311355d9debe77f28db79d4b800c) ([@xannem](https://github.com/xannem)) - Light mode styling fixes in query builder and allow new line delimiter for query filter value spec.
+
 ## 0.6.15
 
 ## 0.6.14

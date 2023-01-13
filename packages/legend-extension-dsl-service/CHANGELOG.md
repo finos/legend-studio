@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-service
 
+## 0.1.16
+
+### Patch Changes
+
+- [#1685](https://github.com/finos/legend-studio/pull/1685) [`50120dbef`](https://github.com/finos/legend-studio/commit/50120dbef670a71010726f44dfb03b8a65b9b5ff) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support a searchable dropdown for adding service owners ([#1683](https://github.com/finos/legend-studio/issues/1683)).
+
 ## 0.1.15
 
 ## 0.1.14
