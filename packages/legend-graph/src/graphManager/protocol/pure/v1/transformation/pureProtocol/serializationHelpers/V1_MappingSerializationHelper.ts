@@ -118,7 +118,7 @@ import {
   V1_serializeTestSuite,
   V1_TestSuiteType,
 } from './V1_TestSerializationHelper.js';
-import { V1_StoreTestData } from '../../../model/packageableElements/mapping/V1_StoreTestData.js';
+import { V1_MappingTestData } from '../../../model/packageableElements/mapping/V1_MappingTestData.js';
 import {
   V1_deserializeEmbeddedDataType,
   V1_serializeEmbeddedDataType,
@@ -861,8 +861,8 @@ const V1_mappingTestModelLegacySchema = createModelSchema(
 
 export const V1_storeTestDataModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_StoreTestData> =>
-  createModelSchema(V1_StoreTestData, {
+): ModelSchema<V1_MappingTestData> =>
+  createModelSchema(V1_MappingTestData, {
     data: custom(
       (val) => V1_serializeEmbeddedDataType(val, plugins),
       (val) => V1_deserializeEmbeddedDataType(val, plugins),

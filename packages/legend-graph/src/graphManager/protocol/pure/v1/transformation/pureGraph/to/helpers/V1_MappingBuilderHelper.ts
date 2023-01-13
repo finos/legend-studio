@@ -77,8 +77,8 @@ import { V1_MappingTest } from '../../../../model/packageableElements/mapping/V1
 import type { TestSuite } from '../../../../../../../../graph/metamodel/pure/test/Test.js';
 import { MappingTest } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
 import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
-import type { V1_StoreTestData } from '../../../../model/packageableElements/mapping/V1_StoreTestData.js';
-import { StoreTestData } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/StoreTestData.js';
+import type { V1_MappingTestData } from '../../../../model/packageableElements/mapping/V1_MappingTestData.js';
+import { MappingTestData } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestData.js';
 import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
 import { ModelStore } from '../../../../../../../../DSL_Mapping_Exports.js';
 
@@ -210,10 +210,10 @@ export const V1_buildMappingInclude = (
 };
 
 const buildStoreTestData = (
-  element: V1_StoreTestData,
+  element: V1_MappingTestData,
   context: V1_GraphBuilderContext,
-): StoreTestData => {
-  const storeTestData = new StoreTestData();
+): MappingTestData => {
+  const storeTestData = new MappingTestData();
   if (element.store === ModelStore.NAME) {
     storeTestData.store = PackageableElementExplicitReference.create(
       ModelStore.INSTANCE,
