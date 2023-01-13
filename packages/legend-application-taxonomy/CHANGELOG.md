@@ -1,5 +1,7 @@
 # @finos/legend-application-taxonomy
 
+## 6.2.29
+
 ## 6.2.28
 
 ## 6.2.27

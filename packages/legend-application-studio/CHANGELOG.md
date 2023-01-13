@@ -1,5 +1,23 @@
 # @finos/legend-application-studio
 
+## 22.3.0
+
+### Minor Changes
+
+- [#1803](https://github.com/finos/legend-studio/pull/1803) [`713a04ce0`](https://github.com/finos/legend-studio/commit/713a04ce07e1d7adb6de4da08f3f8d5d0059445e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable testing and execution via service editor for inline queries.
+
+### Patch Changes
+
+- [#1801](https://github.com/finos/legend-studio/pull/1801) [`6921fd220`](https://github.com/finos/legend-studio/commit/6921fd220c69aee176d6eb8bef524b1864074eba) ([@gayathrir11](https://github.com/gayathrir11)) - Fix global test runner not showing status of test run for services with multi execution.
+
+- [#1809](https://github.com/finos/legend-studio/pull/1809) [`06c85020b`](https://github.com/finos/legend-studio/commit/06c85020bb18d390607540bfd5fa556f34c67d8e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add external format schema generation to element generation dropdowns.
+
+- [#1685](https://github.com/finos/legend-studio/pull/1685) [`50120dbef`](https://github.com/finos/legend-studio/commit/50120dbef670a71010726f44dfb03b8a65b9b5ff) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support a searchable dropdown for adding service owners ([#1683](https://github.com/finos/legend-studio/issues/1683)).
+
+- [#1785](https://github.com/finos/legend-studio/pull/1785) [`4b50e4cb0`](https://github.com/finos/legend-studio/commit/4b50e4cb0f9e39efc8ed17ac966f279c67d65a19) ([@gayathrir11](https://github.com/gayathrir11)) - Show dependency project information in explorer panel.
+
+- [#1808](https://github.com/finos/legend-studio/pull/1808) [`7552ac698`](https://github.com/finos/legend-studio/commit/7552ac698a91c2ab1fca753d19b26ce889f91aff) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support opening query builder by double-clicking the read-only query in the service execution tab.
+
 ## 22.2.1
 
 ## 22.2.0
