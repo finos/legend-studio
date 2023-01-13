@@ -277,7 +277,7 @@ export const QueryBuilder = observer(
                       className="panel__header__action"
                       onClick={openWatermark}
                       tabIndex={-1}
-                      title="Edit Watermark"
+                      title="Show Watermark"
                     >
                       <WaterDropIcon />
                     </button>
@@ -421,7 +421,7 @@ export const QueryBuilder = observer(
                         <MenuContentItem onClick={openWatermark}>
                           <MenuContentItemIcon>{null}</MenuContentItemIcon>
                           <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Edit Watermark
+                            Show Watermark
                           </MenuContentItemLabel>
                         </MenuContentItem>
                       </MenuContent>
