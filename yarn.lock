@@ -65,6 +65,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ag-grid-community/styles@npm:29.0.0":
+  version: 29.0.0
+  resolution: "@ag-grid-community/styles@npm:29.0.0"
+  checksum: a9643047028b8463b3990a187c1ff62bb477af70064714f1318f5b5f7aa5a2cdec280c542c031cd5ac0af931478fb53fe0d3c9de7ec4e3999447a86363f207d0
+  languageName: node
+  linkType: hard
+
 "@ampproject/remapping@npm:^2.1.0":
   version: 2.2.0
   resolution: "@ampproject/remapping@npm:2.2.0"
@@ -2902,6 +2909,7 @@ __metadata:
     "@ag-grid-community/client-side-row-model": 29.0.0
     "@ag-grid-community/core": 29.0.0
     "@ag-grid-community/react": 29.0.0
+    "@ag-grid-community/styles": 29.0.0
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
