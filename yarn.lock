@@ -36,32 +36,32 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ag-grid-community/client-side-row-model@npm:28.2.1":
-  version: 28.2.1
-  resolution: "@ag-grid-community/client-side-row-model@npm:28.2.1"
+"@ag-grid-community/client-side-row-model@npm:29.0.0":
+  version: 29.0.0
+  resolution: "@ag-grid-community/client-side-row-model@npm:29.0.0"
   dependencies:
-    "@ag-grid-community/core": ~28.2.1
-  checksum: cdd6c74b6a5b44ace07da0cc1797f5f38646cf25ef51d43d3c02aa0ccd702437490a4ce9fd9db2dfcbeefd1edd4e48bd82052e2596e2cfbe8618df8bdcd90b27
+    "@ag-grid-community/core": ~29.0.0
+  checksum: d3d22f09521c5e82084f88aa83d0a0494c9411f7d82abfc3d3af86249577a6027b9891afcfee1c43d46c2e28719cf326fc9d0d8688bec87d9f71b6a537e1d6f4
   languageName: node
   linkType: hard
 
-"@ag-grid-community/core@npm:28.2.1, @ag-grid-community/core@npm:~28.2.1":
-  version: 28.2.1
-  resolution: "@ag-grid-community/core@npm:28.2.1"
-  checksum: da64f8412f33b7b76067f169a1dc867f3641e10e9b3344edec3f26dc792ba2245dd4afca0fe1788c71c6c96ffac04ca4ea30ec43551b77bfab178c9b68b761ec
+"@ag-grid-community/core@npm:29.0.0, @ag-grid-community/core@npm:~29.0.0":
+  version: 29.0.0
+  resolution: "@ag-grid-community/core@npm:29.0.0"
+  checksum: 0133d83ab2991c0e1821815fe30af4fba3887eea229f332c1a7595e1b522d6dd9c1e03ea1d35e3e0b8967f365e705b28f49a3476a8f7c9ba77c31a22534b088c
   languageName: node
   linkType: hard
 
-"@ag-grid-community/react@npm:28.2.1":
-  version: 28.2.1
-  resolution: "@ag-grid-community/react@npm:28.2.1"
+"@ag-grid-community/react@npm:29.0.0":
+  version: 29.0.0
+  resolution: "@ag-grid-community/react@npm:29.0.0"
   dependencies:
     prop-types: ^15.8.1
   peerDependencies:
-    "@ag-grid-community/core": ~28.2.1
+    "@ag-grid-community/core": ~29.0.0
     react: ^16.3.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.3.0 || ^17.0.0 || ^18.0.0
-  checksum: cbdb6886f2e295723f64874b517dd914d0b75f99a0d9229a636bff2764263ac49aff38ea7e63a7142557d55249122393f8116246b91dfcde60099fdfd8c56a97
+  checksum: fa733deff74999498d0c703f42b6301a7fe091a52c3aba5ed2672ed84d72353cef3d3ac0dac6df5cde5e1c4e9b1ba9809535aa2534e6677aced9c67f07383164
   languageName: node
   linkType: hard
 
@@ -1989,7 +1989,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.32.0
     react-refresh: 0.14.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     typescript: 4.9.4
   peerDependencies:
     "@babel/core": ^7.0.0
@@ -2012,7 +2012,7 @@ __metadata:
     eslint-plugin-react-hooks: 4.6.0
     micromatch: 4.0.5
     prettier: 2.8.3
-    rimraf: 3.0.2
+    rimraf: 4.0.4
   peerDependencies:
     eslint: ^8.0.0
     prettier: ^2.0.0
@@ -2029,7 +2029,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.32.0
     npm-run-all: 4.1.5
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     typescript: 4.9.4
     webpack: 5.75.0
     webpack-bundle-analyzer: 4.7.0
@@ -2061,7 +2061,7 @@ __metadata:
     react: 18.2.0
     react-dnd: 16.0.1
     react-dom: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2094,7 +2094,7 @@ __metadata:
     eslint: 8.32.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     typescript: 4.9.4
   languageName: unknown
@@ -2110,7 +2110,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.32.0
     npm-run-all: 4.1.5
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     typescript: 4.9.4
     webpack: 5.75.0
     webpack-bundle-analyzer: 4.7.0
@@ -2143,7 +2143,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2177,7 +2177,7 @@ __metadata:
     eslint: 8.32.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     typescript: 4.9.4
   languageName: unknown
@@ -2193,7 +2193,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.32.0
     npm-run-all: 4.1.5
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     typescript: 4.9.4
     webpack: 5.75.0
     webpack-bundle-analyzer: 4.7.0
@@ -2231,7 +2231,7 @@ __metadata:
     react: 18.2.0
     react-dnd: 16.0.1
     react-dom: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2257,7 +2257,7 @@ __metadata:
     eslint: 8.32.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     typescript: 4.9.4
   languageName: unknown
@@ -2273,7 +2273,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.32.0
     npm-run-all: 4.1.5
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     typescript: 4.9.4
     webpack: 5.75.0
     webpack-bundle-analyzer: 4.7.0
@@ -2305,7 +2305,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2342,7 +2342,7 @@ __metadata:
     react-draggable: 4.4.5
     react-router: 5.3.4
     react-router-dom: 5.3.4
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     sql-formatter: 12.1.0
@@ -2389,7 +2389,7 @@ __metadata:
     react-select: 4.3.1
     react-window: 1.8.8
     remark-gfm: 3.0.1
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     typescript: 4.9.4
   peerDependencies:
@@ -2439,7 +2439,7 @@ __metadata:
     postcss-loader: 7.0.2
     react-refresh: 0.14.0
     resolve: 1.22.1
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     sass-loader: 13.2.0
     typescript: 4.9.4
@@ -2472,7 +2472,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2505,7 +2505,7 @@ __metadata:
     react: 18.2.0
     react-dnd: 16.0.1
     react-dom: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2533,7 +2533,7 @@ __metadata:
     mobx: 6.7.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2561,7 +2561,7 @@ __metadata:
     mobx: 6.7.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
@@ -2588,7 +2588,7 @@ __metadata:
     mobx: 6.7.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2622,7 +2622,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2651,7 +2651,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2672,7 +2672,7 @@ __metadata:
     eslint: 8.32.0
     jest: 29.4.1
     npm-run-all: 4.1.5
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     typescript: 4.9.4
   languageName: unknown
   linkType: soft
@@ -2690,7 +2690,7 @@ __metadata:
     eslint: 8.32.0
     jest: 29.4.1
     npm-run-all: 4.1.5
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     typescript: 4.9.4
   languageName: unknown
@@ -2716,7 +2716,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2745,7 +2745,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2774,7 +2774,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2796,7 +2796,7 @@ __metadata:
     jest: 29.4.1
     npm-run-all: 4.1.5
     opentracing: 0.14.7
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     typescript: 4.9.4
     zipkin: 0.22.0
     zipkin-javascript-opentracing: 3.0.0
@@ -2815,7 +2815,7 @@ __metadata:
     fastify: 4.12.0
     nodemon: 2.0.20
     npm-run-all: 4.1.5
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     typescript: 4.9.4
   languageName: unknown
   linkType: soft
@@ -2835,7 +2835,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     serializr: 3.0.2
     typescript: 4.9.4
   languageName: unknown
@@ -2861,7 +2861,7 @@ __metadata:
     eslint: 8.32.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     typedoc: 0.23.24
     typescript: 4.9.4
   languageName: unknown
@@ -2890,7 +2890,7 @@ __metadata:
     eslint: 8.32.0
     jest: 29.4.1
     npm-run-all: 4.1.5
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     typescript: 4.9.4
   languageName: unknown
   linkType: soft
@@ -2899,9 +2899,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-query-builder@workspace:packages/legend-query-builder"
   dependencies:
-    "@ag-grid-community/client-side-row-model": 28.2.1
-    "@ag-grid-community/core": 28.2.1
-    "@ag-grid-community/react": 28.2.1
+    "@ag-grid-community/client-side-row-model": 29.0.0
+    "@ag-grid-community/core": 29.0.0
+    "@ag-grid-community/react": 29.0.0
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
@@ -2925,7 +2925,7 @@ __metadata:
     react: 18.2.0
     react-dnd: 16.0.1
     react-dom: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2949,7 +2949,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     serializr: 3.0.2
     typescript: 4.9.4
   languageName: unknown
@@ -2970,7 +2970,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     serializr: 3.0.2
     typescript: 4.9.4
   languageName: unknown
@@ -3005,7 +3005,7 @@ __metadata:
     papaparse: 5.3.2
     pretty-format: 29.4.1
     query-string: 8.1.0
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     seedrandom: 3.0.5
     serializr: 3.0.2
     typescript: 4.9.4
@@ -3025,7 +3025,7 @@ __metadata:
     jest: 29.4.1
     lodash: 4.17.21
     npm-run-all: 4.1.5
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     typescript: 4.9.4
   languageName: unknown
   linkType: soft
@@ -3038,7 +3038,7 @@ __metadata:
     eslint: 8.32.0
     postcss: 8.4.21
     postcss-scss: 4.0.6
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     stylelint-config-prettier: 9.0.4
     stylelint-config-standard: 29.0.0
     stylelint-scss: 4.3.0
@@ -10348,7 +10348,7 @@ __metadata:
     micromatch: 4.0.5
     npm-run-all: 4.1.5
     prettier: 2.8.3
-    rimraf: 3.0.2
+    rimraf: 4.0.4
     sass: 1.57.1
     semver: 7.3.8
     sort-package-json: 2.2.0
@@ -14027,14 +14027,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rimraf@npm:3.0.2, rimraf@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "rimraf@npm:3.0.2"
-  dependencies:
-    glob: ^7.1.3
+"rimraf@npm:4.0.4":
+  version: 4.0.4
+  resolution: "rimraf@npm:4.0.4"
   bin:
-    rimraf: bin.js
-  checksum: 87f4164e396f0171b0a3386cc1877a817f572148ee13a7e113b238e48e8a9f2f31d009a92ec38a591ff1567d9662c6b67fd8818a2dbbaed74bc26a87a2a4a9a0
+    rimraf: dist/cjs/src/bin.js
+  checksum: a3296ea15c79fe3da0bae06a484dd8b8ec1e6d3044b02f05ce27575ef23c856e37eef6e71a668ce0e263da594a05ace1e88be6f42200f1fbbf433b57121bae32
   languageName: node
   linkType: hard
 
@@ -14046,6 +14044,17 @@ __metadata:
   bin:
     rimraf: ./bin.js
   checksum: cdc7f6eacb17927f2a075117a823e1c5951792c6498ebcce81ca8203454a811d4cf8900314154d3259bb8f0b42ab17f67396a8694a54cae3283326e57ad250cd
+  languageName: node
+  linkType: hard
+
+"rimraf@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "rimraf@npm:3.0.2"
+  dependencies:
+    glob: ^7.1.3
+  bin:
+    rimraf: bin.js
+  checksum: 87f4164e396f0171b0a3386cc1877a817f572148ee13a7e113b238e48e8a9f2f31d009a92ec38a591ff1567d9662c6b67fd8818a2dbbaed74bc26a87a2a4a9a0
   languageName: node
   linkType: hard
 
