@@ -115,17 +115,17 @@ export const EditPanel = observer(() => {
           <div className="edit-panel__header__tab__icon">
             <FileAltIcon className="edit-panel__header__tab__icon--file" />
           </div>
-          {editorState.file.RO && (
-            <div className="edit-panel__header__tab__icon">
-              <LockIcon className="edit-panel__header__tab__icon--readonly" />
-            </div>
-          )}
           <div className="edit-panel__header__tab__label">
             {editorState.fileName}
           </div>
           {showMoreInfo && (
             <div className="edit-panel__header__tab__path">
               {editorState.filePath}
+            </div>
+          )}
+          {editorState.file.RO && (
+            <div className="edit-panel__header__tab__icon">
+              <LockIcon className="edit-panel__header__tab__icon--readonly" />
             </div>
           )}
         </div>
