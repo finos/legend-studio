@@ -62,7 +62,7 @@ import {
   SIMPLE_FUNCTION_SNIPPET,
   SIMPLE_PROFILE_SNIPPET,
   BLANK_DIAGRAM_SNIPPET,
-  COPYRIGHT_HEADER_SNIPPET,
+  getCopyrightHeaderSnippet,
 } from './LegendPureIDECodeSnippets.js';
 
 // NOTE: these are technically different parsers compared to the ones we have in `Legend Engine` so we will
@@ -233,13 +233,13 @@ export const getCopyrightHeaderSuggestions =
 
     results.push({
       label: {
-        label: `#copyright`,
+        label: `/copyright`,
         description: `(copyright header)`,
       },
       kind: monacoLanguagesAPI.CompletionItemKind.Snippet,
       insertTextRules:
         monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
-      insertText: COPYRIGHT_HEADER_SNIPPET,
+      insertText: getCopyrightHeaderSnippet(),
       // NOTE: only show this suggestion when the cursor is on the first line of the file
       range: {
         startLineNumber: 1,

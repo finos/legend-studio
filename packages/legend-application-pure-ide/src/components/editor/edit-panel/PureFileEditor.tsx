@@ -381,7 +381,7 @@ export const PureFileEditor = observer(
     pureConstructSuggestionProviderDisposer.current?.dispose();
     pureConstructSuggestionProviderDisposer.current =
       monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
-        triggerCharacters: ['#', ':', '>', '.', '@', '^', '$'],
+        triggerCharacters: ['/', '#', ':', '>', '.', '@', '^', '$'],
         provideCompletionItems: async (model, position, context) => {
           let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
 
@@ -390,6 +390,13 @@ export const PureFileEditor = observer(
             monacoLanguagesAPI.CompletionTriggerKind.TriggerCharacter
           ) {
             switch (context.triggerCharacter) {
+              // special commands: copyright header, etc.
+              case '/': {
+                suggestions = suggestions.concat(
+                  getCopyrightHeaderSuggestions(),
+                );
+                break;
+              }
               // parser section header
               case '#': {
                 suggestions = suggestions.concat(
