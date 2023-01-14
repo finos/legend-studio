@@ -128,36 +128,38 @@ const FileTreeNodeContainer: React.FC<
   const isPlatformDirectory =
     node.data instanceof DirectoryNode &&
     node.data.li_attr.path === '/platform';
-  const isChildPlatformDirectory =
-    node.data instanceof DirectoryNode &&
-    node.data.li_attr.path.startsWith('/platform');
+  const isReadOnly = node.data.li_attr.RO;
   const isDirectory = node.data.isFolderNode;
   const isChildlessDirectory =
     node.data instanceof DirectoryNode && !node.data.children;
   const nodeIcon = isPlatformDirectory ? (
-    <WrenchIcon className="explorer__icon--platform" />
+    <WrenchIcon className="explorer__icon--readonly" />
   ) : isDirectory ? (
     isChildlessDirectory ? (
       <FolderIcon
-        className={clsx({
-          'explorer__icon--platform': isChildPlatformDirectory,
+        className={clsx('explorer__icon--folder', {
+          'explorer__icon--readonly': isReadOnly,
         })}
       />
     ) : node.isOpen ? (
       <FolderOpenIcon
-        className={clsx({
-          'explorer__icon--platform': isChildPlatformDirectory,
+        className={clsx('explorer__icon--folder', {
+          'explorer__icon--readonly': isReadOnly,
         })}
       />
     ) : (
       <FolderIcon
-        className={clsx({
-          'explorer__icon--platform': isChildPlatformDirectory,
+        className={clsx('explorer__icon--folder', {
+          'explorer__icon--readonly': isReadOnly,
         })}
       />
     )
   ) : (
-    <FileAltIcon className="explorer__icon--file" />
+    <FileAltIcon
+      className={clsx('explorer__icon--file', {
+        'explorer__icon--readonly': isReadOnly,
+      })}
+    />
   );
   const selectNode: React.MouseEventHandler = (event) => {
     event.stopPropagation();

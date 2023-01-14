@@ -60,13 +60,6 @@
     user-select: none;
   }
 
-  &__conent__container__message--failure {
-    font-size: 1.4rem;
-    font-weight: 500;
-    color: var(--color-red-180);
-    text-align: center;
-  }
-
   &__content {
     height: 100%;
     overflow-x: hidden;
@@ -202,8 +195,12 @@
       color: var(--color-file);
     }
 
-    &--platform {
-      color: var(--color-lime-75);
+    &--folder {
+      color: var(--color-yellow-80);
+    }
+
+    &--readonly {
+      color: var(--color-light-grey-400);
     }
   }
 }

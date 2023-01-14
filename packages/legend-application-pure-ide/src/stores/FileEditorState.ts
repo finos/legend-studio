@@ -221,7 +221,9 @@ export class FileEditorState
   }
 
   override get description(): string | undefined {
-    return `File: ${trimPathLeadingSlash(this.filePath)}`;
+    return `File: ${trimPathLeadingSlash(this.filePath)}${
+      this.file.RO ? ' (readonly)' : ''
+    }`;
   }
 
   get fileName(): string {

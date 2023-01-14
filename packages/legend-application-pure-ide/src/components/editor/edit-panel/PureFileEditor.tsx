@@ -175,6 +175,7 @@ export const PureFileEditor = observer(
           language: EDITOR_LANGUAGE.PURE,
           theme: EDITOR_THEME.LEGEND,
           wordWrap: editorState.textEditorState.wrapText ? 'on' : 'off',
+          readOnly: editorState.file.RO,
           contextmenu: true,
           // NOTE: since things like context-menus, tooltips are mounted into Shadow DOM
           // by default, we can't override their CSS by design, we need to disable Shadow DOM

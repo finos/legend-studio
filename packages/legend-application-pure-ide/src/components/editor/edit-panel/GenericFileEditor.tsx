@@ -161,6 +161,7 @@ export const GenericFileEditor = observer(
           ...getBaseTextEditorOptions(),
           theme: EDITOR_THEME.LEGEND,
           wordWrap: editorState.textEditorState.wrapText ? 'on' : 'off',
+          readOnly: editorState.file.RO,
         });
 
         newEditor.onDidChangeModelContent(() => {

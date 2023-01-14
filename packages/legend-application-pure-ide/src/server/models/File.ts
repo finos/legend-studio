@@ -24,6 +24,7 @@ export const trimPathLeadingSlash = (path: string): string =>
 
 export class File {
   content!: string;
+  RO!: boolean;
 
   constructor() {
     makeObservable(this, {
@@ -44,6 +45,7 @@ export class File {
 
 createModelSchema(File, {
   content: primitive(),
+  RO: primitive(),
 });
 
 export class FileCoordinate {
