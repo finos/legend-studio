@@ -329,8 +329,9 @@ export const PureFileEditor = observer(
           // where sometimes, hovering the mouse on the right half of the last character of a definition token
           // and then hitting Ctrl/Cmd key will not be trigger definition provider. We're not quite sure what
           // to do with that for the time being.
+          const lineContent = model.getLineContent(position.lineNumber);
           const lineTokens = monacoEditorAPI.tokenize(
-            model.getLineContent(position.lineNumber),
+            lineContent,
             EDITOR_LANGUAGE.PURE,
           )[0];
           if (!lineTokens) {
@@ -338,9 +339,14 @@ export const PureFileEditor = observer(
           }
           let currentToken: Token | undefined = undefined;
           let currentTokenRange: IRange | undefined = undefined;
-          for (let i = 1; i < lineTokens.length; ++i) {
-            const token = guaranteeNonNullable(lineTokens[i]);
-            if (token.offset + 1 > position.column) {
+          for (let i = 1; i <= lineTokens.length; ++i) {
+            // NOTE: here we have to account for the fact that the last token
+            // extends to the end of the line, and it could be a meaninful token
+            const tokenOffset =
+              i === lineTokens.length
+                ? lineContent.length
+                : guaranteeNonNullable(lineTokens[i]).offset;
+            if (tokenOffset + 1 > position.column) {
               currentToken = guaranteeNonNullable(lineTokens[i - 1]);
               // this is the selection of text from another file for peeking/preview the definition
               // We can't really do much here since we do goto-definition asynchronously, we will
@@ -349,7 +355,7 @@ export const PureFileEditor = observer(
                 startLineNumber: position.lineNumber,
                 startColumn: currentToken.offset + 1,
                 endLineNumber: position.lineNumber,
-                endColumn: token.offset + 1, // NOTE: seems like this needs to be exclusive
+                endColumn: tokenOffset + 1, // NOTE: seems like this needs to be exclusive
               };
               break;
             }
