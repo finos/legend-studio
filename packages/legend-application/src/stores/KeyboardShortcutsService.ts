@@ -48,6 +48,7 @@ export class KeyboardShortcutsService {
         // and when dispatching the command with a particular key combination, we only
         // execute the first matching command, if we override the config, we would need
         // to add them to the beginning of this list.
+        // TODO: do validation on hot keys, hot keys which consist only of modifier keys, e.g. `Shift Shift` should not be supported
         const shortcuts = [
           entry.content.defaultKeyboardShortcut,
           ...(entry.content.additionalKeyboardShortcuts ?? []),
