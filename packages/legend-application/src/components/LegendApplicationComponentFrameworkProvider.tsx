@@ -77,6 +77,12 @@ const buildHotkeysConfiguration = (
   return keyMap;
 };
 
+/**
+ * Some elements (e.g. <canvas>) and components that we do not control the implementation
+ * might have special logic to prevent `keydown` event bubbling naturally, this
+ * method forces those event to surface to the top of the app and being handled
+ * by keybinding service
+ */
 export const forceDispatchKeyboardEvent = (event: KeyboardEvent): void => {
   document
     .getElementById(APP_CONTAINER_ID)
