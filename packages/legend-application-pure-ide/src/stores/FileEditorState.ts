@@ -31,7 +31,6 @@ import {
   assertErrorThrown,
   getNullableLastElement,
   guaranteeNonNullable,
-  IllegalStateError,
   type GeneratorFn,
 } from '@finos/legend-shared';
 import {
@@ -301,105 +300,109 @@ export class FileEditorState
   }
 
   registerCommands(): void {
-    if (this.textEditorState.language !== EDITOR_LANGUAGE.PURE) {
-      throw new IllegalStateError(
-        `File editor commands should only be used for Pure files`,
-      );
-    }
-    this.editorStore.applicationStore.commandCenter.registerCommand({
-      key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_DEFINITION,
-      trigger: () =>
-        this.editorStore.tabManagerState.currentTab === this &&
-        Boolean(this.textEditorState.editor?.hasTextFocus()),
-      action: () => {
-        const currentPosition = this.textEditorState.editor?.getPosition();
-        if (currentPosition) {
-          flowResult(
-            this.editorStore.executeNavigation(
-              new FileCoordinate(
-                this.filePath,
-                currentPosition.lineNumber,
-                currentPosition.column,
+    if (this.textEditorState.language === EDITOR_LANGUAGE.PURE) {
+      this.editorStore.applicationStore.commandCenter.registerCommand({
+        key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_DEFINITION,
+        trigger: () =>
+          this.editorStore.tabManagerState.currentTab === this &&
+          Boolean(this.textEditorState.editor?.hasTextFocus()),
+        action: () => {
+          const currentPosition = this.textEditorState.editor?.getPosition();
+          if (currentPosition) {
+            flowResult(
+              this.editorStore.executeNavigation(
+                new FileCoordinate(
+                  this.filePath,
+                  currentPosition.lineNumber,
+                  currentPosition.column,
+                ),
               ),
-            ),
-          ).catch(this.editorStore.applicationStore.alertUnhandledError);
-        }
-      },
-    });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
-      key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_BACK,
-      action: () => {
-        flowResult(this.editorStore.navigateBack()).catch(
-          this.editorStore.applicationStore.alertUnhandledError,
-        );
-      },
-    });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
-      key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE,
-      trigger: () =>
-        this.editorStore.tabManagerState.currentTab === this &&
-        Boolean(this.textEditorState.editor?.hasTextFocus()),
-      action: () => {
-        const currentPosition = this.textEditorState.editor?.getPosition();
-        if (currentPosition) {
-          this.editorStore
-            .revealConceptInTree(
-              new FileCoordinate(
-                this.filePath,
-                currentPosition.lineNumber,
-                currentPosition.column,
-              ),
-            )
-            .catch(this.editorStore.applicationStore.alertUnhandledError);
-        }
-      },
-    });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
-      key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.FIND_USAGES,
-      trigger: () =>
-        this.editorStore.tabManagerState.currentTab === this &&
-        Boolean(this.textEditorState.editor?.hasTextFocus()),
-      action: () => {
-        const currentPosition = this.textEditorState.editor?.getPosition();
-        if (currentPosition) {
-          const coordinate = new FileCoordinate(
-            this.filePath,
-            currentPosition.lineNumber,
-            currentPosition.column,
-          );
-          this.findConceptUsages(coordinate);
-        }
-      },
-    });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
-      key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
-      trigger: () =>
-        this.editorStore.tabManagerState.currentTab === this &&
-        Boolean(this.textEditorState.editor?.hasTextFocus()),
-      action: () => {
-        const currentPosition = this.textEditorState.editor?.getPosition();
-        if (currentPosition) {
-          const currentWord =
-            this.textEditorState.model.getWordAtPosition(currentPosition);
-          if (!currentWord) {
-            return;
+            ).catch(this.editorStore.applicationStore.alertUnhandledError);
           }
-          const coordinate = new FileCoordinate(
-            this.filePath,
-            currentPosition.lineNumber,
-            currentPosition.column,
-          );
-          flowResult(this.setConceptToRenameState(coordinate)).catch(
+        },
+      });
+      this.editorStore.applicationStore.commandCenter.registerCommand({
+        key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_BACK,
+        action: () => {
+          flowResult(this.editorStore.navigateBack()).catch(
             this.editorStore.applicationStore.alertUnhandledError,
           );
-        }
-      },
-    });
+        },
+      });
+      this.editorStore.applicationStore.commandCenter.registerCommand({
+        key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE,
+        trigger: () =>
+          this.editorStore.tabManagerState.currentTab === this &&
+          Boolean(this.textEditorState.editor?.hasTextFocus()),
+        action: () => {
+          const currentPosition = this.textEditorState.editor?.getPosition();
+          if (currentPosition) {
+            this.editorStore
+              .revealConceptInTree(
+                new FileCoordinate(
+                  this.filePath,
+                  currentPosition.lineNumber,
+                  currentPosition.column,
+                ),
+              )
+              .catch(this.editorStore.applicationStore.alertUnhandledError);
+          }
+        },
+      });
+      this.editorStore.applicationStore.commandCenter.registerCommand({
+        key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.FIND_USAGES,
+        trigger: () =>
+          this.editorStore.tabManagerState.currentTab === this &&
+          Boolean(this.textEditorState.editor?.hasTextFocus()),
+        action: () => {
+          const currentPosition = this.textEditorState.editor?.getPosition();
+          if (currentPosition) {
+            const coordinate = new FileCoordinate(
+              this.filePath,
+              currentPosition.lineNumber,
+              currentPosition.column,
+            );
+            this.findConceptUsages(coordinate);
+          }
+        },
+      });
+      this.editorStore.applicationStore.commandCenter.registerCommand({
+        key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
+        trigger: () =>
+          this.editorStore.tabManagerState.currentTab === this &&
+          Boolean(this.textEditorState.editor?.hasTextFocus()),
+        action: () => {
+          const currentPosition = this.textEditorState.editor?.getPosition();
+          if (currentPosition) {
+            const currentWord =
+              this.textEditorState.model.getWordAtPosition(currentPosition);
+            if (!currentWord) {
+              return;
+            }
+            const coordinate = new FileCoordinate(
+              this.filePath,
+              currentPosition.lineNumber,
+              currentPosition.column,
+            );
+            flowResult(this.setConceptToRenameState(coordinate)).catch(
+              this.editorStore.applicationStore.alertUnhandledError,
+            );
+          }
+        },
+      });
+    }
     this.editorStore.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_LINE,
       trigger: () => this.editorStore.tabManagerState.currentTab === this,
       action: () => {
         this.setShowGoToLinePrompt(true);
+      },
+    });
+    this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.TOGGLE_TEXT_WRAP,
+      trigger: () => this.editorStore.tabManagerState.currentTab === this,
+      action: () => {
+        this.textEditorState.setWrapText(!this.textEditorState.wrapText);
       },
     });
   }
@@ -480,17 +483,19 @@ export class FileEditorState
 
   deregisterCommands(): void {
     if (this.textEditorState.language !== EDITOR_LANGUAGE.PURE) {
-      throw new IllegalStateError(
-        `File editor commands should only be used for Pure files`,
+      [
+        LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_DEFINITION,
+        LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_BACK,
+        LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE,
+        LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.FIND_USAGES,
+        LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
+      ].forEach((key) =>
+        this.editorStore.applicationStore.commandCenter.deregisterCommand(key),
       );
     }
     [
-      LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_DEFINITION,
-      LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_BACK,
-      LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE,
-      LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.FIND_USAGES,
-      LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
       LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_LINE,
+      LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.TOGGLE_TEXT_WRAP,
     ].forEach((key) =>
       this.editorStore.applicationStore.commandCenter.deregisterCommand(key),
     );
