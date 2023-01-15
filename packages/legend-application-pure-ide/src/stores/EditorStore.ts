@@ -322,12 +322,13 @@ export class EditorStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
-      this.initState.fail();
+      // this.initState.fail();
       this.applicationStore.setBlockingAlert({
         message: 'Failed to initialize IDE',
         prompt:
           'Make sure the IDE server is working, otherwise try to restart it',
       });
+      this.initState.pass();
       return;
     }
     this.initState.pass();

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { addUniqueEntry, LogEvent } from '@finos/legend-shared';
+import { isNonNullable, LogEvent } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import { APPLICATION_EVENT } from './ApplicationEvent.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
@@ -22,17 +22,11 @@ import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 export class KeyboardShortcutsService {
   readonly applicationStore: GenericLegendApplicationStore;
   /**
-   * NOTE: with this design, the relationship between command and key is many-to-one
-   * We can have multiple commands being mapped to the same key combination, not the other
-   * way around
+   * NOTE: with this design, the relationship between command and key is many-to-many
+   * We can have multiple commands being mapped to the same key combination, and vice versa
    */
   readonly keyMap = new Map<string, string[]>();
-  /**
-   * NOTE: we want to leave the value of the map as optional because we want
-   * to use this map to quickly construct the key-binding view: some commands
-   * don't already have a hotkey
-   */
-  readonly commandKeyMap = new Map<string, string | undefined>();
+  readonly commandKeyMap = new Map<string, string[]>();
   isHotkeysBlocked = false;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
@@ -40,36 +34,44 @@ export class KeyboardShortcutsService {
       keyMap: observable,
       commandKeyMap: observable,
       isHotkeysBlocked: observable,
-      updateHotkey: action,
+      addHotkey: action,
       blockGlobalHotkeys: action,
       unblockGlobalHotkeys: action,
     });
 
     this.applicationStore = applicationStore;
-    const commandsWithMultipleKeyBindings: string[] = [];
     this.applicationStore.pluginManager
       .getApplicationPlugins()
       .flatMap((plugin) => plugin.getExtraKeyedCommandConfigEntries?.() ?? [])
       .forEach((entry) => {
-        if (
-          entry.content.defaultKeyboardShortcut &&
-          this.commandKeyMap.get(entry.key)
-        ) {
-          addUniqueEntry(commandsWithMultipleKeyBindings, entry.key);
+        // NOTE: since we allow mapping multiple commands to the same key combination
+        // and when dispatching the command with a particular key combination, we only
+        // execute the first matching command, if we override the config, we would need
+        // to add them to the beginning of this list.
+        const shortcuts = [
+          entry.content.defaultKeyboardShortcut,
+          ...(entry.content.additionalKeyboardShortcuts ?? []),
+        ].filter(isNonNullable);
+        if (shortcuts.length) {
+          shortcuts.forEach((shortcut) => this.addHotkey(entry.key, shortcut));
+        } else {
+          if (!this.commandKeyMap.has(entry.key)) {
+            this.commandKeyMap.set(entry.key, []);
+          }
         }
-        this.updateHotkey(entry.key, entry.content.defaultKeyboardShortcut);
       });
 
-    if (commandsWithMultipleKeyBindings.length) {
-      this.applicationStore.log.warn(
-        LogEvent.create(
-          APPLICATION_EVENT.APPLICATION_KEYBOARD_SHORTCUTS_CONFIGURATION_CHECK_FAILURE,
-        ),
-        `Found multiple key bindings in configuration for commands:\n${commandsWithMultipleKeyBindings
-          .map((key) => `- ${key}`)
-          .join('\n')}`,
-      );
-    }
+    // Warn when detected multiple commands bound to the same key combination
+    Array.from(this.keyMap.entries()).forEach(([keyCombination, commands]) => {
+      if (commands.length > 1) {
+        this.applicationStore.log.warn(
+          LogEvent.create(
+            APPLICATION_EVENT.APPLICATION_KEYBOARD_SHORTCUTS_CONFIGURATION_CHECK_FAILURE,
+          ),
+          `Found multiple commands with key binding '${keyCombination}'`,
+        );
+      }
+    });
   }
 
   blockGlobalHotkeys(): void {
@@ -80,27 +82,19 @@ export class KeyboardShortcutsService {
     this.isHotkeysBlocked = false;
   }
 
-  updateHotkey(commandKey: string, keyCombination: string | undefined): void {
-    const currentKeyCombination = this.commandKeyMap.get(commandKey);
-    this.commandKeyMap.set(commandKey, keyCombination);
-    // remove old key map
-    if (currentKeyCombination) {
-      this.keyMap.set(
-        currentKeyCombination,
-        (this.keyMap.get(currentKeyCombination) ?? []).filter(
-          (key) => key === commandKey,
-        ),
-      );
-    }
+  addHotkey(commandKey: string, keyCombination: string): void {
+    // add shortcut to command key map
+    this.commandKeyMap.set(commandKey, [
+      ...(this.commandKeyMap.get(commandKey) ?? []),
+      keyCombination,
+    ]);
     // add new key map
-    if (keyCombination) {
-      this.keyMap.set(keyCombination, [
-        ...(this.keyMap.get(keyCombination) ?? []).filter(
-          (key) => key !== commandKey,
-        ),
-        commandKey,
-      ]);
-    }
+    this.keyMap.set(keyCombination, [
+      ...(this.keyMap.get(keyCombination) ?? []).filter(
+        (key) => key !== commandKey,
+      ),
+      commandKey,
+    ]);
   }
 
   dispatch(keyCombination: string): void {

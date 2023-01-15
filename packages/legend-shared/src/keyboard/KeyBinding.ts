@@ -49,7 +49,7 @@ type KeyPressData = { modifiers: string[]; key: string };
 export type KeyBindingConfig = {
   [key: string]: {
     combinations: string[];
-    handler: (event: KeyboardEvent) => void;
+    handler: (keyCombination: string, event: KeyboardEvent) => void;
   };
 };
 
@@ -191,7 +191,7 @@ export function createKeybindingsHandler(
         } else {
           // matches found, all keypresses of the combination have been fulfilled, call the handler
           possibleMatches.delete(keyCombination);
-          entry.handler(event);
+          entry.handler(keyCombination, event);
         }
       });
 

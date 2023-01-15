@@ -32,10 +32,12 @@ export const LEGEND_PURE_IDE_COMMAND_CONFIG: CommandConfigData = {
   [LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_FILE]: {
     title: 'Search for file',
     defaultKeyboardShortcut: 'Control+Shift+KeyN',
+    additionalKeyboardShortcuts: ['Shift Shift', 'Control+KeyP', 'Meta+KeyP'],
   },
   [LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_TEXT]: {
     title: 'Search text',
     defaultKeyboardShortcut: 'Control+Shift+KeyF',
+    additionalKeyboardShortcuts: ['Meta+Shift+KeyF'],
   },
   [LEGEND_PURE_IDE_COMMAND_KEY.GO_TO_FILE]: {
     title: 'Go to file',
@@ -95,6 +97,7 @@ export const LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_CONFIG: CommandConfigData =
   };
 
 export enum LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY {
+  TOGGLE_TEXT_WRAP = 'editor.file-editor.toggle-text-wrap',
   REVEAL_CONCEPT_IN_TREE = 'editor.file-editor.reveal-concept-in-tree',
   GO_TO_DEFINITION = 'editor.file-editor.go-to-definition',
   GO_BACK = 'editor.file-editor.go-back',
@@ -105,6 +108,10 @@ export enum LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY {
 
 export const LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_CONFIG: CommandConfigData =
   {
+    [LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.TOGGLE_TEXT_WRAP]: {
+      title: 'Toggle text wrap (File)',
+      defaultKeyboardShortcut: 'Alt+KeyZ',
+    },
     [LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE]: {
       title: 'Reveal concept in tree (File)',
       defaultKeyboardShortcut: 'Control+Shift+KeyB',

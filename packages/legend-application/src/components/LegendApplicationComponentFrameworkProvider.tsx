@@ -49,18 +49,16 @@ const PLATFORM_NATIVE_KEYBOARD_SHORTCUTS = [
   'Control+Shift+KeyB',
 ];
 
-const buildReactHotkeysConfiguration = (
-  commandKeyMap: Map<string, string | undefined>,
-  handlerCreator: (
-    keyCombination: string,
-  ) => (keyEvent?: KeyboardEvent) => void,
+const buildHotkeysConfiguration = (
+  commandKeyMap: Map<string, string[]>,
+  handler: (keyCombination: string, event: KeyboardEvent) => void,
 ): KeyBindingConfig => {
   const keyMap: KeyBindingConfig = {};
-  commandKeyMap.forEach((keyCombination, commandKey) => {
-    if (keyCombination) {
+  commandKeyMap.forEach((keyCombinations, commandKey) => {
+    if (keyCombinations.length) {
       keyMap[commandKey] = {
-        combinations: [keyCombination],
-        handler: handlerCreator(keyCombination),
+        combinations: keyCombinations,
+        handler,
       };
     }
   });
@@ -70,9 +68,9 @@ const buildReactHotkeysConfiguration = (
     'INTERNAL__PLATFORM_NATIVE_KEYBOARD_COMMAND';
   keyMap[PLATFORM_NATIVE_KEYBOARD_COMMAND] = {
     combinations: PLATFORM_NATIVE_KEYBOARD_SHORTCUTS,
-    handler: (event?: KeyboardEvent) => {
+    handler: (keyCombination: string, event: KeyboardEvent) => {
       // prevent default from potentially clashing key combinations
-      event?.preventDefault();
+      event.preventDefault();
     },
   };
 
@@ -108,17 +106,17 @@ export const LegendApplicationComponentFrameworkProvider = observer(
         document.getElementById(APP_BACKDROP_CONTAINER_ID)
       : document.getElementById(APP_BACKDROP_CONTAINER_ID);
 
-    const keyBindingMap = buildReactHotkeysConfiguration(
+    const keyBindingMap = buildHotkeysConfiguration(
       applicationStore.keyboardShortcutsService.commandKeyMap,
-      (keyCombination: string) => (event?: KeyboardEvent) => {
+      (keyCombination: string, event: KeyboardEvent) => {
         // prevent default from potentially clashing key combinations with platform native keyboard shortcuts
-        if (PLATFORM_NATIVE_KEYBOARD_SHORTCUTS.includes(keyCombination)) {
-          event?.preventDefault();
-        }
         // NOTE: Though tempting since it's a good way to simplify and potentially avoid conflicts,
-        // we should not call `preventDefault()` because if we have any hotkey which is too short, such as `r`, `a`
-        // we risk blocking some very common interaction, i.e. user typing, or even constructing longer
-        // key combinations
+        // we should not call `preventDefault()` because if we have any hotkey sequence which is too short,
+        // such as `r`, `a` - we risk blocking some very common interaction, i.e. user typing, or even
+        // constructing longer key combinations
+        if (PLATFORM_NATIVE_KEYBOARD_SHORTCUTS.includes(keyCombination)) {
+          event.preventDefault();
+        }
         applicationStore.keyboardShortcutsService.dispatch(keyCombination);
       },
     );
