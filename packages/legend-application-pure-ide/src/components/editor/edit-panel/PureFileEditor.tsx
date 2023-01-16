@@ -66,7 +66,7 @@ import { FileCoordinate } from '../../../server/models/File.js';
 import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../../../stores/LegendPureIDECommand.js';
 import { GoToLinePrompt } from './GenericFileEditor.js';
 
-const IDENTIFIER_PATTERN = /^[a-zA-Z0-9_][a-zA-Z0-9_$]*/;
+const IDENTIFIER_PATTERN = /^\w[\w$]*$/;
 
 const RenameConceptPrompt = observer(
   (props: { renameConceptState: FileEditorRenameConceptState }) => {
@@ -80,7 +80,7 @@ const RenameConceptPrompt = observer(
     // validation
     const isValidValue = Boolean(value.match(IDENTIFIER_PATTERN));
     const isSameValue = conceptName === value;
-    const error = !isValidValue ? 'Invalid path' : undefined;
+    const error = !isValidValue ? 'Invalid concept name' : undefined;
 
     // actions
     const closeModal = (): void => {
