@@ -652,7 +652,7 @@ export class EditorStore implements CommandRegistrar {
         this.setConsoleText(result.text);
       }
       if (result instanceof ExecutionFailureResult) {
-        this.applicationStore.notifyWarning(
+        this.applicationStore.notifyError(
           `Execution failed${result.text ? `: ${result.text}` : ''}`,
         );
         if (result.sessionError) {
@@ -752,6 +752,13 @@ export class EditorStore implements CommandRegistrar {
     potentiallyAffectedFiles: string[],
   ): GeneratorFn<void> {
     const refreshTreesPromise = this.refreshTrees();
+
+    // reset errors on all tabs before potentially show the latest error
+    this.tabManagerState.tabs
+      .filter(filterByType(FileEditorState))
+      .filter((tab) => potentiallyAffectedFiles.includes(tab.filePath))
+      .forEach((tab) => tab.clearError());
+
     if (result instanceof ExecutionFailureResult) {
       yield flowResult(
         this.loadFile(
