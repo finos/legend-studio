@@ -174,6 +174,7 @@ export const PureFileEditor = observer(
           ...getBaseTextEditorOptions(),
           language: EDITOR_LANGUAGE.PURE,
           theme: EDITOR_THEME.LEGEND,
+          wordSeparators: '`~!@#%^&*()-=+[{]}\\|;:\'",.<>/?', // omit $ from default word separators
           wordWrap: editorState.textEditorState.wrapText ? 'on' : 'off',
           readOnly: editorState.file.RO,
           contextmenu: true,
