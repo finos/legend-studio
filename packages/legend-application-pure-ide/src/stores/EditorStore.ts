@@ -319,19 +319,29 @@ export class EditorStore implements CommandRegistrar {
           conceptTreeInitPromise,
         ]);
       }
+      this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
-      // this.initState.fail();
-      this.applicationStore.setBlockingAlert({
-        message: 'Failed to initialize IDE',
-        prompt:
-          'Make sure the IDE server is working, otherwise try to restart it',
+      this.initState.fail();
+      this.applicationStore.setActionAlertInfo({
+        message: `Failed to initialize IDE`,
+        prompt: `This can either due to an internal server error, which you would need to manually resolve; or a compilation, which you can proceed to debug`,
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Compile to debug',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            default: true,
+            handler: () => {
+              flowResult(this.executeGo()).catch(
+                this.applicationStore.alertUnhandledError,
+              );
+            },
+          },
+        ],
       });
-      this.initState.pass();
-      return;
     }
-    this.initState.pass();
   }
 
   *checkIfSessionWakingUp(message?: string): GeneratorFn<void> {
@@ -375,12 +385,10 @@ export class EditorStore implements CommandRegistrar {
   registerCommands(): void {
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_FILE,
-      trigger: () => this.initState.hasSucceeded,
       action: () => this.setOpenFileSearchCommand(true),
     });
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_TEXT,
-      trigger: () => this.initState.hasSucceeded,
       action: () => this.setOpenTextSearchCommand(true),
     });
     this.applicationStore.commandCenter.registerCommand({
@@ -396,7 +404,6 @@ export class EditorStore implements CommandRegistrar {
     });
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_AUX_PANEL,
-      trigger: () => this.initState.hasSucceeded,
       action: () => this.auxPanelDisplayState.toggle(),
     });
     this.applicationStore.commandCenter.registerCommand({
@@ -565,7 +572,7 @@ export class EditorStore implements CommandRegistrar {
       avoidUpdatingConsoleText?: boolean;
     },
   ): GeneratorFn<void> {
-    if (!this.initState.hasSucceeded) {
+    if (!this.initState.hasCompleted) {
       this.applicationStore.notifyWarning(
         `Can't execute while initializing application`,
       );
@@ -778,6 +785,15 @@ export class EditorStore implements CommandRegistrar {
       this.resetChangeDetection(
         potentiallyAffectedFiles.concat(result.modifiedFiles),
       );
+      // NOTE: this is for the case where compilation failed during IDE initialization
+      // this is when we fix the compilation and execute for the first time, which in turn
+      // will properly `initialize` the application
+      // therefore, we will need to re-initialize the concept tree which was not initialized
+      // before
+      if (this.initState.hasFailed || !this.conceptTreeState.treeData) {
+        yield flowResult(this.conceptTreeState.initialize());
+        this.initState.pass();
+      }
     }
     yield refreshTreesPromise;
   }

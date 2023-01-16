@@ -482,7 +482,7 @@ export class FileEditorState
   }
 
   deregisterCommands(): void {
-    if (this.textEditorState.language !== EDITOR_LANGUAGE.PURE) {
+    if (this.textEditorState.language === EDITOR_LANGUAGE.PURE) {
       [
         LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_DEFINITION,
         LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_BACK,
