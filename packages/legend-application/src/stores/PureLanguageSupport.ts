@@ -81,6 +81,7 @@ const theme: monacoEditorAPI.IStandaloneThemeData = {
     { token: PURE_GRAMMAR_TOKEN.PARAMETER, foreground: '9cdcfe' },
     { token: PURE_GRAMMAR_TOKEN.VARIABLE, foreground: '4fc1ff' },
     { token: PURE_GRAMMAR_TOKEN.TYPE, foreground: '3dc9b0' },
+    { token: `${PURE_GRAMMAR_TOKEN.STRING}.escape`, foreground: 'd7ba7d' },
   ],
 };
 
