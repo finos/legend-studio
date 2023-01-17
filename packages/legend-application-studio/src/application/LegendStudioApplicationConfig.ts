@@ -103,6 +103,7 @@ export interface LegendStudioApplicationConfigurationData
   sdlc: { url: string; baseHeaders?: RequestHeaders };
   depot: { url: string };
   engine: { url: string; queryUrl?: string };
+  query?: { url: string };
 }
 
 export class LegendStudioApplicationConfig extends LegendApplicationConfig {
@@ -113,6 +114,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
   readonly depotServerUrl: string;
   readonly sdlcServerUrl: string;
   readonly SDLCServerBaseHeaders?: RequestHeaders | undefined;
+  readonly queryServerUrl: string | undefined;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendStudioApplicationConfigurationData>,
@@ -150,6 +152,11 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
       `Can't configure application: 'sdlc.url' field is missing or empty`,
     );
     this.SDLCServerBaseHeaders = input.configData.sdlc.baseHeaders;
+
+    // query
+    if (input.configData.query?.url) {
+      this.queryServerUrl = input.configData.query.url;
+    }
 
     // options
     this.options = LegendStudioApplicationCoreOptions.create(

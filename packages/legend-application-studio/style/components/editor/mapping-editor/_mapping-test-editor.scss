@@ -212,7 +212,7 @@
     }
   }
 
-  &__execute-btn {
+  &__action-btn {
     @include flexVCenter;
 
     height: 100%;
@@ -263,6 +263,7 @@
 
     &__option {
       width: 12rem;
+      text-align: left;
     }
 
     &__label[disabled],

@@ -24,7 +24,6 @@ import {
   Dialog,
   type SelectComponent,
   BlankPanelContent,
-  ArrowCircleDownIcon,
   clsx,
   CustomSelectorInput,
   PanelLoadingIndicator,
@@ -40,8 +39,13 @@ import {
   ModalFooter,
   ModalHeader,
   ModalTitle,
+  MoreVerticalIcon,
 } from '@finos/legend-art';
-import { assertErrorThrown, debounce } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  debounce,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -63,6 +67,10 @@ import {
   QueryBuilderTextEditorMode,
   QueryBuilderTextEditor,
 } from '@finos/legend-query-builder';
+import { EDITOR_MODE } from '../../../../stores/EditorConfig.js';
+import type { ProjectViewerEditorMode } from '../../../../stores/project-viewer/ProjectViewerEditorMode.js';
+import { useLegendStudioApplicationStore } from '../../../LegendStudioBaseStoreProvider.js';
+import { WorkspaceType } from '@finos/legend-server-sdlc';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -247,16 +255,17 @@ export const ServiceExecutionQueryEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { executionState, isReadOnly } = props;
-    const applicationStore = useApplicationStore();
+    const applicationStore = useLegendStudioApplicationStore();
     const editorStore = useEditorStore();
     const queryState = executionState.queryState;
     const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
+    const service = executionState.serviceEditorState.service;
     // actions
     const editWithQueryBuilder = (
       openQueryBuilderTextEditor: boolean,
+      alwaysOpenQueryBuilderTextEditor: boolean,
     ): (() => void) =>
       applicationStore.guardUnhandledError(async () => {
-        const service = executionState.serviceEditorState.service;
         const selectedExecutionState =
           executionState.selectedExecutionContextState;
         if (selectedExecutionState?.executionContext.mapping === undefined) {
@@ -332,8 +341,9 @@ export const ServiceExecutionQueryEditor = observer(
               }),
             );
             if (
-              openQueryBuilderTextEditor &&
-              !embeddedQueryBuilderState.queryBuilderState?.isQuerySupported
+              alwaysOpenQueryBuilderTextEditor ||
+              (openQueryBuilderTextEditor &&
+                !embeddedQueryBuilderState.queryBuilderState?.isQuerySupported)
             ) {
               embeddedQueryBuilderState.queryBuilderState?.textEditorState.openModal(
                 QueryBuilderTextEditorMode.TEXT,
@@ -348,6 +358,7 @@ export const ServiceExecutionQueryEditor = observer(
           executionState.setOpeningQueryEditor(false);
         }
       });
+
     const importQuery = (): void => {
       queryState.setOpenQueryImporter(true);
     };
@@ -369,9 +380,72 @@ export const ServiceExecutionQueryEditor = observer(
     const generatePlan = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.generatePlan(false)),
     );
+
     const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.generatePlan(true)),
     );
+
+    console.log(applicationStore);
+    const openQueryInLegendQuery = (): void => {
+      if (
+        editorStore.mode === EDITOR_MODE.VIEWER &&
+        (editorStore.editorMode as ProjectViewerEditorMode).viewerStore.version
+          ?.id.id
+      ) {
+        applicationStore.navigator.visitAddress(
+          executionState.generateServiceQueryCreatorRoute(
+            guaranteeNonNullable(applicationStore.config.queryServerUrl),
+            guaranteeNonNullable(
+              editorStore.projectConfigurationEditorState.projectConfiguration
+                ?.groupId,
+            ),
+            guaranteeNonNullable(
+              editorStore.projectConfigurationEditorState.projectConfiguration
+                ?.artifactId,
+            ),
+            guaranteeNonNullable(
+              (editorStore.editorMode as ProjectViewerEditorMode).viewerStore
+                .version?.id.id,
+            ),
+            service.path,
+          ),
+        );
+      } else {
+        applicationStore.navigator.visitAddress(
+          executionState.generateServiceQueryCreatorRoute(
+            guaranteeNonNullable(applicationStore.config.queryServerUrl),
+            guaranteeNonNullable(
+              editorStore.projectConfigurationEditorState.projectConfiguration
+                ?.groupId,
+            ),
+            guaranteeNonNullable(
+              editorStore.projectConfigurationEditorState.projectConfiguration
+                ?.artifactId,
+            ),
+            'HEAD',
+            service.path,
+          ),
+        );
+      }
+    };
+
+    const openQueryInServiceExtension = (): void => {
+      applicationStore.navigator.visitAddress(
+        applicationStore.navigator.generateAddress(
+          executionState.generateProjectServiceQueryUpdaterRoute(
+            guaranteeNonNullable(
+              editorStore.projectConfigurationEditorState.projectConfiguration
+                ?.projectId,
+            ),
+            guaranteeNonNullable(
+              editorStore.sdlcState.currentWorkspace?.workspaceId,
+            ),
+            service.path,
+          ),
+        ),
+      );
+    };
+
     // convert to string
     useEffect(() => {
       flowResult(queryState.convertLambdaObjectToGrammarString(true)).catch(
@@ -388,23 +462,38 @@ export const ServiceExecutionQueryEditor = observer(
             </div>
           </div>
           <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              onClick={editWithQueryBuilder(false)}
-              title="Edit query..."
-            >
-              <PencilIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              onClick={importQuery}
-              disabled={isReadOnly}
-              tabIndex={-1}
-              title="Import query"
-            >
-              <ArrowCircleDownIcon />
-            </button>
+            <div className="service-editor__execution__action-btn">
+              <button
+                className="service-editor__execution__action-btn__label service-editor__execution__action-btn__label--primary"
+                onClick={editWithQueryBuilder(false, false)}
+                title="Edit Query"
+                tabIndex={-1}
+              >
+                <PencilIcon className="service-editor__execution__action-btn__label__icon" />
+                <div className="service-editor__execution__action-btn__label__title">
+                  Edit Query
+                </div>
+              </button>
+              <DropdownMenu
+                className="service-editor__execution__action-btn__dropdown-btn service-editor__execution__action-btn__dropdown-btn--primary"
+                content={
+                  <MenuContent>
+                    <MenuContentItem
+                      className="service-editor__execution__action-btn__option"
+                      onClick={editWithQueryBuilder(true, true)}
+                    >
+                      Text Mode
+                    </MenuContentItem>
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                  transformOrigin: { vertical: 'top', horizontal: 'right' },
+                }}
+              >
+                <CaretDownIcon />
+              </DropdownMenu>
+            </div>
             {executionState.isRunningQuery ? (
               <button
                 className="service-editor__execution__stop-btn"
@@ -419,32 +508,32 @@ export const ServiceExecutionQueryEditor = observer(
                 </div>
               </button>
             ) : (
-              <div className="service-editor__execution__execute-btn">
+              <div className="service-editor__execution__action-btn">
                 <button
-                  className="service-editor__execution__execute-btn__label"
+                  className="service-editor__execution__action-btn__label"
                   onClick={runQuery}
                   title="Run Query"
                   disabled={executionIsRunning}
                   tabIndex={-1}
                 >
-                  <PlayIcon className="service-editor__execution__execute-btn__label__icon" />
-                  <div className="service-editor__execution__execute-btn__label__title">
+                  <PlayIcon className="service-editor__execution__action-btn__label__icon" />
+                  <div className="service-editor__execution__action-btn__label__title">
                     Run Query
                   </div>
                 </button>
                 <DropdownMenu
-                  className="service-editor__execution__execute-btn__dropdown-btn"
+                  className="service-editor__execution__action-btn__dropdown-btn"
                   disabled={executionIsRunning}
                   content={
                     <MenuContent>
                       <MenuContentItem
-                        className="service-editor__execution__execute-btn__option"
+                        className="service-editor__execution__action-btn__option"
                         onClick={generatePlan}
                       >
                         Generate Plan
                       </MenuContentItem>
                       <MenuContentItem
-                        className="service-editor__execution__execute-btn__option"
+                        className="service-editor__execution__action-btn__option"
                         onClick={debugPlanGeneration}
                       >
                         Debug
@@ -460,6 +549,52 @@ export const ServiceExecutionQueryEditor = observer(
                 </DropdownMenu>
               </div>
             )}
+            <div>
+              <DropdownMenu
+                className="service-editor__execution__advanced-btn"
+                disabled={executionIsRunning}
+                content={
+                  <MenuContent>
+                    <MenuContentItem
+                      className="service-editor__execution__advanced-btn__option"
+                      onClick={importQuery}
+                    >
+                      Import Query
+                    </MenuContentItem>
+                    {applicationStore.config.queryServerUrl && (
+                      <MenuContentItem
+                        className="service-editor__execution__advanced-btn__option"
+                        onClick={openQueryInLegendQuery}
+                      >
+                        Open in Legend Query
+                      </MenuContentItem>
+                    )}
+                    <MenuContentItem
+                      className="service-editor__execution__advanced-btn__option"
+                      onClick={openQueryInServiceExtension}
+                      disabled={
+                        editorStore.sdlcState.currentWorkspace
+                          ?.workspaceType !== WorkspaceType.GROUP
+                      }
+                    >
+                      Open in Service Extension
+                    </MenuContentItem>
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                  transformOrigin: { vertical: 'top', horizontal: 'right' },
+                }}
+              >
+                <div className="service-editor__execution__advanced-btn__label">
+                  <MoreVerticalIcon className="service-editor__execution__advanced-btn__label__icon" />
+                  Advanced
+                </div>
+                <div className="service-editor__execution__advanced-btn__icon">
+                  <CaretDownIcon />
+                </div>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
         <div className="panel__content property-mapping-editor__entry__container">
@@ -474,9 +609,9 @@ export const ServiceExecutionQueryEditor = observer(
               'double click to edit query in query builder form mode or text mode'
             }
             onDoubleClick={(event) => {
-              event.stopPropagation();
               event.preventDefault();
-              editWithQueryBuilder(true)();
+              event.stopPropagation();
+              editWithQueryBuilder(true, false)();
             }}
           >
             <TextInputEditor

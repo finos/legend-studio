@@ -290,8 +290,8 @@ test(
 
     await TEST__openElementFromExplorerTree('model::MyMapping', renderResult);
     fireEvent.click(renderResult.getByText('test_1'));
-    await waitFor(() => renderResult.getByTitle('Edit query...'));
-    fireEvent.click(renderResult.getByTitle('Edit query...'));
+    await waitFor(() => renderResult.getByText('Edit Query'));
+    fireEvent.click(renderResult.getByText('Edit Query'));
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
@@ -322,8 +322,8 @@ test(
 
     await TEST__openElementFromExplorerTree('model::MyService', renderResult);
     fireEvent.click(renderResult.getByText('Execution'));
-    await waitFor(() => renderResult.getByTitle('Edit query...'));
-    fireEvent.click(renderResult.getByTitle('Edit query...'));
+    await waitFor(() => renderResult.getByText('Edit Query'));
+    fireEvent.click(renderResult.getByText('Edit Query'));
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
