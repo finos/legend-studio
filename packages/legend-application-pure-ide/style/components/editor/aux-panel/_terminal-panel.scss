@@ -76,6 +76,56 @@
     }
   }
 
+  &__header__searcher {
+    &__input__container {
+      height: 2rem;
+      width: 23rem;
+      position: relative;
+      display: flex;
+    }
+
+    &__input {
+      height: 100%;
+      width: 100%;
+      font-size: 1.2rem;
+      padding-right: 8rem;
+      border-radius: 0.1rem;
+    }
+
+    &__input__actions {
+      @include flexVCenter;
+
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+
+    &__input__action {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 2rem;
+      width: 2rem;
+
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+
+      &--active svg,
+      &:hover svg {
+        color: var(--color-light-grey-300);
+      }
+    }
+
+    &__result {
+      @include flexVCenter;
+
+      min-width: 9rem;
+      padding: 0 0.5rem;
+      font-size: 1.2rem;
+    }
+  }
+
   &__content {
     height: calc(100% - 2.8rem);
     width: 100%;

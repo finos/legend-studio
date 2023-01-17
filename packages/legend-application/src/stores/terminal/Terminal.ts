@@ -89,16 +89,36 @@ export enum ANSI_ESCAPE {
 }
 
 class ConsoleSearchConfiguration {
+  private searchInput?: HTMLInputElement | undefined;
+
+  searchText = '';
+
   useRegex = false;
   matchWholeWord = false;
   matchCaseSensitive = false;
 
+  resultCount?: number | undefined;
+  currentResultIndex?: number | undefined;
+
   constructor() {
     makeObservable(this, {
+      searchText: observable,
+
       useRegex: observable,
       matchWholeWord: observable,
       matchCaseSensitive: observable,
+
+      resultCount: observable,
+      currentResultIndex: observable,
     });
+  }
+
+  setSearchInput(el: HTMLInputElement | undefined): void {
+    this.searchInput = el;
+  }
+
+  focus(): void {
+    this.searchInput?.focus();
   }
 }
 
@@ -109,12 +129,21 @@ export abstract class Console {
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {
+      setSearchText: action,
+
       setSearchRegex: action,
       setSearchWholeWord: action,
       setSearchCaseSensitive: action,
+
+      setSearchResultCount: action,
+      setSearchCurrentResultIndex: action,
     });
 
     this.applicationStore = applicationStore;
+  }
+
+  setSearchText(val: string): void {
+    this.searchConfig.searchText = val;
   }
 
   setSearchRegex(val: boolean): void {
@@ -127,6 +156,14 @@ export abstract class Console {
 
   setSearchCaseSensitive(val: boolean): void {
     this.searchConfig.matchCaseSensitive = val;
+  }
+
+  setSearchResultCount(val: number | undefined): void {
+    this.searchConfig.resultCount = val;
+  }
+
+  setSearchCurrentResultIndex(val: number | undefined): void {
+    this.searchConfig.currentResultIndex = val;
   }
 
   abstract mount(container: HTMLElement): void;
@@ -171,4 +208,9 @@ export abstract class Terminal extends Console {
     command: string | undefined,
     opts?: TerminalWriteOption,
   ): void;
+
+  abstract search(val: string): void;
+  abstract clearSearch(): void;
+  abstract findPrevious(): void;
+  abstract findNext(): void;
 }

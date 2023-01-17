@@ -80,7 +80,7 @@ export function parseKeybinding(value: string): KeyPressData[] {
 /**
  * Checks if a series of keypress events matches a key binding sequence either partially or exactly.
  */
-const isMatchingKeyCombination = (
+export const isMatchingKeyCombination = (
   event: KeyboardEvent,
   combinationData: KeyPressData,
 ): boolean =>

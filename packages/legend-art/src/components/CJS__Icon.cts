@@ -189,6 +189,7 @@ export {
   VscRegex as RegexIcon,
   VscVersions as VersionsIcon,
   VscCaseSensitive as CaseSensitiveIcon,
+  VscWholeWord as WholeWordMatchIcon,
 } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,

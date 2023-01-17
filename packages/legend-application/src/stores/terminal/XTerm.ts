@@ -22,12 +22,20 @@ import {
 } from 'xterm';
 import { WebLinksAddon as XTermWebLinksAddon } from 'xterm-addon-web-links';
 import { FitAddon as XTermFitAddon } from 'xterm-addon-fit';
-import { SearchAddon as XTermSearchAddon } from 'xterm-addon-search';
+import {
+  type ISearchDecorationOptions as XTermSearchDecorationOptions,
+  SearchAddon as XTermSearchAddon,
+} from 'xterm-addon-search';
 import { Unicode11Addon as XTermUnicode11Addon } from 'xterm-addon-unicode11';
 import { WebglAddon as XTermWebglAddon } from 'xterm-addon-webgl';
 import { MONOSPACED_FONT_FAMILY, TAB_SIZE } from '../../const.js';
 import { forceDispatchKeyboardEvent } from '../../components/LegendApplicationComponentFrameworkProvider.js';
 import { Terminal, type TerminalWriteOption, ANSI_ESCAPE } from './Terminal.js';
+import {
+  guaranteeNonNullable,
+  isMatchingKeyCombination,
+  parseKeybinding,
+} from '@finos/legend-shared';
 
 const LEGEND_XTERM_THEME: XTermTheme = {
   foreground: '#cccccc',
@@ -59,6 +67,13 @@ const LEGEND_XTERM_THEME: XTermTheme = {
   brightWhite: '#e5e5e5',
 };
 
+const LEGEND_XTERM_SEARCH_THEME: XTermSearchDecorationOptions = {
+  matchOverviewRuler: '#d186167e',
+  activeMatchColorOverviewRuler: '#A0A0A0CC',
+  matchBackground: '#62331c',
+  activeMatchBackground: '#515C6A',
+};
+
 // robot acsii art
 // See https://asciiartist.com/ascii-art-micro-robot/
 const HELP_COMMAND_TEXT = `
@@ -78,8 +93,8 @@ ${ANSI_ESCAPE.BOLD}${ANSI_ESCAPE.MAGENTA}\u276f${ANSI_ESCAPE.RESET} `;
 export class XTerm extends Terminal {
   private readonly instance: XTermTerminal;
   private readonly resizer: XTermFitAddon;
-  private readonly searcher: XTermSearchAddon;
   private readonly renderer: XTermWebglAddon;
+  private readonly searcher: XTermSearchAddon;
 
   // NOTE: since we don't attach xterm to a terminal with real stdin, we have to manually
   // register the user input in this temporary variable. When `Enter` is hit, we will flush this
@@ -99,6 +114,8 @@ export class XTerm extends Terminal {
       fontFamily: `"${MONOSPACED_FONT_FAMILY}", Menlo, Consolas, monospace`,
       tabStopWidth: TAB_SIZE,
       theme: LEGEND_XTERM_THEME,
+      overviewRulerWidth: 14, // 14px
+      scrollback: 10000, // buffer a substantial content length
       convertEol: true, // treat \n as new line
     });
 
@@ -125,6 +142,23 @@ export class XTerm extends Terminal {
 
     this.instance.attachCustomKeyEventHandler(
       (event: KeyboardEvent): boolean => {
+        // NOTE: this is a cheap way to handl hotkey, but this is really the only
+        // hotkey we want to support at local scope of the terminal
+        if (
+          isMatchingKeyCombination(
+            event,
+            guaranteeNonNullable(parseKeybinding('Control+KeyF')[0]),
+          ) ||
+          isMatchingKeyCombination(
+            event,
+            guaranteeNonNullable(parseKeybinding('Meta+KeyF')[0]),
+          )
+        ) {
+          event.preventDefault();
+          event.stopPropagation();
+          this.searchConfig.focus();
+          return false;
+        }
         // NOTE: since we render the terminal using webgl/canvas, event is not bubbled
         // naturally through the DOM tree, we have to manually force this
         forceDispatchKeyboardEvent(event);
@@ -132,34 +166,42 @@ export class XTerm extends Terminal {
       },
     );
 
-    this._TEMPORARY__onKeyListener = this.instance.onKey(
-      ({ key, domEvent }) => {
-        if (key.charCodeAt(0) === 13) {
-          // Enter
-          if (domEvent.shiftKey) {
-            // this.instance.write('\n');
-            // this._TEMPORARY__currentCommandText += '\n';
-          } else {
-            this._TEMPORARY__currentCommandText = '';
+    this.searcher.onDidChangeResults((result) => {
+      if (result) {
+        this.setSearchResultCount(result.resultCount);
+        this.setSearchCurrentResultIndex(result.resultIndex);
+      } else {
+        this.setSearchResultCount(undefined);
+        this.setSearchCurrentResultIndex(undefined);
+      }
+    });
 
-            // execute command
-          }
-        } else if (key.charCodeAt(0) === 127) {
-          // Backspace
-          this.instance.write('\b \b');
-        } else {
-          this.instance.write(key);
-          // this.instance.buffer.active.cur;
-          this._TEMPORARY__currentCommandText += key;
-        }
-      },
-    );
+    // this._TEMPORARY__onKeyListener = this.instance.onKey(
+    //   ({ key, domEvent }) => {
+    //     if (key.charCodeAt(0) === 13) {
+    //       // Enter
+    //       if (domEvent.shiftKey) {
+    //         // this.instance.write('\n');
+    //         // this._TEMPORARY__currentCommandText += '\n';
+    //       } else {
+    //         this._TEMPORARY__currentCommandText = '';
+
+    //         // execute command
+    //       }
+    //     } else if (key.charCodeAt(0) === 127) {
+    //       // Backspace
+    //       this.instance.write('\b \b');
+    //     } else {
+    //       this.instance.write(key);
+    //       // this.instance.buffer.active.cur;
+    //       this._TEMPORARY__currentCommandText += key;
+    //     }
+    //   },
+    // );
 
     // this._TEMPORARY__onDataHandler = this.instance.onData((val) => {});
 
     // use onData for paste and normal input, limit the range; use onKey for special handling, liek Enter, Arrow, backspaces, etc.
-
-    // this.searcher.findNext('foo');
   }
 
   mount(container: HTMLElement): void {
@@ -204,7 +246,7 @@ export class XTerm extends Terminal {
     opts?: TerminalWriteOption,
   ): void {
     if (!this.preserveLog && opts?.clear) {
-      this.instance.clear();
+      this.instance.reset();
       this.instance.scrollToTop();
     }
     this.resetANSIStyling();
@@ -214,5 +256,42 @@ export class XTerm extends Terminal {
     if (!opts?.clear) {
       this.instance.scrollToBottom();
     }
+  }
+
+  search(val: string): void {
+    this.searcher.findNext(val, {
+      decorations: LEGEND_XTERM_SEARCH_THEME,
+      regex: this.searchConfig.useRegex,
+      wholeWord: this.searchConfig.matchWholeWord,
+      caseSensitive: this.searchConfig.matchCaseSensitive,
+      // do incremental search so that the expansion will be expanded the selection if it
+      // still matches the term the user typed.
+      incremental: true,
+    });
+  }
+
+  clearSearch(): void {
+    this.searcher.clearDecorations();
+    this.setSearchText('');
+    this.setSearchResultCount(undefined);
+    this.setSearchCurrentResultIndex(undefined);
+  }
+
+  findPrevious(): void {
+    this.searcher.findPrevious(this.searchConfig.searchText, {
+      decorations: LEGEND_XTERM_SEARCH_THEME,
+      regex: this.searchConfig.useRegex,
+      wholeWord: this.searchConfig.matchWholeWord,
+      caseSensitive: this.searchConfig.matchCaseSensitive,
+    });
+  }
+
+  findNext(): void {
+    this.searcher.findNext(this.searchConfig.searchText, {
+      decorations: LEGEND_XTERM_SEARCH_THEME,
+      regex: this.searchConfig.useRegex,
+      wholeWord: this.searchConfig.matchWholeWord,
+      caseSensitive: this.searchConfig.matchCaseSensitive,
+    });
   }
 }
