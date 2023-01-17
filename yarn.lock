@@ -1996,7 +1996,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.32.0
     react-refresh: 0.14.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     typescript: 4.9.4
   peerDependencies:
     "@babel/core": ^7.0.0
@@ -2019,7 +2019,7 @@ __metadata:
     eslint-plugin-react-hooks: 4.6.0
     micromatch: 4.0.5
     prettier: 2.8.3
-    rimraf: 4.0.7
+    rimraf: 4.1.0
   peerDependencies:
     eslint: ^8.0.0
     prettier: ^2.0.0
@@ -2036,7 +2036,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.32.0
     npm-run-all: 4.1.5
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     typescript: 4.9.4
     webpack: 5.75.0
     webpack-bundle-analyzer: 4.7.0
@@ -2068,7 +2068,7 @@ __metadata:
     react: 18.2.0
     react-dnd: 16.0.1
     react-dom: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2101,7 +2101,7 @@ __metadata:
     eslint: 8.32.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     typescript: 4.9.4
   languageName: unknown
@@ -2117,7 +2117,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.32.0
     npm-run-all: 4.1.5
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     typescript: 4.9.4
     webpack: 5.75.0
     webpack-bundle-analyzer: 4.7.0
@@ -2150,7 +2150,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2184,7 +2184,7 @@ __metadata:
     eslint: 8.32.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     typescript: 4.9.4
   languageName: unknown
@@ -2200,7 +2200,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.32.0
     npm-run-all: 4.1.5
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     typescript: 4.9.4
     webpack: 5.75.0
     webpack-bundle-analyzer: 4.7.0
@@ -2238,7 +2238,7 @@ __metadata:
     react: 18.2.0
     react-dnd: 16.0.1
     react-dom: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2264,7 +2264,7 @@ __metadata:
     eslint: 8.32.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     typescript: 4.9.4
   languageName: unknown
@@ -2280,7 +2280,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.32.0
     npm-run-all: 4.1.5
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     typescript: 4.9.4
     webpack: 5.75.0
     webpack-bundle-analyzer: 4.7.0
@@ -2312,7 +2312,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2349,7 +2349,7 @@ __metadata:
     react-draggable: 4.4.5
     react-router: 5.3.4
     react-router-dom: 5.3.4
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     sql-formatter: 12.1.0
@@ -2402,7 +2402,7 @@ __metadata:
     react-select: 4.3.1
     react-window: 1.8.8
     remark-gfm: 3.0.1
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     typescript: 4.9.4
   peerDependencies:
@@ -2439,14 +2439,9 @@ __metadata:
     eslint: 8.32.0
     html-webpack-plugin: 5.5.0
     isbinaryfile: 5.0.0
-<<<<<<< HEAD
     jest: 29.4.1
-    jest-environment-jsdom: 29.4.1
-=======
-    jest: 29.3.1
     jest-canvas-mock: 2.4.0
-    jest-environment-jsdom: 29.3.1
->>>>>>> e2302641e (pure ide: improve styling for terminal)
+    jest-environment-jsdom: 29.4.1
     jest-extended: 3.2.3
     jest-watch-typeahead: 2.2.2
     jsonc-parser: 3.2.0
@@ -2458,7 +2453,7 @@ __metadata:
     postcss-loader: 7.0.2
     react-refresh: 0.14.0
     resolve: 1.22.1
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     sass-loader: 13.2.0
     typescript: 4.9.4
@@ -2491,7 +2486,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2523,7 +2518,7 @@ __metadata:
     react: 18.2.0
     react-dnd: 16.0.1
     react-dom: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2551,7 +2546,7 @@ __metadata:
     mobx: 6.7.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2579,7 +2574,7 @@ __metadata:
     mobx: 6.7.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     serializr: 3.0.2
     typescript: 4.9.4
   peerDependencies:
@@ -2606,7 +2601,7 @@ __metadata:
     mobx: 6.7.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2640,7 +2635,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2669,7 +2664,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2690,7 +2685,7 @@ __metadata:
     eslint: 8.32.0
     jest: 29.3.1
     npm-run-all: 4.1.5
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     typescript: 4.9.4
   languageName: unknown
   linkType: soft
@@ -2708,7 +2703,7 @@ __metadata:
     eslint: 8.32.0
     jest: 29.3.1
     npm-run-all: 4.1.5
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     typescript: 4.9.4
   languageName: unknown
@@ -2734,7 +2729,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2763,7 +2758,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2792,7 +2787,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2814,7 +2809,7 @@ __metadata:
     jest: 29.3.1
     npm-run-all: 4.1.5
     opentracing: 0.14.7
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     typescript: 4.9.4
     zipkin: 0.22.0
     zipkin-javascript-opentracing: 3.0.0
@@ -2833,7 +2828,7 @@ __metadata:
     fastify: 4.11.0
     nodemon: 2.0.20
     npm-run-all: 4.1.5
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     typescript: 4.9.4
   languageName: unknown
   linkType: soft
@@ -2853,7 +2848,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     serializr: 3.0.2
     typescript: 4.9.4
   languageName: unknown
@@ -2879,7 +2874,7 @@ __metadata:
     eslint: 8.32.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     typedoc: 0.23.24
     typescript: 4.9.4
   languageName: unknown
@@ -2908,7 +2903,7 @@ __metadata:
     eslint: 8.32.0
     jest: 29.3.1
     npm-run-all: 4.1.5
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     typescript: 4.9.4
   languageName: unknown
   linkType: soft
@@ -2944,7 +2939,7 @@ __metadata:
     react: 18.2.0
     react-dnd: 16.0.1
     react-dom: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     serializr: 3.0.2
     typescript: 4.9.4
@@ -2968,7 +2963,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     serializr: 3.0.2
     typescript: 4.9.4
   languageName: unknown
@@ -2989,7 +2984,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     serializr: 3.0.2
     typescript: 4.9.4
   languageName: unknown
@@ -3024,7 +3019,7 @@ __metadata:
     papaparse: 5.3.2
     pretty-format: 29.4.1
     query-string: 8.1.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     seedrandom: 3.0.5
     serializr: 3.0.2
     typescript: 4.9.4
@@ -3044,7 +3039,7 @@ __metadata:
     jest: 29.3.1
     lodash: 4.17.21
     npm-run-all: 4.1.5
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     typescript: 4.9.4
   languageName: unknown
   linkType: soft
@@ -3057,7 +3052,7 @@ __metadata:
     eslint: 8.32.0
     postcss: 8.4.21
     postcss-scss: 4.0.6
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     stylelint-config-prettier: 9.0.4
     stylelint-config-standard: 29.0.0
     stylelint-scss: 4.3.0
@@ -3956,8 +3951,8 @@ __metadata:
   linkType: hard
 
 "@testing-library/dom@npm:^8.5.0":
-  version: 8.19.1
-  resolution: "@testing-library/dom@npm:8.19.1"
+  version: 8.20.0
+  resolution: "@testing-library/dom@npm:8.20.0"
   dependencies:
     "@babel/code-frame": ^7.10.4
     "@babel/runtime": ^7.12.5
@@ -3967,7 +3962,7 @@ __metadata:
     dom-accessibility-api: ^0.5.9
     lz-string: ^1.4.4
     pretty-format: ^27.0.2
-  checksum: 0fb1f05fa199491795063eae5e892922851570717c85131776de6edd5477b1bfa528790401120a616ce4846584570d1436b0bce4649652ddb6ea9d67a1f00b19
+  checksum: 1e599129a2fe91959ce80900a0a4897232b89e2a8e22c1f5950c36d39c97629ea86b4986b60b173b5525a05de33fde1e35836ea597b03de78cc51b122835c6f0
   languageName: node
   linkType: hard
 
@@ -4614,7 +4609,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/eslint-plugin@npm:5.49.0":
   version: 5.49.0
   resolution: "@typescript-eslint/eslint-plugin@npm:5.49.0"
   dependencies:
@@ -4622,15 +4616,6 @@ __metadata:
     "@typescript-eslint/type-utils": 5.49.0
     "@typescript-eslint/utils": 5.49.0
     debug: ^4.3.4
-    ignore: ^5.2.0
-    natural-compare-lite: ^1.4.0
-    regexpp: ^3.2.0
-    semver: ^7.3.7
-    tsutils: ^3.21.0
-  peerDependencies:
-    "@typescript-eslint/parser": ^5.0.0
-    eslint: ^6.0.0 || ^7.0.0 || ^8.0.0
-  peerDependenciesMeta:
     typescript:
       optional: true
   checksum: 15423cd9fde1ac3f8ba34526a07e537464e70463f1af784be5567fdc78e5745352fa0a2c3be0c13d066bc4b9720b5fa438d64647f624d29722eb4f158c039dcc
@@ -5838,9 +5823,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001400, caniuse-lite@npm:^1.0.30001426":
-  version: 1.0.30001444
-  resolution: "caniuse-lite@npm:1.0.30001444"
-  checksum: 3d6436e2eea8ee77fdca906f481fd5513eec836d3c5ef395da96872f8e67e0db4b898430a588745752e43fabf0503dc351ff1ab710717c33451bdc8f09a7b5cf
+  version: 1.0.30001445
+  resolution: "caniuse-lite@npm:1.0.30001445"
+  checksum: f98ca67829c3c52af5af0a62b8510432b2ad9594437d24ad460a6eb1a23d93e7a31631b1f550fbbe482ad05c467aa00da710a41699eb13d1f246d7db4147ab79
   languageName: node
   linkType: hard
 
@@ -8319,15 +8304,15 @@ __metadata:
   linkType: hard
 
 "glob@npm:^8.0.1":
-  version: 8.0.3
-  resolution: "glob@npm:8.0.3"
+  version: 8.1.0
+  resolution: "glob@npm:8.1.0"
   dependencies:
     fs.realpath: ^1.0.0
     inflight: ^1.0.4
     inherits: 2
     minimatch: ^5.0.1
     once: ^1.3.0
-  checksum: 50bcdea19d8e79d8de5f460b1939ffc2b3299eac28deb502093fdca22a78efebc03e66bf54f0abc3d3d07d8134d19a32850288b7440d77e072aa55f9d33b18c5
+  checksum: 92fbea3221a7d12075f26f0227abac435de868dd0736a17170663783296d0dd8d3d532a5672b4488a439bf5d7fb85cdd07c11185d6cd39184f0385cbdfb86a47
   languageName: node
   linkType: hard
 
@@ -10329,9 +10314,9 @@ __metadata:
   linkType: hard
 
 "klona@npm:^2.0.4, klona@npm:^2.0.5":
-  version: 2.0.5
-  resolution: "klona@npm:2.0.5"
-  checksum: 8c976126ea252b766e648a4866e1bccff9d3b08432474ad80c559f6c7265cf7caede2498d463754d8c88c4759895edd8210c85c0d3155e6aae4968362889466f
+  version: 2.0.6
+  resolution: "klona@npm:2.0.6"
+  checksum: ac9ee3732e42b96feb67faae4d27cf49494e8a3bf3fa7115ce242fe04786788e0aff4741a07a45a2462e2079aa983d73d38519c85d65b70ef11447bbc3c58ce7
   languageName: node
   linkType: hard
 
@@ -10367,7 +10352,7 @@ __metadata:
     micromatch: 4.0.5
     npm-run-all: 4.1.5
     prettier: 2.8.3
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sass: 1.57.1
     semver: 7.3.8
     sort-package-json: 2.2.0
@@ -10768,11 +10753,11 @@ __metadata:
   linkType: hard
 
 "marked@npm:^4.2.5":
-  version: 4.2.5
-  resolution: "marked@npm:4.2.5"
+  version: 4.2.12
+  resolution: "marked@npm:4.2.12"
   bin:
     marked: bin/marked.js
-  checksum: dd7da20a3983c66b516463fad5dc8d15dc70e137d20b6dc491e134f671e84bd2ed5f859e2c35f21e56830a122e4356b9e574bcde49b72b7ad6bc121a215a1a98
+  checksum: bd551cd61028ee639d4ca2ccdfcc5a6ba4227c1b143c4538f3cde27f569dcb57df8e6313560394645b418b84a7336c07ab1e438b89b6324c29d7d8cdd3102d63
   languageName: node
   linkType: hard
 
@@ -11464,11 +11449,11 @@ __metadata:
   linkType: hard
 
 "minimatch@npm:^5.0.1, minimatch@npm:^5.1.2":
-  version: 5.1.2
-  resolution: "minimatch@npm:5.1.2"
+  version: 5.1.4
+  resolution: "minimatch@npm:5.1.4"
   dependencies:
     brace-expansion: ^2.0.1
-  checksum: 32ffda25b9fb8270a1c1beafdb7489dc0e411af553495136509a945691f63c9b6b000eeeaaf8bffe3efa609c1d6d3bc0f5a106f6c3443b5c05da649100ded964
+  checksum: 0de6d7d154e70d12487b30a7bfcb74bd15fd1f1ec007a2516699ba76e63f78ca2e5016c200b242ed75123aff8dcccf49947f71b629fb1b1f221c8e76a13ed8de
   languageName: node
   linkType: hard
 
@@ -13065,21 +13050,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:2.8.3":
+"prettier@npm:2.8.3, prettier@npm:^2.7.1":
   version: 2.8.3
   resolution: "prettier@npm:2.8.3"
   bin:
     prettier: bin-prettier.js
   checksum: 92f2ceb522d454370e02082aa74ad27388672f7cee8975028b59517c069fe643bdc73e322675c8faf2ff173d7a626d1a6389f26b474000308e793aa25fff46e5
-  languageName: node
-  linkType: hard
-
-"prettier@npm:^2.7.1":
-  version: 2.8.2
-  resolution: "prettier@npm:2.8.2"
-  bin:
-    prettier: bin-prettier.js
-  checksum: 740c56c2128d587d656ea1dde9bc9c3503dfc94db4f3ac387259215eeb2e216680bdad9d18a0c9feecc6b42cfa188d6fa777df4c36c1d00cedd4199074fbfbd2
   languageName: node
   linkType: hard
 
@@ -14046,12 +14022,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rimraf@npm:4.0.7":
-  version: 4.0.7
-  resolution: "rimraf@npm:4.0.7"
+"rimraf@npm:4.1.0":
+  version: 4.1.0
+  resolution: "rimraf@npm:4.1.0"
   bin:
     rimraf: dist/cjs/src/bin.js
-  checksum: 294ae526198eadac7b57e7b43782aaa0be5d5c2a606ee65c26d9cd2fdddc320d80cc43c3c1c0b9562e88aa265f67c4c00f70af2b4d065e76ce03d9d7a2a5c901
+  checksum: da4849802779a8c8cbe3aa1fbdf817b1ec41f7e95fb82074de3129e0030cd4e6e1f512a732344f0062c1cea59569c8113c78c3f50267cc469e8e9bfbe7622cb5
   languageName: node
   linkType: hard
 
@@ -14328,11 +14304,11 @@ __metadata:
   linkType: hard
 
 "serialize-javascript@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "serialize-javascript@npm:6.0.0"
+  version: 6.0.1
+  resolution: "serialize-javascript@npm:6.0.1"
   dependencies:
     randombytes: ^2.1.0
-  checksum: 56f90b562a1bdc92e55afb3e657c6397c01a902c588c0fe3d4c490efdcc97dcd2a3074ba12df9e94630f33a5ce5b76a74784a7041294628a6f4306e0ec84bf93
+  checksum: 3c4f4cb61d0893b988415bdb67243637333f3f574e9e9cc9a006a2ced0b390b0b3b44aef8d51c951272a9002ec50885eefdc0298891bc27eb2fe7510ea87dc4f
   languageName: node
   linkType: hard
 
@@ -15622,9 +15598,9 @@ __metadata:
   linkType: hard
 
 "type-fest@npm:^3.0.0":
-  version: 3.5.1
-  resolution: "type-fest@npm:3.5.1"
-  checksum: b79991ef1310bd114210c8f697b510cefd2276c6ed4fd5026430b6e73a4253916c6551f773327a1e4c47ac2b31205294c8e68030e4999f262e0d47d541f7b7cb
+  version: 3.5.2
+  resolution: "type-fest@npm:3.5.2"
+  checksum: 39411ad25610fd5542b3bc1a3381bfc24a7cd3d422f52e5aa9a0580fd7c8a60140c332ef585637e05117f3e0b7267dbd510e15e13f3dd8ce98fd29fba9c3479f
   languageName: node
   linkType: hard
 
