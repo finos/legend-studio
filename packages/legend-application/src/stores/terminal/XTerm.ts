@@ -30,9 +30,16 @@ import { Unicode11Addon as XTermUnicode11Addon } from 'xterm-addon-unicode11';
 import { WebglAddon as XTermWebglAddon } from 'xterm-addon-webgl';
 import { MONOSPACED_FONT_FAMILY, TAB_SIZE } from '../../const.js';
 import { forceDispatchKeyboardEvent } from '../../components/LegendApplicationComponentFrameworkProvider.js';
-import { Terminal, type TerminalWriteOption, ANSI_ESCAPE } from './Terminal.js';
 import {
+  Terminal,
+  ANSI_ESCAPE,
+  type TerminalWriteOption,
+  type TerminalSetupConfiguration,
+} from './Terminal.js';
+import {
+  ActionState,
   guaranteeNonNullable,
+  IllegalStateError,
   isMatchingKeyCombination,
   parseKeybinding,
 } from '@finos/legend-shared';
@@ -95,6 +102,9 @@ export class XTerm extends Terminal {
   private readonly resizer: XTermFitAddon;
   private readonly renderer: XTermWebglAddon;
   private readonly searcher: XTermSearchAddon;
+  private webLinkProvider?: XTermWebLinksAddon;
+
+  private readonly setupState = ActionState.create();
 
   // NOTE: since we don't attach xterm to a terminal with real stdin, we have to manually
   // register the user input in this temporary variable. When `Enter` is hit, we will flush this
@@ -122,11 +132,14 @@ export class XTerm extends Terminal {
     this.resizer = new XTermFitAddon();
     this.searcher = new XTermSearchAddon();
     this.renderer = new XTermWebglAddon();
-
-    this.setup();
   }
 
-  private setup(): void {
+  setup(configuration?: TerminalSetupConfiguration | undefined): void {
+    if (this.setupState.hasCompleted) {
+      throw new IllegalStateError(`Terminal is already set up`);
+    }
+    this.setupState.complete();
+
     // Handling context loss: The browser may drop WebGL contexts for various reasons like OOM or after the system has been suspended.
     // An easy, but suboptimal way, to handle this is by disposing of WebglAddon when the `webglcontextlost` event fires
     // NOTE: we don't really have a resilient way to fallback right now, hopefully, the fallback is to render in DOM
@@ -136,7 +149,7 @@ export class XTerm extends Terminal {
     this.instance.loadAddon(this.resizer);
     this.instance.loadAddon(this.searcher);
     this.instance.loadAddon(this.renderer);
-    this.instance.loadAddon(new XTermWebLinksAddon());
+
     this.instance.loadAddon(new XTermUnicode11Addon());
     this.instance.unicode.activeVersion = '11';
 
@@ -165,6 +178,13 @@ export class XTerm extends Terminal {
         return true; // return true to indicate the event should still be handled by xterm
       },
     );
+
+    this.webLinkProvider = configuration?.webLinkProvider
+      ? new XTermWebLinksAddon(configuration.webLinkProvider.handler, {
+          urlRegex: configuration.webLinkProvider.regex,
+        })
+      : new XTermWebLinksAddon();
+    this.instance.loadAddon(this.webLinkProvider);
 
     this.searcher.onDidChangeResults((result) => {
       if (result) {
@@ -204,39 +224,64 @@ export class XTerm extends Terminal {
     // use onData for paste and normal input, limit the range; use onKey for special handling, liek Enter, Arrow, backspaces, etc.
   }
 
+  get isSetup(): boolean {
+    return this.setupState.hasCompleted;
+  }
+
+  private checkSetup(): void {
+    if (!this.setupState.hasCompleted) {
+      throw new IllegalStateError(`Terminal has not been set up yet`);
+    }
+  }
+
   mount(container: HTMLElement): void {
+    this.checkSetup();
+
     this.instance.open(container);
   }
 
   dispose(): void {
+    this.checkSetup();
+
     this.searcher.dispose();
     this.resizer.dispose();
     this.renderer.dispose();
+    this.webLinkProvider?.dispose();
     this._TEMPORARY__onKeyListener?.dispose();
     this._TEMPORARY__onDataListener?.dispose();
     this.instance.dispose();
   }
 
   autoResize(): void {
+    this.checkSetup();
+
     this.resizer.fit();
   }
 
   focus(): void {
+    this.checkSetup();
+
     this.instance.focus();
   }
 
   override showHelp(): void {
+    this.checkSetup();
+
     this.resetANSIStyling();
     this.instance.scrollToBottom();
     this.instance.writeln(HELP_COMMAND_TEXT);
   }
 
   clear(): void {
+    this.checkSetup();
+
     this.instance.reset();
     this.instance.write(DEFAULT_COMMAND_HEADER);
   }
 
   private resetANSIStyling(): void {
+    this.checkSetup();
+
     this.instance.write(ANSI_ESCAPE.RESET);
   }
 
@@ -245,6 +290,8 @@ export class XTerm extends Terminal {
     command: string | undefined,
     opts?: TerminalWriteOption,
   ): void {
+    this.checkSetup();
+
     if (!this.preserveLog && opts?.clear) {
       this.instance.reset();
       this.instance.scrollToTop();
@@ -259,6 +306,8 @@ export class XTerm extends Terminal {
   }
 
   search(val: string): void {
+    this.checkSetup();
+
     this.searcher.findNext(val, {
       decorations: LEGEND_XTERM_SEARCH_THEME,
       regex: this.searchConfig.useRegex,
@@ -271,6 +320,8 @@ export class XTerm extends Terminal {
   }
 
   clearSearch(): void {
+    this.checkSetup();
+
     this.searcher.clearDecorations();
     this.setSearchText('');
     this.setSearchResultCount(undefined);
@@ -278,6 +329,8 @@ export class XTerm extends Terminal {
   }
 
   findPrevious(): void {
+    this.checkSetup();
+
     this.searcher.findPrevious(this.searchConfig.searchText, {
       decorations: LEGEND_XTERM_SEARCH_THEME,
       regex: this.searchConfig.useRegex,
@@ -287,6 +340,8 @@ export class XTerm extends Terminal {
   }
 
   findNext(): void {
+    this.checkSetup();
+
     this.searcher.findNext(this.searchConfig.searchText, {
       decorations: LEGEND_XTERM_SEARCH_THEME,
       regex: this.searchConfig.useRegex,

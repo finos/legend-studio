@@ -18,6 +18,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  BlankPanelContent,
   CaseSensitiveIcon,
   CloseIcon,
   clsx,
@@ -96,6 +97,13 @@ export const Console = observer(() => {
     }
   };
 
+  if (!terminal.isSetup) {
+    return (
+      <div className="terminal-panel">
+        <BlankPanelContent>Terminal is not set up yet</BlankPanelContent>
+      </div>
+    );
+  }
   return (
     <div className="terminal-panel">
       <div className="terminal-panel__header">

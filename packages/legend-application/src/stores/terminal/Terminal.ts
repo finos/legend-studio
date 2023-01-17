@@ -181,6 +181,18 @@ export interface TerminalWriteOption {
   clear?: boolean | undefined;
 }
 
+export interface TerminalWebLinkProviderConfiguration {
+  handler: (event: MouseEvent, text: string) => void;
+  regex: RegExp;
+}
+
+export interface TerminalSetupConfiguration {
+  // NOTE: since xterm do not support web-link provider, we need to override the default addon
+  // the more ideal strategy is to implement additional buffer parser
+  // See https://github.com/xtermjs/xterm.js/issues/3746
+  webLinkProvider?: TerminalWebLinkProviderConfiguration | undefined;
+}
+
 export abstract class Terminal extends Console {
   preserveLog = false;
 
@@ -197,6 +209,8 @@ export abstract class Terminal extends Console {
     this.preserveLog = val;
   }
 
+  abstract get isSetup(): boolean;
+  abstract setup(configuration?: TerminalSetupConfiguration | undefined): void;
   abstract focus(): void;
 
   showHelp(): void {

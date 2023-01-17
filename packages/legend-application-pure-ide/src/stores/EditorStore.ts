@@ -103,6 +103,9 @@ import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import type { SourceModificationResult } from '../server/models/Source.js';
 import { ConceptType } from '../server/models/ConceptTree.js';
 
+const LEGEND_PURE_IDE_TERMINAL_WEBLINK_REGEX =
+  /(?:(?<url>https?:[/]{2}[^\s"'!*(){}|\\^<>`]*[^\s"':,.!?{}|\\^~[\]`()<>])|(?<path>resource:(?<path_sourceId>\/?(?:\w\/)*\w+(?:.\w+)*) (?:line:(?<path_line>\d+)) (?:column:(?<path_column>\d+))))/;
+
 export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
 
@@ -209,6 +212,34 @@ export class EditorStore implements CommandRegistrar {
           : this.applicationStore.config.pureUrl,
       }),
     );
+
+    this.applicationStore.terminalService.terminal.setup({
+      webLinkProvider: {
+        handler: (event, text) => {
+          const match = text.match(LEGEND_PURE_IDE_TERMINAL_WEBLINK_REGEX);
+          if (match?.groups?.url) {
+            this.applicationStore.navigator.visitAddress(match.groups.url);
+          } else if (
+            match?.groups?.path &&
+            match?.groups?.path_sourceId &&
+            match?.groups?.path_column &&
+            match?.groups?.path_line
+          ) {
+            flowResult(
+              this.loadFile(
+                match.groups.path_sourceId,
+                new FileCoordinate(
+                  match.groups.path_sourceId,
+                  Number.parseInt(match.groups.path_line, 10),
+                  Number.parseInt(match.groups.path_column, 10),
+                ),
+              ),
+            ).catch(this.applicationStore.alertUnhandledError);
+          }
+        },
+        regex: LEGEND_PURE_IDE_TERMINAL_WEBLINK_REGEX,
+      },
+    });
   }
 
   setOpenFileSearchCommand(val: boolean): void {
