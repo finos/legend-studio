@@ -98,8 +98,11 @@ export { MINIMUM_SERVICE_OWNERS } from './stores/editor-state/element-editor-sta
 export { generateServiceManagementUrl } from './stores/editor-state/element-editor-state/service/ServiceRegistrationState.js';
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
 export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal.js';
-export { GenerationFile } from './stores/shared/FileGenerationTreeUtils.js';
-export { FileGenerationState } from './stores/editor-state/FileGenerationState.js';
+export { FileSystem_File as GenerationFile } from './stores/shared/FileSystemTreeUtils.js';
+export {
+  FileGenerationState,
+  GeneratedFileStructureState,
+} from './stores/editor-state/FileGenerationState.js';
 export { DSL_ExternalFormat_LegendStudioApplicationPlugin } from './components/DSL_ExternalFormat_LegendStudioApplicationPlugin.js';
 export {
   externalFormatData_setData,

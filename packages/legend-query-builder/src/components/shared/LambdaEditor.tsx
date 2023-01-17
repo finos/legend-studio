@@ -464,7 +464,9 @@ const LambdaEditorPopUp = observer(
         const _editor = monacoEditorAPI.create(element, {
           ...getBaseTextEditorOptions(),
           language: EDITOR_LANGUAGE.PURE,
-          theme: EDITOR_THEME.LEGEND,
+          theme: applicationStore.TEMPORARY__isLightThemeEnabled
+            ? EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
+            : EDITOR_THEME.LEGEND,
         });
         setEditor(_editor);
       }
@@ -584,11 +586,18 @@ const LambdaEditorPopUp = observer(
       >
         <Modal
           darkMode={true}
-          className={clsx('editor-modal lambda-editor__popup__modal', {
-            'lambda-editor__popup__modal--has-error': Boolean(
-              lambdaEditorState.parserError,
-            ),
-          })}
+          className={clsx(
+            'editor-modal lambda-editor__popup__modal',
+            {
+              'lambda-editor__popup__modal--has-error': Boolean(
+                lambdaEditorState.parserError,
+              ),
+            },
+            {
+              'lambda-editor--light':
+                applicationStore.TEMPORARY__isLightThemeEnabled,
+            },
+          )}
         >
           <ModalHeader>
             <ModalTitle title="Edit Lambda" />

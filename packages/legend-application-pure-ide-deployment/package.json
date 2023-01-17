@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-pure-ide-deployment",
-  "version": "8.28.0",
+  "version": "8.29.0",
   "description": "Legend Pure IDE web application deployment",
   "keywords": [
     "legend",
@@ -44,7 +44,7 @@
     "@finos/legend-dev-utils": "workspace:*",
     "copy-webpack-plugin": "11.0.0",
     "cross-env": "7.0.3",
-    "eslint": "8.30.0",
+    "eslint": "8.31.0",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "typescript": "4.9.4",

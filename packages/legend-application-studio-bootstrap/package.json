@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-studio-bootstrap",
-  "version": "8.28.0",
+  "version": "8.29.0",
   "description": "Legend Studio application bootrap",
   "keywords": [
     "legend",
@@ -65,7 +65,7 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.30.0",
+    "eslint": "8.31.0",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.57.1",

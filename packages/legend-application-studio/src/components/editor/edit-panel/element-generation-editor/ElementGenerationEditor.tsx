@@ -24,10 +24,7 @@ import {
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState.js';
 import type { ElementEditorState } from '../../../../stores/editor-state/element-editor-state/ElementEditorState.js';
 import { guaranteeType } from '@finos/legend-shared';
-import {
-  GenerationResultViewer,
-  FileGenerationConfigurationEditor,
-} from '../../../editor/edit-panel/element-generation-editor/FileGenerationEditor.js';
+import { FileGenerationConfigurationEditor } from '../../../editor/edit-panel/element-generation-editor/FileGenerationEditor.js';
 import { flowResult } from 'mobx';
 import {
   Dialog,
@@ -39,6 +36,7 @@ import {
 } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
+import { FileSystemViewer } from './FileSystemViewer.js';
 
 const NewFileGenerationModal = observer(
   (props: {
@@ -145,7 +143,7 @@ export const ElementGenerationEditor = observer(
     const applicationStore = useApplicationStore();
     const isReadOnly = currentElementState.isReadOnly;
     const leaveElementGenerationView = (): void =>
-      currentElementState.setGenerationViewMode(undefined);
+      currentElementState.setGenerationModeState(undefined);
 
     useEffect(() => {
       flowResult(elementGenerationState.regenerate()).catch(
@@ -187,8 +185,8 @@ export const ElementGenerationEditor = observer(
                 <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
               </ResizablePanelSplitter>
               <ResizablePanel>
-                <GenerationResultViewer
-                  fileGenerationState={
+                <FileSystemViewer
+                  generatedFileState={
                     elementGenerationState.fileGenerationState
                   }
                 />

@@ -1,5 +1,17 @@
 # @finos/legend-graph
 
+## 22.2.0
+
+### Minor Changes
+
+- [#1817](https://github.com/finos/legend-studio/pull/1817) [`cad4352bf`](https://github.com/finos/legend-studio/commit/cad4352bff6e61bcef42503d934632fac98894d0) ([@gs-gunjan](https://github.com/gs-gunjan)) - Renaming test data in mapping test suites
+
+### Patch Changes
+
+- [#1815](https://github.com/finos/legend-studio/pull/1815) [`3a88c08e4`](https://github.com/finos/legend-studio/commit/3a88c08e4dac9267e92ce665f41dd45ab64e7d32) ([@xannem](https://github.com/xannem)) - fix: groupBy attribute for mappings when toggling form mode from text mode
+
+- [#1730](https://github.com/finos/legend-studio/pull/1730) [`0026b7986`](https://github.com/finos/legend-studio/commit/0026b79867b8783fc507618e8a0131c7021b018e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Improve query execution test flow.
+
 ## 22.1.1
 
 ## 22.1.0

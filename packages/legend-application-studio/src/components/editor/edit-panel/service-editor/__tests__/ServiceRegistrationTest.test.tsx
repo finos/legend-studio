@@ -17,7 +17,6 @@
 import { test, expect } from '@jest/globals';
 import {
   type RenderResult,
-  getByPlaceholderText,
   getByTitle,
   waitFor,
   getByText,
@@ -301,14 +300,6 @@ test(
       );
     const service = serviceEditorState.service;
     expect(service.owners).toHaveLength(2);
-    fireEvent.click(getByTitle(editPanel, 'Add owner'));
-    const ownerInput = await waitFor(() =>
-      getByPlaceholderText(editPanel, 'Enter an owner...'),
-    );
-    fireEvent.change(ownerInput, { target: { value: 'owner3' } });
-    fireEvent.click(getByText(editPanel, 'Save'));
-    await waitFor(() => getByText(editPanel, 'owner3'));
-    expect(service.owners).toHaveLength(3);
     // registration
     fireEvent.click(getByText(editPanel, 'Registration'));
     const registrationEditor = await waitFor(() =>

@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 5.0.19
+
+### Patch Changes
+
+- [#1669](https://github.com/finos/legend-studio/pull/1669) [`04bec8146`](https://github.com/finos/legend-studio/commit/04bec8146730311355d9debe77f28db79d4b800c) ([@xannem](https://github.com/xannem)) - Light mode styling fixes in query builder and allow new line delimiter for query filter value spec.
+
 ## 5.0.18
 
 ## 5.0.17

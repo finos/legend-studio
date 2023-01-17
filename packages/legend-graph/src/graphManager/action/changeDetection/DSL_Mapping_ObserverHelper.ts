@@ -123,7 +123,7 @@ import {
   observe_TestSuite,
 } from './Testable_ObserverHelper.js';
 import type { MappingTestSuite } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
-import type { StoreTestData } from '../../../graph/metamodel/pure/packageableElements/mapping/StoreTestData.js';
+import type { MappingTestData } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestData.js';
 import { observe_EmbeddedData } from './DSL_Data_ObserverHelper.js';
 
 // ------------------------------------- Store -------------------------------------
@@ -141,7 +141,7 @@ export const observe_Abstract_Store = (metamodel: Store): void => {
 // ------------------------------------- TestSuite -----------------------------------
 
 export const observe_StoreTestData = skipObservedWithContext(
-  (metamodel: StoreTestData, context: ObserverContext): StoreTestData => {
+  (metamodel: MappingTestData, context: ObserverContext): MappingTestData => {
     makeObservable(metamodel, {
       store: observable,
       data: observable,

@@ -19,15 +19,13 @@ import {
   type SelectComponent,
   clsx,
   CustomSelectorInput,
-  ResizablePanel,
-  ResizablePanelGroup,
-  ResizablePanelSplitter,
-  ResizablePanelSplitterLine,
   TimesIcon,
   LockIcon,
   PanelDropZone,
+  PanelFormSection,
 } from '@finos/legend-art';
 import {
+  capitalize,
   filterByType,
   guaranteeNonNullable,
   prettyCONSTName,
@@ -39,6 +37,7 @@ import {
 import {
   PackageableElementExplicitReference,
   SchemaSet,
+  type ModelUnit,
   type PackageableElement,
   type PackageableElementReference,
 } from '@finos/legend-graph';
@@ -61,7 +60,7 @@ import {
   externalFormat_modelUnit_deletePackageableElementIncludes,
 } from '../../../../stores/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 
-const BindingScopeEntryEditor = observer(
+const ModelUnitPackagableElementEntryEditor = observer(
   (props: {
     elementRef: PackageableElementReference<PackageableElement>;
     removeElement: (
@@ -77,13 +76,13 @@ const BindingScopeEntryEditor = observer(
         className="panel__content__form__section__list__item"
       >
         <>
-          <div className="panel__content__form__section__list__item__value binding-scope-entry-editor__element">
+          <div className="panel__content__form__section__list__item__value model-unit-entry-editor__element">
             {
-              <div className="binding-scope-entry-editor__element__icon">
+              <div className="model-unit-entry-editor__element__icon">
                 {getElementIcon(editorStore, elementRef.value)}
               </div>
             }
-            <div className="binding-scope-entry-editor__element__path">
+            <div className="model-unit-entry-editor__element__path">
               {elementRef.value.path}
             </div>
           </div>
@@ -103,7 +102,7 @@ const BindingScopeEntryEditor = observer(
   },
 );
 
-const BindingScopeEditor = observer(
+const ModelUnitPackageElementEditor = observer(
   (props: {
     elements: PackageableElementReference<PackageableElement>[];
     addElement: () => void;
@@ -145,34 +144,32 @@ const BindingScopeEditor = observer(
     );
 
     return (
-      <div className="binding-scope-editor">
-        <div className="binding-scope-editor__panel__content">
+      <div className="model-unit-editor">
+        <div className="model-unit-editor__panel__content">
           <PanelDropZone
             dropTargetConnector={dropElementRef}
             isDragOver={isElementDragOver && !isReadOnly}
           >
-            <div className="binding-scope-editor__panel__content__form">
-              <div className="binding-scope-editor__panel__content__form__section">
-                <div className="binding-scope-editor__panel__content__form__section__list">
-                  {elements.map((elementRef) => (
-                    <BindingScopeEntryEditor
-                      key={elementRef.value._UUID}
-                      elementRef={elementRef}
-                      removeElement={removeElement}
-                      isReadOnly={isReadOnly}
-                    />
-                  ))}
-                  <div className="binding-scope-editor__panel__content__form__section__list__new-item__add">
-                    <button
-                      className="binding-scope-editor__panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                      disabled={!allowAddingElement}
-                      tabIndex={-1}
-                      onClick={addElement}
-                      title="Add Element"
-                    >
-                      Add Value
-                    </button>
-                  </div>
+            <div className="model-unit-editor__panel__content__form__section">
+              <div className="model-unit-editor__panel__content__form__section__list">
+                {elements.map((elementRef) => (
+                  <ModelUnitPackagableElementEntryEditor
+                    key={elementRef.value._UUID}
+                    elementRef={elementRef}
+                    removeElement={removeElement}
+                    isReadOnly={isReadOnly}
+                  />
+                ))}
+                <div className="model-unit-editor__panel__content__form__section__list__new-item__add">
+                  <button
+                    className="model-unit-editor__panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                    disabled={!allowAddingElement}
+                    tabIndex={-1}
+                    onClick={addElement}
+                    title="Add Element"
+                  >
+                    Add Value
+                  </button>
                 </div>
               </div>
             </div>
@@ -287,6 +284,134 @@ const BindingGeneralEditor = observer(
   },
 );
 
+export const ModelUnitEditor = observer(
+  (props: { modelUnit: ModelUnit; isReadOnly: boolean }) => {
+    const editorStore = useEditorStore();
+    const { modelUnit, isReadOnly } = props;
+    const graph = editorStore.graphManagerState.graph;
+    const allowedElements = [
+      ...graph.ownProfiles,
+      ...graph.ownEnumerations,
+      ...graph.ownClasses,
+      ...graph.ownAssociations,
+      ...graph.ownFunctions,
+    ];
+    const elements = allowedElements.filter(
+      (element) =>
+        !modelUnit.packageableElementIncludes
+          .map((e) => e.value)
+          .includes(element) &&
+        !modelUnit.packageableElementExcludes
+          .map((e) => e.value)
+          .includes(element),
+    );
+    const allowAddingElement = !isReadOnly && Boolean(elements.length);
+    const addInclusion = (): void => {
+      if (allowAddingElement) {
+        externalFormat_modelUnit_addPackageableElementIncludes(
+          modelUnit,
+          PackageableElementExplicitReference.create(
+            guaranteeNonNullable(elements[0]),
+          ),
+        );
+      }
+    };
+    const addExclusion = (): void => {
+      if (allowAddingElement) {
+        externalFormat_modelUnit_addPackageableElementExcludes(
+          modelUnit,
+          PackageableElementExplicitReference.create(
+            guaranteeNonNullable(elements[0]),
+          ),
+        );
+      }
+    };
+    const removeInclusion = (
+      val: PackageableElementReference<PackageableElement>,
+    ): void =>
+      externalFormat_modelUnit_deletePackageableElementIncludes(modelUnit, val);
+    const removeExclusion = (
+      val: PackageableElementReference<PackageableElement>,
+    ): void =>
+      externalFormat_modelUnit_deletePackageableElementExcludes(modelUnit, val);
+    const handleDropInclusion = useCallback(
+      (item: UMLEditorElementDropTarget): void => {
+        const element = item.data.packageableElement;
+        if (
+          !isReadOnly &&
+          !modelUnit.packageableElementIncludes
+            .map((e) => e.value)
+            .includes(element)
+        ) {
+          externalFormat_modelUnit_addPackageableElementIncludes(
+            modelUnit,
+            PackageableElementExplicitReference.create(element),
+          );
+        }
+      },
+      [isReadOnly, modelUnit],
+    );
+    const handleDropExclusion = useCallback(
+      (item: UMLEditorElementDropTarget): void => {
+        const element = item.data.packageableElement;
+        if (
+          !isReadOnly &&
+          !modelUnit.packageableElementExcludes
+            .map((e) => e.value)
+            .includes(element)
+        ) {
+          externalFormat_modelUnit_addPackageableElementExcludes(
+            modelUnit,
+            PackageableElementExplicitReference.create(element),
+          );
+        }
+      },
+      [isReadOnly, modelUnit],
+    );
+
+    return (
+      <>
+        <PanelFormSection>
+          <div className="panel__content__form__section__header__label">
+            <div className="panel__content__form__section__header__label__text">
+              {capitalize('Model Includes')}
+            </div>
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Specifies the list of models included
+          </div>
+          <ModelUnitPackageElementEditor
+            elements={modelUnit.packageableElementIncludes}
+            addElement={addInclusion}
+            removeElement={removeInclusion}
+            allowAddingElement={allowAddingElement}
+            handleDropElement={handleDropInclusion}
+            isReadOnly={isReadOnly}
+          />
+        </PanelFormSection>
+        <PanelFormSection>
+          <div className="panel__content__form__section__header__label">
+            <div className="panel__content__form__section__header__label__text">
+              {capitalize('Model Excludes')}
+            </div>
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Specifies the list of models excluded
+          </div>{' '}
+          <ModelUnitPackageElementEditor
+            elements={modelUnit.packageableElementExcludes}
+            addElement={addExclusion}
+            removeElement={removeExclusion}
+            allowAddingElement={allowAddingElement}
+            handleDropElement={handleDropExclusion}
+            isReadOnly={isReadOnly}
+          />
+        </PanelFormSection>
+      </>
+    );
+  },
+);
+
 export const BindingEditor = observer(() => {
   const editorStore = useEditorStore();
   const editorState =
@@ -299,86 +424,6 @@ export const BindingEditor = observer(() => {
     (tab: BINDING_TAB_TYPE): (() => void) =>
     (): void =>
       editorState.setSelectedTab(tab);
-  const graph = editorStore.graphManagerState.graph;
-  const allowedElements = [
-    ...graph.ownProfiles,
-    ...graph.ownEnumerations,
-    ...graph.ownClasses,
-    ...graph.ownAssociations,
-    ...graph.ownFunctions,
-  ];
-  const elements = allowedElements.filter(
-    (element) =>
-      !modelUnit.packageableElementIncludes
-        .map((e) => e.value)
-        .includes(element) &&
-      !modelUnit.packageableElementExcludes
-        .map((e) => e.value)
-        .includes(element),
-  );
-  const allowAddingElement = !isReadOnly && Boolean(elements.length);
-  const addInclusion = (): void => {
-    if (allowAddingElement) {
-      externalFormat_modelUnit_addPackageableElementIncludes(
-        modelUnit,
-        PackageableElementExplicitReference.create(
-          guaranteeNonNullable(elements[0]),
-        ),
-      );
-    }
-  };
-  const addExclusion = (): void => {
-    if (allowAddingElement) {
-      externalFormat_modelUnit_addPackageableElementExcludes(
-        modelUnit,
-        PackageableElementExplicitReference.create(
-          guaranteeNonNullable(elements[0]),
-        ),
-      );
-    }
-  };
-  const removeInclusion = (
-    val: PackageableElementReference<PackageableElement>,
-  ): void =>
-    externalFormat_modelUnit_deletePackageableElementIncludes(modelUnit, val);
-  const removeExclusion = (
-    val: PackageableElementReference<PackageableElement>,
-  ): void =>
-    externalFormat_modelUnit_deletePackageableElementExcludes(modelUnit, val);
-  const handleDropInclusion = useCallback(
-    (item: UMLEditorElementDropTarget): void => {
-      const element = item.data.packageableElement;
-      if (
-        !isReadOnly &&
-        !modelUnit.packageableElementIncludes
-          .map((e) => e.value)
-          .includes(element)
-      ) {
-        externalFormat_modelUnit_addPackageableElementIncludes(
-          modelUnit,
-          PackageableElementExplicitReference.create(element),
-        );
-      }
-    },
-    [isReadOnly, modelUnit],
-  );
-  const handleDropExclusion = useCallback(
-    (item: UMLEditorElementDropTarget): void => {
-      const element = item.data.packageableElement;
-      if (
-        !isReadOnly &&
-        !modelUnit.packageableElementExcludes
-          .map((e) => e.value)
-          .includes(element)
-      ) {
-        externalFormat_modelUnit_addPackageableElementExcludes(
-          modelUnit,
-          PackageableElementExplicitReference.create(element),
-        );
-      }
-    },
-    [isReadOnly, modelUnit],
-  );
   return (
     <div className="binding-editor">
       <div className="binding-editor__header">
@@ -433,53 +478,30 @@ export const BindingEditor = observer(() => {
           </>
         )}
         {selectedTab === BINDING_TAB_TYPE.MODELS && (
-          <ResizablePanelGroup orientation="vertical">
-            <ResizablePanel minSize={280} maxSize={550}>
-              <div className="binding-editor__header">
-                <div className="binding-editor__header__title">
-                  <div className="binding-editor__header__title__label">
-                    Model Includes
+          <>
+            <div className="binding-editor__header">
+              <div className="binding-editor__header__title">
+                {isReadOnly && (
+                  <div className="element-editor__header__lock">
+                    <LockIcon />
                   </div>
+                )}
+                <div className="binding-editor__header__title__label">
+                  Model Unit
                 </div>
               </div>
-              <div className="binding-editor__header__prompt">
-                Specifies the list of models included
-              </div>
-              <BindingScopeEditor
-                key={editorState.uuid}
-                elements={modelUnit.packageableElementIncludes}
-                addElement={addInclusion}
-                removeElement={removeInclusion}
-                allowAddingElement={allowAddingElement}
-                handleDropElement={handleDropInclusion}
-                isReadOnly={isReadOnly}
-              />
-            </ResizablePanel>
-            <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-            </ResizablePanelSplitter>
-            <ResizablePanel>
-              <div className="binding-editor__header">
-                <div className="binding-editor__header__title">
-                  <div className="binding-editor__header__title__label">
-                    Model Excludes
-                  </div>
+            </div>
+            <div className="binding-editor__content">
+              <div className="binding-editor__content__lists">
+                <div className="binding-editor__model-unit-editor">
+                  <ModelUnitEditor
+                    modelUnit={modelUnit}
+                    isReadOnly={isReadOnly}
+                  />
                 </div>
               </div>
-              <div className="binding-editor__header__prompt">
-                Specifies the list of models excluded
-              </div>
-              <BindingScopeEditor
-                key={editorState.uuid}
-                elements={modelUnit.packageableElementExcludes}
-                addElement={addExclusion}
-                removeElement={removeExclusion}
-                allowAddingElement={allowAddingElement}
-                handleDropElement={handleDropExclusion}
-                isReadOnly={isReadOnly}
-              />
-            </ResizablePanel>
-          </ResizablePanelGroup>
+            </div>
+          </>
         )}
       </div>
     </div>

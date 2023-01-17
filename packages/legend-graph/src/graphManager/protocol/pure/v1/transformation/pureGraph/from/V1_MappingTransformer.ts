@@ -161,8 +161,8 @@ import {
 import type { MappingTest } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
 import type { MappingTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
 import { V1_MappingTestSuite } from '../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
-import type { StoreTestData } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/StoreTestData.js';
-import { V1_StoreTestData } from '../../../model/packageableElements/mapping/V1_StoreTestData.js';
+import type { MappingTestData } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestData.js';
+import { V1_MappingTestData } from '../../../model/packageableElements/mapping/V1_MappingTestData.js';
 import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
 
 export const V1_transformPropertyReference = (
@@ -337,10 +337,10 @@ const transformMappingTestLegacy = (
 };
 
 const transformStoreTestData = (
-  element: StoreTestData,
+  element: MappingTestData,
   context: V1_GraphTransformerContext,
-): V1_StoreTestData => {
-  const testData = new V1_StoreTestData();
+): V1_MappingTestData => {
+  const testData = new V1_MappingTestData();
   testData.data = V1_transformEmbeddedData(element.data, context);
   testData.store = element.store.valueForSerialization ?? '';
   return testData;
@@ -950,6 +950,13 @@ const transformRootRelationalSetImpl = (
   classMapping.primaryKey = element.primaryKey.map((pk) =>
     V1_transformRelationalOperationElement(pk, context),
   );
+
+  if (element.groupBy) {
+    classMapping.groupBy = element.groupBy.columns.map((pk) =>
+      V1_transformRelationalOperationElement(pk, context),
+    );
+  }
+
   if (element.filter) {
     const filter = new V1_FilterMapping();
     const filterPointer = new V1_FilterPointer();

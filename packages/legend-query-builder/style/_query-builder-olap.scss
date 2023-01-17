@@ -102,14 +102,13 @@
       @include flexCenter;
 
       height: 100%;
-      padding: 0 1rem;
+      padding: 0 0.7rem;
       font-size: 1.2rem;
       font-weight: 500;
       background: var(--color-dark-grey-280);
       color: var(--color-light-grey-100);
       border-radius: 0.2rem 0 0 0.2rem;
       white-space: nowrap;
-      width: 3rem;
 
       &__agg {
         width: 13rem;
@@ -127,7 +126,7 @@
 
       height: 100%;
       width: 2.8rem;
-      background: var(--color-yellow-500);
+      background: var(--color-yellow-200);
       color: var(--color-light-grey-100);
 
       svg {
@@ -254,16 +253,15 @@
       color: var(--color-light-grey-100);
 
       svg {
-        font-size: 1.8rem;
+        font-size: 1.4rem;
       }
     }
 
     &__operator__badge--activated {
       border-radius: 0;
-      background: var(--color-purple-50);
+      background: var(--color-yellow-200);
 
       svg {
-        font-size: 1.8rem;
         color: var(--color-dark-grey-280);
       }
     }
@@ -316,13 +314,13 @@
 
       height: 100%;
       width: 2.8rem;
-      background: var(--color-orange-150);
+      background: var(--color-blue-200);
       color: var(--color-light-grey-100);
       border-radius: 0.2rem 0 0 0.2rem;
 
       svg {
         font-size: 1.8rem;
-        color: var(--color-dark-grey-280);
+        color: var(--color-light-grey-0);
       }
     }
   }

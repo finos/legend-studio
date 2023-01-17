@@ -25,16 +25,16 @@ import {
   type GenerationOutput,
 } from '@finos/legend-graph';
 
-export interface GenerationOutputResult {
-  generationOutput: GenerationOutput;
-  parentId?: string | undefined;
-}
 export const GENERATION_FILE_ROOT_NAME = 'GENERATION_FILE_ROOT';
 
-// Generation Directory Model
-class GenerationFileNodeElement {
+export interface FileResult {
+  value: GenerationOutput;
+  parentId?: string | undefined;
+}
+
+class FileSystemElement {
   name: string;
-  directory?: GenerationDirectory | undefined;
+  directory?: FileSystem_Directory | undefined;
   parentId?: string | undefined;
 
   constructor(name: string, fileGenerationParent?: string) {
@@ -53,42 +53,42 @@ class GenerationFileNodeElement {
   }
 }
 
-export class GenerationDirectory extends GenerationFileNodeElement {
-  children: GenerationFileNodeElement[] = [];
+export class FileSystem_Directory extends FileSystemElement {
+  children: FileSystemElement[] = [];
 
-  setDirectory(val: GenerationDirectory): void {
+  setDirectory(val: FileSystem_Directory): void {
     this.directory = val;
   }
-  addChild(val: GenerationFileNodeElement): void {
+  addChild(val: FileSystemElement): void {
     addUniqueEntry(this.children, val);
   }
-  addElement(val: GenerationFileNodeElement): void {
+  addElement(val: FileSystemElement): void {
     this.addChild(val);
     val.directory = this;
   }
 
   static createDirectoryFromParent(
     name: string,
-    parent: GenerationDirectory,
-    fileGenerationParent?: string,
-  ): GenerationDirectory {
-    const newDirectory = new GenerationDirectory(name, fileGenerationParent);
+    parent: FileSystem_Directory,
+    genParent?: string,
+  ): FileSystem_Directory {
+    const newDirectory = new FileSystem_Directory(name, genParent);
     newDirectory.setDirectory(parent);
     return newDirectory;
   }
 
   static getOrCreateDirectory(
-    parent: GenerationDirectory,
+    parent: FileSystem_Directory,
     directoryName: string,
     insert: boolean,
-  ): GenerationDirectory {
+  ): FileSystem_Directory {
     const index = directoryName.indexOf(DIRECTORY_PATH_DELIMITER);
     const str =
       index === -1 ? directoryName : directoryName.substring(0, index);
-    let node: GenerationDirectory | undefined;
+    let node: FileSystem_Directory | undefined;
     node = parent.children.find(
-      (child: GenerationFileNodeElement): child is GenerationDirectory =>
-        child instanceof GenerationDirectory && child.name === str,
+      (child: FileSystemElement): child is FileSystem_Directory =>
+        child instanceof FileSystem_Directory && child.name === str,
     );
     if (!node) {
       if (!insert) {
@@ -97,11 +97,11 @@ export class GenerationDirectory extends GenerationFileNodeElement {
         );
       }
       // create the node if it is not in parent directory
-      node = GenerationDirectory.createDirectoryFromParent(str, parent);
+      node = FileSystem_Directory.createDirectoryFromParent(str, parent);
       parent.addChild(node);
     }
     if (index !== -1) {
-      return GenerationDirectory.getOrCreateDirectory(
+      return FileSystem_Directory.getOrCreateDirectory(
         node,
         directoryName.substring(index + DIRECTORY_PATH_DELIMITER.length),
         insert,
@@ -121,7 +121,7 @@ export class GenerationDirectory extends GenerationFileNodeElement {
   }
 }
 
-export class GenerationFile extends GenerationFileNodeElement {
+export class FileSystem_File extends FileSystemElement {
   content!: string;
   format?: string | undefined;
 
@@ -137,31 +137,31 @@ export class GenerationFile extends GenerationFileNodeElement {
   }
 }
 
-// Generation Tree Node
-export interface GenerationTreeNodeData extends TreeNodeData {
-  fileNode: GenerationFileNodeElement;
+// Tree Node
+export interface FileSystemTreeNodeData extends TreeNodeData {
+  fileNode: FileSystemElement;
 }
 
-export const getGenerationTreeNodeData = (
-  fileNode: GenerationFileNodeElement,
-): GenerationTreeNodeData => ({
+export const getFileSystemTreeNodeData = (
+  fileNode: FileSystemElement,
+): FileSystemTreeNodeData => ({
   id: fileNode.path,
   label: fileNode.name,
   childrenIds:
-    fileNode instanceof GenerationDirectory
+    fileNode instanceof FileSystem_Directory
       ? fileNode.children.map((child) => child.path)
       : undefined,
   fileNode: fileNode,
 });
 
 export const populateDirectoryTreeNodeChildren = (
-  node: GenerationTreeNodeData,
-  treeData: TreeData<GenerationTreeNodeData>,
+  node: FileSystemTreeNodeData,
+  treeData: TreeData<FileSystemTreeNodeData>,
 ): void => {
-  if (node.childrenIds && node.fileNode instanceof GenerationDirectory) {
+  if (node.childrenIds && node.fileNode instanceof FileSystem_Directory) {
     node.childrenIds = node.fileNode.children.map((child) => child.path);
     node.fileNode.children
-      .map((child) => getGenerationTreeNodeData(child))
+      .map((child) => getFileSystemTreeNodeData(child))
       .forEach((childNode) => {
         const currentNode = treeData.nodes.get(childNode.id);
         if (currentNode) {
@@ -174,14 +174,14 @@ export const populateDirectoryTreeNodeChildren = (
   }
 };
 
-export const getGenerationTreeData = (
-  dir: GenerationDirectory,
+export const getFileSystemTreeData = (
+  dir: FileSystem_Directory,
   rootWrapperName?: string,
-): TreeData<GenerationTreeNodeData> => {
+): TreeData<FileSystemTreeNodeData> => {
   const rootIds: string[] = [];
-  const nodes = new Map<string, GenerationTreeNodeData>();
+  const nodes = new Map<string, FileSystemTreeNodeData>();
   if (rootWrapperName) {
-    const rootNode = getGenerationTreeNodeData(dir);
+    const rootNode = getFileSystemTreeNodeData(dir);
     rootNode.label = rootWrapperName;
     addUniqueEntry(rootIds, rootNode.id);
     nodes.set(rootNode.id, rootNode);
@@ -191,11 +191,11 @@ export const getGenerationTreeData = (
       .sort((a, b) => a.name.localeCompare(b.name))
       .sort(
         (a, b) =>
-          (b instanceof GenerationDirectory ? 1 : 0) -
-          (a instanceof GenerationDirectory ? 1 : 0),
+          (b instanceof FileSystem_Directory ? 1 : 0) -
+          (a instanceof FileSystem_Directory ? 1 : 0),
       )
       .forEach((childDirectory) => {
-        const childTreeNodeData = getGenerationTreeNodeData(childDirectory);
+        const childTreeNodeData = getFileSystemTreeNodeData(childDirectory);
         addUniqueEntry(rootIds, childTreeNodeData.id);
         nodes.set(childTreeNodeData.id, childTreeNodeData);
       });
@@ -204,11 +204,11 @@ export const getGenerationTreeData = (
 };
 
 export const addNode = (
-  element: GenerationFileNodeElement,
-  treeData: TreeData<GenerationTreeNodeData>,
+  element: FileSystemElement,
+  treeData: TreeData<FileSystemTreeNodeData>,
   showRoot?: boolean,
-): GenerationTreeNodeData => {
-  const newNode = getGenerationTreeNodeData(element);
+): FileSystemTreeNodeData => {
+  const newNode = getFileSystemTreeNodeData(element);
   treeData.nodes.set(newNode.id, newNode);
   if (
     !element.directory ||
@@ -227,28 +227,28 @@ export const addNode = (
 };
 
 export const openNode = (
-  element: GenerationFileNodeElement,
-  treeData: TreeData<GenerationTreeNodeData>,
+  element: FileSystemElement,
+  treeData: TreeData<FileSystemTreeNodeData>,
   showRoot?: boolean,
-): GenerationTreeNodeData | undefined => {
+): FileSystemTreeNodeData | undefined => {
   let currentElement = element;
-  let openingNode: GenerationTreeNodeData | undefined;
+  let openingNode: FileSystemTreeNodeData | undefined;
   while (currentElement.directory) {
-    const node: GenerationTreeNodeData =
+    const node: FileSystemTreeNodeData =
       treeData.nodes.get(currentElement.path) ??
       addNode(currentElement, treeData, showRoot);
-    node.isOpen = currentElement instanceof GenerationDirectory;
+    node.isOpen = currentElement instanceof FileSystem_Directory;
     openingNode = !openingNode ? node : openingNode;
     currentElement = currentElement.directory;
   }
   return openingNode;
 };
 
-export const getFileGenerationChildNodes = (
-  node: GenerationTreeNodeData,
-  treeData: TreeData<GenerationTreeNodeData>,
-): GenerationTreeNodeData[] => {
-  if (node.childrenIds && node.fileNode instanceof GenerationDirectory) {
+export const getFileSystemChildNodes = (
+  node: FileSystemTreeNodeData,
+  treeData: TreeData<FileSystemTreeNodeData>,
+): FileSystemTreeNodeData[] => {
+  if (node.childrenIds && node.fileNode instanceof FileSystem_Directory) {
     populateDirectoryTreeNodeChildren(node, treeData);
     return node.childrenIds
       .map((id) => treeData.nodes.get(id))
@@ -256,21 +256,21 @@ export const getFileGenerationChildNodes = (
       .sort((a, b) => a.label.localeCompare(b.label))
       .sort(
         (a, b) =>
-          (b.fileNode instanceof GenerationDirectory ? 1 : 0) -
-          (a.fileNode instanceof GenerationDirectory ? 1 : 0),
+          (b.fileNode instanceof FileSystem_Directory ? 1 : 0) -
+          (a.fileNode instanceof FileSystem_Directory ? 1 : 0),
       );
   }
   return [];
 };
 
-export const buildGenerationDirectory = (
-  rootDirectory: GenerationDirectory,
-  generationResultIndex: Map<string, GenerationOutputResult>,
-  filesIndex: Map<string, GenerationFile>,
+export const buildFileSystemDirectory = (
+  rootDirectory: FileSystem_Directory,
+  filesResultIndex: Map<string, FileResult>,
+  filesIndex: Map<string, FileSystem_File>,
 ): void => {
-  Array.from(generationResultIndex.values()).forEach((generationFileInfo) => {
-    const generationOutput = generationFileInfo.generationOutput;
-    const filePath = generationOutput.fileName;
+  Array.from(filesResultIndex.values()).forEach((fileResult) => {
+    const resultValue = fileResult.value;
+    const filePath = resultValue.fileName;
     const index = filePath.lastIndexOf(DIRECTORY_PATH_DELIMITER);
     const fileName =
       index === -1
@@ -283,22 +283,23 @@ export const buildGenerationDirectory = (
       index === -1 ? undefined : filePath.substring(0, index);
     let directory = rootDirectory;
     if (directoryName) {
-      directory = GenerationDirectory.getOrCreateDirectory(
+      directory = FileSystem_Directory.getOrCreateDirectory(
         rootDirectory,
         directoryName,
         true,
       );
     }
-    const file = new GenerationFile(
+    const file = new FileSystem_File(
       fileName,
-      generationOutput.content,
-      generationFileInfo.generationOutput.format,
-      generationFileInfo.parentId,
+      resultValue.content,
+      fileResult.value.format,
+      fileResult.parentId,
     );
     directory.addElement(file);
     filesIndex.set(filePath, file);
   });
 };
+
 const openNodeById = (
   id: string,
   treeData: TreeData<TreeNodeData> | undefined,
@@ -312,19 +313,19 @@ const openNodeById = (
 };
 
 export const reprocessOpenNodes = (
-  treeData: TreeData<GenerationTreeNodeData>,
-  filesIndex: Map<string, GenerationFile>,
-  rootDirectory: GenerationDirectory,
+  treeData: TreeData<FileSystemTreeNodeData>,
+  filesIndex: Map<string, FileSystem_File>,
+  rootDirectory: FileSystem_Directory,
   openedNodeIds: string[],
   showRoot?: boolean,
 ): void => {
   const openNodeElement = (
     elementPath: string,
-  ): GenerationTreeNodeData | undefined => {
+  ): FileSystemTreeNodeData | undefined => {
     const element =
       filesIndex.get(elementPath) ??
       returnUndefOnError(() =>
-        GenerationDirectory.getOrCreateDirectory(
+        FileSystem_Directory.getOrCreateDirectory(
           rootDirectory,
           elementPath,
           false,

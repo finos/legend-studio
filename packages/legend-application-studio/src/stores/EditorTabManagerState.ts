@@ -95,27 +95,24 @@ export class EditorTabManagerState extends TabManagerState {
     openedTabEditorPaths: string[],
     currentTabState: EditorState | undefined,
     currentTabElementPath: string | undefined,
-    shouldRecoverTabs: boolean,
   ): void => {
-    if (shouldRecoverTabs) {
-      this.tabs = openedTabEditorPaths
-        .map((editorPath) => {
-          const correspondingElement =
-            this.editorStore.graphManagerState.graph.getNullableElement(
-              editorPath,
-            );
-          if (correspondingElement) {
-            return this.editorStore.createElementEditorState(
-              correspondingElement,
-            );
-          }
-          return undefined;
-        })
-        .filter(isNonNullable);
-      this.setCurrentTab(
-        this.findCurrentTab(currentTabState, currentTabElementPath),
-      );
-    }
+    this.tabs = openedTabEditorPaths
+      .map((editorPath) => {
+        const correspondingElement =
+          this.editorStore.graphManagerState.graph.getNullableElement(
+            editorPath,
+          );
+        if (correspondingElement) {
+          return this.editorStore.createElementEditorState(
+            correspondingElement,
+          );
+        }
+        return undefined;
+      })
+      .filter(isNonNullable);
+    this.setCurrentTab(
+      this.findCurrentTab(currentTabState, currentTabElementPath),
+    );
   };
 
   findCurrentTab = (

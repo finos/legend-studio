@@ -157,6 +157,7 @@ const ClassQueryBuilderSetupPanelContent = observer(
                 filterOption={mappingFilterOption}
                 formatOptionLabel={getPackageableElementOptionFormatter({
                   darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
+                  pureModel: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </div>
@@ -181,6 +182,7 @@ const ClassQueryBuilderSetupPanelContent = observer(
                 filterOption={runtimeFilterOption}
                 formatOptionLabel={getRuntimeOptionFormatter({
                   darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
+                  pureModel: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </div>

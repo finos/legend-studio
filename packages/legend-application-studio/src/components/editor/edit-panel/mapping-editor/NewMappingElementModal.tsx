@@ -232,7 +232,9 @@ export const NewMappingElementModal = observer(() => {
               filterOption={filterOption}
               onChange={handleTargetChange}
               value={selectedOption}
-              formatOptionLabel={getPackageableElementOptionFormatter({})}
+              formatOptionLabel={getPackageableElementOptionFormatter({
+                pureModel: editorStore.graphManagerState.graph,
+              })}
               placeholder="Choose a target"
               isClearable={true}
             />

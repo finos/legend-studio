@@ -406,8 +406,6 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
       return new NewPureModelConnectionDriver(this.editorStore);
     } else if (store instanceof FlatData) {
       return new NewFlatDataConnectionDriver(this.editorStore);
-    } else if (store instanceof Database) {
-      return new NewRelationalDatabaseConnectionDriver(this.editorStore);
     }
     const extraNewConnectionDriverCreators = this.editorStore.pluginManager
       .getApplicationPlugins()

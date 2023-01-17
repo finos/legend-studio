@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../Core_HashUtils.js';
 import type { EmbeddedData } from '../../data/EmbeddedData.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
 import type { Store } from '../store/Store.js';
 
-export class StoreTestData implements Hashable {
+export class MappingTestData implements Hashable {
   store!: PackageableElementReference<Store>;
   data!: EmbeddedData;
 

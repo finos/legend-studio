@@ -274,6 +274,27 @@
     }
   }
 
+  &__list-editor__expand-button {
+    @include flexCenter;
+
+    height: 2.8rem;
+    min-width: 2.8rem;
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__list-editor__textarea {
+    height: 50vh;
+
+    &__description {
+      color: var(--color-light-grey-400);
+      font-size: 1.2rem;
+      font-weight: 400;
+    }
+  }
+
   &__list-editor__edit-icon {
     @include flexCenter;
 
@@ -292,6 +313,7 @@
   &:hover &__list-editor__preview,
   &:hover &__list-editor__edit-icon {
     background: var(--color-dark-grey-300);
+    color: var(--color-light-grey-100);
   }
 
   .selector-input__indicators,
