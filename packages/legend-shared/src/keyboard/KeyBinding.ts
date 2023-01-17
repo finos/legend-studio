@@ -43,6 +43,8 @@ export enum KEYBOARD_NAMED_KEY {
   ENTER = 'Enter',
   DELETE = 'Delete',
   BACKSPACE = 'Backspace',
+
+  BACKQUOTE = 'Backquote',
 }
 
 type KeyPressData = { modifiers: string[]; key: string };

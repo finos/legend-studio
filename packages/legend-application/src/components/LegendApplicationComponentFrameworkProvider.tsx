@@ -41,6 +41,7 @@ const PLATFORM_NATIVE_KEYBOARD_SHORTCUTS = [
   'F10', // Chrome: Developer Tools > Sources: Step over next function call
   'F11', // Chrome: Developer Tools > Sources: Step into next function call
   'Meta+Shift+KeyP', // Chrome: Developer Tools: Open Command Prompt inside developer tools
+  'Control+Backquote', // Chrome: Developer Tools: Open console
   'Control+Shift+KeyP',
   'Meta+KeyB', // Firefox: Open bookmark sidebar
   'Control+KeyB',

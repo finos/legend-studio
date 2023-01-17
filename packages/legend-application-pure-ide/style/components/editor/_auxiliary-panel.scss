@@ -36,6 +36,7 @@
     }
 
     &__content {
+      height: calc(100% - 3.4rem);
       background: var(--color-dark-grey-50);
     }
   }

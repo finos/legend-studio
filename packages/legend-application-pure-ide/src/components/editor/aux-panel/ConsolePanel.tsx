@@ -14,21 +14,50 @@
  * limitations under the License.
  */
 
-import { BlankPanelContent } from '@finos/legend-art';
+import { useApplicationStore } from '@finos/legend-application';
+import { useResizeDetector } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
+import { AUX_PANEL_MODE } from '../../../stores/EditorConfig.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 
 export const Console = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
+  const { ref, width, height } = useResizeDetector<HTMLDivElement>();
+
+  useEffect(() => {
+    if (ref.current) {
+      applicationStore.terminalService.console.mount(ref.current);
+    }
+  }, [applicationStore, ref]);
+
+  // auto-focus on the terminal when the console tab is open
+  useEffect(() => {
+    if (
+      editorStore.auxPanelDisplayState.isOpen &&
+      editorStore.activeAuxPanelMode === AUX_PANEL_MODE.CONSOLE
+    ) {
+      applicationStore.terminalService.console.focus();
+    }
+  }, [
+    applicationStore,
+    editorStore.auxPanelDisplayState.isOpen,
+    editorStore.activeAuxPanelMode,
+  ]);
+
+  useEffect(() => {
+    applicationStore.terminalService.console.autoResize();
+  }, [applicationStore, width, height]);
 
   return (
-    <div className="console-panel">
-      {editorStore.consoleText && (
+    <div ref={ref} className="console-panel">
+      {/* {editorStore.consoleText && (
         <pre className="console-panel__content">
           {editorStore.consoleText.trim()}
-        </pre>
-      )}
-      {!editorStore.consoleText && (
+        </pre> */}
+      {/* )} */}
+      {/* {!editorStore.consoleText && (
         <BlankPanelContent>
           <div className="auxiliary-panel__splash-screen">
             <div className="auxiliary-panel__splash-screen__content">
@@ -43,7 +72,7 @@ export const Console = observer(() => {
             </div>
           </div>
         </BlankPanelContent>
-      )}
+      )} */}
     </div>
   );
 });

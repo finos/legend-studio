@@ -127,9 +127,6 @@ export class EditorStore implements CommandRegistrar {
   readonly executionState = ActionState.create();
   navigationStack: FileCoordinate[] = []; // TODO?: we might want to limit the number of items in this stack
 
-  // Console
-  consoleText?: string | undefined;
-
   // Search Command
   readonly fileSearchCommandLoadingState = ActionState.create();
   readonly fileSearchCommandState = new SearchCommandState();
@@ -151,7 +148,6 @@ export class EditorStore implements CommandRegistrar {
       isMaxAuxPanelSizeSet: observable,
       activeAuxPanelMode: observable,
       activeActivity: observable,
-      consoleText: observable,
       navigationStack: observable,
       openFileSearchCommand: observable,
       fileSearchCommandResults: observable,
@@ -165,7 +161,6 @@ export class EditorStore implements CommandRegistrar {
       setOpenTextSearchCommand: action,
       setActiveAuxPanelMode: action,
       setActiveActivity: action,
-      setConsoleText: action,
       setSearchState: action,
       setTestRunnerState: action,
       pullInitializationActivity: action,
@@ -224,10 +219,6 @@ export class EditorStore implements CommandRegistrar {
     this.activeAuxPanelMode = val;
   }
 
-  setConsoleText(value: string | undefined): void {
-    this.consoleText = value;
-  }
-
   setSearchState(val: SearchState | undefined): void {
     this.searchState = val;
   }
@@ -284,7 +275,7 @@ export class EditorStore implements CommandRegistrar {
         (yield initializationPromise) as PlainObject<InitializationResult>,
       );
       if (result.text) {
-        this.setConsoleText(result.text);
+        this.applicationStore.terminalService.console.writeln(result.text);
         this.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
         this.auxPanelDisplayState.open();
       }
@@ -569,7 +560,7 @@ export class EditorStore implements CommandRegistrar {
        * Some execution, such as find concept produces no output
        * so we should not reset the console text in that case
        */
-      avoidUpdatingConsoleText?: boolean;
+      silent?: boolean;
     },
   ): GeneratorFn<void> {
     if (!this.initState.hasCompleted) {
@@ -648,8 +639,8 @@ export class EditorStore implements CommandRegistrar {
         guaranteeNonNullable(executionPromiseResult),
       );
       this.applicationStore.setBlockingAlert(undefined);
-      if (!options?.avoidUpdatingConsoleText) {
-        this.setConsoleText(result.text);
+      if (!options?.silent) {
+        this.applicationStore.terminalService.console.writeln(result.text);
       }
       if (result instanceof ExecutionFailureResult) {
         this.applicationStore.notifyError(
@@ -897,7 +888,7 @@ export class EditorStore implements CommandRegistrar {
           }
           this.resetChangeDetection(potentiallyAffectedFiles);
         },
-        { avoidUpdatingConsoleText: true },
+        { silent: true },
       ),
     );
   }
@@ -1037,7 +1028,7 @@ export class EditorStore implements CommandRegistrar {
         if (result.errorDialog) {
           this.applicationStore.notifyWarning(`Error: ${result.text}`);
         } else {
-          this.setConsoleText(result.text);
+          this.applicationStore.terminalService.console.writeln(result.text);
         }
         return false;
       }
@@ -1148,7 +1139,7 @@ export class EditorStore implements CommandRegistrar {
         yield this.reloadFile(file);
       }
       yield this.refreshTrees();
-      this.setConsoleText(
+      this.applicationStore.terminalService.console.writeln(
         `Sucessfully renamed concept. Please re-compile the code`,
       );
       this.applicationStore.notifyWarning(
@@ -1189,7 +1180,7 @@ export class EditorStore implements CommandRegistrar {
         yield this.reloadFile(file);
       }
       yield this.refreshTrees();
-      this.setConsoleText(
+      this.applicationStore.terminalService.console.writeln(
         `Sucessfully moved packageble elements. Please re-compile the code`,
       );
       this.applicationStore.notifyWarning(
@@ -1239,7 +1230,7 @@ export class EditorStore implements CommandRegistrar {
           yield this.reloadFile(file);
         }
       }
-      this.setConsoleText(
+      this.applicationStore.terminalService.console.writeln(
         `Sucessfully updated file. Please re-compile the code`,
       );
       this.applicationStore.notifyWarning(

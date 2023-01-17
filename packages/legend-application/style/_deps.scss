@@ -14,16 +14,4 @@
  * limitations under the License.
  */
 
-@use 'mixins' as *;
-
-.console-panel {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  padding: 1.5rem 0 0 1.5rem;
-  display: flex;
-
-  .xterm {
-    height: calc(100% - 1.5rem);
-  }
-}
+@import url('xterm/css/xterm.css');

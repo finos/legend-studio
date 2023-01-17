@@ -37,6 +37,7 @@ import { ApplicationNavigationContextService } from './ApplicationNavigationCont
 import type { LegendApplicationPlugin } from './LegendApplicationPlugin.js';
 import { CommandCenter } from './CommandCenter.js';
 import { KeyboardShortcutsService } from './KeyboardShortcutsService.js';
+import { TerminalService } from './TerminalService.js';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -127,7 +128,8 @@ export class ApplicationStore<
   actionAlertInfo?: ActionAlertInfo | undefined;
 
   // TODO: consider renaming this to `LogService`
-  log: Log = new Log();
+  log = new Log();
+  terminalService: TerminalService;
 
   // documentation & help
   documentationService: DocumentationService;
@@ -183,6 +185,7 @@ export class ApplicationStore<
     this.pluginManager = pluginManager;
     // NOTE: set the logger first so other loading could use the configured logger
     this.log.registerPlugins(pluginManager.getLoggerPlugins());
+    this.terminalService = new TerminalService(this);
 
     this.navigationContextService = new ApplicationNavigationContextService(
       this,
