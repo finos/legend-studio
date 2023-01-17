@@ -51,28 +51,9 @@ export const Console = observer(() => {
   }, [applicationStore, width, height]);
 
   return (
-    <div ref={ref} className="console-panel">
-      {/* {editorStore.consoleText && (
-        <pre className="console-panel__content">
-          {editorStore.consoleText.trim()}
-        </pre> */}
-      {/* )} */}
-      {/* {!editorStore.consoleText && (
-        <BlankPanelContent>
-          <div className="auxiliary-panel__splash-screen">
-            <div className="auxiliary-panel__splash-screen__content">
-              <div className="auxiliary-panel__splash-screen__content__item">
-                <div className="auxiliary-panel__splash-screen__content__item__label">
-                  Execute to see output
-                </div>
-                <div className="auxiliary-panel__splash-screen__content__item__hot-keys">
-                  <div className="hotkey__key">F9</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </BlankPanelContent>
-      )} */}
+    <div className="console-panel">
+      <div className="console-panel__header"></div>
+      <div ref={ref} className="console-panel__content" />
     </div>
   );
 });
