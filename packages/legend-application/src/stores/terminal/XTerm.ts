@@ -94,7 +94,9 @@ export class XTerm extends Terminal {
       allowProposedApi: true,
       fontSize: 12,
       letterSpacing: 2,
-      fontFamily: MONOSPACED_FONT_FAMILY,
+      fontWeight: 400,
+      fontWeightBold: 700,
+      fontFamily: `"${MONOSPACED_FONT_FAMILY}", Menlo, Consolas, monospace`,
       tabStopWidth: TAB_SIZE,
       theme: LEGEND_XTERM_THEME,
       convertEol: true, // treat \n as new line
@@ -188,8 +190,7 @@ export class XTerm extends Terminal {
   }
 
   clear(): void {
-    this.instance.clear();
-    this.instance.scrollToTop();
+    this.instance.reset();
     this.instance.write(DEFAULT_COMMAND_HEADER);
   }
 

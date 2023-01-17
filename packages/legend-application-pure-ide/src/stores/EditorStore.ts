@@ -266,13 +266,23 @@ export class EditorStore implements CommandRegistrar {
     // initialize editor
     this.initState.inProgress();
     try {
-      const initializationPromise = this.client.initialize(!fullInit);
       this.applicationStore.setBlockingAlert({
         message: 'Loading Pure IDE...',
         prompt:
           'Please be patient as we are building the initial application state',
         showLoading: true,
       });
+      const initializationPromise = this.client
+        .initialize(!fullInit)
+        .catch((error) => {
+          assertErrorThrown(error);
+          this.applicationStore.notifyError(error);
+          this.initState.fail();
+          this.applicationStore.setBlockingAlert({
+            message: `Failed to initialize IDE`,
+            prompt: `Before debugging, make sure the server is running then restart the application`,
+          });
+        });
       yield this.pullInitializationActivity();
       this.applicationStore.setBlockingAlert(undefined);
       const openWelcomeFilePromise = flowResult(this.loadFile('/welcome.pure'));
@@ -635,7 +645,7 @@ export class EditorStore implements CommandRegistrar {
           executionPromiseFinished = true;
           executionPromiseResult = value;
         }),
-        new Promise((resolve) =>
+        new Promise((resolve, reject) =>
           setTimeout(
             () => {
               if (!executionPromiseFinished && checkExecutionStatus) {
@@ -644,7 +654,11 @@ export class EditorStore implements CommandRegistrar {
                   prompt: 'Please do not refresh the application',
                   showLoading: true,
                 });
-                resolve(this.pullExecutionStatus());
+                resolve(
+                  this.pullExecutionStatus().finally(() => {
+                    this.applicationStore.setBlockingAlert(undefined);
+                  }),
+                );
               }
               resolve();
             },
@@ -710,6 +724,9 @@ export class EditorStore implements CommandRegistrar {
       } else {
         yield flowResult(manageResult(result, potentiallyAffectedFiles));
       }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
     } finally {
       this.applicationStore.setBlockingAlert(undefined);
       this.executionState.reset();

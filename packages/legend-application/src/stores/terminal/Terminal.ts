@@ -24,11 +24,12 @@ export enum ANSI_ESCAPE {
   RESET = '\u001b[0m', // color off
 
   // text decoration
-  BOLD = '\u001b[22m',
-  ITALIC = '\u001b[23m',
-  UNDERLINE = '\u001b[24m',
-  BLINKING = '\u001b[25m',
-  STRIKETHROUGH = '\u001b[29m',
+  BOLD = '\u001b[1m',
+  DIM = '\u001b[2m',
+  ITALIC = '\u001b[3m',
+  UNDERLINE = '\u001b[4m',
+  BLINKING = '\u001b[5m',
+  STRIKETHROUGH = '\u001b[9m',
 
   // foreground
   BLACK = '\u001b[30m',
