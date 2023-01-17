@@ -1,12 +1,12 @@
-name: (Bot) Label New Issue
+name: (Bot) Onboard New Issue
 
 on:
   issues:
     types: [opened]
 
 jobs:
-  label-new-issue:
-    name: Label New Issue
+  onboard-new-issue:
+    name: Onboard New Issue
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -27,12 +27,13 @@ jobs:
           node-version: 16
       - name: Install dependencies
         run: yarn workspaces focus --production @finos/legend-internal-github-bot
-      - name: Label new issue
+      - name: Onboard new issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ORGANIZATION_READ_TOKEN: ${{ secrets.READ_ORG_TOKEN }}
           ORGANIZATION_NAME: finos
           TEAM_NAME: legend-contributors
           TEAM_LABEL: 'Studio Core Team'
+          FALLBACK_MILESTONE: 'Backlog'
         working-directory: ./scripts/github-bot
-        run: node ./labelNewIssue.js
+        run: node ./onboardNewIssue.js
