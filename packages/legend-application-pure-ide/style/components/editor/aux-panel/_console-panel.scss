@@ -30,6 +30,52 @@
     border-bottom: 0.1rem solid var(--color-dark-grey-85);
   }
 
+  &__header__action {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    height: 2.8rem;
+    width: 2.8rem;
+
+    svg {
+      color: var(--color-dark-grey-400);
+    }
+
+    &:hover,
+    &--active {
+      svg {
+        color: var(--color-light-grey-300);
+      }
+    }
+
+    &[disabled],
+    &[disabled]:hover {
+      svg {
+        color: var(--color-dark-grey-300);
+      }
+    }
+
+    &__icon {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__header__group {
+    @include flexVCenter;
+
+    height: 100%;
+    padding: 0 0.5rem;
+
+    &__separator {
+      height: 1.6rem;
+      border: 0.05rem solid var(--color-dark-grey-100);
+    }
+
+    &__action {
+      width: 2rem;
+    }
+  }
+
   &__content {
     height: calc(100% - 2.8rem);
     width: 100%;

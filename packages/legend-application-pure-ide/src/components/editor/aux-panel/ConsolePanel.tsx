@@ -15,7 +15,15 @@
  */
 
 import { useApplicationStore } from '@finos/legend-application';
-import { useResizeDetector } from '@finos/legend-art';
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  clsx,
+  HistoryIcon,
+  QuestionCircleIcon,
+  TrashIcon,
+  useResizeDetector,
+} from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import { AUX_PANEL_MODE } from '../../../stores/EditorConfig.js';
@@ -24,13 +32,14 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 export const Console = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
+  const console = applicationStore.terminalService.console;
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
   useEffect(() => {
     if (ref.current) {
-      applicationStore.terminalService.console.mount(ref.current);
+      console.mount(ref.current);
     }
-  }, [applicationStore, ref]);
+  }, [console, ref]);
 
   // auto-focus on the terminal when the console tab is open
   useEffect(() => {
@@ -38,21 +47,85 @@ export const Console = observer(() => {
       editorStore.auxPanelDisplayState.isOpen &&
       editorStore.activeAuxPanelMode === AUX_PANEL_MODE.CONSOLE
     ) {
-      applicationStore.terminalService.console.focus();
+      console.focus();
     }
   }, [
-    applicationStore,
+    console,
     editorStore.auxPanelDisplayState.isOpen,
     editorStore.activeAuxPanelMode,
   ]);
 
   useEffect(() => {
-    applicationStore.terminalService.console.autoResize();
-  }, [applicationStore, width, height]);
+    console.autoResize();
+  }, [console, width, height]);
 
   return (
     <div className="console-panel">
-      <div className="console-panel__header"></div>
+      <div className="console-panel__header">
+        <div className="console-panel__header__group">
+          <button
+            className="console-panel__header__action console-panel__header__group__action"
+            title="Previous Match"
+            // disabled={isAlignerDisabled}
+            tabIndex={-1}
+            // onClick={(): void =>
+            //   diagramEditorState.renderer.align(
+            //     DIAGRAM_ALIGNER_OPERATOR.ALIGN_LEFT,
+            //   )
+            // }
+          >
+            <ArrowUpIcon className="console-panel__header__action__icon" />
+          </button>
+          <button
+            className="console-panel__header__action console-panel__header__group__action"
+            title="Next Match"
+            // disabled={isAlignerDisabled}
+            tabIndex={-1}
+            // onClick={(): void =>
+            //   diagramEditorState.renderer.align(
+            //     DIAGRAM_ALIGNER_OPERATOR.ALIGN_LEFT,
+            //   )
+            // }
+          >
+            <ArrowDownIcon className="console-panel__header__action__icon" />
+          </button>
+        </div>
+        <div className="console-panel__header__group__separator" />
+        <div className="console-panel__header__group">
+          <button
+            className={clsx(
+              'console-panel__header__action console-panel__header__group__action',
+              {
+                'console-panel__header__action--active': console.preserveLog,
+              },
+            )}
+            title="Toggle Preserve Console"
+            tabIndex={-1}
+            onClick={() => console.setPreserveLog(!console.preserveLog)}
+          >
+            <HistoryIcon className="console-panel__header__action__icon" />
+          </button>
+          <button
+            className="console-panel__header__action console-panel__header__group__action"
+            title="Clear Console"
+            tabIndex={-1}
+            onClick={() => {
+              console.clear();
+              console.focus();
+            }}
+          >
+            <TrashIcon className="console-panel__header__action__icon" />
+          </button>
+          <button
+            className="console-panel__header__action console-panel__header__group__action"
+            title="Show Help"
+            tabIndex={-1}
+            onClick={() => console.showHelp()}
+          >
+            <QuestionCircleIcon className="console-panel__header__action__icon" />
+          </button>
+        </div>
+      </div>
       <div ref={ref} className="console-panel__content" />
     </div>
   );
