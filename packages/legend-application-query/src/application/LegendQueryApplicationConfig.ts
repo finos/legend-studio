@@ -18,6 +18,7 @@ import {
   assertNonNullable,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
+  type RequestHeaders,
   SerializationFactory,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -26,7 +27,29 @@ import {
   type LegendApplicationConfigurationInput,
   type LegendApplicationConfigurationData,
 } from '@finos/legend-application';
-import { createModelSchema, optional, primitive } from 'serializr';
+import {
+  createModelSchema,
+  list,
+  object,
+  optional,
+  primitive,
+} from 'serializr';
+
+export class ServiceRegistrationEnvironmentConfig {
+  env!: string;
+  executionUrl!: string;
+  modes: string[] = [];
+  managementUrl!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(ServiceRegistrationEnvironmentConfig, {
+      env: primitive(),
+      executionUrl: primitive(),
+      managementUrl: primitive(),
+      modes: list(primitive()),
+    }),
+  );
+}
 
 class LegendQueryApplicationCoreOptions {
   /**
@@ -40,9 +63,24 @@ class LegendQueryApplicationCoreOptions {
    */
   TEMPORARY__enableThemeSwitcher = false;
 
+  /**
+   * Provides service registration environment configs.
+   *
+   * TODO: when we modularize service, we can move this config to DSL Service preset. Then, we can remove
+   * the TEMPORARY__ prefix.
+   *
+   * @modularize
+   * See https://github.com/finos/legend-studio/issues/65
+   */
+  TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvironmentConfig[] =
+    [];
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendQueryApplicationCoreOptions, {
       TEMPORARY__enableThemeSwitcher: optional(primitive()),
+      TEMPORARY__serviceRegistrationConfig: list(
+        object(ServiceRegistrationEnvironmentConfig),
+      ),
     }),
   );
 
@@ -60,6 +98,7 @@ type LegendStudioApplicationInstanceConfigurationData = {
 
 export interface LegendQueryApplicationConfigurationData
   extends LegendApplicationConfigurationData {
+  sdlc: { url: string; baseHeaders?: RequestHeaders };
   depot: {
     url: string;
   };
@@ -83,6 +122,8 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
     [];
   readonly taxonomyUrl: string;
+  readonly sdlcServerUrl: string;
+  readonly SDLCServerBaseHeaders?: RequestHeaders | undefined;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendQueryApplicationConfigurationData>,
@@ -133,6 +174,17 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
       input.configData.taxonomy.url,
       `Can't configure application: 'taxonomy.url' field is missing or empty`,
     );
+
+    // sdlc
+    assertNonNullable(
+      input.configData.sdlc,
+      `Can't configure application: 'sdlc' field is missing`,
+    );
+    this.sdlcServerUrl = guaranteeNonEmptyString(
+      input.configData.sdlc.url,
+      `Can't configure application: 'sdlc.url' field is missing or empty`,
+    );
+    this.SDLCServerBaseHeaders = input.configData.sdlc.baseHeaders;
 
     // options
     this.options = LegendQueryApplicationCoreOptions.create(

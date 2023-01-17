@@ -23,6 +23,9 @@ const TEST_DATA__appConfig = {
   engine: {
     url: 'https://testEngineUrl',
   },
+  sdlc: {
+    url: 'https://testSdlcUrl',
+  },
   depot: {
     url: 'https://testMetadataUrl',
   },

@@ -18,6 +18,7 @@ import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { ApplicationStore } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
+import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 
 export type LegendQueryApplicationStore = ApplicationStore<
   LegendQueryApplicationConfig,
@@ -27,19 +28,23 @@ export type LegendQueryApplicationStore = ApplicationStore<
 export class LegendQueryBaseStore {
   applicationStore: LegendQueryApplicationStore;
   depotServerClient: DepotServerClient;
+  sdlcServerClient: SDLCServerClient;
   pluginManager: LegendQueryPluginManager;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
+    sdlcServerClient: SDLCServerClient,
   ) {
     this.applicationStore = applicationStore;
     this.depotServerClient = depotServerClient;
+    this.sdlcServerClient = sdlcServerClient;
     this.pluginManager = applicationStore.pluginManager;
 
     // Register plugins
     this.depotServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
+    this.sdlcServerClient.setTracerService(this.applicationStore.tracerService);
   }
 }
