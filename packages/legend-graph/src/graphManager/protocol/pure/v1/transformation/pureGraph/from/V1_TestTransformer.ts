@@ -71,7 +71,7 @@ export const V1_transformAtomicTest = (
   context: V1_GraphTransformerContext,
 ): V1_AtomicTest => {
   if (value instanceof ServiceTest) {
-    return V1_transformServiceTest(value);
+    return V1_transformServiceTest(value, context);
   } else if (value instanceof MappingTest) {
     return V1_transformMappingTest(value, context);
   }
@@ -97,6 +97,7 @@ export const V1_transformAtomicTest = (
 
 export const V1_transformTestAssertion = (
   value: TestAssertion,
+  context: V1_GraphTransformerContext,
 ): V1_TestAssertion => {
   if (value instanceof EqualTo) {
     return transformEqualTo(value);
@@ -105,6 +106,21 @@ export const V1_transformTestAssertion = (
   } else if (value instanceof EqualToTDS) {
     return transformEqualToTDS(value);
   }
+
+  const extraTestAssertionTransformers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as Testable_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraTestAssertionTransformers?.() ?? [],
+  );
+
+  for (const transformer of extraTestAssertionTransformers) {
+    const testAssertionTransformer = transformer(value, context);
+    if (testAssertionTransformer) {
+      return testAssertionTransformer;
+    }
+  }
+
   throw new UnsupportedOperationError(`Can't transform test assertion`, value);
 };
 

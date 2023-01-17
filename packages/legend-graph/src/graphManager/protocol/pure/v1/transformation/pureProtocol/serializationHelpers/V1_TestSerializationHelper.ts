@@ -233,9 +233,9 @@ export const V1_serializeAtomicTest = (
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_AtomicTest> => {
   if (protocol instanceof V1_ServiceTest) {
-    return serialize(V1_serviceTestModelSchema, protocol);
+    return serialize(V1_serviceTestModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_MappingTest) {
-    return serialize(V1_mappingTestModelSchema, protocol);
+    return serialize(V1_mappingTestModelSchema(plugins), protocol);
   }
   const extraAtomicTestSerializers = plugins.flatMap(
     (plugin) =>
@@ -262,9 +262,9 @@ export const V1_deserializeAtomicTest = (
 ): V1_AtomicTest => {
   switch (json._type) {
     case ATOMIC_TEST_TYPE.Service_Test:
-      return deserialize(V1_serviceTestModelSchema, json);
+      return deserialize(V1_serviceTestModelSchema(plugins), json);
     case ATOMIC_TEST_TYPE.Mapping_Test:
-      return deserialize(V1_mappingTestModelSchema, json);
+      return deserialize(V1_mappingTestModelSchema(plugins), json);
     default: {
       const extraAtomicTestProtocolDeserializers = plugins.flatMap(
         (plugin) =>
@@ -287,6 +287,7 @@ export const V1_deserializeAtomicTest = (
 
 export const V1_serializeTestAssertion = (
   protocol: V1_TestAssertion,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_TestAssertion> => {
   if (protocol instanceof V1_EqualTo) {
     return serialize(V1_equalToModelSchema, protocol);
@@ -294,6 +295,18 @@ export const V1_serializeTestAssertion = (
     return serialize(V1_equalToJsonModelSchema, protocol);
   } else if (protocol instanceof V1_EqualToTDS) {
     return serialize(V1_equalToTDSModelSchema, protocol);
+  }
+  const extraTestAssertionSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as Testable_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraTestAssertionProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraTestAssertionSerializers) {
+    const testAssertionProtocolJson = serializer(protocol, plugins);
+    if (testAssertionProtocolJson) {
+      return testAssertionProtocolJson;
+    }
   }
   throw new UnsupportedOperationError(
     `Can't serialize test assertion`,
@@ -303,6 +316,7 @@ export const V1_serializeTestAssertion = (
 
 export const V1_deserializeTestAssertion = (
   json: PlainObject<V1_TestAssertion>,
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_TestAssertion => {
   switch (json._type) {
     case V1_TestAssertionType.EQUAL_TO:
@@ -312,6 +326,18 @@ export const V1_deserializeTestAssertion = (
     case V1_TestAssertionType.EQUAL_TO_TDS:
       return deserialize(V1_equalToTDSModelSchema, json);
     default:
+      const extraTestAssertionProtocolDeserializers = plugins.flatMap(
+        (plugin) =>
+          (
+            plugin as Testable_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraTestAssertionProtocolDeserializers?.() ?? [],
+      );
+      for (const deserializer of extraTestAssertionProtocolDeserializers) {
+        const testAssertionProtocol = deserializer(json, plugins);
+        if (testAssertionProtocol) {
+          return testAssertionProtocol;
+        }
+      }
       throw new UnsupportedOperationError(
         `Can't deserialize test assertion of type '${json._type}'`,
       );

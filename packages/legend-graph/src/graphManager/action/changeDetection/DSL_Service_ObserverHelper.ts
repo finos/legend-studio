@@ -128,8 +128,8 @@ export const observe_TestData = skipObservedWithContext(
   },
 );
 
-export const observe_ServiceTest = skipObserved(
-  (metamodel: ServiceTest): ServiceTest => {
+export const observe_ServiceTest = skipObservedWithContext(
+  (metamodel: ServiceTest, context: ObserverContext): ServiceTest => {
     makeObservable(metamodel, {
       id: observable,
       serializationFormat: observable,
@@ -140,7 +140,9 @@ export const observe_ServiceTest = skipObserved(
     });
 
     metamodel.parameters.forEach(observe_ParameterValue);
-    metamodel.assertions.forEach(observe_TestAssertion);
+    metamodel.assertions.forEach((assertion) =>
+      observe_TestAssertion(assertion, context),
+    );
 
     return metamodel;
   },

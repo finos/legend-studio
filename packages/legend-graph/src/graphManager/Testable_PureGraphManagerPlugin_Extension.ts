@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
+import type { TestAssertion } from '../graph/metamodel/pure/test/assertion/TestAssertion.js';
 import type { AtomicTest } from '../graph/metamodel/pure/test/Test.js';
 import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
 import type { PureModel } from '../graph/PureModel.js';
 import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
+
+export type TestAssertionObserver = (
+  metamodel: TestAssertion,
+  context: ObserverContext,
+) => TestAssertion | undefined;
 
 export type AtomicTestObserver = (
   metamodel: AtomicTest,
@@ -51,4 +57,9 @@ export interface Testable_PureGraphManagerPlugin_Extension
    * Get the list of atomic test observers.
    */
   getExtraAtomicTestObservers?(): AtomicTestObserver[];
+
+  /**
+   * Get the list of atomic test observers.
+   */
+  getExtraTestAssertionObservers?(): TestAssertionObserver[];
 }

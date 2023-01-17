@@ -137,6 +137,7 @@ const transformTestData = (
 
 export const V1_transformServiceTest = (
   element: ServiceTest,
+  context: V1_GraphTransformerContext,
 ): V1_ServiceTest => {
   const serviceTest = new V1_ServiceTest();
   serviceTest.id = element.id;
@@ -146,7 +147,7 @@ export const V1_transformServiceTest = (
   );
   serviceTest.keys = element.keys;
   serviceTest.assertions = element.assertions.map((assertion) =>
-    V1_transformTestAssertion(assertion),
+    V1_transformTestAssertion(assertion, context),
   );
   return serviceTest;
 };

@@ -21,6 +21,8 @@ import {
   observe_AtomicTest,
   observe_EmbeddedData,
   observe_TestAssertion,
+  observe_ExternalFormatData,
+  skipObserved,
   skipObservedWithContext,
   type TestBatch,
 } from '@finos/legend-graph';
@@ -29,6 +31,7 @@ import type { PersistenceTest } from '../../../graph/metamodel/pure/model/packag
 import type { PersistenceTestBatch } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTestBatch.js';
 import type { PersistenceTestData } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTestData.js';
 import type { ConnectionTestData } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ConnectionTestData.js';
+import type { AllRowsEquivalentToJson } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_AllRowsEquivalentToJson.js';
 
 export const observe_Persistence = skipObservedWithContext(
   (metamodel: Persistence, context: ObserverContext): Persistence => {
@@ -113,8 +116,22 @@ export const observe_PersistenceTestBatch = skipObservedWithContext(
 
     observe_TestData(metamodel.testData, context);
     metamodel.assertions.forEach((assertion) =>
-      observe_TestAssertion(assertion),
+      observe_TestAssertion(assertion, context),
     );
+
+    return metamodel;
+  },
+);
+
+export const observe_AllRowsEquivalentToJson = skipObserved(
+  (metamodel: AllRowsEquivalentToJson): AllRowsEquivalentToJson => {
+    makeObservable(metamodel, {
+      id: observable,
+      expected: observable,
+      hashCode: computed,
+    });
+
+    observe_ExternalFormatData(metamodel.expected);
 
     return metamodel;
   },

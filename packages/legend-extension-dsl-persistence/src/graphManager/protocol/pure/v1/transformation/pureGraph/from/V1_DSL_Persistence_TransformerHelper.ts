@@ -655,7 +655,7 @@ export const V1_transformPersistenceTestBatch = (
     context,
   );
   persistenceTestBatch.assertions = element.assertions.map(
-    (assertion: TestAssertion) => V1_transformTestAssertion(assertion),
+    (assertion: TestAssertion) => V1_transformTestAssertion(assertion, context),
   );
   return persistenceTestBatch;
 };

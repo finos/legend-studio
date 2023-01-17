@@ -75,9 +75,13 @@ export const service_setConnectionTestDataEmbeddedData = action(
 );
 
 export const service_addTest = action(
-  (suite: ServiceTestSuite, test: ServiceTest) => {
+  (
+    suite: ServiceTestSuite,
+    test: ServiceTest,
+    observerContext: ObserverContext,
+  ) => {
     test.__parent = suite;
-    addUniqueEntry(suite.tests, observe_ServiceTest(test));
+    addUniqueEntry(suite.tests, observe_ServiceTest(test, observerContext));
   },
 );
 

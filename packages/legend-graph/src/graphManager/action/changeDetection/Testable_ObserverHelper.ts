@@ -80,9 +80,9 @@ export function observe_AtomicTest(
   context: ObserverContext,
 ): AtomicTest {
   if (metamodel instanceof ServiceTest) {
-    return observe_ServiceTest(metamodel);
+    return observe_ServiceTest(metamodel, context);
   } else if (metamodel instanceof MappingTest) {
-    return observe_MappingTest(metamodel);
+    return observe_MappingTest(metamodel, context);
   }
   const extraAtomicTestBuilder = context.plugins.flatMap(
     (plugin) =>
@@ -101,7 +101,10 @@ export function observe_AtomicTest(
   return metamodel;
 }
 
-export function observe_TestAssertion(metamodel: TestAssertion): TestAssertion {
+export function observe_TestAssertion(
+  metamodel: TestAssertion,
+  context: ObserverContext,
+): TestAssertion {
   if (metamodel instanceof EqualTo) {
     return observe_EqualTo(metamodel);
   } else if (metamodel instanceof EqualToJson) {
@@ -109,6 +112,20 @@ export function observe_TestAssertion(metamodel: TestAssertion): TestAssertion {
   } else if (metamodel instanceof EqualToTDS) {
     return observe_EqualToTDS(metamodel);
   }
+  const extraTestAssertionObservers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as Testable_PureGraphManagerPlugin_Extension
+      ).getExtraTestAssertionObservers?.() ?? [],
+  );
+
+  for (const observer of extraTestAssertionObservers) {
+    const testAssertionObserver = observer(metamodel, context);
+    if (testAssertionObserver) {
+      return testAssertionObserver;
+    }
+  }
+
   return metamodel;
 }
 

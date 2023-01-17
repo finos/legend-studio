@@ -124,7 +124,11 @@ export class ServiceTestSuiteState {
     const state = new ServiceTestState(this, test);
     state.addAssertion();
     this.selectedTestState = state;
-    service_addTest(this.suite, test);
+    service_addTest(
+      this.suite,
+      test,
+      this.editorStore.changeDetectionState.observerContext,
+    );
     addUniqueEntry(this.testStates, state);
   }
 

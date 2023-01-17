@@ -119,6 +119,7 @@ import { V1_PersistenceTest } from '../../model/packageableElements/persistence/
 import { V1_PersistenceTestBatch } from '../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTestBatch.js';
 import { V1_ConnectionTestData } from '../../model/packageableElements/persistence/V1_DSL_Persistence_ConnectionTestData.js';
 import { V1_PersistenceTestData } from '../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTestData.js';
+import { V1_AllRowsEquivalentToJson } from '../../model/packageableElements/persistence/V1_DSL_Persistence_AllRowsEquivalentToJson.js';
 
 /**********
  * notifier
@@ -1056,6 +1057,10 @@ export enum V1_AtomicTestType {
   PERSISTENCE_TEST = 'test',
 }
 
+export enum V1_PersistenceTestAssertionType {
+  ALL_ROWS_EQUIVALENT_TO_JSON = 'allRowsEquivalentToJson',
+}
+
 export const V1_persistenceConnectionTestDataModelSchema = createModelSchema(
   V1_ConnectionTestData,
   {
@@ -1070,6 +1075,17 @@ export const V1_persistenceTestDataModelSchema = (
     connection: usingModelSchema(V1_persistenceConnectionTestDataModelSchema),
   });
 
+export const V1_allRowsEquivalentToJsonModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_AllRowsEquivalentToJson> =>
+  createModelSchema(V1_AllRowsEquivalentToJson, {
+    _type: usingConstantValueSchema(
+      V1_PersistenceTestAssertionType.ALL_ROWS_EQUIVALENT_TO_JSON,
+    ),
+    expected: usingModelSchema(V1_externalFormatDataModelSchema),
+    id: primitive(),
+  });
+
 export const V1_persistenceTestBatchModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_PersistenceTestBatch> =>
@@ -1077,12 +1093,16 @@ export const V1_persistenceTestBatchModelSchema = (
     assertions: custom(
       (values) =>
         serializeArray(values, (value: V1_TestAssertion) =>
-          V1_serializeTestAssertion(value),
+          V1_serializeTestAssertion(value, plugins),
         ),
       (values) =>
-        deserializeArray(values, (v) => V1_deserializeTestAssertion(v), {
-          skipIfEmpty: false,
-        }),
+        deserializeArray(
+          values,
+          (v) => V1_deserializeTestAssertion(v, plugins),
+          {
+            skipIfEmpty: false,
+          },
+        ),
     ),
     batchId: primitive(),
     id: primitive(),

@@ -37,6 +37,8 @@ import {
   V1_TriggerType,
   V1_persistenceTestModelSchema,
   V1_AtomicTestType,
+  V1_PersistenceTestAssertionType,
+  V1_allRowsEquivalentToJsonModelSchema,
 } from './v1/transformation/pureProtocol/V1_DSL_Persistence_ProtocolHelper.js';
 import {
   V1_PERSISTENCE_CONTEXT_ELEMENT_PROTOCOL_TYPE,
@@ -64,12 +66,16 @@ import {
   type PackageableElement,
   PureProtocolProcessorPlugin,
   type TestAssertion,
+  type V1_TestAssertion,
   type V1_AssertionStatus,
   type V1_AtomicTest,
   type V1_AtomicTestBuilder,
   type V1_AtomicTestTransformer,
   V1_buildFullPath,
   V1_ElementBuilder,
+  V1_buildEmbeddedData,
+  V1_transformExternalFormatData,
+  ExternalFormatData,
   type V1_ElementProtocolClassifierPathGetter,
   type V1_ElementProtocolDeserializer,
   type V1_ElementProtocolSerializer,
@@ -81,11 +87,21 @@ import {
   type Testable_PureProtocolProcessorPlugin_Extension,
   type V1_AtomicTestProtocolSerializer,
   type V1_AtomicTestProtocolDeserializer,
+  type V1_TestAssertionBuilder,
+  type V1_TestAssertionTransformer,
+  type V1_TestAssertionProtocolSerializer,
+  type V1_TestAssertionProtocolDeserializer,
 } from '@finos/legend-graph';
-import { assertType, type PlainObject } from '@finos/legend-shared';
+import {
+  guaranteeType,
+  assertType,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import { V1_PersistenceTest } from './v1/model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTest.js';
 import { PersistenceTest } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
+import { V1_AllRowsEquivalentToJson } from './v1/model/packageableElements/persistence/V1_DSL_Persistence_AllRowsEquivalentToJson.js';
+import { AllRowsEquivalentToJson } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_AllRowsEquivalentToJson.js';
 import type { PersistenceTestBatch } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTestBatch.js';
 
 export const PERSISTENCE_ELEMENT_CLASSIFIER_PATH =
@@ -348,6 +364,84 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
       ): V1_AtomicTest | undefined => {
         if (json._type === V1_AtomicTestType.PERSISTENCE_TEST) {
           return deserialize(V1_persistenceTestModelSchema(plugins), json);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraTestAssertionBuilders?(): V1_TestAssertionBuilder[] {
+    return [
+      (
+        protocol: V1_TestAssertion,
+        parentTest: AtomicTest | undefined,
+        context: V1_GraphBuilderContext,
+      ): TestAssertion | undefined => {
+        if (protocol instanceof V1_AllRowsEquivalentToJson) {
+          const allRowsEquivalentToJson = new AllRowsEquivalentToJson();
+          allRowsEquivalentToJson.id = protocol.id;
+          allRowsEquivalentToJson.parentTest = parentTest;
+          allRowsEquivalentToJson.expected = guaranteeType(
+            V1_buildEmbeddedData(protocol.expected, context),
+            ExternalFormatData,
+          );
+          return allRowsEquivalentToJson;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraTestAssertionTransformers?(): V1_TestAssertionTransformer[] {
+    return [
+      (
+        metamodel: TestAssertion,
+        context: V1_GraphTransformerContext,
+      ): V1_TestAssertion | undefined => {
+        if (metamodel instanceof AllRowsEquivalentToJson) {
+          const allRowsEquivalentToJson = new V1_AllRowsEquivalentToJson();
+          allRowsEquivalentToJson.id = metamodel.id;
+          allRowsEquivalentToJson.expected = V1_transformExternalFormatData(
+            metamodel.expected,
+          );
+          return allRowsEquivalentToJson;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraTestAssertionProtocolSerializers(): V1_TestAssertionProtocolSerializer[] {
+    return [
+      (
+        protocol: V1_TestAssertion,
+        plugins: PureProtocolProcessorPlugin[],
+      ): PlainObject<V1_TestAssertion> | undefined => {
+        if (protocol instanceof V1_AllRowsEquivalentToJson) {
+          return serialize(
+            V1_allRowsEquivalentToJsonModelSchema(plugins),
+            protocol,
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraTestAssertionProtocolDeserializers(): V1_TestAssertionProtocolDeserializer[] {
+    return [
+      (
+        json: PlainObject<V1_TestAssertion>,
+        plugins: PureProtocolProcessorPlugin[],
+      ): V1_TestAssertion | undefined => {
+        if (
+          json._type ===
+          V1_PersistenceTestAssertionType.ALL_ROWS_EQUIVALENT_TO_JSON
+        ) {
+          return deserialize(
+            V1_allRowsEquivalentToJsonModelSchema(plugins),
+            json,
+          );
         }
         return undefined;
       },

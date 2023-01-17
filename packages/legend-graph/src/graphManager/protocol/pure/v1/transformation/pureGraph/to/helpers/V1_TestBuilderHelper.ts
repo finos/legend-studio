@@ -92,6 +92,18 @@ export const V1_buildTestAssertion = (
   } else if (value instanceof V1_EqualToTDS) {
     return buildEqualToTDS(value, parentTest, context);
   }
+  const extraTestAssertionBuilder = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as Testable_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraTestAssertionBuilders?.() ?? [],
+  );
+  for (const builder of extraTestAssertionBuilder) {
+    const metamodel = builder(value, parentTest, context);
+    if (metamodel) {
+      return metamodel;
+    }
+  }
   throw new UnsupportedOperationError(`Can't build test assertion`, value);
 };
 

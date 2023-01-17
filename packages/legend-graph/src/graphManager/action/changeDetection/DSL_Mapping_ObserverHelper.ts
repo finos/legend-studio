@@ -154,8 +154,8 @@ export const observe_StoreTestData = skipObservedWithContext(
   },
 );
 
-export const observe_MappingTest = skipObserved(
-  (metamodel: MappingTest): MappingTest => {
+export const observe_MappingTest = skipObservedWithContext(
+  (metamodel: MappingTest, context: ObserverContext): MappingTest => {
     makeObservable(metamodel, {
       id: observable,
       query: observable,
@@ -163,7 +163,9 @@ export const observe_MappingTest = skipObserved(
       hashCode: computed,
     });
 
-    metamodel.assertions.forEach(observe_TestAssertion);
+    metamodel.assertions.forEach((assertion) =>
+      observe_TestAssertion(assertion, context),
+    );
 
     return metamodel;
   },

@@ -15,6 +15,7 @@
  */
 
 import {
+  type ObserverContext,
   type EqualToJson,
   type ExternalFormatData,
   type AtomicTest,
@@ -39,9 +40,16 @@ export const testAssertion_setId = action(
 );
 
 export const atomicTest_addAssertion = action(
-  (test: AtomicTest, val: TestAssertion): void => {
+  (
+    test: AtomicTest,
+    val: TestAssertion,
+    observerContext: ObserverContext,
+  ): void => {
     val.parentTest = test;
-    addUniqueEntry(test.assertions, observe_TestAssertion(val));
+    addUniqueEntry(
+      test.assertions,
+      observe_TestAssertion(val, observerContext),
+    );
   },
 );
 

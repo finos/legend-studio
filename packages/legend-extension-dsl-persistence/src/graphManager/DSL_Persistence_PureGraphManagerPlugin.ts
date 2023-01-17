@@ -20,11 +20,14 @@ import { PersistenceContext } from '../graph/metamodel/pure/model/packageableEle
 import {
   observe_Persistence,
   observe_PersistenceTest,
+  observe_AllRowsEquivalentToJson,
 } from './action/changeDetection/DSL_Persistence_ObserverHelper.js';
 import { observe_PersistenceContext } from './action/changeDetection/DSL_PersistenceContext_ObserverHelper.js';
 import {
   type AtomicTest,
   type AtomicTestObserver,
+  type TestAssertion,
+  type TestAssertionObserver,
   type ElementObserver,
   type ObserverContext,
   type PackageableElement,
@@ -33,6 +36,7 @@ import {
   type Testable_PureGraphManagerPlugin_Extension,
 } from '@finos/legend-graph';
 import { PersistenceTest } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
+import { AllRowsEquivalentToJson } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_AllRowsEquivalentToJson.js';
 
 export const PURE_GRAMMAR_PERSISTENCE_PARSER_NAME = 'Persistence';
 export const PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL = 'Persistence';
@@ -95,6 +99,20 @@ export class DSL_Persistence_PureGraphManagerPlugin
       ): AtomicTest | undefined => {
         if (element instanceof PersistenceTest) {
           return observe_PersistenceTest(element, context);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraTestAssertionObservers(): TestAssertionObserver[] {
+    return [
+      (
+        element: TestAssertion,
+        context: ObserverContext,
+      ): TestAssertion | undefined => {
+        if (element instanceof AllRowsEquivalentToJson) {
+          return observe_AllRowsEquivalentToJson(element);
         }
         return undefined;
       },

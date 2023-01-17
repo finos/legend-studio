@@ -870,17 +870,20 @@ export const V1_storeTestDataModelSchema = (
     store: primitive(),
   });
 
-export const V1_mappingTestModelSchema = createModelSchema(V1_MappingTest, {
-  _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Mapping_Test),
-  assertions: list(
-    custom(
-      (val) => V1_serializeTestAssertion(val),
-      (val) => V1_deserializeTestAssertion(val),
+export const V1_mappingTestModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_MappingTest> =>
+  createModelSchema(V1_MappingTest, {
+    _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Mapping_Test),
+    assertions: list(
+      custom(
+        (val) => V1_serializeTestAssertion(val, plugins),
+        (val) => V1_deserializeTestAssertion(val, plugins),
+      ),
     ),
-  ),
-  id: primitive(),
-  query: usingModelSchema(V1_rawLambdaModelSchema),
-});
+    id: primitive(),
+    query: usingModelSchema(V1_rawLambdaModelSchema),
+  });
 
 export const V1_mappingTestSuiteModelSchema = (
   plugins: PureProtocolProcessorPlugin[],

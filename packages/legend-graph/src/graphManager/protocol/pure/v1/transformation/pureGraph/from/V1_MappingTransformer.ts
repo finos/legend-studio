@@ -353,7 +353,7 @@ export const V1_transformMappingTest = (
   const mappingTest = new V1_MappingTest();
   mappingTest.id = element.id;
   mappingTest.assertions = element.assertions.map((assertion) =>
-    V1_transformTestAssertion(assertion),
+    V1_transformTestAssertion(assertion, context),
   );
   mappingTest.query = element.query.accept_RawValueSpecificationVisitor(
     new V1_RawValueSpecificationTransformer(context),

@@ -108,7 +108,11 @@ export class TestableTestEditorState {
 
   addAssertion(): void {
     const assertion = createEmptyEqualToJsonAssertion(this.test);
-    atomicTest_addAssertion(this.test, assertion);
+    atomicTest_addAssertion(
+      this.test,
+      assertion,
+      this.editorStore.changeDetectionState.observerContext,
+    );
     const assertionState = new TestAssertionEditorState(
       this.editorStore,
       assertion,

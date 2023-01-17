@@ -149,36 +149,39 @@ export const V1_testDataModelSchema = (
     ),
   });
 
-export const V1_serviceTestModelSchema = createModelSchema(V1_ServiceTest, {
-  _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Service_Test),
-  assertions: list(
-    custom(
-      (val) => V1_serializeTestAssertion(val),
-      (val) => V1_deserializeTestAssertion(val),
+export const V1_serviceTestModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ServiceTest> =>
+  createModelSchema(V1_ServiceTest, {
+    _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Service_Test),
+    assertions: list(
+      custom(
+        (val) => V1_serializeTestAssertion(val, plugins),
+        (val) => V1_deserializeTestAssertion(val, plugins),
+      ),
     ),
-  ),
-  id: primitive(),
-  keys: list(primitive()),
-  parameters: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_parameterValueModelSchema, value),
-        {
-          skipIfEmpty: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(
-        values,
-        (v) => deserialize(V1_parameterValueModelSchema, v),
-        {
-          skipIfEmpty: false,
-        },
-      ),
-  ),
-  serializationFormat: optional(primitive()),
-});
+    id: primitive(),
+    keys: list(primitive()),
+    parameters: custom(
+      (values) =>
+        serializeArray(
+          values,
+          (value) => serialize(V1_parameterValueModelSchema, value),
+          {
+            skipIfEmpty: true,
+          },
+        ),
+      (values) =>
+        deserializeArray(
+          values,
+          (v) => deserialize(V1_parameterValueModelSchema, v),
+          {
+            skipIfEmpty: false,
+          },
+        ),
+    ),
+    serializationFormat: optional(primitive()),
+  });
 
 export const V1_serviceTestSuiteModelSchema = (
   plugins: PureProtocolProcessorPlugin[],

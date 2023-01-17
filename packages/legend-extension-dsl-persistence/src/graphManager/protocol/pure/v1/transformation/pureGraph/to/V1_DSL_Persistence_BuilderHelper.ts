@@ -154,10 +154,9 @@ import {
   type PackageableElementImplicitReference,
   type TestAssertion,
   V1_buildAtomicTest,
+  V1_buildTestAssertion,
   V1_buildEmbeddedData,
-  V1_buildEqualToJson,
   V1_buildFullPath,
-  V1_EqualToJson,
   type V1_GraphBuilderContext,
   type V1_TestAssertion,
 } from '@finos/legend-graph';
@@ -640,19 +639,6 @@ export const V1_buildNotifier = (
  * test
  **********/
 
-export const V1_buildPersistenceTestAssertions = (
-  value: V1_TestAssertion[],
-  parentTest: AtomicTest | undefined,
-  context: V1_GraphBuilderContext,
-): TestAssertion[] =>
-  value.map((assertion) => {
-    if (assertion instanceof V1_EqualToJson) {
-      return V1_buildEqualToJson(assertion, parentTest, context);
-    } else {
-      throw new UnsupportedOperationError(`Can't build test assertion`, value);
-    }
-  });
-
 const V1_buildConnectionTestData = (
   element: V1_ConnectionTestData,
   context: V1_GraphBuilderContext,
@@ -680,10 +666,8 @@ export const V1_buildTestBatch = (
     const testBatch = new PersistenceTestBatch();
     testBatch.id = persistenceTestBatch.id;
     testBatch.batchId = persistenceTestBatch.batchId;
-    testBatch.assertions = V1_buildPersistenceTestAssertions(
-      persistenceTestBatch.assertions,
-      parentTest,
-      context,
+    testBatch.assertions = persistenceTestBatch.assertions.map((assertion) =>
+      V1_buildTestAssertion(assertion, parentTest, context),
     );
     testBatch.testData = V1_buildTestData(
       persistenceTestBatch.testData,
