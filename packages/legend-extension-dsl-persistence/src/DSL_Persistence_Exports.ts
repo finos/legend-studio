@@ -16,3 +16,4 @@
 
 export * from './graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Persistence.js';
 export * from './graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
+export * from './graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_AllRowsEquivalentToJson.js';
