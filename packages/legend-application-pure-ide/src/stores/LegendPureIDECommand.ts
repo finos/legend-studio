@@ -20,7 +20,7 @@ export enum LEGEND_PURE_IDE_COMMAND_KEY {
   SEARCH_FILE = 'editor.search.file',
   SEARCH_TEXT = 'editor.search.text',
   GO_TO_FILE = 'editor.go-to-file',
-  TOGGLE_AUX_PANEL = 'editor.toggle-auxiliary-panel',
+  TOGGLE_TERMINAL_PANEL = 'editor.toggle-auxiliary-panel',
   EXECUTE = 'editor.execute',
   FULL_RECOMPILE = 'editor.full-compile',
   FULL_RECOMPILE_WITH_FULL_INIT = 'editor.full-compile.with-init',
@@ -43,8 +43,8 @@ export const LEGEND_PURE_IDE_COMMAND_CONFIG: CommandConfigData = {
     title: 'Go to file',
     defaultKeyboardShortcut: 'Control+F1',
   },
-  [LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_AUX_PANEL]: {
-    title: 'Toggle auxiliary panel',
+  [LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_TERMINAL_PANEL]: {
+    title: 'Toggle terminal',
     defaultKeyboardShortcut: 'Control+Backquote',
   },
   [LEGEND_PURE_IDE_COMMAND_KEY.EXECUTE]: {
@@ -137,3 +137,20 @@ export const LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_CONFIG: CommandConfigData 
       defaultKeyboardShortcut: 'Control+KeyG',
     },
   };
+
+export enum LEGEND_PURE_IDE_TERMINAL_COMMAND {
+  GO = 'go',
+  COMPILE = 'compile',
+  EXECUTE_GO = 'executeGo',
+
+  TEST = 'test',
+
+  REMOVE = 'rm',
+  MOVE = 'mv',
+  NEW_DIRECTORY = 'mkdir',
+  NEW_FILE = 'touch',
+
+  CLEAR = 'clear',
+  ANSI = 'ansi',
+  HELP = 'help',
+}

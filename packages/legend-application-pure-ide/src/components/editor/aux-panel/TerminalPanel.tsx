@@ -32,7 +32,7 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 export const Console = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const console = applicationStore.terminalService.console;
+  const console = applicationStore.terminalService.terminal;
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export const Console = observer(() => {
   useEffect(() => {
     if (
       editorStore.auxPanelDisplayState.isOpen &&
-      editorStore.activeAuxPanelMode === AUX_PANEL_MODE.CONSOLE
+      editorStore.activeAuxPanelMode === AUX_PANEL_MODE.TERMINAL
     ) {
       console.focus();
     }
@@ -60,11 +60,11 @@ export const Console = observer(() => {
   }, [console, width, height]);
 
   return (
-    <div className="console-panel">
-      <div className="console-panel__header">
-        <div className="console-panel__header__group">
+    <div className="terminal-panel">
+      <div className="terminal-panel__header">
+        <div className="terminal-panel__header__group">
           <button
-            className="console-panel__header__action console-panel__header__group__action"
+            className="terminal-panel__header__action terminal-panel__header__group__action"
             title="Previous Match"
             // disabled={isAlignerDisabled}
             tabIndex={-1}
@@ -74,10 +74,10 @@ export const Console = observer(() => {
             //   )
             // }
           >
-            <ArrowUpIcon className="console-panel__header__action__icon" />
+            <ArrowUpIcon className="terminal-panel__header__action__icon" />
           </button>
           <button
-            className="console-panel__header__action console-panel__header__group__action"
+            className="terminal-panel__header__action terminal-panel__header__group__action"
             title="Next Match"
             // disabled={isAlignerDisabled}
             tabIndex={-1}
@@ -87,26 +87,26 @@ export const Console = observer(() => {
             //   )
             // }
           >
-            <ArrowDownIcon className="console-panel__header__action__icon" />
+            <ArrowDownIcon className="terminal-panel__header__action__icon" />
           </button>
         </div>
-        <div className="console-panel__header__group__separator" />
-        <div className="console-panel__header__group">
+        <div className="terminal-panel__header__group__separator" />
+        <div className="terminal-panel__header__group">
           <button
             className={clsx(
-              'console-panel__header__action console-panel__header__group__action',
+              'terminal-panel__header__action terminal-panel__header__group__action',
               {
-                'console-panel__header__action--active': console.preserveLog,
+                'terminal-panel__header__action--active': console.preserveLog,
               },
             )}
             title="Toggle Preserve Console"
             tabIndex={-1}
             onClick={() => console.setPreserveLog(!console.preserveLog)}
           >
-            <HistoryIcon className="console-panel__header__action__icon" />
+            <HistoryIcon className="terminal-panel__header__action__icon" />
           </button>
           <button
-            className="console-panel__header__action console-panel__header__group__action"
+            className="terminal-panel__header__action terminal-panel__header__group__action"
             title="Clear Console"
             tabIndex={-1}
             onClick={() => {
@@ -114,19 +114,19 @@ export const Console = observer(() => {
               console.focus();
             }}
           >
-            <TrashIcon className="console-panel__header__action__icon" />
+            <TrashIcon className="terminal-panel__header__action__icon" />
           </button>
           <button
-            className="console-panel__header__action console-panel__header__group__action"
+            className="terminal-panel__header__action terminal-panel__header__group__action"
             title="Show Help"
             tabIndex={-1}
             onClick={() => console.showHelp()}
           >
-            <QuestionCircleIcon className="console-panel__header__action__icon" />
+            <QuestionCircleIcon className="terminal-panel__header__action__icon" />
           </button>
         </div>
       </div>
-      <div ref={ref} className="console-panel__content" />
+      <div ref={ref} className="terminal-panel__content" />
     </div>
   );
 });

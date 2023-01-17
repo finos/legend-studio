@@ -94,7 +94,10 @@ import { DiagramInfo, serializeDiagram } from '../server/models/DiagramInfo.js';
 import type { LegendPureIDEApplicationStore } from './LegendPureIDEBaseStore.js';
 import { SearchCommandState } from './SearchCommandState.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
-import { LEGEND_PURE_IDE_COMMAND_KEY } from './LegendPureIDECommand.js';
+import {
+  LEGEND_PURE_IDE_COMMAND_KEY,
+  LEGEND_PURE_IDE_TERMINAL_COMMAND,
+} from './LegendPureIDECommand.js';
 import { ExecutionError } from '../server/models/ExecutionError.js';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import type { SourceModificationResult } from '../server/models/Source.js';
@@ -110,7 +113,7 @@ export class EditorStore implements CommandRegistrar {
 
   // Layout
   isMaxAuxPanelSizeSet = false;
-  activeAuxPanelMode = AUX_PANEL_MODE.CONSOLE;
+  activeAuxPanelMode = AUX_PANEL_MODE.TERMINAL;
   readonly auxPanelDisplayState = new PanelDisplayState({
     // initial: 0,
     initial: 300,
@@ -235,6 +238,9 @@ export class EditorStore implements CommandRegistrar {
     // but the blocking alert for not-found workspace will still block the app
     this.applicationStore.setBlockingAlert(undefined);
     this.applicationStore.setActionAlertInfo(undefined);
+
+    // dispose the terminal
+    this.applicationStore.terminalService.terminal.dispose();
   }
 
   /**
@@ -276,8 +282,11 @@ export class EditorStore implements CommandRegistrar {
         (yield initializationPromise) as PlainObject<InitializationResult>,
       );
       if (result.text) {
-        this.applicationStore.terminalService.console.writeln(result.text);
-        this.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+        this.applicationStore.terminalService.terminal.write(
+          result.text,
+          `(initialize application)`,
+        );
+        this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
         this.auxPanelDisplayState.open();
       }
       if (result instanceof InitializationFailureResult) {
@@ -333,6 +342,8 @@ export class EditorStore implements CommandRegistrar {
           },
         ],
       });
+    } finally {
+      this.applicationStore.terminalService.terminal.clear();
     }
   }
 
@@ -395,8 +406,12 @@ export class EditorStore implements CommandRegistrar {
       },
     });
     this.applicationStore.commandCenter.registerCommand({
-      key: LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_AUX_PANEL,
-      action: () => this.auxPanelDisplayState.toggle(),
+      key: LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_TERMINAL_PANEL,
+      action: () => {
+        this.auxPanelDisplayState.toggle();
+        this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
+        this.applicationStore.terminalService.terminal.focus();
+      },
     });
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.EXECUTE,
@@ -445,7 +460,7 @@ export class EditorStore implements CommandRegistrar {
       LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_FILE,
       LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_TEXT,
       LEGEND_PURE_IDE_COMMAND_KEY.GO_TO_FILE,
-      LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_AUX_PANEL,
+      LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_TERMINAL_PANEL,
       LEGEND_PURE_IDE_COMMAND_KEY.EXECUTE,
       LEGEND_PURE_IDE_COMMAND_KEY.FULL_RECOMPILE,
       LEGEND_PURE_IDE_COMMAND_KEY.FULL_RECOMPILE_WITH_FULL_INIT,
@@ -556,12 +571,14 @@ export class EditorStore implements CommandRegistrar {
       result: ExecutionResult,
       potentiallyAffectedFiles: string[],
     ) => Promise<void>,
+    command: string | undefined,
     options?: {
       /**
        * Some execution, such as find concept produces no output
        * so we should not reset the console text in that case
        */
       silent?: boolean;
+      clearTerminal?: boolean;
     },
   ): GeneratorFn<void> {
     if (!this.initState.hasCompleted) {
@@ -641,7 +658,13 @@ export class EditorStore implements CommandRegistrar {
       );
       this.applicationStore.setBlockingAlert(undefined);
       if (!options?.silent) {
-        this.applicationStore.terminalService.console.writeln(result.text);
+        this.applicationStore.terminalService.terminal.write(
+          result.text,
+          command ?? `(execute)`,
+          {
+            clear: options?.clearTerminal,
+          },
+        );
       }
       if (result instanceof ExecutionFailureResult) {
         this.applicationStore.notifyError(
@@ -674,6 +697,7 @@ export class EditorStore implements CommandRegistrar {
                     extraParams,
                     checkExecutionStatus,
                     manageResult,
+                    command,
                   ),
                 ),
               this.client.mode,
@@ -735,6 +759,10 @@ export class EditorStore implements CommandRegistrar {
           flowResult(
             this.manageExecuteGoResult(result, potentiallyAffectedFiles),
           ),
+        LEGEND_PURE_IDE_TERMINAL_COMMAND.GO,
+        {
+          clearTerminal: true,
+        },
       ),
     );
   }
@@ -835,7 +863,7 @@ export class EditorStore implements CommandRegistrar {
                 ),
               ),
             );
-            this.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+            this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
             this.auxPanelDisplayState.open();
             this.testRunState.fail();
           } else if (result instanceof TestExecutionResult) {
@@ -855,6 +883,7 @@ export class EditorStore implements CommandRegistrar {
           // do nothing?
           await refreshTreesPromise;
         },
+        `${LEGEND_PURE_IDE_TERMINAL_COMMAND.TEST} ${path}`,
       ),
     );
   }
@@ -889,6 +918,7 @@ export class EditorStore implements CommandRegistrar {
           }
           this.resetChangeDetection(potentiallyAffectedFiles);
         },
+        `(navigate)`,
         { silent: true },
       ),
     );
@@ -942,6 +972,7 @@ export class EditorStore implements CommandRegistrar {
                     keepShowingIfMatchedCurrent: true,
                   });
                 },
+                `(recompile)`,
               ),
             ).catch(this.applicationStore.alertUnhandledError);
           },
@@ -1019,17 +1050,21 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *command(
-    cmd: () => Promise<PlainObject<CommandResult>>,
+    fn: () => Promise<PlainObject<CommandResult>>,
+    command: string,
   ): GeneratorFn<boolean> {
     try {
       const result = deserializeCommandResult(
-        (yield cmd()) as PlainObject<CommandResult>,
+        (yield fn()) as PlainObject<CommandResult>,
       );
       if (result instanceof CommandFailureResult) {
         if (result.errorDialog) {
           this.applicationStore.notifyWarning(`Error: ${result.text}`);
         } else {
-          this.applicationStore.terminalService.console.writeln(result.text);
+          this.applicationStore.terminalService.terminal.write(
+            result.text,
+            command,
+          );
         }
         return false;
       }
@@ -1140,8 +1175,9 @@ export class EditorStore implements CommandRegistrar {
         yield this.reloadFile(file);
       }
       yield this.refreshTrees();
-      this.applicationStore.terminalService.console.writeln(
+      this.applicationStore.terminalService.terminal.write(
         `Sucessfully renamed concept. Please re-compile the code`,
+        `(rename concept: ${oldName} \u2192 ${newName})`,
       );
       this.applicationStore.notifyWarning(
         `Please re-compile the code after refacting`,
@@ -1181,8 +1217,9 @@ export class EditorStore implements CommandRegistrar {
         yield this.reloadFile(file);
       }
       yield this.refreshTrees();
-      this.applicationStore.terminalService.console.writeln(
+      this.applicationStore.terminalService.terminal.write(
         `Sucessfully moved packageble elements. Please re-compile the code`,
+        `(move elements)`,
       );
       this.applicationStore.notifyWarning(
         `Please re-compile the code after refacting`,
@@ -1205,7 +1242,7 @@ export class EditorStore implements CommandRegistrar {
         candidate.messageToBeModified,
       ),
     );
-    this.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+    this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
     this.auxPanelDisplayState.open();
   }
 
@@ -1231,8 +1268,9 @@ export class EditorStore implements CommandRegistrar {
           yield this.reloadFile(file);
         }
       }
-      this.applicationStore.terminalService.console.writeln(
+      this.applicationStore.terminalService.terminal.write(
         `Sucessfully updated file. Please re-compile the code`,
+        `(update file content: ${path})`,
       );
       this.applicationStore.notifyWarning(
         `Please re-compile the code after refacting`,
@@ -1281,8 +1319,9 @@ export class EditorStore implements CommandRegistrar {
   *createNewDirectory(path: string): GeneratorFn<void> {
     try {
       yield flowResult(
-        this.command(() =>
-          this.client.createFolder(trimPathLeadingSlash(path)),
+        this.command(
+          () => this.client.createFolder(trimPathLeadingSlash(path)),
+          LEGEND_PURE_IDE_TERMINAL_COMMAND.NEW_DIRECTORY,
         ),
       );
 
@@ -1296,7 +1335,10 @@ export class EditorStore implements CommandRegistrar {
   *createNewFile(path: string): GeneratorFn<void> {
     try {
       const result = (yield flowResult(
-        this.command(() => this.client.createFile(trimPathLeadingSlash(path))),
+        this.command(
+          () => this.client.createFile(trimPathLeadingSlash(path)),
+          LEGEND_PURE_IDE_TERMINAL_COMMAND.NEW_FILE,
+        ),
       )) as boolean;
       yield flowResult(this.directoryTreeState.refreshTreeData());
       if (result) {
@@ -1311,7 +1353,10 @@ export class EditorStore implements CommandRegistrar {
   *renameFile(oldPath: string, newPath: string): GeneratorFn<void> {
     try {
       yield flowResult(
-        this.command(() => this.client.renameFile(oldPath, newPath)),
+        this.command(
+          () => this.client.renameFile(oldPath, newPath),
+          LEGEND_PURE_IDE_TERMINAL_COMMAND.MOVE,
+        ),
       );
       yield flowResult(this.directoryTreeState.refreshTreeData());
       const openTab = this.tabManagerState.tabs.find(
@@ -1333,8 +1378,9 @@ export class EditorStore implements CommandRegistrar {
   ): GeneratorFn<void> {
     const _delete = async (): Promise<void> => {
       await flowResult(
-        this.command(() =>
-          this.client.deleteDirectoryOrFile(trimPathLeadingSlash(path)),
+        this.command(
+          () => this.client.deleteDirectoryOrFile(trimPathLeadingSlash(path)),
+          LEGEND_PURE_IDE_TERMINAL_COMMAND.REMOVE,
         ),
       );
       const editorStatesToClose = this.tabManagerState.tabs.filter(

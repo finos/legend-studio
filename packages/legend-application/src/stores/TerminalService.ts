@@ -21,10 +21,10 @@ import { XTerm } from './terminal/XTerm.js';
 export class TerminalService {
   readonly applicationStore: GenericLegendApplicationStore;
 
-  readonly console: Terminal;
+  readonly terminal: Terminal;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     this.applicationStore = applicationStore;
-    this.console = new XTerm(applicationStore);
+    this.terminal = new XTerm(applicationStore);
   }
 }

@@ -15,7 +15,11 @@
  */
 
 import type { GenericLegendApplicationStore } from '../ApplicationStore.js';
-import { type ITheme as XTermTheme, Terminal as XTermTerminal } from 'xterm';
+import {
+  type ITheme as XTermTheme,
+  Terminal as XTermTerminal,
+  type IDisposable as XTermDisposable,
+} from 'xterm';
 import { WebLinksAddon as XTermWebLinksAddon } from 'xterm-addon-web-links';
 import { FitAddon as XTermFitAddon } from 'xterm-addon-fit';
 import { SearchAddon as XTermSearchAddon } from 'xterm-addon-search';
@@ -23,69 +27,7 @@ import { Unicode11Addon as XTermUnicode11Addon } from 'xterm-addon-unicode11';
 import { WebglAddon as XTermWebglAddon } from 'xterm-addon-webgl';
 import { MONOSPACED_FONT_FAMILY, TAB_SIZE } from '../../const.js';
 import { forceDispatchKeyboardEvent } from '../../components/LegendApplicationComponentFrameworkProvider.js';
-import { Terminal } from './Terminal.js';
-
-// NOTE: using Unicode for ANSI escape
-// See https://stackoverflow.com/questions/26153308/best-ansi-escape-beginning
-enum XTERM_ANSI_CODE {
-  RESET = '\u001b[0m', // color off
-
-  // foreground
-  BLACK = '\u001b[30m',
-  RED = '\u001b[31m',
-  GREEN = '\u001b[32m',
-  YELLOW = '\u001b[33m',
-  BLUE = '\u001b[34m',
-  MAGENTA = '\u001b[35m',
-  CYAN = '\u001b[36m',
-  WHITE = '\u001b[37m',
-
-  BRIGHT_BLACK = `\u001b[1;30m`,
-  BRIGHT_RED = '\u001b[1;31m',
-  BRIGHT_GREEN = '\u001b[1;32m',
-  BRIGHT_YELLOW = '\u001b[1;33m',
-  BRIGHT_BLUE = '\u001b[1;34m',
-  BRIGHT_MAGENTA = '\u001b[1;35m',
-  BRIGHT_CYAN = '\u001b[1;36m',
-  BRIGHT_WHITE = '\u001b[1;37m',
-
-  DIMMED_BLACK = `\u001b[2;30m`,
-  DIMMED_RED = '\u001b[2;31m',
-  DIMMED_GREEN = '\u001b[2;32m',
-  DIMMED_YELLOW = '\u001b[2;33m',
-  DIMMED_BLUE = '\u001b[2;34m',
-  DIMMED_MAGENTA = '\u001b[2;35m',
-  DIMMED_CYAN = '\u001b[2;36m',
-  DIMMED_WHITE = '\u001b[2;37m',
-
-  // background
-  BLACK_BG = '\u001b[40m',
-  RED_BG = '\u001b[41m',
-  GREEN_BG = '\u001b[42m',
-  YELLOW_BG = '\u001b[43m',
-  BLUE_BG = '\u001b[44m',
-  MAGENTA_BG = '\u001b[45m',
-  CYAN_BG = '\u001b[46m',
-  WHITE_BG = '\u001b[47m',
-
-  BRIGHT_BLACK_BG = `\u001b[1;40m`,
-  BRIGHT_RED_BG = '\u001b[1;41m',
-  BRIGHT_GREEN_BG = '\u001b[1;42m',
-  BRIGHT_YELLOW_BG = '\u001b[1;43m',
-  BRIGHT_BLUE_BG = '\u001b[1;44m',
-  BRIGHT_MAGENTA_BG = '\u001b[1;45m',
-  BRIGHT_CYAN_BG = '\u001b[1;46m',
-  BRIGHT_WHITE_BG = '\u001b[1;47m',
-
-  DIMMED_BLACK_BG = `\u001b[2;40m`,
-  DIMMED_RED_BG = '\u001b[2;41m',
-  DIMMED_GREEN_BG = '\u001b[2;42m',
-  DIMMED_YELLOW_BG = '\u001b[2;43m',
-  DIMMED_BLUE_BG = '\u001b[2;44m',
-  DIMMED_MAGENTA_BG = '\u001b[2;45m',
-  DIMMED_CYAN_BG = '\u001b[2;46m',
-  DIMMED_WHITE_BG = '\u001b[2;47m',
-}
+import { Terminal, type TerminalWriteOption, ANSI_ESCAPE } from './Terminal.js';
 
 const LEGEND_XTERM_THEME: XTermTheme = {
   foreground: '#cccccc',
@@ -120,19 +62,30 @@ const LEGEND_XTERM_THEME: XTermTheme = {
 // robot acsii art
 // See https://asciiartist.com/ascii-art-micro-robot/
 const HELP_COMMAND_TEXT = `
-${XTERM_ANSI_CODE.BRIGHT_BLACK}+-------------------------------------------------------+${XTERM_ANSI_CODE.RESET}
-${XTERM_ANSI_CODE.BRIGHT_BLACK}|${XTERM_ANSI_CODE.RESET}   ${XTERM_ANSI_CODE.BRIGHT_GREEN}[@@]${XTERM_ANSI_CODE.RESET}   "Hi! Welcome to the HELP menu of Pure IDE"   ${XTERM_ANSI_CODE.BRIGHT_BLACK}|${XTERM_ANSI_CODE.RESET}
-${XTERM_ANSI_CODE.BRIGHT_BLACK}|${XTERM_ANSI_CODE.RESET}  ${XTERM_ANSI_CODE.BRIGHT_GREEN}/|__|\\${XTERM_ANSI_CODE.RESET}                                               ${XTERM_ANSI_CODE.BRIGHT_BLACK}|${XTERM_ANSI_CODE.RESET}
-${XTERM_ANSI_CODE.BRIGHT_BLACK}+--${XTERM_ANSI_CODE.RESET} ${XTERM_ANSI_CODE.BRIGHT_GREEN}d  b${XTERM_ANSI_CODE.RESET} ${XTERM_ANSI_CODE.BRIGHT_BLACK}-----------------------------------------------+${XTERM_ANSI_CODE.RESET}
+${ANSI_ESCAPE.BRIGHT_BLACK}+-------------------------------------------------------+${ANSI_ESCAPE.RESET}
+${ANSI_ESCAPE.BRIGHT_BLACK}|${ANSI_ESCAPE.RESET}   ${ANSI_ESCAPE.BRIGHT_GREEN}[@@]${ANSI_ESCAPE.RESET}   "Hi! Welcome to the HELP menu of Pure IDE"   ${ANSI_ESCAPE.BRIGHT_BLACK}|${ANSI_ESCAPE.RESET}
+${ANSI_ESCAPE.BRIGHT_BLACK}|${ANSI_ESCAPE.RESET}  ${ANSI_ESCAPE.BRIGHT_GREEN}/|__|\\${ANSI_ESCAPE.RESET}                                               ${ANSI_ESCAPE.BRIGHT_BLACK}|${ANSI_ESCAPE.RESET}
+${ANSI_ESCAPE.BRIGHT_BLACK}+--${ANSI_ESCAPE.RESET} ${ANSI_ESCAPE.BRIGHT_GREEN}d  b${ANSI_ESCAPE.RESET} ${ANSI_ESCAPE.BRIGHT_BLACK}-----------------------------------------------+${ANSI_ESCAPE.RESET}
 
 
 `;
+
+const DEFAULT_USER = 'purist';
+const DEFAULT_COMMAND_HEADER = `
+${ANSI_ESCAPE.BOLD}${ANSI_ESCAPE.BRIGHT_BLUE}$${DEFAULT_USER}${ANSI_ESCAPE.RESET}
+${ANSI_ESCAPE.BOLD}${ANSI_ESCAPE.MAGENTA}\u276f${ANSI_ESCAPE.RESET} `;
 
 export class XTerm extends Terminal {
   private readonly instance: XTermTerminal;
   private readonly resizer: XTermFitAddon;
   private readonly searcher: XTermSearchAddon;
   private readonly renderer: XTermWebglAddon;
+
+  // NOTE: since we don't attach xterm to a terminal with real stdin, we have to manually
+  // register the user input in this temporary variable. When `Enter` is hit, we will flush this
+  private _TEMPORARY__currentCommandText = '';
+  private _TEMPORARY__onKeyListener?: XTermDisposable;
+  private _TEMPORARY__onDataListener?: XTermDisposable;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     super(applicationStore);
@@ -150,6 +103,11 @@ export class XTerm extends Terminal {
     this.resizer = new XTermFitAddon();
     this.searcher = new XTermSearchAddon();
     this.renderer = new XTermWebglAddon();
+
+    this.setup();
+  }
+
+  private setup(): void {
     // Handling context loss: The browser may drop WebGL contexts for various reasons like OOM or after the system has been suspended.
     // An easy, but suboptimal way, to handle this is by disposing of WebglAddon when the `webglcontextlost` event fires
     // NOTE: we don't really have a resilient way to fallback right now, hopefully, the fallback is to render in DOM
@@ -172,11 +130,47 @@ export class XTerm extends Terminal {
       },
     );
 
+    this._TEMPORARY__onKeyListener = this.instance.onKey(
+      ({ key, domEvent }) => {
+        if (key.charCodeAt(0) === 13) {
+          // Enter
+          if (domEvent.shiftKey) {
+            // this.instance.write('\n');
+            // this._TEMPORARY__currentCommandText += '\n';
+          } else {
+            this._TEMPORARY__currentCommandText = '';
+
+            // execute command
+          }
+        } else if (key.charCodeAt(0) === 127) {
+          // Backspace
+          this.instance.write('\b \b');
+        } else {
+          this.instance.write(key);
+          // this.instance.buffer.active.cur;
+          this._TEMPORARY__currentCommandText += key;
+        }
+      },
+    );
+
+    // this._TEMPORARY__onDataHandler = this.instance.onData((val) => {});
+
+    // use onData for paste and normal input, limit the range; use onKey for special handling, liek Enter, Arrow, backspaces, etc.
+
     // this.searcher.findNext('foo');
   }
 
   mount(container: HTMLElement): void {
     this.instance.open(container);
+  }
+
+  dispose(): void {
+    this.searcher.dispose();
+    this.resizer.dispose();
+    this.renderer.dispose();
+    this._TEMPORARY__onKeyListener?.dispose();
+    this._TEMPORARY__onDataListener?.dispose();
+    this.instance.dispose();
   }
 
   autoResize(): void {
@@ -195,27 +189,29 @@ export class XTerm extends Terminal {
 
   clear(): void {
     this.instance.clear();
+    this.instance.scrollToTop();
+    this.instance.write(DEFAULT_COMMAND_HEADER);
   }
 
   private resetANSIStyling(): void {
-    this.instance.write(XTERM_ANSI_CODE.RESET);
+    this.instance.write(ANSI_ESCAPE.RESET);
   }
 
-  write(val: string): void {
-    if (!this.preserveLog) {
-      this.clear();
-      this.resetANSIStyling();
+  write(
+    output: string,
+    command: string | undefined,
+    opts?: TerminalWriteOption,
+  ): void {
+    if (!this.preserveLog && opts?.clear) {
+      this.instance.clear();
       this.instance.scrollToTop();
     }
-    this.instance.write(val);
-  }
-
-  writeln(val: string): void {
-    if (!this.preserveLog) {
-      this.clear();
-      this.resetANSIStyling();
-      this.instance.scrollToTop();
+    this.resetANSIStyling();
+    this.instance.write(DEFAULT_COMMAND_HEADER);
+    this.instance.write(`${command ?? '(unknown)'}\n`);
+    this.instance.writeln(output);
+    if (!opts?.clear) {
+      this.instance.scrollToBottom();
     }
-    this.instance.writeln(val);
   }
 }
