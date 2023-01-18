@@ -683,7 +683,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       ),
     );
     decorateRuntimeWithNewMapping(
-      executionState.executionContext.runtime,
+      customRuntime,
       executionState.executionContext.mapping.value,
       this.editorStore,
     );

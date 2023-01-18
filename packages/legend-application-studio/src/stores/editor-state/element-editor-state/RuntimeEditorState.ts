@@ -151,14 +151,16 @@ export const decorateRuntimeWithNewMapping = (
       editorStore.changeDetectionState.observerContext,
     ),
   );
-  const sourceClasses = mapping.classMappings
-    .map((classMapping) =>
-      getMappingElementSource(
-        classMapping,
-        editorStore.pluginManager.getApplicationPlugins(),
-      ),
-    )
-    .filter(filterByType(Class));
+  const sourceClasses: Class[] = [];
+  mapping.classMappings.forEach((classMapping) => {
+    const mappingSource = getMappingElementSource(
+      classMapping,
+      editorStore.pluginManager.getApplicationPlugins(),
+    );
+    if (mappingSource instanceof Class) {
+      addUniqueEntry(sourceClasses, mappingSource);
+    }
+  });
   let classesSpecifiedInModelConnections: Class[] = [];
   runtimeValue.connections.forEach((storeConnections) => {
     if (storeConnections.store.value instanceof ModelStore) {
