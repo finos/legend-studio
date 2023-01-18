@@ -192,13 +192,17 @@ export const createEmptyEqualToJsonAssertion = (
   return assert;
 };
 
-export const createRelationalDataFromCSV = (val: string): RelationalCSVData => {
+// Temproary as engine should return an embedded data type
+export const TEMPORARY_createRelationalDataFromCSV = (
+  val: string,
+): RelationalCSVData => {
+  const NEW_LINE = '\n';
   const data = new RelationalCSVData();
-  const separator = '\n-----\n';
+  const separator = `${NEW_LINE}-----${NEW_LINE}`;
   const lineBreak = /\r?\n/;
   const tables = val
     .split(separator)
-    .filter((e) => !(e === '\n' || e === '\r' || e === ''));
+    .filter((e) => !(e === NEW_LINE || e === '\r' || e === ''));
   tables.forEach((tableData) => {
     const tableInfo = tableData.split(lineBreak);
     assertTrue(
@@ -208,7 +212,7 @@ export const createRelationalDataFromCSV = (val: string): RelationalCSVData => {
     const table = new RelationalCSVDataTable();
     table.schema = guaranteeNonEmptyString(tableInfo.shift());
     table.table = guaranteeNonEmptyString(tableInfo.shift());
-    table.values = tableInfo.join('\n');
+    table.values = tableInfo.join(NEW_LINE) + NEW_LINE;
     data.tables.push(table);
   });
   return data;

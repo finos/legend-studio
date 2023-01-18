@@ -57,7 +57,7 @@ import {
   createMockPrimitiveProperty,
 } from '../../../../shared/MockDataUtils.js';
 import {
-  createRelationalDataFromCSV,
+  TEMPORARY_createRelationalDataFromCSV,
   EmbeddedDataConnectionTypeVisitor,
   getAllIdentifiedConnectionsFromRuntime,
   TEMPORARY_EmbeddedDataConnectionVisitor,
@@ -155,7 +155,7 @@ export class ConnectionTestDataState {
               anonymizeGeneratedData: this.anonymizeGeneratedData,
             },
           )) as string;
-        embeddedData = createRelationalDataFromCSV(value);
+        embeddedData = TEMPORARY_createRelationalDataFromCSV(value);
       } else {
         embeddedData = connection.accept_ConnectionVisitor(
           new TEMPORARY_EmbeddedDataConnectionVisitor(this.editorStore),
