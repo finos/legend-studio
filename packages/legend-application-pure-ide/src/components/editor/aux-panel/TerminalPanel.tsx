@@ -88,12 +88,15 @@ export const Console = observer(() => {
   const onSearchNavigation: React.KeyboardEventHandler<HTMLInputElement> = (
     event,
   ) => {
-    if (event.key === 'Enter') {
+    if (event.code === 'Enter') {
       if (event.shiftKey) {
         terminal.findPrevious();
       } else {
         terminal.findNext();
       }
+    } else if (event.code === 'Escape') {
+      terminal.clearSearch();
+      terminal.focus();
     }
   };
 

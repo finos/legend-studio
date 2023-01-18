@@ -86,7 +86,26 @@ export enum ANSI_ESCAPE {
   DIMMED_MAGENTA_BG = '\u001b[2;45m',
   DIMMED_CYAN_BG = '\u001b[2;46m',
   DIMMED_WHITE_BG = '\u001b[2;47m',
+
+  // utility
+  ERASE_FROM_CURSOR_TO_END_OF_LINE = '\u001b[0K',
+  ERASE_FROM_CURSOR_TO_START_OF_LINE = '\u001b[1K',
+  ERASE_LINE = '\u001b[2K',
 }
+
+/**
+ * NOTE: line and column start from 1
+ */
+export const ANSI_moveCursor = (line: number, column: number): string =>
+  `\u001b[${line};${column}H`;
+export const ANSI_moveCursorUp = (val: number, start?: boolean): string =>
+  start ? `\u001b[${val}F` : `\u001b[${val}A`;
+export const ANSI_moveCursorDown = (val: number, start?: boolean): string =>
+  start ? `\u001b[${val}E` : `\u001b[${val}B`;
+export const ANSI_moveCursorRight = (val: number): string => `\u001b[${val}C`;
+export const ANSI_moveCursorLeft = (val: number): string => `\u001b[${val}D`;
+export const ANSI_moveCursorToColumn = (val: number): string =>
+  `\u001b[${val}G`;
 
 class ConsoleSearchConfiguration {
   private searchInput?: HTMLInputElement | undefined;
@@ -186,27 +205,42 @@ export interface TerminalWebLinkProviderConfiguration {
   regex: RegExp;
 }
 
+export interface TerminalCommandConfiguration {
+  command: string;
+  alias: string[];
+  handler: (args: string[]) => void;
+}
+
 export interface TerminalSetupConfiguration {
   // NOTE: since xterm do not support web-link provider, we need to override the default addon
   // the more ideal strategy is to implement additional buffer parser
   // See https://github.com/xtermjs/xterm.js/issues/3746
   webLinkProvider?: TerminalWebLinkProviderConfiguration | undefined;
+  commands?: TerminalCommandConfiguration[] | undefined;
 }
 
 export abstract class Terminal extends Console {
   preserveLog = false;
+  protected commandRegistry: TerminalCommandConfiguration[] = [];
+  command = '';
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     super(applicationStore);
 
     makeObservable(this, {
       preserveLog: observable,
+      command: observable,
       setPreserveLog: action,
+      setCommand: action,
     });
   }
 
   setPreserveLog(val: boolean): void {
     this.preserveLog = val;
+  }
+
+  setCommand(val: string): void {
+    this.command = val;
   }
 
   abstract get isSetup(): boolean;
@@ -217,6 +251,7 @@ export abstract class Terminal extends Console {
     // do nothing
   }
 
+  abstract abort(): void;
   abstract write(
     output: string,
     command: string | undefined,

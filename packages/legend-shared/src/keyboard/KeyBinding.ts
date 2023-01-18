@@ -80,9 +80,9 @@ export function parseKeybinding(value: string): KeyPressData[] {
 /**
  * Checks if a series of keypress events matches a key binding sequence either partially or exactly.
  */
-export const isMatchingKeyCombination = (
+export const isMatchingKeyPressData = (
   event: KeyboardEvent,
-  combinationData: KeyPressData,
+  keyPressData: KeyPressData,
 ): boolean =>
   // NOTE: we allow specifying with `event.code` only
   // - key: value of the key pressed by the user, taking into consideration the state of modifier keys
@@ -93,9 +93,9 @@ export const isMatchingKeyCombination = (
   //   i.e. this property returns a value that isn't altered by keyboard layout or the state of the modifier keys
   // See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
   // See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
-  combinationData.key === event.code &&
+  keyPressData.key === event.code &&
   // ensure all the modifiers in the keybinding are pressed
-  combinationData.modifiers.every((modifier) =>
+  keyPressData.modifiers.every((modifier) =>
     event.getModifierState(modifier),
   ) &&
   // modifier keys (Shift, Control, etc.) change the meaning of a keybinding,
@@ -108,10 +108,19 @@ export const isMatchingKeyCombination = (
   ].find(
     (modifier) =>
       // check if the current key pressed is one of the modifier keys
-      combinationData.key !== modifier &&
+      keyPressData.key !== modifier &&
       event.getModifierState(modifier) &&
       // check if the modifier key pressed is part of the key combination
-      !combinationData.modifiers.includes(modifier),
+      !keyPressData.modifiers.includes(modifier),
+  );
+
+export const isMatchingKeyCombination = (
+  event: KeyboardEvent,
+  keyCombination: string,
+): boolean =>
+  isMatchingKeyPressData(
+    event,
+    guaranteeNonNullable(parseKeybinding(keyCombination)[0]),
   );
 
 /**
@@ -171,10 +180,7 @@ export function createKeybindingsHandler(
           remainingExpectedKeyPresses[0],
         );
 
-        const matches = isMatchingKeyCombination(
-          event,
-          currentExpectedKeyPress,
-        );
+        const matches = isMatchingKeyPressData(event, currentExpectedKeyPress);
         if (!matches) {
           // if the current key pressed is a modifier key
           // we don't consider this as a non-match yet

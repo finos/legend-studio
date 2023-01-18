@@ -130,7 +130,6 @@
     height: calc(100% - 2.8rem);
     width: 100%;
     display: flex;
-    padding: 0.5rem 0 0.5rem 1.5rem;
     overflow: hidden;
     position: relative;
   }
@@ -138,5 +137,6 @@
   .xterm {
     height: 100%;
     width: 100%;
+    padding: 0.5rem 0 0.5rem 1.5rem;
   }
 }
