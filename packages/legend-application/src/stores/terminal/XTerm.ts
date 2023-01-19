@@ -296,17 +296,43 @@ export class XTerm extends Terminal {
           // escape from current command
           this.abort();
         } else if (domEvent.code === 'Backspace') {
-          // Alt: ignore boundaries
-          // Ctrl: respect boundaries
-          this.deleteFromCommand(-1);
+          // Alt: jump word only, Ctrl: jump to end
+          // this would apply for Delete, ArrowLeft, ArrowRight
+          this.deleteFromCommand(
+            domEvent.altKey
+              ? this.computeCursorJumpMovement(true, true)
+              : domEvent.ctrlKey
+              ? this.computeCursorJumpMovement(true, false)
+              : -1,
+          );
         } else if (domEvent.code === 'Delete') {
-          this.deleteFromCommand(1);
-        } else if (domEvent.code === 'ArrowRight') {
-          // this.instance.write(this.generateMoveCursorANSISeq(1));
-          this.instance.write(this.generateMoveCursorANSISeq(10));
+          this.deleteFromCommand(
+            domEvent.altKey
+              ? this.computeCursorJumpMovement(false, true)
+              : domEvent.ctrlKey
+              ? this.computeCursorJumpMovement(false, false)
+              : 1,
+          );
         } else if (domEvent.code === 'ArrowLeft') {
-          // this.instance.write(this.generateMoveCursorANSISeq(-1));
-          this.instance.write(this.generateMoveCursorANSISeq(-10));
+          this.instance.write(
+            this.generateMoveCursorANSISeq(
+              domEvent.altKey
+                ? this.computeCursorJumpMovement(true, true)
+                : domEvent.ctrlKey
+                ? this.computeCursorJumpMovement(true, false)
+                : -1,
+            ),
+          );
+        } else if (domEvent.code === 'ArrowRight') {
+          this.instance.write(
+            this.generateMoveCursorANSISeq(
+              domEvent.altKey
+                ? this.computeCursorJumpMovement(false, true)
+                : domEvent.ctrlKey
+                ? this.computeCursorJumpMovement(false, false)
+                : 1,
+            ),
+          );
         } else if (
           domEvent.key.match(
             /^[A-Za-z0-9!@#$%^&*()-_=+"':;,.<>/?[\]{}|\\~` \\t]$/,
@@ -391,24 +417,54 @@ export class XTerm extends Terminal {
     };
   }
 
-  // private computeCursorJumpDistance(back: boolean, lookForWordOnly: boolean): number {
-  //   const buffer = this.instance.buffer.active;
-  //   const range = this.getCommandRange();
+  private computeCursorJumpMovement(
+    back: boolean,
+    jumpWordOnly: boolean,
+  ): number {
+    const range = this.getCommandRange();
 
-  //   let distance = 0;
+    let distance: number | undefined = undefined;
+    let foundWord = false;
 
-  //   if (back) {
-  //     for (let i = range.cursorIdx - 1; i > -1; --i) {
-  //       if (lookForWordOnly) {
+    // scan for the boundary of the closest word to the cursor position
+    if (jumpWordOnly) {
+      if (back) {
+        for (let i = range.cursorIdx - 1; i > -1; --i) {
+          const char = this.command.charAt(i);
+          if (char.match(/\w/)) {
+            if (!foundWord) {
+              foundWord = true;
+            }
+          } else {
+            if (foundWord) {
+              distance = range.cursorIdx - i - 1;
+              break;
+            }
+          }
+        }
+      } else {
+        for (let i = range.cursorIdx + 1; i < this.command.length; ++i) {
+          const char = this.command.charAt(i);
+          if (char.match(/\w/)) {
+            if (!foundWord) {
+              foundWord = true;
+            }
+          } else {
+            if (foundWord) {
+              distance = i - range.cursorIdx - 1;
+              break;
+            }
+          }
+        }
+      }
+    }
 
-  //       }
-  //       if (this.command.charAt(i).match(/\w/);
-  //     }
-  //   }
-  //   // if (lookForWordOnly) {
+    if (distance === undefined) {
+      distance = back ? range.cursorIdx : this.command.length - range.cursorIdx;
+    }
 
-  //   // }
-  // }
+    return back ? -distance : distance;
+  }
 
   /**
    * Generate the ANSI escape sequence for new cursor position
@@ -480,42 +536,37 @@ export class XTerm extends Terminal {
       val < 0 ? range.cursorIdx : this.command.length - range.cursorIdx;
     const distance = Math.min(Math.abs(val), maxDistance);
 
+    let left;
+    let right;
+    let cursorMovement;
     if (val === 0) {
       return;
     } else if (val < 0) {
       // remove leftwards
-      const left = this.command.slice(0, range.cursorIdx - distance);
-      const right = this.command.slice(range.cursorIdx, this.command.length);
-      this.instance.write(
-        // reset cursor to start of command, basically here, we're rewriting the entire command
-        ANSI_moveCursor(range.startY + 1, range.startX + 1) +
-          left +
-          right +
-          // fill space to erase cells rendered from previous command
-          ' '.repeat(distance) +
-          // move the cursor as well
-          this.generateMoveCursorANSISeq(-distance),
-      );
-      this.setCommand(left + right);
-    } else if (val > 0) {
+      left = this.command.slice(0, range.cursorIdx - distance);
+      right = this.command.slice(range.cursorIdx, this.command.length);
+      cursorMovement = -distance;
+    } else {
       // remove rightwards
-      const left = this.command.slice(0, range.cursorIdx);
-      const right = this.command.slice(
+      left = this.command.slice(0, range.cursorIdx);
+      right = this.command.slice(
         range.cursorIdx + distance,
         this.command.length,
       );
-      this.instance.write(
-        // reset cursor to start of command, basically here, we're rewriting the entire command
-        ANSI_moveCursor(range.startY + 1, range.startX + 1) +
-          left +
-          right +
-          // fill space to erase cells rendered from previous command
-          ' '.repeat(distance) +
-          // move the cursor as well
-          this.generateMoveCursorANSISeq(0),
-      );
-      this.setCommand(left + right);
+      cursorMovement = 0;
     }
+
+    this.instance.write(
+      // reset cursor to start of command, basically here, we're rewriting the entire command
+      ANSI_moveCursor(range.startY + 1, range.startX + 1) +
+        left +
+        right +
+        // fill space to erase cells rendered from previous command
+        ' '.repeat(distance) +
+        // move the cursor as well
+        this.generateMoveCursorANSISeq(cursorMovement),
+    );
+    this.setCommand(left + right);
   }
 
   get isSetup(): boolean {
