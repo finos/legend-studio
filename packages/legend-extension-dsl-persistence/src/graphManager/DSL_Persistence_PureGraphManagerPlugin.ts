@@ -21,6 +21,7 @@ import {
   observe_Persistence,
   observe_PersistenceTest,
   observe_AllRowsEquivalentToJson,
+  observe_ActiveRowsEquivalentToJson,
 } from './action/changeDetection/DSL_Persistence_ObserverHelper.js';
 import { observe_PersistenceContext } from './action/changeDetection/DSL_PersistenceContext_ObserverHelper.js';
 import {
@@ -37,6 +38,7 @@ import {
 } from '@finos/legend-graph';
 import { PersistenceTest } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
 import { AllRowsEquivalentToJson } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_AllRowsEquivalentToJson.js';
+import { ActiveRowsEquivalentToJson } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ActiveRowsEquivalentToJson.js';
 
 export const PURE_GRAMMAR_PERSISTENCE_PARSER_NAME = 'Persistence';
 export const PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL = 'Persistence';
@@ -113,6 +115,8 @@ export class DSL_Persistence_PureGraphManagerPlugin
       ): TestAssertion | undefined => {
         if (element instanceof AllRowsEquivalentToJson) {
           return observe_AllRowsEquivalentToJson(element);
+        } else if (element instanceof ActiveRowsEquivalentToJson) {
+          return observe_ActiveRowsEquivalentToJson(element);
         }
         return undefined;
       },

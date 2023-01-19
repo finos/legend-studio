@@ -39,6 +39,7 @@ import {
   V1_AtomicTestType,
   V1_PersistenceTestAssertionType,
   V1_allRowsEquivalentToJsonModelSchema,
+  V1_activeRowsEquivalentToJsonModelSchema,
 } from './v1/transformation/pureProtocol/V1_DSL_Persistence_ProtocolHelper.js';
 import {
   V1_PERSISTENCE_CONTEXT_ELEMENT_PROTOCOL_TYPE,
@@ -102,6 +103,8 @@ import { V1_PersistenceTest } from './v1/model/packageableElements/persistence/V
 import { PersistenceTest } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
 import { V1_AllRowsEquivalentToJson } from './v1/model/packageableElements/persistence/V1_DSL_Persistence_AllRowsEquivalentToJson.js';
 import { AllRowsEquivalentToJson } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_AllRowsEquivalentToJson.js';
+import { V1_ActiveRowsEquivalentToJson } from './v1/model/packageableElements/persistence/V1_DSL_Persistence_ActiveRowsEquivalentToJson.js';
+import { ActiveRowsEquivalentToJson } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ActiveRowsEquivalentToJson.js';
 import type { PersistenceTestBatch } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTestBatch.js';
 
 export const PERSISTENCE_ELEMENT_CLASSIFIER_PATH =
@@ -386,6 +389,15 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
             ExternalFormatData,
           );
           return allRowsEquivalentToJson;
+        } else if (protocol instanceof V1_ActiveRowsEquivalentToJson) {
+          const activeRowsEquivalentToJson = new ActiveRowsEquivalentToJson();
+          activeRowsEquivalentToJson.id = protocol.id;
+          activeRowsEquivalentToJson.parentTest = parentTest;
+          activeRowsEquivalentToJson.expected = guaranteeType(
+            V1_buildEmbeddedData(protocol.expected, context),
+            ExternalFormatData,
+          );
+          return activeRowsEquivalentToJson;
         }
         return undefined;
       },
@@ -405,6 +417,14 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
             metamodel.expected,
           );
           return allRowsEquivalentToJson;
+        } else if (metamodel instanceof ActiveRowsEquivalentToJson) {
+          const activeRowsEquivalentToJson =
+            new V1_ActiveRowsEquivalentToJson();
+          activeRowsEquivalentToJson.id = metamodel.id;
+          activeRowsEquivalentToJson.expected = V1_transformExternalFormatData(
+            metamodel.expected,
+          );
+          return activeRowsEquivalentToJson;
         }
         return undefined;
       },
@@ -420,6 +440,11 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
         if (protocol instanceof V1_AllRowsEquivalentToJson) {
           return serialize(
             V1_allRowsEquivalentToJsonModelSchema(plugins),
+            protocol,
+          );
+        } else if (protocol instanceof V1_ActiveRowsEquivalentToJson) {
+          return serialize(
+            V1_activeRowsEquivalentToJsonModelSchema(plugins),
             protocol,
           );
         }
@@ -440,6 +465,14 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
         ) {
           return deserialize(
             V1_allRowsEquivalentToJsonModelSchema(plugins),
+            json,
+          );
+        } else if (
+          json._type ===
+          V1_PersistenceTestAssertionType.ACTIVE_ROWS_EQUIVALENT_TO_JSON
+        ) {
+          return deserialize(
+            V1_activeRowsEquivalentToJsonModelSchema(plugins),
             json,
           );
         }

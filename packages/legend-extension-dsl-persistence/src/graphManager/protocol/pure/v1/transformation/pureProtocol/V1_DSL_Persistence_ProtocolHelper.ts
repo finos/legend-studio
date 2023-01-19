@@ -120,6 +120,7 @@ import { V1_PersistenceTestBatch } from '../../model/packageableElements/persist
 import { V1_ConnectionTestData } from '../../model/packageableElements/persistence/V1_DSL_Persistence_ConnectionTestData.js';
 import { V1_PersistenceTestData } from '../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTestData.js';
 import { V1_AllRowsEquivalentToJson } from '../../model/packageableElements/persistence/V1_DSL_Persistence_AllRowsEquivalentToJson.js';
+import { V1_ActiveRowsEquivalentToJson } from '../../model/packageableElements/persistence/V1_DSL_Persistence_ActiveRowsEquivalentToJson.js';
 
 /**********
  * notifier
@@ -1059,6 +1060,7 @@ export enum V1_AtomicTestType {
 
 export enum V1_PersistenceTestAssertionType {
   ALL_ROWS_EQUIVALENT_TO_JSON = 'allRowsEquivalentToJson',
+  ACTIVE_ROWS_EQUIVALENT_TO_JSON = 'activeRowsEquivalentToJson',
 }
 
 export const V1_persistenceConnectionTestDataModelSchema = createModelSchema(
@@ -1081,6 +1083,17 @@ export const V1_allRowsEquivalentToJsonModelSchema = (
   createModelSchema(V1_AllRowsEquivalentToJson, {
     _type: usingConstantValueSchema(
       V1_PersistenceTestAssertionType.ALL_ROWS_EQUIVALENT_TO_JSON,
+    ),
+    expected: usingModelSchema(V1_externalFormatDataModelSchema),
+    id: primitive(),
+  });
+
+export const V1_activeRowsEquivalentToJsonModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ActiveRowsEquivalentToJson> =>
+  createModelSchema(V1_ActiveRowsEquivalentToJson, {
+    _type: usingConstantValueSchema(
+      V1_PersistenceTestAssertionType.ACTIVE_ROWS_EQUIVALENT_TO_JSON,
     ),
     expected: usingModelSchema(V1_externalFormatDataModelSchema),
     id: primitive(),
