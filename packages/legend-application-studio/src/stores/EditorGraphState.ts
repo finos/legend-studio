@@ -1179,6 +1179,8 @@ export class EditorGraphState {
         },
       );
 
+      this.editorStore.graphManagerState.graph = newGraph;
+      this.editorStore.graphManagerState.graphBuildState = graphBuildState;
       this.reprocessExplorerTreeInTextMode();
 
       this.editorStore.applicationStore.log.info(
