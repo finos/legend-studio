@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 22.3.1
+
+### Patch Changes
+
+- [#1825](https://github.com/finos/legend-studio/pull/1825) [`1b128c0c7`](https://github.com/finos/legend-studio/commit/1b128c0c768637665b1043cb3e6b797292650e71) ([@gayathrir11](https://github.com/gayathrir11)) - Fix creating default custom runtime for services with nested M2M mapping. ([#1824](https://github.com/finos/legend-studio/issues/1824)).
+
 ## 22.3.0
 
 ### Minor Changes
