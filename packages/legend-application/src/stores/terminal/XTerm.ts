@@ -285,9 +285,11 @@ export class XTerm extends Terminal {
         } else if (domEvent.code === 'Delete') {
           this.deleteFromCommand(1);
         } else if (domEvent.code === 'ArrowRight') {
-          this.instance.write(this.generateMoveCursorANSISeq(1));
+          // this.instance.write(this.generateMoveCursorANSISeq(1));
+          this.instance.write(this.generateMoveCursorANSISeq(10));
         } else if (domEvent.code === 'ArrowLeft') {
-          this.instance.write(this.generateMoveCursorANSISeq(-1));
+          // this.instance.write(this.generateMoveCursorANSISeq(-1));
+          this.instance.write(this.generateMoveCursorANSISeq(-10));
         } else if (
           domEvent.key.match(
             /^[A-Za-z0-9!@#$%^&*()-_=+"':;,.<>/?[\]{}|\\~` \\t]$/,
@@ -409,7 +411,7 @@ export class XTerm extends Terminal {
         buffer.baseY +
         buffer.cursorY +
         (buffer.cursorX + distance >= cols
-          ? Math.ceil((buffer.cursorX + distance) / cols)
+          ? Math.floor((buffer.cursorX + distance) / cols)
           : 0);
     }
     return ANSI_moveCursor(newCursorY + 1, newCursorX + 1);
