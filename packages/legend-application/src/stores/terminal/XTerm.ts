@@ -32,7 +32,7 @@ import { MONOSPACED_FONT_FAMILY, TAB_SIZE } from '../../const.js';
 import { forceDispatchKeyboardEvent } from '../../components/LegendApplicationComponentFrameworkProvider.js';
 import {
   Terminal,
-  ANSI_ESCAPE,
+  DISPLAY_ANSI_ESCAPE,
   type TerminalWriteOption,
   type TerminalSetupConfiguration,
   ANSI_moveCursor,
@@ -86,18 +86,18 @@ const LEGEND_XTERM_SEARCH_THEME: XTermSearchDecorationOptions = {
 // robot acsii art
 // See https://asciiartist.com/ascii-art-micro-robot/
 const HELP_COMMAND_TEXT = `
-${ANSI_ESCAPE.BRIGHT_BLACK}+-------------------------------------------------------+${ANSI_ESCAPE.RESET}
-${ANSI_ESCAPE.BRIGHT_BLACK}|${ANSI_ESCAPE.RESET}   ${ANSI_ESCAPE.BRIGHT_GREEN}[@@]${ANSI_ESCAPE.RESET}   "Hi! Welcome to the HELP menu of Pure IDE"   ${ANSI_ESCAPE.BRIGHT_BLACK}|${ANSI_ESCAPE.RESET}
-${ANSI_ESCAPE.BRIGHT_BLACK}|${ANSI_ESCAPE.RESET}  ${ANSI_ESCAPE.BRIGHT_GREEN}/|__|\\${ANSI_ESCAPE.RESET}                                               ${ANSI_ESCAPE.BRIGHT_BLACK}|${ANSI_ESCAPE.RESET}
-${ANSI_ESCAPE.BRIGHT_BLACK}+--${ANSI_ESCAPE.RESET} ${ANSI_ESCAPE.BRIGHT_GREEN}d  b${ANSI_ESCAPE.RESET} ${ANSI_ESCAPE.BRIGHT_BLACK}-----------------------------------------------+${ANSI_ESCAPE.RESET}
+${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}+-------------------------------------------------------+${DISPLAY_ANSI_ESCAPE.RESET}
+${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}|${DISPLAY_ANSI_ESCAPE.RESET}   ${DISPLAY_ANSI_ESCAPE.BRIGHT_GREEN}[@@]${DISPLAY_ANSI_ESCAPE.RESET}   "Hi! Welcome to the HELP menu of Pure IDE"   ${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}|${DISPLAY_ANSI_ESCAPE.RESET}
+${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}|${DISPLAY_ANSI_ESCAPE.RESET}  ${DISPLAY_ANSI_ESCAPE.BRIGHT_GREEN}/|__|\\${DISPLAY_ANSI_ESCAPE.RESET}                                               ${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}|${DISPLAY_ANSI_ESCAPE.RESET}
+${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}+--${DISPLAY_ANSI_ESCAPE.RESET} ${DISPLAY_ANSI_ESCAPE.BRIGHT_GREEN}d  b${DISPLAY_ANSI_ESCAPE.RESET} ${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}-----------------------------------------------+${DISPLAY_ANSI_ESCAPE.RESET}
 
 
 `;
 
 const DEFAULT_USER = 'purist';
 const DEFAULT_COMMAND_HEADER = `
-${ANSI_ESCAPE.BOLD}${ANSI_ESCAPE.BRIGHT_BLUE}$${DEFAULT_USER}${ANSI_ESCAPE.RESET}
-${ANSI_ESCAPE.BOLD}${ANSI_ESCAPE.MAGENTA}\u276f${ANSI_ESCAPE.RESET} `;
+${DISPLAY_ANSI_ESCAPE.BOLD}${DISPLAY_ANSI_ESCAPE.BRIGHT_BLUE}$${DEFAULT_USER}${DISPLAY_ANSI_ESCAPE.RESET}
+${DISPLAY_ANSI_ESCAPE.BOLD}${DISPLAY_ANSI_ESCAPE.MAGENTA}\u276f${DISPLAY_ANSI_ESCAPE.RESET} `;
 const COMMAND_START = '\u276f ';
 
 export class XTerm extends Terminal {
@@ -494,7 +494,7 @@ export class XTerm extends Terminal {
   }
 
   private resetANSIStyling(): void {
-    this.instance.write(ANSI_ESCAPE.RESET);
+    this.instance.write(DISPLAY_ANSI_ESCAPE.RESET);
   }
 
   override showHelp(): void {
@@ -519,7 +519,9 @@ export class XTerm extends Terminal {
   }
 
   fail(error: string): void {
-    this.instance.write(`\n${ANSI_ESCAPE.RED}${error}${ANSI_ESCAPE.RED}`);
+    this.instance.write(
+      `\n${DISPLAY_ANSI_ESCAPE.RED}${error}${DISPLAY_ANSI_ESCAPE.RED}`,
+    );
     this.abort();
   }
 

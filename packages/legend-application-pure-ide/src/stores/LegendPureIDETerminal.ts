@@ -37,9 +37,9 @@ export const setupTerminal = (editorStore: EditorStore): void => {
           editorStore.applicationStore.navigator.visitAddress(match.groups.url);
         } else if (
           match?.groups?.path &&
-          match?.groups?.path_sourceId &&
-          match?.groups?.path_column &&
-          match?.groups?.path_line
+          match.groups.path_sourceId &&
+          match.groups.path_column &&
+          match.groups.path_line
         ) {
           flowResult(
             editorStore.loadFile(
