@@ -44,6 +44,7 @@ import {
   IllegalStateError,
   isMatchingKeyCombination,
   LogEvent,
+  prettyCONSTName,
   uniqBy,
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../ApplicationEvent.js';
@@ -129,6 +130,20 @@ ${uniqBy(Array.from(commandRegistry.values()), (config) => config.command)
       }\n${''.padEnd(30)}Usage: ${DISPLAY_ANSI_ESCAPE.DIM}${config.usage}${
         DISPLAY_ANSI_ESCAPE.RESET
       }`,
+  )
+  .join('\n')}
+`;
+
+const getCommonANSIEscapeSequencesForStyling = (): string =>
+  `
+Common ANSI Escape Sequences for Styling:
+
+${Object.entries(DISPLAY_ANSI_ESCAPE)
+  .map(
+    ([key, value]) =>
+      `${value}${prettyCONSTName(key).padEnd(20)}${
+        DISPLAY_ANSI_ESCAPE.RESET
+      } ${value.replace('\x1b', '\\x1b')}`,
   )
   .join('\n')}
 `;
@@ -281,6 +296,8 @@ export class XTerm extends Terminal {
           // escape from current command
           this.abort();
         } else if (domEvent.code === 'Backspace') {
+          // Alt: ignore boundaries
+          // Ctrl: respect boundaries
           this.deleteFromCommand(-1);
         } else if (domEvent.code === 'Delete') {
           this.deleteFromCommand(1);
@@ -304,7 +321,7 @@ export class XTerm extends Terminal {
     this._TEMPORARY__onDataListener = this.instance.onData((val) => {
       // only support pasting (not meant for 1 character though) and special functions starting with special
       // ANSI escape sequence
-      if (val.length > 1 && !val.startsWith('\x1B')) {
+      if (val.length > 1 && !val.startsWith('\x1b')) {
         this.writeToCommand(
           val
             // remove all unsupported characters, including newline
@@ -373,6 +390,25 @@ export class XTerm extends Terminal {
       cursorIdx,
     };
   }
+
+  // private computeCursorJumpDistance(back: boolean, lookForWordOnly: boolean): number {
+  //   const buffer = this.instance.buffer.active;
+  //   const range = this.getCommandRange();
+
+  //   let distance = 0;
+
+  //   if (back) {
+  //     for (let i = range.cursorIdx - 1; i > -1; --i) {
+  //       if (lookForWordOnly) {
+
+  //       }
+  //       if (this.command.charAt(i).match(/\w/);
+  //     }
+  //   }
+  //   // if (lookForWordOnly) {
+
+  //   // }
+  // }
 
   /**
    * Generate the ANSI escape sequence for new cursor position
@@ -486,21 +522,15 @@ export class XTerm extends Terminal {
     return this.setupState.hasCompleted;
   }
 
-  private checkSetup(): void {
+  mount(container: HTMLElement): void {
     if (!this.setupState.hasCompleted) {
       throw new IllegalStateError(`XTerm terminal has not been set up yet`);
     }
-  }
-
-  mount(container: HTMLElement): void {
-    this.checkSetup();
 
     this.instance.open(container);
   }
 
   dispose(): void {
-    this.checkSetup();
-
     this.searcher.dispose();
     this.resizer.dispose();
     this.renderer.dispose();
@@ -511,14 +541,10 @@ export class XTerm extends Terminal {
   }
 
   autoResize(): void {
-    this.checkSetup();
-
     this.resizer.fit();
   }
 
   focus(): void {
-    this.checkSetup();
-
     this.instance.focus();
   }
 
@@ -527,10 +553,33 @@ export class XTerm extends Terminal {
     this.setCommand('');
   }
 
-  clear(): void {
-    this.checkSetup();
+  private newSystemCommand(command: string): void {
+    // if another command is already running, we don't need to print the command header anymore
+    // the potential pitfall here is that we could have another process prints to the
+    // terminal while the command is being run. Nothing much we can do here for now.
+    if (!this.isRunningCommand) {
+      this.newCommand();
+      this.instance.write(
+        `${DISPLAY_ANSI_ESCAPE.DIM}(system: ${command})\n${DISPLAY_ANSI_ESCAPE.RESET}`,
+      );
+    }
+  }
 
+  /**
+   * Flush the terminal screen completely
+   *
+   * Probably due to write buffer batching, calling `reset` or `clear` on xterm terminal immediately after
+   * write commands will not work. To solve this, we can either promisify the `reset` call or write the ANSI
+   * reset sequence \x1bc
+   */
+  private async flushScreen(): Promise<void> {
+    this.instance.write('\x1bc');
     this.instance.reset();
+  }
+
+  clear(): void {
+    this.flushScreen();
+    this.instance.scrollToTop();
     this.newCommand();
   }
 
@@ -539,8 +588,6 @@ export class XTerm extends Terminal {
   }
 
   override showHelp(): void {
-    this.checkSetup();
-
     this.resetANSIStyling();
     this.instance.scrollToBottom();
     if (this.command !== '') {
@@ -551,6 +598,10 @@ export class XTerm extends Terminal {
     this.focus();
   }
 
+  override showCommonANSIEscapeSequences(): void {
+    this.instance.write(getCommonANSIEscapeSequencesForStyling(), undefined);
+  }
+
   abort(): void {
     this.resetANSIStyling();
     this.instance.write('\n');
@@ -559,52 +610,36 @@ export class XTerm extends Terminal {
     this.isRunningCommand = false;
   }
 
-  fail(error: string): void {
+  fail(error: string, opts?: TerminalWriteOption): void {
+    if (opts?.systemCommand) {
+      this.newSystemCommand(opts.systemCommand);
+    }
+
     this.instance.write(
       `\n${DISPLAY_ANSI_ESCAPE.RED}${error}${DISPLAY_ANSI_ESCAPE.RED}`,
     );
     this.abort();
   }
 
-  write(
-    output: string,
-    command: string | undefined,
-    opts?: TerminalWriteOption,
-  ): void {
-    this.checkSetup();
-
+  output(output: string, opts?: TerminalWriteOption): void {
     this.resetANSIStyling();
 
-    if (!this.preserveLog && opts?.clear && !this.isRunningCommand) {
-      this.instance.reset();
-      this.instance.scrollToTop();
-    } else if (this.preserveLog) {
-      // effectively abort previous command
-      this.instance.write('\n');
-    } else if (this.isRunningCommand) {
-      this.instance.write('\n');
+    if (!opts?.clear && opts?.systemCommand) {
+      this.newSystemCommand(opts.systemCommand);
     }
 
-    // if the command is running, we don't need to print the command header anymore
-    // the potential pitfall here is that we could have another process prints to the
-    // terminal while the command is being run. Nothing much we can do here for now.
-    if (!this.isRunningCommand) {
-      this.newCommand();
-      this.instance.write(`${command ?? '(unknown)'}\n`);
+    if (!this.preserveLog && opts?.clear) {
+      this.flushScreen();
+    } else if (this.preserveLog || this.isRunningCommand) {
+      this.instance.write('\n');
     }
 
     this.instance.writeln(output);
-
-    if (!opts?.clear) {
-      this.instance.scrollToBottom();
-    }
-
+    this.instance.scrollToBottom();
     this.newCommand();
   }
 
   search(val: string): void {
-    this.checkSetup();
-
     this.searcher.findNext(val, {
       decorations: LEGEND_XTERM_SEARCH_THEME,
       regex: this.searchConfig.useRegex,
@@ -617,8 +652,6 @@ export class XTerm extends Terminal {
   }
 
   clearSearch(): void {
-    this.checkSetup();
-
     this.searcher.clearDecorations();
     this.instance.clearSelection();
     this.setSearchText('');
@@ -627,8 +660,6 @@ export class XTerm extends Terminal {
   }
 
   findPrevious(): void {
-    this.checkSetup();
-
     this.searcher.findPrevious(this.searchConfig.searchText, {
       decorations: LEGEND_XTERM_SEARCH_THEME,
       regex: this.searchConfig.useRegex,
@@ -638,8 +669,6 @@ export class XTerm extends Terminal {
   }
 
   findNext(): void {
-    this.checkSetup();
-
     this.searcher.findNext(this.searchConfig.searchText, {
       decorations: LEGEND_XTERM_SEARCH_THEME,
       regex: this.searchConfig.useRegex,

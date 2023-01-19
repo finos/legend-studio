@@ -295,10 +295,9 @@ export class EditorStore implements CommandRegistrar {
         (yield initializationPromise) as PlainObject<InitializationResult>,
       );
       if (result.text) {
-        this.applicationStore.terminalService.terminal.write(
-          result.text,
-          `(initialize application)`,
-        );
+        this.applicationStore.terminalService.terminal.output(result.text, {
+          systemCommand: 'initialize application',
+        });
         this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
         this.auxPanelDisplayState.open();
       }
@@ -676,11 +675,11 @@ export class EditorStore implements CommandRegistrar {
       );
       this.applicationStore.setBlockingAlert(undefined);
       if (!options?.silent) {
-        this.applicationStore.terminalService.terminal.write(
+        this.applicationStore.terminalService.terminal.output(
           result.text ?? '',
-          command ?? `(execute)`,
           {
             clear: options?.clearTerminal,
+            systemCommand: command ?? 'execute',
           },
         );
       }
@@ -732,7 +731,9 @@ export class EditorStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
-      this.applicationStore.terminalService.terminal.fail(error.message);
+      this.applicationStore.terminalService.terminal.fail(error.message, {
+        systemCommand: command ?? 'execute',
+      });
     } finally {
       this.applicationStore.setBlockingAlert(undefined);
       this.executionState.reset();
@@ -941,7 +942,7 @@ export class EditorStore implements CommandRegistrar {
           }
           this.resetChangeDetection(potentiallyAffectedFiles);
         },
-        `(navigate)`,
+        `navigate`,
         { silent: true },
       ),
     );
@@ -995,7 +996,7 @@ export class EditorStore implements CommandRegistrar {
                     keepShowingIfMatchedCurrent: true,
                   });
                 },
-                `(recompile)`,
+                `recompile`,
               ),
             ).catch(this.applicationStore.alertUnhandledError);
           },
@@ -1082,22 +1083,23 @@ export class EditorStore implements CommandRegistrar {
       );
       if (result instanceof CommandFailureResult) {
         if (result.errorDialog) {
-          this.applicationStore.notifyWarning(`Error: ${result.text}`);
-          this.applicationStore.terminalService.terminal.fail(result.text);
-        } else {
-          this.applicationStore.terminalService.terminal.write(
-            result.text,
-            command,
+          this.applicationStore.notifyWarning(
+            `Can't run command '${command}': ${result.text}`,
           );
+        } else {
+          this.applicationStore.terminalService.terminal.output(result.text, {
+            systemCommand: command,
+          });
         }
         return false;
       }
-      this.applicationStore.terminalService.terminal.write('Done', command);
       return true;
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
-      this.applicationStore.terminalService.terminal.fail(error.message);
+      this.applicationStore.terminalService.terminal.fail(error.message, {
+        systemCommand: command,
+      });
       return false;
     }
   }
@@ -1201,18 +1203,12 @@ export class EditorStore implements CommandRegistrar {
         yield this.reloadFile(file);
       }
       yield this.refreshTrees();
-      this.applicationStore.terminalService.terminal.write(
-        `Sucessfully renamed concept. Please re-compile the code`,
-        `(rename concept: ${oldName} \u2192 ${newName})`,
-      );
       this.applicationStore.notifyWarning(
         `Please re-compile the code after refacting`,
       );
-    } catch {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.notifyError(`Can't rename concept '${oldName}'`);
-      this.applicationStore.terminalService.terminal.fail(
-        `Can't rename concept '${oldName}'`,
-      );
     }
   }
 
@@ -1246,17 +1242,13 @@ export class EditorStore implements CommandRegistrar {
         yield this.reloadFile(file);
       }
       yield this.refreshTrees();
-      this.applicationStore.terminalService.terminal.write(
-        `Sucessfully moved packageble elements. Please re-compile the code`,
-        `(move elements)`,
-      );
       this.applicationStore.notifyWarning(
         `Please re-compile the code after refacting`,
       );
-    } catch {
-      this.applicationStore.notifyError(`Can't move packageable elements`);
-      this.applicationStore.terminalService.terminal.fail(
-        `Can't move packageable elements`,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(
+        `Can't move packageable elements:\n${error.message}`,
       );
     }
   }
@@ -1300,18 +1292,12 @@ export class EditorStore implements CommandRegistrar {
           yield this.reloadFile(file);
         }
       }
-      this.applicationStore.terminalService.terminal.write(
-        `Sucessfully updated file. Please re-compile the code`,
-        `(update file content: ${path})`,
-      );
       this.applicationStore.notifyWarning(
         `Please re-compile the code after refacting`,
       );
-    } catch {
-      this.applicationStore.notifyError(`Can't update file: ${path}`);
-      this.applicationStore.terminalService.terminal.fail(
-        `Can't update file: ${path}`,
-      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(`Can't update file '${path}'`);
     }
   }
 
@@ -1403,7 +1389,6 @@ export class EditorStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
-      this.applicationStore.terminalService.terminal.fail(error.message);
     }
   }
 
