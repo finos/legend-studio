@@ -730,6 +730,7 @@ export class EditorStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
+      this.applicationStore.terminalService.terminal.fail(error.message);
     } finally {
       this.applicationStore.setBlockingAlert(undefined);
       this.executionState.reset();
@@ -1080,6 +1081,7 @@ export class EditorStore implements CommandRegistrar {
       if (result instanceof CommandFailureResult) {
         if (result.errorDialog) {
           this.applicationStore.notifyWarning(`Error: ${result.text}`);
+          this.applicationStore.terminalService.terminal.fail(result.text);
         } else {
           this.applicationStore.terminalService.terminal.write(
             result.text,
@@ -1088,10 +1090,12 @@ export class EditorStore implements CommandRegistrar {
         }
         return false;
       }
+      this.applicationStore.terminalService.terminal.write('Done', command);
       return true;
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
+      this.applicationStore.terminalService.terminal.fail(error.message);
       return false;
     }
   }
@@ -1204,6 +1208,9 @@ export class EditorStore implements CommandRegistrar {
       );
     } catch {
       this.applicationStore.notifyError(`Can't rename concept '${oldName}'`);
+      this.applicationStore.terminalService.terminal.fail(
+        `Can't rename concept '${oldName}'`,
+      );
     }
   }
 
@@ -1246,6 +1253,9 @@ export class EditorStore implements CommandRegistrar {
       );
     } catch {
       this.applicationStore.notifyError(`Can't move packageable elements`);
+      this.applicationStore.terminalService.terminal.fail(
+        `Can't move packageable elements`,
+      );
     }
   }
 
@@ -1297,6 +1307,9 @@ export class EditorStore implements CommandRegistrar {
       );
     } catch {
       this.applicationStore.notifyError(`Can't update file: ${path}`);
+      this.applicationStore.terminalService.terminal.fail(
+        `Can't update file: ${path}`,
+      );
     }
   }
 
@@ -1388,13 +1401,14 @@ export class EditorStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
+      this.applicationStore.terminalService.terminal.fail(error.message);
     }
   }
 
   *deleteDirectoryOrFile(
     path: string,
-    isDirectory: boolean,
-    hasChildContent: boolean,
+    isDirectory: boolean | undefined,
+    hasChildContent: boolean | undefined,
   ): GeneratorFn<void> {
     const _delete = async (): Promise<void> => {
       await flowResult(
@@ -1406,35 +1420,39 @@ export class EditorStore implements CommandRegistrar {
       const editorStatesToClose = this.tabManagerState.tabs.filter(
         (tab) =>
           tab instanceof FileEditorState &&
-          (isDirectory
+          (isDirectory === undefined || isDirectory
             ? tab.filePath.startsWith(`${path}/`)
             : tab.filePath === path),
       );
       editorStatesToClose.forEach((tab) => this.tabManagerState.closeTab(tab));
       await flowResult(this.directoryTreeState.refreshTreeData());
     };
-    this.applicationStore.setActionAlertInfo({
-      message: `Are you sure you would like to delete this ${
-        isDirectory ? 'directory' : 'file'
-      }?`,
-      prompt: hasChildContent
-        ? 'Beware! This directory is not empty, this action is not undo-able, you have to manually revert using VCS'
-        : 'Beware! This action is not undo-able, you have to manually revert using VCS',
-      type: ActionAlertType.CAUTION,
-      actions: [
-        {
-          label: 'Delete anyway',
-          type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-          handler: () => {
-            _delete().catch(this.applicationStore.alertUnhandledError);
+    if (isDirectory === undefined || hasChildContent === undefined) {
+      _delete().catch(this.applicationStore.alertUnhandledError);
+    } else {
+      this.applicationStore.setActionAlertInfo({
+        message: `Are you sure you would like to delete this ${
+          isDirectory ? 'directory' : 'file'
+        }?`,
+        prompt: hasChildContent
+          ? 'Beware! This directory is not empty, this action is not undo-able, you have to manually revert using VCS'
+          : 'Beware! This action is not undo-able, you have to manually revert using VCS',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Delete anyway',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: () => {
+              _delete().catch(this.applicationStore.alertUnhandledError);
+            },
           },
-        },
-        {
-          label: 'Abort',
-          type: ActionAlertActionType.PROCEED,
-          default: true,
-        },
-      ],
-    });
+          {
+            label: 'Abort',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    }
   }
 }

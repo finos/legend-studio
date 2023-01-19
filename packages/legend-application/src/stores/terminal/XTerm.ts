@@ -42,7 +42,9 @@ import {
   guaranteeNonNullable,
   IllegalStateError,
   isMatchingKeyCombination,
+  LogEvent,
 } from '@finos/legend-shared';
+import { APPLICATION_EVENT } from '../ApplicationEvent.js';
 
 const LEGEND_XTERM_THEME: XTermTheme = {
   foreground: '#cccccc',
@@ -107,6 +109,7 @@ export class XTerm extends Terminal {
 
   private _TEMPORARY__onKeyListener?: XTermDisposable;
   private _TEMPORARY__onDataListener?: XTermDisposable;
+  private isRunningCommand = false;
 
   private readonly setupState = ActionState.create();
 
@@ -179,6 +182,23 @@ export class XTerm extends Terminal {
       : new XTermWebLinksAddon();
     this.instance.loadAddon(this.webLinkProvider);
 
+    (configuration?.commands ?? []).forEach((commandConfig) => {
+      [commandConfig.command, ...(commandConfig.aliases ?? [])].forEach(
+        (command) => {
+          if (!this.commandRegistry.has(command)) {
+            this.commandRegistry.set(command, commandConfig);
+          } else {
+            this.applicationStore.log.warn(
+              LogEvent.create(
+                APPLICATION_EVENT.APPLICATION_TERMINAL_COMMAND_CONFIGURATION_CHECK_FAILURE,
+              ),
+              `Found multiple duplicated terminal commands '${command}'`,
+            );
+          }
+        },
+      );
+    });
+
     this.searcher.onDidChangeResults((result) => {
       if (result) {
         this.setSearchResultCount(result.resultCount);
@@ -189,27 +209,32 @@ export class XTerm extends Terminal {
       }
     });
 
-    // NOTE:
-    // 1. no multi line support
-    // 2. a lot of navigation is limitted
-    // no word navigation yet
+    // NOTE: `xterm` expects to be attached to a proper terminal program which handles
+    // input, since we can't do that yet, we implement a fairly basic input handling flow
+    // See https://github.com/xtermjs/xterm.js/issues/617#issuecomment-288849502
     this._TEMPORARY__onKeyListener = this.instance.onKey(
       ({ key, domEvent }) => {
-        // TODO: grab and build the WHOLE command string, then do string manipulation on it, if we modify it, e.g.
-        // TODO handle paste at cursor, we can also employ the same strategy ^
-
-        // console.log(this.instance.buffer.active);
         if (domEvent.code === 'Enter') {
-          console.log(
-            'command....',
-            { command: this.command },
-            this.getCommandRange(),
-          );
-          // console.log('issuing command...', this.command);
-          // get current command
-          // issue command not found here as well?
-          // how to execute command and send it to log?
-          // execute command
+          if (this.command.trim()) {
+            const [command, ...args] = this.command
+              .replaceAll(/\s+/g, ' ')
+              .split(' ');
+            if (!command) {
+              return;
+            }
+            const matchingCommand = this.commandRegistry.get(command);
+            if (!matchingCommand) {
+              this.fail(`command not found: ${command}`);
+              return;
+            }
+            if (this.isRunningCommand) {
+              return;
+            }
+            this.isRunningCommand = true;
+            matchingCommand.handler(args).finally(() => {
+              this.isRunningCommand = false;
+            });
+          }
         } else if (
           isMatchingKeyCombination(domEvent, 'Control+KeyC') ||
           isMatchingKeyCombination(domEvent, 'Control+KeyD')
@@ -234,8 +259,7 @@ export class XTerm extends Terminal {
         }
       },
     );
-
-    // this is needed to support pasting
+    // this is needed to support copy-pasting
     this._TEMPORARY__onDataListener = this.instance.onData((val) => {
       // only support pasting (not meant for 1 character though) and special functions starting with special
       // ANSI escape sequence
@@ -257,6 +281,9 @@ export class XTerm extends Terminal {
   // we don't really have a better solution at the moment,
   // but we should come with more systematic way of persisting the start line of command
   // the challenge with this is due to text-reflow
+  //
+  // there is also a quriky known issue with text-reflow and the line with cursor
+  // See https://github.com/xtermjs/xterm.js/issues/1941#issuecomment-463660633
   private getCommandRange(): {
     // NOTE: all of these are absolute index in the buffer, not relative to the viewport
     startY: number;
@@ -354,7 +381,6 @@ export class XTerm extends Terminal {
    */
   private writeToCommand(val: string): void {
     const range = this.getCommandRange();
-    const a = this.generateMoveCursorANSISeq(val.length, false);
     const left = this.command.slice(0, range.cursorIdx);
     const right = this.command.slice(range.cursorIdx);
 
@@ -362,7 +388,7 @@ export class XTerm extends Terminal {
       val +
         right +
         // update the cursor
-        a,
+        this.generateMoveCursorANSISeq(val.length, false),
     );
     this.setCommand(left + val + right);
   }
@@ -489,6 +515,12 @@ export class XTerm extends Terminal {
     this.instance.write('\n');
     this.newCommand();
     this.instance.scrollToBottom();
+    this.isRunningCommand = false;
+  }
+
+  fail(error: string): void {
+    this.instance.write(`\n${ANSI_ESCAPE.RED}${error}${ANSI_ESCAPE.RED}`);
+    this.abort();
   }
 
   write(
@@ -500,16 +532,24 @@ export class XTerm extends Terminal {
 
     this.resetANSIStyling();
 
-    if (!this.preserveLog && opts?.clear) {
+    if (!this.preserveLog && opts?.clear && !this.isRunningCommand) {
       this.instance.reset();
       this.instance.scrollToTop();
     } else if (this.preserveLog) {
       // effectively abort previous command
       this.instance.write('\n');
+    } else if (this.isRunningCommand) {
+      this.instance.write('\n');
     }
 
-    this.newCommand();
-    this.instance.write(`${command ?? '(unknown)'}\n`);
+    // if the command is running, we don't need to print the command header anymore
+    // the potential pitfall here is that we could have another process prints to the
+    // terminal while the command is being run. Nothing much we can do here for now.
+    if (!this.isRunningCommand) {
+      this.newCommand();
+      this.instance.write(`${command ?? '(unknown)'}\n`);
+    }
+
     this.instance.writeln(output);
 
     if (!opts?.clear) {

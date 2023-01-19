@@ -207,8 +207,9 @@ export interface TerminalWebLinkProviderConfiguration {
 
 export interface TerminalCommandConfiguration {
   command: string;
-  alias: string[];
-  handler: (args: string[]) => void;
+  description: string;
+  aliases?: string[] | undefined;
+  handler: (args: string[]) => Promise<void>;
 }
 
 export interface TerminalSetupConfiguration {
@@ -221,7 +222,7 @@ export interface TerminalSetupConfiguration {
 
 export abstract class Terminal extends Console {
   preserveLog = false;
-  protected commandRegistry: TerminalCommandConfiguration[] = [];
+  protected commandRegistry = new Map<string, TerminalCommandConfiguration>();
   command = '';
 
   constructor(applicationStore: GenericLegendApplicationStore) {
@@ -251,6 +252,11 @@ export abstract class Terminal extends Console {
     // do nothing
   }
 
+  showCommonANSIEscapeSequences(): void {
+    // do nothing
+  }
+
+  abstract fail(error: string): void;
   abstract abort(): void;
   abstract write(
     output: string,
