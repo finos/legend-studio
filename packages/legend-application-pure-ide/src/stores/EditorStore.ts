@@ -116,8 +116,7 @@ export class EditorStore implements CommandRegistrar {
   isMaxAuxPanelSizeSet = false;
   activeAuxPanelMode = AUX_PANEL_MODE.TERMINAL;
   readonly auxPanelDisplayState = new PanelDisplayState({
-    // initial: 0,
-    initial: 300,
+    initial: 0,
     default: 300,
     snap: 100,
   });

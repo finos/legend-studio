@@ -1176,8 +1176,7 @@ const DiagramEditorDiagramCanvas = observer(
     }
   >(function DiagramEditorDiagramCanvas(props, ref) {
     const { diagramEditorState } = props;
-    const diagramCanvasRef =
-      ref as React.MutableRefObject<HTMLDivElement | null>;
+    const diagramCanvasRef = ref as React.MutableRefObject<HTMLDivElement>;
     const isReadOnly = diagramEditorState.isReadOnly;
 
     const { width, height } = useResizeDetector<HTMLDivElement>({
