@@ -677,7 +677,7 @@ export class EditorStore implements CommandRegistrar {
       this.applicationStore.setBlockingAlert(undefined);
       if (!options?.silent) {
         this.applicationStore.terminalService.terminal.write(
-          result.text,
+          result.text ?? '',
           command ?? `(execute)`,
           {
             clear: options?.clearTerminal,
@@ -688,6 +688,7 @@ export class EditorStore implements CommandRegistrar {
         this.applicationStore.notifyError(
           `Execution failed${result.text ? `: ${result.text}` : ''}`,
         );
+        this.applicationStore.terminalService.terminal.fail(result.text ?? '');
         if (result.sessionError) {
           this.applicationStore.setBlockingAlert({
             message: 'Session corrupted',

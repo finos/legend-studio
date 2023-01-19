@@ -29,7 +29,7 @@ export interface ExecutionActivity {
 }
 
 export abstract class ExecutionResult {
-  text!: string;
+  text?: string;
   // compiler!: string;
   reinit?: boolean;
 }
