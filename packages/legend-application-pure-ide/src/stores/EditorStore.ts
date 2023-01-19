@@ -356,6 +356,7 @@ export class EditorStore implements CommandRegistrar {
         ],
       });
     } finally {
+      // initialize the terminal
       this.applicationStore.terminalService.terminal.clear();
     }
   }

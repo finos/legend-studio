@@ -33,9 +33,10 @@ import { forceDispatchKeyboardEvent } from '../../components/LegendApplicationCo
 import {
   Terminal,
   DISPLAY_ANSI_ESCAPE,
+  ANSI_moveCursor,
   type TerminalWriteOption,
   type TerminalSetupConfiguration,
-  ANSI_moveCursor,
+  type TerminalCommandConfiguration,
 } from './Terminal.js';
 import {
   ActionState,
@@ -43,6 +44,7 @@ import {
   IllegalStateError,
   isMatchingKeyCombination,
   LogEvent,
+  uniqBy,
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../ApplicationEvent.js';
 
@@ -85,13 +87,50 @@ const LEGEND_XTERM_SEARCH_THEME: XTermSearchDecorationOptions = {
 
 // robot acsii art
 // See https://asciiartist.com/ascii-art-micro-robot/
-const HELP_COMMAND_TEXT = `
-${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}+-------------------------------------------------------+${DISPLAY_ANSI_ESCAPE.RESET}
-${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}|${DISPLAY_ANSI_ESCAPE.RESET}   ${DISPLAY_ANSI_ESCAPE.BRIGHT_GREEN}[@@]${DISPLAY_ANSI_ESCAPE.RESET}   "Hi! Welcome to the HELP menu of Pure IDE"   ${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}|${DISPLAY_ANSI_ESCAPE.RESET}
-${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}|${DISPLAY_ANSI_ESCAPE.RESET}  ${DISPLAY_ANSI_ESCAPE.BRIGHT_GREEN}/|__|\\${DISPLAY_ANSI_ESCAPE.RESET}                                               ${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}|${DISPLAY_ANSI_ESCAPE.RESET}
-${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}+--${DISPLAY_ANSI_ESCAPE.RESET} ${DISPLAY_ANSI_ESCAPE.BRIGHT_GREEN}d  b${DISPLAY_ANSI_ESCAPE.RESET} ${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}-----------------------------------------------+${DISPLAY_ANSI_ESCAPE.RESET}
+const getHelpCommandContent = (
+  commandRegistry: Map<string, TerminalCommandConfiguration>,
+): string => `
+${
+  DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK
+}+-------------------------------------------------------+${
+  DISPLAY_ANSI_ESCAPE.RESET
+}
+${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}|${DISPLAY_ANSI_ESCAPE.RESET}   ${
+  DISPLAY_ANSI_ESCAPE.BRIGHT_GREEN
+}[@@]${
+  DISPLAY_ANSI_ESCAPE.RESET
+}   "Hi! Welcome to the HELP menu of Pure IDE"   ${
+  DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK
+}|${DISPLAY_ANSI_ESCAPE.RESET}
+${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}|${DISPLAY_ANSI_ESCAPE.RESET}  ${
+  DISPLAY_ANSI_ESCAPE.BRIGHT_GREEN
+}/|__|\\${
+  DISPLAY_ANSI_ESCAPE.RESET
+}                                               ${
+  DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK
+}|${DISPLAY_ANSI_ESCAPE.RESET}
+${DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK}+--${DISPLAY_ANSI_ESCAPE.RESET} ${
+  DISPLAY_ANSI_ESCAPE.BRIGHT_GREEN
+}d  b${DISPLAY_ANSI_ESCAPE.RESET} ${
+  DISPLAY_ANSI_ESCAPE.BRIGHT_BLACK
+}-----------------------------------------------+${DISPLAY_ANSI_ESCAPE.RESET}
 
+Following is the list of supported commands:
 
+${uniqBy(Array.from(commandRegistry.values()), (config) => config.command)
+  .map(
+    (config) =>
+      `${DISPLAY_ANSI_ESCAPE.BRIGHT_GREEN}${config.command.padEnd(30)}${
+        DISPLAY_ANSI_ESCAPE.RESET
+      }${config.description}${
+        config.aliases?.length
+          ? `\n${''.padEnd(30)}Aliases: ${config.aliases.join(', ')}`
+          : ''
+      }\n${''.padEnd(30)}Usage: ${DISPLAY_ANSI_ESCAPE.DIM}${config.usage}${
+        DISPLAY_ANSI_ESCAPE.RESET
+      }`,
+  )
+  .join('\n')}
 `;
 
 const DEFAULT_USER = 'purist';
@@ -447,7 +486,7 @@ export class XTerm extends Terminal {
 
   private checkSetup(): void {
     if (!this.setupState.hasCompleted) {
-      throw new IllegalStateError(`Terminal has not been set up yet`);
+      throw new IllegalStateError(`XTerm terminal has not been set up yet`);
     }
   }
 
@@ -505,7 +544,7 @@ export class XTerm extends Terminal {
     if (this.command !== '') {
       this.abort();
     }
-    this.instance.writeln(HELP_COMMAND_TEXT);
+    this.instance.writeln(getHelpCommandContent(this.commandRegistry));
     this.abort();
     this.focus();
   }

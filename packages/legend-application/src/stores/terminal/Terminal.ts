@@ -217,6 +217,7 @@ export interface TerminalWebLinkProviderConfiguration {
 export interface TerminalCommandConfiguration {
   command: string;
   description: string;
+  usage: string;
   aliases?: string[] | undefined;
   handler: (args: string[]) => Promise<void>;
 }

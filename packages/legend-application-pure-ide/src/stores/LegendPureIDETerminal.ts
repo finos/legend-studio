@@ -63,7 +63,8 @@ export const setupTerminal = (editorStore: EditorStore): void => {
     commands: [
       {
         command: LEGEND_PURE_IDE_TERMINAL_COMMAND.GO,
-        description: 'Run the go() function in /welcome.pure. Usage: go',
+        description: 'Run the go() function in /welcome.pure',
+        usage: 'go',
         aliases: [
           LEGEND_PURE_IDE_TERMINAL_COMMAND.EXECUTE_GO,
           LEGEND_PURE_IDE_TERMINAL_COMMAND.COMPILE,
@@ -75,7 +76,8 @@ export const setupTerminal = (editorStore: EditorStore): void => {
       },
       {
         command: LEGEND_PURE_IDE_TERMINAL_COMMAND.TEST,
-        description: 'Run the test suite. Usage: test [/some/path]',
+        description: 'Run the test suite (by path if specified)',
+        usage: 'test [/some/path]',
         handler: async (args: string[]): Promise<void> => {
           const path = getNullableFirstElement(args);
           if (path) {
@@ -95,10 +97,11 @@ export const setupTerminal = (editorStore: EditorStore): void => {
       // io
       {
         command: LEGEND_PURE_IDE_TERMINAL_COMMAND.REMOVE,
-        description: 'Remove a file or directory. Usage: rm /some/path',
+        description: 'Remove a file or directory',
+        usage: 'rm /some/path',
         handler: async (args: string[]): Promise<void> => {
           const path = getNullableFirstElement(args);
-          if (!path || !path.match(FILE_PATH_PATTERN)) {
+          if (!path?.match(FILE_PATH_PATTERN)) {
             editorStore.applicationStore.terminalService.terminal.fail(
               `rm command requires a valid file/directory path`,
             );
@@ -111,17 +114,18 @@ export const setupTerminal = (editorStore: EditorStore): void => {
       },
       {
         command: LEGEND_PURE_IDE_TERMINAL_COMMAND.MOVE,
-        description: 'Move a file. Usage: mv /old/path /new/path',
+        description: 'Move a file',
+        usage: 'mv /old/path /new/path',
         handler: async (args: string[]): Promise<void> => {
           const oldPath = guaranteeNonNullable(args[0]);
-          if (!oldPath || !oldPath.match(FILE_PATH_PATTERN)) {
+          if (!oldPath?.match(FILE_PATH_PATTERN)) {
             editorStore.applicationStore.terminalService.terminal.fail(
               `${LEGEND_PURE_IDE_TERMINAL_COMMAND.MOVE} command requires a valid old file path`,
             );
             return;
           }
           const newPath = guaranteeNonNullable(args[1]);
-          if (!newPath || !newPath.match(FILE_PATH_PATTERN)) {
+          if (!newPath?.match(FILE_PATH_PATTERN)) {
             editorStore.applicationStore.terminalService.terminal.fail(
               `${LEGEND_PURE_IDE_TERMINAL_COMMAND.MOVE} command requires a valid new file path`,
             );
@@ -134,10 +138,11 @@ export const setupTerminal = (editorStore: EditorStore): void => {
       },
       {
         command: LEGEND_PURE_IDE_TERMINAL_COMMAND.NEW_DIRECTORY,
-        description: 'Create a new directory. Usage: mkdir /some/path',
+        description: 'Create a new directory',
+        usage: 'mkdir /some/path',
         handler: async (args: string[]): Promise<void> => {
           const path = guaranteeNonNullable(args[0]);
-          if (!path || !path.match(FILE_PATH_PATTERN)) {
+          if (!path?.match(FILE_PATH_PATTERN)) {
             editorStore.applicationStore.terminalService.terminal.fail(
               `${LEGEND_PURE_IDE_TERMINAL_COMMAND.NEW_DIRECTORY} command requires a valid old file path`,
             );
@@ -150,10 +155,11 @@ export const setupTerminal = (editorStore: EditorStore): void => {
       },
       {
         command: LEGEND_PURE_IDE_TERMINAL_COMMAND.NEW_FILE,
-        description: 'Create a new file. Usage: touch /some/path',
+        description: 'Create a new file',
+        usage: 'touch /some/path',
         handler: async (args: string[]): Promise<void> => {
           const path = guaranteeNonNullable(args[0]);
-          if (!path || !path.match(FILE_PATH_PATTERN)) {
+          if (!path?.match(FILE_PATH_PATTERN)) {
             editorStore.applicationStore.terminalService.terminal.fail(
               `${LEGEND_PURE_IDE_TERMINAL_COMMAND.NEW_FILE} command requires a valid old file path`,
             );
@@ -168,14 +174,16 @@ export const setupTerminal = (editorStore: EditorStore): void => {
       // utility
       {
         command: LEGEND_PURE_IDE_TERMINAL_COMMAND.CLEAR,
-        description: 'Clear the terminal. Usage: clear',
+        description: 'Clear the terminal',
+        usage: 'clear',
         handler: async (args: string[]): Promise<void> => {
           editorStore.applicationStore.terminalService.terminal.clear();
         },
       },
       {
         command: LEGEND_PURE_IDE_TERMINAL_COMMAND.ANSI,
-        description: 'Show common ANSI escape sequences. Usage: ansi',
+        description: 'Show common ANSI escape sequences used for styling',
+        usage: 'ansi',
         handler: async (args: string[]): Promise<void> => {
           editorStore.applicationStore.terminalService.terminal.showCommonANSIEscapeSequences();
           return Promise.resolve();
@@ -183,7 +191,8 @@ export const setupTerminal = (editorStore: EditorStore): void => {
       },
       {
         command: LEGEND_PURE_IDE_TERMINAL_COMMAND.HELP,
-        description: 'Show help. Usage: help',
+        description: 'Show help',
+        usage: 'help',
         handler: async (args: string[]): Promise<void> => {
           editorStore.applicationStore.terminalService.terminal.showHelp();
           return Promise.resolve();
