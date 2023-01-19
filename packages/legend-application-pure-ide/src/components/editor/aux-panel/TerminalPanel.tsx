@@ -242,7 +242,10 @@ export const Console = observer(() => {
             className="terminal-panel__header__action terminal-panel__header__group__action"
             title="Show Help"
             tabIndex={-1}
-            onClick={() => terminal.showHelp()}
+            onClick={() => {
+              terminal.showHelp();
+              terminal.focus();
+            }}
           >
             <QuestionCircleIcon className="terminal-panel__header__action__icon" />
           </button>

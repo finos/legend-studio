@@ -2416,7 +2416,7 @@ __metadata:
     react-icons: 4.7.1
     react-markdown: 8.0.5
     react-reflex: 4.0.9
-    react-resize-detector: 8.0.2
+    react-resize-detector: 8.0.1
     react-select: 4.3.1
     react-window: 1.8.8
     remark-gfm: 3.0.1
@@ -13573,15 +13573,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-resize-detector@npm:8.0.2":
-  version: 8.0.2
-  resolution: "react-resize-detector@npm:8.0.2"
+"react-resize-detector@npm:8.0.1":
+  version: 8.0.1
+  resolution: "react-resize-detector@npm:8.0.1"
   dependencies:
     lodash: ^4.17.21
   peerDependencies:
     react: ^16.0.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: b4cb7878ad25b2689d1af4c742bb72dc42a1bf70004b1ab84bc4e8eb4ac34dc5455ecc274bd6a67e68e3840f07829c4d9ed7b5a366cafc6cec8c33e2539da3c7
+  checksum: 0b206c37e91efbe91accc513c8f714e522c6f800bf4daed00e7e59fa2bc4b1102f55002b60cca8d40a41de712578964a0790e55221fe396fccb80ec1b32d0d6e
   languageName: node
   linkType: hard
 

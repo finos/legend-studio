@@ -1186,16 +1186,14 @@ const DiagramEditorDiagramCanvas = observer(
     });
 
     useEffect(() => {
-      if (diagramCanvasRef.current) {
-        const renderer = new DiagramRenderer(
-          diagramCanvasRef.current,
-          diagramEditorState.diagram,
-        );
-        diagramEditorState.setRenderer(renderer);
-        diagramEditorState.setupRenderer();
-        renderer.render();
-        renderer.autoRecenter();
-      }
+      const renderer = new DiagramRenderer(
+        diagramCanvasRef.current,
+        diagramEditorState.diagram,
+      );
+      diagramEditorState.setRenderer(renderer);
+      diagramEditorState.setupRenderer();
+      renderer.render();
+      renderer.autoRecenter();
     }, [diagramCanvasRef, diagramEditorState]);
 
     useEffect(() => {

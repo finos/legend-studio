@@ -256,6 +256,8 @@ export abstract class Terminal extends Console {
   abstract fail(error: string, opts?: TerminalWriteOption): void;
   abstract output(output: string, opts?: TerminalWriteOption): void;
 
+  abstract isFocused(): boolean;
+
   abstract search(val: string): void;
   abstract clearSearch(): void;
   abstract findPrevious(): void;

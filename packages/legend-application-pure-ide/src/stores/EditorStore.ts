@@ -420,9 +420,24 @@ export class EditorStore implements CommandRegistrar {
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_TERMINAL_PANEL,
       action: () => {
-        this.auxPanelDisplayState.toggle();
-        this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
-        this.applicationStore.terminalService.terminal.focus();
+        // toggle the aux panel and activate terminal tab if needs be
+        // if the terminal is already open, and not yet focused, focus on it
+        // else, close it
+        if (this.auxPanelDisplayState.isOpen) {
+          if (this.activeAuxPanelMode !== AUX_PANEL_MODE.TERMINAL) {
+            this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
+            this.applicationStore.terminalService.terminal.focus();
+          } else {
+            if (!this.applicationStore.terminalService.terminal.isFocused()) {
+              this.applicationStore.terminalService.terminal.focus();
+            } else {
+              this.auxPanelDisplayState.close();
+            }
+          }
+        } else {
+          this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
+          this.auxPanelDisplayState.open();
+        }
       },
     });
     this.applicationStore.commandCenter.registerCommand({
@@ -686,7 +701,7 @@ export class EditorStore implements CommandRegistrar {
         this.applicationStore.notifyError(
           `Execution failed${result.text ? `: ${result.text}` : ''}`,
         );
-        this.applicationStore.terminalService.terminal.fail(result.text ?? '');
+        this.applicationStore.terminalService.terminal.fail(result.text);
         if (result.sessionError) {
           this.applicationStore.setBlockingAlert({
             message: 'Session corrupted',

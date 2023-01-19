@@ -29,7 +29,6 @@ import {
 import { Unicode11Addon as XTermUnicode11Addon } from 'xterm-addon-unicode11';
 import { WebglAddon as XTermWebglAddon } from 'xterm-addon-webgl';
 import { MONOSPACED_FONT_FAMILY, TAB_SIZE } from '../../const.js';
-import { forceDispatchKeyboardEvent } from '../../components/LegendApplicationComponentFrameworkProvider.js';
 import {
   Terminal,
   DISPLAY_ANSI_ESCAPE,
@@ -48,6 +47,7 @@ import {
   uniqBy,
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../ApplicationEvent.js';
+import { forceDispatchKeyboardEvent } from '../../components/LegendApplicationComponentFrameworkProvider.js';
 
 const LEGEND_XTERM_THEME: XTermTheme = {
   foreground: '#cccccc',
@@ -131,8 +131,7 @@ ${uniqBy(Array.from(commandRegistry.values()), (config) => config.command)
         DISPLAY_ANSI_ESCAPE.RESET
       }`,
   )
-  .join('\n')}
-`;
+  .join('\n')}`;
 
 const getCommonANSIEscapeSequencesForStyling = (): string =>
   `
@@ -145,8 +144,7 @@ ${Object.entries(DISPLAY_ANSI_ESCAPE)
         DISPLAY_ANSI_ESCAPE.RESET
       } ${value.replace('\x1b', '\\x1b')}`,
   )
-  .join('\n')}
-`;
+  .join('\n')}`;
 
 const DEFAULT_USER = 'purist';
 const DEFAULT_COMMAND_HEADER = `
@@ -209,22 +207,24 @@ export class XTerm extends Terminal {
     this.instance.loadAddon(new XTermUnicode11Addon());
     this.instance.unicode.activeVersion = '11';
 
+    // NOTE: since we render the terminal using webgl/canvas, event is not bubbled
+    // naturally through the DOM tree, we have to manually force this
     this.instance.attachCustomKeyEventHandler(
       (event: KeyboardEvent): boolean => {
-        // NOTE: this is a cheap way to handl hotkey, but this is really the only
+        // NOTE: this is a cheap way to handle hotkey, but this is really the only
         // hotkey we want to support at local scope of the terminal
+        // also, since here we have prevent default and stop propagation, we have to do
+        // this here instead at in `onKey` handler
         if (
           isMatchingKeyCombination(event, 'Control+KeyF') ||
           isMatchingKeyCombination(event, 'Meta+KeyF')
         ) {
+          // prevent default so as to not trigger browser platform search command
           event.preventDefault();
           event.stopPropagation();
           this.searchConfig.focus();
           return false;
         }
-        // NOTE: since we render the terminal using webgl/canvas, event is not bubbled
-        // naturally through the DOM tree, we have to manually force this
-        forceDispatchKeyboardEvent(event);
         return true; // return true to indicate the event should still be handled by xterm
       },
     );
@@ -287,6 +287,9 @@ export class XTerm extends Terminal {
             this.isRunningCommand = true;
             matchingCommand.handler(args).finally(() => {
               this.isRunningCommand = false;
+              if (!this.isFlushed) {
+                this.abort();
+              }
             });
           }
         } else if (
@@ -340,6 +343,10 @@ export class XTerm extends Terminal {
         ) {
           // commonly supported keys
           this.writeToCommand(key);
+        } else {
+          // for the rest, allow the keyboard event to be bubbled to
+          // application keyboard shortcuts handler
+          forceDispatchKeyboardEvent(domEvent);
         }
       },
     );
@@ -573,6 +580,10 @@ export class XTerm extends Terminal {
     return this.setupState.hasCompleted;
   }
 
+  isFocused(): boolean {
+    return document.activeElement === this.instance.textarea;
+  }
+
   mount(container: HTMLElement): void {
     if (!this.setupState.hasCompleted) {
       throw new IllegalStateError(`XTerm terminal has not been set up yet`);
@@ -623,9 +634,29 @@ export class XTerm extends Terminal {
    * write commands will not work. To solve this, we can either promisify the `reset` call or write the ANSI
    * reset sequence \x1bc
    */
-  private async flushScreen(): Promise<void> {
+  private flushScreen(): void {
     this.instance.write('\x1bc');
     this.instance.reset();
+  }
+
+  private get isFlushed(): boolean {
+    const buffer = this.instance.buffer.active;
+    let isLastLineEmpty = true;
+
+    for (let i = buffer.baseY + buffer.cursorY; i > -1; --i) {
+      const line = guaranteeNonNullable(buffer.getLine(i));
+      const lineText = line.translateToString();
+
+      // skip empty lines
+      if (!lineText.trim()) {
+        continue;
+      } else {
+        isLastLineEmpty = lineText !== COMMAND_START;
+        break;
+      }
+    }
+
+    return this.command === '' && isLastLineEmpty;
   }
 
   clear(): void {
@@ -641,16 +672,21 @@ export class XTerm extends Terminal {
   override showHelp(): void {
     this.resetANSIStyling();
     this.instance.scrollToBottom();
-    if (this.command !== '') {
+    if (!this.isFlushed && !this.isRunningCommand) {
       this.abort();
     }
-    this.instance.writeln(getHelpCommandContent(this.commandRegistry));
+    this.instance.write(getHelpCommandContent(this.commandRegistry));
     this.abort();
-    this.focus();
   }
 
   override showCommonANSIEscapeSequences(): void {
-    this.instance.write(getCommonANSIEscapeSequencesForStyling(), undefined);
+    this.resetANSIStyling();
+    this.instance.scrollToBottom();
+    if (!this.isFlushed && !this.isRunningCommand) {
+      this.abort();
+    }
+    this.instance.write(getCommonANSIEscapeSequencesForStyling());
+    this.abort();
   }
 
   abort(): void {

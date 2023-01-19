@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  getNullableFirstElement,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { getNullableFirstElement } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { FileCoordinate } from '../server/models/File.js';
 import type { EditorStore } from './EditorStore.js';
@@ -117,14 +114,14 @@ export const setupTerminal = (editorStore: EditorStore): void => {
         description: 'Move a file',
         usage: 'mv /old/path /new/path',
         handler: async (args: string[]): Promise<void> => {
-          const oldPath = guaranteeNonNullable(args[0]);
+          const oldPath = args[0];
           if (!oldPath?.match(FILE_PATH_PATTERN)) {
             editorStore.applicationStore.terminalService.terminal.fail(
               `${LEGEND_PURE_IDE_TERMINAL_COMMAND.MOVE} command requires a valid old file path`,
             );
             return;
           }
-          const newPath = guaranteeNonNullable(args[1]);
+          const newPath = args[1];
           if (!newPath?.match(FILE_PATH_PATTERN)) {
             editorStore.applicationStore.terminalService.terminal.fail(
               `${LEGEND_PURE_IDE_TERMINAL_COMMAND.MOVE} command requires a valid new file path`,
@@ -141,7 +138,7 @@ export const setupTerminal = (editorStore: EditorStore): void => {
         description: 'Create a new directory',
         usage: 'mkdir /some/path',
         handler: async (args: string[]): Promise<void> => {
-          const path = guaranteeNonNullable(args[0]);
+          const path = args[0];
           if (!path?.match(FILE_PATH_PATTERN)) {
             editorStore.applicationStore.terminalService.terminal.fail(
               `${LEGEND_PURE_IDE_TERMINAL_COMMAND.NEW_DIRECTORY} command requires a valid old file path`,
@@ -158,7 +155,7 @@ export const setupTerminal = (editorStore: EditorStore): void => {
         description: 'Create a new file',
         usage: 'touch /some/path',
         handler: async (args: string[]): Promise<void> => {
-          const path = guaranteeNonNullable(args[0]);
+          const path = args[0];
           if (!path?.match(FILE_PATH_PATTERN)) {
             editorStore.applicationStore.terminalService.terminal.fail(
               `${LEGEND_PURE_IDE_TERMINAL_COMMAND.NEW_FILE} command requires a valid old file path`,

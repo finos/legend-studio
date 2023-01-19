@@ -81,13 +81,11 @@ const DataSpaceDiagramCanvas = observer(
     });
 
     useEffect(() => {
-      if (diagramCanvasRef.current) {
-        const renderer = new DiagramRenderer(diagramCanvasRef.current, diagram);
-        dataSpaceViewerState.setRenderer(renderer);
-        dataSpaceViewerState.setupRenderer();
-        renderer.render();
-        renderer.autoRecenter();
-      }
+      const renderer = new DiagramRenderer(diagramCanvasRef.current, diagram);
+      dataSpaceViewerState.setRenderer(renderer);
+      dataSpaceViewerState.setupRenderer();
+      renderer.render();
+      renderer.autoRecenter();
     }, [diagramCanvasRef, dataSpaceViewerState, diagram]);
 
     useEffect(() => {
