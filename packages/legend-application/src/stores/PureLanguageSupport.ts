@@ -267,7 +267,7 @@ const generateLanguageMonarch = (
     // `function doSomething<T>(a: Function<T[1]->Boolean[1]>)`
     // nor we want to make sure the last character of the content is not `-` to avoid
     // accidentally matching `->` as the end of the generics
-    generics: /<[^:.]+[^-]>/,
+    generics: /(?:(?:<\w+>)|(?:<[^:.@^()]+[^-]>))/,
     date: /%-?\d+(?:-\d+(?:-\d+(?:T(?:\d+(?::\d+(?::\d+(?:.\d+)?)?)?)(?:[+-][0-9]{4})?)))/,
     time: /%\d+(?::\d+(?::\d+(?:.\d+)?)?)?/,
 
