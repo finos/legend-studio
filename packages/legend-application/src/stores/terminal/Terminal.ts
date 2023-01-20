@@ -219,25 +219,18 @@ export interface TerminalSetupConfiguration {
 export abstract class Terminal extends Console {
   preserveLog = false;
   protected commandRegistry = new Map<string, TerminalCommandConfiguration>();
-  command = '';
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     super(applicationStore);
 
     makeObservable(this, {
       preserveLog: observable,
-      command: observable,
       setPreserveLog: action,
-      setCommand: action,
     });
   }
 
   setPreserveLog(val: boolean): void {
     this.preserveLog = val;
-  }
-
-  setCommand(val: string): void {
-    this.command = val;
   }
 
   abstract get isSetup(): boolean;

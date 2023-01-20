@@ -166,6 +166,11 @@ export class XTerm extends Terminal {
 
   private _TEMPORARY__onKeyListener?: XTermDisposable;
   private _TEMPORARY__onDataListener?: XTermDisposable;
+
+  private command = '';
+  private commandHistory: string[] = [];
+  private currentCommandSearchString = '';
+  private commandHistoryNavigationIdx: number | undefined = undefined;
   private isRunningCommand = false;
 
   private readonly setupState = ActionState.create();
@@ -273,11 +278,36 @@ export class XTerm extends Terminal {
     // See https://github.com/xtermjs/xterm.js/issues/617#issuecomment-288849502
     this._TEMPORARY__onKeyListener = this.instance.onKey(
       ({ key, domEvent }) => {
+        // take care of command history navigation
+        if (domEvent.code === 'ArrowUp') {
+          this.setCommandFromHistory(
+            this.commandHistoryNavigationIdx !== undefined
+              ? this.commandHistoryNavigationIdx + 1
+              : 0,
+          );
+          return;
+          // reset current command in place
+        } else if (domEvent.code === 'ArrowDown') {
+          if (this.commandHistoryNavigationIdx !== undefined) {
+            this.setCommandFromHistory(
+              this.commandHistoryNavigationIdx === 0
+                ? undefined
+                : this.commandHistoryNavigationIdx - 1,
+            );
+          }
+          return;
+        } else {
+          // reset navigation history the moment any other key is pressed
+          this.commandHistoryNavigationIdx = undefined;
+        }
+
         if (domEvent.code === 'Enter') {
+          // run command
           if (this.command.trim()) {
             const [command, ...args] = this.command
               .replaceAll(/\s+/g, ' ')
               .split(' ');
+            this.addCommandToHistory(this.command);
             if (!command) {
               return;
             }
@@ -301,7 +331,7 @@ export class XTerm extends Terminal {
           isMatchingKeyCombination(domEvent, 'Control+KeyC') ||
           isMatchingKeyCombination(domEvent, 'Control+KeyD')
         ) {
-          // escape from current command
+          // abort command
           this.abort();
         } else if (domEvent.code === 'Backspace') {
           // Alt: jump word only, Ctrl: jump to end
@@ -613,6 +643,54 @@ export class XTerm extends Terminal {
 
   focus(): void {
     this.instance.focus();
+  }
+
+  private addCommandToHistory(val: string): void {
+    // if this is the same as previous command, do not push it to the history stack
+    if (val === this.commandHistory.at(0)) {
+      return;
+    }
+    // history command is essentially a stack, so we only insert at the beginning
+    this.commandHistory.unshift(val);
+  }
+
+  /**
+   * This methods help update the current command to a command in history
+   * stack, it does the necessary resetting and helps properly update
+   * the history navigation index
+   */
+  private setCommandFromHistory(idx: number | undefined): void {
+    const val =
+      idx === undefined
+        ? this.currentCommandSearchString
+        : // NOTE: only consider commands starting with the original command
+          // also note that empty string naturaly match all history command
+          this.commandHistory
+            .filter((command) =>
+              command.startsWith(this.currentCommandSearchString),
+            )
+            .at(idx);
+    if (val !== undefined) {
+      let range = this.getCommandRange();
+      this.instance.write(
+        // reset cursor to start of command and rewrite the entire command
+        ANSI_moveCursor(range.startY + 1, range.startX + 1) +
+          val.padEnd(this.command.length),
+      );
+      this.command = val;
+      range = this.getCommandRange();
+      this.instance.write(
+        // reset cursor to command end
+        ANSI_moveCursor(range.endY + 1, range.endX + 1),
+      );
+      this.commandHistoryNavigationIdx = idx;
+    }
+  }
+
+  private setCommand(val: string): void {
+    this.command = val;
+    this.currentCommandSearchString = val;
+    this.commandHistoryNavigationIdx = undefined;
   }
 
   private newCommand(): void {
