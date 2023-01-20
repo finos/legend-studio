@@ -137,6 +137,22 @@
     cursor: default;
   }
 
+  &__type--error {
+    background: var(--color-red-400);
+  }
+
+  &__error--info {
+    @include flexCenter;
+
+    border-radius: 0.2rem;
+    margin-left: 1rem;
+    color: var(--color-light-grey-300);
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+
   &__type--show-click-hint {
     cursor: pointer;
   }

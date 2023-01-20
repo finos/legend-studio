@@ -21,6 +21,7 @@ import {
   isNonNullable,
   assertTrue,
   UnsupportedOperationError,
+  LogEvent,
 } from '@finos/legend-shared';
 import type { Class } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import type { Association } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Association.js';
@@ -56,6 +57,7 @@ import {
   getOrCreateGraphPackage,
 } from '../../../../../../../../graph/helpers/DomainHelper.js';
 import { AggregationKind } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/AggregationKind.js';
+import { GraphBuilderError } from '../../../../../../../GraphManagerUtils.js';
 
 export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,
@@ -252,6 +254,34 @@ export const V1_buildDerivedProperty = (
   return derivedProperty;
 };
 
+/**
+ * Validates the association property. If the association property is a system element
+ * then it is invalid.
+ */
+const validateAssociationProperty = (
+  association: Association,
+  property: string,
+  context: V1_GraphBuilderContext,
+): void => {
+  const systemClass = context.graph.systemModel.getOwnNullableClass(property);
+  const sytemAssociation = context.graph.systemModel.getOwnNullableAssociation(
+    association.path,
+  );
+  if (systemClass && !sytemAssociation) {
+    const message = `Found system class property '${property}' in association '${association.path}'`;
+    /**
+     * In strict-mode, graph builder will consider this as an error
+     * See https://github.com/finos/legend-studio/issues/941
+     *
+     * @discrepancy graph-building
+     */
+    if (context.options?.strict) {
+      throw new GraphBuilderError(message);
+    }
+    context.log.warn(LogEvent.create(message));
+  }
+};
+
 export const V1_buildAssociationProperty = (
   currentProperty: V1_Property,
   associatedProperty: V1_Property,
@@ -261,6 +291,11 @@ export const V1_buildAssociationProperty = (
   const associatedPropertyClassType = guaranteeNonNullable(
     associatedProperty.type,
     `Association associated property 'type' field is missing`,
+  );
+  validateAssociationProperty(
+    pureAssociation,
+    associatedPropertyClassType,
+    context,
   );
   const associatedClass = context.resolveClass(associatedPropertyClassType);
   const property = V1_buildProperty(currentProperty, context, pureAssociation);
