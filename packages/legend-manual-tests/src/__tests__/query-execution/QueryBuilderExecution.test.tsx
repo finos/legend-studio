@@ -152,9 +152,9 @@ test(integrationTest('test query execution with parameters'), async () => {
   const queryBuilderResultPanel = await waitFor(() =>
     renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL),
   );
-  await waitFor(() =>
-    fireEvent.click(getByText(queryBuilderResultPanel, 'Run Query')),
-  );
+  await act(async () => {
+    fireEvent.click(getByText(queryBuilderResultPanel, 'Run Query'));
+  });
   const parameterValueDialog = await waitFor(() =>
     renderResult.getByRole('dialog'),
   );
