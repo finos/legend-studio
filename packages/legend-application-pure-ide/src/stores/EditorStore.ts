@@ -538,27 +538,34 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *loadFile(filePath: string, coordinate?: FileCoordinate): GeneratorFn<void> {
-    let editorState = this.tabManagerState.tabs.find(
-      (tab): tab is FileEditorState =>
-        tab instanceof FileEditorState && tab.filePath === filePath,
-    );
-    if (!editorState) {
-      yield flowResult(this.checkIfSessionWakingUp());
-      editorState = new FileEditorState(
-        this,
-        deserialize(File, yield this.client.getFile(filePath)),
-        filePath,
+    try {
+      let editorState = this.tabManagerState.tabs.find(
+        (tab): tab is FileEditorState =>
+          tab instanceof FileEditorState && tab.filePath === filePath,
       );
-    }
-    this.tabManagerState.openTab(editorState);
-    if (coordinate) {
-      editorState.textEditorState.setForcedCursorPosition({
-        lineNumber: coordinate.line,
-        column: coordinate.column,
-      });
-      if (coordinate instanceof FileErrorCoordinate) {
-        editorState.showError(coordinate);
+      if (!editorState) {
+        yield flowResult(this.checkIfSessionWakingUp());
+        editorState = new FileEditorState(
+          this,
+          deserialize(File, yield this.client.getFile(filePath)),
+          filePath,
+        );
       }
+      this.tabManagerState.openTab(editorState);
+      if (coordinate) {
+        editorState.textEditorState.setForcedCursorPosition({
+          lineNumber: coordinate.line,
+          column: coordinate.column,
+        });
+        if (coordinate instanceof FileErrorCoordinate) {
+          editorState.showError(coordinate);
+        }
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.terminalService.terminal.fail(error.message, {
+        systemCommand: `load file ${filePath}`,
+      });
     }
   }
 
@@ -688,15 +695,6 @@ export class EditorStore implements CommandRegistrar {
         guaranteeNonNullable(executionPromiseResult),
       );
       this.applicationStore.setBlockingAlert(undefined);
-      if (!options?.silent) {
-        this.applicationStore.terminalService.terminal.output(
-          result.text ?? '',
-          {
-            clear: options?.clearTerminal,
-            systemCommand: command ?? 'execute',
-          },
-        );
-      }
       if (result instanceof ExecutionFailureResult) {
         this.applicationStore.notifyError(
           `Execution failed${result.text ? `: ${result.text}` : ''}`,
@@ -710,37 +708,48 @@ export class EditorStore implements CommandRegistrar {
         } else {
           yield flowResult(manageResult(result, potentiallyAffectedFiles));
         }
-      } else if (result instanceof ExecutionSuccessResult) {
-        this.applicationStore.notifySuccess('Execution succeeded!');
-        if (result.reinit) {
-          this.applicationStore.setBlockingAlert({
-            message: 'Reinitializing...',
-            prompt: 'Please do not refresh the application',
-            showLoading: true,
-          });
-          this.initState.reset();
-          yield flowResult(
-            this.initialize(
-              false,
-              () =>
-                flowResult(
-                  this.execute(
-                    url,
-                    extraParams,
-                    checkExecutionStatus,
-                    manageResult,
-                    command,
-                  ),
-                ),
-              this.client.mode,
-              this.client.compilerMode,
-            ),
+      } else {
+        if (!options?.silent) {
+          this.applicationStore.terminalService.terminal.output(
+            result.text ?? '',
+            {
+              clear: options?.clearTerminal,
+              systemCommand: command ?? 'execute',
+            },
           );
+        }
+        if (result instanceof ExecutionSuccessResult) {
+          this.applicationStore.notifySuccess('Execution succeeded!');
+          if (result.reinit) {
+            this.applicationStore.setBlockingAlert({
+              message: 'Reinitializing...',
+              prompt: 'Please do not refresh the application',
+              showLoading: true,
+            });
+            this.initState.reset();
+            yield flowResult(
+              this.initialize(
+                false,
+                () =>
+                  flowResult(
+                    this.execute(
+                      url,
+                      extraParams,
+                      checkExecutionStatus,
+                      manageResult,
+                      command,
+                    ),
+                  ),
+                this.client.mode,
+                this.client.compilerMode,
+              ),
+            );
+          } else {
+            yield flowResult(manageResult(result, potentiallyAffectedFiles));
+          }
         } else {
           yield flowResult(manageResult(result, potentiallyAffectedFiles));
         }
-      } else {
-        yield flowResult(manageResult(result, potentiallyAffectedFiles));
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -818,17 +827,19 @@ export class EditorStore implements CommandRegistrar {
       .forEach((tab) => tab.clearError());
 
     if (result instanceof ExecutionFailureResult) {
-      yield flowResult(
-        this.loadFile(
-          result.source,
-          new FileErrorCoordinate(
+      if (result.source) {
+        yield flowResult(
+          this.loadFile(
             result.source,
-            result.line,
-            result.column,
-            new ExecutionError(result.text.split('\n').filter(Boolean)[0]),
+            new FileErrorCoordinate(
+              result.source,
+              result.line,
+              result.column,
+              new ExecutionError(result.text.split('\n').filter(Boolean)[0]),
+            ),
           ),
-        ),
-      );
+        );
+      }
       if (result instanceof UnmatchedFunctionResult) {
         this.setSearchState(
           new UnmatchedFunctionExecutionResultState(this, result),
@@ -888,19 +899,21 @@ export class EditorStore implements CommandRegistrar {
         async (result: ExecutionResult, potentiallyAffectedFiles: string[]) => {
           const refreshTreesPromise = this.refreshTrees();
           if (result instanceof ExecutionFailureResult) {
-            await flowResult(
-              this.loadFile(
-                result.source,
-                new FileErrorCoordinate(
+            if (result.source) {
+              await flowResult(
+                this.loadFile(
                   result.source,
-                  result.line,
-                  result.column,
-                  new ExecutionError(
-                    result.text.split('\n').filter(Boolean)[0],
+                  new FileErrorCoordinate(
+                    result.source,
+                    result.line,
+                    result.column,
+                    new ExecutionError(
+                      result.text.split('\n').filter(Boolean)[0],
+                    ),
                   ),
                 ),
-              ),
-            );
+              );
+            }
             this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
             this.auxPanelDisplayState.open();
             this.testRunState.fail();

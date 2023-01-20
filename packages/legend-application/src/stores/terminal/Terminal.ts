@@ -247,7 +247,7 @@ export abstract class Terminal extends Console {
 
   abstract abort(): void;
   abstract fail(error: string, opts?: TerminalWriteOption): void;
-  abstract output(output: string, opts?: TerminalWriteOption): void;
+  abstract output(val: string, opts?: TerminalWriteOption): void;
 
   abstract isFocused(): boolean;
 

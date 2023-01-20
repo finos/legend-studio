@@ -65,11 +65,11 @@ export class FileErrorCoordinate extends FileCoordinate {
 
   constructor(
     file: string,
-    line: number,
-    column: number,
+    line: number | undefined,
+    column: number | undefined,
     error: ExecutionError,
   ) {
-    super(file, line, column);
+    super(file, line ?? 1, column ?? 1);
 
     this.error = error;
   }

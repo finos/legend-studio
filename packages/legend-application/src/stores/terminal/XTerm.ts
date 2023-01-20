@@ -372,9 +372,9 @@ export class XTerm extends Terminal {
             ),
           );
         } else if (
-          domEvent.key.match(
-            /^[A-Za-z0-9!@#$%^&*()-_=+"':;,.<>/?[\]{}|\\~` \\t]$/,
-          )
+          // use key here so we absolute do not allow any characters other than these
+          // being added to the input command
+          key.match(/^[A-Za-z0-9!@#$%^&*()-_=+"':;,.<>/?[\]{}|\\~` \\t]$/)
         ) {
           // commonly supported keys
           this.writeToCommand(key);
@@ -703,7 +703,10 @@ export class XTerm extends Terminal {
     // the potential pitfall here is that we could have another process prints to the
     // terminal while the command is being run. Nothing much we can do here for now.
     if (!this.isRunningCommand) {
-      this.newCommand();
+      if (this.command) {
+        this.abort();
+        this.newCommand();
+      }
       this.instance.write(
         `${DISPLAY_ANSI_ESCAPE.DIM}(system: ${command})\n${DISPLAY_ANSI_ESCAPE.RESET}`,
       );
@@ -791,7 +794,7 @@ export class XTerm extends Terminal {
     this.abort();
   }
 
-  output(output: string, opts?: TerminalWriteOption): void {
+  output(val: string, opts?: TerminalWriteOption): void {
     this.resetANSIStyling();
 
     if (!opts?.clear && opts?.systemCommand) {
@@ -804,7 +807,9 @@ export class XTerm extends Terminal {
       this.instance.write('\n');
     }
 
-    this.instance.writeln(output);
+    this.instance.writeln(val);
+
+    this.resetANSIStyling();
     this.instance.scrollToBottom();
     this.newCommand();
   }

@@ -400,7 +400,11 @@ const TestRunnerResultDisplay = observer(
     const toggleViewMode = (): void =>
       testRunnerState.setViewAsList(!testRunnerState.viewAsList);
     const removeTestResult = (): void => {
-      editorStore.setTestRunnerState(undefined);
+      flowResult(testRunnerState.cancelTestRun())
+        .catch(applicationStore.alertUnhandledError)
+        .finally(() => {
+          editorStore.setTestRunnerState(undefined);
+        });
     };
 
     return (
@@ -487,7 +491,7 @@ const TestRunnerResultDisplay = observer(
                     className="panel__header__action"
                     tabIndex={-1}
                     onClick={removeTestResult}
-                    title="Remove Test Result & Reset"
+                    title="Reset"
                   >
                     <TimesIcon />
                   </button>
