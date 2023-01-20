@@ -62,10 +62,7 @@ export const setupTerminal = (editorStore: EditorStore): void => {
         command: LEGEND_PURE_IDE_TERMINAL_COMMAND.GO,
         description: 'Run the go() function in /welcome.pure',
         usage: 'go',
-        aliases: [
-          LEGEND_PURE_IDE_TERMINAL_COMMAND.EXECUTE_GO,
-          LEGEND_PURE_IDE_TERMINAL_COMMAND.COMPILE,
-        ],
+        aliases: ['compile', 'executeGo'],
         handler: async (args: string[]): Promise<void> =>
           flowResult(editorStore.executeGo()).catch(
             editorStore.applicationStore.alertUnhandledError,
@@ -175,6 +172,23 @@ export const setupTerminal = (editorStore: EditorStore): void => {
         usage: 'clear',
         handler: async (args: string[]): Promise<void> => {
           editorStore.applicationStore.terminalService.terminal.clear();
+        },
+      },
+      {
+        command: LEGEND_PURE_IDE_TERMINAL_COMMAND.ECHO,
+        description: 'Print text',
+        usage: `echo 'some string'`,
+        handler: async (
+          args: string[],
+          command: string,
+          text: string,
+        ): Promise<void> => {
+          const content = text
+            .substring(text.indexOf(command) + command.length)
+            .trim();
+          editorStore.applicationStore.terminalService.terminal.output(
+            content.replaceAll(/\\u001b/g, '\u001b'),
+          );
         },
       },
       {

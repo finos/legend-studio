@@ -304,9 +304,8 @@ export class XTerm extends Terminal {
         if (domEvent.code === 'Enter') {
           // run command
           if (this.command.trim()) {
-            const [command, ...args] = this.command
-              .replaceAll(/\s+/g, ' ')
-              .split(' ');
+            const text = this.command;
+            const [command, ...args] = text.replaceAll(/\s+/g, ' ').split(' ');
             this.addCommandToHistory(this.command);
             if (!command) {
               return;
@@ -320,7 +319,7 @@ export class XTerm extends Terminal {
               return;
             }
             this.isRunningCommand = true;
-            matchingCommand.handler(args).finally(() => {
+            matchingCommand.handler(args, command, text).finally(() => {
               this.isRunningCommand = false;
               if (!this.isFlushed) {
                 this.abort();
@@ -807,9 +806,10 @@ export class XTerm extends Terminal {
       this.instance.write('\n');
     }
 
-    this.instance.writeln(val);
+    this.instance.write(val);
 
     this.resetANSIStyling();
+    this.instance.write('\n');
     this.instance.scrollToBottom();
     this.newCommand();
   }

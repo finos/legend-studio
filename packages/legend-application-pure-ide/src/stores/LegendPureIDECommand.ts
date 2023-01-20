@@ -140,8 +140,6 @@ export const LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_CONFIG: CommandConfigData 
 
 export enum LEGEND_PURE_IDE_TERMINAL_COMMAND {
   GO = 'go',
-  COMPILE = 'compile',
-  EXECUTE_GO = 'executeGo',
 
   TEST = 'test',
 
@@ -149,7 +147,11 @@ export enum LEGEND_PURE_IDE_TERMINAL_COMMAND {
   MOVE = 'mv',
   NEW_DIRECTORY = 'mkdir',
   NEW_FILE = 'touch',
+  LS = 'ls',
+  CD = 'cd',
+  OPEN_FILE = 'open',
 
+  ECHO = 'echo',
   CLEAR = 'clear',
   ANSI = 'ansi',
   HELP = 'help',

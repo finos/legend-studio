@@ -205,7 +205,7 @@ export interface TerminalCommandConfiguration {
   description: string;
   usage: string;
   aliases?: string[] | undefined;
-  handler: (args: string[]) => Promise<void>;
+  handler: (args: string[], command: string, text: string) => Promise<void>;
 }
 
 export interface TerminalSetupConfiguration {
