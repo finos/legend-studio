@@ -186,7 +186,10 @@ const TestTreeNodeContainer = observer(
         <div className="tree-view__node__icon explorer__package-tree__node__icon">
           <div
             className="explorer__package-tree__node__icon__expand"
-            onClick={toggleExpansion}
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleExpansion();
+            }}
           >
             {!isExpandable ? (
               <div />
