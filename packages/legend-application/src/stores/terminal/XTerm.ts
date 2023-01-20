@@ -142,7 +142,12 @@ ${Object.entries(DISPLAY_ANSI_ESCAPE)
     ([key, value]) =>
       `${value}${prettyCONSTName(key).padEnd(20)}${
         DISPLAY_ANSI_ESCAPE.RESET
-      } ${value.replace('\x1b', '\\x1b')}`,
+        // NOTE: since these are recommended ANSI escape sequences which can be used
+        // by users in strings input in Pure IDE, they have to be Unicode escape, if we send
+        // the original hexadecimal escape as part of the string, some string escape handling
+        // in Pure seems to escape the leading slash of the ANSI escape sequence \x1B; however
+        // this is not the case of the escape sequence for Unicode, \u001b hence our logic here
+      } ${value.replace('\x1b', '\\u001b')}`,
   )
   .join('\n')}`;
 
