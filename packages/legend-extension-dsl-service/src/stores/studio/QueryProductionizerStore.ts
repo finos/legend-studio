@@ -101,7 +101,7 @@ const projectDependencyToProjectCoordinates = (
   );
 };
 
-const createServiceEntity = async (
+export const createServiceElement = async (
   servicePath: string,
   servicePattern: string,
   serviceOwners: string[],
@@ -109,7 +109,7 @@ const createServiceEntity = async (
   mappingPath: string,
   runtimePath: string,
   graphManagerState: GraphManagerState,
-): Promise<Entity> => {
+): Promise<Service> => {
   const [servicePackagePath, serviceName] =
     resolvePackagePathAndElementName(servicePath);
   const service = stub_ElementhWithPackagePath(
@@ -141,6 +141,27 @@ const createServiceEntity = async (
     service,
     PackageableElementExplicitReference.create(mapping),
     new RuntimePointer(PackageableElementExplicitReference.create(runtime)),
+  );
+  return service;
+};
+
+const createServiceEntity = async (
+  servicePath: string,
+  servicePattern: string,
+  serviceOwners: string[],
+  queryContent: string,
+  mappingPath: string,
+  runtimePath: string,
+  graphManagerState: GraphManagerState,
+): Promise<Entity> => {
+  const service = await createServiceElement(
+    servicePath,
+    servicePattern,
+    serviceOwners,
+    queryContent,
+    mappingPath,
+    runtimePath,
+    graphManagerState,
   );
   const entity = graphManagerState.graphManager.elementToEntity(service, {
     pruneSourceInformation: true,

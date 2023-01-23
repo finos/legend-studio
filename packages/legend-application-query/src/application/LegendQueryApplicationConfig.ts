@@ -26,7 +26,29 @@ import {
   type LegendApplicationConfigurationInput,
   type LegendApplicationConfigurationData,
 } from '@finos/legend-application';
-import { createModelSchema, optional, primitive } from 'serializr';
+import {
+  createModelSchema,
+  optional,
+  primitive,
+  list,
+  object,
+} from 'serializr';
+
+export class ServiceRegistrationEnvironmentConfig {
+  env!: string;
+  executionUrl!: string;
+  modes: string[] = [];
+  managementUrl!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(ServiceRegistrationEnvironmentConfig, {
+      env: primitive(),
+      executionUrl: primitive(),
+      managementUrl: primitive(),
+      modes: list(primitive()),
+    }),
+  );
+}
 
 class LegendQueryApplicationCoreOptions {
   /**
@@ -40,9 +62,24 @@ class LegendQueryApplicationCoreOptions {
    */
   TEMPORARY__enableThemeSwitcher = false;
 
+  /**
+   * Provides service registration environment configs.
+   *
+   * TODO: when we modularize service, we can move this config to DSL Service preset. Then, we can remove
+   * the TEMPORARY__ prefix.
+   *
+   * @modularize
+   * See https://github.com/finos/legend-studio/issues/65
+   */
+  TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvironmentConfig[] =
+    [];
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendQueryApplicationCoreOptions, {
       TEMPORARY__enableThemeSwitcher: optional(primitive()),
+      TEMPORARY__serviceRegistrationConfig: list(
+        object(ServiceRegistrationEnvironmentConfig),
+      ),
     }),
   );
 
