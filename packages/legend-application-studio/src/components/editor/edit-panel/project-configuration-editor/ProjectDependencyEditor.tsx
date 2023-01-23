@@ -66,7 +66,7 @@ import {
 } from '@finos/legend-storage';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { forwardRef, useRef, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import { ProjectConfigurationEditorState } from '../../../../stores/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import {
   type ProjectDependencyConflictTreeNodeData,
@@ -136,9 +136,7 @@ const ProjectDependencyActions = observer(
             className="project-dependency-editor__conflicts-btn"
             tabIndex={-1}
             onClick={viewConflict}
-            disabled={
-              !dependencyEditorState.dependencyReport?.conflictInfo.size
-            }
+            disabled={!dependencyEditorState.dependencyReport?.conflicts.length}
             title="View any conflicts in your dependencies"
           >
             View Conflicts
@@ -529,7 +527,7 @@ const ProjectDependencyConflictViewer = observer(
     const { report, dependencyEditorState } = props;
     const hasConflict = Boolean(report.conflicts.length);
     const collapseTree = (): void => {
-      dependencyEditorState.conflictStates.forEach((c) => {
+      dependencyEditorState.conflictStates?.forEach((c) => {
         const treeData = c.treeData;
         Array.from(treeData.nodes.values()).forEach((n) => (n.isOpen = false));
         c.setTreeData({ ...treeData });
@@ -538,6 +536,13 @@ const ProjectDependencyConflictViewer = observer(
     const expandAllNodes = (): void => {
       dependencyEditorState.expandAllConflicts();
     };
+
+    useEffect(() => {
+      if (hasConflict && !dependencyEditorState.conflictStates) {
+        dependencyEditorState.buildConflictPaths();
+      }
+    }, [dependencyEditorState, hasConflict]);
+
     return (
       <div className="panel project-dependency-explorer">
         <div className="panel__header">
@@ -547,7 +552,7 @@ const ProjectDependencyConflictViewer = observer(
           <div className="panel__header__actions">
             <button
               className="panel__header__action"
-              disabled={!hasConflict}
+              disabled={!hasConflict || !dependencyEditorState.conflictStates}
               onClick={collapseTree}
               tabIndex={-1}
             >
@@ -555,7 +560,7 @@ const ProjectDependencyConflictViewer = observer(
             </button>
             <button
               className="panel__header__action"
-              disabled={!hasConflict}
+              disabled={!hasConflict || !dependencyEditorState.conflictStates}
               onClick={expandAllNodes}
               tabIndex={-1}
             >
@@ -564,7 +569,7 @@ const ProjectDependencyConflictViewer = observer(
           </div>
         </div>
         <div className="project-dependency-explorer__content">
-          {hasConflict && (
+          {hasConflict && dependencyEditorState.conflictStates && (
             <div>
               {dependencyEditorState.conflictStates.map((c) => (
                 <ConflictDependencyTreeView
@@ -645,7 +650,8 @@ const ProjectDependencyReportModal = observer(
               <PanelLoadingIndicator
                 isLoading={Boolean(
                   isExpandingDependencies ||
-                    dependencyEditorState.expandConflictsState.isInProgress,
+                    dependencyEditorState.expandConflictsState.isInProgress ||
+                    dependencyEditorState.buildConflictPathState.isInProgress,
                 )}
               />
 
