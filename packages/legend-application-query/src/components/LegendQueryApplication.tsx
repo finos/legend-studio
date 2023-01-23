@@ -37,7 +37,6 @@ import {
 } from './LegendQueryBaseStoreProvider.js';
 import { EditExistingQuerySetup } from './EditExistingQuerySetup.js';
 import { CreateMappingQuerySetup } from './CreateMappingQuerySetup.js';
-import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
 
 const LegendQueryApplicationRoot = observer(() => {
   const applicationStore = useLegendQueryApplicationStore();
@@ -97,25 +96,17 @@ export const LegendQueryApplication = observer(
     const { config } = props;
 
     return (
-      <SDLCServerClientProvider
+      <DepotServerClientProvider
         config={{
-          env: config.env,
-          serverUrl: config.sdlcServerUrl,
-          baseHeaders: config.SDLCServerBaseHeaders,
+          serverUrl: config.depotServerUrl,
         }}
       >
-        <DepotServerClientProvider
-          config={{
-            serverUrl: config.depotServerUrl,
-          }}
-        >
-          <LegendQueryBaseStoreProvider>
-            <LegendApplicationComponentFrameworkProvider>
-              <LegendQueryApplicationRoot />
-            </LegendApplicationComponentFrameworkProvider>
-          </LegendQueryBaseStoreProvider>
-        </DepotServerClientProvider>
-      </SDLCServerClientProvider>
+        <LegendQueryBaseStoreProvider>
+          <LegendApplicationComponentFrameworkProvider>
+            <LegendQueryApplicationRoot />
+          </LegendApplicationComponentFrameworkProvider>
+        </LegendQueryBaseStoreProvider>
+      </DepotServerClientProvider>
     );
   },
 );

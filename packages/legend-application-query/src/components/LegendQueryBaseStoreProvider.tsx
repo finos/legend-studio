@@ -25,7 +25,6 @@ import {
   type ApplicationStore,
   useApplicationStore,
 } from '@finos/legend-application';
-import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 
 export const useLegendQueryApplicationStore = (): ApplicationStore<
   LegendQueryApplicationConfig,
@@ -42,14 +41,8 @@ export const LegendQueryBaseStoreProvider: React.FC<{
 }> = ({ children }) => {
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const sdlcServerClient = useSDLCServerClient();
   const store = useLocalObservable(
-    () =>
-      new LegendQueryBaseStore(
-        applicationStore,
-        depotServerClient,
-        sdlcServerClient,
-      ),
+    () => new LegendQueryBaseStore(applicationStore, depotServerClient),
   );
   return (
     <LegendQueryBaseStoreContext.Provider value={store}>

@@ -18,7 +18,6 @@ import {
   assertNonNullable,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
-  type RequestHeaders,
   SerializationFactory,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -29,10 +28,10 @@ import {
 } from '@finos/legend-application';
 import {
   createModelSchema,
-  list,
-  object,
   optional,
   primitive,
+  list,
+  object,
 } from 'serializr';
 
 export class ServiceRegistrationEnvironmentConfig {
@@ -98,7 +97,6 @@ type LegendStudioApplicationInstanceConfigurationData = {
 
 export interface LegendQueryApplicationConfigurationData
   extends LegendApplicationConfigurationData {
-  sdlc: { url: string; baseHeaders?: RequestHeaders };
   depot: {
     url: string;
   };
@@ -122,8 +120,6 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
     [];
   readonly taxonomyUrl: string;
-  readonly sdlcServerUrl: string;
-  readonly SDLCServerBaseHeaders?: RequestHeaders | undefined;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendQueryApplicationConfigurationData>,
@@ -174,17 +170,6 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
       input.configData.taxonomy.url,
       `Can't configure application: 'taxonomy.url' field is missing or empty`,
     );
-
-    // sdlc
-    assertNonNullable(
-      input.configData.sdlc,
-      `Can't configure application: 'sdlc' field is missing`,
-    );
-    this.sdlcServerUrl = guaranteeNonEmptyString(
-      input.configData.sdlc.url,
-      `Can't configure application: 'sdlc.url' field is missing or empty`,
-    );
-    this.SDLCServerBaseHeaders = input.configData.sdlc.baseHeaders;
 
     // options
     this.options = LegendQueryApplicationCoreOptions.create(

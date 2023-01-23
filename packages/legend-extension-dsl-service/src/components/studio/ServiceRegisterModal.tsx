@@ -14,32 +14,22 @@
  * limitations under the License.
  */
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   ActionState,
   assertErrorThrown,
   assertNonEmptyString,
-  debounce,
-  type GeneratorFn,
   guaranteeNonNullable,
   LogEvent,
-  type PlainObject,
   uuid,
 } from '@finos/legend-shared';
-import {
-  User,
-  ProjectConfiguration,
-  useSDLCServerClient,
-  type SDLCServerClient,
-} from '@finos/legend-server-sdlc';
 import {
   generateServiceManagementUrl,
   LATEST_PROJECT_REVISION,
   LEGEND_STUDIO_APP_EVENT,
 } from '@finos/legend-application-studio';
 import { createServiceElement } from '../../stores/studio/QueryProductionizerStore.js';
-import { flowResult, flow } from 'mobx';
 import {
   CheckSquareIcon,
   clsx,
@@ -50,7 +40,7 @@ import {
   Panel,
   PanelFullContent,
   PanelLoadingIndicator,
-  RobotIcon,
+  RocketIcon,
   SquareIcon,
 } from '@finos/legend-art';
 import {
@@ -61,86 +51,44 @@ import {
   ServiceExecutionMode,
   isValidFullPath,
   validate_ServicePattern,
-  type ServiceRegistrationResult,
-  type QueryInfo,
 } from '@finos/legend-graph';
-import { type UserOption, buildUserOption } from './QueryProductionizer.js';
 import type { ExistingQueryEditorStore } from '@finos/legend-application-query';
 import { ProjectData } from '@finos/legend-server-depot';
-
-const searchUsers = flow(function* (
-  name: string,
-  editorStore: ExistingQueryEditorStore,
-  sdlcServerClient: SDLCServerClient,
-): GeneratorFn<User[]> {
-  try {
-    return ((yield sdlcServerClient.getUsers(name)) as PlainObject<User>[]).map(
-      (p) => User.serialization.fromJson(p),
-    );
-  } catch (error) {
-    assertErrorThrown(error);
-    editorStore.applicationStore.notifyError(error);
-    return [];
-  }
-});
 
 const ServiceRegisterModal = observer(
   (props: { editorStore: ExistingQueryEditorStore; onClose(): void }) => {
     const { editorStore, onClose } = props;
-
-    const sdlcServerClient = useSDLCServerClient();
-
-    const [isLoadingUsers, setIsLoadingUsers] = useState<boolean>(false);
     const [registrationState] = useState(ActionState.create());
-    const [searchText, setSearchText] = useState('');
+    const [text, setText] = useState('');
     const [serviceEnv, setServiceEnv] = useState<string | undefined>(undefined);
     const [servicePath, setServicePath] = useState('model::QueryService');
     const [activateService, setActivateService] = useState(false);
     const [servicePattern, setServicePattern] = useState(`/${uuid()}`);
-    const [userOptions, setUserOptions] = useState<UserOption[]>([]);
-    const [selectedOwners, setSelectedOwners] = useState<UserOption[]>(
-      sdlcServerClient.currentUser
-        ? [buildUserOption(guaranteeNonNullable(sdlcServerClient.currentUser))]
-        : [],
-    );
-
-    const debouncedSearchUsers = useMemo(
-      () =>
-        debounce((input: string): void => {
-          setIsLoadingUsers(true);
-          flowResult(searchUsers(input, editorStore, sdlcServerClient))
-            .then((users: User[]) =>
-              setUserOptions(users.map((u) => buildUserOption(u))),
-            )
-            .then(() => setIsLoadingUsers(false))
-            .catch(editorStore.applicationStore.alertUnhandledError);
-        }, 500),
-      [editorStore, sdlcServerClient],
-    );
-
-    const onSearchTextChange = (value: string): void => {
-      if (value !== searchText) {
-        setSearchText(value);
-        debouncedSearchUsers.cancel();
-        if (value.length >= 3) {
-          debouncedSearchUsers(value);
-        } else if (value.length === 0) {
-          setUserOptions([]);
-          setIsLoadingUsers(false);
-        }
+    const [owners, setOwners] = useState<string[]>([]);
+    const [isServicePathValid, setIsValidServicePath] = useState(true);
+    const [isServiceUrlPatternValid, setIsServiceUrlPatternValid] =
+      useState(true);
+    const onTextChange = (value: string): void => {
+      if (value !== text) {
+        setText(value);
       }
     };
-    const onUserOptionChange = (options: UserOption[]): void => {
-      setSelectedOwners(options);
-      setUserOptions([]);
+    const onUserOptionChange = (options: string[]): void => {
+      setOwners(options);
     };
     const onChangeServicePath: React.ChangeEventHandler<HTMLInputElement> = (
       event,
-    ) => setServicePath(event.target.value);
+    ) => {
+      setServicePath(event.target.value);
+      setIsValidServicePath(isValidFullPath(event.target.value));
+    };
 
     const onChangeServicePattern: React.ChangeEventHandler<HTMLInputElement> = (
       event,
-    ) => setServicePattern(event.target.value);
+    ) => {
+      setServicePattern(event.target.value);
+      setIsServiceUrlPatternValid(!validate_ServicePattern(event.target.value));
+    };
     const serverRegistrationOptions =
       editorStore.applicationStore.config.options
         .TEMPORARY__serviceRegistrationConfig;
@@ -167,10 +115,6 @@ const ServiceRegisterModal = observer(
     const toggleActivateService = (): void =>
       setActivateService(!activateService);
 
-    const isServicePathValid = (): boolean => isValidFullPath(servicePath);
-    const isServiceUrlPatternValid = (): boolean =>
-      !validate_ServicePattern(servicePattern);
-
     const registerService = editorStore.applicationStore.guardUnhandledError(
       async (): Promise<void> => {
         const project = ProjectData.serialization.fromJson(
@@ -180,13 +124,11 @@ const ServiceRegisterModal = observer(
           ),
         );
         const currentQueryInfo =
-          (await editorStore.graphManagerState.graphManager.getQueryInfo(
+          await editorStore.graphManagerState.graphManager.getQueryInfo(
             editorStore.query.id,
-          )) as QueryInfo;
+          );
         if (
           registrationState.isInProgress ||
-          !currentQueryInfo ||
-          !project ||
           !servicePath ||
           !servicePattern ||
           !isServicePathValid ||
@@ -199,36 +141,30 @@ const ServiceRegisterModal = observer(
           registrationState.inProgress();
           const serverUrl = guaranteeNonNullable(
             serverRegistrationOptions.find(
-              (option) => option.env === selectedEnvOption?.value,
+              (option) => option.env === selectedEnvOption.value,
             )?.managementUrl,
           );
           const versionInput = LATEST_PROJECT_REVISION;
-          const projectConf = await Promise.all([
-            sdlcServerClient.getConfiguration(project.projectId, undefined),
-          ]);
-          const projectConfig = ProjectConfiguration.serialization.fromJson(
-            projectConf[0],
-          );
           registrationState.setMessage(`Registering service...`);
           const service = await createServiceElement(
             servicePath,
             servicePattern,
-            selectedOwners.map((val) => val.value),
+            owners,
             currentQueryInfo.content,
             currentQueryInfo.mapping,
             currentQueryInfo.runtime,
             editorStore.graphManagerState,
           );
           const serviceRegistrationResult =
-            (await editorStore.graphManagerState.graphManager.registerService(
+            await editorStore.graphManagerState.graphManager.registerService(
               service,
               editorStore.graphManagerState.graph,
-              projectConfig.groupId,
-              projectConfig.artifactId,
+              project.groupId,
+              project.artifactId,
               versionInput,
               serverUrl,
               ServiceExecutionMode.SEMI_INTERACTIVE,
-            )) as ServiceRegistrationResult;
+            );
           if (activateService) {
             registrationState.setMessage(`Activating service...`);
             await editorStore.graphManagerState.graphManager.activateService(
@@ -349,16 +285,14 @@ const ServiceRegisterModal = observer(
                     <CustomSelectorInput
                       className="service-register-modal___service-owner__selector"
                       placeholder={'Enter an owner...'}
-                      isLoading={isLoadingUsers}
                       spellCheck={false}
-                      inputValue={searchText}
-                      options={userOptions}
+                      inputValue={text}
                       darkMode={true}
-                      onInputChange={onSearchTextChange}
+                      onInputChange={onTextChange}
                       onChange={onUserOptionChange}
                       isMulti={true}
                       allowCreating={true}
-                      value={selectedOwners}
+                      value={owners}
                     />
                   </div>
                 </div>
@@ -431,7 +365,7 @@ export const ServiceRegisterAction = observer(
           onClick={registerCurrentQuery}
           title="Register query as service..."
         >
-          <RobotIcon />
+          <RocketIcon />
         </button>
         {showRegisterServiceModal && (
           <ServiceRegisterModal editorStore={editorStore} onClose={onClose} />

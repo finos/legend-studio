@@ -14,110 +14,110 @@
  * limitations under the License.
  */
 
- @use 'mixins' as *;
+@use 'mixins' as *;
 
- .service-register-modal {
-   height: 100%;
-   position: relative;
-   background: var(--color-dark-grey-50);
+.service-register-modal {
+  height: 100%;
+  position: relative;
+  background: var(--color-dark-grey-50);
 
-   &__actions {
-     margin-top: 0.5rem;
-     width: 100%;
-     display: flex;
-     justify-content: flex-end;
-   }
+  &__actions {
+    margin-top: 0.5rem;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
 
-   &__group {
-     &__header {
-       @include flexCenter;
+  &__group {
+    &__header {
+      @include flexCenter;
 
-       height: 1.8rem;
-       width: 10rem;
-       padding: 0 1rem;
-       background: var(--color-dark-grey-400);
-       color: var(--color-light-grey-0);
-       font-weight: 500;
-       font-size: 1.2rem;
-       border-radius: 0.2rem 0.2rem 0 0;
-     }
+      height: 1.8rem;
+      width: 10rem;
+      padding: 0 1rem;
+      background: var(--color-dark-grey-400);
+      color: var(--color-light-grey-0);
+      font-weight: 500;
+      font-size: 1.2rem;
+      border-radius: 0.2rem 0.2rem 0 0;
+    }
 
-     &__content {
-       padding: 0.5rem;
-       border: 0.1rem solid var(--color-dark-grey-400);
-       border-radius: 0 0.2rem 0.2rem;
-     }
+    &__content {
+      padding: 0.5rem;
+      border: 0.1rem solid var(--color-dark-grey-400);
+      border-radius: 0 0.2rem 0.2rem;
+    }
 
-     &--workspace &__header {
-       background: var(--color-purple-400);
-     }
+    &--workspace &__header {
+      background: var(--color-purple-400);
+    }
 
-     &--workspace &__content {
-       border-color: var(--color-purple-400);
-     }
+    &--workspace &__content {
+      border-color: var(--color-purple-400);
+    }
 
-     &--service &__header {
-       background: var(--color-blue-200);
-     }
+    &--service &__header {
+      background: var(--color-blue-200);
+    }
 
-     &--service &__content {
-       border-color: var(--color-blue-200);
-     }
+    &--service &__content {
+      border-color: var(--color-blue-200);
+    }
 
-     & + & {
-       margin-top: 1.5rem;
-     }
-   }
+    & + & {
+      margin-top: 1.5rem;
+    }
+  }
 
-   &__input {
-     display: flex;
+  &__input {
+    display: flex;
 
-     &__label {
-       @include flexVCenter;
+    &__label {
+      @include flexVCenter;
 
-       width: 9.4rem;
-       background: var(--color-dark-grey-200);
-       font-family: 'Roboto Mono', monospace;
-       font-size: 1.4rem;
-       padding: 0 1rem;
-       border-radius: 0.2rem 0 0 0.2rem;
-       color: var(--color-dark-grey-500);
-     }
+      width: 9.4rem;
+      background: var(--color-dark-grey-200);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.4rem;
+      padding: 0 1rem;
+      border-radius: 0.2rem 0 0 0.2rem;
+      color: var(--color-dark-grey-500);
+    }
 
-     &__input,
-     &__selector {
-       flex: 1 0;
-     }
+    &__input,
+    &__selector {
+      flex: 1 0;
+    }
 
-     & + & {
-       margin-top: 0.5rem;
-     }
-   }
+    & + & {
+      margin-top: 0.5rem;
+    }
+  }
 
-   &__auto-activation {
-     display: flex;
-     background: var(--color-dark-grey-85);
-     border: 0.1rem solid var(--color-dark-grey-280);
-     border-radius: 0.2rem;
-     margin-top: 0.5rem;
+  &__auto-activation {
+    display: flex;
+    background: var(--color-dark-grey-85);
+    border: 0.1rem solid var(--color-dark-grey-280);
+    border-radius: 0.2rem;
+    margin-top: 0.5rem;
 
-     &__toggler {
-       padding: 1rem;
-       cursor: pointer;
-       width: calc(100% - 3rem);
-     }
+    &__toggler {
+      padding: 1rem;
+      cursor: pointer;
+      width: calc(100% - 3rem);
+    }
 
-     &__hint {
-       @include flexHCenter;
+    &__hint {
+      @include flexHCenter;
 
-       padding: 1rem 0;
-       width: 3rem;
-     }
+      padding: 1rem 0;
+      width: 3rem;
+    }
 
-     .panel__content__form__section__toggler__prompt {
-       font-family: 'Roboto Mono', monospace;
-       font-size: 1.3rem;
-       margin-left: 1rem;
-     }
-   }
- }
+    .panel__content__form__section__toggler__prompt {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.3rem;
+      margin-left: 1rem;
+    }
+  }
+}
