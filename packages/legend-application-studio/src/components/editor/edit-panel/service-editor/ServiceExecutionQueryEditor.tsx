@@ -65,12 +65,12 @@ import {
   ServiceQueryBuilderState,
   LambdaParameterValuesEditor,
   QueryBuilderTextEditorMode,
-  QueryBuilderTextEditor,
 } from '@finos/legend-query-builder';
 import { EDITOR_MODE } from '../../../../stores/EditorConfig.js';
 import type { ProjectViewerEditorMode } from '../../../../stores/project-viewer/ProjectViewerEditorMode.js';
 import { useLegendStudioApplicationStore } from '../../../LegendStudioBaseStoreProvider.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
+import { SNAPSHOT_VERSION_ALIAS } from '@finos/legend-server-depot';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -262,8 +262,8 @@ export const ServiceExecutionQueryEditor = observer(
     const service = executionState.serviceEditorState.service;
     // actions
     const editWithQueryBuilder = (
-      openQueryBuilderTextEditor: boolean,
-      alwaysOpenQueryBuilderTextEditor: boolean,
+      editQueryInFormMode: boolean,
+      editQueryInTextMode: boolean,
     ): (() => void) =>
       applicationStore.guardUnhandledError(async () => {
         const selectedExecutionState =
@@ -341,8 +341,8 @@ export const ServiceExecutionQueryEditor = observer(
               }),
             );
             if (
-              alwaysOpenQueryBuilderTextEditor ||
-              (openQueryBuilderTextEditor &&
+              !editQueryInFormMode ||
+              (editQueryInTextMode &&
                 !embeddedQueryBuilderState.queryBuilderState?.isQuerySupported)
             ) {
               embeddedQueryBuilderState.queryBuilderState?.textEditorState.openModal(
@@ -421,7 +421,7 @@ export const ServiceExecutionQueryEditor = observer(
               editorStore.projectConfigurationEditorState.projectConfiguration
                 ?.artifactId,
             ),
-            'HEAD',
+            SNAPSHOT_VERSION_ALIAS,
             service.path,
           ),
         );
@@ -464,7 +464,7 @@ export const ServiceExecutionQueryEditor = observer(
             <div className="service-editor__execution__action-btn">
               <button
                 className="service-editor__execution__action-btn__label service-editor__execution__action-btn__label--primary"
-                onClick={editWithQueryBuilder(false, false)}
+                onClick={editWithQueryBuilder(true, false)}
                 title="Edit Query"
                 tabIndex={-1}
               >
@@ -479,7 +479,7 @@ export const ServiceExecutionQueryEditor = observer(
                   <MenuContent>
                     <MenuContentItem
                       className="service-editor__execution__action-btn__option"
-                      onClick={editWithQueryBuilder(true, true)}
+                      onClick={editWithQueryBuilder(false, true)}
                     >
                       Text Mode
                     </MenuContentItem>
@@ -560,14 +560,13 @@ export const ServiceExecutionQueryEditor = observer(
                     >
                       Import Query
                     </MenuContentItem>
-                    {applicationStore.config.queryServerUrl && (
-                      <MenuContentItem
-                        className="service-editor__execution__advanced-btn__option"
-                        onClick={openQueryInLegendQuery}
-                      >
-                        Open in Legend Query
-                      </MenuContentItem>
-                    )}
+                    <MenuContentItem
+                      className="service-editor__execution__advanced-btn__option"
+                      onClick={openQueryInLegendQuery}
+                      disabled={!applicationStore.config.queryServerUrl}
+                    >
+                      Open in Legend Query
+                    </MenuContentItem>
                     <MenuContentItem
                       className="service-editor__execution__advanced-btn__option"
                       onClick={openQueryInServiceExtension}
@@ -610,7 +609,7 @@ export const ServiceExecutionQueryEditor = observer(
             onDoubleClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
-              editWithQueryBuilder(true, false)();
+              editWithQueryBuilder(true, true)();
             }}
           >
             <TextInputEditor
@@ -638,11 +637,6 @@ export const ServiceExecutionQueryEditor = observer(
             />
           )}
         </div>
-        {embeddedQueryBuilderState.queryBuilderState?.textEditorState.mode && (
-          <QueryBuilderTextEditor
-            queryBuilderState={embeddedQueryBuilderState.queryBuilderState}
-          />
-        )}
       </div>
     );
   },
