@@ -86,14 +86,17 @@ const getIdentifiedConnectionWithRuntimeOptionFormatter = (props: {
       <div className={className}>
         <div className={`${className}__name`}>{option.label}</div>
         {
-          <div className={`${className}__tag`}>
-            {`${
-              (option.value?.runtime as RuntimePointer).packageableRuntime.value
-                .path
-            }/${
-              option.value?.identifiedConnection.connection.store.value.path
-            }/${option.label}`}
-          </div>
+          <>
+            <div className={`${className}__tag`}>
+              {`${
+                (option.value?.runtime as RuntimePointer).packageableRuntime
+                  .value.path
+              }`}
+            </div>
+            <div className={`${className}__tag`}>
+              {`${option.value?.identifiedConnection.connection.store.value.path}`}
+            </div>
+          </>
         }
       </div>
     );
