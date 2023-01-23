@@ -52,6 +52,8 @@ import { EmbeddedDataEditor } from '../../data-editor/EmbeddedDataEditor.js';
 import { EmbeddedDataType } from '../../../../../stores/editor-state/ExternalFormatState.js';
 import { flowResult } from 'mobx';
 import {
+  ActionAlertActionType,
+  ActionAlertType,
   buildElementOption,
   LEGEND_APPLICATION_DOCUMENTATION_KEY,
   useApplicationStore,
@@ -64,6 +66,8 @@ export const ConnectionTestDataEditor = observer(
   (props: { connectionTestDataState: ConnectionTestDataState }) => {
     const { connectionTestDataState } = props;
     const applicationStore = useApplicationStore();
+    const USER_ATTESTATION_MESSAGE =
+      'Data generated has not been anonmyized. I attest that I am aware of the sensitive data leakage risk when using real data in tests.';
     const isReadOnly =
       connectionTestDataState.testDataState.testSuiteState.testableState
         .serviceEditorState.isReadOnly;
@@ -75,10 +79,34 @@ export const ConnectionTestDataEditor = observer(
         !anonymizeGeneratedData,
       );
     };
+    const confirmGenerateUnAnonmyizedData = (): void => {
+      applicationStore.setActionAlertInfo({
+        message: USER_ATTESTATION_MESSAGE,
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Accept',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: applicationStore.guardUnhandledError(() =>
+              flowResult(connectionTestDataState.generateTestData()),
+            ),
+          },
+          {
+            label: 'Decline',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    };
     const generateTestData = (): void => {
-      flowResult(connectionTestDataState.generateTestData()).catch(
-        applicationStore.alertUnhandledError,
-      );
+      if (!anonymizeGeneratedData) {
+        confirmGenerateUnAnonmyizedData();
+      } else {
+        flowResult(connectionTestDataState.generateTestData()).catch(
+          applicationStore.alertUnhandledError,
+        );
+      }
     };
 
     return (
@@ -86,7 +114,7 @@ export const ConnectionTestDataEditor = observer(
         <div className="service-test-suite-editor__header">
           <div className="service-test-suite-editor__header__title">
             <div className="service-test-suite-editor__header__title__label">
-              embedded data
+              data
             </div>
           </div>
           <div className="panel__header__actions">
@@ -410,7 +438,7 @@ export const ServiceTestDataEditor = observer(
         <div className="service-test-suite-editor__header">
           <div className="service-test-suite-editor__header__title">
             <div className="service-test-suite-editor__header__title__label service-test-suite-editor__header__title__label--data">
-              data
+              test suite data
             </div>
           </div>
         </div>
@@ -428,7 +456,7 @@ export const ServiceTestDataEditor = observer(
               <div className="binding-editor__header">
                 <div className="binding-editor__header__title">
                   <div className="binding-editor__header__title__label">
-                    connections test data
+                    connections
                     <button
                       className="binding-editor__header__title__label__hint"
                       tabIndex={-1}
