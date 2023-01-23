@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 22.3.2
+
+### Patch Changes
+
+- [#1823](https://github.com/finos/legend-studio/pull/1823) [`798ab319e`](https://github.com/finos/legend-studio/commit/798ab319ea6c1b8819f7f361891bb52475183451) ([@gayathrir11](https://github.com/gayathrir11)) - Modify the label and fix the copy link functionality for dependependency tree elements
+
 ## 22.3.1
 
 ### Patch Changes
