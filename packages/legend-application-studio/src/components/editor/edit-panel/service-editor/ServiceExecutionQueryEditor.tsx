@@ -385,7 +385,6 @@ export const ServiceExecutionQueryEditor = observer(
       flowResult(executionState.generatePlan(true)),
     );
 
-    console.log(applicationStore);
     const openQueryInLegendQuery = (): void => {
       if (
         editorStore.mode === EDITOR_MODE.VIEWER &&
