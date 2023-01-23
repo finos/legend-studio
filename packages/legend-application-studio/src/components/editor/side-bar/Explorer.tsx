@@ -91,6 +91,7 @@ import {
   isMainGraphElement,
   getFunctionSignature,
   getFunctionNameWithPath,
+  getElementRootPackage,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
@@ -236,6 +237,12 @@ const ExplorerContextMenu = observer(
       ));
     const projectId = editorStore.sdlcState.currentProject?.projectId;
     const isReadOnly = editorStore.isInViewerMode || Boolean(nodeIsImmutable);
+    const isDependencyProjectElement =
+      node &&
+      isDependencyElement(
+        node.packageableElement,
+        editorStore.graphManagerState.graph,
+      );
     const _package = node
       ? node.packageableElement instanceof Package
         ? node.packageableElement
@@ -283,20 +290,74 @@ const ExplorerContextMenu = observer(
     };
     const copyWorkspaceElementLink = (): void => {
       if (node) {
-        applicationStore
-          .copyTextToClipboard(
-            applicationStore.navigator.generateAddress(
-              editorStore.editorMode.generateElementLink(
-                node.packageableElement.path,
+        const dependency =
+          editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
+            (dep) =>
+              dep.projectId ===
+              getElementRootPackage(node.packageableElement).name,
+          );
+        if (dependency) {
+          applicationStore
+            .copyTextToClipboard(
+              applicationStore.navigator.generateAddress(
+                editorStore.editorMode.generateDependencyElementLink(
+                  node.packageableElement.path,
+                  dependency,
+                ),
               ),
-            ),
-          )
-          .then(() =>
-            applicationStore.notifySuccess(
-              'Copied workspace element link to clipboard',
-            ),
-          )
-          .catch(applicationStore.alertUnhandledError);
+            )
+            .then(() =>
+              applicationStore.notifySuccess(
+                'Copied workspace element link to clipboard',
+              ),
+            )
+            .catch(applicationStore.alertUnhandledError);
+        } else {
+          applicationStore
+            .copyTextToClipboard(
+              applicationStore.navigator.generateAddress(
+                editorStore.editorMode.generateElementLink(
+                  node.packageableElement.path,
+                ),
+              ),
+            )
+            .then(() =>
+              applicationStore.notifySuccess(
+                'Copied workspace element link to clipboard',
+              ),
+            )
+            .catch(applicationStore.alertUnhandledError);
+        }
+      }
+    };
+    const copySDLCProjectLink = (): void => {
+      if (node) {
+        const dependency =
+          editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
+            (dep) =>
+              dep.projectId ===
+              getElementRootPackage(node.packageableElement).name,
+          );
+        if (dependency) {
+          applicationStore
+            .copyTextToClipboard(
+              applicationStore.navigator.generateAddress(
+                generateViewProjectByGAVRoute(
+                  guaranteeNonNullable(dependency.groupId),
+                  guaranteeNonNullable(dependency.artifactId),
+                  dependency.versionId === MASTER_SNAPSHOT_ALIAS
+                    ? SNAPSHOT_VERSION_ALIAS
+                    : dependency.versionId,
+                ),
+              ),
+            )
+            .then(() =>
+              applicationStore.notifySuccess(
+                'Copied SDLC project link to clipboard',
+              ),
+            )
+            .catch(applicationStore.alertUnhandledError);
+        }
       }
     };
     const createNewElement =
@@ -311,7 +372,7 @@ const ExplorerContextMenu = observer(
     const viewProject = (): void => {
       const projectDependency =
         editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
-          (dep) => dep.projectId === node?.label,
+          (dep) => dep.projectId === node?.packageableElement.name,
         );
       if (projectDependency && !projectDependency.isLegacyDependency) {
         applicationStore.navigator.visitAddress(
@@ -330,7 +391,7 @@ const ExplorerContextMenu = observer(
     const viewSDLCProject = (): void => {
       const dependency =
         editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
-          (dep) => dep.projectId === node?.label,
+          (dep) => dep.projectId === node?.packageableElement.name,
         );
       if (dependency) {
         createViewSDLCProjectHandler(
@@ -397,7 +458,7 @@ const ExplorerContextMenu = observer(
         )}
         {node && (
           <>
-            {!editorStore.isInViewerMode && (
+            {!editorStore.isInViewerMode && !isDependencyProjectElement && (
               <MenuContentItem onClick={openElementInViewerMode}>
                 View in Project
               </MenuContentItem>
@@ -405,6 +466,11 @@ const ExplorerContextMenu = observer(
             <MenuContentItem onClick={copyWorkspaceElementLink}>
               Copy Link
             </MenuContentItem>
+            {isDependencyProjectElement && (
+              <MenuContentItem onClick={copySDLCProjectLink}>
+                Copy SDLC Project Link
+              </MenuContentItem>
+            )}
           </>
         )}
       </MenuContent>

@@ -22,6 +22,12 @@ import {
 } from '../LegendStudioRouter.js';
 import { EditorMode } from '../editor/EditorMode.js';
 import type { ProjectViewerStore } from './ProjectViewerStore.js';
+import type { ProjectDependency } from '@finos/legend-server-sdlc';
+import {
+  MASTER_SNAPSHOT_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export class ProjectViewerEditorMode extends EditorMode {
   viewerStore: ProjectViewerStore;
@@ -55,5 +61,19 @@ export class ProjectViewerEditorMode extends EditorMode {
           this.viewerStore.editorStore.sdlcState.activeProject.projectId,
           elementPath,
         );
+  }
+
+  generateDependencyElementLink(
+    elementPath: string,
+    dependencyProject: ProjectDependency,
+  ): string {
+    return generateViewProjectByGAVRoute(
+      guaranteeNonNullable(dependencyProject.groupId),
+      guaranteeNonNullable(dependencyProject.artifactId),
+      dependencyProject.versionId === MASTER_SNAPSHOT_ALIAS
+        ? SNAPSHOT_VERSION_ALIAS
+        : dependencyProject.versionId,
+      elementPath,
+    );
   }
 }

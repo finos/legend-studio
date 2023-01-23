@@ -14,9 +14,19 @@
  * limitations under the License.
  */
 
+import type { ProjectDependency } from '@finos/legend-server-sdlc';
+
 export abstract class EditorMode {
   /**
    * Using information about the current project to generate a sharable link to the element.
    */
   abstract generateElementLink(elementPath: string): string;
+
+  /**
+   * Using information about the dependency project to generate a sharable link to the element.
+   */
+  abstract generateDependencyElementLink(
+    elementPath: string,
+    dependencyProject: ProjectDependency,
+  ): string;
 }

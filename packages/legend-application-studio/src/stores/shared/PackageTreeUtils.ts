@@ -48,6 +48,17 @@ import {
   getElementRootPackage,
 } from '@finos/legend-graph';
 import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState.js';
+import { GAV_DELIMITER } from '@finos/legend-storage';
+
+/**
+ *
+ * Returns the explorer tree label for a dependency project. We return artifactId if
+ * the dependency is not a legacy dependency otherwise we return the projectId.
+ */
+const getDependecyElementLabelFromProjectId = (projectId: string): string =>
+  projectId.includes(GAV_DELIMITER)
+    ? guaranteeNonNullable(projectId.split(GAV_DELIMITER)[1])
+    : projectId;
 
 const getElementProjectExplorerDnDType = (
   editorStore: EditorStore,
@@ -226,7 +237,7 @@ export const getDependenciesPackableElementTreeData = (
       true,
       childFilter,
     );
-    childRootNode.label = _package.name;
+    childRootNode.label = getDependecyElementLabelFromProjectId(_package.name);
     childRootNode.id = _package.name;
     addUniqueEntry(rootIds, childRootNode.id);
     nodes.set(childRootNode.id, childRootNode);
