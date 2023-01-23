@@ -63,7 +63,7 @@ export class GrammarTextEditorState {
 
   graphGrammarText = '';
   currentElementLabelRegexString?: string | undefined;
-  wrapText = false;
+  wrapText = true;
   forcedCursorPosition?: TextEditorPosition | undefined;
 
   constructor(editorStore: EditorStore) {
