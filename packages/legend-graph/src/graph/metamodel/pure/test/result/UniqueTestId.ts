@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { AtomicTest, TestSuite } from '../Test.js';
 
-import type { Hashable } from '@finos/legend-shared';
-import type { TestAssertion } from './assertion/TestAssertion.js';
+export class UniqueTestId {
+  parentSuite: TestSuite | undefined;
+  atomicTest: AtomicTest;
 
-export abstract class TestBatch implements Hashable {
-  id!: string;
-  batchId!: string;
-  assertions: TestAssertion[] = [];
-
-  abstract get hashCode(): string;
+  constructor(testSuite: TestSuite | undefined, atomicTestId: AtomicTest) {
+    this.parentSuite = testSuite;
+    this.atomicTest = atomicTestId;
+  }
 }

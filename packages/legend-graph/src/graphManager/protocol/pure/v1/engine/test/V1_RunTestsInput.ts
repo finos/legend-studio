@@ -17,17 +17,17 @@
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, object, primitive, list } from 'serializr';
 import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
-import type { V1_AtomicTestId } from '../../model/test/V1_AtomicTestId.js';
-import { V1_atomicTestIdModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_TestSerializationHelper.js';
+import type { V1_UniqueTestId } from '../../model/test/V1_UniqueTestId.js';
+import { V1_uniqueTestIdModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_TestSerializationHelper.js';
 
 export class V1_RunTestsTestableInput {
   testable!: string;
-  unitTestIds: V1_AtomicTestId[] = [];
+  unitTestIds: V1_UniqueTestId[] = [];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_RunTestsTestableInput, {
       testable: primitive(),
-      unitTestIds: list(usingModelSchema(V1_atomicTestIdModelSchema)),
+      unitTestIds: list(usingModelSchema(V1_uniqueTestIdModelSchema)),
     }),
   );
 }

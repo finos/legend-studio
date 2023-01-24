@@ -19,14 +19,14 @@ import {
   type AssertionStatus,
   AssertFail,
   type TestResult,
-  TestPassed,
+  TestExecuted,
   TestError,
-  TestFailed,
   EqualToJson,
   ExternalFormatData,
   EqualToJsonAssertFail,
   MultiExecutionServiceTestResult,
   AssertPass,
+  TestExecutionStatus,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -118,7 +118,7 @@ export class TestAssertionResultState {
   setTestResult(val: TestResult | undefined): void {
     this.testResult = val;
     this.statusState = undefined;
-    if (val instanceof TestFailed) {
+    if (val instanceof TestExecuted) {
       const status = val.assertStatuses.find(
         (_status) => _status.assertion === this.assertionState.assertion,
       );
@@ -158,10 +158,14 @@ export class TestAssertionResultState {
     }
     if (this.testResult instanceof TestError) {
       return TESTABLE_RESULT.ERROR;
-    } else if (this.testResult instanceof TestPassed) {
+    } else if (
+      this.testResult instanceof TestExecuted &&
+      this.testResult.testExecutionStatus === TestExecutionStatus.PASS
+    ) {
       return TESTABLE_RESULT.PASSED;
     } else if (
-      this.testResult instanceof TestFailed &&
+      this.testResult instanceof TestExecuted &&
+      this.testResult.testExecutionStatus === TestExecutionStatus.FAIL &&
       this.statusState instanceof TestAssertionStatusState
     ) {
       return getTestableResultFromAssertionStatus(this.statusState.status);
@@ -170,10 +174,16 @@ export class TestAssertionResultState {
         this.testResult.keyIndexedTestResults.entries(),
       ).every((keyResult) => {
         const result = keyResult[1];
-        if (result instanceof TestPassed) {
+        if (
+          result instanceof TestExecuted &&
+          result.testExecutionStatus === TestExecutionStatus.PASS
+        ) {
           return true;
         }
-        if (result instanceof TestFailed) {
+        if (
+          result instanceof TestExecuted &&
+          result.testExecutionStatus === TestExecutionStatus.FAIL
+        ) {
           const status = result.assertStatuses.find(
             (_status) => _status.assertion === this.assertionState.assertion,
           );

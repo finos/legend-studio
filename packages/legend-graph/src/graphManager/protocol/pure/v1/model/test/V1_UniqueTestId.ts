@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export class V1_AtomicTestId {
+export class V1_UniqueTestId {
   testSuiteId: string | undefined;
   atomicTestId!: string;
 }
