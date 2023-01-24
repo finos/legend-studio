@@ -261,10 +261,7 @@ export const ServiceExecutionQueryEditor = observer(
     const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
     const service = executionState.serviceEditorState.service;
     // actions
-    const editWithQueryBuilder = (
-      editQueryInFormMode: boolean,
-      editQueryInTextMode: boolean,
-    ): (() => void) =>
+    const editWithQueryBuilder = (openInTextMode = false): (() => void) =>
       applicationStore.guardUnhandledError(async () => {
         const selectedExecutionState =
           executionState.selectedExecutionContextState;
@@ -292,6 +289,11 @@ export const ServiceExecutionQueryEditor = observer(
                   queryBuilderState.initializeWithQuery(
                     executionState.execution.func,
                   );
+                  if (openInTextMode) {
+                    queryBuilderState.textEditorState.openModal(
+                      QueryBuilderTextEditorMode.TEXT,
+                    );
+                  }
                   return queryBuilderState;
                 },
                 actionConfigs: [
@@ -340,15 +342,6 @@ export const ServiceExecutionQueryEditor = observer(
                 ),
               }),
             );
-            if (
-              !editQueryInFormMode ||
-              (editQueryInTextMode &&
-                !embeddedQueryBuilderState.queryBuilderState?.isQuerySupported)
-            ) {
-              embeddedQueryBuilderState.queryBuilderState?.textEditorState.openModal(
-                QueryBuilderTextEditorMode.TEXT,
-              );
-            }
             executionState.setOpeningQueryEditor(false);
             return;
           }
@@ -464,7 +457,7 @@ export const ServiceExecutionQueryEditor = observer(
             <div className="service-editor__execution__action-btn">
               <button
                 className="service-editor__execution__action-btn__label service-editor__execution__action-btn__label--primary"
-                onClick={editWithQueryBuilder(true, false)}
+                onClick={editWithQueryBuilder()}
                 title="Edit Query"
                 tabIndex={-1}
               >
@@ -479,7 +472,7 @@ export const ServiceExecutionQueryEditor = observer(
                   <MenuContent>
                     <MenuContentItem
                       className="service-editor__execution__action-btn__option"
-                      onClick={editWithQueryBuilder(false, true)}
+                      onClick={editWithQueryBuilder(true)}
                     >
                       Text Mode
                     </MenuContentItem>
@@ -603,13 +596,11 @@ export const ServiceExecutionQueryEditor = observer(
           />
           <div
             className="service-execution-query-editor__content"
-            title={
-              'double click to edit query in query builder form mode or text mode'
-            }
+            title={'double click to edit query in query builder'}
             onDoubleClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
-              editWithQueryBuilder(true, true)();
+              editWithQueryBuilder()();
             }}
           >
             <TextInputEditor

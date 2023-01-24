@@ -105,10 +105,7 @@ const MappingTestQueryEditor = observer(
     const applicationStore = useApplicationStore();
 
     // actions
-    const editWithQueryBuilder = (
-      editQueryInFormMode: boolean,
-      editQueryInTextMode: boolean,
-    ): (() => void) =>
+    const editWithQueryBuilder = (openInTextMode = false): (() => void) =>
       applicationStore.guardUnhandledError(async () => {
         const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
         await flowResult(
@@ -120,6 +117,11 @@ const MappingTestQueryEditor = observer(
                 embeddedQueryBuilderState.editorStore.graphManagerState,
               );
               queryBuilderState.initializeWithQuery(testState.queryState.query);
+              if (openInTextMode) {
+                queryBuilderState.textEditorState.openModal(
+                  QueryBuilderTextEditorMode.TEXT,
+                );
+              }
               return queryBuilderState;
             },
             actionConfigs: [
@@ -165,15 +167,6 @@ const MappingTestQueryEditor = observer(
             disableCompile: isStubbed_RawLambda(testState.queryState.query),
           }),
         );
-        if (
-          !editQueryInFormMode ||
-          (editQueryInTextMode &&
-            !embeddedQueryBuilderState.queryBuilderState?.isQuerySupported)
-        ) {
-          embeddedQueryBuilderState.queryBuilderState?.textEditorState.openModal(
-            QueryBuilderTextEditorMode.TEXT,
-          );
-        }
       });
 
     // Class mapping selector
@@ -268,7 +261,7 @@ const MappingTestQueryEditor = observer(
             <div className="mapping-test-editor__action-btn">
               <button
                 className="mapping-test-editor__action-btn__label"
-                onClick={editWithQueryBuilder(true, false)}
+                onClick={editWithQueryBuilder()}
                 title="Edit Query"
                 tabIndex={-1}
               >
@@ -283,7 +276,7 @@ const MappingTestQueryEditor = observer(
                   <MenuContent>
                     <MenuContentItem
                       className="mapping-test-editor__action-btn__option"
-                      onClick={editWithQueryBuilder(false, true)}
+                      onClick={editWithQueryBuilder(true)}
                     >
                       Text Mode
                     </MenuContentItem>
@@ -309,13 +302,11 @@ const MappingTestQueryEditor = observer(
           <PanelContent>
             <div
               className="mapping-test-editor__query-panel__query"
-              title={
-                'double click to edit query in query builder form mode or text mode'
-              }
+              title={'double click to edit query in query builder'}
               onDoubleClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                editWithQueryBuilder(true, true)();
+                editWithQueryBuilder()();
               }}
             >
               <TextInputEditor
