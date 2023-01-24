@@ -30,7 +30,6 @@ import {
   clsx,
   PanelLoadingIndicator,
   BlankPanelPlaceholder,
-  TimesIcon,
   PlayIcon,
   ResizablePanelGroup,
   ResizablePanel,
@@ -92,7 +91,10 @@ import {
   relationalInputData_setData,
   relationalInputData_setInputType,
 } from '../../../../stores/shared/modifier/STO_Relational_GraphModifierHelper.js';
-import type { QueryBuilderState } from '@finos/legend-query-builder';
+import {
+  type QueryBuilderState,
+  QueryBuilderTextEditorMode,
+} from '@finos/legend-query-builder';
 import { MappingExecutionQueryBuilderState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 
 const MappingTestQueryEditor = observer(
@@ -103,8 +105,8 @@ const MappingTestQueryEditor = observer(
     const applicationStore = useApplicationStore();
 
     // actions
-    const editWithQueryBuilder = applicationStore.guardUnhandledError(
-      async () => {
+    const editWithQueryBuilder = (openInTextMode = false): (() => void) =>
+      applicationStore.guardUnhandledError(async () => {
         const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
         await flowResult(
           embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
@@ -115,6 +117,11 @@ const MappingTestQueryEditor = observer(
                 embeddedQueryBuilderState.editorStore.graphManagerState,
               );
               queryBuilderState.initializeWithQuery(testState.queryState.query);
+              if (openInTextMode) {
+                queryBuilderState.textEditorState.openModal(
+                  QueryBuilderTextEditorMode.TEXT,
+                );
+              }
               return queryBuilderState;
             },
             actionConfigs: [
@@ -160,8 +167,7 @@ const MappingTestQueryEditor = observer(
             disableCompile: isStubbed_RawLambda(testState.queryState.query),
           }),
         );
-      },
-    );
+      });
 
     // Class mapping selector
     const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
@@ -252,28 +258,57 @@ const MappingTestQueryEditor = observer(
             <div className="panel__header__title__label">query</div>
           </div>
           <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              onClick={editWithQueryBuilder}
-              title="Edit query..."
-            >
-              <PencilIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              disabled={isReadOnly}
-              onClick={clearQuery}
-              title="Clear query"
-            >
-              <TimesIcon />
-            </button>
+            <div className="mapping-test-editor__action-btn">
+              <button
+                className="mapping-test-editor__action-btn__label"
+                onClick={editWithQueryBuilder()}
+                title="Edit Query"
+                tabIndex={-1}
+              >
+                <PencilIcon className="mapping-test-editor__action-btn__label__icon" />
+                <div className="mapping-test-editor__action-btn__label__title">
+                  Edit Query
+                </div>
+              </button>
+              <DropdownMenu
+                className="mapping-test-editor__action-btn__dropdown-btn"
+                content={
+                  <MenuContent>
+                    <MenuContentItem
+                      className="mapping-test-editor__action-btn__option"
+                      onClick={editWithQueryBuilder(true)}
+                    >
+                      Text Mode
+                    </MenuContentItem>
+                    <MenuContentItem
+                      className="mapping-test-editor__action-btn__option"
+                      onClick={clearQuery}
+                    >
+                      Clear Query
+                    </MenuContentItem>
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                  transformOrigin: { vertical: 'top', horizontal: 'right' },
+                }}
+              >
+                <CaretDownIcon />
+              </DropdownMenu>
+            </div>
           </div>
         </div>
         {!isStubbed_RawLambda(queryState.query) && (
           <PanelContent>
-            <div className="mapping-test-editor__query-panel__query">
+            <div
+              className="mapping-test-editor__query-panel__query"
+              title={'double click to edit query in query builder'}
+              onDoubleClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                editWithQueryBuilder()();
+              }}
+            >
               <TextInputEditor
                 inputValue={queryState.lambdaString}
                 isReadOnly={true}
@@ -752,7 +787,7 @@ export const MappingTestEditor = observer(
               </div>
             ))}
           </div>
-          <div className="mapping-test-editor__header__actions">
+          <div className="panel__header__actions mapping-test-editor__header__actions">
             {testState.isRunningTest ? (
               <button
                 className="mapping-test-editor__stop-btn"
@@ -767,35 +802,35 @@ export const MappingTestEditor = observer(
                 </div>
               </button>
             ) : (
-              <div className="mapping-test-editor__execute-btn">
+              <div className="mapping-test-editor__action-btn">
                 <button
-                  className="mapping-test-editor__execute-btn__label"
+                  className="mapping-test-editor__action-btn__label"
                   onClick={runTest}
                   disabled={
                     testState.isExecutingTest || testState.isGeneratingPlan
                   }
                   tabIndex={-1}
                 >
-                  <PlayIcon className="mapping-test-editor__execute-btn__label__icon" />
-                  <div className="mapping-test-editor__execute-btn__label__title">
+                  <PlayIcon className="mapping-test-editor__action-btn__label__icon" />
+                  <div className="mapping-test-editor__action-btn__label__title">
                     Run Test
                   </div>
                 </button>
                 <DropdownMenu
-                  className="mapping-test-editor__execute-btn__dropdown-btn"
+                  className="mapping-test-editor__action-btn__dropdown-btn"
                   disabled={
                     testState.isExecutingTest || testState.isGeneratingPlan
                   }
                   content={
                     <MenuContent>
                       <MenuContentItem
-                        className="mapping-test-editor__execute-btn__option"
+                        className="mapping-test-editor__action-btn__option"
                         onClick={generatePlan}
                       >
                         Generate Plan
                       </MenuContentItem>
                       <MenuContentItem
-                        className="mapping-test-editor__execute-btn__option"
+                        className="mapping-test-editor__action-btn__option"
                         onClick={debugPlanGeneration}
                       >
                         Debug
