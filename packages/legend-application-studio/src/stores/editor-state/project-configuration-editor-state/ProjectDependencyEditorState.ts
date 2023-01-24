@@ -299,8 +299,9 @@ export class ProjectDependencyEditorState {
   flattenDependencyTreeData:
     | TreeData<ProjectDependencyTreeNodeData>
     | undefined;
-  conflictStates: ProjectDependencyConflictState[] = [];
+  conflictStates: ProjectDependencyConflictState[] | undefined;
   expandConflictsState = ActionState.create();
+  buildConflictPathState = ActionState.create();
 
   constructor(
     configState: ProjectConfigurationEditorState,
@@ -314,12 +315,14 @@ export class ProjectDependencyEditorState {
       conflictStates: observable,
       reportTab: observable,
       expandConflictsState: observable,
+      buildConflictPathState: observable,
       setDependencyReport: action,
       expandAllConflicts: action,
       setFlattenDependencyTreeData: action,
       clearTrees: action,
       setTreeData: action,
       setDependencyTreeData: action,
+      buildConflictPaths: action,
       setConflictStates: action,
       fetchDependencyReport: flow,
     });
@@ -329,15 +332,17 @@ export class ProjectDependencyEditorState {
   }
 
   expandAllConflicts(): void {
-    this.expandConflictsState.inProgress();
-    this.conflictStates.forEach((c) => {
-      const treeData = c.treeData;
-      Array.from(treeData.nodes.values()).forEach((n) => (n.isOpen = true));
-    });
-    this.conflictStates.forEach((c) => {
-      c.setTreeData({ ...c.treeData });
-    });
-    this.expandConflictsState.complete();
+    if (this.conflictStates) {
+      this.expandConflictsState.inProgress();
+      this.conflictStates.forEach((c) => {
+        const treeData = c.treeData;
+        Array.from(treeData.nodes.values()).forEach((n) => (n.isOpen = true));
+      });
+      this.conflictStates.forEach((c) => {
+        c.setTreeData({ ...c.treeData });
+      });
+      this.expandConflictsState.complete();
+    }
   }
 
   setTreeData(
@@ -361,7 +366,7 @@ export class ProjectDependencyEditorState {
     this.dependencyTreeData = tree;
   }
 
-  setConflictStates(val: ProjectDependencyConflictState[]): void {
+  setConflictStates(val: ProjectDependencyConflictState[] | undefined): void {
     this.conflictStates = val;
   }
 
@@ -380,6 +385,7 @@ export class ProjectDependencyEditorState {
       this.fetchingDependencyInfoState.inProgress();
       this.dependencyReport = undefined;
       this.clearTrees();
+      this.setConflictStates(undefined);
       if (this.projectConfiguration?.projectDependencies) {
         const dependencyCoordinates = (yield flowResult(
           this.editorStore.graphState.buildProjectDependencyCoordinates(
@@ -396,7 +402,10 @@ export class ProjectDependencyEditorState {
           RawProjectDependencyReport.serialization.fromJson(dependencyInfoRaw);
         const report = buildDependencyReport(rawdependencyReport);
         this.dependencyReport = report;
-        this.processReport(report);
+        this.setDependencyTreeData(buildDependencyTreeData(report));
+        this.setFlattenDependencyTreeData(
+          buildFlattenDependencyTreeData(report),
+        );
       }
       this.fetchingDependencyInfoState.complete();
     } catch (error) {
@@ -410,22 +419,27 @@ export class ProjectDependencyEditorState {
     }
   }
 
-  processReport(report: ProjectDependencyGraphReport): void {
-    this.setDependencyTreeData(buildDependencyTreeData(report));
-    this.setFlattenDependencyTreeData(buildFlattenDependencyTreeData(report));
-    this.setConflictStates([]);
-    try {
-      report.conflictInfo = buildConflictsPaths(report);
-      const conflictStates = Array.from(report.conflictInfo.entries()).map(
-        ([conflict, paths]) =>
-          new ProjectDependencyConflictState(report, conflict, paths),
-      );
-      this.setConflictStates(conflictStates);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(
-        `Unable to build conflict paths ${error.message}`,
-      );
+  buildConflictPaths(): void {
+    const report = this.dependencyReport;
+    if (report) {
+      this.setConflictStates(undefined);
+      this.buildConflictPathState.inProgress();
+      try {
+        report.conflictInfo = buildConflictsPaths(report);
+        const conflictStates = Array.from(report.conflictInfo.entries()).map(
+          ([conflict, paths]) =>
+            new ProjectDependencyConflictState(report, conflict, paths),
+        );
+        this.setConflictStates(conflictStates);
+        this.buildConflictPathState.complete();
+      } catch (error) {
+        assertErrorThrown(error);
+        this.setConflictStates([]);
+        this.buildConflictPathState.fail();
+        this.editorStore.applicationStore.notifyError(
+          `Unable to build conflict paths ${error.message}`,
+        );
+      }
     }
   }
 
