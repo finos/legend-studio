@@ -60,7 +60,7 @@ import {
 } from '@finos/legend-application';
 import { DSL_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/studio/DSL_Service_LegendStudioDocumentation.js';
 
-type UserOption = { label: string; value: string };
+export type UserOption = { label: string; value: string };
 
 const buildUserOption = (userValue: User): UserOption => ({
   value: userValue.userId,
