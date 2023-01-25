@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 22.3.3
+
+### Patch Changes
+
+- [#1819](https://github.com/finos/legend-studio/pull/1819) [`675d88bb1`](https://github.com/finos/legend-studio/commit/675d88bb120e8c6015afcfd08f3847b6dfe8c2df) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Group actions in the service execution tab and support opening current service query in `Legend Query`.
+
 ## 22.3.2
 
 ### Patch Changes
