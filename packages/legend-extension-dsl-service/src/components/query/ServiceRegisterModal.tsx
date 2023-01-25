@@ -49,11 +49,11 @@ import {
 } from '@finos/legend-application';
 import {
   ServiceExecutionMode,
-  isValidFullPath,
   validate_ServicePattern,
 } from '@finos/legend-graph';
 import type { ExistingQueryEditorStore } from '@finos/legend-application-query';
 import { ProjectData } from '@finos/legend-server-depot';
+import type { UserOption } from '../studio/QueryProductionizer.js';
 
 const ServiceRegisterModal = observer(
   (props: { editorStore: ExistingQueryEditorStore; onClose(): void }) => {
@@ -61,11 +61,9 @@ const ServiceRegisterModal = observer(
     const [registrationState] = useState(ActionState.create());
     const [text, setText] = useState('');
     const [serviceEnv, setServiceEnv] = useState<string | undefined>(undefined);
-    const [servicePath, setServicePath] = useState('model::QueryService');
     const [activateService, setActivateService] = useState(false);
     const [servicePattern, setServicePattern] = useState(`/${uuid()}`);
-    const [owners, setOwners] = useState<string[]>([]);
-    const [isServicePathValid, setIsValidServicePath] = useState(true);
+    const [owners, setOwners] = useState<UserOption[]>([]);
     const [isServiceUrlPatternValid, setIsServiceUrlPatternValid] =
       useState(true);
     const onTextChange = (value: string): void => {
@@ -73,14 +71,8 @@ const ServiceRegisterModal = observer(
         setText(value);
       }
     };
-    const onUserOptionChange = (options: string[]): void => {
+    const onUserOptionChange = (options: UserOption[]): void => {
       setOwners(options);
-    };
-    const onChangeServicePath: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      setServicePath(event.target.value);
-      setIsValidServicePath(isValidFullPath(event.target.value));
     };
 
     const onChangeServicePattern: React.ChangeEventHandler<HTMLInputElement> = (
@@ -129,9 +121,7 @@ const ServiceRegisterModal = observer(
           );
         if (
           registrationState.isInProgress ||
-          !servicePath ||
           !servicePattern ||
-          !isServicePathValid ||
           !isServiceUrlPatternValid ||
           !selectedEnvOption
         ) {
@@ -147,9 +137,9 @@ const ServiceRegisterModal = observer(
           const versionInput = LATEST_PROJECT_REVISION;
           registrationState.setMessage(`Registering service...`);
           const service = await createServiceElement(
-            servicePath,
+            'model::QueryService',
             servicePattern,
-            owners,
+            owners.map((o) => o.value),
             currentQueryInfo.content,
             currentQueryInfo.mapping,
             currentQueryInfo.runtime,
@@ -233,27 +223,6 @@ const ServiceRegisterModal = observer(
             <PanelLoadingIndicator isLoading={registrationState.isInProgress} />
             <PanelFullContent>
               <div className="service-register-modal__group__content">
-                <div className="service-register-modal__input">
-                  <div className="service-register-modal__input__label">
-                    Path
-                  </div>
-                  <div className="input-group service-register-modal__input__input">
-                    <input
-                      className={clsx('input input--dark input-group__input', {
-                        'input-group__input--error': !isServicePathValid,
-                      })}
-                      spellCheck={false}
-                      placeholder="Enter the full path for your service (e.g. model::MyQueryService)"
-                      value={servicePath}
-                      onChange={onChangeServicePath}
-                    />
-                    {!isServicePathValid && (
-                      <div className="input-group__error-message">
-                        Invalid full path
-                      </div>
-                    )}
-                  </div>
-                </div>
                 <div className="service-register-modal__input">
                   <div className="service-register-modal__input__label">
                     URL

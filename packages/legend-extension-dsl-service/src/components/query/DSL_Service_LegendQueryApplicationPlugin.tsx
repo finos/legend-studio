@@ -24,7 +24,7 @@ import { generateQueryProductionizerRoute } from '../../stores/studio/DSL_Servic
 import { ProjectData } from '@finos/legend-server-depot';
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import { buildUrl } from '@finos/legend-shared';
-import { ServiceRegisterAction } from '../studio/ServiceRegisterModal.js';
+import { ServiceRegisterAction } from './ServiceRegisterModal.js';
 
 export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
