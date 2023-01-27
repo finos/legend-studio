@@ -43,6 +43,7 @@ import {
   RuntimePointer,
   Service,
   Mapping,
+  RawLambda,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
@@ -105,7 +106,7 @@ export const createServiceElement = async (
   servicePath: string,
   servicePattern: string,
   serviceOwners: string[],
-  queryContent: string,
+  queryContent: string | RawLambda,
   mappingPath: string,
   runtimePath: string,
   graphManagerState: GraphManagerState,
@@ -131,13 +132,15 @@ export const createServiceElement = async (
     runtimePackagePath,
   );
   service.execution = new PureSingleExecution(
-    await graphManagerState.graphManager.pureCodeToLambda(
-      queryContent,
-      undefined,
-      {
-        pruneSourceInformation: true,
-      },
-    ),
+    queryContent instanceof RawLambda
+      ? queryContent
+      : await graphManagerState.graphManager.pureCodeToLambda(
+          queryContent,
+          undefined,
+          {
+            pruneSourceInformation: true,
+          },
+        ),
     service,
     PackageableElementExplicitReference.create(mapping),
     new RuntimePointer(PackageableElementExplicitReference.create(runtime)),

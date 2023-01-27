@@ -26,7 +26,6 @@ import {
 } from '@finos/legend-shared';
 import {
   generateServiceManagementUrl,
-  LATEST_PROJECT_REVISION,
   LEGEND_STUDIO_APP_EVENT,
 } from '@finos/legend-application-studio';
 import { createServiceElement } from '../../stores/studio/QueryProductionizerStore.js';
@@ -48,20 +47,25 @@ import {
   ActionAlertActionType,
 } from '@finos/legend-application';
 import {
+  RuntimePointer,
   ServiceExecutionMode,
   validate_ServicePattern,
 } from '@finos/legend-graph';
 import type { ExistingQueryEditorStore } from '@finos/legend-application-query';
-import { ProjectData } from '@finos/legend-server-depot';
 import type { UserOption } from '../studio/QueryProductionizer.js';
+import type { QueryBuilderState } from '@finos/legend-query-builder';
+import { resolveVersion } from '@finos/legend-server-depot';
 
 const ServiceRegisterModal = observer(
-  (props: { editorStore: ExistingQueryEditorStore; onClose(): void }) => {
-    const { editorStore, onClose } = props;
+  (props: {
+    editorStore: ExistingQueryEditorStore;
+    onClose(): void;
+    queryBuilderState: QueryBuilderState;
+  }) => {
+    const { editorStore, onClose, queryBuilderState } = props;
     const [registrationState] = useState(ActionState.create());
     const [text, setText] = useState('');
-    const [serviceEnv, setServiceEnv] = useState<string | undefined>(undefined);
-    const [activateService, setActivateService] = useState(false);
+    const [activateService, setActivateService] = useState(true);
     const [servicePattern, setServicePattern] = useState(`/${uuid()}`);
     const [owners, setOwners] = useState<UserOption[]>([]);
     const [isServiceUrlPatternValid, setIsServiceUrlPatternValid] =
@@ -93,6 +97,9 @@ const ServiceRegisterModal = observer(
         label: info.env.toUpperCase(),
         value: info.env,
       }));
+    const [serviceEnv, setServiceEnv] = useState<string | undefined>(
+      envOptions[0]?.value,
+    );
     const selectedEnvOption = serviceEnv
       ? {
           label: serviceEnv.toUpperCase(),
@@ -109,56 +116,45 @@ const ServiceRegisterModal = observer(
 
     const registerService = editorStore.applicationStore.guardUnhandledError(
       async (): Promise<void> => {
-        const project = ProjectData.serialization.fromJson(
-          await editorStore.depotServerClient.getProject(
-            editorStore.query.groupId,
-            editorStore.query.artifactId,
-          ),
-        );
-        const currentQueryInfo =
-          await editorStore.graphManagerState.graphManager.getQueryInfo(
-            editorStore.query.id,
-          );
         if (
           registrationState.isInProgress ||
           !servicePattern ||
           !isServiceUrlPatternValid ||
-          !selectedEnvOption
+          !selectedEnvOption ||
+          !queryBuilderState.mapping ||
+          !(queryBuilderState.runtimeValue instanceof RuntimePointer)
         ) {
           return;
         }
         try {
           registrationState.inProgress();
-          const serverUrl = guaranteeNonNullable(
-            serverRegistrationOptions.find(
-              (option) => option.env === selectedEnvOption.value,
-            )?.managementUrl,
+          const serverConfig = serverRegistrationOptions.find(
+            (option) => option.env === selectedEnvOption.value,
           );
-          const versionInput = LATEST_PROJECT_REVISION;
           registrationState.setMessage(`Registering service...`);
           const service = await createServiceElement(
             'model::QueryService',
             servicePattern,
             owners.map((o) => o.value),
-            currentQueryInfo.content,
-            currentQueryInfo.mapping,
-            currentQueryInfo.runtime,
+            queryBuilderState.buildQuery(),
+            queryBuilderState.mapping.path,
+            queryBuilderState.runtimeValue.packageableRuntime.value.path,
             editorStore.graphManagerState,
           );
           const serviceRegistrationResult =
             await editorStore.graphManagerState.graphManager.registerService(
               service,
               editorStore.graphManagerState.graph,
-              project.groupId,
-              project.artifactId,
-              versionInput,
-              serverUrl,
+              editorStore.query.groupId,
+              editorStore.query.artifactId,
+              resolveVersion(editorStore.query.versionId),
+              guaranteeNonNullable(serverConfig?.executionUrl),
               ServiceExecutionMode.SEMI_INTERACTIVE,
             );
           if (activateService) {
             registrationState.setMessage(`Activating service...`);
             await editorStore.graphManagerState.graphManager.activateService(
-              serverUrl,
+              guaranteeNonNullable(serverConfig?.executionUrl),
               serviceRegistrationResult.serviceInstanceId,
             );
           }
@@ -181,7 +177,7 @@ const ServiceRegisterModal = observer(
                 handler: (): void => {
                   editorStore.applicationStore.navigator.visitAddress(
                     generateServiceManagementUrl(
-                      guaranteeNonNullable(serverUrl),
+                      guaranteeNonNullable(serverConfig?.managementUrl),
                       serviceRegistrationResult.pattern,
                     ),
                   );
@@ -318,8 +314,11 @@ const ServiceRegisterModal = observer(
 );
 
 export const ServiceRegisterAction = observer(
-  (props: { editorStore: ExistingQueryEditorStore }) => {
-    const { editorStore } = props;
+  (props: {
+    editorStore: ExistingQueryEditorStore;
+    queryBuilderState: QueryBuilderState;
+  }) => {
+    const { editorStore, queryBuilderState } = props;
     const [showRegisterServiceModal, setShowRegisterServiceModal] =
       useState(false);
     const registerCurrentQuery = (): void => {
@@ -337,7 +336,11 @@ export const ServiceRegisterAction = observer(
           <RocketIcon />
         </button>
         {showRegisterServiceModal && (
-          <ServiceRegisterModal editorStore={editorStore} onClose={onClose} />
+          <ServiceRegisterModal
+            editorStore={editorStore}
+            onClose={onClose}
+            queryBuilderState={queryBuilderState}
+          />
         )}
       </>
     );
