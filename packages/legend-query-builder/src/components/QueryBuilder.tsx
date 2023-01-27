@@ -34,6 +34,7 @@ import {
   AssistantIcon,
   MenuContentDivider,
 } from '@finos/legend-art';
+import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '@finos/legend-application';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
 import { QueryBuilderSidebar } from './QueryBuilderSideBar.js';
@@ -196,8 +197,19 @@ export const QueryBuilder = observer(
     const fetchStructureState = queryBuilderState.fetchStructureState;
     const isTDSState =
       fetchStructureState.implementation instanceof QueryBuilderTDSState;
+    const applicationStore = queryBuilderState.applicationStore;
     const openLambdaEditor = (mode: QueryBuilderTextEditorMode): void =>
       queryBuilderState.textEditorState.openModal(mode);
+    const toggleAssistant = (): void =>
+      applicationStore.assistantService.toggleAssistant();
+    const queryDocEntry = applicationStore.documentationService.getDocEntry(
+      LEGEND_APPLICATION_DOCUMENTATION_KEY.TUTORIAL_QUERY_BUILDER,
+    );
+    const openQueryTutorial = (): void => {
+      if (queryDocEntry?.url) {
+        applicationStore.navigator.visitAddress(queryDocEntry.url);
+      }
+    };
     const toggleShowFunctionPanel = (): void => {
       queryBuilderState.setShowFunctionsExplorerPanel(
         !queryBuilderState.showFunctionsExplorerPanel,
@@ -446,14 +458,20 @@ export const QueryBuilder = observer(
                           </MenuContentItemLabel>
                         </MenuContentItem>
                         <MenuContentDivider />
-                        <MenuContentItem onClick={openWatermark}>
-                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
-                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Open Documentation
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                        <MenuContentItem onClick={openWatermark}>
-                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                        {queryDocEntry && (
+                          <MenuContentItem onClick={openQueryTutorial}>
+                            <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                            <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                              Open Documentation
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                        )}
+                        <MenuContentItem onClick={toggleAssistant}>
+                          <MenuContentItemIcon>
+                            {!applicationStore.assistantService.isHidden ? (
+                              <CheckIcon />
+                            ) : null}
+                          </MenuContentItemIcon>
                           <MenuContentItemLabel className="query-builder__sub-header__menu-content">
                             Show Virtual Assistant
                           </MenuContentItemLabel>
