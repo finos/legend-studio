@@ -91,7 +91,10 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
       {
         key: 'register-service',
         renderer: (editorStore, queryBuilderState) => (
-          <ServiceRegisterAction editorStore={editorStore} />
+          <ServiceRegisterAction
+            editorStore={editorStore}
+            queryBuilderState={queryBuilderState}
+          />
         ),
       },
     ];

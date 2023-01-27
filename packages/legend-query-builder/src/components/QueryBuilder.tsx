@@ -34,7 +34,6 @@ import {
   AssistantIcon,
   MenuContentDivider,
 } from '@finos/legend-art';
-import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '@finos/legend-application';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
 import { QueryBuilderSidebar } from './QueryBuilderSideBar.js';
@@ -50,6 +49,7 @@ import {
   BackdropContainer,
   useApplicationStore,
   useCommands,
+  LEGEND_APPLICATION_DOCUMENTATION_KEY,
 } from '@finos/legend-application';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
