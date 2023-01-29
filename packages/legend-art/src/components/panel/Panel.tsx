@@ -150,6 +150,7 @@ export const PanelFormTextField = forwardRef<
     errorMessage?: string | undefined;
     isReadOnly?: boolean;
     className?: string | undefined;
+    inputType?: string | undefined;
     darkMode?: boolean;
     fullWidth?: boolean;
   }
@@ -165,6 +166,7 @@ export const PanelFormTextField = forwardRef<
     className,
     darkMode,
     fullWidth,
+    inputType,
   } = props;
   const displayValue = value ?? '';
   const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
@@ -190,6 +192,7 @@ export const PanelFormTextField = forwardRef<
             { 'input--small': !fullWidth },
           )}
           ref={ref}
+          type={inputType ? inputType : 'text'}
           spellCheck={false}
           disabled={isReadOnly}
           placeholder={placeholder}
