@@ -3788,3 +3788,214 @@ export const TEST_DATA__lambda_olapGroupBy_withSort = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA__lambda_olapGroupBy_withSortOnOlapColumn = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'sort',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'filter',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'olapGroupBy',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'project',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'getAll',
+                      parameters: [
+                        {
+                          _type: 'packageableElementPtr',
+                          fullPath: 'model::Person',
+                        },
+                      ],
+                    },
+                    {
+                      _type: 'collection',
+                      multiplicity: {
+                        lowerBound: 2,
+                        upperBound: 2,
+                      },
+                      values: [
+                        {
+                          _type: 'lambda',
+                          body: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                              property: 'firstName',
+                            },
+                          ],
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                        },
+                        {
+                          _type: 'lambda',
+                          body: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                              property: 'lastName',
+                            },
+                          ],
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                    {
+                      _type: 'collection',
+                      multiplicity: {
+                        lowerBound: 2,
+                        upperBound: 2,
+                      },
+                      values: [
+                        {
+                          _type: 'string',
+                          value: 'First Name',
+                        },
+                        {
+                          _type: 'string',
+                          value: 'Last Name',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: [
+                    {
+                      _type: 'string',
+                      value: 'First Name',
+                    },
+                  ],
+                },
+                {
+                  _type: 'func',
+                  function: 'asc',
+                  parameters: [
+                    {
+                      _type: 'string',
+                      value: 'Last Name',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'rank',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'string',
+                  value: 'testCol1',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'func',
+                  function: 'equal',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'row',
+                        },
+                        {
+                          _type: 'string',
+                          value: 'First Name',
+                        },
+                      ],
+                      property: 'getString',
+                    },
+                    {
+                      _type: 'string',
+                      value: 'Test',
+                    },
+                  ],
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'row',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          values: [
+            {
+              _type: 'func',
+              function: 'asc',
+              parameters: [
+                {
+                  _type: 'string',
+                  value: 'testCol1',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};

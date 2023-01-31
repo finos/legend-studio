@@ -420,10 +420,9 @@ export const processTDSSortDirectionExpression = (
     const sortColumnName = extractNullableStringFromInstanceValue(
       guaranteeNonNullable(expression.parametersValues[0]),
     );
-    const queryBuilderProjectionColumnState =
-      projectionState.projectionColumns.find(
-        (e) => e.columnName === sortColumnName,
-      );
+    const queryBuilderProjectionColumnState = projectionState.tdsColumns.find(
+      (e) => e.columnName === sortColumnName,
+    );
     if (queryBuilderProjectionColumnState) {
       const sortColumnState = new SortColumnState(
         queryBuilderProjectionColumnState,

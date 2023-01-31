@@ -100,6 +100,7 @@ import {
   TEST_DATA__lambda_olapGroupBy_withTake,
   TEST_DATA__lambda_olapGroupBy_withDistinct,
   TEST_DATA__lambda_groupBy_postFilter_OlapGroupBy,
+  TEST_DATA__lambda_olapGroupBy_withSortOnOlapColumn,
 } from './TEST_DATA__QueryBuilder__OLAPGroupBy.js';
 import {
   TEST_DATA_lambda_watermark_Constant,
@@ -514,6 +515,12 @@ const cases: RoundtripTestCase[] = [
     'OlapGroupBy with TDS sort',
     olapGroupbyCtx,
     TEST_DATA__lambda_olapGroupBy_withSort,
+    undefined,
+  ],
+  [
+    'OlapGroupBy with TDS sort applied on OLAP column',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_withSortOnOlapColumn,
     undefined,
   ],
   [

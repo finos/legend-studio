@@ -16,7 +16,6 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { QueryBuilderTDSState } from './QueryBuilderTDSState.js';
-import type { QueryBuilderProjectionColumnState } from './projection/QueryBuilderProjectionColumnState.js';
 import {
   addUniqueEntry,
   deleteEntry,
@@ -24,6 +23,7 @@ import {
   hashArray,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
 
 export enum COLUMN_SORT_TYPE {
   ASC = 'ASC',
@@ -31,10 +31,10 @@ export enum COLUMN_SORT_TYPE {
 }
 
 export class SortColumnState implements Hashable {
-  columnState: QueryBuilderProjectionColumnState;
+  columnState: QueryBuilderTDSColumnState;
   sortType = COLUMN_SORT_TYPE.ASC;
 
-  constructor(columnState: QueryBuilderProjectionColumnState) {
+  constructor(columnState: QueryBuilderTDSColumnState) {
     makeObservable(this, {
       columnState: observable,
       sortType: observable,
@@ -46,7 +46,7 @@ export class SortColumnState implements Hashable {
     this.columnState = columnState;
   }
 
-  setColumnState(val: QueryBuilderProjectionColumnState): void {
+  setColumnState(val: QueryBuilderTDSColumnState): void {
     this.columnState = val;
   }
 
@@ -109,8 +109,8 @@ export class QueryResultSetModifierState implements Hashable {
   }
 
   updateSortColumns(): void {
-    this.sortColumns = this.sortColumns.filter((e) =>
-      this.tdsState.projectionColumns.includes(e.columnState),
+    this.sortColumns = this.sortColumns.filter((colState) =>
+      this.tdsState.tdsColumns.includes(colState.columnState),
     );
   }
 
