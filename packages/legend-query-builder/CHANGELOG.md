@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 0.6.19
+
+### Patch Changes
+
+- [#1863](https://github.com/finos/legend-studio/pull/1863) [`8cc899318`](https://github.com/finos/legend-studio/commit/8cc899318374df074cf934cd09a72c3c2bea312c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support TDS sort for any tds column not just projection columns.
+
+- [#1859](https://github.com/finos/legend-studio/pull/1859) [`d8b85ff06`](https://github.com/finos/legend-studio/commit/d8b85ff066d8743d96c9f9edbf2875a062847e00) ([@xannem](https://github.com/xannem)) - Add loading indicator for when user closes text-mode query and fixes flickering blank panels [#1853](https://github.com/finos/legend-studio/issues/1853)
+
+- [#1860](https://github.com/finos/legend-studio/pull/1860) [`d096134b2`](https://github.com/finos/legend-studio/commit/d096134b2f1a290aa0bd7f3b35a264c37abdb686) ([@xannem](https://github.com/xannem)) - Add button icon to clear all projection columns in query builder.
+
 ## 0.6.18
 
 ### Patch Changes
