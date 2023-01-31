@@ -1,5 +1,25 @@
 # @finos/legend-application-studio
 
+## 22.3.4
+
+## 22.3.3
+
+### Patch Changes
+
+- [#1819](https://github.com/finos/legend-studio/pull/1819) [`675d88bb1`](https://github.com/finos/legend-studio/commit/675d88bb120e8c6015afcfd08f3847b6dfe8c2df) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Group actions in the service execution tab and support opening current service query in `Legend Query`.
+
+## 22.3.2
+
+### Patch Changes
+
+- [#1823](https://github.com/finos/legend-studio/pull/1823) [`798ab319e`](https://github.com/finos/legend-studio/commit/798ab319ea6c1b8819f7f361891bb52475183451) ([@gayathrir11](https://github.com/gayathrir11)) - Modify the label and fix the copy link functionality for dependependency tree elements
+
+## 22.3.1
+
+### Patch Changes
+
+- [#1825](https://github.com/finos/legend-studio/pull/1825) [`1b128c0c7`](https://github.com/finos/legend-studio/commit/1b128c0c768637665b1043cb3e6b797292650e71) ([@gayathrir11](https://github.com/gayathrir11)) - Fix creating default custom runtime for services with nested M2M mapping. ([#1824](https://github.com/finos/legend-studio/issues/1824)).
+
 ## 22.3.0
 
 ### Minor Changes

@@ -29,7 +29,7 @@ import {
 import type { RawProjectDependencyReport } from './models/RawProjectDependencyReport.js';
 
 // max depth is to prevent cycles from breaking tree
-const MAX_DEPTH = 10000;
+const MAX_DEPTH = 100;
 
 const isRootNode = (
   node: ProjectDependencyVersionNode,

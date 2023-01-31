@@ -32,6 +32,7 @@ import {
   DiffIcon,
   WaterDropIcon,
   AssistantIcon,
+  MenuContentDivider,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -48,6 +49,7 @@ import {
   BackdropContainer,
   useApplicationStore,
   useCommands,
+  LEGEND_APPLICATION_DOCUMENTATION_KEY,
 } from '@finos/legend-application';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
@@ -134,7 +136,7 @@ const QueryBuilderStatusBar = observer(
               openLambdaEditor(QueryBuilderTextEditorMode.JSON)
             }
             tabIndex={-1}
-            title="View Query JSON"
+            title="View Query Protocol"
           >{`{ }`}</button>
           <button
             className={clsx(
@@ -195,6 +197,19 @@ export const QueryBuilder = observer(
     const fetchStructureState = queryBuilderState.fetchStructureState;
     const isTDSState =
       fetchStructureState.implementation instanceof QueryBuilderTDSState;
+    const applicationStore = queryBuilderState.applicationStore;
+    const openLambdaEditor = (mode: QueryBuilderTextEditorMode): void =>
+      queryBuilderState.textEditorState.openModal(mode);
+    const toggleAssistant = (): void =>
+      applicationStore.assistantService.toggleAssistant();
+    const queryDocEntry = applicationStore.documentationService.getDocEntry(
+      LEGEND_APPLICATION_DOCUMENTATION_KEY.TUTORIAL_QUERY_BUILDER,
+    );
+    const openQueryTutorial = (): void => {
+      if (queryDocEntry?.url) {
+        applicationStore.navigator.visitAddress(queryDocEntry.url);
+      }
+    };
     const toggleShowFunctionPanel = (): void => {
       queryBuilderState.setShowFunctionsExplorerPanel(
         !queryBuilderState.showFunctionsExplorerPanel,
@@ -227,6 +242,12 @@ export const QueryBuilder = observer(
 
     const openWatermark = (): void => {
       queryBuilderState.watermarkState.setIsEditingWatermark(true);
+    };
+    const editQueryInPure = (): void => {
+      openLambdaEditor(QueryBuilderTextEditorMode.TEXT);
+    };
+    const showQueryProtocol = (): void => {
+      openLambdaEditor(QueryBuilderTextEditorMode.JSON);
     };
 
     useCommands(queryBuilderState);
@@ -348,7 +369,6 @@ export const QueryBuilder = observer(
                             </MenuContentItemLabel>
                           </MenuContentItem>
                         }
-
                         <MenuContentItem
                           onClick={toggleShowFilterPanel}
                           disabled={
@@ -422,6 +442,38 @@ export const QueryBuilder = observer(
                           <MenuContentItemIcon>{null}</MenuContentItemIcon>
                           <MenuContentItemLabel className="query-builder__sub-header__menu-content">
                             Show Watermark
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                        <MenuContentDivider />
+                        <MenuContentItem onClick={editQueryInPure}>
+                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Edit Query in Pure
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                        <MenuContentItem onClick={showQueryProtocol}>
+                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Show Query Protocol
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                        <MenuContentDivider />
+                        {queryDocEntry && (
+                          <MenuContentItem onClick={openQueryTutorial}>
+                            <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                            <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                              Open Documentation
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                        )}
+                        <MenuContentItem onClick={toggleAssistant}>
+                          <MenuContentItemIcon>
+                            {!applicationStore.assistantService.isHidden ? (
+                              <CheckIcon />
+                            ) : null}
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Show Virtual Assistant
                           </MenuContentItemLabel>
                         </MenuContentItem>
                       </MenuContent>

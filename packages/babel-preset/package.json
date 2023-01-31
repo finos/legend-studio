@@ -1,6 +1,6 @@
 {
   "name": "@finos/babel-preset-legend-studio",
-  "version": "2.0.28",
+  "version": "2.0.29",
   "description": "Legend Studio Babel preset",
   "keywords": [
     "legend",
@@ -35,12 +35,12 @@
     "@babel/preset-env": "7.20.2",
     "@babel/preset-react": "7.18.6",
     "@babel/preset-typescript": "7.18.6",
-    "@babel/runtime": "7.20.7",
+    "@babel/runtime": "7.20.13",
     "react-refresh": "0.14.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.31.0",
+    "eslint": "8.32.0",
     "rimraf": "3.0.2",
     "typescript": "4.9.4"
   },

@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 0.6.18
+
+### Patch Changes
+
+- [#1856](https://github.com/finos/legend-studio/pull/1856) [`707a7a622`](https://github.com/finos/legend-studio/commit/707a7a6223e2d65b471dca9efb967da6fd125739) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add text/protocol and documentation options to advanced dropdown in query builder.
+
+## 0.6.17
+
 ## 0.6.16
 
 ### Patch Changes

@@ -28,6 +28,7 @@ import {
   DEFAULT_TEST_PREFIX,
   TestError,
   MultiExecutionServiceTestResult,
+  isStubbed_RawLambda,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -244,6 +245,7 @@ export class ServiceTestableState {
       selectedSuiteState: observable,
       suiteToRename: observable,
       initSuites: action,
+      init: action,
       addTestSuite: action,
       changeSuite: action,
       setSuiteToRename: action,
@@ -252,6 +254,19 @@ export class ServiceTestableState {
     this.editorStore = editorStore;
     this.serviceEditorState = serviceEditorState;
     this.initSuites();
+  }
+
+  init(): void {
+    const service = this.serviceEditorState.service;
+    const query = this.serviceEditorState.serviceQuery;
+    if (
+      query &&
+      !isStubbed_RawLambda(query) &&
+      !service.tests.length &&
+      !service.test
+    ) {
+      this.addTestSuite();
+    }
   }
 
   setSuiteToRename(testSuite: ServiceTestSuite | undefined): void {

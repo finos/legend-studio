@@ -43,6 +43,7 @@ import {
   RuntimePointer,
   Service,
   Mapping,
+  RawLambda,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
@@ -101,15 +102,15 @@ const projectDependencyToProjectCoordinates = (
   );
 };
 
-const createServiceEntity = async (
+export const createServiceElement = async (
   servicePath: string,
   servicePattern: string,
   serviceOwners: string[],
-  queryContent: string,
+  queryContent: string | RawLambda,
   mappingPath: string,
   runtimePath: string,
   graphManagerState: GraphManagerState,
-): Promise<Entity> => {
+): Promise<Service> => {
   const [servicePackagePath, serviceName] =
     resolvePackagePathAndElementName(servicePath);
   const service = stub_ElementhWithPackagePath(
@@ -131,16 +132,39 @@ const createServiceEntity = async (
     runtimePackagePath,
   );
   service.execution = new PureSingleExecution(
-    await graphManagerState.graphManager.pureCodeToLambda(
-      queryContent,
-      undefined,
-      {
-        pruneSourceInformation: true,
-      },
-    ),
+    queryContent instanceof RawLambda
+      ? queryContent
+      : await graphManagerState.graphManager.pureCodeToLambda(
+          queryContent,
+          undefined,
+          {
+            pruneSourceInformation: true,
+          },
+        ),
     service,
     PackageableElementExplicitReference.create(mapping),
     new RuntimePointer(PackageableElementExplicitReference.create(runtime)),
+  );
+  return service;
+};
+
+const createServiceEntity = async (
+  servicePath: string,
+  servicePattern: string,
+  serviceOwners: string[],
+  queryContent: string,
+  mappingPath: string,
+  runtimePath: string,
+  graphManagerState: GraphManagerState,
+): Promise<Entity> => {
+  const service = await createServiceElement(
+    servicePath,
+    servicePattern,
+    serviceOwners,
+    queryContent,
+    mappingPath,
+    runtimePath,
+    graphManagerState,
   );
   const entity = graphManagerState.graphManager.elementToEntity(service, {
     pruneSourceInformation: true,
