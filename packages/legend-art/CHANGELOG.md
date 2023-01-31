@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 5.0.21
+
+### Patch Changes
+
+- [#1859](https://github.com/finos/legend-studio/pull/1859) [`d8b85ff06`](https://github.com/finos/legend-studio/commit/d8b85ff066d8743d96c9f9edbf2875a062847e00) ([@xannem](https://github.com/xannem)) - Add loading icon.
+
 ## 5.0.20
 
 ## 5.0.19
