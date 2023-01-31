@@ -178,8 +178,21 @@ const buildAssertionStatus = (
   } else if (value instanceof V1_AssertPass) {
     return buildAssertPass(value, atomicTest, plugins);
   }
+  const extraAssertionStatusBuilder = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as Testable_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraAssertionStatusBuilders?.() ?? [],
+  );
+  for (const builder of extraAssertionStatusBuilder) {
+    const metamodel = builder(value, atomicTest, plugins);
+    if (metamodel) {
+      return metamodel;
+    }
+  }
   throw new UnsupportedOperationError(`Can't build assertion status`, value);
 };
+
 export const V1_buildTestError = (
   element: V1_TestError,
   testable: Testable,

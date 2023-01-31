@@ -121,6 +121,8 @@ import { V1_ConnectionTestData } from '../../model/packageableElements/persisten
 import { V1_PersistenceTestData } from '../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTestData.js';
 import { V1_AllRowsEquivalentToJson } from '../../model/packageableElements/persistence/V1_DSL_Persistence_AllRowsEquivalentToJson.js';
 import { V1_ActiveRowsEquivalentToJson } from '../../model/packageableElements/persistence/V1_DSL_Persistence_ActiveRowsEquivalentToJson.js';
+import { V1_AllRowsEquivalentToJsonAssertFail } from '../../model/packageableElements/persistence/V1_DSL_Persistence_AllRowsEquivalentToJsonAssertFail.js';
+import { V1_ActiveRowsEquivalentToJsonAssertFail } from '../../model/packageableElements/persistence/V1_DSL_Persistence_ActiveRowsEquivalentToJsonAssertFail.js';
 
 /**********
  * notifier
@@ -1063,6 +1065,11 @@ export enum V1_PersistenceTestAssertionType {
   ACTIVE_ROWS_EQUIVALENT_TO_JSON = 'activeRowsEquivalentToJson',
 }
 
+export enum V1_PersistenceAssertionStatusType {
+  ALL_ROWS_EQUIVALENT_TO_JSON_ASSERT_FAIL = 'allRowsEquivalentToJsonAssertFail',
+  ACTIVE_ROWS_EQUIVALENT_TO_JSON_ASSERT_FAIL = 'activeRowsEquivalentToJsonAssertFail',
+}
+
 export const V1_persistenceConnectionTestDataModelSchema = createModelSchema(
   V1_ConnectionTestData,
   {
@@ -1097,6 +1104,28 @@ export const V1_activeRowsEquivalentToJsonModelSchema = (
     ),
     expected: usingModelSchema(V1_externalFormatDataModelSchema),
     id: primitive(),
+  });
+
+export const V1_allRowsEquivalentToJsonAssertFailModelSchema =
+  createModelSchema(V1_AllRowsEquivalentToJsonAssertFail, {
+    _type: usingConstantValueSchema(
+      V1_PersistenceAssertionStatusType.ALL_ROWS_EQUIVALENT_TO_JSON_ASSERT_FAIL,
+    ),
+    actual: primitive(),
+    expected: primitive(),
+    id: primitive(),
+    message: primitive(),
+  });
+
+export const V1_activeRowsEquivalentToJsonAssertFailModelSchema =
+  createModelSchema(V1_ActiveRowsEquivalentToJsonAssertFail, {
+    _type: usingConstantValueSchema(
+      V1_PersistenceAssertionStatusType.ACTIVE_ROWS_EQUIVALENT_TO_JSON_ASSERT_FAIL,
+    ),
+    actual: primitive(),
+    expected: primitive(),
+    id: primitive(),
+    message: primitive(),
   });
 
 export const V1_persistenceTestBatchModelSchema = (

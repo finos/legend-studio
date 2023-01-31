@@ -16,6 +16,7 @@
 
 import type { PlainObject } from '@finos/legend-shared';
 import type { TestAssertion } from '../../../graph/metamodel/pure/test/assertion/TestAssertion.js';
+import type { AssertionStatus } from '../../../graph/metamodel/pure/test/assertion/status/AssertionStatus.js';
 import type { AtomicTest } from '../../../graph/metamodel/pure/test/Test.js';
 import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin.js';
 import type { V1_TestAssertion } from './v1/model/test/assertion/V1_TestAssertion.js';
@@ -33,6 +34,22 @@ export type V1_TestableAssertion = (
   testable: AtomicTest,
   element: V1_AssertionStatus,
 ) => TestAssertion | undefined;
+
+export type V1_AssertionStatusBuilder = (
+  element: V1_AssertionStatus,
+  atomicTest: AtomicTest,
+  plugins: PureProtocolProcessorPlugin[],
+) => AssertionStatus | undefined;
+
+export type V1_AssertionStatusProtocolSerializer = (
+  protocol: V1_AssertionStatus,
+  plugins: PureProtocolProcessorPlugin[],
+) => PlainObject<V1_AssertionStatus> | undefined;
+
+export type V1_AssertionStatusProtocolDeserializer = (
+  json: PlainObject<V1_AssertionStatus>,
+  plugins: PureProtocolProcessorPlugin[],
+) => V1_AssertionStatus | undefined;
 
 export type V1_AtomicTestTransformer = (
   metamodel: AtomicTest,
@@ -96,6 +113,21 @@ export interface Testable_PureProtocolProcessorPlugin_Extension
    * Get the list of Testable assertion builders.
    */
   V1_getExtraTestableAssertionBuilders?(): V1_TestableAssertion[];
+
+  /**
+   * Get the list of Assertion status builders.
+   */
+  V1_getExtraAssertionStatusBuilders?(): V1_AssertionStatusBuilder[];
+
+  /**
+   * Get the list of Assertion status protocol serializers.
+   */
+  V1_getExtraAssertionStatusProtocolSerializers?(): V1_AssertionStatusProtocolSerializer[];
+
+  /**
+   * Get the list of Assertion status protocol deserializers.
+   */
+  V1_getExtraAssertionStatusProtocolDeserializers?(): V1_AssertionStatusProtocolDeserializer[];
 
   /**
    * Get the list of Test assertion builders.

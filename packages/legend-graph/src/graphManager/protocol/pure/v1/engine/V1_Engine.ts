@@ -541,11 +541,16 @@ export class V1_Engine {
 
   // --------------------------------------------- Test ---------------------------------------------
 
-  async runTests(input: V1_RunTestsInput): Promise<V1_RunTestsResult> {
+  async runTests(
+    input: V1_RunTestsInput,
+    plugins: PureProtocolProcessorPlugin[],
+  ): Promise<V1_RunTestsResult> {
     const result = (await this.engineServerClient.runTests(
       V1_RunTestsInput.serialization.toJson(input),
     )) as unknown as PlainObject<V1_RunTestsResult>;
-    return V1_RunTestsResult.serialization.fromJson(result);
+
+    const runTestsResult = new V1_RunTestsResult(plugins);
+    return runTestsResult.serialization.fromJson(result);
   }
 
   // ------------------------------------------- File Generation -------------------------------------------

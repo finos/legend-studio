@@ -1759,7 +1759,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         return runTestableInput;
       })
       .filter(isNonNullable);
-    const runTestsResult = await this.engine.runTests(runTestsInput);
+    const runTestsResult = await this.engine.runTests(
+      runTestsInput,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
     const result = V1_buildTestsResult(
       runTestsResult,
       (id: string): Testable | undefined =>
@@ -1800,7 +1803,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       unitAtomicTest.testSuiteId =
         parent instanceof TestSuite ? parent.id : undefined;
       unitAtomicTest.atomicTestId = test.id;
-      const runTestsResult = await this.engine.runTests(runTestsInput);
+      const runTestsResult = await this.engine.runTests(
+        runTestsInput,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      );
       const results = V1_buildTestsResult(
         runTestsResult,
         (_id: string): Testable | undefined =>

@@ -22,6 +22,7 @@ import {
   deserializeMap,
 } from '@finos/legend-shared';
 import {
+  type ModelSchema,
   createModelSchema,
   custom,
   deserialize,
@@ -122,6 +123,7 @@ export const V1_equalToJsonAssertFailModelSchema = createModelSchema(
 
 const V1_serializeAssertionStatus = (
   protocol: V1_AssertionStatus,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_AssertionStatus> => {
   if (protocol instanceof V1_EqualToJsonAssertFail) {
     return serialize(V1_equalToJsonAssertFailModelSchema, protocol);
@@ -129,6 +131,18 @@ const V1_serializeAssertionStatus = (
     return serialize(V1_assertFailModelSchema, protocol);
   } else if (protocol instanceof V1_AssertPass) {
     return serialize(V1_assertPassModelSchema, protocol);
+  }
+  const extraAssertionStatusSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as Testable_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraAssertionStatusProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraAssertionStatusSerializers) {
+    const assertionStatusProtocolJson = serializer(protocol, plugins);
+    if (assertionStatusProtocolJson) {
+      return assertionStatusProtocolJson;
+    }
   }
   throw new UnsupportedOperationError(
     `Can't serialize assertion status`,
@@ -138,6 +152,7 @@ const V1_serializeAssertionStatus = (
 
 const V1_deserializeAssertionStatus = (
   json: PlainObject<V1_AssertionStatus>,
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_AssertionStatus => {
   switch (json._type) {
     case V1_AssertionStatusType.ASSERT_FAIL:
@@ -147,6 +162,18 @@ const V1_deserializeAssertionStatus = (
     case V1_AssertionStatusType.EQUAL_TO_JSON_ASSERT_FAIL:
       return deserialize(V1_equalToJsonAssertFailModelSchema, json);
     default:
+      const extraAssertionStatusProtocolDeserializers = plugins.flatMap(
+        (plugin) =>
+          (
+            plugin as Testable_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraAssertionStatusProtocolDeserializers?.() ?? [],
+      );
+      for (const deserializer of extraAssertionStatusProtocolDeserializers) {
+        const assertionStatusProtocol = deserializer(json, plugins);
+        if (assertionStatusProtocol) {
+          return assertionStatusProtocol;
+        }
+      }
       throw new UnsupportedOperationError(
         `Can't deserialize assertion status of type '${json._type}'`,
       );
@@ -177,31 +204,34 @@ export const V1_testErrorModelSchema = createModelSchema(V1_TestError, {
   testable: primitive(),
 });
 
-export const V1_testFailedModelSchema = createModelSchema(V1_TestFailed, {
-  assertStatuses: list(
-    custom(
-      (val) => V1_serializeAssertionStatus(val),
-      (val) => V1_deserializeAssertionStatus(val),
+export const V1_testFailedModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_TestFailed> =>
+  createModelSchema(V1_TestFailed, {
+    assertStatuses: list(
+      custom(
+        (val) => V1_serializeAssertionStatus(val, plugins),
+        (val) => V1_deserializeAssertionStatus(val, plugins),
+      ),
     ),
-  ),
-  atomicTestId: usingModelSchema(V1_atomicTestIdModelSchema),
-  testable: primitive(),
-});
+    atomicTestId: usingModelSchema(V1_atomicTestIdModelSchema),
+    testable: primitive(),
+  });
 
-export const V1_MultiExecutionServiceTestResultModelSchema = createModelSchema(
-  V1_MultiExecutionServiceTestResult,
-  {
+export const V1_MultiExecutionServiceTestResultModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_MultiExecutionServiceTestResult> =>
+  createModelSchema(V1_MultiExecutionServiceTestResult, {
     atomicTestId: usingModelSchema(V1_atomicTestIdModelSchema),
     keyIndexedTestResults: custom(
       () => SKIP,
       (val) =>
         deserializeMap(val, (v) =>
-          V1_deserializeTestResult(v as PlainObject<V1_TestResult>),
+          V1_deserializeTestResult(v as PlainObject<V1_TestResult>, plugins),
         ),
     ),
     testable: primitive(),
-  },
-);
+  });
 
 export const V1_testPassedModelSchema = createModelSchema(V1_TestPassed, {
   atomicTestId: usingModelSchema(V1_atomicTestIdModelSchema),
@@ -210,17 +240,21 @@ export const V1_testPassedModelSchema = createModelSchema(V1_TestPassed, {
 
 export function V1_deserializeTestResult(
   json: PlainObject<V1_TestResult>,
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_TestResult {
   switch (json._type) {
     case V1_TestResultType.TEST_ERROR:
       return deserialize(V1_testErrorModelSchema, json);
     case V1_TestResultType.TEST_FAILED:
-      return deserialize(V1_testFailedModelSchema, json);
+      return deserialize(V1_testFailedModelSchema(plugins), json);
     case V1_TestResultType.TEST_PASSED:
       return deserialize(V1_testPassedModelSchema, json);
     case V1_TestResultType.MULTI_EXECUTION_TEST_RESULT:
     case V1_TestResultType.TEMPROARY_MULTI_EXECUTION_TEST_RESULT:
-      return deserialize(V1_MultiExecutionServiceTestResultModelSchema, json);
+      return deserialize(
+        V1_MultiExecutionServiceTestResultModelSchema(plugins),
+        json,
+      );
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize atomic test of type '${json._type}'`,

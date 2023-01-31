@@ -40,6 +40,9 @@ import {
   V1_PersistenceTestAssertionType,
   V1_allRowsEquivalentToJsonModelSchema,
   V1_activeRowsEquivalentToJsonModelSchema,
+  V1_PersistenceAssertionStatusType,
+  V1_allRowsEquivalentToJsonAssertFailModelSchema,
+  V1_activeRowsEquivalentToJsonAssertFailModelSchema,
 } from './v1/transformation/pureProtocol/V1_DSL_Persistence_ProtocolHelper.js';
 import {
   V1_PERSISTENCE_CONTEXT_ELEMENT_PROTOCOL_TYPE,
@@ -67,6 +70,7 @@ import {
   type PackageableElement,
   PureProtocolProcessorPlugin,
   type TestAssertion,
+  type AssertionStatus,
   type V1_TestAssertion,
   type V1_AssertionStatus,
   type V1_AtomicTest,
@@ -92,11 +96,15 @@ import {
   type V1_TestAssertionTransformer,
   type V1_TestAssertionProtocolSerializer,
   type V1_TestAssertionProtocolDeserializer,
+  type V1_AssertionStatusBuilder,
+  type V1_AssertionStatusProtocolSerializer,
+  type V1_AssertionStatusProtocolDeserializer,
 } from '@finos/legend-graph';
 import {
   guaranteeType,
   assertType,
   type PlainObject,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import { V1_PersistenceTest } from './v1/model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTest.js';
@@ -105,6 +113,10 @@ import { V1_AllRowsEquivalentToJson } from './v1/model/packageableElements/persi
 import { AllRowsEquivalentToJson } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_AllRowsEquivalentToJson.js';
 import { V1_ActiveRowsEquivalentToJson } from './v1/model/packageableElements/persistence/V1_DSL_Persistence_ActiveRowsEquivalentToJson.js';
 import { ActiveRowsEquivalentToJson } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ActiveRowsEquivalentToJson.js';
+import { V1_AllRowsEquivalentToJsonAssertFail } from './v1/model/packageableElements/persistence/V1_DSL_Persistence_AllRowsEquivalentToJsonAssertFail.js';
+import { AllRowsEquivalentToJsonAssertFail } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_AllRowsEquivalentToJsonAssertFail.js';
+import { V1_ActiveRowsEquivalentToJsonAssertFail } from './v1/model/packageableElements/persistence/V1_DSL_Persistence_ActiveRowsEquivalentToJsonAssertFail.js';
+import { ActiveRowsEquivalentToJsonAssertFail } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ActiveRowsEquivalentToJsonAssertFail.js';
 import type { PersistenceTestBatch } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTestBatch.js';
 
 export const PERSISTENCE_ELEMENT_CLASSIFIER_PATH =
@@ -523,6 +535,132 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
               }
             }
           }
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraAssertionStatusBuilders(): V1_AssertionStatusBuilder[] {
+    return [
+      (
+        element: V1_AssertionStatus,
+        atomicTest: AtomicTest,
+        plugins: PureProtocolProcessorPlugin[],
+      ): AssertionStatus | undefined => {
+        if (element instanceof V1_AllRowsEquivalentToJsonAssertFail) {
+          let assertion = atomicTest.assertions.find(
+            (a) => a.id === element.id,
+          );
+          const extraAssertionBuilder = plugins.flatMap(
+            (plugin) =>
+              (
+                plugin as Testable_PureProtocolProcessorPlugin_Extension
+              ).V1_getExtraTestableAssertionBuilders?.() ?? [],
+          );
+
+          for (const builder of extraAssertionBuilder) {
+            const assertionBuilder = builder(atomicTest, element);
+            if (assertionBuilder) {
+              assertion = assertionBuilder;
+            }
+          }
+
+          if (assertion) {
+            const allRowsEquivalentToJsonAssertFail =
+              new AllRowsEquivalentToJsonAssertFail(assertion, element.message);
+            allRowsEquivalentToJsonAssertFail.actual = element.actual;
+            allRowsEquivalentToJsonAssertFail.expected = element.expected;
+            return allRowsEquivalentToJsonAssertFail;
+          }
+          throw new UnsupportedOperationError(
+            `Can't build AllRowsEquivalentToJsonAssertFail: no compatible builder available from plugins`,
+            element,
+          );
+        } else if (element instanceof V1_ActiveRowsEquivalentToJsonAssertFail) {
+          let assertion = atomicTest.assertions.find(
+            (a) => a.id === element.id,
+          );
+          const extraAssertionBuilder = plugins.flatMap(
+            (plugin) =>
+              (
+                plugin as Testable_PureProtocolProcessorPlugin_Extension
+              ).V1_getExtraTestableAssertionBuilders?.() ?? [],
+          );
+
+          for (const builder of extraAssertionBuilder) {
+            const assertionBuilder = builder(atomicTest, element);
+            if (assertionBuilder) {
+              assertion = assertionBuilder;
+            }
+          }
+
+          if (assertion) {
+            const activeRowsEquivalentToJsonAssertFail =
+              new ActiveRowsEquivalentToJsonAssertFail(
+                assertion,
+                element.message,
+              );
+            activeRowsEquivalentToJsonAssertFail.actual = element.actual;
+            activeRowsEquivalentToJsonAssertFail.expected = element.expected;
+            return activeRowsEquivalentToJsonAssertFail;
+          }
+          throw new UnsupportedOperationError(
+            `Can't build ActiveRowsEquivalentToJsonAssertFail: no compatible builder available from plugins`,
+            element,
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraAssertionStatusProtocolSerializers(): V1_AssertionStatusProtocolSerializer[] {
+    return [
+      (
+        protocol: V1_AssertionStatus,
+        plugins: PureProtocolProcessorPlugin[],
+      ): PlainObject<V1_AssertionStatus> | undefined => {
+        if (protocol instanceof V1_AllRowsEquivalentToJsonAssertFail) {
+          return serialize(
+            V1_allRowsEquivalentToJsonAssertFailModelSchema,
+            protocol,
+          );
+        } else if (
+          protocol instanceof V1_ActiveRowsEquivalentToJsonAssertFail
+        ) {
+          return serialize(
+            V1_activeRowsEquivalentToJsonAssertFailModelSchema,
+            protocol,
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraAssertionStatusProtocolDeserializers(): V1_AssertionStatusProtocolDeserializer[] {
+    return [
+      (
+        json: PlainObject<V1_AssertionStatus>,
+        plugins: PureProtocolProcessorPlugin[],
+      ): V1_AssertionStatus | undefined => {
+        if (
+          json._type ===
+          V1_PersistenceAssertionStatusType.ALL_ROWS_EQUIVALENT_TO_JSON_ASSERT_FAIL
+        ) {
+          return deserialize(
+            V1_allRowsEquivalentToJsonAssertFailModelSchema,
+            json,
+          );
+        } else if (
+          json._type ===
+          V1_PersistenceAssertionStatusType.ACTIVE_ROWS_EQUIVALENT_TO_JSON_ASSERT_FAIL
+        ) {
+          return deserialize(
+            V1_activeRowsEquivalentToJsonAssertFailModelSchema,
+            json,
+          );
         }
         return undefined;
       },

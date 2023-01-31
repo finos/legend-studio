@@ -320,6 +320,7 @@ export * from './graphManager/protocol/pure/v1/model/test/V1_TestBatch.js';
 export * from './graphManager/protocol/pure/v1/model/test/assertion/V1_EqualToJson.js';
 export * from './graphManager/protocol/pure/v1/model/test/assertion/V1_TestAssertion.js';
 export * from './graphManager/protocol/pure/v1/model/test/assertion/status/V1_AssertionStatus.js';
+export * from './graphManager/protocol/pure/v1/model/test/assertion/status/V1_AssertFail.js';
 
 // --------------------------------------------- VALIDATION --------------------------------------------------
 

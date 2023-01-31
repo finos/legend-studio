@@ -29,10 +29,20 @@ import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessor
 
 export class V1_RunTestsResult {
   results: V1_TestResult[] = [];
+  plugins: PureProtocolProcessorPlugin[] = [];
 
-  static readonly serialization = new SerializationFactory(
+  constructor(plugins: PureProtocolProcessorPlugin[]) {
+    this.plugins = plugins;
+  }
+
+  readonly serialization = new SerializationFactory(
     createModelSchema(V1_RunTestsResult, {
-      results: list(custom((value) => SKIP, V1_deserializeTestResult)),
+      results: list(
+        custom(
+          (value) => SKIP,
+          (value) => V1_deserializeTestResult(value, this.plugins),
+        ),
+      ),
     }),
   );
 }
