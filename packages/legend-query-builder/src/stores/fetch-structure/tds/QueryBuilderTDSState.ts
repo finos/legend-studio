@@ -428,6 +428,11 @@ export class QueryBuilderTDSState
     changeEntry(this.projectionColumns, oldVal, newVal);
   }
 
+  removeAllColumns(): void {
+    this.projectionColumns = [];
+    this.aggregationState.columns = [];
+  }
+
   removeColumn(val: QueryBuilderProjectionColumnState): void {
     deleteEntry(this.projectionColumns, val);
 
@@ -600,6 +605,28 @@ export class QueryBuilderTDSState
           this.queryBuilderState.explorerState.humanizePropertyName,
         ),
       );
+    });
+  }
+
+  checkBeforeClearingColumns(onChange: () => void): void {
+    this.queryBuilderState.applicationStore.setActionAlertInfo({
+      message:
+        'You will be clearing all projection columns. Do you still want to proceed?',
+      type: ActionAlertType.CAUTION,
+      actions: [
+        {
+          label: 'Proceed',
+          type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+          handler: this.queryBuilderState.applicationStore.guardUnhandledError(
+            async () => onChange(),
+          ),
+        },
+        {
+          label: 'Cancel',
+          type: ActionAlertActionType.PROCEED,
+          default: true,
+        },
+      ],
     });
   }
 
