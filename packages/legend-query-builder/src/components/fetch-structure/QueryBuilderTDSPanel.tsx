@@ -566,6 +566,14 @@ export const QueryBuilderTDSPanel = observer(
         <div className="query-builder__projection__toolbar">
           <button
             className="panel__header__action"
+            onClick={openResultSetModifierEditor}
+            tabIndex={-1}
+            title="Configure result set modifiers..."
+          >
+            <OptionsIcon className="query-builder__icon query-builder__icon__query-option" />
+          </button>
+          <button
+            className="panel__header__action"
             disabled={tdsState.projectionColumns.length < 1}
             onClick={clearAllProjectionColumns}
             tabIndex={-1}
@@ -576,14 +584,6 @@ export const QueryBuilderTDSPanel = observer(
             }
           >
             <BrushIcon className="query-builder__icon query-builder__icon__query-option--small" />
-          </button>
-          <button
-            className="panel__header__action"
-            onClick={openResultSetModifierEditor}
-            tabIndex={-1}
-            title="Configure result set modifiers..."
-          >
-            <OptionsIcon className="query-builder__icon query-builder__icon__query-option" />
           </button>
           <button
             className="panel__header__action"
