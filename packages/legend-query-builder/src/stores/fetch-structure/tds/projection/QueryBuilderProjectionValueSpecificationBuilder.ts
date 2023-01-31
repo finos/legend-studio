@@ -85,6 +85,7 @@ const appendResultSetModifier = (
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
         ])
       ) {
         let currentExpression = func;

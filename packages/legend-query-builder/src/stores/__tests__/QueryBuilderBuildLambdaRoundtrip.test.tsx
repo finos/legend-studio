@@ -84,10 +84,10 @@ import {
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
 import { INTERNAL__BasicQueryBuilderState } from '../QueryBuilderState.js';
 import {
-  TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy,
-  TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc,
-  TEST_DATA__lambda_olapGroupBy_StackedGroupBy,
   TEST_DATA__OlapGroupBy_entities,
+  TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy,
+  TEST_DATA__lambda_olapGroupBy_SimpleStringRankFunc,
+  TEST_DATA__lambda_olapGroupBy_StackedGroupBy,
   TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter,
   TEST_DATA__lambda_olapGroupBy_RankWithPostFilterOnOlapColumn,
   TEST_DATA__lambda_olapGroupBy_StringRankNoSortBy,
@@ -96,8 +96,11 @@ import {
   TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation,
   TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank,
   TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank_VarName,
-  TEST_DATA__GroupBy_postFilter_OlapGroupBy,
-} from './TEST_DATA__QueryBuilder_OLAPGroupBy.js';
+  TEST_DATA__lambda_olapGroupBy_withSort,
+  TEST_DATA__lambda_olapGroupBy_withTake,
+  TEST_DATA__lambda_olapGroupBy_withDistinct,
+  TEST_DATA__lambda_groupBy_postFilter_OlapGroupBy,
+} from './TEST_DATA__QueryBuilder__OLAPGroupBy.js';
 import {
   TEST_DATA_lambda_watermark_Constant,
   TEST_DATA_lambda_watermark_filter_Constant,
@@ -390,25 +393,25 @@ const cases: RoundtripTestCase[] = [
   [
     'OlapGroupBy with simple string with rank() operation',
     olapGroupbyCtx,
-    TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc('rank'),
+    TEST_DATA__lambda_olapGroupBy_SimpleStringRankFunc('rank'),
     undefined,
   ],
   [
     'OlapGroupBy with simple string with denseRank() operation',
     olapGroupbyCtx,
-    TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc('denseRank'),
+    TEST_DATA__lambda_olapGroupBy_SimpleStringRankFunc('denseRank'),
     undefined,
   ],
   [
     'OlapGroupBy with simple string with rowNumber() operation',
     olapGroupbyCtx,
-    TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc('rowNumber'),
+    TEST_DATA__lambda_olapGroupBy_SimpleStringRankFunc('rowNumber'),
     undefined,
   ],
   [
     'OlapGroupBy with simple string with averageRank() operation',
     olapGroupbyCtx,
-    TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc('averageRank'),
+    TEST_DATA__lambda_olapGroupBy_SimpleStringRankFunc('averageRank'),
     undefined,
   ],
   [
@@ -496,9 +499,27 @@ const cases: RoundtripTestCase[] = [
     undefined,
   ],
   [
+    'OlapGroupBy with TDS take',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_withTake,
+    undefined,
+  ],
+  [
+    'OlapGroupBy with TDS distinct',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_withDistinct,
+    undefined,
+  ],
+  [
+    'OlapGroupBy with TDS sort',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_withSort,
+    undefined,
+  ],
+  [
     'OlapGroupBy with TDS groupBy -> post-filter -> olap groupBy',
     postFilterCtx,
-    TEST_DATA__GroupBy_postFilter_OlapGroupBy,
+    TEST_DATA__lambda_groupBy_postFilter_OlapGroupBy,
     undefined,
   ],
   [
