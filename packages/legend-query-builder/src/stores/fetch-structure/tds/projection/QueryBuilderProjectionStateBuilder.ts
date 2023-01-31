@@ -263,6 +263,7 @@ export const processTDSTakeExpression = (
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
     ]),
     `Can't process take() expression: only support take() in TDS expression`,
   );
@@ -311,6 +312,7 @@ export const processTDSDistinctExpression = (
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
     ]),
     `Can't process distinct() expression: only support distinct() in TDS expression`,
   );
@@ -418,10 +420,9 @@ export const processTDSSortDirectionExpression = (
     const sortColumnName = extractNullableStringFromInstanceValue(
       guaranteeNonNullable(expression.parametersValues[0]),
     );
-    const queryBuilderProjectionColumnState =
-      projectionState.projectionColumns.find(
-        (e) => e.columnName === sortColumnName,
-      );
+    const queryBuilderProjectionColumnState = projectionState.tdsColumns.find(
+      (e) => e.columnName === sortColumnName,
+    );
     if (queryBuilderProjectionColumnState) {
       const sortColumnState = new SortColumnState(
         queryBuilderProjectionColumnState,

@@ -32,17 +32,17 @@ import {
   COLUMN_SORT_TYPE,
   SortColumnState,
 } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
-import type { QueryBuilderProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 
 const ColumnSortEditor = observer(
   (props: { tdsState: QueryBuilderTDSState; sortState: SortColumnState }) => {
     const { tdsState, sortState } = props;
     const applicationStore = useApplicationStore();
     const sortColumns = tdsState.resultSetModifierState.sortColumns;
-    const projectionOptions = tdsState.projectionColumns
+    const projectionOptions = tdsState.tdsColumns
       .filter(
         (projectionCol) =>
           projectionCol === sortState.columnState ||
@@ -57,7 +57,7 @@ const ColumnSortEditor = observer(
       value: sortState,
     };
     const onChange = (
-      val: { label: string; value: QueryBuilderProjectionColumnState } | null,
+      val: { label: string; value: QueryBuilderTDSColumnState } | null,
     ): void => {
       if (val !== null) {
         sortState.setColumnState(val.value);
