@@ -135,8 +135,8 @@ export const BlankPanelPlaceholder: React.FC<{
   useEffect(() => {
     const _containerWidth = containerWidth ?? 0;
     const _containerHeight = containerHeight ?? 0;
-    const _textWidth = textWidth ?? 0;
-    const _textHeight = textHeight ?? 0;
+    const _textWidth = textWidth ? textWidth : DEFAULT_CONTENT_PADDING;
+    const _textHeight = textHeight ? textHeight : DEFAULT_CONTENT_PADDING;
     const _graphicWidth = graphicWidth ?? 0;
     const _graphicHeight = graphicHeight ?? 0;
     setShowText(

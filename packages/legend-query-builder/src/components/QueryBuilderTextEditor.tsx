@@ -19,10 +19,12 @@ import { observer } from 'mobx-react-lite';
 import {
   clsx,
   Dialog,
+  LoadingIcon,
   Modal,
   ModalBody,
   ModalFooter,
   ModalHeader,
+  PanelLoadingIndicator,
 } from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { QueryBuilderTextEditorMode } from '../stores/QueryBuilderTextEditorState.js';
@@ -80,6 +82,11 @@ export const QueryBuilderTextEditor = observer(
               </div>
             )}
           </ModalHeader>
+          <PanelLoadingIndicator
+            isLoading={
+              queryBuilderState.textEditorState.closingQueryState.isInProgress
+            }
+          />
           <ModalBody>
             <div
               className={clsx('query-builder-text-mode__modal__content', {
@@ -119,9 +126,19 @@ export const QueryBuilderTextEditor = observer(
             <button
               className="btn btn--dark"
               onClick={close}
-              disabled={Boolean(queryTextEditorState.parserError)}
+              disabled={
+                Boolean(queryTextEditorState.parserError) ||
+                queryBuilderState.textEditorState.closingQueryState.isInProgress
+              }
             >
-              Close
+              {queryBuilderState.textEditorState.closingQueryState
+                .isInProgress ? (
+                <>
+                  <LoadingIcon isLoading={true} /> Closing
+                </>
+              ) : (
+                <> Close </>
+              )}
             </button>
           </ModalFooter>
         </Modal>

@@ -172,7 +172,7 @@
     }
 
     &__info {
-      @include flexVCenter;
+      @include flexCenter;
 
       cursor: help;
       height: 2rem;

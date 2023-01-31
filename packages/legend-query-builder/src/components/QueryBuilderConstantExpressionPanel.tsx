@@ -271,7 +271,7 @@ export const QueryBuilderConstantExpressionPanel = observer(
               ))}
             {!constantState.constants.length && (
               <BlankPanelPlaceholder
-                text="Add a Constants"
+                text="Add a Constant"
                 disabled={isReadOnly}
                 onClick={addConstant}
                 clickActionType="add"
