@@ -108,6 +108,7 @@ import { V1_RawBaseExecutionContext } from './model/rawValueSpecification/V1_Raw
 import {
   type V1_GraphBuilderContext,
   V1_GraphBuilderContextBuilder,
+  V1_buildFullPath,
 } from './transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import { V1_PureModelContextPointer } from './model/context/V1_PureModelContextPointer.js';
 import { V1_Engine } from './engine/V1_Engine.js';
@@ -263,6 +264,11 @@ import { CompilationWarning } from '../../../action/compilation/CompilationWarni
 import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_ServiceTransformer.js';
 import { V1_transformModelUnit } from './transformation/pureGraph/from/V1_DSL_ExternalFormat_Transformer.js';
 import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
+import {
+  V1_buildFunctionSignature,
+  V1_getFunctionName,
+} from './helpers/V1_DomainHelper.js';
+import { V1_buildVariable } from './transformation/pureGraph/to/helpers/V1_DomainBuilderHelper.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -767,6 +773,49 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         stopWatch,
         buildState,
         options,
+      );
+
+      // Resolve function's functionName and parameter/returnValue's type/multiplicity
+      await Promise.all<void>(
+        buildInputs.map((input) =>
+          promisify(() => {
+            input.data.nativeElements
+              .filter(filterByType(V1_ConcreteFunctionDefinition))
+              .forEach((element) => {
+                try {
+                  const context = this.getBuilderContext(
+                    graph,
+                    input.model,
+                    element,
+                    options,
+                  );
+                  const func = context.currentSubGraph.getOwnFunction(
+                    V1_buildFullPath(
+                      element.package,
+                      V1_buildFunctionSignature(element),
+                    ),
+                  );
+                  func.returnType = context.resolveType(element.returnType);
+                  func.returnMultiplicity = context.graph.getMultiplicity(
+                    element.returnMultiplicity.lowerBound,
+                    element.returnMultiplicity.upperBound,
+                  );
+                  func.parameters = element.parameters.map((param) =>
+                    V1_buildVariable(param, context),
+                  );
+                  func.functionName = V1_getFunctionName(element);
+                } catch (err) {
+                  assertErrorThrown(err);
+                  const error =
+                    err instanceof GraphBuilderError
+                      ? err
+                      : new GraphBuilderError(err);
+                  error.message = `Can't build element '${element.path}': ${err.message}`;
+                  throw error;
+                }
+              });
+          }),
+        ),
       );
 
       /**
