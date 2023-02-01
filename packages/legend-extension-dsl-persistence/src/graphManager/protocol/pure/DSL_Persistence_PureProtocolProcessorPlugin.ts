@@ -450,15 +450,9 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
         plugins: PureProtocolProcessorPlugin[],
       ): PlainObject<V1_TestAssertion> | undefined => {
         if (protocol instanceof V1_AllRowsEquivalentToJson) {
-          return serialize(
-            V1_allRowsEquivalentToJsonModelSchema(plugins),
-            protocol,
-          );
+          return serialize(V1_allRowsEquivalentToJsonModelSchema, protocol);
         } else if (protocol instanceof V1_ActiveRowsEquivalentToJson) {
-          return serialize(
-            V1_activeRowsEquivalentToJsonModelSchema(plugins),
-            protocol,
-          );
+          return serialize(V1_activeRowsEquivalentToJsonModelSchema, protocol);
         }
         return undefined;
       },
@@ -475,18 +469,12 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
           json._type ===
           V1_PersistenceTestAssertionType.ALL_ROWS_EQUIVALENT_TO_JSON
         ) {
-          return deserialize(
-            V1_allRowsEquivalentToJsonModelSchema(plugins),
-            json,
-          );
+          return deserialize(V1_allRowsEquivalentToJsonModelSchema, json);
         } else if (
           json._type ===
           V1_PersistenceTestAssertionType.ACTIVE_ROWS_EQUIVALENT_TO_JSON
         ) {
-          return deserialize(
-            V1_activeRowsEquivalentToJsonModelSchema(plugins),
-            json,
-          );
+          return deserialize(V1_activeRowsEquivalentToJsonModelSchema, json);
         }
         return undefined;
       },

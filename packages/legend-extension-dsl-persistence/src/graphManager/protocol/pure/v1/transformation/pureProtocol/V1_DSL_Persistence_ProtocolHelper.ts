@@ -1084,27 +1084,27 @@ export const V1_persistenceTestDataModelSchema = (
     connection: usingModelSchema(V1_persistenceConnectionTestDataModelSchema),
   });
 
-export const V1_allRowsEquivalentToJsonModelSchema = (
-  plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_AllRowsEquivalentToJson> =>
-  createModelSchema(V1_AllRowsEquivalentToJson, {
+export const V1_allRowsEquivalentToJsonModelSchema = createModelSchema(
+  V1_AllRowsEquivalentToJson,
+  {
     _type: usingConstantValueSchema(
       V1_PersistenceTestAssertionType.ALL_ROWS_EQUIVALENT_TO_JSON,
     ),
     expected: usingModelSchema(V1_externalFormatDataModelSchema),
     id: primitive(),
-  });
+  },
+);
 
-export const V1_activeRowsEquivalentToJsonModelSchema = (
-  plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_ActiveRowsEquivalentToJson> =>
-  createModelSchema(V1_ActiveRowsEquivalentToJson, {
+export const V1_activeRowsEquivalentToJsonModelSchema = createModelSchema(
+  V1_ActiveRowsEquivalentToJson,
+  {
     _type: usingConstantValueSchema(
       V1_PersistenceTestAssertionType.ACTIVE_ROWS_EQUIVALENT_TO_JSON,
     ),
     expected: usingModelSchema(V1_externalFormatDataModelSchema),
     id: primitive(),
-  });
+  },
+);
 
 export const V1_allRowsEquivalentToJsonAssertFailModelSchema =
   createModelSchema(V1_AllRowsEquivalentToJsonAssertFail, {
