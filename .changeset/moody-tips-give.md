@@ -1,7 +1,6 @@
 ---
-'@finos/legend-extension-dsl-persistence': patch
-'@finos/legend-application-studio': patch
 '@finos/legend-graph': patch
 ---
 
-Handle testable refactor
+Modified `AtomicTestId` to `UniqueTestId`. Removed `TestBatch` model from core.
+Replaced `TestPassed` and `TestFailed` models with `TestExecuted` model.
