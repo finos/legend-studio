@@ -55,11 +55,7 @@
     "@fontsource/roboto": "4.5.8",
     "@fontsource/roboto-condensed": "4.5.9",
     "@fontsource/roboto-mono": "4.5.10",
-<<<<<<< HEAD
     "@mui/material": "5.11.6",
-=======
-    "@mui/material": "5.11.5",
->>>>>>> 3bcb8b2aa (bump dependencies)
     "@types/react": "18.0.27",
     "@types/react-select": "4.0.18",
     "@types/react-window": "1.8.5",
