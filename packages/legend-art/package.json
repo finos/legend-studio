@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-art",
-  "version": "5.0.20",
+  "version": "5.0.21",
   "description": "Legend shared visual components and component utilities",
   "keywords": [
     "legend",
@@ -78,10 +78,10 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@jest/globals": "29.3.1",
+    "@jest/globals": "29.4.1",
     "cross-env": "7.0.3",
     "eslint": "8.32.0",
-    "jest": "29.3.1",
+    "jest": "29.4.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.57.1",
