@@ -22,7 +22,6 @@ import {
   observe_EmbeddedData,
   observe_TestAssertion,
   skipObservedWithContext,
-  type TestBatch,
 } from '@finos/legend-graph';
 import { makeObservable, observable, override, computed } from 'mobx';
 import type { PersistenceTest } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
@@ -45,23 +44,6 @@ export const observe_Persistence = skipObservedWithContext(
     });
 
     metamodel.tests.forEach((test) => observe_AtomicTest(test, context));
-
-    return metamodel;
-  },
-);
-
-export const observe_PersistenceTest = skipObservedWithContext(
-  (metamodel: PersistenceTest, context: ObserverContext): PersistenceTest => {
-    makeObservable(metamodel, {
-      id: observable,
-      testBatches: observable,
-      isTestDataFromServiceOutput: observable,
-      hashCode: computed,
-    });
-
-    metamodel.testBatches.forEach((testBatch) =>
-      observe_TestBatch(testBatch, context),
-    );
 
     return metamodel;
   },
@@ -120,9 +102,19 @@ export const observe_PersistenceTestBatch = skipObservedWithContext(
   },
 );
 
-export function observe_TestBatch(
-  metamodel: PersistenceTestBatch,
-  context: ObserverContext,
-): TestBatch {
-  return observe_PersistenceTestBatch(metamodel, context);
-}
+export const observe_PersistenceTest = skipObservedWithContext(
+  (metamodel: PersistenceTest, context: ObserverContext): PersistenceTest => {
+    makeObservable(metamodel, {
+      id: observable,
+      testBatches: observable,
+      isTestDataFromServiceOutput: observable,
+      hashCode: computed,
+    });
+
+    metamodel.testBatches.forEach((testBatch) =>
+      observe_PersistenceTestBatch(testBatch, context),
+    );
+
+    return metamodel;
+  },
+);

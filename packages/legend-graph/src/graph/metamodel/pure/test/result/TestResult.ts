@@ -14,19 +14,30 @@
  * limitations under the License.
  */
 import type { AssertionStatus } from '../assertion/status/AssertionStatus.js';
+import type { AtomicTest, TestSuite } from '../Test.js';
 import type { Testable } from '../Testable.js';
-import type { AtomicTestId } from './AtomicTestId.js';
 
 export class TestResult {
   testable!: Testable;
-  atomicTestId!: AtomicTestId;
+  parentSuite: TestSuite | undefined;
+  atomicTest: AtomicTest;
+
+  constructor(testSuite: TestSuite | undefined, atomicTestId: AtomicTest) {
+    this.parentSuite = testSuite;
+    this.atomicTest = atomicTestId;
+  }
 }
+
 export class TestError extends TestResult {
   error!: string;
 }
 
-export class TestPassed extends TestResult {}
+export enum TestExecutionStatus {
+  PASS = 'PASS',
+  FAIL = 'FAIL',
+}
 
-export class TestFailed extends TestResult {
+export class TestExecuted extends TestResult {
+  testExecutionStatus!: TestExecutionStatus;
   assertStatuses: AssertionStatus[] = [];
 }

@@ -26,6 +26,7 @@ import {
   custom,
   deserialize,
   list,
+  optional,
   primitive,
   serialize,
   SKIP,
@@ -49,12 +50,11 @@ import type { V1_TestAssertion } from '../../../model/test/assertion/V1_TestAsse
 import {
   type V1_TestResult,
   V1_TestError,
-  V1_TestFailed,
-  V1_TestPassed,
+  V1_TestExecuted,
 } from '../../../model/test/result/V1_TestResult.js';
 import type { V1_AtomicTest } from '../../../model/test/V1_AtomicTest.js';
-import { V1_AtomicTestId } from '../../../model/test/V1_AtomicTestId.js';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
+import { V1_UniqueTestId } from '../../../model/test/V1_UniqueTestId.js';
 import { V1_externalFormatDataModelSchema } from './V1_DataElementSerializationHelper.js';
 import {
   V1_mappingTestModelSchema,
@@ -79,8 +79,7 @@ export enum V1_TestAssertionType {
 
 enum V1_TestResultType {
   TEST_ERROR = 'testError',
-  TEST_PASSED = 'testPassed',
-  TEST_FAILED = 'testFailed',
+  TEST_EXECUTED = 'testExecuted',
   MULTI_EXECUTION_TEST_RESULT = 'multiExecutionTestResult',
   // Remove once https://github.com/finos/legend-engine/pull/808 is released
   TEMPROARY_MULTI_EXECUTION_TEST_RESULT = 'MultiExecutionServiceTestResult',
@@ -91,7 +90,7 @@ export enum V1_TestSuiteType {
   MAPPING_TEST_SUITE = 'mappingTestSuite',
 }
 
-export const V1_atomicTestIdModelSchema = createModelSchema(V1_AtomicTestId, {
+export const V1_uniqueTestIdModelSchema = createModelSchema(V1_UniqueTestId, {
   atomicTestId: primitive(),
   testSuiteId: primitive(),
 });
@@ -172,26 +171,29 @@ const V1_equalToTDSModelSchema = createModelSchema(V1_EqualToTDS, {
 });
 
 export const V1_testErrorModelSchema = createModelSchema(V1_TestError, {
-  atomicTestId: usingModelSchema(V1_atomicTestIdModelSchema),
+  atomicTestId: primitive(),
   error: primitive(),
   testable: primitive(),
+  testSuiteId: primitive(),
 });
 
-export const V1_testFailedModelSchema = createModelSchema(V1_TestFailed, {
+export const V1_testExecutedModelSchema = createModelSchema(V1_TestExecuted, {
   assertStatuses: list(
     custom(
       (val) => V1_serializeAssertionStatus(val),
       (val) => V1_deserializeAssertionStatus(val),
     ),
   ),
-  atomicTestId: usingModelSchema(V1_atomicTestIdModelSchema),
+  atomicTestId: primitive(),
   testable: primitive(),
+  testExecutionStatus: primitive(),
+  testSuiteId: optional(primitive()),
 });
 
 export const V1_MultiExecutionServiceTestResultModelSchema = createModelSchema(
   V1_MultiExecutionServiceTestResult,
   {
-    atomicTestId: usingModelSchema(V1_atomicTestIdModelSchema),
+    atomicTestId: primitive(),
     keyIndexedTestResults: custom(
       () => SKIP,
       (val) =>
@@ -200,13 +202,9 @@ export const V1_MultiExecutionServiceTestResultModelSchema = createModelSchema(
         ),
     ),
     testable: primitive(),
+    testSuiteId: primitive(),
   },
 );
-
-export const V1_testPassedModelSchema = createModelSchema(V1_TestPassed, {
-  atomicTestId: usingModelSchema(V1_atomicTestIdModelSchema),
-  testable: primitive(),
-});
 
 export function V1_deserializeTestResult(
   json: PlainObject<V1_TestResult>,
@@ -214,10 +212,8 @@ export function V1_deserializeTestResult(
   switch (json._type) {
     case V1_TestResultType.TEST_ERROR:
       return deserialize(V1_testErrorModelSchema, json);
-    case V1_TestResultType.TEST_FAILED:
-      return deserialize(V1_testFailedModelSchema, json);
-    case V1_TestResultType.TEST_PASSED:
-      return deserialize(V1_testPassedModelSchema, json);
+    case V1_TestResultType.TEST_EXECUTED:
+      return deserialize(V1_testExecutedModelSchema, json);
     case V1_TestResultType.MULTI_EXECUTION_TEST_RESULT:
     case V1_TestResultType.TEMPROARY_MULTI_EXECUTION_TEST_RESULT:
       return deserialize(V1_MultiExecutionServiceTestResultModelSchema, json);

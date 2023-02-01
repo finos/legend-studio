@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-import { V1_TestBatch } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
 import type { V1_PersistenceTestData } from './V1_DSL_Persistence_PersistenceTestData.js';
+import type { V1_TestAssertion } from '@finos/legend-graph';
 
-export class V1_PersistenceTestBatch extends V1_TestBatch implements Hashable {
+export class V1_PersistenceTestBatch implements Hashable {
   testData!: V1_PersistenceTestData;
+  id!: string;
+  batchId!: string;
+  assertions: V1_TestAssertion[] = [];
 
-  override get hashCode(): string {
+  get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.PERSISTENCE_TEST_BATCH,
       this.id,

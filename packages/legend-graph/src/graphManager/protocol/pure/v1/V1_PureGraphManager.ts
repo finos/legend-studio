@@ -219,13 +219,14 @@ import {
   V1_RunTestsInput,
   V1_RunTestsTestableInput,
 } from './engine/test/V1_RunTestsInput.js';
-import { V1_AtomicTestId } from './model/test/V1_AtomicTestId.js';
+import { V1_UniqueTestId } from './model/test/V1_UniqueTestId.js';
 import type { RunTestsTestableInput } from '../../../../graph/metamodel/pure/test/result/RunTestsTestableInput.js';
 import { V1_buildTestsResult } from './engine/test/V1_RunTestsResult.js';
 import {
   type TestResult,
-  TestFailed,
   TestError,
+  TestExecuted,
+  TestExecutionStatus,
 } from '../../../../graph/metamodel/pure/test/result/TestResult.js';
 import {
   type Service,
@@ -1751,7 +1752,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         const runTestableInput = new V1_RunTestsTestableInput();
         runTestableInput.testable = testable;
         runTestableInput.unitTestIds = input.unitTestIds.map((unit) => {
-          const unitAtomicTest = new V1_AtomicTestId();
+          const unitAtomicTest = new V1_UniqueTestId();
           unitAtomicTest.testSuiteId = unit.parentSuite?.id;
           unitAtomicTest.atomicTestId = unit.atomicTest.id;
           return unitAtomicTest;
@@ -1786,7 +1787,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       const runTestsInput = new V1_RunTestsInput();
       runTestsInput.model = this.getFullGraphModelData(graph);
       const runTestableInput = new V1_RunTestsTestableInput();
-      const unitAtomicTest = new V1_AtomicTestId();
+      const unitAtomicTest = new V1_UniqueTestId();
       runTestableInput.testable = guaranteeNonNullable(
         getNullableIDFromTestable(
           testable,
@@ -1813,7 +1814,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
       const result = results[0];
       let status: AssertFail | undefined = undefined;
-      if (result instanceof TestFailed) {
+      if (
+        result instanceof TestExecuted &&
+        result.testExecutionStatus === TestExecutionStatus.FAIL
+      ) {
         status = result.assertStatuses.find(
           (aStatus) =>
             aStatus.assertion === baseAssertion &&
@@ -1822,7 +1826,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       } else if (result instanceof MultiExecutionServiceTestResult) {
         status = Array.from(result.keyIndexedTestResults.values())
           .map((testResult) => {
-            if (testResult instanceof TestFailed) {
+            if (
+              testResult instanceof TestExecuted &&
+              testResult.testExecutionStatus === TestExecutionStatus.FAIL
+            ) {
               return testResult.assertStatuses.find(
                 (aStatus) =>
                   aStatus.assertion === baseAssertion &&

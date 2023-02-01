@@ -19,16 +19,15 @@ import {
   AssertionStatus,
   type Test,
   type Testable,
-  type TestBatch,
   type TestResult,
   type TestAssertion,
   RunTestsTestableInput,
   TestSuite,
   AtomicTest,
-  AtomicTestId,
+  UniqueTestId,
   TestError,
-  TestFailed,
-  TestPassed,
+  TestExecutionStatus,
+  TestExecuted,
   AssertPass,
   AssertFail,
   PackageableElement,
@@ -135,14 +134,6 @@ export class AtomicTestTreeNodeData extends TestTreeNodeData {
   }
 }
 
-export class TestBatchTreeNodeData extends TestTreeNodeData {
-  testBatch: TestBatch;
-  constructor(id: string, testBatch: TestBatch) {
-    super(id, testBatch.id);
-    this.testBatch = testBatch;
-  }
-}
-
 export class TestSuiteTreeNodeData extends TestTreeNodeData {
   testSuite: TestSuite;
 
@@ -227,13 +218,16 @@ export const getAssertionStatus = (
   results: Map<AtomicTest, TestResult>,
 ): AssertionStatus | Map<string, AssertionStatus> | undefined => {
   const result = getAssertion_TestResult(assertion, results);
-  if (result instanceof TestFailed) {
+  if (
+    result instanceof TestExecuted &&
+    result.testExecutionStatus === TestExecutionStatus.FAIL
+  ) {
     return result.assertStatuses.find((s) => s.assertion === assertion);
   } else if (result instanceof MultiExecutionServiceTestResult) {
     const testAssertionStatus = new Map<string, AssertionStatus>();
     Array.from(result.keyIndexedTestResults.entries()).forEach(
       ([key, testResult]) => {
-        if (testResult instanceof TestFailed) {
+        if (testResult instanceof TestExecuted) {
           const testAssertion = testResult.assertStatuses.find(
             (s) => s.assertion === assertion,
           );
@@ -282,15 +276,27 @@ export enum TESTABLE_RESULT {
 export const getTestableResultFromTestResult = (
   testResult: TestResult | undefined,
 ): TESTABLE_RESULT => {
-  if (testResult instanceof TestPassed) {
+  if (
+    testResult instanceof TestExecuted &&
+    testResult.testExecutionStatus === TestExecutionStatus.PASS
+  ) {
     return TESTABLE_RESULT.PASSED;
-  } else if (testResult instanceof TestFailed) {
+  } else if (
+    testResult instanceof TestExecuted &&
+    testResult.testExecutionStatus === TestExecutionStatus.FAIL
+  ) {
     return TESTABLE_RESULT.FAILED;
   } else if (testResult instanceof TestError) {
     return TESTABLE_RESULT.ERROR;
   } else if (testResult instanceof MultiExecutionServiceTestResult) {
     const result = Array.from(testResult.keyIndexedTestResults.values());
-    if (result.every((t) => t instanceof TestPassed)) {
+    if (
+      result.every(
+        (t) =>
+          t instanceof TestExecuted &&
+          t.testExecutionStatus === TestExecutionStatus.PASS,
+      )
+    ) {
       return TESTABLE_RESULT.PASSED;
     } else if (result.some((t) => t instanceof TestError)) {
       return TESTABLE_RESULT.ERROR;
@@ -320,11 +326,23 @@ export const getTestableResultFromAssertionStatus = (
 export const getTestableResultFromTestResults = (
   testResults: (TestResult | undefined)[],
 ): TESTABLE_RESULT => {
-  if (testResults.every((t) => t instanceof TestPassed)) {
+  if (
+    testResults.every(
+      (t) =>
+        t instanceof TestExecuted &&
+        t.testExecutionStatus === TestExecutionStatus.PASS,
+    )
+  ) {
     return TESTABLE_RESULT.PASSED;
   } else if (testResults.find((t) => t instanceof TestError)) {
     return TESTABLE_RESULT.ERROR;
-  } else if (testResults.find((t) => t instanceof TestFailed)) {
+  } else if (
+    testResults.find(
+      (t) =>
+        t instanceof TestExecuted &&
+        t.testExecutionStatus === TestExecutionStatus.FAIL,
+    )
+  ) {
     return TESTABLE_RESULT.FAILED;
   } else if (
     testResults.find((t) => t instanceof MultiExecutionServiceTestResult)
@@ -337,7 +355,13 @@ export const getTestableResultFromTestResults = (
         );
       }
     });
-    if (result.every((t) => t instanceof TestPassed)) {
+    if (
+      result.every(
+        (t) =>
+          t instanceof TestExecuted &&
+          t.testExecutionStatus === TestExecutionStatus.PASS,
+      )
+    ) {
       return TESTABLE_RESULT.PASSED;
     } else if (result.some((t) => t instanceof TestError)) {
       return TESTABLE_RESULT.ERROR;
@@ -375,14 +399,6 @@ export const getNodeTestableResult = (
     return getTestableResultFromTestResult(
       getAtomicTest_TestResult(node.atomicTest, results),
     );
-  } else if (node instanceof TestBatchTreeNodeData) {
-    node.testBatch.assertions.forEach((assertion) => {
-      getNodeTestableResult(
-        new AssertionTestTreeNodeData(assertion.id, assertion),
-        globalRun,
-        results,
-      );
-    });
   } else if (node instanceof TestSuiteTreeNodeData) {
     return getTestableResultFromTestResults(
       getTestSuite_TestResults(node.testSuite, results),
@@ -402,7 +418,6 @@ export class TestableState {
   testableMetadata: TestableMetadata;
   treeData: TreeData<TestableExplorerTreeNodeData>;
   results: Map<AtomicTest, TestResult> = new Map();
-  batchResults: Map<TestBatch, TestResult> = new Map();
   isRunningTests = ActionState.create();
 
   constructor(
@@ -443,7 +458,7 @@ export class TestableState {
             ? atomicTest.__parent
             : undefined;
         input = new RunTestsTestableInput(this.testableMetadata.testable);
-        input.unitTestIds = [new AtomicTestId(suite, atomicTest)];
+        input.unitTestIds = [new UniqueTestId(suite, atomicTest)];
         const parentNode = Array.from(this.treeData.nodes.values())
           .filter(filterByType(AtomicTestTreeNodeData))
           .find((n) => n.atomicTest === atomicTest);
@@ -458,12 +473,12 @@ export class TestableState {
             ? atomicTest.__parent
             : undefined;
         input = new RunTestsTestableInput(this.testableMetadata.testable);
-        input.unitTestIds = [new AtomicTestId(suite, atomicTest)];
+        input.unitTestIds = [new UniqueTestId(suite, atomicTest)];
         node.isRunning = true;
       } else if (node instanceof TestSuiteTreeNodeData) {
         input = new RunTestsTestableInput(this.testableMetadata.testable);
         input.unitTestIds = node.testSuite.tests.map(
-          (s) => new AtomicTestId(node.testSuite, s),
+          (s) => new UniqueTestId(node.testSuite, s),
         );
         node.isRunning = true;
       } else if (node instanceof TestableTreeNodeData) {
@@ -498,7 +513,7 @@ export class TestableState {
   handleTestableResult(testResult: TestResult, openAssertions?: boolean): void {
     try {
       assertTrue(testResult.testable === this.testableMetadata.testable);
-      this.results.set(testResult.atomicTestId.atomicTest, testResult);
+      this.results.set(testResult.atomicTest, testResult);
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notifyError(
