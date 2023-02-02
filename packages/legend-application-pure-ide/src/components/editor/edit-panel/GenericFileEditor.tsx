@@ -18,7 +18,11 @@ import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI } from 'monaco-editor';
 import type { FileEditorState } from '../../../stores/FileEditorState.js';
-import { EDITOR_THEME, useApplicationStore } from '@finos/legend-application';
+import {
+  EDITOR_THEME,
+  useApplicationStore,
+  useCommands,
+} from '@finos/legend-application';
 import {
   clsx,
   Dialog,
@@ -151,7 +155,6 @@ export const GenericFileEditor = observer(
     const [editor, setEditor] = useState<
       monacoEditorAPI.IStandaloneCodeEditor | undefined
     >();
-    const content = editorState.file.content;
     const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
     useEffect(() => {
@@ -161,6 +164,7 @@ export const GenericFileEditor = observer(
           ...getBaseTextEditorOptions(),
           theme: EDITOR_THEME.LEGEND,
           wordWrap: editorState.textEditorState.wrapText ? 'on' : 'off',
+          readOnly: editorState.file.RO,
         });
 
         newEditor.onDidChangeModelContent(() => {
@@ -189,13 +193,7 @@ export const GenericFileEditor = observer(
       }
     }, [editorStore, applicationStore, editorState, editor]);
 
-    if (editor) {
-      // Set the value of the editor
-      const currentValue = editor.getValue();
-      if (currentValue !== content) {
-        editor.setValue(content);
-      }
-    }
+    useCommands(editorState);
 
     useEffect(() => {
       if (width !== undefined && height !== undefined) {

@@ -81,12 +81,15 @@ const theme: monacoEditorAPI.IStandaloneThemeData = {
     { token: PURE_GRAMMAR_TOKEN.PARAMETER, foreground: '9cdcfe' },
     { token: PURE_GRAMMAR_TOKEN.VARIABLE, foreground: '4fc1ff' },
     { token: PURE_GRAMMAR_TOKEN.TYPE, foreground: '3dc9b0' },
+    { token: `${PURE_GRAMMAR_TOKEN.STRING}.escape`, foreground: 'd7ba7d' },
   ],
 };
 
 // Taken from `monaco-languages` configuration for Java in order to do propert brace matching
 // See https://github.com/microsoft/monaco-languages/blob/master/src/java/java.ts
 const configuration: monacoLanguagesAPI.LanguageConfiguration = {
+  // NOTE: Pure identifier includes $
+  wordPattern: /(-?\d*\.\d\w*)|([^`~!@#%^&*()\-=+[{\]}\\|;:'",.<>/?\s]+)/,
   comments: {
     lineComment: '//',
     blockComment: ['/*', '*/'],
@@ -256,7 +259,15 @@ const generateLanguageMonarch = (
     hexdigits: /[[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
     multiplicity: /\[(?:[a-zA-Z0-9]+(?:\.\.(?:[a-zA-Z0-9]+|\*|))?|\*)\]/,
     package: /(?:[\w_]+::)+/,
-    generics: /<.+>/,
+    // NOTE: generics is a little tricky because in order to do it right, we have to
+    // do some sort of bracket matching, but we just can use a simple tokenizer here
+    // so to account for cases like `<Nil,Any|*>)->` `Function<{T[1]->Boolean[1]}>[1]`
+    // we have to make sure the content does not contain any `:` or `.` characters
+    // in order to avoid the accidental greedy match with inputs like
+    // `function doSomething<T>(a: Function<T[1]->Boolean[1]>)`
+    // nor we want to make sure the last character of the content is not `-` to avoid
+    // accidentally matching `->` as the end of the generics
+    generics: /(?:(?:<\w+>)|(?:<[^:.@^()]+[^-]>))/,
     date: /%-?\d+(?:-\d+(?:-\d+(?:T(?:\d+(?::\d+(?::\d+(?:.\d+)?)?)?)(?:[+-][0-9]{4})?)))/,
     time: /%\d+(?::\d+(?::\d+(?:.\d+)?)?)?/,
 
@@ -295,6 +306,9 @@ const generateLanguageMonarch = (
             cases: {
               '@languageStructs': PURE_GRAMMAR_TOKEN.LANGUAGE_STRUCT,
               '@keywords': `${PURE_GRAMMAR_TOKEN.KEYWORD}.$0`,
+              // function descriptor
+              '([a-zA-Z_$][\\w$]*)_((\\w+_(([a-zA-Z0-9]+)|(\\$[a-zA-Z0-9]+_[a-zA-Z0-9]+\\$)))__)*(\\w+_(([a-zA-Z0-9]+)|(\\$[a-zA-Z0-9]+_[a-zA-Z0-9]+\\$)))_':
+                PURE_GRAMMAR_TOKEN.TYPE,
               '@default': PURE_GRAMMAR_TOKEN.IDENTIFIER,
             },
           },

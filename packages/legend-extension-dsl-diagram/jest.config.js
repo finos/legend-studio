@@ -22,12 +22,8 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const packageJson = loadJSON(resolve(__dirname, './package.json'));
-const base = getBaseJestDOMProjectConfig(
+
+export default getBaseJestDOMProjectConfig(
   packageJson.name,
   'packages/legend-extension-dsl-diagram',
 );
-
-export default {
-  ...base,
-  setupFiles: [...base.setupFiles, 'jest-canvas-mock'],
-};

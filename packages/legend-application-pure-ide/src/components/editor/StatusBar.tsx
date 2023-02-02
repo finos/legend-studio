@@ -110,7 +110,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           )}
           onClick={toggleAuxPanel}
           tabIndex={-1}
-          title="Toggle auxiliary panel (Ctrl + `)"
+          title="Toggle auxiliary panel"
         >
           <TerminalIcon />
         </button>

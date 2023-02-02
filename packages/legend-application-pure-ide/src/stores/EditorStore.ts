@@ -94,11 +94,15 @@ import { DiagramInfo, serializeDiagram } from '../server/models/DiagramInfo.js';
 import type { LegendPureIDEApplicationStore } from './LegendPureIDEBaseStore.js';
 import { SearchCommandState } from './SearchCommandState.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
-import { LEGEND_PURE_IDE_COMMAND_KEY } from './LegendPureIDECommand.js';
+import {
+  LEGEND_PURE_IDE_COMMAND_KEY,
+  LEGEND_PURE_IDE_TERMINAL_COMMAND,
+} from './LegendPureIDECommand.js';
 import { ExecutionError } from '../server/models/ExecutionError.js';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import type { SourceModificationResult } from '../server/models/Source.js';
 import { ConceptType } from '../server/models/ConceptTree.js';
+import { setupTerminal } from './LegendPureIDETerminal.js';
 
 export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
@@ -110,7 +114,7 @@ export class EditorStore implements CommandRegistrar {
 
   // Layout
   isMaxAuxPanelSizeSet = false;
-  activeAuxPanelMode = AUX_PANEL_MODE.CONSOLE;
+  activeAuxPanelMode = AUX_PANEL_MODE.TERMINAL;
   readonly auxPanelDisplayState = new PanelDisplayState({
     initial: 0,
     default: 300,
@@ -126,9 +130,6 @@ export class EditorStore implements CommandRegistrar {
 
   readonly executionState = ActionState.create();
   navigationStack: FileCoordinate[] = []; // TODO?: we might want to limit the number of items in this stack
-
-  // Console
-  consoleText?: string | undefined;
 
   // Search Command
   readonly fileSearchCommandLoadingState = ActionState.create();
@@ -151,7 +152,6 @@ export class EditorStore implements CommandRegistrar {
       isMaxAuxPanelSizeSet: observable,
       activeAuxPanelMode: observable,
       activeActivity: observable,
-      consoleText: observable,
       navigationStack: observable,
       openFileSearchCommand: observable,
       fileSearchCommandResults: observable,
@@ -165,7 +165,6 @@ export class EditorStore implements CommandRegistrar {
       setOpenTextSearchCommand: action,
       setActiveAuxPanelMode: action,
       setActiveActivity: action,
-      setConsoleText: action,
       setSearchState: action,
       setTestRunnerState: action,
       pullInitializationActivity: action,
@@ -210,6 +209,8 @@ export class EditorStore implements CommandRegistrar {
           : this.applicationStore.config.pureUrl,
       }),
     );
+
+    setupTerminal(this);
   }
 
   setOpenFileSearchCommand(val: boolean): void {
@@ -222,10 +223,6 @@ export class EditorStore implements CommandRegistrar {
 
   setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
     this.activeAuxPanelMode = val;
-  }
-
-  setConsoleText(value: string | undefined): void {
-    this.consoleText = value;
   }
 
   setSearchState(val: SearchState | undefined): void {
@@ -243,6 +240,9 @@ export class EditorStore implements CommandRegistrar {
     // but the blocking alert for not-found workspace will still block the app
     this.applicationStore.setBlockingAlert(undefined);
     this.applicationStore.setActionAlertInfo(undefined);
+
+    // dispose the terminal
+    this.applicationStore.terminalService.terminal.dispose();
   }
 
   /**
@@ -268,13 +268,23 @@ export class EditorStore implements CommandRegistrar {
     // initialize editor
     this.initState.inProgress();
     try {
-      const initializationPromise = this.client.initialize(!fullInit);
       this.applicationStore.setBlockingAlert({
         message: 'Loading Pure IDE...',
         prompt:
           'Please be patient as we are building the initial application state',
         showLoading: true,
       });
+      const initializationPromise = this.client
+        .initialize(!fullInit)
+        .catch((error) => {
+          assertErrorThrown(error);
+          this.applicationStore.notifyError(error);
+          this.initState.fail();
+          this.applicationStore.setBlockingAlert({
+            message: `Failed to initialize IDE`,
+            prompt: `Before debugging, make sure the server is running then restart the application`,
+          });
+        });
       yield this.pullInitializationActivity();
       this.applicationStore.setBlockingAlert(undefined);
       const openWelcomeFilePromise = flowResult(this.loadFile('/welcome.pure'));
@@ -284,8 +294,10 @@ export class EditorStore implements CommandRegistrar {
         (yield initializationPromise) as PlainObject<InitializationResult>,
       );
       if (result.text) {
-        this.setConsoleText(result.text);
-        this.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+        this.applicationStore.terminalService.terminal.output(result.text, {
+          systemCommand: 'initialize application',
+        });
+        this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
         this.auxPanelDisplayState.open();
       }
       if (result instanceof InitializationFailureResult) {
@@ -319,18 +331,32 @@ export class EditorStore implements CommandRegistrar {
           conceptTreeInitPromise,
         ]);
       }
+      this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
       this.initState.fail();
-      this.applicationStore.setBlockingAlert({
-        message: 'Failed to initialize IDE',
-        prompt:
-          'Make sure the IDE server is working, otherwise try to restart it',
+      this.applicationStore.setActionAlertInfo({
+        message: `Failed to initialize IDE`,
+        prompt: `This can either due to an internal server error, which you would need to manually resolve; or a compilation, which you can proceed to debug`,
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Compile to debug',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            default: true,
+            handler: () => {
+              flowResult(this.executeGo()).catch(
+                this.applicationStore.alertUnhandledError,
+              );
+            },
+          },
+        ],
       });
-      return;
+    } finally {
+      // initialize the terminal
+      this.applicationStore.terminalService.terminal.clear();
     }
-    this.initState.pass();
   }
 
   *checkIfSessionWakingUp(message?: string): GeneratorFn<void> {
@@ -374,12 +400,10 @@ export class EditorStore implements CommandRegistrar {
   registerCommands(): void {
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_FILE,
-      trigger: () => this.initState.hasSucceeded,
       action: () => this.setOpenFileSearchCommand(true),
     });
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_TEXT,
-      trigger: () => this.initState.hasSucceeded,
       action: () => this.setOpenTextSearchCommand(true),
     });
     this.applicationStore.commandCenter.registerCommand({
@@ -394,9 +418,27 @@ export class EditorStore implements CommandRegistrar {
       },
     });
     this.applicationStore.commandCenter.registerCommand({
-      key: LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_AUX_PANEL,
-      trigger: () => this.initState.hasSucceeded,
-      action: () => this.auxPanelDisplayState.toggle(),
+      key: LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_TERMINAL_PANEL,
+      action: () => {
+        // toggle the aux panel and activate terminal tab if needs be
+        // if the terminal is already open, and not yet focused, focus on it
+        // else, close it
+        if (this.auxPanelDisplayState.isOpen) {
+          if (this.activeAuxPanelMode !== AUX_PANEL_MODE.TERMINAL) {
+            this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
+            this.applicationStore.terminalService.terminal.focus();
+          } else {
+            if (!this.applicationStore.terminalService.terminal.isFocused()) {
+              this.applicationStore.terminalService.terminal.focus();
+            } else {
+              this.auxPanelDisplayState.close();
+            }
+          }
+        } else {
+          this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
+          this.auxPanelDisplayState.open();
+        }
+      },
     });
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.EXECUTE,
@@ -445,7 +487,7 @@ export class EditorStore implements CommandRegistrar {
       LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_FILE,
       LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_TEXT,
       LEGEND_PURE_IDE_COMMAND_KEY.GO_TO_FILE,
-      LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_AUX_PANEL,
+      LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_TERMINAL_PANEL,
       LEGEND_PURE_IDE_COMMAND_KEY.EXECUTE,
       LEGEND_PURE_IDE_COMMAND_KEY.FULL_RECOMPILE,
       LEGEND_PURE_IDE_COMMAND_KEY.FULL_RECOMPILE_WITH_FULL_INIT,
@@ -496,27 +538,34 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *loadFile(filePath: string, coordinate?: FileCoordinate): GeneratorFn<void> {
-    let editorState = this.tabManagerState.tabs.find(
-      (tab): tab is FileEditorState =>
-        tab instanceof FileEditorState && tab.filePath === filePath,
-    );
-    if (!editorState) {
-      yield flowResult(this.checkIfSessionWakingUp());
-      editorState = new FileEditorState(
-        this,
-        deserialize(File, yield this.client.getFile(filePath)),
-        filePath,
+    try {
+      let editorState = this.tabManagerState.tabs.find(
+        (tab): tab is FileEditorState =>
+          tab instanceof FileEditorState && tab.filePath === filePath,
       );
-    }
-    this.tabManagerState.openTab(editorState);
-    if (coordinate) {
-      editorState.textEditorState.setForcedCursorPosition({
-        lineNumber: coordinate.line,
-        column: coordinate.column,
-      });
-      if (coordinate instanceof FileErrorCoordinate) {
-        editorState.showError(coordinate);
+      if (!editorState) {
+        yield flowResult(this.checkIfSessionWakingUp());
+        editorState = new FileEditorState(
+          this,
+          deserialize(File, yield this.client.getFile(filePath)),
+          filePath,
+        );
       }
+      this.tabManagerState.openTab(editorState);
+      if (coordinate) {
+        editorState.textEditorState.setForcedCursorPosition({
+          lineNumber: coordinate.line,
+          column: coordinate.column,
+        });
+        if (coordinate instanceof FileErrorCoordinate) {
+          editorState.showError(coordinate);
+        }
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.terminalService.terminal.fail(error.message, {
+        systemCommand: `load file ${filePath}`,
+      });
     }
   }
 
@@ -556,15 +605,17 @@ export class EditorStore implements CommandRegistrar {
       result: ExecutionResult,
       potentiallyAffectedFiles: string[],
     ) => Promise<void>,
+    command: string | undefined,
     options?: {
       /**
        * Some execution, such as find concept produces no output
        * so we should not reset the console text in that case
        */
-      avoidUpdatingConsoleText?: boolean;
+      silent?: boolean;
+      clearTerminal?: boolean;
     },
   ): GeneratorFn<void> {
-    if (!this.initState.hasSucceeded) {
+    if (!this.initState.hasCompleted) {
       this.applicationStore.notifyWarning(
         `Can't execute while initializing application`,
       );
@@ -618,7 +669,7 @@ export class EditorStore implements CommandRegistrar {
           executionPromiseFinished = true;
           executionPromiseResult = value;
         }),
-        new Promise((resolve) =>
+        new Promise((resolve, reject) =>
           setTimeout(
             () => {
               if (!executionPromiseFinished && checkExecutionStatus) {
@@ -627,7 +678,11 @@ export class EditorStore implements CommandRegistrar {
                   prompt: 'Please do not refresh the application',
                   showLoading: true,
                 });
-                resolve(this.pullExecutionStatus());
+                resolve(
+                  this.pullExecutionStatus().finally(() => {
+                    this.applicationStore.setBlockingAlert(undefined);
+                  }),
+                );
               }
               resolve();
             },
@@ -640,13 +695,11 @@ export class EditorStore implements CommandRegistrar {
         guaranteeNonNullable(executionPromiseResult),
       );
       this.applicationStore.setBlockingAlert(undefined);
-      if (!options?.avoidUpdatingConsoleText) {
-        this.setConsoleText(result.text);
-      }
       if (result instanceof ExecutionFailureResult) {
-        this.applicationStore.notifyWarning(
+        this.applicationStore.notifyError(
           `Execution failed${result.text ? `: ${result.text}` : ''}`,
         );
+        this.applicationStore.terminalService.terminal.fail(result.text);
         if (result.sessionError) {
           this.applicationStore.setBlockingAlert({
             message: 'Session corrupted',
@@ -655,37 +708,55 @@ export class EditorStore implements CommandRegistrar {
         } else {
           yield flowResult(manageResult(result, potentiallyAffectedFiles));
         }
-      } else if (result instanceof ExecutionSuccessResult) {
-        this.applicationStore.notifySuccess('Execution succeeded!');
-        if (result.reinit) {
-          this.applicationStore.setBlockingAlert({
-            message: 'Reinitializing...',
-            prompt: 'Please do not refresh the application',
-            showLoading: true,
-          });
-          this.initState.reset();
-          yield flowResult(
-            this.initialize(
-              false,
-              () =>
-                flowResult(
-                  this.execute(
-                    url,
-                    extraParams,
-                    checkExecutionStatus,
-                    manageResult,
-                  ),
-                ),
-              this.client.mode,
-              this.client.compilerMode,
-            ),
+      } else {
+        if (!options?.silent) {
+          this.applicationStore.terminalService.terminal.output(
+            result.text ?? '',
+            {
+              clear: options?.clearTerminal,
+              systemCommand: command ?? 'execute',
+            },
           );
+        }
+        if (result instanceof ExecutionSuccessResult) {
+          this.applicationStore.notifySuccess('Execution succeeded!');
+          if (result.reinit) {
+            this.applicationStore.setBlockingAlert({
+              message: 'Reinitializing...',
+              prompt: 'Please do not refresh the application',
+              showLoading: true,
+            });
+            this.initState.reset();
+            yield flowResult(
+              this.initialize(
+                false,
+                () =>
+                  flowResult(
+                    this.execute(
+                      url,
+                      extraParams,
+                      checkExecutionStatus,
+                      manageResult,
+                      command,
+                    ),
+                  ),
+                this.client.mode,
+                this.client.compilerMode,
+              ),
+            );
+          } else {
+            yield flowResult(manageResult(result, potentiallyAffectedFiles));
+          }
         } else {
           yield flowResult(manageResult(result, potentiallyAffectedFiles));
         }
-      } else {
-        yield flowResult(manageResult(result, potentiallyAffectedFiles));
       }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(error);
+      this.applicationStore.terminalService.terminal.fail(error.message, {
+        systemCommand: command ?? 'execute',
+      });
     } finally {
       this.applicationStore.setBlockingAlert(undefined);
       this.executionState.reset();
@@ -735,6 +806,10 @@ export class EditorStore implements CommandRegistrar {
           flowResult(
             this.manageExecuteGoResult(result, potentiallyAffectedFiles),
           ),
+        LEGEND_PURE_IDE_TERMINAL_COMMAND.GO,
+        {
+          clearTerminal: true,
+        },
       ),
     );
   }
@@ -744,18 +819,27 @@ export class EditorStore implements CommandRegistrar {
     potentiallyAffectedFiles: string[],
   ): GeneratorFn<void> {
     const refreshTreesPromise = this.refreshTrees();
+
+    // reset errors on all tabs before potentially show the latest error
+    this.tabManagerState.tabs
+      .filter(filterByType(FileEditorState))
+      .filter((tab) => potentiallyAffectedFiles.includes(tab.filePath))
+      .forEach((tab) => tab.clearError());
+
     if (result instanceof ExecutionFailureResult) {
-      yield flowResult(
-        this.loadFile(
-          result.source,
-          new FileErrorCoordinate(
+      if (result.source) {
+        yield flowResult(
+          this.loadFile(
             result.source,
-            result.line,
-            result.column,
-            new ExecutionError(result.text.split('\n').filter(Boolean)[0]),
+            new FileErrorCoordinate(
+              result.source,
+              result.line,
+              result.column,
+              new ExecutionError(result.text.split('\n').filter(Boolean)[0]),
+            ),
           ),
-        ),
-      );
+        );
+      }
       if (result instanceof UnmatchedFunctionResult) {
         this.setSearchState(
           new UnmatchedFunctionExecutionResultState(this, result),
@@ -777,6 +861,15 @@ export class EditorStore implements CommandRegistrar {
       this.resetChangeDetection(
         potentiallyAffectedFiles.concat(result.modifiedFiles),
       );
+      // NOTE: this is for the case where compilation failed during IDE initialization
+      // this is when we fix the compilation and execute for the first time, which in turn
+      // will properly `initialize` the application
+      // therefore, we will need to re-initialize the concept tree which was not initialized
+      // before
+      if (this.initState.hasFailed || !this.conceptTreeState.treeData) {
+        yield flowResult(this.conceptTreeState.initialize());
+        this.initState.pass();
+      }
     }
     yield refreshTreesPromise;
   }
@@ -806,20 +899,22 @@ export class EditorStore implements CommandRegistrar {
         async (result: ExecutionResult, potentiallyAffectedFiles: string[]) => {
           const refreshTreesPromise = this.refreshTrees();
           if (result instanceof ExecutionFailureResult) {
-            await flowResult(
-              this.loadFile(
-                result.source,
-                new FileErrorCoordinate(
+            if (result.source) {
+              await flowResult(
+                this.loadFile(
                   result.source,
-                  result.line,
-                  result.column,
-                  new ExecutionError(
-                    result.text.split('\n').filter(Boolean)[0],
+                  new FileErrorCoordinate(
+                    result.source,
+                    result.line,
+                    result.column,
+                    new ExecutionError(
+                      result.text.split('\n').filter(Boolean)[0],
+                    ),
                   ),
                 ),
-              ),
-            );
-            this.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+              );
+            }
+            this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
             this.auxPanelDisplayState.open();
             this.testRunState.fail();
           } else if (result instanceof TestExecutionResult) {
@@ -839,6 +934,7 @@ export class EditorStore implements CommandRegistrar {
           // do nothing?
           await refreshTreesPromise;
         },
+        `${LEGEND_PURE_IDE_TERMINAL_COMMAND.TEST} ${path}`,
       ),
     );
   }
@@ -873,7 +969,8 @@ export class EditorStore implements CommandRegistrar {
           }
           this.resetChangeDetection(potentiallyAffectedFiles);
         },
-        { avoidUpdatingConsoleText: true },
+        `navigate`,
+        { silent: true },
       ),
     );
   }
@@ -926,6 +1023,7 @@ export class EditorStore implements CommandRegistrar {
                     keepShowingIfMatchedCurrent: true,
                   });
                 },
+                `recompile`,
               ),
             ).catch(this.applicationStore.alertUnhandledError);
           },
@@ -1003,17 +1101,22 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *command(
-    cmd: () => Promise<PlainObject<CommandResult>>,
+    fn: () => Promise<PlainObject<CommandResult>>,
+    command: string,
   ): GeneratorFn<boolean> {
     try {
       const result = deserializeCommandResult(
-        (yield cmd()) as PlainObject<CommandResult>,
+        (yield fn()) as PlainObject<CommandResult>,
       );
       if (result instanceof CommandFailureResult) {
         if (result.errorDialog) {
-          this.applicationStore.notifyWarning(`Error: ${result.text}`);
+          this.applicationStore.notifyWarning(
+            `Can't run command '${command}': ${result.text}`,
+          );
         } else {
-          this.setConsoleText(result.text);
+          this.applicationStore.terminalService.terminal.output(result.text, {
+            systemCommand: command,
+          });
         }
         return false;
       }
@@ -1021,6 +1124,9 @@ export class EditorStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
+      this.applicationStore.terminalService.terminal.fail(error.message, {
+        systemCommand: command,
+      });
       return false;
     }
   }
@@ -1124,13 +1230,11 @@ export class EditorStore implements CommandRegistrar {
         yield this.reloadFile(file);
       }
       yield this.refreshTrees();
-      this.setConsoleText(
-        `Sucessfully renamed concept. Please re-compile the code`,
-      );
       this.applicationStore.notifyWarning(
         `Please re-compile the code after refacting`,
       );
-    } catch {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.notifyError(`Can't rename concept '${oldName}'`);
     }
   }
@@ -1165,14 +1269,14 @@ export class EditorStore implements CommandRegistrar {
         yield this.reloadFile(file);
       }
       yield this.refreshTrees();
-      this.setConsoleText(
-        `Sucessfully moved packageble elements. Please re-compile the code`,
-      );
       this.applicationStore.notifyWarning(
         `Please re-compile the code after refacting`,
       );
-    } catch {
-      this.applicationStore.notifyError(`Can't move packageable elements`);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(
+        `Can't move packageable elements:\n${error.message}`,
+      );
     }
   }
 
@@ -1189,7 +1293,7 @@ export class EditorStore implements CommandRegistrar {
         candidate.messageToBeModified,
       ),
     );
-    this.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+    this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
     this.auxPanelDisplayState.open();
   }
 
@@ -1215,14 +1319,12 @@ export class EditorStore implements CommandRegistrar {
           yield this.reloadFile(file);
         }
       }
-      this.setConsoleText(
-        `Sucessfully updated file. Please re-compile the code`,
-      );
       this.applicationStore.notifyWarning(
         `Please re-compile the code after refacting`,
       );
-    } catch {
-      this.applicationStore.notifyError(`Can't update file: ${path}`);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(`Can't update file '${path}'`);
     }
   }
 
@@ -1265,8 +1367,9 @@ export class EditorStore implements CommandRegistrar {
   *createNewDirectory(path: string): GeneratorFn<void> {
     try {
       yield flowResult(
-        this.command(() =>
-          this.client.createFolder(trimPathLeadingSlash(path)),
+        this.command(
+          () => this.client.createFolder(trimPathLeadingSlash(path)),
+          LEGEND_PURE_IDE_TERMINAL_COMMAND.NEW_DIRECTORY,
         ),
       );
 
@@ -1280,7 +1383,10 @@ export class EditorStore implements CommandRegistrar {
   *createNewFile(path: string): GeneratorFn<void> {
     try {
       const result = (yield flowResult(
-        this.command(() => this.client.createFile(trimPathLeadingSlash(path))),
+        this.command(
+          () => this.client.createFile(trimPathLeadingSlash(path)),
+          LEGEND_PURE_IDE_TERMINAL_COMMAND.NEW_FILE,
+        ),
       )) as boolean;
       yield flowResult(this.directoryTreeState.refreshTreeData());
       if (result) {
@@ -1295,7 +1401,10 @@ export class EditorStore implements CommandRegistrar {
   *renameFile(oldPath: string, newPath: string): GeneratorFn<void> {
     try {
       yield flowResult(
-        this.command(() => this.client.renameFile(oldPath, newPath)),
+        this.command(
+          () => this.client.renameFile(oldPath, newPath),
+          LEGEND_PURE_IDE_TERMINAL_COMMAND.MOVE,
+        ),
       );
       yield flowResult(this.directoryTreeState.refreshTreeData());
       const openTab = this.tabManagerState.tabs.find(
@@ -1312,47 +1421,52 @@ export class EditorStore implements CommandRegistrar {
 
   *deleteDirectoryOrFile(
     path: string,
-    isDirectory: boolean,
-    hasChildContent: boolean,
+    isDirectory: boolean | undefined,
+    hasChildContent: boolean | undefined,
   ): GeneratorFn<void> {
     const _delete = async (): Promise<void> => {
       await flowResult(
-        this.command(() =>
-          this.client.deleteDirectoryOrFile(trimPathLeadingSlash(path)),
+        this.command(
+          () => this.client.deleteDirectoryOrFile(trimPathLeadingSlash(path)),
+          LEGEND_PURE_IDE_TERMINAL_COMMAND.REMOVE,
         ),
       );
       const editorStatesToClose = this.tabManagerState.tabs.filter(
         (tab) =>
           tab instanceof FileEditorState &&
-          (isDirectory
+          (isDirectory === undefined || isDirectory
             ? tab.filePath.startsWith(`${path}/`)
             : tab.filePath === path),
       );
       editorStatesToClose.forEach((tab) => this.tabManagerState.closeTab(tab));
       await flowResult(this.directoryTreeState.refreshTreeData());
     };
-    this.applicationStore.setActionAlertInfo({
-      message: `Are you sure you would like to delete this ${
-        isDirectory ? 'directory' : 'file'
-      }?`,
-      prompt: hasChildContent
-        ? 'Beware! This directory is not empty, this action is not undo-able, you have to manually revert using VCS'
-        : 'Beware! This action is not undo-able, you have to manually revert using VCS',
-      type: ActionAlertType.CAUTION,
-      actions: [
-        {
-          label: 'Delete anyway',
-          type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-          handler: () => {
-            _delete().catch(this.applicationStore.alertUnhandledError);
+    if (isDirectory === undefined || hasChildContent === undefined) {
+      _delete().catch(this.applicationStore.alertUnhandledError);
+    } else {
+      this.applicationStore.setActionAlertInfo({
+        message: `Are you sure you would like to delete this ${
+          isDirectory ? 'directory' : 'file'
+        }?`,
+        prompt: hasChildContent
+          ? 'Beware! This directory is not empty, this action is not undo-able, you have to manually revert using VCS'
+          : 'Beware! This action is not undo-able, you have to manually revert using VCS',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Delete anyway',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: () => {
+              _delete().catch(this.applicationStore.alertUnhandledError);
+            },
           },
-        },
-        {
-          label: 'Abort',
-          type: ActionAlertActionType.PROCEED,
-          default: true,
-        },
-      ],
-    });
+          {
+            label: 'Abort',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    }
   }
 }

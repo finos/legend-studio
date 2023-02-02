@@ -54,6 +54,7 @@ import {
   GoToFileIcon,
   SubjectIcon,
   ViewHeadlineIcon,
+  TimesIcon,
 } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
@@ -186,7 +187,10 @@ const TestTreeNodeContainer = observer(
         <div className="tree-view__node__icon explorer__package-tree__node__icon">
           <div
             className="explorer__package-tree__node__icon__expand"
-            onClick={toggleExpansion}
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleExpansion();
+            }}
           >
             {!isExpandable ? (
               <div />
@@ -395,6 +399,13 @@ const TestRunnerResultDisplay = observer(
     };
     const toggleViewMode = (): void =>
       testRunnerState.setViewAsList(!testRunnerState.viewAsList);
+    const removeTestResult = (): void => {
+      flowResult(testRunnerState.cancelTestRun())
+        .catch(applicationStore.alertUnhandledError)
+        .finally(() => {
+          editorStore.setTestRunnerState(undefined);
+        });
+    };
 
     return (
       <div className="test-runner-panel__content">
@@ -475,6 +486,14 @@ const TestRunnerResultDisplay = observer(
                     title="Run Suite"
                   >
                     <PlayIcon />
+                  </button>
+                  <button
+                    className="panel__header__action"
+                    tabIndex={-1}
+                    onClick={removeTestResult}
+                    title="Reset"
+                  >
+                    <TimesIcon />
                   </button>
                 </div>
               </div>

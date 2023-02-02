@@ -46,7 +46,7 @@ export const Editor = withEditorStore(
   observer(() => {
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const editable = editorStore.initState.hasSucceeded;
+    const editable = !editorStore.initState.isInInitialState;
 
     // layout
     const { ref, width, height } = useResizeDetector<HTMLDivElement>();

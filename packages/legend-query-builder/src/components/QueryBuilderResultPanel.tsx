@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
+import { AgGridReact } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
   BlankPanelContent,
@@ -362,18 +362,14 @@ const QueryBuilderGridResult = observer(
           onCellMouseOver={(event): void => {
             setCellDoubleClickedEvent(event);
           }}
-        >
-          {columns.map((colName) => (
-            <AgGridColumn
-              minWidth={50}
-              sortable={true}
-              resizable={true}
-              field={colName}
-              key={colName}
-              flex={1}
-            />
-          ))}
-        </AgGridReact>
+          columnDefs={columns.map((colName) => ({
+            minWidth: 50,
+            sortable: true,
+            resizable: true,
+            field: colName,
+            flex: 1,
+          }))}
+        />
       </ContextMenu>
     );
   },

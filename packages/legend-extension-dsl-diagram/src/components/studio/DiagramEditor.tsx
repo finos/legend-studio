@@ -1176,8 +1176,7 @@ const DiagramEditorDiagramCanvas = observer(
     }
   >(function DiagramEditorDiagramCanvas(props, ref) {
     const { diagramEditorState } = props;
-    const diagramCanvasRef =
-      ref as React.MutableRefObject<HTMLDivElement | null>;
+    const diagramCanvasRef = ref as React.MutableRefObject<HTMLDivElement>;
     const isReadOnly = diagramEditorState.isReadOnly;
 
     const { width, height } = useResizeDetector<HTMLDivElement>({
@@ -1187,16 +1186,14 @@ const DiagramEditorDiagramCanvas = observer(
     });
 
     useEffect(() => {
-      if (diagramCanvasRef.current) {
-        const renderer = new DiagramRenderer(
-          diagramCanvasRef.current,
-          diagramEditorState.diagram,
-        );
-        diagramEditorState.setRenderer(renderer);
-        diagramEditorState.setupRenderer();
-        renderer.render();
-        renderer.autoRecenter();
-      }
+      const renderer = new DiagramRenderer(
+        diagramCanvasRef.current,
+        diagramEditorState.diagram,
+      );
+      diagramEditorState.setRenderer(renderer);
+      diagramEditorState.setupRenderer();
+      renderer.render();
+      renderer.autoRecenter();
     }, [diagramCanvasRef, diagramEditorState]);
 
     useEffect(() => {

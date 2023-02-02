@@ -53,6 +53,12 @@
       &--file {
         color: var(--color-file);
       }
+
+      &--readonly {
+        margin-left: 0.5rem;
+        font-size: 1rem;
+        color: var(--color-dark-grey-350);
+      }
     }
 
     &__label {

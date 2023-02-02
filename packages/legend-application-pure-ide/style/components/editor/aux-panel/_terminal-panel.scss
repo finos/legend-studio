@@ -1,0 +1,142 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.terminal-panel {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &__header {
+    @include flexVCenter;
+
+    justify-content: flex-end;
+    height: 2.8rem;
+    border-bottom: 0.1rem solid var(--color-dark-grey-85);
+  }
+
+  &__header__action {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    height: 2.8rem;
+    width: 2.8rem;
+
+    svg {
+      color: var(--color-dark-grey-400);
+    }
+
+    &:hover,
+    &--active {
+      svg {
+        color: var(--color-light-grey-300);
+      }
+    }
+
+    &[disabled],
+    &[disabled]:hover {
+      svg {
+        color: var(--color-dark-grey-300);
+      }
+    }
+
+    &__icon {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__header__group {
+    @include flexVCenter;
+
+    height: 100%;
+    padding: 0 0.5rem;
+
+    &__separator {
+      height: 1.6rem;
+      border: 0.05rem solid var(--color-dark-grey-100);
+    }
+
+    &__action {
+      width: 2rem;
+    }
+  }
+
+  &__header__searcher {
+    &__input__container {
+      height: 2rem;
+      width: 23rem;
+      position: relative;
+      display: flex;
+    }
+
+    &__input {
+      height: 100%;
+      width: 100%;
+      font-size: 1.2rem;
+      padding-right: 8rem;
+      border-radius: 0.1rem;
+    }
+
+    &__input__actions {
+      @include flexVCenter;
+
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+
+    &__input__action {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 2rem;
+      width: 2rem;
+
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+
+      &--active svg,
+      &:hover svg {
+        color: var(--color-light-grey-300);
+      }
+    }
+
+    &__result {
+      @include flexVCenter;
+
+      min-width: 9rem;
+      padding: 0 0.5rem;
+      font-size: 1.2rem;
+    }
+  }
+
+  &__content {
+    height: calc(100% - 2.8rem);
+    width: 100%;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .xterm {
+    height: 100%;
+    width: 100%;
+    padding: 0.5rem 0 0.5rem 1.5rem;
+  }
+}

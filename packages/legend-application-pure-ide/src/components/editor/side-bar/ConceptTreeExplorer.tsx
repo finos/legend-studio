@@ -430,7 +430,7 @@ export const ConceptTreeExplorer = observer(() => {
               )}
             {treeState.loadInitialDataState.hasFailed && (
               <BlankPanelContent>
-                Failed to build concept tree
+                Failed to build concept tree. Make sure graph compiles
               </BlankPanelContent>
             )}
           </div>
