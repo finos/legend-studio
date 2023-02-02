@@ -2519,7 +2519,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // ---------------------------------------- Analysis ----------------------------------------
 
-  private buildMappingModelCoverageAnalysisInputContextData = (
+  buildPureModelContextDataFromPureModel = (
     graph: PureModel,
   ): V1_PureModelContextData => {
     const graphData = this.getFullGraphModelData(graph);
@@ -2557,7 +2557,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const input = new V1_MappingModelCoverageAnalysisInput();
     input.clientVersion = V1_PureGraphManager.TARGET_PROTOCOL_VERSION;
     input.mapping = mapping.path;
-    input.model = this.buildMappingModelCoverageAnalysisInputContextData(graph);
+    input.model = this.buildPureModelContextDataFromPureModel(graph);
     return V1_buildModelCoverageAnalysisResult(
       await this.engine.analyzeMappingModelCoverage(input),
     );

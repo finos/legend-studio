@@ -18,7 +18,10 @@ export * from './stores/QueryBuilderBootstraper.js';
 export { QueryBuilder_GraphManagerPreset } from './graphManager/QueryBuilder_GraphManagerPreset.js';
 
 export { QUERY_BUILDER_TEST_ID } from './components/QueryBuilder_TestID.js';
-export { QueryBuilder_LegendApplicationPlugin } from './components/QueryBuilder_LegendApplicationPlugin.js';
+export {
+  type CheckEntitlementEditorRender,
+  QueryBuilder_LegendApplicationPlugin,
+} from './components/QueryBuilder_LegendApplicationPlugin.js';
 export { QueryBuilderNavigationBlocker } from './components/QueryBuilderNavigationBlocker.js';
 export {
   QueryBuilder,
