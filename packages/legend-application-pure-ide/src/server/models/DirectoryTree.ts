@@ -33,7 +33,7 @@ abstract class DirectoryAttribute {
 class FileDirectoryAttribute extends DirectoryAttribute {
   declare id: string;
   declare path: string;
-  file!: string;
+  file!: boolean;
   statusType?: string; // used for change detection
 }
 
@@ -86,7 +86,7 @@ createModelSchema(DirectoryNode, {
   li_attr: custom(
     () => SKIP,
     (value) => {
-      if (value.file && value.file === 'true') {
+      if (value.file) {
         return deserialize(FileDirectoryAttribute, value);
       } else {
         return deserialize(FolderDirectoryAttribute, value);

@@ -34,12 +34,12 @@ export const ActivityBar = observer(() => {
       editorStore.setActiveActivity(activity);
   const activities: ActivityDisplay[] = [
     {
-      mode: ACTIVITY_MODE.CONCEPT,
+      mode: ACTIVITY_MODE.CONCEPT_EXPLORER,
       title: 'Concept Explorer',
       icon: <ListIcon />,
     },
     {
-      mode: ACTIVITY_MODE.FILE,
+      mode: ACTIVITY_MODE.FILE_EXPLORER,
       title: 'File Explorer',
       icon: <FileAltIcon />,
     },

@@ -329,15 +329,16 @@ const FileExplorerTree = observer(() => {
       nodeAttribute instanceof ElementConceptAttribute ||
       nodeAttribute instanceof PropertyConceptAttribute
     ) {
-      editorStore.directoryTreeState.revealPath(
-        nodeAttribute.file,
-        true,
-        new FileCoordinate(
-          nodeAttribute.file,
-          Number.parseInt(nodeAttribute.line, 10),
-          Number.parseInt(nodeAttribute.column, 10),
-        ),
-      );
+      flowResult(
+        editorStore.directoryTreeState.revealPath(nodeAttribute.file, {
+          forceOpenExplorerPanel: true,
+          coordinate: new FileCoordinate(
+            nodeAttribute.file,
+            Number.parseInt(nodeAttribute.line, 10),
+            Number.parseInt(nodeAttribute.column, 10),
+          ),
+        }),
+      ).catch(applicationStore.alertUnhandledError);
     }
   };
 

@@ -15,7 +15,12 @@
  */
 
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import { ACTIVITY_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
+import {
+  ACTIVITY_MODE,
+  AUX_PANEL_MODE,
+  ROOT_PACKAGE_PATH,
+  WELCOME_FILE_PATH,
+} from './EditorConfig.js';
 import { FileEditorState } from './FileEditorState.js';
 import { serialize, deserialize } from 'serializr';
 import {
@@ -120,7 +125,7 @@ export class EditorStore implements CommandRegistrar {
     default: 300,
     snap: 100,
   });
-  activeActivity?: ACTIVITY_MODE = ACTIVITY_MODE.CONCEPT;
+  activeActivity?: ACTIVITY_MODE = ACTIVITY_MODE.CONCEPT_EXPLORER;
   readonly sideBarDisplayState = new PanelDisplayState({
     initial: 300,
     default: 300,
@@ -287,7 +292,9 @@ export class EditorStore implements CommandRegistrar {
         });
       yield this.pullInitializationActivity();
       this.applicationStore.setBlockingAlert(undefined);
-      const openWelcomeFilePromise = flowResult(this.loadFile('/welcome.pure'));
+      const openWelcomeFilePromise = flowResult(
+        this.loadFile(WELCOME_FILE_PATH),
+      );
       const directoryTreeInitPromise = this.directoryTreeState.initialize();
       const conceptTreeInitPromise = this.conceptTreeState.initialize();
       const result = deserializeInitializationnResult(
@@ -412,7 +419,9 @@ export class EditorStore implements CommandRegistrar {
         if (this.tabManagerState.currentTab instanceof FileEditorState) {
           this.directoryTreeState.revealPath(
             this.tabManagerState.currentTab.filePath,
-            true,
+            {
+              forceOpenExplorerPanel: true,
+            },
           );
         }
       },
@@ -940,7 +949,7 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *executeFullTestSuite(relevantTestsOnly?: boolean): GeneratorFn<void> {
-    yield flowResult(this.executeTests('::', relevantTestsOnly));
+    yield flowResult(this.executeTests(ROOT_PACKAGE_PATH, relevantTestsOnly));
   }
 
   *executeNavigation(coordinate: FileCoordinate): GeneratorFn<void> {
@@ -1019,7 +1028,7 @@ export class EditorStore implements CommandRegistrar {
                     ),
                   );
                   this.resetChangeDetection(potentiallyAffectedFiles);
-                  this.setActiveActivity(ACTIVITY_MODE.CONCEPT, {
+                  this.setActiveActivity(ACTIVITY_MODE.CONCEPT_EXPLORER, {
                     keepShowingIfMatchedCurrent: true,
                   });
                 },
@@ -1075,8 +1084,8 @@ export class EditorStore implements CommandRegistrar {
       showLoading: true,
     });
     try {
-      if (this.activeActivity !== ACTIVITY_MODE.CONCEPT) {
-        this.setActiveActivity(ACTIVITY_MODE.CONCEPT);
+      if (this.activeActivity !== ACTIVITY_MODE.CONCEPT_EXPLORER) {
+        this.setActiveActivity(ACTIVITY_MODE.CONCEPT_EXPLORER);
       }
       const parts = concept.path.split(ELEMENT_PATH_DELIMITER);
       let currentPath = guaranteeNonNullable(parts[0]);

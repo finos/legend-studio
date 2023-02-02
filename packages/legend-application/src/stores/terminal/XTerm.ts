@@ -319,12 +319,18 @@ export class XTerm extends Terminal {
               return;
             }
             this.isRunningCommand = true;
-            matchingCommand.handler(args, command, text).finally(() => {
-              this.isRunningCommand = false;
-              if (!this.isFlushed) {
-                this.abort();
-              }
-            });
+            matchingCommand
+              .handler(
+                args.map((arg) => arg.trim()),
+                command,
+                text,
+              )
+              .finally(() => {
+                this.isRunningCommand = false;
+                if (!this.isFlushed) {
+                  this.abort();
+                }
+              });
           }
         } else if (
           isMatchingKeyCombination(domEvent, 'Control+KeyC') ||

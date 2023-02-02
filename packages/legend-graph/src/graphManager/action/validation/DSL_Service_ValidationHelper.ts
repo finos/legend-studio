@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { addUniqueEntry } from '@finos/legend-shared';
+import { addUniqueEntry, URL_SEPARATOR } from '@finos/legend-shared';
 import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { PureExecution } from '../../../graph/metamodel/pure/packageableElements/service/ServiceExecution.js';
 import { isStubbed_PackageableElement } from '../../../graph/helpers/creator/DomainModelCreatorHelper.js';
@@ -30,9 +30,9 @@ export const validate_ServicePattern = (
   const errors: string[] = [];
   if (!pattern) {
     addUniqueEntry(errors, 'Pattern must not be empty');
-  } else if (pattern === '/') {
+  } else if (pattern === URL_SEPARATOR) {
     addUniqueEntry(errors, `Pattern must not be '/'`);
-  } else if (!pattern.startsWith('/')) {
+  } else if (!pattern.startsWith(URL_SEPARATOR)) {
     addUniqueEntry(errors, `Pattern must start with a '/'`);
   }
   // TODO: potentially do more validation
