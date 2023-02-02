@@ -26,7 +26,7 @@ export enum EDITOR_THEME {
 }
 
 export enum EDITOR_LANGUAGE {
-  TEXT = 'text',
+  TEXT = 'plaintext',
   PURE = 'pure',
   JSON = 'json',
   JAVA = 'java',

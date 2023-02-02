@@ -53,7 +53,8 @@
     cursor: pointer;
     height: 3.4rem;
     font-size: 1.2rem;
-    margin: 0 1rem;
+    margin: 0 0.5rem;
+    padding: 0 0.5rem;
     font-weight: 500;
     border-bottom: 0.2rem solid var(--color-dark-grey-50);
     color: var(--color-dark-grey-400);
@@ -64,13 +65,13 @@
     border-bottom: 0.2rem solid var(--color-yellow-300);
   }
 
-  &__header__tab__icon svg {
-    font-size: 1.1rem;
-    margin-right: 0.5rem;
-  }
+  &__header__tab__icon {
+    @include flexVCenter;
 
-  &__header__tab__icon--test svg {
-    color: var(--color-pink-300);
+    svg {
+      font-size: 1.1rem;
+      margin-right: 0.5rem;
+    }
   }
 
   &__header__tab__title {

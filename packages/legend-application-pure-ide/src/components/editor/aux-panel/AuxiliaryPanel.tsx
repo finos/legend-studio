@@ -52,20 +52,14 @@ export const AuxiliaryPanel = observer(() => {
       mode: AUX_PANEL_MODE.SEARCH_RESULT,
       name: 'SEARCH',
       icon: (
-        <div className="auxiliary-panel__header__tab__icon--search">
-          <SearchIcon />
-        </div>
+        <SearchIcon className="auxiliary-panel__header__tab__icon--search" />
       ),
       isVisible: true,
     },
     [AUX_PANEL_MODE.TEST_RUNNER]: {
       mode: AUX_PANEL_MODE.TEST_RUNNER,
       name: 'TEST',
-      icon: (
-        <div className="auxiliary-panel__header__tab__icon--test">
-          <FlaskIcon />
-        </div>
-      ),
+      icon: <FlaskIcon className="auxiliary-panel__header__tab__icon--test" />,
       isVisible: true,
     },
   };
