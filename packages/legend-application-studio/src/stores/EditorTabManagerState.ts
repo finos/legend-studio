@@ -61,7 +61,13 @@ export class EditorTabManagerState extends TabManagerState {
         element,
       );
     } else if (!(element instanceof Package)) {
-      const newTab = this.editorStore.createElementEditorState(element);
+      const existingElementState = this.tabs.find(
+        (state) =>
+          state instanceof ElementEditorState && state.element === element,
+      );
+      const newTab =
+        existingElementState ??
+        this.editorStore.createElementEditorState(element);
       if (newTab) {
         this.openTab(newTab);
       } else {
