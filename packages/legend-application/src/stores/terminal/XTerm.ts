@@ -802,7 +802,7 @@ export class XTerm extends Terminal {
   output(val: string, opts?: TerminalWriteOption): void {
     this.resetANSIStyling();
 
-    if (!opts?.clear && opts?.systemCommand) {
+    if ((!opts?.clear || this.preserveLog) && opts?.systemCommand) {
       this.newSystemCommand(opts.systemCommand);
     }
 
