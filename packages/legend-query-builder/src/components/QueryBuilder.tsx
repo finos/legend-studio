@@ -33,6 +33,12 @@ import {
   WaterDropIcon,
   AssistantIcon,
   MenuContentDivider,
+  Dialog,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  BlankPanelContent,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -60,6 +66,7 @@ import { QueryBuilderGraphFetchTreeState } from '../stores/fetch-structure/graph
 import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSPanel.js';
 import { QueryBuilderWatermarkEditor } from './watermark/QueryBuilderWatermark.js';
 import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpressionPanel.js';
+import { QueryBuilder_LegendApplicationPlugin } from './QueryBuilder_LegendApplicationPlugin.js';
 
 export const QUERY_BUILDER_BACKDROP_CONTAINER_ID =
   'query-builder.backdrop-container';
@@ -190,6 +197,54 @@ const QueryBuilderPostGraphFetchPanel = observer(
   },
 );
 
+const renderCheckEntitlementsEditor = (
+  queryBuilderState: QueryBuilderState,
+  plugins: QueryBuilder_LegendApplicationPlugin[],
+): React.ReactNode => {
+  const checkEntitlementsEditorRenderers = plugins.flatMap(
+    (plugin) => plugin.getCheckEntitlementsEditorRender() ?? [],
+  );
+  for (const editorRenderer of checkEntitlementsEditorRenderers) {
+    const editor = editorRenderer(queryBuilderState);
+    if (editor) {
+      return editor;
+    }
+  }
+
+  const handleClose = (): void => {
+    queryBuilderState.checkEntitlementsState.setIsCheckingEntitlements(false);
+  };
+
+  return (
+    <Dialog
+      open={queryBuilderState.checkEntitlementsState.isCheckingEntitlements}
+      onClose={handleClose}
+      classes={{
+        root: 'editor-modal__root-container',
+        container: 'editor-modal__container',
+        paper: 'editor-modal__content',
+      }}
+    >
+      <Modal darkMode={true} className="editor-modal">
+        <ModalHeader title="Query Entitlements" />
+        <ModalBody>
+          <BlankPanelContent>
+            Check Entitlements are not supported
+          </BlankPanelContent>
+        </ModalBody>
+        <ModalFooter>
+          <button
+            className="btn modal__footer__close-btn"
+            onClick={handleClose}
+          >
+            Close
+          </button>
+        </ModalFooter>
+      </Modal>
+    </Dialog>
+  );
+};
+
 export const QueryBuilder = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
@@ -248,6 +303,10 @@ export const QueryBuilder = observer(
     };
     const showQueryProtocol = (): void => {
       openLambdaEditor(QueryBuilderTextEditorMode.JSON);
+    };
+
+    const openCheckEntitlmentsEditor = (): void => {
+      queryBuilderState.checkEntitlementsState.setIsCheckingEntitlements(true);
     };
 
     useCommands(queryBuilderState);
@@ -444,6 +503,12 @@ export const QueryBuilder = observer(
                             Show Watermark
                           </MenuContentItemLabel>
                         </MenuContentItem>
+                        <MenuContentItem onClick={openCheckEntitlmentsEditor}>
+                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Check Entitlements
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
                         <MenuContentDivider />
                         <MenuContentItem onClick={editQueryInPure}>
                           <MenuContentItemIcon>{null}</MenuContentItemIcon>
@@ -588,6 +653,16 @@ export const QueryBuilder = observer(
           {queryBuilderState.textEditorState.mode && (
             <QueryBuilderTextEditor queryBuilderState={queryBuilderState} />
           )}
+          {queryBuilderState.checkEntitlementsState.isCheckingEntitlements &&
+            renderCheckEntitlementsEditor(
+              queryBuilderState,
+              applicationStore.pluginManager
+                .getApplicationPlugins()
+                .filter(
+                  (plugin) =>
+                    plugin instanceof QueryBuilder_LegendApplicationPlugin,
+                ) as QueryBuilder_LegendApplicationPlugin[],
+            )}
         </div>
         <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
       </div>
