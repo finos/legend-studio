@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 0.6.20
+
+### Patch Changes
+
+- [#1867](https://github.com/finos/legend-studio/pull/1867) [`df98cc531`](https://github.com/finos/legend-studio/commit/df98cc5318d4ece60c6694866ac0304a61b3fd2a) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support check entitlements in query builder.
+
 ## 0.6.19
 
 ### Patch Changes
