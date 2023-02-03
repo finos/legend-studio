@@ -14,4 +14,46 @@
  * limitations under the License.
  */
 
-export { format as formatDate, formatDistanceToNow, addDays } from 'date-fns';
+import {
+  format as formatDate,
+  formatDistanceToNow,
+  addDays,
+  formatDuration,
+  intervalToDuration,
+} from 'date-fns';
+
+export { formatDate, formatDistanceToNow, addDays };
+
+const COMMON_TIME_UNIT_HOURS = 'hours';
+const COMMON_TIME_UNIT_SECONDS = 'seconds';
+const COMMON_TIME_UNIT_MINUTES = 'minutes';
+const MS_SECOND_INTERVAL = 1000;
+export const prettyDuration = (
+  msTime: number,
+  options?: {
+    ms?: boolean;
+  },
+): string => {
+  const format = formatDuration(
+    intervalToDuration({
+      start: 0,
+      end: msTime,
+    }),
+    {
+      format: [
+        COMMON_TIME_UNIT_HOURS,
+        COMMON_TIME_UNIT_MINUTES,
+        COMMON_TIME_UNIT_SECONDS,
+      ],
+    },
+  );
+  if (!options?.ms) {
+    return format;
+  }
+  const ms = msTime % MS_SECOND_INTERVAL;
+  const msLabel = `${ms} ms`;
+  if (!format) {
+    return msLabel;
+  }
+  return `${format}${ms > 0 ? ` ${msLabel}` : ''}`;
+};
