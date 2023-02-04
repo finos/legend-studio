@@ -44,7 +44,7 @@ import {
   type ExecutionResult,
   TestExecutionResult,
   UnmatchedFunctionResult,
-  UnmatchedResult,
+  UnknownSymbolResult,
   GetConceptResult,
   deserializeExecutionResult,
   ExecutionFailureResult,
@@ -58,8 +58,6 @@ import {
 import {
   type SearchState,
   UsageResultState,
-  UnmatchedFunctionExecutionResultState,
-  UnmatchExecutionResultState,
   SearchResultState,
   TextSearchResultState,
 } from './SearchResultState.js';
@@ -108,6 +106,11 @@ import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import type { SourceModificationResult } from '../server/models/Source.js';
 import { ConceptType } from '../server/models/ConceptTree.js';
 import { setupTerminal } from './LegendPureIDETerminal.js';
+import {
+  type CodeFixSuggestionState,
+  UnknownSymbolCodeFixSuggestionState,
+  UnmatchedFunctionCodeFixSuggestionState,
+} from './CodeFixSuggestionState.js';
 
 export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
@@ -136,16 +139,19 @@ export class EditorStore implements CommandRegistrar {
   readonly executionState = ActionState.create();
   navigationStack: FileCoordinate[] = []; // TODO?: we might want to limit the number of items in this stack
 
-  // Search Command
+  // File Search Command
   readonly fileSearchCommandLoadingState = ActionState.create();
   readonly fileSearchCommandState = new SearchCommandState();
   openFileSearchCommand = false;
   fileSearchCommandResults: string[] = [];
+
+  // Panel
+  codeFixSuggestionState?: CodeFixSuggestionState | undefined;
+
+  // Search Panel
   readonly textSearchCommandLoadingState = ActionState.create();
   readonly textSearchCommandState = new SearchCommandState();
   openTextSearchCommand = false;
-
-  // Search Panel
   searchState?: SearchState | undefined;
 
   // Test
@@ -163,7 +169,9 @@ export class EditorStore implements CommandRegistrar {
       fileSearchCommandState: observable,
       openTextSearchCommand: observable,
       textSearchCommandState: observable,
+
       searchState: observable,
+      codeFixSuggestionState: observable,
       testRunnerState: observable,
 
       setOpenFileSearchCommand: action,
@@ -171,6 +179,7 @@ export class EditorStore implements CommandRegistrar {
       setActiveAuxPanelMode: action,
       setActiveActivity: action,
       setSearchState: action,
+      setCodeFixSuggestionState: action,
       setTestRunnerState: action,
       pullInitializationActivity: action,
       pullExecutionStatus: action,
@@ -232,6 +241,10 @@ export class EditorStore implements CommandRegistrar {
 
   setSearchState(val: SearchState | undefined): void {
     this.searchState = val;
+  }
+
+  setCodeFixSuggestionState(val: CodeFixSuggestionState | undefined): void {
+    this.codeFixSuggestionState = val;
   }
 
   setTestRunnerState(val: TestRunnerState | undefined): void {
@@ -620,7 +633,7 @@ export class EditorStore implements CommandRegistrar {
        * Some execution, such as find concept produces no output
        * so we should not reset the console text in that case
        */
-      silent?: boolean;
+      silentTerminalOnSuccess?: boolean;
       clearTerminal?: boolean;
     },
   ): GeneratorFn<void> {
@@ -639,6 +652,7 @@ export class EditorStore implements CommandRegistrar {
     // reset search state before execution
     if (!(this.searchState instanceof SearchResultState)) {
       this.setSearchState(undefined);
+      this.setCodeFixSuggestionState(undefined);
     }
     this.executionState.inProgress();
     const potentiallyAffectedFiles = this.tabManagerState.tabs
@@ -708,7 +722,9 @@ export class EditorStore implements CommandRegistrar {
         this.applicationStore.notifyError(
           `Execution failed${result.text ? `: ${result.text}` : ''}`,
         );
-        this.applicationStore.terminalService.terminal.fail(result.text);
+        this.applicationStore.terminalService.terminal.fail(result.text, {
+          systemCommand: command ?? 'execute',
+        });
         if (result.sessionError) {
           this.applicationStore.setBlockingAlert({
             message: 'Session corrupted',
@@ -718,7 +734,7 @@ export class EditorStore implements CommandRegistrar {
           yield flowResult(manageResult(result, potentiallyAffectedFiles));
         }
       } else {
-        if (!options?.silent) {
+        if (!options?.silentTerminalOnSuccess) {
           this.applicationStore.terminalService.terminal.output(
             result.text ?? '',
             {
@@ -850,14 +866,16 @@ export class EditorStore implements CommandRegistrar {
         );
       }
       if (result instanceof UnmatchedFunctionResult) {
-        this.setSearchState(
-          new UnmatchedFunctionExecutionResultState(this, result),
+        this.setCodeFixSuggestionState(
+          new UnmatchedFunctionCodeFixSuggestionState(this, result),
         );
-        this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH_RESULT);
+        this.setActiveAuxPanelMode(AUX_PANEL_MODE.CODE_FIX_SUGGESTION);
         this.auxPanelDisplayState.open();
-      } else if (result instanceof UnmatchedResult) {
-        this.setSearchState(new UnmatchExecutionResultState(this, result));
-        this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH_RESULT);
+      } else if (result instanceof UnknownSymbolResult) {
+        this.setCodeFixSuggestionState(
+          new UnknownSymbolCodeFixSuggestionState(this, result),
+        );
+        this.setActiveAuxPanelMode(AUX_PANEL_MODE.CODE_FIX_SUGGESTION);
         this.auxPanelDisplayState.open();
       }
       this.resetChangeDetection(potentiallyAffectedFiles);
@@ -979,7 +997,7 @@ export class EditorStore implements CommandRegistrar {
           this.resetChangeDetection(potentiallyAffectedFiles);
         },
         `navigate`,
-        { silent: true },
+        { silentTerminalOnSuccess: true },
       ),
     );
   }
@@ -1207,7 +1225,7 @@ export class EditorStore implements CommandRegistrar {
       this.setSearchState(
         new UsageResultState(this, concept, usages, searchResultCoordinates),
       );
-      this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH_RESULT);
+      this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH);
       this.auxPanelDisplayState.open();
     } catch (error) {
       assertErrorThrown(error);
@@ -1292,7 +1310,7 @@ export class EditorStore implements CommandRegistrar {
   *updateFileUsingSuggestionCandidate(
     candidate: CandidateWithPackageNotImported,
   ): GeneratorFn<void> {
-    this.setSearchState(undefined);
+    this.setCodeFixSuggestionState(undefined);
     yield flowResult(
       this.updateFile(
         candidate.fileToBeModified,
@@ -1354,7 +1372,7 @@ export class EditorStore implements CommandRegistrar {
       return;
     }
     this.textSearchCommandLoadingState.inProgress();
-    this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH_RESULT);
+    this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH);
     this.auxPanelDisplayState.open();
     try {
       const results = (

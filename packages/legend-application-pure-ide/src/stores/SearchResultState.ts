@@ -15,10 +15,6 @@
  */
 
 import { computed, makeObservable, observable } from 'mobx';
-import type {
-  UnmatchedFunctionResult,
-  UnmatchedResult,
-} from '../server/models/Execution.js';
 import {
   type SearchEntry,
   SearchResultCoordinate,
@@ -30,6 +26,7 @@ import { deleteEntry, guaranteeNonNullable } from '@finos/legend-shared';
 
 export abstract class SearchState {
   readonly editorStore: EditorStore;
+  uuid = 1;
 
   constructor(editorStore: EditorStore) {
     this.editorStore = editorStore;
@@ -120,23 +117,5 @@ export class UsageResultState extends SearchResultState {
         }),
     );
     this.usageConcept = usageConcept;
-  }
-}
-
-export class UnmatchedFunctionExecutionResultState extends SearchState {
-  readonly result: UnmatchedFunctionResult;
-
-  constructor(editorStore: EditorStore, result: UnmatchedFunctionResult) {
-    super(editorStore);
-    this.result = result;
-  }
-}
-
-export class UnmatchExecutionResultState extends SearchState {
-  readonly result: UnmatchedResult;
-
-  constructor(editorStore: EditorStore, result: UnmatchedResult) {
-    super(editorStore);
-    this.result = result;
   }
 }

@@ -27,17 +27,10 @@ import { flowResult } from 'mobx';
 import {
   type SearchResultState,
   TextSearchResultState,
-  UnmatchedFunctionExecutionResultState,
-  UnmatchExecutionResultState,
   UsageResultState,
 } from '../../../stores/SearchResultState.js';
-import type {
-  CandidateWithPackageImported,
-  CandidateWithPackageNotImported,
-} from '../../../server/models/Execution.js';
 import { getConceptInfoLabel } from '../../../server/models/Usage.js';
 import {
-  ArrowCircleRightIcon,
   BlankPanelContent,
   FileAltIcon,
   PanelLoadingIndicator,
@@ -212,187 +205,6 @@ const UsageResultDisplay = observer(
   },
 );
 
-const CandidateWithPackageImportedDisplay = observer(
-  (props: { candidate: CandidateWithPackageImported }) => {
-    const { candidate } = props;
-    const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore();
-    const goToResult = (): void => {
-      flowResult(
-        editorStore.loadFile(
-          candidate.sourceID,
-          new FileCoordinate(
-            candidate.sourceID,
-            candidate.line,
-            candidate.column,
-          ),
-        ),
-      ).catch(applicationStore.alertUnhandledError);
-    };
-
-    return (
-      <div className="search-panel__entry__content__item">
-        <div
-          className="search-panel__entry__content__item__label__candidate"
-          title="Go to Result"
-          onClick={goToResult}
-        >
-          <div className="search-panel__entry__content__item__label__candidate-name">
-            {candidate.foundName}
-          </div>
-          <div className="search-panel__entry__content__item__label__candidate-location">
-            {`${trimPathLeadingSlash(candidate.sourceID)} [${candidate.line}:${
-              candidate.column
-            }]`}
-          </div>
-        </div>
-        <div className="search-panel__entry__content__item__actions">
-          <button
-            className="search-panel__entry__content__item__action"
-            tabIndex={-1}
-            title="Go to Result"
-            onClick={goToResult}
-          >
-            <ArrowCircleRightIcon />
-          </button>
-        </div>
-      </div>
-    );
-  },
-);
-
-const CandidateWithPackageNotImportedDisplay = observer(
-  (props: { candidate: CandidateWithPackageNotImported }) => {
-    const { candidate } = props;
-    const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore();
-    const goToResult = (): void => {
-      flowResult(
-        editorStore.loadFile(
-          candidate.sourceID,
-          new FileCoordinate(
-            candidate.sourceID,
-            candidate.line,
-            candidate.column,
-          ),
-        ),
-      ).catch(applicationStore.alertUnhandledError);
-    };
-    const useCandidate = (): void => {
-      flowResult(
-        editorStore.updateFileUsingSuggestionCandidate(candidate),
-      ).catch(applicationStore.alertUnhandledError);
-    };
-
-    return (
-      <div className="search-panel__entry__content__item">
-        <div
-          className="search-panel__entry__content__item__label__candidate"
-          title="Add Suggested Import"
-          onClick={useCandidate}
-        >
-          <div className="search-panel__entry__content__item__label__candidate-name">
-            {candidate.foundName}
-          </div>
-          <div className="search-panel__entry__content__item__label__candidate-location">
-            {`${trimPathLeadingSlash(candidate.sourceID)} [${candidate.line}:${
-              candidate.column
-            }]`}
-          </div>
-        </div>
-        <div className="search-panel__entry__content__item__actions">
-          <button
-            className="search-panel__entry__content__item__action"
-            tabIndex={-1}
-            title="Go to Result"
-            onClick={goToResult}
-          >
-            <ArrowCircleRightIcon />
-          </button>
-        </div>
-      </div>
-    );
-  },
-);
-
-const UnmatchedFunctionExecutionResultDisplay = observer(
-  (props: { searchState: UnmatchedFunctionExecutionResultState }) => {
-    const { searchState } = props;
-    const result = searchState.result;
-
-    return (
-      <div className="search-panel__content">
-        {!result.candidatesWithPackageImported.length && (
-          <div className="search-panel__content__header">{`No functions, in packages already imported, match the function '${result.candidateName}'`}</div>
-        )}
-        {Boolean(result.candidatesWithPackageImported.length) && (
-          <>
-            <div className="search-panel__content__header">
-              {`These functions, in packages already imported, would match the function '${result.candidateName}' if you changed the parameters`}
-            </div>
-            <div className="search-panel__entry">
-              {result.candidatesWithPackageImported.map((candidate) => (
-                <CandidateWithPackageImportedDisplay
-                  key={candidate.uuid}
-                  candidate={candidate}
-                />
-              ))}
-            </div>
-          </>
-        )}
-        {!result.candidatesWithPackageNotImported.length && (
-          <div className="search-panel__content__header">{`No functions, in packages not imported, match the function '${result.candidateName}'`}</div>
-        )}
-        {Boolean(result.candidatesWithPackageNotImported.length) && (
-          <>
-            <div className="search-panel__content__header">
-              {`These functions, in packages not imported, match the function '${result.candidateName}'. Click on result to import the necessary package`}
-            </div>
-            <div className="search-panel__entry">
-              {result.candidatesWithPackageNotImported.map((candidate) => (
-                <CandidateWithPackageNotImportedDisplay
-                  key={candidate.uuid}
-                  candidate={candidate}
-                />
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    );
-  },
-);
-
-const UnmatchExecutionResultDisplay = observer(
-  (props: { searchState: UnmatchExecutionResultState }) => {
-    const { searchState } = props;
-    const result = searchState.result;
-
-    return (
-      <div className="search-panel__content">
-        {!result.candidates.length && (
-          <div className="search-panel__content__header">{`No possible matches found for '${result.candidateName}'`}</div>
-        )}
-        {Boolean(result.candidates.length) && (
-          <>
-            <div className="search-panel__content__header">
-              {`Found possible matches for '${result.candidateName}'. Click on result to import the necessary package`}
-            </div>
-            <div className="search-panel__entry">
-              {result.candidates.map((candidate) => (
-                <CandidateWithPackageNotImportedDisplay
-                  key={candidate.uuid}
-                  candidate={candidate}
-                />
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    );
-  },
-);
-
 export const SearchPanel = observer(() => {
   const editorStore = useEditorStore();
 
@@ -430,15 +242,6 @@ export const SearchPanel = observer(() => {
       )}
       {editorStore.searchState instanceof TextSearchResultState && (
         <TextSearchResultDisplay searchState={editorStore.searchState} />
-      )}
-      {editorStore.searchState instanceof
-        UnmatchedFunctionExecutionResultState && (
-        <UnmatchedFunctionExecutionResultDisplay
-          searchState={editorStore.searchState}
-        />
-      )}
-      {editorStore.searchState instanceof UnmatchExecutionResultState && (
-        <UnmatchExecutionResultDisplay searchState={editorStore.searchState} />
       )}
     </div>
   );
