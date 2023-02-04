@@ -36,9 +36,9 @@ import type { EditorStore } from './EditorStore.js';
 import { LEGEND_PURE_IDE_TERMINAL_COMMAND } from './LegendPureIDECommand.js';
 
 const PACKAGE_PATH_PATTERN = /^(?:(?:\w[\w$]*)::)*\w[\w$]*$/;
-const FILE_PATH_PATTERN = /^\/?(?:\w\/)*\w+(?:.\w+)*$/;
+const FILE_PATH_PATTERN = /^\/?(?:\w+\/)*\w+(?:\.\w+)*$/;
 const LEGEND_PURE_IDE_TERMINAL_WEBLINK_REGEX =
-  /(?:(?<url>https?:[/]{2}[^\s"'!*(){}|\\^<>`]*[^\s"':,.!?{}|\\^~[\]`()<>])|(?<path>resource:(?<path_sourceId>\/?(?:\w\/)*\w+(?:.\w+)*) (?:line:(?<path_line>\d+)) (?:column:(?<path_column>\d+))))/;
+  /(?:(?<url>https?:[/]{2}[^\s"'!*(){}|\\^<>`]*[^\s"':,.!?{}|\\^~[\]`()<>])|(?<path>resource:(?<path_sourceId>\/?(?:\w+\/)*\w+(?:\.\w+)*) (?:line:(?<path_line>\d+)) (?:column:(?<path_column>\d+))))/;
 
 export const setupTerminal = (editorStore: EditorStore): void => {
   editorStore.applicationStore.terminalService.terminal.setup({

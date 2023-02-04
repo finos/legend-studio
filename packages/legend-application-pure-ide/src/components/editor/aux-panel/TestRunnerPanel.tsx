@@ -329,7 +329,7 @@ const TestRunnerTree = observer(
 
 // NOTE: we need the global match hence, including /g in the regexp
 const TEST_ERROR_LOCATION_PATTERN =
-  /(?<path>resource:(?<path_sourceId>\/?(?:\w\/)*\w+(?:.\w+)*) (?:line:(?<path_line>\d+)) (?:column:(?<path_column>\d+)))/g;
+  /(?<path>resource:(?<path_sourceId>\/?(?:\w+\/)*\w+(?:\.\w+)*) (?:line:(?<path_line>\d+)) (?:column:(?<path_column>\d+)))/g;
 
 type TestErrorLocationLink = monacoLanguagesAPI.ILink & {
   sourceId: string;

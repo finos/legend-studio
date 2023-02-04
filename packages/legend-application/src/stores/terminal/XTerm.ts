@@ -379,7 +379,7 @@ export class XTerm extends Terminal {
         } else if (
           // use key here so we absolute do not allow any characters other than these
           // being added to the input command
-          key.match(/^[A-Za-z0-9!@#$%^&*()-_=+"':;,.<>/?[\]{}|\\~` \\t]$/)
+          key.match(/^[A-Za-z0-9!@#$%^&*()\-_=+"':;,.<>/?[\]{}|\\~` ]$/)
         ) {
           // commonly supported keys
           this.writeToCommand(key);
@@ -398,10 +398,7 @@ export class XTerm extends Terminal {
         this.writeToCommand(
           val
             // remove all unsupported characters, including newline
-            .replaceAll(
-              /[^A-Za-z0-9!@#$%^&*()-_=+"':;,.<>/?[\]{}|\\~` \\t]/g,
-              '',
-            )
+            .replaceAll(/[^A-Za-z0-9!@#$%^&*()\-_=+"':;,.<>/?[\]{}|\\~` ]/g, '')
             .trimEnd(),
         );
       }

@@ -22,7 +22,7 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 import { Dialog } from '@finos/legend-art';
 import type { DirectoryTreeNode } from '../../../server/models/DirectoryTree.js';
 
-const FILE_PATH_PATTERN = /^\/?(?:\w\/)*\w+(?:.\w+)*$/;
+const FILE_PATH_PATTERN = /^\/?(?:\w+\/)*\w+(?:\.\w+)*$/;
 
 export const RenameFilePrompt = observer(
   (props: { node: DirectoryTreeNode }) => {

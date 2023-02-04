@@ -22,7 +22,7 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 import { Dialog } from '@finos/legend-art';
 import type { DirectoryTreeNode } from '../../../server/models/DirectoryTree.js';
 
-const FILE_NAME_PATTERN = /^\w+(?:.\w+)*$/;
+const FILE_NAME_PATTERN = /^\w+(?:\.\w+)*$/;
 const DEFAULT_FILE_NAME = 'untitled.pure';
 
 export const CreateNewFilePrompt = observer(
