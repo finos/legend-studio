@@ -58,8 +58,8 @@ import {
   TimesIcon,
   disposeEditor,
   useResizeDetector,
-  getBaseTextEditorOptions,
   WordWrapIcon,
+  getBaseConsoleOptions,
 } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
@@ -363,28 +363,9 @@ const TestResultConsole: React.FC<{
     if (!editor && textInputRef.current) {
       const element = textInputRef.current;
       const newEditor = monacoEditorAPI.create(element, {
-        ...getBaseTextEditorOptions(),
+        ...getBaseConsoleOptions(),
         theme: EDITOR_THEME.LEGEND,
         language: EDITOR_LANGUAGE.TEXT,
-        fontSize: 12,
-        extraEditorClassName: 'test-runner-panel__result__content',
-        readOnly: true,
-        glyphMargin: false,
-        folding: false,
-        lineNumbers: 'off',
-        lineDecorationsWidth: 10,
-        lineNumbersMinChars: 0,
-        minimap: {
-          enabled: false,
-        },
-        guides: {
-          bracketPairs: false,
-          bracketPairsHorizontal: false,
-          highlightActiveBracketPair: false,
-          indentation: false,
-          highlightActiveIndentation: false,
-        },
-        renderLineHighlight: 'none',
       });
       setEditor(newEditor);
     }
