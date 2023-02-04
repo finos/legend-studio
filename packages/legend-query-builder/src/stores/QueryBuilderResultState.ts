@@ -210,6 +210,10 @@ export class QueryBuilderResultState {
         `Runtime is required to execute query`,
       );
       const query = this.buildExecutionRawLambda();
+      const parameterValues = buildExecutionParameterValues(
+        this.queryBuilderState.parametersState.parameterStates,
+        this.queryBuilderState.graphManagerState,
+      );
       const startTime = Date.now();
       const promise =
         this.queryBuilderState.graphManagerState.graphManager.runQuery(
@@ -218,10 +222,7 @@ export class QueryBuilderResultState {
           runtime,
           this.queryBuilderState.graphManagerState.graph,
           {
-            parameterValues: buildExecutionParameterValues(
-              this.queryBuilderState.parametersState.parameterStates,
-              this.queryBuilderState.graphManagerState,
-            ),
+            parameterValues,
           },
         );
       this.setQueryRunPromise(promise);

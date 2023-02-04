@@ -59,6 +59,7 @@ import {
   guaranteeNonNullable,
   isBoolean,
   type PlainObject,
+  prettyDuration,
 } from '@finos/legend-shared';
 import { forwardRef, useState } from 'react';
 import type { CellMouseOverEvent } from '@ag-grid-community/core';
@@ -494,15 +495,29 @@ export const QueryBuilderResultPanel = observer(
       );
     };
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
-    const resultSetSize = (result: ExecutionResult | undefined): string =>
-      result
-        ? result instanceof TDSExecutionResult
-          ? `${
-              result.result.rows.length
-            } row(s) in ${resultState.executionDuration?.toString()} ms`
-          : `run in ${resultState.executionDuration?.toString()} ms`
-        : '';
 
+    const getResultSetDescription = (
+      _executionResult: ExecutionResult,
+    ): string | undefined => {
+      const queryDuration = resultState.executionDuration
+        ? prettyDuration(resultState.executionDuration, {
+            ms: true,
+          })
+        : undefined;
+      if (_executionResult instanceof TDSExecutionResult) {
+        const rowLength = _executionResult.result.rows.length;
+        return `${rowLength} row(s)${
+          queryDuration ? ` in ${queryDuration}` : ''
+        }`;
+      }
+      if (!queryDuration) {
+        return undefined;
+      }
+      return `query ran in ${queryDuration}`;
+    };
+    const resultDescription = executionResult
+      ? getResultSetDescription(executionResult)
+      : undefined;
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL}
@@ -512,7 +527,7 @@ export const QueryBuilderResultPanel = observer(
           <div className="panel__header__title">
             <div className="panel__header__title__label">result</div>
             <div className="query-builder__result__analytics">
-              {resultSetSize(executionResult)}
+              {resultDescription ?? ''}
             </div>
             {executionResult && resultState.checkForStaleResults && (
               <div className="query-builder__result__stale-status">
