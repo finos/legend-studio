@@ -24,49 +24,11 @@ import type { Usage, ConceptInfo } from '../server/models/Usage.js';
 import type { EditorStore } from './EditorStore.js';
 import { deleteEntry, guaranteeNonNullable } from '@finos/legend-shared';
 
-export abstract class SearchState {
+export class ReferenceUsageResult {
   readonly editorStore: EditorStore;
-  uuid = 1;
+  readonly usageConcept: ConceptInfo;
 
-  constructor(editorStore: EditorStore) {
-    this.editorStore = editorStore;
-  }
-}
-
-export abstract class SearchResultState extends SearchState {
   searchEntries: SearchResultEntry[] = [];
-
-  constructor(editorStore: EditorStore, searchEntries: SearchResultEntry[]) {
-    super(editorStore);
-
-    makeObservable(this, {
-      searchEntries: observable,
-      numberOfFiles: computed,
-      numberOfResults: computed,
-    });
-
-    this.searchEntries = searchEntries;
-  }
-
-  dismissSearchEntry(value: SearchEntry): void {
-    deleteEntry(this.searchEntries, value);
-    if (!this.searchEntries.length) {
-      this.editorStore.setSearchState(undefined);
-    }
-  }
-
-  get numberOfFiles(): number {
-    return this.searchEntries.length;
-  }
-  get numberOfResults(): number {
-    return this.searchEntries.flatMap((entry) => entry.coordinates).length;
-  }
-}
-
-export class TextSearchResultState extends SearchResultState {}
-
-export class UsageResultState extends SearchResultState {
-  usageConcept: ConceptInfo;
 
   constructor(
     editorStore: EditorStore,
@@ -74,6 +36,15 @@ export class UsageResultState extends SearchResultState {
     references: Usage[],
     searchResultCoordinates: SearchResultCoordinate[],
   ) {
+    makeObservable(this, {
+      searchEntries: observable,
+      numberOfFiles: computed,
+      numberOfResults: computed,
+    });
+
+    this.editorStore = editorStore;
+    this.usageConcept = usageConcept;
+
     const fileMap = new Map<string, SearchResultEntry>();
     references.forEach((ref, idx) => {
       let entry: SearchResultEntry;
@@ -101,21 +72,33 @@ export class UsageResultState extends SearchResultState {
       )?.preview;
       entry.coordinates.push(coordinates);
     });
-    super(
-      editorStore,
-      Array.from(fileMap.keys())
-        .sort((f1, f2) => f1.localeCompare(f2))
-        .map((file) => {
-          const entry = guaranteeNonNullable(fileMap.get(file));
-          // NOTE: sorting the list of coordinates (line has higher precendence than column)
-          entry.setCoordinates(
-            entry.coordinates
-              .sort((c1, c2) => c1.startColumn - c2.startColumn)
-              .sort((c1, c2) => c1.startLine - c2.startLine),
-          );
-          return entry;
-        }),
-    );
-    this.usageConcept = usageConcept;
+
+    this.searchEntries = Array.from(fileMap.keys())
+      .sort((f1, f2) => f1.localeCompare(f2))
+      .map((file) => {
+        const entry = guaranteeNonNullable(fileMap.get(file));
+        // NOTE: sorting the list of coordinates (line has higher precendence than column)
+        entry.setCoordinates(
+          entry.coordinates
+            .sort((c1, c2) => c1.startColumn - c2.startColumn)
+            .sort((c1, c2) => c1.startLine - c2.startLine),
+        );
+        return entry;
+      });
+  }
+
+  dismissSearchEntry(value: SearchEntry): void {
+    deleteEntry(this.searchEntries, value);
+    if (!this.searchEntries.length) {
+      this.editorStore.setTextSearchResult(undefined);
+    }
+  }
+
+  get numberOfFiles(): number {
+    return this.searchEntries.length;
+  }
+
+  get numberOfResults(): number {
+    return this.searchEntries.flatMap((entry) => entry.coordinates).length;
   }
 }

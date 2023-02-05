@@ -24,12 +24,7 @@ import {
   trimPathLeadingSlash,
 } from '../../../server/models/File.js';
 import { flowResult } from 'mobx';
-import {
-  type SearchResultState,
-  TextSearchResultState,
-  UsageResultState,
-} from '../../../stores/SearchResultState.js';
-import { getConceptInfoLabel } from '../../../server/models/Usage.js';
+import { TextSearchResult } from '../../../stores/TextSearchResult.js';
 import {
   BlankPanelContent,
   FileAltIcon,
@@ -42,7 +37,7 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 
 const SearchResultEntryDisplay = observer(
   (props: {
-    searchState: SearchResultState;
+    searchState: TextSearchResult;
     searchEntry: SearchResultEntry;
   }) => {
     const { searchState, searchEntry } = props;
@@ -73,24 +68,24 @@ const SearchResultEntryDisplay = observer(
       };
 
     return (
-      <div className="search-panel__entry">
-        <div className="search-panel__entry__header">
-          <div className="search-panel__entry__header__title">
-            <div className="search-panel__entry__header__title__label">
+      <div className="text-search-panel__entry">
+        <div className="text-search-panel__entry__header">
+          <div className="text-search-panel__entry__header__title">
+            <div className="text-search-panel__entry__header__title__label">
               <FileAltIcon />
             </div>
-            <div className="search-panel__entry__header__title__content">
+            <div className="text-search-panel__entry__header__title__content">
               {trimPathLeadingSlash(searchEntry.sourceId)}
             </div>
           </div>
-          <div className="search-panel__entry__header__actions">
-            <div className="search-panel__entry__header__action search-panel__entry__header__action--with-counter">
-              <div className="search-panel__entry__header__action__counter">
+          <div className="text-search-panel__entry__header__actions">
+            <div className="text-search-panel__entry__header__action text-search-panel__entry__header__action--with-counter">
+              <div className="text-search-panel__entry__header__action__counter">
                 {searchEntry.coordinates.length}
               </div>
             </div>
             <button
-              className="search-panel__entry__header__action search-panel__entry__header__action--hidden"
+              className="text-search-panel__entry__header__action text-search-panel__entry__header__action--hidden"
               tabIndex={-1}
               title="Dismiss"
               onClick={dismissResultForFile}
@@ -99,30 +94,30 @@ const SearchResultEntryDisplay = observer(
             </button>
           </div>
         </div>
-        <div className="search-panel__entry__content">
+        <div className="text-search-panel__entry__content">
           {searchEntry.coordinates.map((coordinate) => (
             <div
               key={coordinate.uuid}
-              className="search-panel__entry__content__item"
+              className="text-search-panel__entry__content__item"
             >
               <div
-                className="search-panel__entry__content__item__label search-panel__entry__content__item__label--full"
+                className="text-search-panel__entry__content__item__label text-search-panel__entry__content__item__label--full"
                 title="Go to Result"
                 onClick={goToResult(coordinate)}
               >
                 {coordinate.preview && (
-                  <div className="search-panel__entry__content__item__label__content">
-                    <div className="search-panel__entry__content__item__label__coordinates">
+                  <div className="text-search-panel__entry__content__item__label__content">
+                    <div className="text-search-panel__entry__content__item__label__coordinates">
                       {`[${coordinate.startLine}:${coordinate.startColumn}]`}
                     </div>
-                    <div className="search-panel__entry__content__item__label__preview">
-                      <span className="search-panel__entry__content__item__label__preview__text">
+                    <div className="text-search-panel__entry__content__item__label__preview">
+                      <span className="text-search-panel__entry__content__item__label__preview__text">
                         {coordinate.preview.before}
                       </span>
-                      <span className="search-panel__entry__content__item__label__preview__text search-panel__entry__content__item__label__preview__text--found">
+                      <span className="text-search-panel__entry__content__item__label__preview__text text-search-panel__entry__content__item__label__preview__text--found">
                         {coordinate.preview.found.replaceAll(/\n/g, '\u21B5')}
                       </span>
-                      <span className="search-panel__entry__content__item__label__preview__text">
+                      <span className="text-search-panel__entry__content__item__label__preview__text">
                         {coordinate.preview.after}
                       </span>
                     </div>
@@ -134,9 +129,9 @@ const SearchResultEntryDisplay = observer(
                   </>
                 )}
               </div>
-              <div className="search-panel__entry__content__item__actions">
+              <div className="text-search-panel__entry__content__item__actions">
                 <button
-                  className="search-panel__entry__content__item__action search-panel__entry__content__item__action--hidden"
+                  className="text-search-panel__entry__content__item__action text-search-panel__entry__content__item__action--hidden"
                   tabIndex={-1}
                   title="Dismiss"
                   onClick={dismissCoordinate(coordinate)}
@@ -153,7 +148,7 @@ const SearchResultEntryDisplay = observer(
 );
 
 const TextSearchResultDisplay = observer(
-  (props: { searchState: TextSearchResultState }) => {
+  (props: { searchState: TextSearchResult }) => {
     const { searchState } = props;
     const editorStore = useEditorStore();
     if (!searchState.searchEntries.length) {
@@ -162,8 +157,8 @@ const TextSearchResultDisplay = observer(
       );
     }
     return (
-      <div className="search-panel__content">
-        <div className="search-panel__content__header">{`Showing ${searchState.numberOfResults} result(s) in ${searchState.numberOfFiles} files for '${editorStore.textSearchCommandState.text}'`}</div>
+      <div className="text-search-panel__content">
+        <div className="text-search-panel__content__header">{`Showing ${searchState.numberOfResults} result(s) in ${searchState.numberOfFiles} files for '${editorStore.textSearchCommandState.text}'`}</div>
         {searchState.searchEntries.map((searchEntry) => (
           <SearchResultEntryDisplay
             key={searchEntry.uuid}
@@ -176,44 +171,15 @@ const TextSearchResultDisplay = observer(
   },
 );
 
-const UsageResultDisplay = observer(
-  (props: { usageState: UsageResultState }) => {
-    const { usageState } = props;
-    if (!usageState.searchEntries.length) {
-      return (
-        <BlankPanelContent>{`No usages found for ${getConceptInfoLabel(
-          usageState.usageConcept,
-        )}`}</BlankPanelContent>
-      );
-    }
-    return (
-      <div className="search-panel__content">
-        <div className="search-panel__content__header">{`Showing ${
-          usageState.numberOfResults
-        } usages(s) in ${
-          usageState.numberOfFiles
-        } files for ${getConceptInfoLabel(usageState.usageConcept)}`}</div>
-        {usageState.searchEntries.map((searchEntry) => (
-          <SearchResultEntryDisplay
-            key={searchEntry.uuid}
-            searchState={usageState}
-            searchEntry={searchEntry}
-          />
-        ))}
-      </div>
-    );
-  },
-);
-
-export const SearchPanel = observer(() => {
+export const TextSearchPanel = observer(() => {
   const editorStore = useEditorStore();
 
   return (
-    <div className="search-panel">
+    <div className="text-search-panel">
       <PanelLoadingIndicator
-        isLoading={editorStore.textSearchCommandLoadingState.isInProgress}
+        isLoading={editorStore.textSearchCommandLoadState.isInProgress}
       />
-      {!editorStore.searchState && (
+      {!editorStore.textSearchResult && (
         <BlankPanelContent>
           <div className="auxiliary-panel__splash-screen">
             <div className="auxiliary-panel__splash-screen__content">
@@ -237,11 +203,8 @@ export const SearchPanel = observer(() => {
           </div>
         </BlankPanelContent>
       )}
-      {editorStore.searchState instanceof UsageResultState && (
-        <UsageResultDisplay usageState={editorStore.searchState} />
-      )}
-      {editorStore.searchState instanceof TextSearchResultState && (
-        <TextSearchResultDisplay searchState={editorStore.searchState} />
+      {editorStore.textSearchResult instanceof TextSearchResult && (
+        <TextSearchResultDisplay searchState={editorStore.textSearchResult} />
       )}
     </div>
   );

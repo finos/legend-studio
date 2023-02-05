@@ -76,7 +76,7 @@ const ConceptExplorerContextMenu = observer(
         nodeAttribute instanceof ElementConceptAttribute ||
         nodeAttribute instanceof PropertyConceptAttribute
       ) {
-        editorStore.findUsages(
+        editorStore.findUsagesFromCoordinate(
           new FileCoordinate(
             nodeAttribute.file,
             Number.parseInt(nodeAttribute.line, 10),

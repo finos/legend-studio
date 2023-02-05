@@ -28,9 +28,9 @@ import { ArrowCircleRightIcon } from '@finos/legend-art';
 import { useApplicationStore } from '@finos/legend-application';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
-  UnknownSymbolCodeFixSuggestionState,
-  UnmatchedFunctionCodeFixSuggestionState,
-} from '../../../stores/CodeFixSuggestionState.js';
+  UnknownSymbolCodeFixSuggestion,
+  UnmatchedFunctionCodeFixSuggestion,
+} from '../../../stores/CodeFixSuggestion.js';
 
 const CandidateWithPackageImportedDisplay = observer(
   (props: { candidate: CandidateWithPackageImported }) => {
@@ -136,7 +136,7 @@ const CandidateWithPackageNotImportedDisplay = observer(
 );
 
 const UnmatchedFunctionExecutionResultDisplay = observer(
-  (props: { suggestionState: UnmatchedFunctionCodeFixSuggestionState }) => {
+  (props: { suggestionState: UnmatchedFunctionCodeFixSuggestion }) => {
     const { suggestionState } = props;
     const result = suggestionState.result;
 
@@ -184,7 +184,7 @@ const UnmatchedFunctionExecutionResultDisplay = observer(
 );
 
 const UnmatchExecutionResultDisplay = observer(
-  (props: { suggestionState: UnknownSymbolCodeFixSuggestionState }) => {
+  (props: { suggestionState: UnknownSymbolCodeFixSuggestion }) => {
     const { suggestionState } = props;
     const result = suggestionState.result;
 
@@ -218,16 +218,16 @@ export const CodeFixSuggestionsPanel = observer(() => {
 
   return (
     <div className="suggestions-panel">
-      {editorStore.codeFixSuggestionState instanceof
-        UnmatchedFunctionCodeFixSuggestionState && (
+      {editorStore.codeFixSuggestion instanceof
+        UnmatchedFunctionCodeFixSuggestion && (
         <UnmatchedFunctionExecutionResultDisplay
-          suggestionState={editorStore.codeFixSuggestionState}
+          suggestionState={editorStore.codeFixSuggestion}
         />
       )}
-      {editorStore.codeFixSuggestionState instanceof
-        UnknownSymbolCodeFixSuggestionState && (
+      {editorStore.codeFixSuggestion instanceof
+        UnknownSymbolCodeFixSuggestion && (
         <UnmatchExecutionResultDisplay
-          suggestionState={editorStore.codeFixSuggestionState}
+          suggestionState={editorStore.codeFixSuggestion}
         />
       )}
     </div>

@@ -18,7 +18,7 @@ import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Console } from './TerminalPanel.js';
 import { AUX_PANEL_MODE } from '../../../stores/EditorConfig.js';
-import { SearchPanel } from './SearchPanel.js';
+import { TextSearchPanel } from './TextSearchPanel.js';
 import { TestRunnerPanel } from './TestRunnerPanel.js';
 import { isNonNullable } from '@finos/legend-shared';
 import {
@@ -34,6 +34,7 @@ import {
 } from '@finos/legend-art';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { CodeFixSuggestionsPanel } from './CodeFixSuggestionsPanel.js';
+import { ReferenceUsagePanel } from './ReferenceUsagePanel.js';
 
 export const AuxiliaryPanel = observer(() => {
   const editorStore = useEditorStore();
@@ -74,7 +75,7 @@ export const AuxiliaryPanel = observer(() => {
       icon: (
         <ReferencesIcon className="auxiliary-panel__header__tab__icon--references" />
       ),
-      isVisible: false,
+      isVisible: true,
     },
     [AUX_PANEL_MODE.CODE_FIX_SUGGESTION]: {
       mode: AUX_PANEL_MODE.CODE_FIX_SUGGESTION,
@@ -82,7 +83,7 @@ export const AuxiliaryPanel = observer(() => {
       icon: (
         <WandIcon className="auxiliary-panel__header__tab__icon--suggestion" />
       ),
-      isVisible: Boolean(editorStore.codeFixSuggestionState),
+      isVisible: Boolean(editorStore.codeFixSuggestion),
     },
   };
 
@@ -157,7 +158,7 @@ export const AuxiliaryPanel = observer(() => {
         )}
         {isTabVisible(AUX_PANEL_MODE.SEARCH) && (
           <div className="auxiliary-panel__content__tab">
-            <SearchPanel />
+            <TextSearchPanel />
           </div>
         )}
         {isTabVisible(AUX_PANEL_MODE.TEST_RUNNER) && (
@@ -168,6 +169,11 @@ export const AuxiliaryPanel = observer(() => {
         {isTabVisible(AUX_PANEL_MODE.CODE_FIX_SUGGESTION) && (
           <div className="auxiliary-panel__content__tab">
             <CodeFixSuggestionsPanel />
+          </div>
+        )}
+        {isTabVisible(AUX_PANEL_MODE.REFERENCES) && (
+          <div className="auxiliary-panel__content__tab">
+            <ReferenceUsagePanel />
           </div>
         )}
       </div>

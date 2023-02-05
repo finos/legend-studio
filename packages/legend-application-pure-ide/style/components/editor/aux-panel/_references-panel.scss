@@ -16,39 +16,70 @@
 
 @use 'mixins' as *;
 
-.search-panel {
+.references-panel {
   height: 100%;
   width: 100%;
 
   &__content {
-    overflow-y: overlay;
+    display: flex;
+    flex-direction: column;
     height: 100%;
     width: 100%;
-    padding: 1.5rem;
   }
 
   &__content__header {
-    font-weight: 500;
-    padding: 1rem;
-    line-height: 2rem;
+    @include flexVCenter;
+    @include flexHSpaceBetween;
+
     background: var(--color-dark-grey-85);
-    margin-bottom: 1rem;
-    user-select: none;
+    height: 2.8rem;
+    padding-right: 0.5rem;
+
+    &__title {
+      font-weight: 500;
+      padding: 1rem;
+      user-select: none;
+      font-size: 1.2rem;
+    }
+
+    &__actions {
+      @include flexVCenter;
+
+      width: 6rem;
+    }
+
+    &__action {
+      @include flexCenter;
+
+      width: 2rem;
+      height: 2.8rem;
+      color: var(--color-dark-grey-400);
+
+      &:hover {
+        color: var(--color-light-grey-500);
+      }
+    }
+  }
+
+  &__content__results {
+    overflow-y: overlay;
+    height: calc(100% - 2.8rem);
+    padding: 0.5rem 0;
   }
 
   &__entry {
-    margin: 1rem 0;
-
     &__header {
       @include flexVCenter;
       @include flexHSpaceBetween;
 
-      background: var(--color-dark-grey-85);
-      cursor: default;
-      height: 2.8rem;
-      min-height: 2.8rem;
+      cursor: pointer;
+      height: 2.2rem;
+      min-height: 2.2rem;
       padding-left: 0.5rem;
-      margin-bottom: 1rem;
+
+      &:hover {
+        background: var(--color-dark-blue-shade-100);
+      }
 
       &:hover &__action--with-counter {
         display: none;
@@ -64,6 +95,10 @@
 
       user-select: none;
       width: calc(100% - 5rem);
+    }
+
+    &__header__title__expander {
+      @include flexCenter;
     }
 
     &__header__title__label {
@@ -127,10 +162,10 @@
     @include flexVCenter;
     @include flexHSpaceBetween;
 
-    height: 2rem;
     width: 100%;
-    min-height: 2rem;
-    padding-left: 0.5rem;
+    height: 2.2rem;
+    min-height: 2.2rem;
+    padding-left: 1.5rem;
     cursor: pointer;
     font-size: 1.2rem;
     color: var(--color-light-grey-400);
@@ -165,14 +200,14 @@
 
     &__label__preview {
       display: inline-block;
-      line-height: 2rem;
+      line-height: 2.2rem;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: pre;
     }
 
     &__label__preview__text {
-      line-height: 2rem;
+      line-height: 2.2rem;
       font-size: 1.2rem;
       font-family: 'Roboto Mono', monospace;
       white-space: pre;
@@ -181,30 +216,6 @@
     &__label__preview__text--found {
       font-weight: 700;
       color: var(--color-blue-150);
-    }
-
-    &__label__candidate {
-      @include flexHSpaceBetween;
-
-      width: calc(100% - 5.6rem);
-      height: 2rem;
-      line-height: 2rem;
-      user-select: none;
-    }
-
-    &__label__candidate-name {
-      @include ellipsisTextOverflow;
-
-      width: 60%;
-    }
-
-    &__label__candidate-location {
-      @include ellipsisTextOverflow;
-
-      width: 40%;
-      padding: 0 1rem;
-      text-align: right;
-      font-size: 1.2rem;
     }
 
     &__actions {

@@ -17,7 +17,8 @@
 @use 'mixins' as *;
 
 @forward 'aux-panel/terminal-panel';
-@forward 'aux-panel/search-panel';
+@forward 'aux-panel/references-panel';
+@forward 'aux-panel/text-search-panel';
 @forward 'aux-panel/suggestions-panel';
 @forward 'aux-panel/test-runner-panel';
 

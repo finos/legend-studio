@@ -20,7 +20,7 @@ import type {
 } from '../server/models/Execution.js';
 import type { EditorStore } from './EditorStore.js';
 
-export class CodeFixSuggestionState {
+export class CodeFixSuggestion {
   readonly editorStore: EditorStore;
 
   constructor(editorStore: EditorStore) {
@@ -28,7 +28,7 @@ export class CodeFixSuggestionState {
   }
 }
 
-export class UnmatchedFunctionCodeFixSuggestionState extends CodeFixSuggestionState {
+export class UnmatchedFunctionCodeFixSuggestion extends CodeFixSuggestion {
   readonly result: UnmatchedFunctionResult;
 
   constructor(editorStore: EditorStore, result: UnmatchedFunctionResult) {
@@ -37,7 +37,7 @@ export class UnmatchedFunctionCodeFixSuggestionState extends CodeFixSuggestionSt
   }
 }
 
-export class UnknownSymbolCodeFixSuggestionState extends CodeFixSuggestionState {
+export class UnknownSymbolCodeFixSuggestion extends CodeFixSuggestion {
   readonly result: UnknownSymbolResult;
 
   constructor(editorStore: EditorStore, result: UnknownSymbolResult) {
