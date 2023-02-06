@@ -383,7 +383,7 @@ const TestResultConsole: React.FC<{
           ).forEach((match) => {
             if (
               match.index !== undefined &&
-              match?.groups?.path &&
+              match.groups?.path &&
               match.groups.path_sourceId &&
               match.groups.path_column &&
               match.groups.path_line

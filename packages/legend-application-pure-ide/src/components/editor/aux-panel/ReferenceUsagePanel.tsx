@@ -42,7 +42,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import type { ReferenceUsageResult } from '../../../stores/ReferenceUsageResult.js';
 
-const SearchResultEntryDisplay = observer(
+const ReferenceUsageSearchResultEntryDisplay = observer(
   (props: {
     referenceUsageResult: ReferenceUsageResult;
     result: SearchResultEntry;
@@ -251,7 +251,7 @@ const UsageResultDisplay = observer(
         </div>
         <div className="references-panel__content__results">
           {referenceUsageState.searchEntries.map((searchEntry) => (
-            <SearchResultEntryDisplay
+            <ReferenceUsageSearchResultEntryDisplay
               key={searchEntry.uuid}
               referenceUsageResult={referenceUsageState}
               result={searchEntry}

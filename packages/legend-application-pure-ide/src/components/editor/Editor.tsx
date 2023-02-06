@@ -24,7 +24,6 @@ import { StatusBar } from './StatusBar.js';
 import { EditPanel } from './edit-panel/EditPanel.js';
 import { FileSearchCommand } from './command-center/FileSearchCommand.js';
 import { flowResult } from 'mobx';
-import { TextSearchCommand } from './command-center/TextSearchCommand.js';
 import { useApplicationStore, useCommands } from '@finos/legend-application';
 import {
   type ResizablePanelHandlerProps,
@@ -46,7 +45,6 @@ export const Editor = withEditorStore(
   observer(() => {
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const editable = !editorStore.initState.isInInitialState;
 
     // layout
     const { ref, width, height } = useResizeDetector<HTMLDivElement>();
@@ -171,9 +169,8 @@ export const Editor = withEditorStore(
             </div>
           </div>
         </div>
-        <StatusBar actionsDisabled={!editable} />
-        {editable && <FileSearchCommand />}
-        {editable && <TextSearchCommand />}
+        <StatusBar />
+        <FileSearchCommand />
       </div>
     );
   }),

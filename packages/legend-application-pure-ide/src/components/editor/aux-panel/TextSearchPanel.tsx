@@ -24,23 +24,30 @@ import {
   trimPathLeadingSlash,
 } from '../../../server/models/File.js';
 import { flowResult } from 'mobx';
-import { TextSearchResult } from '../../../stores/TextSearchResult.js';
 import {
-  BlankPanelContent,
+  CaseSensitiveIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  CloseIcon,
+  clsx,
+  CollapseTreeIcon,
+  ExpandTreeIcon,
   FileAltIcon,
   PanelLoadingIndicator,
-  PlusIcon,
+  RefreshIcon,
+  RegexIcon,
   TimesIcon,
 } from '@finos/legend-art';
 import { useApplicationStore } from '@finos/legend-application';
 import { useEditorStore } from '../EditorStoreProvider.js';
+import type { TextSearchResult } from '../../../stores/TextSearchState.js';
+import { useEffect, useMemo, useRef } from 'react';
+import { debounce } from '@finos/legend-shared';
+import { AUX_PANEL_MODE } from '../../../stores/EditorConfig.js';
 
-const SearchResultEntryDisplay = observer(
-  (props: {
-    searchState: TextSearchResult;
-    searchEntry: SearchResultEntry;
-  }) => {
-    const { searchState, searchEntry } = props;
+const TextSearchResultEntryDisplay = observer(
+  (props: { searchResult: TextSearchResult; result: SearchResultEntry }) => {
+    const { searchResult, result } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const goToResult =
@@ -48,40 +55,46 @@ const SearchResultEntryDisplay = observer(
       (): Promise<void> =>
         flowResult(
           editorStore.loadFile(
-            searchEntry.sourceId,
+            result.sourceId,
             new FileCoordinate(
-              searchEntry.sourceId,
+              result.sourceId,
               coordinate.startLine,
               coordinate.startColumn,
             ),
           ),
         ).catch(applicationStore.alertUnhandledError);
     const dismissResultForFile = (): void =>
-      searchState.dismissSearchEntry(searchEntry);
+      searchResult.dismissSearchEntry(result);
     const dismissCoordinate =
       (coordinate: SearchResultCoordinate): (() => void) =>
       (): void => {
-        searchEntry.dismissCoordinate(coordinate);
-        if (!searchEntry.coordinates.length) {
-          searchState.dismissSearchEntry(searchEntry);
+        result.dismissCoordinate(coordinate);
+        if (!result.coordinates.length) {
+          searchResult.dismissSearchEntry(result);
         }
       };
 
     return (
       <div className="text-search-panel__entry">
-        <div className="text-search-panel__entry__header">
+        <div
+          className="text-search-panel__entry__header"
+          onClick={() => result.setIsExpanded(!result.isExpanded)}
+        >
           <div className="text-search-panel__entry__header__title">
+            <div className="text-search-panel__entry__header__title__expander">
+              {result.isExpanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
+            </div>
             <div className="text-search-panel__entry__header__title__label">
               <FileAltIcon />
             </div>
             <div className="text-search-panel__entry__header__title__content">
-              {trimPathLeadingSlash(searchEntry.sourceId)}
+              {trimPathLeadingSlash(result.sourceId)}
             </div>
           </div>
           <div className="text-search-panel__entry__header__actions">
             <div className="text-search-panel__entry__header__action text-search-panel__entry__header__action--with-counter">
               <div className="text-search-panel__entry__header__action__counter">
-                {searchEntry.coordinates.length}
+                {result.coordinates.length}
               </div>
             </div>
             <button
@@ -94,52 +107,148 @@ const SearchResultEntryDisplay = observer(
             </button>
           </div>
         </div>
-        <div className="text-search-panel__entry__content">
-          {searchEntry.coordinates.map((coordinate) => (
-            <div
-              key={coordinate.uuid}
-              className="text-search-panel__entry__content__item"
-            >
+        {result.isExpanded && (
+          <div className="text-search-panel__entry__content">
+            {result.coordinates.map((coordinate) => (
               <div
-                className="text-search-panel__entry__content__item__label text-search-panel__entry__content__item__label--full"
-                title="Go to Result"
-                onClick={goToResult(coordinate)}
+                key={coordinate.uuid}
+                className="text-search-panel__entry__content__item"
               >
-                {coordinate.preview && (
-                  <div className="text-search-panel__entry__content__item__label__content">
-                    <div className="text-search-panel__entry__content__item__label__coordinates">
-                      {`[${coordinate.startLine}:${coordinate.startColumn}]`}
-                    </div>
-                    <div className="text-search-panel__entry__content__item__label__preview">
-                      <span className="text-search-panel__entry__content__item__label__preview__text">
-                        {coordinate.preview.before}
-                      </span>
-                      <span className="text-search-panel__entry__content__item__label__preview__text text-search-panel__entry__content__item__label__preview__text--found">
-                        {coordinate.preview.found.replaceAll(/\n/g, '\u21B5')}
-                      </span>
-                      <span className="text-search-panel__entry__content__item__label__preview__text">
-                        {coordinate.preview.after}
-                      </span>
-                    </div>
-                  </div>
-                )}
-                {!coordinate.preview && (
-                  <>
-                    {`line: ${coordinate.startLine} - column: ${coordinate.startColumn}`}
-                  </>
-                )}
-              </div>
-              <div className="text-search-panel__entry__content__item__actions">
-                <button
-                  className="text-search-panel__entry__content__item__action text-search-panel__entry__content__item__action--hidden"
-                  tabIndex={-1}
-                  title="Dismiss"
-                  onClick={dismissCoordinate(coordinate)}
+                <div
+                  className="text-search-panel__entry__content__item__label text-search-panel__entry__content__item__label--full"
+                  title={
+                    coordinate.preview
+                      ? `${
+                          coordinate.preview.before
+                        }${coordinate.preview.found.replaceAll(
+                          /\n/g,
+                          '\u21B5',
+                        )}${coordinate.preview.after}`
+                      : 'Go To Result'
+                  }
+                  onClick={goToResult(coordinate)}
                 >
-                  <TimesIcon />
-                </button>
+                  {coordinate.preview && (
+                    <div className="text-search-panel__entry__content__item__label__content">
+                      <div className="text-search-panel__entry__content__item__label__coordinates">
+                        {`[${coordinate.startLine}:${coordinate.startColumn}]`}
+                      </div>
+                      <div className="text-search-panel__entry__content__item__label__preview">
+                        <span className="text-search-panel__entry__content__item__label__preview__text">
+                          {coordinate.preview.before}
+                        </span>
+                        <span className="text-search-panel__entry__content__item__label__preview__text text-search-panel__entry__content__item__label__preview__text--found">
+                          {coordinate.preview.found.replaceAll(/\n/g, '\u21B5')}
+                        </span>
+                        <span className="text-search-panel__entry__content__item__label__preview__text">
+                          {coordinate.preview.after}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  {!coordinate.preview && (
+                    <>
+                      {`line: ${coordinate.startLine} - column: ${coordinate.startColumn}`}
+                    </>
+                  )}
+                </div>
+                <div className="text-search-panel__entry__content__item__actions">
+                  <button
+                    className="text-search-panel__entry__content__item__action text-search-panel__entry__content__item__action--hidden"
+                    tabIndex={-1}
+                    title="Dismiss"
+                    onClick={dismissCoordinate(coordinate)}
+                  >
+                    <TimesIcon />
+                  </button>
+                </div>
               </div>
-            </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+
+const TextSearchResultDisplay = observer(
+  (props: { searchResult: TextSearchResult }) => {
+    const { searchResult } = props;
+    const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
+    const showExpandAction = searchResult.searchEntries.some(
+      (entry) => !entry.isExpanded,
+    );
+    const refresh = (): void => {
+      flowResult(editorStore.textSearchState.search()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
+    const clear = (): void => {
+      editorStore.textSearchState.setText('');
+      editorStore.textSearchState.setResult(undefined);
+    };
+    const expandAll = (): void => {
+      searchResult.searchEntries.forEach((entry) => entry.setIsExpanded(true));
+    };
+    const collapseAll = (): void => {
+      searchResult.searchEntries.forEach((entry) => entry.setIsExpanded(false));
+    };
+
+    return (
+      <div className="text-search-panel__content">
+        <div className="text-search-panel__content__header">
+          <div className="text-search-panel__content__header__title">
+            {!searchResult.searchEntries.length
+              ? `No result`
+              : `${searchResult.numberOfResults} result(s) in ${searchResult.numberOfFiles} files`}
+          </div>
+          <div className="text-search-panel__content__header__actions">
+            <button
+              className="text-search-panel__content__header__action"
+              tabIndex={-1}
+              title="Refresh"
+              onClick={refresh}
+            >
+              <RefreshIcon />
+            </button>
+            <button
+              className="text-search-panel__content__header__action"
+              tabIndex={-1}
+              title="Clear"
+              onClick={clear}
+            >
+              <CloseIcon />
+            </button>
+            {!showExpandAction && (
+              <button
+                className="text-search-panel__content__header__action"
+                tabIndex={-1}
+                title="Collapse All"
+                onClick={collapseAll}
+              >
+                <CollapseTreeIcon />
+              </button>
+            )}
+            {showExpandAction && (
+              <button
+                className="text-search-panel__content__header__action"
+                tabIndex={-1}
+                title="Expand All"
+                onClick={expandAll}
+              >
+                <ExpandTreeIcon />
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="text-search-panel__content__results">
+          {searchResult.searchEntries.map((searchEntry) => (
+            <TextSearchResultEntryDisplay
+              key={searchEntry.uuid}
+              searchResult={searchResult}
+              result={searchEntry}
+            />
           ))}
         </div>
       </div>
@@ -147,64 +256,95 @@ const SearchResultEntryDisplay = observer(
   },
 );
 
-const TextSearchResultDisplay = observer(
-  (props: { searchState: TextSearchResult }) => {
-    const { searchState } = props;
-    const editorStore = useEditorStore();
-    if (!searchState.searchEntries.length) {
-      return (
-        <BlankPanelContent>{`No occurrences found for '${editorStore.textSearchCommandState.text}'`}</BlankPanelContent>
-      );
-    }
-    return (
-      <div className="text-search-panel__content">
-        <div className="text-search-panel__content__header">{`Showing ${searchState.numberOfResults} result(s) in ${searchState.numberOfFiles} files for '${editorStore.textSearchCommandState.text}'`}</div>
-        {searchState.searchEntries.map((searchEntry) => (
-          <SearchResultEntryDisplay
-            key={searchEntry.uuid}
-            searchState={searchState}
-            searchEntry={searchEntry}
-          />
-        ))}
-      </div>
-    );
-  },
-);
-
 export const TextSearchPanel = observer(() => {
   const editorStore = useEditorStore();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchState = editorStore.textSearchState;
+  const toggleCaseSensitive = (): void =>
+    searchState.setCaseSensitive(!searchState.isCaseSensitive);
+  const toggleRegExp = (): void => searchState.setRegExp(!searchState.isRegExp);
+  const debouncedSearch = useMemo(
+    () => debounce(() => searchState.search(), 300),
+    [searchState],
+  );
+  const onSearchTextChange: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ): void => {
+    const value = event.target.value;
+    searchState.setText(value);
+    debouncedSearch.cancel();
+    if (!value) {
+      searchState.setResult(undefined);
+    } else {
+      debouncedSearch();
+    }
+  };
+  const onSearch: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+    if (event.code === 'Enter') {
+      debouncedSearch.cancel();
+      if (searchState.text) {
+        debouncedSearch();
+      }
+    } else if (event.code === 'Escape') {
+      searchInputRef.current?.select();
+    }
+  };
+
+  useEffect(() => {
+    if (
+      editorStore.auxPanelDisplayState.isOpen &&
+      editorStore.activeAuxPanelMode === AUX_PANEL_MODE.SEARCH
+    ) {
+      searchInputRef.current?.focus();
+    }
+  }, [editorStore.auxPanelDisplayState.isOpen, editorStore.activeAuxPanelMode]);
 
   return (
     <div className="text-search-panel">
       <PanelLoadingIndicator
-        isLoading={editorStore.textSearchCommandLoadState.isInProgress}
+        isLoading={editorStore.textSearchState.loadState.isInProgress}
       />
-      {!editorStore.textSearchResult && (
-        <BlankPanelContent>
-          <div className="auxiliary-panel__splash-screen">
-            <div className="auxiliary-panel__splash-screen__content">
-              <div className="auxiliary-panel__splash-screen__content__item">
-                <div className="auxiliary-panel__splash-screen__content__item__label">
-                  Search something
-                </div>
-                <div className="auxiliary-panel__splash-screen__content__item__hot-keys">
-                  <div className="hotkey__key">Ctrl</div>
-                  <div className="hotkey__plus">
-                    <PlusIcon />
-                  </div>
-                  <div className="hotkey__key">Shift</div>
-                  <div className="hotkey__plus">
-                    <PlusIcon />
-                  </div>
-                  <div className="hotkey__key">F</div>
-                </div>
-              </div>
-            </div>
+      <div className="text-search-panel__header">
+        <div className="text-search-panel__searcher__input__container">
+          <input
+            ref={searchInputRef}
+            autoFocus={true}
+            className="text-search-panel__searcher__input input--dark"
+            onChange={onSearchTextChange}
+            onKeyDown={onSearch}
+            value={searchState.text}
+            placeholder="Search"
+          />
+          <div className="text-search-panel__searcher__input__actions">
+            <button
+              className={clsx('text-search-panel__searcher__input__action', {
+                'text-search-panel__searcher__input__action--active':
+                  searchState.isCaseSensitive,
+              })}
+              tabIndex={-1}
+              title="Match Case"
+              onClick={toggleCaseSensitive}
+            >
+              <CaseSensitiveIcon />
+            </button>
+            <button
+              className={clsx('text-search-panel__searcher__input__action', {
+                'text-search-panel__searcher__input__action--active':
+                  searchState.isRegExp,
+              })}
+              tabIndex={-1}
+              title="Use Regular Expression"
+              onClick={toggleRegExp}
+            >
+              <RegexIcon />
+            </button>
           </div>
-        </BlankPanelContent>
-      )}
-      {editorStore.textSearchResult instanceof TextSearchResult && (
-        <TextSearchResultDisplay searchState={editorStore.textSearchResult} />
+        </div>
+      </div>
+      {editorStore.textSearchState.result && (
+        <TextSearchResultDisplay
+          searchResult={editorStore.textSearchState.result}
+        />
       )}
     </div>
   );

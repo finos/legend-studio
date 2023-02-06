@@ -37,7 +37,7 @@ export const FileSearchCommand = observer(() => {
   const searchState = editorStore.fileSearchCommandState;
   const selectorRef = useRef<SelectComponent>(null);
   // configs
-  const toggleRegExp = (): void => searchState.toggleRegExp();
+  const toggleRegExp = (): void => searchState.setRegExp(!searchState.isRegExp);
   // actions
   const debouncedSearch = useMemo(
     () =>

@@ -50,12 +50,7 @@ import {
   ExecutionFailureResult,
   ExecutionSuccessResult,
 } from '../server/models/Execution.js';
-import {
-  type SearchResultEntry,
-  getSearchResultEntry,
-  SearchResultCoordinate,
-} from '../server/models/SearchEntry.js';
-import { TextSearchResult } from './TextSearchResult.js';
+import { SearchResultCoordinate } from '../server/models/SearchEntry.js';
 import { TestRunnerState } from './TestRunnerState.js';
 import {
   type ConceptInfo,
@@ -90,7 +85,7 @@ import { PanelDisplayState } from '@finos/legend-art';
 import { DiagramEditorState } from './DiagramEditorState.js';
 import { DiagramInfo, serializeDiagram } from '../server/models/DiagramInfo.js';
 import type { LegendPureIDEApplicationStore } from './LegendPureIDEBaseStore.js';
-import { SearchCommandState } from './SearchCommandState.js';
+import { FileSearchCommandState } from './FileSearchCommandState.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
 import {
   LEGEND_PURE_IDE_COMMAND_KEY,
@@ -107,6 +102,7 @@ import {
   UnmatchedFunctionCodeFixSuggestion,
 } from './CodeFixSuggestion.js';
 import { ReferenceUsageResult } from './ReferenceUsageResult.js';
+import { TextSearchState } from './TextSearchState.js';
 
 export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
@@ -137,7 +133,7 @@ export class EditorStore implements CommandRegistrar {
 
   // File Search Command
   readonly fileSearchCommandLoadState = ActionState.create();
-  readonly fileSearchCommandState = new SearchCommandState();
+  readonly fileSearchCommandState = new FileSearchCommandState();
   openFileSearchCommand = false;
   fileSearchCommandResults: string[] = [];
 
@@ -149,10 +145,7 @@ export class EditorStore implements CommandRegistrar {
   referenceUsageResult?: ReferenceUsageResult | undefined;
 
   // Text Search Panel
-  readonly textSearchCommandLoadState = ActionState.create();
-  readonly textSearchCommandState = new SearchCommandState();
-  openTextSearchCommand = false;
-  textSearchResult?: TextSearchResult | undefined;
+  readonly textSearchState: TextSearchState;
 
   // Test Runner Panel
   readonly testRunState = ActionState.create();
@@ -167,19 +160,14 @@ export class EditorStore implements CommandRegistrar {
       openFileSearchCommand: observable,
       fileSearchCommandResults: observable,
       fileSearchCommandState: observable,
-      openTextSearchCommand: observable,
-      textSearchCommandState: observable,
 
-      textSearchResult: observable,
       codeFixSuggestion: observable,
       referenceUsageResult: observable,
       testRunnerState: observable,
-      setTextSearchResult: action,
       setCodeFixSuggestion: action,
       setReferenceUsageResult: action,
 
       setOpenFileSearchCommand: action,
-      setOpenTextSearchCommand: action,
       setActiveAuxPanelMode: action,
       setActiveActivity: action,
       setTestRunnerState: action,
@@ -208,7 +196,6 @@ export class EditorStore implements CommandRegistrar {
       updateFileUsingSuggestionCandidate: flow,
       updateFile: flow,
       searchFile: flow,
-      searchText: flow,
 
       createNewDirectory: flow,
       createNewFile: flow,
@@ -217,6 +204,8 @@ export class EditorStore implements CommandRegistrar {
     });
 
     this.applicationStore = applicationStore;
+
+    this.textSearchState = new TextSearchState(this);
     this.directoryTreeState = new DirectoryTreeState(this);
     this.conceptTreeState = new ConceptTreeState(this);
     this.client = new PureServerClient(
@@ -234,16 +223,8 @@ export class EditorStore implements CommandRegistrar {
     this.openFileSearchCommand = val;
   }
 
-  setOpenTextSearchCommand(val: boolean): void {
-    this.openTextSearchCommand = val;
-  }
-
   setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
     this.activeAuxPanelMode = val;
-  }
-
-  setTextSearchResult(val: TextSearchResult | undefined): void {
-    this.textSearchResult = val;
   }
 
   setCodeFixSuggestion(val: CodeFixSuggestion | undefined): void {
@@ -431,7 +412,17 @@ export class EditorStore implements CommandRegistrar {
     });
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_TEXT,
-      action: () => this.setOpenTextSearchCommand(true),
+      action: () => {
+        if (
+          this.auxPanelDisplayState.isOpen &&
+          this.activeAuxPanelMode === AUX_PANEL_MODE.SEARCH
+        ) {
+          this.auxPanelDisplayState.close();
+        } else {
+          this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH);
+          this.auxPanelDisplayState.open();
+        }
+      },
     });
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.GO_TO_FILE,
@@ -1380,30 +1371,6 @@ export class EditorStore implements CommandRegistrar {
       this.fileSearchCommandState.isRegExp,
     )) as string[];
     this.fileSearchCommandLoadState.pass();
-  }
-
-  *searchText(): GeneratorFn<void> {
-    if (this.textSearchCommandLoadState.isInProgress) {
-      return;
-    }
-    this.textSearchCommandLoadState.inProgress();
-    this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH);
-    this.auxPanelDisplayState.open();
-    try {
-      const results = (
-        (yield this.client.searchText(
-          this.textSearchCommandState.text,
-          this.textSearchCommandState.isCaseSensitive,
-          this.textSearchCommandState.isRegExp,
-        )) as PlainObject<SearchResultEntry>[]
-      ).map((result) => getSearchResultEntry(result));
-      this.setTextSearchResult(new TextSearchResult(this, results));
-      this.textSearchCommandLoadState.pass();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
-      this.textSearchCommandLoadState.fail();
-    }
   }
 
   *createNewDirectory(path: string): GeneratorFn<void> {

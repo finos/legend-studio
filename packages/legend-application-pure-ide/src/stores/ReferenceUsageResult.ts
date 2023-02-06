@@ -90,7 +90,7 @@ export class ReferenceUsageResult {
   dismissSearchEntry(value: SearchEntry): void {
     deleteEntry(this.searchEntries, value);
     if (!this.searchEntries.length) {
-      this.editorStore.setTextSearchResult(undefined);
+      this.editorStore.setReferenceUsageResult(undefined);
     }
   }
 

@@ -116,11 +116,9 @@ export const AuxiliaryPanel = observer(() => {
                 })}
                 onClick={changeMode(tab.mode)}
               >
-                {tab.icon && (
-                  <div className="auxiliary-panel__header__tab__icon">
-                    {tab.icon}
-                  </div>
-                )}
+                <div className="auxiliary-panel__header__tab__icon">
+                  {tab.icon}
+                </div>
                 <div className="auxiliary-panel__header__tab__title">
                   {tab.name}
                 </div>
