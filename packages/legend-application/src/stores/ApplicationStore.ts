@@ -46,6 +46,7 @@ import {
   NOTIFCATION_SEVERITY,
 } from './NotificationService.js';
 import { UNKNOWN_USER_ID } from './IdentityService.js';
+import { StorageService } from './storage/StorageService.js';
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
@@ -65,6 +66,9 @@ export class ApplicationStore<
   // navigation
   readonly navigator: WebApplicationNavigator;
   readonly navigationContextService: ApplicationNavigationContextService;
+
+  // storage
+  storageService: StorageService;
 
   // TODO: refactor this to `NotificationService` including notifications and alerts
   notification?: Notification | undefined;
@@ -128,6 +132,7 @@ export class ApplicationStore<
 
     this.config = config;
     this.navigator = navigator;
+    this.storageService = new StorageService(this);
     this.pluginManager = pluginManager;
     // NOTE: set the logger first so other loading could use the configured logger
     this.log.registerPlugins(pluginManager.getLoggerPlugins());
