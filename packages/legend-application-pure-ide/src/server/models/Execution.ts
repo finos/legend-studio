@@ -20,6 +20,7 @@ import {
   deserialize,
   list,
   object,
+  optional,
   primitive,
 } from 'serializr';
 
@@ -29,7 +30,7 @@ export interface ExecutionActivity {
 }
 
 export abstract class ExecutionResult {
-  text!: string;
+  text?: string;
   // compiler!: string;
   reinit?: boolean;
 }
@@ -51,9 +52,9 @@ createModelSchema(ExecutionSuccessResult, {
 export class ExecutionFailureResult extends ExecutionResult {
   declare text: string;
   RO!: boolean;
-  line!: number;
-  column!: number;
-  source!: string;
+  line?: number;
+  column?: number;
+  source?: string;
   error!: boolean;
   sessionError?: string;
 }
@@ -61,9 +62,9 @@ export class ExecutionFailureResult extends ExecutionResult {
 createModelSchema(ExecutionFailureResult, {
   text: primitive(),
   RO: primitive(),
-  line: primitive(),
-  column: primitive(),
-  source: primitive(),
+  line: optional(primitive()),
+  column: optional(primitive()),
+  source: optional(primitive()),
   error: primitive(),
   sessionError: primitive(),
 });

@@ -25,12 +25,10 @@ import { AssertFail } from '../../../../../../../../graph/metamodel/pure/test/as
 import type { AssertionStatus } from '../../../../../../../../graph/metamodel/pure/test/assertion/status/AssertionStatus.js';
 import { AssertPass } from '../../../../../../../../graph/metamodel/pure/test/assertion/status/AssertPass.js';
 import { EqualToJsonAssertFail } from '../../../../../../../../graph/metamodel/pure/test/assertion/status/EqualToJsonAssertFail.js';
-import { AtomicTestId } from '../../../../../../../../graph/metamodel/pure/test/result/AtomicTestId.js';
 import {
   type TestResult,
   TestError,
-  TestFailed,
-  TestPassed,
+  TestExecuted,
 } from '../../../../../../../../graph/metamodel/pure/test/result/TestResult.js';
 import {
   AtomicTest,
@@ -44,33 +42,35 @@ import { V1_AssertPass } from '../../../../model/test/assertion/status/V1_Assert
 import { V1_EqualToJsonAssertFail } from '../../../../model/test/assertion/status/V1_EqualToJsonAssertFail.js';
 import {
   type V1_TestResult,
-  V1_TestFailed,
-  V1_TestPassed,
+  V1_TestExecuted,
   V1_TestError,
 } from '../../../../model/test/result/V1_TestResult.js';
-import type { V1_AtomicTestId } from '../../../../model/test/V1_AtomicTestId.js';
 import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
 import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../../Testable_PureProtocolProcessorPlugin_Extension.js';
 
-const buildAtomicTestId = (
-  element: V1_AtomicTestId,
+const buildTestSuite = (
   testable: Testable,
-): AtomicTestId => {
-  const testSuite = testable.tests
+  testSuiteId?: string | undefined,
+): TestSuite | undefined =>
+  testable.tests
     .filter(filterByType(TestSuite))
-    .find((t) => t.id === element.testSuiteId);
-  let atomicTest: AtomicTest;
+    .find((t) => t.id === testSuiteId);
+
+const buildAtomicTest = (
+  testable: Testable,
+  atomicTestId: string,
+  testSuite?: TestSuite,
+): AtomicTest => {
   if (testSuite) {
-    atomicTest = guaranteeNonNullable(
-      testSuite.tests.find((aT) => aT.id === element.atomicTestId),
+    return guaranteeNonNullable(
+      testSuite.tests.find((aT) => aT.id === atomicTestId),
     );
   } else {
-    atomicTest = guaranteeType(
-      testable.tests.find((e) => e.id === element.atomicTestId),
+    return guaranteeType(
+      testable.tests.find((e) => e.id === atomicTestId),
       AtomicTest,
     );
   }
-  return new AtomicTestId(testSuite, atomicTest);
 };
 
 const buildAssertFail = (
@@ -197,34 +197,28 @@ export const V1_buildTestError = (
   element: V1_TestError,
   testable: Testable,
 ): TestError => {
-  const testError = new TestError();
+  const testSuite = buildTestSuite(testable, element.testSuiteId);
+  const atomicTest = buildAtomicTest(testable, element.atomicTestId, testSuite);
+  const testError = new TestError(testSuite, atomicTest);
   testError.testable = testable;
-  testError.atomicTestId = buildAtomicTestId(element.atomicTestId, testable);
   testError.error = element.error;
   return testError;
 };
-export const V1_buildTestFailed = (
-  element: V1_TestFailed,
+
+export const V1_buildTestExecuted = (
+  element: V1_TestExecuted,
   testable: Testable,
   plugins: PureProtocolProcessorPlugin[],
-): TestFailed => {
-  const testFailed = new TestFailed();
-  testFailed.atomicTestId = buildAtomicTestId(element.atomicTestId, testable);
-  testFailed.testable = testable;
-  testFailed.assertStatuses = element.assertStatuses.map((e) =>
-    buildAssertionStatus(e, testFailed.atomicTestId.atomicTest, plugins),
+): TestExecuted => {
+  const testSuite = buildTestSuite(testable, element.testSuiteId);
+  const atomicTest = buildAtomicTest(testable, element.atomicTestId, testSuite);
+  const testExecuted = new TestExecuted(testSuite, atomicTest);
+  testExecuted.testable = testable;
+  testExecuted.assertStatuses = element.assertStatuses.map((e) =>
+    buildAssertionStatus(e, atomicTest, plugins),
   );
-  return testFailed;
-};
-
-export const V1_buildTestPassed = (
-  element: V1_TestPassed,
-  testable: Testable,
-): TestPassed => {
-  const testPassed = new TestPassed();
-  testPassed.testable = testable;
-  testPassed.atomicTestId = buildAtomicTestId(element.atomicTestId, testable);
-  return testPassed;
+  testExecuted.testExecutionStatus = element.testExecutionStatus;
+  return testExecuted;
 };
 
 export const V1_buildMultiExecutionServiceTestResult = (
@@ -232,9 +226,10 @@ export const V1_buildMultiExecutionServiceTestResult = (
   testable: Testable,
   plugins: PureProtocolProcessorPlugin[],
 ): MultiExecutionServiceTestResult => {
-  const multi = new MultiExecutionServiceTestResult();
+  const testSuite = buildTestSuite(testable, element.testSuiteId);
+  const atomicTest = buildAtomicTest(testable, element.atomicTestId, testSuite);
+  const multi = new MultiExecutionServiceTestResult(testSuite, atomicTest);
   multi.testable = testable;
-  multi.atomicTestId = buildAtomicTestId(element.atomicTestId, testable);
   multi.keyIndexedTestResults = new Map<string, TestResult>();
   Array.from(element.keyIndexedTestResults.entries()).forEach((result) => {
     multi.keyIndexedTestResults.set(
@@ -250,10 +245,8 @@ export function V1_buildTestResult(
   testable: Testable,
   plugins: PureProtocolProcessorPlugin[],
 ): TestResult {
-  if (element instanceof V1_TestPassed) {
-    return V1_buildTestPassed(element, testable);
-  } else if (element instanceof V1_TestFailed) {
-    return V1_buildTestFailed(element, testable, plugins);
+  if (element instanceof V1_TestExecuted) {
+    return V1_buildTestExecuted(element, testable, plugins);
   } else if (element instanceof V1_TestError) {
     return V1_buildTestError(element, testable);
   } else if (element instanceof V1_MultiExecutionServiceTestResult) {

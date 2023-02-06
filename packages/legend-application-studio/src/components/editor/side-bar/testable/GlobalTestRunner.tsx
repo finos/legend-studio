@@ -58,8 +58,7 @@ import {
   AtomicTestTreeNodeData,
   AssertionTestTreeNodeData,
   TestableTreeNodeData,
-  TestSuiteTreeNodeData,
-  TestBatchTreeNodeData,
+  TestTreeNodeData,
   getNodeTestableResult,
   getAtomicTest_TestResult,
   getAssertionStatus,
@@ -157,7 +156,7 @@ const TestFailViewer = observer(
     const { globalTestRunnerState, failure } = props;
     const id =
       failure instanceof TestError
-        ? failure.atomicTestId.atomicTest.id
+        ? failure.atomicTest.id
         : failure.assertion.id;
     const closeLogViewer = (): void =>
       globalTestRunnerState.setFailureViewing(undefined);
@@ -351,21 +350,7 @@ const TestableTreeNodeContainer: React.FC<
             </span>
           </div>
         )}
-        {node instanceof TestSuiteTreeNodeData && (
-          <div className="global-test-runner__item__link__content">
-            <span className="global-test-runner__item__link__content__id">
-              {node.label}
-            </span>
-          </div>
-        )}
-        {node instanceof AtomicTestTreeNodeData && (
-          <div className="global-test-runner__item__link__content">
-            <span className="global-test-runner__item__link__content__id">
-              {node.label}
-            </span>
-          </div>
-        )}
-        {node instanceof TestBatchTreeNodeData && (
+        {node instanceof TestTreeNodeData && (
           <div className="global-test-runner__item__link__content">
             <span className="global-test-runner__item__link__content__id">
               {node.label}

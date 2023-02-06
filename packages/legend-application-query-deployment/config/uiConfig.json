@@ -1,0 +1,25 @@
+{
+  "appName": "query",
+  "env": "prod",
+  "engine": {
+    "url": "${PROTOCOL}://${ENGINE_HOST}:${ENGINE_PORT}/api"
+  },
+  "depot": {
+    "url": "${PROTOCOL}://${DEPOT_HOST}:${DEPOT_PORT}/depot/api"
+  },
+  "studio": {
+    "url": "${PROTOCOL}://${STUDIO_HOST}:${STUDIO_PORT}/studio",
+    "instances": [
+      {
+        "sdlcProjectIDPrefix": "PROD",
+        "url": "${PROTOCOL}://${STUDIO_HOST}:${STUDIO_PORT}/studio"
+      }
+    ]
+  },
+  "taxonomy": {
+    "url": "${PROTOCOL}://${TAXONOMY_HOST}:${TAXONOMY_PORT}/taxonomy"
+  },
+  "documentation": {
+    "url": "https://legend.finos.org"
+  }
+}

@@ -17,18 +17,18 @@
 import {
   type TestResult,
   type Service,
-  TestPassed,
-  TestFailed,
+  TestExecuted,
   ServiceTestSuite,
   TestData,
   ServiceTest,
   RunTestsTestableInput,
-  AtomicTestId,
+  UniqueTestId,
   DEFAULT_TEST_SUITE_PREFIX,
   DEFAULT_TEST_PREFIX,
   TestError,
   MultiExecutionServiceTestResult,
   isStubbed_RawLambda,
+  TestExecutionStatus,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -150,7 +150,7 @@ export class ServiceTestSuiteState {
       const service = this.testableState.serviceEditorState.service;
       const input = new RunTestsTestableInput(service);
       input.unitTestIds = this.suite.tests.map(
-        (t) => new AtomicTestId(this.suite, t),
+        (t) => new UniqueTestId(this.suite, t),
       );
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
@@ -158,9 +158,7 @@ export class ServiceTestSuiteState {
           this.editorStore.graphManagerState.graph,
         )) as TestResult[];
       testResults.forEach((result) => {
-        const state = this.testStates.find(
-          (t) => t.test === result.atomicTestId.atomicTest,
-        );
+        const state = this.testStates.find((t) => t.test === result.atomicTest);
         state?.handleTestResult(result);
       });
       this.isRunningTest.complete();
@@ -181,9 +179,13 @@ export class ServiceTestSuiteState {
       input.unitTestIds = this.testStates
         .map((testState) => {
           const result = testState.testResultState.result;
-          if (result instanceof TestFailed || result instanceof TestError) {
+          if (
+            (result instanceof TestExecuted &&
+              result.testExecutionStatus === TestExecutionStatus.FAIL) ||
+            result instanceof TestError
+          ) {
             testState.runningTestAction.inProgress();
-            return new AtomicTestId(this.suite, testState.test);
+            return new UniqueTestId(this.suite, testState.test);
           }
           return undefined;
         })
@@ -194,9 +196,7 @@ export class ServiceTestSuiteState {
           this.editorStore.graphManagerState.graph,
         )) as TestResult[];
       testResults.forEach((result) => {
-        const state = this.testStates.find(
-          (t) => t.test === result.atomicTestId.atomicTest,
-        );
+        const state = this.testStates.find((t) => t.test === result.atomicTest);
         state?.handleTestResult(result);
       });
       this.isRunningTest.complete();
@@ -216,11 +216,17 @@ export class ServiceTestSuiteState {
   get testPassed(): number {
     return this.testStates.filter(
       (e) =>
-        e.testResultState.result instanceof TestPassed ||
+        (e.testResultState.result instanceof TestExecuted &&
+          e.testResultState.result.testExecutionStatus ===
+            TestExecutionStatus.PASS) ||
         (e.testResultState.result instanceof MultiExecutionServiceTestResult &&
           Array.from(
             e.testResultState.result.keyIndexedTestResults.values(),
-          ).every((kv) => kv instanceof TestPassed)),
+          ).every(
+            (kv) =>
+              kv instanceof TestExecuted &&
+              kv.testExecutionStatus === TestExecutionStatus.PASS,
+          )),
     ).length;
   }
 

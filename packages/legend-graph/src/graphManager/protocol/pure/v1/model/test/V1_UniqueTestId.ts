@@ -14,18 +14,7 @@
  * limitations under the License.
  */
 
-@use 'mixins' as *;
-
-.console-panel {
-  height: 100%;
-  width: 100%;
-
-  &__content {
-    height: 100%;
-    overflow: overlay;
-    padding: 1.5rem;
-    line-height: 2rem;
-    font-family: 'Roboto Mono', monospace;
-    font-size: 1.2rem;
-  }
+export class V1_UniqueTestId {
+  testSuiteId: string | undefined;
+  atomicTestId!: string;
 }

@@ -16,7 +16,7 @@
 
 @use 'mixins' as *;
 
-@forward 'aux-panel/console-panel';
+@forward 'aux-panel/terminal-panel';
 @forward 'aux-panel/search-panel';
 @forward 'aux-panel/test-runner-panel';
 
@@ -36,6 +36,7 @@
     }
 
     &__content {
+      height: calc(100% - 3.4rem);
       background: var(--color-dark-grey-50);
     }
   }

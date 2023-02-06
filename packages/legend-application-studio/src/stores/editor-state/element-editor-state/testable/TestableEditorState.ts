@@ -19,10 +19,11 @@ import {
   type Testable,
   type TestAssertion,
   type TestResult,
-  TestPassed,
-  AtomicTestId,
+  TestExecuted,
+  UniqueTestId,
   RunTestsTestableInput,
   TestSuite,
+  TestExecutionStatus,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -147,7 +148,7 @@ export class TestableTestEditorState {
         this.test.__parent instanceof TestSuite
           ? this.test.__parent
           : undefined;
-      input.unitTestIds.push(new AtomicTestId(suite, this.test));
+      input.unitTestIds.push(new UniqueTestId(suite, this.test));
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
           [input],
@@ -155,8 +156,7 @@ export class TestableTestEditorState {
         )) as TestResult[];
       const result = guaranteeNonNullable(testResults[0]);
       assertTrue(
-        result.testable === this.testable &&
-          result.atomicTestId.atomicTest === this.test,
+        result.testable === this.testable && result.atomicTest === this.test,
         'Unexpected test result',
       );
       this.handleTestResult(result);
@@ -190,7 +190,11 @@ export class TestableTestEditorState {
   }
 
   get assertionPassed(): number {
-    if (this.testResultState.result instanceof TestPassed) {
+    if (
+      this.testResultState.result instanceof TestExecuted &&
+      this.testResultState.result.testExecutionStatus ===
+        TestExecutionStatus.PASS
+    ) {
       return this.assertionCount;
     }
     return this.assertionEditorStates.filter(
@@ -199,7 +203,11 @@ export class TestableTestEditorState {
   }
 
   get assertionFailed(): number {
-    if (this.testResultState.result instanceof TestPassed) {
+    if (
+      this.testResultState.result instanceof TestExecuted &&
+      this.testResultState.result.testExecutionStatus ===
+        TestExecutionStatus.PASS
+    ) {
       return 0;
     }
     return this.assertionEditorStates.filter(

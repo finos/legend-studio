@@ -27,6 +27,7 @@ import {
 abstract class DirectoryAttribute {
   id!: string;
   path!: string;
+  RO!: boolean;
 }
 
 class FileDirectoryAttribute extends DirectoryAttribute {
@@ -41,6 +42,7 @@ createModelSchema(FileDirectoryAttribute, {
   path: primitive(),
   file: primitive(),
   statusType: primitive(),
+  RO: primitive(),
 });
 
 class FolderDirectoryAttribute extends DirectoryAttribute {
@@ -53,6 +55,7 @@ createModelSchema(FolderDirectoryAttribute, {
   id: primitive(),
   path: primitive(),
   repo: primitive(),
+  RO: primitive(),
 });
 
 export class DirectoryNode {

@@ -16,13 +16,16 @@
 
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
 import type { PersistenceTestData } from './DSL_Persistence_PersistenceTestData.js';
-import { TestBatch } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
+import type { TestAssertion } from '@finos/legend-graph';
 
-export class PersistenceTestBatch extends TestBatch implements Hashable {
+export class PersistenceTestBatch implements Hashable {
   testData!: PersistenceTestData;
+  id!: string;
+  batchId!: string;
+  assertions: TestAssertion[] = [];
 
-  override get hashCode(): string {
+  get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.PERSISTENCE_TEST_BATCH,
       this.id,

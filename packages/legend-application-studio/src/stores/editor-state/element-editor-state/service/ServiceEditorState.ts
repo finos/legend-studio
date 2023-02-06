@@ -75,7 +75,8 @@ export class ServiceEditorState extends ElementEditorState {
       editorStore,
       this.service,
       editorStore.applicationStore.config.options.TEMPORARY__serviceRegistrationConfig,
-      editorStore.sdlcServerClient.features.canCreateVersion,
+      editorStore.sdlcServerClient.featuresConfigHasBeenFetched &&
+        editorStore.sdlcServerClient.features.canCreateVersion,
     );
     this.testableState = new ServiceTestableState(editorStore, this);
   }

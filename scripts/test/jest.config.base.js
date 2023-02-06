@@ -46,6 +46,7 @@ export const getBaseJestConfig = (isGlobal) => {
       // TODO: remove this when we no longer need to mock `Window.fetch()` for tests
       // See https://github.com/finos/legend-studio/issues/758
       '@finos/legend-dev-utils/jest/blockFetch',
+      'jest-canvas-mock',
     ],
     // Setup to run immediately after the test framework has been installed in the environment
     // before each test file in the suite is executed

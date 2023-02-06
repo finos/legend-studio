@@ -102,8 +102,11 @@ export const setupLegendApplicationUILibrary = async (
    * this is to ensure
    */
   const fontLoadFailureErrorMessage = `Monospaced font '${MONOSPACED_FONT_FAMILY}' has not been loaded properly, text editor display problems might occur`;
-  await document.fonts
-    .load(`1em ${MONOSPACED_FONT_FAMILY}`)
+  await Promise.all(
+    [400, 700].map((weight) =>
+      document.fonts.load(`${weight} 1em ${MONOSPACED_FONT_FAMILY}`),
+    ),
+  )
     .then(() => {
       if (document.fonts.check(`1em ${MONOSPACED_FONT_FAMILY}`)) {
         monacoEditorAPI.remeasureFonts();

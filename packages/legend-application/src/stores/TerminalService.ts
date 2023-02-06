@@ -13,14 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { AtomicTest, TestSuite } from '../Test.js';
 
-export class AtomicTestId {
-  parentSuite: TestSuite | undefined;
-  atomicTest: AtomicTest;
+import type { GenericLegendApplicationStore } from './ApplicationStore.js';
+import type { Terminal } from './terminal/Terminal.js';
+import { XTerm } from './terminal/XTerm.js';
 
-  constructor(testSuite: TestSuite | undefined, atomicTestId: AtomicTest) {
-    this.parentSuite = testSuite;
-    this.atomicTest = atomicTestId;
+export class TerminalService {
+  readonly applicationStore: GenericLegendApplicationStore;
+
+  readonly terminal: Terminal;
+
+  constructor(applicationStore: GenericLegendApplicationStore) {
+    this.applicationStore = applicationStore;
+    this.terminal = new XTerm(applicationStore);
   }
 }

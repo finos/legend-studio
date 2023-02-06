@@ -25,9 +25,8 @@ import {
 } from '../../../server/models/ConceptTree.js';
 import { extractElementNameFromPath } from '@finos/legend-graph';
 
-const IDENTIFIER_PATTERN = /^[a-zA-Z0-9_][a-zA-Z0-9_$]*$/;
-const PACKAGE_PATH_PATTERN =
-  /^(?:(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)::)*[a-zA-Z0-9_][a-zA-Z0-9_$]*$/;
+const IDENTIFIER_PATTERN = /^\w[\w$]*$/;
+const PACKAGE_PATH_PATTERN = /^(?:(?:\w[\w$]*)::)*\w[\w$]*$/;
 
 export const RenameConceptPrompt = observer(
   (props: { node: ConceptTreeNode }) => {

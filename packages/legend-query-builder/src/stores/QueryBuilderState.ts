@@ -77,6 +77,7 @@ import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUt
 import { QUERY_BUILDER_COMMAND_KEY } from './QueryBuilderCommand.js';
 import { QueryBuilderWatermarkState } from './watermark/QueryBuilderWatermarkState.js';
 import { QueryBuilderConstantsState } from './QueryBuilderConstantsState.js';
+import { QueryBuilderCheckEntitlementsState } from './entitlements/QueryBuilderCheckEntitlementsState.js';
 
 export abstract class QueryBuilderState implements CommandRegistrar {
   applicationStore: GenericLegendApplicationStore;
@@ -91,6 +92,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
   watermarkState: QueryBuilderWatermarkState;
+  checkEntitlementsState: QueryBuilderCheckEntitlementsState;
   filterOperators: QueryBuilderFilterOperator[] =
     getQueryBuilderCoreFilterOperators();
   resultState: QueryBuilderResultState;
@@ -102,6 +104,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   showFunctionsExplorerPanel = false;
   showParametersPanel = false;
   isEditingWatermark = false;
+  isCheckingEntitlments = false;
 
   class?: Class | undefined;
   mapping?: Mapping | undefined;
@@ -123,12 +126,14 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       fetchStructureState: observable,
       filterState: observable,
       watermarkState: observable,
+      checkEntitlementsState: observable,
       resultState: observable,
       textEditorState: observable,
       unsupportedQueryState: observable,
       showFunctionsExplorerPanel: observable,
       showParametersPanel: observable,
       isEditingWatermark: observable,
+      isCheckingEntitlments: observable,
       changeDetectionState: observable,
       class: observable,
       mapping: observable,
@@ -141,6 +146,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setShowFunctionsExplorerPanel: action,
       setShowParametersPanel: action,
       setIsEditingWatermark: action,
+      setIsCheckingEntitlments: action,
       setClass: action,
       setMapping: action,
       setRuntimeValue: action,
@@ -167,6 +173,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.watermarkState = new QueryBuilderWatermarkState(this);
+    this.checkEntitlementsState = new QueryBuilderCheckEntitlementsState(this);
     this.resultState = new QueryBuilderResultState(this);
     this.textEditorState = new QueryBuilderTextEditorState(this);
     this.unsupportedQueryState = new QueryBuilderUnsupportedQueryState(this);
@@ -230,6 +237,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.isEditingWatermark = val;
   }
 
+  setIsCheckingEntitlments(val: boolean): void {
+    this.isCheckingEntitlments = val;
+  }
+
   setClass(val: Class | undefined): void {
     this.class = val;
   }
@@ -291,6 +302,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.functionsExplorerState = new QueryFunctionsExplorerState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.watermarkState = new QueryBuilderWatermarkState(this);
+    this.checkEntitlementsState = new QueryBuilderCheckEntitlementsState(this);
 
     const currentFetchStructureImplementationType =
       this.fetchStructureState.implementation.type;
@@ -528,6 +540,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.parametersState,
       this.filterState,
       this.watermarkState,
+      this.checkEntitlementsState,
       this.fetchStructureState.implementation,
     ]);
   }

@@ -14,7 +14,4 @@
  * limitations under the License.
  */
 
-export class V1_AtomicTestId {
-  testSuiteId: string | undefined;
-  atomicTestId!: string;
-}
+@import url('xterm/css/xterm.css');

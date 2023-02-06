@@ -91,7 +91,6 @@ import {
   V1_deserializeTestAssertion,
   V1_externalFormatDataModelSchema,
   type V1_TestAssertion,
-  type V1_TestBatch,
   V1_serializeAtomicTest,
   V1_deserializeAtomicTest,
 } from '@finos/legend-graph';
@@ -1151,22 +1150,6 @@ export const V1_persistenceTestBatchModelSchema = (
     testData: usingModelSchema(V1_persistenceTestDataModelSchema(plugins)),
   });
 
-export const V1_serializePersistenceTestBatch = (
-  protocol: V1_TestBatch,
-  plugins: PureProtocolProcessorPlugin[],
-): PlainObject<V1_TestBatch> => {
-  if (protocol instanceof V1_PersistenceTestBatch) {
-    return serialize(V1_persistenceTestBatchModelSchema(plugins), protocol);
-  }
-  throw new UnsupportedOperationError(`Can't serialize test batch `, protocol);
-};
-
-export const V1_deserializePersistenceTestBatch = (
-  json: PlainObject<V1_TestBatch>,
-  plugins: PureProtocolProcessorPlugin[],
-): V1_TestBatch =>
-  deserialize(V1_persistenceTestBatchModelSchema(plugins), json);
-
 export const V1_persistenceTestModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_PersistenceTest> =>
@@ -1178,8 +1161,8 @@ export const V1_persistenceTestModelSchema = (
       (values) =>
         serializeArray(
           values,
-          (value: V1_TestBatch) =>
-            V1_serializePersistenceTestBatch(value, plugins),
+          (value) =>
+            serialize(V1_persistenceTestBatchModelSchema(plugins), value),
           {
             skipIfEmpty: true,
             INTERNAL__forceReturnEmptyInTest: true,
@@ -1188,7 +1171,7 @@ export const V1_persistenceTestModelSchema = (
       (values) =>
         deserializeArray(
           values,
-          (v) => V1_deserializePersistenceTestBatch(v, plugins),
+          (v) => deserialize(V1_persistenceTestBatchModelSchema(plugins), v),
           {
             skipIfEmpty: false,
           },

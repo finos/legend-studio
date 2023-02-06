@@ -90,7 +90,6 @@ import {
   relationshipView_simplifyPath,
   relationshipView_setPath,
 } from './stores/studio/DSL_Diagram_GraphModifierHelper.js';
-import { forceDispatchKeyboardEvent } from '@finos/legend-application';
 
 export enum DIAGRAM_INTERACTION_MODE {
   LAYOUT,
@@ -2478,10 +2477,6 @@ export class DiagramRenderer {
   // --------------------------------- Event handler --------------------------
 
   keydown(e: KeyboardEvent): void {
-    // NOTE: Since <canvas> element does not bubble `keydown` event naturally, we will
-    // manually do this in order to take advantage of application keyboard shortcuts service
-    forceDispatchKeyboardEvent(e);
-
     // Remove selected view(s)
     if ('Delete' === e.code) {
       if (!this.isReadOnly) {

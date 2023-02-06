@@ -127,6 +127,9 @@ export abstract class TreeState<
   }
 
   *refreshTreeData(): GeneratorFn<void> {
+    if (!this.treeData) {
+      return;
+    }
     const openingNodeIds = new Set(
       Array.from(this.getTreeData().nodes.values())
         .filter((node) => node.isOpen)

@@ -16,7 +16,7 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Console } from './ConsolePanel.js';
+import { Console } from './TerminalPanel.js';
 import { AUX_PANEL_MODE } from '../../../stores/EditorConfig.js';
 import { SearchPanel } from './SearchPanel.js';
 import { TestRunnerPanel } from './TestRunnerPanel.js';
@@ -42,9 +42,9 @@ export const AuxiliaryPanel = observer(() => {
     editorStore.auxPanelDisplayState.toggleMaximize();
 
   const auxTabMap = {
-    [AUX_PANEL_MODE.CONSOLE]: {
-      mode: AUX_PANEL_MODE.CONSOLE,
-      name: 'CONSOLE',
+    [AUX_PANEL_MODE.TERMINAL]: {
+      mode: AUX_PANEL_MODE.TERMINAL,
+      name: 'TERMINAL',
       icon: undefined,
       isVisible: true,
     },
@@ -78,7 +78,7 @@ export const AuxiliaryPanel = observer(() => {
 
   useEffect(() => {
     if (!tabsToShow.includes(editorStore.activeAuxPanelMode)) {
-      editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+      editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
     }
   }, [editorStore, tabsToShow, editorStore.activeAuxPanelMode]);
 
@@ -134,7 +134,7 @@ export const AuxiliaryPanel = observer(() => {
         </div>
       </div>
       <div className="panel__content">
-        {isTabVisible(AUX_PANEL_MODE.CONSOLE) && (
+        {isTabVisible(AUX_PANEL_MODE.TERMINAL) && (
           <div className="auxiliary-panel__content__tab">
             <Console />
           </div>

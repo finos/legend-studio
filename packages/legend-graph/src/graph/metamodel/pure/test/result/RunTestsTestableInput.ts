@@ -15,11 +15,11 @@
  */
 
 import type { Testable } from '../Testable.js';
-import type { AtomicTestId } from './AtomicTestId.js';
+import type { UniqueTestId } from './UniqueTestId.js';
 
 export class RunTestsTestableInput {
   testable: Testable;
-  unitTestIds: AtomicTestId[] = [];
+  unitTestIds: UniqueTestId[] = [];
 
   constructor(testable: Testable) {
     this.testable = testable;

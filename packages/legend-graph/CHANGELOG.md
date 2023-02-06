@@ -1,5 +1,12 @@
 # @finos/legend-graph
 
+## 22.2.3
+
+### Patch Changes
+
+- [#1845](https://github.com/finos/legend-studio/pull/1845) [`f901cd37c`](https://github.com/finos/legend-studio/commit/f901cd37c87c680971c32e3d8721f2cabb6627d9) ([@gayathrir11](https://github.com/gayathrir11)) - Modified `AtomicTestId` to `UniqueTestId`. Removed `TestBatch` model from core.
+  Replaced `TestPassed` and `TestFailed` models with `TestExecuted` model.
+
 ## 22.2.2
 
 ## 22.2.1

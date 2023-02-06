@@ -26,6 +26,8 @@
  * See https://github.com/microsoft/TypeScript/issues/49298
  */
 export {
+  FaTrash as TrashIcon,
+  FaHistory as HistoryIcon,
   FaCrosshairs as CrosshairsIcon,
   FaLayerGroup as LayerGroupIcon,
   FaGhost as GhostIcon,
@@ -187,6 +189,7 @@ export {
   VscRegex as RegexIcon,
   VscVersions as VersionsIcon,
   VscCaseSensitive as CaseSensitiveIcon,
+  VscWholeWord as WholeWordMatchIcon,
 } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,
