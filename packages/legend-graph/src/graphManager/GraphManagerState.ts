@@ -131,6 +131,7 @@ export class GraphManagerState extends BasicGraphManagerState {
       usableEnumerations: computed,
       usableMeasures: computed,
       usableClasses: computed,
+      usableAssociationPropertyClasses: computed,
       usableAssociations: computed,
       usableFunctions: computed,
       usableStores: computed,
@@ -266,6 +267,10 @@ export class GraphManagerState extends BasicGraphManagerState {
       ...this.graph.ownClasses,
     ];
   }
+  get usableAssociationPropertyClasses(): Class[] {
+    return [...this.graph.dependencyManager.classes, ...this.graph.ownClasses];
+  }
+
   get usableAssociations(): Association[] {
     return [
       ...this.collectExposedSystemElements(
