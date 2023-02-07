@@ -26,20 +26,14 @@ import {
 import { useEditorStore } from '../EditorStoreProvider.js';
 import type { Problem } from '../../../stores/EditorGraphState.js';
 import { CompilationWarning, EngineError } from '@finos/legend-graph';
+import { GRAPH_EDITOR_MODE } from '../../../stores/EditorConfig.js';
 
 const ProblemItem = observer((props: { problem: Problem }) => {
   const { problem } = props;
   const editorStore = useEditorStore();
   const isStale = editorStore.graphState.areProblemsStale;
-  const goToSource = (): void => {
-    // NOTE: in text mode, we allow click to go to position even when the problems might already be stale
-    if (editorStore.isInGrammarTextMode && problem.sourceInformation) {
-      editorStore.grammarTextEditorState.setForcedCursorPosition({
-        lineNumber: problem.sourceInformation.startLine,
-        column: problem.sourceInformation.startColumn,
-      });
-    }
-  };
+  const goToSource = (): void =>
+    editorStore.graphEditorMode.goToProblem(problem);
 
   return (
     <PanelListItem>
@@ -64,7 +58,8 @@ const ProblemItem = observer((props: { problem: Problem }) => {
         </div>
         {problem.sourceInformation && (
           <div className="auxiliary-panel__problem__source">
-            {editorStore.isInGrammarTextMode &&
+            {editorStore.graphEditorMode.mode ===
+              GRAPH_EDITOR_MODE.GRAMMAR_TEXT &&
               `[Ln ${problem.sourceInformation.startLine}, Col ${problem.sourceInformation.startColumn}]`}
           </div>
         )}

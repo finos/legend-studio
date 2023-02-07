@@ -425,6 +425,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       undefined,
       { enableCompression: true },
     );
+
   lambdaReturnType = (
     input: PlainObject<V1_LambdaReturnTypeInput>,
   ): Promise<PlainObject<V1_LambdaReturnTypeResult>> =>

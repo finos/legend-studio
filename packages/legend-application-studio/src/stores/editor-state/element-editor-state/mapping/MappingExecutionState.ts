@@ -737,7 +737,11 @@ export class MappingExecutionState extends MappingEditorTabState {
             this.editorStore.changeDetectionState.observerContext,
           );
           yield flowResult(
-            this.editorStore.addElement(service, packagePath, true),
+            this.editorStore.graphEditorMode.addElement(
+              service,
+              packagePath,
+              true,
+            ),
           );
         } else {
           throw new UnsupportedOperationError(

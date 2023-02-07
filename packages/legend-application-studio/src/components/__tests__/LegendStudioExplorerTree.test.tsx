@@ -26,7 +26,7 @@ import {
   TEST__openElementFromExplorerTree,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../EditorComponentTestUtils.js';
-import { FormModeCompilationOutcome } from '../../stores/EditorGraphState.js';
+import { GraphCompilationOutcome } from '../../stores/EditorGraphState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import { extractElementNameFromPath } from '@finos/legend-graph';
 import TEST_DATA__ClassQueryBuilder from './TEST_DATA__ClassQueryBuilderModel.json';
@@ -41,11 +41,11 @@ test(integrationTest('Test Explorer tree context menu '), async () => {
     },
   );
   const classPath = 'model::Person';
-  const MOCK__globalCompileInFormModeFn = createMock();
-  MOCK__editorStore.graphState.globalCompileInFormMode =
-    MOCK__globalCompileInFormModeFn;
-  MOCK__globalCompileInFormModeFn.mockResolvedValue(
-    FormModeCompilationOutcome.SUCCEEDED,
+  const MOCK__GlobalCompileInFormModeFn = createMock();
+  MOCK__editorStore.graphEditorMode.globalCompile =
+    MOCK__GlobalCompileInFormModeFn;
+  MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
+    GraphCompilationOutcome.SUCCEEDED,
   );
   MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
     createMock();

@@ -786,7 +786,7 @@ export class MappingTestState extends MappingEditorTabState {
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error.message,
       );
-      yield flowResult(this.editorStore.graphState.globalCompileInFormMode()); // recompile graph if there is problem with the deep fetch tree of a test
+      yield flowResult(this.editorStore.graphEditorMode.globalCompile()); // recompile graph if there is problem with the deep fetch tree of a test
     }
   }
 

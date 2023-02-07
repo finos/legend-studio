@@ -30,7 +30,11 @@ import {
   WarningIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
-import { ACTIVITY_MODE, AUX_PANEL_MODE } from '../../stores/EditorConfig.js';
+import {
+  ACTIVITY_MODE,
+  AUX_PANEL_MODE,
+  GRAPH_EDITOR_MODE,
+} from '../../stores/EditorConfig.js';
 import {
   generateSetupRoute,
   type WorkspaceEditorPathParams,
@@ -136,12 +140,8 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const handleTextModeClick = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
   );
-  const compile = applicationStore.guardUnhandledError(
-    editorStore.isInGrammarTextMode
-      ? () => flowResult(editorStore.graphState.globalCompileInTextMode())
-      : async () => {
-          await flowResult(editorStore.graphState.globalCompileInFormMode());
-        },
+  const compile = applicationStore.guardUnhandledError(() =>
+    flowResult(editorStore.graphEditorMode.globalCompile()),
   );
   const generate = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.graphState.graphGenerationState.globalGenerate()),
@@ -380,7 +380,8 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             'editor__status-bar__action editor__status-bar__action__toggler',
             {
               'editor__status-bar__action editor__status-bar__action__toggler--active':
-                editorStore.isInGrammarTextMode,
+                editorStore.graphEditorMode.mode ===
+                GRAPH_EDITOR_MODE.GRAMMAR_TEXT,
             },
           )}
           disabled={actionsDisabled}

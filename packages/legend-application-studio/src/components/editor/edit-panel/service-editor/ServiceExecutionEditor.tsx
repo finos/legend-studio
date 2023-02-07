@@ -120,7 +120,7 @@ const PureExecutionContextConfigurationEditor = observer(
       }
     };
     const visitMapping = (): void =>
-      editorStore.tabManagerState.openElementEditor(mapping);
+      editorStore.graphEditorMode.openElement(mapping);
     // runtime
     const runtime = executionContext.runtime;
     const isRuntimePointer = runtime instanceof RuntimePointer;
@@ -201,7 +201,7 @@ const PureExecutionContextConfigurationEditor = observer(
     };
     const visitRuntime = (): void => {
       if (runtime instanceof RuntimePointer) {
-        editorStore.tabManagerState.openElementEditor(
+        editorStore.graphEditorMode.openElement(
           runtime.packageableRuntime.value,
         );
       }

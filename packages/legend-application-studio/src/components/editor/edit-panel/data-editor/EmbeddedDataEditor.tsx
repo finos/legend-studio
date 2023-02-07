@@ -168,7 +168,7 @@ export const DataElementReferenceDataEditor = observer(
       }
     };
     const visitData = (): void =>
-      editorStore.tabManagerState.openElementEditor(dataElement);
+      editorStore.graphEditorMode.openElement(dataElement);
     return (
       <div className="panel data-element-reference-editor">
         <div className="data-element-reference-editor__header">

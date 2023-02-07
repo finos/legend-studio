@@ -201,7 +201,7 @@ const ParameterBasicEditor = observer(
     };
     const openElement = (): void => {
       if (!(paramType instanceof PrimitiveType)) {
-        editorStore.tabManagerState.openElementEditor(
+        editorStore.graphEditorMode.openElement(
           paramType instanceof Unit ? paramType.measure : paramType,
         );
       }
@@ -456,7 +456,7 @@ const ReturnTypeEditor = observer(
 
     const openElement = (): void => {
       if (!(returnType.value instanceof PrimitiveType)) {
-        editorStore.tabManagerState.openElementEditor(
+        editorStore.graphEditorMode.openElement(
           returnType.value instanceof Unit
             ? returnType.value.measure
             : returnType.value,

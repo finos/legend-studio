@@ -93,7 +93,7 @@ export class DiagramEditorClassViewEditorSidePanelState extends DiagramEditorSid
         (elementState) =>
           isType(elementState, ClassEditorState) &&
           elementState.element === classView.class.value,
-      ) ?? this.editorStore.createElementEditorState(classView.class.value),
+      ) ?? new ClassEditorState(this.editorStore, classView.class.value),
       ClassEditorState,
     );
   }

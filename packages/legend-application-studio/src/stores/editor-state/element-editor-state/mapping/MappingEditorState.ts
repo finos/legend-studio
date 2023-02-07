@@ -842,9 +842,7 @@ export class MappingEditorState extends ElementEditorState {
     }
     // Open mapping element from included mapping in another mapping editor tab
     if (mappingElement._PARENT !== this.element) {
-      this.editorStore.tabManagerState.openElementEditor(
-        mappingElement._PARENT,
-      );
+      this.editorStore.graphEditorMode.openElement(mappingElement._PARENT);
     }
     const currentMappingEditorState =
       this.editorStore.tabManagerState.getCurrentEditorState(

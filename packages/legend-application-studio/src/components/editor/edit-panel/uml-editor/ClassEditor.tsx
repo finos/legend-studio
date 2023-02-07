@@ -272,7 +272,7 @@ const PropertyBasicEditor = observer(
     // Other
     const openElement = (): void => {
       if (!(propertyType instanceof PrimitiveType)) {
-        editorStore.tabManagerState.openElementEditor(
+        editorStore.graphEditorMode.openElement(
           propertyType instanceof Unit ? propertyType.measure : propertyType,
         );
       }
@@ -280,7 +280,7 @@ const PropertyBasicEditor = observer(
     // NOTE: for now we do not allow directly modifying inherited and associated properties,
     // we would make the user go to the supertype or the association where the property comes from
     const visitOwner = (): void =>
-      editorStore.tabManagerState.openElementEditor(property._OWNER);
+      editorStore.graphEditorMode.openElement(property._OWNER);
 
     return (
       <div ref={ref} className="property-basic-editor__container">
@@ -629,13 +629,13 @@ const DerivedPropertyBasicEditor = observer(
       );
     const openElement = (): void => {
       if (!(propertyType instanceof PrimitiveType)) {
-        editorStore.tabManagerState.openElementEditor(
+        editorStore.graphEditorMode.openElement(
           propertyType instanceof Unit ? propertyType.measure : propertyType,
         );
       }
     };
     const visitOwner = (): void =>
-      editorStore.tabManagerState.openElementEditor(derivedProperty._OWNER);
+      editorStore.graphEditorMode.openElement(derivedProperty._OWNER);
     const remove = applicationStore.guardUnhandledError(async () => {
       await flowResult(dpState.convertLambdaObjectToGrammarString(false));
       deleteDerivedProperty();
@@ -919,7 +919,7 @@ const ConstraintEditor = observer(
       deleteConstraint();
     });
     const visitOwner = (): void =>
-      editorStore.tabManagerState.openElementEditor(constraint._OWNER);
+      editorStore.graphEditorMode.openElement(constraint._OWNER);
 
     return (
       <div ref={ref} className="constraint-editor__container">
@@ -1075,7 +1075,7 @@ const SuperTypeEditor = observer(
     const changeType = (val: PackageableElementOption<Class>): void =>
       setGenericTypeReferenceValue(superType, new GenericType(val.value));
     const visitDerivationSource = (): void =>
-      editorStore.tabManagerState.openElementEditor(rawType);
+      editorStore.graphEditorMode.openElement(rawType);
 
     return (
       <div ref={ref} className="super-type-editor__container">
@@ -1674,7 +1674,7 @@ export const ClassFormEditor = observer(
       : undefined;
     const visitGenerationParentElement = (): void => {
       if (generationParentElement) {
-        editorStore.tabManagerState.openElementEditor(generationParentElement);
+        editorStore.graphEditorMode.openElement(generationParentElement);
       }
     };
 

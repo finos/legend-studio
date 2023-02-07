@@ -580,7 +580,7 @@ const IdentifiedConnectionEditor = observer(
     };
     const visitConnection = (): void => {
       if (identifiedConnection.connection instanceof ConnectionPointer) {
-        editorStore.tabManagerState.openElementEditor(
+        editorStore.graphEditorMode.openElement(
           identifiedConnection.connection.packageableConnection.value,
         );
       }
@@ -844,7 +844,7 @@ const RuntimeMappingEditor = observer(
     const deleteMapping = (): void =>
       runtimeEditorState.deleteMapping(mappingRef);
     const visitMapping = (): void =>
-      editorStore.tabManagerState.openElementEditor(mappingRef.value);
+      editorStore.graphEditorMode.openElement(mappingRef.value);
 
     return (
       <div className="panel__content__form__section__list__item--customized runtime-mapping-editor">

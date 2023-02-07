@@ -52,6 +52,7 @@ import { useEffect } from 'react';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import { EntityChangeConflictSideBarItem } from '../edit-panel/diff-editor/EntityChangeConflictEditor.js';
 import { FormLocalChangesState } from '../../../stores/sidebar-state/LocalChangesState.js';
+import { GRAPH_EDITOR_MODE } from '../../../stores/EditorConfig.js';
 
 const PatchLoader = observer(() => {
   const editorStore = useEditorStore();
@@ -143,7 +144,7 @@ export const LocalChanges = observer(() => {
     localChangesState.downloadLocalChanges();
   const uploadPatchChanges = (): void =>
     localChangesState.patchLoaderState.openModal(
-      editorStore.graphState.computeLocalEntityChanges(),
+      editorStore.localChangesState.computeLocalEntityChanges(),
     );
   const pushLocalChanges = applicationStore.guardUnhandledError(() =>
     flowResult(localChangesState.pushLocalChanges()),
@@ -244,7 +245,7 @@ export const LocalChanges = observer(() => {
               isDispatchingAction ||
               editorStore.workspaceUpdaterState.isUpdatingWorkspace ||
               !editorStore.changeDetectionState.initState.hasSucceeded ||
-              !editorStore.isInFormMode
+              editorStore.graphEditorMode.mode !== GRAPH_EDITOR_MODE.FORM
             }
             tabIndex={-1}
             title="Upload local entity changes"

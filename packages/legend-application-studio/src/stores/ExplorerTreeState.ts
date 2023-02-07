@@ -449,9 +449,7 @@ export class ExplorerTreeState {
   ): void => {
     // Open non-package element
     if (!(node.packageableElement instanceof Package)) {
-      this.editorStore.tabManagerState.openElementEditor(
-        node.packageableElement,
-      );
+      this.editorStore.graphEditorMode.openElement(node.packageableElement);
     }
     // Expand package element
     if (node.childrenIds?.length) {

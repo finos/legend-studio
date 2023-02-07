@@ -67,7 +67,11 @@ export class ElementFileGenerationState {
     const fileGeneration = this.fileGenerationState.fileGeneration;
     fileGeneration.name = name;
     yield flowResult(
-      this.editorStore.addElement(fileGeneration, packagePath, true),
+      this.editorStore.graphEditorMode.addElement(
+        fileGeneration,
+        packagePath,
+        true,
+      ),
     );
     yield handlePostCreateAction(fileGeneration, this.editorStore);
     // reset file generation state so since the current file generation is promoted to a packageable element in the graph
