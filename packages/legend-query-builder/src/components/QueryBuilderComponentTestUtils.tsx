@@ -71,7 +71,8 @@ export const TEST__setUpQueryBuilder = async (
     applicationStore,
     graphManagerState,
   );
-  queryBuilderState.setMapping(graphManagerState.graph.getMapping(mappingPath));
+  const mapping = graphManagerState.graph.getMapping(mappingPath);
+  queryBuilderState.setMapping(mapping);
   queryBuilderState.setRuntimeValue(
     new RuntimePointer(
       PackageableElementExplicitReference.create(
@@ -87,6 +88,7 @@ export const TEST__setUpQueryBuilder = async (
     ).mockResolvedValue(
       graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
         rawMappingModelCoverageAnalysisResult,
+        mapping,
       ),
     );
   }

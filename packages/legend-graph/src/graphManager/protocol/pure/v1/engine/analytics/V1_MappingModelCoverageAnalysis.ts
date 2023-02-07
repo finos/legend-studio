@@ -29,6 +29,7 @@ import {
   primitive,
   serialize,
 } from 'serializr';
+import type { Mapping } from '../../../../../../DSL_Mapping_Exports.js';
 import {
   EntityMappedProperty,
   EnumMappedProperty,
@@ -162,7 +163,9 @@ const buildMappedEntity = (protocol: V1_MappedEntity): MappedEntity =>
 
 export const V1_buildModelCoverageAnalysisResult = (
   protocol: V1_MappingModelCoverageAnalysisResult,
+  mapping: Mapping,
 ): MappingModelCoverageAnalysisResult =>
   new MappingModelCoverageAnalysisResult(
     protocol.mappedEntities.map((p) => buildMappedEntity(p)),
+    mapping,
   );

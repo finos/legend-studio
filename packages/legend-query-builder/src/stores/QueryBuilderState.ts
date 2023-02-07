@@ -295,7 +295,13 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.textEditorState = new QueryBuilderTextEditorState(this);
     this.unsupportedQueryState = new QueryBuilderUnsupportedQueryState(this);
     this.milestoningState = new QueryBuilderMilestoningState(this);
+    const mappingModelCoverageAnalysisResult =
+      this.explorerState.mappingModelCoverageAnalysisResult;
     this.explorerState = new QueryBuilderExplorerState(this);
+    if (mappingModelCoverageAnalysisResult) {
+      this.explorerState.mappingModelCoverageAnalysisResult =
+        mappingModelCoverageAnalysisResult;
+    }
     this.explorerState.refreshTreeData();
     this.parametersState = new QueryBuilderParametersState(this);
     this.constantState = new QueryBuilderConstantsState(this);
