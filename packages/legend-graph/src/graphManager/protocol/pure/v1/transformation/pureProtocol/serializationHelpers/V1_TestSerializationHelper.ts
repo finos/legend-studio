@@ -160,7 +160,7 @@ const V1_deserializeAssertionStatus = (
       return deserialize(V1_assertPassModelSchema, json);
     case V1_AssertionStatusType.EQUAL_TO_JSON_ASSERT_FAIL:
       return deserialize(V1_equalToJsonAssertFailModelSchema, json);
-    default:
+    default: {
       const extraAssertionStatusProtocolDeserializers = plugins.flatMap(
         (plugin) =>
           (
@@ -176,6 +176,7 @@ const V1_deserializeAssertionStatus = (
       throw new UnsupportedOperationError(
         `Can't deserialize assertion status of type '${json._type}'`,
       );
+    }
   }
 };
 
@@ -355,7 +356,7 @@ export const V1_deserializeTestAssertion = (
       return deserialize(V1_equalToJsonModelSchema, json);
     case V1_TestAssertionType.EQUAL_TO_TDS:
       return deserialize(V1_equalToTDSModelSchema, json);
-    default:
+    default: {
       const extraTestAssertionProtocolDeserializers = plugins.flatMap(
         (plugin) =>
           (
@@ -371,6 +372,7 @@ export const V1_deserializeTestAssertion = (
       throw new UnsupportedOperationError(
         `Can't deserialize test assertion of type '${json._type}'`,
       );
+    }
   }
 };
 
