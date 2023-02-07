@@ -558,7 +558,7 @@ export const TEST_DATA__roundtrip_case2 = [
               },
               assertions: [
                 {
-                  _type: 'equalToJson',
+                  _type: 'allRowsEquivalentToJson',
                   expected: {
                     _type: 'externalFormat',
                     contentType: 'application/json',
@@ -581,7 +581,7 @@ export const TEST_DATA__roundtrip_case2 = [
               },
               assertions: [
                 {
-                  _type: 'equalToJson',
+                  _type: 'activeRowsEquivalentToJson',
                   expected: {
                     _type: 'externalFormat',
                     contentType: 'application/json',

@@ -73,7 +73,7 @@
 //             asserts:
 //             {
 //               assert1:
-//                 EqualToJson
+//                 AllRowsEquivalentToJson
 //                 #{
 //                   expected:
 //                   ExternalFormat
