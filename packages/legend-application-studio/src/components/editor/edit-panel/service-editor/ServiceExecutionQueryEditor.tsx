@@ -66,11 +66,11 @@ import {
   LambdaParameterValuesEditor,
   QueryBuilderTextEditorMode,
 } from '@finos/legend-query-builder';
-import { EDITOR_MODE } from '../../../../stores/EditorConfig.js';
-import type { ProjectViewerEditorMode } from '../../../../stores/project-viewer/ProjectViewerEditorMode.js';
+import { ProjectViewerEditorMode } from '../../../../stores/project-viewer/ProjectViewerEditorMode.js';
 import { useLegendStudioApplicationStore } from '../../../LegendStudioBaseStoreProvider.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { SNAPSHOT_VERSION_ALIAS } from '@finos/legend-server-depot';
+import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -379,59 +379,60 @@ export const ServiceExecutionQueryEditor = observer(
     );
 
     const openQueryInLegendQuery = (): void => {
-      if (
-        editorStore.mode === EDITOR_MODE.VIEWER &&
-        (editorStore.editorMode as ProjectViewerEditorMode).viewerStore.version
-          ?.id.id
-      ) {
-        applicationStore.navigator.visitAddress(
-          executionState.generateServiceQueryCreatorRoute(
-            guaranteeNonNullable(applicationStore.config.queryServerUrl),
-            guaranteeNonNullable(
-              editorStore.projectConfigurationEditorState.projectConfiguration
-                ?.groupId,
-            ),
-            guaranteeNonNullable(
-              editorStore.projectConfigurationEditorState.projectConfiguration
-                ?.artifactId,
-            ),
-            guaranteeNonNullable(
-              (editorStore.editorMode as ProjectViewerEditorMode).viewerStore
-                .version?.id.id,
-            ),
-            service.path,
-          ),
-        );
+      const queryServerUrl = guaranteeNonNullable(
+        applicationStore.config.queryServerUrl,
+      );
+      let projectGAV: ProjectGAVCoordinates;
+      if (editorStore.editorMode instanceof ProjectViewerEditorMode) {
+        const viewerEditorMode = editorStore.editorMode;
+        // for Achive mode
+        if (viewerEditorMode.viewerStore.projectGAVCoordinates) {
+          projectGAV = viewerEditorMode.viewerStore.projectGAVCoordinates;
+        } else {
+          // for other viewer modes, if no version we use project `HEAD`
+          projectGAV = {
+            groupId:
+              editorStore.projectConfigurationEditorState
+                .currentProjectConfiguration.groupId,
+            artifactId:
+              editorStore.projectConfigurationEditorState
+                .currentProjectConfiguration.artifactId,
+            versionId:
+              viewerEditorMode.viewerStore.version?.id.id ??
+              SNAPSHOT_VERSION_ALIAS,
+          };
+        }
       } else {
-        applicationStore.navigator.visitAddress(
-          executionState.generateServiceQueryCreatorRoute(
-            guaranteeNonNullable(applicationStore.config.queryServerUrl),
-            guaranteeNonNullable(
-              editorStore.projectConfigurationEditorState.projectConfiguration
-                ?.groupId,
-            ),
-            guaranteeNonNullable(
-              editorStore.projectConfigurationEditorState.projectConfiguration
-                ?.artifactId,
-            ),
-            SNAPSHOT_VERSION_ALIAS,
-            service.path,
-          ),
-        );
+        projectGAV = {
+          groupId:
+            editorStore.projectConfigurationEditorState
+              .currentProjectConfiguration.groupId,
+          artifactId:
+            editorStore.projectConfigurationEditorState
+              .currentProjectConfiguration.artifactId,
+          versionId: SNAPSHOT_VERSION_ALIAS,
+        };
       }
+      applicationStore.navigator.visitAddress(
+        executionState.generateServiceQueryCreatorRoute(
+          queryServerUrl,
+          projectGAV.groupId,
+          projectGAV.artifactId,
+          projectGAV.versionId,
+          service.path,
+        ),
+      );
     };
 
     const openQueryInServiceExtension = (): void => {
       applicationStore.navigator.visitAddress(
         applicationStore.navigator.generateAddress(
           executionState.generateProjectServiceQueryUpdaterRoute(
-            guaranteeNonNullable(
-              editorStore.projectConfigurationEditorState.projectConfiguration
-                ?.projectId,
-            ),
-            guaranteeNonNullable(
-              editorStore.sdlcState.currentWorkspace?.workspaceId,
-            ),
+            editorStore.projectConfigurationEditorState
+              .currentProjectConfiguration.projectId,
+
+            editorStore.sdlcState.activeWorkspace.workspaceId,
+
             service.path,
           ),
         ),

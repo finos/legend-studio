@@ -214,7 +214,7 @@ const ServiceRegisterModal = observer(
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
         <Modal darkMode={true} className="search-modal">
-          <ModalTitle title="Regiser Service Semi-interactively..." />
+          <ModalTitle title="Register Service Semi-interactively..." />
           <Panel>
             <PanelLoadingIndicator isLoading={registrationState.isInProgress} />
             <PanelFullContent>
