@@ -16,10 +16,10 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
-import type { V1_ExternalFormatData } from '@finos/legend-graph';
 import {
   V1_TestAssertion,
   type V1_TestAssertionVisitor,
+  type V1_ExternalFormatData,
 } from '@finos/legend-graph';
 
 export class V1_AllRowsEquivalentToJson

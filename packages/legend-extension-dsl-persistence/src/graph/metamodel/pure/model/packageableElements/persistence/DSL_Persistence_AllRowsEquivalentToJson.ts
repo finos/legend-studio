@@ -16,8 +16,11 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
-import type { ExternalFormatData } from '@finos/legend-graph';
-import { TestAssertion, type TestAssertionVisitor } from '@finos/legend-graph';
+import {
+  TestAssertion,
+  type TestAssertionVisitor,
+  type ExternalFormatData,
+} from '@finos/legend-graph';
 
 export class AllRowsEquivalentToJson extends TestAssertion implements Hashable {
   expected!: ExternalFormatData;

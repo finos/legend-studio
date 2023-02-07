@@ -148,17 +148,14 @@ import type { Trigger } from '../../../../../../../graph/metamodel/pure/model/pa
 import { getOwnPersistence } from '../../../../../../DSL_Persistence_GraphManagerHelper.js';
 import type { DSL_Persistence_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Persistence_PureProtocolProcessorPlugin_Extension.js';
 import {
-  type AtomicTest,
   type Binding,
   type Database,
   type PackageableElementImplicitReference,
-  type TestAssertion,
   V1_buildAtomicTest,
   V1_buildTestAssertion,
   V1_buildEmbeddedData,
   V1_buildFullPath,
   type V1_GraphBuilderContext,
-  type V1_TestAssertion,
 } from '@finos/legend-graph';
 import {
   guaranteeNonEmptyString,
