@@ -1514,6 +1514,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return grammarToJson;
   }
 
+  async prettyLambdaContent(lambda: string): Promise<string> {
+    return this.engine.prettyLambdaContent(lambda);
+  }
+
   async entitiesToPureCode(entities: Entity[]): Promise<string> {
     const startTime = Date.now();
     const grammarToJson = await this.engine.pureModelContextDataToPureCode(

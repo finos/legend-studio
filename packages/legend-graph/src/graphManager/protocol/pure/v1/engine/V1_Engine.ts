@@ -285,6 +285,13 @@ export class V1_Engine {
     );
   }
 
+  async prettyLambdaContent(lambda: string): Promise<string> {
+    return this.engineServerClient.JSONToGrammar_lambda(
+      await this.engineServerClient.grammarToJSON_lambda(lambda),
+      V1_RenderStyle.PRETTY,
+    );
+  }
+
   async transformCodeToLambda(
     code: string,
     lambdaId?: string,

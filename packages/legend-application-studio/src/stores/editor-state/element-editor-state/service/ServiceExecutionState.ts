@@ -258,15 +258,12 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
       try {
         this.loadQueryInfoState.inProgress();
         const content =
-          (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
-            (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
-              (
-                (yield this.editorStore.graphManagerState.graphManager.getQueryInfo(
-                  query.id,
-                )) as QueryInfo
-              ).content,
-            )) as RawLambda,
-            true,
+          (yield this.editorStore.graphManagerState.graphManager.prettyLambdaContent(
+            (
+              (yield this.editorStore.graphManagerState.graphManager.getQueryInfo(
+                query.id,
+              )) as QueryInfo
+            ).content,
           )) as string;
         this.selectedQueryInfo = {
           query,
