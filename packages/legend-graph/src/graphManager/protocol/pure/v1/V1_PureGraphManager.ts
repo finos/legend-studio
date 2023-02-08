@@ -2571,17 +2571,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     input.model = this.buildPureModelContextDataFromPureModel(graph);
     return V1_buildModelCoverageAnalysisResult(
       await this.engine.analyzeMappingModelCoverage(input),
+      mapping,
     );
   }
 
   buildMappingModelCoverageAnalysisResult(
     input: RawMappingModelCoverageAnalysisResult,
+    mapping: Mapping,
   ): MappingModelCoverageAnalysisResult {
     return V1_buildModelCoverageAnalysisResult(
       deserialize(
         V1_MappingModelCoverageAnalysisResult,
         input as PlainObject<V1_MappingModelCoverageAnalysisResult>,
       ),
+      mapping,
     );
   }
 

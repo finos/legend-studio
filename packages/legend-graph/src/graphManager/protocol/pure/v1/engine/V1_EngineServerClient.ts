@@ -49,7 +49,10 @@ import type { V1_TestResult } from '../model/test/result/V1_TestResult.js';
 import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
 import type { V1_RenderStyle } from './grammar/V1_RenderStyle.js';
 import type { V1_ParserError } from './grammar/V1_ParserError.js';
-import type { V1_MappingModelCoverageAnalysisResult } from './analytics/V1_MappingModelCoverageAnalysis.js';
+import type {
+  V1_MappingModelCoverageAnalysisInput,
+  V1_MappingModelCoverageAnalysisResult,
+} from './analytics/V1_MappingModelCoverageAnalysis.js';
 import { ServiceExecutionMode } from '../../../../action/service/ServiceExecutionMode.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
@@ -501,7 +504,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // --------------------------------------- Analysis ---------------------------------------
 
   analyzeMappingModelCoverage = (
-    input: PlainObject<V1_MappingModelCoverageAnalysisResult>,
+    input: PlainObject<V1_MappingModelCoverageAnalysisInput>,
   ): Promise<PlainObject<V1_MappingModelCoverageAnalysisResult>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.MODEL_ANALYTICS),

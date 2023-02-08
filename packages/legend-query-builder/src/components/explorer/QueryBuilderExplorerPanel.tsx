@@ -803,7 +803,6 @@ export const QueryBuilderExplorerPanel = observer(
         applicationStore.alertUnhandledError,
       );
     }, [applicationStore, explorerState, queryBuilderState.mapping]);
-
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER}

@@ -133,9 +133,8 @@ export const TEST__setUpQueryEditor = async (
   query.artifactId = lightQuery.artifactId;
   query.owner = lightQuery.owner;
   query.isCurrentUserQuery = lightQuery.isCurrentUserQuery;
-  query.mapping = PackageableElementExplicitReference.create(
-    graphManagerState.graph.getMapping(mappingPath),
-  );
+  const _mapping = graphManagerState.graph.getMapping(mappingPath);
+  query.mapping = PackageableElementExplicitReference.create(_mapping);
   query.runtime = PackageableElementExplicitReference.create(
     graphManagerState.graph.getRuntime(runtimePath),
   );
@@ -162,6 +161,7 @@ export const TEST__setUpQueryEditor = async (
     ).mockResolvedValue(
       graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
         rawMappingModelCoverageAnalysisResult,
+        _mapping,
       ),
     );
   }

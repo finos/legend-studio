@@ -284,6 +284,7 @@ describe(integrationTest('Build property mapping data'), () => {
         graphManagerState,
         graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
           rawMappingModelCoverageAnalysisResult,
+          _mapping,
         ),
         maxDepth === undefined ? 1000 : maxDepth,
       );

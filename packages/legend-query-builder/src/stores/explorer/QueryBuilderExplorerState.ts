@@ -660,7 +660,13 @@ export class QueryBuilderExplorerState {
   }
 
   *analyzeMappingModelCoverage(): GeneratorFn<void> {
-    if (this.queryBuilderState.mapping) {
+    // We will only refetch if the analysis result's mapping has changed.
+    // This makes the assumption that the mapping has not been edited, which is a valid assumption since query is not for editing mappings
+    if (
+      this.queryBuilderState.mapping &&
+      this.queryBuilderState.mapping !==
+        this.mappingModelCoverageAnalysisResult?.mapping
+    ) {
       this.mappingModelCoverageAnalysisState.inProgress();
       this.mappingModelCoverageAnalysisState.setMessage('Analyzing Mapping...');
       try {

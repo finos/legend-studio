@@ -467,6 +467,7 @@ export abstract class AbstractPureGraphManager {
 
   abstract buildMappingModelCoverageAnalysisResult(
     input: RawMappingModelCoverageAnalysisResult,
+    mapping: Mapping,
   ): MappingModelCoverageAnalysisResult;
 
   // ------------------------------------------- Change detection -------------------------------------------
