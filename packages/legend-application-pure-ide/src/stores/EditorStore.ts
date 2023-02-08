@@ -15,7 +15,12 @@
  */
 
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import { ACTIVITY_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
+import {
+  ACTIVITY_MODE,
+  AUX_PANEL_MODE,
+  ROOT_PACKAGE_PATH,
+  WELCOME_FILE_PATH,
+} from './EditorConfig.js';
 import { FileEditorState } from './FileEditorState.js';
 import { serialize, deserialize } from 'serializr';
 import {
@@ -39,25 +44,13 @@ import {
   type ExecutionResult,
   TestExecutionResult,
   UnmatchedFunctionResult,
-  UnmatchedResult,
+  UnknownSymbolResult,
   GetConceptResult,
   deserializeExecutionResult,
   ExecutionFailureResult,
   ExecutionSuccessResult,
 } from '../server/models/Execution.js';
-import {
-  type SearchResultEntry,
-  getSearchResultEntry,
-  SearchResultCoordinate,
-} from '../server/models/SearchEntry.js';
-import {
-  type SearchState,
-  UsageResultState,
-  UnmatchedFunctionExecutionResultState,
-  UnmatchExecutionResultState,
-  SearchResultState,
-  TextSearchResultState,
-} from './SearchResultState.js';
+import { SearchResultCoordinate } from '../server/models/SearchEntry.js';
 import { TestRunnerState } from './TestRunnerState.js';
 import {
   type ConceptInfo,
@@ -92,7 +85,7 @@ import { PanelDisplayState } from '@finos/legend-art';
 import { DiagramEditorState } from './DiagramEditorState.js';
 import { DiagramInfo, serializeDiagram } from '../server/models/DiagramInfo.js';
 import type { LegendPureIDEApplicationStore } from './LegendPureIDEBaseStore.js';
-import { SearchCommandState } from './SearchCommandState.js';
+import { FileSearchCommandState } from './FileSearchCommandState.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
 import {
   LEGEND_PURE_IDE_COMMAND_KEY,
@@ -103,6 +96,13 @@ import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import type { SourceModificationResult } from '../server/models/Source.js';
 import { ConceptType } from '../server/models/ConceptTree.js';
 import { setupTerminal } from './LegendPureIDETerminal.js';
+import {
+  type CodeFixSuggestion,
+  UnknownSymbolCodeFixSuggestion,
+  UnmatchedFunctionCodeFixSuggestion,
+} from './CodeFixSuggestion.js';
+import { ReferenceUsageResult } from './ReferenceUsageResult.js';
+import { TextSearchState } from './TextSearchState.js';
 
 export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
@@ -120,7 +120,7 @@ export class EditorStore implements CommandRegistrar {
     default: 300,
     snap: 100,
   });
-  activeActivity?: ACTIVITY_MODE = ACTIVITY_MODE.CONCEPT;
+  activeActivity?: ACTIVITY_MODE = ACTIVITY_MODE.CONCEPT_EXPLORER;
   readonly sideBarDisplayState = new PanelDisplayState({
     initial: 300,
     default: 300,
@@ -131,19 +131,23 @@ export class EditorStore implements CommandRegistrar {
   readonly executionState = ActionState.create();
   navigationStack: FileCoordinate[] = []; // TODO?: we might want to limit the number of items in this stack
 
-  // Search Command
-  readonly fileSearchCommandLoadingState = ActionState.create();
-  readonly fileSearchCommandState = new SearchCommandState();
+  // File Search Command
+  readonly fileSearchCommandLoadState = ActionState.create();
+  readonly fileSearchCommandState = new FileSearchCommandState();
   openFileSearchCommand = false;
   fileSearchCommandResults: string[] = [];
-  readonly textSearchCommandLoadingState = ActionState.create();
-  readonly textSearchCommandState = new SearchCommandState();
-  openTextSearchCommand = false;
 
-  // Search Panel
-  searchState?: SearchState | undefined;
+  // Code-fix Suggestions Panel
+  codeFixSuggestion?: CodeFixSuggestion | undefined;
 
-  // Test
+  // Reference Usage Panel
+  readonly referenceUsageLoadState = ActionState.create();
+  referenceUsageResult?: ReferenceUsageResult | undefined;
+
+  // Text Search Panel
+  readonly textSearchState: TextSearchState;
+
+  // Test Runner Panel
   readonly testRunState = ActionState.create();
   testRunnerState?: TestRunnerState | undefined;
 
@@ -156,16 +160,16 @@ export class EditorStore implements CommandRegistrar {
       openFileSearchCommand: observable,
       fileSearchCommandResults: observable,
       fileSearchCommandState: observable,
-      openTextSearchCommand: observable,
-      textSearchCommandState: observable,
-      searchState: observable,
+
+      codeFixSuggestion: observable,
+      referenceUsageResult: observable,
       testRunnerState: observable,
+      setCodeFixSuggestion: action,
+      setReferenceUsageResult: action,
 
       setOpenFileSearchCommand: action,
-      setOpenTextSearchCommand: action,
       setActiveAuxPanelMode: action,
       setActiveActivity: action,
-      setSearchState: action,
       setTestRunnerState: action,
       pullInitializationActivity: action,
       pullExecutionStatus: action,
@@ -184,6 +188,7 @@ export class EditorStore implements CommandRegistrar {
       fullReCompile: flow,
       command: flow,
 
+      findUsagesFromCoordinate: flow,
       findUsages: flow,
       renameConcept: flow,
       movePackageableElements: flow,
@@ -191,7 +196,6 @@ export class EditorStore implements CommandRegistrar {
       updateFileUsingSuggestionCandidate: flow,
       updateFile: flow,
       searchFile: flow,
-      searchText: flow,
 
       createNewDirectory: flow,
       createNewFile: flow,
@@ -200,6 +204,8 @@ export class EditorStore implements CommandRegistrar {
     });
 
     this.applicationStore = applicationStore;
+
+    this.textSearchState = new TextSearchState(this);
     this.directoryTreeState = new DirectoryTreeState(this);
     this.conceptTreeState = new ConceptTreeState(this);
     this.client = new PureServerClient(
@@ -217,16 +223,16 @@ export class EditorStore implements CommandRegistrar {
     this.openFileSearchCommand = val;
   }
 
-  setOpenTextSearchCommand(val: boolean): void {
-    this.openTextSearchCommand = val;
-  }
-
   setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
     this.activeAuxPanelMode = val;
   }
 
-  setSearchState(val: SearchState | undefined): void {
-    this.searchState = val;
+  setCodeFixSuggestion(val: CodeFixSuggestion | undefined): void {
+    this.codeFixSuggestion = val;
+  }
+
+  setReferenceUsageResult(val: ReferenceUsageResult | undefined): void {
+    this.referenceUsageResult = val;
   }
 
   setTestRunnerState(val: TestRunnerState | undefined): void {
@@ -287,7 +293,9 @@ export class EditorStore implements CommandRegistrar {
         });
       yield this.pullInitializationActivity();
       this.applicationStore.setBlockingAlert(undefined);
-      const openWelcomeFilePromise = flowResult(this.loadFile('/welcome.pure'));
+      const openWelcomeFilePromise = flowResult(
+        this.loadFile(WELCOME_FILE_PATH),
+      );
       const directoryTreeInitPromise = this.directoryTreeState.initialize();
       const conceptTreeInitPromise = this.conceptTreeState.initialize();
       const result = deserializeInitializationnResult(
@@ -404,7 +412,17 @@ export class EditorStore implements CommandRegistrar {
     });
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_TEXT,
-      action: () => this.setOpenTextSearchCommand(true),
+      action: () => {
+        if (
+          this.auxPanelDisplayState.isOpen &&
+          this.activeAuxPanelMode === AUX_PANEL_MODE.SEARCH
+        ) {
+          this.auxPanelDisplayState.close();
+        } else {
+          this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH);
+          this.auxPanelDisplayState.open();
+        }
+      },
     });
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.GO_TO_FILE,
@@ -412,7 +430,9 @@ export class EditorStore implements CommandRegistrar {
         if (this.tabManagerState.currentTab instanceof FileEditorState) {
           this.directoryTreeState.revealPath(
             this.tabManagerState.currentTab.filePath,
-            true,
+            {
+              forceOpenExplorerPanel: true,
+            },
           );
         }
       },
@@ -611,7 +631,7 @@ export class EditorStore implements CommandRegistrar {
        * Some execution, such as find concept produces no output
        * so we should not reset the console text in that case
        */
-      silent?: boolean;
+      silentTerminalOnSuccess?: boolean;
       clearTerminal?: boolean;
     },
   ): GeneratorFn<void> {
@@ -627,10 +647,8 @@ export class EditorStore implements CommandRegistrar {
       );
       return;
     }
-    // reset search state before execution
-    if (!(this.searchState instanceof SearchResultState)) {
-      this.setSearchState(undefined);
-    }
+    // reset suggestions before execution
+    this.setCodeFixSuggestion(undefined);
     this.executionState.inProgress();
     const potentiallyAffectedFiles = this.tabManagerState.tabs
       .filter(filterByType(FileEditorState))
@@ -699,7 +717,9 @@ export class EditorStore implements CommandRegistrar {
         this.applicationStore.notifyError(
           `Execution failed${result.text ? `: ${result.text}` : ''}`,
         );
-        this.applicationStore.terminalService.terminal.fail(result.text);
+        this.applicationStore.terminalService.terminal.fail(result.text, {
+          systemCommand: command ?? 'execute',
+        });
         if (result.sessionError) {
           this.applicationStore.setBlockingAlert({
             message: 'Session corrupted',
@@ -709,7 +729,7 @@ export class EditorStore implements CommandRegistrar {
           yield flowResult(manageResult(result, potentiallyAffectedFiles));
         }
       } else {
-        if (!options?.silent) {
+        if (!options?.silentTerminalOnSuccess) {
           this.applicationStore.terminalService.terminal.output(
             result.text ?? '',
             {
@@ -841,14 +861,16 @@ export class EditorStore implements CommandRegistrar {
         );
       }
       if (result instanceof UnmatchedFunctionResult) {
-        this.setSearchState(
-          new UnmatchedFunctionExecutionResultState(this, result),
+        this.setCodeFixSuggestion(
+          new UnmatchedFunctionCodeFixSuggestion(this, result),
         );
-        this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH_RESULT);
+        this.setActiveAuxPanelMode(AUX_PANEL_MODE.CODE_FIX_SUGGESTION);
         this.auxPanelDisplayState.open();
-      } else if (result instanceof UnmatchedResult) {
-        this.setSearchState(new UnmatchExecutionResultState(this, result));
-        this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH_RESULT);
+      } else if (result instanceof UnknownSymbolResult) {
+        this.setCodeFixSuggestion(
+          new UnknownSymbolCodeFixSuggestion(this, result),
+        );
+        this.setActiveAuxPanelMode(AUX_PANEL_MODE.CODE_FIX_SUGGESTION);
         this.auxPanelDisplayState.open();
       }
       this.resetChangeDetection(potentiallyAffectedFiles);
@@ -940,7 +962,7 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *executeFullTestSuite(relevantTestsOnly?: boolean): GeneratorFn<void> {
-    yield flowResult(this.executeTests('::', relevantTestsOnly));
+    yield flowResult(this.executeTests(ROOT_PACKAGE_PATH, relevantTestsOnly));
   }
 
   *executeNavigation(coordinate: FileCoordinate): GeneratorFn<void> {
@@ -970,7 +992,7 @@ export class EditorStore implements CommandRegistrar {
           this.resetChangeDetection(potentiallyAffectedFiles);
         },
         `navigate`,
-        { silent: true },
+        { silentTerminalOnSuccess: true },
       ),
     );
   }
@@ -1019,7 +1041,7 @@ export class EditorStore implements CommandRegistrar {
                     ),
                   );
                   this.resetChangeDetection(potentiallyAffectedFiles);
-                  this.setActiveActivity(ACTIVITY_MODE.CONCEPT, {
+                  this.setActiveActivity(ACTIVITY_MODE.CONCEPT_EXPLORER, {
                     keepShowingIfMatchedCurrent: true,
                   });
                 },
@@ -1075,8 +1097,8 @@ export class EditorStore implements CommandRegistrar {
       showLoading: true,
     });
     try {
-      if (this.activeActivity !== ACTIVITY_MODE.CONCEPT) {
-        this.setActiveActivity(ACTIVITY_MODE.CONCEPT);
+      if (this.activeActivity !== ACTIVITY_MODE.CONCEPT_EXPLORER) {
+        this.setActiveActivity(ACTIVITY_MODE.CONCEPT_EXPLORER);
       }
       const parts = concept.path.split(ELEMENT_PATH_DELIMITER);
       let currentPath = guaranteeNonNullable(parts[0]);
@@ -1155,14 +1177,19 @@ export class EditorStore implements CommandRegistrar {
     );
   }
 
-  *findUsages(coordinate: FileCoordinate): GeneratorFn<void> {
+  *findUsagesFromCoordinate(coordinate: FileCoordinate): GeneratorFn<void> {
     const concept = (yield this.getConceptInfo(coordinate)) as
       | ConceptInfo
       | undefined;
     if (!concept) {
       return;
     }
+    yield flowResult(this.findUsages(concept));
+  }
+
+  *findUsages(concept: ConceptInfo): GeneratorFn<void> {
     try {
+      this.referenceUsageLoadState.inProgress();
       this.applicationStore.setBlockingAlert({
         message: 'Finding concept usages...',
         prompt: `Finding references of ${getConceptInfoLabel(concept)}`,
@@ -1195,16 +1222,22 @@ export class EditorStore implements CommandRegistrar {
           ),
         )) as PlainObject<SearchResultCoordinate>[]
       ).map((preview) => deserialize(SearchResultCoordinate, preview));
-      this.setSearchState(
-        new UsageResultState(this, concept, usages, searchResultCoordinates),
+      this.setReferenceUsageResult(
+        new ReferenceUsageResult(
+          this,
+          concept,
+          usages,
+          searchResultCoordinates,
+        ),
       );
-      this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH_RESULT);
+      this.setActiveAuxPanelMode(AUX_PANEL_MODE.REFERENCES);
       this.auxPanelDisplayState.open();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
     } finally {
       this.applicationStore.setBlockingAlert(undefined);
+      this.referenceUsageLoadState.complete();
     }
   }
 
@@ -1283,7 +1316,7 @@ export class EditorStore implements CommandRegistrar {
   *updateFileUsingSuggestionCandidate(
     candidate: CandidateWithPackageNotImported,
   ): GeneratorFn<void> {
-    this.setSearchState(undefined);
+    this.setCodeFixSuggestion(undefined);
     yield flowResult(
       this.updateFile(
         candidate.fileToBeModified,
@@ -1329,39 +1362,15 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *searchFile(): GeneratorFn<void> {
-    if (this.fileSearchCommandLoadingState.isInProgress) {
+    if (this.fileSearchCommandLoadState.isInProgress) {
       return;
     }
-    this.fileSearchCommandLoadingState.inProgress();
+    this.fileSearchCommandLoadState.inProgress();
     this.fileSearchCommandResults = (yield this.client.findFiles(
       this.fileSearchCommandState.text,
       this.fileSearchCommandState.isRegExp,
     )) as string[];
-    this.fileSearchCommandLoadingState.pass();
-  }
-
-  *searchText(): GeneratorFn<void> {
-    if (this.textSearchCommandLoadingState.isInProgress) {
-      return;
-    }
-    this.textSearchCommandLoadingState.inProgress();
-    this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH_RESULT);
-    this.auxPanelDisplayState.open();
-    try {
-      const results = (
-        (yield this.client.searchText(
-          this.textSearchCommandState.text,
-          this.textSearchCommandState.isCaseSensitive,
-          this.textSearchCommandState.isRegExp,
-        )) as PlainObject<SearchResultEntry>[]
-      ).map((result) => getSearchResultEntry(result));
-      this.setSearchState(new TextSearchResultState(this, results));
-      this.textSearchCommandLoadingState.pass();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
-      this.textSearchCommandLoadingState.fail();
-    }
+    this.fileSearchCommandLoadState.pass();
   }
 
   *createNewDirectory(path: string): GeneratorFn<void> {

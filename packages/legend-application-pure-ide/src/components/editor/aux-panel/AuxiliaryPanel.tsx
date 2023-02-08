@@ -18,7 +18,7 @@ import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Console } from './TerminalPanel.js';
 import { AUX_PANEL_MODE } from '../../../stores/EditorConfig.js';
-import { SearchPanel } from './SearchPanel.js';
+import { TextSearchPanel } from './TextSearchPanel.js';
 import { TestRunnerPanel } from './TestRunnerPanel.js';
 import { isNonNullable } from '@finos/legend-shared';
 import {
@@ -26,10 +26,15 @@ import {
   ChevronUpIcon,
   clsx,
   FlaskIcon,
+  ReferencesIcon,
   SearchIcon,
+  TerminalIcon,
+  WandIcon,
   XIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from '../EditorStoreProvider.js';
+import { CodeFixSuggestionsPanel } from './CodeFixSuggestionsPanel.js';
+import { ReferenceUsagePanel } from './ReferenceUsagePanel.js';
 
 export const AuxiliaryPanel = observer(() => {
   const editorStore = useEditorStore();
@@ -45,28 +50,40 @@ export const AuxiliaryPanel = observer(() => {
     [AUX_PANEL_MODE.TERMINAL]: {
       mode: AUX_PANEL_MODE.TERMINAL,
       name: 'TERMINAL',
-      icon: undefined,
+      icon: (
+        <TerminalIcon className="auxiliary-panel__header__tab__icon--terminal" />
+      ),
       isVisible: true,
     },
-    [AUX_PANEL_MODE.SEARCH_RESULT]: {
-      mode: AUX_PANEL_MODE.SEARCH_RESULT,
+    [AUX_PANEL_MODE.SEARCH]: {
+      mode: AUX_PANEL_MODE.SEARCH,
       name: 'SEARCH',
       icon: (
-        <div className="auxiliary-panel__header__tab__icon--search">
-          <SearchIcon />
-        </div>
+        <SearchIcon className="auxiliary-panel__header__tab__icon--search" />
       ),
       isVisible: true,
     },
     [AUX_PANEL_MODE.TEST_RUNNER]: {
       mode: AUX_PANEL_MODE.TEST_RUNNER,
       name: 'TEST',
+      icon: <FlaskIcon className="auxiliary-panel__header__tab__icon--test" />,
+      isVisible: true,
+    },
+    [AUX_PANEL_MODE.REFERENCES]: {
+      mode: AUX_PANEL_MODE.REFERENCES,
+      name: 'REFERENCES',
       icon: (
-        <div className="auxiliary-panel__header__tab__icon--test">
-          <FlaskIcon />
-        </div>
+        <ReferencesIcon className="auxiliary-panel__header__tab__icon--references" />
       ),
       isVisible: true,
+    },
+    [AUX_PANEL_MODE.CODE_FIX_SUGGESTION]: {
+      mode: AUX_PANEL_MODE.CODE_FIX_SUGGESTION,
+      name: 'SUGGESTIONS',
+      icon: (
+        <WandIcon className="auxiliary-panel__header__tab__icon--suggestion" />
+      ),
+      isVisible: Boolean(editorStore.codeFixSuggestion),
     },
   };
 
@@ -99,11 +116,9 @@ export const AuxiliaryPanel = observer(() => {
                 })}
                 onClick={changeMode(tab.mode)}
               >
-                {tab.icon && (
-                  <div className="auxiliary-panel__header__tab__icon">
-                    {tab.icon}
-                  </div>
-                )}
+                <div className="auxiliary-panel__header__tab__icon">
+                  {tab.icon}
+                </div>
                 <div className="auxiliary-panel__header__tab__title">
                   {tab.name}
                 </div>
@@ -139,14 +154,24 @@ export const AuxiliaryPanel = observer(() => {
             <Console />
           </div>
         )}
-        {isTabVisible(AUX_PANEL_MODE.SEARCH_RESULT) && (
+        {isTabVisible(AUX_PANEL_MODE.SEARCH) && (
           <div className="auxiliary-panel__content__tab">
-            <SearchPanel />
+            <TextSearchPanel />
           </div>
         )}
         {isTabVisible(AUX_PANEL_MODE.TEST_RUNNER) && (
           <div className="auxiliary-panel__content__tab">
             <TestRunnerPanel />
+          </div>
+        )}
+        {isTabVisible(AUX_PANEL_MODE.CODE_FIX_SUGGESTION) && (
+          <div className="auxiliary-panel__content__tab">
+            <CodeFixSuggestionsPanel />
+          </div>
+        )}
+        {isTabVisible(AUX_PANEL_MODE.REFERENCES) && (
+          <div className="auxiliary-panel__content__tab">
+            <ReferenceUsagePanel />
           </div>
         )}
       </div>

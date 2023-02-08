@@ -46,6 +46,7 @@ export * from './stores/ApplicationStoreTestUtils.js';
 export * from './stores/WebApplicationRouter.js';
 export { PURE_GRAMMAR_TOKEN } from './stores/PureLanguageSupport.js';
 export * from './stores/PureLanguageTextEditorSupport.js';
+export { DISPLAY_ANSI_ESCAPE } from './stores/terminal/Terminal.js';
 
 // ------------------------------------------- Shared components -------------------------------------------
 

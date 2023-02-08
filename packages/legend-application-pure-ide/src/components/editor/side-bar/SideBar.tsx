@@ -29,9 +29,9 @@ export const SideBar = observer(() => {
 
   const renderSideBar = (): React.ReactNode => {
     switch (editorStore.activeActivity) {
-      case ACTIVITY_MODE.CONCEPT:
+      case ACTIVITY_MODE.CONCEPT_EXPLORER:
         return <ConceptTreeExplorer />;
-      case ACTIVITY_MODE.FILE:
+      case ACTIVITY_MODE.FILE_EXPLORER:
         return <DirectoryTreeExplorer />;
       default:
         return null;

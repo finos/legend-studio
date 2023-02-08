@@ -14,16 +14,31 @@
  * limitations under the License.
  */
 
-import { getNullableFirstElement } from '@finos/legend-shared';
+import { DISPLAY_ANSI_ESCAPE } from '@finos/legend-application';
+import {
+  assertErrorThrown,
+  getNullableFirstElement,
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
+import { deserialize } from 'serializr';
+import {
+  ConceptNode,
+  PackageConceptAttribute,
+} from '../server/models/ConceptTree.js';
+import { DirectoryNode } from '../server/models/DirectoryTree.js';
 import { FileCoordinate } from '../server/models/File.js';
+import {
+  HOME_DIRECTORY_PATH,
+  ROOT_PACKAGE_PATH,
+  WELCOME_FILE_PATH,
+} from './EditorConfig.js';
 import type { EditorStore } from './EditorStore.js';
 import { LEGEND_PURE_IDE_TERMINAL_COMMAND } from './LegendPureIDECommand.js';
 
 const PACKAGE_PATH_PATTERN = /^(?:(?:\w[\w$]*)::)*\w[\w$]*$/;
-const FILE_PATH_PATTERN = /^\/?(?:\w\/)*\w+(?:.\w+)*$/;
+const FILE_PATH_PATTERN = /^\/?(?:\w+\/)*\w+(?:\.\w+)*$/;
 const LEGEND_PURE_IDE_TERMINAL_WEBLINK_REGEX =
-  /(?:(?<url>https?:[/]{2}[^\s"'!*(){}|\\^<>`]*[^\s"':,.!?{}|\\^~[\]`()<>])|(?<path>resource:(?<path_sourceId>\/?(?:\w\/)*\w+(?:.\w+)*) (?:line:(?<path_line>\d+)) (?:column:(?<path_column>\d+))))/;
+  /(?:(?<url>https?:[/]{2}[^\s"'!*(){}|\\^<>`]*[^\s"':,.!?{}|\\^~[\]`()<>])|(?<path>resource:(?<path_sourceId>\/?(?:\w+\/)*\w+(?:\.\w+)*) (?:line:(?<path_line>\d+)) (?:column:(?<path_column>\d+))))/;
 
 export const setupTerminal = (editorStore: EditorStore): void => {
   editorStore.applicationStore.terminalService.terminal.setup({
@@ -60,7 +75,7 @@ export const setupTerminal = (editorStore: EditorStore): void => {
     commands: [
       {
         command: LEGEND_PURE_IDE_TERMINAL_COMMAND.GO,
-        description: 'Run the go() function in /welcome.pure',
+        description: 'Run the go() function in welcome file',
         usage: 'go',
         aliases: ['compile', 'executeGo'],
         handler: async (args: string[]): Promise<void> =>
@@ -77,14 +92,14 @@ export const setupTerminal = (editorStore: EditorStore): void => {
           if (path) {
             if (!path.match(PACKAGE_PATH_PATTERN)) {
               editorStore.applicationStore.terminalService.terminal.fail(
-                `${LEGEND_PURE_IDE_TERMINAL_COMMAND.TEST} command requires a valid Pure path`,
+                `command requires a valid package/concept path`,
               );
               return;
             }
           }
-          await flowResult(editorStore.executeTests(path ?? '::')).catch(
-            editorStore.applicationStore.alertUnhandledError,
-          );
+          await flowResult(
+            editorStore.executeTests(path ?? ROOT_PACKAGE_PATH),
+          ).catch(editorStore.applicationStore.alertUnhandledError);
         },
       },
 
@@ -114,14 +129,14 @@ export const setupTerminal = (editorStore: EditorStore): void => {
           const oldPath = args[0];
           if (!oldPath?.match(FILE_PATH_PATTERN)) {
             editorStore.applicationStore.terminalService.terminal.fail(
-              `${LEGEND_PURE_IDE_TERMINAL_COMMAND.MOVE} command requires a valid old file path`,
+              `command requires a valid old file path`,
             );
             return;
           }
           const newPath = args[1];
           if (!newPath?.match(FILE_PATH_PATTERN)) {
             editorStore.applicationStore.terminalService.terminal.fail(
-              `${LEGEND_PURE_IDE_TERMINAL_COMMAND.MOVE} command requires a valid new file path`,
+              `command requires a valid new file path`,
             );
             return;
           }
@@ -138,7 +153,7 @@ export const setupTerminal = (editorStore: EditorStore): void => {
           const path = args[0];
           if (!path?.match(FILE_PATH_PATTERN)) {
             editorStore.applicationStore.terminalService.terminal.fail(
-              `${LEGEND_PURE_IDE_TERMINAL_COMMAND.NEW_DIRECTORY} command requires a valid old file path`,
+              `command requires a valid directory path`,
             );
             return;
           }
@@ -155,13 +170,142 @@ export const setupTerminal = (editorStore: EditorStore): void => {
           const path = args[0];
           if (!path?.match(FILE_PATH_PATTERN)) {
             editorStore.applicationStore.terminalService.terminal.fail(
-              `${LEGEND_PURE_IDE_TERMINAL_COMMAND.NEW_FILE} command requires a valid old file path`,
+              `command requires a valid path`,
             );
             return;
           }
           await flowResult(editorStore.createNewDirectory(path)).catch(
             editorStore.applicationStore.alertUnhandledError,
           );
+        },
+      },
+
+      // navigation
+      {
+        command: LEGEND_PURE_IDE_TERMINAL_COMMAND.WELCOME,
+        description: 'Open the welcome file',
+        usage: 'welcome',
+        aliases: ['start'],
+        handler: async (): Promise<void> => {
+          await flowResult(editorStore.loadFile(WELCOME_FILE_PATH)).catch(
+            editorStore.applicationStore.alertUnhandledError,
+          );
+        },
+      },
+      {
+        command: LEGEND_PURE_IDE_TERMINAL_COMMAND.OPEN_FILE,
+        description: 'Open a file',
+        usage: 'open /some/file/path',
+        aliases: ['edit', 'code', 'vi'],
+        handler: async (args: string[]): Promise<void> => {
+          const path = args[0];
+          if (!path?.match(PACKAGE_PATH_PATTERN)) {
+            editorStore.applicationStore.terminalService.terminal.fail(
+              `command requires a valid file path`,
+            );
+            return;
+          }
+
+          await flowResult(editorStore.loadFile(path)).catch(
+            editorStore.applicationStore.alertUnhandledError,
+          );
+        },
+      },
+      {
+        command: LEGEND_PURE_IDE_TERMINAL_COMMAND.OPEN_DIRECTORY,
+        description: 'Open a directory or a package',
+        usage: 'cd /some/directory/path | cd some::package::path',
+        handler: async (args: string[]): Promise<void> => {
+          const path = args[0];
+          if (
+            !path ||
+            !(path.match(FILE_PATH_PATTERN) || path.match(PACKAGE_PATH_PATTERN))
+          ) {
+            editorStore.applicationStore.terminalService.terminal.fail(
+              `command requires a valid directory or concept path`,
+            );
+            return;
+          }
+
+          try {
+            // NOTE: favor concept/package path over directory path
+            if (path.match(PACKAGE_PATH_PATTERN)) {
+              await flowResult(
+                editorStore.conceptTreeState.revealConcept(path, {
+                  forceOpenExplorerPanel: true,
+                  packageOnly: true,
+                }),
+              );
+            } else {
+              await flowResult(
+                editorStore.directoryTreeState.revealPath(path, {
+                  forceOpenExplorerPanel: true,
+                  directoryOnly: true,
+                }),
+              );
+            }
+          } catch (error) {
+            assertErrorThrown(error);
+            editorStore.applicationStore.terminalService.terminal.fail(
+              error.message,
+            );
+          }
+        },
+      },
+      {
+        command: LEGEND_PURE_IDE_TERMINAL_COMMAND.LIST_DIRECTORY,
+        description: 'List children of a directory or package',
+        usage: 'cd /some/directory/path | cd some::package::path | cd ::',
+        handler: async (args: string[]): Promise<void> => {
+          const path = args[0];
+          if (
+            !path ||
+            !(
+              path.match(FILE_PATH_PATTERN) ||
+              path.match(PACKAGE_PATH_PATTERN) ||
+              [HOME_DIRECTORY_PATH, ROOT_PACKAGE_PATH].includes(path)
+            )
+          ) {
+            editorStore.applicationStore.terminalService.terminal.fail(
+              `command requires a valid directory or package path`,
+            );
+            return;
+          }
+
+          try {
+            // NOTE: favor concept/package path over directory path
+            if (
+              path.match(PACKAGE_PATH_PATTERN) ||
+              path === ROOT_PACKAGE_PATH
+            ) {
+              editorStore.applicationStore.terminalService.terminal.output(
+                (await editorStore.client.getConceptChildren(path))
+                  .map((child) => deserialize(ConceptNode, child))
+                  .map((child) =>
+                    child.li_attr instanceof PackageConceptAttribute
+                      ? `${DISPLAY_ANSI_ESCAPE.BRIGHT_CYAN}${child.text}${DISPLAY_ANSI_ESCAPE.RESET}`
+                      : child.text,
+                  )
+                  .join('\n'),
+              );
+            } else {
+              editorStore.applicationStore.terminalService.terminal.output(
+                (await editorStore.client.getDirectoryChildren(path))
+                  .map((child) => deserialize(DirectoryNode, child))
+                  .map((child) =>
+                    child.isFolderNode
+                      ? `${DISPLAY_ANSI_ESCAPE.BRIGHT_CYAN}${child.text}${DISPLAY_ANSI_ESCAPE.RESET}`
+                      : child.text,
+                  )
+                  .join('\n'),
+              );
+            }
+          } catch (error) {
+            assertErrorThrown(error);
+            editorStore.applicationStore.terminalService.terminal.fail(
+              error.message,
+            );
+          }
         },
       },
 

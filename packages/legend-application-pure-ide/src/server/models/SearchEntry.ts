@@ -77,11 +77,15 @@ createModelSchema(SearchResultCoordinate, {
 export class SearchResultEntry extends SearchEntry {
   sourceId!: string;
   coordinates: SearchResultCoordinate[] = [];
+  isExpanded = true;
 
   constructor() {
     super();
+
     makeObservable(this, {
       coordinates: observable,
+      isExpanded: observable,
+      setIsExpanded: action,
       dismissCoordinate: action,
     });
   }
@@ -89,6 +93,11 @@ export class SearchResultEntry extends SearchEntry {
   setCoordinates(value: SearchResultCoordinate[]): void {
     this.coordinates = value;
   }
+
+  setIsExpanded(val: boolean): void {
+    this.isExpanded = val;
+  }
+
   dismissCoordinate(value: SearchResultCoordinate): void {
     deleteEntry(this.coordinates, value);
   }

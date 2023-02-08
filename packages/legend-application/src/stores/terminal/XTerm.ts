@@ -191,6 +191,9 @@ export class XTerm extends Terminal {
       overviewRulerWidth: 14, // 14px
       scrollback: 10000, // buffer a substantial content length
       convertEol: true, // treat \n as new line
+
+      // this is needed so we can control the cursor programmatically using escape sequences
+      scrollOnUserInput: false,
     });
 
     this.resizer = new XTermFitAddon();
@@ -319,12 +322,18 @@ export class XTerm extends Terminal {
               return;
             }
             this.isRunningCommand = true;
-            matchingCommand.handler(args, command, text).finally(() => {
-              this.isRunningCommand = false;
-              if (!this.isFlushed) {
-                this.abort();
-              }
-            });
+            matchingCommand
+              .handler(
+                args.map((arg) => arg.trim()),
+                command,
+                text,
+              )
+              .finally(() => {
+                this.isRunningCommand = false;
+                if (!this.isFlushed) {
+                  this.abort();
+                }
+              });
           }
         } else if (
           isMatchingKeyCombination(domEvent, 'Control+KeyC') ||
@@ -336,44 +345,38 @@ export class XTerm extends Terminal {
           // Alt: jump word only, Ctrl: jump to end
           // this would apply for Delete, ArrowLeft, ArrowRight
           this.deleteFromCommand(
-            domEvent.altKey
-              ? this.computeCursorJumpMovement(true, true)
-              : domEvent.ctrlKey
-              ? this.computeCursorJumpMovement(true, false)
+            domEvent.altKey || domEvent.ctrlKey
+              ? this.computeCursorJumpMovement(true)
               : -1,
           );
         } else if (domEvent.code === 'Delete') {
           this.deleteFromCommand(
-            domEvent.altKey
-              ? this.computeCursorJumpMovement(false, true)
-              : domEvent.ctrlKey
-              ? this.computeCursorJumpMovement(false, false)
+            domEvent.altKey || domEvent.ctrlKey
+              ? this.computeCursorJumpMovement(false)
               : 1,
           );
         } else if (domEvent.code === 'ArrowLeft') {
-          this.instance.write(
-            this.generateMoveCursorANSISeq(
-              domEvent.altKey
-                ? this.computeCursorJumpMovement(true, true)
-                : domEvent.ctrlKey
-                ? this.computeCursorJumpMovement(true, false)
-                : -1,
-            ),
+          const movement = this.computeCursorMovement(
+            domEvent.altKey || domEvent.ctrlKey
+              ? this.computeCursorJumpMovement(true)
+              : -1,
           );
+          // console.log('left', movement);
+          this.instance.scrollLines(movement.scroll);
+          this.instance.write(movement.seq);
         } else if (domEvent.code === 'ArrowRight') {
-          this.instance.write(
-            this.generateMoveCursorANSISeq(
-              domEvent.altKey
-                ? this.computeCursorJumpMovement(false, true)
-                : domEvent.ctrlKey
-                ? this.computeCursorJumpMovement(false, false)
-                : 1,
-            ),
+          const movement = this.computeCursorMovement(
+            domEvent.altKey || domEvent.ctrlKey
+              ? this.computeCursorJumpMovement(false)
+              : 1,
           );
+          // console.log('right', movement);
+          this.instance.scrollLines(movement.scroll);
+          this.instance.write(movement.seq);
         } else if (
           // use key here so we absolute do not allow any characters other than these
           // being added to the input command
-          key.match(/^[A-Za-z0-9!@#$%^&*()-_=+"':;,.<>/?[\]{}|\\~` \\t]$/)
+          key.match(/^[A-Za-z0-9!@#$%^&*()\-_=+"':;,.<>/?[\]{}|\\~` ]$/)
         ) {
           // commonly supported keys
           this.writeToCommand(key);
@@ -392,10 +395,7 @@ export class XTerm extends Terminal {
         this.writeToCommand(
           val
             // remove all unsupported characters, including newline
-            .replaceAll(
-              /[^A-Za-z0-9!@#$%^&*()-_=+"':;,.<>/?[\]{}|\\~` \\t]/g,
-              '',
-            )
+            .replaceAll(/[^A-Za-z0-9!@#$%^&*()\-_=+"':;,.<>/?[\]{}|\\~` ]/g, '')
             .trimEnd(),
         );
       }
@@ -458,43 +458,38 @@ export class XTerm extends Terminal {
     };
   }
 
-  private computeCursorJumpMovement(
-    back: boolean,
-    jumpWordOnly: boolean,
-  ): number {
+  private computeCursorJumpMovement(back: boolean): number {
     const range = this.getCommandRange();
 
     let distance: number | undefined = undefined;
     let foundWord = false;
 
     // scan for the boundary of the closest word to the cursor position
-    if (jumpWordOnly) {
-      if (back) {
-        for (let i = range.cursorIdx - 1; i > -1; --i) {
-          const char = this.command.charAt(i);
-          if (char.match(/\w/)) {
-            if (!foundWord) {
-              foundWord = true;
-            }
-          } else {
-            if (foundWord) {
-              distance = range.cursorIdx - i - 1;
-              break;
-            }
+    if (back) {
+      for (let i = range.cursorIdx - 1; i > -1; --i) {
+        const char = this.command.charAt(i);
+        if (char.match(/\w/)) {
+          if (!foundWord) {
+            foundWord = true;
+          }
+        } else {
+          if (foundWord) {
+            distance = range.cursorIdx - i - 1;
+            break;
           }
         }
-      } else {
-        for (let i = range.cursorIdx + 1; i < this.command.length; ++i) {
-          const char = this.command.charAt(i);
-          if (char.match(/\w/)) {
-            if (!foundWord) {
-              foundWord = true;
-            }
-          } else {
-            if (foundWord) {
-              distance = i - range.cursorIdx - 1;
-              break;
-            }
+      }
+    } else {
+      for (let i = range.cursorIdx + 1; i < this.command.length; ++i) {
+        const char = this.command.charAt(i);
+        if (char.match(/\w/)) {
+          if (!foundWord) {
+            foundWord = true;
+          }
+        } else {
+          if (foundWord) {
+            distance = i - range.cursorIdx - 1;
+            break;
           }
         }
       }
@@ -513,11 +508,15 @@ export class XTerm extends Terminal {
    *
    * @param val a number (negative means cursor move leftwards)
    * @param limit whether to limit the movement of the cursor by the command range
-   * @returns  ANSI escape sequence for new cursor position
+   * @returns cursor movement information including the ANSI escape sequence for new cursor position and scroll distance
    */
-  private generateMoveCursorANSISeq(val: number, limit = true): string {
+  private computeCursorMovement(
+    val: number,
+    limit = true,
+  ): { seq: string; scroll: number } {
     const buffer = this.instance.buffer.active;
     const cols = this.instance.cols;
+    const rows = this.instance.rows;
     const range = this.getCommandRange();
 
     const maxDistance = limit
@@ -529,25 +528,44 @@ export class XTerm extends Terminal {
 
     let newCursorX = buffer.cursorX;
     let newCursorY = buffer.cursorY;
+    let abs_cursorY = buffer.baseY + buffer.cursorY;
 
     if (val < 0) {
       // move leftwards
       newCursorX = (cols + ((buffer.cursorX - distance) % cols)) % cols;
       newCursorY =
-        buffer.baseY +
         buffer.cursorY -
         (distance > buffer.cursorX ? Math.ceil(distance / cols) : 0);
+      abs_cursorY = newCursorY + buffer.baseY;
+      newCursorY = Math.max(newCursorY, -1);
     } else if (val > 0) {
       // move rightwards
       newCursorX = (buffer.cursorX + distance) % cols;
       newCursorY =
-        buffer.baseY +
         buffer.cursorY +
         (buffer.cursorX + distance >= cols
           ? Math.floor((buffer.cursorX + distance) / cols)
           : 0);
+      abs_cursorY = newCursorY + buffer.baseY;
+      newCursorY = Math.min(newCursorY, rows - 1);
     }
-    return ANSI_moveCursor(newCursorY + 1, newCursorX + 1);
+
+    const scroll =
+      abs_cursorY > buffer.viewportY + rows
+        ? abs_cursorY - (buffer.viewportY + rows)
+        : abs_cursorY < buffer.viewportY
+        ? abs_cursorY - buffer.viewportY
+        : 0;
+
+    return {
+      // NOTE: currently, there is a design limitation with programmatically set the cursor using escape sequence
+      // by design, the scrollback (everything above the viewport/ybase) is readonly, and most terminals work like this.
+      // So for very long command that causes an overflow, one cannot set the cursor position pass the `baseY`
+      // this will affect both navigation and delete/backspace behavior
+      // See https://github.com/xtermjs/xterm.js/issues/4405
+      seq: ANSI_moveCursor(newCursorY + 1, newCursorX + 1),
+      scroll,
+    };
   }
 
   /**
@@ -557,12 +575,14 @@ export class XTerm extends Terminal {
     const range = this.getCommandRange();
     const left = this.command.slice(0, range.cursorIdx);
     const right = this.command.slice(range.cursorIdx);
+    const movement = this.computeCursorMovement(val.length, false);
 
+    this.instance.scrollLines(movement.scroll);
     this.instance.write(
       val +
         right +
         // update the cursor
-        this.generateMoveCursorANSISeq(val.length, false),
+        movement.seq,
     );
     this.setCommand(left + val + right);
   }
@@ -572,7 +592,10 @@ export class XTerm extends Terminal {
    * NOTE: negative number means backward deleting (i.e. backspace)
    */
   private deleteFromCommand(val: number): void {
+    // console.log(val);
+
     const range = this.getCommandRange();
+
     const maxDistance =
       val < 0 ? range.cursorIdx : this.command.length - range.cursorIdx;
     const distance = Math.min(Math.abs(val), maxDistance);
@@ -597,6 +620,9 @@ export class XTerm extends Terminal {
       cursorMovement = 0;
     }
 
+    const movement = this.computeCursorMovement(cursorMovement);
+
+    this.instance.scrollLines(movement.scroll);
     this.instance.write(
       // reset cursor to start of command, basically here, we're rewriting the entire command
       ANSI_moveCursor(range.startY + 1, range.startX + 1) +
@@ -605,7 +631,7 @@ export class XTerm extends Terminal {
         // fill space to erase cells rendered from previous command
         ' '.repeat(distance) +
         // move the cursor as well
-        this.generateMoveCursorANSISeq(cursorMovement),
+        movement.seq,
     );
     this.setCommand(left + right);
   }
@@ -796,7 +822,7 @@ export class XTerm extends Terminal {
   output(val: string, opts?: TerminalWriteOption): void {
     this.resetANSIStyling();
 
-    if (!opts?.clear && opts?.systemCommand) {
+    if ((!opts?.clear || this.preserveLog) && opts?.systemCommand) {
       this.newSystemCommand(opts.systemCommand);
     }
 

@@ -16,7 +16,7 @@
 
 import { action, makeObservable, observable } from 'mobx';
 
-export class SearchCommandState {
+export class FileSearchCommandState {
   text = '';
   isCaseSensitive = false;
   isRegExp = false;
@@ -47,15 +47,7 @@ export class SearchCommandState {
     this.isCaseSensitive = value;
   }
 
-  toggleCaseSensitive(): void {
-    this.setCaseSensitive(!this.isCaseSensitive);
-  }
-
   setRegExp(value: boolean): void {
     this.isRegExp = value;
-  }
-
-  toggleRegExp(): void {
-    this.setRegExp(!this.isRegExp);
   }
 }

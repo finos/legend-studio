@@ -147,12 +147,12 @@ createModelSchema(UnmatchedFunctionResult, {
   ),
 });
 
-export class UnmatchedResult extends ExecutionFailureResult {
+export class UnknownSymbolResult extends ExecutionFailureResult {
   candidateName!: string;
   candidates: CandidateWithPackageNotImported[] = [];
 }
 
-createModelSchema(UnmatchedResult, {
+createModelSchema(UnknownSymbolResult, {
   candidateName: primitive(),
   candidates: list(object(CandidateWithPackageNotImported)),
 });
@@ -212,7 +212,7 @@ export const deserializeExecutionResult = (
     if (value.candidateName && value.PureUnmatchedFunctionException) {
       return deserialize(UnmatchedFunctionResult, value);
     } else if (value.candidateName && value.candidates) {
-      return deserialize(UnmatchedResult, value);
+      return deserialize(UnknownSymbolResult, value);
     }
     return deserialize(ExecutionFailureResult, value);
   } else if (value.jumpTo) {

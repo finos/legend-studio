@@ -409,7 +409,7 @@ export class FileEditorState
 
   findConceptUsages(coordinate: FileCoordinate): void {
     const proceed = (): void => {
-      flowResult(this.editorStore.findUsages(coordinate)).catch(
+      flowResult(this.editorStore.findUsagesFromCoordinate(coordinate)).catch(
         this.editorStore.applicationStore.alertUnhandledError,
       );
     };

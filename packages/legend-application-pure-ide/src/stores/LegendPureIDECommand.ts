@@ -147,9 +147,11 @@ export enum LEGEND_PURE_IDE_TERMINAL_COMMAND {
   MOVE = 'mv',
   NEW_DIRECTORY = 'mkdir',
   NEW_FILE = 'touch',
-  LS = 'ls',
-  CD = 'cd',
+
   OPEN_FILE = 'open',
+  OPEN_DIRECTORY = 'cd',
+  LIST_DIRECTORY = 'ls',
+  WELCOME = 'welcome',
 
   ECHO = 'echo',
   CLEAR = 'clear',

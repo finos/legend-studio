@@ -16,7 +16,7 @@
 
 @use 'mixins' as *;
 
-.search-panel {
+.suggestions-panel {
   height: 100%;
   width: 100%;
 
@@ -101,25 +101,6 @@
 
     &__header__action[disabled] svg {
       color: var(--color-light-grey-400) !important;
-    }
-
-    &__header__action--with-counter {
-      width: initial;
-      cursor: default;
-    }
-
-    &__header__action__counter {
-      @include flexCenter;
-
-      height: 1.8rem;
-      min-width: 1.8rem;
-      background: var(--color-dark-grey-300);
-      border-radius: 0.9rem;
-      font-size: 1rem;
-      font-weight: 500;
-      padding: 0.5rem;
-      margin-right: 0.5rem;
-      user-select: none;
     }
   }
 

@@ -89,7 +89,8 @@ export enum DISPLAY_ANSI_ESCAPE {
 }
 
 /**
- * NOTE: line and column start from 1
+ * NOTE: this is the line and the column of the viewport of the terminal;
+ * Also, line and column start from 1
  */
 export const ANSI_moveCursor = (line: number, column: number): string =>
   `\x1b[${line};${column}H`;

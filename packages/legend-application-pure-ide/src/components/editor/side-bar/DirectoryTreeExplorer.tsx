@@ -324,7 +324,7 @@ export const DirectoryTreeExplorer = observer(() => {
   const focus = (): void => {
     const currentTab = editorStore.tabManagerState.currentTab;
     if (currentTab instanceof FileEditorState) {
-      flowResult(treeState.revealPath(currentTab.filePath, false)).catch(
+      flowResult(treeState.revealPath(currentTab.filePath)).catch(
         applicationStore.alertUnhandledError,
       );
     }
