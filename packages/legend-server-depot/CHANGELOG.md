@@ -1,5 +1,7 @@
 # @finos/legend-server-depot
 
+## 4.2.8
+
 ## 4.2.7
 
 ## 4.2.6

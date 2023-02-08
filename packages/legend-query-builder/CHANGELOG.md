@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 0.6.21
+
+### Patch Changes
+
+- [#1873](https://github.com/finos/legend-studio/pull/1873) [`1a5080f89`](https://github.com/finos/legend-studio/commit/1a5080f8914b1827e2f360379f5170f5683453e3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Display execution time using `prettyDuration`.
+
 ## 0.6.20
 
 ### Patch Changes

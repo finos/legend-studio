@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-persistence-cloud
 
+## 4.0.40
+
 ## 4.0.39
 
 ## 4.0.38
