@@ -1,5 +1,7 @@
 # @finos/legend-application-query-deployment
 
+## 8.37.0
+
 ## 8.36.0
 
 ### Patch Changes
