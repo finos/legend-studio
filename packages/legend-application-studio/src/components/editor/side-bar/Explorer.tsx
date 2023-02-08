@@ -123,14 +123,18 @@ const ElementRenamer = observer(() => {
     event,
   ): void => {
     setPath(event.target.value);
-    const isElementPathNonEmpty = path !== '';
+    const isElementPathNonEmpty = event.target.value !== '';
     const isNotTopLevelElement =
-      element instanceof Package || path.includes(ELEMENT_PATH_DELIMITER);
+      element instanceof Package ||
+      event.target.value.includes(ELEMENT_PATH_DELIMITER);
     const isValidElementPath =
-      (element instanceof Package && isValidPath(path)) ||
-      isValidFullPath(path);
+      (element instanceof Package && isValidPath(event.target.value)) ||
+      isValidFullPath(event.target.value);
     let existingElement =
-      editorStore.graphManagerState.graph.getNullableElement(path, true);
+      editorStore.graphManagerState.graph.getNullableElement(
+        event.target.value,
+        true,
+      );
     existingElement =
       existingElement instanceof Package
         ? isMainGraphElement(existingElement)
@@ -168,12 +172,18 @@ const ElementRenamer = observer(() => {
             : path,
         ),
       )
-        .then(() => setCanRenameElement(false))
+        .then(() => {
+          setCanRenameElement(false);
+          setElementRenameValidationErrorMessage('');
+        })
         .catch(applicationStore.alertUnhandledError);
     }
   };
-
-  const abort = (): void => explorerTreeState.setElementToRename(undefined);
+  const abort = (): void => {
+    setCanRenameElement(false);
+    setElementRenameValidationErrorMessage('');
+    explorerTreeState.setElementToRename(undefined);
+  };
   const onEnter = (): void => pathInputRef.current?.focus();
 
   useEffect(() => {
@@ -206,7 +216,7 @@ const ElementRenamer = observer(() => {
             placeholder="Enter element path"
             onChange={changePath}
           />
-          {elementRenameValidationErrorMessage !== '' && (
+          {elementRenameValidationErrorMessage && (
             <div className="input-group__error-message">
               {elementRenameValidationErrorMessage}
             </div>
