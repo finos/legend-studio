@@ -1,5 +1,7 @@
 # @finos/legend-server-sdlc
 
+## 4.1.19
+
 ## 4.1.18
 
 ### Patch Changes

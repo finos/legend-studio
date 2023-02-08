@@ -1,5 +1,7 @@
 # @finos/legend-art
 
+## 5.0.22
+
 ## 5.0.21
 
 ### Patch Changes

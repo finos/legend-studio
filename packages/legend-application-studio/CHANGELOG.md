@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 22.3.7
+
+### Patch Changes
+
+- [#1833](https://github.com/finos/legend-studio/pull/1833) [`ef7e8fa6d`](https://github.com/finos/legend-studio/commit/ef7e8fa6d693848ac71a5a2f54db421f9d45fde3) ([@gayathrir11](https://github.com/gayathrir11)) - Add warnings when associations reference system elements. ([#282](https://github.com/finos/legend-studio/issues/282))
+
 ## 22.3.6
 
 ### Patch Changes
