@@ -30,6 +30,7 @@ import {
   TEST_DATA__DuplicateClassProperties,
   TEST_DATA__DuplicateAssociationProperties,
   TEST_DATA__DuplicatedElement,
+  TEST_DATA__InvalidAssociationProperty,
 } from './TEST_DATA__GraphBuildFailure.js';
 import { unitTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
@@ -213,5 +214,19 @@ test(unitTest('STRICT-MODE: Duplicate association properties'), async () => {
     ),
   ).rejects.toThrowError(
     `Found duplicated property 'abc' in association 'test::association'`,
+  );
+});
+
+test(unitTest('STRICT-MODE: Invalid association property'), async () => {
+  await expect(() =>
+    TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__InvalidAssociationProperty as Entity[],
+      {
+        strict: true,
+      },
+    ),
+  ).rejects.toThrowError(
+    `Found system class property 'meta::pure::tds::TabularDataSet' in association 'test::association'`,
   );
 });
