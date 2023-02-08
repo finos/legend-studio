@@ -1,5 +1,7 @@
 # @finos/legend-shared
 
+## 6.2.17
+
 ## 6.2.16
 
 ### Patch Changes
