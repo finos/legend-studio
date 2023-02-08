@@ -42,6 +42,7 @@ import {
   buildExecutionParameterValues,
   getExecutionQueryFromRawLambda,
 } from './shared/LambdaParameterState.js';
+import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificationBuilderHelper.js';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -113,11 +114,14 @@ export class QueryBuilderResultState {
     return false;
   }
 
-  buildExecutionRawLambda(): RawLambda {
+  buildExecutionRawLambda(
+    moreOptions?: LambdaFunctionBuilderOption,
+  ): RawLambda {
     let query: RawLambda;
     if (this.queryBuilderState.isQuerySupported) {
       const lambdaFunction = buildLambdaFunction(this.queryBuilderState, {
         isBuildingExecutionQuery: true,
+        ...moreOptions,
       });
       query = buildRawLambdaFromLambdaFunction(
         lambdaFunction,

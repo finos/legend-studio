@@ -204,7 +204,10 @@ const QueryBuilderExplorerPreviewDataModal = observer(
 
     return (
       <Dialog
-        open={Boolean(previewDataState.previewData)}
+        open={
+          Boolean(previewDataState.previewData) ||
+          previewDataState.isGeneratingPreviewData
+        }
         onClose={close}
         classes={{
           root: 'editor-modal__root-container',
@@ -219,7 +222,15 @@ const QueryBuilderExplorerPreviewDataModal = observer(
           <ModalHeader
             title={prettyPropertyName(previewDataState.propertyName)}
           />
+          <PanelLoadingIndicator
+            isLoading={previewDataState.isGeneratingPreviewData}
+          />
           <ModalBody className="query-builder__explorer__preview-data-modal__body">
+            {previewDataState.isGeneratingPreviewData && (
+              <div className="query-builder__explorer__preview-data-modal__placeholder">
+                Loading preview data...
+              </div>
+            )}
             {previewDataState.previewData && (
               <table className="table">
                 <thead>
