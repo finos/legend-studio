@@ -558,8 +558,10 @@ export class XTerm extends Terminal {
         : 0;
 
     return {
-      // there is a problem with long command and setting the cursor pass
-      // the `baseY` row
+      // NOTE: currently, there is a design limitation with programmatically set the cursor using escape sequence
+      // by design, the scrollback (everything above the viewport/ybase) is readonly, and most terminals work like this.
+      // So for very long command that causes an overflow, one cannot set the cursor position pass the `baseY`
+      // this will affect both navigation and delete/backspace behavior
       // See https://github.com/xtermjs/xterm.js/issues/4405
       seq: ANSI_moveCursor(newCursorY + 1, newCursorX + 1),
       scroll,
