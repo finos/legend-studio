@@ -37,10 +37,17 @@ import {
   areWorkspacesEquivalent,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
+import { ProjectDependantEditorState } from './ProjectDependantEditorState.js';
+import {
+  ProjectData,
+  type ProjectVersionPlatformDependency,
+} from '@finos/legend-server-depot';
+import { compareSemVerVersions } from '@finos/legend-storage';
 
 export enum PROJECT_OVERVIEW_ACTIVITY_MODE {
   RELEASE = 'RELEASE',
   OVERVIEW = 'OVERVIEW',
+  DEPENDANTS = 'DEPENDANTS',
   VERSIONS = 'VERSIONS',
   WORKSPACES = 'WORKSPACES',
 }
@@ -54,6 +61,7 @@ export class ProjectOverviewState {
   latestProjectVersion?: Version | null; // `undefined` if API is not yet called, `null` if fetched but no version exists
   currentProjectRevision?: Revision | undefined;
   projectWorkspaces: Workspace[] = [];
+  projectDependantEditorState: ProjectDependantEditorState;
 
   isCreatingVersion = false;
   isFetchingProjectWorkspaces = false;
@@ -76,17 +84,23 @@ export class ProjectOverviewState {
       isUpdatingProject: observable,
       isFetchingLatestVersion: observable,
       isFetchingCurrentProjectRevision: observable,
+      projectDependantEditorState: observable,
       setActivityMode: action,
       fetchProjectWorkspaces: flow,
       deleteWorkspace: flow,
       updateProject: flow,
       fetchLatestProjectVersion: flow,
+      fetchDependants: flow,
       createVersion: flow,
     });
 
     this.editorStore = editorStore;
     this.sdlcState = sdlcState;
     this.releaseVersion = new CreateVersionCommand();
+    this.projectDependantEditorState = new ProjectDependantEditorState(
+      this,
+      this.editorStore,
+    );
   }
 
   setActivityMode(activityMode: PROJECT_OVERVIEW_ACTIVITY_MODE): void {
@@ -180,6 +194,78 @@ export class ProjectOverviewState {
       this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isUpdatingProject = false;
+    }
+  }
+
+  *fetchDependants(): GeneratorFn<void> {
+    const groupId =
+      this.editorStore.projectConfigurationEditorState.projectConfiguration
+        ?.groupId;
+    const artifactId =
+      this.editorStore.projectConfigurationEditorState.projectConfiguration
+        ?.artifactId;
+    const version = this.editorStore.sdlcState.projectVersions[0]?.id.id;
+
+    if (!groupId || !artifactId || !version) {
+      return;
+    }
+
+    try {
+      this.projectDependantEditorState.fetchingDependantInfoState.inProgress();
+      const data =
+        yield this.editorStore.depotServerClient.getIndexedDependantProjects(
+          groupId,
+          artifactId,
+          version,
+        );
+      const fetchedDependants = (data as ProjectVersionPlatformDependency[])
+        .sort(
+          (
+            a: { groupId: string; artifactId: string },
+            b: { groupId: string; artifactId: string },
+          ) => (a.groupId + a.artifactId > b.groupId + b.artifactId ? 1 : -1),
+        )
+        .sort((a: { versionId: string }, b: { versionId: string }) =>
+          compareSemVerVersions(a.versionId, b.versionId) > 0 ? 1 : -1,
+        )
+        .filter(
+          (filteredDependant: ProjectVersionPlatformDependency) =>
+            filteredDependant.versionId !== 'master-SNAPSHOT',
+        );
+
+      const uniqueProjects = [
+        ...new Map(
+          fetchedDependants.map((item: ProjectVersionPlatformDependency) => [
+            `${item.groupId}:${item.artifactId}`,
+            item,
+          ]),
+        ).values(),
+      ];
+
+      this.projectDependantEditorState.setDependants(uniqueProjects);
+      this.projectDependantEditorState.dependants?.map(
+        async (dependant: ProjectVersionPlatformDependency): Promise<void> => {
+          try {
+            const project = ProjectData.serialization.fromJson(
+              await this.editorStore.depotServerClient.getProject(
+                dependant.groupId,
+                dependant.artifactId,
+              ),
+            );
+            dependant.projectId = project.projectId;
+          } catch (error) {
+            assertErrorThrown(error);
+          }
+        },
+      );
+      this.projectDependantEditorState.fetchingDependantInfoState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.projectDependantEditorState.fetchingDependantInfoState.fail();
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+        error,
+      );
     }
   }
 

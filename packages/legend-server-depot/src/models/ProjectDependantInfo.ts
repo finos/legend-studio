@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-import { clsx } from 'clsx';
+export type PlatformsVersion = {
+  propertyName: string;
+  value: string;
+  projectVersionId: string;
+};
 
-export const Badge: React.FC<{
-  title: string;
-  tooltip?: string;
-  className?: string;
-}> = (props) => {
-  const { title, className, tooltip } = props;
-  return (
-    <div className={clsx('badge', className)} title={tooltip}>
-      {title.toLowerCase()}
-    </div>
-  );
+export type ProjectVersionPlatformDependency = {
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+  platformsVersionSpecific?: string[] | undefined;
+  platformsVersion: PlatformsVersion[] | undefined;
+  dependency: {
+    groupId: string;
+    artifactid: string;
+    versionId: string;
+  };
+  projectId?: string | undefined;
 };
