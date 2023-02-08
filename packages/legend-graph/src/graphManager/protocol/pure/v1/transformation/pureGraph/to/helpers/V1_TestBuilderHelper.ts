@@ -92,32 +92,35 @@ export const V1_buildTestAssertion = (
   } else if (value instanceof V1_EqualToTDS) {
     return buildEqualToTDS(value, parentTest, context);
   }
-  const extraTestAssertionBuilder = context.extensions.plugins.flatMap(
+  const extraTestAssertionBuilders = context.extensions.plugins.flatMap(
     (plugin) =>
       (
         plugin as Testable_PureProtocolProcessorPlugin_Extension
       ).V1_getExtraTestAssertionBuilders?.() ?? [],
   );
-  for (const builder of extraTestAssertionBuilder) {
+  for (const builder of extraTestAssertionBuilders) {
     const metamodel = builder(value, parentTest, context);
     if (metamodel) {
       return metamodel;
     }
   }
-  throw new UnsupportedOperationError(`Can't build test assertion`, value);
+  throw new UnsupportedOperationError(
+    `Can't build test assertion: no compatible builder available from plugins`,
+    value,
+  );
 };
 
 export const V1_buildAtomicTest = (
   value: V1_AtomicTest,
   context: V1_GraphBuilderContext,
 ): AtomicTest => {
-  const extraAtomicTestBuilder = context.extensions.plugins.flatMap(
+  const extraAtomicTestBuilders = context.extensions.plugins.flatMap(
     (plugin) =>
       (
         plugin as Testable_PureProtocolProcessorPlugin_Extension
       ).V1_getExtraAtomicTestBuilders?.() ?? [],
   );
-  for (const builder of extraAtomicTestBuilder) {
+  for (const builder of extraAtomicTestBuilders) {
     const metamodel = builder(value, context);
     if (metamodel) {
       return metamodel;

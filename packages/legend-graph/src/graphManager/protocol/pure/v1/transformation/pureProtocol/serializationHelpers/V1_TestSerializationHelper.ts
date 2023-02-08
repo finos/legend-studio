@@ -144,7 +144,7 @@ const V1_serializeAssertionStatus = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't serialize assertion status`,
+    `Can't serialize assertion status: no compatible serializer available from the plugins`,
     protocol,
   );
 };
@@ -174,7 +174,7 @@ const V1_deserializeAssertionStatus = (
         }
       }
       throw new UnsupportedOperationError(
-        `Can't deserialize assertion status of type '${json._type}'`,
+        `Can't deserialize assertion status of type '${json._type}': no compatible deserializer available from the plugins`,
       );
     }
   }
@@ -340,7 +340,7 @@ export const V1_serializeTestAssertion = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't serialize test assertion`,
+    `Can't serialize test assertion: no compatible serializer available from the plugins`,
     protocol,
   );
 };
@@ -370,7 +370,7 @@ export const V1_deserializeTestAssertion = (
         }
       }
       throw new UnsupportedOperationError(
-        `Can't deserialize test assertion of type '${json._type}'`,
+        `Can't deserialize test assertion of type '${json._type}': no compatible deserializer available from the plugins`,
       );
     }
   }

@@ -121,7 +121,10 @@ export const V1_transformTestAssertion = (
     }
   }
 
-  throw new UnsupportedOperationError(`Can't transform test assertion`, value);
+  throw new UnsupportedOperationError(
+    `Can't transform test assertion: no compatible transformer available from plugins`,
+    value,
+  );
 };
 
 export const V1_transformTestSuite = (

@@ -59,7 +59,7 @@ export interface Testable_PureGraphManagerPlugin_Extension
   getExtraAtomicTestObservers?(): AtomicTestObserver[];
 
   /**
-   * Get the list of atomic test observers.
+   * Get the list of test assertion observers.
    */
   getExtraTestAssertionObservers?(): TestAssertionObserver[];
 }
