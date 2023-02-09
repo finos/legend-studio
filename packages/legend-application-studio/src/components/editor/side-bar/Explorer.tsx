@@ -113,43 +113,55 @@ const ElementRenamer = observer(() => {
       ? getFunctionNameWithPath(element)
       : element?.path) ?? '',
   );
+  const [canRenameElement, setCanRenameElement] = useState(false);
+  const [
+    elementRenameValidationErrorMessage,
+    setElementRenameValidationErrorMessage,
+  ] = useState('');
   const pathInputRef = useRef<HTMLInputElement>(null);
   const changePath: React.ChangeEventHandler<HTMLInputElement> = (
     event,
-  ): void => setPath(event.target.value);
+  ): void => {
+    const currentValue = event.target.value;
+    setPath(currentValue);
+    const isElementPathNonEmpty = currentValue !== '';
+    const isNotTopLevelElement =
+      element instanceof Package ||
+      currentValue.includes(ELEMENT_PATH_DELIMITER);
+    const isValidElementPath =
+      (element instanceof Package && isValidPath(currentValue)) ||
+      isValidFullPath(currentValue);
+    let existingElement =
+      editorStore.graphManagerState.graph.getNullableElement(
+        currentValue,
+        true,
+      );
+    existingElement =
+      existingElement instanceof Package
+        ? isMainGraphElement(existingElement)
+          ? existingElement
+          : undefined
+        : existingElement;
+    const isElementUnique = !existingElement || existingElement === element;
+    const errorMessage = !isElementPathNonEmpty
+      ? `Element path cannot be empty`
+      : !isNotTopLevelElement
+      ? `Creating top level element is not allowed`
+      : !isValidElementPath
+      ? `Element path is not valid`
+      : !isElementUnique
+      ? `Element of the same path already existed`
+      : '';
+    setElementRenameValidationErrorMessage(errorMessage);
+    setCanRenameElement(
+      isElementPathNonEmpty &&
+        isNotTopLevelElement &&
+        isValidElementPath &&
+        isElementUnique,
+    );
+  };
 
-  const isElementPathNonEmpty = path !== '';
-  const isNotTopLevelElement =
-    element instanceof Package || path.includes(ELEMENT_PATH_DELIMITER);
-  const isValidElementPath =
-    (element instanceof Package && isValidPath(path)) || isValidFullPath(path);
-  let existingElement = editorStore.graphManagerState.graph.getNullableElement(
-    path,
-    true,
-  );
-  existingElement =
-    existingElement instanceof Package
-      ? isMainGraphElement(existingElement)
-        ? existingElement
-        : undefined
-      : existingElement;
-  const isElementUnique = !existingElement || existingElement === element;
-  const elementRenameValidationErrorMessage = !isElementPathNonEmpty
-    ? `Element path cannot be empty`
-    : !isNotTopLevelElement
-    ? `Creating top level element is not allowed`
-    : !isValidElementPath
-    ? `Element path is not valid`
-    : !isElementUnique
-    ? `Element of the same path already existed`
-    : undefined;
-  const canRenameElement =
-    isElementPathNonEmpty &&
-    isNotTopLevelElement &&
-    isValidElementPath &&
-    isElementUnique;
-
-  const close = (event: React.MouseEvent<HTMLButtonElement>): void => {
+  const rename = (event: React.MouseEvent<HTMLButtonElement>): void => {
     event.preventDefault();
     if (element && canRenameElement) {
       explorerTreeState.setElementToRename(undefined);
@@ -160,11 +172,19 @@ const ElementRenamer = observer(() => {
             ? path + getFunctionSignature(element)
             : path,
         ),
-      ).catch(applicationStore.alertUnhandledError);
+      )
+        .then(() => {
+          setCanRenameElement(false);
+          setElementRenameValidationErrorMessage('');
+        })
+        .catch(applicationStore.alertUnhandledError);
     }
   };
-
-  const abort = (): void => explorerTreeState.setElementToRename(undefined);
+  const abort = (): void => {
+    setCanRenameElement(false);
+    setElementRenameValidationErrorMessage('');
+    explorerTreeState.setElementToRename(undefined);
+  };
   const onEnter = (): void => pathInputRef.current?.focus();
 
   useEffect(() => {
@@ -188,6 +208,7 @@ const ElementRenamer = observer(() => {
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
       <form className="modal modal--dark search-modal explorer__element-renamer">
+        <div className="modal__title">Rename Element</div>
         <div className="input-group">
           <input
             className="input-group__input input--dark explorer__element-renamer__input"
@@ -202,11 +223,18 @@ const ElementRenamer = observer(() => {
             </div>
           )}
         </div>
-        <button
-          type="submit"
-          className="explorer__element-renamer__close-btn"
-          onClick={close}
-        />
+        <div className="search-modal__actions">
+          <button type="button" className="btn btn--dark" onClick={abort}>
+            Cancel
+          </button>
+          <button
+            className="btn btn--dark"
+            disabled={!canRenameElement}
+            onClick={rename}
+          >
+            Rename
+          </button>
+        </div>
       </form>
     </Dialog>
   );
