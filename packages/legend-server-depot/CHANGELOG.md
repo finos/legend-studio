@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 4.3.0
+
+### Minor Changes
+
+- [#1876](https://github.com/finos/legend-studio/pull/1876) [`27aec4ed0`](https://github.com/finos/legend-studio/commit/27aec4ed06e99701c5b4e080312417af4d2b8899) ([@xannem](https://github.com/xannem)) - Add project dependants tab for project config
+
 ## 4.2.9
 
 ## 4.2.8

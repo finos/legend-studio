@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 8.38.0
+
+### Patch Changes
+
+- [#1882](https://github.com/finos/legend-studio/pull/1882) [`87c71c559`](https://github.com/finos/legend-studio/commit/87c71c5592e4d1cbcc04ef9d915d7ac2f072ad1f) ([@xannem](https://github.com/xannem)) - Styling feedbacks for query upon closing and running.
+
 ## 8.37.0
 
 ## 8.36.0

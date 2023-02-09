@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 0.6.23
+
+### Patch Changes
+
+- [#1885](https://github.com/finos/legend-studio/pull/1885) [`652450d2c`](https://github.com/finos/legend-studio/commit/652450d2c4ca38e4c20f037fcbf989c0660993d0) ([@gayathrir11](https://github.com/gayathrir11)) - Fix showing preview data for milestoned proeprties.
+
+- [#1882](https://github.com/finos/legend-studio/pull/1882) [`87c71c559`](https://github.com/finos/legend-studio/commit/87c71c5592e4d1cbcc04ef9d915d7ac2f072ad1f) ([@xannem](https://github.com/xannem)) - Styling feedbacks for query upon closing and running.
+
 ## 0.6.22
 
 ## 0.6.21
