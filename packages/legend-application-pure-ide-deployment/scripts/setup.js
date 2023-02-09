@@ -52,6 +52,29 @@ const setup = (outputDir) => {
           url: 'http://localhost:9200',
           dynamic: argv['use-dynamic-pure-server'] ? true : undefined,
         },
+        documentation: {
+          url: 'https://legend.finos.org',
+          registry: [
+            /**
+             * NOTE: the end-point must enable CORS and allow origin from everywhere (ideally)
+             * Or, we would need to use a CORS proxy. Note that we usually need to deploy these
+             * `cors-anywhere` has a nice live deployment which requires temporarily access
+             *
+             * See https://github.com/Rob--W/cors-anywhere
+             * See https://cors-anywhere.herokuapp.com/
+             * See https://gist.github.com/jimmywarting/ac1be6ea0297c16c477e17f8fbe51347
+             */
+            // { url: 'https://cors-anywhere.herokuapp.com/https://raw.githubusercontent.com/finos/legend/master/website/static/resource/studio/documentation/shared.json' },
+            /**
+             * Use this end-point when developing documentation locally
+             */
+            // { url: 'http://localhost:9999/documentation.json' },
+            {
+              url: 'https://legend.finos.org/resource/studio/documentation/pure-ide.json',
+              simple: true,
+            },
+          ],
+        },
       },
       undefined,
       2,
