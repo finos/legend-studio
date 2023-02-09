@@ -346,7 +346,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.setRuntimeValue(val);
   }
 
-  buildQuery(options?: { keepSourceInformation: boolean }): RawLambda {
+  buildQuery(options?: {
+    keepSourceInformation: boolean;
+    useAllVersionsForMilestoning?: boolean;
+  }): RawLambda {
     if (!this.isQuerySupported) {
       const parameters = this.parametersState.parameterStates.map((e) =>
         this.graphManagerState.graphManager.serializeValueSpecification(
@@ -361,6 +364,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     return buildRawLambdaFromLambdaFunction(
       buildLambdaFunction(this, {
         keepSourceInformation: Boolean(options?.keepSourceInformation),
+        useAllVersionsForMilestoning: Boolean(
+          options?.useAllVersionsForMilestoning,
+        ),
       }),
       this.graphManagerState,
     );
