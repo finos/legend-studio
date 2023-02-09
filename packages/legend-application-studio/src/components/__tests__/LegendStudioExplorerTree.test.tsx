@@ -83,5 +83,5 @@ test(integrationTest('Test Explorer tree context menu '), async () => {
   await act(async () => {
     fireEvent.click(getByText(renameDialog, 'Rename'));
   });
-  expect(projectExplorer.outerHTML).toContain('PersonRenamed');
+  expect(getByText(projectExplorer, 'PersonRenamed')).not.toBeNull();
 });
