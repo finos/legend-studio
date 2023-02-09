@@ -38,7 +38,6 @@ import {
   SNAPSHOT_VERSION_ALIAS,
   type ProjectVersionPlatformDependency,
 } from '@finos/legend-server-depot';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -63,8 +62,8 @@ const ProjectDependantEditor = observer(
       applicationStore.navigator.visitAddress(
         applicationStore.navigator.generateAddress(
           generateViewProjectByGAVRoute(
-            guaranteeNonNullable(dependency.groupId),
-            guaranteeNonNullable(dependency.artifactId),
+            dependency.groupId,
+            dependency.artifactId,
             dependency.versionId === MASTER_SNAPSHOT_ALIAS
               ? SNAPSHOT_VERSION_ALIAS
               : dependency.versionId,
