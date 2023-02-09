@@ -122,17 +122,18 @@ const ElementRenamer = observer(() => {
   const changePath: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ): void => {
-    setPath(event.target.value);
-    const isElementPathNonEmpty = event.target.value !== '';
+    const currentValue = event.target.value;
+    setPath(currentValue);
+    const isElementPathNonEmpty = currentValue !== '';
     const isNotTopLevelElement =
       element instanceof Package ||
-      event.target.value.includes(ELEMENT_PATH_DELIMITER);
+      currentValue.includes(ELEMENT_PATH_DELIMITER);
     const isValidElementPath =
-      (element instanceof Package && isValidPath(event.target.value)) ||
-      isValidFullPath(event.target.value);
+      (element instanceof Package && isValidPath(currentValue)) ||
+      isValidFullPath(currentValue);
     let existingElement =
       editorStore.graphManagerState.graph.getNullableElement(
-        event.target.value,
+        currentValue,
         true,
       );
     existingElement =
