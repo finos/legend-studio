@@ -40,7 +40,7 @@ import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import { ProjectDependantEditorState } from './ProjectDependantEditorState.js';
 import {
   ProjectData,
-  type ProjectVersionPlatformDependency,
+  ProjectVersionPlatformDependency,
 } from '@finos/legend-server-depot';
 import { compareSemVerVersions } from '@finos/legend-storage';
 
@@ -199,11 +199,11 @@ export class ProjectOverviewState {
 
   *fetchDependants(): GeneratorFn<void> {
     const groupId =
-      this.editorStore.projectConfigurationEditorState.projectConfiguration
-        ?.groupId;
+      this.editorStore.projectConfigurationEditorState
+        .currentProjectConfiguration.groupId;
     const artifactId =
-      this.editorStore.projectConfigurationEditorState.projectConfiguration
-        ?.artifactId;
+      this.editorStore.projectConfigurationEditorState
+        .currentProjectConfiguration.artifactId;
     const version = this.editorStore.sdlcState.projectVersions[0]?.id.id;
 
     if (!groupId || !artifactId || !version) {
@@ -212,13 +212,15 @@ export class ProjectOverviewState {
 
     try {
       this.projectDependantEditorState.fetchingDependantInfoState.inProgress();
-      const data =
-        yield this.editorStore.depotServerClient.getIndexedDependantProjects(
+
+      const fetchedDependants = (
+        (yield this.editorStore.depotServerClient.getIndexedDependantProjects(
           groupId,
           artifactId,
           version,
-        );
-      const fetchedDependants = (data as ProjectVersionPlatformDependency[])
+        )) as PlainObject<ProjectVersionPlatformDependency>[]
+      )
+        .map((v) => ProjectVersionPlatformDependency.serialization.fromJson(v))
         .sort(
           (
             a: { groupId: string; artifactId: string },

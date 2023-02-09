@@ -32,4 +32,4 @@ export * from './DepotEntityHelper.js';
 
 export * from './ProjectDependencyGraphReportHelper.js';
 
-export * from './models/ProjectDependantInfo.js';
+export * from './models/ProjectVersionPlatformDependency.js';

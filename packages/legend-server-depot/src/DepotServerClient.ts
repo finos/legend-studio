@@ -30,7 +30,7 @@ import {
 } from './models/ProjectVersionEntities.js';
 import type { StoredEntity } from './models/StoredEntity.js';
 import type { RawProjectDependencyReport } from './models/RawProjectDependencyReport.js';
-import type { ProjectVersionPlatformDependency } from './models/ProjectDependantInfo.js';
+import type { ProjectVersionPlatformDependency } from './models/ProjectVersionPlatformDependency.js';
 
 export interface DepotServerClientConfig {
   serverUrl: string;
@@ -158,13 +158,12 @@ export class DepotServerClient extends AbstractServerClient {
     groupId: string,
     artifactId: string,
     version: string,
-  ): Promise<PlainObject<ProjectVersionPlatformDependency>[]> {
+  ): Promise<PlainObject<ProjectVersionPlatformDependency>[] | undefined> {
     const dependants = await this.getDependantProjects(
       groupId,
       artifactId,
       version,
     );
-
     return dependants;
   }
 

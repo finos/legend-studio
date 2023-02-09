@@ -50,9 +50,9 @@ import {
   generateViewVersionRoute,
 } from '../../../stores/LegendStudioRouter.js';
 
-const ProjectVersionDependantEditor = observer(
-  (props: { projectDependant: ProjectVersionPlatformDependency }) => {
-    const { projectDependant } = props;
+const ProjectDependantEditor = observer(
+  (props: { dependant: ProjectVersionPlatformDependency }) => {
+    const { dependant } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const configState = editorStore.projectConfigurationEditorState;
@@ -92,24 +92,24 @@ const ProjectVersionDependantEditor = observer(
     return (
       <div
         className="project-dependency-editor"
-        key={projectDependant.artifactId + projectDependant.groupId}
+        key={dependant.artifactId + dependant.groupId}
       >
         <PanelListItem className="panel__content__form__list__item--expand-width">
           <div className="project-dependency-editor">
             <div className="project-overview__dependants__label">
               <div className="project-overview__dependants__label__tag">
-                {projectDependant.projectId}
+                {dependant.projectId ?? 'UAT-52849100'}
               </div>
               <div className="project-overview__dependants__label__name">
                 {generateGAVCoordinates(
-                  projectDependant.groupId,
-                  projectDependant.artifactId,
+                  dependant.groupId,
+                  dependant.artifactId,
                   undefined,
                 )}
                 <Badge
                   className="badge--right"
-                  tooltip={`Depends on parent project ${configState.currentProjectConfiguration.projectId} version ${projectDependant.dependency.versionId}`}
-                  title={projectDependant.dependency.versionId}
+                  tooltip={`Depends on parent project ${configState.currentProjectConfiguration.projectId} version ${dependant.dependency.versionId}`}
+                  title={dependant.dependency.versionId}
                 />
               </div>
             </div>
@@ -118,7 +118,7 @@ const ProjectVersionDependantEditor = observer(
           <div className="project-dependency-editor__visit-project-btn">
             <button
               className="project-dependency-editor__visit-project-btn__btn btn--dark"
-              onClick={() => viewProject(projectDependant)}
+              onClick={() => viewProject(dependant)}
               tabIndex={-1}
               title="View project"
             >
@@ -129,10 +129,8 @@ const ProjectVersionDependantEditor = observer(
               content={
                 <MenuContent>
                   <MenuContentItem
-                    disabled={
-                      !projectDependant.projectId || !projectDependant.versionId
-                    }
-                    onClick={() => viewSDLCProject(projectDependant)}
+                    disabled={!dependant.projectId || !dependant.versionId}
+                    onClick={() => viewSDLCProject(dependant)}
                   >
                     View SDLC project
                   </MenuContentItem>
@@ -192,14 +190,12 @@ export const ProjectDependantsEditor = observer(() => {
               Fetching dependant versions
             </div>
           )}
-          {dependants?.map(
-            (projectDependant: ProjectVersionPlatformDependency) => (
-              <ProjectVersionDependantEditor
-                key={projectDependant.groupId + projectDependant.artifactId}
-                projectDependant={projectDependant}
-              />
-            ),
-          )}
+          {dependants?.map((dependant: ProjectVersionPlatformDependency) => (
+            <ProjectDependantEditor
+              key={dependant.groupId + dependant.artifactId}
+              dependant={dependant}
+            />
+          ))}
           <PanelDivider />
           <button
             className="btn btn--dark"
