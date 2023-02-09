@@ -132,7 +132,7 @@ export class ServiceExecutionParameterState extends LambdaParametersState {
         flowResult(this.executionState.runQuery()).catch(
           this.executionState.editorStore.applicationStore.alertUnhandledError,
         ),
-      PARAMETER_SUBMIT_ACTION.EXECUTE,
+      PARAMETER_SUBMIT_ACTION.RUN,
     );
   }
 

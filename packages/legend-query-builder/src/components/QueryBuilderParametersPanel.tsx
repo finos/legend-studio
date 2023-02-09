@@ -28,6 +28,7 @@ import {
   ModalHeader,
   PanelFormTextField,
   InfoCircleIcon,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -207,9 +208,7 @@ const VariableExpressionEditor = observer(
                 Create
               </button>
             )}
-            <button className="btn modal__footer__close-btn" onClick={close}>
-              Close
-            </button>
+            <ModalFooterButton onClick={close} text="Close" />
           </ModalFooter>
         </Modal>
       </Dialog>

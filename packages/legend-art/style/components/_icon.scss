@@ -51,6 +51,6 @@
 }
 
 .loading-icon__container--spinning svg {
-  animation: spin 1s infinite ease;
+  animation: spin 0.7s infinite running;
   margin-right: 0.5rem;
 }

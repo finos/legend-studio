@@ -170,9 +170,7 @@ test(integrationTest('test query execution with parameters'), async () => {
       },
     ),
   );
-  await waitFor(() =>
-    fireEvent.click(getByText(parameterValueDialog, 'Execute')),
-  );
+  await waitFor(() => fireEvent.click(getByText(parameterValueDialog, 'Run')));
   await waitFor(() => findByText(queryBuilderResultPanel, 'Age'));
   expect(
     queryBuilderResultPanel.getElementsByClassName(

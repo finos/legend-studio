@@ -58,7 +58,7 @@ import {
 } from './ValueSpecificationModifierHelper.js';
 
 export enum PARAMETER_SUBMIT_ACTION {
-  EXECUTE = 'EXECUTE',
+  RUN = 'RUN',
   EXPORT = 'EXPORT',
 }
 

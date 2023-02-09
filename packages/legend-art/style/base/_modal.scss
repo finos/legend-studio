@@ -93,6 +93,18 @@
       border-radius: 0.2rem;
       color: var(--color-light-grey-50);
     }
+
+    .btn--light {
+      color: var(--color-dark-grey-100);
+      background: var(--color-light-grey-50);
+    }
+
+    &__status {
+      @include flexCenter;
+
+      margin-right: 1rem;
+      font-style: italic;
+    }
   }
 
   &__footer__close-btn {

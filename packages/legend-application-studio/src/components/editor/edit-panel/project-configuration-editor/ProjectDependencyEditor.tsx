@@ -45,6 +45,7 @@ import {
   BlankPanelContent,
   VersionsIcon,
   RepoIcon,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import {
   MASTER_SNAPSHOT_ALIAS,
@@ -735,12 +736,7 @@ const ProjectDependencyReportModal = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn modal__footer__close-btn"
-              onClick={closeModal}
-            >
-              Close
-            </button>
+            <ModalFooterButton onClick={closeModal} text="Close" />
           </ModalFooter>
         </Modal>
       </Dialog>
