@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 5.0.24
+
+### Patch Changes
+
+- [#1882](https://github.com/finos/legend-studio/pull/1882) [`87c71c559`](https://github.com/finos/legend-studio/commit/87c71c5592e4d1cbcc04ef9d915d7ac2f072ad1f) ([@xannem](https://github.com/xannem)) - Minor modal and panel styling edits.
+
 ## 5.0.23
 
 ## 5.0.22

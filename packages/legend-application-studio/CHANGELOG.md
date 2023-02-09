@@ -1,5 +1,17 @@
 # @finos/legend-application-studio
 
+## 22.4.0
+
+### Minor Changes
+
+- [#1876](https://github.com/finos/legend-studio/pull/1876) [`27aec4ed0`](https://github.com/finos/legend-studio/commit/27aec4ed06e99701c5b4e080312417af4d2b8899) ([@xannem](https://github.com/xannem)) - Add project dependants tab for project config
+
+### Patch Changes
+
+- [#1882](https://github.com/finos/legend-studio/pull/1882) [`87c71c559`](https://github.com/finos/legend-studio/commit/87c71c5592e4d1cbcc04ef9d915d7ac2f072ad1f) ([@xannem](https://github.com/xannem)) - Minor modal and panel styling edits.
+
+- [#1847](https://github.com/finos/legend-studio/pull/1847) [`6d34797a0`](https://github.com/finos/legend-studio/commit/6d34797a02e86da3c3022e48ca3adb61da1463bd) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where packageableElement in the explorer tree can't be renamed ([#1846](https://github.com/finos/legend-studio/issues/1846)).
+
 ## 22.3.8
 
 ## 22.3.7
