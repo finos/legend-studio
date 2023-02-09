@@ -19,12 +19,13 @@ import { observer } from 'mobx-react-lite';
 import {
   clsx,
   Dialog,
-  LoadingIcon,
   Modal,
   ModalBody,
   ModalFooter,
+  ModalFooterStatus,
   ModalHeader,
   PanelLoadingIndicator,
+  RefreshIcon,
 } from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { QueryBuilderTextEditorMode } from '../stores/QueryBuilderTextEditorState.js';
@@ -115,6 +116,10 @@ export const QueryBuilderTextEditor = observer(
             </div>
           </ModalBody>
           <ModalFooter>
+            {queryBuilderState.textEditorState.closingQueryState
+              .isInProgress && (
+              <ModalFooterStatus>Closing Query...</ModalFooterStatus>
+            )}
             {mode === QueryBuilderTextEditorMode.TEXT && (
               <button
                 className="btn btn--dark btn--caution"
@@ -134,7 +139,10 @@ export const QueryBuilderTextEditor = observer(
               {queryBuilderState.textEditorState.closingQueryState
                 .isInProgress ? (
                 <>
-                  <LoadingIcon isLoading={true} /> Closing
+                  <div className="loading-icon__container--spinning">
+                    <RefreshIcon />
+                    Closing
+                  </div>
                 </>
               ) : (
                 <> Close </>

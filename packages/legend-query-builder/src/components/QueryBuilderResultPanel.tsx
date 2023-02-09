@@ -463,14 +463,16 @@ export const QueryBuilderResultPanel = observer(
     const isQueryValid =
       !queryBuilderState.isQuerySupported || !queryValidationIssues;
     const runQuery = (): void => {
+      resultState.pressedRunQuery.inProgress();
       if (queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
           (): Promise<void> =>
             flowResult(resultState.runQuery()).catch(
               applicationStore.alertUnhandledError,
             ),
-          PARAMETER_SUBMIT_ACTION.EXECUTE,
+          PARAMETER_SUBMIT_ACTION.RUN,
         );
+        resultState.pressedRunQuery.complete();
       } else {
         flowResult(resultState.runQuery()).catch(
           applicationStore.alertUnhandledError,
@@ -495,6 +497,11 @@ export const QueryBuilderResultPanel = observer(
       );
     };
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
+
+    const isRunQueryDisabled =
+      !isQueryValid ||
+      resultState.isGeneratingPlan ||
+      resultState.pressedRunQuery.isInProgress;
 
     const getResultSetDescription = (
       _executionResult: ExecutionResult,
@@ -526,6 +533,11 @@ export const QueryBuilderResultPanel = observer(
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">result</div>
+            {resultState.pressedRunQuery.isInProgress && (
+              <div className="panel__header__title__label__status">
+                Running Query...
+              </div>
+            )}
             <div className="query-builder__result__analytics">
               {resultDescription ?? ''}
             </div>
@@ -583,7 +595,7 @@ export const QueryBuilderResultPanel = observer(
                           .join('\n')}`
                       : undefined
                   }
-                  disabled={!isQueryValid}
+                  disabled={isRunQueryDisabled}
                 >
                   <PlayIcon className="query-builder__result__execute-btn__label__icon" />
                   <div className="query-builder__result__execute-btn__label__title">
@@ -592,18 +604,20 @@ export const QueryBuilderResultPanel = observer(
                 </button>
                 <DropdownMenu
                   className="query-builder__result__execute-btn__dropdown-btn"
-                  disabled={resultState.isGeneratingPlan || !isQueryValid}
+                  disabled={isRunQueryDisabled}
                   content={
                     <MenuContent>
                       <MenuContentItem
                         className="query-builder__result__execute-btn__option"
                         onClick={generatePlan}
+                        disabled={isRunQueryDisabled}
                       >
                         Generate Plan
                       </MenuContentItem>
                       <MenuContentItem
                         className="query-builder__result__execute-btn__option"
                         onClick={debugPlanGeneration}
+                        disabled={isRunQueryDisabled}
                       >
                         Debug
                       </MenuContentItem>

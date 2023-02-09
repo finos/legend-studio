@@ -32,13 +32,39 @@ export const PanelHeader: React.FC<{
   children?: React.ReactNode;
   className?: string;
 }> = (props) => {
-  const { title, children } = props;
+  const { title, children, className } = props;
   return (
-    <div className="panel__header">
+    <div className={clsx('panel__header', className)}>
       {title && (
         <div className="panel__header__title">
           <div className="panel__header__title__label">
             {title.toLowerCase()}
+          </div>
+        </div>
+      )}
+
+      {children}
+    </div>
+  );
+};
+
+export const PanelSideBarHeader: React.FC<{
+  title?: string;
+  children?: React.ReactNode;
+  className?: string;
+  darkMode?: boolean;
+}> = (props) => {
+  const { title, children, className, darkMode } = props;
+  return (
+    <div
+      className={clsx('panel__header side-bar__header', className, {
+        'panel__header--dark': darkMode,
+      })}
+    >
+      {title && (
+        <div className="panel__header__title">
+          <div className="panel__header__title__content side-bar__header__title__content">
+            {title.toUpperCase()}
           </div>
         </div>
       )}

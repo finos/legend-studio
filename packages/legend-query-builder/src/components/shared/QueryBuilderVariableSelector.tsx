@@ -133,7 +133,7 @@ export const VariableViewer = observer(
               <TimesIcon />
             </button>
             <VariableInfoTooltip variable={variable}>
-              <div className="value-spec-editor__variable__info">
+              <div className="query-builder__variables__variable__action value-spec-editor__variable__info">
                 <InfoCircleIcon />
               </div>
             </VariableInfoTooltip>

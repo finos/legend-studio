@@ -51,6 +51,7 @@ export class QueryBuilderResultState {
   readonly executionPlanState: ExecutionPlanState;
 
   previewLimit = DEFAULT_LIMIT;
+  pressedRunQuery = ActionState.create();
   isRunningQuery = false;
   isGeneratingPlan = false;
   executionResult?: ExecutionResult | undefined;
@@ -241,6 +242,7 @@ export class QueryBuilderResultState {
       this.queryBuilderState.applicationStore.notifyError(error);
     } finally {
       this.setIsRunningQuery(false);
+      this.pressedRunQuery.complete();
     }
   }
 
