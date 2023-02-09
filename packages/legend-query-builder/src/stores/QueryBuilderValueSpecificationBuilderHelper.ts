@@ -20,6 +20,7 @@ import {
   DerivedProperty,
   INTERNAL__PropagatedValue,
   matchFunctionName,
+  MILESTONING_VERSION_PROPERTY_SUFFIX,
   PropertyExplicitReference,
   SimpleFunctionExpression,
   VariableExpression,
@@ -92,7 +93,7 @@ export const buildPropertyExpressionChain = (
       // the property is milestoned. If that is the case we need to replace the
       // `property` with `propertyAllVersions`
       if (
-        options?.isBuildingExecutionQueryToPreviewData === true &&
+        options?.useAllVersionsForMilestoning &&
         currentExpression.func.value.genericType.value.rawType instanceof
           Class &&
         currentExpression.func.value._OWNER._generatedMilestonedProperties
@@ -101,7 +102,7 @@ export const buildPropertyExpressionChain = (
         const name = currentExpression.func.value.name;
         const property =
           currentExpression.func.value._OWNER._generatedMilestonedProperties.find(
-            (e) => e.name === `${name}AllVersions`,
+            (e) => e.name === `${name}${MILESTONING_VERSION_PROPERTY_SUFFIX}`,
           );
         if (property) {
           propertyExpression_setFunc(
@@ -191,6 +192,6 @@ export type LambdaFunctionBuilderOption = {
    * queryBuilderState will make the lambda function building process overrides `.all()` to `.allVersions()` if the Class
    * is milestoned and `property` to `propertyAllVersions` if a property is milestoned.
    */
-  isBuildingExecutionQueryToPreviewData?: boolean | undefined;
+  useAllVersionsForMilestoning?: boolean | undefined;
   keepSourceInformation?: boolean | undefined;
 };

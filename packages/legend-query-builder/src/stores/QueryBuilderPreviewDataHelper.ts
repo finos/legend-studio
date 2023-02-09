@@ -142,7 +142,7 @@ export const buildNumericPreviewDataQuery = (
   });
 
   return builderState.resultState.buildExecutionRawLambda({
-    isBuildingExecutionQueryToPreviewData: true,
+    useAllVersionsForMilestoning: true,
   });
 };
 
@@ -201,6 +201,6 @@ export const buildNonNumericPreviewDataQuery = (
     new SortColumnState(valueProjectionColState),
   ];
   return builderState.resultState.buildExecutionRawLambda({
-    isBuildingExecutionQueryToPreviewData: true,
+    useAllVersionsForMilestoning: true,
   });
 };

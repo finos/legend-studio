@@ -31,8 +31,6 @@ import {
   PrimitiveInstanceValue,
   PrimitiveType,
   SUPPORTED_FUNCTIONS,
-  BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
-  PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { buildFilterExpression } from './filter/QueryBuilderFilterValueSpecificationBuilder.js';
@@ -126,10 +124,7 @@ export const buildLambdaFunction = (
     queryBuilderState.graphManagerState.graph,
   );
 
-  if (
-    milestoningStereotype &&
-    options?.isBuildingExecutionQueryToPreviewData === true
-  ) {
+  if (milestoningStereotype && options?.useAllVersionsForMilestoning) {
     // build getAllVersions() when we preview data for milestoned classes
     // because if we use getAll() we need to pass in data to execute the query
     // but we don't give user that option in this flow.

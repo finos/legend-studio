@@ -116,13 +116,13 @@ export class QueryBuilderResultState {
   }
 
   buildExecutionRawLambda(
-    moreOptions?: LambdaFunctionBuilderOption,
+    executionOptions?: LambdaFunctionBuilderOption,
   ): RawLambda {
     let query: RawLambda;
     if (this.queryBuilderState.isQuerySupported) {
       const lambdaFunction = buildLambdaFunction(this.queryBuilderState, {
         isBuildingExecutionQuery: true,
-        ...moreOptions,
+        ...executionOptions,
       });
       query = buildRawLambdaFromLambdaFunction(
         lambdaFunction,
