@@ -181,6 +181,34 @@
     }
   }
 
+  &__dependants {
+    &__label {
+      display: flex;
+      white-space: nowrap;
+
+      &__tag {
+        @include flexCenter;
+
+        height: 1.8rem;
+        width: 8rem;
+        border-radius: 0.2rem;
+        font-size: 1rem;
+        margin-right: 1rem;
+        color: var(--color-dark-grey-250);
+        background: var(--color-light-grey-400);
+        font-weight: 500;
+      }
+
+      &__name {
+        @include flexVCenter;
+
+        white-space: nowrap;
+        height: 1.8rem;
+        color: var(--color-light-grey-200);
+      }
+    }
+  }
+
   &__release__editor {
     width: 100%;
     padding: 0.5rem;
