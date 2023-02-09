@@ -88,8 +88,9 @@ const theme: monacoEditorAPI.IStandaloneThemeData = {
 // Taken from `monaco-languages` configuration for Java in order to do propert brace matching
 // See https://github.com/microsoft/monaco-languages/blob/master/src/java/java.ts
 const configuration: monacoLanguagesAPI.LanguageConfiguration = {
-  // NOTE: Pure identifier includes $
-  wordPattern: /(-?\d*\.\d\w*)|([^`~!@#%^&*()\-=+[{\]}\\|;:'",.<>/?\s]+)/,
+  // NOTE: Pure identifier includes $ but not in the first position (as that is parsed as a variable)
+  wordPattern:
+    /(-?\d*\.\d\w*)|([^`~!@#%^$&*()\-=+[{\]}\\|;:'",.<>/?\s][^`~!@#%^&*()\-=+[{\]}\\|;:'",.<>/?\s]*)/,
   comments: {
     lineComment: '//',
     blockComment: ['/*', '*/'],
