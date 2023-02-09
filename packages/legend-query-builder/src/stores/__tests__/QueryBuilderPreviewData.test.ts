@@ -18,6 +18,9 @@ import { test, describe, expect } from '@jest/globals';
 import { guaranteeType, integrationTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import {
+  TEST_DATA__Milestoning_PreviewData,
+  TEST_DATA__Milestoning_PreviewData_entities,
+  TEST_DATA__Milestoning_PreviewData_modelCoverageAnalysisResult,
   TEST_DATA__PreviewData_entities,
   TEST_DATA__PreviewData_lambda_non_numeric,
   TEST_DATA__PreviewData_lambda_numeric,
@@ -73,6 +76,19 @@ const cases: PreviewDataTestCase[] = [
     'age',
     TEST_DATA__PreviewData_lambda_numeric,
     true,
+  ],
+  [
+    'Simple preview data on property whose class is milestoned',
+    {
+      entities: TEST_DATA__Milestoning_PreviewData_entities,
+      _class: 'model::Firm',
+      mapping: 'execution::RelationalMapping',
+      rawMappingModelCoverageAnalysisResult:
+        TEST_DATA__Milestoning_PreviewData_modelCoverageAnalysisResult,
+    },
+    'legalName',
+    TEST_DATA__Milestoning_PreviewData,
+    false,
   ],
 ];
 
