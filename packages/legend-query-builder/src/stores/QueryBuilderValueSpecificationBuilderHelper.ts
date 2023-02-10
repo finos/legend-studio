@@ -102,7 +102,9 @@ export const buildPropertyExpressionChain = (
         const name = currentExpression.func.value.name;
         const property =
           currentExpression.func.value._OWNER._generatedMilestonedProperties.find(
-            (e) => e.name === `${name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS}`,
+            (e) =>
+              e.name ===
+              `${name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS}`,
           );
         if (property) {
           propertyExpression_setFunc(
