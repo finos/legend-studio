@@ -229,7 +229,7 @@ const renderCheckEntitlementsEditor = (
         <ModalHeader title="Query Entitlements" />
         <ModalBody>
           <BlankPanelContent>
-            Check Entitlements are not supported
+            Check Entitlements is not supported yet
           </BlankPanelContent>
         </ModalBody>
         <ModalFooter>
@@ -503,7 +503,17 @@ export const QueryBuilder = observer(
                             Show Watermark
                           </MenuContentItemLabel>
                         </MenuContentItem>
-                        <MenuContentItem onClick={openCheckEntitlmentsEditor}>
+                        <MenuContentItem
+                          onClick={openCheckEntitlmentsEditor}
+                          disabled={
+                            !(
+                              queryBuilderState.fetchStructureState
+                                .implementation instanceof QueryBuilderTDSState
+                            ) ||
+                            queryBuilderState.fetchStructureState.implementation
+                              .projectionColumns.length === 0
+                          }
+                        >
                           <MenuContentItemIcon>{null}</MenuContentItemIcon>
                           <MenuContentItemLabel className="query-builder__sub-header__menu-content">
                             Check Entitlements
