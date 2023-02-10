@@ -137,6 +137,7 @@ import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
 import { LEGEND_STUDIO_COMMAND_KEY } from './LegendStudioCommand.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
+import type { ProjectViewerEditorMode } from './project-viewer/ProjectViewerEditorMode.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -300,9 +301,14 @@ export class EditorStore implements CommandRegistrar {
   get isInitialized(): boolean {
     if (this.isInViewerMode) {
       return (
-        Boolean(
+        (Boolean(
           this.sdlcState.currentProject && this.sdlcState.currentWorkspace,
-        ) && this.graphManagerState.systemBuildState.hasSucceeded
+        ) ||
+          Boolean(
+            (this.sdlcState.editorStore.editorMode as ProjectViewerEditorMode)
+              .viewerStore.projectGAVCoordinates,
+          )) &&
+        this.graphManagerState.systemBuildState.hasSucceeded
       );
     } else {
       return (
