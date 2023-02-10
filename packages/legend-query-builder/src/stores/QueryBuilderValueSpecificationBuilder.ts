@@ -132,7 +132,6 @@ export const buildLambdaFunction = (
       _class,
       Multiplicity.ONE,
     );
-
     lambdaFunction.expressionSequence[0] = getAllVersionsFunction;
   } else {
     // build getAll()
@@ -169,7 +168,10 @@ export const buildLambdaFunction = (
     ];
   }
   // build parameters
-  if (queryBuilderState.parametersState.parameterStates.length) {
+  if (
+    queryBuilderState.parametersState.parameterStates.length &&
+    !options?.useAllVersionsForMilestoning
+  ) {
     if (options?.isBuildingExecutionQuery) {
       buildExecutionQueryFromLambdaFunction(
         lambdaFunction,
