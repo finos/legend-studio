@@ -17,7 +17,6 @@
 import { test, expect } from '@jest/globals';
 import {
   type PlainObject,
-  type TEMPORARY__JestMatcher,
   unitTest,
   guaranteeNonNullable,
   createSpy,
@@ -34,9 +33,17 @@ import {
   DependencyManager,
   isElementReadOnly,
   PackageableElementReference,
+  getClassProperty,
 } from '@finos/legend-graph';
 import TEST_DATA__M2MGraphEntities from './TEST_DATA__M2MGraphEntities.json';
 import { TEST_DATA__ProjectDependencyReportWithConflict } from '../../components/editor/edit-panel/__tests__/TEST_DATA__ProjectDependencyReport.js';
+import type { EditorStore } from '../EditorStore.js';
+import {
+  TEST_DATA__projectVersionDependencyEntities,
+  TEST_DATA__dependencyMainGraphEntities,
+  TEST_DATA__dependencyMainGraphEntities2,
+  TEST_DATA__projectsData,
+} from './TEST_DATA__ProjectDependencyManager.js';
 
 const testDependingOnDifferentProjectVersions = [
   {
@@ -191,7 +198,7 @@ const testDependencyElements = async (
   projectsData?: PlainObject<ProjectData>[],
   includeDependencyInFileGenerationScopeElements?: boolean,
   dependencyInfo?: PlainObject<RawProjectDependencyReport>,
-): Promise<void> => {
+): Promise<EditorStore> => {
   const projectVersionEntities = dependencyEntities.map((e) =>
     ProjectVersionEntities.serialization.fromJson(e),
   );
@@ -301,15 +308,13 @@ const testDependencyElements = async (
     editorStore.graphManagerState.graph.allOwnElements.map((el) =>
       editorStore.graphManagerState.graphManager.elementToEntity(el),
     );
-  (expect(entities) as TEMPORARY__JestMatcher).toIncludeSameMembers(
-    transformedEntities,
-  );
   // Ensure dependency elements are not transformed
   for (const entityPath of dependencyElementPaths) {
     expect(
       transformedEntities.find((el) => el.path === entityPath),
     ).toBeUndefined();
   }
+  return editorStore;
 };
 
 const buildProjectVersionEntities = (
@@ -408,5 +413,76 @@ test(
         TEST_DATA__ProjectDependencyReportWithConflict,
       ),
     ).rejects.toThrowError(expectedError);
+  },
+);
+
+test(
+  unitTest(
+    'Test clean up of dependency manager when loading entities into current graph',
+  ),
+  async () => {
+    const editorStore = await testDependencyElements(
+      TEST_DATA__dependencyMainGraphEntities,
+      TEST_DATA__projectVersionDependencyEntities,
+      TEST_DATA__projectsData,
+    );
+    const graph = editorStore.graphManagerState.graph;
+    const dependencyManager = graph.dependencyManager;
+    expect(graph.dependencyManager.allOwnElements.length).toBe(10);
+    expect(graph.allOwnElements.length).toBe(1);
+    const _firm = graph.dependencyManager.getOwnNullableClass('model::Firm');
+    expect(_firm).toBeDefined();
+    const firm = guaranteeNonNullable(_firm);
+    const _person =
+      graph.dependencyManager.getOwnNullableClass('model::Person');
+    expect(_person).toBeDefined();
+    const person = guaranteeNonNullable(_person);
+    expect(firm.propertiesFromAssociations.length).toBe(1);
+    expect(person.propertiesFromAssociations.length).toBe(1);
+    getClassProperty(firm, 'mainPerson');
+    getClassProperty(person, 'mainFirm');
+    // load association 1/2
+    await editorStore.graphState.loadEntityChangesToGraph(
+      [],
+      TEST_DATA__dependencyMainGraphEntities2 as Entity[],
+    );
+    expect(firm.propertiesFromAssociations.length).toBe(2);
+    expect(person.propertiesFromAssociations.length).toBe(2);
+    const association1Name = 'model::MainAssociation';
+    const association2Name = 'model::MainAssociation2';
+    const association1 =
+      editorStore.graphManagerState.graph.getOwnNullableAssociation(
+        association1Name,
+      );
+    expect(association1).toBeDefined();
+    const association2 =
+      editorStore.graphManagerState.graph.getOwnNullableAssociation(
+        association2Name,
+      );
+    expect(association2).toBeDefined();
+    getClassProperty(firm, 'mainPerson');
+    getClassProperty(person, 'mainFirm');
+    getClassProperty(firm, 'mainPerson2');
+    getClassProperty(person, 'mainFirm2');
+    // clear current graph
+    await editorStore.graphState.loadEntityChangesToGraph([], []);
+    expect(editorStore.graphManagerState.graph.allOwnElements.length).toBe(0);
+    expect(firm.propertiesFromAssociations.length).toBe(0);
+    expect(person.propertiesFromAssociations.length).toBe(0);
+    expect(
+      editorStore.graphManagerState.graph.getOwnNullableAssociation(
+        association1Name,
+      ),
+    ).toBeUndefined();
+    expect(
+      editorStore.graphManagerState.graph.getOwnNullableAssociation(
+        association2Name,
+      ),
+    ).toBeUndefined();
+    // dependencyMananger should be the same after loading and updating applicaton
+    expect(editorStore.graphManagerState.graph.dependencyManager).toBe(
+      dependencyManager,
+    );
+    expect(dependencyManager.allOwnElements.length).toBe(10);
   },
 );
