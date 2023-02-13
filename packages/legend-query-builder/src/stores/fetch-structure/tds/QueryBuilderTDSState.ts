@@ -92,9 +92,9 @@ import type { LambdaFunctionBuilderOption } from '../../QueryBuilderValueSpecifi
 import { appendProjection } from './projection/QueryBuilderProjectionValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
-import { QueryBuilderWindowState } from './olapGroupBy/QueryBuilderWindowState.js';
-import type { QueryBuilderTDS_WindowOperator } from './olapGroupBy/operators/QueryBuilderTDS_WindowOperator.js';
-import { getQueryBuilderCoreWindowOperators } from './olapGroupBy/QueryBuilderWindowGroupByOperatorLoader.js';
+import { QueryBuilderWindowState } from './window/QueryBuilderWindowState.js';
+import type { QueryBuilderTDS_WindowOperator } from './window/operators/QueryBuilderTDS_WindowOperator.js';
+import { getQueryBuilderCoreWindowOperators } from './window/QueryBuilderWindowGroupByOperatorLoader.js';
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
 
 export class QueryBuilderTDSState

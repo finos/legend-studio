@@ -47,7 +47,7 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPropertyExpressionChain } from '../../../QueryBuilderValueSpecificationBuilderHelper.js';
-import { appendOLAPGroupByState } from '../olapGroupBy/QueryBuilderWindowValueSpecificationBuilder.js';
+import { appendOLAPGroupByState } from '../window/QueryBuilderWindowValueSpecificationBuilder.js';
 import { appendPostFilter } from '../post-filter/QueryBuilderPostFilterValueSpecificationBuilder.js';
 
 const buildSortExpression = (

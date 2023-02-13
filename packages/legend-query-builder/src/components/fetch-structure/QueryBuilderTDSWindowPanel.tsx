@@ -47,7 +47,7 @@ import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useCallback, useRef, useState } from 'react';
 import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
-import type { QueryBuilderTDS_WindowOperator } from '../../stores/fetch-structure/tds/olapGroupBy/operators/QueryBuilderTDS_WindowOperator.js';
+import type { QueryBuilderTDS_WindowOperator } from '../../stores/fetch-structure/tds/window/operators/QueryBuilderTDS_WindowOperator.js';
 import {
   type QueryBuilderWindowState,
   type QueryBuilderWindowDropTarget,
@@ -56,7 +56,7 @@ import {
   QueryBuilderTDS_WindowRankOperatorState,
   QueryBuilderTDS_WindowAggreationOperatorState,
   QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
-} from '../../stores/fetch-structure/tds/olapGroupBy/QueryBuilderWindowState.js';
+} from '../../stores/fetch-structure/tds/window/QueryBuilderWindowState.js';
 import { QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';

@@ -17,7 +17,7 @@
 import { Multiplicity } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { QueryBuilderAggregateColumnState } from '../../aggregation/QueryBuilderAggregationState.js';
-import { QueryBuilderWindowColumnState } from '../../olapGroupBy/QueryBuilderWindowState.js';
+import { QueryBuilderWindowColumnState } from '../../window/QueryBuilderWindowState.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderTDSColumnState } from '../../QueryBuilderTDSColumnState.js';
 

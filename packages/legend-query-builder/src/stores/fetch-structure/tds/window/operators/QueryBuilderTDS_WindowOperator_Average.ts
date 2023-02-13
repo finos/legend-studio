@@ -33,7 +33,9 @@ export class QueryBuilderTDS_WindowOperator_Average extends QueryBuilderTDS_Wind
   }
 
   get hashCode(): string {
-    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_AVERAGE]);
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_AVERAGE,
+    ]);
   }
 
   isCompatibleWithType(type: Type | undefined): boolean {
