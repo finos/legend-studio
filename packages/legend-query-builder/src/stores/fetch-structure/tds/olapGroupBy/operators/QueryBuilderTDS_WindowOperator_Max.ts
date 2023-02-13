@@ -14,32 +14,32 @@
  * limitations under the License.
  */
 
-import { PRIMITIVE_TYPE, type Type } from '@finos/legend-graph';
 import { hashArray } from '@finos/legend-shared';
+import { type Type, PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { QueryBuilderTDS_WindowOperator } from './QueryBuilderTDS_WindowOperator.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
-import { QueryBuilderTDS_OLAPOperator } from './QueryBuilderTDS_OLAPOperator.js';
 
-export class QueryBuilderTDS_OLAPRankOperator_AverageRank extends QueryBuilderTDS_OLAPOperator {
-  getLabel(): string {
-    return 'average rank';
+export class QueryBuilderTDS_WindowOperator_Max extends QueryBuilderTDS_WindowOperator {
+  override isColumnAggregator(): boolean {
+    return true;
   }
 
+  getLabel(): string {
+    return 'max';
+  }
   get pureFunc(): string {
-    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_AVERAGE_RANK;
+    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.MAX;
   }
 
   get hashCode(): string {
-    return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.TDS_OLAP_OPERATOR_DENSE_RANK,
-    ]);
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_MAX]);
   }
 
   isCompatibleWithType(type: Type | undefined): boolean {
     if (type) {
       return (
         [
-          PRIMITIVE_TYPE.STRING,
           PRIMITIVE_TYPE.BOOLEAN,
           PRIMITIVE_TYPE.NUMBER,
           PRIMITIVE_TYPE.INTEGER,

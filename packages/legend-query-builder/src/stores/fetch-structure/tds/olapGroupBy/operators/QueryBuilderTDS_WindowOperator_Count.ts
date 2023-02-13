@@ -16,30 +16,31 @@
 
 import { hashArray } from '@finos/legend-shared';
 import { type Type, PRIMITIVE_TYPE } from '@finos/legend-graph';
-import { QueryBuilderTDS_OLAPOperator } from './QueryBuilderTDS_OLAPOperator.js';
+import { QueryBuilderTDS_WindowOperator } from './QueryBuilderTDS_WindowOperator.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
 
-export class QueryBuilderTDS_OLAPOperator_Average extends QueryBuilderTDS_OLAPOperator {
+export class QueryBuilderTDS_WindowOperator_Count extends QueryBuilderTDS_WindowOperator {
   override isColumnAggregator(): boolean {
     return true;
   }
 
   getLabel(): string {
-    return 'avg';
+    return 'count';
   }
   get pureFunc(): string {
-    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.AVERAGE;
+    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.COUNT;
   }
 
   get hashCode(): string {
-    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.TDS_OLAP_OPERATOR_AVERAGE]);
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_COUNT]);
   }
 
   isCompatibleWithType(type: Type | undefined): boolean {
     if (type) {
       return (
         [
+          PRIMITIVE_TYPE.STRING,
           PRIMITIVE_TYPE.BOOLEAN,
           PRIMITIVE_TYPE.NUMBER,
           PRIMITIVE_TYPE.INTEGER,

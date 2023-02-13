@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-import { PRIMITIVE_TYPE, type Type } from '@finos/legend-graph';
 import { hashArray } from '@finos/legend-shared';
+import { type Type, PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { QueryBuilderTDS_WindowOperator } from './QueryBuilderTDS_WindowOperator.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
-import { QueryBuilderTDS_OLAPOperator } from './QueryBuilderTDS_OLAPOperator.js';
 
-export class QueryBuilderTDS_OLAPRankOperator_RowNumber extends QueryBuilderTDS_OLAPOperator {
-  getLabel(): string {
-    return 'row number';
+export class QueryBuilderTDS_WindowOperator_Sum extends QueryBuilderTDS_WindowOperator {
+  override isColumnAggregator(): boolean {
+    return true;
   }
 
+  getLabel(): string {
+    return 'sum';
+  }
   get pureFunc(): string {
-    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_ROW_NUMBER;
+    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUM;
   }
 
   get hashCode(): string {
-    return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.TDS_OLAP_OPERATOR_ROW_NUMBER,
-    ]);
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_SUM]);
   }
 
   isCompatibleWithType(type: Type | undefined): boolean {

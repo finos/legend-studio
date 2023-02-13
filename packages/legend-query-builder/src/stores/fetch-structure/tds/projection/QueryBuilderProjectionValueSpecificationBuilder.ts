@@ -47,7 +47,7 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPropertyExpressionChain } from '../../../QueryBuilderValueSpecificationBuilderHelper.js';
-import { appendOLAPGroupByState } from '../olapGroupBy/QueryBuilderOLAPGroupByValueSpecificationBuilder.js';
+import { appendOLAPGroupByState } from '../olapGroupBy/QueryBuilderWindowValueSpecificationBuilder.js';
 import { appendPostFilter } from '../post-filter/QueryBuilderPostFilterValueSpecificationBuilder.js';
 
 const buildSortExpression = (
@@ -370,7 +370,7 @@ export const appendProjection = (
   }
 
   // build olapGroupBy
-  appendOLAPGroupByState(tdsState.olapGroupByState, lambdaFunction);
+  appendOLAPGroupByState(tdsState.windowState, lambdaFunction);
 
   // build post-filter
   appendPostFilter(tdsState.postFilterState, lambdaFunction);
