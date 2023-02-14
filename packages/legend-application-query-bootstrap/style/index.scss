@@ -692,6 +692,10 @@
 
   // ------------------------------------ Projection Panel ---------------------------------------
 
+  .query-builder__projection__options__sort__sortby {
+    background: var(--color-legacy-light-blue-200);
+  }
+
   .query-builder__projection__toolbar {
     background: var(--color-legacy-light-grey-100);
     border-color: var(--color-legacy-light-grey-100);
