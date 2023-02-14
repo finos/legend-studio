@@ -145,7 +145,7 @@ const QueryBuilderConstantExpressionEditor = observer(
                 darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
                 formatOptionLabel={getPackageableElementOptionFormatter({
                   darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
-                  pureModel: queryBuilderState.graphManagerState.graph,
+                  graph: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </PanelFormSection>

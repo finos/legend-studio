@@ -165,7 +165,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     ): React.ReactNode => {
       if (option.value instanceof PackageableElement) {
         return getPackageableElementOptionFormatter({
-          pureModel: editorStore.graphManagerState.graph,
+          graph: editorStore.graphManagerState.graph,
         })(buildElementOption(option.value));
       }
       return <div className="mapping-source-option-label">{option.label}</div>;

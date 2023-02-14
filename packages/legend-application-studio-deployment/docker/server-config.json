@@ -32,7 +32,7 @@
     "/static"
   ],
   "localAssetPaths": {
-    "/studio/config.json": "/config/uiConfig.json"
+    "/studio/config.json": "/config/config.json"
   },
   "uiPath": "/studio",
   "sessionCookie": "LEGEND_STUDIO_JSESSIONID",

@@ -71,7 +71,7 @@ const MappingExecutionQueryBuilderSetupPanelContent = observer(
                 darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
                 formatOptionLabel={getPackageableElementOptionFormatter({
                   darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
-                  pureModel: editorStore.graphManagerState.graph,
+                  graph: editorStore.graphManagerState.graph,
                 })}
               />
             </div>

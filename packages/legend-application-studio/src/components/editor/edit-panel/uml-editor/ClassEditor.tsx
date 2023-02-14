@@ -323,7 +323,7 @@ const PropertyBasicEditor = observer(
                 placeholder="Choose a type..."
                 filterOption={filterOption}
                 formatOptionLabel={getPackageableElementOptionFormatter({
-                  pureModel: editorStore.graphManagerState.graph,
+                  graph: editorStore.graphManagerState.graph,
                 })}
               />
             )}
@@ -684,7 +684,7 @@ const DerivedPropertyBasicEditor = observer(
                   placeholder="Choose a type..."
                   filterOption={filterOption}
                   formatOptionLabel={getPackageableElementOptionFormatter({
-                    pureModel: editorStore.graphManagerState.graph,
+                    graph: editorStore.graphManagerState.graph,
                   })}
                 />
               )}
@@ -1091,7 +1091,7 @@ const SuperTypeEditor = observer(
               placeholder="Choose a class"
               filterOption={filterOption}
               formatOptionLabel={getPackageableElementOptionFormatter({
-                pureModel: editorStore.graphManagerState.graph,
+                graph: editorStore.graphManagerState.graph,
               })}
             />
             <button

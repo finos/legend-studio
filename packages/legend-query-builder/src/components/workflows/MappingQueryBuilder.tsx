@@ -151,7 +151,7 @@ const MappingQueryBuilderSetupPanelContent = observer(
                 filterOption={mappingFilterOption}
                 formatOptionLabel={getPackageableElementOptionFormatter({
                   darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
-                  pureModel: queryBuilderState.graphManagerState.graph,
+                  graph: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </div>

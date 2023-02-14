@@ -8,4 +8,4 @@ COPY dist/taxonomy /app/bin/webapp-content/web/taxonomy/
 #
 # See https://github.com/finos/legend-sdlc/pull/514
 CMD java -cp /app/bin/webapp-content:/app/bin/* \
-org.finos.legend.server.shared.staticserver.Server server /config/httpConfig.json
+org.finos.legend.server.shared.staticserver.Server server /config/server-config.json

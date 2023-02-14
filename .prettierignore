@@ -16,6 +16,5 @@
 # Exceptions
 /packages/legend-dev-utils/__tests__/fixtures/testTsConfigWithTrailingCommas.json
 
-# Config jsons with $ variable names 
-/packages/legend-application-studio-deployment/config/*.json
-/packages/legend-application-query-deployment/config/*.json
+# Template config JSON with variable ($)
+/packages/legend-application-*-deployment/docker/*.json

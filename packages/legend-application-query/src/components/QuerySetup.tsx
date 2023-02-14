@@ -138,6 +138,10 @@ const QuerySetupActionGroupConfigMenu = observer(() => {
   const toggleShowAllGroups = (): void =>
     setupStore.setShowAllGroups(!setupStore.showAllGroups);
   const reset = (): void => setupStore.resetConfig();
+  const showAll = (): void => {
+    setupStore.setShowAdvancedActions(true);
+    setupStore.setShowAllGroups(true);
+  };
 
   return (
     <MenuContent className="query-setup__landing-page__config-menu">
@@ -173,6 +177,7 @@ const QuerySetupActionGroupConfigMenu = observer(() => {
         </MenuContentItem>
       ))}
       <MenuContentDivider />
+      <MenuContentItem onClick={showAll}>Show All</MenuContentItem>
       <MenuContentItem onClick={reset} disabled={!setupStore.isCustomized}>
         Reset
       </MenuContentItem>
