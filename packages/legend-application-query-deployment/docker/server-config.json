@@ -32,7 +32,7 @@
     "/static"
   ],
   "localAssetPaths": {
-    "/query/config.json": "/config/uiConfig.json"
+    "/query/config.json": "/config/config.json"
   },
   "uiPath": "/query",
   "sessionCookie": "LEGEND_QUERY_JSESSIONID",
