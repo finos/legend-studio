@@ -39,6 +39,7 @@ import {
   useApplicationStore,
   buildElementOption,
   type PackageableElementOption,
+  getPackageableElementOptionFormatter,
 } from '@finos/legend-application';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
 import { CreateMappingQuerySetupStore } from '../stores/CreateMappingQuerySetupStore.js';
@@ -173,9 +174,6 @@ const CreateMappingQuerySetupContent = observer(() => {
         value: setupStore.currentMapping,
       }
     : null;
-  const mappingSelectorPlaceholder = mappingOptions.length
-    ? 'Choose a mapping'
-    : 'No mapping available';
   const onMappingOptionChange = (
     option: PackageableElementOption<Mapping> | null,
   ): void => {
@@ -311,10 +309,17 @@ const CreateMappingQuerySetupContent = observer(() => {
                     disabled={!mappingOptions.length}
                     onChange={onMappingOptionChange}
                     value={selectedMappingOption}
-                    placeholder={mappingSelectorPlaceholder}
+                    placeholder={
+                      mappingOptions.length
+                        ? 'Choose a mapping'
+                        : 'No mapping available'
+                    }
                     isClearable={true}
                     escapeClearsValue={true}
                     darkMode={true}
+                    formatOptionLabel={getPackageableElementOptionFormatter({
+                      darkMode: true,
+                    })}
                   />
                 </div>
                 <div className="query-setup__wizard__group">
@@ -333,6 +338,9 @@ const CreateMappingQuerySetupContent = observer(() => {
                     isClearable={true}
                     escapeClearsValue={true}
                     darkMode={true}
+                    formatOptionLabel={getPackageableElementOptionFormatter({
+                      darkMode: true,
+                    })}
                   />
                 </div>
               </>
