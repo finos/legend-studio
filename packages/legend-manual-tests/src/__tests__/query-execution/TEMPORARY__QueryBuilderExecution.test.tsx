@@ -107,8 +107,9 @@ test(integrationTest('test query execution with parameters'), async () => {
   expect(queryBuilderState.parametersState.parameterStates.length).toBe(
     expectedNumberOfParameter,
   );
-  queryBuilderState.parametersState.parameterStates.forEach(
-    (queryParamState) => {
+  await act(async () => {
+    for (const queryParamState of queryBuilderState.parametersState
+      .parameterStates) {
       const value = new PrimitiveInstanceValue(
         GenericTypeExplicitReference.create(
           new GenericType(PrimitiveType.INTEGER),
@@ -118,8 +119,8 @@ test(integrationTest('test query execution with parameters'), async () => {
       value.values = [20];
 
       queryParamState.setValue(value);
-    },
-  );
+    }
+  });
   const parameterValues = buildExecutionParameterValues(
     queryBuilderState.parametersState.parameterStates,
     queryBuilderState.graphManagerState,
