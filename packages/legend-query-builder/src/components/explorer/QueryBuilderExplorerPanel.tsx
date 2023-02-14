@@ -62,12 +62,16 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
   getQueryBuilderPropertyNodeData,
   getQueryBuilderSubTypeNodeData,
+  buildPropertyExpressionFromExplorerTreeNodeData,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
 import { useDrag } from 'react-dnd';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { flowResult } from 'mobx';
-import { prettyPropertyName } from '../../stores/QueryBuilderPropertyEditorState.js';
+import {
+  getPropertyChainName,
+  prettyPropertyName,
+} from '../../stores/QueryBuilderPropertyEditorState.js';
 import {
   type Type,
   type Multiplicity,
@@ -89,6 +93,8 @@ import { getClassPropertyIcon } from '../shared/ElementIconUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { filterByType, guaranteeNonNullable } from '@finos/legend-shared';
 import { QueryBuilderPropertySearchPanel } from './QueryBuilderPropertySearchPanel.js';
+import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 
 const checkForDeprecatedNode = (
   node: QueryBuilderExplorerTreeNodeData,
@@ -298,7 +304,36 @@ const QueryBuilderExplorerContextMenu = observer(
             (childNode) =>
               !(childNode.type instanceof Class) &&
               childNode.mappingData.mapped,
-          );
+          )
+          .filter((childNode) => {
+            const propertyExpression =
+              buildPropertyExpressionFromExplorerTreeNodeData(
+                childNode,
+                queryBuilderState.explorerState,
+              );
+            if (
+              queryBuilderState.fetchStructureState.implementation instanceof
+              QueryBuilderTDSState
+            ) {
+              const currentProjectColumns =
+                queryBuilderState.fetchStructureState.implementation.projectionColumns.map(
+                  (currCol) => {
+                    if (
+                      currCol instanceof QueryBuilderSimpleProjectionColumnState
+                    ) {
+                      return !(
+                        currCol.propertyExpressionState.path === childNode.id &&
+                        currCol.columnName ===
+                          getPropertyChainName(propertyExpression, true)
+                      );
+                    }
+                    return true;
+                  },
+                );
+              return currentProjectColumns.every((bool) => bool);
+            }
+            return true;
+          });
         nodesToAdd.forEach((nodeToAdd) =>
           queryBuilderState.fetchStructureState.fetchProperty(nodeToAdd),
         );

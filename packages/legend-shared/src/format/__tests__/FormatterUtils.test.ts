@@ -66,6 +66,15 @@ test(unitTest('Prettify CONST name'), () => {
   expect(prettyCONSTName('TOM_TOM')).toEqual('Tom Tom');
 });
 
+test(unitTest('Prettify CONST name with ID'), () => {
+  expect(prettyCONSTName('ContractID')).toEqual('Contract ID');
+  expect(prettyCONSTName('CONTRACTID')).toEqual('Contract ID');
+  expect(prettyCONSTName('ContractId')).toEqual('Contract ID');
+  expect(prettyCONSTName('ID')).toEqual('ID');
+  expect(prettyCONSTName('Id')).toEqual('ID');
+  expect(prettyCONSTName('Contractid')).toEqual('Contractid');
+});
+
 test(unitTest('Camel/Pascal case check'), () => {
   expect(isCamelCase('aSomething')).toBe(true);
   expect(isCamelCase('Something')).toBe(true);

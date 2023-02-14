@@ -56,6 +56,19 @@ export const TITLE_CASE_EXCEPTION_WORDS = [
   'up',
 ];
 
+export const prettyCONSTName = (value: string | undefined): string => {
+  if (!value) {
+    return '';
+  }
+  const containsId = value.slice(-2) === 'ID' || value.slice(-2) === 'Id';
+  const newValue = containsId ? value.slice(0, value.length - 2) : value;
+  const newName = toSentenceCase(newValue.toLowerCase())
+    .replace(/_(?:\w)/gu, (val) => val.toUpperCase())
+    .replace(/_/gu, ' ')
+    .trim();
+  return containsId ? `${newName} ID`.trim() : newName;
+};
+
 export const toTitleCase = (value: string | undefined): string =>
   (value ?? '')
     .trim()
@@ -69,12 +82,6 @@ export const toTitleCase = (value: string | undefined): string =>
     // always capitalize first and last word
     .replace(/^(?:\w+)\b/u, (val) => capitalize(val))
     .replace(/\b(?:\w+)$/u, (val) => capitalize(val));
-
-export const prettyCONSTName = (value: string | undefined): string =>
-  toSentenceCase((value ?? '').toLowerCase())
-    .replace(/_(?:\w)/gu, (val) => val.toUpperCase())
-    .replace(/_/gu, ' ')
-    .trim();
 
 export const isCamelCase = (value: string | undefined): boolean =>
   value !== undefined &&

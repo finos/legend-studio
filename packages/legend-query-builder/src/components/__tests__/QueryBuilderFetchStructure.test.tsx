@@ -446,6 +446,16 @@ test(
     expect(tdsStateOne.projectionColumns.length).toBe(3);
     expect(tdsStateOne.projectionColumns[2]?.columnName).toBe('Name');
 
+    //check that you do not add properties that already exist
+    fireEvent.click(getByText(explorerPanel, 'LegalEntity'));
+    await waitFor(() => getByText(explorerPanel, 'LegalEntity'));
+    const rootNodeElementTwo = getByText(explorerPanel, 'LegalEntity');
+    fireEvent.contextMenu(rootNodeElementTwo);
+    fireEvent.click(
+      renderResult.getByText('Add Properties to Fetch Structure'),
+    );
+    expect(tdsStateOne.projectionColumns.length).toBe(3);
+
     // simpleProjection with subType
     await act(async () => {
       queryBuilderState.initializeWithQuery(
