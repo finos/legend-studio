@@ -41,19 +41,37 @@ jobs:
             os: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.3.0
       - name: Get Yarn cache directory path
+        if: matrix.os != 'windows-latest'
         id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
       - name: Setup Yarn cache
-        uses: actions/cache@v3
+        if: matrix.os != 'windows-latest'
+        uses: actions/cache@v3.2.5
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
+          enableCrossOsArchive: true
+      # NOTE: this is required since Windows machine uses powershell (pwsh)
+      # See https://github.com/actions/cache/issues/988
+      - name: Get Yarn cache directory path (Windows)
+        if: matrix.os == 'windows-latest'
+        id: yarn-cache-dir-path-windows
+        run: echo "dir=$(yarn config get cacheFolder)" >> ${env:GITHUB_OUTPUT}
+      - name: Setup Yarn cache (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/cache@v3.2.5
+        id: yarn-cache-windows
+        with:
+          path: ${{ steps.yarn-cache-dir-path-windows.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+          enableCrossOsArchive: true
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: 16
       - name: Install dependencies
