@@ -200,13 +200,11 @@ const VariableExpressionEditor = observer(
           </ModalBody>
           <ModalFooter>
             {isCreating && (
-              <button
-                className="btn modal__footer__close-btn btn--dark"
+              <ModalFooterButton
+                text="Create"
+                inProgress={Boolean(validationMessage)}
                 onClick={onAction}
-                disabled={Boolean(validationMessage)}
-              >
-                Create
-              </button>
+              />
             )}
             <ModalFooterButton onClick={close} text="Close" />
           </ModalFooter>

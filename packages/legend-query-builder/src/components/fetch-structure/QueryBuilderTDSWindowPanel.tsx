@@ -42,6 +42,7 @@ import {
   Modal,
   ModalFooter,
   PanelFormSection,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -513,13 +514,9 @@ const QueryBuilderWindowColumnModalEditor = observer(
           </div>
           <ModalFooter>
             {createNewWindow ? (
-              <button className="btn modal__footer__close-btn" onClick={create}>
-                Create
-              </button>
+              <ModalFooterButton text="Create" onClick={create} />
             ) : (
-              <button className="btn modal__footer__close-btn" onClick={close}>
-                Close
-              </button>
+              <ModalFooterButton text="Close" onClick={close} />
             )}
           </ModalFooter>
         </Modal>

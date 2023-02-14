@@ -26,6 +26,7 @@ import {
   Dialog,
   disposeDiffEditor,
   useResizeDetector,
+  Button,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI } from 'monaco-editor';
@@ -195,9 +196,7 @@ export const QueryBuilderDiffViewPanel = observer(
               )}
             </div>
             <div className="query-builder__diff-panel__actions">
-              <button className="btn btn--dark" onClick={close}>
-                Close
-              </button>
+              <Button text="close" onClick={close} />
             </div>
           </div>
         </div>

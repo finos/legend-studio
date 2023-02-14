@@ -25,6 +25,7 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
@@ -338,12 +339,7 @@ export const QueryBuilderPropertyExpressionEditor = observer(
             </ModalBody>
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn modal__footer__close-btn"
-              onClick={handleClose}
-            >
-              Done
-            </button>
+            <ModalFooterButton text="Done" onClick={handleClose} />
           </ModalFooter>
         </Modal>
       </Dialog>
