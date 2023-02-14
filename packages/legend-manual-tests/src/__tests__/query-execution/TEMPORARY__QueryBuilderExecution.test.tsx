@@ -77,6 +77,7 @@ const ENGINE_SERVER_PORT = (engineConfig as any).server.connector // eslint-disa
   .port as number;
 const ENGINE_SERVER_URL = `http://localhost:${ENGINE_SERVER_PORT}/api`;
 
+// NOTE: this should be converted into an end-to-end test
 test(integrationTest('test query execution with parameters'), async () => {
   const {
     mappingPath,
@@ -108,13 +109,15 @@ test(integrationTest('test query execution with parameters'), async () => {
   );
   queryBuilderState.parametersState.parameterStates.forEach(
     (queryParamState) => {
-      queryParamState.value = new PrimitiveInstanceValue(
+      const value = new PrimitiveInstanceValue(
         GenericTypeExplicitReference.create(
           new GenericType(PrimitiveType.INTEGER),
         ),
       );
-      queryParamState.value.multiplicity = Multiplicity.ZERO_ONE;
-      (queryParamState.value as PrimitiveInstanceValue).values = [20];
+      value.multiplicity = Multiplicity.ZERO_ONE;
+      value.values = [20];
+
+      queryParamState.setValue(value);
     },
   );
   const parameterValues = buildExecutionParameterValues(
