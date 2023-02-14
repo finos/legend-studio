@@ -316,7 +316,7 @@ export const QueryBuilder = observer(
           queryBuilderState.fetchStructureState.implementation,
           QueryBuilderTDSState,
         );
-        tdsState.setShowOlapGroupByPanel(!tdsState.showOlapGroupByPanel);
+        tdsState.setShowWindowFuncPanel(!tdsState.showWindowFuncPanel);
       }
     };
     const showPostFetchStructurePanel =
@@ -455,7 +455,7 @@ export const QueryBuilder = observer(
                                 .implementation instanceof QueryBuilderTDSState
                             ) ||
                             queryBuilderState.fetchStructureState.implementation
-                              .olapGroupByState.olapColumns.length > 0
+                              .windowState.windowColumns.length > 0
                           }
                         >
                           <MenuContentItemIcon>
@@ -464,12 +464,12 @@ export const QueryBuilder = observer(
                               queryBuilderState.fetchStructureState
                                 .implementation,
                               QueryBuilderTDSState,
-                            ).showOlapGroupByPanel ? (
+                            ).showWindowFuncPanel ? (
                               <CheckIcon />
                             ) : null}
                           </MenuContentItemIcon>
                           <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Show OLAP GroupBy
+                            Show Window Funcs
                           </MenuContentItemLabel>
                         </MenuContentItem>
                         <MenuContentItem

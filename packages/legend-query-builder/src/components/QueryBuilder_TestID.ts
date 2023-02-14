@@ -23,7 +23,7 @@ export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER_GRAPH_FETCH = 'query__builder__graph__fetch',
   QUERY_BUILDER_FILTER = 'query__builder__filter',
   QUERY_BUILDER_POST_FILTER = 'query__builder__post-filter',
-  QUERY_BUILDER_OLAP_GROUPBY = 'query__builder__olap-groupby',
+  QUERY_BUILDER_WINDOW_GROUPBY = 'query__builder__window',
   QUERY_BUILDER_EXPLORER = 'query__builder__explorer',
   QUERY_BUILDER_PROPERTY_SEARCH_PANEL = 'query__builder__property__search__panel',
   QUERY_BUILDER_RESULT_PANEL = 'query__builder__result__panel',
