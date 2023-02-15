@@ -2544,8 +2544,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       )
       .flatMap((getter) => getter(graph, graphData));
     prunedGraphData.elements = uniq(
-      this.getFullGraphModelData(graph)
-        .elements.filter(
+      graphData.elements
+        .filter(
           (element) =>
             element instanceof V1_Class ||
             element instanceof V1_Enumeration ||
