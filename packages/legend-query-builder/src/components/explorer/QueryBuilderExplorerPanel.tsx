@@ -316,21 +316,21 @@ const QueryBuilderExplorerContextMenu = observer(
               QueryBuilderTDSState
             ) {
               const currentProjectColumns =
-                queryBuilderState.fetchStructureState.implementation.projectionColumns.map(
+                queryBuilderState.fetchStructureState.implementation.projectionColumns.find(
                   (currCol) => {
                     if (
                       currCol instanceof QueryBuilderSimpleProjectionColumnState
                     ) {
-                      return !(
+                      return (
                         currCol.propertyExpressionState.path === childNode.id &&
                         currCol.columnName ===
                           getPropertyChainName(propertyExpression, true)
                       );
                     }
-                    return true;
+                    return undefined;
                   },
                 );
-              return currentProjectColumns.every((bool) => bool);
+              return currentProjectColumns === undefined;
             }
             return true;
           });

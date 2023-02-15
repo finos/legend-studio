@@ -56,11 +56,14 @@ export const TITLE_CASE_EXCEPTION_WORDS = [
   'up',
 ];
 
+export const CONST_EXCEPTION_ID = ['Id', 'ID'];
+
 export const prettyCONSTName = (value: string | undefined): string => {
   if (!value) {
     return '';
   }
-  const containsId = value.slice(-2) === 'ID' || value.slice(-2) === 'Id';
+  const valueSuffix = value.slice(-2);
+  const containsId = CONST_EXCEPTION_ID.includes(valueSuffix);
   const newValue = containsId ? value.slice(0, value.length - 2) : value;
   const newName = toSentenceCase(newValue.toLowerCase())
     .replace(/_(?:\w)/gu, (val) => val.toUpperCase())
