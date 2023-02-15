@@ -48,7 +48,7 @@ createModelSchema(FileDirectoryAttribute, {
 class FolderDirectoryAttribute extends DirectoryAttribute {
   declare id: string;
   declare path: string;
-  repo?: string; // boolean - used for change detection
+  repo?: boolean;
 }
 
 createModelSchema(FolderDirectoryAttribute, {
@@ -71,6 +71,13 @@ export class DirectoryNode {
 
   get isFileNode(): boolean {
     return this.li_attr instanceof FileDirectoryAttribute;
+  }
+
+  get isRepoNode(): boolean {
+    return (
+      this.li_attr instanceof FolderDirectoryAttribute &&
+      Boolean(this.li_attr.repo)
+    );
   }
 
   getNodeAttribute<T extends DirectoryAttribute>(clazz: Clazz<T>): T {
