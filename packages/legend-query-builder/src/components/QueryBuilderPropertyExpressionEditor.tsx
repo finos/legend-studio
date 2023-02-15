@@ -334,6 +334,9 @@ export const QueryBuilderPropertyExpressionEditor = observer(
             <ModalBody className="query-builder__variables__modal__body">
               <VariableSelector
                 queryBuilderState={propertyExpressionState.queryBuilderState}
+                derivedProperties={
+                  propertyExpressionState.derivedPropertyExpressionStates
+                }
               />
             </ModalBody>
           </ModalBody>

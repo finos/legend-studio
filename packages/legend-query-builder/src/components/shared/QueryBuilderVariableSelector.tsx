@@ -23,12 +23,15 @@ import {
   TimesIcon,
   useDragPreviewLayer,
 } from '@finos/legend-art';
-import type {
-  ValueSpecification,
-  VariableExpression,
+import {
+  SimpleFunctionExpression,
+  SUPPORTED_FUNCTIONS,
+  type ValueSpecification,
+  type VariableExpression,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useDrag } from 'react-dnd';
+import type { QueryBuilderDerivedPropertyExpressionState } from '../../stores/QueryBuilderPropertyEditorState.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { getValueSpecificationStringValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 import {
@@ -36,6 +39,7 @@ import {
   QUERY_BUILDER_VARIABLE_DND_TYPE,
   VariableInfoTooltip,
 } from './BasicValueSpecificationEditor.js';
+import { buildCustomDateOption } from './CustomDatePicker.js';
 
 export const VariableViewer = observer(
   (props: {
@@ -50,8 +54,19 @@ export const VariableViewer = observer(
   }) => {
     const { variable, constantValue, actions, isReadOnly, queryBuilderState } =
       props;
+
+    const getNameOfValue = (value: ValueSpecification): string | undefined => {
+      if (
+        value instanceof SimpleFunctionExpression &&
+        value.functionName === SUPPORTED_FUNCTIONS.ADJUST
+      ) {
+        return buildCustomDateOption(value).generateDisplayLabel();
+      }
+      return getValueSpecificationStringValue(value);
+    };
+
     const valueString = constantValue
-      ? getValueSpecificationStringValue(constantValue)
+      ? getNameOfValue(constantValue)
       : undefined;
     const name = variable.name;
     const variableType = variable.genericType?.value.rawType;
@@ -148,17 +163,29 @@ export const VariableSelector = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
     filterBy?: (variableExpression: VariableExpression) => boolean;
+    derivedProperties?:
+      | QueryBuilderDerivedPropertyExpressionState[]
+      | undefined;
   }) => {
-    const { queryBuilderState, filterBy } = props;
+    const { queryBuilderState, filterBy, derivedProperties } = props;
     const isReadOnly = !queryBuilderState.isQuerySupported;
     const filteredParameterStates =
-      queryBuilderState.parametersState.parameterStates.filter((p) =>
-        filterBy ? filterBy(p.parameter) : true,
-      );
+      queryBuilderState.parametersState.parameterStates.filter((p) => {
+        if (derivedProperties && p.variableType) {
+          const allowedTypes = derivedProperties.map(
+            (dp) => dp.derivedProperty.genericType.value.rawType,
+          );
+          if (!allowedTypes.includes(p.variableType)) {
+            return false;
+          }
+        }
+        return filterBy ? filterBy(p.parameter) : true;
+      });
     const filteredConstantState =
       queryBuilderState.constantState.constants.filter((c) =>
         filterBy ? filterBy(c.variable) : true,
       );
+
     return (
       <>
         <PanelFormListItems title="Available parameters">

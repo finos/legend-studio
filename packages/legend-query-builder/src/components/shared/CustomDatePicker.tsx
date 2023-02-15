@@ -594,7 +594,7 @@ const buildCustomDateOptionReferenceMomentValue = (
  * Build CustomDateOption based on the pure date adjust() function.
  * Transform CustomDateOption if it matches any preserved custom adjust date functions. e.g. One Month Ago..
  */
-const buildCustomDateOption = (
+export const buildCustomDateOption = (
   valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
 ): CustomDateOption => {
   if (

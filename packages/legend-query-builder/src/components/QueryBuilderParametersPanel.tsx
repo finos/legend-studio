@@ -71,12 +71,16 @@ const VariableExpressionEditor = observer(
     const { queryBuilderState, lambdaParameterState } = props;
     const applicationStore = useApplicationStore();
     const queryParametersState = queryBuilderState.parametersState;
+    const allVariableNames = queryBuilderState.allVariableNames;
     const isCreating =
       !queryParametersState.parameterStates.includes(lambdaParameterState);
     const varState = lambdaParameterState.parameter;
     const multiplity = varState.multiplicity;
     const validationMessage = !varState.name
       ? `Parameter name can't be empty`
+      : allVariableNames.filter((e) => e === varState.name).length >
+        (isCreating ? 0 : 1)
+      ? 'Parameter Name Already Exists'
       : (isCreating &&
           queryParametersState.parameterStates.find(
             (p) => p.parameter.name === varState.name,
