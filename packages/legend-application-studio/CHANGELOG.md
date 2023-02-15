@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 22.4.1
+
+### Patch Changes
+
+- [#1849](https://github.com/finos/legend-studio/pull/1849) [`725d21e90`](https://github.com/finos/legend-studio/commit/725d21e9031dc41935a2a623e93f4b32dc6d913a) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where fail to navigate to function element in text mode after clicking on the explorer tree ([#1848](https://github.com/finos/legend-studio/issues/1848)).
+
+- [#1899](https://github.com/finos/legend-studio/pull/1899) [`23f0b763c`](https://github.com/finos/legend-studio/commit/23f0b763c2c1fb3603ac74a4fb40dc66f8c68243) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - fix: toogle text mode shortcut in view/archive mode
+
 ## 22.4.0
 
 ### Minor Changes

@@ -1,5 +1,7 @@
 # @finos/stylelint-config-legend-studio
 
+## 2.0.29
+
 ## 2.0.28
 
 ## 2.0.27
