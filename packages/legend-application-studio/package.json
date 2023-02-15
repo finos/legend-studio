@@ -54,7 +54,7 @@
     "@finos/legend-storage": "workspace:*",
     "@testing-library/react": "13.4.0",
     "@types/react": "18.0.28",
-    "@types/react-dom": "18.0.10",
+    "@types/react-dom": "18.0.11",
     "mobx": "6.8.0",
     "mobx-react-lite": "3.4.0",
     "mobx-utils": "6.0.5",
