@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-text
 
+## 5.0.44
+
 ## 5.0.43
 
 ## 5.0.42
