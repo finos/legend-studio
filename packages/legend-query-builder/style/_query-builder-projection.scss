@@ -267,6 +267,38 @@
         color: var(--color-light-grey-200);
       }
 
+      &__sortby {
+        @include flexCenter;
+
+        height: 2.8rem;
+        padding: 0 1.8rem;
+        font-size: 1.2rem;
+        font-weight: 500;
+        background: var(--color-dark-grey-280);
+        color: var(--color-light-grey-100);
+        border-radius: 0.2rem 0 0 0.2rem;
+        white-space: nowrap;
+        width: 3rem;
+      }
+
+      &__sortby--btn {
+        @include flexCenter;
+
+        height: 2.8rem;
+        padding: 0 1rem;
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: var(--color-light-grey-100);
+        border-radius: 0 0.2rem 0.2rem 0;
+        white-space: nowrap;
+        width: 3rem;
+        background: var(--color-blue-200);
+
+        svg {
+          font-size: 1.4rem;
+        }
+      }
+
       &__remove-btn {
         @include flexCenter;
 
