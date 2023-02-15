@@ -24,6 +24,7 @@ import {
   filterByType,
   guaranteeNonNullable,
   guaranteeType,
+  uuid,
 } from '@finos/legend-shared';
 import { Package } from '../graph/metamodel/pure/packageableElements/domain/Package.js';
 import { Type } from '../graph/metamodel/pure/packageableElements/domain/Type.js';
@@ -98,6 +99,7 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
  * deal with elements belonging to the basic graph.
  */
 export abstract class BasicModel {
+  uuid = uuid();
   root: Package;
   readonly extensions: PureGraphExtension<PackageableElement>[] = [];
 

@@ -352,6 +352,8 @@ export abstract class QueryEditorStore {
     this.graphManagerState = new GraphManagerState(
       applicationStore.pluginManager,
       applicationStore.log,
+      // NOTE: In Legend Query: The expectation is the graph is Immutable. Therefore we can leverage the graph cache
+      true,
     );
     this.queryLoaderState = new QueryLoaderState(this);
   }

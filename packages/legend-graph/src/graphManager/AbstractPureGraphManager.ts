@@ -129,10 +129,16 @@ export abstract class AbstractPureGraphManager {
   extensions: AbstractPureGraphManagerExtension[] = [];
   pluginManager: GraphManagerPluginManager;
   log: Log;
+  leverageInMemoryCache = false;
 
-  constructor(pluginManager: GraphManagerPluginManager, log: Log) {
+  constructor(
+    pluginManager: GraphManagerPluginManager,
+    log: Log,
+    withCache?: boolean,
+  ) {
     this.pluginManager = pluginManager;
     this.log = log;
+    this.leverageInMemoryCache = Boolean(withCache);
     this.extensions = pluginManager
       .getPureGraphManagerPlugins()
       .flatMap(

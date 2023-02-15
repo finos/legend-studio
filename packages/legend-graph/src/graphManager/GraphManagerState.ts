@@ -119,7 +119,11 @@ export class GraphManagerState extends BasicGraphManagerState {
   graphBuildState = ActionState.create();
   generationsBuildState = ActionState.create();
 
-  constructor(pluginManager: GraphManagerPluginManager, log: Log) {
+  constructor(
+    pluginManager: GraphManagerPluginManager,
+    log: Log,
+    withCache?: boolean,
+  ) {
     super(pluginManager, log);
 
     makeObservable(this, {
@@ -157,7 +161,11 @@ export class GraphManagerState extends BasicGraphManagerState {
     this.systemModel = new SystemModel(extensionElementClasses);
     this.coreModel = new CoreModel(extensionElementClasses);
     this.graph = this.createEmptyGraph();
-    this.graphManager = buildPureGraphManager(this.pluginManager, log);
+    this.graphManager = buildPureGraphManager(
+      this.pluginManager,
+      log,
+      withCache,
+    );
 
     this.systemBuildState.setMessageFormatter(
       (message: string) => `[system] ${message}`,

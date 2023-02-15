@@ -22,6 +22,7 @@ import type { GraphManagerPluginManager } from '../../GraphManagerPluginManager.
 export const buildPureGraphManager = (
   pluginManager: GraphManagerPluginManager,
   log: Log,
+  withCache?: boolean,
 ): AbstractPureGraphManager =>
   // NOTE: until we support more client versions, we always default to return V1
-  new V1_PureGraphManager(pluginManager, log);
+  new V1_PureGraphManager(pluginManager, log, withCache);

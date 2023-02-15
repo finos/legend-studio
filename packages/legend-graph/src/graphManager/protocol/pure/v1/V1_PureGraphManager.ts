@@ -264,6 +264,7 @@ import { CompilationWarning } from '../../../action/compilation/CompilationWarni
 import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_ServiceTransformer.js';
 import { V1_transformModelUnit } from './transformation/pureGraph/from/V1_DSL_ExternalFormat_Transformer.js';
 import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
+import { toJS } from 'mobx';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -427,6 +428,94 @@ export interface V1_EngineSetupConfig {
   clientConfig: ServerClientConfig;
 }
 
+export class V1_PureGraphCache {
+  readonly uuid: string;
+  private _pmcd: V1_PureModelContextData | undefined;
+
+  constructor(id: string) {
+    this.uuid = id;
+  }
+
+  isCacheForGraph(graph: PureModel): boolean {
+    return graph.uuid === this.uuid;
+  }
+
+  get pmcd(): V1_PureModelContextData | undefined {
+    console.log('accessing cache get', toJS(this._pmcd));
+    return this._pmcd;
+  }
+
+  setPMCD(val: V1_PureModelContextData): void {
+    console.log('accessing cache set', toJS(val));
+    this._pmcd = val;
+  }
+}
+
+export class V1_PureGraphCacheManager {
+  private isActivated: boolean;
+
+  private cache: V1_PureGraphCache | undefined;
+
+  constructor(isActivated: boolean) {
+    this.isActivated = isActivated;
+  }
+
+  flush(): void {
+    this.cache = undefined;
+  }
+
+  flushWithGraph(graph: PureModel): void {
+    this.cache = new V1_PureGraphCache(graph.uuid);
+  }
+
+  initWithGraph(graph: PureModel): void {
+    if (!this.cache || !this.cache.isCacheForGraph(graph)) {
+      this.flushWithGraph(graph);
+    }
+  }
+
+  leverageCacheForPMCD(
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean | undefined } | undefined,
+  ): V1_PureGraphCache | undefined {
+    const optionsEnabled = options?.keepSourceInformation;
+    if (
+      this.isActivated &&
+      this.cache &&
+      this.cache.isCacheForGraph(graph) &&
+      !optionsEnabled
+    ) {
+      return this.cache;
+    }
+    return undefined;
+  }
+
+  getFullGraphModelData = (
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean | undefined } | undefined,
+  ): V1_PureModelContextData | undefined => {
+    const cache = this.leverageCacheForPMCD(graph, options);
+    if (cache) {
+      return cache.pmcd;
+    }
+    return undefined;
+  };
+
+  putFullGraphModelData = (
+    graph: PureModel,
+    pureModelContextData: V1_PureModelContextData,
+    options?: { keepSourceInformation?: boolean | undefined } | undefined,
+  ): void => {
+    if (this.isActivated) {
+      this.initWithGraph(graph);
+      const cache = this.leverageCacheForPMCD(graph, options);
+      if (cache) {
+        cache.setPMCD(pureModelContextData);
+      }
+    }
+  };
+}
+
 export class V1_PureGraphManager extends AbstractPureGraphManager {
   // Organizing these constants will help with configuring
   // target protocol version in the future
@@ -435,9 +524,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   engine: V1_Engine;
   graphBuilderExtensions: V1_GraphBuilderExtensions;
+  graphCacheManager: V1_PureGraphCacheManager;
 
-  constructor(pluginManager: GraphManagerPluginManager, log: Log) {
-    super(pluginManager, log);
+  constructor(
+    pluginManager: GraphManagerPluginManager,
+    log: Log,
+    withCache?: boolean,
+  ) {
+    super(pluginManager, log, withCache);
     this.engine = new V1_Engine({}, log);
 
     // setup plugins
@@ -460,6 +554,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     V1_setupDatabaseBuilderInputSerialization(
       this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+    this.graphCacheManager = new V1_PureGraphCacheManager(
+      this.leverageInMemoryCache,
     );
   }
 
@@ -1616,7 +1713,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       | undefined,
   ): Promise<CompilationResult> {
     const compilationResult = await this.engine.compilePureModelContextData(
-      this.getFullGraphModelData(graph, {
+      this.getFullGraphModelDataWithCache(graph, {
         keepSourceInformation: options?.keepSourceInformation,
       }),
       {
@@ -1667,7 +1764,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             .build(),
         ),
       ) as V1_RawLambda,
-      this.getFullGraphModelData(graph),
+      this.getFullGraphModelDataWithCache(graph),
     );
   }
 
@@ -2111,7 +2208,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
      * models (e.g. service can use mapping, runtime, connection, store, etc.) we can roughly prune the graph model data by group. Following is an example
      * for mapping used for execution, but this can generalized if we introduce hierarchy/ranking for model type
      */
-    const graphData = this.getFullGraphModelData(graph);
+    const graphData = this.getFullGraphModelDataWithCache(graph);
     const prunedGraphData = new V1_PureModelContextData();
     const extraExecutionElements = this.pluginManager
       .getPureProtocolProcessorPlugins()
@@ -2533,7 +2630,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   buildPureModelContextDataFromPureModel = (
     graph: PureModel,
   ): V1_PureModelContextData => {
-    const graphData = this.getFullGraphModelData(graph);
+    const graphData = this.getFullGraphModelDataWithCache(graph);
     const prunedGraphData = new V1_PureModelContextData();
     const extraElements = this.pluginManager
       .getPureProtocolProcessorPlugins()
@@ -2739,6 +2836,27 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.initializeAndIndexElements(graph, graphBuilderInput);
 
     return graphBuilderInput;
+  }
+
+  getFullGraphModelDataWithCache(
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean | undefined } | undefined,
+  ): V1_PureModelContextData {
+    const cachedPMCD = this.graphCacheManager.getFullGraphModelData(
+      graph,
+      options,
+    );
+    if (!cachedPMCD) {
+      const pmcd = this.getFullGraphModelData(graph, options);
+      this.graphCacheManager.putFullGraphModelData(graph, pmcd);
+      return pmcd;
+    }
+    this.log.info(
+      LogEvent.create(
+        GRAPH_MANAGER_EVENT.GRAPH_META_MODEL_TO_PROTOCOL_TRANSFORMED_FROM_CACHE,
+      ),
+    );
+    return cachedPMCD;
   }
 
   getFullGraphModelData(

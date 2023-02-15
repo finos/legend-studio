@@ -35,6 +35,7 @@ export enum GRAPH_MANAGER_EVENT {
   GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED = 'graph-manager.grammar.composing.success',
   GRAPH_GRAMMAR_TO_MODEL_TRANSFORMED = 'graph-manager.grammar.parsing.success',
   GRAPH_META_MODEL_TO_PROTOCOL_TRANSFORMED = 'graph-manager.transformation.success',
+  GRAPH_META_MODEL_TO_PROTOCOL_TRANSFORMED_FROM_CACHE = 'graph-manager.transformation.cache',
   GRAPH_COMPILE_CONTEXT_COLLECTED = 'graph-manager.build-graph-compile-context.success',
   GRAPH_PROTOCOL_SERIALIZED = 'graph-manager.graph-serialization.success',
 
