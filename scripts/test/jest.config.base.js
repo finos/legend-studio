@@ -55,6 +55,10 @@ export const getBaseJestConfig = (isGlobal) => {
       ...baseConfig.setupFilesAfterEnv,
       '@finos/legend-dev-utils/jest/setupTestEnvironment',
       '@finos/legend-dev-utils/jest/setupJestExpectExtension',
+      // NOTE: we need to call this before each test since there's an issue
+      // with jest-canvas-mock and jest.resetAllMocks(), which is called when we set `restoreMocks: true`
+      // See https://github.com/hustcc/jest-canvas-mock/issues/103
+      '@finos/legend-dev-utils/jest/mockCanvas',
     ],
     moduleNameMapper: {
       ...baseConfig.moduleNameMapper,
