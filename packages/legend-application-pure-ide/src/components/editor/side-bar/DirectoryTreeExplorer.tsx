@@ -127,40 +127,44 @@ const FileTreeNodeContainer: React.FC<
   const { onNodeOpen, onNodeExpand, onNodeCompress } = innerProps;
   const isPlatformDirectory =
     node.data instanceof DirectoryNode &&
+    node.data.isRepoNode &&
     node.data.li_attr.path === '/platform';
   const isReadOnly = node.data.li_attr.RO;
   const isDirectory = node.data.isFolderNode;
   const isChildlessDirectory =
     node.data instanceof DirectoryNode && !node.data.children;
-  const nodeIcon = isPlatformDirectory ? (
-    <WrenchIcon className="explorer__icon--readonly" />
-  ) : isDirectory ? (
-    isChildlessDirectory ? (
-      <FolderIcon
-        className={clsx('explorer__icon--folder', {
-          'explorer__icon--readonly': isReadOnly,
-        })}
-      />
-    ) : node.isOpen ? (
-      <FolderOpenIcon
-        className={clsx('explorer__icon--folder', {
-          'explorer__icon--readonly': isReadOnly,
-        })}
-      />
+  const nodeIcon =
+    isPlatformDirectory ||
+    (node.data.isRepoNode &&
+      node.data.li_attr.path.startsWith('/platform_')) ? (
+      <WrenchIcon className="explorer__icon--readonly" />
+    ) : isDirectory ? (
+      isChildlessDirectory ? (
+        <FolderIcon
+          className={clsx('explorer__icon--folder', {
+            'explorer__icon--readonly': isReadOnly,
+          })}
+        />
+      ) : node.isOpen ? (
+        <FolderOpenIcon
+          className={clsx('explorer__icon--folder', {
+            'explorer__icon--readonly': isReadOnly,
+          })}
+        />
+      ) : (
+        <FolderIcon
+          className={clsx('explorer__icon--folder', {
+            'explorer__icon--readonly': isReadOnly,
+          })}
+        />
+      )
     ) : (
-      <FolderIcon
-        className={clsx('explorer__icon--folder', {
+      <FileAltIcon
+        className={clsx('explorer__icon--file', {
           'explorer__icon--readonly': isReadOnly,
         })}
       />
-    )
-  ) : (
-    <FileAltIcon
-      className={clsx('explorer__icon--file', {
-        'explorer__icon--readonly': isReadOnly,
-      })}
-    />
-  );
+    );
   const selectNode: React.MouseEventHandler = (event) => {
     event.stopPropagation();
     event.preventDefault();
