@@ -26,7 +26,6 @@
  * See https://github.com/microsoft/TypeScript/issues/49298
  */
 export {
-  FaTrash as TrashIcon,
   FaHistory as HistoryIcon,
   FaCrosshairs as CrosshairsIcon,
   FaLayerGroup as LayerGroupIcon,
@@ -78,6 +77,7 @@ export {
   FaRegLightbulb as EmptyLightBulbIcon,
   FaList as ListIcon,
   FaCircle as CircleIcon,
+  FaTrash as TrashIcon,
   FaRegCircle as EmptyCircleIcon,
   FaShieldAlt as ShieldIcon,
   FaTag as TagIcon,
@@ -93,7 +93,6 @@ export {
   FaSitemap as SitemapIcon, // to be reviewed, moved to LegendIcon
   FaExpand as ExpandIcon,
   FaExpandArrowsAlt as ExpandAllIcon,
-  FaBrush as BrushIcon,
   FaSortAlphaDown as SortDownIcon,
   FaSort as SortIcon,
   FaSortAlphaDownAlt as SortDownAltIcon,

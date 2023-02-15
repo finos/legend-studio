@@ -35,7 +35,7 @@ import {
   OptionsIcon,
   PlusIcon,
   PanelContent,
-  BrushIcon,
+  TrashIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -583,7 +583,7 @@ export const QueryBuilderTDSPanel = observer(
                 : 'Clear all projection columns'
             }
           >
-            <BrushIcon className="query-builder__icon query-builder__icon__query-option--small" />
+            <TrashIcon className="query-builder__icon query-builder__icon__query-option--small" />
           </button>
           <button
             className="panel__header__action"

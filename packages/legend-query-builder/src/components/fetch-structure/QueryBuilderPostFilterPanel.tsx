@@ -34,7 +34,7 @@ import {
   ExpandIcon,
   CompressIcon,
   CircleIcon,
-  BrushIcon,
+  TrashIcon,
   NewFolderIcon,
   PlusCircleIcon,
   InfoCircleIcon,
@@ -926,7 +926,7 @@ const QueryBuilderPostFilterPanelContent = observer(
               tabIndex={-1}
               title="Cleanup Tree"
             >
-              <BrushIcon />
+              <TrashIcon />
             </button>
             <button
               className="panel__header__action"

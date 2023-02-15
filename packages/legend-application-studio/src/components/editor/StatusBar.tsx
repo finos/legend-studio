@@ -23,7 +23,7 @@ import {
   CodeBranchIcon,
   TerminalIcon,
   HackerIcon,
-  BrushIcon,
+  TrashIcon,
   CloudUploadIcon,
   AssistantIcon,
   ErrorIcon,
@@ -341,7 +341,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title="Clear generation entities"
         >
-          <BrushIcon />
+          <TrashIcon />
         </button>
         <button
           className={clsx(
