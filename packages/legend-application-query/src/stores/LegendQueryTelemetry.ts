@@ -17,7 +17,7 @@
 import type { TelemetryService } from '@finos/legend-shared';
 import { LEGEND_QUERY_APP_EVENT } from './LegendQueryAppEvent.js';
 
-type QueryViewed_TelemetryData = {
+type Query_TelemetryData = {
   query: {
     name: string;
     id: string;
@@ -30,8 +30,22 @@ type QueryViewed_TelemetryData = {
 export class LegendQueryTelemetry {
   static logEvent_ViewQuery(
     telemetryService: TelemetryService,
-    data: QueryViewed_TelemetryData,
+    data: Query_TelemetryData,
   ): void {
     telemetryService.logEvent(LEGEND_QUERY_APP_EVENT.QUERY_VIEWED, data);
+  }
+
+  static logEvent_CreateQuery(
+    telemetryService: TelemetryService,
+    data: Query_TelemetryData,
+  ): void {
+    telemetryService.logEvent(LEGEND_QUERY_APP_EVENT.QUERY_CREATED, data);
+  }
+
+  static logEvent_UpdateQuery(
+    telemetryService: TelemetryService,
+    data: Query_TelemetryData,
+  ): void {
+    telemetryService.logEvent(LEGEND_QUERY_APP_EVENT.QUERY_UPDATED, data);
   }
 }
