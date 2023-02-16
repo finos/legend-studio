@@ -28,6 +28,7 @@ import {
   Modal,
   ModalBody,
   ModalFooter,
+  ModalFooterButton,
   ModalHeader,
   PanelFormSection,
   PanelFormTextField,
@@ -172,17 +173,13 @@ const QueryBuilderConstantExpressionEditor = observer(
           </ModalBody>
           <ModalFooter>
             {isCreating && (
-              <button
-                className="btn modal__footer__close-btn btn--dark"
+              <ModalFooterButton
+                text="Create"
+                inProgress={Boolean(validationMessage)}
                 onClick={onAction}
-                disabled={Boolean(validationMessage)}
-              >
-                Create
-              </button>
+              />
             )}
-            <button className="btn modal__footer__close-btn" onClick={close}>
-              Close
-            </button>
+            <ModalFooterButton text="Close" onClick={close} />
           </ModalFooter>
         </Modal>
       </Dialog>

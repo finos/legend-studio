@@ -39,6 +39,7 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import {
   AssertFail,
@@ -202,12 +203,7 @@ const TestFailViewer = observer(
               )}
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn modal__footer__close-btn"
-              onClick={closeLogViewer}
-            >
-              Close
-            </button>
+            <ModalFooterButton text="Close" onClick={closeLogViewer} />
           </ModalFooter>
         </Modal>
       </Dialog>

@@ -35,6 +35,7 @@ import {
   Modal,
   ModalBody,
   ModalFooter,
+  ModalFooterButton,
   ModalHeader,
   PanelEntryDropZonePlaceholder,
   PanelFormSection,
@@ -279,9 +280,7 @@ export const MilestoningParametersEditor = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            <button className="btn modal__footer__close-btn" onClick={close}>
-              Close
-            </button>
+            <ModalFooterButton text="Close" onClick={close} />
           </ModalFooter>
         </Modal>
       </Dialog>

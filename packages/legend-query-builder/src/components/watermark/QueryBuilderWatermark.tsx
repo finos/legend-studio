@@ -25,6 +25,7 @@ import {
   ModalFooter,
   ModalHeader,
   PanelFormSection,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import {
   areMultiplicitiesEqual,
@@ -169,12 +170,7 @@ export const QueryBuilderWatermarkEditor = observer(
             </PanelForm>
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn modal__footer__close-btn"
-              onClick={handleClose}
-            >
-              Done
-            </button>
+            <ModalFooterButton text="Done" onClick={handleClose} />
           </ModalFooter>
         </Modal>
       </Dialog>

@@ -39,6 +39,7 @@ import {
   ModalFooter,
   ModalHeader,
   BlankPanelContent,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -233,12 +234,7 @@ const renderCheckEntitlementsEditor = (
           </BlankPanelContent>
         </ModalBody>
         <ModalFooter>
-          <button
-            className="btn modal__footer__close-btn"
-            onClick={handleClose}
-          >
-            Close
-          </button>
+          <ModalFooterButton text="Close" onClick={handleClose} />
         </ModalFooter>
       </Modal>
     </Dialog>

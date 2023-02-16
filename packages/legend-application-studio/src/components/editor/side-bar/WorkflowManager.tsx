@@ -42,6 +42,7 @@ import {
   ModalHeaderActions,
   ModalTitle,
   Modal,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
@@ -245,12 +246,7 @@ const WorkflowJobLogsViewer = observer(
             />
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn modal__footer__close-btn"
-              onClick={closeLogViewer}
-            >
-              Close
-            </button>
+            <ModalFooterButton text="Close" onClick={closeLogViewer} />
           </ModalFooter>
         </Modal>
       </Dialog>

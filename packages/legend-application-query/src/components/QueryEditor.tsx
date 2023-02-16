@@ -43,6 +43,7 @@ import {
   ModalBody,
   ModalFooter,
   ModalTitle,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import {
   debounce,
@@ -122,14 +123,7 @@ const QueryExportDialogContent = observer(
           />
         </ModalBody>
         <ModalFooter>
-          {allowSave && (
-            <button
-              className="btn modal__footer__close-btn btn--dark"
-              onClick={save}
-            >
-              Save
-            </button>
-          )}
+          {allowSave && <ModalFooterButton text="Save" onClick={save} />}
           <button
             className="btn modal__footer__close-btn btn--dark"
             // TODO?: we should probably annotate here why,

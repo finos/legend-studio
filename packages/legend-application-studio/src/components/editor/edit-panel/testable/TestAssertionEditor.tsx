@@ -22,6 +22,7 @@ import {
   Modal,
   ModalBody,
   ModalFooter,
+  ModalFooterButton,
   ModalHeader,
   PanelContent,
   PanelLoadingIndicator,
@@ -139,12 +140,7 @@ const EqualToJsonAssertFailViewer = observer(
                 />
               </ModalBody>
               <ModalFooter>
-                <button
-                  className="btn modal__footer__close-btn"
-                  onClick={close}
-                >
-                  Close
-                </button>
+                <ModalFooterButton text="Close" onClick={close} />
               </ModalFooter>
             </Modal>
           </Dialog>

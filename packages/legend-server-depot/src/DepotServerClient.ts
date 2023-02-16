@@ -74,6 +74,9 @@ export class DepotServerClient extends AbstractServerClient {
   ): string =>
     `${this._versions(groupId, artifactId)}/${encodeURIComponent(version)}`;
 
+  getAllVersions = (groupId: string, artifactId: string): Promise<string[]> =>
+    this.get(this._versions(groupId, artifactId));
+
   getVersionEntities = (
     groupId: string,
     artifactId: string,

@@ -46,6 +46,7 @@ import {
   VersionsIcon,
   RepoIcon,
   ModalFooterButton,
+  Button,
 } from '@finos/legend-art';
 import {
   MASTER_SNAPSHOT_ALIAS,
@@ -123,15 +124,12 @@ const ProjectDependencyActions = observer(
     };
     return (
       <div className="project-dependency-editor__info">
-        <button
-          className="btn btn--dark"
-          tabIndex={-1}
+        <Button
           onClick={viewTree}
           disabled={!dependencyEditorState.dependencyReport}
           title="View Dependency Explorer"
-        >
-          View Dependency Explorer
-        </button>
+          text="View Dependency Explorer"
+        />
         {Boolean(hasConflicts) && (
           <button
             className="project-dependency-editor__conflicts-btn"
