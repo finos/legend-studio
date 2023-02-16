@@ -200,10 +200,10 @@ test(integrationTest('Open query builder by querying a class'), async () => {
     { entities },
   );
 
-  const MockedGlobalCompileInFormModeFn = createMock();
+  const MOCK__globalCompileInFormModeFn = createMock();
   MOCK__editorStore.graphState.globalCompileInFormMode =
-    MockedGlobalCompileInFormModeFn;
-  MockedGlobalCompileInFormModeFn.mockResolvedValue(
+    MOCK__globalCompileInFormModeFn;
+  MOCK__globalCompileInFormModeFn.mockResolvedValue(
     FormModeCompilationOutcome.SUCCEEDED,
   );
   MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
@@ -237,10 +237,10 @@ test(
       { entities },
     );
 
-    const MockedGlobalCompileInFormModeFn = createMock();
+    const MOCK__globalCompileInFormModeFn = createMock();
     MOCK__editorStore.graphState.globalCompileInFormMode =
-      MockedGlobalCompileInFormModeFn;
-    MockedGlobalCompileInFormModeFn.mockResolvedValue(
+      MOCK__globalCompileInFormModeFn;
+    MOCK__globalCompileInFormModeFn.mockResolvedValue(
       FormModeCompilationOutcome.SUCCEEDED,
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
@@ -276,10 +276,10 @@ test(
       { entities },
     );
 
-    const MockedGlobalCompileInFormModeFn = createMock();
+    const MOCK__globalCompileInFormModeFn = createMock();
     MOCK__editorStore.graphState.globalCompileInFormMode =
-      MockedGlobalCompileInFormModeFn;
-    MockedGlobalCompileInFormModeFn.mockResolvedValue(
+      MOCK__globalCompileInFormModeFn;
+    MOCK__globalCompileInFormModeFn.mockResolvedValue(
       FormModeCompilationOutcome.SUCCEEDED,
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
@@ -308,10 +308,10 @@ test(
       { entities },
     );
 
-    const MockedGlobalCompileInFormModeFn = createMock();
+    const MOCK__globalCompileInFormModeFn = createMock();
     MOCK__editorStore.graphState.globalCompileInFormMode =
-      MockedGlobalCompileInFormModeFn;
-    MockedGlobalCompileInFormModeFn.mockResolvedValue(
+      MOCK__globalCompileInFormModeFn;
+    MOCK__globalCompileInFormModeFn.mockResolvedValue(
       FormModeCompilationOutcome.SUCCEEDED,
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
