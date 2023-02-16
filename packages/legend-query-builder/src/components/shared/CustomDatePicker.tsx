@@ -431,7 +431,7 @@ const buildPureDurationEnumValue = (
 };
 
 /**
- * Generate the pure date ajust() function based on the CustomDateOption.
+ * Generate the pure date adjust() function based on the CustomDateOption.
  */
 const buildPureAdjustDateFunction = (
   customDateOption: CustomDateOption,
@@ -594,7 +594,7 @@ const buildCustomDateOptionReferenceMomentValue = (
  * Build CustomDateOption based on the pure date adjust() function.
  * Transform CustomDateOption if it matches any preserved custom adjust date functions. e.g. One Month Ago..
  */
-export const buildCustomDateOption = (
+const buildCustomDateOption = (
   valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
 ): CustomDateOption => {
   if (
@@ -634,7 +634,7 @@ export const buildCustomDateOption = (
 /**
  * Build DatePickerOption from pure date functions or PrimitiveInstanceValue
  */
-const buildDatePickerOption = (
+export const buildDatePickerOption = (
   valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
 ): DatePickerOption => {
   if (valueSpecification instanceof SimpleFunctionExpression) {

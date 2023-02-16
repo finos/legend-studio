@@ -783,6 +783,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       },
     );
 
+    queryBuilderState.setTitleOfQuery(this.query.name);
     return queryBuilderState;
   }
 
