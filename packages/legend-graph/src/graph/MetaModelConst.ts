@@ -124,6 +124,8 @@ export enum CORE_PURE_PATH {
 
   // TDS
   TDS_ROW = 'meta::pure::tds::TDSRow',
+  TDS_TABULARDATASET = 'meta::pure::tds::TabularDataSet',
+  TDS_COLUMN = 'meta::pure::tds::TDSColumn',
 }
 
 export const PURE_DOC_TAG = 'doc';
