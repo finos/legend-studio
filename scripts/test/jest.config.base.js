@@ -46,7 +46,6 @@ export const getBaseJestConfig = (isGlobal) => {
       // TODO: remove this when we no longer need to mock `Window.fetch()` for tests
       // See https://github.com/finos/legend-studio/issues/758
       '@finos/legend-dev-utils/jest/blockFetch',
-      'jest-canvas-mock',
     ],
     // Setup to run immediately after the test framework has been installed in the environment
     // before each test file in the suite is executed
@@ -55,10 +54,6 @@ export const getBaseJestConfig = (isGlobal) => {
       ...baseConfig.setupFilesAfterEnv,
       '@finos/legend-dev-utils/jest/setupTestEnvironment',
       '@finos/legend-dev-utils/jest/setupJestExpectExtension',
-      // NOTE: we need to call this before each test since there's an issue
-      // with jest-canvas-mock and jest.resetAllMocks(), which is called when we set `restoreMocks: true`
-      // See https://github.com/hustcc/jest-canvas-mock/issues/103
-      '@finos/legend-dev-utils/jest/mockCanvas',
     ],
     moduleNameMapper: {
       ...baseConfig.moduleNameMapper,
@@ -128,6 +123,14 @@ export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
     setupFiles: [
       ...config.setupFiles,
       '@finos/legend-dev-utils/jest/setupDOMPolyfills',
+      'jest-canvas-mock',
+    ],
+    setupFilesAfterEnv: [
+      ...config.setupFilesAfterEnv,
+      // NOTE: we need to call this before each test since there's an issue
+      // with jest-canvas-mock and jest.resetAllMocks(), which is called when we set `restoreMocks: true`
+      // See https://github.com/hustcc/jest-canvas-mock/issues/103
+      '@finos/legend-dev-utils/jest/mockCanvas',
     ],
     moduleNameMapper: {
       ...config.moduleNameMapper,
