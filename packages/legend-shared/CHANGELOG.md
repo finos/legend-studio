@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 6.2.19
+
+### Patch Changes
+
+- [#1909](https://github.com/finos/legend-studio/pull/1909) [`130d068d0`](https://github.com/finos/legend-studio/commit/130d068d0932dde5786ecf8de6dacf2bffcc6143) ([@xannem](https://github.com/xannem)) - Humanize 'ID' and 'Id' names.
+
 ## 6.2.18
 
 ## 6.2.17

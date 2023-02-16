@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 0.6.25
+
+### Patch Changes
+
+- [#1911](https://github.com/finos/legend-studio/pull/1911) [`418d96ab7`](https://github.com/finos/legend-studio/commit/418d96ab772f2fab5ffd89ed8c34b96a7593e1b9) ([@xannem](https://github.com/xannem)) - Clarify status of sorting column in query.
+
+- [#1909](https://github.com/finos/legend-studio/pull/1909) [`130d068d0`](https://github.com/finos/legend-studio/commit/130d068d0932dde5786ecf8de6dacf2bffcc6143) ([@xannem](https://github.com/xannem)) - Do not add properties with existing same name/path when user right clicks 'add properties to fetch structure'.
+
 ## 0.6.24
 
 ### Patch Changes

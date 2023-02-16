@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 8.40.0
+
+### Patch Changes
+
+- [#1911](https://github.com/finos/legend-studio/pull/1911) [`418d96ab7`](https://github.com/finos/legend-studio/commit/418d96ab772f2fab5ffd89ed8c34b96a7593e1b9) ([@xannem](https://github.com/xannem)) - Clarify status of sorting column in query.
+
 ## 8.39.0
 
 ## 8.38.0
