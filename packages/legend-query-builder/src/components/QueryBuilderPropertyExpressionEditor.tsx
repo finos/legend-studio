@@ -307,22 +307,22 @@ export const QueryBuilderPropertyExpressionEditor = observer(
     const isParameterCompatibleWithDerivedProperty = (
       variable: VariableExpression,
       derivedProperties: QueryBuilderDerivedPropertyExpressionState[],
-    ): boolean => {
-      const sameType = derivedProperties.find((dp) => {
-        if (!variable.genericType?.value.rawType) {
-          return false;
-        }
-        return (
-          isSuperType(
-            dp.derivedProperty.genericType.value.rawType,
-            variable.genericType.value.rawType,
-          ) ||
-          dp.derivedProperty.genericType.value.rawType.name ===
-            variable.genericType.value.rawType.name
-        );
-      });
-      return sameType !== undefined;
-    };
+    ): boolean =>
+      Boolean(
+        derivedProperties.find((dp) => {
+          if (!variable.genericType?.value.rawType) {
+            return false;
+          }
+          return (
+            isSuperType(
+              dp.derivedProperty.genericType.value.rawType,
+              variable.genericType.value.rawType,
+            ) ||
+            dp.derivedProperty.genericType.value.rawType.name ===
+              variable.genericType.value.rawType.name
+          );
+        }),
+      );
     return (
       <Dialog
         open={Boolean(
