@@ -61,6 +61,12 @@
     flex: 1;
   }
 
+  &__sub-header__query__title {
+    color: var(--color-light-grey-180);
+    margin: 0 1rem;
+    flex: 1;
+  }
+
   &__sub-header__custom-action {
     @include flexCenter;
 
@@ -508,19 +514,30 @@
     }
   }
 
+  &__export__dropdown[disabled],
+  &__export__dropdown[disabled]:hover {
+    background: var(--color-dark-grey-250);
+    color: var(--color-dark-grey-500);
+  }
+
+  &__export__dropdown:hover {
+    color: var(--color-light-grey-50);
+  }
+
   &__export__dropdown {
     @include flexVCenter;
 
     margin: 0 0.5rem;
     height: 2.2rem;
     border: 0.1rem solid var(--color-dark-grey-250);
+    background: var(--color-dark-grey-300);
+    color: var(--color-light-grey-180);
 
     &__label {
       @include flexCenter;
       @include flexConstantDimension;
 
       height: 100%;
-      color: var(--color-dark-grey-500);
       font-weight: 500;
       font-size: 1.2rem;
       width: 5rem;

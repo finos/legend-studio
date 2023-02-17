@@ -366,6 +366,12 @@ export const QueryBuilder = observer(
                 )}
               </div>
               <div className="query-builder__sub-header__content__actions">
+                <div
+                  title="Query title"
+                  className="query-builder__sub-header__query__title"
+                >
+                  {queryBuilderState.titleOfQuery}
+                </div>
                 <div className="query-builder__sub-header__actions">
                   <DropdownMenu
                     className="query-builder__sub-header__custom-action"

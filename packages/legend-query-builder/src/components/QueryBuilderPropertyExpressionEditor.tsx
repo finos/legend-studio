@@ -305,7 +305,25 @@ export const QueryBuilderPropertyExpressionEditor = observer(
     const { propertyExpressionState } = props;
     const handleClose = (): void =>
       propertyExpressionState.setIsEditingDerivedProperty(false);
-
+    const isParameterCompatibleWithDerivedProperty = (
+      variable: VariableExpression,
+      derivedProperties: QueryBuilderDerivedPropertyExpressionState[],
+    ): boolean =>
+      Boolean(
+        derivedProperties.find((dp) => {
+          if (!variable.genericType?.value.rawType) {
+            return false;
+          }
+          return (
+            isSuperType(
+              dp.derivedProperty.genericType.value.rawType,
+              variable.genericType.value.rawType,
+            ) ||
+            dp.derivedProperty.genericType.value.rawType.name ===
+              variable.genericType.value.rawType.name
+          );
+        }),
+      );
     return (
       <Dialog
         open={Boolean(
@@ -335,6 +353,12 @@ export const QueryBuilderPropertyExpressionEditor = observer(
             <ModalBody className="query-builder__variables__modal__body">
               <VariableSelector
                 queryBuilderState={propertyExpressionState.queryBuilderState}
+                filterBy={(v: VariableExpression) =>
+                  isParameterCompatibleWithDerivedProperty(
+                    v,
+                    propertyExpressionState.derivedPropertyExpressionStates,
+                  )
+                }
               />
             </ModalBody>
           </ModalBody>

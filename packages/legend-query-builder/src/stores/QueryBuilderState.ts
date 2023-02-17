@@ -99,6 +99,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   textEditorState: QueryBuilderTextEditorState;
   unsupportedQueryState: QueryBuilderUnsupportedQueryState;
   observableContext: ObserverContext;
+  titleOfQuery: string | undefined;
 
   queryCompileState = ActionState.create();
   showFunctionsExplorerPanel = false;
@@ -126,6 +127,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       fetchStructureState: observable,
       filterState: observable,
       watermarkState: observable,
+      titleOfQuery: observable,
       checkEntitlementsState: observable,
       resultState: observable,
       textEditorState: observable,
@@ -150,6 +152,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setClass: action,
       setMapping: action,
       setRuntimeValue: action,
+
+      setTitleOfQuery: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -251,6 +255,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setRuntimeValue(val: Runtime | undefined): void {
     this.runtimeValue = val;
+  }
+
+  setTitleOfQuery(val: string | undefined): void {
+    this.titleOfQuery = val;
   }
 
   get isQuerySupported(): boolean {

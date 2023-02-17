@@ -431,7 +431,7 @@ const buildPureDurationEnumValue = (
 };
 
 /**
- * Generate the pure date ajust() function based on the CustomDateOption.
+ * Generate the pure date adjust() function based on the CustomDateOption.
  */
 const buildPureAdjustDateFunction = (
   customDateOption: CustomDateOption,
@@ -634,7 +634,7 @@ const buildCustomDateOption = (
 /**
  * Build DatePickerOption from pure date functions or PrimitiveInstanceValue
  */
-const buildDatePickerOption = (
+export const buildDatePickerOption = (
   valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
 ): DatePickerOption => {
   if (valueSpecification instanceof SimpleFunctionExpression) {
