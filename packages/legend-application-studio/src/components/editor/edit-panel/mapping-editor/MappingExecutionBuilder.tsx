@@ -773,9 +773,9 @@ export const MappingExecutionBuilder = observer(
                 <FlaskIcon />
               </button>
             )}
-            <div className="mapping-execution-builder__execute-btn">
+            <div className="mapping-execution-builder__action-btn">
               <button
-                className="mapping-execution-builder__execute-btn__label"
+                className="mapping-execution-builder__action-btn__label"
                 onClick={execute}
                 disabled={
                   isStubbed_RawLambda(queryState.query) ||
@@ -785,13 +785,13 @@ export const MappingExecutionBuilder = observer(
                 }
                 tabIndex={-1}
               >
-                <PlayIcon className="mapping-execution-builder__execute-btn__label__icon" />
-                <div className="mapping-execution-builder__execute-btn__label__title">
+                <PlayIcon className="mapping-execution-builder__action-btn__label__icon" />
+                <div className="mapping-execution-builder__action-btn__label__title">
                   Run Query
                 </div>
               </button>
               <DropdownMenu
-                className="mapping-execution-builder__execute-btn__dropdown-btn"
+                className="mapping-execution-builder__action-btn__dropdown-btn"
                 disabled={
                   isStubbed_RawLambda(queryState.query) ||
                   !inputDataState.isValid ||
@@ -801,13 +801,13 @@ export const MappingExecutionBuilder = observer(
                 content={
                   <MenuContent>
                     <MenuContentItem
-                      className="mapping-execution-builder__execute-btn__option"
+                      className="mapping-execution-builder__action-btn__option"
                       onClick={generatePlan}
                     >
                       Generate Plan
                     </MenuContentItem>
                     <MenuContentItem
-                      className="mapping-execution-builder__execute-btn__option"
+                      className="mapping-execution-builder__action-btn__option"
                       onClick={debugPlanGeneration}
                     >
                       Debug
