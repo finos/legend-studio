@@ -36,39 +36,39 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ag-grid-community/client-side-row-model@npm:29.0.0":
-  version: 29.0.0
-  resolution: "@ag-grid-community/client-side-row-model@npm:29.0.0"
+"@ag-grid-community/client-side-row-model@npm:29.1.0":
+  version: 29.1.0
+  resolution: "@ag-grid-community/client-side-row-model@npm:29.1.0"
   dependencies:
-    "@ag-grid-community/core": ~29.0.0
-  checksum: d3d22f09521c5e82084f88aa83d0a0494c9411f7d82abfc3d3af86249577a6027b9891afcfee1c43d46c2e28719cf326fc9d0d8688bec87d9f71b6a537e1d6f4
+    "@ag-grid-community/core": ~29.1.0
+  checksum: 38442c62f11be78f3d3eda26d5cf8283a47b024ddd8fb4b553ac2efa40b980a32c7572a1d5c0b0c284055ef3f2637156f27b9abac53339b51f08523854f97968
   languageName: node
   linkType: hard
 
-"@ag-grid-community/core@npm:29.0.0, @ag-grid-community/core@npm:~29.0.0":
-  version: 29.0.0
-  resolution: "@ag-grid-community/core@npm:29.0.0"
-  checksum: 0133d83ab2991c0e1821815fe30af4fba3887eea229f332c1a7595e1b522d6dd9c1e03ea1d35e3e0b8967f365e705b28f49a3476a8f7c9ba77c31a22534b088c
+"@ag-grid-community/core@npm:29.1.0, @ag-grid-community/core@npm:~29.1.0":
+  version: 29.1.0
+  resolution: "@ag-grid-community/core@npm:29.1.0"
+  checksum: 6d93ca815fc3f0a91d2df56f0191b8c1c944b7626e9b4b1a072981b25bf45547180d1ce0a0dec39af137bcd37d4403a9570875604f37fb3ab31c3710b653b2aa
   languageName: node
   linkType: hard
 
-"@ag-grid-community/react@npm:29.0.0":
-  version: 29.0.0
-  resolution: "@ag-grid-community/react@npm:29.0.0"
+"@ag-grid-community/react@npm:29.1.0":
+  version: 29.1.0
+  resolution: "@ag-grid-community/react@npm:29.1.0"
   dependencies:
     prop-types: ^15.8.1
   peerDependencies:
-    "@ag-grid-community/core": ~29.0.0
+    "@ag-grid-community/core": ~29.1.0
     react: ^16.3.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.3.0 || ^17.0.0 || ^18.0.0
-  checksum: fa733deff74999498d0c703f42b6301a7fe091a52c3aba5ed2672ed84d72353cef3d3ac0dac6df5cde5e1c4e9b1ba9809535aa2534e6677aced9c67f07383164
+  checksum: b80311a03dfcb74e84353c0dcb6cef31d5b4ffcd9d66f6f47cefc9ba0e68cbdf4e4fb9ca9a6bff33a408358651985b0f506116eb7c7f2dda647d51e7edf4f43c
   languageName: node
   linkType: hard
 
-"@ag-grid-community/styles@npm:29.0.0":
-  version: 29.0.0
-  resolution: "@ag-grid-community/styles@npm:29.0.0"
-  checksum: a9643047028b8463b3990a187c1ff62bb477af70064714f1318f5b5f7aa5a2cdec280c542c031cd5ac0af931478fb53fe0d3c9de7ec4e3999447a86363f207d0
+"@ag-grid-community/styles@npm:29.1.0":
+  version: 29.1.0
+  resolution: "@ag-grid-community/styles@npm:29.1.0"
+  checksum: 092cc803929bd3821cf00a9c63f2028ed73204e1bc732644b965cd418e8b37b4c9296316e94327a5c8d0ad59df65c908e2952217930cc47fa6c68fd353b7b545
   languageName: node
   linkType: hard
 
@@ -742,7 +742,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-syntax-jsx@npm:^7.17.12, @babel/plugin-syntax-jsx@npm:^7.18.6, @babel/plugin-syntax-jsx@npm:^7.7.2":
+"@babel/plugin-syntax-jsx@npm:^7.18.6, @babel/plugin-syntax-jsx@npm:^7.7.2":
   version: 7.18.6
   resolution: "@babel/plugin-syntax-jsx@npm:7.18.6"
   dependencies:
@@ -1792,12 +1792,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/babel-plugin@npm:^11.10.5":
-  version: 11.10.5
-  resolution: "@emotion/babel-plugin@npm:11.10.5"
+"@emotion/babel-plugin@npm:^11.10.6":
+  version: 11.10.6
+  resolution: "@emotion/babel-plugin@npm:11.10.6"
   dependencies:
     "@babel/helper-module-imports": ^7.16.7
-    "@babel/plugin-syntax-jsx": ^7.17.12
     "@babel/runtime": ^7.18.3
     "@emotion/hash": ^0.9.0
     "@emotion/memoize": ^0.8.0
@@ -1808,9 +1807,7 @@ __metadata:
     find-root: ^1.1.0
     source-map: ^0.5.7
     stylis: 4.1.3
-  peerDependencies:
-    "@babel/core": ^7.0.0
-  checksum: e3353499c76c4422d6e900c0dfab73607056d9da86161a3f27c3459c193c4908050c5d252c68fcde231e13f02a9d8e0dc07d260317ae0e5206841e331cc4caae
+  checksum: 3eed138932e8edf2598352e69ad949b9db3051a4d6fcff190dacbac9aa838d7ef708b9f3e6c48660625d9311dae82d73477ae4e7a31139feef5eb001a5528421
   languageName: node
   linkType: hard
 
@@ -1850,12 +1847,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/react@npm:11.10.5, @emotion/react@npm:^11.1.1":
-  version: 11.10.5
-  resolution: "@emotion/react@npm:11.10.5"
+"@emotion/react@npm:11.10.6, @emotion/react@npm:^11.1.1":
+  version: 11.10.6
+  resolution: "@emotion/react@npm:11.10.6"
   dependencies:
     "@babel/runtime": ^7.18.3
-    "@emotion/babel-plugin": ^11.10.5
+    "@emotion/babel-plugin": ^11.10.6
     "@emotion/cache": ^11.10.5
     "@emotion/serialize": ^1.1.1
     "@emotion/use-insertion-effect-with-fallbacks": ^1.0.0
@@ -1863,14 +1860,11 @@ __metadata:
     "@emotion/weak-memoize": ^0.3.0
     hoist-non-react-statics: ^3.3.1
   peerDependencies:
-    "@babel/core": ^7.0.0
     react: ">=16.8.0"
   peerDependenciesMeta:
-    "@babel/core":
-      optional: true
     "@types/react":
       optional: true
-  checksum: 32b67b28e9b6d6c53b970072680697f04c2521441050bdeb19a1a7f0164af549b4dad39ff375eda1b6a3cf1cc86ba2c6fa55460ec040e6ebbca3e9ec58353cf7
+  checksum: 4762042e39126ffaffe76052dc65c9bb0ba6b8893013687ba3cc13ed4dd834c31597f1230684c3c078e90aecc13ab6cd0e3cde0dec8b7761affd2571f4d80019
   languageName: node
   linkType: hard
 
@@ -1894,26 +1888,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/styled@npm:11.10.5":
-  version: 11.10.5
-  resolution: "@emotion/styled@npm:11.10.5"
+"@emotion/styled@npm:11.10.6":
+  version: 11.10.6
+  resolution: "@emotion/styled@npm:11.10.6"
   dependencies:
     "@babel/runtime": ^7.18.3
-    "@emotion/babel-plugin": ^11.10.5
+    "@emotion/babel-plugin": ^11.10.6
     "@emotion/is-prop-valid": ^1.2.0
     "@emotion/serialize": ^1.1.1
     "@emotion/use-insertion-effect-with-fallbacks": ^1.0.0
     "@emotion/utils": ^1.2.0
   peerDependencies:
-    "@babel/core": ^7.0.0
     "@emotion/react": ^11.0.0-rc.0
     react: ">=16.8.0"
   peerDependenciesMeta:
-    "@babel/core":
-      optional: true
     "@types/react":
       optional: true
-  checksum: 1cec5f6aeb227a7255141031e8594f38ad83902413472aae0a46c27e5f9769c01e23c1ad39adee408d8a2168a697464314d1a0c4f50b31a5d25ea506b2d7bbc8
+  checksum: ed0ee4bec3b63ee9c5eb8216b22646313ff1ada06c5183f128d25b73252126e9fde625e81c868be7ccd666b686a73076f923ce188dac25e93d5062ddffdad46f
   languageName: node
   linkType: hard
 
@@ -2093,7 +2084,7 @@ __metadata:
     react-dnd: 16.0.1
     react-dom: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
     typescript: 4.9.5
   peerDependencies:
@@ -2126,7 +2117,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     typescript: 4.9.5
   languageName: unknown
   linkType: soft
@@ -2163,7 +2154,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.4.3
-    "@testing-library/react": 13.4.0
+    "@testing-library/react": 14.0.0
     "@types/react": 18.0.28
     "@types/react-dom": 18.0.11
     cross-env: 7.0.3
@@ -2175,7 +2166,7 @@ __metadata:
     react: 18.2.0
     react-dom: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
     typescript: 4.9.5
   peerDependencies:
@@ -2209,7 +2200,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     typescript: 4.9.5
   languageName: unknown
   linkType: soft
@@ -2247,7 +2238,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.4.3
-    "@testing-library/react": 13.4.0
+    "@testing-library/react": 14.0.0
     "@types/react": 18.0.28
     "@types/react-dom": 18.0.11
     cross-env: 7.0.3
@@ -2263,7 +2254,7 @@ __metadata:
     react-dnd: 16.0.1
     react-dom: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
     typescript: 4.9.5
   peerDependencies:
@@ -2289,7 +2280,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     typescript: 4.9.5
   languageName: unknown
   linkType: soft
@@ -2337,7 +2328,7 @@ __metadata:
     react: 18.2.0
     react-dom: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
     typescript: 4.9.5
   peerDependencies:
@@ -2374,9 +2365,9 @@ __metadata:
     react-router: 5.3.4
     react-router-dom: 5.3.4
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
-    sql-formatter: 12.1.0
+    sql-formatter: 12.1.2
     typescript: 4.9.5
     xterm: 5.1.0
     xterm-addon-fit: 0.7.0
@@ -2393,8 +2384,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-art@workspace:packages/legend-art"
   dependencies:
-    "@emotion/react": 11.10.5
-    "@emotion/styled": 11.10.5
+    "@emotion/react": 11.10.6
+    "@emotion/styled": 11.10.6
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@fontsource/raleway": 4.5.12
@@ -2427,7 +2418,7 @@ __metadata:
     react-window: 1.8.8
     remark-gfm: 3.0.1
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     typescript: 4.9.5
   peerDependencies:
     react: ^18.0.0
@@ -2478,7 +2469,7 @@ __metadata:
     react-refresh: 0.14.0
     resolve: 1.22.1
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     sass-loader: 13.2.0
     typescript: 4.9.5
     webpack: 5.75.0
@@ -2511,7 +2502,7 @@ __metadata:
     react: 18.2.0
     react-dom: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
     typescript: 4.9.5
   peerDependencies:
@@ -2531,7 +2522,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.4.3
-    "@testing-library/react": 13.4.0
+    "@testing-library/react": 14.0.0
     "@types/react": 18.0.28
     cross-env: 7.0.3
     eslint: 8.34.0
@@ -2543,7 +2534,7 @@ __metadata:
     react-dnd: 16.0.1
     react-dom: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
     typescript: 4.9.5
   peerDependencies:
@@ -2571,7 +2562,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
     typescript: 4.9.5
   peerDependencies:
@@ -2626,7 +2617,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
     typescript: 4.9.5
   peerDependencies:
@@ -2660,7 +2651,7 @@ __metadata:
     react: 18.2.0
     react-dom: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
     typescript: 4.9.5
   peerDependencies:
@@ -2689,7 +2680,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
     typescript: 4.9.5
   peerDependencies:
@@ -2728,7 +2719,7 @@ __metadata:
     jest: 29.4.3
     npm-run-all: 4.1.5
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     typescript: 4.9.5
   languageName: unknown
   linkType: soft
@@ -2754,7 +2745,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
     typescript: 4.9.5
   peerDependencies:
@@ -2783,7 +2774,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
     typescript: 4.9.5
   peerDependencies:
@@ -2812,7 +2803,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
     typescript: 4.9.5
   peerDependencies:
@@ -2921,7 +2912,7 @@ __metadata:
     "@finos/legend-query-builder": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.4.3
-    "@testing-library/react": 13.4.0
+    "@testing-library/react": 14.0.0
     axios: 1.3.3
     cross-env: 7.0.3
     eslint: 8.34.0
@@ -2936,10 +2927,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-query-builder@workspace:packages/legend-query-builder"
   dependencies:
-    "@ag-grid-community/client-side-row-model": 29.0.0
-    "@ag-grid-community/core": 29.0.0
-    "@ag-grid-community/react": 29.0.0
-    "@ag-grid-community/styles": 29.0.0
+    "@ag-grid-community/client-side-row-model": 29.1.0
+    "@ag-grid-community/core": 29.1.0
+    "@ag-grid-community/react": 29.1.0
+    "@ag-grid-community/styles": 29.1.0
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
@@ -2948,7 +2939,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.4.3
-    "@testing-library/react": 13.4.0
+    "@testing-library/react": 14.0.0
     "@types/papaparse": 5.3.7
     "@types/react": 18.0.28
     "@types/react-dom": 18.0.11
@@ -2964,7 +2955,7 @@ __metadata:
     react-dnd: 16.0.1
     react-dom: 18.2.0
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     serializr: 3.0.2
     typescript: 4.9.5
   peerDependencies:
@@ -3918,9 +3909,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/dom@npm:^8.5.0":
-  version: 8.20.0
-  resolution: "@testing-library/dom@npm:8.20.0"
+"@testing-library/dom@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "@testing-library/dom@npm:9.0.0"
   dependencies:
     "@babel/code-frame": ^7.10.4
     "@babel/runtime": ^7.12.5
@@ -3930,21 +3921,21 @@ __metadata:
     dom-accessibility-api: ^0.5.9
     lz-string: ^1.4.4
     pretty-format: ^27.0.2
-  checksum: 1e599129a2fe91959ce80900a0a4897232b89e2a8e22c1f5950c36d39c97629ea86b4986b60b173b5525a05de33fde1e35836ea597b03de78cc51b122835c6f0
+  checksum: 5381bf9438f0ee35f795e7f9b203564aa455e7cd838b6677084c82dd56396779c38cc49ddffed4e57a8bcc3c62b4bc96ea684bb4b24d13655152db745327b2cd
   languageName: node
   linkType: hard
 
-"@testing-library/react@npm:13.4.0":
-  version: 13.4.0
-  resolution: "@testing-library/react@npm:13.4.0"
+"@testing-library/react@npm:14.0.0":
+  version: 14.0.0
+  resolution: "@testing-library/react@npm:14.0.0"
   dependencies:
     "@babel/runtime": ^7.12.5
-    "@testing-library/dom": ^8.5.0
+    "@testing-library/dom": ^9.0.0
     "@types/react-dom": ^18.0.0
   peerDependencies:
     react: ^18.0.0
     react-dom: ^18.0.0
-  checksum: 51ec548c1fdb1271089a5c63e0908f0166f2c7fcd9cacd3108ebbe0ce64cb4351812d885892020dc37608418cfb15698514856502b3cab0e5cc58d6cc1bd4a3e
+  checksum: 4a54c8f56cc4a39b50803205f84f06280bb76521d6d5d4b3b36651d760c7c7752ef142d857d52aaf4fad4848ed7a8be49afc793a5dda105955d2f8bef24901ac
   languageName: node
   linkType: hard
 
@@ -4284,10 +4275,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:18.13.0":
-  version: 18.13.0
-  resolution: "@types/node@npm:18.13.0"
-  checksum: 4ea10f8802848b01672bce938f678b6774ca2cee0c9774f12275ab064ae07818419c3e2e41d6257ce7ba846d1ea26c63214aa1dfa4166fa3746291752b8c6416
+"@types/node@npm:*, @types/node@npm:18.14.0":
+  version: 18.14.0
+  resolution: "@types/node@npm:18.14.0"
+  checksum: d83fcf5e4ed544755dd9028f5cbb6b9d46235043159111bb2ad62223729aee581c0144a9f6df8ba73d74011db9ed4ebd7af2fd5e0996714e3beb508a5da8ac5c
   languageName: node
   linkType: hard
 
@@ -5798,9 +5789,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001426, caniuse-lite@npm:^1.0.30001449":
-  version: 1.0.30001453
-  resolution: "caniuse-lite@npm:1.0.30001453"
-  checksum: 7a41f78604188a14aa079a0703b6f76961971dee27cb8ed15f8523b4cc889e3951b51f98369d06a15c723a0eba18eb280aee9b0f1002dffbbe44f2a71348f1ec
+  version: 1.0.30001456
+  resolution: "caniuse-lite@npm:1.0.30001456"
+  checksum: c2cc479962149abd09a25b64699ee7484d9c433db2bad0a489f7b51b09a463c991f6efd7b8e201bc1a1ccf3294263f88503a3adf0a57db9046939ee7e58b76a6
   languageName: node
   linkType: hard
 
@@ -7061,9 +7052,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.284":
-  version: 1.4.299
-  resolution: "electron-to-chromium@npm:1.4.299"
-  checksum: 3d3ba3da9a7661f61003a957bb21eb8abfba84c7920088db53f28613e31c8277ad443ae9882dc64a5a5c5e6bf8f52e8a701afac3a7223926ecdb2bd45bfaded4
+  version: 1.4.302
+  resolution: "electron-to-chromium@npm:1.4.302"
+  checksum: aa764494f9a5b6916ba9f311c0204b2c73449addba18cc55d43e84e8c4465732af9cd6560a8efeb32f3c5a928299030e41352e5b3a081e9e56b086d5be618f45
   languageName: node
   linkType: hard
 
@@ -10276,7 +10267,7 @@ __metadata:
     "@finos/eslint-plugin-legend-studio": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
-    "@types/node": 18.13.0
+    "@types/node": 18.14.0
     chalk: 5.2.0
     cross-env: 7.0.3
     envinfo: 7.8.1
@@ -10290,13 +10281,13 @@ __metadata:
     npm-run-all: 4.1.5
     prettier: 2.8.4
     rimraf: 4.1.2
-    sass: 1.58.1
+    sass: 1.58.3
     semver: 7.3.8
     sort-package-json: 2.4.1
     stylelint: 15.1.0
     typedoc: 0.23.25
     typescript: 4.9.5
-    yargs: 17.6.2
+    yargs: 17.7.0
   languageName: unknown
   linkType: soft
 
@@ -10604,9 +10595,9 @@ __metadata:
   linkType: hard
 
 "lru-cache@npm:^7.7.1":
-  version: 7.15.0
-  resolution: "lru-cache@npm:7.15.0"
-  checksum: 85fafe28ddb14fc4518a1f268241861bdb5339ed35b51a23c742cf2467c639a05f0c8d11594e3d27cdf1052c51ddb1fa06ece024c28caa5a0312c8f1ac2fc2c3
+  version: 7.16.1
+  resolution: "lru-cache@npm:7.16.1"
+  checksum: 64618e3ed4fd1203afedd9bbf5247921b1419f8e3100f20e58e5f04e741f8287bd7d04fefaad332411bb53b3a73445714b235de750cf5d310cba1fa23bd82795
   languageName: node
   linkType: hard
 
@@ -13692,8 +13683,8 @@ __metadata:
   linkType: hard
 
 "regexpu-core@npm:^5.2.1":
-  version: 5.3.0
-  resolution: "regexpu-core@npm:5.3.0"
+  version: 5.3.1
+  resolution: "regexpu-core@npm:5.3.1"
   dependencies:
     "@babel/regjsgen": ^0.8.0
     regenerate: ^1.4.2
@@ -13701,7 +13692,7 @@ __metadata:
     regjsparser: ^0.9.1
     unicode-match-property-ecmascript: ^2.0.0
     unicode-match-property-value-ecmascript: ^2.1.0
-  checksum: f3c7921543ebda919c53fdbbf3a9cebbecbf8ad65b30e423d7eaef35484e08cbc919f9e8334f4693a72206f583d4f2b48d4415483f6e6e8c81f0046e3a23c66f
+  checksum: 446fbbb79059afcd64d11ea573276e2df97ee7ad45aa452834d3b2aef7edf7bfe206c310f57f9345d8c95bfedbf9c16a9529f9219a05ae6a6b0d6f0dbe523b33
   languageName: node
   linkType: hard
 
@@ -14095,16 +14086,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.58.1":
-  version: 1.58.1
-  resolution: "sass@npm:1.58.1"
+"sass@npm:1.58.3":
+  version: 1.58.3
+  resolution: "sass@npm:1.58.3"
   dependencies:
     chokidar: ">=3.0.0 <4.0.0"
     immutable: ^4.0.0
     source-map-js: ">=0.6.2 <2.0.0"
   bin:
     sass: sass.js
-  checksum: ff079887d906b5c0dde99084d14ac36336d238c0c07935ff6381bad68f05de212c1ff12657ac1e8a0533523cd7a393126facdc2508d758e7d5700344a0e6ea51
+  checksum: 35a2b98c037ef80fdc93c9b0be846e6ccc7d75596351a37ee79c397e66666d0a754c52c4696e746c0aff32327471e185343ca349e998a58340411adc9d0489a5
   languageName: node
   linkType: hard
 
@@ -14701,15 +14692,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sql-formatter@npm:12.1.0":
-  version: 12.1.0
-  resolution: "sql-formatter@npm:12.1.0"
+"sql-formatter@npm:12.1.2":
+  version: 12.1.2
+  resolution: "sql-formatter@npm:12.1.2"
   dependencies:
     argparse: ^2.0.1
     nearley: ^2.20.1
   bin:
     sql-formatter: bin/sql-formatter-cli.cjs
-  checksum: 10f19f0a6efdaaed6acefa8bbb638344b39320380392d0dce9ca3373401f70559f89ae7a194128391ce1a4aa17fb8e0cb73ced3f38be9e08285a3c4f52bc825f
+  checksum: 59e3f9688a82f20918fe1a91c505edafa1459e9b2ef61a801ef1235ec06654a69fb7bb57748aeab80fe2b756046b250297c9979ba73e02adc5e9a72d38d129fd
   languageName: node
   linkType: hard
 
@@ -15228,8 +15219,8 @@ __metadata:
   linkType: hard
 
 "terser@npm:^5.10.0, terser@npm:^5.14.1":
-  version: 5.16.3
-  resolution: "terser@npm:5.16.3"
+  version: 5.16.4
+  resolution: "terser@npm:5.16.4"
   dependencies:
     "@jridgewell/source-map": ^0.3.2
     acorn: ^8.5.0
@@ -15237,7 +15228,7 @@ __metadata:
     source-map-support: ~0.5.20
   bin:
     terser: bin/terser
-  checksum: d3c2ac1c2723c37b698b25b68d76fd315a1277fddde113983d5783d1f2a01dd7b8ed83ba3f54e5e65f0b59dd971ed7be2fdf8d4be94ec694b2d27832d2e7561f
+  checksum: 92c7b38b7322340993d6a3578d74818c3556f362b3014f18a9b3d079ac7fa5da57954fda9a0d40d53013bc3ba82f50758296881abc40761e1bafdbde9a2ab967
   languageName: node
   linkType: hard
 
@@ -15538,9 +15529,9 @@ __metadata:
   linkType: hard
 
 "type-fest@npm:^3.0.0":
-  version: 3.5.7
-  resolution: "type-fest@npm:3.5.7"
-  checksum: 06358352daa706d6f582d2041945e629fdd236c3c94678c4d87efb5d2e77bab78740337449f44bbd09a736c966e70570e901e2e2576b59b369891ffc1bf87bb6
+  version: 3.6.0
+  resolution: "type-fest@npm:3.6.0"
+  checksum: 3cb3b27fc1dc69e0a7524041d9d32cfd3786b16591952e0b2b87ca44b53acaed1bf86ee62a7cc3033a55154d44542e8b488d500d1b363d828f62a9fae9d2a043
   languageName: node
   linkType: hard
 
@@ -16545,9 +16536,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yargs@npm:17.6.2, yargs@npm:^17.1.1, yargs@npm:^17.3.1":
-  version: 17.6.2
-  resolution: "yargs@npm:17.6.2"
+"yargs@npm:17.7.0, yargs@npm:^17.1.1, yargs@npm:^17.3.1":
+  version: 17.7.0
+  resolution: "yargs@npm:17.7.0"
   dependencies:
     cliui: ^8.0.1
     escalade: ^3.1.1
@@ -16556,7 +16547,7 @@ __metadata:
     string-width: ^4.2.3
     y18n: ^5.0.5
     yargs-parser: ^21.1.1
-  checksum: 47da1b0d854fa16d45a3ded57b716b013b2179022352a5f7467409da5a04a1eef5b3b3d97a2dfc13e8bbe5f2ffc0afe3bc6a4a72f8254e60f5a4bd7947138643
+  checksum: e7d5f5b60e63b04ded7c27c3d4b194565565cac3ea19fffcdbb183bed973a83106822a04dda28ebba4811ce92949a9d9858d3935186ff8f343548bf98aab2120
   languageName: node
   linkType: hard
 
