@@ -41,7 +41,7 @@ jobs:
   deploy-documentation-website:
     name: Deploy Documentation Site
     runs-on: ubuntu-latest
-    needs: build-documentation-
+    needs: build-documentation-website
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
       pages: write # to deploy to Pages
