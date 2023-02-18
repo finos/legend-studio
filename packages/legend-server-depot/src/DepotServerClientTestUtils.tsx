@@ -27,9 +27,9 @@ export const TEST__provideMockedDepotServerClient = (customization?: {
   mock?: DepotServerClient;
 }): DepotServerClient => {
   const value = customization?.mock ?? TEST__getTestDepotServerClient();
-  const MockedDepotServerClientProvider = require('./DepotServerClientProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedDepotServerClientProvider.useDepotServerClient = createMock();
-  MockedDepotServerClientProvider.useDepotServerClient.mockReturnValue(value);
+  const MOCK__DepotServerClientProvider = require('./DepotServerClientProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  MOCK__DepotServerClientProvider.useDepotServerClient = createMock();
+  MOCK__DepotServerClientProvider.useDepotServerClient.mockReturnValue(value);
   return value;
 };
 

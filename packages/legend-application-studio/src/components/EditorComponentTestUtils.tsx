@@ -167,9 +167,9 @@ export const TEST__provideMockedEditorStore = (customization?: {
       customization?.graphManagerState ??
         TEST__getTestGraphManagerState(customization?.pluginManager),
     );
-  const MockedEditorStoreProvider = require('./editor/EditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedEditorStoreProvider.useEditorStore = createMock();
-  MockedEditorStoreProvider.useEditorStore.mockReturnValue(value);
+  const MOCK__EditorStoreProvider = require('./editor/EditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  MOCK__EditorStoreProvider.useEditorStore = createMock();
+  MOCK__EditorStoreProvider.useEditorStore.mockReturnValue(value);
   return value;
 };
 

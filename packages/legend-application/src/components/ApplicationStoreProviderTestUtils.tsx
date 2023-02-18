@@ -52,8 +52,8 @@ export const TEST__provideMockedApplicationStore = <
         new WebApplicationNavigator(createMemoryHistory()),
       pluginManager,
     );
-  const MockedApplicationStoreProvider = require('./ApplicationStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedApplicationStoreProvider.useApplicationStore = createMock();
-  MockedApplicationStoreProvider.useApplicationStore.mockReturnValue(value);
+  const MOCK__ApplicationStoreProvider = require('./ApplicationStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  MOCK__ApplicationStoreProvider.useApplicationStore = createMock();
+  MOCK__ApplicationStoreProvider.useApplicationStore.mockReturnValue(value);
   return value;
 };

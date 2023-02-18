@@ -94,9 +94,9 @@ export const TEST__provideMockedGraphManagerState = (customization?: {
   const value =
     customization?.mock ??
     TEST__getTestGraphManagerState(customization?.pluginManager);
-  const MockedGraphManagerStateProvider = require('./GraphManagerStateProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedGraphManagerStateProvider.useGraphManagerState = createMock();
-  MockedGraphManagerStateProvider.useGraphManagerState.mockReturnValue(value);
+  const MOCK__GraphManagerStateProvider = require('./GraphManagerStateProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  MOCK__GraphManagerStateProvider.useGraphManagerState = createMock();
+  MOCK__GraphManagerStateProvider.useGraphManagerState.mockReturnValue(value);
   return value;
 };
 

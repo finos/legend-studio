@@ -28,9 +28,9 @@ export const TEST__provideMockedSDLCServerClient = (customization?: {
   mock?: SDLCServerClient;
 }): SDLCServerClient => {
   const value = customization?.mock ?? TEST__getTestSDLCServerClient();
-  const MockedSDLCServerClientProvider = require('./SDLCServerClientProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedSDLCServerClientProvider.useSDLCServerClient = createMock();
-  MockedSDLCServerClientProvider.useSDLCServerClient.mockReturnValue(value);
+  const MOCK__SDLCServerClientProvider = require('./SDLCServerClientProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  MOCK__SDLCServerClientProvider.useSDLCServerClient = createMock();
+  MOCK__SDLCServerClientProvider.useSDLCServerClient.mockReturnValue(value);
   return value;
 };
 

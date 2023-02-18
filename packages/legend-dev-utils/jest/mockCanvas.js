@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-import { jest } from '@jest/globals';
+// eslint-disable-next-line @finos/legend-studio/no-cross-workspace-non-export-usage
+import canvasMock from 'jest-canvas-mock/lib/mock/prototype.js';
+import { beforeEach } from '@jest/globals';
 
-// Increase timeout for some long running tests
-jest.setTimeout(20000);
-// Runs failed tests n-times until they pass or until the max number of retries is exhausted.
-jest.retryTimes(2);
+// NOTE: we need to call this before each test since there's an issue
+// with jest-canvas-mock and jest.resetAllMocks(), which is called when we set `restoreMocks: true`
+// See https://github.com/hustcc/jest-canvas-mock/issues/103
+beforeEach(() => {
+  canvasMock();
+});

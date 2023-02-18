@@ -231,9 +231,24 @@ export class QueryExportState {
         this.editorStore.applicationStore.notifySuccess(
           `Successfully created query!`,
         );
+
         LegendQueryEventService.create(
           this.editorStore.applicationStore.eventService,
         ).notify_QueryCreated({ queryId: newQuery.id });
+
+        LegendQueryTelemetry.logEvent_CreateQuery(
+          this.editorStore.applicationStore.telemetryService,
+          {
+            query: {
+              id: query.id,
+              name: query.name,
+              groupId: query.groupId,
+              artifactId: query.artifactId,
+              versionId: query.versionId,
+            },
+          },
+        );
+
         this.editorStore.applicationStore.navigator.goToLocation(
           generateExistingQueryEditorRoute(newQuery.id),
         );
@@ -246,6 +261,20 @@ export class QueryExportState {
         this.editorStore.applicationStore.notifySuccess(
           `Successfully updated query!`,
         );
+
+        LegendQueryTelemetry.logEvent_UpdateQuery(
+          this.editorStore.applicationStore.telemetryService,
+          {
+            query: {
+              id: query.id,
+              name: query.name,
+              groupId: query.groupId,
+              artifactId: query.artifactId,
+              versionId: query.versionId,
+            },
+          },
+        );
+
         this.onQueryUpdate?.(updatedQuery);
       }
     } catch (error) {
