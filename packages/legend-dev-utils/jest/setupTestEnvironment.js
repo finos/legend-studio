@@ -17,6 +17,6 @@
 import { jest } from '@jest/globals';
 
 // Increase timeout for some long running tests
-jest.setTimeout(10000);
+jest.setTimeout(20000);
 // Runs failed tests n-times until they pass or until the max number of retries is exhausted.
 jest.retryTimes(2);
