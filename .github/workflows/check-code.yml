@@ -20,9 +20,7 @@ jobs:
   check-code:
     name: Run Code Checks
     # Disable usage of large runner on default branch of forks
-    # NOTE: temporarily disable big runners
-    # runs-on: ${{ (github.repository != 'finos/legend-studio' && github.ref == 'refs/heads/master') && 'ubuntu-latest' || 'ubuntu-latest-16-cores' }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ (github.repository != 'finos/legend-studio' && github.ref == 'refs/heads/master') && 'ubuntu-latest' || 'ubuntu-latest-4-cores' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.3.0
@@ -52,7 +50,7 @@ jobs:
     name: Run Codebase Maintenance Checks
     # Disable usage of large runner on default branch of forks
     # NOTE: temporarily disable big runners
-    # runs-on: ${{ (github.repository != 'finos/legend-studio' && github.ref == 'refs/heads/master') && 'ubuntu-latest' || 'ubuntu-latest-16-cores' }}
+    # runs-on: ${{ (github.repository != 'finos/legend-studio' && github.ref == 'refs/heads/master') && 'ubuntu-latest' || 'ubuntu-latest-4-cores' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
