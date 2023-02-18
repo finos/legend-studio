@@ -9,6 +9,7 @@ jobs:
   build-documentation-website:
     name: Build Documentation Site
     runs-on: ubuntu-latest
+    if: github.repository == 'finos/legend-studio' # prevent running this action in forks
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.3.0
@@ -41,6 +42,7 @@ jobs:
   deploy-documentation-website:
     name: Deploy Documentation Site
     runs-on: ubuntu-latest
+    if: github.repository == 'finos/legend-studio' # prevent running this action in forks
     needs: build-documentation-website
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
