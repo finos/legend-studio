@@ -55,6 +55,7 @@ import {
 import type { DataSpaceExecutionContextAnalysisResult } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { useApplicationStore } from '@finos/legend-application';
+import { DSL_DataSpace_LegendApplicationPlugin } from './DSL_DataSpace_LegendApplicationPlugin.js';
 
 interface DataSpaceViewerActivityConfig {
   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE;
@@ -472,6 +473,26 @@ const DataSpaceSupportInfoViewerInner = observer(
   },
 );
 
+const renderDataSpaceCheckEntitlementsEditor = (
+  dataSpaceViewerState: DataSpaceViewerState,
+  plugins: DSL_DataSpace_LegendApplicationPlugin[],
+): React.ReactNode => {
+  const checkEntitlementsEditorRenderers = plugins.flatMap(
+    (plugin) => plugin.getCheckEntitlementsEditorRender() ?? [],
+  );
+  for (const editorRenderer of checkEntitlementsEditorRenderers) {
+    const editor = editorRenderer(dataSpaceViewerState);
+    if (editor) {
+      return editor;
+    }
+  }
+  return (
+    <BlankPanelContent>
+      Check entitlement(s) (Work in Progress)
+    </BlankPanelContent>
+  );
+};
+
 export const DataSpaceViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
@@ -609,11 +630,16 @@ export const DataSpaceViewer = observer(
                 />
               )}
               {dataSpaceViewerState.currentActivity ===
-                DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT && (
-                <BlankPanelContent>
-                  Request entitlement(s) (Work in Progress)
-                </BlankPanelContent>
-              )}
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT &&
+                renderDataSpaceCheckEntitlementsEditor(
+                  dataSpaceViewerState,
+                  applicationStore.pluginManager
+                    .getApplicationPlugins()
+                    .filter(
+                      (plugin) =>
+                        plugin instanceof DSL_DataSpace_LegendApplicationPlugin,
+                    ) as DSL_DataSpace_LegendApplicationPlugin[],
+                )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA && (
                 <BlankPanelContent>
