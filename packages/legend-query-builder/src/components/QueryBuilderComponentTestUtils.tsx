@@ -62,9 +62,15 @@ export const TEST__setUpQueryBuilder = async (
     entities,
     graphManagerState.graphBuildState,
   );
+
+  const history = createMemoryHistory();
+  const navigator = new WebApplicationNavigator(history);
+  TEST__provideMockedWebApplicationNavigator({ mock: navigator });
+
   const applicationStore = TEST__provideMockedApplicationStore(
     TEST__getGenericApplicationConfig(),
     pluginManager,
+    { navigator },
   );
 
   const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
@@ -92,11 +98,6 @@ export const TEST__setUpQueryBuilder = async (
       ),
     );
   }
-
-  const history = createMemoryHistory();
-  const navigator = new WebApplicationNavigator(history);
-  applicationStore.navigator = navigator;
-  TEST__provideMockedWebApplicationNavigator({ mock: navigator });
 
   const renderResult = render(
     <Router history={history}>

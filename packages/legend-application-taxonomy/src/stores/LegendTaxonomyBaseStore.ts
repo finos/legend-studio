@@ -14,8 +14,20 @@
  * limitations under the License.
  */
 
-import type { ApplicationStore } from '@finos/legend-application';
+import {
+  type ApplicationStore,
+  ApplicationTelemetry,
+  APPLICATION_EVENT,
+} from '@finos/legend-application';
 import type { DepotServerClient } from '@finos/legend-server-depot';
+import {
+  ActionState,
+  assertErrorThrown,
+  LogEvent,
+  NetworkClient,
+  type GeneratorFn,
+} from '@finos/legend-shared';
+import { flow, makeObservable } from 'mobx';
 import type { LegendTaxonomyApplicationConfig } from '../application/LegendTaxonomyApplicationConfig.js';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
 import type { TaxonomyServerClient } from './TaxonomyServerClient.js';
@@ -26,16 +38,22 @@ export type LegendTaxonomyApplicationStore = ApplicationStore<
 >;
 
 export class LegendTaxonomyBaseStore {
-  applicationStore: LegendTaxonomyApplicationStore;
-  depotServerClient: DepotServerClient;
-  taxonomyServerClient: TaxonomyServerClient;
-  pluginManager: LegendTaxonomyPluginManager;
+  readonly applicationStore: LegendTaxonomyApplicationStore;
+  readonly depotServerClient: DepotServerClient;
+  readonly taxonomyServerClient: TaxonomyServerClient;
+  readonly pluginManager: LegendTaxonomyPluginManager;
+
+  readonly initState = ActionState.create();
 
   constructor(
     applicationStore: LegendTaxonomyApplicationStore,
     taxonomyServerClient: TaxonomyServerClient,
     depotServerClient: DepotServerClient,
   ) {
+    makeObservable(this, {
+      initialize: flow,
+    });
+
     this.applicationStore = applicationStore;
     this.taxonomyServerClient = taxonomyServerClient;
     this.depotServerClient = depotServerClient;
@@ -48,5 +66,55 @@ export class LegendTaxonomyBaseStore {
     this.depotServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
+  }
+
+  *initialize(): GeneratorFn<void> {
+    if (!this.initState.isInInitialState) {
+      this.applicationStore.notifyIllegalState('Base store is re-initialized');
+      return;
+    }
+    this.initState.inProgress();
+
+    try {
+      this.applicationStore.setCurrentUser(
+        (yield new NetworkClient().get(
+          `${this.applicationStore.config.engineServerUrl}/server/v1/currentUser`,
+        )) as string,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.log.error(
+        LogEvent.create(
+          APPLICATION_EVENT.APPLICATION_IDENTITY_AUTO_FETCH_FAILURE,
+        ),
+        error,
+      );
+      this.applicationStore.notifyWarning(error.message);
+    }
+
+    // setup telemetry service
+    this.applicationStore.telemetryService.setUserId(
+      this.applicationStore.currentUser,
+    );
+
+    ApplicationTelemetry.logEvent_ApplicationInitialized(
+      this.applicationStore.telemetryService,
+      {
+        application: {
+          name: this.applicationStore.config.appName,
+          version: this.applicationStore.config.appVersion,
+          env: this.applicationStore.config.env,
+        },
+        browser: {
+          userAgent: navigator.userAgent,
+        },
+        screen: {
+          height: window.screen.height,
+          width: window.screen.width,
+        },
+      },
+    );
+
+    this.initState.complete();
   }
 }

@@ -90,9 +90,13 @@ test(
 );
 
 test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
+  const navigator = new WebApplicationNavigator(createMemoryHistory());
+  TEST__provideMockedWebApplicationNavigator({ mock: navigator });
+
   const applicationStore = TEST__provideMockedApplicationStore(
     TEST__getLegendStudioApplicationConfig(),
     LegendStudioPluginManager.create(),
+    { navigator },
   );
   const sdlcServerClient = TEST__provideMockedSDLCServerClient();
   const stubURL = 'stubUrl';
@@ -102,8 +106,7 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
     name: 'testUser',
     userId: 'testUserId',
   });
-  const navigator = new WebApplicationNavigator(createMemoryHistory());
-  applicationStore.navigator = navigator;
+
   const navigationActionSpy = createSpy(
     navigator,
     'goToAddress',
@@ -111,8 +114,6 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   createSpy(navigator, 'getCurrentAddress').mockImplementationOnce(
     () => stubURL,
   );
-
-  TEST__provideMockedWebApplicationNavigator();
 
   render(
     <MemoryRouter>
