@@ -415,6 +415,9 @@ export class ProjectViewerStore {
           ),
         },
         dependencies: dependency_buildReport,
+        dependenciesCount:
+          this.editorStore.graphManagerState.graph.dependencyManager
+            .numberOfDependencies,
         graph: graph_buildReport,
       };
       this.editorStore.applicationStore.log.info(

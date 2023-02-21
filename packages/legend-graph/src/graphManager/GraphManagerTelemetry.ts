@@ -15,14 +15,16 @@
  */
 
 import type { TelemetryService } from '@finos/legend-shared';
-import type { GraphBuilderReport } from './GraphBuilderReport.js';
+import type { GraphBuilderReport } from './GraphManagerMetrics.js';
 import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent.js';
 
 type GraphBuilt_TelemetryData = {
   timings: Record<string, number>;
   dependencies: GraphBuilderReport;
+  dependenciesCount: number;
   graph: GraphBuilderReport;
   generations?: GraphBuilderReport;
+  generationCount?: number;
 };
 
 export class GraphManagerTelemetry {

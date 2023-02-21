@@ -14,19 +14,32 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-shared';
 import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent.js';
 
-export class GraphBuilderReport {
+export class BasicGraphOperationStatistics {
   timings: {
-    [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: number;
+    total: number;
     [key: string]: number;
-  } = { [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: 0 };
+  } = { total: 0 };
   elementCount: {
     total: number;
     [key: string]: number;
   } = {
     total: 0,
   };
-  otherStats: PlainObject = {};
+}
+
+export class GraphOperationStatistics extends BasicGraphOperationStatistics {
+  dependencies = 0;
+}
+
+export class GraphBuilderReport extends BasicGraphOperationStatistics {
+  override timings: {
+    /**
+     * @deprecated
+     */
+    [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: number;
+    total: number;
+    [key: string]: number;
+  } = { total: 0, [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: 0 };
 }

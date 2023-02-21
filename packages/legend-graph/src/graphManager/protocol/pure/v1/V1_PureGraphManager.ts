@@ -216,7 +216,7 @@ import type { ExternalFormatDescription } from '../../../../graphManager/action/
 import type { ConfigurationProperty } from '../../../../graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
 import { V1_ExternalFormatModelGenerationInput } from './engine/externalFormat/V1_ExternalFormatModelGeneration.js';
 import { V1_GenerateSchemaInput } from './engine/externalFormat/V1_GenerateSchemaInput.js';
-import { GraphBuilderReport } from '../../../../graphManager/GraphBuilderReport.js';
+import { GraphBuilderReport } from '../../../GraphManagerMetrics.js';
 import type { Package } from '../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
 import { V1_DataElement } from './model/packageableElements/data/V1_DataElement.js';
 import {
@@ -555,6 +555,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+        total: stopWatch.elapsed,
       };
       return report;
     } catch (error) {
@@ -637,10 +638,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
 
       buildState.pass();
-      report.otherStats.projectCount = dependencyEntitiesIndex.size;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+        total: stopWatch.elapsed,
       };
       return report;
     } catch (error) {
@@ -719,6 +720,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+        total: stopWatch.elapsed,
       };
       return report;
     } catch (error) {
@@ -796,6 +798,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+        total: stopWatch.elapsed,
       };
       return report;
     } catch (error) {
@@ -873,10 +876,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
 
       buildState.pass();
-      report.otherStats.generationCount = generationGraphDataIndex.size;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+        total: stopWatch.elapsed,
       };
       return report;
     } catch (error) {

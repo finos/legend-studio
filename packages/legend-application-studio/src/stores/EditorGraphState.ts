@@ -392,8 +392,12 @@ export class EditorGraphState {
           ),
         },
         dependencies: dependency_buildReport,
+        dependenciesCount:
+          this.editorStore.graphManagerState.graph.dependencyManager
+            .numberOfDependencies,
         graph: graph_buildReport,
         generations: generation_buildReport,
+        generationsCount: this.graphGenerationState.generatedEntities.size,
       };
       this.editorStore.applicationStore.log.info(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),

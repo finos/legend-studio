@@ -535,6 +535,8 @@ export abstract class QueryEditorStore {
         ),
       },
       dependencies: dependency_buildReport,
+      dependenciesCount:
+        this.graphManagerState.graph.dependencyManager.numberOfDependencies,
       graph: graph_buildReport,
     };
     this.applicationStore.log.info(
