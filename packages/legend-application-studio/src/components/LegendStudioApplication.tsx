@@ -110,6 +110,7 @@ const LegendStudioNotFoundRouteScreen = observer(() => {
 export const LegendStudioApplicationRoot = observer(() => {
   const baseStore = useLegendStudioBaseStore();
   const applicationStore = useLegendStudioApplicationStore();
+
   const extraApplicationPageEntries = applicationStore.pluginManager
     .getApplicationPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
@@ -120,13 +121,17 @@ export const LegendStudioApplicationRoot = observer(() => {
     );
   }, [applicationStore, baseStore]);
 
-  return (
-    <div className="app">
-      {baseStore.isSDLCAuthorized === false && (
+  if (baseStore.initState.isInProgress) {
+    return (
+      <div className="app">
         <div className="app__page">
           <PanelLoadingIndicator isLoading={true} />
         </div>
-      )}
+      </div>
+    );
+  }
+  return (
+    <div className="app">
       {baseStore.isSDLCAuthorized === undefined && (
         <>
           <Switch>

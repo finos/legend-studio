@@ -19,6 +19,7 @@ import {
   guaranteeNonNullable,
   createMock,
   createSpy,
+  type Writable,
 } from '@finos/legend-shared';
 import {
   type GraphManagerState,
@@ -40,6 +41,7 @@ import {
   TEST__getTestApplicationStore,
   Router,
   createMemoryHistory,
+  type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import { TEST__getTestLegendQueryApplicationConfig } from '../stores/QueryEditorStoreTestUtils.js';
 import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
@@ -172,8 +174,12 @@ export const TEST__setUpQueryEditor = async (
     initialEntries: [generateExistingQueryEditorRoute(lightQuery.id)],
   });
   const navigator = new WebApplicationNavigator(history);
-  MOCK__editorStore.applicationStore.navigator = navigator;
   TEST__provideMockedWebApplicationNavigator({ mock: navigator });
+  // TODO: this is not the proper way to do this, we prefer to mock and inject this when we
+  // create the editor store, let's consider how we clean this up in the future
+  (
+    MOCK__editorStore.applicationStore as Writable<GenericLegendApplicationStore>
+  ).navigator = navigator;
 
   const renderResult = render(
     <Router history={history}>

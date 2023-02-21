@@ -15,10 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  DEFAULT_NOTIFICATION_HIDE_TIME,
-  NOTIFCATION_SEVERITY,
-} from '../stores/ApplicationStore.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
 import {
   Notification,
@@ -35,6 +31,10 @@ import {
   clsx,
 } from '@finos/legend-art';
 import { useState } from 'react';
+import {
+  DEFAULT_NOTIFICATION_HIDE_TIME,
+  NOTIFCATION_SEVERITY,
+} from '../stores/NotificationService.js';
 
 export const NotificationManager = observer(() => {
   const applicationStore = useApplicationStore();

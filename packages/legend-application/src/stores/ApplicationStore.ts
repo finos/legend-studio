@@ -38,73 +38,14 @@ import type { LegendApplicationPlugin } from './LegendApplicationPlugin.js';
 import { CommandCenter } from './CommandCenter.js';
 import { KeyboardShortcutsService } from './KeyboardShortcutsService.js';
 import { TerminalService } from './TerminalService.js';
-
-export enum ActionAlertType {
-  STANDARD = 'STANDARD',
-  CAUTION = 'CAUTION',
-}
-
-export enum ActionAlertActionType {
-  STANDARD = 'STANDARD',
-  PROCEED_WITH_CAUTION = 'PROCEED_WITH_CAUTION',
-  PROCEED = 'PROCEED',
-}
-
-export interface ActionAlertInfo {
-  title?: string;
-  message: string;
-  prompt?: string;
-  type?: ActionAlertType;
-  onClose?: () => void;
-  onEnter?: () => void;
-  actions: {
-    label: string;
-    default?: boolean;
-    handler?: () => void; // default to dismiss
-    type?: ActionAlertActionType;
-  }[];
-}
-
-export interface BlockingAlertInfo {
-  message: string;
-  prompt?: string;
-  showLoading?: boolean;
-}
-
-export const DEFAULT_NOTIFICATION_HIDE_TIME = 6000; // ms
-export const DEFAULT_ERROR_NOTIFICATION_HIDE_TIME = 10000; // ms
-
-export enum NOTIFCATION_SEVERITY {
-  ILEGAL_STATE = 'ILEGAL_STATE', // highest priority since this implies bugs - we expect user to never see this
-  ERROR = 'ERROR',
-  WARNING = 'WARNING',
-  SUCCESS = 'SUCCESS',
-  INFO = 'INFO',
-}
-
-export interface NotificationAction {
-  icon: React.ReactNode;
-  action: () => void;
-}
-
-export class Notification {
-  severity: NOTIFCATION_SEVERITY;
-  message: string;
-  actions: NotificationAction[];
-  autoHideDuration?: number | undefined;
-
-  constructor(
-    severity: NOTIFCATION_SEVERITY,
-    message: string,
-    actions: NotificationAction[],
-    autoHideDuration: number | undefined,
-  ) {
-    this.severity = severity;
-    this.message = message;
-    this.actions = actions;
-    this.autoHideDuration = autoHideDuration;
-  }
-}
+import type { ActionAlertInfo, BlockingAlertInfo } from './AlertService.js';
+import {
+  Notification,
+  type NotificationAction,
+  DEFAULT_NOTIFICATION_HIDE_TIME,
+  NOTIFCATION_SEVERITY,
+} from './NotificationService.js';
+import { UNKNOWN_USER_ID } from './IdentityService.js';
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
@@ -115,12 +56,15 @@ export class ApplicationStore<
   T extends LegendApplicationConfig,
   V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
 > {
-  config: T;
-  pluginManager: V;
+  readonly config: T;
+  readonly pluginManager: V;
+
+  // user
+  currentUser = UNKNOWN_USER_ID;
 
   // navigation
-  navigator: WebApplicationNavigator;
-  navigationContextService: ApplicationNavigationContextService;
+  readonly navigator: WebApplicationNavigator;
+  readonly navigationContextService: ApplicationNavigationContextService;
 
   // TODO: refactor this to `NotificationService` including notifications and alerts
   notification?: Notification | undefined;
@@ -128,21 +72,21 @@ export class ApplicationStore<
   actionAlertInfo?: ActionAlertInfo | undefined;
 
   // TODO: consider renaming this to `LogService`
-  log = new Log();
-  terminalService: TerminalService;
+  readonly log = new Log();
+  readonly terminalService: TerminalService;
 
   // documentation & help
-  documentationService: DocumentationService;
-  assistantService: AssistantService;
+  readonly documentationService: DocumentationService;
+  readonly assistantService: AssistantService;
 
   // communication
-  eventService = new EventService();
-  telemetryService = new TelemetryService();
-  tracerService = new TracerService();
+  readonly eventService = new EventService();
+  readonly telemetryService = new TelemetryService();
+  readonly tracerService = new TracerService();
 
   // control and interactions
-  commandCenter: CommandCenter;
-  keyboardShortcutsService: KeyboardShortcutsService;
+  readonly commandCenter: CommandCenter;
+  readonly keyboardShortcutsService: KeyboardShortcutsService;
 
   // TODO: config
   // See https://github.com/finos/legend-studio/issues/407
@@ -161,6 +105,7 @@ export class ApplicationStore<
 
   constructor(config: T, navigator: WebApplicationNavigator, pluginManager: V) {
     makeObservable(this, {
+      currentUser: observable,
       notification: observable,
       blockingAlertInfo: observable,
       actionAlertInfo: observable,
@@ -171,6 +116,7 @@ export class ApplicationStore<
       setShowBackdrop: action,
       setBlockingAlert: action,
       setActionAlertInfo: action,
+      setCurrentUser: action,
       setNotification: action,
       notify: action,
       notifySuccess: action,
@@ -195,6 +141,7 @@ export class ApplicationStore<
     this.telemetryService.registerPlugins(
       pluginManager.getTelemetryServicePlugins(),
     );
+    this.telemetryService.setUserId(this.currentUser);
     this.commandCenter = new CommandCenter(this);
     this.keyboardShortcutsService = new KeyboardShortcutsService(this);
     this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
@@ -241,6 +188,10 @@ export class ApplicationStore<
       this.keyboardShortcutsService.unblockGlobalHotkeys();
     }
     this.actionAlertInfo = alertInfo;
+  }
+
+  setCurrentUser(val: string): void {
+    this.currentUser = val;
   }
 
   setNotification(notification: Notification | undefined): void {

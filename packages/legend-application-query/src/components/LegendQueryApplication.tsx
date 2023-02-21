@@ -34,16 +34,37 @@ import type { LegendQueryApplicationConfig } from '../application/LegendQueryApp
 import {
   LegendQueryBaseStoreProvider,
   useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
 } from './LegendQueryBaseStoreProvider.js';
 import { EditExistingQuerySetup } from './EditExistingQuerySetup.js';
 import { CreateMappingQuerySetup } from './CreateMappingQuerySetup.js';
+import { useEffect } from 'react';
+import { flowResult } from 'mobx';
+import { PanelLoadingIndicator } from '@finos/legend-art';
 
 const LegendQueryApplicationRoot = observer(() => {
   const applicationStore = useLegendQueryApplicationStore();
+  const baseStore = useLegendQueryBaseStore();
+
   const extraApplicationPageEntries = applicationStore.pluginManager
     .getApplicationPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
 
+  useEffect(() => {
+    flowResult(baseStore.initialize()).catch(
+      applicationStore.alertUnhandledError,
+    );
+  }, [applicationStore, baseStore]);
+
+  if (baseStore.initState.isInProgress) {
+    return (
+      <div className="app">
+        <div className="app__page">
+          <PanelLoadingIndicator isLoading={true} />
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="app">
       <Switch>

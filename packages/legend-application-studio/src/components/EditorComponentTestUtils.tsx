@@ -29,7 +29,12 @@ import {
   generateEditorRoute,
   LEGEND_STUDIO_ROUTE_PATTERN,
 } from '../stores/LegendStudioRouter.js';
-import { createMock, createSpy, type PlainObject } from '@finos/legend-shared';
+import {
+  createMock,
+  createSpy,
+  type Writable,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -71,6 +76,7 @@ import {
   Router,
   createMemoryHistory,
   Route,
+  type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import { TEST__getLegendStudioApplicationConfig } from '../stores/EditorStoreTestUtils.js';
 import type { LegendStudioApplicationStore } from '../stores/LegendStudioBaseStore.js';
@@ -340,8 +346,12 @@ export const TEST__setUpEditor = async (
     ],
   });
   const navigator = new WebApplicationNavigator(history);
-  MOCK__editorStore.applicationStore.navigator = navigator;
   TEST__provideMockedWebApplicationNavigator({ mock: navigator });
+  // TODO: this is not the proper way to do this, we prefer to mock and inject this when we
+  // create the editor store, let's consider how we clean this up in the future
+  (
+    MOCK__editorStore.applicationStore as Writable<GenericLegendApplicationStore>
+  ).navigator = navigator;
 
   const renderResult = render(
     <Router history={history}>

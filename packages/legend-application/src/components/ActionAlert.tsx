@@ -19,7 +19,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   type ActionAlertInfo,
-} from '../stores/ApplicationStore.js';
+} from '../stores/AlertService.js';
 import { observer } from 'mobx-react-lite';
 import { noop } from '@finos/legend-shared';
 import { useApplicationStore } from './ApplicationStoreProvider.js';

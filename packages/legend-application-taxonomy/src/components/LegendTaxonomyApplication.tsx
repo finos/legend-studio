@@ -32,11 +32,31 @@ import { StandaloneDataSpaceViewer } from './StandaloneDataSpaceViewer.js';
 import {
   LegendTaxonomyBaseStoreProvider,
   useLegendTaxonomyApplicationStore,
+  useLegendTaxonomyBaseStore,
 } from './LegendTaxonomyBaseStoreProvider.js';
+import { useEffect } from 'react';
+import { flowResult } from 'mobx';
+import { PanelLoadingIndicator } from '@finos/legend-art';
 
 export const LegendTaxonomyApplicationRoot = observer(() => {
   const applicationStore = useLegendTaxonomyApplicationStore();
+  const baseStore = useLegendTaxonomyBaseStore();
 
+  useEffect(() => {
+    flowResult(baseStore.initialize()).catch(
+      applicationStore.alertUnhandledError,
+    );
+  }, [applicationStore, baseStore]);
+
+  if (baseStore.initState.isInProgress) {
+    return (
+      <div className="app">
+        <div className="app__page">
+          <PanelLoadingIndicator isLoading={true} />
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="app">
       <Switch>
