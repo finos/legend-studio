@@ -336,8 +336,11 @@ export class XTerm extends Terminal {
               });
           }
         } else if (
-          isMatchingKeyCombination(domEvent, 'Control+KeyC') ||
-          isMatchingKeyCombination(domEvent, 'Control+KeyD')
+          isMatchingKeyCombination(domEvent, 'Control+KeyD') ||
+          // NOTE: this handling here makes the assumption that the hotkey used for copying is
+          // fixed to `Control+KeyC` (for Windows), it doesn't handling a different assignment
+          (isMatchingKeyCombination(domEvent, 'Control+KeyC') &&
+            !this.instance.hasSelection())
         ) {
           // abort command
           this.abort();
