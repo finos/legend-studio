@@ -13,7 +13,6 @@ on:
 jobs:
   release:
     name: Release
-    # NOTE: temporarily disable big runners
     runs-on: ubuntu-latest-4-cores
     if: github.repository == 'finos/legend-studio' # prevent running this action in forks
     steps:
