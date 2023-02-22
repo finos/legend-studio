@@ -50,6 +50,7 @@ import { buildDefaultInstanceValue } from '../stores/shared/ValueSpecificationEd
 import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 
 // Note: We currently only allow constant variables for primitive types of multiplicity ONE.
 // This is why we don't show multiplicity in the editor.
@@ -136,7 +137,7 @@ const QueryBuilderConstantExpressionEditor = observer(
                 Type
               </div>
               <div className="panel__content__form__section__header__prompt">
-                Data type of the parameter.
+                Data type of the constant.
               </div>
               <CustomSelectorInput
                 placeholder="Choose a type..."
@@ -223,7 +224,10 @@ export const QueryBuilderConstantExpressionPanel = observer(
     };
 
     return (
-      <div className="panel query-builder__variables">
+      <div
+        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS}
+        className="panel query-builder__variables"
+      >
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">constants</div>

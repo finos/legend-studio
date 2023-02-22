@@ -102,7 +102,14 @@ export const TEST_DATA__simpleProjection = {
       ],
     },
   ],
-  parameters: [],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'String',
+      multiplicity: { lowerBound: 0, upperBound: 1 },
+      name: 'var_1',
+    },
+  ],
 };
 
 export const TEST_DATA__simpleProjectionWithSubtype = {

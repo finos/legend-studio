@@ -94,7 +94,7 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
         _type: 'var',
         class: 'String',
         multiplicity: { lowerBound: 0, upperBound: 1 },
-        name: 'var_1',
+        name: 'var_11',
       },
     ],
   },
