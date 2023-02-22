@@ -65,6 +65,7 @@ import type {
   ElementSuggestion,
   VariableSuggestion,
 } from './models/Suggestion.js';
+import { ROOT_PACKAGE_PATH } from '../stores/EditorConfig.js';
 
 export class PureClient {
   private networkClient: NetworkClient;
@@ -219,7 +220,7 @@ export class PureClient {
   getConceptChildren = (path?: string): Promise<PlainObject<ConceptNode>[]> =>
     this.networkClient.get(`${this.baseUrl}/execute`, undefined, undefined, {
       func: 'meta::pure::ide::display_ide(String[1]):String[1]',
-      param: path ? `'${path}'` : "'::'",
+      param: path ? `'${path}'` : `'${ROOT_PACKAGE_PATH}'`,
       format: 'raw',
       mode: this.mode,
       sessionId: this.sessionId,

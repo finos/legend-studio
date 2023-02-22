@@ -72,8 +72,7 @@ const DataSpaceDiagramCanvas = observer(
     }
   >(function DataSpaceDiagramCanvas(props, ref) {
     const { dataSpaceViewerState, diagram } = props;
-    const diagramCanvasRef =
-      ref as React.MutableRefObject<HTMLDivElement | null>;
+    const diagramCanvasRef = ref as React.MutableRefObject<HTMLDivElement>;
 
     const { width, height } = useResizeDetector<HTMLDivElement>({
       refreshMode: 'debounce',
@@ -82,13 +81,11 @@ const DataSpaceDiagramCanvas = observer(
     });
 
     useEffect(() => {
-      if (diagramCanvasRef.current) {
-        const renderer = new DiagramRenderer(diagramCanvasRef.current, diagram);
-        dataSpaceViewerState.setRenderer(renderer);
-        dataSpaceViewerState.setupRenderer();
-        renderer.render();
-        renderer.autoRecenter();
-      }
+      const renderer = new DiagramRenderer(diagramCanvasRef.current, diagram);
+      dataSpaceViewerState.setRenderer(renderer);
+      dataSpaceViewerState.setupRenderer();
+      renderer.render();
+      renderer.autoRecenter();
     }, [diagramCanvasRef, dataSpaceViewerState, diagram]);
 
     useEffect(() => {

@@ -102,6 +102,10 @@ export class SDLCServerClient extends AbstractServerClient {
     this._features = val;
   }
 
+  get featuresConfigHasBeenFetched(): boolean {
+    return Boolean(this._features);
+  }
+
   get features(): SDLCServerFeaturesConfiguration {
     return guaranteeNonNullable(
       this._features,

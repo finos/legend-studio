@@ -52,6 +52,7 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -62,12 +63,16 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
   getQueryBuilderPropertyNodeData,
   getQueryBuilderSubTypeNodeData,
+  buildPropertyExpressionFromExplorerTreeNodeData,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
 import { useDrag } from 'react-dnd';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { flowResult } from 'mobx';
-import { prettyPropertyName } from '../../stores/QueryBuilderPropertyEditorState.js';
+import {
+  getPropertyChainName,
+  prettyPropertyName,
+} from '../../stores/QueryBuilderPropertyEditorState.js';
 import {
   type Type,
   type Multiplicity,
@@ -89,6 +94,8 @@ import { getClassPropertyIcon } from '../shared/ElementIconUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { filterByType, guaranteeNonNullable } from '@finos/legend-shared';
 import { QueryBuilderPropertySearchPanel } from './QueryBuilderPropertySearchPanel.js';
+import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 
 const checkForDeprecatedNode = (
   node: QueryBuilderExplorerTreeNodeData,
@@ -204,7 +211,10 @@ const QueryBuilderExplorerPreviewDataModal = observer(
 
     return (
       <Dialog
-        open={Boolean(previewDataState.previewData)}
+        open={
+          Boolean(previewDataState.previewData) ||
+          previewDataState.isGeneratingPreviewData
+        }
         onClose={close}
         classes={{
           root: 'editor-modal__root-container',
@@ -219,7 +229,15 @@ const QueryBuilderExplorerPreviewDataModal = observer(
           <ModalHeader
             title={prettyPropertyName(previewDataState.propertyName)}
           />
+          <PanelLoadingIndicator
+            isLoading={previewDataState.isGeneratingPreviewData}
+          />
           <ModalBody className="query-builder__explorer__preview-data-modal__body">
+            {previewDataState.isGeneratingPreviewData && (
+              <div className="query-builder__explorer__preview-data-modal__placeholder">
+                Loading preview data...
+              </div>
+            )}
             {previewDataState.previewData && (
               <table className="table">
                 <thead>
@@ -249,9 +267,7 @@ const QueryBuilderExplorerPreviewDataModal = observer(
             )}
           </ModalBody>
           <ModalFooter>
-            <button className="btn modal__footer__close-btn" onClick={close}>
-              Close
-            </button>
+            <ModalFooterButton text="Close" onClick={close} />
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -287,7 +303,36 @@ const QueryBuilderExplorerContextMenu = observer(
             (childNode) =>
               !(childNode.type instanceof Class) &&
               childNode.mappingData.mapped,
-          );
+          )
+          .filter((childNode) => {
+            const propertyExpression =
+              buildPropertyExpressionFromExplorerTreeNodeData(
+                childNode,
+                queryBuilderState.explorerState,
+              );
+            if (
+              queryBuilderState.fetchStructureState.implementation instanceof
+              QueryBuilderTDSState
+            ) {
+              const currentProjectColumns =
+                queryBuilderState.fetchStructureState.implementation.projectionColumns.find(
+                  (currCol) => {
+                    if (
+                      currCol instanceof QueryBuilderSimpleProjectionColumnState
+                    ) {
+                      return (
+                        currCol.propertyExpressionState.path === childNode.id &&
+                        currCol.columnName ===
+                          getPropertyChainName(propertyExpression, true)
+                      );
+                    }
+                    return undefined;
+                  },
+                );
+              return currentProjectColumns === undefined;
+            }
+            return true;
+          });
         nodesToAdd.forEach((nodeToAdd) =>
           queryBuilderState.fetchStructureState.fetchProperty(nodeToAdd),
         );
@@ -803,7 +848,6 @@ export const QueryBuilderExplorerPanel = observer(
         applicationStore.alertUnhandledError,
       );
     }, [applicationStore, explorerState, queryBuilderState.mapping]);
-
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER}

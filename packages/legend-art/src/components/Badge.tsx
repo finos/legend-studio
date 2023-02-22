@@ -18,8 +18,13 @@ import { clsx } from 'clsx';
 
 export const Badge: React.FC<{
   title: string;
+  tooltip?: string;
   className?: string;
 }> = (props) => {
-  const { title, className } = props;
-  return <div className={clsx('badge', className)}>{title.toLowerCase()}</div>;
+  const { title, className, tooltip } = props;
+  return (
+    <div className={clsx('badge', className)} title={tooltip}>
+      {title.toLowerCase()}
+    </div>
+  );
 };

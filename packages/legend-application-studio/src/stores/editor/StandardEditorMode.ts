@@ -14,8 +14,17 @@
  * limitations under the License.
  */
 
+import {
+  MASTER_SNAPSHOT_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
+import type { ProjectDependency } from '@finos/legend-server-sdlc';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { EditorStore } from '../EditorStore.js';
-import { generateEditorRoute } from '../LegendStudioRouter.js';
+import {
+  generateEditorRoute,
+  generateViewProjectByGAVRoute,
+} from '../LegendStudioRouter.js';
 import { EditorMode } from './EditorMode.js';
 
 export class StandardEditorMode extends EditorMode {
@@ -31,6 +40,20 @@ export class StandardEditorMode extends EditorMode {
       this.editorStore.sdlcState.activeProject.projectId,
       this.editorStore.sdlcState.activeWorkspace.workspaceId,
       this.editorStore.sdlcState.activeWorkspace.workspaceType,
+      elementPath,
+    );
+  }
+
+  generateDependencyElementLink(
+    elementPath: string,
+    dependencyProject: ProjectDependency,
+  ): string {
+    return generateViewProjectByGAVRoute(
+      guaranteeNonNullable(dependencyProject.groupId),
+      guaranteeNonNullable(dependencyProject.artifactId),
+      dependencyProject.versionId === MASTER_SNAPSHOT_ALIAS
+        ? SNAPSHOT_VERSION_ALIAS
+        : dependencyProject.versionId,
       elementPath,
     );
   }

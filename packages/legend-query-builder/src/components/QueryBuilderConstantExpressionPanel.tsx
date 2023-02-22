@@ -28,6 +28,7 @@ import {
   Modal,
   ModalBody,
   ModalFooter,
+  ModalFooterButton,
   ModalHeader,
   PanelFormSection,
   PanelFormTextField,
@@ -145,7 +146,7 @@ const QueryBuilderConstantExpressionEditor = observer(
                 darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
                 formatOptionLabel={getPackageableElementOptionFormatter({
                   darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
-                  pureModel: queryBuilderState.graphManagerState.graph,
+                  graph: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </PanelFormSection>
@@ -172,17 +173,13 @@ const QueryBuilderConstantExpressionEditor = observer(
           </ModalBody>
           <ModalFooter>
             {isCreating && (
-              <button
-                className="btn modal__footer__close-btn btn--dark"
+              <ModalFooterButton
+                text="Create"
+                inProgress={Boolean(validationMessage)}
                 onClick={onAction}
-                disabled={Boolean(validationMessage)}
-              >
-                Create
-              </button>
+              />
             )}
-            <button className="btn modal__footer__close-btn" onClick={close}>
-              Close
-            </button>
+            <ModalFooterButton text="Close" onClick={close} />
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -271,7 +268,7 @@ export const QueryBuilderConstantExpressionPanel = observer(
               ))}
             {!constantState.constants.length && (
               <BlankPanelPlaceholder
-                text="Add a Constants"
+                text="Add a Constant"
                 disabled={isReadOnly}
                 onClick={addConstant}
                 clickActionType="add"

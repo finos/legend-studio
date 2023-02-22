@@ -33,9 +33,15 @@
     z-index: 1;
     padding-left: 1rem;
     box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
+
+    &--dark {
+      background: var(--color-dark-grey-50);
+    }
   }
 
   &__header__actions {
+    @include flexVCenter;
+
     display: flex;
     height: 100%;
   }
@@ -69,6 +75,16 @@
     cursor: default;
     margin-right: 0.5rem;
     white-space: nowrap;
+  }
+
+  &__header__title__label__status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.7rem;
+    font-weight: 400;
+    font-size: 1.2rem;
+    font-style: italic; // background: var(--color-dark-grey-280);
   }
 
   &__header__title__content {
@@ -238,6 +254,10 @@
     &__item {
       width: 100%;
       display: flex;
+
+      &--expand-width {
+        justify-content: space-between;
+      }
     }
   }
 

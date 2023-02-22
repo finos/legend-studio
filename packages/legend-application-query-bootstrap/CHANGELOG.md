@@ -1,5 +1,35 @@
 # @finos/legend-application-query-bootstrap
 
+## 8.41.0
+
+## 8.40.0
+
+### Patch Changes
+
+- [#1911](https://github.com/finos/legend-studio/pull/1911) [`418d96ab7`](https://github.com/finos/legend-studio/commit/418d96ab772f2fab5ffd89ed8c34b96a7593e1b9) ([@xannem](https://github.com/xannem)) - Clarify status of sorting column in query.
+
+## 8.39.0
+
+## 8.38.0
+
+### Patch Changes
+
+- [#1882](https://github.com/finos/legend-studio/pull/1882) [`87c71c559`](https://github.com/finos/legend-studio/commit/87c71c5592e4d1cbcc04ef9d915d7ac2f072ad1f) ([@xannem](https://github.com/xannem)) - Styling feedbacks for query upon closing and running.
+
+## 8.37.0
+
+## 8.36.0
+
+## 8.35.0
+
+## 8.34.0
+
+## 8.33.0
+
+## 8.32.0
+
+## 8.31.0
+
 ## 8.30.0
 
 ## 8.29.0

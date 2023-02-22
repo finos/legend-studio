@@ -23,9 +23,10 @@ import {
   TimesIcon,
   useDragPreviewLayer,
 } from '@finos/legend-art';
-import type {
-  ValueSpecification,
-  VariableExpression,
+import {
+  SimpleFunctionExpression,
+  type ValueSpecification,
+  type VariableExpression,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useDrag } from 'react-dnd';
@@ -36,6 +37,7 @@ import {
   QUERY_BUILDER_VARIABLE_DND_TYPE,
   VariableInfoTooltip,
 } from './BasicValueSpecificationEditor.js';
+import { buildDatePickerOption } from './CustomDatePicker.js';
 
 export const VariableViewer = observer(
   (props: {
@@ -50,8 +52,19 @@ export const VariableViewer = observer(
   }) => {
     const { variable, constantValue, actions, isReadOnly, queryBuilderState } =
       props;
+
+    const getNameOfValue = (value: ValueSpecification): string | undefined => {
+      if (value instanceof SimpleFunctionExpression) {
+        const possibleDateLabel = buildDatePickerOption(value).label;
+        if (possibleDateLabel) {
+          return possibleDateLabel;
+        }
+      }
+      return getValueSpecificationStringValue(value);
+    };
+
     const valueString = constantValue
-      ? getValueSpecificationStringValue(constantValue)
+      ? getNameOfValue(constantValue)
       : undefined;
     const name = variable.name;
     const variableType = variable.genericType?.value.rawType;
@@ -133,7 +146,7 @@ export const VariableViewer = observer(
               <TimesIcon />
             </button>
             <VariableInfoTooltip variable={variable}>
-              <div className="value-spec-editor__variable__info">
+              <div className="query-builder__variables__variable__action value-spec-editor__variable__info">
                 <InfoCircleIcon />
               </div>
             </VariableInfoTooltip>
@@ -159,6 +172,7 @@ export const VariableSelector = observer(
       queryBuilderState.constantState.constants.filter((c) =>
         filterBy ? filterBy(c.variable) : true,
       );
+
     return (
       <>
         <PanelFormListItems title="Available parameters">

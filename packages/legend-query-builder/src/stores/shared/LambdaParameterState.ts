@@ -58,7 +58,7 @@ import {
 } from './ValueSpecificationModifierHelper.js';
 
 export enum PARAMETER_SUBMIT_ACTION {
-  EXECUTE = 'EXECUTE',
+  RUN = 'RUN',
   EXPORT = 'EXPORT',
 }
 
@@ -216,6 +216,7 @@ export class LambdaParameterState implements Hashable {
       mockParameterValue: action,
       hashCode: computed,
     });
+
     this.observableContext = observableContext;
     this.parameter = observe_VariableExpression(variableExpression);
     this.graph = graph;

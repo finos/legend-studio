@@ -47,7 +47,7 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPropertyExpressionChain } from '../../../QueryBuilderValueSpecificationBuilderHelper.js';
-import { appendOLAPGroupByState } from '../olapGroupBy/QueryBuilderOLAPGroupByValueSpecificationBuilder.js';
+import { appendOLAPGroupByState } from '../window/QueryBuilderWindowValueSpecificationBuilder.js';
 import { appendPostFilter } from '../post-filter/QueryBuilderPostFilterValueSpecificationBuilder.js';
 
 const buildSortExpression = (
@@ -85,6 +85,7 @@ const appendResultSetModifier = (
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
         ])
       ) {
         let currentExpression = func;
@@ -226,6 +227,7 @@ export const appendProjection = (
               projectionColumnState.propertyExpressionState.propertyExpression,
               projectionColumnState.propertyExpressionState.queryBuilderState,
               projectionColumnState.lambdaParameterName,
+              options,
               true,
             ),
           ],
@@ -327,6 +329,7 @@ export const appendProjection = (
               projectionColumnState.propertyExpressionState.propertyExpression,
               projectionColumnState.propertyExpressionState.queryBuilderState,
               projectionColumnState.lambdaParameterName,
+              options,
             ),
           ],
           queryBuilderState.graphManagerState.graph,
@@ -367,7 +370,7 @@ export const appendProjection = (
   }
 
   // build olapGroupBy
-  appendOLAPGroupByState(tdsState.olapGroupByState, lambdaFunction);
+  appendOLAPGroupByState(tdsState.windowState, lambdaFunction);
 
   // build post-filter
   appendPostFilter(tdsState.postFilterState, lambdaFunction);

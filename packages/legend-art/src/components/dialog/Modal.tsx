@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { toTitleCase } from '@finos/legend-shared';
+import { prettyCONSTName, toTitleCase } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 import { generateSimpleDIVComponent } from '../ComponentCreatorUtils.js';
 
@@ -73,3 +73,56 @@ export const ModalFooter = generateSimpleDIVComponent(
   'ModalFooter',
   'modal__footer',
 );
+
+export const ModalFooterStatus = generateSimpleDIVComponent(
+  'ModalFooterStatus',
+  'modal__footer__status',
+);
+
+export const ModalFooterButton: React.FC<{
+  title?: string;
+  text?: string;
+  darkMode?: boolean;
+  inProgress?: boolean;
+  inProgressText?: string;
+  children?: React.ReactNode;
+  className?: string;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+}> = (props) => {
+  const {
+    onClick,
+    inProgress,
+    inProgressText,
+    text,
+    title,
+    children,
+    className,
+    darkMode,
+  } = props;
+
+  const isDarkMode = darkMode !== undefined ? darkMode : true;
+
+  const buttonText =
+    inProgressText && inProgress
+      ? prettyCONSTName(inProgressText)
+      : prettyCONSTName(text);
+
+  return (
+    <button
+      className={clsx(
+        'btn modal__footer__close-btn',
+        {
+          'btn--dark': isDarkMode,
+        },
+        { 'btn--light': !isDarkMode },
+        className,
+      )}
+      title={title}
+      onClick={onClick}
+      disabled={inProgress}
+    >
+      {buttonText}
+      {children}
+    </button>
+  );
+};

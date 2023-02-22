@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
+import type { TestExecutionStatus } from '../../../../../../../graph/metamodel/pure/test/result/TestResult.js';
 import type { V1_AssertionStatus } from '../assertion/status/V1_AssertionStatus.js';
-import type { V1_AtomicTestId } from '../V1_AtomicTestId.js';
 
 export abstract class V1_TestResult {
   testable!: string;
-  atomicTestId!: V1_AtomicTestId;
+  atomicTestId!: string;
+  testSuiteId?: string | undefined;
 }
 
 export class V1_TestError extends V1_TestResult {
   error!: string;
 }
 
-export class V1_TestPassed extends V1_TestResult {}
-export class V1_TestFailed extends V1_TestResult {
+export class V1_TestExecuted extends V1_TestResult {
+  testExecutionStatus!: TestExecutionStatus;
   assertStatuses: V1_AssertionStatus[] = [];
 }

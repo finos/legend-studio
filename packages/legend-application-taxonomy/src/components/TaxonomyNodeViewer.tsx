@@ -72,12 +72,6 @@ const TaxonomyNodeDataSpaceItem = observer(
         </div>
       ) : (
         <div className="taxonomy-node-viewer__explorer__entry__path">
-          <div className="taxonomy-node-viewer__explorer__entry__path__package">
-            {dataSpaceTaxonomyContext.path.substring(
-              0,
-              idx + ELEMENT_PATH_DELIMITER.length,
-            )}
-          </div>
           <div className="taxonomy-node-viewer__explorer__entry__path__name">
             {dataSpaceTaxonomyContext.path.substring(
               idx + ELEMENT_PATH_DELIMITER.length,

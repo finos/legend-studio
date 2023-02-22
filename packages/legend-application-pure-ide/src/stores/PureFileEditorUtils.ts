@@ -62,7 +62,7 @@ import {
   SIMPLE_FUNCTION_SNIPPET,
   SIMPLE_PROFILE_SNIPPET,
   BLANK_DIAGRAM_SNIPPET,
-  COPYRIGHT_HEADER_SNIPPET,
+  getCopyrightHeaderSnippet,
 } from './LegendPureIDECodeSnippets.js';
 
 // NOTE: these are technically different parsers compared to the ones we have in `Legend Engine` so we will
@@ -233,13 +233,13 @@ export const getCopyrightHeaderSuggestions =
 
     results.push({
       label: {
-        label: `#copyright`,
+        label: `/copyright`,
         description: `(copyright header)`,
       },
       kind: monacoLanguagesAPI.CompletionItemKind.Snippet,
       insertTextRules:
         monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
-      insertText: COPYRIGHT_HEADER_SNIPPET,
+      insertText: getCopyrightHeaderSnippet(),
       // NOTE: only show this suggestion when the cursor is on the first line of the file
       range: {
         startLineNumber: 1,
@@ -338,13 +338,11 @@ const elementSuggestionToCompletionItem = (
   } as monacoLanguagesAPI.CompletionItem;
 };
 
-const INCOMPLETE_PATH_PATTERN =
-  /(?<incompletePath>(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*::)+$)/;
+const INCOMPLETE_PATH_PATTERN = /(?<incompletePath>(?:\w[\w$]*::)+$)/;
 
 const ARROW_FUNCTION_USAGE_WITH_INCOMPLETE_PATH_PATTERN =
-  /->\s*(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*::)+$/;
-const CONSTRUCTOR_USAGE_WITH_INCOMPLETE_PATH_PATTERN =
-  /\^\s*(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*::)+$/;
+  /->\s*(?:\w[\w$]*::)+$/;
+const CONSTRUCTOR_USAGE_WITH_INCOMPLETE_PATH_PATTERN = /\^\s*(?:\w[\w$]*::)+$/;
 
 export const getIncompletePathSuggestions = async (
   position: IPosition,
@@ -401,7 +399,7 @@ export const getIncompletePathSuggestions = async (
 };
 
 const IMPORT_STATEMENT_PATTERN =
-  /^\s*import\s+(?:(?<importPath>(?:(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)::)*[a-zA-Z0-9_][a-zA-Z0-9_$]*)::*)/;
+  /^\s*import\s+(?:(?<importPath>(?:(?:\w[\w$]*)::)*\w[\w$]*)::*)/;
 
 const getCurrentSectionImportPaths = (
   position: IPosition,
@@ -428,8 +426,8 @@ const getCurrentSectionImportPaths = (
     .filter(isNonNullable);
 };
 
-const ARROW_FUNCTION_USAGE_PATTERN = /->\s*(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)?$/;
-const CONSTRUCTOR_USAGE_PATTERN = /\^\s*(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)?$/;
+const ARROW_FUNCTION_USAGE_PATTERN = /->\s*(?:\w[\w$]*)?$/;
+const CONSTRUCTOR_USAGE_PATTERN = /\^\s*(?:\w[\w$]*)?$/;
 
 export const getIdentifierSuggestions = async (
   position: IPosition,
@@ -533,7 +531,7 @@ const attributeSuggestionToCompletionItem = (
 };
 
 const ATTRIBUTE_ACCESSOR_PATTERN =
-  /^(?<owner>(?:(?:[a-zA-Z0-9_][a-zA-Z0-9_$]*)::)*[a-zA-Z0-9_][a-zA-Z0-9_$]*)\s*.$/;
+  /^(?<owner>(?:(?:\w[\w$]*)::)*\w[\w$]*)\s*.$/;
 
 export const getAttributeSuggestions = async (
   position: IPosition,

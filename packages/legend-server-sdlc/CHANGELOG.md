@@ -1,5 +1,23 @@
 # @finos/legend-server-sdlc
 
+## 4.1.22
+
+## 4.1.21
+
+## 4.1.20
+
+## 4.1.19
+
+## 4.1.18
+
+### Patch Changes
+
+- [#1865](https://github.com/finos/legend-studio/pull/1865) [`1ceda36e8`](https://github.com/finos/legend-studio/commit/1ceda36e80d74c381a7124bf0af99a1c3c04e869) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix rendering of service editor on archive mode.
+
+## 4.1.17
+
+## 4.1.16
+
 ## 4.1.15
 
 ## 4.1.14

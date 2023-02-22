@@ -1,5 +1,30 @@
 # @finos/legend-graph
 
+## 22.2.8
+
+## 22.2.7
+
+## 22.2.6
+
+## 22.2.5
+
+## 22.2.4
+
+### Patch Changes
+
+- [#1833](https://github.com/finos/legend-studio/pull/1833) [`ef7e8fa6d`](https://github.com/finos/legend-studio/commit/ef7e8fa6d693848ac71a5a2f54db421f9d45fde3) ([@gayathrir11](https://github.com/gayathrir11)) - Add warnings when associations reference system elements. ([#282](https://github.com/finos/legend-studio/issues/282))
+
+## 22.2.3
+
+### Patch Changes
+
+- [#1845](https://github.com/finos/legend-studio/pull/1845) [`f901cd37c`](https://github.com/finos/legend-studio/commit/f901cd37c87c680971c32e3d8721f2cabb6627d9) ([@gayathrir11](https://github.com/gayathrir11)) - Modified `AtomicTestId` to `UniqueTestId`. Removed `TestBatch` model from core.
+  Replaced `TestPassed` and `TestFailed` models with `TestExecuted` model.
+
+## 22.2.2
+
+## 22.2.1
+
 ## 22.2.0
 
 ### Minor Changes

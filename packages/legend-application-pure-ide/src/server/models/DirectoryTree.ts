@@ -27,12 +27,13 @@ import {
 abstract class DirectoryAttribute {
   id!: string;
   path!: string;
+  RO!: boolean;
 }
 
 class FileDirectoryAttribute extends DirectoryAttribute {
   declare id: string;
   declare path: string;
-  file!: string;
+  file!: boolean;
   statusType?: string; // used for change detection
 }
 
@@ -41,18 +42,20 @@ createModelSchema(FileDirectoryAttribute, {
   path: primitive(),
   file: primitive(),
   statusType: primitive(),
+  RO: primitive(),
 });
 
 class FolderDirectoryAttribute extends DirectoryAttribute {
   declare id: string;
   declare path: string;
-  repo?: string; // boolean - used for change detection
+  repo?: boolean;
 }
 
 createModelSchema(FolderDirectoryAttribute, {
   id: primitive(),
   path: primitive(),
   repo: primitive(),
+  RO: primitive(),
 });
 
 export class DirectoryNode {
@@ -70,6 +73,13 @@ export class DirectoryNode {
     return this.li_attr instanceof FileDirectoryAttribute;
   }
 
+  get isRepoNode(): boolean {
+    return (
+      this.li_attr instanceof FolderDirectoryAttribute &&
+      Boolean(this.li_attr.repo)
+    );
+  }
+
   getNodeAttribute<T extends DirectoryAttribute>(clazz: Clazz<T>): T {
     return guaranteeType(
       this.li_attr,
@@ -83,7 +93,7 @@ createModelSchema(DirectoryNode, {
   li_attr: custom(
     () => SKIP,
     (value) => {
-      if (value.file && value.file === 'true') {
+      if (value.file) {
         return deserialize(FileDirectoryAttribute, value);
       } else {
         return deserialize(FolderDirectoryAttribute, value);

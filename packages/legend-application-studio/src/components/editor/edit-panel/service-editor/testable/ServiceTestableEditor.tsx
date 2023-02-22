@@ -32,7 +32,7 @@ import { observer } from 'mobx-react-lite';
 import type { ServiceTestSuite } from '@finos/legend-graph';
 import { ServiceTestDataEditor } from './ServiceTestDataEditor.js';
 import { ServiceTestsEditor } from './ServiceTestsEditor.js';
-import { forwardRef, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { testSuite_setId } from '../../../../../stores/shared/modifier/Testable_GraphModifierHelper.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type {
@@ -152,6 +152,10 @@ export const ServiceTestableEditor = observer(
         val,
       );
 
+    useEffect(() => {
+      serviceTestableState.init();
+    }, [serviceTestableState]);
+
     useApplicationNavigationContext(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SERVICE_EDITOR_TEST,
     );
@@ -211,7 +215,7 @@ export const ServiceTestableEditor = observer(
               text="Add Test Suite"
               onClick={addSuite}
               clickActionType="add"
-              tooltipText="Click to add test"
+              tooltipText="Click to add test suite"
             />
           )}
           {serviceTestableState.suiteToRename && (

@@ -16,7 +16,8 @@
 
 // ------------------------------------- Copyright header -------------------------------------
 
-export const COPYRIGHT_HEADER_SNIPPET = `// Copyright \${1:2020} Goldman Sachs
+export const getCopyrightHeaderSnippet =
+  (): string => `// Copyright \${1:${new Date().getFullYear()}} Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.

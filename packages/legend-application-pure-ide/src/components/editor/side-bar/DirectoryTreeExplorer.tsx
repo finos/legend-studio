@@ -127,38 +127,44 @@ const FileTreeNodeContainer: React.FC<
   const { onNodeOpen, onNodeExpand, onNodeCompress } = innerProps;
   const isPlatformDirectory =
     node.data instanceof DirectoryNode &&
+    node.data.isRepoNode &&
     node.data.li_attr.path === '/platform';
-  const isChildPlatformDirectory =
-    node.data instanceof DirectoryNode &&
-    node.data.li_attr.path.startsWith('/platform');
+  const isReadOnly = node.data.li_attr.RO;
   const isDirectory = node.data.isFolderNode;
   const isChildlessDirectory =
     node.data instanceof DirectoryNode && !node.data.children;
-  const nodeIcon = isPlatformDirectory ? (
-    <WrenchIcon className="explorer__icon--platform" />
-  ) : isDirectory ? (
-    isChildlessDirectory ? (
-      <FolderIcon
-        className={clsx({
-          'explorer__icon--platform': isChildPlatformDirectory,
-        })}
-      />
-    ) : node.isOpen ? (
-      <FolderOpenIcon
-        className={clsx({
-          'explorer__icon--platform': isChildPlatformDirectory,
-        })}
-      />
+  const nodeIcon =
+    isPlatformDirectory ||
+    (node.data.isRepoNode &&
+      node.data.li_attr.path.startsWith('/platform_')) ? (
+      <WrenchIcon className="explorer__icon--readonly" />
+    ) : isDirectory ? (
+      isChildlessDirectory ? (
+        <FolderIcon
+          className={clsx('explorer__icon--folder', {
+            'explorer__icon--readonly': isReadOnly,
+          })}
+        />
+      ) : node.isOpen ? (
+        <FolderOpenIcon
+          className={clsx('explorer__icon--folder', {
+            'explorer__icon--readonly': isReadOnly,
+          })}
+        />
+      ) : (
+        <FolderIcon
+          className={clsx('explorer__icon--folder', {
+            'explorer__icon--readonly': isReadOnly,
+          })}
+        />
+      )
     ) : (
-      <FolderIcon
-        className={clsx({
-          'explorer__icon--platform': isChildPlatformDirectory,
+      <FileAltIcon
+        className={clsx('explorer__icon--file', {
+          'explorer__icon--readonly': isReadOnly,
         })}
       />
-    )
-  ) : (
-    <FileAltIcon className="explorer__icon--file" />
-  );
+    );
   const selectNode: React.MouseEventHandler = (event) => {
     event.stopPropagation();
     event.preventDefault();
@@ -322,7 +328,7 @@ export const DirectoryTreeExplorer = observer(() => {
   const focus = (): void => {
     const currentTab = editorStore.tabManagerState.currentTab;
     if (currentTab instanceof FileEditorState) {
-      flowResult(treeState.revealPath(currentTab.filePath, false)).catch(
+      flowResult(treeState.revealPath(currentTab.filePath)).catch(
         applicationStore.alertUnhandledError,
       );
     }

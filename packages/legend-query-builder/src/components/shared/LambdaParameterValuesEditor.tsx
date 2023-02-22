@@ -19,8 +19,10 @@ import {
   Dialog,
   Modal,
   ModalBody,
+  ModalFooterButton,
   ModalFooter,
   ModalHeader,
+  ModalFooterStatus,
 } from '@finos/legend-art';
 import {
   type PureModel,
@@ -28,8 +30,8 @@ import {
   type ObserverContext,
   PrimitiveType,
 } from '@finos/legend-graph';
-import { prettyCONSTName } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 import type { LambdaParametersState } from '../../stores/shared/LambdaParameterState.js';
 import { BasicValueSpecificationEditor } from './BasicValueSpecificationEditor.js';
 
@@ -41,12 +43,18 @@ export const LambdaParameterValuesEditor = observer(
     lambdaParametersState: LambdaParametersState;
   }) => {
     const { lambdaParametersState, graph, observerContext } = props;
+    const [isSubmitAction, setIsSubmitAction] = useState(false);
+    const [isClosingAction, setIsClosingAction] = useState(false);
     const valuesEdtiorState = lambdaParametersState.parameterValuesEditorState;
-    const close = (): void => valuesEdtiorState.close();
+    const close = (): void => {
+      setIsClosingAction(true);
+      valuesEdtiorState.close();
+    };
     const applicationStore = useApplicationStore();
     const submitAction = valuesEdtiorState.submitAction;
     const submit = applicationStore.guardUnhandledError(async () => {
       if (submitAction) {
+        setIsSubmitAction(true);
         close();
         await submitAction.handler();
       }
@@ -106,18 +114,23 @@ export const LambdaParameterValuesEditor = observer(
             })}
           </ModalBody>
           <ModalFooter>
-            {submitAction && (
-              <button
-                className="btn modal__footer__close-btn"
-                title={submitAction.label}
-                onClick={submit}
-              >
-                {prettyCONSTName(submitAction.label)}
-              </button>
+            {isClosingAction && (
+              <ModalFooterStatus> Closing...</ModalFooterStatus>
             )}
-            <button className="btn modal__footer__close-btn" onClick={close}>
-              Close
-            </button>
+            {submitAction && (
+              <ModalFooterButton
+                inProgress={isSubmitAction}
+                inProgressText={`${submitAction.label}...`}
+                onClick={submit}
+                text={submitAction.label}
+              />
+            )}
+            <ModalFooterButton
+              inProgress={isClosingAction}
+              inProgressText={'Closing...'}
+              onClick={close}
+              text="Close"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>

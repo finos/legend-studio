@@ -29,6 +29,7 @@ import {
   ActionAlertType,
   ApplicationTelemetry,
   matchPath,
+  APPLICATION_EVENT,
 } from '@finos/legend-application';
 import {
   action,
@@ -46,20 +47,18 @@ import type { LegendStudioApplicationConfig } from '../application/LegendStudioA
 import { LegendStudioEventService } from './LegendStudioEventService.js';
 import { LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN } from './LegendStudioRouter.js';
 
-const UNKNOWN_USER_ID = '(unknown)';
-
 export type LegendStudioApplicationStore = ApplicationStore<
   LegendStudioApplicationConfig,
   LegendStudioPluginManager
 >;
 
 export class LegendStudioBaseStore {
-  applicationStore: LegendStudioApplicationStore;
-  sdlcServerClient: SDLCServerClient;
-  depotServerClient: DepotServerClient;
-  pluginManager: LegendStudioPluginManager;
+  readonly applicationStore: LegendStudioApplicationStore;
+  readonly sdlcServerClient: SDLCServerClient;
+  readonly depotServerClient: DepotServerClient;
+  readonly pluginManager: LegendStudioPluginManager;
 
-  initState = ActionState.create();
+  readonly initState = ActionState.create();
 
   isSDLCAuthorized: boolean | undefined = false;
   SDLCServerTermsOfServicesUrlsToView: string[] = [];
@@ -93,9 +92,7 @@ export class LegendStudioBaseStore {
 
   *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
-      this.applicationStore.notifyIllegalState(
-        'Studio store is re-initialized',
-      );
+      this.applicationStore.notifyIllegalState('Base store is re-initialized');
       return;
     }
     this.initState.inProgress();
@@ -111,24 +108,27 @@ export class LegendStudioBaseStore {
       // setup SDLC server client
       yield flowResult(this.initializeSDLCServerClient());
 
-      let currentUserID = UNKNOWN_USER_ID;
       try {
         const currentUser = User.serialization.fromJson(
           (yield this.sdlcServerClient.getCurrentUser()) as PlainObject<User>,
         );
         this.sdlcServerClient.setCurrentUser(currentUser);
-        currentUserID = currentUser.userId;
+        this.applicationStore.setCurrentUser(currentUser.userId);
       } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.log.error(
-          LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
+          LogEvent.create(
+            APPLICATION_EVENT.APPLICATION_IDENTITY_AUTO_FETCH_FAILURE,
+          ),
           error,
         );
         this.applicationStore.notifyWarning(error.message);
       }
 
       // setup telemetry service
-      this.applicationStore.telemetryService.setUserId(currentUserID);
+      this.applicationStore.telemetryService.setUserId(
+        this.applicationStore.currentUser,
+      );
     } else {
       this.isSDLCAuthorized = undefined;
     }
@@ -150,11 +150,20 @@ export class LegendStudioBaseStore {
         },
       },
     );
+
     LegendStudioEventService.create(
       this.applicationStore.eventService,
     ).notify_ApplicationLoaded();
 
     this.initState.complete();
+  }
+
+  get needsToAcceptSDLCServerTermsOfServices(): boolean {
+    return Boolean(this.SDLCServerTermsOfServicesUrlsToView.length);
+  }
+
+  dismissSDLCServerTermsOfServicesAlert(): void {
+    this.SDLCServerTermsOfServicesUrlsToView = [];
   }
 
   private *initializeSDLCServerClient(): GeneratorFn<void> {
@@ -244,13 +253,5 @@ export class LegendStudioBaseStore {
         this.applicationStore.notifyError(error);
       }
     }
-  }
-
-  get needsToAcceptSDLCServerTermsOfServices(): boolean {
-    return Boolean(this.SDLCServerTermsOfServicesUrlsToView.length);
-  }
-
-  dismissSDLCServerTermsOfServicesAlert(): void {
-    this.SDLCServerTermsOfServicesUrlsToView = [];
   }
 }

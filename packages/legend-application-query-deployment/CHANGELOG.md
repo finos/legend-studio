@@ -1,5 +1,31 @@
 # @finos/legend-application-query-deployment
 
+## 8.41.0
+
+## 8.40.0
+
+## 8.39.0
+
+## 8.38.0
+
+## 8.37.0
+
+## 8.36.0
+
+### Patch Changes
+
+- [#1836](https://github.com/finos/legend-studio/pull/1836) [`82de90d9b`](https://github.com/finos/legend-studio/commit/82de90d9b81ca5074e61b322382d86c25a08d26f) ([@epsstan](https://github.com/epsstan)) - Update Docker images ...
+
+## 8.35.0
+
+## 8.34.0
+
+## 8.33.0
+
+## 8.32.0
+
+## 8.31.0
+
 ## 8.30.0
 
 ## 8.29.0

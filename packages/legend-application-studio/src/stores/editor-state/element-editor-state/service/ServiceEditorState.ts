@@ -33,9 +33,11 @@ import { ServiceRegistrationState } from '../../../editor-state/element-editor-s
 import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState.js';
 import {
   type PackageableElement,
+  type RawLambda,
   Service,
   PureSingleExecution,
   PureMultiExecution,
+  PureExecution,
 } from '@finos/legend-graph';
 import { ServiceTestableState } from './testable/ServiceTestableState.js';
 import { User } from '@finos/legend-server-sdlc';
@@ -73,7 +75,8 @@ export class ServiceEditorState extends ElementEditorState {
       editorStore,
       this.service,
       editorStore.applicationStore.config.options.TEMPORARY__serviceRegistrationConfig,
-      editorStore.sdlcServerClient.features.canCreateVersion,
+      editorStore.sdlcServerClient.featuresConfigHasBeenFetched &&
+        editorStore.sdlcServerClient.features.canCreateVersion,
     );
     this.testableState = new ServiceTestableState(editorStore, this);
   }
@@ -124,6 +127,14 @@ export class ServiceEditorState extends ElementEditorState {
       Service,
       'Element inside service editor state must be a service',
     );
+  }
+
+  get serviceQuery(): RawLambda | undefined {
+    const execution = this.service.execution;
+    if (execution instanceof PureExecution) {
+      return execution.func;
+    }
+    return undefined;
   }
 
   *searchUsers(name: string): GeneratorFn<User[]> {

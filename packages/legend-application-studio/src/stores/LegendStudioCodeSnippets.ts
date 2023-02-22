@@ -236,7 +236,9 @@ export const BLANK_SERVICE_SNIPPET = `Service \${1:new::NewService}
   documentation: \${4:'documentation'};
   autoActivateUpdates: \${5:true};
   execution: \${6:}
-  test: \${7:}
+  testSuites:
+  [
+  ]
 }`;
 
 export const SERVICE_WITH_SINGLE_EXECUTION_SNIPPET = `Service \${1:new::NewService}
@@ -261,13 +263,9 @@ export const SERVICE_WITH_SINGLE_EXECUTION_SNIPPET = `Service \${1:new::NewServi
     // example of using runtime pointer
     // runtime: model::SomeRuntime;
   }
-  test: Single
-  {
-    data: 'data'; // this test data will be shared across tests
-    asserts:
-    [
-    ];
-  }
+  testSuites:
+  [
+  ]
 }`;
 
 export const SERVICE_WITH_MULTI_EXECUTION_SNIPPET = `Service \${1:new::NewService}
@@ -301,20 +299,9 @@ export const SERVICE_WITH_MULTI_EXECUTION_SNIPPET = `Service \${1:new::NewServic
     //   runtime: model::SomeRuntime;
     // }
   }
-  test: Multi
-  {
-    tests['key_1']:
-    {
-      data: 'data';
-      asserts:
-      [
-      ];
-    }
-    // tests['key_2']:
-    // {
-    //   data: 'data';
-    // }
-  }
+  testSuites:
+  [
+  ]
 }`;
 
 // ------------------------------------- Generation -------------------------------------

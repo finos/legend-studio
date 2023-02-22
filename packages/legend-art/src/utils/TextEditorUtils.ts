@@ -84,6 +84,30 @@ export const getBaseTextEditorOptions =
       'bracketPairColorization.enabled': false,
     } as monacoEditorAPI.IStandaloneEditorConstructionOptions);
 
+export const getBaseConsoleOptions =
+  (): monacoEditorAPI.IStandaloneEditorConstructionOptions => ({
+    ...getBaseTextEditorOptions(),
+    fontSize: 12,
+    extraEditorClassName: 'monaco-editor--small-font',
+    readOnly: true,
+    glyphMargin: false,
+    folding: false,
+    lineNumbers: 'off',
+    lineDecorationsWidth: 10,
+    lineNumbersMinChars: 0,
+    minimap: {
+      enabled: false,
+    },
+    guides: {
+      bracketPairs: false,
+      bracketPairsHorizontal: false,
+      highlightActiveBracketPair: false,
+      indentation: false,
+      highlightActiveIndentation: false,
+    },
+    renderLineHighlight: 'none',
+  });
+
 export const moveCursorToPosition = (
   editor: monacoEditorAPI.ICodeEditor,
   position: TextEditorPosition,

@@ -1,5 +1,31 @@
 # @finos/legend-extension-dsl-service
 
+## 0.1.28
+
+## 0.1.27
+
+## 0.1.26
+
+## 0.1.25
+
+## 0.1.24
+
+## 0.1.23
+
+## 0.1.22
+
+## 0.1.21
+
+## 0.1.20
+
+## 0.1.19
+
+## 0.1.18
+
+### Patch Changes
+
+- [#1834](https://github.com/finos/legend-studio/pull/1834) [`eb28388b2`](https://github.com/finos/legend-studio/commit/eb28388b213ce8e75baeca64888f7433d5af8b27) ([@gayathrir11](https://github.com/gayathrir11)) - Support semi-interactive registration of services from Standalone query
+
 ## 0.1.17
 
 ## 0.1.16

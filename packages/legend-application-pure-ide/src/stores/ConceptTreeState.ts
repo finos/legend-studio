@@ -22,6 +22,7 @@ import {
   PropertyConceptAttribute,
   ConceptNode,
   ConceptType,
+  PackageConceptAttribute,
 } from '../server/models/ConceptTree.js';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from './EditorStore.js';
@@ -46,6 +47,16 @@ import {
   ELEMENT_PATH_DELIMITER,
   extractPackagePathFromPath,
 } from '@finos/legend-graph';
+import { ACTIVITY_MODE } from './EditorConfig.js';
+
+const getParentPath = (path: string): string | undefined => {
+  const trimmedPath = path.trim();
+  const idx = trimmedPath.lastIndexOf(ELEMENT_PATH_DELIMITER);
+  if (idx <= 0) {
+    return undefined;
+  }
+  return trimmedPath.substring(0, idx);
+};
 
 export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
   readonly loadConceptActivity = ActionState.create();
@@ -66,6 +77,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
       setNodeForMoveElement: action,
       pullConceptsActivity: action,
       pollConceptsActivity: flow,
+      revealConcept: flow,
     });
   }
 
@@ -188,6 +200,51 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
       );
     }
     return Promise.resolve();
+  }
+
+  *revealConcept(
+    path: string,
+    options?: {
+      /**
+       * Only reveal packages, will skip element/property nodes
+       */
+      packageOnly?: boolean | undefined;
+      forceOpenExplorerPanel?: boolean | undefined;
+    },
+  ): GeneratorFn<void> {
+    if (options?.forceOpenExplorerPanel) {
+      this.editorStore.setActiveActivity(ACTIVITY_MODE.CONCEPT_EXPLORER, {
+        keepShowingIfMatchedCurrent: true,
+      });
+    }
+
+    const paths: string[] = [];
+    let currentPath: string | undefined = path;
+    while (currentPath) {
+      paths.unshift(currentPath);
+      currentPath = getParentPath(currentPath);
+    }
+    for (const _path of paths) {
+      const node = guaranteeNonNullable(
+        this.getTreeData().nodes.get(_path),
+        `Can't find node with path '${_path}'`,
+      );
+      if (node.data.li_attr instanceof PackageConceptAttribute) {
+        yield flowResult(this.expandNode(node));
+      } else {
+        if (options?.packageOnly) {
+          throw new Error(`Can't reveal non-package path`);
+        }
+        // TODO: this is not needed so we haven't implemented this yet
+      }
+    }
+
+    this.setSelectedNode(
+      guaranteeNonNullable(
+        this.getTreeData().nodes.get(path),
+        `Can't find node with path '${path}'`,
+      ),
+    );
   }
 
   async movePackageableElements(

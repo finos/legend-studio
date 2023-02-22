@@ -22,6 +22,7 @@ export * from './components/CJS__Fuse.cjs';
 
 export * from './components/CJS__Icon.cjs';
 export * from './components/TypeIcon.js';
+export * from './components/LoadingIcon.js';
 export * from './components/Input.js';
 export * from './components/LegendLogo.js';
 export * from './components/TreeView.js';
@@ -29,6 +30,7 @@ export * from './components/CustomSelectorInput.js';
 export * from './components/ComponentsConfiguration.js';
 export * from './components/ResizablePanel.js';
 export * from './components/Badge.js';
+export * from './components/Button.js';
 
 export * from './components/dialog/Dialog.js';
 export * from './components/dialog/NonBlockingDialog.js';

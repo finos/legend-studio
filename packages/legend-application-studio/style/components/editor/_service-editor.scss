@@ -240,7 +240,7 @@
       }
     }
 
-    &__execute-btn {
+    &__action-btn {
       @include flexVCenter;
 
       height: 100%;
@@ -250,7 +250,7 @@
         @include flexVCenter;
 
         height: 2.2rem;
-        background: var(--color-blue-200);
+        background: var(--color-dark-grey-250);
         padding: 1rem;
         border-radius: 0.2rem 0 0 0.2rem;
       }
@@ -267,17 +267,25 @@
         font-weight: 500;
       }
 
+      &__label--primary {
+        background: var(--color-blue-200);
+      }
+
       &__dropdown-btn {
         @include flexCenter;
 
         height: 2.2rem;
         width: 2rem;
-        background: var(--color-blue-200);
+        background: var(--color-dark-grey-250);
         border-radius: 0 0.2rem 0.2rem 0;
         border-left: 0.1rem solid var(--color-dark-shade-280);
 
         svg {
           color: var(--color-light-grey-180);
+        }
+
+        &--primary {
+          background: var(--color-blue-200);
         }
       }
 
@@ -288,6 +296,7 @@
       }
 
       &__option {
+        text-align: left;
         width: 12rem;
       }
 
@@ -300,6 +309,58 @@
       &__label[disabled] &__label__title,
       &__dropdown-btn[disabled] svg {
         color: var(--color-dark-grey-500);
+      }
+    }
+
+    &__advanced-btn {
+      @include flexVCenter;
+
+      height: 100%;
+      margin: 0 0.15rem;
+
+      &__label {
+        @include flexVCenter;
+
+        height: 2.2rem;
+        background: var(--color-dark-grey-250);
+        padding: 1rem;
+        border-radius: 0.2rem 0 0 0.2rem;
+        color: var(--color-light-grey-180);
+        font-size: 1.2rem;
+        font-weight: 500;
+
+        &__icon {
+          font-size: 1.2rem;
+          height: 2.2rem;
+          margin-right: 0.7rem;
+          background: var(--color-dark-grey-250);
+          color: var(--color-light-grey-180);
+        }
+      }
+
+      &__option {
+        text-align: left;
+        width: 19rem;
+      }
+
+      &__icon {
+        @include flexCenter;
+
+        height: 2.2rem;
+        width: 2rem;
+        background: var(--color-dark-grey-250);
+        border-radius: 0 0.2rem 0.2rem 0;
+        border-left: 0.1rem solid var(--color-dark-shade-280);
+
+        svg {
+          color: var(--color-light-grey-180);
+        }
+      }
+
+      &__label:hover,
+      &__label__icon,
+      &__icon:hover svg {
+        color: var(--color-light-grey-50);
       }
     }
 

@@ -6,24 +6,25 @@ on:
       - master
 
 jobs:
-  publish-documentation-site:
-    name: Publish Documentation Site
+  build-documentation-website:
+    name: Build Documentation Site
     runs-on: ubuntu-latest
+    if: github.repository == 'finos/legend-studio' # prevent running this action in forks
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.3.0
       - name: Get Yarn cache directory path
         id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
       - name: Setup Yarn cache
-        uses: actions/cache@v3
+        uses: actions/cache@v3.2.5
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: 16
       - name: Install dependencies
@@ -34,7 +35,24 @@ jobs:
           # See https://github.com/TypeStrong/typedoc/issues/1606
           NODE_OPTIONS: '--max_old_space_size=4096'
         run: yarn build:ts && yarn build:website
-      - name: Deploy documentation site
-        uses: JamesIves/github-pages-deploy-action@v4.4.1
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1.0.7
         with:
-          folder: ./build/docs
+          path: ./build/docs
+  deploy-documentation-website:
+    name: Deploy Documentation Site
+    runs-on: ubuntu-latest
+    if: github.repository == 'finos/legend-studio' # prevent running this action in forks
+    needs: build-documentation-website
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1.2.4

@@ -34,7 +34,7 @@ import {
   ExpandIcon,
   CompressIcon,
   CircleIcon,
-  BrushIcon,
+  TrashIcon,
   NewFolderIcon,
   PlusCircleIcon,
   InfoCircleIcon,
@@ -93,9 +93,9 @@ import {
   renderPropertyTypeIcon,
 } from './QueryBuilderTDSComponentHelper.js';
 import {
-  type QueryBuilderOLAPColumnDragSource,
-  QUERY_BUILDER_OLAP_COLUMN_DND_TYPE,
-} from '../../stores/fetch-structure/tds/olapGroupBy/QueryBuilderOLAPGroupByState.js';
+  type QueryBuilderWindowColumnDragSource,
+  QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
+} from '../../stores/fetch-structure/tds/window/QueryBuilderWindowState.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
@@ -218,7 +218,7 @@ export const QueryBuilderColumnBadge = observer(
       () => ({
         accept: [
           QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-          QUERY_BUILDER_OLAP_COLUMN_DND_TYPE,
+          QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
         ],
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
@@ -486,12 +486,12 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       (item: QueryBuilderPostFilterDropTarget, type: string): void => {
         if (
           type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
-          type === QUERY_BUILDER_OLAP_COLUMN_DND_TYPE
+          type === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE
         ) {
           const columnState = (
             item as
               | QueryBuilderProjectionColumnDragSource
-              | QueryBuilderOLAPColumnDragSource
+              | QueryBuilderWindowColumnDragSource
           ).columnState as QueryBuilderTDSColumnState;
           let conditionState: PostFilterConditionState;
           try {
@@ -553,7 +553,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
         accept: [
           ...Object.values(QUERY_BUILDER_POST_FILTER_DND_TYPE),
           QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-          QUERY_BUILDER_OLAP_COLUMN_DND_TYPE,
+          QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
         ],
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
@@ -865,7 +865,7 @@ const QueryBuilderPostFilterPanelContent = observer(
       () => ({
         accept: [
           QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-          QUERY_BUILDER_OLAP_COLUMN_DND_TYPE,
+          QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
         ],
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
@@ -926,7 +926,7 @@ const QueryBuilderPostFilterPanelContent = observer(
               tabIndex={-1}
               title="Cleanup Tree"
             >
-              <BrushIcon />
+              <TrashIcon />
             </button>
             <button
               className="panel__header__action"

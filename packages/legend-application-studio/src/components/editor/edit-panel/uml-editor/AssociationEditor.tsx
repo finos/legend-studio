@@ -43,6 +43,7 @@ import {
   LongArrowRightIcon,
   PanelDropZone,
   Panel,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
@@ -92,6 +93,7 @@ import {
   buildElementOption,
   useApplicationNavigationContext,
   type PackageableElementOption,
+  LEGEND_APPLICATION_DOCUMENTATION_KEY,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
@@ -113,6 +115,21 @@ const AssociationPropertyBasicEditor = observer(
       }
       return false;
     };
+    const isPropertyInvalid = (): boolean => {
+      const sytemAssociation =
+        editorStore.graphManagerState.graph.systemModel.getOwnNullableAssociation(
+          association.path,
+        );
+      if (
+        !sytemAssociation &&
+        editorStore.graphManagerState.graph.systemModel.getOwnNullableClass(
+          property.genericType.value.rawType.path,
+        )
+      ) {
+        return true;
+      }
+      return false;
+    };
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property_setName(property, event.target.value);
@@ -121,7 +138,9 @@ const AssociationPropertyBasicEditor = observer(
     const [isEditingType, setIsEditingType] = useState(false);
     // TODO: make this so that association can only refer to classes from the same graph space
     const propertyTypeOptions =
-      editorStore.graphManagerState.usableClasses.map(buildElementOption);
+      editorStore.graphManagerState.usableAssociationPropertyClasses.map(
+        buildElementOption,
+      );
     const propertyType = property.genericType.value.rawType;
     const propertyTypeName = getClassPropertyType(propertyType);
     const filterOption = createFilter({
@@ -191,6 +210,10 @@ const AssociationPropertyBasicEditor = observer(
         );
       }
     };
+    const seeErrorDocumentation = (): void =>
+      editorStore.applicationStore.assistantService.openDocumentationEntry(
+        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_WHY_DO_I_SEE_ERROR_WITH_ASSOCIATION_PROPERTY_TYPE,
+      );
 
     return (
       <div className="property-basic-editor">
@@ -227,7 +250,15 @@ const AssociationPropertyBasicEditor = observer(
                 'property-basic-editor__type--has-visit-btn':
                   propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE,
               },
+              {
+                'property-basic-editor__type--error': isPropertyInvalid(),
+              },
             )}
+            title={
+              isPropertyInvalid()
+                ? `Found system class property '${propertyType.path}' in association '${association.path}'`
+                : undefined
+            }
           >
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <div className="property-basic-editor__type__abbr">
@@ -243,6 +274,16 @@ const AssociationPropertyBasicEditor = observer(
             >
               Click to edit
             </div>
+            {isPropertyInvalid() && (
+              <button
+                className="property-basic-editor__error--info"
+                tabIndex={-1}
+                onClick={seeErrorDocumentation}
+                title="click to see more details on error"
+              >
+                <InfoCircleIcon />
+              </button>
+            )}
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <button
                 data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
@@ -265,6 +306,9 @@ const AssociationPropertyBasicEditor = observer(
                 'property-basic-editor__type--has-visit-btn':
                   propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE,
               },
+              {
+                'property-basic-editor__type--error': isPropertyInvalid(),
+              },
             )}
           >
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
@@ -275,6 +319,16 @@ const AssociationPropertyBasicEditor = observer(
             <div className="property-basic-editor__type__label">
               {propertyType.name}
             </div>
+            {isPropertyInvalid() && (
+              <button
+                className="property-basic-editor__error--info"
+                tabIndex={-1}
+                onClick={seeErrorDocumentation}
+                title="click to see more details on error"
+              >
+                <InfoCircleIcon />
+              </button>
+            )}
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <button
                 data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}

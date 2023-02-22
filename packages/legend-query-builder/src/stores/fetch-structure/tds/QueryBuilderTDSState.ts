@@ -92,9 +92,9 @@ import type { LambdaFunctionBuilderOption } from '../../QueryBuilderValueSpecifi
 import { appendProjection } from './projection/QueryBuilderProjectionValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
-import { QueryBuilderOLAPGroupByState } from './olapGroupBy/QueryBuilderOLAPGroupByState.js';
-import type { QueryBuilderTDS_OLAPOperator } from './olapGroupBy/operators/QueryBuilderTDS_OLAPOperator.js';
-import { getQueryBuilderCoreOLAPGroupByOperators } from './olapGroupBy/QueryBuilderOLAPGroupByOperatorLoader.js';
+import { QueryBuilderWindowState } from './window/QueryBuilderWindowState.js';
+import type { QueryBuilderTDS_WindowOperator } from './window/operators/QueryBuilderTDS_WindowOperator.js';
+import { getQueryBuilderCoreWindowOperators } from './window/QueryBuilderWindowGroupByOperatorLoader.js';
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
 
 export class QueryBuilderTDSState
@@ -103,19 +103,19 @@ export class QueryBuilderTDSState
 {
   readonly aggregationState: QueryBuilderAggregationState;
   readonly postFilterState: QueryBuilderPostFilterState;
-  readonly olapGroupByState: QueryBuilderOLAPGroupByState;
+  readonly windowState: QueryBuilderWindowState;
   readonly resultSetModifierState: QueryResultSetModifierState;
   projectionColumns: QueryBuilderProjectionColumnState[] = [];
   isConvertDerivationProjectionObjects = false;
   showPostFilterPanel = false;
-  showOlapGroupByPanel = false;
+  showWindowFuncPanel = false;
 
   postFilterOperators: QueryBuilderPostFilterOperator[] =
     getQueryBuilderCorePostFilterOperators();
   aggregationOperators: QueryBuilderAggregateOperator[] =
     getQueryBuilderCoreAggregrationOperators();
-  olapGroupByOperators: QueryBuilderTDS_OLAPOperator[] =
-    getQueryBuilderCoreOLAPGroupByOperators();
+  windowFuncOperators: QueryBuilderTDS_WindowOperator[] =
+    getQueryBuilderCoreWindowOperators();
 
   constructor(
     queryBuilderState: QueryBuilderState,
@@ -127,7 +127,7 @@ export class QueryBuilderTDSState
       projectionColumns: observable,
       isConvertDerivationProjectionObjects: observable,
       showPostFilterPanel: observable,
-      showOlapGroupByPanel: observable,
+      showWindowFuncPanel: observable,
       TEMPORARY__showPostFetchStructurePanel: computed,
       derivations: computed,
       hasParserError: computed,
@@ -135,7 +135,7 @@ export class QueryBuilderTDSState
       moveColumn: action,
       replaceColumn: action,
       setShowPostFilterPanel: action,
-      setShowOlapGroupByPanel: action,
+      setShowWindowFuncPanel: action,
       convertDerivationProjectionObjects: flow,
     });
 
@@ -148,9 +148,9 @@ export class QueryBuilderTDSState
       this,
       this.aggregationOperators,
     );
-    this.olapGroupByState = new QueryBuilderOLAPGroupByState(
+    this.windowState = new QueryBuilderWindowState(
       this,
-      this.olapGroupByOperators,
+      this.windowFuncOperators,
     );
   }
 
@@ -173,7 +173,7 @@ export class QueryBuilderTDSState
   override get TEMPORARY__showPostFetchStructurePanel(): boolean {
     return (
       this.queryBuilderState.filterState.showPanel ||
-      this.showOlapGroupByPanel ||
+      this.showWindowFuncPanel ||
       this.showPostFilterPanel
     );
   }
@@ -279,7 +279,7 @@ export class QueryBuilderTDSState
     return [
       ...this.aggregationState.columns,
       ...projectionColumns,
-      ...this.olapGroupByState.olapColumns,
+      ...this.windowState.windowColumns,
     ];
   }
 
@@ -293,7 +293,7 @@ export class QueryBuilderTDSState
     return Boolean(
       [
         ...this.postFilterState.referencedTDSColumns,
-        ...this.olapGroupByState.referencedTDSColumns,
+        ...this.windowState.referencedTDSColumns,
       ].find((col) => {
         if (col instanceof QueryBuilderAggregateColumnState) {
           return tdsCol instanceof QueryBuilderAggregateColumnState
@@ -320,8 +320,8 @@ export class QueryBuilderTDSState
     this.showPostFilterPanel = val;
   }
 
-  setShowOlapGroupByPanel(val: boolean): void {
-    this.showOlapGroupByPanel = val;
+  setShowWindowFuncPanel(val: boolean): void {
+    this.showWindowFuncPanel = val;
   }
 
   *convertDerivationProjectionObjects(): GeneratorFn<void> {
@@ -426,6 +426,11 @@ export class QueryBuilderTDSState
     }
 
     changeEntry(this.projectionColumns, oldVal, newVal);
+  }
+
+  removeAllColumns(): void {
+    this.projectionColumns = [];
+    this.aggregationState.columns = [];
   }
 
   removeColumn(val: QueryBuilderProjectionColumnState): void {
@@ -600,6 +605,28 @@ export class QueryBuilderTDSState
           this.queryBuilderState.explorerState.humanizePropertyName,
         ),
       );
+    });
+  }
+
+  checkBeforeClearingColumns(onChange: () => void): void {
+    this.queryBuilderState.applicationStore.setActionAlertInfo({
+      message:
+        'You will be clearing all projection columns. Do you still want to proceed?',
+      type: ActionAlertType.CAUTION,
+      actions: [
+        {
+          label: 'Proceed',
+          type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+          handler: this.queryBuilderState.applicationStore.guardUnhandledError(
+            async () => onChange(),
+          ),
+        },
+        {
+          label: 'Cancel',
+          type: ActionAlertActionType.PROCEED,
+          default: true,
+        },
+      ],
     });
   }
 

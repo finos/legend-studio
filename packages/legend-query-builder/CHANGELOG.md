@@ -1,5 +1,61 @@
 # @finos/legend-query-builder
 
+## 0.6.26
+
+## 0.6.25
+
+### Patch Changes
+
+- [#1911](https://github.com/finos/legend-studio/pull/1911) [`418d96ab7`](https://github.com/finos/legend-studio/commit/418d96ab772f2fab5ffd89ed8c34b96a7593e1b9) ([@xannem](https://github.com/xannem)) - Clarify status of sorting column in query.
+
+- [#1909](https://github.com/finos/legend-studio/pull/1909) [`130d068d0`](https://github.com/finos/legend-studio/commit/130d068d0932dde5786ecf8de6dacf2bffcc6143) ([@xannem](https://github.com/xannem)) - Do not add properties with existing same name/path when user right clicks 'add properties to fetch structure'.
+
+## 0.6.24
+
+### Patch Changes
+
+- [#1896](https://github.com/finos/legend-studio/pull/1896) [`c5d19c222`](https://github.com/finos/legend-studio/commit/c5d19c22252fbca2ba902b048726964e7a1d3971) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Minor improvements for checking entitlements.
+
+## 0.6.23
+
+### Patch Changes
+
+- [#1885](https://github.com/finos/legend-studio/pull/1885) [`652450d2c`](https://github.com/finos/legend-studio/commit/652450d2c4ca38e4c20f037fcbf989c0660993d0) ([@gayathrir11](https://github.com/gayathrir11)) - Fix showing preview data for milestoned proeprties.
+
+- [#1882](https://github.com/finos/legend-studio/pull/1882) [`87c71c559`](https://github.com/finos/legend-studio/commit/87c71c5592e4d1cbcc04ef9d915d7ac2f072ad1f) ([@xannem](https://github.com/xannem)) - Styling feedbacks for query upon closing and running.
+
+## 0.6.22
+
+## 0.6.21
+
+### Patch Changes
+
+- [#1873](https://github.com/finos/legend-studio/pull/1873) [`1a5080f89`](https://github.com/finos/legend-studio/commit/1a5080f8914b1827e2f360379f5170f5683453e3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Display execution time using `prettyDuration`.
+
+## 0.6.20
+
+### Patch Changes
+
+- [#1867](https://github.com/finos/legend-studio/pull/1867) [`df98cc531`](https://github.com/finos/legend-studio/commit/df98cc5318d4ece60c6694866ac0304a61b3fd2a) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support check entitlements in query builder.
+
+## 0.6.19
+
+### Patch Changes
+
+- [#1863](https://github.com/finos/legend-studio/pull/1863) [`8cc899318`](https://github.com/finos/legend-studio/commit/8cc899318374df074cf934cd09a72c3c2bea312c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support TDS sort for any tds column not just projection columns.
+
+- [#1859](https://github.com/finos/legend-studio/pull/1859) [`d8b85ff06`](https://github.com/finos/legend-studio/commit/d8b85ff066d8743d96c9f9edbf2875a062847e00) ([@xannem](https://github.com/xannem)) - Add loading indicator for when user closes text-mode query and fixes flickering blank panels [#1853](https://github.com/finos/legend-studio/issues/1853)
+
+- [#1860](https://github.com/finos/legend-studio/pull/1860) [`d096134b2`](https://github.com/finos/legend-studio/commit/d096134b2f1a290aa0bd7f3b35a264c37abdb686) ([@xannem](https://github.com/xannem)) - Add button icon to clear all projection columns in query builder.
+
+## 0.6.18
+
+### Patch Changes
+
+- [#1856](https://github.com/finos/legend-studio/pull/1856) [`707a7a622`](https://github.com/finos/legend-studio/commit/707a7a6223e2d65b471dca9efb967da6fd125739) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add text/protocol and documentation options to advanced dropdown in query builder.
+
+## 0.6.17
+
 ## 0.6.16
 
 ### Patch Changes

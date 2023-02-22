@@ -219,13 +219,14 @@ import {
   V1_RunTestsInput,
   V1_RunTestsTestableInput,
 } from './engine/test/V1_RunTestsInput.js';
-import { V1_AtomicTestId } from './model/test/V1_AtomicTestId.js';
+import { V1_UniqueTestId } from './model/test/V1_UniqueTestId.js';
 import type { RunTestsTestableInput } from '../../../../graph/metamodel/pure/test/result/RunTestsTestableInput.js';
 import { V1_buildTestsResult } from './engine/test/V1_RunTestsResult.js';
 import {
   type TestResult,
-  TestFailed,
   TestError,
+  TestExecuted,
+  TestExecutionStatus,
 } from '../../../../graph/metamodel/pure/test/result/TestResult.js';
 import {
   type Service,
@@ -1513,6 +1514,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return grammarToJson;
   }
 
+  async prettyLambdaContent(lambda: string): Promise<string> {
+    return this.engine.prettyLambdaContent(lambda);
+  }
+
   async entitiesToPureCode(entities: Entity[]): Promise<string> {
     const startTime = Date.now();
     const grammarToJson = await this.engine.pureModelContextDataToPureCode(
@@ -1751,7 +1756,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         const runTestableInput = new V1_RunTestsTestableInput();
         runTestableInput.testable = testable;
         runTestableInput.unitTestIds = input.unitTestIds.map((unit) => {
-          const unitAtomicTest = new V1_AtomicTestId();
+          const unitAtomicTest = new V1_UniqueTestId();
           unitAtomicTest.testSuiteId = unit.parentSuite?.id;
           unitAtomicTest.atomicTestId = unit.atomicTest.id;
           return unitAtomicTest;
@@ -1786,7 +1791,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       const runTestsInput = new V1_RunTestsInput();
       runTestsInput.model = this.getFullGraphModelData(graph);
       const runTestableInput = new V1_RunTestsTestableInput();
-      const unitAtomicTest = new V1_AtomicTestId();
+      const unitAtomicTest = new V1_UniqueTestId();
       runTestableInput.testable = guaranteeNonNullable(
         getNullableIDFromTestable(
           testable,
@@ -1813,7 +1818,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
       const result = results[0];
       let status: AssertFail | undefined = undefined;
-      if (result instanceof TestFailed) {
+      if (
+        result instanceof TestExecuted &&
+        result.testExecutionStatus === TestExecutionStatus.FAIL
+      ) {
         status = result.assertStatuses.find(
           (aStatus) =>
             aStatus.assertion === baseAssertion &&
@@ -1822,7 +1830,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       } else if (result instanceof MultiExecutionServiceTestResult) {
         status = Array.from(result.keyIndexedTestResults.values())
           .map((testResult) => {
-            if (testResult instanceof TestFailed) {
+            if (
+              testResult instanceof TestExecuted &&
+              testResult.testExecutionStatus === TestExecutionStatus.FAIL
+            ) {
               return testResult.assertStatuses.find(
                 (aStatus) =>
                   aStatus.assertion === baseAssertion &&
@@ -2519,7 +2530,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // ---------------------------------------- Analysis ----------------------------------------
 
-  private buildMappingModelCoverageAnalysisInputContextData = (
+  buildPureModelContextDataFromPureModel = (
     graph: PureModel,
   ): V1_PureModelContextData => {
     const graphData = this.getFullGraphModelData(graph);
@@ -2533,8 +2544,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       )
       .flatMap((getter) => getter(graph, graphData));
     prunedGraphData.elements = uniq(
-      this.getFullGraphModelData(graph)
-        .elements.filter(
+      graphData.elements
+        .filter(
           (element) =>
             element instanceof V1_Class ||
             element instanceof V1_Enumeration ||
@@ -2557,20 +2568,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const input = new V1_MappingModelCoverageAnalysisInput();
     input.clientVersion = V1_PureGraphManager.TARGET_PROTOCOL_VERSION;
     input.mapping = mapping.path;
-    input.model = this.buildMappingModelCoverageAnalysisInputContextData(graph);
+    input.model = this.buildPureModelContextDataFromPureModel(graph);
     return V1_buildModelCoverageAnalysisResult(
       await this.engine.analyzeMappingModelCoverage(input),
+      mapping,
     );
   }
 
   buildMappingModelCoverageAnalysisResult(
     input: RawMappingModelCoverageAnalysisResult,
+    mapping: Mapping,
   ): MappingModelCoverageAnalysisResult {
     return V1_buildModelCoverageAnalysisResult(
       deserialize(
         V1_MappingModelCoverageAnalysisResult,
         input as PlainObject<V1_MappingModelCoverageAnalysisResult>,
       ),
+      mapping,
     );
   }
 

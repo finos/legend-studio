@@ -16,9 +16,12 @@
 
 import {
   AbstractPropertyExpression,
+  Class,
   DerivedProperty,
   INTERNAL__PropagatedValue,
   matchFunctionName,
+  MILESTONING_VERSION_PROPERTY_SUFFIX,
+  PropertyExplicitReference,
   SimpleFunctionExpression,
   VariableExpression,
   type ValueSpecification,
@@ -30,7 +33,11 @@ import {
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import { variableExpression_setName } from './shared/ValueSpecificationModifierHelper.js';
+import {
+  functionExpression_setParametersValues,
+  propertyExpression_setFunc,
+  variableExpression_setName,
+} from './shared/ValueSpecificationModifierHelper.js';
 
 /**
  * Gets the value of ValueSpecification given INTERNAL__PropagatedValue is pointing to.
@@ -50,6 +57,7 @@ export const buildPropertyExpressionChain = (
   propertyExpression: AbstractPropertyExpression,
   queryBuilderState: QueryBuilderState,
   lambdaParameterName: string,
+  options?: LambdaFunctionBuilderOption,
   /**
    * As of now, we don't support date propagation for aggregation-class functions
    * so we have this temporary flag to disable date propagation, there could be other
@@ -81,45 +89,75 @@ export const buildPropertyExpressionChain = (
       currentExpression instanceof AbstractPropertyExpression &&
       currentExpression.func.value instanceof DerivedProperty
     ) {
-      const currentPropertyExpression = currentExpression;
-      const parameterValues = currentExpression.parametersValues.slice(1);
-      parameterValues.forEach((parameterValue, index) => {
-        if (parameterValue instanceof INTERNAL__PropagatedValue) {
-          // Replace with argumentless derived property expression only when default date propagation is supported
-          if (
-            !TEMPORARY__disableDatePropagation &&
-            parameterValue.isPropagatedValue
-          ) {
-            // NOTE: For `bitemporal` property check if the property expression has parameters which are not instance of
-            // `INTERNAL_PropagatedValue` then pass the parameters as user explicitly changed values of either of the parameters.
+      // check if we are building the expression chain to view preview data and if the
+      // the property is milestoned. If that is the case we need to replace the
+      // `property` with `propertyAllVersions`
+      if (
+        options?.useAllVersionsForMilestoning &&
+        currentExpression.func.value.genericType.value.rawType instanceof
+          Class &&
+        currentExpression.func.value._OWNER._generatedMilestonedProperties
+          .length !== 0
+      ) {
+        const name = currentExpression.func.value.name;
+        const property =
+          currentExpression.func.value._OWNER._generatedMilestonedProperties.find(
+            (e) =>
+              e.name ===
+              `${name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS}`,
+          );
+        if (property) {
+          propertyExpression_setFunc(
+            currentExpression,
+            PropertyExplicitReference.create(property),
+          );
+          functionExpression_setParametersValues(
+            currentExpression,
+            [guaranteeNonNullable(currentExpression.parametersValues[0])],
+            queryBuilderState.observableContext,
+          );
+        }
+      } else {
+        const currentPropertyExpression = currentExpression;
+        const parameterValues = currentExpression.parametersValues.slice(1);
+        parameterValues.forEach((parameterValue, index) => {
+          if (parameterValue instanceof INTERNAL__PropagatedValue) {
+            // Replace with argumentless derived property expression only when default date propagation is supported
             if (
-              (index === 1 &&
-                currentPropertyExpression.parametersValues.length === 3) ||
-              (index === 0 &&
-                currentPropertyExpression.parametersValues.length === 3 &&
-                !(
-                  currentPropertyExpression.parametersValues[2] instanceof
-                    INTERNAL__PropagatedValue &&
-                  currentPropertyExpression.parametersValues[2]
-                    .isPropagatedValue === true
-                ))
+              !TEMPORARY__disableDatePropagation &&
+              parameterValue.isPropagatedValue
             ) {
+              // NOTE: For `bitemporal` property check if the property expression has parameters which are not instance of
+              // `INTERNAL_PropagatedValue` then pass the parameters as user explicitly changed values of either of the parameters.
+              if (
+                (index === 1 &&
+                  currentPropertyExpression.parametersValues.length === 3) ||
+                (index === 0 &&
+                  currentPropertyExpression.parametersValues.length === 3 &&
+                  !(
+                    currentPropertyExpression.parametersValues[2] instanceof
+                      INTERNAL__PropagatedValue &&
+                    currentPropertyExpression.parametersValues[2]
+                      .isPropagatedValue === true
+                  ))
+              ) {
+                currentPropertyExpression.parametersValues[index + 1] =
+                  getValueOfInternalPropagatedValue(parameterValue);
+              } else {
+                currentPropertyExpression.parametersValues = [
+                  guaranteeNonNullable(
+                    guaranteeType(currentExpression, AbstractPropertyExpression)
+                      .parametersValues[0],
+                  ),
+                ];
+              }
+            } else {
               currentPropertyExpression.parametersValues[index + 1] =
                 getValueOfInternalPropagatedValue(parameterValue);
-            } else {
-              currentPropertyExpression.parametersValues = [
-                guaranteeNonNullable(
-                  guaranteeType(currentExpression, AbstractPropertyExpression)
-                    .parametersValues[0],
-                ),
-              ];
             }
-          } else {
-            currentPropertyExpression.parametersValues[index + 1] =
-              getValueOfInternalPropagatedValue(parameterValue);
           }
-        }
-      });
+        });
+      }
     }
     currentExpression = nextExpression;
     // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
@@ -150,5 +188,12 @@ export type LambdaFunctionBuilderOption = {
    * queryBuilderState will make the lambda function building process overrides several query values, such as the row limit.
    */
   isBuildingExecutionQuery?: boolean | undefined;
+
+  /**
+   * Set this to `true` when we construct query for execution within the app to view preview data.
+   * queryBuilderState will make the lambda function building process overrides `.all()` to `.allVersions()` if the Class
+   * is milestoned and `property` to `propertyAllVersions` if a property is milestoned.
+   */
+  useAllVersionsForMilestoning?: boolean | undefined;
   keepSourceInformation?: boolean | undefined;
 };

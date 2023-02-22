@@ -32,13 +32,39 @@ export const PanelHeader: React.FC<{
   children?: React.ReactNode;
   className?: string;
 }> = (props) => {
-  const { title, children } = props;
+  const { title, children, className } = props;
   return (
-    <div className="panel__header">
+    <div className={clsx('panel__header', className)}>
       {title && (
         <div className="panel__header__title">
           <div className="panel__header__title__label">
             {title.toLowerCase()}
+          </div>
+        </div>
+      )}
+
+      {children}
+    </div>
+  );
+};
+
+export const PanelSideBarHeader: React.FC<{
+  title?: string;
+  children?: React.ReactNode;
+  className?: string;
+  darkMode?: boolean;
+}> = (props) => {
+  const { title, children, className, darkMode } = props;
+  return (
+    <div
+      className={clsx('panel__header side-bar__header', className, {
+        'panel__header--dark': darkMode,
+      })}
+    >
+      {title && (
+        <div className="panel__header__title">
+          <div className="panel__header__title__content side-bar__header__title__content">
+            {title.toUpperCase()}
           </div>
         </div>
       )}
@@ -150,6 +176,7 @@ export const PanelFormTextField = forwardRef<
     errorMessage?: string | undefined;
     isReadOnly?: boolean;
     className?: string | undefined;
+    inputType?: string | undefined;
     darkMode?: boolean;
     fullWidth?: boolean;
   }
@@ -165,6 +192,7 @@ export const PanelFormTextField = forwardRef<
     className,
     darkMode,
     fullWidth,
+    inputType,
   } = props;
   const displayValue = value ?? '';
   const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
@@ -190,6 +218,7 @@ export const PanelFormTextField = forwardRef<
             { 'input--small': !fullWidth },
           )}
           ref={ref}
+          type={inputType ? inputType : 'text'}
           spellCheck={false}
           disabled={isReadOnly}
           placeholder={placeholder}

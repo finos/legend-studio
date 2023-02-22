@@ -77,6 +77,7 @@ import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUt
 import { QUERY_BUILDER_COMMAND_KEY } from './QueryBuilderCommand.js';
 import { QueryBuilderWatermarkState } from './watermark/QueryBuilderWatermarkState.js';
 import { QueryBuilderConstantsState } from './QueryBuilderConstantsState.js';
+import { QueryBuilderCheckEntitlementsState } from './entitlements/QueryBuilderCheckEntitlementsState.js';
 
 export abstract class QueryBuilderState implements CommandRegistrar {
   applicationStore: GenericLegendApplicationStore;
@@ -91,17 +92,20 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
   watermarkState: QueryBuilderWatermarkState;
+  checkEntitlementsState: QueryBuilderCheckEntitlementsState;
   filterOperators: QueryBuilderFilterOperator[] =
     getQueryBuilderCoreFilterOperators();
   resultState: QueryBuilderResultState;
   textEditorState: QueryBuilderTextEditorState;
   unsupportedQueryState: QueryBuilderUnsupportedQueryState;
   observableContext: ObserverContext;
+  titleOfQuery: string | undefined;
 
   queryCompileState = ActionState.create();
   showFunctionsExplorerPanel = false;
   showParametersPanel = false;
   isEditingWatermark = false;
+  isCheckingEntitlments = false;
 
   class?: Class | undefined;
   mapping?: Mapping | undefined;
@@ -123,12 +127,15 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       fetchStructureState: observable,
       filterState: observable,
       watermarkState: observable,
+      titleOfQuery: observable,
+      checkEntitlementsState: observable,
       resultState: observable,
       textEditorState: observable,
       unsupportedQueryState: observable,
       showFunctionsExplorerPanel: observable,
       showParametersPanel: observable,
       isEditingWatermark: observable,
+      isCheckingEntitlments: observable,
       changeDetectionState: observable,
       class: observable,
       mapping: observable,
@@ -141,9 +148,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setShowFunctionsExplorerPanel: action,
       setShowParametersPanel: action,
       setIsEditingWatermark: action,
+      setIsCheckingEntitlments: action,
       setClass: action,
       setMapping: action,
       setRuntimeValue: action,
+
+      setTitleOfQuery: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -167,6 +177,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.watermarkState = new QueryBuilderWatermarkState(this);
+    this.checkEntitlementsState = new QueryBuilderCheckEntitlementsState(this);
     this.resultState = new QueryBuilderResultState(this);
     this.textEditorState = new QueryBuilderTextEditorState(this);
     this.unsupportedQueryState = new QueryBuilderUnsupportedQueryState(this);
@@ -230,6 +241,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.isEditingWatermark = val;
   }
 
+  setIsCheckingEntitlments(val: boolean): void {
+    this.isCheckingEntitlments = val;
+  }
+
   setClass(val: Class | undefined): void {
     this.class = val;
   }
@@ -240,6 +255,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setRuntimeValue(val: Runtime | undefined): void {
     this.runtimeValue = val;
+  }
+
+  setTitleOfQuery(val: string | undefined): void {
+    this.titleOfQuery = val;
   }
 
   get isQuerySupported(): boolean {
@@ -284,13 +303,20 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.textEditorState = new QueryBuilderTextEditorState(this);
     this.unsupportedQueryState = new QueryBuilderUnsupportedQueryState(this);
     this.milestoningState = new QueryBuilderMilestoningState(this);
+    const mappingModelCoverageAnalysisResult =
+      this.explorerState.mappingModelCoverageAnalysisResult;
     this.explorerState = new QueryBuilderExplorerState(this);
+    if (mappingModelCoverageAnalysisResult) {
+      this.explorerState.mappingModelCoverageAnalysisResult =
+        mappingModelCoverageAnalysisResult;
+    }
     this.explorerState.refreshTreeData();
     this.parametersState = new QueryBuilderParametersState(this);
     this.constantState = new QueryBuilderConstantsState(this);
     this.functionsExplorerState = new QueryFunctionsExplorerState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.watermarkState = new QueryBuilderWatermarkState(this);
+    this.checkEntitlementsState = new QueryBuilderCheckEntitlementsState(this);
 
     const currentFetchStructureImplementationType =
       this.fetchStructureState.implementation.type;
@@ -528,6 +554,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.parametersState,
       this.filterState,
       this.watermarkState,
+      this.checkEntitlementsState,
       this.fetchStructureState.implementation,
     ]);
   }

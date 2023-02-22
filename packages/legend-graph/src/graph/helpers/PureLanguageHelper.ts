@@ -151,7 +151,7 @@ export const generateFunctionPrettyName = (
         )}]`,
     )
     .join(', ')})` +
-  `: ${element.returnType.value.name}[${generateMultiplicityString(
+  `: ${element.returnType.value.path}[${generateMultiplicityString(
     element.returnMultiplicity.lowerBound,
     element.returnMultiplicity.upperBound,
   )}]`;

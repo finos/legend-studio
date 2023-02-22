@@ -200,10 +200,10 @@ test(integrationTest('Open query builder by querying a class'), async () => {
     { entities },
   );
 
-  const MockedGlobalCompileInFormModeFn = createMock();
+  const MOCK__globalCompileInFormModeFn = createMock();
   MOCK__editorStore.graphState.globalCompileInFormMode =
-    MockedGlobalCompileInFormModeFn;
-  MockedGlobalCompileInFormModeFn.mockResolvedValue(
+    MOCK__globalCompileInFormModeFn;
+  MOCK__globalCompileInFormModeFn.mockResolvedValue(
     FormModeCompilationOutcome.SUCCEEDED,
   );
   MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
@@ -237,10 +237,10 @@ test(
       { entities },
     );
 
-    const MockedGlobalCompileInFormModeFn = createMock();
+    const MOCK__globalCompileInFormModeFn = createMock();
     MOCK__editorStore.graphState.globalCompileInFormMode =
-      MockedGlobalCompileInFormModeFn;
-    MockedGlobalCompileInFormModeFn.mockResolvedValue(
+      MOCK__globalCompileInFormModeFn;
+    MOCK__globalCompileInFormModeFn.mockResolvedValue(
       FormModeCompilationOutcome.SUCCEEDED,
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
@@ -276,10 +276,10 @@ test(
       { entities },
     );
 
-    const MockedGlobalCompileInFormModeFn = createMock();
+    const MOCK__globalCompileInFormModeFn = createMock();
     MOCK__editorStore.graphState.globalCompileInFormMode =
-      MockedGlobalCompileInFormModeFn;
-    MockedGlobalCompileInFormModeFn.mockResolvedValue(
+      MOCK__globalCompileInFormModeFn;
+    MOCK__globalCompileInFormModeFn.mockResolvedValue(
       FormModeCompilationOutcome.SUCCEEDED,
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
@@ -290,8 +290,8 @@ test(
 
     await TEST__openElementFromExplorerTree('model::MyMapping', renderResult);
     fireEvent.click(renderResult.getByText('test_1'));
-    await waitFor(() => renderResult.getByTitle('Edit query...'));
-    fireEvent.click(renderResult.getByTitle('Edit query...'));
+    await waitFor(() => renderResult.getByText('Edit Query'));
+    fireEvent.click(renderResult.getByText('Edit Query'));
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
@@ -308,10 +308,10 @@ test(
       { entities },
     );
 
-    const MockedGlobalCompileInFormModeFn = createMock();
+    const MOCK__globalCompileInFormModeFn = createMock();
     MOCK__editorStore.graphState.globalCompileInFormMode =
-      MockedGlobalCompileInFormModeFn;
-    MockedGlobalCompileInFormModeFn.mockResolvedValue(
+      MOCK__globalCompileInFormModeFn;
+    MOCK__globalCompileInFormModeFn.mockResolvedValue(
       FormModeCompilationOutcome.SUCCEEDED,
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
@@ -322,8 +322,8 @@ test(
 
     await TEST__openElementFromExplorerTree('model::MyService', renderResult);
     fireEvent.click(renderResult.getByText('Execution'));
-    await waitFor(() => renderResult.getByTitle('Edit query...'));
-    fireEvent.click(renderResult.getByTitle('Edit query...'));
+    await waitFor(() => renderResult.getByText('Edit Query'));
+    fireEvent.click(renderResult.getByText('Edit Query'));
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),

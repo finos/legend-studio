@@ -62,6 +62,7 @@ export * from './components/shared/ProjectSelectorUtils.js';
 export * from './components/shared/WorkspaceSelectorUtils.js';
 export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor.js';
 export { TypeTree } from './components/shared/TypeTree.js';
+export * from './stores/sidebar-state/testable/GlobalTestRunnerState.js';
 
 // test
 export {
@@ -95,7 +96,10 @@ export * from './stores/DSL_Generation_LegendStudioApplicationPlugin_Extension.j
 export * from './stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 
 export { MINIMUM_SERVICE_OWNERS } from './stores/editor-state/element-editor-state/service/ServiceEditorState.js';
-export { generateServiceManagementUrl } from './stores/editor-state/element-editor-state/service/ServiceRegistrationState.js';
+export {
+  LATEST_PROJECT_REVISION,
+  generateServiceManagementUrl,
+} from './stores/editor-state/element-editor-state/service/ServiceRegistrationState.js';
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
 export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal.js';
 export { FileSystem_File as GenerationFile } from './stores/shared/FileSystemTreeUtils.js';

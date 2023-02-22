@@ -30,17 +30,17 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { TreeData } from '@finos/legend-art';
+import { DIRECTORY_PATH_DELIMITER } from '@finos/legend-graph';
 
 const getParentPath = (path: string): string | undefined => {
   const trimmedPath = path.trim();
-  const idx = trimmedPath.lastIndexOf('/');
+  const idx = trimmedPath.lastIndexOf(DIRECTORY_PATH_DELIMITER);
   if (idx <= 0) {
     return undefined;
   }
   return trimmedPath.substring(0, idx);
 };
 
-const isFilePath = (path: string): boolean => path.endsWith('.pure');
 const pathToId = (path: string): string => `file_${path}`;
 
 export class DirectoryTreeState extends TreeState<
@@ -145,14 +145,22 @@ export class DirectoryTreeState extends TreeState<
 
   *revealPath(
     path: string,
-    forceOpenDirectoryTreePanel: boolean,
-    coordinate?: FileCoordinate,
+    options?: {
+      /**
+       * Only reveal directories, will skip opening file
+       * if the provided path belongs to a file
+       */
+      directoryOnly?: boolean | undefined;
+      forceOpenExplorerPanel?: boolean | undefined;
+      coordinate?: FileCoordinate | undefined;
+    },
   ): GeneratorFn<void> {
-    if (forceOpenDirectoryTreePanel) {
-      this.editorStore.setActiveActivity(ACTIVITY_MODE.FILE, {
+    if (options?.forceOpenExplorerPanel) {
+      this.editorStore.setActiveActivity(ACTIVITY_MODE.FILE_EXPLORER, {
         keepShowingIfMatchedCurrent: true,
       });
     }
+
     const paths: string[] = [];
     let currentPath: string | undefined = path;
     while (currentPath) {
@@ -160,20 +168,28 @@ export class DirectoryTreeState extends TreeState<
       currentPath = getParentPath(currentPath);
     }
     for (const _path of paths) {
-      if (!isFilePath(_path)) {
-        const node = guaranteeNonNullable(
-          this.getTreeData().nodes.get(pathToId(_path)),
-          `Can't find directory node with path '${_path}'`,
-        );
+      const node = guaranteeNonNullable(
+        this.getTreeData().nodes.get(pathToId(_path)),
+        `Can't find node with path '${_path}'`,
+      );
+      if (node.data.isFolderNode) {
         yield flowResult(this.expandNode(node));
       } else {
-        yield flowResult(this.editorStore.loadFile(_path, coordinate));
+        if (options?.directoryOnly) {
+          throw new Error(`Can't reveal non-directory path`);
+        } else {
+          yield flowResult(
+            this.editorStore.loadFile(_path, options?.coordinate),
+          );
+        }
       }
     }
-    const fileNode = guaranteeNonNullable(
-      this.getTreeData().nodes.get(pathToId(path)),
-      `Can't find file node with path '${path}'`,
+
+    this.setSelectedNode(
+      guaranteeNonNullable(
+        this.getTreeData().nodes.get(pathToId(path)),
+        `Can't find node with path '${path}'`,
+      ),
     );
-    this.setSelectedNode(fileNode);
   }
 }

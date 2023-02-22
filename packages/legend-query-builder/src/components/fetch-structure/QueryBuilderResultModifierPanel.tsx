@@ -27,22 +27,25 @@ import {
   ModalFooter,
   ModalHeader,
   SortIcon,
+  DropdownMenu,
+  MenuContent,
+  MenuContentItem,
 } from '@finos/legend-art';
 import {
   COLUMN_SORT_TYPE,
   SortColumnState,
 } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
-import type { QueryBuilderProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 
 const ColumnSortEditor = observer(
   (props: { tdsState: QueryBuilderTDSState; sortState: SortColumnState }) => {
     const { tdsState, sortState } = props;
     const applicationStore = useApplicationStore();
     const sortColumns = tdsState.resultSetModifierState.sortColumns;
-    const projectionOptions = tdsState.projectionColumns
+    const projectionOptions = tdsState.tdsColumns
       .filter(
         (projectionCol) =>
           projectionCol === sortState.columnState ||
@@ -57,23 +60,19 @@ const ColumnSortEditor = observer(
       value: sortState,
     };
     const onChange = (
-      val: { label: string; value: QueryBuilderProjectionColumnState } | null,
+      val: { label: string; value: QueryBuilderTDSColumnState } | null,
     ): void => {
       if (val !== null) {
         sortState.setColumnState(val.value);
       }
     };
     const sortType = sortState.sortType;
-    const toggleSortType = (): void => {
-      sortState.setSortType(
-        sortType === COLUMN_SORT_TYPE.ASC
-          ? COLUMN_SORT_TYPE.DESC
-          : COLUMN_SORT_TYPE.ASC,
-      );
-    };
+
     const deleteColumnSort = (): void =>
       tdsState.resultSetModifierState.deleteSortColumn(sortState);
-
+    const changeSortBy = (sortOp: COLUMN_SORT_TYPE) => (): void => {
+      sortState.setSortType(sortOp);
+    };
     return (
       <div className="panel__content__form__section__list__item query-builder__projection__options__sort">
         <CustomSelectorInput
@@ -87,13 +86,34 @@ const ColumnSortEditor = observer(
           value={value}
           darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
         />
-        <button
-          className="btn--dark btn--sm query-builder__projection__options__sort__type-btn"
-          tabIndex={-1}
-          onClick={toggleSortType}
+        <div className="query-builder__projection__options__sort__sortby">
+          {sortType.toLowerCase()}
+        </div>
+        <DropdownMenu
+          content={
+            <MenuContent>
+              {Object.values(COLUMN_SORT_TYPE).map((op) => (
+                <MenuContentItem key={op} onClick={changeSortBy(op)}>
+                  {op.toLowerCase()}
+                </MenuContentItem>
+              ))}
+            </MenuContent>
+          }
+          menuProps={{
+            anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+            transformOrigin: { vertical: 'top', horizontal: 'left' },
+            elevation: 7,
+          }}
         >
-          <SortIcon />
-        </button>
+          <div
+            className="query-builder__projection__options__sort__sortby--btn"
+            tabIndex={-1}
+            title="Choose SortBy Operator..."
+          >
+            <SortIcon />
+          </div>
+        </DropdownMenu>
+
         <button
           className="query-builder__projection__options__sort__remove-btn btn--dark btn--caution"
           onClick={deleteColumnSort}

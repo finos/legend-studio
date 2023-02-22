@@ -32,6 +32,14 @@ import {
   DiffIcon,
   WaterDropIcon,
   AssistantIcon,
+  MenuContentDivider,
+  Dialog,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  BlankPanelContent,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -48,6 +56,7 @@ import {
   BackdropContainer,
   useApplicationStore,
   useCommands,
+  LEGEND_APPLICATION_DOCUMENTATION_KEY,
 } from '@finos/legend-application';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
@@ -58,6 +67,7 @@ import { QueryBuilderGraphFetchTreeState } from '../stores/fetch-structure/graph
 import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSPanel.js';
 import { QueryBuilderWatermarkEditor } from './watermark/QueryBuilderWatermark.js';
 import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpressionPanel.js';
+import { QueryBuilder_LegendApplicationPlugin } from './QueryBuilder_LegendApplicationPlugin.js';
 
 export const QUERY_BUILDER_BACKDROP_CONTAINER_ID =
   'query-builder.backdrop-container';
@@ -134,7 +144,7 @@ const QueryBuilderStatusBar = observer(
               openLambdaEditor(QueryBuilderTextEditorMode.JSON)
             }
             tabIndex={-1}
-            title="View Query JSON"
+            title="View Query Protocol"
           >{`{ }`}</button>
           <button
             className={clsx(
@@ -188,6 +198,49 @@ const QueryBuilderPostGraphFetchPanel = observer(
   },
 );
 
+const renderCheckEntitlementsEditor = (
+  queryBuilderState: QueryBuilderState,
+  plugins: QueryBuilder_LegendApplicationPlugin[],
+): React.ReactNode => {
+  const checkEntitlementsEditorRenderers = plugins.flatMap(
+    (plugin) => plugin.getCheckEntitlementsEditorRender() ?? [],
+  );
+  for (const editorRenderer of checkEntitlementsEditorRenderers) {
+    const editor = editorRenderer(queryBuilderState);
+    if (editor) {
+      return editor;
+    }
+  }
+
+  const handleClose = (): void => {
+    queryBuilderState.checkEntitlementsState.setIsCheckingEntitlements(false);
+  };
+
+  return (
+    <Dialog
+      open={queryBuilderState.checkEntitlementsState.isCheckingEntitlements}
+      onClose={handleClose}
+      classes={{
+        root: 'editor-modal__root-container',
+        container: 'editor-modal__container',
+        paper: 'editor-modal__content',
+      }}
+    >
+      <Modal darkMode={true} className="editor-modal">
+        <ModalHeader title="Query Entitlements" />
+        <ModalBody>
+          <BlankPanelContent>
+            Check Entitlements is not supported yet
+          </BlankPanelContent>
+        </ModalBody>
+        <ModalFooter>
+          <ModalFooterButton text="Close" onClick={handleClose} />
+        </ModalFooter>
+      </Modal>
+    </Dialog>
+  );
+};
+
 export const QueryBuilder = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
@@ -195,6 +248,19 @@ export const QueryBuilder = observer(
     const fetchStructureState = queryBuilderState.fetchStructureState;
     const isTDSState =
       fetchStructureState.implementation instanceof QueryBuilderTDSState;
+    const applicationStore = queryBuilderState.applicationStore;
+    const openLambdaEditor = (mode: QueryBuilderTextEditorMode): void =>
+      queryBuilderState.textEditorState.openModal(mode);
+    const toggleAssistant = (): void =>
+      applicationStore.assistantService.toggleAssistant();
+    const queryDocEntry = applicationStore.documentationService.getDocEntry(
+      LEGEND_APPLICATION_DOCUMENTATION_KEY.TUTORIAL_QUERY_BUILDER,
+    );
+    const openQueryTutorial = (): void => {
+      if (queryDocEntry?.url) {
+        applicationStore.navigator.visitAddress(queryDocEntry.url);
+      }
+    };
     const toggleShowFunctionPanel = (): void => {
       queryBuilderState.setShowFunctionsExplorerPanel(
         !queryBuilderState.showFunctionsExplorerPanel,
@@ -228,6 +294,16 @@ export const QueryBuilder = observer(
     const openWatermark = (): void => {
       queryBuilderState.watermarkState.setIsEditingWatermark(true);
     };
+    const editQueryInPure = (): void => {
+      openLambdaEditor(QueryBuilderTextEditorMode.TEXT);
+    };
+    const showQueryProtocol = (): void => {
+      openLambdaEditor(QueryBuilderTextEditorMode.JSON);
+    };
+
+    const openCheckEntitlmentsEditor = (): void => {
+      queryBuilderState.checkEntitlementsState.setIsCheckingEntitlements(true);
+    };
 
     useCommands(queryBuilderState);
     const toggleShowOLAPGroupByPanel = (): void => {
@@ -236,7 +312,7 @@ export const QueryBuilder = observer(
           queryBuilderState.fetchStructureState.implementation,
           QueryBuilderTDSState,
         );
-        tdsState.setShowOlapGroupByPanel(!tdsState.showOlapGroupByPanel);
+        tdsState.setShowWindowFuncPanel(!tdsState.showWindowFuncPanel);
       }
     };
     const showPostFetchStructurePanel =
@@ -290,6 +366,12 @@ export const QueryBuilder = observer(
                 )}
               </div>
               <div className="query-builder__sub-header__content__actions">
+                <div
+                  title="Query title"
+                  className="query-builder__sub-header__query__title"
+                >
+                  {queryBuilderState.titleOfQuery}
+                </div>
                 <div className="query-builder__sub-header__actions">
                   <DropdownMenu
                     className="query-builder__sub-header__custom-action"
@@ -348,7 +430,6 @@ export const QueryBuilder = observer(
                             </MenuContentItemLabel>
                           </MenuContentItem>
                         }
-
                         <MenuContentItem
                           onClick={toggleShowFilterPanel}
                           disabled={
@@ -376,7 +457,7 @@ export const QueryBuilder = observer(
                                 .implementation instanceof QueryBuilderTDSState
                             ) ||
                             queryBuilderState.fetchStructureState.implementation
-                              .olapGroupByState.olapColumns.length > 0
+                              .windowState.windowColumns.length > 0
                           }
                         >
                           <MenuContentItemIcon>
@@ -385,12 +466,12 @@ export const QueryBuilder = observer(
                               queryBuilderState.fetchStructureState
                                 .implementation,
                               QueryBuilderTDSState,
-                            ).showOlapGroupByPanel ? (
+                            ).showWindowFuncPanel ? (
                               <CheckIcon />
                             ) : null}
                           </MenuContentItemIcon>
                           <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Show OLAP GroupBy
+                            Show Window Funcs
                           </MenuContentItemLabel>
                         </MenuContentItem>
                         <MenuContentItem
@@ -422,6 +503,54 @@ export const QueryBuilder = observer(
                           <MenuContentItemIcon>{null}</MenuContentItemIcon>
                           <MenuContentItemLabel className="query-builder__sub-header__menu-content">
                             Show Watermark
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                        <MenuContentItem
+                          onClick={openCheckEntitlmentsEditor}
+                          disabled={
+                            !(
+                              queryBuilderState.fetchStructureState
+                                .implementation instanceof QueryBuilderTDSState
+                            ) ||
+                            queryBuilderState.fetchStructureState.implementation
+                              .projectionColumns.length === 0
+                          }
+                        >
+                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Check Entitlements
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                        <MenuContentDivider />
+                        <MenuContentItem onClick={editQueryInPure}>
+                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Edit Query in Pure
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                        <MenuContentItem onClick={showQueryProtocol}>
+                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Show Query Protocol
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                        <MenuContentDivider />
+                        {queryDocEntry && (
+                          <MenuContentItem onClick={openQueryTutorial}>
+                            <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                            <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                              Open Documentation
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                        )}
+                        <MenuContentItem onClick={toggleAssistant}>
+                          <MenuContentItemIcon>
+                            {!applicationStore.assistantService.isHidden ? (
+                              <CheckIcon />
+                            ) : null}
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Show Virtual Assistant
                           </MenuContentItemLabel>
                         </MenuContentItem>
                       </MenuContent>
@@ -536,6 +665,16 @@ export const QueryBuilder = observer(
           {queryBuilderState.textEditorState.mode && (
             <QueryBuilderTextEditor queryBuilderState={queryBuilderState} />
           )}
+          {queryBuilderState.checkEntitlementsState.isCheckingEntitlements &&
+            renderCheckEntitlementsEditor(
+              queryBuilderState,
+              applicationStore.pluginManager
+                .getApplicationPlugins()
+                .filter(
+                  (plugin) =>
+                    plugin instanceof QueryBuilder_LegendApplicationPlugin,
+                ) as QueryBuilder_LegendApplicationPlugin[],
+            )}
         </div>
         <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
       </div>

@@ -47,117 +47,117 @@ const onboardNewIssue = async () => {
 
   console.log(`Onboarding new issue...`);
 
+  let issue;
+
   try {
-    const issue = (
+    issue = (
       await octokit.rest.issues.get({
         issue_number: issueNumber,
         ...github.context.repo,
       })
     ).data;
+  } catch (error) {
+    githubActionCore.error(`Can't onboard issue. Error:\n${error.message}`);
+    process.exit(1);
+  }
 
-    // Add team label to issues created by team members
-    console.log(
-      `Adding team label '${teamLabel}' to issue '${issue.title}'...`,
-    );
-    let membership;
-    try {
-      membership = (
-        await octokitWithOrganizationReadScope.rest.teams.getMembershipForUserInOrg(
-          {
-            org: orgName,
-            team_slug: teamName,
-            username: issue.user.login,
-            ...github.context.repo,
-          },
-        )
-      ).data;
-    } catch (error) {
-      membership = undefined;
-    }
-    if (membership) {
-      try {
-        await octokit.rest.issues.addLabels({
-          issue_number: issueNumber,
-          labels: [teamLabel],
+  // Add team label to issues created by team members
+  console.log(`Adding team label '${teamLabel}' to issue '${issue.title}'...`);
+  let membership;
+  try {
+    membership = (
+      await octokitWithOrganizationReadScope.rest.teams.getMembershipForUserInOrg(
+        {
+          org: orgName,
+          team_slug: teamName,
+          username: issue.user.login,
           ...github.context.repo,
-        });
-        console.log(
-          chalk.green(
-            `\u2713 Added team label '${teamLabel}' to issue '${issue.title}'`,
-          ),
-        );
-      } catch (error) {
-        githubActionCore.error(
-          `Can't add team label '${teamLabel}' to issue '${issue.title}'. Error:\n${error.message}\nPlease manually do so.`,
-        );
-      }
-    } else {
-      githubActionCore.warning(
-        `(skipped) User '${issue.user.login}' is not a member of team '${teamName}'`,
+        },
+      )
+    ).data;
+  } catch (error) {
+    membership = undefined;
+  }
+  if (membership) {
+    try {
+      await octokit.rest.issues.addLabels({
+        issue_number: issueNumber,
+        labels: [teamLabel],
+        ...github.context.repo,
+      });
+      console.log(
+        chalk.green(
+          `\u2713 Added team label '${teamLabel}' to issue '${issue.title}'`,
+        ),
+      );
+    } catch (error) {
+      githubActionCore.error(
+        `Can't add team label '${teamLabel}' to issue '${issue.title}'. Error:\n${error.message}\nPlease manually do so.`,
       );
     }
+  } else {
+    githubActionCore.warning(
+      `(skipped) User '${issue.user.login}' is not a member of team '${teamName}'`,
+    );
+  }
 
-    // Setting fallback milestone to the issue.
-    if (fallbackMilestoneTitle && !issue.milestone) {
-      console.log(`Checking if fallback milestone exists...`);
+  // Setting fallback milestone to new open issue
+  if (fallbackMilestoneTitle && !issue.milestone) {
+    console.log(`Checking if fallback milestone exists...`);
 
-      let openMilestones;
-      try {
-        openMilestones = (
-          await octokit.rest.issues.listMilestones({
-            state: 'open',
-            ...github.context.repo,
-          })
-        ).data;
-      } catch (error) {
-        openMilestones = undefined;
-      }
-      if (openMilestones) {
-        const fallbackMilestone = openMilestones.find(
-          (milestone) => milestone.title === fallbackMilestoneTitle,
+    let openMilestones;
+    try {
+      openMilestones = (
+        await octokit.rest.issues.listMilestones({
+          state: 'open',
+          ...github.context.repo,
+        })
+      ).data;
+    } catch (error) {
+      openMilestones = undefined;
+    }
+    if (openMilestones) {
+      const fallbackMilestone = openMilestones.find(
+        (milestone) => milestone.title === fallbackMilestoneTitle,
+      );
+
+      if (fallbackMilestone) {
+        console.log(
+          `Setting milestone ${fallbackMilestone}' for issue '${issue.title}'`,
         );
 
-        if (fallbackMilestone) {
+        try {
+          await octokit.rest.issues.update({
+            issue_number: issueNumber,
+            milestone: fallbackMilestone.number,
+            ...github.context.repo,
+          });
           console.log(
-            `Setting milestone ${fallbackMilestone}' for issue '${issue.title}'`,
+            chalk.green(
+              `Set milestone '${fallbackMilestoneTitle}' for issue '${issue.title}'`,
+            ),
           );
-
-          try {
-            await octokit.rest.issues.update({
-              issue_number: issueNumber,
-              milestone: fallbackMilestone.number,
-              ...github.context.repo,
-            });
-            console.log(
-              chalk.green(
-                `Set milestone '${fallbackMilestoneTitle}' for issue '${issue.title}'`,
-              ),
-            );
-          } catch (error) {
-            githubActionCore.error(
-              `Can't set milestone '${fallbackMilestoneTitle}' for issue '${issue.title}'. Error:\n${error.message}\nPlease manually do so.`,
-            );
-          }
-        } else {
-          githubActionCore.warning(
-            `'${fallbackMilestoneTitle}' does not exist in the project`,
+        } catch (error) {
+          githubActionCore.error(
+            `Can't set milestone '${fallbackMilestoneTitle}' for issue '${issue.title}'. Error:\n${error.message}\nPlease manually do so.`,
           );
         }
       } else {
         githubActionCore.warning(
-          `Can't get the list of open milestones in the project`,
+          `'${fallbackMilestoneTitle}' does not exist in the project`,
         );
       }
     } else {
       githubActionCore.warning(
-        fallbackMilestoneTitle
-          ? `(skipped) Milestone already exists for the issue: ${issueNumber}`
-          : `(skipped) No fallback milestone exists`,
+        `Can't get the list of open milestones in the project`,
       );
     }
-  } catch (error) {
-    githubActionCore.error(`Can't onboard issue. Error:\n${error.message}`);
-    process.exit(1);
+  } else {
+    githubActionCore.warning(
+      fallbackMilestoneTitle
+        ? `(skipped) Milestone already exists for the issue: ${issueNumber}`
+        : `(skipped) No fallback milestone exists`,
+    );
   }
 };
 

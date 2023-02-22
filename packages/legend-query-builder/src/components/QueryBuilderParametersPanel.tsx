@@ -28,6 +28,7 @@ import {
   ModalHeader,
   PanelFormTextField,
   InfoCircleIcon,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -70,12 +71,16 @@ const VariableExpressionEditor = observer(
     const { queryBuilderState, lambdaParameterState } = props;
     const applicationStore = useApplicationStore();
     const queryParametersState = queryBuilderState.parametersState;
+    const allVariableNames = queryBuilderState.allVariableNames;
     const isCreating =
       !queryParametersState.parameterStates.includes(lambdaParameterState);
     const varState = lambdaParameterState.parameter;
     const multiplity = varState.multiplicity;
     const validationMessage = !varState.name
       ? `Parameter name can't be empty`
+      : allVariableNames.filter((e) => e === varState.name).length >
+        (isCreating ? 0 : 1)
+      ? 'Parameter Name Already Exists'
       : (isCreating &&
           queryParametersState.parameterStates.find(
             (p) => p.parameter.name === varState.name,
@@ -171,7 +176,7 @@ const VariableExpressionEditor = observer(
                 darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
                 formatOptionLabel={getPackageableElementOptionFormatter({
                   darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
-                  pureModel: queryBuilderState.graphManagerState.graph,
+                  graph: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </div>
@@ -199,17 +204,13 @@ const VariableExpressionEditor = observer(
           </ModalBody>
           <ModalFooter>
             {isCreating && (
-              <button
-                className="btn modal__footer__close-btn btn--dark"
+              <ModalFooterButton
+                text="Create"
+                inProgress={Boolean(validationMessage)}
                 onClick={onAction}
-                disabled={Boolean(validationMessage)}
-              >
-                Create
-              </button>
+              />
             )}
-            <button className="btn modal__footer__close-btn" onClick={close}>
-              Close
-            </button>
+            <ModalFooterButton onClick={close} text="Close" />
           </ModalFooter>
         </Modal>
       </Dialog>

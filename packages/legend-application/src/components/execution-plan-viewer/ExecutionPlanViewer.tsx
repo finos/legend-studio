@@ -36,6 +36,8 @@ import {
   Modal,
   ModalBody,
   ModalFooter,
+  PanelSideBarHeader,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import {
   addUniqueEntry,
@@ -430,13 +432,10 @@ const ExecutionPlanViewerContent = observer(
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel size={300} minSize={300}>
               <div className="panel execution-plan-viewer__explorer">
-                <div className="panel__header side-bar__header">
-                  <div className="panel__header__title">
-                    <div className="panel__header__title__content side-bar__header__title__content">
-                      EXECUTION PLAN EXPLORER
-                    </div>
-                  </div>
-                </div>
+                <PanelSideBarHeader
+                  darkMode={true}
+                  title="execution plan explorer"
+                />
                 <div className="panel__content execution-plan-viewer__explorer__content__container">
                   <ExecutionPlanTree
                     executionPlanState={executionPlanState}
@@ -535,12 +534,7 @@ export const ExecutionPlanViewer = observer(
             )}
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn modal__footer__close-btn"
-              onClick={closePlanViewer}
-            >
-              Close
-            </button>
+            <ModalFooterButton onClick={closePlanViewer} text="Close" />
           </ModalFooter>
         </Modal>
       </Dialog>

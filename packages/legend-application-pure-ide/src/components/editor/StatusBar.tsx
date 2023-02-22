@@ -58,8 +58,7 @@ const FileEditorStatusBar = observer(
   },
 );
 
-export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
-  const { actionsDisabled } = props;
+export const StatusBar = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
 
@@ -92,7 +91,10 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
                 editorStore.executionState.isInProgress,
             },
           )}
-          disabled={actionsDisabled || editorStore.executionState.isInProgress}
+          disabled={
+            editorStore.initState.isInInitialState ||
+            editorStore.executionState.isInProgress
+          }
           onClick={executeGo}
           tabIndex={-1}
           title="Execute (F9)"
@@ -110,7 +112,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           )}
           onClick={toggleAuxPanel}
           tabIndex={-1}
-          title="Toggle auxiliary panel (Ctrl + `)"
+          title="Toggle auxiliary panel"
         >
           <TerminalIcon />
         </button>

@@ -172,15 +172,15 @@ test(integrationTest('Test navigation of dependency tree'), async () => {
   fireEvent.click(getByText(editPanel, 'dependencies'));
 
   // expanding first dependency
-  await waitFor(() => findByText(editPanel, 'org.finos.legend:prod-1'));
-  fireEvent.click(getByText(editPanel, 'org.finos.legend:prod-1'));
+  await waitFor(() => findByText(editPanel, 'prod-1'));
+  fireEvent.click(getByText(editPanel, 'prod-1'));
   await waitFor(() => findByText(editPanel, 'model'));
   fireEvent.click(getByText(editPanel, 'model'));
   await waitFor(() => findByText(editPanel, 'ClassB'));
 
   // expanding second dependency
-  await waitFor(() => findByText(editPanel, 'org.finos.legend:prod-2'));
-  fireEvent.click(getByText(editPanel, 'org.finos.legend:prod-2'));
+  await waitFor(() => findByText(editPanel, 'prod-2'));
+  fireEvent.click(getByText(editPanel, 'prod-2'));
   await waitFor(() => findByText(editPanel, 'test'));
   fireEvent.click(getByText(editPanel, 'test'));
   await waitFor(() => findByText(editPanel, 'ClassC'));

@@ -141,7 +141,9 @@ export const buildNumericPreviewDataQuery = (
     aggregationState.changeColumnAggregateOperator(valAggOp, colState);
   });
 
-  return builderState.resultState.buildExecutionRawLambda();
+  return builderState.resultState.buildExecutionRawLambda({
+    useAllVersionsForMilestoning: true,
+  });
 };
 
 export const buildNonNumericPreviewDataQuery = (
@@ -198,5 +200,7 @@ export const buildNonNumericPreviewDataQuery = (
     sortValueCount,
     new SortColumnState(valueProjectionColState),
   ];
-  return builderState.resultState.buildExecutionRawLambda();
+  return builderState.resultState.buildExecutionRawLambda({
+    useAllVersionsForMilestoning: true,
+  });
 };

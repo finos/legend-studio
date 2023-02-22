@@ -1,5 +1,25 @@
 # @finos/legend-shared
 
+## 6.2.19
+
+### Patch Changes
+
+- [#1909](https://github.com/finos/legend-studio/pull/1909) [`130d068d0`](https://github.com/finos/legend-studio/commit/130d068d0932dde5786ecf8de6dacf2bffcc6143) ([@xannem](https://github.com/xannem)) - Humanize 'ID' and 'Id' names.
+
+## 6.2.18
+
+## 6.2.17
+
+## 6.2.16
+
+### Patch Changes
+
+- [#1873](https://github.com/finos/legend-studio/pull/1873) [`1a5080f89`](https://github.com/finos/legend-studio/commit/1a5080f8914b1827e2f360379f5170f5683453e3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `prettyDuaration` to display time interval.
+
+## 6.2.15
+
+## 6.2.14
+
 ## 6.2.13
 
 ## 6.2.12

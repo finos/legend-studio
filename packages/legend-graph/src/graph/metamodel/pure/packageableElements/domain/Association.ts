@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { type Hashable, type Writable, hashArray } from '@finos/legend-shared';
+import {
+  type Hashable,
+  type Writable,
+  hashArray,
+  guaranteeType,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import {
   type PackageableElementVisitor,
@@ -27,6 +32,7 @@ import {
   stub_Class,
   stub_Property,
 } from '../../../../../graph/helpers/creator/DomainModelCreatorHelper.js';
+import { Class } from './Class.js';
 
 /**
  * Assocation needs exactly 2 properties (for 2 classes, not enumeration, not primitive), e.g.
@@ -68,6 +74,33 @@ export class Association extends PackageableElement implements Hashable {
     (properties[0] as Writable<Property>)._OWNER = this;
     (properties[1] as Writable<Property>)._OWNER = this;
     this.properties = properties;
+  }
+
+  /**
+   * Make sure we clean up the properties added to classes through
+   * this association
+   *
+   * @internal model logic
+   */
+  override dispose(): void {
+    super.dispose();
+    // cleanup property classes' properties which were added through this association
+    const [propertyA, propertyB] = this.properties;
+    if (
+      propertyA.genericType.value.rawType instanceof Class &&
+      propertyB.genericType.value.rawType instanceof Class
+    ) {
+      const classA = guaranteeType(propertyA.genericType.value.rawType, Class);
+      const classB = guaranteeType(propertyB.genericType.value.rawType, Class);
+      classA.propertiesFromAssociations =
+        classA.propertiesFromAssociations.filter(
+          (property) => property !== propertyB,
+        );
+      classB.propertiesFromAssociations =
+        classB.propertiesFromAssociations.filter(
+          (property) => property !== propertyA,
+        );
+    }
   }
 
   protected override get _elementHashCode(): string {

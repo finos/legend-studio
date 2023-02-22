@@ -44,6 +44,14 @@
     min-width: 30vw;
   }
 
+  &__preview-data-modal__placeholder {
+    @include flexCenter;
+
+    color: var(--color-light-grey-400);
+    font-family: 'Roboto Mono', monospace;
+    min-height: 5vw;
+  }
+
   &__preview-data-modal__body {
     @include flexCenter;
 

@@ -961,3 +961,60 @@ export const TEST_DATA__DuplicateAssociationProperties = [
     },
   },
 ];
+
+export const TEST_DATA__InvalidAssociationProperty = [
+  {
+    path: 'test::class',
+    content: {
+      _type: 'class',
+      name: 'class',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'p',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::association',
+    content: {
+      _type: 'association',
+      name: 'association',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'p',
+          type: 'meta::pure::tds::TabularDataSet',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'q',
+          type: 'test::class',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::relationship::Association',
+  },
+];

@@ -114,6 +114,25 @@
       ]
     },
     {
+      "_type": "Enumeration",
+      "name": "Quarter",
+      "package": "meta::pure::functions::date",
+      "values": [
+        {
+          "value": "Q1"
+        },
+        {
+          "value": "Q2"
+        },
+        {
+          "value": "Q3"
+        },
+        {
+          "value": "Q4"
+        }
+      ]
+    },
+    {
       "_type": "class",
       "name": "Time",
       "package": "meta::pure::functions::date",

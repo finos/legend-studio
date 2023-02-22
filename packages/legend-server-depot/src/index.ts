@@ -31,3 +31,5 @@ export * from './DepotVersionAliases.js';
 export * from './DepotEntityHelper.js';
 
 export * from './ProjectDependencyGraphReportHelper.js';
+
+export * from './models/ProjectVersionPlatformDependency.js';

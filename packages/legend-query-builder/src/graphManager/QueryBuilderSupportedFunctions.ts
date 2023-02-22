@@ -19,6 +19,7 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   EXISTS = 'meta::pure::functions::collection::exists',
   FILTER = 'meta::pure::functions::collection::filter',
   GET_ALL = 'meta::pure::functions::collection::getAll',
+  GET_ALL_VERSIONS = 'meta::pure::functions::collection::getAllVersions',
   NOT = 'meta::pure::functions::boolean::not',
   OR = 'meta::pure::functions::boolean::or',
   TAKE = 'meta::pure::functions::collection::take',

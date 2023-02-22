@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
+
 export type RawMappingModelCoverageAnalysisResult = object;
 
 export class MappedEntity {
@@ -68,11 +70,13 @@ export class EnumMappedProperty extends MappedProperty {
 
 export class MappingModelCoverageAnalysisResult {
   readonly __ENTITIES_INDEX = new Map<string, MappedEntity>();
+  readonly mapping: Mapping;
 
   mappedEntities: MappedEntity[];
 
-  constructor(mappedEntities: MappedEntity[]) {
+  constructor(mappedEntities: MappedEntity[], mapping: Mapping) {
     this.mappedEntities = mappedEntities;
+    this.mapping = mapping;
     mappedEntities.forEach((entity) =>
       this.__ENTITIES_INDEX.set(entity.path, entity),
     );

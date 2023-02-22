@@ -35,6 +35,7 @@ import {
   OptionsIcon,
   PlusIcon,
   PanelContent,
+  TrashIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -478,6 +479,12 @@ export const QueryBuilderTDSPanel = observer(
       tdsState.resultSetModifierState.setShowModal(true);
     const addNewBlankDerivation = (): void => tdsState.addNewBlankDerivation();
 
+    const clearAllProjectionColumns = (): void => {
+      tdsState.checkBeforeClearingColumns(() => {
+        tdsState.removeAllColumns();
+      });
+    };
+
     // Drag and Drop
     const handleDrop = useCallback(
       (
@@ -564,6 +571,19 @@ export const QueryBuilderTDSPanel = observer(
             title="Configure result set modifiers..."
           >
             <OptionsIcon className="query-builder__icon query-builder__icon__query-option" />
+          </button>
+          <button
+            className="panel__header__action"
+            disabled={tdsState.projectionColumns.length < 1}
+            onClick={clearAllProjectionColumns}
+            tabIndex={-1}
+            title={
+              tdsState.projectionColumns.length < 1
+                ? 'No projection columns to clear'
+                : 'Clear all projection columns'
+            }
+          >
+            <TrashIcon className="query-builder__icon query-builder__icon__query-option--small" />
           </button>
           <button
             className="panel__header__action"

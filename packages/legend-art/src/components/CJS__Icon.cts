@@ -26,6 +26,7 @@
  * See https://github.com/microsoft/TypeScript/issues/49298
  */
 export {
+  FaHistory as HistoryIcon,
   FaCrosshairs as CrosshairsIcon,
   FaLayerGroup as LayerGroupIcon,
   FaGhost as GhostIcon,
@@ -76,6 +77,7 @@ export {
   FaRegLightbulb as EmptyLightBulbIcon,
   FaList as ListIcon,
   FaCircle as CircleIcon,
+  FaTrash as TrashIcon,
   FaRegCircle as EmptyCircleIcon,
   FaShieldAlt as ShieldIcon,
   FaTag as TagIcon,
@@ -91,7 +93,6 @@ export {
   FaSitemap as SitemapIcon, // to be reviewed, moved to LegendIcon
   FaExpand as ExpandIcon,
   FaExpandArrowsAlt as ExpandAllIcon,
-  FaBrush as BrushIcon,
   FaSortAlphaDown as SortDownIcon,
   FaSort as SortIcon,
   FaSortAlphaDownAlt as SortDownAltIcon,
@@ -187,6 +188,11 @@ export {
   VscRegex as RegexIcon,
   VscVersions as VersionsIcon,
   VscCaseSensitive as CaseSensitiveIcon,
+  VscWholeWord as WholeWordMatchIcon,
+  VscReferences as ReferencesIcon,
+  VscWand as WandIcon,
+  VscCollapseAll as CollapseTreeIcon,
+  VscExpandAll as ExpandTreeIcon,
 } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,

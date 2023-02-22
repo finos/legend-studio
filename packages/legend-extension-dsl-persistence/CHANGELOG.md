@@ -1,5 +1,31 @@
 # @finos/legend-extension-dsl-persistence
 
+## 4.0.45
+
+## 4.0.44
+
+## 4.0.43
+
+## 4.0.42
+
+## 4.0.41
+
+## 4.0.40
+
+## 4.0.39
+
+### Patch Changes
+
+- [#1845](https://github.com/finos/legend-studio/pull/1845) [`f901cd37c`](https://github.com/finos/legend-studio/commit/f901cd37c87c680971c32e3d8721f2cabb6627d9) ([@gayathrir11](https://github.com/gayathrir11)) - Merged `TestBatch` to `PersistenceTestBatch`.
+
+## 4.0.38
+
+## 4.0.37
+
+## 4.0.36
+
+## 4.0.35
+
 ## 4.0.34
 
 ## 4.0.33

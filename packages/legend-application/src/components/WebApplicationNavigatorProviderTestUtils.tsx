@@ -27,9 +27,10 @@ export const TEST__provideMockedWebApplicationNavigator = (customization?: {
     new WebApplicationNavigator(
       customization?.history ?? createMemoryHistory(),
     );
-  const MockWebApplicationNavigatorProvider = require('./WebApplicationNavigatorProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockWebApplicationNavigatorProvider.useWebApplicationNavigator = createMock();
-  MockWebApplicationNavigatorProvider.useWebApplicationNavigator.mockReturnValue(
+  const MOCK__WebApplicationNavigatorProvider = require('./WebApplicationNavigatorProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  MOCK__WebApplicationNavigatorProvider.useWebApplicationNavigator =
+    createMock();
+  MOCK__WebApplicationNavigatorProvider.useWebApplicationNavigator.mockReturnValue(
     value,
   );
   return value;

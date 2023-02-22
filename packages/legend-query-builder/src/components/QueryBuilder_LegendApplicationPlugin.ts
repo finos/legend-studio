@@ -22,6 +22,11 @@ import {
 } from '@finos/legend-application';
 import packageJson from '../../package.json';
 import { QUERY_BUILDER_COMMAND_CONFIG } from '../stores/QueryBuilderCommand.js';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
+
+export type CheckEntitlementEditorRender = (
+  queryBuilderState: QueryBuilderState,
+) => React.ReactNode | undefined;
 
 export class QueryBuilder_LegendApplicationPlugin extends LegendApplicationPlugin {
   static NAME = packageJson.extensions.applicationPlugin;
@@ -40,5 +45,9 @@ export class QueryBuilder_LegendApplicationPlugin extends LegendApplicationPlugi
     return collectKeyedCommandConfigEntriesFromConfig(
       QUERY_BUILDER_COMMAND_CONFIG,
     );
+  }
+
+  getCheckEntitlementsEditorRender(): CheckEntitlementEditorRender | undefined {
+    return undefined;
   }
 }

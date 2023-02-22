@@ -49,3 +49,8 @@
   font-family: 'Roboto Monospaced', sans-serif;
   font-size: 1.6rem;
 }
+
+.loading-icon__container--spinning svg {
+  animation: spin 0.7s infinite running;
+  margin-right: 0.5rem;
+}

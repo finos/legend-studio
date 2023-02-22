@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
+import { AgGridReact } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
   BlankPanelContent,
@@ -59,6 +59,7 @@ import {
   guaranteeNonNullable,
   isBoolean,
   type PlainObject,
+  prettyDuration,
 } from '@finos/legend-shared';
 import { forwardRef, useState } from 'react';
 import type { CellMouseOverEvent } from '@ag-grid-community/core';
@@ -362,18 +363,14 @@ const QueryBuilderGridResult = observer(
           onCellMouseOver={(event): void => {
             setCellDoubleClickedEvent(event);
           }}
-        >
-          {columns.map((colName) => (
-            <AgGridColumn
-              minWidth={50}
-              sortable={true}
-              resizable={true}
-              field={colName}
-              key={colName}
-              flex={1}
-            />
-          ))}
-        </AgGridReact>
+          columnDefs={columns.map((colName) => ({
+            minWidth: 50,
+            sortable: true,
+            resizable: true,
+            field: colName,
+            flex: 1,
+          }))}
+        />
       </ContextMenu>
     );
   },
@@ -466,14 +463,16 @@ export const QueryBuilderResultPanel = observer(
     const isQueryValid =
       !queryBuilderState.isQuerySupported || !queryValidationIssues;
     const runQuery = (): void => {
+      resultState.pressedRunQuery.inProgress();
       if (queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
           (): Promise<void> =>
             flowResult(resultState.runQuery()).catch(
               applicationStore.alertUnhandledError,
             ),
-          PARAMETER_SUBMIT_ACTION.EXECUTE,
+          PARAMETER_SUBMIT_ACTION.RUN,
         );
+        resultState.pressedRunQuery.complete();
       } else {
         flowResult(resultState.runQuery()).catch(
           applicationStore.alertUnhandledError,
@@ -498,15 +497,34 @@ export const QueryBuilderResultPanel = observer(
       );
     };
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
-    const resultSetSize = (result: ExecutionResult | undefined): string =>
-      result
-        ? result instanceof TDSExecutionResult
-          ? `${
-              result.result.rows.length
-            } row(s) in ${resultState.executionDuration?.toString()} ms`
-          : `run in ${resultState.executionDuration?.toString()} ms`
-        : '';
 
+    const isRunQueryDisabled =
+      !isQueryValid ||
+      resultState.isGeneratingPlan ||
+      resultState.pressedRunQuery.isInProgress;
+
+    const getResultSetDescription = (
+      _executionResult: ExecutionResult,
+    ): string | undefined => {
+      const queryDuration = resultState.executionDuration
+        ? prettyDuration(resultState.executionDuration, {
+            ms: true,
+          })
+        : undefined;
+      if (_executionResult instanceof TDSExecutionResult) {
+        const rowLength = _executionResult.result.rows.length;
+        return `${rowLength} row(s)${
+          queryDuration ? ` in ${queryDuration}` : ''
+        }`;
+      }
+      if (!queryDuration) {
+        return undefined;
+      }
+      return `query ran in ${queryDuration}`;
+    };
+    const resultDescription = executionResult
+      ? getResultSetDescription(executionResult)
+      : undefined;
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL}
@@ -515,8 +533,13 @@ export const QueryBuilderResultPanel = observer(
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">result</div>
+            {resultState.pressedRunQuery.isInProgress && (
+              <div className="panel__header__title__label__status">
+                Running Query...
+              </div>
+            )}
             <div className="query-builder__result__analytics">
-              {resultSetSize(executionResult)}
+              {resultDescription ?? ''}
             </div>
             {executionResult && resultState.checkForStaleResults && (
               <div className="query-builder__result__stale-status">
@@ -572,7 +595,7 @@ export const QueryBuilderResultPanel = observer(
                           .join('\n')}`
                       : undefined
                   }
-                  disabled={!isQueryValid}
+                  disabled={isRunQueryDisabled}
                 >
                   <PlayIcon className="query-builder__result__execute-btn__label__icon" />
                   <div className="query-builder__result__execute-btn__label__title">
@@ -581,18 +604,20 @@ export const QueryBuilderResultPanel = observer(
                 </button>
                 <DropdownMenu
                   className="query-builder__result__execute-btn__dropdown-btn"
-                  disabled={resultState.isGeneratingPlan || !isQueryValid}
+                  disabled={isRunQueryDisabled}
                   content={
                     <MenuContent>
                       <MenuContentItem
                         className="query-builder__result__execute-btn__option"
                         onClick={generatePlan}
+                        disabled={isRunQueryDisabled}
                       >
                         Generate Plan
                       </MenuContentItem>
                       <MenuContentItem
                         className="query-builder__result__execute-btn__option"
                         onClick={debugPlanGeneration}
+                        disabled={isRunQueryDisabled}
                       >
                         Debug
                       </MenuContentItem>

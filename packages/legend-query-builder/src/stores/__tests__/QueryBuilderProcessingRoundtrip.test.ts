@@ -55,8 +55,8 @@ import {
   TEST_DATA__lambda_olapGroupBy_StackedGroupBy,
   TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter,
   TEST_DATA__OlapGroupBy_entities,
-  TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc,
-} from './TEST_DATA__QueryBuilder_OLAPGroupBy.js';
+  TEST_DATA__lambda_olapGroupBy_SimpleStringRankFunc,
+} from './TEST_DATA__QueryBuilder__OLAPGroupBy.js';
 
 const pluginManager = TEST__LegendApplicationPluginManager.create();
 pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
@@ -164,7 +164,7 @@ const cases: RoundtripTestCase[] = [
   [
     'OlapGroupBy with simple string with rank operation',
     olapGroupbyCtx,
-    TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc('rank'),
+    TEST_DATA__lambda_olapGroupBy_SimpleStringRankFunc('rank'),
   ],
   [
     'OlapGroupBy with stacked olapGroupBy function',

@@ -26,6 +26,7 @@ import {
 import {
   TestFailureResult,
   TestSuccessResult,
+  type TestResult,
 } from '../../../server/models/Test.js';
 import { flowResult } from 'mobx';
 import {
@@ -54,16 +55,31 @@ import {
   GoToFileIcon,
   SubjectIcon,
   ViewHeadlineIcon,
+  TimesIcon,
+  disposeEditor,
+  useResizeDetector,
+  WordWrapIcon,
+  getBaseConsoleOptions,
 } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
   isNonNullable,
   noop,
 } from '@finos/legend-shared';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  EDITOR_LANGUAGE,
+  EDITOR_THEME,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { FileCoordinate } from '../../../server/models/File.js';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
+import { useEffect, useRef, useState } from 'react';
+import {
+  type IDisposable,
+  editor as monacoEditorAPI,
+  languages as monacoLanguagesAPI,
+} from 'monaco-editor';
 
 const TestTreeNodeContainer = observer(
   (
@@ -186,7 +202,10 @@ const TestTreeNodeContainer = observer(
         <div className="tree-view__node__icon explorer__package-tree__node__icon">
           <div
             className="explorer__package-tree__node__icon__expand"
-            onClick={toggleExpansion}
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleExpansion();
+            }}
           >
             {!isExpandable ? (
               <div />
@@ -308,6 +327,171 @@ const TestRunnerTree = observer(
   },
 );
 
+// NOTE: we need the global match hence, including /g in the regexp
+const TEST_ERROR_LOCATION_PATTERN =
+  /(?<path>resource:(?<path_sourceId>\/?(?:\w+\/)*\w+(?:\.\w+)*) (?:line:(?<path_line>\d+)) (?:column:(?<path_column>\d+)))/g;
+
+type TestErrorLocationLink = monacoLanguagesAPI.ILink & {
+  sourceId: string;
+  line: string;
+  column: string;
+};
+
+const TestResultConsole: React.FC<{
+  result: TestResult | undefined;
+  wrapText: boolean;
+}> = (props) => {
+  const { wrapText, result } = props;
+  const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
+  const [editor, setEditor] = useState<
+    monacoEditorAPI.IStandaloneCodeEditor | undefined
+  >();
+  const locationLinkProviderDisposer = useRef<IDisposable | undefined>(
+    undefined,
+  );
+  const textInputRef = useRef<HTMLDivElement>(null);
+  const { ref, width, height } = useResizeDetector<HTMLDivElement>();
+
+  useEffect(() => {
+    if (width !== undefined && height !== undefined) {
+      editor?.layout({ width, height });
+    }
+  }, [editor, width, height]);
+
+  useEffect(() => {
+    if (!editor && textInputRef.current) {
+      const element = textInputRef.current;
+      const newEditor = monacoEditorAPI.create(element, {
+        ...getBaseConsoleOptions(),
+        theme: EDITOR_THEME.LEGEND,
+        language: EDITOR_LANGUAGE.TEXT,
+      });
+      setEditor(newEditor);
+    }
+  }, [applicationStore, editor]);
+
+  locationLinkProviderDisposer.current?.dispose();
+  locationLinkProviderDisposer.current =
+    monacoLanguagesAPI.registerLinkProvider(EDITOR_LANGUAGE.TEXT, {
+      provideLinks: (model) => {
+        const links: TestErrorLocationLink[] = [];
+
+        for (let i = 1; i <= model.getLineCount(); ++i) {
+          Array.from(
+            model.getLineContent(i).matchAll(TEST_ERROR_LOCATION_PATTERN),
+          ).forEach((match) => {
+            if (
+              match.index !== undefined &&
+              match.groups?.path &&
+              match.groups.path_sourceId &&
+              match.groups.path_column &&
+              match.groups.path_line
+            ) {
+              links.push({
+                range: {
+                  startLineNumber: i,
+                  startColumn: match.index + 1,
+                  endLineNumber: i,
+                  endColumn: match.index + 1 + match.groups.path.length,
+                },
+                tooltip: 'Click to go to location',
+                sourceId: match.groups.path_sourceId,
+                line: match.groups.path_line,
+                column: match.groups.path_column,
+              });
+            }
+          });
+        }
+        return {
+          links,
+        };
+      },
+      // NOTE: this is a hacky way to customize the behavior of clicking on a link
+      // there is no good solution right now to intercept this cleanly and prevent the default behavior
+      // this will produce a warning in the console since link resolved is not navigatable by monaco-editor
+      resolveLink: (link) => {
+        const locationLink = link as TestErrorLocationLink;
+        flowResult(
+          editorStore.loadFile(
+            locationLink.sourceId,
+            new FileCoordinate(
+              locationLink.sourceId,
+              Number.parseInt(locationLink.line, 10),
+              Number.parseInt(locationLink.column, 10),
+            ),
+          ),
+        ).catch(editorStore.applicationStore.alertUnhandledError);
+        return undefined;
+      },
+    });
+
+  useEffect(() => {
+    if (width !== undefined && height !== undefined) {
+      editor?.layout({ width, height });
+    }
+  }, [editor, width, height]);
+
+  useEffect(() => {
+    if (editor) {
+      const value =
+        result instanceof TestSuccessResult
+          ? 'Test passed!'
+          : result instanceof TestFailureResult
+          ? result.error.text
+          : 'Running...';
+      editor.setValue(value);
+      // color text based on test result/status
+      if (
+        result instanceof TestSuccessResult ||
+        result instanceof TestFailureResult
+      ) {
+        editor.createDecorationsCollection([
+          {
+            range: {
+              startLineNumber: 1,
+              startColumn: 1,
+              endLineNumber: Number.MAX_SAFE_INTEGER,
+              endColumn: Number.MAX_SAFE_INTEGER,
+            },
+            options: {
+              inlineClassName:
+                result instanceof TestSuccessResult
+                  ? 'test-runner-panel__result__content--success'
+                  : 'test-runner-panel__result__content--failure',
+            },
+          },
+        ]);
+      }
+    }
+  }, [editor, result]);
+
+  useEffect(() => {
+    if (editor) {
+      editor.updateOptions({
+        wordWrap: wrapText ? 'on' : 'off',
+      });
+    }
+  }, [editor, wrapText]);
+
+  useEffect(
+    () => (): void => {
+      if (editor) {
+        disposeEditor(editor);
+      }
+
+      locationLinkProviderDisposer.current?.dispose();
+    },
+    [editor],
+  ); // dispose editor
+
+  return (
+    <div ref={ref} className="text-editor__container">
+      <div className="text-editor__body" ref={textInputRef} />
+    </div>
+  );
+};
+
 const TestResultViewer = observer(
   (props: {
     testRunnerState: TestRunnerState;
@@ -317,6 +501,7 @@ const TestResultViewer = observer(
     const { testRunnerState, selectedTestId, testResultInfo } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
+    const [wrapText, setWrapText] = useState(false);
     const result = testResultInfo.results.get(selectedTestId);
     const testInfo = guaranteeNonNullable(
       testRunnerState.allTests.get(selectedTestId),
@@ -343,6 +528,16 @@ const TestResultViewer = observer(
           </div>
           <div className="panel__header__actions">
             <button
+              className={clsx('panel__header__action', {
+                'panel__header__action--active': wrapText,
+              })}
+              tabIndex={-1}
+              onClick={(): void => setWrapText(!wrapText)}
+              title="Toggle Text Wrap"
+            >
+              <WordWrapIcon className="test-runner-panel__result__header__icon--text-wrap" />
+            </button>
+            <button
               className="panel__header__action"
               tabIndex={-1}
               title="Open File"
@@ -353,19 +548,7 @@ const TestResultViewer = observer(
           </div>
         </div>
         <div className="panel__content test-runner-panel__result">
-          {!result && (
-            <div className="test-runner-panel__result__content">Running...</div>
-          )}
-          {result instanceof TestSuccessResult && (
-            <div className="test-runner-panel__result__content">
-              Test passed!
-            </div>
-          )}
-          {result instanceof TestFailureResult && (
-            <pre className="test-runner-panel__result__content">
-              {result.error.text}
-            </pre>
-          )}
+          <TestResultConsole result={result} wrapText={wrapText} />
         </div>
       </div>
     );
@@ -395,6 +578,13 @@ const TestRunnerResultDisplay = observer(
     };
     const toggleViewMode = (): void =>
       testRunnerState.setViewAsList(!testRunnerState.viewAsList);
+    const removeTestResult = (): void => {
+      flowResult(testRunnerState.cancelTestRun())
+        .catch(applicationStore.alertUnhandledError)
+        .finally(() => {
+          editorStore.setTestRunnerState(undefined);
+        });
+    };
 
     return (
       <div className="test-runner-panel__content">
@@ -475,6 +665,14 @@ const TestRunnerResultDisplay = observer(
                     title="Run Suite"
                   >
                     <PlayIcon />
+                  </button>
+                  <button
+                    className="panel__header__action"
+                    tabIndex={-1}
+                    onClick={removeTestResult}
+                    title="Reset"
+                  >
+                    <TimesIcon />
                   </button>
                 </div>
               </div>

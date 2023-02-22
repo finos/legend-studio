@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
+export const WELCOME_FILE_PATH = '/welcome.pure';
+export const HOME_DIRECTORY_PATH = '/';
+export const ROOT_PACKAGE_PATH = '::';
+
 export enum ACTIVITY_MODE {
-  CONCEPT = 'CONCEPT',
-  FILE = 'FILE',
+  CONCEPT_EXPLORER = 'CONCEPT_EXPLORER',
+  FILE_EXPLORER = 'FILE_EXPLORER',
 }
 
 export enum AUX_PANEL_MODE {
-  CONSOLE = 'CONSOLE',
-  SEARCH_RESULT = 'SEARCH_RESULT',
+  TERMINAL = 'TERMINAL',
+  SEARCH = 'SEARCH',
+  REFERENCES = 'REFERNECES',
   TEST_RUNNER = 'TEST_RUNNER',
+  CODE_FIX_SUGGESTION = 'CODE_FIX_SUGGESTION',
 }

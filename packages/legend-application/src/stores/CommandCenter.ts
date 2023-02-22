@@ -31,6 +31,7 @@ export type CommandConfigEntry = {
    * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
    */
   defaultKeyboardShortcut?: string;
+  additionalKeyboardShortcuts?: string[];
   when?: string;
 };
 export type KeyedCommandConfigEntry = {

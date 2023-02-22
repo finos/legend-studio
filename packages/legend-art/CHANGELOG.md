@@ -1,5 +1,31 @@
 # @finos/legend-art
 
+## 5.0.26
+
+### Patch Changes
+
+- [#1909](https://github.com/finos/legend-studio/pull/1909) [`130d068d0`](https://github.com/finos/legend-studio/commit/130d068d0932dde5786ecf8de6dacf2bffcc6143) ([@xannem](https://github.com/xannem)) - Replace brush icon with trash icon
+
+## 5.0.25
+
+## 5.0.24
+
+### Patch Changes
+
+- [#1882](https://github.com/finos/legend-studio/pull/1882) [`87c71c559`](https://github.com/finos/legend-studio/commit/87c71c5592e4d1cbcc04ef9d915d7ac2f072ad1f) ([@xannem](https://github.com/xannem)) - Minor modal and panel styling edits.
+
+## 5.0.23
+
+## 5.0.22
+
+## 5.0.21
+
+### Patch Changes
+
+- [#1859](https://github.com/finos/legend-studio/pull/1859) [`d8b85ff06`](https://github.com/finos/legend-studio/commit/d8b85ff066d8743d96c9f9edbf2875a062847e00) ([@xannem](https://github.com/xannem)) - Add loading icon.
+
+## 5.0.20
+
 ## 5.0.19
 
 ### Patch Changes

@@ -44,6 +44,7 @@ import {
   PURE_CONNECTION_NAME,
 } from '@finos/legend-graph';
 import type { TextEditorPosition } from '@finos/legend-art';
+import { generatePackageableElementTreeNodeDataLabel } from '../shared/PackageTreeUtils.js';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,
@@ -53,17 +54,21 @@ const getGrammarElementTypeLabelRegexString = (
     `^([^\\S\\n])*${typeLabel}` + // start with type label (accounted for spaces, but not newline)
     `(\\s+<<.*>>)?` + // account for stereotype
     `(\\s+\\{.*\\})?` + // account for tagged value
-    `\\s+${elementPath}` + // element path
+    `\\s+${elementPath
+      .replaceAll('*', '\\*')
+      .replaceAll('(', '\\(')
+      .replaceAll(')', '\\)')
+      .replaceAll('[', '\\[')
+      .replaceAll(']', '\\]')}` + // element path (might contain [],(),*)
     `[\\s\\n]`
   ) // account for termination after element path
     .replace(/\$/g, '\\$'); // replace special character $ by \\$
-
 export class GrammarTextEditorState {
   readonly editorStore: EditorStore;
 
   graphGrammarText = '';
   currentElementLabelRegexString?: string | undefined;
-  wrapText = false;
+  wrapText = true;
   forcedCursorPosition?: TextEditorPosition | undefined;
 
   constructor(editorStore: EditorStore) {
@@ -183,7 +188,9 @@ export class GrammarTextEditorState {
     }
     this.currentElementLabelRegexString = getGrammarElementTypeLabelRegexString(
       typeLabel,
-      element.path,
+      `${element.package?.path}::${generatePackageableElementTreeNodeDataLabel(
+        element,
+      )}`,
     );
   }
 }

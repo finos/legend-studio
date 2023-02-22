@@ -26,6 +26,7 @@ import {
   type GeneratorFn,
   assertErrorThrown,
   LogEvent,
+  ActionState,
 } from '@finos/legend-shared';
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState.js';
@@ -59,6 +60,8 @@ export class QueryBuilderTextEditorState extends LambdaEditorState {
   rawLambdaState: QueryBuilderRawLambdaState;
   isConvertingLambdaToString = false;
   mode: QueryBuilderTextEditorMode | undefined;
+  closingQueryState = ActionState.create();
+
   /**
    * This is used to store the JSON string when viewing the query in JSON mode
    * TODO: consider moving this to another state if we need to simplify the logic of text-mode
@@ -187,6 +190,7 @@ export class QueryBuilderTextEditorState extends LambdaEditorState {
   }
 
   *closeModal(): GeneratorFn<void> {
+    this.closingQueryState.inProgress();
     if (this.mode === QueryBuilderTextEditorMode.TEXT) {
       yield flowResult(this.convertLambdaGrammarStringToObject());
       if (this.parserError) {
@@ -199,6 +203,8 @@ export class QueryBuilderTextEditorState extends LambdaEditorState {
       }
       return;
     }
+    this.closingQueryState.complete();
+
     this.setMode(undefined);
   }
 }

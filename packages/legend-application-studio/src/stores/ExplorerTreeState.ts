@@ -78,6 +78,7 @@ export class ExplorerTreeState {
       dependencyTreeData: observable.ref,
       selectedNode: observable.ref,
       fileGenerationTreeData: observable.ref,
+      elementToRename: observable.ref,
       setTreeData: action,
       setGenerationTreeData: action,
       setSystemTreeData: action,

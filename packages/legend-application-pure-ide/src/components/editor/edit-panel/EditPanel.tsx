@@ -22,6 +22,7 @@ import { PureFileEditor } from './PureFileEditor.js';
 import {
   clsx,
   FileAltIcon,
+  LockIcon,
   PlusIcon,
   useResizeDetector,
 } from '@finos/legend-art';
@@ -120,6 +121,11 @@ export const EditPanel = observer(() => {
           {showMoreInfo && (
             <div className="edit-panel__header__tab__path">
               {editorState.filePath}
+            </div>
+          )}
+          {editorState.file.RO && (
+            <div className="edit-panel__header__tab__icon">
+              <LockIcon className="edit-panel__header__tab__icon--readonly" />
             </div>
           )}
         </div>

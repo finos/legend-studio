@@ -1,5 +1,63 @@
 # @finos/legend-application-studio
 
+## 22.4.3
+
+## 22.4.2
+
+### Patch Changes
+
+- [#1909](https://github.com/finos/legend-studio/pull/1909) [`130d068d0`](https://github.com/finos/legend-studio/commit/130d068d0932dde5786ecf8de6dacf2bffcc6143) ([@xannem](https://github.com/xannem)) - Replace brush icon with trash icon
+
+## 22.4.1
+
+### Patch Changes
+
+- [#1849](https://github.com/finos/legend-studio/pull/1849) [`725d21e90`](https://github.com/finos/legend-studio/commit/725d21e9031dc41935a2a623e93f4b32dc6d913a) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where fail to navigate to function element in text mode after clicking on the explorer tree ([#1848](https://github.com/finos/legend-studio/issues/1848)).
+
+- [#1899](https://github.com/finos/legend-studio/pull/1899) [`23f0b763c`](https://github.com/finos/legend-studio/commit/23f0b763c2c1fb3603ac74a4fb40dc66f8c68243) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - fix: toogle text mode shortcut in view/archive mode
+
+## 22.4.0
+
+### Minor Changes
+
+- [#1876](https://github.com/finos/legend-studio/pull/1876) [`27aec4ed0`](https://github.com/finos/legend-studio/commit/27aec4ed06e99701c5b4e080312417af4d2b8899) ([@xannem](https://github.com/xannem)) - Add project dependants tab for project config
+
+### Patch Changes
+
+- [#1882](https://github.com/finos/legend-studio/pull/1882) [`87c71c559`](https://github.com/finos/legend-studio/commit/87c71c5592e4d1cbcc04ef9d915d7ac2f072ad1f) ([@xannem](https://github.com/xannem)) - Minor modal and panel styling edits.
+
+- [#1847](https://github.com/finos/legend-studio/pull/1847) [`6d34797a0`](https://github.com/finos/legend-studio/commit/6d34797a02e86da3c3022e48ca3adb61da1463bd) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where packageableElement in the explorer tree can't be renamed ([#1846](https://github.com/finos/legend-studio/issues/1846)).
+
+## 22.3.8
+
+## 22.3.7
+
+### Patch Changes
+
+- [#1833](https://github.com/finos/legend-studio/pull/1833) [`ef7e8fa6d`](https://github.com/finos/legend-studio/commit/ef7e8fa6d693848ac71a5a2f54db421f9d45fde3) ([@gayathrir11](https://github.com/gayathrir11)) - Add warnings when associations reference system elements. ([#282](https://github.com/finos/legend-studio/issues/282))
+
+## 22.3.6
+
+### Patch Changes
+
+- [#1865](https://github.com/finos/legend-studio/pull/1865) [`1ceda36e8`](https://github.com/finos/legend-studio/commit/1ceda36e80d74c381a7124bf0af99a1c3c04e869) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix rendering of service editor on archive mode.
+
+## 22.3.5
+
+## 22.3.4
+
+## 22.3.3
+
+### Patch Changes
+
+- [#1819](https://github.com/finos/legend-studio/pull/1819) [`675d88bb1`](https://github.com/finos/legend-studio/commit/675d88bb120e8c6015afcfd08f3847b6dfe8c2df) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Group actions in the service execution tab and support opening current service query in `Legend Query`.
+
+## 22.3.2
+
+### Patch Changes
+
+- [#1823](https://github.com/finos/legend-studio/pull/1823) [`798ab319e`](https://github.com/finos/legend-studio/commit/798ab319ea6c1b8819f7f361891bb52475183451) ([@gayathrir11](https://github.com/gayathrir11)) - Modify the label and fix the copy link functionality for dependependency tree elements
+
 ## 22.3.1
 
 ### Patch Changes

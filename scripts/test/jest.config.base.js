@@ -123,6 +123,14 @@ export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
     setupFiles: [
       ...config.setupFiles,
       '@finos/legend-dev-utils/jest/setupDOMPolyfills',
+      'jest-canvas-mock',
+    ],
+    setupFilesAfterEnv: [
+      ...config.setupFilesAfterEnv,
+      // NOTE: we need to call this before each test since there's an issue
+      // with jest-canvas-mock and jest.resetAllMocks(), which is called when we set `restoreMocks: true`
+      // See https://github.com/hustcc/jest-canvas-mock/issues/103
+      '@finos/legend-dev-utils/jest/mockCanvas',
     ],
     moduleNameMapper: {
       ...config.moduleNameMapper,

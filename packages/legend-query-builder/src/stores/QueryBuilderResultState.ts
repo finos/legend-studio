@@ -42,6 +42,7 @@ import {
   buildExecutionParameterValues,
   getExecutionQueryFromRawLambda,
 } from './shared/LambdaParameterState.js';
+import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificationBuilderHelper.js';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -51,6 +52,7 @@ export class QueryBuilderResultState {
   readonly executionPlanState: ExecutionPlanState;
 
   previewLimit = DEFAULT_LIMIT;
+  pressedRunQuery = ActionState.create();
   isRunningQuery = false;
   isGeneratingPlan = false;
   executionResult?: ExecutionResult | undefined;
@@ -113,11 +115,14 @@ export class QueryBuilderResultState {
     return false;
   }
 
-  buildExecutionRawLambda(): RawLambda {
+  buildExecutionRawLambda(
+    executionOptions?: LambdaFunctionBuilderOption,
+  ): RawLambda {
     let query: RawLambda;
     if (this.queryBuilderState.isQuerySupported) {
       const lambdaFunction = buildLambdaFunction(this.queryBuilderState, {
         isBuildingExecutionQuery: true,
+        ...executionOptions,
       });
       query = buildRawLambdaFromLambdaFunction(
         lambdaFunction,
@@ -210,6 +215,10 @@ export class QueryBuilderResultState {
         `Runtime is required to execute query`,
       );
       const query = this.buildExecutionRawLambda();
+      const parameterValues = buildExecutionParameterValues(
+        this.queryBuilderState.parametersState.parameterStates,
+        this.queryBuilderState.graphManagerState,
+      );
       const startTime = Date.now();
       const promise =
         this.queryBuilderState.graphManagerState.graphManager.runQuery(
@@ -218,10 +227,7 @@ export class QueryBuilderResultState {
           runtime,
           this.queryBuilderState.graphManagerState.graph,
           {
-            parameterValues: buildExecutionParameterValues(
-              this.queryBuilderState.parametersState.parameterStates,
-              this.queryBuilderState.graphManagerState,
-            ),
+            parameterValues,
           },
         );
       this.setQueryRunPromise(promise);
@@ -240,6 +246,7 @@ export class QueryBuilderResultState {
       this.queryBuilderState.applicationStore.notifyError(error);
     } finally {
       this.setIsRunningQuery(false);
+      this.pressedRunQuery.complete();
     }
   }
 
