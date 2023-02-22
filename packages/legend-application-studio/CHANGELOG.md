@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 22.4.4
+
+### Patch Changes
+
+- [#1935](https://github.com/finos/legend-studio/pull/1935) [`03b78099b`](https://github.com/finos/legend-studio/commit/03b78099bfa4abacc4140145735125f81132f7a6) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Use strategic test suite for service code snippets.
+
 ## 22.4.3
 
 ## 22.4.2

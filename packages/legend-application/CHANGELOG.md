@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 10.2.18
+
+### Patch Changes
+
+- [#1936](https://github.com/finos/legend-studio/pull/1936) [`4ba7b5afb`](https://github.com/finos/legend-studio/commit/4ba7b5afb4e22741115fee9e74cfbe5a5a440a58) ([@akphi](https://github.com/akphi)) - Fix a problem where abort command (`Control+KeyC`) clash with copy command in `Windows`.
+
 ## 10.2.17
 
 ## 10.2.16
