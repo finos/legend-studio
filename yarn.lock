@@ -2734,13 +2734,14 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@jest/globals": 29.3.1
+    "@jest/globals": 29.4.3
     cross-env: 7.0.3
-    eslint: 8.30.0
-    jest: 29.3.1
+    eslint: 8.34.0
+    jest: 29.4.3
     npm-run-all: 4.1.5
-    rimraf: 3.0.2
-    typescript: 4.9.4
+    rimraf: 4.1.2
+    sass: 1.58.3
+    typescript: 4.9.5
   languageName: unknown
   linkType: soft
 
@@ -5655,9 +5656,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"breakword@file:./breakword-1.0.5.tgz::locator=legend-studio%40workspace%3A.":
+"breakword@npm:^1.0.5":
   version: 1.0.5
-  resolution: "breakword@file:./breakword-1.0.5.tgz::locator=legend-studio%40workspace%3A."
+  resolution: "breakword@npm:1.0.5"
   dependencies:
     wcwidth: ^1.0.1
   checksum: 8ca7b10bbbbfe1c45c12c9119c4bc1e585452ddd58c5da93020a0c1deac3cf6bb335632675c9c705ba7b644065ae1d6623a25e79b7a48e0ee0ff42cb6e94b357
@@ -14485,10 +14486,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"smartwrap@file:./smartwrap-1.2.5.tgz::locator=legend-studio%40workspace%3A.":
-  version: 1.2.5
-  resolution: "smartwrap@file:./smartwrap-1.2.5.tgz::locator=legend-studio%40workspace%3A."
+"smartwrap@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "smartwrap@npm:2.0.2"
   dependencies:
+    array.prototype.flat: ^1.2.3
     breakword: ^1.0.5
     grapheme-splitter: ^1.0.4
     strip-ansi: ^6.0.0
@@ -14496,7 +14498,7 @@ __metadata:
     yargs: ^15.1.0
   bin:
     smartwrap: src/terminal-adapter.js
-  checksum: 123f33d7e5095b7953dce8d9afe1141e2a1dbd592dbd722cb713838f907c1e6c3bd3f286707f06a99ba3817abee265bab1ba7dc31e50d557a997fe7b44794f6a
+  checksum: 1a6833eb1c3d8488b036df66dcab37dcdda5270bb9629c471155785c09ee1b591177a9774c588c43f8fa28833204500019265da2ffed28ac7bbf4589b943d2fa
   languageName: node
   linkType: hard
 
