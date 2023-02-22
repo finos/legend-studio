@@ -333,7 +333,10 @@ export const ServiceRegisterAction = observer(
           onClick={registerCurrentQuery}
           title="Register query as service..."
         >
-          <RocketIcon />
+          <RocketIcon className="query-editor__header__action__icon--service" />
+          <div className="query-editor__header__action__label">
+            Register Service
+          </div>
         </button>
         {showRegisterServiceModal && (
           <ServiceRegisterModal

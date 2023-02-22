@@ -204,9 +204,8 @@ export class ProjectOverviewState {
     const artifactId =
       this.editorStore.projectConfigurationEditorState
         .currentProjectConfiguration.artifactId;
-    const version = this.editorStore.sdlcState.projectVersions[0]?.id.id;
 
-    if (!groupId || !artifactId || !version) {
+    if (!groupId || !artifactId) {
       return;
     }
 
@@ -217,7 +216,6 @@ export class ProjectOverviewState {
         (yield this.editorStore.depotServerClient.getIndexedDependantProjects(
           groupId,
           artifactId,
-          version,
         )) as PlainObject<ProjectVersionPlatformDependency>[]
       )
         .map((v) => ProjectVersionPlatformDependency.serialization.fromJson(v))

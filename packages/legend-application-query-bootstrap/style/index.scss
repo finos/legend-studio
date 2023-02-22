@@ -102,6 +102,12 @@
     outline: none;
   }
 
+  .btn--medium,
+  .btn--medium:hover {
+    background: var(--color-legacy-light-grey-300);
+    color: var(--color-white);
+  }
+
   // ---------------------------- Table -------------------------------
 
   .query-builder__explorer__preview-data-modal__body .table {

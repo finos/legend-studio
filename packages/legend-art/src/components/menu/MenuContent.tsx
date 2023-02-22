@@ -34,13 +34,16 @@ export const MenuContentItem: React.FC<{
   children: React.ReactNode;
   className?: string;
   disabled?: boolean;
+  title?: string;
   onClick?: () => void;
 }> = (props) => {
-  const { className, onClick, disabled, children, ...otherProps } = props;
+  const { className, onClick, title, disabled, children, ...otherProps } =
+    props;
   return (
     <button
       className={clsx('menu__item', className)}
       disabled={Boolean(disabled)}
+      title={title}
       onClick={onClick}
       {...otherProps}
     >

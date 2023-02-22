@@ -17,18 +17,14 @@
 import {
   type SelectComponent,
   Dialog,
-  ExternalLinkSquareIcon,
   PanelLoadingIndicator,
   SaveIcon,
   BlankPanelContent,
   clsx,
-  EmptyLightBulbIcon,
-  LightBulbIcon,
   SearchIcon,
   TimesIcon,
   CheckSquareIcon,
   SquareIcon,
-  ManageSearchIcon,
   DropdownMenu,
   MenuContent,
   MenuContentItem,
@@ -44,6 +40,9 @@ import {
   ModalFooter,
   ModalTitle,
   ModalFooterButton,
+  ManageSearchIcon,
+  LightBulbIcon,
+  EmptyLightBulbIcon,
 } from '@finos/legend-art';
 import {
   debounce,
@@ -445,55 +444,12 @@ const QueryEditorHeaderContent = observer(
             onClick={openQueryLoader}
             title="Load query..."
           >
-            <ManageSearchIcon className="query-editor__header__action__icon--loader" />
+            <ManageSearchIcon className="query-editor__header__action__icon--load" />
+            <div className="query-editor__header__action__label">
+              Load Query
+            </div>
           </button>
-          {editorStore.queryLoaderState.isQueryLoaderOpen && (
-            <QueryLoader
-              editorStore={editorStore}
-              queryBuilderState={queryBuilderState}
-            />
-          )}
-          <div className="query-editor__header__action query-editor__header__action__view-project">
-            <button
-              className="query-editor__header__action__view-project__btn btn--dark"
-              disabled={editorStore.isViewProjectActionDisabled}
-              tabIndex={-1}
-              title="View project"
-              onClick={viewProject}
-            >
-              <ExternalLinkSquareIcon />
-            </button>
-            <DropdownMenu
-              className="query-editor__header__action__view-project__dropdown-trigger btn--dark"
-              disabled={editorStore.isViewProjectActionDisabled}
-              content={
-                <MenuContent>
-                  <MenuContentItem
-                    disabled={editorStore.isViewProjectActionDisabled}
-                    onClick={viewSDLCProject}
-                  >
-                    View SDLC project
-                  </MenuContentItem>
-                </MenuContent>
-              }
-            >
-              <CaretDownIcon />
-            </DropdownMenu>
-          </div>
-          {applicationStore.config.options.TEMPORARY__enableThemeSwitcher && (
-            <button
-              className="query-editor__header__action btn--dark"
-              tabIndex={-1}
-              title="Toggle light/dark mode"
-              onClick={toggleLightDarkMode}
-            >
-              {applicationStore.TEMPORARY__isLightThemeEnabled ? (
-                <EmptyLightBulbIcon />
-              ) : (
-                <LightBulbIcon />
-              )}
-            </button>
-          )}
+
           <button
             className="query-editor__header__action btn--dark"
             tabIndex={-1}
@@ -502,7 +458,69 @@ const QueryEditorHeaderContent = observer(
             title="Save query"
           >
             <SaveIcon />
+
+            <div className="query-editor__header__action__label">
+              Save Query
+            </div>
           </button>
+
+          {editorStore.queryLoaderState.isQueryLoaderOpen && (
+            <QueryLoader
+              editorStore={editorStore}
+              queryBuilderState={queryBuilderState}
+            />
+          )}
+          {applicationStore.config.options.TEMPORARY__enableThemeSwitcher && (
+            <button
+              title="Toggle light/dark mode"
+              onClick={toggleLightDarkMode}
+              className="query-editor__header__action"
+              disabled={editorStore.isViewProjectActionDisabled}
+            >
+              {applicationStore.TEMPORARY__isLightThemeEnabled ? (
+                <>
+                  {' '}
+                  <LightBulbIcon className="query-editor__header__action__icon--bulb--light" />{' '}
+                </>
+              ) : (
+                <>
+                  <EmptyLightBulbIcon className="query-editor__header__action__icon--bulb--dark" />{' '}
+                </>
+              )}
+            </button>
+          )}
+
+          <DropdownMenu
+            className="query-editor__header__action btn--medium"
+            disabled={editorStore.isViewProjectActionDisabled}
+            content={
+              <MenuContent>
+                <MenuContentItem
+                  className="query-editor__header__action__options"
+                  disabled={editorStore.isViewProjectActionDisabled}
+                  onClick={viewProject}
+                >
+                  Project
+                </MenuContentItem>
+                <MenuContentItem
+                  className="query-editor__header__action__options"
+                  disabled={editorStore.isViewProjectActionDisabled}
+                  onClick={viewSDLCProject}
+                >
+                  SDLC project
+                </MenuContentItem>
+              </MenuContent>
+            }
+          >
+            <div
+              className="query-editor__header__action__label"
+              title="See more options"
+            >
+              Go to...
+            </div>
+            <CaretDownIcon />
+          </DropdownMenu>
+
           {editorStore.exportState && <QueryExport />}
         </div>
       </div>

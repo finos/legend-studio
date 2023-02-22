@@ -65,21 +65,58 @@
       @include flexCenter;
 
       height: 2.8rem;
-      width: 2.8rem;
+      min-width: 2rem;
+      padding: 0 0.5rem;
       border-radius: 0.2rem;
+      margin: 0 0.3rem;
+
+      &__options {
+        // background: var(--color-blue-300);
+        // color: var(--color-light-grey-50);
+      }
 
       svg {
         color: var(--color-light-grey-100);
       }
 
-      &__icon--loader {
-        font-size: 2rem;
+      &__label {
+        margin-left: 0.5rem;
+        font-size: 1.2rem;
+      }
+
+      &__icon {
+        &--load {
+          font-size: 2rem;
+          margin-bottom: 0.1rem;
+        }
+
+        &--bulb--light {
+          color: var(--color-yellow-100) !important;
+        }
+
+        &--bulb--light:hover,
+        &--bulb--dark:hover {
+          color: var(--color-yellow-200) !important;
+        }
+
+        &--bulb--dark {
+          color: var(--color-light-grey-50) !important;
+        }
+
+        &--service {
+          font-size: 1.2rem;
+        }
+
+        &--productionize {
+          font-size: 1.3rem;
+        }
       }
 
       &__view-project {
         @include flexVCenter;
 
         width: 4.4rem;
+        padding: 0;
 
         &__btn {
           @include flexCenter;
@@ -87,6 +124,7 @@
           height: 2.8rem;
           width: 2.8rem;
           border-radius: 0.2rem 0 0 0.2rem;
+          padding: 0 0.5rem;
         }
 
         &__dropdown-trigger {
