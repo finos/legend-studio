@@ -24,6 +24,11 @@
   font-family: Raleway, sans-serif;
   font-weight: 900;
   user-select: none;
+
+  &--active svg,
+  &--active svg:hover {
+    color: var(--color-yellow-100);
+  }
 }
 
 .icon--flat-data {

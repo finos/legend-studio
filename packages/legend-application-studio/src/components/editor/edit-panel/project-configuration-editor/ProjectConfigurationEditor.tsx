@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
@@ -27,11 +27,13 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   Panel,
+  PencilIcon,
   PanelForm,
-  PanelFormTextField,
   CheckSquareIcon,
   SquareIcon,
   ExclamationTriangleIcon,
+  PanelFormSection,
+  PanelListItem,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -42,6 +44,8 @@ import {
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
+  ActionAlertActionType,
+  ActionAlertType,
   DocumentationPreview,
   LEGEND_APPLICATION_DOCUMENTATION_KEY,
   useApplicationStore,
@@ -67,6 +71,47 @@ const ProjectStructureEditor = observer(
       flowResult(
         editorStore.projectConfigurationEditorState.updateToLatestStructure(),
       ).catch(applicationStore.alertUnhandledError);
+    };
+
+    const changeGroupId: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      const stringValue = event.target.value;
+      projectConfig.setGroupId(stringValue);
+    };
+
+    const changeArtifactId: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      const stringValue = event.target.value;
+      projectConfig.setArtifactId(stringValue);
+    };
+    const [blockingEditGav, setBlockingEditGav] = useState(true);
+
+    const allowEditingGav = (): void => {
+      if (blockingEditGav) {
+        editorStore.applicationStore.setActionAlertInfo({
+          message:
+            'If you are editing the group ID or artifact ID (gav), please keep in mind this means you are creating a new project which means that you will lose any previous project versions. Moreover, if your current project has dependencies, you will lose those dependencies until you release the version of your new project with its updated gav.',
+          type: ActionAlertType.CAUTION,
+          actions: [
+            {
+              label: 'Acknowledge and Proceed',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              handler: (): void => {
+                setBlockingEditGav(false);
+              },
+            },
+            {
+              label: 'Cancel',
+              type: ActionAlertActionType.PROCEED,
+              default: true,
+            },
+          ],
+        });
+      } else {
+        setBlockingEditGav(true);
+      }
     };
 
     return (
@@ -105,27 +150,87 @@ const ProjectStructureEditor = observer(
         </div>
 
         <PanelForm>
-          <PanelFormTextField
-            isReadOnly={isReadOnly}
-            value={projectConfig.groupId}
-            name="Group ID"
-            prompt="The domain for artifacts generated as part of the project build
-              pipeline and published to an artifact repository"
-            update={(value: string | undefined): void =>
-              projectConfig.setGroupId(value ?? '')
-            }
-          />
-          <PanelFormTextField
-            isReadOnly={isReadOnly}
-            value={projectConfig.artifactId}
-            name="Artifact ID"
-            prompt="The identifier (within the domain specified by group ID) for
+          <PanelFormSection>
+            <div className="panel__content__form__section__header__label">
+              Group ID
+            </div>
+            <div className="panel__content__form__section__header__prompt">
+              The domain for artifacts generated as part of the project build
+              pipeline and published to an artifact repository
+            </div>
+            <PanelListItem>
+              <div className="input-group">
+                <input
+                  className={clsx(
+                    'input input--dark input-group__input panel__content__form__section__input input--large',
+                  )}
+                  title={
+                    blockingEditGav && !isReadOnly
+                      ? 'Click pencil icon to edit group ID'
+                      : 'Group ID'
+                  }
+                  spellCheck={false}
+                  disabled={isReadOnly || blockingEditGav}
+                  value={projectConfig.groupId}
+                  onChange={changeGroupId}
+                />
+              </div>
+
+              <button
+                className={clsx(
+                  'panel__content__form__section__list__item__edit-btn',
+                  { 'icon--active': !blockingEditGav },
+                )}
+                disabled={isReadOnly}
+                onClick={() => allowEditingGav()}
+                tabIndex={-1}
+                title="Edit group ID"
+              >
+                <PencilIcon />
+              </button>
+            </PanelListItem>
+          </PanelFormSection>
+          <PanelFormSection>
+            <div className="panel__content__form__section__header__label">
+              Artifact ID
+            </div>
+            <div className="panel__content__form__section__header__prompt">
+              The identifier (within the domain specified by group ID) for
               artifacts generated as part of the project build pipeline and
-              published to an artifact repository"
-            update={(value: string | undefined): void =>
-              projectConfig.setArtifactId(value ?? '')
-            }
-          />
+              published to an artifact repository
+            </div>
+            <PanelListItem>
+              <div className="input-group">
+                <input
+                  className={clsx(
+                    'input input--dark input-group__input panel__content__form__section__input input--large',
+                  )}
+                  title={
+                    blockingEditGav && !isReadOnly
+                      ? 'Click pencil icon to edit artifact ID'
+                      : 'Artifact ID'
+                  }
+                  spellCheck={false}
+                  disabled={isReadOnly || blockingEditGav}
+                  value={projectConfig.artifactId}
+                  onChange={changeArtifactId}
+                />
+              </div>
+
+              <button
+                className={clsx(
+                  'panel__content__form__section__list__item__edit-btn',
+                  { 'icon--active': !blockingEditGav },
+                )}
+                disabled={isReadOnly}
+                title="Edit artifact ID"
+                onClick={() => allowEditingGav()}
+                tabIndex={-1}
+              >
+                <PencilIcon />
+              </button>
+            </PanelListItem>
+          </PanelFormSection>
         </PanelForm>
       </div>
     );
