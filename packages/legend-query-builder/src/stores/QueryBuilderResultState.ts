@@ -43,6 +43,7 @@ import {
   getExecutionQueryFromRawLambda,
 } from './shared/LambdaParameterState.js';
 import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificationBuilderHelper.js';
+import { QueryBuilderTelemetry } from './QueryBuilderTelemetry.js';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -219,6 +220,14 @@ export class QueryBuilderResultState {
         this.queryBuilderState.parametersState.parameterStates,
         this.queryBuilderState.graphManagerState,
       );
+      QueryBuilderTelemetry.logEvent_RunQueryLaunched(
+        this.queryBuilderState.applicationStore.telemetryService,
+        this.queryBuilderState.applicationContext
+          ? {
+              applicationContext: this.queryBuilderState.applicationContext,
+            }
+          : {},
+      );
       const startTime = Date.now();
       const promise =
         this.queryBuilderState.graphManagerState.graphManager.runQuery(
@@ -264,6 +273,14 @@ export class QueryBuilderResultState {
       const query = this.queryBuilderState.buildQuery();
       let rawPlan: RawExecutionPlan;
       if (debug) {
+        QueryBuilderTelemetry.logEvent_DebugExecutionPlanLaunched(
+          this.queryBuilderState.applicationStore.telemetryService,
+          this.queryBuilderState.applicationContext
+            ? {
+                applicationContext: this.queryBuilderState.applicationContext,
+              }
+            : {},
+        );
         const debugResult =
           (yield this.queryBuilderState.graphManagerState.graphManager.debugExecutionPlanGeneration(
             query,
@@ -274,6 +291,14 @@ export class QueryBuilderResultState {
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
       } else {
+        QueryBuilderTelemetry.logEvent_GenerateExecutionPlanLaunched(
+          this.queryBuilderState.applicationStore.telemetryService,
+          this.queryBuilderState.applicationContext
+            ? {
+                applicationContext: this.queryBuilderState.applicationContext,
+              }
+            : {},
+        );
         rawPlan =
           (yield this.queryBuilderState.graphManagerState.graphManager.generateExecutionPlan(
             query,

@@ -206,7 +206,7 @@ export {
   AbstractPureGraphManager,
   type GraphBuilderOptions,
 } from './graphManager/AbstractPureGraphManager.js';
-export { GraphBuilderReport } from './graphManager/GraphManagerMetrics.js';
+export * from './graphManager/GraphManagerMetrics.js';
 export { GraphManagerTelemetry } from './graphManager/GraphManagerTelemetry.js';
 export * from './graphManager/GraphManagerUtils.js';
 export * from './graphManager/GraphManagerEvent.js';

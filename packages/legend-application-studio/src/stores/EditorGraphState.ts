@@ -89,7 +89,7 @@ import {
   GraphManagerTelemetry,
   DataElement,
   type PackageableElement,
-  type GraphBuilderReport,
+  type GraphManagerOperationReport,
   type CompilationWarning,
   type TextCompilationResult,
   type CompilationResult,
@@ -106,6 +106,7 @@ import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import { ExplorerTreeState } from './ExplorerTreeState.js';
+import { LegendStudioTelemetry } from './LegendStudioTelemetry.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -356,7 +357,7 @@ export class EditorGraphState {
           dependencyManager,
           dependencyEntitiesIndex,
           this.editorStore.graphManagerState.dependenciesBuildState,
-        )) as GraphBuilderReport;
+        )) as GraphManagerOperationReport;
       dependency_buildReport.timings[
         GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
       ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
@@ -373,7 +374,7 @@ export class EditorGraphState {
                 .TEMPORARY__preserveSectionIndex,
             strict: this.enableStrictMode,
           },
-        )) as GraphBuilderReport;
+        )) as GraphManagerOperationReport;
 
       // build generations
       const generation_buildReport =
@@ -381,7 +382,7 @@ export class EditorGraphState {
           this.editorStore.graphManagerState.graph,
           this.graphGenerationState.generatedEntities,
           this.editorStore.graphManagerState.generationsBuildState,
-        )) as GraphBuilderReport;
+        )) as GraphManagerOperationReport;
 
       // report
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
@@ -568,6 +569,10 @@ export class EditorGraphState {
       return FormModeCompilationOutcome.SKIPPED;
     }
 
+    LegendStudioTelemetry.logEvent_GraphCompilationLaunched(
+      this.editorStore.applicationStore.telemetryService,
+    );
+
     const currentGraphHash =
       this.editorStore.changeDetectionState.currentGraphHash;
 
@@ -715,6 +720,10 @@ export class EditorGraphState {
     ) {
       return;
     }
+
+    LegendStudioTelemetry.logEvent_TextCompilationLaunched(
+      this.editorStore.applicationStore.telemetryService,
+    );
 
     const currentGraphHash =
       this.editorStore.grammarTextEditorState.currentTextGraphHash;

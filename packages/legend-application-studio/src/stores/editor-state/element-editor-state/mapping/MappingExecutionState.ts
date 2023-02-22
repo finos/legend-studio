@@ -127,8 +127,12 @@ import {
   createBareExternalFormat,
 } from '../../../shared/testable/TestableUtils.js';
 import { SERIALIZATION_FORMAT } from '../service/testable/ServiceTestEditorState.js';
-import { LambdaEditorState } from '@finos/legend-query-builder';
+import {
+  LambdaEditorState,
+  QueryBuilderTelemetry,
+} from '@finos/legend-query-builder';
 import { MappingEditorTabState } from './MappingTabManagerState.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../LegendStudioApplicationNavigationContext.js';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -758,6 +762,13 @@ export class MappingExecutionState extends MappingEditorTabState {
         this.inputDataState.isValid &&
         !this.isExecuting
       ) {
+        QueryBuilderTelemetry.logEvent_RunQueryLaunched(
+          this.editorStore.applicationStore.telemetryService,
+          {
+            applicationContext:
+              LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_EXECUTION_EDITOR,
+          },
+        );
         this.isExecuting = true;
         const result =
           (yield this.editorStore.graphManagerState.graphManager.runQuery(
@@ -802,6 +813,13 @@ export class MappingExecutionState extends MappingEditorTabState {
         this.isGeneratingPlan = true;
         let rawPlan: RawExecutionPlan;
         if (debug) {
+          QueryBuilderTelemetry.logEvent_DebugExecutionPlanLaunched(
+            this.editorStore.applicationStore.telemetryService,
+            {
+              applicationContext:
+                LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_EXECUTION_EDITOR,
+            },
+          );
           const debugResult =
             (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
               query,
@@ -812,6 +830,13 @@ export class MappingExecutionState extends MappingEditorTabState {
           rawPlan = debugResult.plan;
           this.executionPlanState.setDebugText(debugResult.debug);
         } else {
+          QueryBuilderTelemetry.logEvent_GenerateExecutionPlanLaunched(
+            this.editorStore.applicationStore.telemetryService,
+            {
+              applicationContext:
+                LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_EXECUTION_EDITOR,
+            },
+          );
           rawPlan =
             (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
               query,

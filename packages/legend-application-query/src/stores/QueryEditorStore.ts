@@ -44,7 +44,7 @@ import {
   PackageableElementExplicitReference,
   RuntimePointer,
   GRAPH_MANAGER_EVENT,
-  type GraphBuilderReport,
+  type GraphManagerOperationReport,
   GraphManagerTelemetry,
   extractElementNameFromPath,
   QuerySearchSpecification,
@@ -87,6 +87,7 @@ import {
   ServiceQueryBuilderState,
 } from '@finos/legend-query-builder';
 import { LegendQueryTelemetry } from './LegendQueryTelemetry.js';
+import { LEGEND_QUERY_APPLICATION_NAVIGATION_CONTEXT_KEY } from './LegendQueryApplicationNavigationContext.js';
 
 export const createViewProjectHandler =
   (applicationStore: LegendQueryApplicationStore) =>
@@ -505,7 +506,7 @@ export abstract class QueryEditorStore {
         dependencyManager,
         dependencyEntitiesIndex,
         this.graphManagerState.dependenciesBuildState,
-      )) as GraphBuilderReport;
+      )) as GraphManagerOperationReport;
     dependency_buildReport.timings[
       GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
     ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
@@ -519,7 +520,7 @@ export abstract class QueryEditorStore {
         {
           sdlc: new LegendSDLC(groupId, artifactId, resolveVersion(versionId)),
         },
-      )) as GraphBuilderReport;
+      )) as GraphManagerOperationReport;
     graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
       stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
@@ -792,6 +793,9 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     queryBuilderState =
       queryBuilderState ??
       new ClassQueryBuilderState(this.applicationStore, this.graphManagerState);
+
+    queryBuilderState.applicationContext =
+      LEGEND_QUERY_APPLICATION_NAVIGATION_CONTEXT_KEY.EDITOR;
 
     queryBuilderState.setMapping(query.mapping.value);
     queryBuilderState.setRuntimeValue(

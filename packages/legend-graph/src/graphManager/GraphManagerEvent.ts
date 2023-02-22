@@ -27,16 +27,21 @@ export enum GRAPH_MANAGER_EVENT {
   GRAPH_BUILDER_OTHER_ELEMENTS_BUILT = 'graph-manager.graph-builder.build-other-elements.success',
   GRAPH_BUILDER_COMPLETED = 'graph-manager.graph-builder.success',
 
-  GRAPH_SYSTEM_INITIALIZED = 'graph-manager.system-initialization.success',
   GRAPH_INITIALIZED = 'graph-manager.graph-initialization.success',
+  GRAPH_SYSTEM_INITIALIZED = 'graph-manager.system-initialization.success',
   GRAPH_DEPENDENCIES_FETCHED = 'graph-manager.fetch-dependencies.success',
   GRAPH_ENTITIES_FETCHED = 'graph-manager.entities-dependencies.success',
-  GRAPH_UPDATED_AND_REBUILT = 'graph-manager.rebuild.success',
-  GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED = 'graph-manager.grammar.composing.success',
-  GRAPH_GRAMMAR_TO_MODEL_TRANSFORMED = 'graph-manager.grammar.parsing.success',
   GRAPH_META_MODEL_TO_PROTOCOL_TRANSFORMED = 'graph-manager.transformation.success',
   GRAPH_COMPILE_CONTEXT_COLLECTED = 'graph-manager.build-graph-compile-context.success',
   GRAPH_PROTOCOL_SERIALIZED = 'graph-manager.graph-serialization.success',
+
+  GRAPH_UPDATED_AND_REBUILT = 'graph-manager.rebuild.success',
+  GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED = 'graph-manager.grammar.composing.success',
+  GRAPH_GRAMMAR_TO_MODEL_TRANSFORMED = 'graph-manager.grammar.parsing.success',
+
+  QUERY_RUN = 'graph-manager.execution.run-query.success',
+  EXECUTION_PLAN_GENERATED = 'graph-manager.execution.generate-plan.success',
+  EXECUTION_PLAN_DEBUGGED = 'graph-manager.execution.debug-plan.success',
 
   GRAPH_BUILDER_FAILURE = 'graph-manager.graph-builder.failure',
   EXECUTION_FAILURE = 'graph-manager.execution.failure',

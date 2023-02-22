@@ -56,7 +56,7 @@ import type { Entity, LegendSDLC } from '@finos/legend-storage';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification.js';
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
-import type { GraphBuilderReport } from './GraphManagerMetrics.js';
+import type { GraphManagerOperationReport } from './GraphManagerMetrics.js';
 import type { RunTestsTestableInput } from '../graph/metamodel/pure/test/result/RunTestsTestableInput.js';
 import type { TestResult } from '../graph/metamodel/pure/test/result/TestResult.js';
 import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
@@ -187,7 +187,7 @@ export abstract class AbstractPureGraphManager {
     systemModel: SystemModel,
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport>;
+  ): Promise<GraphManagerOperationReport>;
 
   /**
    * Build immutable models which holds dependencies.
@@ -204,7 +204,7 @@ export abstract class AbstractPureGraphManager {
     dependencyEntitiesIndex: Map<string, Entity[]>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport>;
+  ): Promise<GraphManagerOperationReport>;
 
   /**
    * Process entities and build the main graph.
@@ -214,7 +214,7 @@ export abstract class AbstractPureGraphManager {
     entities: Entity[],
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport>;
+  ): Promise<GraphManagerOperationReport>;
 
   /**
    * Process entities and build the light graph.
@@ -224,14 +224,14 @@ export abstract class AbstractPureGraphManager {
     entities: Entity[],
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport>;
+  ): Promise<GraphManagerOperationReport>;
 
   abstract buildGenerations(
     graph: PureModel,
     generationEntities: Map<string, Entity[]>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport>;
+  ): Promise<GraphManagerOperationReport>;
 
   // ------------------------------------------- Grammar -------------------------------------------
 
@@ -367,6 +367,7 @@ export abstract class AbstractPureGraphManager {
   ): Promise<SchemaSet[]>;
 
   // ------------------------------------------- Import -------------------------------------------
+
   abstract getExamplePureProtocolText(): string;
   abstract getExampleExternalFormatImportText(): string;
   abstract entitiesToPureProtocolText(entities: Entity[]): Promise<string>;

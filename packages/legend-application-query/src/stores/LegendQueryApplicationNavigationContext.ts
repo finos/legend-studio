@@ -14,26 +14,7 @@
  * limitations under the License.
  */
 
-import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent.js';
-
-export type GraphManagerOperationReport = {
-  timings: {
-    total: number;
-    [key: string]: number;
-  };
-  elementCount: {
-    total: number;
-    [key: string]: number;
-  };
-};
-
-export const createGraphManagerOperationReport =
-  (): GraphManagerOperationReport => ({
-    timings: { total: 0 },
-    elementCount: { total: 0 },
-  });
-
-export const createGraphBuilderReport = (): GraphManagerOperationReport => ({
-  timings: { total: 0, [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: 0 },
-  elementCount: { total: 0 },
-});
+export enum LEGEND_QUERY_APPLICATION_NAVIGATION_CONTEXT_KEY {
+  // EDITOR
+  EDITOR = 'query.editor',
+}

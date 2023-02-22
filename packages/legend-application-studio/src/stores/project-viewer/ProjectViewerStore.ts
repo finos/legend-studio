@@ -54,7 +54,7 @@ import {
   ProjectWorkflowManagerState,
 } from '../sidebar-state/WorkflowManagerState.js';
 import {
-  type GraphBuilderReport,
+  type GraphManagerOperationReport,
   GraphManagerTelemetry,
   GRAPH_MANAGER_EVENT,
   DependencyGraphBuilderError,
@@ -386,7 +386,7 @@ export class ProjectViewerStore {
           dependencyManager,
           dependencyEntitiesIndex,
           this.editorStore.graphManagerState.dependenciesBuildState,
-        )) as GraphBuilderReport;
+        )) as GraphManagerOperationReport;
 
       const sdlc = this.projectGAVCoordinates
         ? new LegendSDLC(
@@ -404,7 +404,7 @@ export class ProjectViewerStore {
           {
             sdlc,
           },
-        )) as GraphBuilderReport;
+        )) as GraphManagerOperationReport;
 
       // report
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);

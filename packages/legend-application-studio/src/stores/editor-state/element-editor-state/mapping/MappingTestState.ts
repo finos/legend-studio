@@ -93,8 +93,12 @@ import {
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
 } from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
-import { LambdaEditorState } from '@finos/legend-query-builder';
+import {
+  LambdaEditorState,
+  QueryBuilderTelemetry,
+} from '@finos/legend-query-builder';
 import { MappingEditorTabState } from './MappingTabManagerState.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../LegendStudioApplicationNavigationContext.js';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -796,6 +800,13 @@ export class MappingTestState extends MappingEditorTabState {
       this.isGeneratingPlan = true;
       let rawPlan: RawExecutionPlan;
       if (debug) {
+        QueryBuilderTelemetry.logEvent_DebugExecutionPlanLaunched(
+          this.editorStore.applicationStore.telemetryService,
+          {
+            applicationContext:
+              LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_TEST_EDITOR,
+          },
+        );
         const debugResult =
           (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
             this.queryState.query,
@@ -806,6 +817,13 @@ export class MappingTestState extends MappingEditorTabState {
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
       } else {
+        QueryBuilderTelemetry.logEvent_GenerateExecutionPlanLaunched(
+          this.editorStore.applicationStore.telemetryService,
+          {
+            applicationContext:
+              LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_TEST_EDITOR,
+          },
+        );
         rawPlan =
           (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
             this.queryState.query,

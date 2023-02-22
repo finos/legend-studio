@@ -90,7 +90,9 @@ import {
   LambdaParametersState,
   LambdaParameterState,
   PARAMETER_SUBMIT_ACTION,
+  QueryBuilderTelemetry,
 } from '@finos/legend-query-builder';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../LegendStudioApplicationNavigationContext.js';
 
 enum DSL_SERVICE_PATH_PARAM_TOKEN {
   PROJECT_ID = 'projectId',
@@ -554,6 +556,13 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       this.isGeneratingPlan = true;
       let rawPlan: RawExecutionPlan;
       if (debug) {
+        QueryBuilderTelemetry.logEvent_DebugExecutionPlanLaunched(
+          this.editorStore.applicationStore.telemetryService,
+          {
+            applicationContext:
+              LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SERVICE_EDITOR_EXECUTION,
+          },
+        );
         const debugResult =
           (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
             query,
@@ -564,6 +573,13 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
       } else {
+        QueryBuilderTelemetry.logEvent_GenerateExecutionPlanLaunched(
+          this.editorStore.applicationStore.telemetryService,
+          {
+            applicationContext:
+              LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SERVICE_EDITOR_EXECUTION,
+          },
+        );
         rawPlan =
           (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
             query,
@@ -612,6 +628,13 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     if (this.isRunningQuery) {
       return;
     }
+    QueryBuilderTelemetry.logEvent_RunQueryLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      {
+        applicationContext:
+          LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SERVICE_EDITOR_EXECUTION,
+      },
+    );
     try {
       this.isRunningQuery = true;
       const promise = this.editorStore.graphManagerState.graphManager.runQuery(

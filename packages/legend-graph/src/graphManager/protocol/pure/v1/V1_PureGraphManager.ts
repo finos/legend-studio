@@ -216,7 +216,10 @@ import type { ExternalFormatDescription } from '../../../../graphManager/action/
 import type { ConfigurationProperty } from '../../../../graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
 import { V1_ExternalFormatModelGenerationInput } from './engine/externalFormat/V1_ExternalFormatModelGeneration.js';
 import { V1_GenerateSchemaInput } from './engine/externalFormat/V1_GenerateSchemaInput.js';
-import { GraphBuilderReport } from '../../../GraphManagerMetrics.js';
+import {
+  createGraphBuilderReport,
+  type GraphManagerOperationReport,
+} from '../../../GraphManagerMetrics.js';
 import type { Package } from '../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
 import { V1_DataElement } from './model/packageableElements/data/V1_DataElement.js';
 import {
@@ -316,7 +319,7 @@ const mergePureModelContextData = (
 };
 
 export const V1_indexPureModelContextData = (
-  report: GraphBuilderReport,
+  report: GraphManagerOperationReport,
   data: V1_PureModelContextData,
   extensions: V1_GraphBuilderExtensions,
 ): V1_PureModelContextDataIndex => {
@@ -503,9 +506,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     systemModel: SystemModel,
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport> {
+  ): Promise<GraphManagerOperationReport> {
     const stopWatch = new StopWatch();
-    const report = new GraphBuilderReport();
+    const report = createGraphBuilderReport();
     buildState.reset();
 
     // Create a dummy graph for system processing. This is to ensure system model does not depend on the main graph
@@ -578,9 +581,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     dependencyEntitiesIndex: Map<string, Entity[]>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport> {
+  ): Promise<GraphManagerOperationReport> {
     const stopWatch = new StopWatch();
-    const report = new GraphBuilderReport();
+    const report = createGraphBuilderReport();
     buildState.reset();
 
     // Create a dummy graph for system processing. This is to ensure dependency models do not depend on the main graph
@@ -662,9 +665,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     entities: Entity[],
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport> {
+  ): Promise<GraphManagerOperationReport> {
     const stopWatch = new StopWatch();
-    const report = new GraphBuilderReport();
+    const report = createGraphBuilderReport();
     buildState.reset();
 
     try {
@@ -747,9 +750,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     entities: Entity[],
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport> {
+  ): Promise<GraphManagerOperationReport> {
     const stopWatch = new StopWatch();
-    const report = new GraphBuilderReport();
+    const report = createGraphBuilderReport();
     buildState.reset();
 
     try {
@@ -825,9 +828,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     generatedEntities: Map<string, Entity[]>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport> {
+  ): Promise<GraphManagerOperationReport> {
     const stopWatch = new StopWatch();
-    const report = new GraphBuilderReport();
+    const report = createGraphBuilderReport();
     const generatedModel = graph.generationModel;
     buildState.reset();
 
@@ -904,7 +907,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   private async buildGraphFromInputs(
     graph: PureModel,
     inputs: V1_PureGraphBuilderInput[],
-    report: GraphBuilderReport,
+    report: GraphManagerOperationReport,
     stopWatch: StopWatch,
     graphBuilderState: ActionState,
     options?: GraphBuilderOptions,
@@ -964,7 +967,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   private async buildLightGraphFromInputs(
     graph: PureModel,
     inputs: V1_PureGraphBuilderInput[],
-    report: GraphBuilderReport,
+    report: GraphManagerOperationReport,
     stopWatch: StopWatch,
     graphBuilderState: ActionState,
     options?: GraphBuilderOptions,
@@ -2023,7 +2026,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     input.targetBindingPath = targetBinding;
     const genPMCD = await this.engine.generateSchema(input);
     const genGraph = await this.createEmptyGraph();
-    const report = new GraphBuilderReport();
+    const report = createGraphBuilderReport();
     const mainGraphBuilderInput: V1_PureGraphBuilderInput[] = [
       {
         model: genGraph,
@@ -2702,7 +2705,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     entityFilterFn?: ((entity: Entity) => boolean) | undefined,
     entityProcessorFn?: ((entity: Entity) => Entity) | undefined,
   ): Promise<V1_PureGraphBuilderInput[]> {
-    const report = new GraphBuilderReport();
+    const report = createGraphBuilderReport();
 
     // build main graph builder input
     const data = new V1_PureModelContextData();

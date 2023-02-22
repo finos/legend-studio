@@ -49,6 +49,7 @@ export * from './stores/ServiceInfo.js';
 export * from './components/ServiceQuerySetupUtils.js';
 export * from './components/QuerySetupUtils.js';
 export * from './components/QueryBuilderTextEditor.js';
+export * from './stores/QueryBuilderTelemetry.js';
 
 export { TEST__setUpQueryBuilder } from './components/QueryBuilderComponentTestUtils.js';
 

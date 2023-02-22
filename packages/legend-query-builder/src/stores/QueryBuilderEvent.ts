@@ -14,26 +14,8 @@
  * limitations under the License.
  */
 
-import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent.js';
-
-export type GraphManagerOperationReport = {
-  timings: {
-    total: number;
-    [key: string]: number;
-  };
-  elementCount: {
-    total: number;
-    [key: string]: number;
-  };
-};
-
-export const createGraphManagerOperationReport =
-  (): GraphManagerOperationReport => ({
-    timings: { total: 0 },
-    elementCount: { total: 0 },
-  });
-
-export const createGraphBuilderReport = (): GraphManagerOperationReport => ({
-  timings: { total: 0, [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: 0 },
-  elementCount: { total: 0 },
-});
+export enum QUERY_BUILDER_EVENT {
+  RUN_QUERY__LAUNCH = 'editor.execution.run-query.launch',
+  GENERATE_EXECUTION_PLAN__LAUNCH = 'editor.execution.generate-plan.launch',
+  DEBUG_EXECUTION_PLAN__LAUNCH = 'editor.execution.debug-plan.launch',
+}
