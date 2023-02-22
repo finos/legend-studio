@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-query-graphql",
-  "version": "1.0.24",
+  "version": "1.0.0",
   "description": "Legend extension for GraphQL Query format",
   "keywords": [
     "legend",
