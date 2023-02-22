@@ -65,6 +65,7 @@ import {
 } from '../graph/helpers/DomainHelper.js';
 import { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
+import type { LegendSDLC } from '@finos/legend-storage';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -99,6 +100,9 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
  */
 export abstract class BasicModel {
   root: Package;
+
+  private _sdlcPointer: LegendSDLC | undefined;
+
   readonly extensions: PureGraphExtension<PackageableElement>[] = [];
 
   private elementSectionIndex = new Map<string, Section>();
@@ -206,6 +210,20 @@ export abstract class BasicModel {
 
   get ownTestables(): Testable[] {
     return [...this.ownServices, ...this.ownMappings];
+  }
+
+  get sdlc(): LegendSDLC | undefined {
+    return this._sdlcPointer;
+  }
+
+  setSDLC(val: LegendSDLC): void {
+    if (this._sdlcPointer) {
+      throw new IllegalStateError(
+        `SDLC pointer has already been set for model.`,
+      );
+    } else {
+      this._sdlcPointer = val;
+    }
   }
 
   getExtensionElements<T extends PackageableElement>(

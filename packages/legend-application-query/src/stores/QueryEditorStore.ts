@@ -64,10 +64,12 @@ import {
   type Entity,
   type ProjectGAVCoordinates,
   parseProjectIdentifier,
+  LegendSDLC,
 } from '@finos/legend-storage';
 import {
   type DepotServerClient,
   ProjectData,
+  resolveVersion,
 } from '@finos/legend-server-depot';
 import {
   TAB_SIZE,
@@ -514,6 +516,9 @@ export abstract class QueryEditorStore {
         this.graphManagerState.graph,
         entities,
         this.graphManagerState.graphBuildState,
+        {
+          sdlc: new LegendSDLC(groupId, artifactId, resolveVersion(versionId)),
+        },
       )) as GraphBuilderReport;
     graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
       stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);

@@ -41,7 +41,7 @@ import {
 } from '../../transformation/pureProtocol/V1_PackageableElementSerialization.js';
 import { V1_PureModelContextComposite } from '../../model/context/V1_PureModelContextComposite.js';
 import { V1_Protocol } from '../../model/V1_Protocol.js';
-import { V1_AlloySDLC } from '../../model/context/V1_SDLC.js';
+import { V1_LegendSDLC } from '../../model/context/V1_SDLC.js';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
 import { V1_packageableElementPointerDeserializerSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin.js';
@@ -122,7 +122,7 @@ export const V1_entitiesToPureModelContextData = async (
   }
 };
 
-const alloySDLCSerializationModelSchema = createModelSchema(V1_AlloySDLC, {
+const legendSDLCSerializationModelSchema = createModelSchema(V1_LegendSDLC, {
   _type: usingConstantValueSchema(V1_SDLCType.ALLOY),
   baseVersion: optional(primitive()),
   version: primitive(),
@@ -146,8 +146,8 @@ const V1_pureModelContextPointerModelSchema = createModelSchema(
   V1_PureModelContextPointer,
   {
     _type: usingConstantValueSchema(V1_PureModelContextType.POINTER),
-    serializer: usingModelSchema(V1_Protocol.serialization.schema),
-    sdlcInfo: usingModelSchema(alloySDLCSerializationModelSchema),
+    serializer: optional(usingModelSchema(V1_Protocol.serialization.schema)),
+    sdlcInfo: usingModelSchema(legendSDLCSerializationModelSchema),
   },
 );
 

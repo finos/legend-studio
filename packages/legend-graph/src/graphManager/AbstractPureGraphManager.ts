@@ -52,7 +52,7 @@ import {
   type TracerService,
 } from '@finos/legend-shared';
 import type { LightQuery, Query, QueryInfo } from './action/query/Query.js';
-import type { Entity } from '@finos/legend-storage';
+import type { Entity, LegendSDLC } from '@finos/legend-storage';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification.js';
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
@@ -98,6 +98,10 @@ export interface GraphBuilderOptions {
    * See https://github.com/finos/legend-studio/issues/941
    */
   strict?: boolean;
+  /**
+   * This ties a graph to an sdlc pointer. Meaning the graph is immutable and tied to a specific `versioned` SDLC.
+   */
+  sdlc?: LegendSDLC | undefined;
 }
 
 export interface ExecutionOptions {

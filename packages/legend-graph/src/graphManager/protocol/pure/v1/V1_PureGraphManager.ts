@@ -140,7 +140,7 @@ import { V1_GenerationSpecification } from './model/packageableElements/generati
 import { V1_Mapping } from './model/packageableElements/mapping/V1_Mapping.js';
 import { V1_ConcreteFunctionDefinition } from './model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
 import { V1_PureModelContextComposite } from './model/context/V1_PureModelContextComposite.js';
-import { V1_AlloySDLC } from './model/context/V1_SDLC.js';
+import { V1_LegendSDLC } from './model/context/V1_SDLC.js';
 import { V1_Protocol } from './model/V1_Protocol.js';
 import type { V1_PureModelContext } from './model/context/V1_PureModelContext.js';
 import type { V1_ElementBuilder } from './transformation/pureGraph/to/V1_ElementBuilder.js';
@@ -198,7 +198,11 @@ import {
   V1_transformQuerySearchSpecification,
 } from './engine/V1_EngineHelper.js';
 import { V1_buildExecutionResult } from './engine/execution/V1_ExecutionHelper.js';
-import { type Entity, ENTITY_PATH_DELIMITER } from '@finos/legend-storage';
+import {
+  type Entity,
+  type LegendSDLC,
+  ENTITY_PATH_DELIMITER,
+} from '@finos/legend-storage';
 import {
   DependencyGraphBuilderError,
   GraphBuilderError,
@@ -428,10 +432,12 @@ export interface V1_EngineSetupConfig {
 }
 
 export class V1_PureGraphManager extends AbstractPureGraphManager {
-  // Organizing these constants will help with configuring
-  // target protocol version in the future
-  // See https://github.com/finos/legend-studio/issues/475
-  static readonly TARGET_PROTOCOL_VERSION = PureClientVersion.VX_X_X;
+  // Pure Client Version represent the version of the pure protocol.
+  // Most Engine APIs will interrupt an undefined pure client version to mean
+  // use the latest production version of the protocol i.e V20_0_0, while version
+  // `VX_X_X` represents the version in development and used for testing
+  static readonly DEV_PROTOCOL_VERSION = PureClientVersion.VX_X_X;
+  static readonly PROD_PROTOCOL_VERSION = undefined;
 
   engine: V1_Engine;
   graphBuilderExtensions: V1_GraphBuilderExtensions;
@@ -700,6 +706,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
        */
       if (!options?.TEMPORARY__preserveSectionIndex) {
         graph.TEMPORARY__deleteOwnSectionIndex();
+      }
+      /**
+       * This sets the SDLC of the graph if there exists a versioned `SDLC` of the graph. This means the graph is immutable and we can easily `refetch`
+       * the graph with the provided sdlc pointer
+       */
+      if (options?.sdlc) {
+        graph.setSDLC(options.sdlc);
       }
 
       buildState.pass();
@@ -2076,7 +2089,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping | undefined,
     lambda: RawLambda,
     runtime: Runtime | undefined,
-    clientVersion: string,
+    clientVersion: string | undefined,
     parameterValues?: ParameterValue[],
   ): V1_ExecuteInput =>
     this.buildExecutionInput(
@@ -2089,15 +2102,64 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       parameterValues,
     );
 
+  private buildPureModelSDLCPointer(
+    legendSdlc: LegendSDLC,
+  ): V1_PureModelContextPointer {
+    return new V1_PureModelContextPointer(
+      undefined,
+      new V1_LegendSDLC(
+        legendSdlc.groupId,
+        legendSdlc.artifactId,
+        legendSdlc.versionId,
+      ),
+    );
+  }
+
   private buildExecutionInput = (
     graph: PureModel,
     mapping: Mapping | undefined,
     lambda: RawLambda,
     runtime: Runtime | undefined,
-    clientVersion: string,
+    clientVersion: string | undefined,
     executeInput: V1_ExecuteInput,
     parameterValues?: ParameterValue[],
   ): V1_ExecuteInput => {
+    const pureModelContext = graph.sdlc
+      ? this.buildPureModelSDLCPointer(graph.sdlc)
+      : this.buildExecutionInputGraphData(graph, mapping, runtime);
+    // NOTE: for execution, we usually will just assume that we send the connections embedded in the runtime value, since we don't want the user to have to create
+    // packageable runtime and connection just to play with execution.
+    executeInput.clientVersion = clientVersion;
+    executeInput.function = V1_transformRawLambda(
+      lambda,
+      new V1_GraphTransformerContextBuilder(
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ).build(),
+    );
+    executeInput.mapping = mapping?.path;
+    executeInput.runtime = runtime
+      ? V1_transformRuntime(
+          runtime,
+          new V1_GraphTransformerContextBuilder(
+            this.pluginManager.getPureProtocolProcessorPlugins(),
+          ).build(),
+        )
+      : undefined;
+    executeInput.model = pureModelContext;
+    executeInput.context = new V1_RawBaseExecutionContext(); // TODO: potentially need to support more types
+    if (parameterValues) {
+      executeInput.parameterValues = parameterValues.map((p) =>
+        V1_transformParameterValue(p),
+      );
+    }
+    return executeInput;
+  };
+
+  private buildExecutionInputGraphData(
+    graph: PureModel,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
+  ): V1_PureModelContextData {
     /**
      * NOTE: to lessen network load, we might need to think of a way to only include relevant part of the pure model context data here
      *
@@ -2136,33 +2198,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         )
         .concat(extraExecutionElements),
     );
-    // NOTE: for execution, we usually will just assume that we send the connections embedded in the runtime value, since we don't want the user to have to create
-    // packageable runtime and connection just to play with execution.
-    executeInput.clientVersion = clientVersion;
-    executeInput.function = V1_transformRawLambda(
-      lambda,
-      new V1_GraphTransformerContextBuilder(
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      ).build(),
-    );
-    executeInput.mapping = mapping?.path;
-    executeInput.runtime = runtime
-      ? V1_transformRuntime(
-          runtime,
-          new V1_GraphTransformerContextBuilder(
-            this.pluginManager.getPureProtocolProcessorPlugins(),
-          ).build(),
-        )
-      : undefined;
-    executeInput.model = prunedGraphData;
-    executeInput.context = new V1_RawBaseExecutionContext(); // TODO: potentially need to support more types
-    if (parameterValues) {
-      executeInput.parameterValues = parameterValues.map((p) =>
-        V1_transformParameterValue(p),
-      );
-    }
-    return executeInput;
-  };
+    return prunedGraphData;
+  }
 
   async runQuery(
     lambda: RawLambda,
@@ -2178,7 +2215,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           mapping,
           lambda,
           runtime,
-          V1_PureGraphManager.TARGET_PROTOCOL_VERSION,
+          V1_PureGraphManager.PROD_PROTOCOL_VERSION,
           options?.parameterValues,
         ),
         options,
@@ -2203,7 +2240,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       mapping,
       lambda,
       runtime,
-      V1_PureGraphManager.TARGET_PROTOCOL_VERSION,
+      V1_PureGraphManager.DEV_PROTOCOL_VERSION,
       testDataGenerationExecuteInput,
     );
     testDataGenerationExecuteInput.parameters = parameters;
@@ -2225,7 +2262,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         mapping,
         lambda,
         runtime,
-        V1_PureGraphManager.TARGET_PROTOCOL_VERSION,
+        V1_PureGraphManager.DEV_PROTOCOL_VERSION,
       ),
     );
   }
@@ -2242,7 +2279,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         mapping,
         lambda,
         runtime,
-        V1_PureGraphManager.TARGET_PROTOCOL_VERSION,
+        V1_PureGraphManager.DEV_PROTOCOL_VERSION,
       ),
     );
     return {
@@ -2319,7 +2356,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         break;
       }
       case ServiceExecutionMode.SEMI_INTERACTIVE: {
-        const sdlcInfo = new V1_AlloySDLC(groupId, artifactId, version);
+        const sdlcInfo = new V1_LegendSDLC(groupId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
 
         // data
@@ -2368,7 +2405,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         break;
       }
       case ServiceExecutionMode.PROD: {
-        const sdlcInfo = new V1_AlloySDLC(groupId, artifactId, version);
+        const sdlcInfo = new V1_LegendSDLC(groupId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         sdlcInfo.packageableElementPointers = [
           new V1_PackageableElementPointer(
@@ -2530,9 +2567,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // ---------------------------------------- Analysis ----------------------------------------
 
-  buildPureModelContextDataFromPureModel = (
+  buildMappingModelCoverageAnalysisInputContextData = (
     graph: PureModel,
-  ): V1_PureModelContextData => {
+  ): V1_PureModelContext => {
     const graphData = this.getFullGraphModelData(graph);
     const prunedGraphData = new V1_PureModelContextData();
     const extraElements = this.pluginManager
@@ -2566,9 +2603,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
   ): Promise<MappingModelCoverageAnalysisResult> {
     const input = new V1_MappingModelCoverageAnalysisInput();
-    input.clientVersion = V1_PureGraphManager.TARGET_PROTOCOL_VERSION;
+    input.clientVersion = V1_PureGraphManager.DEV_PROTOCOL_VERSION;
     input.mapping = mapping.path;
-    input.model = this.buildPureModelContextDataFromPureModel(graph);
+    input.model = graph.sdlc
+      ? this.buildPureModelSDLCPointer(graph.sdlc)
+      : this.buildMappingModelCoverageAnalysisInputContextData(graph);
     return V1_buildModelCoverageAnalysisResult(
       await this.engine.analyzeMappingModelCoverage(input),
       mapping,

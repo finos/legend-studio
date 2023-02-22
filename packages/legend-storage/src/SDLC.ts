@@ -14,29 +14,16 @@
  * limitations under the License.
  */
 
-import type { V1_PackageableElementPointer } from '../packageableElements/V1_PackageableElement.js';
+import type { ProjectGAVCoordinates } from './DependencyUtils.js';
 
-export abstract class V1_SDLC {
-  baseVersion = 'latest';
-  version: string;
-  packageableElementPointers: V1_PackageableElementPointer[] = [];
-
-  constructor(version: string | undefined) {
-    this.version = version ?? 'none';
-  }
-}
-
-export class V1_LegendSDLC extends V1_SDLC {
+export class LegendSDLC implements ProjectGAVCoordinates {
   groupId: string;
   artifactId: string;
+  versionId: string;
 
-  constructor(
-    groupId: string,
-    artifactId: string,
-    version: string | undefined,
-  ) {
-    super(version);
+  constructor(groupId: string, artifactId: string, versionId: string) {
     this.groupId = groupId;
     this.artifactId = artifactId;
+    this.versionId = versionId;
   }
 }

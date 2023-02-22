@@ -24,7 +24,6 @@ import {
   custom,
   deserialize,
   list,
-  object,
   optional,
   primitive,
   serialize,
@@ -37,7 +36,8 @@ import {
   MappedProperty,
   MappingModelCoverageAnalysisResult,
 } from '../../../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
-import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
+import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
+import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
 
 enum V1_MappedPropertyType {
   ENUM = 'enum',
@@ -121,13 +121,13 @@ class V1_MappedEntity {
 export class V1_MappingModelCoverageAnalysisInput {
   clientVersion!: string;
   mapping!: string;
-  model!: V1_PureModelContextData;
+  model!: V1_PureModelContext;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_MappingModelCoverageAnalysisInput, {
       clientVersion: primitive(),
       mapping: primitive(),
-      model: object(V1_PureModelContextData),
+      model: V1_pureModelContextPropSchema,
     }),
   );
 }
