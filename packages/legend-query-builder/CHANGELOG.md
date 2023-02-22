@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 0.6.27
+
+### Patch Changes
+
+- [#1934](https://github.com/finos/legend-studio/pull/1934) [`e22a6db89`](https://github.com/finos/legend-studio/commit/e22a6db89875bcad7302839ac02a047f9b9f20d0) ([@xannem](https://github.com/xannem)) - Add tests for expected query builder behavior.
+
+- [#1916](https://github.com/finos/legend-studio/pull/1916) [`66aebc576`](https://github.com/finos/legend-studio/commit/66aebc57678dd65024ade037932dc9b0fd3b402a) ([@xannem](https://github.com/xannem)) - Only show parameter types that match derived property types, and show humanized version of date::adjust functions.
+
 ## 0.6.26
 
 ## 0.6.25

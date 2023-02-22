@@ -1,5 +1,16 @@
 # @finos/legend-graph
 
+## 22.3.0
+
+### Minor Changes
+
+- [#1940](https://github.com/finos/legend-studio/pull/1940) [`5febc1969`](https://github.com/finos/legend-studio/commit/5febc19692f6a766cc0b85615b8f98b440ff3d1c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `sdlc` to BasicModel, to provide a `versioned` sdlc pointer for a metamodel graph.
+  Leverage sdlc pointer when applicable to send over `V1_PureModelContextPointer` to engine to lessen payload and improve performance by removing unneccesary transformation and serialization of all elemetns.
+
+### Patch Changes
+
+- [#1924](https://github.com/finos/legend-studio/pull/1924) [`106c5f78e`](https://github.com/finos/legend-studio/commit/106c5f78e2ac80f56b9b2eeacf621f97082b425b) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Expose TDS types in type selectors.
+
 ## 22.2.8
 
 ## 22.2.7
