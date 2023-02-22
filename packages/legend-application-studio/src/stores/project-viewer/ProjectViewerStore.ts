@@ -36,6 +36,7 @@ import {
   type Entity,
   type ProjectGAVCoordinates,
   parseGAVCoordinates,
+  LegendSDLC,
 } from '@finos/legend-storage';
 import {
   ProjectConfiguration,
@@ -46,7 +47,7 @@ import {
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import { TAB_SIZE } from '@finos/legend-application';
-import { ProjectData } from '@finos/legend-server-depot';
+import { ProjectData, resolveVersion } from '@finos/legend-server-depot';
 import {
   type WorkflowManagerState,
   ProjectVersionWorkflowManagerState,
@@ -387,12 +388,22 @@ export class ProjectViewerStore {
           this.editorStore.graphManagerState.dependenciesBuildState,
         )) as GraphBuilderReport;
 
+      const sdlc = this.projectGAVCoordinates
+        ? new LegendSDLC(
+            this.projectGAVCoordinates.groupId,
+            this.projectGAVCoordinates.artifactId,
+            resolveVersion(this.projectGAVCoordinates.versionId),
+          )
+        : undefined;
       // build graph
       const graph_buildReport =
         (yield this.editorStore.graphManagerState.graphManager.buildGraph(
           this.editorStore.graphManagerState.graph,
           entities,
           this.editorStore.graphManagerState.graphBuildState,
+          {
+            sdlc,
+          },
         )) as GraphBuilderReport;
 
       // report

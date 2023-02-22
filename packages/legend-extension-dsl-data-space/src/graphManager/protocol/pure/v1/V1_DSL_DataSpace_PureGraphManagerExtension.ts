@@ -102,7 +102,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         engineClient.getTraceData(ANALYZE_DATA_SPACE_TRACE),
         `${engineClient._pure()}/analytics/dataSpace/render`,
         {
-          clientVersion: V1_PureGraphManager.TARGET_PROTOCOL_VERSION,
+          clientVersion: V1_PureGraphManager.DEV_PROTOCOL_VERSION,
           dataSpace: dataSpacePath,
           model: {
             _type: V1_PureModelContextType.DATA,

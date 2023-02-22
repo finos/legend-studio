@@ -884,6 +884,11 @@ export class ChangeDetectionState {
         `Can't observe graph: change detection must be stopped first`,
       );
     }
+    if (this.editorStore.graphManagerState.graph.sdlc) {
+      throw new IllegalStateError(
+        `Can't observe graph: can't change graph with sdlc pointer`,
+      );
+    }
     this.graphObserveState.inProgress();
     this.graphObserveState.setMessage(`Observing graph...`);
     const startTime = Date.now();
