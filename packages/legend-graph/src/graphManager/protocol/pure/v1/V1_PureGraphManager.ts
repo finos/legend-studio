@@ -2567,9 +2567,19 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // ---------------------------------------- Analysis ----------------------------------------
 
-  buildMappingModelCoverageAnalysisInputContextData = (
+  private buildMappingModelCoverageAnalysisInputContextData = (
     graph: PureModel,
   ): V1_PureModelContext => {
+    /**
+     * To lessen network load, we only include relevant part of the pure model context data here
+     *
+     * Graph data models can be classified based on dependency hieararchy:
+     * 1. Building blocks: models that all other models depend on: e.g. domain models, connections, etc.
+     * 2. Consumers: models that depends on other models: e.g. mapping, service, etc.
+     * 3. Unrelated: models that depends on nothing and vice versa: e.g. text
+     *
+     * For analyzing mapping, we choose to include some building blocks and mappings.
+     */
     const graphData = this.getFullGraphModelData(graph);
     const prunedGraphData = new V1_PureModelContextData();
     const extraElements = this.pluginManager

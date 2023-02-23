@@ -505,22 +505,6 @@ export const QueryBuilder = observer(
                             Show Watermark
                           </MenuContentItemLabel>
                         </MenuContentItem>
-                        <MenuContentItem
-                          onClick={openCheckEntitlmentsEditor}
-                          disabled={
-                            !(
-                              queryBuilderState.fetchStructureState
-                                .implementation instanceof QueryBuilderTDSState
-                            ) ||
-                            queryBuilderState.fetchStructureState.implementation
-                              .projectionColumns.length === 0
-                          }
-                        >
-                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
-                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Check Entitlements
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
                         <MenuContentDivider />
                         <MenuContentItem onClick={editQueryInPure}>
                           <MenuContentItemIcon>{null}</MenuContentItemIcon>
@@ -532,6 +516,23 @@ export const QueryBuilder = observer(
                           <MenuContentItemIcon>{null}</MenuContentItemIcon>
                           <MenuContentItemLabel className="query-builder__sub-header__menu-content">
                             Show Query Protocol
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                        <MenuContentItem
+                          onClick={openCheckEntitlmentsEditor}
+                          disabled={
+                            queryBuilderState.isQuerySupported &&
+                            (!(
+                              queryBuilderState.fetchStructureState
+                                .implementation instanceof QueryBuilderTDSState
+                            ) ||
+                              queryBuilderState.fetchStructureState
+                                .implementation.projectionColumns.length === 0)
+                          }
+                        >
+                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Check Entitlements
                           </MenuContentItemLabel>
                         </MenuContentItem>
                         <MenuContentDivider />

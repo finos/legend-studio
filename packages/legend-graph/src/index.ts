@@ -93,7 +93,7 @@ export { V1_StereotypePtr } from './graphManager/protocol/pure/v1/model/packagea
 export { V1_TaggedValue } from './graphManager/protocol/pure/v1/model/packageableElements/domain/V1_TaggedValue.js';
 export { V1_PropertyPointer } from './graphManager/protocol/pure/v1/model/packageableElements/domain/V1_PropertyPointer.js';
 export { V1_SectionIndex } from './graphManager/protocol/pure/v1/model/packageableElements/section/V1_SectionIndex.js';
-
+export { V1_pureModelContextPropSchema } from './graphManager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 
 // metamodels
@@ -251,6 +251,7 @@ export {
 } from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_DomainTransformer.js';
 export { V1_buildTaggedValue } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_DomainBuilderHelper.js';
 export { V1_PureModelContextData } from './graphManager/protocol/pure/v1/model/context/V1_PureModelContextData.js';
+export { V1_PureModelContext } from './graphManager/protocol/pure/v1/model/context/V1_PureModelContext.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationPathResolver.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_ElementBuilder.js';
