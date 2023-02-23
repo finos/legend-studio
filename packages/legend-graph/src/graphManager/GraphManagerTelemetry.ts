@@ -28,10 +28,13 @@ type GraphInitialized_TelemetryData = {
 };
 
 export class GraphManagerTelemetry {
-  static logEvent_GraphInitialized(
+  static logEvent_GraphInitializationSucceeded(
     telemetryService: TelemetryService,
     data: GraphInitialized_TelemetryData,
   ): void {
-    telemetryService.logEvent(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED, data);
+    telemetryService.logEvent(
+      GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
+      data,
+    );
   }
 }

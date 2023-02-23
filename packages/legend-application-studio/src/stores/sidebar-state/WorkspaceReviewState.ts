@@ -152,7 +152,9 @@ export class WorkspaceReviewState {
         ),
       ]);
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
+        ),
         Date.now() - startTime,
         'ms',
       );

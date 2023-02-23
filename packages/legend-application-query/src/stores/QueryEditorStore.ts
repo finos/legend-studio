@@ -239,7 +239,7 @@ export class QueryExportState {
           this.editorStore.applicationStore.eventService,
         ).notify_QueryCreated({ queryId: newQuery.id });
 
-        LegendQueryTelemetry.logEvent_CreateQuery(
+        LegendQueryTelemetry.logEvent_CreateQuerySucceeded(
           this.editorStore.applicationStore.telemetryService,
           {
             query: {
@@ -265,7 +265,7 @@ export class QueryExportState {
           `Successfully updated query!`,
         );
 
-        LegendQueryTelemetry.logEvent_UpdateQuery(
+        LegendQueryTelemetry.logEvent_UpdateQuerySucceeded(
           this.editorStore.applicationStore.telemetryService,
           {
             query: {
@@ -474,7 +474,7 @@ export abstract class QueryEditorStore {
     // initialize system
     stopWatch.record();
     yield this.graphManagerState.initializeSystem();
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_SYSTEM_INITIALIZED);
+    stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH_SYSTEM__SUCCESS);
 
     // fetch entities
     stopWatch.record();
@@ -484,7 +484,7 @@ export abstract class QueryEditorStore {
       versionId,
     )) as Entity[];
     this.initState.setMessage(undefined);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
+    stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS);
 
     // fetch and build dependencies
     stopWatch.record();
@@ -497,7 +497,7 @@ export abstract class QueryEditorStore {
     const dependencyEntitiesIndex = (yield flowResult(
       this.depotServerClient.getIndexedDependencyEntities(project, versionId),
     )) as Map<string, Entity[]>;
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+    stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
 
     const dependency_buildReport = createGraphBuilderReport();
     yield this.graphManagerState.graphManager.buildDependencies(
@@ -510,8 +510,10 @@ export abstract class QueryEditorStore {
       dependency_buildReport,
     );
     dependency_buildReport.timings[
-      GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
-    ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+      GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS
+    ] = stopWatch.getRecord(
+      GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS,
+    );
 
     // build graph
     const graph_buildReport = createGraphBuilderReport();
@@ -524,18 +526,20 @@ export abstract class QueryEditorStore {
       },
       graph_buildReport,
     );
-    graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
-      stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
+    graph_buildReport.timings[
+      GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS
+    ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS);
 
     // report
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
+    stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
     const graphBuilderReportData = {
       timings: {
-        [GRAPH_MANAGER_EVENT.GRAPH_SYSTEM_INITIALIZED]: stopWatch.getRecord(
-          GRAPH_MANAGER_EVENT.GRAPH_SYSTEM_INITIALIZED,
-        ),
-        [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.getRecord(
-          GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED,
+        [GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH_SYSTEM__SUCCESS]:
+          stopWatch.getRecord(
+            GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH_SYSTEM__SUCCESS,
+          ),
+        [GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS]: stopWatch.getRecord(
+          GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
         ),
       },
       dependencies: dependency_buildReport,
@@ -544,10 +548,10 @@ export abstract class QueryEditorStore {
       graph: graph_buildReport,
     };
     this.applicationStore.log.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
+      LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
       graphBuilderReportData,
     );
-    GraphManagerTelemetry.logEvent_GraphInitialized(
+    GraphManagerTelemetry.logEvent_GraphInitializationSucceeded(
       this.applicationStore.telemetryService,
       graphBuilderReportData,
     );
@@ -813,7 +817,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
 
     // send analytics
-    LegendQueryTelemetry.logEvent_ViewQuery(
+    LegendQueryTelemetry.logEvent_ViewQuerySucceeded(
       this.applicationStore.telemetryService,
       {
         query: {

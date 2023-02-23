@@ -269,7 +269,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       );
 
       this.applicationStore.log.info(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_LOCAL_CHANGES_PUSHED),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.PUSH_LOCAL_CHANGES__SUCCESS),
       );
 
       onSuccess?.();

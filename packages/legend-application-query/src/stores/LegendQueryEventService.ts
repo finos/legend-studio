@@ -33,6 +33,9 @@ export class LegendQueryEventService {
   }
 
   notify_QueryCreated(data: QueryCreated_EventData): void {
-    this.eventService.notify(LEGEND_QUERY_APP_EVENT.QUERY_CREATED, data);
+    this.eventService.notify(
+      LEGEND_QUERY_APP_EVENT.CREATE_QUERY__SUCCESS,
+      data,
+    );
   }
 }

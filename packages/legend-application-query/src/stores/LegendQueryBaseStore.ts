@@ -78,7 +78,7 @@ export class LegendQueryBaseStore {
       assertErrorThrown(error);
       this.applicationStore.log.error(
         LogEvent.create(
-          APPLICATION_EVENT.APPLICATION_IDENTITY_AUTO_FETCH_FAILURE,
+          APPLICATION_EVENT.APPLICATION_IDENTITY_AUTO_FETCH__FAILURE,
         ),
         error,
       );
@@ -90,7 +90,7 @@ export class LegendQueryBaseStore {
       this.applicationStore.currentUser,
     );
 
-    ApplicationTelemetry.logEvent_ApplicationInitialized(
+    ApplicationTelemetry.logEvent_ApplicationInitializationSucceeded(
       this.applicationStore.telemetryService,
       {
         application: {

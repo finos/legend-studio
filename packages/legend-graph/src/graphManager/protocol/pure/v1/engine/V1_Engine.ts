@@ -164,7 +164,7 @@ export class V1_Engine {
     const startTime = Date.now();
     const serializedGraph = V1_serializePureModelContextData(graph);
     this.log.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_PROTOCOL_SERIALIZED),
+      LogEvent.create(GRAPH_MANAGER_EVENT.SERIALIZE_GRAPH_PROTOCOL__SUCCESS),
       Date.now() - startTime,
       'ms',
     );

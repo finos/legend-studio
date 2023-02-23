@@ -221,7 +221,9 @@ export class WorkspaceUpdaterState {
         ),
       ]);
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
+        ),
         Date.now() - restartChangeDetectionStartTime,
         'ms',
       );
@@ -279,7 +281,7 @@ export class WorkspaceUpdaterState {
           this.sdlcState.activeWorkspace,
         )) as WorkspaceUpdateReport;
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_UPDATED),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.UPDATE_WORKSPACE__SUCCESS),
         Date.now() - startTime,
         'ms',
       );

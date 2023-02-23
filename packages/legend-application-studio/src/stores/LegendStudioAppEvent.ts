@@ -39,8 +39,8 @@ export enum LEGEND_STUDIO_APP_EVENT {
   // TODO: consider to split this generic errors into more specific events
   SDLC_MANAGER_FAILURE = 'sdlc.manager.failure',
 
-  WORKSPACE_UPDATED = 'sdlc.workspace-update.success',
-  WORKSPACE_LOCAL_CHANGES_PUSHED = 'sdlc.local-changes-push.success',
+  UPDATE_WORKSPACE__SUCCESS = 'sdlc.workspace-update.success',
+  PUSH_LOCAL_CHANGES__SUCCESS = 'sdlc.local-changes-push.success',
 
   // Depot
   // TODO: consider to split this generic errors into more specific events

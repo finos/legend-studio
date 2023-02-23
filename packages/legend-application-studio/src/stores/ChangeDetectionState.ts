@@ -138,7 +138,7 @@ class RevisionChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -227,7 +227,7 @@ class RevisionChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -263,7 +263,7 @@ class RevisionChangeDetectionState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_FAILURE),
+        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION__FAILURE),
         `Can't build hashes index`,
       );
       this.setEntityHashesIndex(new Map<string, string>());
@@ -548,7 +548,7 @@ export class ChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_GRAPH_HASH_SNAPSHOTED,
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_GRAPH_HASHES_INDEX__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -606,7 +606,7 @@ export class ChangeDetectionState {
       if (!quiet) {
         this.editorStore.applicationStore.log.info(
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
           ),
           Date.now() - startTime,
           'ms',
@@ -686,7 +686,7 @@ export class ChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED,
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_WORKSPACE_UPDATE_CONFLICTS__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -718,7 +718,7 @@ export class ChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED,
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CONFLICT_RESOLUTION_CONFLICTS__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -847,7 +847,7 @@ export class ChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -869,7 +869,7 @@ export class ChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -901,7 +901,9 @@ export class ChangeDetectionState {
       this.editorStore.changeDetectionState.observerContext,
     );
     this.editorStore.applicationStore.log.info(
-      LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_GRAPH_OBSERVED),
+      LogEvent.create(
+        CHANGE_DETECTION_EVENT.CHANGE_DETECTION_OBSERVE_GRAPH__SUCCESS,
+      ),
       '[ASYNC]',
       Date.now() - startTime,
       'ms',
@@ -942,7 +944,7 @@ export class ChangeDetectionState {
     this.graphElementHashCodeKeepAliveComputationDisposers = disposers;
     this.editorStore.applicationStore.log.info(
       LogEvent.create(
-        CHANGE_DETECTION_EVENT.CHANGE_DETECTION_GRAPH_HASHES_PRECOMPUTED,
+        CHANGE_DETECTION_EVENT.CHANGE_DETECTION_PRECOMPUTE_GRAPH_HASHES__SUCCESS,
       ),
       '[ASYNC]',
       Date.now() - startTime,

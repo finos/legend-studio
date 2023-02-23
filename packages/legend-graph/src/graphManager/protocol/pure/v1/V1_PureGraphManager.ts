@@ -533,7 +533,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             V1_deserializePureModelContextData(modelContextData),
           ),
       );
-      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
+      stopWatch.record(
+        GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DESERIALIZE_ELEMENTS__SUCCESS,
+      );
 
       // prepare build inputs
       const buildInputs = [
@@ -560,7 +562,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildState.pass();
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
-        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]:
+          stopWatch.elapsed,
         total: stopWatch.elapsed,
       };
     } catch (error) {
@@ -619,7 +622,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           },
         ),
       );
-      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
+      stopWatch.record(
+        GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DESERIALIZE_ELEMENTS__SUCCESS,
+      );
 
       // prepare build inputs
       const buildInputs: V1_PureGraphBuilderInput[] = Array.from(
@@ -646,7 +651,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildState.pass();
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
-        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]:
+          stopWatch.elapsed,
         total: stopWatch.elapsed,
       };
     } catch (error) {
@@ -682,7 +688,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         data,
         this.pluginManager.getPureProtocolProcessorPlugins(),
       );
-      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
+      stopWatch.record(
+        GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DESERIALIZE_ELEMENTS__SUCCESS,
+      );
 
       // prepare build inputs
       const buildInputs: V1_PureGraphBuilderInput[] = [
@@ -725,7 +733,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildState.pass();
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
-        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]:
+          stopWatch.elapsed,
         total: stopWatch.elapsed,
       };
     } catch (error) {
@@ -767,7 +776,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         data,
         this.pluginManager.getPureProtocolProcessorPlugins(),
       );
-      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
+      stopWatch.record(
+        GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DESERIALIZE_ELEMENTS__SUCCESS,
+      );
 
       // prepare build inputs
       const buildInputs: V1_PureGraphBuilderInput[] = [
@@ -803,7 +814,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildState.pass();
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
-        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]:
+          stopWatch.elapsed,
         total: stopWatch.elapsed,
       };
     } catch (error) {
@@ -857,7 +869,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           },
         ),
       );
-      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
+      stopWatch.record(
+        GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DESERIALIZE_ELEMENTS__SUCCESS,
+      );
 
       // prepare build inputs
       const buildInputs: V1_PureGraphBuilderInput[] = Array.from(
@@ -884,7 +898,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildState.pass();
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
-        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]:
+          stopWatch.elapsed,
         total: stopWatch.elapsed,
       };
     } catch (error) {
@@ -919,51 +934,59 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       `Indexing ${report.elementCount.total} elements...`,
     );
     await this.initializeAndIndexElements(graph, inputs, options);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_INDEXED);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_INDEX_ELEMENTS__SUCCESS);
 
     // build section index
     graphBuilderState.setMessage(`Building section indices...`);
     await this.buildSectionIndices(graph, inputs, options);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_SECTION_INDICES_BUILT);
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_SECTION_INDICES__SUCCESS,
+    );
 
     // build types
     graphBuilderState.setMessage(`Building domain models...`);
     await this.buildTypes(graph, inputs, options);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DOMAIN_MODELS_BUILT);
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_DOMAIN_MODELS__SUCCESS,
+    );
 
     // build stores
     graphBuilderState.setMessage(`Building stores...`);
     await this.buildStores(graph, inputs, options);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_STORES_BUILT);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_STORES__SUCCESS);
 
     // build mappings
     graphBuilderState.setMessage(`Building mappings...`);
     await this.buildMappings(graph, inputs, options);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_MAPPINGS_BUILT);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_MAPPINGS__SUCCESS);
 
     // build connections and runtimes
     graphBuilderState.setMessage(`Building connections and runtimes...`);
     await this.buildConnectionsAndRuntimes(graph, inputs, options);
     stopWatch.record(
-      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_CONNECTIONS_AND_RUNTIMES_BUILT,
+      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_CONNECTIONS_AND_RUNTIMES__SUCCESS,
     );
 
     // build services
     graphBuilderState.setMessage(`Building services...`);
     await this.buildServices(graph, inputs, options);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_SERVICES_BUILT);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_SERVICES__SUCCESS);
 
     // build data elements
     graphBuilderState.setMessage(`Building data elements...`);
     await this.buildDataElements(graph, inputs, options);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DATA_ELEMENTS_BUILT);
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_DATA_ELEMENTS__SUCCESS,
+    );
 
     // build other elements
     graphBuilderState.setMessage(`Building other elements...`);
     await this.buildFileGenerations(graph, inputs, options);
     await this.buildGenerationSpecifications(graph, inputs, options);
     await this.buildOtherElements(graph, inputs, options);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_OTHER_ELEMENTS_BUILT);
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_OTHER_ELEMENTS__SUCCESS,
+    );
   }
 
   private async buildLightGraphFromInputs(
@@ -979,7 +1002,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       `Indexing ${report.elementCount.total} elements...`,
     );
     await this.initializeAndIndexElements(graph, inputs, options);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_INDEXED);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_INDEX_ELEMENTS__SUCCESS);
   }
 
   private getBuilderContext(
@@ -1528,7 +1551,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graphData,
     );
     this.log.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED),
+      LogEvent.create(
+        GRAPH_MANAGER_EVENT.TRANSFORM_GRAPH_META_MODEL_TO_GRAMMAR__SUCCESS,
+      ),
       Date.now() - startTime,
       'ms',
     );
@@ -1545,7 +1570,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       await this.entitiesToPureModelContextData(entities),
     );
     this.log.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED),
+      LogEvent.create(
+        GRAPH_MANAGER_EVENT.TRANSFORM_GRAPH_META_MODEL_TO_GRAMMAR__SUCCESS,
+      ),
       Date.now() - startTime,
       'ms',
     );
@@ -3011,7 +3038,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     this.log.info(
       LogEvent.create(
-        GRAPH_MANAGER_EVENT.GRAPH_META_MODEL_TO_PROTOCOL_TRANSFORMED,
+        GRAPH_MANAGER_EVENT.TRANSFORM_GRAPH_META_MODEL_TO_PROTOCOL__SUCCESS,
       ),
       Date.now() - startTime,
       'ms',
@@ -3031,7 +3058,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ...generatedModel.allOwnElements,
     ].map((element) => this.elementToProtocol(element));
     this.log.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_COMPILE_CONTEXT_COLLECTED),
+      LogEvent.create(
+        GRAPH_MANAGER_EVENT.COLLECT_GRAPH_COMPILE_CONTEXT__SUCCESS,
+      ),
       Date.now() - startTime,
       'ms',
     );

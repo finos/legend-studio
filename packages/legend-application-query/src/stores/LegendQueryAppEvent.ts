@@ -18,7 +18,7 @@ export enum LEGEND_QUERY_APP_EVENT {
   // TODO: split this into specific events
   GENERIC_FAILURE = 'application.failure.generic',
 
-  QUERY_VIEWED = 'query-editor.view-query',
-  QUERY_CREATED = 'query-editor.create-query.success',
-  QUERY_UPDATED = 'query-editor.update-query.success',
+  VIEW_QUERY__SUCCESS = 'query-editor.view-query.success',
+  CREATE_QUERY__SUCCESS = 'query-editor.create-query.success',
+  UPDATE_QUERY__SUCCESS = 'query-editor.update-query.success',
 }

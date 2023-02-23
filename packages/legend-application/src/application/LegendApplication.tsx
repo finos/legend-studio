@@ -111,19 +111,19 @@ export const setupLegendApplicationUILibrary = async (
       if (document.fonts.check(`1em ${MONOSPACED_FONT_FAMILY}`)) {
         monacoEditorAPI.remeasureFonts();
         logger.info(
-          LogEvent.create(APPLICATION_EVENT.TEXT_EDITOR_FONT_LOADED),
+          LogEvent.create(APPLICATION_EVENT.LOAD_TEXT_EDITOR_FONT__SUCCESS),
           `Monospaced font '${MONOSPACED_FONT_FAMILY}' has been loaded`,
         );
       } else {
         logger.error(
-          LogEvent.create(APPLICATION_EVENT.APPLICATION_SETUP_FAILURE),
+          LogEvent.create(APPLICATION_EVENT.APPLICATION_SETUP__FAILURE),
           fontLoadFailureErrorMessage,
         );
       }
     })
     .catch(() =>
       logger.error(
-        LogEvent.create(APPLICATION_EVENT.APPLICATION_SETUP_FAILURE),
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_SETUP__FAILURE),
         fontLoadFailureErrorMessage,
       ),
     );
@@ -227,7 +227,7 @@ export abstract class LegendApplication {
     } catch (error) {
       assertErrorThrown(error);
       this.logger.error(
-        LogEvent.create(APPLICATION_EVENT.APPLICATION_CONFIGURATION_FAILURE),
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_CONFIGURATION__FAILURE),
         error,
       );
     }
@@ -245,7 +245,7 @@ export abstract class LegendApplication {
     } catch (error) {
       assertErrorThrown(error);
       this.logger.error(
-        LogEvent.create(APPLICATION_EVENT.APPLICATION_CONFIGURATION_FAILURE),
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_CONFIGURATION__FAILURE),
         error,
       );
     }
@@ -317,7 +317,7 @@ export abstract class LegendApplication {
           assertErrorThrown(error);
           this.logger.warn(
             LogEvent.create(
-              APPLICATION_EVENT.APPLICATION_DOCUMENTATION_FETCH_FAILURE,
+              APPLICATION_EVENT.APPLICATION_DOCUMENTATION_FETCH__FAILURE,
             ),
             error,
           );
@@ -369,13 +369,13 @@ export abstract class LegendApplication {
       );
 
       this.logger.info(
-        LogEvent.create(APPLICATION_EVENT.APPLICATION_LOADED),
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_LOAD__SUCCESS),
         'Legend application loaded',
       );
     } catch (error) {
       assertErrorThrown(error);
       this.logger.error(
-        LogEvent.create(APPLICATION_EVENT.APPLICATION_LOAD_FAILURE),
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_LOAD__FAILURE),
         'Failed to load Legend application',
       );
       throw error;

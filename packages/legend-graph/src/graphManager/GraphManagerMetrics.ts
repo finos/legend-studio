@@ -36,7 +36,10 @@ export const createGraphManagerOperationReport =
   });
 
 export const createGraphBuilderReport = (): GraphManagerOperationReport => ({
-  timings: { total: 0, [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: 0 },
+  timings: {
+    total: 0,
+    [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]: 0,
+  },
   elementCount: { total: undefined },
 });
 

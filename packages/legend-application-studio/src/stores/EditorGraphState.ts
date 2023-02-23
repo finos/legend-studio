@@ -349,7 +349,7 @@ export class EditorGraphState {
       const dependencyEntitiesIndex = (yield flowResult(
         this.getIndexedDependencyEntities(),
       )) as Map<string, Entity[]>;
-      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+      stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
 
       const dependency_buildReport = createGraphBuilderReport();
       yield this.editorStore.graphManagerState.graphManager.buildDependencies(
@@ -362,8 +362,10 @@ export class EditorGraphState {
         dependency_buildReport,
       );
       dependency_buildReport.timings[
-        GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
-      ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+        GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS
+      ] = stopWatch.getRecord(
+        GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS,
+      );
 
       // build graph
       const graph_buildReport = createGraphBuilderReport();
@@ -391,11 +393,11 @@ export class EditorGraphState {
       );
 
       // report
-      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
+      stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
       const graphBuilderReportData = {
         timings: {
-          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.getRecord(
-            GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED,
+          [GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS]: stopWatch.getRecord(
+            GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
           ),
         },
         dependencies: dependency_buildReport,
@@ -407,10 +409,10 @@ export class EditorGraphState {
         generationsCount: this.graphGenerationState.generatedEntities.size,
       };
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
+        LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
         graphBuilderReportData,
       );
-      GraphManagerTelemetry.logEvent_GraphInitialized(
+      GraphManagerTelemetry.logEvent_GraphInitializationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         graphBuilderReportData,
       );
@@ -786,7 +788,7 @@ export class EditorGraphState {
 
       stopWatch.record();
       yield flowResult(this.updateGraphAndApplicationInTextMode(entities));
-      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_UPDATED_AND_REBUILT);
+      stopWatch.record(GRAPH_MANAGER_EVENT.UPDATE_AND_REBUILD_GRAPH__SUCCESS);
 
       // Remove `SectionIndex when computing changes in text mode as engine after
       // transforming grammarToJson would return `SectionIndex` which is not
@@ -1159,7 +1161,7 @@ export class EditorGraphState {
       );
 
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_UPDATED_AND_REBUILT),
+        LogEvent.create(GRAPH_MANAGER_EVENT.UPDATE_AND_REBUILD_GRAPH__SUCCESS),
         '[TOTAL]',
         Date.now() - startTime,
         'ms',
@@ -1172,7 +1174,9 @@ export class EditorGraphState {
       yield this.editorStore.changeDetectionState.preComputeGraphElementHashes();
       this.editorStore.changeDetectionState.start();
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
+        ),
         '[ASYNC]',
       );
 
@@ -1232,7 +1236,7 @@ export class EditorGraphState {
       this.reprocessExplorerTreeInTextMode();
 
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_UPDATED_AND_REBUILT),
+        LogEvent.create(GRAPH_MANAGER_EVENT.UPDATE_AND_REBUILD_GRAPH__SUCCESS),
         '[TOTAL]',
         Date.now() - startTime,
         'ms',
