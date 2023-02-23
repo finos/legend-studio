@@ -17,9 +17,11 @@
 export enum LEGEND_STUDIO_APP_EVENT {
   COMPILE_GRAPH__LAUNCH = 'editor.compilation.compile-graph.launch',
   COMPILE_TEXT__LAUNCH = 'editor.compilation.compile-text.launch',
+  TEST_DATA_GENERATION__LAUNCH = 'editor.test.test-data-generation.launch',
 
   TEXT_MODE_COMPILATION__SUCCESS = 'editor.text-mode.compilation.success',
   FORM_MODE_COMPILATION__SUCCESS = 'editor.form-mode.compilation.success',
+  TEST_DATA_GENERATION__SUCCESS = 'editor.test.test-data-generation.success',
 
   // FAILURE
   // TODO: consider to spliting all of these generic errors into more specific events

@@ -218,6 +218,7 @@ import { V1_ExternalFormatModelGenerationInput } from './engine/externalFormat/V
 import { V1_GenerateSchemaInput } from './engine/externalFormat/V1_GenerateSchemaInput.js';
 import {
   createGraphBuilderReport,
+  createGraphManagerOperationReport,
   type GraphManagerOperationReport,
 } from '../../../GraphManagerMetrics.js';
 import type { Package } from '../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
@@ -383,7 +384,8 @@ export const V1_indexPureModelContextData = (
   });
 
   // report
-  report.elementCount.total = report.elementCount.total + index.elements.length;
+  report.elementCount.total =
+    (report.elementCount.total ?? 0) + index.elements.length;
   report.elementCount.other =
     (report.elementCount.other ?? 0) +
     otherElementsByClass.size +
@@ -506,9 +508,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     systemModel: SystemModel,
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphManagerOperationReport> {
+    _report?: GraphManagerOperationReport,
+  ): Promise<void> {
     const stopWatch = new StopWatch();
-    const report = createGraphBuilderReport();
+    const report = _report ?? createGraphBuilderReport();
     buildState.reset();
 
     // Create a dummy graph for system processing. This is to ensure system model does not depend on the main graph
@@ -560,7 +563,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
         total: stopWatch.elapsed,
       };
-      return report;
     } catch (error) {
       assertErrorThrown(error);
       buildState.fail();
@@ -581,9 +583,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     dependencyEntitiesIndex: Map<string, Entity[]>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphManagerOperationReport> {
+    _report?: GraphManagerOperationReport,
+  ): Promise<void> {
     const stopWatch = new StopWatch();
-    const report = createGraphBuilderReport();
+    const report = _report ?? createGraphBuilderReport();
     buildState.reset();
 
     // Create a dummy graph for system processing. This is to ensure dependency models do not depend on the main graph
@@ -646,7 +649,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
         total: stopWatch.elapsed,
       };
-      return report;
     } catch (error) {
       assertErrorThrown(error);
       this.log.error(
@@ -665,9 +667,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     entities: Entity[],
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphManagerOperationReport> {
+    _report?: GraphManagerOperationReport,
+  ): Promise<void> {
     const stopWatch = new StopWatch();
-    const report = createGraphBuilderReport();
+    const report = _report ?? createGraphBuilderReport();
     buildState.reset();
 
     try {
@@ -725,7 +728,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
         total: stopWatch.elapsed,
       };
-      return report;
     } catch (error) {
       assertErrorThrown(error);
       this.log.error(
@@ -750,9 +752,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     entities: Entity[],
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphManagerOperationReport> {
+    _report?: GraphManagerOperationReport,
+  ): Promise<void> {
     const stopWatch = new StopWatch();
-    const report = createGraphBuilderReport();
+    const report = _report ?? createGraphBuilderReport();
     buildState.reset();
 
     try {
@@ -803,7 +806,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
         total: stopWatch.elapsed,
       };
-      return report;
     } catch (error) {
       assertErrorThrown(error);
       this.log.error(
@@ -828,9 +830,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     generatedEntities: Map<string, Entity[]>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphManagerOperationReport> {
+    _report?: GraphManagerOperationReport,
+  ): Promise<void> {
     const stopWatch = new StopWatch();
-    const report = createGraphBuilderReport();
+    const report = _report ?? createGraphBuilderReport();
     const generatedModel = graph.generationModel;
     buildState.reset();
 
@@ -884,7 +887,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
         total: stopWatch.elapsed,
       };
-      return report;
     } catch (error) {
       assertErrorThrown(error);
       this.log.error(
@@ -1633,15 +1635,31 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           keepSourceInformation?: boolean | undefined;
         }
       | undefined,
+    _report?: GraphManagerOperationReport,
   ): Promise<CompilationResult> {
+    const report = _report ?? createGraphManagerOperationReport();
+    const stopWatch = new StopWatch();
+
+    const graphData = this.getFullGraphModelData(graph, {
+      keepSourceInformation: options?.keepSourceInformation,
+    });
+    stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
+
     const compilationResult = await this.engine.compilePureModelContextData(
-      this.getFullGraphModelData(graph, {
-        keepSourceInformation: options?.keepSourceInformation,
-      }),
+      graphData,
       {
         onError: options?.onError,
       },
     );
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,
+    );
+
+    report.timings = {
+      ...Object.fromEntries(stopWatch.records),
+      total: stopWatch.elapsed,
+    };
+
     return {
       warnings: compilationResult.warnings?.map(
         (warning) =>
@@ -1654,14 +1672,33 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graphGrammar: string,
     graph: PureModel,
     options?: { onError?: () => void },
+    _report?: GraphManagerOperationReport,
   ): Promise<TextCompilationResult> {
+    const report = _report ?? createGraphManagerOperationReport();
+    const stopWatch = new StopWatch();
+
+    const graphCompileContext = this.getGraphCompileContext(graph);
+    stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
+
     const compilationResult = await this.engine.compileText(
       graphGrammar,
-      this.getGraphCompileContext(graph),
+      report,
+      graphCompileContext,
       options,
     );
+
+    const entities = this.pureModelContextDataToEntities(
+      compilationResult.model,
+    );
+
+    report.timings = {
+      ...report.timings,
+      ...Object.fromEntries(stopWatch.records),
+      total: stopWatch.elapsed,
+    };
+
     return {
-      entities: this.pureModelContextDataToEntities(compilationResult.model),
+      entities,
       warnings: compilationResult.warnings?.map(
         (warning) =>
           new CompilationWarning(warning.message, warning.sourceInformation),
@@ -2213,23 +2250,104 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     runtime: Runtime,
     graph: PureModel,
     options?: ExecutionOptions,
+    _report?: GraphManagerOperationReport,
   ): Promise<ExecutionResult> {
-    return V1_buildExecutionResult(
-      await this.engine.executeMapping(
-        this.createExecutionInput(
-          graph,
-          mapping,
-          lambda,
-          runtime,
-          V1_PureGraphManager.PROD_PROTOCOL_VERSION,
-          options?.parameterValues,
-        ),
-        options,
-      ),
+    const report = _report ?? createGraphManagerOperationReport();
+    const stopWatch = new StopWatch();
+
+    const input = this.createExecutionInput(
+      graph,
+      mapping,
+      lambda,
+      runtime,
+      V1_PureGraphManager.PROD_PROTOCOL_VERSION,
+      options?.parameterValues,
     );
+    stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
+
+    const result = V1_buildExecutionResult(
+      await this.engine.executeMapping(input, options),
+    );
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,
+    );
+
+    report.timings = {
+      ...Object.fromEntries(stopWatch.records),
+      total: stopWatch.elapsed,
+    };
+
+    return result;
   }
 
-  generateExecuteTestData(
+  async generateExecutionPlan(
+    lambda: RawLambda,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
+    graph: PureModel,
+    _report?: GraphManagerOperationReport,
+  ): Promise<RawExecutionPlan> {
+    const report = _report ?? createGraphManagerOperationReport();
+    const stopWatch = new StopWatch();
+
+    const input = this.createExecutionInput(
+      graph,
+      mapping,
+      lambda,
+      runtime,
+      V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+    );
+    stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
+
+    const result = await this.engine.generateExecutionPlan(input);
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,
+    );
+
+    report.timings = {
+      ...Object.fromEntries(stopWatch.records),
+      total: stopWatch.elapsed,
+    };
+
+    return result;
+  }
+
+  async debugExecutionPlanGeneration(
+    lambda: RawLambda,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
+    graph: PureModel,
+    _report?: GraphManagerOperationReport,
+  ): Promise<{ plan: RawExecutionPlan; debug: string }> {
+    const report = _report ?? createGraphManagerOperationReport();
+    const stopWatch = new StopWatch();
+
+    const input = this.createExecutionInput(
+      graph,
+      mapping,
+      lambda,
+      runtime,
+      V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+    );
+    stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
+
+    const result = await this.engine.debugExecutionPlanGeneration(input);
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,
+    );
+
+    report.timings = {
+      ...Object.fromEntries(stopWatch.records),
+      total: stopWatch.elapsed,
+    };
+
+    return {
+      plan: result.plan,
+      debug: result.debug.join('\n'),
+    };
+  }
+
+  async generateExecuteTestData(
     lambda: RawLambda,
     parameters: (string | number | boolean)[],
     mapping: Mapping,
@@ -2238,7 +2356,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: {
       anonymizeGeneratedData?: boolean;
     },
+    _report?: GraphManagerOperationReport,
   ): Promise<string> {
+    const report = _report ?? createGraphManagerOperationReport();
+    const stopWatch = new StopWatch();
+
     const testDataGenerationExecuteInput =
       new V1_TestDataGenerationExecutionInput();
     this.buildExecutionInput(
@@ -2253,45 +2375,21 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     testDataGenerationExecuteInput.hashStrings = Boolean(
       options?.anonymizeGeneratedData,
     );
-    return this.engine.generateExecuteTestData(testDataGenerationExecuteInput);
-  }
+    stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
 
-  generateExecutionPlan(
-    lambda: RawLambda,
-    mapping: Mapping | undefined,
-    runtime: Runtime | undefined,
-    graph: PureModel,
-  ): Promise<RawExecutionPlan> {
-    return this.engine.generateExecutionPlan(
-      this.createExecutionInput(
-        graph,
-        mapping,
-        lambda,
-        runtime,
-        V1_PureGraphManager.DEV_PROTOCOL_VERSION,
-      ),
+    const result = await this.engine.generateExecuteTestData(
+      testDataGenerationExecuteInput,
     );
-  }
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,
+    );
 
-  async debugExecutionPlanGeneration(
-    lambda: RawLambda,
-    mapping: Mapping | undefined,
-    runtime: Runtime | undefined,
-    graph: PureModel,
-  ): Promise<{ plan: RawExecutionPlan; debug: string }> {
-    const result = await this.engine.debugExecutionPlanGeneration(
-      this.createExecutionInput(
-        graph,
-        mapping,
-        lambda,
-        runtime,
-        V1_PureGraphManager.DEV_PROTOCOL_VERSION,
-      ),
-    );
-    return {
-      plan: result.plan,
-      debug: result.debug.join('\n'),
+    report.timings = {
+      ...Object.fromEntries(stopWatch.records),
+      total: stopWatch.elapsed,
     };
+
+    return result;
   }
 
   buildExecutionPlan(

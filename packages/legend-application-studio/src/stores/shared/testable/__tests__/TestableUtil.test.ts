@@ -16,7 +16,7 @@
 
 import { expect, test } from '@jest/globals';
 import { guaranteeNonNullable, unitTest } from '@finos/legend-shared';
-import { TEMPORARY_createRelationalDataFromCSV } from '../TestableUtils.js';
+import { TEMPORARY__createRelationalDataFromCSV } from '../TestableUtils.js';
 
 export const SINGLE_CSV =
   'default\nFirmTable\nLegal_name,id\ncf566,1\nf223f,2\n-----\n';
@@ -24,7 +24,7 @@ export const MULTI_TABLE_CSV =
   'default\nFirmTable\nLegal_name,id\ncf566,1\nf223f,2\n-----\ndefault\nPersonTable\nfirm_id,firstName,id\n1,53e,1\n-----\n';
 
 test(unitTest('CreateRelationalDataFromCSV for single table'), () => {
-  const single = TEMPORARY_createRelationalDataFromCSV(SINGLE_CSV);
+  const single = TEMPORARY__createRelationalDataFromCSV(SINGLE_CSV);
   expect(single.tables.length).toBe(1);
   const table = guaranteeNonNullable(single.tables[0]);
   expect(table.table).toBe('FirmTable');
@@ -33,7 +33,7 @@ test(unitTest('CreateRelationalDataFromCSV for single table'), () => {
 });
 
 test(unitTest('CreateRelationalDataFromCSV for multi table'), () => {
-  const multi = TEMPORARY_createRelationalDataFromCSV(MULTI_TABLE_CSV);
+  const multi = TEMPORARY__createRelationalDataFromCSV(MULTI_TABLE_CSV);
   expect(multi.tables.length).toBe(2);
   const firmTable = guaranteeNonNullable(
     multi.tables.find((t) => t.table === 'FirmTable'),

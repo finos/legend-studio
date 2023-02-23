@@ -89,11 +89,12 @@ import {
   GraphManagerTelemetry,
   DataElement,
   type PackageableElement,
-  type GraphManagerOperationReport,
   type CompilationWarning,
   type TextCompilationResult,
   type CompilationResult,
   type PureModel,
+  createGraphBuilderReport,
+  reportGraphAnalytics,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -350,39 +351,44 @@ export class EditorGraphState {
       )) as Map<string, Entity[]>;
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
-      const dependency_buildReport =
-        (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
-          this.editorStore.graphManagerState.coreModel,
-          this.editorStore.graphManagerState.systemModel,
-          dependencyManager,
-          dependencyEntitiesIndex,
-          this.editorStore.graphManagerState.dependenciesBuildState,
-        )) as GraphManagerOperationReport;
+      const dependency_buildReport = createGraphBuilderReport();
+      yield this.editorStore.graphManagerState.graphManager.buildDependencies(
+        this.editorStore.graphManagerState.coreModel,
+        this.editorStore.graphManagerState.systemModel,
+        dependencyManager,
+        dependencyEntitiesIndex,
+        this.editorStore.graphManagerState.dependenciesBuildState,
+        {},
+        dependency_buildReport,
+      );
       dependency_buildReport.timings[
         GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
       ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build graph
-      const graph_buildReport =
-        (yield this.editorStore.graphManagerState.graphManager.buildGraph(
-          this.editorStore.graphManagerState.graph,
-          entities,
-          this.editorStore.graphManagerState.graphBuildState,
-          {
-            TEMPORARY__preserveSectionIndex:
-              this.editorStore.applicationStore.config.options
-                .TEMPORARY__preserveSectionIndex,
-            strict: this.enableStrictMode,
-          },
-        )) as GraphManagerOperationReport;
+      const graph_buildReport = createGraphBuilderReport();
+      yield this.editorStore.graphManagerState.graphManager.buildGraph(
+        this.editorStore.graphManagerState.graph,
+        entities,
+        this.editorStore.graphManagerState.graphBuildState,
+        {
+          TEMPORARY__preserveSectionIndex:
+            this.editorStore.applicationStore.config.options
+              .TEMPORARY__preserveSectionIndex,
+          strict: this.enableStrictMode,
+        },
+        graph_buildReport,
+      );
 
       // build generations
-      const generation_buildReport =
-        (yield this.editorStore.graphManagerState.graphManager.buildGenerations(
-          this.editorStore.graphManagerState.graph,
-          this.graphGenerationState.generatedEntities,
-          this.editorStore.graphManagerState.generationsBuildState,
-        )) as GraphManagerOperationReport;
+      const generation_buildReport = createGraphBuilderReport();
+      yield this.editorStore.graphManagerState.graphManager.buildGenerations(
+        this.editorStore.graphManagerState.graph,
+        this.graphGenerationState.generatedEntities,
+        this.editorStore.graphManagerState.generationsBuildState,
+        {},
+        generation_buildReport,
+      );
 
       // report
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
@@ -569,6 +575,10 @@ export class EditorGraphState {
       return FormModeCompilationOutcome.SKIPPED;
     }
 
+    const stopWatch = new StopWatch();
+    const report = reportGraphAnalytics(
+      this.editorStore.graphManagerState.graph,
+    );
     LegendStudioTelemetry.logEvent_GraphCompilationLaunched(
       this.editorStore.applicationStore.telemetryService,
     );
@@ -593,6 +603,7 @@ export class EditorGraphState {
           {
             keepSourceInformation: true,
           },
+          report,
         )) as CompilationResult;
 
       this.warnings = compilationResult.warnings
@@ -614,6 +625,12 @@ export class EditorGraphState {
           }
         }
       }
+
+      report.timings.total = stopWatch.elapsed;
+      LegendStudioTelemetry.logEvent_GraphCompilationSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        report,
+      );
 
       return FormModeCompilationOutcome.SUCCEEDED;
     } catch (error) {
@@ -721,6 +738,10 @@ export class EditorGraphState {
       return;
     }
 
+    const stopWatch = new StopWatch();
+    const report = reportGraphAnalytics(
+      this.editorStore.graphManagerState.graph,
+    );
     LegendStudioTelemetry.logEvent_TextCompilationLaunched(
       this.editorStore.applicationStore.telemetryService,
     );
@@ -739,6 +760,8 @@ export class EditorGraphState {
         (yield this.editorStore.graphManagerState.graphManager.compileText(
           this.editorStore.grammarTextEditorState.graphGrammarText,
           this.editorStore.graphManagerState.graph,
+          {},
+          report,
         )) as TextCompilationResult;
 
       const entities = compilationResult.entities;
@@ -761,7 +784,9 @@ export class EditorGraphState {
         }
       }
 
+      stopWatch.record();
       yield flowResult(this.updateGraphAndApplicationInTextMode(entities));
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_UPDATED_AND_REBUILT);
 
       // Remove `SectionIndex when computing changes in text mode as engine after
       // transforming grammarToJson would return `SectionIndex` which is not
@@ -772,6 +797,16 @@ export class EditorGraphState {
             entities,
           ),
         ),
+      );
+
+      report.timings = {
+        ...report.timings,
+        ...Object.fromEntries(stopWatch.records),
+        total: stopWatch.elapsed,
+      };
+      LegendStudioTelemetry.logEvent_GraphCompilationSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        report,
       );
     } catch (error) {
       assertErrorThrown(error);

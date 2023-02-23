@@ -39,9 +39,8 @@ export enum GRAPH_MANAGER_EVENT {
   GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED = 'graph-manager.grammar.composing.success',
   GRAPH_GRAMMAR_TO_MODEL_TRANSFORMED = 'graph-manager.grammar.parsing.success',
 
-  QUERY_RUN = 'graph-manager.execution.run-query.success',
-  EXECUTION_PLAN_GENERATED = 'graph-manager.execution.generate-plan.success',
-  EXECUTION_PLAN_DEBUGGED = 'graph-manager.execution.debug-plan.success',
+  V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS = 'graph-manager.v1.engine-operation.server-call.success',
+  V1_ENGINE_OPERATION_INPUT__SUCCESS = 'graph-manager.v1.engine-operation.graph.collect-input.success',
 
   GRAPH_BUILDER_FAILURE = 'graph-manager.graph-builder.failure',
   EXECUTION_FAILURE = 'graph-manager.execution.failure',

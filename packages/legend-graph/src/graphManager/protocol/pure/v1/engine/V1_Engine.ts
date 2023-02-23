@@ -26,6 +26,7 @@ import {
   NetworkClientError,
   returnUndefOnError,
   deserializeMap,
+  StopWatch,
 } from '@finos/legend-shared';
 import type { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
@@ -98,6 +99,7 @@ import type {
 } from './compilation/V1_CompilationResult.js';
 import { V1_CompilationWarning } from './compilation/V1_CompilationWarning.js';
 import { V1_GenerateSchemaInput } from './externalFormat/V1_GenerateSchemaInput.js';
+import type { GraphManagerOperationReport } from '../../../../GraphManagerMetrics.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -411,6 +413,7 @@ export class V1_Engine {
 
   async compileText(
     graphText: string,
+    TEMPORARY__report: GraphManagerOperationReport,
     compileContext?: V1_PureModelContextData,
     options?: { onError?: () => void; getCompilationWarnings?: boolean },
   ): Promise<V1_TextCompilationResult> {
@@ -428,7 +431,12 @@ export class V1_Engine {
         )
       : mainGraph;
     try {
+      const stopWatch = new StopWatch();
       await this.engineServerClient.compile(pureModelContextDataJson);
+      TEMPORARY__report.timings[
+        GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS
+      ] = stopWatch.elapsed;
+
       const model = V1_deserializePureModelContextData(mainGraph);
       const compilationResult = await this.engineServerClient.compile(
         pureModelContextDataJson,

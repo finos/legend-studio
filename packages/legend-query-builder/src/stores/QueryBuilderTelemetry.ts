@@ -14,24 +14,29 @@
  * limitations under the License.
  */
 
+import type { GraphManagerOperationReport } from '@finos/legend-graph';
 import type { TelemetryService } from '@finos/legend-shared';
 import { QUERY_BUILDER_EVENT } from './QueryBuilderEvent.js';
 
-type QueryExecution_TelemteryData = {
+type LaunchQueryExecution_TelemteryData = {
   applicationContext?: string | undefined;
 };
 
+type QueryExecution_TelemetryData = GraphManagerOperationReport & {
+  dependenciesCount: number;
+};
+
 export class QueryBuilderTelemetry {
-  static logEvent_RunQueryLaunched(
+  static logEvent_QueryRunLaunched(
     telemetryService: TelemetryService,
-    data: QueryExecution_TelemteryData,
+    data: LaunchQueryExecution_TelemteryData,
   ): void {
     telemetryService.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__LAUNCH, data);
   }
 
-  static logEvent_GenerateExecutionPlanLaunched(
+  static logEvent_ExecutionPlanGenerationLaunched(
     telemetryService: TelemetryService,
-    data: QueryExecution_TelemteryData,
+    data: LaunchQueryExecution_TelemteryData,
   ): void {
     telemetryService.logEvent(
       QUERY_BUILDER_EVENT.GENERATE_EXECUTION_PLAN__LAUNCH,
@@ -39,12 +44,39 @@ export class QueryBuilderTelemetry {
     );
   }
 
-  static logEvent_DebugExecutionPlanLaunched(
+  static logEvent_ExecutionPlanDebugLaunched(
     telemetryService: TelemetryService,
-    data: QueryExecution_TelemteryData,
+    data: LaunchQueryExecution_TelemteryData,
   ): void {
     telemetryService.logEvent(
       QUERY_BUILDER_EVENT.DEBUG_EXECUTION_PLAN__LAUNCH,
+      data,
+    );
+  }
+
+  static logEvent_QueryRunSucceeded(
+    telemetryService: TelemetryService,
+    data: QueryExecution_TelemetryData,
+  ): void {
+    telemetryService.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__SUCCESS, data);
+  }
+
+  static logEvent_ExecutionPlanGenerationSucceeded(
+    telemetryService: TelemetryService,
+    data: QueryExecution_TelemetryData,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_EVENT.GENERATE_EXECUTION_PLAN__SUCCESS,
+      data,
+    );
+  }
+
+  static logEvent_ExecutionPlanDebugSucceeded(
+    telemetryService: TelemetryService,
+    data: QueryExecution_TelemetryData,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_EVENT.DEBUG_EXECUTION_PLAN__SUCCESS,
       data,
     );
   }

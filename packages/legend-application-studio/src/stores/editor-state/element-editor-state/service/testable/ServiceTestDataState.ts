@@ -33,6 +33,7 @@ import {
   DataElementReference,
   PackageableElementExplicitReference,
   ConnectionPointer,
+  reportGraphAnalytics,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -57,10 +58,10 @@ import {
   createMockPrimitiveProperty,
 } from '../../../../shared/MockDataUtils.js';
 import {
-  TEMPORARY_createRelationalDataFromCSV,
+  TEMPORARY__createRelationalDataFromCSV,
   EmbeddedDataConnectionTypeVisitor,
   getAllIdentifiedConnectionsFromRuntime,
-  TEMPORARY_EmbeddedDataConnectionVisitor,
+  TEMPORARY__EmbeddedDataConnectionVisitor,
 } from '../../../../shared/testable/TestableUtils.js';
 import { EmbeddedDataType } from '../../../ExternalFormatState.js';
 import {
@@ -69,6 +70,7 @@ import {
 } from '../../data/DataEditorState.js';
 import { createEmbeddedData } from '../../data/EmbeddedDataState.js';
 import type { ServiceTestSuiteState } from './ServiceTestableState.js';
+import { LegendStudioTelemetry } from '../../../../LegendStudioTelemetry.js';
 
 const buildTestDataParameters = (
   rawLambda: RawLambda,
@@ -131,7 +133,7 @@ export class ConnectionTestDataState {
       this.generatingTestDataSate.inProgress();
       const connection = guaranteeNonNullable(
         this.resolveConnectionValue(this.connectionData.connectionId),
-        `Unable to resolve connection id '${this.connectionData.connectionId}`,
+        `Unable to resolve connection ID '${this.connectionData.connectionId}`,
       );
 
       let embeddedData: EmbeddedData;
@@ -139,6 +141,16 @@ export class ConnectionTestDataState {
         const serviceExecutionParameters = guaranteeNonNullable(
           this.testDataState.testSuiteState.testableState.serviceEditorState
             .executionState.serviceExecutionParameters,
+        );
+
+        // NOTE: since we don't have a generic mechanism for test-data generation
+        // we will only report metrics around API usage, when we genericize, we will
+        // move this out
+        LegendStudioTelemetry.logEvent_TestDataGenerationLaunched(
+          this.testDataState.editorStore.applicationStore.telemetryService,
+        );
+        const report = reportGraphAnalytics(
+          this.editorStore.graphManagerState.graph,
         );
 
         const value =
@@ -154,11 +166,21 @@ export class ConnectionTestDataState {
             {
               anonymizeGeneratedData: this.anonymizeGeneratedData,
             },
+            report,
           )) as string;
-        embeddedData = TEMPORARY_createRelationalDataFromCSV(value);
+
+        // NOTE: since we don't have a generic mechanism for test-data generation
+        // we will only report metrics around API usage, when we genericize, we will
+        // move this out
+        LegendStudioTelemetry.logEvent_TestDataGenerationSucceeded(
+          this.editorStore.applicationStore.telemetryService,
+          report,
+        );
+
+        embeddedData = TEMPORARY__createRelationalDataFromCSV(value);
       } else {
         embeddedData = connection.accept_ConnectionVisitor(
-          new TEMPORARY_EmbeddedDataConnectionVisitor(this.editorStore),
+          new TEMPORARY__EmbeddedDataConnectionVisitor(this.editorStore),
         );
       }
       service_setConnectionTestDataEmbeddedData(

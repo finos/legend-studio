@@ -44,13 +44,13 @@ import {
   PackageableElementExplicitReference,
   RuntimePointer,
   GRAPH_MANAGER_EVENT,
-  type GraphManagerOperationReport,
   GraphManagerTelemetry,
   extractElementNameFromPath,
   QuerySearchSpecification,
   Mapping,
   type Runtime,
   type Service,
+  createGraphBuilderReport,
 } from '@finos/legend-graph';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
@@ -499,28 +499,31 @@ export abstract class QueryEditorStore {
     )) as Map<string, Entity[]>;
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
-    const dependency_buildReport =
-      (yield this.graphManagerState.graphManager.buildDependencies(
-        this.graphManagerState.coreModel,
-        this.graphManagerState.systemModel,
-        dependencyManager,
-        dependencyEntitiesIndex,
-        this.graphManagerState.dependenciesBuildState,
-      )) as GraphManagerOperationReport;
+    const dependency_buildReport = createGraphBuilderReport();
+    yield this.graphManagerState.graphManager.buildDependencies(
+      this.graphManagerState.coreModel,
+      this.graphManagerState.systemModel,
+      dependencyManager,
+      dependencyEntitiesIndex,
+      this.graphManagerState.dependenciesBuildState,
+      {},
+      dependency_buildReport,
+    );
     dependency_buildReport.timings[
       GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
     ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
     // build graph
-    const graph_buildReport =
-      (yield this.graphManagerState.graphManager.buildGraph(
-        this.graphManagerState.graph,
-        entities,
-        this.graphManagerState.graphBuildState,
-        {
-          sdlc: new LegendSDLC(groupId, artifactId, resolveVersion(versionId)),
-        },
-      )) as GraphManagerOperationReport;
+    const graph_buildReport = createGraphBuilderReport();
+    yield this.graphManagerState.graphManager.buildGraph(
+      this.graphManagerState.graph,
+      entities,
+      this.graphManagerState.graphBuildState,
+      {
+        sdlc: new LegendSDLC(groupId, artifactId, resolveVersion(versionId)),
+      },
+      graph_buildReport,
+    );
     graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
       stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 

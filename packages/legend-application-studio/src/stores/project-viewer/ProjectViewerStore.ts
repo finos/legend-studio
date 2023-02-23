@@ -54,12 +54,12 @@ import {
   ProjectWorkflowManagerState,
 } from '../sidebar-state/WorkflowManagerState.js';
 import {
-  type GraphManagerOperationReport,
   GraphManagerTelemetry,
   GRAPH_MANAGER_EVENT,
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
   GraphBuilderError,
+  createGraphBuilderReport,
 } from '@finos/legend-graph';
 import { GRAPH_EDITOR_MODE } from '../EditorConfig.js';
 
@@ -379,32 +379,34 @@ export class ProjectViewerStore {
       this.editorStore.graphManagerState.graph.dependencyManager =
         dependencyManager;
 
-      const dependency_buildReport =
-        (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
-          this.editorStore.graphManagerState.coreModel,
-          this.editorStore.graphManagerState.systemModel,
-          dependencyManager,
-          dependencyEntitiesIndex,
-          this.editorStore.graphManagerState.dependenciesBuildState,
-        )) as GraphManagerOperationReport;
+      const dependency_buildReport = createGraphBuilderReport();
+      yield this.editorStore.graphManagerState.graphManager.buildDependencies(
+        this.editorStore.graphManagerState.coreModel,
+        this.editorStore.graphManagerState.systemModel,
+        dependencyManager,
+        dependencyEntitiesIndex,
+        this.editorStore.graphManagerState.dependenciesBuildState,
+        {},
+        dependency_buildReport,
+      );
 
-      const sdlc = this.projectGAVCoordinates
-        ? new LegendSDLC(
-            this.projectGAVCoordinates.groupId,
-            this.projectGAVCoordinates.artifactId,
-            resolveVersion(this.projectGAVCoordinates.versionId),
-          )
-        : undefined;
       // build graph
-      const graph_buildReport =
-        (yield this.editorStore.graphManagerState.graphManager.buildGraph(
-          this.editorStore.graphManagerState.graph,
-          entities,
-          this.editorStore.graphManagerState.graphBuildState,
-          {
-            sdlc,
-          },
-        )) as GraphManagerOperationReport;
+      const graph_buildReport = createGraphBuilderReport();
+      yield this.editorStore.graphManagerState.graphManager.buildGraph(
+        this.editorStore.graphManagerState.graph,
+        entities,
+        this.editorStore.graphManagerState.graphBuildState,
+        {
+          sdlc: this.projectGAVCoordinates
+            ? new LegendSDLC(
+                this.projectGAVCoordinates.groupId,
+                this.projectGAVCoordinates.artifactId,
+                resolveVersion(this.projectGAVCoordinates.versionId),
+              )
+            : undefined,
+        },
+        graph_buildReport,
+      );
 
       // report
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);

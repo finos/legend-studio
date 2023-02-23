@@ -24,6 +24,7 @@ import {
   UnsupportedOperationError,
   filterByType,
   guaranteeNonNullable,
+  StopWatch,
 } from '@finos/legend-shared';
 import type { ServiceEditorState } from './ServiceEditorState.js';
 import {
@@ -65,6 +66,7 @@ import {
   VariableExpression,
   stub_PackageableRuntime,
   stub_Mapping,
+  reportGraphAnalytics,
 } from '@finos/legend-graph';
 import {
   type Entity,
@@ -91,6 +93,7 @@ import {
   LambdaParameterState,
   PARAMETER_SUBMIT_ACTION,
   QueryBuilderTelemetry,
+  QUERY_BUILDER_EVENT,
 } from '@finos/legend-query-builder';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../LegendStudioApplicationNavigationContext.js';
 
@@ -555,8 +558,14 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       const query = this.queryState.query;
       this.isGeneratingPlan = true;
       let rawPlan: RawExecutionPlan;
+
+      const stopWatch = new StopWatch();
+      const report = reportGraphAnalytics(
+        this.editorStore.graphManagerState.graph,
+      );
+
       if (debug) {
-        QueryBuilderTelemetry.logEvent_DebugExecutionPlanLaunched(
+        QueryBuilderTelemetry.logEvent_ExecutionPlanDebugLaunched(
           this.editorStore.applicationStore.telemetryService,
           {
             applicationContext:
@@ -569,11 +578,12 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
             this.selectedExecutionContextState?.executionContext.mapping.value,
             this.selectedExecutionContextState?.executionContext.runtime,
             this.editorStore.graphManagerState.graph,
+            report,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
       } else {
-        QueryBuilderTelemetry.logEvent_GenerateExecutionPlanLaunched(
+        QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationLaunched(
           this.editorStore.applicationStore.telemetryService,
           {
             applicationContext:
@@ -586,8 +596,11 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
             this.selectedExecutionContextState?.executionContext.mapping.value,
             this.selectedExecutionContextState?.executionContext.runtime,
             this.editorStore.graphManagerState.graph,
+            report,
           )) as object;
       }
+
+      stopWatch.record();
       try {
         this.executionPlanState.setRawPlan(rawPlan);
         const plan =
@@ -598,6 +611,24 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         this.executionPlanState.setPlan(plan);
       } catch {
         // do nothing
+      }
+      stopWatch.record(QUERY_BUILDER_EVENT.BUILD_EXECUTION_PLAN__SUCCESS);
+
+      report.timings = {
+        ...report.timings,
+        ...Object.fromEntries(stopWatch.records),
+        total: stopWatch.elapsed,
+      };
+      if (debug) {
+        QueryBuilderTelemetry.logEvent_ExecutionPlanDebugSucceeded(
+          this.editorStore.applicationStore.telemetryService,
+          report,
+        );
+      } else {
+        QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationSucceeded(
+          this.editorStore.applicationStore.telemetryService,
+          report,
+        );
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -628,15 +659,23 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     if (this.isRunningQuery) {
       return;
     }
-    QueryBuilderTelemetry.logEvent_RunQueryLaunched(
+
+    QueryBuilderTelemetry.logEvent_QueryRunLaunched(
       this.editorStore.applicationStore.telemetryService,
       {
         applicationContext:
           LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SERVICE_EDITOR_EXECUTION,
       },
     );
+
     try {
       this.isRunningQuery = true;
+
+      const stopWatch = new StopWatch();
+      const report = reportGraphAnalytics(
+        this.editorStore.graphManagerState.graph,
+      );
+
       const promise = this.editorStore.graphManagerState.graphManager.runQuery(
         this.getExecutionQuery(),
         this.selectedExecutionContextState?.executionContext.mapping.value,
@@ -649,7 +688,9 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
             this.editorStore.graphManagerState,
           ),
         },
+        report,
       );
+
       this.setQueryRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
       if (this.queryRunPromise === promise) {
@@ -657,6 +698,15 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
           stringifyLosslessJSON(result, undefined, TAB_SIZE),
         );
         this.parameterState.setParameters([]);
+
+        report.timings = {
+          ...report.timings,
+          total: stopWatch.elapsed,
+        };
+        QueryBuilderTelemetry.logEvent_QueryRunSucceeded(
+          this.editorStore.applicationStore.telemetryService,
+          report,
+        );
       }
     } catch (error) {
       assertErrorThrown(error);

@@ -27,42 +27,11 @@ type GraphInitialized_TelemetryData = {
   generationCount?: number;
 };
 
-type GraphOperation_TelemetryData = GraphManagerOperationReport & {
-  dependenciesCount: number;
-};
-
 export class GraphManagerTelemetry {
   static logEvent_GraphInitialized(
     telemetryService: TelemetryService,
     data: GraphInitialized_TelemetryData,
   ): void {
     telemetryService.logEvent(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED, data);
-  }
-
-  static logEvent_QueryRun(
-    telemetryService: TelemetryService,
-    data: GraphOperation_TelemetryData,
-  ): void {
-    telemetryService.logEvent(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED, data);
-  }
-
-  static logEvent_ExecutionPlanGenerated(
-    telemetryService: TelemetryService,
-    data: GraphOperation_TelemetryData,
-  ): void {
-    telemetryService.logEvent(
-      GRAPH_MANAGER_EVENT.EXECUTION_PLAN_GENERATED,
-      data,
-    );
-  }
-
-  static logEvent_ExecutionPlanDebugged(
-    telemetryService: TelemetryService,
-    data: GraphOperation_TelemetryData,
-  ): void {
-    telemetryService.logEvent(
-      GRAPH_MANAGER_EVENT.EXECUTION_PLAN_DEBUGGED,
-      data,
-    );
   }
 }

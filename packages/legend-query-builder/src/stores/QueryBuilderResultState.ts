@@ -25,6 +25,7 @@ import {
   downloadFileUsingDataURI,
   UnsupportedOperationError,
   ActionState,
+  StopWatch,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
@@ -35,6 +36,7 @@ import {
   EXECUTION_SERIALIZATION_FORMAT,
   RawExecutionResult,
   buildRawLambdaFromLambdaFunction,
+  reportGraphAnalytics,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import { ExecutionPlanState } from '@finos/legend-application';
@@ -44,6 +46,7 @@ import {
 } from './shared/LambdaParameterState.js';
 import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificationBuilderHelper.js';
 import { QueryBuilderTelemetry } from './QueryBuilderTelemetry.js';
+import { QUERY_BUILDER_EVENT } from './QueryBuilderEvent.js';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -220,7 +223,8 @@ export class QueryBuilderResultState {
         this.queryBuilderState.parametersState.parameterStates,
         this.queryBuilderState.graphManagerState,
       );
-      QueryBuilderTelemetry.logEvent_RunQueryLaunched(
+
+      QueryBuilderTelemetry.logEvent_QueryRunLaunched(
         this.queryBuilderState.applicationStore.telemetryService,
         this.queryBuilderState.applicationContext
           ? {
@@ -228,7 +232,12 @@ export class QueryBuilderResultState {
             }
           : {},
       );
-      const startTime = Date.now();
+
+      const stopWatch = new StopWatch();
+      const report = reportGraphAnalytics(
+        this.queryBuilderState.graphManagerState.graph,
+      );
+
       const promise =
         this.queryBuilderState.graphManagerState.graphManager.runQuery(
           query,
@@ -239,12 +248,22 @@ export class QueryBuilderResultState {
             parameterValues,
           },
         );
+
       this.setQueryRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
       if (this.queryRunPromise === promise) {
         this.setExecutionResult(result);
         this.latestRunHashCode = currentHashCode;
-        this.setExecutionDuration(Date.now() - startTime);
+        this.setExecutionDuration(stopWatch.elapsed);
+
+        report.timings = {
+          ...report.timings,
+          total: stopWatch.elapsed,
+        };
+        QueryBuilderTelemetry.logEvent_QueryRunSucceeded(
+          this.queryBuilderState.applicationStore.telemetryService,
+          report,
+        );
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -272,8 +291,14 @@ export class QueryBuilderResultState {
       );
       const query = this.queryBuilderState.buildQuery();
       let rawPlan: RawExecutionPlan;
+
+      const stopWatch = new StopWatch();
+      const report = reportGraphAnalytics(
+        this.queryBuilderState.graphManagerState.graph,
+      );
+
       if (debug) {
-        QueryBuilderTelemetry.logEvent_DebugExecutionPlanLaunched(
+        QueryBuilderTelemetry.logEvent_ExecutionPlanDebugLaunched(
           this.queryBuilderState.applicationStore.telemetryService,
           this.queryBuilderState.applicationContext
             ? {
@@ -287,11 +312,12 @@ export class QueryBuilderResultState {
             mapping,
             runtime,
             this.queryBuilderState.graphManagerState.graph,
+            report,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
       } else {
-        QueryBuilderTelemetry.logEvent_GenerateExecutionPlanLaunched(
+        QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationLaunched(
           this.queryBuilderState.applicationStore.telemetryService,
           this.queryBuilderState.applicationContext
             ? {
@@ -305,8 +331,11 @@ export class QueryBuilderResultState {
             mapping,
             runtime,
             this.queryBuilderState.graphManagerState.graph,
+            report,
           )) as object;
       }
+
+      stopWatch.record();
       try {
         this.executionPlanState.setRawPlan(rawPlan);
         const plan =
@@ -317,6 +346,24 @@ export class QueryBuilderResultState {
         this.executionPlanState.setPlan(plan);
       } catch {
         // do nothing
+      }
+      stopWatch.record(QUERY_BUILDER_EVENT.BUILD_EXECUTION_PLAN__SUCCESS);
+
+      report.timings = {
+        ...report.timings,
+        ...Object.fromEntries(stopWatch.records),
+        total: stopWatch.elapsed,
+      };
+      if (debug) {
+        QueryBuilderTelemetry.logEvent_ExecutionPlanDebugSucceeded(
+          this.queryBuilderState.applicationStore.telemetryService,
+          report,
+        );
+      } else {
+        QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationSucceeded(
+          this.queryBuilderState.applicationStore.telemetryService,
+          report,
+        );
       }
     } catch (error) {
       assertErrorThrown(error);
