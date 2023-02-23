@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
-export enum LEGEND_TAXONOMY_APP_EVENT {
-  TAXONOMY_DATA_CHECK__FAILURE = 'application.data-check.failure',
+export enum LEGEND_QUERY_APPLICATION_NAVIGATION_CONTEXT_KEY {
+  // EDITOR
+  EDITOR = 'query.editor',
 }

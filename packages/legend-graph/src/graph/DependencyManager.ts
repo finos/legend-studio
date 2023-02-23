@@ -87,6 +87,10 @@ export class DependencyManager {
     });
   }
 
+  get numberOfDependencies(): number {
+    return this.projectDependencyModelsIndex.size;
+  }
+
   get hasDependencies(): boolean {
     return Boolean(this.projectDependencyModelsIndex.size);
   }

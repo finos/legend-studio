@@ -157,7 +157,7 @@ export class DocumentationService {
         if (this.hasDocEntry(entry.key)) {
           applicationStore.log.warn(
             LogEvent.create(
-              APPLICATION_EVENT.APPLICATION_DOCUMENTATION_LOAD_SKIPPED,
+              APPLICATION_EVENT.APPLICATION_DOCUMENTATION_LOAD__SKIP,
             ),
             entry.key,
           );
@@ -192,7 +192,7 @@ export class DocumentationService {
     if (missingDocumentationEntries.length) {
       applicationStore.log.warn(
         LogEvent.create(
-          APPLICATION_EVENT.APPLICATION_DOCUMENTATION_REQUIREMENT_CHECK_FAILURE,
+          APPLICATION_EVENT.APPLICATION_DOCUMENTATION_REQUIREMENT_CHECK__FAILURE,
         ),
         `Can't find corresponding documentation entry for keys:\n${missingDocumentationEntries
           .map((key) => `- ${key}`)
@@ -211,7 +211,7 @@ export class DocumentationService {
       if (this.hasContextualDocEntry(entry.context)) {
         applicationStore.log.warn(
           LogEvent.create(
-            APPLICATION_EVENT.APPLICATION_CONTEXTUAL_DOCUMENTATION_LOAD_SKIPPED,
+            APPLICATION_EVENT.APPLICATION_CONTEXTUAL_DOCUMENTATION_LOAD__SKIP,
           ),
           entry.context,
         );

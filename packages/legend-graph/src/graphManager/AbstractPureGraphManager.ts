@@ -56,7 +56,7 @@ import type { Entity, LegendSDLC } from '@finos/legend-storage';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification.js';
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
-import type { GraphBuilderReport } from './GraphBuilderReport.js';
+import type { GraphManagerOperationReport } from './GraphManagerMetrics.js';
 import type { RunTestsTestableInput } from '../graph/metamodel/pure/test/result/RunTestsTestableInput.js';
 import type { TestResult } from '../graph/metamodel/pure/test/result/TestResult.js';
 import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
@@ -187,7 +187,8 @@ export abstract class AbstractPureGraphManager {
     systemModel: SystemModel,
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport>;
+    report?: GraphManagerOperationReport,
+  ): Promise<void>;
 
   /**
    * Build immutable models which holds dependencies.
@@ -204,7 +205,8 @@ export abstract class AbstractPureGraphManager {
     dependencyEntitiesIndex: Map<string, Entity[]>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport>;
+    report?: GraphManagerOperationReport,
+  ): Promise<void>;
 
   /**
    * Process entities and build the main graph.
@@ -214,7 +216,8 @@ export abstract class AbstractPureGraphManager {
     entities: Entity[],
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport>;
+    report?: GraphManagerOperationReport,
+  ): Promise<void>;
 
   /**
    * Process entities and build the light graph.
@@ -224,14 +227,16 @@ export abstract class AbstractPureGraphManager {
     entities: Entity[],
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport>;
+    report?: GraphManagerOperationReport,
+  ): Promise<void>;
 
   abstract buildGenerations(
     graph: PureModel,
     generationEntities: Map<string, Entity[]>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport>;
+    report?: GraphManagerOperationReport,
+  ): Promise<void>;
 
   // ------------------------------------------- Grammar -------------------------------------------
 
@@ -278,11 +283,13 @@ export abstract class AbstractPureGraphManager {
       onError?: () => void;
       keepSourceInformation?: boolean;
     },
+    report?: GraphManagerOperationReport,
   ): Promise<CompilationResult>;
   abstract compileText(
     graphGrammar: string,
     graph: PureModel,
     options?: { onError?: () => void },
+    report?: GraphManagerOperationReport,
   ): Promise<TextCompilationResult>;
   abstract getLambdaReturnType(
     lambda: RawLambda,
@@ -290,7 +297,7 @@ export abstract class AbstractPureGraphManager {
     options?: { keepSourceInformation?: boolean },
   ): Promise<string>;
 
-  // ------------------------------------------- Test  -------------------------------------------
+  // ------------------------------------------- Test -------------------------------------------
 
   abstract runTests(
     inputs: RunTestsTestableInput[],
@@ -304,7 +311,7 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): Promise<AssertFail>;
 
-  // ------------------------------------------- Value Specification  -------------------------------------------
+  // ------------------------------------------- Value Specification -------------------------------------------
 
   abstract buildValueSpecification(
     json: PlainObject,
@@ -351,14 +358,12 @@ export abstract class AbstractPureGraphManager {
   abstract getAvailableExternalFormatsDescriptions(): Promise<
     ExternalFormatDescription[]
   >;
-
   abstract generateModelFromExternalFormat(
     schemaSet: SchemaSet,
     targetBinding: string | undefined,
     configs: ConfigurationProperty[],
     graph: PureModel,
   ): Promise<string>;
-
   abstract generateSchemaFromExternalFormatConfig(
     modelUnit: ModelUnit,
     targetBinding: string | undefined,
@@ -367,6 +372,7 @@ export abstract class AbstractPureGraphManager {
   ): Promise<SchemaSet[]>;
 
   // ------------------------------------------- Import -------------------------------------------
+
   abstract getExamplePureProtocolText(): string;
   abstract getExampleExternalFormatImportText(): string;
   abstract entitiesToPureProtocolText(entities: Entity[]): Promise<string>;
@@ -380,6 +386,7 @@ export abstract class AbstractPureGraphManager {
     runtime: Runtime | undefined,
     graph: PureModel,
     options?: ExecutionOptions,
+    report?: GraphManagerOperationReport,
   ): Promise<ExecutionResult>;
 
   abstract generateExecutionPlan(
@@ -387,6 +394,7 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping | undefined,
     runtime: Runtime | undefined,
     graph: PureModel,
+    report?: GraphManagerOperationReport,
   ): Promise<RawExecutionPlan>;
 
   abstract debugExecutionPlanGeneration(
@@ -394,18 +402,8 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping | undefined,
     runtime: Runtime | undefined,
     graph: PureModel,
+    report?: GraphManagerOperationReport,
   ): Promise<{ plan: RawExecutionPlan; debug: string }>;
-
-  abstract buildExecutionPlan(
-    executionPlanJson: RawExecutionPlan,
-    graph: PureModel,
-  ): ExecutionPlan;
-
-  abstract serializeExecutionPlan(
-    executionPlan: ExecutionPlan,
-  ): RawExecutionPlan;
-
-  abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 
   abstract generateExecuteTestData(
     lambda: RawLambda,
@@ -417,7 +415,19 @@ export abstract class AbstractPureGraphManager {
       // Anonymizes data by hashing any string values in the generated data
       anonymizeGeneratedData?: boolean;
     },
+    report?: GraphManagerOperationReport,
   ): Promise<string>;
+
+  abstract buildExecutionPlan(
+    executionPlanJson: RawExecutionPlan,
+    graph: PureModel,
+  ): ExecutionPlan;
+
+  abstract serializeExecutionPlan(
+    executionPlan: ExecutionPlan,
+  ): RawExecutionPlan;
+
+  abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 
   // ------------------------------------------- Service -------------------------------------------
   /**

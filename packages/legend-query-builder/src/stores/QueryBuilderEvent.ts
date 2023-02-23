@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-shared';
-import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent.js';
+export enum QUERY_BUILDER_EVENT {
+  RUN_QUERY__LAUNCH = 'editor.execution.run-query.launch',
+  GENERATE_EXECUTION_PLAN__LAUNCH = 'editor.execution.generate-plan.launch',
+  DEBUG_EXECUTION_PLAN__LAUNCH = 'editor.execution.debug-plan.launch',
 
-export class GraphBuilderReport {
-  timings: {
-    [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: number;
-    [key: string]: number;
-  } = { [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: 0 };
-  elementCount: {
-    total: number;
-    [key: string]: number;
-  } = {
-    total: 0,
-  };
-  otherStats: PlainObject = {};
+  RUN_QUERY__SUCCESS = 'editor.execution.run-query.success',
+  GENERATE_EXECUTION_PLAN__SUCCESS = 'editor.execution.generate-plan.success',
+  DEBUG_EXECUTION_PLAN__SUCCESS = 'editor.execution.debug-plan.success',
+  BUILD_EXECUTION_PLAN__SUCCESS = 'graph-manager.execution.build-plan.success',
 }

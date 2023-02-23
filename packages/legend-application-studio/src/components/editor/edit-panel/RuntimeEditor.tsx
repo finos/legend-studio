@@ -491,7 +491,7 @@ const IdentifiedConnectionEditor = observer(
     } = props;
     const applicationStore = useApplicationStore();
     const runtimeValue = runtimeEditorState.runtimeValue;
-    // TODO: add runtime connection id
+    // TODO: add runtime connection ID
     // connection pointer
     const isEmbeddedConnection = !(
       identifiedConnection.connection instanceof ConnectionPointer

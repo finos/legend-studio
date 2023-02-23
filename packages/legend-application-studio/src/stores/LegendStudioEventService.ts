@@ -31,6 +31,6 @@ export class LegendStudioEventService {
   }
 
   notify_ApplicationLoaded(): void {
-    this.eventService.notify(APPLICATION_EVENT.APPLICATION_LOADED, {});
+    this.eventService.notify(APPLICATION_EVENT.APPLICATION_LOAD__SUCCESS, {});
   }
 }

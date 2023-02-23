@@ -814,7 +814,7 @@ export class EditorStore implements CommandRegistrar {
         entities,
       );
       this.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED),
+        LogEvent.create(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS),
         Date.now() - startTime,
         'ms',
       );
@@ -838,7 +838,7 @@ export class EditorStore implements CommandRegistrar {
             this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
               entities,
               LogEvent.create(
-                CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+                CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
               ),
             ),
           );
@@ -879,7 +879,7 @@ export class EditorStore implements CommandRegistrar {
         this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
           ),
         ),
 
@@ -892,7 +892,9 @@ export class EditorStore implements CommandRegistrar {
         this.changeDetectionState.computeAggregatedProjectLatestChanges(true),
       ]);
       this.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
+        ),
         '[ASNYC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======

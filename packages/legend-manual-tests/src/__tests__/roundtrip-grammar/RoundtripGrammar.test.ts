@@ -175,7 +175,7 @@ const checkGrammarRoundtrip = async (
   );
   if (options?.debug) {
     log.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED),
+      LogEvent.create(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS),
       `[entities: ${entities.length}]`,
     );
   }
@@ -185,7 +185,7 @@ const checkGrammarRoundtrip = async (
   });
   if (options?.debug) {
     log.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
+      LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
       Date.now() - startTime,
       'ms',
     );
@@ -196,7 +196,7 @@ const checkGrammarRoundtrip = async (
   );
   if (options?.debug) {
     log.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_PROTOCOL_SERIALIZED),
+      LogEvent.create(GRAPH_MANAGER_EVENT.SERIALIZE_GRAPH_PROTOCOL__SUCCESS),
       Date.now() - startTime,
       'ms',
     );

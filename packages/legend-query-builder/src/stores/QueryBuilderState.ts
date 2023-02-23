@@ -111,6 +111,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   mapping?: Mapping | undefined;
   runtimeValue?: Runtime | undefined;
 
+  applicationContext?: string | undefined;
+
   // NOTE: this makes it so that we need to import components in stores code,
   // we probably want to refactor to an extension mechanism
   TEMPORARY__setupPanelContentRenderer?: (() => React.ReactNode) | undefined;
