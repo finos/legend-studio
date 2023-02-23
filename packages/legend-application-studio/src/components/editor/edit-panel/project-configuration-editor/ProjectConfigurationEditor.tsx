@@ -92,7 +92,7 @@ const ProjectStructureEditor = observer(
       if (blockingEditGav) {
         editorStore.applicationStore.setActionAlertInfo({
           message:
-            'If you are editing the group ID or artifact ID (gav), please keep in mind this means you are creating a new project which means that you will lose any previous project versions. Moreover, if your current project has dependencies, you will lose those dependencies until you release the version of your new project with its updated gav.',
+            'Please read these instructions before you edit groupid or artifactid (gav) as changing them can have downstream impacts. Be aware you will lose any previous project versions. Moreover, if your current project has dependant projects you can break those too if you do not change the gav in a controlled way.',
           type: ActionAlertType.CAUTION,
           actions: [
             {
