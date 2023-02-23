@@ -93,7 +93,6 @@ export { V1_StereotypePtr } from './graphManager/protocol/pure/v1/model/packagea
 export { V1_TaggedValue } from './graphManager/protocol/pure/v1/model/packageableElements/domain/V1_TaggedValue.js';
 export { V1_PropertyPointer } from './graphManager/protocol/pure/v1/model/packageableElements/domain/V1_PropertyPointer.js';
 export { V1_SectionIndex } from './graphManager/protocol/pure/v1/model/packageableElements/section/V1_SectionIndex.js';
-export { V1_pureModelContextPropSchema } from './graphManager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 
 // metamodels
@@ -274,6 +273,7 @@ export { V1_EngineServerClient } from './graphManager/protocol/pure/v1/engine/V1
 export { V1_Engine } from './graphManager/protocol/pure/v1/engine/V1_Engine.js';
 export {
   V1_PureModelContextType,
+  V1_pureModelContextPropSchema,
   V1_entitiesToPureModelContextData,
   V1_deserializePureModelContextData,
 } from './graphManager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
