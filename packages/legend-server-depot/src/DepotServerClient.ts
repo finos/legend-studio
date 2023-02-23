@@ -146,35 +146,35 @@ export class DepotServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Dependants -------------------------------------------
 
+  getAllDependantProjects = (
+    groupId: string,
+    artifactId: string,
+  ): Promise<PlainObject<ProjectVersionPlatformDependency>[]> =>
+    this.get(
+      `${this._versions(groupId, artifactId)}/all/dependantProjects`,
+      undefined,
+      undefined,
+    );
+
   getDependantProjects = (
     groupId: string,
     artifactId: string,
-    version?: string,
-  ): Promise<PlainObject<ProjectVersionPlatformDependency>[]> => {
-    if (!version) {
-      return this.get(
-        `${this._versions(groupId, artifactId)}/all/dependantProjects`,
-        undefined,
-        undefined,
-      );
-    }
-    return this.get(
+    version: string,
+  ): Promise<PlainObject<ProjectVersionPlatformDependency>[]> =>
+    this.get(
       `${this._version(groupId, artifactId, version)}/dependantProjects`,
       undefined,
       undefined,
     );
-  };
 
   async getIndexedDependantProjects(
     groupId: string,
     artifactId: string,
     version?: string,
   ): Promise<PlainObject<ProjectVersionPlatformDependency>[] | undefined> {
-    const dependants = await this.getDependantProjects(
-      groupId,
-      artifactId,
-      version,
-    );
+    const dependants = version
+      ? await this.getDependantProjects(groupId, artifactId, version)
+      : await this.getAllDependantProjects(groupId, artifactId);
     return dependants;
   }
 

@@ -479,12 +479,11 @@ const QueryEditorHeaderContent = observer(
             >
               {applicationStore.TEMPORARY__isLightThemeEnabled ? (
                 <>
-                  {' '}
-                  <LightBulbIcon className="query-editor__header__action__icon--bulb--light" />{' '}
+                  <LightBulbIcon className="query-editor__header__action__icon--bulb--light" />
                 </>
               ) : (
                 <>
-                  <EmptyLightBulbIcon className="query-editor__header__action__icon--bulb--dark" />{' '}
+                  <EmptyLightBulbIcon className="query-editor__header__action__icon--bulb--dark" />
                 </>
               )}
             </button>
