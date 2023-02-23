@@ -326,6 +326,7 @@ const QueryBuilderGridResult = observer(
     const [cellDoubleClickedEvent, setCellDoubleClickedEvent] =
       useState<CellMouseOverEvent | null>(null);
     const columns = executionResult.result.columns;
+    let rowNumber = 1;
     const rowData = executionResult.result.rows.map((_row) => {
       const row: PlainObject = {};
       const cols = executionResult.result.columns;
@@ -334,7 +335,9 @@ const QueryBuilderGridResult = observer(
         // call `.toString()` to avoid this behavior.
         // See https://github.com/finos/legend-studio/issues/1008
         row[cols[idx] as string] = isBoolean(value) ? String(value) : value;
+        row.rowNumber = rowNumber;
       });
+      rowNumber += 1;
       return row;
     });
 
@@ -351,7 +354,8 @@ const QueryBuilderGridResult = observer(
         }
         disabled={
           !(fetchStructureImplementation instanceof QueryBuilderTDSState) ||
-          !queryBuilderState.isQuerySupported
+          !queryBuilderState.isQuerySupported ||
+          !cellDoubleClickedEvent
         }
         menuProps={{ elevation: 7 }}
         key={executionResult._UUID}
@@ -359,7 +363,19 @@ const QueryBuilderGridResult = observer(
       >
         <AgGridReact
           rowData={rowData}
+          gridOptions={{
+            suppressScrollOnNewData: true,
+            getRowId: function (data) {
+              return data.data.rowNumber as string;
+            },
+          }}
           modules={[ClientSideRowModelModule]}
+          // Note: we use onCellMouseOver as a bit of a workaround
+          // since we use the context menu so we want the user to be
+          // able to right click any cell and have the context menu
+          // options use the data belonging to the row that they are
+          // in. hence why we set the cell every time we mouse over
+          // rather than making user click multiple times.
           onCellMouseOver={(event): void => {
             setCellDoubleClickedEvent(event);
           }}
