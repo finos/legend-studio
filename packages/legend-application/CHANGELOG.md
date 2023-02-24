@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 11.0.0
+
+### Major Changes
+
+- [#1937](https://github.com/finos/legend-studio/pull/1937) [`176371264`](https://github.com/finos/legend-studio/commit/176371264c6b3af8a14cbe4ce6d2d75a50691173) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed event `application.context.accessed -> application.context.access`, `application.virtual-assistant.documentation-entry.accessed -> application.virtual-assistant.documentation-entry.access`.
+
 ## 10.2.18
 
 ### Patch Changes
