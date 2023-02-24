@@ -413,8 +413,7 @@ export const ChangeExecutionModal = observer(
           className="modal modal--dark search-modal"
         >
           <div className="modal__title">
-            Change to {`${isChangingToMulti ? ' multi ' : ' single '}`}{' '}
-            execution
+            {`Change to ${isChangingToMulti ? 'multi' : 'single'} execution`}
           </div>
           <div className="service-execution-editor__change__modal">
             {renderChangeExecution()}

@@ -504,8 +504,9 @@ export const CreateNewElementModal = observer(() => {
         className="modal modal--dark search-modal"
       >
         <div className="modal__title">
-          Create a New{' '}
-          {getElementTypeLabel(editorStore, newElementState.type) ?? 'element'}
+          {`Create a New ${
+            getElementTypeLabel(editorStore, newElementState.type) ?? 'element'
+          }`}
         </div>
         <div>
           {newElementState.showType && (
