@@ -22,7 +22,7 @@ import {
 import packageJson from '../../package.json';
 import type { QuerySetupLandingPageStore } from '../stores/QuerySetupStore.js';
 import {
-  ArrowCirceUpIcon,
+  ArrowCircleUpIcon,
   BrainIcon,
   DroidIcon,
   ManageSearchIcon,
@@ -177,7 +177,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         },
         label: 'Productionize an existing query',
         className: 'query-setup__landing-page__action--productionize-query',
-        icon: <ArrowCirceUpIcon />,
+        icon: <ArrowCircleUpIcon />,
       },
     ];
   }

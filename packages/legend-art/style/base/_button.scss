@@ -86,6 +86,28 @@
   }
 }
 
+.btn--medium {
+  @include flexCenter;
+
+  border-radius: 0.1rem;
+  background: var(--color-dark-grey-280);
+  color: var(--color-light-grey-50);
+
+  &:hover {
+    background: var(--color-dark-grey-300);
+  }
+
+  &[disabled] {
+    background: var(--color-dark-grey-300);
+    color: var(--color-dark-grey-500);
+  }
+
+  &:focus {
+    outline: 0.1rem solid var(--color-grey-200);
+    outline-offset: 0.1rem;
+  }
+}
+
 .btn--dark.btn--caution {
   background: var(--color-pink-400);
 

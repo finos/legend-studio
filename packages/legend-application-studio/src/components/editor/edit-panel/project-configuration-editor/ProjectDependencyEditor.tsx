@@ -23,7 +23,6 @@ import {
   clsx,
   CustomSelectorInput,
   TimesIcon,
-  ExternalLinkSquareIcon,
   Dialog,
   DropdownMenu,
   CaretDownIcon,
@@ -889,41 +888,39 @@ const ProjectVersionDependencyEditor = observer(
           }
           darkMode={true}
         />
-        <div className="project-dependency-editor__visit-project-btn">
-          <button
-            className="project-dependency-editor__visit-project-btn__btn btn--dark"
-            disabled={
-              projectDependency.isLegacyDependency ||
-              !selectedProject ||
-              !selectedVersionOption
-            }
-            onClick={viewProject}
-            tabIndex={-1}
-            title="View project"
-          >
-            <ExternalLinkSquareIcon />
-          </button>
-          <DropdownMenu
-            className="project-dependency-editor__visit-project-btn__dropdown-trigger btn--dark"
-            content={
-              <MenuContent>
-                <MenuContentItem
-                  disabled={
-                    projectDependency.isLegacyDependency ||
-                    !selectedProject ||
-                    !selectedVersionOption ||
-                    !projectDependencyData
-                  }
-                  onClick={viewSDLCProject}
-                >
-                  View SDLC project
-                </MenuContentItem>
-              </MenuContent>
-            }
-          >
-            <CaretDownIcon title="Show more options..." />
-          </DropdownMenu>
-        </div>
+        <DropdownMenu
+          className="project-dependency-editor__visit-project-btn__dropdown-trigger btn--medium"
+          content={
+            <MenuContent>
+              <MenuContentItem
+                disabled={
+                  projectDependency.isLegacyDependency ||
+                  !selectedProject ||
+                  !selectedVersionOption
+                }
+                onClick={viewProject}
+                title="View project"
+              >
+                Project
+              </MenuContentItem>
+              <MenuContentItem
+                title="View SDLC project"
+                disabled={
+                  projectDependency.isLegacyDependency ||
+                  !selectedProject ||
+                  !selectedVersionOption ||
+                  !projectDependencyData
+                }
+                onClick={viewSDLCProject}
+              >
+                SDLC project
+              </MenuContentItem>
+            </MenuContent>
+          }
+        >
+          Go to... <CaretDownIcon title="Show more options..." />
+        </DropdownMenu>
+
         <button
           className="project-dependency-editor__remove-btn btn--dark btn--caution"
           disabled={isReadOnly}
