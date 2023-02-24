@@ -67,7 +67,7 @@ const RelationalTableIdentifierModal = observer(
           <div className="modal__title">
             {editableTable
               ? 'Rename Relational Data Table'
-              : 'Add Relational Data Table'}{' '}
+              : 'Add Relational Data Table'}
           </div>
           <div className="relational-data-editor__identifier">
             <div className="relational-data-editor__identifier__values">

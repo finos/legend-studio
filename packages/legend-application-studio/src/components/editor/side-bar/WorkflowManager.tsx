@@ -383,11 +383,10 @@ const WorkflowTreeNodeContainer: React.FC<
                 #{node.label}
               </span>
               <span className="workflow-manager__item__link__content__created-at">
-                created{' '}
-                {formatDistanceToNow(node.workflow.createdAt, {
+                {`created ${formatDistanceToNow(node.workflow.createdAt, {
                   includeSeconds: true,
                   addSuffix: true,
-                })}
+                })}`}
               </span>
             </div>
           </a>
@@ -405,11 +404,10 @@ const WorkflowTreeNodeContainer: React.FC<
                 {node.workflowJob.name}
               </span>
               <span className="workflow-manager__item__link__content__created-at">
-                created{' '}
-                {formatDistanceToNow(node.workflowJob.createdAt, {
+                {`created ${formatDistanceToNow(node.workflowJob.createdAt, {
                   includeSeconds: true,
                   addSuffix: true,
-                })}
+                })}`}
               </span>
             </div>
           </a>

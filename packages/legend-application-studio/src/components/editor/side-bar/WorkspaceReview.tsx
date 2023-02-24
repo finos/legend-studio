@@ -299,11 +299,10 @@ export const WorkspaceReview = observer(() => {
                 </button>
               </div>
               <div className="workspace-review__title__content__review-status">
-                created{' '}
-                {formatDistanceToNow(workspaceReview.createdAt, {
+                {`created ${formatDistanceToNow(workspaceReview.createdAt, {
                   includeSeconds: true,
                   addSuffix: true,
-                })}
+                })}`}
               </div>
             </>
           )}

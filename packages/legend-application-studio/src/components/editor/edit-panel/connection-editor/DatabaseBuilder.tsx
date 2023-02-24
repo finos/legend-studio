@@ -48,12 +48,14 @@ import {
   EDITOR_LANGUAGE,
   TextInputEditor,
   useApplicationStore,
+  useConditionedApplicationNavigationContext,
 } from '@finos/legend-application';
 import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,
 } from './DatabaseEditorHelper.js';
 import { flowResult } from 'mobx';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const getNodeIcon = (node: DatabaseBuilderTreeNodeData): React.ReactNode => {
   if (node instanceof SchemaDatabaseBuilderTreeNodeData) {
@@ -233,12 +235,6 @@ export const DatabaseBuilder = observer(
       databaseBuilderState.isBuildingDatabase ||
       databaseBuilderState.isSavingDatabase;
 
-    useEffect(() => {
-      flowResult(databaseBuilderState.fetchSchemaDefinitions()).catch(
-        applicationStore.alertUnhandledError,
-      );
-    }, [databaseBuilderState, applicationStore]);
-
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       if (!databaseBuilderState.currentDatabase) {
         const stringValue = event.target.value;
@@ -246,6 +242,17 @@ export const DatabaseBuilder = observer(
         databaseBuilderState.setTargetDatabasePath(updatedValue ?? '');
       }
     };
+
+    useEffect(() => {
+      flowResult(databaseBuilderState.fetchSchemaDefinitions()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    }, [databaseBuilderState, applicationStore]);
+
+    useConditionedApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DATABASE_BUILDER,
+      databaseBuilderState.showModal,
+    );
 
     return (
       <Dialog

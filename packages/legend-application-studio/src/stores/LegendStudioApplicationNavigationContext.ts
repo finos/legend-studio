@@ -47,7 +47,9 @@ export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
   MAPPING_TEST_EDITOR = 'studio.editor.mapping-editor.test-editor',
 
   RUNTIME_EDITOR = 'studio.editor.runtime-editor',
+
   CONNECTION_EDITOR = 'studio.editor.connection-editor',
+  DATABASE_BUILDER = 'studio.editor.connection-editor.database-builder',
 
   SERVICE_EDITOR = 'studio.editor.service-editor',
   SERVICE_EDITOR_EXECUTION = 'studio.editor.service-editor.execution',
