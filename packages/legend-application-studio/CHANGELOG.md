@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 22.4.5
+
+### Patch Changes
+
+- [#1939](https://github.com/finos/legend-studio/pull/1939) [`a6cb0d1c7`](https://github.com/finos/legend-studio/commit/a6cb0d1c7b35ac0b71fd29473d3e84d0bf2161e6) ([@xannem](https://github.com/xannem)) - Increase readability of query builder icon option buttons
+
 ## 22.4.4
 
 ### Patch Changes

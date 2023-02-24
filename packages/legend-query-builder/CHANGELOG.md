@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 0.6.28
+
+### Patch Changes
+
+- [#1942](https://github.com/finos/legend-studio/pull/1942) [`868774e24`](https://github.com/finos/legend-studio/commit/868774e2445d4e644bc735c3bf5e0ea29419ca9d) ([@xannem](https://github.com/xannem)) - Fixes re-rendering of query builder results data table.
+
 ## 0.6.27
 
 ### Patch Changes

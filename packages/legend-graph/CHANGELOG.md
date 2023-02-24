@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 23.0.0
+
+### Major Changes
+
+- [#1937](https://github.com/finos/legend-studio/pull/1937) [`176371264`](https://github.com/finos/legend-studio/commit/176371264c6b3af8a14cbe4ce6d2d75a50691173) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Change the structure of graph initialization report to include `dependenciesCount` and `generationsCount` on top level.
+
 ## 22.3.0
 
 ### Minor Changes
