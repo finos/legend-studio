@@ -77,7 +77,7 @@ export const getRegexStringForElement = (
 export const getRegexString = (typeLabels: string[]): string => {
   const _typeLabelsString = typeLabels.join('|');
   return (
-    `^([^\\S\\n])Class` + // start with type label (accounted for spaces, but not newline)
+    `^([^\\S\\n])*Class` + // start with type label (accounted for spaces, but not newline)
     `(\\s+<<.*>>)?` + // account for stereotype
     `(\\s+\\{.*\\})?` + // account for tagged value
     `[\\s\\n]`

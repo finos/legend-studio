@@ -43,6 +43,8 @@ import {
   DropdownMenu,
   MenuContentItemIcon,
   MenuContentItemLabel,
+  SingleFileTextModeIcon,
+  MultiFileTextModeIcon,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -172,6 +174,33 @@ export const GrammarTextEditorPanelActions = observer(
 
     return (
       <div className="text-editor__header__content__actions">
+        <div className="text-editor__action-btn">
+          {grammarModeManagerState.isInDefaultTextMode ? (
+            <button
+              className="text-editor__action-btn__label"
+              onClick={toggleDefaultTextMode}
+              title="Switch to multiple file text mode"
+              tabIndex={-1}
+            >
+              <SingleFileTextModeIcon className="text-editor__action-btn__label__icon" />
+              <div className="text-editor__action-btn__label__title">
+                Text Mode
+              </div>
+            </button>
+          ) : (
+            <button
+              className="text-editor__action-btn__label"
+              onClick={toggleDefaultTextMode}
+              title="Switch to single file text mode"
+              tabIndex={-1}
+            >
+              <MultiFileTextModeIcon className="text-editor__action-btn__label__icon" />
+              <div className="text-editor__action-btn__label__title">
+                Text Mode
+              </div>
+            </button>
+          )}
+        </div>
         <DropdownMenu
           className="text-editor__header__custom-action"
           title="Show More Options..."
@@ -187,7 +216,7 @@ export const GrammarTextEditorPanelActions = observer(
                   </MenuContentItemLabel>
                 </MenuContentItem>
               )}
-              <MenuContentItem onClick={toggleDefaultTextMode}>
+              {/* <MenuContentItem onClick={toggleDefaultTextMode}>
                 <MenuContentItemIcon>
                   {!grammarModeManagerState.isInDefaultTextMode ? (
                     <CheckIcon />
@@ -196,7 +225,7 @@ export const GrammarTextEditorPanelActions = observer(
                 <MenuContentItemLabel className="text-editor__header__menu-content">
                   Show grammar in multiple file mode
                 </MenuContentItemLabel>
-              </MenuContentItem>
+              </MenuContentItem> */}
             </MenuContent>
           }
           menuProps={{
@@ -947,7 +976,8 @@ export const GrammarTextEditor = observer(
                   model,
                   [
                     {
-                      message: 'Please change the element path by right clicking',
+                      message:
+                        'Please change the element path by right clicking',
                       startLineNumber: errorRange.startLineNumber,
                       startColumn: errorRange.startColumn,
                       endLineNumber: errorRange.endLineNumber,

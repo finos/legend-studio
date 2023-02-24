@@ -190,6 +190,8 @@ export {
   VscVersions as VersionsIcon,
   VscCaseSensitive as CaseSensitiveIcon,
   VscWholeWord as WholeWordMatchIcon,
+  VscFile as SingleFileTextModeIcon,
+  VscFiles as MultiFileTextModeIcon,
 } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,

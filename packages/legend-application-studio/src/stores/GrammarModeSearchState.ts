@@ -83,6 +83,7 @@ export class GrammarModeSearchState {
 
   deleteSearchResult(searchResult: SearchResult): void {
     deleteEntry(this.searchResults, searchResult);
+    this.setResultsLength(this.resultsLength - searchResult.indices.length);
   }
 
   deleteSearchResultIndex(
@@ -90,6 +91,7 @@ export class GrammarModeSearchState {
     searchResultIndex: SearchResultSourceInformation,
   ): void {
     deleteEntry(searchResult.indices, searchResultIndex);
+    this.setResultsLength(this.resultsLength - 1);
   }
 
   searchEachEntity(entityPath: string, text: string): void {
@@ -133,10 +135,12 @@ export class GrammarModeSearchState {
 
   searchForText(): void {
     this.searchResults = [];
-    this.searchState.inProgress();
-    Array.from(
-      this.editorStore.grammarModeManagerState.currentGrammarElements.entries(),
-    ).map(([key, text]) => this.searchEachEntity(key, text));
-    this.searchState.complete();
+    if (this.searchText) {
+      this.searchState.inProgress();
+      Array.from(
+        this.editorStore.grammarModeManagerState.currentGrammarElements.entries(),
+      ).map(([key, text]) => this.searchEachEntity(key, text));
+      this.searchState.complete();
+    }
   }
 }
