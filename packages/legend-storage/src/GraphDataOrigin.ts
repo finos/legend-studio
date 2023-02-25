@@ -14,6 +14,17 @@
  * limitations under the License.
  */
 
-export interface V1_LambdaReturnTypeResult {
-  returnType: string;
+export abstract class GraphDataOrigin {}
+
+export class LegendSDLC extends GraphDataOrigin {
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+
+  constructor(groupId: string, artifactId: string, versionId: string) {
+    super();
+    this.groupId = groupId;
+    this.artifactId = artifactId;
+    this.versionId = versionId;
+  }
 }

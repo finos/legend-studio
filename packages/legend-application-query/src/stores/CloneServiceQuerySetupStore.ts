@@ -29,7 +29,7 @@ import {
   type PlainObject,
   type GeneratorFn,
 } from '@finos/legend-shared';
-import type { Entity } from '@finos/legend-storage';
+import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { LEGEND_QUERY_APP_EVENT } from './LegendQueryAppEvent.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
@@ -116,7 +116,7 @@ export class CloneServiceQuerySetupStore extends BaseQuerySetupStore {
       )) as Entity[];
       const dependencyEntitiesIndex = (yield flowResult(
         this.depotServerClient.getIndexedDependencyEntities(project, versionId),
-      )) as Map<string, Entity[]>;
+      )) as Map<string, EntitiesWithOrigin>;
 
       const serviceExecutionAnalysisResults = (yield flowResult(
         getQueryBuilderGraphManagerExtension(

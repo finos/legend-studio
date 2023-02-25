@@ -200,7 +200,9 @@ import {
 import { V1_buildExecutionResult } from './engine/execution/V1_ExecutionHelper.js';
 import {
   type Entity,
-  type LegendSDLC,
+  type GraphDataOrigin,
+  type EntitiesWithOrigin,
+  LegendSDLC,
   ENTITY_PATH_DELIMITER,
 } from '@finos/legend-storage';
 import {
@@ -272,6 +274,7 @@ import { CompilationWarning } from '../../../action/compilation/CompilationWarni
 import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_ServiceTransformer.js';
 import { V1_transformModelUnit } from './transformation/pureGraph/from/V1_DSL_ExternalFormat_Transformer.js';
 import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
+import { V1_LambdaReturnTypeInput } from './engine/compilation/V1_LambdaReturnType.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -428,6 +431,7 @@ export const V1_indexPureModelContextData = (
 interface V1_PureGraphBuilderInput {
   model: BasicModel;
   data: V1_PureModelContextDataIndex;
+  origin?: GraphDataOrigin | undefined;
 }
 
 export interface V1_EngineSetupConfig {
@@ -583,7 +587,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
-    dependencyEntitiesIndex: Map<string, Entity[]>,
+    entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
     _report?: GraphManagerOperationReport,
@@ -601,7 +605,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph.dependencyManager = dependencyManager;
 
     try {
-      dependencyManager.initialize(dependencyEntitiesIndex);
+      dependencyManager.initialize(entitiesWithOriginIdx);
 
       // deserialize
       buildState.setMessage(`Partitioning and deserializing elements...`);
@@ -610,12 +614,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         V1_PureModelContextData
       >();
       await Promise.all(
-        Array.from(dependencyEntitiesIndex.entries()).map(
-          ([dependencyKey, entities]) => {
+        Array.from(entitiesWithOriginIdx.entries()).map(
+          ([dependencyKey, entitiesWithOrigin]) => {
             const projectModelData = new V1_PureModelContextData();
             dependencyGraphDataIndex.set(dependencyKey, projectModelData);
             return V1_entitiesToPureModelContextData(
-              entities,
+              entitiesWithOrigin.entities,
               projectModelData,
               this.pluginManager.getPureProtocolProcessorPlugins(),
             );
@@ -726,8 +730,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
        * This sets the SDLC of the graph if there exists a versioned `SDLC` of the graph. This means the graph is immutable and we can easily `refetch`
        * the graph with the provided sdlc pointer
        */
-      if (options?.sdlc) {
-        graph.setSDLC(options.sdlc);
+      if (options?.origin) {
+        graph.setOrigin(options.origin);
       }
 
       buildState.pass();
@@ -1739,6 +1743,17 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: { keepSourceInformation?: boolean },
   ): Promise<string> {
     return this.engine.getLambdaReturnType(
+      this.buildLambdaReturnTypeInput(lambda, graph, options),
+    );
+  }
+
+  private buildLambdaReturnTypeInput(
+    lambda: RawLambda,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): V1_LambdaReturnTypeInput {
+    return new V1_LambdaReturnTypeInput(
+      this.getFullGraphModelContext(graph),
       lambda.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(
           new V1_GraphTransformerContextBuilder(
@@ -1750,7 +1765,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             .build(),
         ),
       ) as V1_RawLambda,
-      this.getFullGraphModelData(graph),
     );
   }
 
@@ -1823,7 +1837,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
   ): Promise<TestResult[]> {
     const runTestsInput = new V1_RunTestsInput();
-    runTestsInput.model = this.getFullGraphModelData(graph);
+    runTestsInput.model = this.getFullGraphModelContext(graph);
     runTestsInput.testables = inputs
       .map((input) => {
         const testable = guaranteeNonNullable(
@@ -2173,16 +2187,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
 
   private buildPureModelSDLCPointer(
-    legendSdlc: LegendSDLC,
+    origin: GraphDataOrigin,
   ): V1_PureModelContextPointer {
-    return new V1_PureModelContextPointer(
-      undefined,
-      new V1_LegendSDLC(
-        legendSdlc.groupId,
-        legendSdlc.artifactId,
-        legendSdlc.versionId,
-      ),
-    );
+    if (origin instanceof LegendSDLC) {
+      return new V1_PureModelContextPointer(
+        undefined,
+        new V1_LegendSDLC(origin.groupId, origin.artifactId, origin.versionId),
+      );
+    }
+    throw new UnsupportedOperationError('Unsupported graph origin');
   }
 
   private buildExecutionInput = (
@@ -2194,8 +2207,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     executeInput: V1_ExecuteInput,
     parameterValues?: ParameterValue[],
   ): V1_ExecuteInput => {
-    const pureModelContext = graph.sdlc
-      ? this.buildPureModelSDLCPointer(graph.sdlc)
+    const pureModelContext = graph.origin
+      ? this.buildPureModelSDLCPointer(graph.origin)
       : this.buildExecutionInputGraphData(graph, mapping, runtime);
     // NOTE: for execution, we usually will just assume that we send the connections embedded in the runtime value, since we don't want the user to have to create
     // packageable runtime and connection just to play with execution.
@@ -2746,8 +2759,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const input = new V1_MappingModelCoverageAnalysisInput();
     input.clientVersion = V1_PureGraphManager.DEV_PROTOCOL_VERSION;
     input.mapping = mapping.path;
-    input.model = graph.sdlc
-      ? this.buildPureModelSDLCPointer(graph.sdlc)
+    input.model = graph.origin
+      ? this.buildPureModelSDLCPointer(graph.origin)
       : this.buildMappingModelCoverageAnalysisInputContextData(graph);
     return V1_buildModelCoverageAnalysisResult(
       await this.engine.analyzeMappingModelCoverage(input),
@@ -2836,7 +2849,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async indexLightGraph(
     graph: PureModel,
     entities: Entity[],
-    dependencyEntities: Map<string, Entity[]>,
+    entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>,
     entityFilterFn?: ((entity: Entity) => boolean) | undefined,
     entityProcessorFn?: ((entity: Entity) => Entity) | undefined,
   ): Promise<V1_PureGraphBuilderInput[]> {
@@ -2874,31 +2887,33 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     ];
 
     // build dependencies graph builder input
-    graph.dependencyManager.initialize(dependencyEntities);
+    graph.dependencyManager.initialize(entitiesWithOriginIdx);
     const dependencyGraphDataIndex = new Map<string, V1_PureModelContextData>();
     await Promise.all(
-      Array.from(dependencyEntities.entries()).map(([dependencyKey, value]) => {
-        const projectModelData = new V1_PureModelContextData();
-        dependencyGraphDataIndex.set(dependencyKey, projectModelData);
-        return V1_entitiesToPureModelContextData(
-          value
-            .filter((entity) => {
-              // never exclude section index as it could be used for path resolution when building the graph later
-              if (entity.classifierPath === CORE_PURE_PATH.SECTION_INDEX) {
+      Array.from(entitiesWithOriginIdx.entries()).map(
+        ([dependencyKey, value]) => {
+          const projectModelData = new V1_PureModelContextData();
+          dependencyGraphDataIndex.set(dependencyKey, projectModelData);
+          return V1_entitiesToPureModelContextData(
+            value.entities
+              .filter((entity) => {
+                // never exclude section index as it could be used for path resolution when building the graph later
+                if (entity.classifierPath === CORE_PURE_PATH.SECTION_INDEX) {
+                  return true;
+                }
+                if (entityFilterFn) {
+                  return entityFilterFn(entity);
+                }
                 return true;
-              }
-              if (entityFilterFn) {
-                return entityFilterFn(entity);
-              }
-              return true;
-            })
-            .map((entity) =>
-              entityProcessorFn ? entityProcessorFn(entity) : entity,
-            ),
-          projectModelData,
-          this.pluginManager.getPureProtocolProcessorPlugins(),
-        );
-      }),
+              })
+              .map((entity) =>
+                entityProcessorFn ? entityProcessorFn(entity) : entity,
+              ),
+            projectModelData,
+            this.pluginManager.getPureProtocolProcessorPlugins(),
+          );
+        },
+      ),
     );
     const dependencyGraphBuilderInput: V1_PureGraphBuilderInput[] = Array.from(
       dependencyGraphDataIndex.entries(),
@@ -2919,6 +2934,17 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.initializeAndIndexElements(graph, graphBuilderInput);
 
     return graphBuilderInput;
+  }
+
+  private getFullGraphModelContext(
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean | undefined } | undefined,
+  ): V1_PureModelContext {
+    // if options is given we will not use the origin if we want to keep source information
+    if (graph.origin && !options?.keepSourceInformation) {
+      return this.buildPureModelSDLCPointer(graph.origin);
+    }
+    return this.getFullGraphModelData(graph, options);
   }
 
   getFullGraphModelData(

@@ -884,7 +884,7 @@ export class ChangeDetectionState {
         `Can't observe graph: change detection must be stopped first`,
       );
     }
-    if (this.editorStore.graphManagerState.graph.sdlc) {
+    if (this.editorStore.graphManagerState.graph.origin) {
       throw new IllegalStateError(
         `Can't observe graph: can't change graph with sdlc pointer`,
       );

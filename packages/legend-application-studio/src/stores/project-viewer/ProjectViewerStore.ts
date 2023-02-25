@@ -35,6 +35,7 @@ import {
 import {
   type Entity,
   type ProjectGAVCoordinates,
+  type EntitiesWithOrigin,
   parseGAVCoordinates,
   LegendSDLC,
 } from '@finos/legend-storage';
@@ -65,7 +66,7 @@ import { GRAPH_EDITOR_MODE } from '../EditorConfig.js';
 
 interface ProjectViewerGraphBuilderMaterial {
   entities: Entity[];
-  dependencyEntitiesIndex: Map<string, Entity[]>;
+  entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>;
 }
 
 export class ProjectViewerStore {
@@ -284,13 +285,13 @@ export class ProjectViewerStore {
     const dependencyEntitiesIndex =
       (yield this.editorStore.graphState.getIndexedDependencyEntities()) as Map<
         string,
-        Entity[]
+        EntitiesWithOrigin
       >;
     stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
 
     return {
       entities,
-      dependencyEntitiesIndex,
+      entitiesWithOriginIdx: dependencyEntitiesIndex,
     };
   }
 
@@ -335,18 +336,18 @@ export class ProjectViewerStore {
         project,
         versionId,
       ),
-    )) as Map<string, Entity[]>;
+    )) as Map<string, EntitiesWithOrigin>;
     stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
 
     return {
       entities,
-      dependencyEntitiesIndex,
+      entitiesWithOriginIdx: dependencyEntitiesIndex,
     };
   }
 
   *buildGraph(
     entities: Entity[],
-    dependencyEntitiesIndex: Map<string, Entity[]>,
+    entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>,
   ): GeneratorFn<boolean> {
     try {
       const stopWatch = new StopWatch();
@@ -384,7 +385,7 @@ export class ProjectViewerStore {
         this.editorStore.graphManagerState.coreModel,
         this.editorStore.graphManagerState.systemModel,
         dependencyManager,
-        dependencyEntitiesIndex,
+        entitiesWithOriginIdx,
         this.editorStore.graphManagerState.dependenciesBuildState,
         {},
         dependency_buildReport,
@@ -397,7 +398,7 @@ export class ProjectViewerStore {
         entities,
         this.editorStore.graphManagerState.graphBuildState,
         {
-          sdlc: this.projectGAVCoordinates
+          origin: this.projectGAVCoordinates
             ? new LegendSDLC(
                 this.projectGAVCoordinates.groupId,
                 this.projectGAVCoordinates.artifactId,
@@ -542,7 +543,7 @@ export class ProjectViewerStore {
       const graphBuilderResult = (yield flowResult(
         this.buildGraph(
           graphBuilderMaterial.entities,
-          graphBuilderMaterial.dependencyEntitiesIndex,
+          graphBuilderMaterial.entitiesWithOriginIdx,
         ),
       )) as boolean;
 

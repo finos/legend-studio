@@ -63,6 +63,7 @@ import { LEGEND_QUERY_APP_EVENT } from './LegendQueryAppEvent.js';
 import {
   type Entity,
   type ProjectGAVCoordinates,
+  type EntitiesWithOrigin,
   parseProjectIdentifier,
   LegendSDLC,
 } from '@finos/legend-storage';
@@ -494,9 +495,9 @@ export abstract class QueryEditorStore {
     this.graphManagerState.dependenciesBuildState.setMessage(
       `Fetching dependencies...`,
     );
-    const dependencyEntitiesIndex = (yield flowResult(
+    const entitiesWithOriginIdx = (yield flowResult(
       this.depotServerClient.getIndexedDependencyEntities(project, versionId),
-    )) as Map<string, Entity[]>;
+    )) as Map<string, EntitiesWithOrigin>;
     stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
 
     const dependency_buildReport = createGraphBuilderReport();
@@ -504,7 +505,7 @@ export abstract class QueryEditorStore {
       this.graphManagerState.coreModel,
       this.graphManagerState.systemModel,
       dependencyManager,
-      dependencyEntitiesIndex,
+      entitiesWithOriginIdx,
       this.graphManagerState.dependenciesBuildState,
       {},
       dependency_buildReport,
@@ -522,7 +523,7 @@ export abstract class QueryEditorStore {
       entities,
       this.graphManagerState.graphBuildState,
       {
-        sdlc: new LegendSDLC(groupId, artifactId, resolveVersion(versionId)),
+        origin: new LegendSDLC(groupId, artifactId, resolveVersion(versionId)),
       },
       graph_buildReport,
     );
