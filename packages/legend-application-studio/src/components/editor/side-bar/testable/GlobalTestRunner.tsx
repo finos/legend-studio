@@ -40,6 +40,8 @@ import {
   ModalFooter,
   ModalHeader,
   ModalFooterButton,
+  Panel,
+  PanelHeader,
 } from '@finos/legend-art';
 import {
   AssertFail,
@@ -48,9 +50,15 @@ import {
   PackageableElement,
   TestError,
 } from '@finos/legend-graph';
-import { type GeneratorFn, isNonNullable } from '@finos/legend-shared';
+import {
+  type GeneratorFn,
+  isNonNullable,
+  prettyCONSTName,
+  toTitleCase,
+} from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import { forwardRef, useEffect } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
+import { GLOBAL_TEST_RUNNER_TABS } from '../../../../stores/EditorConfig.js';
 import {
   type TestableExplorerTreeNodeData,
   type GlobalTestRunnerState,
@@ -64,9 +72,11 @@ import {
   getAtomicTest_TestResult,
   getAssertionStatus,
 } from '../../../../stores/sidebar-state/testable/GlobalTestRunnerState.js';
+import type { STO_ProjectOverview_LegendStudioApplicationPlugin_Extension } from '../../../../stores/STO_ProjectOverview_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { TextDiffView } from '../../../shared/DiffView.js';
 import { getElementTypeIcon } from '../../../shared/ElementIconUtils.js';
+import { UnsupportedEditorPanel } from '../../edit-panel/UnsupportedElementEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 
 export const getTestableResultIcon = (
@@ -373,6 +383,31 @@ export const GlobalTestRunner = observer(
     const editorStore = useEditorStore();
     const globalTestRunnerState = props.globalTestRunnerState;
     const isDispatchingAction = globalTestRunnerState.isDispatchingAction;
+    const sdlcState = editorStore.sdlcState;
+    const currentWorkspace = sdlcState.currentWorkspace;
+    const plugins = editorStore.pluginManager.getApplicationPlugins();
+    const testRunnerTabs = (Object.values(GLOBAL_TEST_RUNNER_TABS) as string[])
+      .concat(
+        plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as STO_ProjectOverview_LegendStudioApplicationPlugin_Extension
+            ).getExtraTestRunnerTabsClassifiers?.() ?? [],
+        ),
+      )
+      .map((e) => ({
+        value: e,
+        label: prettyCONSTName(e),
+      }));
+
+    const [selectedTab, setSelectedTab] = useState(
+      GLOBAL_TEST_RUNNER_TABS.GLOBAL_TEST_RUNNER.valueOf(),
+    );
+
+    const changeTab = (tab: string): void => {
+      setSelectedTab(tab);
+    };
+
     const renderTestables = (): React.ReactNode => (
       <>
         {(globalTestRunnerState.testableStates ?? []).map((testableState) => {
@@ -417,68 +452,121 @@ export const GlobalTestRunner = observer(
       globalTestRunnerState.runAllTests(undefined);
 
     const reset = (): void => globalTestRunnerState.init(true);
-    return (
-      <div
-        data-testid={LEGEND_STUDIO_TEST_ID.GLOBAL_TEST_RUNNER}
-        className="panel global-test-runner"
-      >
-        <div className="panel__header side-bar__header">
-          <div className="panel__header__title global-test-runner__header__title">
-            <div className="panel__header__title__content side-bar__header__title__content">
-              GLOBAL TEST RUNNER
-            </div>
-          </div>
-          <div className="panel__header__actions side-bar__header__actions">
-            <button
-              className={clsx(
-                'panel__header__action side-bar__header__action global-test-runner__refresh-btn',
-                {
-                  'global-test-runner__refresh-btn--loading':
-                    isDispatchingAction,
-                },
-              )}
-              disabled={isDispatchingAction}
-              onClick={reset}
-              tabIndex={-1}
-              title="Run All Tests"
-            >
-              <RefreshIcon />
-            </button>
-            <button
-              className="panel__header__action side-bar__header__action global-test-runner__refresh-btn"
-              disabled={isDispatchingAction}
-              onClick={runAllTests}
-              tabIndex={-1}
-              title="Run All Tests"
-            >
-              <PlayIcon />
-            </button>
-          </div>
-        </div>
-        <div className="panel__content side-bar__content">
-          <PanelLoadingIndicator isLoading={isDispatchingAction} />
-          <div className="panel side-bar__panel">
-            <div className="panel__header">
-              <div className="panel__header__title">
-                <div className="panel__header__title__content">TESTABLES</div>
+
+    const renderTestRunnerTab = (): React.ReactNode => {
+      if (
+        selectedTab === GLOBAL_TEST_RUNNER_TABS.GLOBAL_TEST_RUNNER.valueOf()
+      ) {
+        return (
+          <div
+            data-testid={LEGEND_STUDIO_TEST_ID.GLOBAL_TEST_RUNNER}
+            className="panel global-test-runner"
+          >
+            <PanelHeader className="panel__header side-bar__header">
+              <div className="panel__header__title global-test-runner__header__title">
+                <div className="panel__header__title__content side-bar__header__title__content">
+                  GLOBAL TEST RUNNER
+                </div>
               </div>
+              <div className="panel__header__actions side-bar__header__actions">
+                <button
+                  className={clsx(
+                    'panel__header__action side-bar__header__action global-test-runner__refresh-btn',
+                    {
+                      'global-test-runner__refresh-btn--loading':
+                        isDispatchingAction,
+                    },
+                  )}
+                  disabled={isDispatchingAction}
+                  onClick={reset}
+                  tabIndex={-1}
+                  title="Run All Tests"
+                >
+                  <RefreshIcon />
+                </button>
+                <button
+                  className="panel__header__action side-bar__header__action global-test-runner__refresh-btn"
+                  disabled={isDispatchingAction}
+                  onClick={runAllTests}
+                  tabIndex={-1}
+                  title="Run All Tests"
+                >
+                  <PlayIcon />
+                </button>
+              </div>
+            </PanelHeader>
+            <PanelContent className="side-bar__content">
+              <PanelLoadingIndicator isLoading={isDispatchingAction} />
+              <Panel className="side-bar__panel">
+                <PanelHeader>
+                  <div className="panel__header__title">
+                    <div className="panel__header__title__content">
+                      TESTABLES
+                    </div>
+                  </div>
+                  <div
+                    className="side-bar__panel__header__changes-count"
+                    data-testid={
+                      LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                    }
+                  ></div>
+                </PanelHeader>
+                <PanelContent>{renderTestables()}</PanelContent>
+                {globalTestRunnerState.failureViewing && (
+                  <TestFailViewer
+                    globalTestRunnerState={globalTestRunnerState}
+                    failure={globalTestRunnerState.failureViewing}
+                  />
+                )}
+              </Panel>
+            </PanelContent>
+          </div>
+        );
+      } else {
+        const extraTestRunnerTabEditorRenderers = plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as STO_ProjectOverview_LegendStudioApplicationPlugin_Extension
+            ).getExtraTestRunnerTabsEditorRenderers?.() ?? [],
+        );
+        for (const editorRenderer of extraTestRunnerTabEditorRenderers) {
+          const editor = editorRenderer(
+            selectedTab,
+            editorStore,
+            currentWorkspace,
+          );
+          if (editor) {
+            return editor;
+          }
+        }
+        return (
+          <UnsupportedEditorPanel
+            text="Can't display this editor"
+            isReadOnly={true}
+          />
+        );
+      }
+    };
+
+    return (
+      <Panel>
+        <div className="panel__header panel__header--dark">
+          <div className="panel__header__tabs">
+            {testRunnerTabs.map((tab) => (
               <div
-                className="side-bar__panel__header__changes-count"
-                data-testid={
-                  LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
-                }
-              ></div>
-            </div>
-            <PanelContent>{renderTestables()}</PanelContent>
-            {globalTestRunnerState.failureViewing && (
-              <TestFailViewer
-                globalTestRunnerState={globalTestRunnerState}
-                failure={globalTestRunnerState.failureViewing}
-              />
-            )}
+                key={tab.value}
+                onClick={() => changeTab(tab.value)}
+                className={clsx('panel__header__tab', {
+                  ['panel__header__tab--active']: tab.value === selectedTab,
+                })}
+              >
+                {toTitleCase(prettyCONSTName(tab.value))}
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+        <PanelContent>{renderTestRunnerTab()}</PanelContent>
+      </Panel>
     );
   },
 );

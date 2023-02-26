@@ -30,7 +30,7 @@ export enum LEGEND_STUDIO_TEST_ID {
   EXPLORER_TREES = 'explorer-trees',
   EXPLORER_CONTEXT_MENU = 'explorer__context-menu',
 
-  GLOBAL_TEST_RUNNER = 'global-test-runner',
+  GLOBAL_TEST_RUNNER = 'test-runner',
 
   STATUS_BAR = 'status-bar',
   EDITOR__STATUS_BAR__RIGHT = 'editor__status-bar__right',
