@@ -16,7 +16,7 @@
 
 import packageJson from '../../../../package.json';
 import type { PlainObject } from '@finos/legend-shared';
-import V1_SYSTEM_MODELS from './v1/V1_Query_GraphQL_SystemModels.json';
+import V1_SYSTEM_MODELS from './v1/V1_FMT_GraphQL_SystemModels.json';
 import {
   type V1_PureModelContextData,
   PureProtocolProcessorPlugin,
