@@ -25,5 +25,5 @@ const packageJson = loadJSON(resolve(__dirname, './package.json'));
 
 export default getBaseJestProjectConfig(
   packageJson.name,
-  'packages/legend-extension-query-graphql',
+  'packages/legend-extension-format-graphql',
 );

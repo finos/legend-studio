@@ -1,21 +1,21 @@
 {
-  "name": "@finos/legend-extension-query-graphql",
+  "name": "@finos/legend-extension-format-graphql",
   "version": "1.0.0",
   "description": "Legend extension for GraphQL Query format",
   "keywords": [
     "legend",
     "legend-extension",
-    "query-graphql",
+    "format-graphql",
     "graphql"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-query-graphql",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-format-graphql",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-extension-query-graphql"
+    "directory": "packages/legend-extension-format-graphql"
   },
   "license": "Apache-2.0",
   "sideEffects": false,

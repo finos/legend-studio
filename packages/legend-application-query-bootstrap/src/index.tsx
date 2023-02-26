@@ -33,7 +33,7 @@ import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-forma
 import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
 import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery';
 import { DSL_Service_LegendQueryApplicationPlugin } from '@finos/legend-extension-dsl-service';
-import { Query_GraphQL_GraphManagerPreset } from '@finos/legend-extension-query-graphql';
+import { Query_GraphQL_GraphManagerPreset } from '@finos/legend-extension-format-graphql';
 
 export class LegendQueryWebApplication {
   static getPresetCollection(): AbstractPreset[] {

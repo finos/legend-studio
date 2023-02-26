@@ -77,7 +77,7 @@
       "path": "packages/legend-extension-format-morphir"
     },
     {
-      "path": "packages/legend-extension-query-graphql"
+      "path": "packages/legend-extension-format-graphql"
     },
     // fixtures
     {

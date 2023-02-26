@@ -16,8 +16,8 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { Query_GraphQL_PureGraphManagerPlugin as Query_GraphQL_PureGraphManagerPlugin } from './graphManager/Query_GraphQL_PureGraphManagerPlugin.js';
-import { Query_GraphQL_PureProtocolProcessorPlugin as Query_GraphQL_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/Query_GraphQL_PureProtocolProcessorPlugin.js';
+import { Query_GraphQL_PureGraphManagerPlugin as Query_GraphQL_PureGraphManagerPlugin } from './graphManager/FMT_GraphQL_PureGraphManagerPlugin.js';
+import { Query_GraphQL_PureProtocolProcessorPlugin as Query_GraphQL_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/FMT_GraphQL_PureProtocolProcessorPlugin.js';
 
 export class Query_GraphQL_GraphManagerPreset extends AbstractPreset {
   constructor() {

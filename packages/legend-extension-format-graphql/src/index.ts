@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './Query_GraphQL_Extension.js';
+export * from './FMT_GraphQL_Extension.js';
