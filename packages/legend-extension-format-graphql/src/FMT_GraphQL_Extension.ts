@@ -16,14 +16,14 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { Query_GraphQL_PureGraphManagerPlugin as Query_GraphQL_PureGraphManagerPlugin } from './graphManager/FMT_GraphQL_PureGraphManagerPlugin.js';
-import { Query_GraphQL_PureProtocolProcessorPlugin as Query_GraphQL_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/FMT_GraphQL_PureProtocolProcessorPlugin.js';
+import { FMT_GraphQL_PureGraphManagerPlugin as FMT_GraphQL_PureGraphManagerPlugin } from './graphManager/FMT_GraphQL_PureGraphManagerPlugin.js';
+import { FMT_GraphQL_PureProtocolProcessorPlugin as FMT_GraphQL_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/FMT_GraphQL_PureProtocolProcessorPlugin.js';
 
-export class Query_GraphQL_GraphManagerPreset extends AbstractPreset {
+export class FMT_GraphQL_GraphManagerPreset extends AbstractPreset {
   constructor() {
     super(packageJson.extensions.graphManagerPreset, packageJson.version, [
-      new Query_GraphQL_PureGraphManagerPlugin(),
-      new Query_GraphQL_PureProtocolProcessorPlugin(),
+      new FMT_GraphQL_PureGraphManagerPlugin(),
+      new FMT_GraphQL_PureProtocolProcessorPlugin(),
     ]);
   }
 }

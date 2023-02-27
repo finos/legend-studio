@@ -22,7 +22,7 @@ import {
   PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
 
-export class Query_GraphQL_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
+export class FMT_GraphQL_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
     super(
       packageJson.extensions.pureProtocolProcessorPlugin,

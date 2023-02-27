@@ -1,7 +1,7 @@
 {
   "name": "@finos/legend-extension-format-graphql",
-  "version": "1.0.0",
-  "description": "Legend extension for GraphQL Query format",
+  "version": "0.0.0",
+  "description": "Legend extension for GraphQL",
   "keywords": [
     "legend",
     "legend-extension",
@@ -56,8 +56,8 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphManagerPreset": "@finos/legend-graph-manager-preset-query-graphql",
-    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-query-graphql",
-    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-query-graphql"
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-format-graphql",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-format-graphql",
+    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-format-graphql"
   }
 }
