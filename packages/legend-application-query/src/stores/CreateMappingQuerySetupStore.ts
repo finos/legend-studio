@@ -131,14 +131,14 @@ export class CreateMappingQuerySetupStore extends BaseQuerySetupStore {
         project,
         versionId,
       )) as Entity[];
-      const entitiesWithOriginIdx = (yield flowResult(
+      const dependencyEntitiesIndex = (yield flowResult(
         this.depotServerClient.getIndexedDependencyEntities(project, versionId),
       )) as Map<string, EntitiesWithOrigin>;
 
       this.mappingRuntimeCompatibilitySurveyResult = (yield flowResult(
         getQueryBuilderGraphManagerExtension(
           this.graphManagerState.graphManager,
-        ).surveyMappingRuntimeCompatibility(entities, entitiesWithOriginIdx),
+        ).surveyMappingRuntimeCompatibility(entities, dependencyEntitiesIndex),
       )) as MappingRuntimeCompatibilityAnalysisResult[];
 
       this.surveyMappingRuntimeCompatibilityState.pass();

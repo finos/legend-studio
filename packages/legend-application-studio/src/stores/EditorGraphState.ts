@@ -350,7 +350,7 @@ export class EditorGraphState {
       this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
         `Fetching dependencies...`,
       );
-      const entitiesWithOriginIdx = (yield flowResult(
+      const dependencyEntitiesIndex = (yield flowResult(
         this.getIndexedDependencyEntities(),
       )) as Map<string, EntitiesWithOrigin>;
       stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
@@ -360,7 +360,7 @@ export class EditorGraphState {
         this.editorStore.graphManagerState.coreModel,
         this.editorStore.graphManagerState.systemModel,
         dependencyManager,
-        entitiesWithOriginIdx,
+        dependencyEntitiesIndex,
         this.editorStore.graphManagerState.dependenciesBuildState,
         {},
         dependency_buildReport,

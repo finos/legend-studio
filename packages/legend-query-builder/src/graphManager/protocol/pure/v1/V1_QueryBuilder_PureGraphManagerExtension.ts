@@ -62,13 +62,13 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
   async buildGraphForCreateQuerySetup(
     graph: PureModel,
     entities: Entity[],
-    entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>,
+    dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>,
   ): Promise<void> {
     try {
       const graphBuilderInput = await this.graphManager.indexLightGraph(
         graph,
         entities,
-        entitiesWithOriginIdx,
+        dependencyEntitiesIndex,
         (entity: Entity): boolean =>
           ((entity.content as PlainObject<V1_PackageableElement>)
             ._type as string) === V1_MAPPING_ELEMENT_PROTOCOL_TYPE ||
@@ -139,7 +139,7 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
 
   async surveyMappingRuntimeCompatibility(
     entities: Entity[],
-    entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>,
+    dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>,
   ): Promise<MappingRuntimeCompatibilityAnalysisResult[]> {
     const result: MappingRuntimeCompatibilityAnalysisResult[] = [];
     const graph = await this.graphManager.createEmptyGraph({
@@ -149,7 +149,7 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
     const graphBuilderInput = await this.graphManager.indexLightGraph(
       graph,
       entities,
-      entitiesWithOriginIdx,
+      dependencyEntitiesIndex,
       (entity: Entity): boolean =>
         ([CORE_PURE_PATH.MAPPING, CORE_PURE_PATH.RUNTIME] as string[]).includes(
           entity.classifierPath,
@@ -249,7 +249,7 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
 
   async surveyServiceExecution(
     entities: Entity[],
-    entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>,
+    dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>,
   ): Promise<ServiceExecutionAnalysisResult[]> {
     const result: ServiceExecutionAnalysisResult[] = [];
     const graph = await this.graphManager.createEmptyGraph({
@@ -259,7 +259,7 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
     const graphBuilderInput = await this.graphManager.indexLightGraph(
       graph,
       entities,
-      entitiesWithOriginIdx,
+      dependencyEntitiesIndex,
       (entity: Entity): boolean =>
         entity.classifierPath === CORE_PURE_PATH.SERVICE,
       // NOTE: small optimization since we only need to inspect services' execution context

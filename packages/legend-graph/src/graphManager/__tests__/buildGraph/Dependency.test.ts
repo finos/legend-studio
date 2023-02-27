@@ -106,15 +106,15 @@ test(
 
     await graphManagerState.initializeSystem();
     const dependencyManager = new DependencyManager([]);
-    const entitiesWithOriginIdx = new Map<string, EntitiesWithOrigin>();
-    entitiesWithOriginIdx.set(a_DependencyKey, firstDependencyEntities);
-    entitiesWithOriginIdx.set(b_DependencyKey, secondDependencyEntities);
+    const dependencyEntitiesIndex = new Map<string, EntitiesWithOrigin>();
+    dependencyEntitiesIndex.set(a_DependencyKey, firstDependencyEntities);
+    dependencyEntitiesIndex.set(b_DependencyKey, secondDependencyEntities);
     graphManagerState.graph.dependencyManager = dependencyManager;
     await graphManagerState.graphManager.buildDependencies(
       graphManagerState.coreModel,
       graphManagerState.systemModel,
       dependencyManager,
-      entitiesWithOriginIdx,
+      dependencyEntitiesIndex,
       graphManagerState.dependenciesBuildState,
     );
     expect(graphManagerState.dependenciesBuildState.hasSucceeded).toBe(true);
@@ -125,7 +125,7 @@ test(
       graphManagerState.graphBuildState,
     );
     expect(graphManagerState.graphBuildState.hasSucceeded).toBe(true);
-    Array.from(entitiesWithOriginIdx.keys()).forEach((k) =>
+    Array.from(dependencyEntitiesIndex.keys()).forEach((k) =>
       expect(dependencyManager.getModel(k)).toBeDefined(),
     );
 
@@ -152,8 +152,8 @@ test(
 
     await graphManagerState.initializeSystem();
     const dependencyManager = new DependencyManager([]);
-    const entitiesWithOriginIdx = new Map<string, EntitiesWithOrigin>();
-    entitiesWithOriginIdx.set(
+    const dependencyEntitiesIndex = new Map<string, EntitiesWithOrigin>();
+    dependencyEntitiesIndex.set(
       'group-1:artifact-2:1.0.0',
       firstDependencyEntities,
     );
@@ -162,7 +162,7 @@ test(
       graphManagerState.coreModel,
       graphManagerState.systemModel,
       dependencyManager,
-      entitiesWithOriginIdx,
+      dependencyEntitiesIndex,
       graphManagerState.dependenciesBuildState,
     );
     expect(graphManagerState.dependenciesBuildState.hasSucceeded).toBe(true);

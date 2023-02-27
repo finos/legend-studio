@@ -495,7 +495,7 @@ export abstract class QueryEditorStore {
     this.graphManagerState.dependenciesBuildState.setMessage(
       `Fetching dependencies...`,
     );
-    const entitiesWithOriginIdx = (yield flowResult(
+    const dependencyEntitiesIndex = (yield flowResult(
       this.depotServerClient.getIndexedDependencyEntities(project, versionId),
     )) as Map<string, EntitiesWithOrigin>;
     stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
@@ -505,7 +505,7 @@ export abstract class QueryEditorStore {
       this.graphManagerState.coreModel,
       this.graphManagerState.systemModel,
       dependencyManager,
-      entitiesWithOriginIdx,
+      dependencyEntitiesIndex,
       this.graphManagerState.dependenciesBuildState,
       {},
       dependency_buildReport,
