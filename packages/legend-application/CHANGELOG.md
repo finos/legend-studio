@@ -1,5 +1,17 @@
 # @finos/legend-application
 
+## 11.0.0
+
+### Major Changes
+
+- [#1937](https://github.com/finos/legend-studio/pull/1937) [`176371264`](https://github.com/finos/legend-studio/commit/176371264c6b3af8a14cbe4ce6d2d75a50691173) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed event `application.context.accessed -> application.context.access`, `application.virtual-assistant.documentation-entry.accessed -> application.virtual-assistant.documentation-entry.access`.
+
+## 10.2.18
+
+### Patch Changes
+
+- [#1936](https://github.com/finos/legend-studio/pull/1936) [`4ba7b5afb`](https://github.com/finos/legend-studio/commit/4ba7b5afb4e22741115fee9e74cfbe5a5a440a58) ([@akphi](https://github.com/akphi)) - Fix a problem where abort command (`Control+KeyC`) clash with copy command in `Windows`.
+
 ## 10.2.17
 
 ## 10.2.16

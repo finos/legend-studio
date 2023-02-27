@@ -15,6 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 import {
   type RelationalDatabaseConnectionValueState,
   CORE_AUTHENTICATION_STRATEGY_TYPE,
@@ -28,6 +29,7 @@ import {
   ResizablePanelSplitter,
   CustomSelectorInput,
   ErrorIcon,
+  FilledWindowMaximizeIcon,
   PanelHeader,
   PlusIcon,
   PanelFormTextField,
@@ -47,6 +49,13 @@ import {
   PanelHeaderActions,
   PanelDivider,
   PanelFormSection,
+  Dialog,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalFooterButton,
+  ModalHeader,
+  Button,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
 
@@ -145,28 +154,66 @@ const LocalH2DatasourceSpecificationEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { sourceSpec, isReadOnly } = props;
+    const [showPopUp, setShowPopUp] = useState(false);
+    const openInPopUp = (): void => setShowPopUp(true);
+    const closePopUp = (): void => setShowPopUp(false);
     // TODO?: support CSV and toggler to go to CSV mode
     const SQLValue = sourceSpec.testDataSetupSqls.join('\n');
 
     return (
-      <PanelFormSection>
-        <div className="panel__content__form__section__header__label">
-          {capitalize('test data setup SQL')}
+      <>
+        {showPopUp && (
+          <div>
+            <Dialog open={showPopUp} onClose={closePopUp}>
+              <Modal darkMode={true} className="editor-modal">
+                <ModalHeader title="test data setup SQL" />
+                <ModalBody className="modal__body__large">
+                  <TextInputEditor
+                    inputValue={SQLValue}
+                    updateInput={(value: string | undefined): void =>
+                      localH2DatasourceSpecification_setTestDataSetupSqls(
+                        sourceSpec,
+                        value ? [value] : [],
+                      )
+                    }
+                    isReadOnly={isReadOnly}
+                    language={EDITOR_LANGUAGE.SQL}
+                  />
+                </ModalBody>
+                <ModalFooter>
+                  <ModalFooterButton onClick={closePopUp} text="Close" />
+                </ModalFooter>
+              </Modal>
+            </Dialog>
+          </div>
+        )}
+        <div>
+          <div className="panel__content__form__section__header__label">
+            {capitalize('test data setup SQL')}
+            <Button
+              className="btn--icon--small"
+              darkMode={false}
+              onClick={openInPopUp}
+              title="Open..."
+            >
+              <FilledWindowMaximizeIcon />
+            </Button>
+          </div>
+          <div className="panel__content__form__section__text-editor">
+            <TextInputEditor
+              inputValue={SQLValue}
+              updateInput={(value: string | undefined): void =>
+                localH2DatasourceSpecification_setTestDataSetupSqls(
+                  sourceSpec,
+                  value ? [value] : [],
+                )
+              }
+              isReadOnly={isReadOnly}
+              language={EDITOR_LANGUAGE.SQL}
+            />
+          </div>
         </div>
-        <div className="panel__content__form__section__text-editor">
-          <TextInputEditor
-            inputValue={SQLValue}
-            updateInput={(value: string | undefined): void =>
-              localH2DatasourceSpecification_setTestDataSetupSqls(
-                sourceSpec,
-                value ? [value] : [],
-              )
-            }
-            isReadOnly={isReadOnly}
-            language={EDITOR_LANGUAGE.SQL}
-          />
-        </div>
-      </PanelFormSection>
+      </>
     );
   },
 );

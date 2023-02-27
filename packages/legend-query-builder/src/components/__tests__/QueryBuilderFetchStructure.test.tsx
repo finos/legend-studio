@@ -266,6 +266,19 @@ test(
       getByTitle(queryBuilder, 'Configure result set modifiers...'),
     );
     const modal = await waitFor(() => renderResult.getByRole('dialog'));
+
+    await waitFor(() => fireEvent.click(getByText(modal, 'Add Value')));
+
+    const sortTypesAsc = await waitFor(() =>
+      getAllByText(modal, COLUMN_SORT_TYPE.ASC.toLowerCase()),
+    );
+    expect(sortTypesAsc).toHaveLength(2);
+
+    const sortTypesDesc = await waitFor(() =>
+      getAllByText(modal, COLUMN_SORT_TYPE.DESC.toLowerCase()),
+    );
+    expect(sortTypesDesc).toHaveLength(1);
+
     await waitFor(() => getByText(modal, 'Sort and Order'));
     await waitFor(() => getByText(modal, 'Eliminate Duplicate Rows'));
     await waitFor(() => getByText(modal, 'Limit Results'));

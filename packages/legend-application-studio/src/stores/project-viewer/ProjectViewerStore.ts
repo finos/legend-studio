@@ -35,7 +35,9 @@ import {
 import {
   type Entity,
   type ProjectGAVCoordinates,
+  type EntitiesWithOrigin,
   parseGAVCoordinates,
+  LegendSDLC,
 } from '@finos/legend-storage';
 import {
   ProjectConfiguration,
@@ -46,25 +48,25 @@ import {
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import { TAB_SIZE } from '@finos/legend-application';
-import { ProjectData } from '@finos/legend-server-depot';
+import { ProjectData, resolveVersion } from '@finos/legend-server-depot';
 import {
   type WorkflowManagerState,
   ProjectVersionWorkflowManagerState,
   ProjectWorkflowManagerState,
 } from '../sidebar-state/WorkflowManagerState.js';
 import {
-  type GraphBuilderReport,
   GraphManagerTelemetry,
   GRAPH_MANAGER_EVENT,
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
   GraphBuilderError,
+  createGraphBuilderReport,
 } from '@finos/legend-graph';
 import { GRAPH_EDITOR_MODE } from '../EditorConfig.js';
 
 interface ProjectViewerGraphBuilderMaterial {
   entities: Entity[];
-  dependencyEntitiesIndex: Map<string, Entity[]>;
+  dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>;
 }
 
 export class ProjectViewerStore {
@@ -257,7 +259,7 @@ export class ProjectViewerStore {
       );
     }
     this.editorStore.initState.setMessage(undefined);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
+    stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS);
 
     const entities = graphBuildingMaterial[0];
     const projectConfiguration = ProjectConfiguration.serialization.fromJson(
@@ -283,13 +285,13 @@ export class ProjectViewerStore {
     const dependencyEntitiesIndex =
       (yield this.editorStore.graphState.getIndexedDependencyEntities()) as Map<
         string,
-        Entity[]
+        EntitiesWithOrigin
       >;
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+    stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
 
     return {
       entities,
-      dependencyEntitiesIndex,
+      dependencyEntitiesIndex: dependencyEntitiesIndex,
     };
   }
 
@@ -323,7 +325,7 @@ export class ProjectViewerStore {
       versionId,
     )) as Entity[];
     this.editorStore.initState.setMessage(undefined);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
+    stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS);
 
     // fetch dependencies
     this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
@@ -334,18 +336,18 @@ export class ProjectViewerStore {
         project,
         versionId,
       ),
-    )) as Map<string, Entity[]>;
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+    )) as Map<string, EntitiesWithOrigin>;
+    stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
 
     return {
       entities,
-      dependencyEntitiesIndex,
+      dependencyEntitiesIndex: dependencyEntitiesIndex,
     };
   }
 
   *buildGraph(
     entities: Entity[],
-    dependencyEntitiesIndex: Map<string, Entity[]>,
+    dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>,
   ): GeneratorFn<boolean> {
     try {
       const stopWatch = new StopWatch();
@@ -378,39 +380,54 @@ export class ProjectViewerStore {
       this.editorStore.graphManagerState.graph.dependencyManager =
         dependencyManager;
 
-      const dependency_buildReport =
-        (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
-          this.editorStore.graphManagerState.coreModel,
-          this.editorStore.graphManagerState.systemModel,
-          dependencyManager,
-          dependencyEntitiesIndex,
-          this.editorStore.graphManagerState.dependenciesBuildState,
-        )) as GraphBuilderReport;
+      const dependency_buildReport = createGraphBuilderReport();
+      yield this.editorStore.graphManagerState.graphManager.buildDependencies(
+        this.editorStore.graphManagerState.coreModel,
+        this.editorStore.graphManagerState.systemModel,
+        dependencyManager,
+        dependencyEntitiesIndex,
+        this.editorStore.graphManagerState.dependenciesBuildState,
+        {},
+        dependency_buildReport,
+      );
 
       // build graph
-      const graph_buildReport =
-        (yield this.editorStore.graphManagerState.graphManager.buildGraph(
-          this.editorStore.graphManagerState.graph,
-          entities,
-          this.editorStore.graphManagerState.graphBuildState,
-        )) as GraphBuilderReport;
+      const graph_buildReport = createGraphBuilderReport();
+      yield this.editorStore.graphManagerState.graphManager.buildGraph(
+        this.editorStore.graphManagerState.graph,
+        entities,
+        this.editorStore.graphManagerState.graphBuildState,
+        {
+          origin: this.projectGAVCoordinates
+            ? new LegendSDLC(
+                this.projectGAVCoordinates.groupId,
+                this.projectGAVCoordinates.artifactId,
+                resolveVersion(this.projectGAVCoordinates.versionId),
+              )
+            : undefined,
+        },
+        graph_buildReport,
+      );
 
       // report
-      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
+      stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
       const graphBuilderReportData = {
         timings: {
-          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.getRecord(
-            GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED,
+          [GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS]: stopWatch.getRecord(
+            GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
           ),
         },
         dependencies: dependency_buildReport,
+        dependenciesCount:
+          this.editorStore.graphManagerState.graph.dependencyManager
+            .numberOfDependencies,
         graph: graph_buildReport,
       };
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
+        LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
         graphBuilderReportData,
       );
-      GraphManagerTelemetry.logEvent_GraphInitialized(
+      GraphManagerTelemetry.logEvent_GraphInitializationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         graphBuilderReportData,
       );

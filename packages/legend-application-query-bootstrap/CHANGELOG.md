@@ -1,5 +1,13 @@
 # @finos/legend-application-query-bootstrap
 
+## 8.43.0
+
+### Patch Changes
+
+- [#1939](https://github.com/finos/legend-studio/pull/1939) [`a6cb0d1c7`](https://github.com/finos/legend-studio/commit/a6cb0d1c7b35ac0b71fd29473d3e84d0bf2161e6) ([@xannem](https://github.com/xannem)) - Increase readability of query builder icon option buttons
+
+## 8.42.0
+
 ## 8.41.0
 
 ## 8.40.0

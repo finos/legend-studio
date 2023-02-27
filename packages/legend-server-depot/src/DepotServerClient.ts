@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@finos/legend-storage';
+import { type Entity, EntitiesWithOrigin } from '@finos/legend-storage';
 import {
   type PlainObject,
   AbstractServerClient,
@@ -146,6 +146,16 @@ export class DepotServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Dependants -------------------------------------------
 
+  getAllDependantProjects = (
+    groupId: string,
+    artifactId: string,
+  ): Promise<PlainObject<ProjectVersionPlatformDependency>[]> =>
+    this.get(
+      `${this._versions(groupId, artifactId)}/all/dependantProjects`,
+      undefined,
+      undefined,
+    );
+
   getDependantProjects = (
     groupId: string,
     artifactId: string,
@@ -160,13 +170,11 @@ export class DepotServerClient extends AbstractServerClient {
   async getIndexedDependantProjects(
     groupId: string,
     artifactId: string,
-    version: string,
+    version?: string,
   ): Promise<PlainObject<ProjectVersionPlatformDependency>[] | undefined> {
-    const dependants = await this.getDependantProjects(
-      groupId,
-      artifactId,
-      version,
-    );
+    const dependants = version
+      ? await this.getDependantProjects(groupId, artifactId, version)
+      : await this.getAllDependantProjects(groupId, artifactId);
     return dependants;
   }
 
@@ -199,8 +207,8 @@ export class DepotServerClient extends AbstractServerClient {
   async getIndexedDependencyEntities(
     project: ProjectData,
     versionId: string,
-  ): Promise<Map<string, Entity[]>> {
-    const dependencyEntitiesIndex = new Map<string, Entity[]>();
+  ): Promise<Map<string, EntitiesWithOrigin>> {
+    const dependencyEntitiesIndex = new Map<string, EntitiesWithOrigin>();
     const dependencies = await this.getDependencyEntities(
       project.groupId,
       project.artifactId,
@@ -211,7 +219,15 @@ export class DepotServerClient extends AbstractServerClient {
     dependencies
       .map((v) => ProjectVersionEntities.serialization.fromJson(v))
       .forEach((dependencyInfo) => {
-        dependencyEntitiesIndex.set(dependencyInfo.id, dependencyInfo.entities);
+        dependencyEntitiesIndex.set(
+          dependencyInfo.id,
+          new EntitiesWithOrigin(
+            dependencyInfo.groupId,
+            dependencyInfo.artifactId,
+            dependencyInfo.versionId,
+            dependencyInfo.entities,
+          ),
+        );
       });
     return dependencyEntitiesIndex;
   }

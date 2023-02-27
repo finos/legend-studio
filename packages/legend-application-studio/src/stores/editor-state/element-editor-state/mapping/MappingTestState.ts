@@ -37,6 +37,7 @@ import {
   tryToFormatLosslessJSONString,
   tryToMinifyJSONString,
   ContentType,
+  StopWatch,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore.js';
 import { observable, flow, action, makeObservable, flowResult } from 'mobx';
@@ -77,6 +78,7 @@ import {
   DEPRECATED__validate_MappingTest,
   type DEPRECATED__MappingTest,
   ModelStore,
+  reportGraphAnalytics,
 } from '@finos/legend-graph';
 import { ExecutionPlanState, TAB_SIZE } from '@finos/legend-application';
 import { flatData_setData } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
@@ -93,8 +95,13 @@ import {
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
 } from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
-import { LambdaEditorState } from '@finos/legend-query-builder';
+import {
+  LambdaEditorState,
+  QueryBuilderTelemetry,
+  QUERY_BUILDER_EVENT,
+} from '@finos/legend-query-builder';
 import { MappingEditorTabState } from './MappingTabManagerState.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../LegendStudioApplicationNavigationContext.js';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -795,25 +802,49 @@ export class MappingTestState extends MappingEditorTabState {
     try {
       this.isGeneratingPlan = true;
       let rawPlan: RawExecutionPlan;
+
+      const stopWatch = new StopWatch();
+      const report = reportGraphAnalytics(
+        this.editorStore.graphManagerState.graph,
+      );
+
       if (debug) {
+        QueryBuilderTelemetry.logEvent_ExecutionPlanDebugLaunched(
+          this.editorStore.applicationStore.telemetryService,
+          {
+            applicationContext:
+              LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_TEST_EDITOR,
+          },
+        );
         const debugResult =
           (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
             this.queryState.query,
             this.mappingEditorState.mapping,
             this.inputDataState.runtime,
             this.editorStore.graphManagerState.graph,
+            report,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
       } else {
+        QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationLaunched(
+          this.editorStore.applicationStore.telemetryService,
+          {
+            applicationContext:
+              LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_TEST_EDITOR,
+          },
+        );
         rawPlan =
           (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
             this.queryState.query,
             this.mappingEditorState.mapping,
             this.inputDataState.runtime,
             this.editorStore.graphManagerState.graph,
+            report,
           )) as object;
       }
+
+      stopWatch.record();
       try {
         this.executionPlanState.setRawPlan(rawPlan);
         const plan =
@@ -824,6 +855,24 @@ export class MappingTestState extends MappingEditorTabState {
         this.executionPlanState.setPlan(plan);
       } catch {
         // do nothing
+      }
+      stopWatch.record(QUERY_BUILDER_EVENT.BUILD_EXECUTION_PLAN__SUCCESS);
+
+      report.timings = {
+        ...report.timings,
+        ...Object.fromEntries(stopWatch.records),
+        total: stopWatch.elapsed,
+      };
+      if (debug) {
+        QueryBuilderTelemetry.logEvent_ExecutionPlanDebugSucceeded(
+          this.editorStore.applicationStore.telemetryService,
+          report,
+        );
+      } else {
+        QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationSucceeded(
+          this.editorStore.applicationStore.telemetryService,
+          report,
+        );
       }
     } catch (error) {
       assertErrorThrown(error);

@@ -189,7 +189,7 @@ export class XTerm extends Terminal {
       tabStopWidth: TAB_SIZE,
       theme: LEGEND_XTERM_THEME,
       overviewRulerWidth: 14, // 14px
-      scrollback: 10000, // buffer a substantial content length
+      scrollback: 100000, // buffer a substantial content length
       convertEol: true, // treat \n as new line
 
       // this is needed so we can control the cursor programmatically using escape sequences
@@ -257,7 +257,7 @@ export class XTerm extends Terminal {
           } else {
             this.applicationStore.log.warn(
               LogEvent.create(
-                APPLICATION_EVENT.APPLICATION_TERMINAL_COMMAND_CONFIGURATION_CHECK_FAILURE,
+                APPLICATION_EVENT.APPLICATION_TERMINAL_COMMAND_CONFIGURATION_CHECK__FAILURE,
               ),
               `Found multiple duplicated terminal commands '${command}'`,
             );

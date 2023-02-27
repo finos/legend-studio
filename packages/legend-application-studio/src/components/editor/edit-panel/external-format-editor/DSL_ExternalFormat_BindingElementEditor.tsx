@@ -397,7 +397,7 @@ export const ModelUnitEditor = observer(
           </div>
           <div className="panel__content__form__section__header__prompt">
             Specifies the list of models excluded
-          </div>{' '}
+          </div>
           <ModelUnitPackageElementEditor
             elements={modelUnit.packageableElementExcludes}
             addElement={addExclusion}

@@ -26,7 +26,7 @@ export abstract class V1_SDLC {
   }
 }
 
-export class V1_AlloySDLC extends V1_SDLC {
+export class V1_LegendSDLC extends V1_SDLC {
   groupId: string;
   artifactId: string;
 

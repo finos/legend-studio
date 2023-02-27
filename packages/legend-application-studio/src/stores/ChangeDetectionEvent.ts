@@ -16,19 +16,19 @@
 
 export enum CHANGE_DETECTION_EVENT {
   // TODO: split this into specific events
-  CHANGE_DETECTION_FAILURE = 'change-detection.failure',
+  CHANGE_DETECTION__FAILURE = 'change-detection.failure',
 
-  CHANGE_DETECTION_RESTARTED = 'change-detection.restart.success',
+  CHANGE_DETECTION_RESTART__SUCCESS = 'change-detection.restart.success',
 
-  CHANGE_DETECTION_CHANGES_COMPUTED = 'change-detection.computation.changes.success',
-  CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED = 'change-detection.computation.conflicts.success',
+  CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS = 'change-detection.computation.changes.success',
+  CHANGE_DETECTION_COMPUTE_CONFLICT_RESOLUTION_CONFLICTS__SUCCESS = 'change-detection.computation.conflicts.success',
 
-  CHANGE_DETECTION_GRAPH_HASH_SNAPSHOTED = 'change-detection.hash-indexing.graph.success',
-  CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT = 'change-detection.hash-indexing.local.success',
-  CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT = 'change-detection.hash-indexing.workspace.success',
-  CHANGE_DETECTION_PROJECT_LATEST_HASHES_INDEX_BUILT = 'change-detection.hash-indexing.project-latest.success',
-  CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED = 'change-detection.hash-indexing.workspace-update.success',
+  CHANGE_DETECTION_BUILD_GRAPH_HASHES_INDEX__SUCCESS = 'change-detection.hash-indexing.graph.success',
+  CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS = 'change-detection.hash-indexing.local.success',
+  CHANGE_DETECTION_BUILD_WORKSPACE_HASHES_INDEX__SUCCESS = 'change-detection.hash-indexing.workspace.success',
+  CHANGE_DETECTION_BUILD_PROJECT_LATEST_HASHES_INDEX__SUCCESS = 'change-detection.hash-indexing.project-latest.success',
+  CHANGE_DETECTION_COMPUTE_WORKSPACE_UPDATE_CONFLICTS__SUCCESS = 'change-detection.hash-indexing.workspace-update.success',
 
-  CHANGE_DETECTION_GRAPH_HASHES_PRECOMPUTED = 'change-detection.graph.pre-hash.success',
-  CHANGE_DETECTION_GRAPH_OBSERVED = 'change-detection.graph.observation.success',
+  CHANGE_DETECTION_PRECOMPUTE_GRAPH_HASHES__SUCCESS = 'change-detection.graph.pre-hash.success',
+  CHANGE_DETECTION_OBSERVE_GRAPH__SUCCESS = 'change-detection.graph.observation.success',
 }

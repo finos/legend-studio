@@ -254,7 +254,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
         isTaxonomyTreeDataValid = false;
         this.applicationStore.log.warn(
           LogEvent.create(
-            LEGEND_TAXONOMY_APP_EVENT.TAXONOMY_DATA_CHECK_FAILURE,
+            LEGEND_TAXONOMY_APP_EVENT.TAXONOMY_DATA_CHECK__FAILURE,
           ),
           `Found duplicated taxonomy node with ID '${taxonomyNodeData.guid}'`,
         );
@@ -264,7 +264,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
         isTaxonomyTreeDataValid = false;
         this.applicationStore.log.warn(
           LogEvent.create(
-            LEGEND_TAXONOMY_APP_EVENT.TAXONOMY_DATA_CHECK_FAILURE,
+            LEGEND_TAXONOMY_APP_EVENT.TAXONOMY_DATA_CHECK__FAILURE,
           ),
           `Found duplicated taxonomy node with package '${taxonomyNodeData.package}'`,
         );

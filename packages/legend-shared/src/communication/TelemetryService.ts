@@ -18,10 +18,9 @@ import {
   AbstractPlugin,
   type AbstractPluginManager,
 } from '../application/AbstractPluginManager.js';
+import type { PlainObject } from '../CommonUtils.js';
 
-export interface TelemetryData {
-  [key: string]: unknown;
-}
+export type TelemetryData = PlainObject;
 
 export interface TelemetryServicePluginManager extends AbstractPluginManager {
   getTelemetryServicePlugins(): TelemetryServicePlugin[];

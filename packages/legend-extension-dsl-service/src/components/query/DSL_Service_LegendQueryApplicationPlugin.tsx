@@ -19,7 +19,7 @@ import {
   type ExistingQueryEditorActionRendererConfiguration,
   LegendQueryApplicationPlugin,
 } from '@finos/legend-application-query';
-import { ArrowCirceUpIcon } from '@finos/legend-art';
+import { ArrowCircleUpIcon } from '@finos/legend-art';
 import { generateQueryProductionizerRoute } from '../../stores/studio/DSL_Service_LegendStudioRouter.js';
 import { ProjectData } from '@finos/legend-server-depot';
 import { parseProjectIdentifier } from '@finos/legend-storage';
@@ -83,7 +83,10 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
               onClick={proceed}
               title="Productionize query..."
             >
-              <ArrowCirceUpIcon />
+              <ArrowCircleUpIcon className="query-editor__header__action__icon--productionize" />
+              <div className="query-editor__header__action__label">
+                Productionize
+              </div>
             </button>
           );
         },

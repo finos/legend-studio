@@ -15,10 +15,11 @@
  */
 
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { createModelSchema, object, primitive, list } from 'serializr';
-import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
+import { createModelSchema, primitive, list } from 'serializr';
+import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
 import type { V1_UniqueTestId } from '../../model/test/V1_UniqueTestId.js';
 import { V1_uniqueTestIdModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_TestSerializationHelper.js';
+import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
 
 export class V1_RunTestsTestableInput {
   testable!: string;
@@ -33,12 +34,12 @@ export class V1_RunTestsTestableInput {
 }
 
 export class V1_RunTestsInput {
-  model!: V1_PureModelContextData;
+  model!: V1_PureModelContext;
   testables: V1_RunTestsTestableInput[] = [];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_RunTestsInput, {
-      model: object(V1_PureModelContextData),
+      model: V1_pureModelContextPropSchema,
       testables: usingModelSchema(
         V1_RunTestsTestableInput.serialization.schema,
       ),

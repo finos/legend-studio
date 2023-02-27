@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-service
 
+## 0.1.30
+
+### Patch Changes
+
+- [#1939](https://github.com/finos/legend-studio/pull/1939) [`a6cb0d1c7`](https://github.com/finos/legend-studio/commit/a6cb0d1c7b35ac0b71fd29473d3e84d0bf2161e6) ([@xannem](https://github.com/xannem)) - Increase readability of query builder icon option buttons
+
+## 0.1.29
+
 ## 0.1.28
 
 ## 0.1.27

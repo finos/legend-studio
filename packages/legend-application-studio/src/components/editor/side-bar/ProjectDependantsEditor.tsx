@@ -22,7 +22,6 @@ import {
 import {
   PanelListItem,
   Badge,
-  ExternalLinkSquareIcon,
   DropdownMenu,
   MenuContent,
   MenuContentItem,
@@ -113,32 +112,30 @@ const ProjectDependantEditor = observer(
               </div>
             </div>
           </div>
+          <DropdownMenu
+            className="project-dependency-editor__visit-project-btn__dropdown-trigger btn--medium"
+            content={
+              <MenuContent>
+                <MenuContentItem
+                  onClick={() => viewProject(dependant)}
+                  title="View project"
+                >
+                  Project
+                </MenuContentItem>
 
-          <div className="project-dependency-editor__visit-project-btn">
-            <button
-              className="project-dependency-editor__visit-project-btn__btn btn--dark"
-              onClick={() => viewProject(dependant)}
-              tabIndex={-1}
-              title="View project"
-            >
-              <ExternalLinkSquareIcon />
-            </button>
-            <DropdownMenu
-              className="project-dependency-editor__visit-project-btn__dropdown-trigger btn--dark"
-              content={
-                <MenuContent>
-                  <MenuContentItem
-                    disabled={!dependant.projectId || !dependant.versionId}
-                    onClick={() => viewSDLCProject(dependant)}
-                  >
-                    View SDLC project
-                  </MenuContentItem>
-                </MenuContent>
-              }
-            >
-              <CaretDownIcon title="Show more options..." />
-            </DropdownMenu>
-          </div>
+                <MenuContentItem
+                  title="View SDLC project"
+                  disabled={!dependant.projectId || !dependant.versionId}
+                  onClick={() => viewSDLCProject(dependant)}
+                >
+                  SDLC project
+                </MenuContentItem>
+              </MenuContent>
+            }
+          >
+            Go to...
+            <CaretDownIcon title="Show more options..." />
+          </DropdownMenu>
         </PanelListItem>
       </div>
     );

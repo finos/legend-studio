@@ -33,7 +33,11 @@ import type { FileGenerationSpecification } from '../graph/metamodel/pure/packag
 import type { GenerationSpecification } from '../graph/metamodel/pure/packageableElements/generationSpecification/GenerationSpecification.js';
 import type { Measure } from '../graph/metamodel/pure/packageableElements/domain/Measure.js';
 import type { SectionIndex } from '../graph/metamodel/pure/packageableElements/section/SectionIndex.js';
-import type { Entity } from '@finos/legend-storage';
+import {
+  type EntitiesWithOrigin,
+  type GraphDataOrigin,
+  LegendSDLC,
+} from '@finos/legend-storage';
 import type { Database } from '../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import type { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
 
@@ -41,8 +45,9 @@ class DependencyModel extends BasicModel {
   constructor(
     extensionElementClasses: Clazz<PackageableElement>[],
     root: Package,
+    origin: GraphDataOrigin,
   ) {
-    super(root.name, extensionElementClasses);
+    super(root.name, extensionElementClasses, origin);
     this.root = root;
   }
 }
@@ -75,16 +80,30 @@ export class DependencyManager {
   /**
    * Here we create and index a graph for each dependency
    */
-  initialize(dependencyEntitiesIndex: Map<string, Entity[]>): void {
-    Array.from(dependencyEntitiesIndex.keys()).forEach((dependencyKey) => {
-      const pkg = new Package(dependencyKey);
-      this.roots.push(pkg);
-      // NOTE: all dependency models will share the dependency manager root package.
-      this.projectDependencyModelsIndex.set(
-        dependencyKey,
-        new DependencyModel(this.extensionElementClasses, pkg),
-      );
-    });
+  initialize(dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>): void {
+    Array.from(dependencyEntitiesIndex.entries()).forEach(
+      ([dependencyKey, entitiesWithOrigin]) => {
+        const pkg = new Package(dependencyKey);
+        this.roots.push(pkg);
+        // NOTE: all dependency models will share the dependency manager root package.
+        this.projectDependencyModelsIndex.set(
+          dependencyKey,
+          new DependencyModel(
+            this.extensionElementClasses,
+            pkg,
+            new LegendSDLC(
+              entitiesWithOrigin.groupId,
+              entitiesWithOrigin.artifactId,
+              entitiesWithOrigin.versionId,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  get numberOfDependencies(): number {
+    return this.projectDependencyModelsIndex.size;
   }
 
   get hasDependencies(): boolean {

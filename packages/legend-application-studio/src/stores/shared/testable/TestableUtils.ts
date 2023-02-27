@@ -77,7 +77,7 @@ export const getAllIdentifiedConnectionsFromRuntime = (
 
 // NOTE: this will all move to `engine` once engine support generating test data for all connections
 // Throws if unable to generate test data
-export class TEMPORARY_EmbeddedDataConnectionVisitor
+export class TEMPORARY__EmbeddedDataConnectionVisitor
   implements ConnectionVisitor<EmbeddedData>
 {
   editorStore: EditorStore;
@@ -165,7 +165,7 @@ export const initializeConnectionDataFromRuntime = (
       const connection = identifiedConnection.connection;
       const embeddedData = returnUndefOnError(() =>
         connection.accept_ConnectionVisitor(
-          new TEMPORARY_EmbeddedDataConnectionVisitor(editorStore),
+          new TEMPORARY__EmbeddedDataConnectionVisitor(editorStore),
         ),
       );
       if (embeddedData) {
@@ -193,7 +193,7 @@ export const createEmptyEqualToJsonAssertion = (
 };
 
 // Temproary as engine should return an embedded data type
-export const TEMPORARY_createRelationalDataFromCSV = (
+export const TEMPORARY__createRelationalDataFromCSV = (
   val: string,
 ): RelationalCSVData => {
   const NEW_LINE = '\n';

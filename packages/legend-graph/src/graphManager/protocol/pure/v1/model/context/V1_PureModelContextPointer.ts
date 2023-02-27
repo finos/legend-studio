@@ -19,10 +19,10 @@ import type { V1_Protocol } from '../../model/V1_Protocol.js';
 import { V1_PureModelContext } from './V1_PureModelContext.js';
 
 export class V1_PureModelContextPointer extends V1_PureModelContext {
-  serializer: V1_Protocol;
+  serializer: V1_Protocol | undefined;
   sdlcInfo?: V1_SDLC | undefined;
 
-  constructor(protocol: V1_Protocol, sdlc?: V1_SDLC) {
+  constructor(protocol: V1_Protocol | undefined, sdlc?: V1_SDLC) {
     super();
     this.serializer = protocol;
     this.sdlcInfo = sdlc;

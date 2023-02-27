@@ -67,7 +67,7 @@ export class KeyboardShortcutsService {
       if (commands.length > 1) {
         this.applicationStore.log.warn(
           LogEvent.create(
-            APPLICATION_EVENT.APPLICATION_KEYBOARD_SHORTCUTS_CONFIGURATION_CHECK_FAILURE,
+            APPLICATION_EVENT.APPLICATION_KEYBOARD_SHORTCUTS_CONFIGURATION_CHECK__FAILURE,
           ),
           `Found multiple commands with key binding '${keyCombination}'`,
         );

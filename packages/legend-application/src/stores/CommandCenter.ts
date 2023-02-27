@@ -74,7 +74,7 @@ export class CommandCenter {
     if (this.commandRegistry.has(commandKey)) {
       this.applicationStore.log.warn(
         LogEvent.create(
-          APPLICATION_EVENT.APPLICATION_COMMAND_CENTER_REGISTRATION_FAILURE,
+          APPLICATION_EVENT.APPLICATION_COMMAND_CENTER_REGISTRATION__FAILURE,
         ),
         `Can't register command: command is already registered`,
       );

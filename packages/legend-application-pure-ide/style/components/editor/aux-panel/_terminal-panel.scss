@@ -138,5 +138,25 @@
     height: 100%;
     width: 100%;
     padding: 0.5rem 0 0.5rem 1.5rem;
+
+    // NOTE: here, we're trying to match the VSCode scrollbar styling
+    ::-webkit-scrollbar {
+      width: 1.4rem;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--color-light-shade-50);
+    }
+
+    &:hover {
+      ::-webkit-scrollbar-thumb {
+        background: #79797966;
+      }
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+      border: 0.05rem solid var(--color-dark-grey-200);
+    }
   }
 }

@@ -28,24 +28,30 @@ type Query_TelemetryData = {
 };
 
 export class LegendQueryTelemetry {
-  static logEvent_ViewQuery(
+  static logEvent_ViewQuerySucceeded(
     telemetryService: TelemetryService,
     data: Query_TelemetryData,
   ): void {
-    telemetryService.logEvent(LEGEND_QUERY_APP_EVENT.QUERY_VIEWED, data);
+    telemetryService.logEvent(LEGEND_QUERY_APP_EVENT.VIEW_QUERY__SUCCESS, data);
   }
 
-  static logEvent_CreateQuery(
+  static logEvent_CreateQuerySucceeded(
     telemetryService: TelemetryService,
     data: Query_TelemetryData,
   ): void {
-    telemetryService.logEvent(LEGEND_QUERY_APP_EVENT.QUERY_CREATED, data);
+    telemetryService.logEvent(
+      LEGEND_QUERY_APP_EVENT.CREATE_QUERY__SUCCESS,
+      data,
+    );
   }
 
-  static logEvent_UpdateQuery(
+  static logEvent_UpdateQuerySucceeded(
     telemetryService: TelemetryService,
     data: Query_TelemetryData,
   ): void {
-    telemetryService.logEvent(LEGEND_QUERY_APP_EVENT.QUERY_UPDATED, data);
+    telemetryService.logEvent(
+      LEGEND_QUERY_APP_EVENT.UPDATE_QUERY__SUCCESS,
+      data,
+    );
   }
 }

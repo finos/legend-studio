@@ -1,5 +1,17 @@
 # @finos/legend-application-studio
 
+## 22.4.5
+
+### Patch Changes
+
+- [#1939](https://github.com/finos/legend-studio/pull/1939) [`a6cb0d1c7`](https://github.com/finos/legend-studio/commit/a6cb0d1c7b35ac0b71fd29473d3e84d0bf2161e6) ([@xannem](https://github.com/xannem)) - Increase readability of query builder icon option buttons
+
+## 22.4.4
+
+### Patch Changes
+
+- [#1935](https://github.com/finos/legend-studio/pull/1935) [`03b78099b`](https://github.com/finos/legend-studio/commit/03b78099bfa4abacc4140145735125f81132f7a6) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Use strategic test suite for service code snippets.
+
 ## 22.4.3
 
 ## 22.4.2

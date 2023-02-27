@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-space
 
+## 9.0.43
+
+### Patch Changes
+
+- [#1939](https://github.com/finos/legend-studio/pull/1939) [`a6cb0d1c7`](https://github.com/finos/legend-studio/commit/a6cb0d1c7b35ac0b71fd29473d3e84d0bf2161e6) ([@xannem](https://github.com/xannem)) - Increase readability of query builder icon option buttons
+
+## 9.0.42
+
 ## 9.0.41
 
 ## 9.0.40

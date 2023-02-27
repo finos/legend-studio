@@ -195,10 +195,11 @@ export const ClassMappingEditor = observer(
               )}
             >
               <div className="mapping-element-editor__metadata__sub-chunk">
-                with{' '}
-                {sourceName
-                  ? `source ${sourceType.toLowerCase()}`
-                  : `no source`}
+                {`with ${
+                  sourceName
+                    ? `source ${sourceType.toLowerCase()}`
+                    : `no source`
+                }`}
               </div>
               {sourceName && (
                 <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__source">

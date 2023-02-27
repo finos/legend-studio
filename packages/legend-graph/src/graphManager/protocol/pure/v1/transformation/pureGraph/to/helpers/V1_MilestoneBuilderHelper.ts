@@ -52,7 +52,7 @@ const buildMilestoningParameter = (
   return json;
 };
 
-const V1_TEMPORARY_buildMilestoningDateProperty = (
+const V1_TEMPORARY__buildMilestoningDateProperty = (
   propertyName: string,
   owner: PropertyOwner,
   graph: PureModel,
@@ -70,7 +70,7 @@ const V1_TEMPORARY_buildMilestoningDateProperty = (
  * We are temproary generating them to support migration Pure -> Legend which have mappings mapped against
  * these properties
  */
-export const V1_TEMPORARY_buildMilestoningClass = (
+export const V1_TEMPORARY__buildMilestoningClass = (
   _class: Class,
   graph: PureModel,
 ): void => {
@@ -78,7 +78,7 @@ export const V1_TEMPORARY_buildMilestoningClass = (
   switch (milestonedStereotype) {
     case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
       _class._generatedMilestonedProperties.push(
-        V1_TEMPORARY_buildMilestoningDateProperty(
+        V1_TEMPORARY__buildMilestoningDateProperty(
           BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
           _class,
           graph,
@@ -88,7 +88,7 @@ export const V1_TEMPORARY_buildMilestoningClass = (
     }
     case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
       _class._generatedMilestonedProperties.push(
-        V1_TEMPORARY_buildMilestoningDateProperty(
+        V1_TEMPORARY__buildMilestoningDateProperty(
           PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
           _class,
           graph,
@@ -98,14 +98,14 @@ export const V1_TEMPORARY_buildMilestoningClass = (
     }
     case MILESTONING_STEREOTYPE.BITEMPORAL: {
       _class._generatedMilestonedProperties.push(
-        V1_TEMPORARY_buildMilestoningDateProperty(
+        V1_TEMPORARY__buildMilestoningDateProperty(
           BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
           _class,
           graph,
         ),
       );
       _class._generatedMilestonedProperties.push(
-        V1_TEMPORARY_buildMilestoningDateProperty(
+        V1_TEMPORARY__buildMilestoningDateProperty(
           PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
           _class,
           graph,

@@ -271,7 +271,9 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         ),
       ]);
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
+        ),
         Date.now() - startTime,
         'ms',
       );
@@ -362,7 +364,9 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       yield this.editorStore.changeDetectionState.preComputeGraphElementHashes();
       this.editorStore.changeDetectionState.start();
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
+        ),
         '[ASNYC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
@@ -408,7 +412,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.editorStore.changeDetectionState.conflictResolutionHeadRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
           ),
         ),
       );
@@ -442,7 +446,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.buildEntityHashesIndex(
           workspaceBaseEntities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_WORKSPACE_HASHES_INDEX__SUCCESS,
           ),
         ),
       );

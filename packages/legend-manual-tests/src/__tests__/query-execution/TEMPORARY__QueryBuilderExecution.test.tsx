@@ -132,7 +132,7 @@ test(integrationTest('test query execution with parameters'), async () => {
     guaranteeNonNullable(queryBuilderState.mapping),
     queryBuilderState.resultState.buildExecutionRawLambda(),
     guaranteeNonNullable(queryBuilderState.runtimeValue),
-    V1_PureGraphManager.TARGET_PROTOCOL_VERSION,
+    V1_PureGraphManager.DEV_PROTOCOL_VERSION,
     parameterValues,
   );
   const executionResult = await axios.post<

@@ -1,7 +1,11 @@
 ---
+'@finos/legend-application-pure-ide-deployment': patch
+'@finos/legend-application-taxonomy-deployment': patch
 '@finos/legend-extension-dsl-persistence-cloud': patch
 '@finos/legend-application-taxonomy-bootstrap': patch
+'@finos/legend-application-studio-deployment': patch
 '@finos/legend-extension-store-service-store': patch
+'@finos/legend-application-query-deployment': patch
 '@finos/legend-application-studio-bootstrap': patch
 '@finos/legend-extension-format-json-schema': patch
 '@finos/legend-application-query-bootstrap': patch
@@ -24,8 +28,10 @@
 '@finos/legend-application': patch
 '@finos/legend-server-sdlc': patch
 '@finos/legend-dev-utils': patch
+'@finos/stylelint-config-legend-studio': patch
 '@finos/legend-storage': patch
 '@finos/legend-shared': patch
+'@finos/babel-preset-legend-studio': patch
 '@finos/legend-graph': patch
 '@finos/legend-art': patch
 ---

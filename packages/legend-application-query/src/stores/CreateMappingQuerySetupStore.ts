@@ -30,7 +30,7 @@ import {
   type PlainObject,
   type GeneratorFn,
 } from '@finos/legend-shared';
-import type { Entity } from '@finos/legend-storage';
+import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
 import {
   action,
   computed,
@@ -133,7 +133,7 @@ export class CreateMappingQuerySetupStore extends BaseQuerySetupStore {
       )) as Entity[];
       const dependencyEntitiesIndex = (yield flowResult(
         this.depotServerClient.getIndexedDependencyEntities(project, versionId),
-      )) as Map<string, Entity[]>;
+      )) as Map<string, EntitiesWithOrigin>;
 
       this.mappingRuntimeCompatibilitySurveyResult = (yield flowResult(
         getQueryBuilderGraphManagerExtension(

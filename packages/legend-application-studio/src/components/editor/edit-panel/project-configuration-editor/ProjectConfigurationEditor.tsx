@@ -87,8 +87,7 @@ const ProjectStructureEditor = observer(
               )}
             </div>
             <div className="project-configuration-editor__project__structure__version__label__text">
-              PROJECT STRUCTURE VERSION{' '}
-              {` ${projectConfig.projectStructureVersion.fullVersion}`}
+              {`PROJECT STRUCTURE VERSION ${projectConfig.projectStructureVersion.fullVersion}`}
             </div>
           </div>
           {isVersionOutdated && (

@@ -41,11 +41,14 @@ type VirtualAssistantDocumentationEntryAccessed_TelemetryData = {
 };
 
 export class ApplicationTelemetry {
-  static logEvent_ApplicationInitialized(
+  static logEvent_ApplicationInitializationSucceeded(
     telemetryService: TelemetryService,
     data: ApplicationLoaded_TelemetryData,
   ): void {
-    telemetryService.logEvent(APPLICATION_EVENT.APPLICATION_LOADED, data);
+    telemetryService.logEvent(
+      APPLICATION_EVENT.APPLICATION_LOAD__SUCCESS,
+      data,
+    );
   }
 
   static logEvent_ApplicationContextAccessed(
@@ -53,7 +56,7 @@ export class ApplicationTelemetry {
     data: ApplicationContextAccessed_TelemetryData,
   ): void {
     telemetryService.logEvent(
-      APPLICATION_EVENT.APPLICATION_CONTEXT_ACCESSED,
+      APPLICATION_EVENT.APPLICATION_CONTEXT__ACCESS,
       data,
     );
   }
@@ -63,7 +66,7 @@ export class ApplicationTelemetry {
     data: VirtualAssistantDocumentationEntryAccessed_TelemetryData,
   ): void {
     telemetryService.logEvent(
-      APPLICATION_EVENT.VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY_ACCESSED,
+      APPLICATION_EVENT.VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY__ACCESS,
       data,
     );
   }

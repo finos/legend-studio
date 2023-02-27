@@ -42,9 +42,11 @@ import {
 } from '../../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 import type { V1_ParameterValue } from '../../model/packageableElements/service/V1_ParameterValue.js';
 import { V1_parameterValueModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
+import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
+import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
 
 export class V1_ExecuteInput {
-  clientVersion!: string;
+  clientVersion: string | undefined;
   /**
    * Studio does not process value specification, they are left in raw JSON form
    *
@@ -52,7 +54,7 @@ export class V1_ExecuteInput {
    */
   function!: V1_RawLambda;
   mapping: string | undefined;
-  model!: V1_PureModelContextData;
+  model!: V1_PureModelContext;
   runtime: V1_Runtime | undefined;
   context!: V1_RawExecutionContext;
   parameterValues: V1_ParameterValue[] = [];
@@ -62,7 +64,7 @@ export class V1_ExecuteInput {
       clientVersion: optional(primitive()),
       function: usingModelSchema(V1_rawLambdaModelSchema),
       mapping: optional(primitive()),
-      model: object(V1_PureModelContextData),
+      model: V1_pureModelContextPropSchema,
       runtime: custom(
         (val) => (val ? V1_serializeRuntime(val) : SKIP),
         () => SKIP,

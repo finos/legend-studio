@@ -276,7 +276,7 @@ export abstract class LocalChangesState {
             this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.buildEntityHashesIndex(
               remoteWorkspaceEntities,
               LogEvent.create(
-                CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+                CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
               ),
             ),
           );
@@ -356,7 +356,7 @@ export abstract class LocalChangesState {
         this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.buildEntityHashesIndex(
           remoteWorkspaceEntities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
           ),
         ),
       );
@@ -419,7 +419,7 @@ export abstract class LocalChangesState {
       const syncFinishedTime = Date.now();
 
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_LOCAL_CHANGES_PUSHED),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.PUSH_LOCAL_CHANGES__SUCCESS),
         syncFinishedTime - startTime,
         'ms',
       );
@@ -446,7 +446,7 @@ export abstract class LocalChangesState {
           this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
             entities,
             LogEvent.create(
-              CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+              CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
             ),
           ),
         );
@@ -502,7 +502,9 @@ export abstract class LocalChangesState {
       }
       yield flowResult(this.restartChangeDetection());
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
+        ),
         Date.now() - syncFinishedTime,
         'ms',
       );
@@ -704,7 +706,9 @@ export class FormLocalChangesState extends LocalChangesState {
       ]);
       this.editorStore.changeDetectionState.start();
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
+        ),
         Date.now() - startTime,
         'ms',
       );

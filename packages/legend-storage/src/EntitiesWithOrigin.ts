@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-shared';
-import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent.js';
+import type { Entity } from './Entity.js';
 
-export class GraphBuilderReport {
-  timings: {
-    [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: number;
-    [key: string]: number;
-  } = { [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: 0 };
-  elementCount: {
-    total: number;
-    [key: string]: number;
-  } = {
-    total: 0,
-  };
-  otherStats: PlainObject = {};
+export class EntitiesWithOrigin {
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+  entities: Entity[];
+
+  constructor(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entities: Entity[],
+  ) {
+    this.groupId = groupId;
+    this.artifactId = artifactId;
+    this.versionId = versionId;
+    this.entities = entities;
+  }
 }

@@ -15,21 +15,26 @@
  */
 
 import type { TelemetryService } from '@finos/legend-shared';
-import type { GraphBuilderReport } from './GraphBuilderReport.js';
+import type { GraphManagerOperationReport } from './GraphManagerMetrics.js';
 import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent.js';
 
-type GraphBuilt_TelemetryData = {
+type GraphInitialized_TelemetryData = {
   timings: Record<string, number>;
-  dependencies: GraphBuilderReport;
-  graph: GraphBuilderReport;
-  generations?: GraphBuilderReport;
+  dependencies: GraphManagerOperationReport;
+  dependenciesCount: number;
+  graph: GraphManagerOperationReport;
+  generations?: GraphManagerOperationReport;
+  generationCount?: number;
 };
 
 export class GraphManagerTelemetry {
-  static logEvent_GraphInitialized(
+  static logEvent_GraphInitializationSucceeded(
     telemetryService: TelemetryService,
-    data: GraphBuilt_TelemetryData,
+    data: GraphInitialized_TelemetryData,
   ): void {
-    telemetryService.logEvent(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED, data);
+    telemetryService.logEvent(
+      GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
+      data,
+    );
   }
 }

@@ -505,7 +505,7 @@ export class WorkspaceSyncState {
       this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
         entities,
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
         ),
       ),
     );

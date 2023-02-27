@@ -15,29 +15,29 @@
  */
 
 export enum APPLICATION_EVENT {
-  TEXT_EDITOR_FONT_LOADED = 'application.load.font.success',
-  APPLICATION_SETUP_FAILURE = 'application.setup.failure',
+  LOAD_TEXT_EDITOR_FONT__SUCCESS = 'application.load.font.success',
+  APPLICATION_SETUP__FAILURE = 'application.setup.failure',
 
   ILLEGAL_APPLICATION_STATE_OCCURRED = 'application.error.illegal-state',
-  APPLICATION_CONFIGURATION_FAILURE = 'application.configuration.failure',
+  APPLICATION_CONFIGURATION__FAILURE = 'application.configuration.failure',
 
-  APPLICATION_IDENTITY_AUTO_FETCH_FAILURE = 'application.identity.auto-fetch.failure',
+  APPLICATION_IDENTITY_AUTO_FETCH__FAILURE = 'application.identity.auto-fetch.failure',
 
-  APPLICATION_DOCUMENTATION_FETCH_FAILURE = 'application.fetch.documentation.failure',
-  APPLICATION_DOCUMENTATION_LOAD_SKIPPED = 'application.load.documentation.skipped',
-  APPLICATION_DOCUMENTATION_REQUIREMENT_CHECK_FAILURE = 'application.load.documentation.requirement-check.failure',
-  APPLICATION_KEYBOARD_SHORTCUTS_CONFIGURATION_CHECK_FAILURE = 'application.load.keyboard-shortcuts.configuration-check.failure',
-  APPLICATION_TERMINAL_COMMAND_CONFIGURATION_CHECK_FAILURE = 'application.load.terminal-command.configuration-check.failure',
-  APPLICATION_CONTEXTUAL_DOCUMENTATION_LOAD_SKIPPED = 'application.load.contextual-documentation.skipped',
+  APPLICATION_DOCUMENTATION_FETCH__FAILURE = 'application.fetch.documentation.failure',
+  APPLICATION_DOCUMENTATION_LOAD__SKIP = 'application.load.documentation.skip',
+  APPLICATION_DOCUMENTATION_REQUIREMENT_CHECK__FAILURE = 'application.load.documentation.requirement-check.failure',
+  APPLICATION_KEYBOARD_SHORTCUTS_CONFIGURATION_CHECK__FAILURE = 'application.load.keyboard-shortcuts.configuration-check.failure',
+  APPLICATION_TERMINAL_COMMAND_CONFIGURATION_CHECK__FAILURE = 'application.load.terminal-command.configuration-check.failure',
+  APPLICATION_CONTEXTUAL_DOCUMENTATION_LOAD__SKIP = 'application.load.contextual-documentation.skip',
 
-  APPLICATION_COMMAND_CENTER_REGISTRATION_FAILURE = 'application.command-center.registration.failure',
+  APPLICATION_COMMAND_CENTER_REGISTRATION__FAILURE = 'application.command-center.registration.failure',
 
-  APPLICATION_LOADED = 'application.load.success',
-  APPLICATION_LOAD_FAILURE = 'application.load.failure',
+  APPLICATION_LOAD__SUCCESS = 'application.load.success',
+  APPLICATION_LOAD__FAILURE = 'application.load.failure',
 
   DEVELOPMENT_ISSUE = 'development.issue',
 
-  APPLICATION_CONTEXT_ACCESSED = 'application.context.accessed',
+  APPLICATION_CONTEXT__ACCESS = 'application.context.access',
 
-  VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY_ACCESSED = 'application.virtual-assistant.documentation-entry.accessed',
+  VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY__ACCESS = 'application.virtual-assistant.documentation-entry.access',
 }

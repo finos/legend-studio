@@ -17,3 +17,5 @@
 export * from './Entity.js';
 export * from './EntityUtils.js';
 export * from './DependencyUtils.js';
+export * from './GraphDataOrigin.js';
+export * from './EntitiesWithOrigin.js';

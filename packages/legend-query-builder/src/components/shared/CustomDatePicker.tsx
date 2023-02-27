@@ -56,7 +56,7 @@ import {
   valueSpecification_setGenericType,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
 
-enum CUSTOM_DATE_PICKER_OPTION {
+export enum CUSTOM_DATE_PICKER_OPTION {
   ABSOLUTE_DATE = 'Absolute Date',
   ABSOLUTE_TIME = 'Absolute Time',
   TODAY = 'Today',

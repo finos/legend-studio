@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@finos/legend-storage';
+import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
 import {
   type AbstractPureGraphManager,
   AbstractPureGraphManagerExtension,
@@ -26,12 +26,12 @@ import type { ServiceExecutionAnalysisResult } from '../../action/analytics/Serv
 export abstract class QueryBuilder_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
   abstract surveyMappingRuntimeCompatibility(
     entities: Entity[],
-    dependencyEntitiesIndex: Map<string, Entity[]>,
+    dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>,
   ): Promise<MappingRuntimeCompatibilityAnalysisResult[]>;
 
   abstract surveyServiceExecution(
     entities: Entity[],
-    dependencyEntitiesIndex: Map<string, Entity[]>,
+    dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>,
   ): Promise<ServiceExecutionAnalysisResult[]>;
 }
 

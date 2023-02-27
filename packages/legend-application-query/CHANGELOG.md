@@ -1,5 +1,25 @@
 # @finos/legend-application-query
 
+## 10.0.0
+
+### Major Changes
+
+- [#1937](https://github.com/finos/legend-studio/pull/1937) [`176371264`](https://github.com/finos/legend-studio/commit/176371264c6b3af8a14cbe4ce6d2d75a50691173) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed event `query-editor.view-query -> query-editor.view-query.success`.
+
+### Patch Changes
+
+- [#1939](https://github.com/finos/legend-studio/pull/1939) [`a6cb0d1c7`](https://github.com/finos/legend-studio/commit/a6cb0d1c7b35ac0b71fd29473d3e84d0bf2161e6) ([@xannem](https://github.com/xannem)) - Increase readability of query builder icon option buttons
+
+## 9.1.0
+
+### Minor Changes
+
+- [#1940](https://github.com/finos/legend-studio/pull/1940) [`5febc1969`](https://github.com/finos/legend-studio/commit/5febc19692f6a766cc0b85615b8f98b440ff3d1c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Set `sdlc` to `PureModel` when building graph to avoid unnecessary calls.
+
+### Patch Changes
+
+- [#1916](https://github.com/finos/legend-studio/pull/1916) [`66aebc576`](https://github.com/finos/legend-studio/commit/66aebc57678dd65024ade037932dc9b0fd3b402a) ([@xannem](https://github.com/xannem)) - Display name of query upon loading query builder.
+
 ## 9.0.37
 
 ## 9.0.36

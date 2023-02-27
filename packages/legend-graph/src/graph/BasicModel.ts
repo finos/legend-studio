@@ -65,6 +65,7 @@ import {
 } from '../graph/helpers/DomainHelper.js';
 import { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
+import type { GraphDataOrigin } from '@finos/legend-storage';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -99,6 +100,9 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
  */
 export abstract class BasicModel {
   root: Package;
+
+  private _origin: GraphDataOrigin | undefined;
+
   readonly extensions: PureGraphExtension<PackageableElement>[] = [];
 
   private elementSectionIndex = new Map<string, Section>();
@@ -129,9 +133,11 @@ export abstract class BasicModel {
   constructor(
     rootPackageName: string,
     extensionElementClasses: Clazz<PackageableElement>[],
+    origin?: GraphDataOrigin | undefined,
   ) {
     this.root = new Package(rootPackageName);
     this.extensions = this.createGraphExtensions(extensionElementClasses);
+    this._origin = origin;
   }
 
   private createGraphExtensions(
@@ -206,6 +212,20 @@ export abstract class BasicModel {
 
   get ownTestables(): Testable[] {
     return [...this.ownServices, ...this.ownMappings];
+  }
+
+  get origin(): GraphDataOrigin | undefined {
+    return this._origin;
+  }
+
+  setOrigin(val: GraphDataOrigin): void {
+    if (this._origin) {
+      throw new IllegalStateError(
+        `SDLC pointer has already been set for model.`,
+      );
+    } else {
+      this._origin = val;
+    }
   }
 
   getExtensionElements<T extends PackageableElement>(

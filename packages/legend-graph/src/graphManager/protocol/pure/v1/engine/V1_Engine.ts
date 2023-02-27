@@ -26,6 +26,7 @@ import {
   NetworkClientError,
   returnUndefOnError,
   deserializeMap,
+  StopWatch,
 } from '@finos/legend-shared';
 import type { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
@@ -34,13 +35,15 @@ import {
 } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription.js';
 import { TEMPORARY__AbstractEngineConfig } from '../../../../../graphManager/action/TEMPORARY__AbstractEngineConfig.js';
 import { V1_EngineServerClient } from './V1_EngineServerClient.js';
-import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
-import type { V1_LambdaReturnTypeResult } from '../engine/compilation/V1_LambdaReturnTypeResult.js';
+import { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
+import {
+  type V1_LambdaReturnTypeResult,
+  V1_LambdaReturnTypeInput,
+} from './compilation/V1_LambdaReturnType.js';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda.js';
 import {
   V1_deserializePureModelContextData,
   V1_serializePureModelContext,
-  V1_serializePureModelContextData,
 } from '../transformation/pureProtocol/V1_PureProtocolSerialization.js';
 import { V1_serializeRawValueSpecification } from '../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 import { V1_transformRawLambda } from '../transformation/pureGraph/from/V1_RawValueSpecificationTransformer.js';
@@ -98,6 +101,7 @@ import type {
 } from './compilation/V1_CompilationResult.js';
 import { V1_CompilationWarning } from './compilation/V1_CompilationWarning.js';
 import { V1_GenerateSchemaInput } from './externalFormat/V1_GenerateSchemaInput.js';
+import type { GraphManagerOperationReport } from '../../../../GraphManagerMetrics.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -156,16 +160,16 @@ export class V1_Engine {
     this.log = log;
   }
 
-  private serializePureModelContextData = (
-    graph: V1_PureModelContextData,
-  ): PlainObject<V1_PureModelContextData> => {
+  private serializePureModelContext = (
+    graph: V1_PureModelContext,
+  ): PlainObject<V1_PureModelContext> => {
     const startTime = Date.now();
-    const serializedGraph = V1_serializePureModelContextData(graph);
-    this.log.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_PROTOCOL_SERIALIZED),
-      Date.now() - startTime,
-      'ms',
-    );
+    const serializedGraph = V1_serializePureModelContext(graph);
+    const logEvent =
+      graph instanceof V1_PureModelContextData
+        ? GRAPH_MANAGER_EVENT.SERIALIZE_GRAPH_PROTOCOL__SUCCESS
+        : GRAPH_MANAGER_EVENT.SERIALIZE_GRAPH_CONTEXT_PROTOCOL__SUCCESS;
+    this.log.info(LogEvent.create(logEvent), Date.now() - startTime, 'ms');
     return serializedGraph;
   };
 
@@ -201,7 +205,7 @@ export class V1_Engine {
     graph: V1_PureModelContextData,
   ): Promise<string> {
     return this.engineServerClient.JSONToGrammar_model(
-      this.serializePureModelContextData(graph),
+      this.serializePureModelContext(graph),
       V1_RenderStyle.STANDARD,
     );
   }
@@ -376,12 +380,12 @@ export class V1_Engine {
   // ------------------------------------------- Compile -------------------------------------------
 
   async compilePureModelContextData(
-    model: V1_PureModelContextData,
+    model: V1_PureModelContext,
     options?: { onError?: (() => void) | undefined } | undefined,
   ): Promise<V1_CompilationResult> {
     try {
       const compilationResult = await this.engineServerClient.compile(
-        this.serializePureModelContextData(model),
+        this.serializePureModelContext(model),
       );
       return {
         warnings: (
@@ -411,6 +415,7 @@ export class V1_Engine {
 
   async compileText(
     graphText: string,
+    TEMPORARY__report: GraphManagerOperationReport,
     compileContext?: V1_PureModelContextData,
     options?: { onError?: () => void; getCompilationWarnings?: boolean },
   ): Promise<V1_TextCompilationResult> {
@@ -422,13 +427,18 @@ export class V1_Engine {
     });
     const pureModelContextDataJson = compileContext
       ? mergeObjects(
-          this.serializePureModelContextData(compileContext),
+          this.serializePureModelContext(compileContext),
           mainGraph,
           false,
         )
       : mainGraph;
     try {
+      const stopWatch = new StopWatch();
       await this.engineServerClient.compile(pureModelContextDataJson);
+      TEMPORARY__report.timings[
+        GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS
+      ] = stopWatch.elapsed;
+
       const model = V1_deserializePureModelContextData(mainGraph);
       const compilationResult = await this.engineServerClient.compile(
         pureModelContextDataJson,
@@ -461,14 +471,12 @@ export class V1_Engine {
   }
 
   async getLambdaReturnType(
-    lambda: V1_RawLambda,
-    model: V1_PureModelContextData,
+    lambdaReturnInput: V1_LambdaReturnTypeInput,
   ): Promise<string> {
     try {
       return (
         (await this.engineServerClient.lambdaReturnType(
-          V1_serializeRawValueSpecification(lambda),
-          this.serializePureModelContextData(model),
+          V1_LambdaReturnTypeInput.serialization.toJson(lambdaReturnInput),
         )) as unknown as V1_LambdaReturnTypeResult
       ).returnType;
     } catch (error) {

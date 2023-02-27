@@ -18,6 +18,8 @@
 
 // TODO: we should remove or restyle this
 .btn {
+  @include flexCenter;
+
   padding: 1rem;
   background: var(--color-white);
   color: var(--color-dark-grey-100);
@@ -56,6 +58,18 @@
 
 .btn--icon {
   @include flexCenter;
+
+  &--small {
+    padding: 0.5rem;
+    margin-left: 0.5rem;
+    border-radius: 0.1rem;
+    color: var(--color-light-grey-50);
+    background: var(--color-dark-grey-300);
+  }
+
+  &--small:hover {
+    background: var(--color-dark-grey-400);
+  }
 }
 
 .btn--important {
@@ -82,6 +96,28 @@
 
   &:focus {
     outline: 0.1rem solid var(--color-blue-200);
+    outline-offset: 0.1rem;
+  }
+}
+
+.btn--medium {
+  @include flexCenter;
+
+  border-radius: 0.1rem;
+  background: var(--color-dark-grey-280);
+  color: var(--color-light-grey-50);
+
+  &:hover {
+    background: var(--color-dark-grey-300);
+  }
+
+  &[disabled] {
+    background: var(--color-dark-grey-300);
+    color: var(--color-dark-grey-500);
+  }
+
+  &:focus {
+    outline: 0.1rem solid var(--color-grey-200);
     outline-offset: 0.1rem;
   }
 }
