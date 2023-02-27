@@ -587,7 +587,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
-    entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>,
+    dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
     _report?: GraphManagerOperationReport,
@@ -605,7 +605,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph.dependencyManager = dependencyManager;
 
     try {
-      dependencyManager.initialize(entitiesWithOriginIdx);
+      dependencyManager.initialize(dependencyEntitiesIndex);
 
       // deserialize
       buildState.setMessage(`Partitioning and deserializing elements...`);
@@ -614,7 +614,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         V1_PureModelContextData
       >();
       await Promise.all(
-        Array.from(entitiesWithOriginIdx.entries()).map(
+        Array.from(dependencyEntitiesIndex.entries()).map(
           ([dependencyKey, entitiesWithOrigin]) => {
             const projectModelData = new V1_PureModelContextData();
             dependencyGraphDataIndex.set(dependencyKey, projectModelData);
@@ -2849,7 +2849,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async indexLightGraph(
     graph: PureModel,
     entities: Entity[],
-    entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>,
+    dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>,
     entityFilterFn?: ((entity: Entity) => boolean) | undefined,
     entityProcessorFn?: ((entity: Entity) => Entity) | undefined,
   ): Promise<V1_PureGraphBuilderInput[]> {
@@ -2887,10 +2887,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     ];
 
     // build dependencies graph builder input
-    graph.dependencyManager.initialize(entitiesWithOriginIdx);
+    graph.dependencyManager.initialize(dependencyEntitiesIndex);
     const dependencyGraphDataIndex = new Map<string, V1_PureModelContextData>();
     await Promise.all(
-      Array.from(entitiesWithOriginIdx.entries()).map(
+      Array.from(dependencyEntitiesIndex.entries()).map(
         ([dependencyKey, value]) => {
           const projectModelData = new V1_PureModelContextData();
           dependencyGraphDataIndex.set(dependencyKey, projectModelData);

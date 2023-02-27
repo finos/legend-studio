@@ -206,7 +206,7 @@ export abstract class AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
-    entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>,
+    dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
     report?: GraphManagerOperationReport,

@@ -66,7 +66,7 @@ import { GRAPH_EDITOR_MODE } from '../EditorConfig.js';
 
 interface ProjectViewerGraphBuilderMaterial {
   entities: Entity[];
-  entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>;
+  dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>;
 }
 
 export class ProjectViewerStore {
@@ -291,7 +291,7 @@ export class ProjectViewerStore {
 
     return {
       entities,
-      entitiesWithOriginIdx: dependencyEntitiesIndex,
+      dependencyEntitiesIndex: dependencyEntitiesIndex,
     };
   }
 
@@ -341,13 +341,13 @@ export class ProjectViewerStore {
 
     return {
       entities,
-      entitiesWithOriginIdx: dependencyEntitiesIndex,
+      dependencyEntitiesIndex: dependencyEntitiesIndex,
     };
   }
 
   *buildGraph(
     entities: Entity[],
-    entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>,
+    dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>,
   ): GeneratorFn<boolean> {
     try {
       const stopWatch = new StopWatch();
@@ -385,7 +385,7 @@ export class ProjectViewerStore {
         this.editorStore.graphManagerState.coreModel,
         this.editorStore.graphManagerState.systemModel,
         dependencyManager,
-        entitiesWithOriginIdx,
+        dependencyEntitiesIndex,
         this.editorStore.graphManagerState.dependenciesBuildState,
         {},
         dependency_buildReport,
@@ -543,7 +543,7 @@ export class ProjectViewerStore {
       const graphBuilderResult = (yield flowResult(
         this.buildGraph(
           graphBuilderMaterial.entities,
-          graphBuilderMaterial.entitiesWithOriginIdx,
+          graphBuilderMaterial.dependencyEntitiesIndex,
         ),
       )) as boolean;
 

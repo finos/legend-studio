@@ -80,8 +80,8 @@ export class DependencyManager {
   /**
    * Here we create and index a graph for each dependency
    */
-  initialize(entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>): void {
-    Array.from(entitiesWithOriginIdx.entries()).forEach(
+  initialize(dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>): void {
+    Array.from(dependencyEntitiesIndex.entries()).forEach(
       ([dependencyKey, entitiesWithOrigin]) => {
         const pkg = new Package(dependencyKey);
         this.roots.push(pkg);

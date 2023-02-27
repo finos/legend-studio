@@ -208,7 +208,7 @@ export class DepotServerClient extends AbstractServerClient {
     project: ProjectData,
     versionId: string,
   ): Promise<Map<string, EntitiesWithOrigin>> {
-    const entitiesWithOriginIdx = new Map<string, EntitiesWithOrigin>();
+    const dependencyEntitiesIndex = new Map<string, EntitiesWithOrigin>();
     const dependencies = await this.getDependencyEntities(
       project.groupId,
       project.artifactId,
@@ -219,7 +219,7 @@ export class DepotServerClient extends AbstractServerClient {
     dependencies
       .map((v) => ProjectVersionEntities.serialization.fromJson(v))
       .forEach((dependencyInfo) => {
-        entitiesWithOriginIdx.set(
+        dependencyEntitiesIndex.set(
           dependencyInfo.id,
           new EntitiesWithOrigin(
             dependencyInfo.groupId,
@@ -229,7 +229,7 @@ export class DepotServerClient extends AbstractServerClient {
           ),
         );
       });
-    return entitiesWithOriginIdx;
+    return dependencyEntitiesIndex;
   }
 
   collectDependencyEntities = (

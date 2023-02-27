@@ -26,12 +26,12 @@ import type { ServiceExecutionAnalysisResult } from '../../action/analytics/Serv
 export abstract class QueryBuilder_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
   abstract surveyMappingRuntimeCompatibility(
     entities: Entity[],
-    entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>,
+    dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>,
   ): Promise<MappingRuntimeCompatibilityAnalysisResult[]>;
 
   abstract surveyServiceExecution(
     entities: Entity[],
-    entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>,
+    dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>,
   ): Promise<ServiceExecutionAnalysisResult[]>;
 }
 
