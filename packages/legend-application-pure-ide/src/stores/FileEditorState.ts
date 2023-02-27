@@ -392,6 +392,33 @@ export class FileEditorState
       });
     }
     this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.DELETE_LINE,
+      trigger: () =>
+        this.editorStore.tabManagerState.currentTab === this &&
+        Boolean(this.textEditorState.editor?.hasTextFocus()),
+      action: () => {
+        const currentPosition = this.textEditorState.editor?.getPosition();
+        if (currentPosition) {
+          this.textEditorState.model.pushEditOperations(
+            [],
+            [
+              {
+                range: {
+                  startLineNumber: currentPosition.lineNumber,
+                  startColumn: 1,
+                  endLineNumber: currentPosition.lineNumber + 1,
+                  endColumn: 1,
+                },
+                text: '',
+                forceMoveMarkers: true,
+              },
+            ],
+            () => null,
+          );
+        }
+      },
+    });
+    this.editorStore.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_LINE,
       trigger: () => this.editorStore.tabManagerState.currentTab === this,
       action: () => {

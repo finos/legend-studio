@@ -104,24 +104,25 @@ export enum LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY {
   FIND_USAGES = 'editor.file-editor.find-usage',
   RENAME_CONCEPT = 'editor.file-editor.rename-concept',
   GO_TO_LINE = 'editor.file-editor.go-to-line',
+  DELETE_LINE = 'editor.file-editor.delete-line',
 }
 
 export const LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_CONFIG: CommandConfigData =
   {
     [LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.TOGGLE_TEXT_WRAP]: {
-      title: 'Toggle text wrap (File)',
+      title: 'Toggle Text-wrap (File)',
       defaultKeyboardShortcut: 'Alt+KeyZ',
     },
     [LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE]: {
-      title: 'Reveal concept in tree (File)',
+      title: 'Reveal Concept in Tree (File)',
       defaultKeyboardShortcut: 'Control+Shift+KeyB',
     },
     [LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_DEFINITION]: {
-      title: 'Go to definition (File)',
+      title: 'Go to Definition (File)',
       defaultKeyboardShortcut: 'Control+KeyB',
     },
     [LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_BACK]: {
-      title: 'Go back (File)',
+      title: 'Go Back (File)',
       defaultKeyboardShortcut: 'Control+Alt+KeyB',
     },
     [LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.FIND_USAGES]: {
@@ -135,6 +136,10 @@ export const LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_CONFIG: CommandConfigData 
     [LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_LINE]: {
       title: 'Go to Line (File)',
       defaultKeyboardShortcut: 'Control+KeyG',
+    },
+    [LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.DELETE_LINE]: {
+      title: 'Delete Line (File)',
+      defaultKeyboardShortcut: 'Control+KeyD',
     },
   };
 
