@@ -34,7 +34,7 @@ export enum GRAPH_MANAGER_EVENT {
   TRANSFORM_GRAPH_META_MODEL_TO_PROTOCOL__SUCCESS = 'graph-manager.transformation.success',
   COLLECT_GRAPH_COMPILE_CONTEXT__SUCCESS = 'graph-manager.build-graph-compile-context.success',
   SERIALIZE_GRAPH_PROTOCOL__SUCCESS = 'graph-manager.graph-serialization.success',
-
+  SERIALIZE_GRAPH_CONTEXT_PROTOCOL__SUCCESS = 'graph-manager.graph-context-serialization.success',
   UPDATE_AND_REBUILD_GRAPH__SUCCESS = 'graph-manager.rebuild.success',
   TRANSFORM_GRAPH_META_MODEL_TO_GRAMMAR__SUCCESS = 'graph-manager.grammar.composing.success',
   TRANSOFMR_GRAPH_GRAMMAR_TO_META_MODEL__SUCCESS = 'graph-manager.grammar.parsing.success',

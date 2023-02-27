@@ -15,7 +15,7 @@
  */
 
 import type { ProjectData } from './models/ProjectData.js';
-import type { Entity } from '@finos/legend-storage';
+import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
 import type { DepotServerClient } from './DepotServerClient.js';
 import type { PlainObject } from '@finos/legend-shared';
 
@@ -26,12 +26,13 @@ export const retrieveProjectEntitiesWithDependencies = async (
 ): Promise<Entity[]> => {
   const [entities, dependencyEntitiesIndex]: [
     PlainObject<Entity>[],
-    Map<string, Entity[]>,
+    Map<string, EntitiesWithOrigin>,
   ] = await Promise.all([
     depotServerClient.getEntities(project, versionId),
     depotServerClient.getIndexedDependencyEntities(project, versionId),
   ]);
   return Array.from(dependencyEntitiesIndex.values())
+    .map((e) => e.entities)
     .flat()
     .concat(entities as unknown as Entity[]);
 };

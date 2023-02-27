@@ -52,7 +52,11 @@ import {
   type TracerService,
 } from '@finos/legend-shared';
 import type { LightQuery, Query, QueryInfo } from './action/query/Query.js';
-import type { Entity, LegendSDLC } from '@finos/legend-storage';
+import type {
+  EntitiesWithOrigin,
+  Entity,
+  GraphDataOrigin,
+} from '@finos/legend-storage';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification.js';
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
@@ -101,7 +105,7 @@ export interface GraphBuilderOptions {
   /**
    * This ties a graph to an sdlc pointer. Meaning the graph is immutable and tied to a specific `versioned` SDLC.
    */
-  sdlc?: LegendSDLC | undefined;
+  origin?: GraphDataOrigin | undefined;
 }
 
 export interface ExecutionOptions {
@@ -202,7 +206,7 @@ export abstract class AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
-    dependencyEntitiesIndex: Map<string, Entity[]>,
+    entitiesWithOriginIdx: Map<string, EntitiesWithOrigin>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
     report?: GraphManagerOperationReport,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@finos/legend-storage';
+import { type Entity, EntitiesWithOrigin } from '@finos/legend-storage';
 import {
   type PlainObject,
   AbstractServerClient,
@@ -207,8 +207,8 @@ export class DepotServerClient extends AbstractServerClient {
   async getIndexedDependencyEntities(
     project: ProjectData,
     versionId: string,
-  ): Promise<Map<string, Entity[]>> {
-    const dependencyEntitiesIndex = new Map<string, Entity[]>();
+  ): Promise<Map<string, EntitiesWithOrigin>> {
+    const entitiesWithOriginIdx = new Map<string, EntitiesWithOrigin>();
     const dependencies = await this.getDependencyEntities(
       project.groupId,
       project.artifactId,
@@ -219,9 +219,17 @@ export class DepotServerClient extends AbstractServerClient {
     dependencies
       .map((v) => ProjectVersionEntities.serialization.fromJson(v))
       .forEach((dependencyInfo) => {
-        dependencyEntitiesIndex.set(dependencyInfo.id, dependencyInfo.entities);
+        entitiesWithOriginIdx.set(
+          dependencyInfo.id,
+          new EntitiesWithOrigin(
+            dependencyInfo.groupId,
+            dependencyInfo.artifactId,
+            dependencyInfo.versionId,
+            dependencyInfo.entities,
+          ),
+        );
       });
-    return dependencyEntitiesIndex;
+    return entitiesWithOriginIdx;
   }
 
   collectDependencyEntities = (

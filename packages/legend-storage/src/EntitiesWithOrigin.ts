@@ -14,16 +14,23 @@
  * limitations under the License.
  */
 
-import type { ProjectGAVCoordinates } from './DependencyUtils.js';
+import type { Entity } from './Entity.js';
 
-export class LegendSDLC implements ProjectGAVCoordinates {
+export class EntitiesWithOrigin {
   groupId: string;
   artifactId: string;
   versionId: string;
+  entities: Entity[];
 
-  constructor(groupId: string, artifactId: string, versionId: string) {
+  constructor(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entities: Entity[],
+  ) {
     this.groupId = groupId;
     this.artifactId = artifactId;
     this.versionId = versionId;
+    this.entities = entities;
   }
 }

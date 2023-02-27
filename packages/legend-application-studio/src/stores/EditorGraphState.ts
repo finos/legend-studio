@@ -44,7 +44,11 @@ import { ElementEditorState } from './editor-state/element-editor-state/ElementE
 import { GraphGenerationState } from './editor-state/GraphGenerationState.js';
 import { MODEL_IMPORT_NATIVE_INPUT_TYPE } from './editor-state/ModelImporterState.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
-import { type Entity, generateGAVCoordinates } from '@finos/legend-storage';
+import {
+  type Entity,
+  EntitiesWithOrigin,
+  generateGAVCoordinates,
+} from '@finos/legend-storage';
 import {
   type EntityChange,
   type ProjectDependency,
@@ -346,9 +350,9 @@ export class EditorGraphState {
       this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
         `Fetching dependencies...`,
       );
-      const dependencyEntitiesIndex = (yield flowResult(
+      const entitiesWithOriginIdx = (yield flowResult(
         this.getIndexedDependencyEntities(),
-      )) as Map<string, Entity[]>;
+      )) as Map<string, EntitiesWithOrigin>;
       stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
 
       const dependency_buildReport = createGraphBuilderReport();
@@ -356,7 +360,7 @@ export class EditorGraphState {
         this.editorStore.graphManagerState.coreModel,
         this.editorStore.graphManagerState.systemModel,
         dependencyManager,
-        dependencyEntitiesIndex,
+        entitiesWithOriginIdx,
         this.editorStore.graphManagerState.dependenciesBuildState,
         {},
         dependency_buildReport,
@@ -981,7 +985,7 @@ export class EditorGraphState {
         dependencyManager,
         (yield flowResult(this.getIndexedDependencyEntities())) as Map<
           string,
-          Entity[]
+          EntitiesWithOrigin
         >,
         dependenciesBuildState,
       );
@@ -1324,8 +1328,10 @@ export class EditorGraphState {
     }
   }
 
-  async getIndexedDependencyEntities(): Promise<Map<string, Entity[]>> {
-    const dependencyEntitiesIndex = new Map<string, Entity[]>();
+  async getIndexedDependencyEntities(): Promise<
+    Map<string, EntitiesWithOrigin>
+  > {
+    const dependencyEntitiesIndex = new Map<string, EntitiesWithOrigin>();
     const currentConfiguration =
       this.editorStore.projectConfigurationEditorState
         .currentProjectConfiguration;
@@ -1370,7 +1376,12 @@ export class EditorGraphState {
           }
           dependencyEntitiesIndex.set(
             dependencyInfo.id,
-            dependencyInfo.entities,
+            new EntitiesWithOrigin(
+              dependencyInfo.groupId,
+              dependencyInfo.artifactId,
+              dependencyInfo.versionId,
+              dependencyInfo.entities,
+            ),
           );
         });
         const hasConflicts = Array.from(dependencyProjects.entries()).find(

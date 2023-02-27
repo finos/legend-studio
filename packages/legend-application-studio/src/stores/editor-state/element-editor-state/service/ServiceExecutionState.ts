@@ -69,7 +69,7 @@ import {
   reportGraphAnalytics,
 } from '@finos/legend-graph';
 import {
-  type Entity,
+  type EntitiesWithOrigin,
   parseGACoordinates,
   generateGAVCoordinates,
 } from '@finos/legend-storage';
@@ -327,7 +327,7 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
           (
             (yield this.editorStore.graphState.getIndexedDependencyEntities()) as Map<
               string,
-              Entity[]
+              EntitiesWithOrigin
             >
           ).keys(),
         ).map((coordinatesInText) => {

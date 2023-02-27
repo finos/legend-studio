@@ -18,7 +18,7 @@ import { test, expect } from '@jest/globals';
 import { type TEMPORARY__JestMatcher, unitTest } from '@finos/legend-shared';
 import { TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils.js';
 import { DependencyManager } from '../../../graph/DependencyManager.js';
-import type { Entity } from '@finos/legend-storage';
+import type { EntitiesWithOrigin } from '@finos/legend-storage';
 
 const entities = [
   {
@@ -43,68 +43,78 @@ const entities = [
   },
 ];
 
-const firstDependencyEntities = [
-  {
-    path: 'model::ClassB',
-    content: {
-      _type: 'class',
-      name: 'ClassB',
-      package: 'model',
-      properties: [
-        {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
+const firstDependencyEntities = {
+  groupId: 'group-1',
+  artifactId: 'artifact-1',
+  versionId: '1.0.0',
+  entities: [
+    {
+      path: 'model::ClassB',
+      content: {
+        _type: 'class',
+        name: 'ClassB',
+        package: 'model',
+        properties: [
+          {
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            name: 'prop1',
+            type: 'String',
           },
-          name: 'prop1',
-          type: 'String',
-        },
-      ],
+        ],
+      },
+      classifierPath: 'meta::pure::metamodel::type::Class',
     },
-    classifierPath: 'meta::pure::metamodel::type::Class',
-  },
-];
+  ],
+};
 
-const secondDependencyEntities = [
-  {
-    path: 'model::ClassC',
-    content: {
-      _type: 'class',
-      name: 'ClassC',
-      package: 'model',
-      properties: [
-        {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
+const secondDependencyEntities = {
+  groupId: 'group-2',
+  artifactId: 'artifact-2',
+  versionId: '1.0.0',
+  entities: [
+    {
+      path: 'model::ClassC',
+      content: {
+        _type: 'class',
+        name: 'ClassC',
+        package: 'model',
+        properties: [
+          {
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            name: 'prop',
+            type: 'String',
           },
-          name: 'prop',
-          type: 'String',
-        },
-      ],
+        ],
+      },
+      classifierPath: 'meta::pure::metamodel::type::Class',
     },
-    classifierPath: 'meta::pure::metamodel::type::Class',
-  },
-];
+  ],
+};
 
 test(
   unitTest('Dependent entities are taken into account when building graph'),
   async () => {
-    const firstDependencyKey = 'dep1';
-    const secondDependencyKey = 'dep2';
+    const a_DependencyKey = 'group-1:artifact-2:1.0.0';
+    const b_DependencyKey = 'group-2:artifact-2:1.0.0';
     const graphManagerState = TEST__getTestGraphManagerState();
 
     await graphManagerState.initializeSystem();
     const dependencyManager = new DependencyManager([]);
-    const dependencyEntitiesIndex = new Map<string, Entity[]>();
-    dependencyEntitiesIndex.set(firstDependencyKey, firstDependencyEntities);
-    dependencyEntitiesIndex.set(secondDependencyKey, secondDependencyEntities);
+    const entitiesWithOriginIdx = new Map<string, EntitiesWithOrigin>();
+    entitiesWithOriginIdx.set(a_DependencyKey, firstDependencyEntities);
+    entitiesWithOriginIdx.set(b_DependencyKey, secondDependencyEntities);
     graphManagerState.graph.dependencyManager = dependencyManager;
     await graphManagerState.graphManager.buildDependencies(
       graphManagerState.coreModel,
       graphManagerState.systemModel,
       dependencyManager,
-      dependencyEntitiesIndex,
+      entitiesWithOriginIdx,
       graphManagerState.dependenciesBuildState,
     );
     expect(graphManagerState.dependenciesBuildState.hasSucceeded).toBe(true);
@@ -115,13 +125,13 @@ test(
       graphManagerState.graphBuildState,
     );
     expect(graphManagerState.graphBuildState.hasSucceeded).toBe(true);
-    Array.from(dependencyEntitiesIndex.keys()).forEach((k) =>
+    Array.from(entitiesWithOriginIdx.keys()).forEach((k) =>
       expect(dependencyManager.getModel(k)).toBeDefined(),
     );
 
     // check dependency manager
-    expect(dependencyManager.getModel(firstDependencyKey)).toBeDefined();
-    expect(dependencyManager.getModel(secondDependencyKey)).toBeDefined();
+    expect(dependencyManager.getModel(a_DependencyKey)).toBeDefined();
+    expect(dependencyManager.getModel(b_DependencyKey)).toBeDefined();
     expect(dependencyManager.allOwnElements.length).toBe(2);
 
     // make sure dependency entities are not mingled with main graph entities
@@ -142,14 +152,17 @@ test(
 
     await graphManagerState.initializeSystem();
     const dependencyManager = new DependencyManager([]);
-    const dependencyEntitiesIndex = new Map<string, Entity[]>();
-    dependencyEntitiesIndex.set('dep', firstDependencyEntities);
+    const entitiesWithOriginIdx = new Map<string, EntitiesWithOrigin>();
+    entitiesWithOriginIdx.set(
+      'group-1:artifact-2:1.0.0',
+      firstDependencyEntities,
+    );
     graphManagerState.graph.dependencyManager = dependencyManager;
     await graphManagerState.graphManager.buildDependencies(
       graphManagerState.coreModel,
       graphManagerState.systemModel,
       dependencyManager,
-      dependencyEntitiesIndex,
+      entitiesWithOriginIdx,
       graphManagerState.dependenciesBuildState,
     );
     expect(graphManagerState.dependenciesBuildState.hasSucceeded).toBe(true);
@@ -157,7 +170,7 @@ test(
     await expect(() =>
       graphManagerState.graphManager.buildGraph(
         graphManagerState.graph,
-        firstDependencyEntities,
+        firstDependencyEntities.entities,
         graphManagerState.graphBuildState,
       ),
     ).rejects.toThrowError(`Element 'model::ClassB' already exists`);
