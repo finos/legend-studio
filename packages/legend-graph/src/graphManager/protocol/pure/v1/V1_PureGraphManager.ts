@@ -1936,6 +1936,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                   aStatus.assertion === baseAssertion &&
                   aStatus instanceof AssertFail,
               );
+            } else if (testResult instanceof TestError) {
+              throw new IllegalStateError(testResult.error);
             }
             return undefined;
           })
