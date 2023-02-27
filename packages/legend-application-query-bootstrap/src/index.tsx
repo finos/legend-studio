@@ -33,7 +33,7 @@ import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-forma
 import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
 import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery';
 import { DSL_Service_LegendQueryApplicationPlugin } from '@finos/legend-extension-dsl-service';
-import { Query_GraphQL_GraphManagerPreset } from '@finos/legend-extension-format-graphql';
+import { FMT_GraphQL_GraphManagerPreset } from '@finos/legend-extension-format-graphql';
 
 export class LegendQueryWebApplication {
   static getPresetCollection(): AbstractPreset[] {
@@ -48,7 +48,7 @@ export class LegendQueryWebApplication {
       new DSL_PersistenceCloud_GraphManagerPreset(),
       new FMT_JSONSchema_GraphManagerPreset(),
       new STO_ServiceStore_GraphManagerPreset(),
-      new Query_GraphQL_GraphManagerPreset(),
+      new FMT_GraphQL_GraphManagerPreset(),
     ];
   }
 
