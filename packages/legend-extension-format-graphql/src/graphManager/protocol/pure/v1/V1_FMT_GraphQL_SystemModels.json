@@ -1,0 +1,10 @@
+{
+  "elements": [
+    {
+      "stereotypes": ["Query", "Mutation", "Subscription"],
+      "package": "meta::external::query::graphQL::binding",
+      "_type": "profile",
+      "name": "GraphQL"
+    }
+  ]
+}

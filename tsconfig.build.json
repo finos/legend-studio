@@ -66,6 +66,9 @@
     {
       "path": "packages/legend-extension-format-morphir/tsconfig.build.json"
     },
+    {
+      "path": "packages/legend-extension-format-graphql/tsconfig.build.json"
+    },
     // fixtures
     {
       "path": "fixtures/legend-mock-server/tsconfig.build.json"
