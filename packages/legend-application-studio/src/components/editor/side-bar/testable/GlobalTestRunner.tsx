@@ -509,7 +509,9 @@ export const GlobalTestRunner = observer(
                     data-testid={
                       LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
                     }
-                  ></div>
+                  >
+                    {globalTestRunnerState.testableStates?.length ?? '0'}
+                  </div>
                 </PanelHeader>
                 <PanelContent>{renderTestables()}</PanelContent>
                 {globalTestRunnerState.failureViewing && (
