@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 23.0.1
+
+### Patch Changes
+
+- [#1953](https://github.com/finos/legend-studio/pull/1953) [`1a96a29fd`](https://github.com/finos/legend-studio/commit/1a96a29fdf60db8757e85b23f4554b2729e1606b) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug in which the generation of assertion data produces a misleading error message.
+
 ## 23.0.0
 
 ### Major Changes

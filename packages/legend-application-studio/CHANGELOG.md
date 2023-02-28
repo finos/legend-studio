@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 22.4.6
+
+### Patch Changes
+
+- [#1946](https://github.com/finos/legend-studio/pull/1946) [`90230b9d9`](https://github.com/finos/legend-studio/commit/90230b9d9446c94badfc6825d38c0a00bd7c6028) ([@xannem](https://github.com/xannem)) - Add option to edit text of H2 database table in expanded modal.
+
 ## 22.4.5
 
 ### Patch Changes

@@ -1,5 +1,7 @@
 # @finos/legend-application-pure-ide
 
+## 6.2.41
+
 ## 6.2.40
 
 ## 6.2.39
