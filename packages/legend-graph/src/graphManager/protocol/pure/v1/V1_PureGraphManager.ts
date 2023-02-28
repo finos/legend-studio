@@ -445,6 +445,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   // Most Engine APIs will interrupt an undefined pure client version to mean
   // use the latest production version of the protocol i.e V20_0_0, while version
   // `VX_X_X` represents the version in development and used for testing
+  static readonly PURE_PROTOCOL_NAME = 'pure';
   static readonly DEV_PROTOCOL_VERSION = PureClientVersion.VX_X_X;
   static readonly PROD_PROTOCOL_VERSION = undefined;
 
@@ -1753,7 +1754,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: { keepSourceInformation?: boolean },
   ): V1_LambdaReturnTypeInput {
     return new V1_LambdaReturnTypeInput(
-      this.getFullGraphModelContext(graph),
+      this.getFullGraphModelContext(
+        graph,
+        V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+      ),
       lambda.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(
           new V1_GraphTransformerContextBuilder(
@@ -1837,7 +1841,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
   ): Promise<TestResult[]> {
     const runTestsInput = new V1_RunTestsInput();
-    runTestsInput.model = this.getFullGraphModelContext(graph);
+    runTestsInput.model = this.getFullGraphModelContext(
+      graph,
+      V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+    );
     runTestsInput.testables = inputs
       .map((input) => {
         const testable = guaranteeNonNullable(
@@ -2190,10 +2197,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private buildPureModelSDLCPointer(
     origin: GraphDataOrigin,
+    clientVersion: string | undefined,
   ): V1_PureModelContextPointer {
     if (origin instanceof LegendSDLC) {
       return new V1_PureModelContextPointer(
-        undefined,
+        clientVersion
+          ? new V1_Protocol(
+              V1_PureGraphManager.PURE_PROTOCOL_NAME,
+              clientVersion,
+            )
+          : undefined,
         new V1_LegendSDLC(origin.groupId, origin.artifactId, origin.versionId),
       );
     }
@@ -2210,7 +2223,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     parameterValues?: ParameterValue[],
   ): V1_ExecuteInput => {
     const pureModelContext = graph.origin
-      ? this.buildPureModelSDLCPointer(graph.origin)
+      ? this.buildPureModelSDLCPointer(graph.origin, undefined)
       : this.buildExecutionInputGraphData(graph, mapping, runtime);
     // NOTE: for execution, we usually will just assume that we send the connections embedded in the runtime value, since we don't want the user to have to create
     // packageable runtime and connection just to play with execution.
@@ -2491,7 +2504,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     // input
     let input: V1_PureModelContext;
     const protocol = new V1_Protocol(
-      'pure',
+      V1_PureGraphManager.PURE_PROTOCOL_NAME,
       serverServiceInfo.services.dependencies.pure,
     );
     switch (executionMode) {
@@ -2762,7 +2775,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     input.clientVersion = V1_PureGraphManager.DEV_PROTOCOL_VERSION;
     input.mapping = mapping.path;
     input.model = graph.origin
-      ? this.buildPureModelSDLCPointer(graph.origin)
+      ? this.buildPureModelSDLCPointer(graph.origin, undefined)
       : this.buildMappingModelCoverageAnalysisInputContextData(graph);
     return V1_buildModelCoverageAnalysisResult(
       await this.engine.analyzeMappingModelCoverage(input),
@@ -2940,11 +2953,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private getFullGraphModelContext(
     graph: PureModel,
+    clientVersion: string | undefined,
     options?: { keepSourceInformation?: boolean | undefined } | undefined,
   ): V1_PureModelContext {
     // if options is given we will not use the origin if we want to keep source information
     if (graph.origin && !options?.keepSourceInformation) {
-      return this.buildPureModelSDLCPointer(graph.origin);
+      return this.buildPureModelSDLCPointer(graph.origin, clientVersion);
     }
     return this.getFullGraphModelData(graph, options);
   }
