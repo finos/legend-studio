@@ -73,6 +73,9 @@ test(unitTest('Prettify CONST name with ID'), () => {
   expect(prettyCONSTName('ID')).toEqual('ID');
   expect(prettyCONSTName('Id')).toEqual('ID');
   expect(prettyCONSTName('Contractid')).toEqual('Contractid');
+  expect(prettyCONSTName('contractualPartyGroupID')).toEqual(
+    'Contractual Party Group ID',
+  );
 });
 
 test(unitTest('Camel/Pascal case check'), () => {

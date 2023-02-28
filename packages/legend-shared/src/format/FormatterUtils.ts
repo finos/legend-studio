@@ -58,20 +58,6 @@ export const TITLE_CASE_EXCEPTION_WORDS = [
 
 export const CONST_EXCEPTION_ID = ['Id', 'ID'];
 
-export const prettyCONSTName = (value: string | undefined): string => {
-  if (!value) {
-    return '';
-  }
-  const valueSuffix = value.slice(-2);
-  const containsId = CONST_EXCEPTION_ID.includes(valueSuffix);
-  const newValue = containsId ? value.slice(0, value.length - 2) : value;
-  const newName = toSentenceCase(newValue.toLowerCase())
-    .replace(/_(?:\w)/gu, (val) => val.toUpperCase())
-    .replace(/_/gu, ' ')
-    .trim();
-  return containsId ? `${newName} ID`.trim() : newName;
-};
-
 export const toTitleCase = (value: string | undefined): string =>
   (value ?? '')
     .trim()
@@ -95,6 +81,21 @@ export const prettyCamelCase = (value: string | undefined): string =>
   toSentenceCase(value)
     .replace(/(?:[A-Z])/gu, (val) => ` ${val}`)
     .trim();
+
+export const prettyCONSTName = (value: string | undefined): string => {
+  if (!value) {
+    return '';
+  }
+  const valueSuffix = value.slice(-2);
+  const containsId = CONST_EXCEPTION_ID.includes(valueSuffix);
+  let newValue = containsId ? value.slice(0, value.length - 2) : value;
+  const newName = toSentenceCase(newValue.toLowerCase())
+    .replace(/_(?:\w)/gu, (val) => val.toUpperCase())
+    .replace(/_/gu, ' ')
+    .trim();
+  newValue = isCamelCase(newValue) ? prettyCamelCase(newValue) : newName;
+  return containsId ? `${newValue} ID`.trim() : newName;
+};
 
 export const tryToFormatJSONString = (value: string, tabSize = 2): string => {
   try {
