@@ -33,11 +33,4 @@ Service org::legend::PersonService
   [
 
   ]
-  test: Single
-  {
-    data: 'test';
-    asserts:
-    [
-    ];
-  }
 }
