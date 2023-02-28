@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 9.0.44
+
+### Patch Changes
+
+- [#1955](https://github.com/finos/legend-studio/pull/1955) [`e4e9f6450`](https://github.com/finos/legend-studio/commit/e4e9f64505822bbbc6d764242e333b5700d52ded) ([@xannem](https://github.com/xannem)) - Styling button fix.
+
 ## 9.0.43
 
 ### Patch Changes
