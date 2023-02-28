@@ -68,6 +68,7 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
   QUESTION_HOW_TO_DEFINE_A_CONSTRAINT = 'question.how-to-define-a-class-constraint',
   QUESTION_HOW_TO_WRITE_A_CONSTRAINT_LAMBDA = 'question.how-to-write-a-class-constraint-lambda',
   QUESTION_HOW_TO_SPECIFY_A_SUPERTYPE = 'question.how-to-specify-a-class-supertype',
+  QUESTION_HOW_TO_UPDATE_GAV = 'question.how-to-update-gav',
 
   // contexts
   CONTEXT_CLASS_EDITOR = 'context.class-editor',

@@ -23,6 +23,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import { noop } from '@finos/legend-shared';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
+import { DocumentationLink } from './shared/DocumentationLink.js';
 
 const getActionButtonClassName = (type: ActionAlertActionType): string => {
   switch (type) {
@@ -38,7 +39,17 @@ const getActionButtonClassName = (type: ActionAlertActionType): string => {
 const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
   const { info } = props;
   const applicationStore = useApplicationStore();
-  const { title, message, prompt, type, onClose, onEnter, actions } = info;
+  const {
+    title,
+    message,
+    prompt,
+    documentationKey,
+    documentationLabel,
+    type,
+    onClose,
+    onEnter,
+    actions,
+  } = info;
   const handleClose = (): void => {
     onClose?.();
     applicationStore.setActionAlertInfo(undefined);
@@ -70,6 +81,12 @@ const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
         <ModalBody>
           <div className="blocking-alert__summary-text">{message}</div>
           <div className="blocking-alert__prompt-text">{prompt}</div>
+          {documentationKey && (
+            <DocumentationLink
+              documentationLabel={documentationLabel}
+              documentationKey={documentationKey}
+            />
+          )}
         </ModalBody>
         <ModalFooter>
           {actions.map((action) => {

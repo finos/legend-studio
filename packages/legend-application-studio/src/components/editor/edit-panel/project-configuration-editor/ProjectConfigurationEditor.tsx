@@ -52,6 +52,7 @@ import {
 } from '@finos/legend-application';
 import { ProjectDependencyEditor } from './ProjectDependencyEditor.js';
 import type { ProjectData } from '@finos/legend-server-depot';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../stores/LegendStudioDocumentation.js';
 
 const ProjectStructureEditor = observer(
   (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
@@ -92,7 +93,10 @@ const ProjectStructureEditor = observer(
       if (blockingEditGav) {
         editorStore.applicationStore.setActionAlertInfo({
           message:
-            'Please read these instructions before you edit groupid or artifactid (gav) as changing them can have downstream impacts. Be aware you will lose any previous project versions. Moreover, if your current project has dependant projects you can break those too if you do not change the gav in a controlled way.',
+            'Please read these instructions before you edit groupid or artifactid (gav) as changing them can have downstream impact. Be aware you will lose any previous project versions. Moreover, if your current project has dependant projects you can break those too if you do not change the gav in a controlled way.',
+          documentationKey:
+            LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_GAV,
+          documentationLabel: 'View instructions documentation',
           type: ActionAlertType.CAUTION,
           actions: [
             {

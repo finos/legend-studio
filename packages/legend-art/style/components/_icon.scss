@@ -29,6 +29,14 @@
   &--active svg:hover {
     color: var(--color-yellow-100);
   }
+
+  &--left {
+    margin-right: 0.5rem;
+  }
+
+  &--right {
+    margin-left: 0.5rem;
+  }
 }
 
 .icon--flat-data {

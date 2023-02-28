@@ -29,6 +29,8 @@ export interface ActionAlertInfo {
   title?: string;
   message: string;
   prompt?: string;
+  documentationKey?: string;
+  documentationLabel?: string;
   type?: ActionAlertType;
   onClose?: () => void;
   onEnter?: () => void;
