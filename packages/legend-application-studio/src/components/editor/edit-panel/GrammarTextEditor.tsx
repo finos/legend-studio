@@ -953,43 +953,43 @@ export const GrammarTextEditor = observer(
               null,
               true,
             );
-            if (!(Array.isArray(matches) && matches.length)) {
-              grammarTextEditorState.setIsElementPathInvalid(true);
-              const regex = getRegexString(editorStore.getTypeLabels());
-              const match = model?.findMatches(
-                regex,
-                true,
-                true,
-                true,
-                null,
-                true,
-              );
-              if (model && Array.isArray(match) && match.length) {
-                const range = guaranteeNonNullable(match[0]).range;
-                const errorRange = new Range(
-                  range.startLineNumber,
-                  range.endColumn,
-                  range.endLineNumber,
-                  model.getLineLength(range.startLineNumber) + 1,
-                );
-                setErrorMarkers(
-                  model,
-                  [
-                    {
-                      message:
-                        'Please change the element path by right clicking',
-                      startLineNumber: errorRange.startLineNumber,
-                      startColumn: errorRange.startColumn,
-                      endLineNumber: errorRange.endLineNumber,
-                      endColumn: errorRange.endColumn,
-                    },
-                  ],
-                  'invalid-path',
-                );
-              }
-            } else {
-              clearMarkers('invalid-path');
-            }
+            // if (!(Array.isArray(matches) && matches.length)) {
+            //   grammarTextEditorState.setIsElementPathInvalid(true);
+            //   const regex = getRegexString(editorStore.getTypeLabels());
+            //   const match = model?.findMatches(
+            //     regex,
+            //     true,
+            //     true,
+            //     true,
+            //     null,
+            //     true,
+            //   );
+            //   if (model && Array.isArray(match) && match.length) {
+            //     const range = guaranteeNonNullable(match[0]).range;
+            //     const errorRange = new Range(
+            //       range.startLineNumber,
+            //       range.endColumn,
+            //       range.endLineNumber,
+            //       model.getLineLength(range.startLineNumber) + 1,
+            //     );
+            //     setErrorMarkers(
+            //       model,
+            //       [
+            //         {
+            //           message:
+            //             'Please change the element path by right clicking',
+            //           startLineNumber: errorRange.startLineNumber,
+            //           startColumn: errorRange.startColumn,
+            //           endLineNumber: errorRange.endLineNumber,
+            //           endColumn: errorRange.endColumn,
+            //         },
+            //       ],
+            //       'invalid-path',
+            //     );
+            //   }
+            // } else {
+            //   clearMarkers('invalid-path');
+            // }
           }
           clearMarkers();
           // NOTE: we can technically can reset the current element label regex string here

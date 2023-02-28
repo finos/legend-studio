@@ -15,7 +15,12 @@
  */
 
 import { TabManager, type TabState } from '@finos/legend-application';
-import { ContextMenu } from '@finos/legend-art';
+import {
+  ContextMenu,
+  PlusIcon,
+  useResizeDetector,
+  clsx,
+} from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { GrammarTextEditorState } from '../../stores/editor-state/GrammarTextEditorState.js';
 import {
@@ -23,6 +28,87 @@ import {
   GrammarTextEditorPanelActions,
 } from './edit-panel/GrammarTextEditor.js';
 import { useEditorStore } from './EditorStoreProvider.js';
+import { useEffect, useState } from 'react';
+
+export const EditPanelSplashScreen: React.FC = () => {
+  const commandListWidth = 300;
+  const commandListHeight = 180;
+  const [showCommandList, setShowCommandList] = useState(false);
+  const { ref, width, height } = useResizeDetector<HTMLDivElement>();
+
+  useEffect(() => {
+    setShowCommandList(
+      (width ?? 0) > commandListWidth && (height ?? 0) > commandListHeight,
+    );
+  }, [width, height]);
+
+  return (
+    <div ref={ref} className="edit-panel__splash-screen">
+      <div
+        className={clsx('edit-panel__splash-screen__content', {
+          'edit-panel__splash-screen__content--hidden': !showCommandList,
+        })}
+      >
+        <div className="edit-panel__splash-screen__content__item">
+          <div className="edit-panel__splash-screen__content__item__label">
+            Open or Search for an Element
+          </div>
+          <div className="edit-panel__splash-screen__content__item__hot-keys">
+            <div className="hotkey__key">Ctrl</div>
+            <div className="hotkey__plus">
+              <PlusIcon />
+            </div>
+            <div className="hotkey__key">P</div>
+          </div>
+        </div>
+        <div className="edit-panel__splash-screen__content__item">
+          <div className="edit-panel__splash-screen__content__item__label">
+            Search across Elements
+          </div>
+          <div className="edit-panel__splash-screen__content__item__hot-keys">
+            <div className="hotkey__key">Ctrl</div>
+            <div className="hotkey__plus">
+              <PlusIcon />
+            </div>
+            <div className="hotkey__key">Shift</div>
+            <div className="hotkey__plus">
+              <PlusIcon />
+            </div>
+            <div className="hotkey__key">F</div>
+          </div>
+        </div>
+        <div className="edit-panel__splash-screen__content__item">
+          <div className="edit-panel__splash-screen__content__item__label">
+            Push Local Changes
+          </div>
+          <div className="edit-panel__splash-screen__content__item__hot-keys">
+            <div className="hotkey__key">Ctrl</div>
+            <div className="hotkey__plus">
+              <PlusIcon />
+            </div>
+            <div className="hotkey__key">S</div>
+          </div>
+        </div>
+        <div className="edit-panel__splash-screen__content__item">
+          <div className="edit-panel__splash-screen__content__item__label">
+            Toggle FormMode
+          </div>
+          <div className="edit-panel__splash-screen__content__item__hot-keys">
+            <div className="hotkey__key">F8</div>
+          </div>
+        </div>
+        <div className="edit-panel__splash-screen__content__item">
+          <div className="edit-panel__splash-screen__content__item__label">
+            Compile
+          </div>
+          <div className="edit-panel__splash-screen__content__item__hot-keys">
+            <div className="hotkey__key">F9</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const GrammarEditPanel = observer(() => {
   const editorStore = useEditorStore();
@@ -63,12 +149,19 @@ export const GrammarEditPanel = observer(() => {
           />
         </div>
       </ContextMenu>
-      <div
-        key={currentEditorState?.uuid}
-        className="panel__content edit-panel__content"
-      >
-        {renderActiveElementTab()}
-      </div>
+      {!currentEditorState && (
+        <div className="panel__content edit-panel__content">
+          <EditPanelSplashScreen />
+        </div>
+      )}
+      {currentEditorState && (
+        <div
+          key={currentEditorState.uuid}
+          className="panel__content edit-panel__content"
+        >
+          {renderActiveElementTab()}
+        </div>
+      )}
     </div>
   );
 });

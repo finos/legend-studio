@@ -391,7 +391,7 @@ export class EditorStore implements CommandRegistrar {
           : undefined;
       this.tabManagerState.closeAllTabs();
       this.tabManagerState = new GrammarEditorTabManagerState(this);
-    } else {
+    } else if (this.graphEditMode === GRAPH_EDITOR_MODE.FORM) {
       this.tabManagerState.tabs.forEach((state: TabState) => {
         if (state instanceof GrammarTextEditorState && state.element) {
           openedTabEditorPaths.push(state.element.path);
@@ -1256,6 +1256,7 @@ export class EditorStore implements CommandRegistrar {
     this.grammarModeManagerState.grammarModeSearchState =
       new GrammarModeSearchState(this);
     if (this.isInFormMode) {
+      this.grammarModeManagerState.isInDefaultTextMode = true;
       if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
         return;
       }

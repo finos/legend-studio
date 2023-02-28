@@ -141,6 +141,7 @@ export { V1_Variable } from './graphManager/protocol/pure/v1/model/valueSpecific
 export { V1_ValueSpecification } from './graphManager/protocol/pure/v1/model/valueSpecification/V1_ValueSpecification.js';
 export { V1_Multiplicity } from './graphManager/protocol/pure/v1/model/packageableElements/domain/V1_Multiplicity.js';
 export { V1_ExternalFormatDescription } from './graphManager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatDescription.js';
+export { V1_EngineError } from './graphManager/protocol/pure/v1/engine/V1_EngineError.js';
 export { V1_ExternalFormatModelGenerationInput } from './graphManager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatModelGeneration.js';
 export { V1_ExecuteInput } from './graphManager/protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
 export { V1_buildExecutionResult } from './graphManager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';

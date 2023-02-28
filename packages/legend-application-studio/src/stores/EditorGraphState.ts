@@ -64,6 +64,7 @@ import {
   GRAPH_MANAGER_EVENT,
   CompilationError,
   EngineError,
+  V1_EngineError,
   extractSourceInformationCoordinates,
   Package,
   Profile,
@@ -719,7 +720,9 @@ export class EditorGraphState {
           ? this.TEMPORARY__removeDependencyProblems(compilationResult.warnings)
           : [];
 
-        yield flowResult(this.updateGraphAndApplicationInTextMode(entities));
+        yield flowResult(
+          this.updateGraphAndApplicationInTextMode(entities, true),
+        );
 
         // Remove `SectionIndex when computing changes in text mode as engine after
         // transforming grammarToJson would return `SectionIndex` which is not
@@ -745,12 +748,29 @@ export class EditorGraphState {
           showLoading: true,
         });
         yield flowResult(
-          this.editorStore.grammarModeManagerState.setGraphGrammarFromEntites(
-            entitiesWithoutSectionIndex,
-          ),
+          this.editorStore.grammarModeManagerState.setGraphGrammar(),
         );
+        // this.editorStore.updateTabManagerState();
       } catch (error) {
         assertErrorThrown(error);
+        console.log(error);
+        if (
+          (error instanceof EngineError) &&
+          error.sourceInformation
+        ) {
+          if (this.editorStore.grammarModeManagerState.isInDefaultTextMode) {
+            this.editorStore.grammarModeManagerState.grammarTextEditorState.setForcedCursorPosition(
+              {
+                lineNumber: error.sourceInformation.startLine,
+                column: error.sourceInformation.startColumn,
+              },
+            );
+          } else {
+            this.editorStore.grammarModeManagerState.openGrammarTextEditor(
+              error.sourceInformation,
+            );
+          }
+        }
         if (this.editorStore.graphManagerState.graphBuildState.hasFailed) {
           // TODO: when we support showing multiple notification, we can split this into 2 messages
           this.editorStore.applicationStore.notifyWarning(
@@ -1233,7 +1253,7 @@ export class EditorGraphState {
         openedTabPaths,
         currentTabElementPath,
         currentTabState,
-        );
+      );
 
       this.editorStore.applicationStore.log.info(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_UPDATED_AND_REBUILT),
@@ -1282,6 +1302,7 @@ export class EditorGraphState {
 
   private *updateGraphAndApplicationInTextMode(
     entities: Entity[],
+    toggle?: boolean,
   ): GeneratorFn<void> {
     const startTime = Date.now();
     this.isUpdatingApplication = true;
@@ -1319,17 +1340,31 @@ export class EditorGraphState {
       yield flowResult(graph_dispose(this.editorStore.graphManagerState.graph));
 
       const graphBuildState = ActionState.create();
-      yield this.editorStore.graphManagerState.graphManager.buildLightGraph(
-        newGraph,
-        entities,
-        graphBuildState,
-        {
-          TEMPORARY__preserveSectionIndex:
-            this.editorStore.applicationStore.config.options
-              .TEMPORARY__preserveSectionIndex,
-          strict: this.enableStrictMode,
-        },
-      );
+      if (!toggle) {
+        yield this.editorStore.graphManagerState.graphManager.buildLightGraph(
+          newGraph,
+          entities,
+          graphBuildState,
+          {
+            TEMPORARY__preserveSectionIndex:
+              this.editorStore.applicationStore.config.options
+                .TEMPORARY__preserveSectionIndex,
+            strict: this.enableStrictMode,
+          },
+        );
+      } else {
+        yield this.editorStore.graphManagerState.graphManager.buildGraph(
+          newGraph,
+          entities,
+          graphBuildState,
+          {
+            TEMPORARY__preserveSectionIndex:
+              this.editorStore.applicationStore.config.options
+                .TEMPORARY__preserveSectionIndex,
+            strict: this.enableStrictMode,
+          },
+        );
+      }
 
       this.editorStore.graphManagerState.graph = newGraph;
       this.editorStore.graphManagerState.graphBuildState = graphBuildState;
@@ -1607,9 +1642,11 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.PRIMITIVE;
     } else if (element instanceof Package) {
       return PACKAGEABLE_ELEMENT_TYPE.PACKAGE;
-    } else if (element instanceof INTERNAL__PackageableElement) {
-      return PACKAGEABLE_ELEMENT_TYPE.PACKAGEABLE_ELEMENT;
-    } else if (element instanceof Class) {
+    }
+    // else if (element instanceof INTERNAL__PackageableElement) {
+    //   return PACKAGEABLE_ELEMENT_TYPE.PACKAGEABLE_ELEMENT;
+    // }
+     else if (element instanceof Class) {
       return PACKAGEABLE_ELEMENT_TYPE.CLASS;
     } else if (element instanceof Association) {
       return PACKAGEABLE_ELEMENT_TYPE.ASSOCIATION;

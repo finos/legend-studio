@@ -178,7 +178,11 @@ export class GrammarEditorTabManagerState extends EditorTabManagerState {
       this.editorStore.grammarModeManagerState.grammarTextEditorState.setCurrentElementLabelRegexString(
         element,
       );
-    } else {
+    } else if (
+      this.editorStore.graphManagerState.graph.allOwnElements.find(
+        (e) => e === element,
+      )
+    ) {
       if (!(element instanceof Package)) {
         const existingGrammarElementState = this.tabs.find(
           (state) =>

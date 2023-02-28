@@ -922,9 +922,9 @@ export class NewElementState {
   createElementInTextMode(name: string): PackageableElement | undefined {
     let element: PackageableElement | undefined;
     switch (this.type) {
-      case PACKAGEABLE_ELEMENT_TYPE.PACKAGEABLE_ELEMENT:
-        element = new INTERNAL__PackageableElement(name);
-        break;
+      // case PACKAGEABLE_ELEMENT_TYPE.PACKAGEABLE_ELEMENT:
+      //   element = new INTERNAL__PackageableElement(name);
+      //   break;
       case PACKAGEABLE_ELEMENT_TYPE.PACKAGE:
         element = new Package(name);
         break;
