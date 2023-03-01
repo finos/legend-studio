@@ -254,6 +254,7 @@ export class QueryBuilderResultState {
       if (this.queryRunPromise === promise) {
         this.setExecutionResult(result);
         this.latestRunHashCode = currentHashCode;
+        stopWatch.record();
         this.setExecutionDuration(stopWatch.elapsed);
 
         report.timings = {
