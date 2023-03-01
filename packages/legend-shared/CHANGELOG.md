@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 6.2.23
+
+### Patch Changes
+
+- [#1960](https://github.com/finos/legend-studio/pull/1960) [`52c944f93`](https://github.com/finos/legend-studio/commit/52c944f93815d790263711c261ca5514d74b6b28) ([@xannem](https://github.com/xannem)) - Fix pretty const name.
+
 ## 6.2.22
 
 ## 6.2.21

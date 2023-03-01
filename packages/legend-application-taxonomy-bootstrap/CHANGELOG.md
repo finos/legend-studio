@@ -1,5 +1,11 @@
 # @finos/legend-application-taxonomy-bootstrap
 
+## 8.45.0
+
+### Patch Changes
+
+- [#1927](https://github.com/finos/legend-studio/pull/1927) [`e351947ff`](https://github.com/finos/legend-studio/commit/e351947fffc792113128678a83721b89f51b2361) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support check entitlements in Dataspace.
+
 ## 8.44.0
 
 ## 8.43.0
