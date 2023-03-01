@@ -127,6 +127,7 @@ export class StandaloneDataSpaceViewerStore {
 
       this.viewerState = new DataSpaceViewerState(
         this.applicationStore,
+        this.graphManagerState,
         groupId,
         artifactId,
         versionId,
