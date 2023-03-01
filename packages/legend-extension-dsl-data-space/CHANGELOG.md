@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 9.0.45
+
+### Patch Changes
+
+- [#1927](https://github.com/finos/legend-studio/pull/1927) [`e351947ff`](https://github.com/finos/legend-studio/commit/e351947fffc792113128678a83721b89f51b2361) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Create a generic application plugin of dataspace.
+
 ## 9.0.44
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-persistence-cloud",
-  "version": "4.0.48",
+  "version": "4.0.49",
   "description": "Legend extension for Persistence Cloud DSL",
   "keywords": [
     "legend",
