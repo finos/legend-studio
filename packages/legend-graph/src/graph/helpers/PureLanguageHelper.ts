@@ -40,6 +40,7 @@ export enum PURE_ELEMENT_NAME {
   SERVICE = 'Service',
   RUNTIME = 'Runtime',
   CONNECTION = 'Connection',
+  SCHEMA_GENERATION = 'SchemaGeneration',
   FILE_GENERATION = 'FileGeneration',
   GENERATION_SPECIFICATION = 'GenerationSpecification',
   DATA_ELEMENT = 'Data',

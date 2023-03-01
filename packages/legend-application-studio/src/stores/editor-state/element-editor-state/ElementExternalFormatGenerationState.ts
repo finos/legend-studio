@@ -24,6 +24,8 @@ import {
   observe_ModelUnit,
   GenerationPropertyItemType,
   PackageableElementExplicitReference,
+  SchemaGenerationSpecification,
+  observer_SchemaGenerationSpecification,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -45,31 +47,19 @@ import {
 import { GeneratedFileStructureState } from '../FileGenerationState.js';
 import { ElementEditorState } from './ElementEditorState.js';
 
-export class ExternalFormatConfigurationSpecification {
-  configurationProperties: ConfigurationProperty[] = [];
-  modelUnit: ModelUnit;
-
-  constructor() {
-    makeObservable(this, {
-      configurationProperties: observable,
-    });
-    this.modelUnit = observe_ModelUnit(new ModelUnit());
-  }
-}
-
 const getNullableFileGenerationConfig = (
-  config: ExternalFormatConfigurationSpecification,
+  config: SchemaGenerationSpecification,
   name: string,
 ): ConfigurationProperty | undefined =>
-  config.configurationProperties.find((property) => name === property.name);
+  config.config?.find((property) => name === property.name);
 
 export class XTGenerationState extends GeneratedFileStructureState {
   readonly elementXTSchemaGenerationState: ElementXTSchemaGenerationState;
-  readonly configSpecification: ExternalFormatConfigurationSpecification;
+  readonly configSpecification: SchemaGenerationSpecification;
 
   constructor(
     elementXTSchemaGenerationState: ElementXTSchemaGenerationState,
-    fileGeneration: ExternalFormatConfigurationSpecification,
+    fileGeneration: SchemaGenerationSpecification,
   ) {
     super(
       GENERATION_FILE_ROOT_NAME,
@@ -94,14 +84,14 @@ export class XTGenerationState extends GeneratedFileStructureState {
   }
 
   resetGenerator(): void {
-    this.configSpecification.configurationProperties = [];
+    this.configSpecification.config = [];
   }
 
   *generate(): GeneratorFn<void> {
     this.generatingAction.inProgress();
     try {
       const modelUnit = this.configSpecification.modelUnit;
-      const properties = [...this.configSpecification.configurationProperties];
+      const properties = [...(this.configSpecification.config ?? [])];
       this.addInferredConfigurationProperties(properties);
       const result =
         (yield this.editorStore.graphManagerState.graphManager.generateSchemaFromExternalFormatConfig(
@@ -161,7 +151,7 @@ export class XTGenerationState extends GeneratedFileStructureState {
   }
 
   updateFileGenerationParameters(
-    config: ExternalFormatConfigurationSpecification,
+    spec: SchemaGenerationSpecification,
     generationProperty: GenerationProperty,
     newValue: unknown,
   ): void {
@@ -171,12 +161,12 @@ export class XTGenerationState extends GeneratedFileStructureState {
         isEmpty(newValue) ||
         deepEqual(newValue, generationProperty.defaultValue)
       ) {
-        config.configurationProperties = config.configurationProperties.filter(
+        spec.config = spec.config?.filter(
           (e) => e.name !== generationProperty.name,
         );
       } else {
         const configProperty = getNullableFileGenerationConfig(
-          config,
+          spec,
           generationProperty.name,
         );
         if (configProperty) {
@@ -188,15 +178,13 @@ export class XTGenerationState extends GeneratedFileStructureState {
             generationProperty.name,
             newValue,
           );
-          configurationProperty_addConfigurationProperty(
-            config.configurationProperties,
-            newItem,
-          );
+          const specConfig = spec.config ?? [];
+          configurationProperty_addConfigurationProperty(specConfig, newItem);
         }
       }
     } else {
       const configProperty = getNullableFileGenerationConfig(
-        config,
+        spec,
         generationProperty.name,
       );
       let useDefaultValue = generationProperty.defaultValue === newValue;
@@ -214,13 +202,11 @@ export class XTGenerationState extends GeneratedFileStructureState {
             generationProperty.name,
             newConfigValue,
           );
-          configurationProperty_addConfigurationProperty(
-            config.configurationProperties,
-            newItem,
-          );
+          const specConfig = spec.config ?? [];
+          configurationProperty_addConfigurationProperty(specConfig, newItem);
         }
       } else {
-        config.configurationProperties = config.configurationProperties.filter(
+        spec.config = spec.config?.filter(
           (e) => e.name !== generationProperty.name,
         );
       }
@@ -244,10 +230,12 @@ export class ElementXTSchemaGenerationState {
     });
     this.editorStore = editorStore;
     this.description = description;
-
+    const _schema = new SchemaGenerationSpecification('');
+    _schema.name = description.name;
+    _schema.modelUnit = new ModelUnit();
     this.xtGenerationState = new XTGenerationState(
       this,
-      new ExternalFormatConfigurationSpecification(),
+      observer_SchemaGenerationSpecification(_schema),
     );
   }
 

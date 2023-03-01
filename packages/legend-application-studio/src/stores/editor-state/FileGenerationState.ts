@@ -230,7 +230,7 @@ export class FileGenerationState extends GeneratedFileStructureState {
         return;
       }
       const mode =
-        this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
+        this.editorStore.graphState.graphGenerationState.globalFileGenerationState.getFileGenerationConfiguration(
           this.fileGeneration.type,
         ).generationMode;
       const result =

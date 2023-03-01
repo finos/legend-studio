@@ -20,7 +20,7 @@ import { flowResult } from 'mobx';
 import {
   getTextContent,
   getEditorLanguageForFormat,
-} from '../../../../stores/editor-state/FileGenerationViewerState.js';
+} from '../../../../stores/editor-state/ArftifactGenerationViewerState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   type TreeNodeContainerProps,

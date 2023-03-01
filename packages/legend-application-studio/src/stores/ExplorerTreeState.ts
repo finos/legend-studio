@@ -65,7 +65,7 @@ export class ExplorerTreeState {
   legalTreeData?: TreeData<PackageTreeNodeData> | undefined;
   dependencyTreeData?: TreeData<PackageTreeNodeData> | undefined;
   selectedNode?: PackageTreeNodeData | undefined;
-  fileGenerationTreeData?: TreeData<FileSystemTreeNodeData> | undefined;
+  artifactsGenerationTreeData?: TreeData<FileSystemTreeNodeData> | undefined;
   elementToRename?: PackageableElement | undefined;
   buildState = ActionState.create();
 
@@ -77,14 +77,14 @@ export class ExplorerTreeState {
       legalTreeData: observable.ref,
       dependencyTreeData: observable.ref,
       selectedNode: observable.ref,
-      fileGenerationTreeData: observable.ref,
+      artifactsGenerationTreeData: observable.ref,
       elementToRename: observable.ref,
       setTreeData: action,
       setGenerationTreeData: action,
       setSystemTreeData: action,
       setLegalTreeData: action,
       setDependencyTreeData: action,
-      setFileGenerationTreeData: action,
+      setArtifactsGenerationTreeData: action,
       setSelectedNode: action,
       setElementToRename: action,
       build: action,
@@ -153,8 +153,8 @@ export class ExplorerTreeState {
   setDependencyTreeData(data: TreeData<PackageTreeNodeData>): void {
     this.dependencyTreeData = data;
   }
-  setFileGenerationTreeData(data: TreeData<FileSystemTreeNodeData>): void {
-    this.fileGenerationTreeData = data;
+  setArtifactsGenerationTreeData(data: TreeData<FileSystemTreeNodeData>): void {
+    this.artifactsGenerationTreeData = data;
   }
   setElementToRename(val: PackageableElement | undefined): void {
     this.elementToRename = val;
@@ -182,7 +182,7 @@ export class ExplorerTreeState {
       this.editorStore.graphManagerState.graph.generationModel.root,
       ExplorerTreeRootPackageLabel.MODEL_GENERATION,
     );
-    this.fileGenerationTreeData = getFileSystemTreeData(
+    this.artifactsGenerationTreeData = getFileSystemTreeData(
       this.editorStore.graphState.graphGenerationState.rootFileDirectory,
       ExplorerTreeRootPackageLabel.FILE_GENERATION,
     );
@@ -216,7 +216,7 @@ export class ExplorerTreeState {
       this.editorStore.graphManagerState.graph.generationModel.root,
       ExplorerTreeRootPackageLabel.MODEL_GENERATION,
     );
-    this.fileGenerationTreeData = getFileSystemTreeData(
+    this.artifactsGenerationTreeData = getFileSystemTreeData(
       this.editorStore.graphState.graphGenerationState.rootFileDirectory,
       ExplorerTreeRootPackageLabel.FILE_GENERATION,
     );
@@ -406,7 +406,7 @@ export class ExplorerTreeState {
     }
     // File generation tree
     // TODO: fix this so it does proper reprocessing, right now it just rebuilds
-    this.fileGenerationTreeData = getFileSystemTreeData(
+    this.artifactsGenerationTreeData = getFileSystemTreeData(
       this.editorStore.graphState.graphGenerationState.rootFileDirectory,
       ExplorerTreeRootPackageLabel.FILE_GENERATION,
     );
@@ -531,9 +531,9 @@ export class ExplorerTreeState {
     }
   }
 
-  getFileGenerationTreeData(): TreeData<FileSystemTreeNodeData> {
+  getArtifactsGenerationTreeData(): TreeData<FileSystemTreeNodeData> {
     return guaranteeNonNullable(
-      this.fileGenerationTreeData,
+      this.artifactsGenerationTreeData,
       'File generation tree data has not been initialized',
     );
   }

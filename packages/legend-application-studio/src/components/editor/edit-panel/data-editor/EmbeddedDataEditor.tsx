@@ -37,7 +37,7 @@ import {
   externalFormatData_setData,
 } from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
-import { getEditorLanguageForFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
+import { getEditorLanguageForFormat } from '../../../../stores/editor-state/ArftifactGenerationViewerState.js';
 import {
   type EmbeddedDataState,
   DataElementReferenceState,

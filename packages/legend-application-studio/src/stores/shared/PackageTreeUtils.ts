@@ -46,6 +46,7 @@ import {
   DataElement,
   generateFunctionPrettyName,
   getElementRootPackage,
+  SchemaGenerationSpecification,
 } from '@finos/legend-graph';
 import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState.js';
 import { GAV_DELIMITER } from '@finos/legend-storage';
@@ -92,6 +93,8 @@ const getElementProjectExplorerDnDType = (
     return CORE_DND_TYPE.PROJECT_EXPLORER_SERVICE;
   } else if (element instanceof GenerationSpecification) {
     return CORE_DND_TYPE.PROJECT_EXPLORER_GENERATION_TREE;
+  } else if (element instanceof SchemaGenerationSpecification) {
+    return CORE_DND_TYPE.PROJECT_EXPLORER_SCHEMA_GENERATION;
   } else if (element instanceof FileGenerationSpecification) {
     return CORE_DND_TYPE.PROJECT_EXPLORER_FILE_GENERATION;
   } else if (element instanceof DataElement) {

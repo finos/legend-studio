@@ -50,6 +50,7 @@ import {
   skipObservedWithContext,
 } from './CoreObserverHelper.js';
 import {
+  observer_SchemaGenerationSpecification,
   observe_FileGenerationSpecification,
   observe_GenerationSpecification,
 } from './DSL_Generation_ObserverHelper.js';
@@ -63,6 +64,7 @@ import { observe_FlatData } from './STO_FlatData_ObserverHelper.js';
 import { observe_Database } from './STO_Relational_ObserverHelper.js';
 import type { DataElement } from '../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import { observe_DataElement } from './DSL_Data_ObserverHelper.js';
+import type { SchemaGenerationSpecification } from '../../../DSL_Generation_Exports.js';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {
   observerContext: ObserverContext;
@@ -141,6 +143,12 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
 
   visit_PackageableConnection(element: PackageableConnection): void {
     observe_PackageableConnection(element, this.observerContext);
+  }
+
+  visit_SchemaGenerationSpecification(
+    element: SchemaGenerationSpecification,
+  ): void {
+    observer_SchemaGenerationSpecification(element);
   }
 
   visit_FileGenerationSpecification(

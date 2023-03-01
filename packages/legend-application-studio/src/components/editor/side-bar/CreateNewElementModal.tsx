@@ -26,6 +26,7 @@ import {
   NewDataElementDriver,
   NewServiceDriver,
   CONNECTION_TYPE,
+  NewSchemaGenerationDriver,
 } from '../../../stores/editor/NewElementState.js';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore.js';
@@ -38,7 +39,7 @@ import {
   type Class,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
-import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState.js';
+import type { GenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState.js';
 import { flowResult } from 'mobx';
 import {
   buildElementOption,
@@ -49,7 +50,10 @@ import {
 import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
-import { EmbeddedDataType } from '../../../stores/editor-state/ExternalFormatState.js';
+import {
+  type ExternalFormatTypeOption,
+  EmbeddedDataType,
+} from '../../../stores/editor-state/ExternalFormatState.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 
 export const getElementTypeLabel = (
@@ -75,6 +79,8 @@ export const getElementTypeLabel = (
       return 'relational database';
     case PACKAGEABLE_ELEMENT_TYPE.SERVICE_STORE:
       return 'service store';
+    case PACKAGEABLE_ELEMENT_TYPE.SCHEMA_GENERATION:
+      return 'schema generation';
     case PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION:
       return 'file generation';
     case PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION:
@@ -372,19 +378,16 @@ const NewServiceDriverEditor = observer(() => {
 
 const NewFileGenerationDriverEditor = observer(() => {
   const editorStore = useEditorStore();
-  const newConnectionDriver = editorStore.newElementState.getNewElementDriver(
-    NewFileGenerationDriver,
-  );
+  const newFileGenerationDriver =
+    editorStore.newElementState.getNewElementDriver(NewFileGenerationDriver);
   const options =
-    editorStore.graphState.graphGenerationState
+    editorStore.graphState.graphGenerationState.globalFileGenerationState
       .fileGenerationConfigurationOptions;
-  const onTypeSelectionChange = (
-    val: FileGenerationTypeOption | null,
-  ): void => {
+  const onTypeSelectionChange = (val: GenerationTypeOption | null): void => {
     if (!val) {
-      newConnectionDriver.setTypeOption(undefined);
+      newFileGenerationDriver.setTypeOption(undefined);
     } else {
-      newConnectionDriver.setTypeOption(val);
+      newFileGenerationDriver.setTypeOption(val);
     }
   };
   return (
@@ -393,7 +396,36 @@ const NewFileGenerationDriverEditor = observer(() => {
         className="sub-panel__content__form__section__dropdown explorer__new-element-modal__driver__dropdown"
         options={options}
         onChange={onTypeSelectionChange}
-        value={newConnectionDriver.typeOption}
+        value={newFileGenerationDriver.typeOption}
+        darkMode={true}
+      />
+    </div>
+  );
+});
+
+const NewSchemaGenerationDriverEditor = observer(() => {
+  const editorStore = useEditorStore();
+  const newSchemaGenerationDriver =
+    editorStore.newElementState.getNewElementDriver(NewSchemaGenerationDriver);
+  const options =
+    editorStore.graphState.graphGenerationState.externalFormatState
+      .schemaXTTypeOptions;
+  const onTypeSelectionChange = (
+    val: ExternalFormatTypeOption | null,
+  ): void => {
+    if (!val) {
+      newSchemaGenerationDriver.setTypeOption(undefined);
+    } else {
+      newSchemaGenerationDriver.setTypeOption(val);
+    }
+  };
+  return (
+    <div className="explorer__new-element-modal__driver">
+      <CustomSelectorInput
+        className="sub-panel__content__form__section__dropdown explorer__new-element-modal__driver__dropdown"
+        options={options}
+        onChange={onTypeSelectionChange}
+        value={newSchemaGenerationDriver.typeOption}
         darkMode={true}
       />
     </div>
@@ -409,6 +441,8 @@ const renderNewElementDriver = (
       return <NewRuntimeDriverEditor />;
     case PACKAGEABLE_ELEMENT_TYPE.CONNECTION:
       return <NewConnectionDriverEditor />;
+    case PACKAGEABLE_ELEMENT_TYPE.SCHEMA_GENERATION:
+      return <NewSchemaGenerationDriverEditor />;
     case PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION:
       return <NewFileGenerationDriverEditor />;
     case PACKAGEABLE_ELEMENT_TYPE.DATA:

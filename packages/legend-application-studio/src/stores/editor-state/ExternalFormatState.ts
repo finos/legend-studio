@@ -66,6 +66,15 @@ export class ExternalFormatState {
     }));
   }
 
+  get schemaXTTypeOptions(): ExternalFormatTypeOption[] {
+    return this.externalFormatDescriptionsWithSchemaGenerationSupport.map(
+      (types) => ({
+        value: types.name,
+        label: types.name,
+      }),
+    );
+  }
+
   get formatContentTypes(): string[] {
     return this.externalFormatsDescriptions.map((e) => e.contentTypes).flat();
   }
@@ -73,6 +82,11 @@ export class ExternalFormatState {
   get externalFormatDescriptionsWithModelGenerationSupport(): ExternalFormatDescription[] {
     return this.externalFormatsDescriptions.filter(
       (d) => d.supportsModelGeneration,
+    );
+  }
+  get externalFormatDescriptionsWithSchemaGenerationSupport(): ExternalFormatDescription[] {
+    return this.externalFormatsDescriptions.filter(
+      (d) => d.supportsSchemaGeneration,
     );
   }
 
@@ -95,9 +109,8 @@ export class ExternalFormatState {
       const externalFormatDescriptions =
         (yield this.editorStore.graphManagerState.graphManager.getAvailableExternalFormatsDescriptions()) as ExternalFormatDescription[];
       this.setExternalFormatsDescriptions(externalFormatDescriptions);
-      this.schemaGenerationStates = externalFormatDescriptions
-        .filter((s) => s.supportsSchemaGeneration)
-        .map(
+      this.schemaGenerationStates =
+        this.externalFormatDescriptionsWithSchemaGenerationSupport.map(
           (descr) =>
             new ElementXTSchemaGenerationState(this.editorStore, descr),
         );

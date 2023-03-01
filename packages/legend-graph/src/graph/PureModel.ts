@@ -58,6 +58,7 @@ import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import type { SectionIndex } from '../graph/metamodel/pure/packageableElements/section/SectionIndex.js';
 import type { PropertyOwner } from './metamodel/pure/packageableElements/domain/AbstractProperty.js';
+import type { SchemaGenerationSpecification } from './metamodel/pure/packageableElements/fileGeneration/SchemaGenerationSpecification.js';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -331,6 +332,16 @@ export class PureModel extends BasicModel {
     ];
   }
 
+  get schemaGenerations(): SchemaGenerationSpecification[] {
+    return [
+      ...this.coreModel.ownSchemaGenerations,
+      ...this.systemModel.ownSchemaGenerations,
+      ...this.dependencyManager.schemaGenerations,
+      ...this.ownSchemaGenerations,
+      ...this.generationModel.ownSchemaGenerations,
+    ];
+  }
+
   get allElements(): PackageableElement[] {
     return [
       ...this.coreModel.allOwnElements,
@@ -476,6 +487,14 @@ export class PureModel extends BasicModel {
         this.dependencyManager.getOwnNullableFileGeneration(path) ??
         this.systemModel.getOwnNullableFileGeneration(path),
       `Can't find file generation '${path}'`,
+    );
+  getSchemaGeneration = (path: string): SchemaGenerationSpecification =>
+    guaranteeNonNullable(
+      this.getOwnNullableSchemaGeneration(path) ??
+        this.generationModel.getOwnNullableSchemaGeneration(path) ??
+        this.dependencyManager.getOwnNullableSchemaGeneration(path) ??
+        this.systemModel.getOwnNullableSchemaGeneration(path),
+      `Can't find schema generation '${path}'`,
     );
   getDataElement = (path: string): DataElement =>
     guaranteeNonNullable(

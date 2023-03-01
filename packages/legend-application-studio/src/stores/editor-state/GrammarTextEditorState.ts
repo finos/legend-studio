@@ -42,6 +42,7 @@ import {
   ModelChainConnection,
   PURE_ELEMENT_NAME,
   PURE_CONNECTION_NAME,
+  SchemaGenerationSpecification,
 } from '@finos/legend-graph';
 import type { TextEditorPosition } from '@finos/legend-art';
 import { generatePackageableElementTreeNodeDataLabel } from '../shared/PackageTreeUtils.js';
@@ -129,6 +130,8 @@ export class GrammarTextEditorState {
       typeLabel = PURE_ELEMENT_NAME.MAPPING;
     } else if (element instanceof Service) {
       typeLabel = PURE_ELEMENT_NAME.SERVICE;
+    } else if (element instanceof SchemaGenerationSpecification) {
+      typeLabel = PURE_ELEMENT_NAME.SCHEMA_GENERATION;
     } else if (element instanceof FileGenerationSpecification) {
       typeLabel = PURE_ELEMENT_NAME.FILE_GENERATION;
     } else if (element instanceof GenerationSpecification) {

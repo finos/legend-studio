@@ -273,6 +273,14 @@ import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_S
 import { V1_transformModelUnit } from './transformation/pureGraph/from/V1_DSL_ExternalFormat_Transformer.js';
 import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 
+import { V1_SchemaGenerationSpecification } from './model/packageableElements/fileGeneration/V1_SchemaGenerationSpecification.js';
+import {
+  V1_ArtifactGenerationExtensionInput,
+  V1_buildArtifactsByExtensionElement,
+} from './engine/generation/V1_ArtifactGenerationExtensionApi.js';
+import type { ArtifactGenerationExtensionResult } from '../../../action/generation/ArtifactGenerationExtensionResult.js';
+import { SchemaGenerationSpecification } from '../../../../DSL_Generation_Exports.js';
+
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
   nativeElements: V1_PackageableElement[] = [];
@@ -293,6 +301,7 @@ class V1_PureModelContextDataIndex {
 
   services: V1_Service[] = [];
 
+  schemaGenerations: V1_SchemaGenerationSpecification[] = [];
   fileGenerations: V1_FileGenerationSpecification[] = [];
   generationSpecifications: V1_GenerationSpecification[] = [];
 
@@ -356,6 +365,8 @@ export const V1_indexPureModelContextData = (
       index.sectionIndices.push(el);
     } else if (el instanceof V1_Service) {
       index.services.push(el);
+    } else if (el instanceof V1_SchemaGenerationSpecification) {
+      index.schemaGenerations.push(el);
     } else if (el instanceof V1_FileGenerationSpecification) {
       index.fileGenerations.push(el);
     } else if (el instanceof V1_GenerationSpecification) {
@@ -390,6 +401,7 @@ export const V1_indexPureModelContextData = (
     (report.elementCount.other ?? 0) +
     otherElementsByClass.size +
     index.fileGenerations.length +
+    index.schemaGenerations.length +
     index.generationSpecifications.length;
   report.elementCount.sectionIndex =
     (report.elementCount.sectionIndex ?? 0) + index.sectionIndices.length;
@@ -1402,6 +1414,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
+    await Promise.all(
+      inputs.flatMap((input) =>
+        input.data.schemaGenerations.map((element) =>
+          this.visitWithGraphBuilderErrorHandling(
+            element,
+            new V1_ElementSecondPassBuilder(
+              this.getBuilderContext(graph, input.model, element, options),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   private async buildGenerationSpecifications(
@@ -1784,6 +1808,19 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         this.getFullGraphModelData(graph),
       )
     ).map(V1_buildGenerationOutput);
+  }
+
+  async generateArtifacts(
+    graph: PureModel,
+  ): Promise<ArtifactGenerationExtensionResult> {
+    const model = this.getFullGraphModelData(graph);
+    const input = new V1_ArtifactGenerationExtensionInput(
+      model,
+      // TODO provide plugin to filter out artifacts we don't want to show in the generation
+      graph.allOwnElements.map((e) => e.path),
+    );
+    const result = await this.engine.generateArtifacts(input);
+    return V1_buildArtifactsByExtensionElement(result);
   }
 
   async generateModel(
@@ -3012,6 +3049,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.DATABASE;
     } else if (protocol instanceof V1_Service) {
       return CORE_PURE_PATH.SERVICE;
+    } else if (protocol instanceof V1_SchemaGenerationSpecification) {
+      return CORE_PURE_PATH.SCHEMA_GENERATION;
     } else if (protocol instanceof V1_FileGenerationSpecification) {
       return CORE_PURE_PATH.FILE_GENERATION;
     } else if (protocol instanceof V1_DataElement) {

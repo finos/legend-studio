@@ -36,6 +36,7 @@ import type { SectionIndex } from '../graph/metamodel/pure/packageableElements/s
 import type { Entity } from '@finos/legend-storage';
 import type { Database } from '../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import type { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
+import type { SchemaGenerationSpecification } from './metamodel/pure/packageableElements/fileGeneration/SchemaGenerationSpecification.js';
 
 class DependencyModel extends BasicModel {
   constructor(
@@ -160,6 +161,10 @@ export class DependencyManager {
     (dep: BasicModel, path: string) =>
       dep.getOwnNullableGenerationSpecification(path),
   );
+  getOwnNullableSchemaGeneration = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableSchemaGeneration(path),
+  );
   getOwnNullableFileGeneration = buildDependencyElementGetter(
     this,
     (dep: BasicModel, path: string) => dep.getOwnNullableFileGeneration(path),
@@ -232,6 +237,9 @@ export class DependencyManager {
     return this.dependencyGraphs.flatMap(
       (dep) => dep.ownGenerationSpecifications,
     );
+  }
+  get schemaGenerations(): SchemaGenerationSpecification[] {
+    return this.dependencyGraphs.flatMap((dep) => dep.ownSchemaGenerations);
   }
   get fileGenerations(): FileGenerationSpecification[] {
     return this.dependencyGraphs.flatMap((dep) => dep.ownFileGenerations);

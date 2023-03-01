@@ -50,6 +50,10 @@ import type { V1_RawRelationalOperationElement } from '../model/packageableEleme
 import type { V1_RenderStyle } from './grammar/V1_RenderStyle.js';
 import type { V1_ParserError } from './grammar/V1_ParserError.js';
 import type {
+  V1_ArtifactGenerationExtensionInput,
+  V1_ArtifactGenerationExtensionOutput,
+} from '../engine/generation/V1_ArtifactGenerationExtensionApi.js';
+import type {
   V1_MappingModelCoverageAnalysisInput,
   V1_MappingModelCoverageAnalysisResult,
 } from './analytics/V1_MappingModelCoverageAnalysis.js';
@@ -61,6 +65,8 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
 
   EXTERNAL_FORMAT_TO_PROTOCOL = 'transform external format code to protocol',
   GENERATE_FILE = 'generate file',
+
+  GENERATE_ARTIFACTS = 'generate artifacts',
 
   COMPILE = 'compile',
   COMPILE_GRAMMAR = 'compile grammar',
@@ -395,6 +401,19 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_FILE),
       `${this._pure()}/${mode}/${type}`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
+  generateAritfacts = (
+    input: PlainObject<V1_ArtifactGenerationExtensionInput>,
+  ): Promise<PlainObject<V1_ArtifactGenerationExtensionOutput>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_ARTIFACTS),
+      `${this._pure()}/generation/generateArtifacts`,
       input,
       {},
       undefined,

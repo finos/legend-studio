@@ -21,8 +21,12 @@ import {
 } from '@finos/legend-shared';
 import { V1_ConfigurationProperty } from '../../../model/packageableElements/fileGeneration/V1_ConfigurationProperty.js';
 import { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification.js';
+import { V1_SchemaGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_SchemaGenerationSpecification.js';
+import { V1_modelUnitModelSchema } from './V1_DSL_ExternalFormat_ProtocolHelper.js';
 
 export const V1_FILE_GENERATION_ELEMENT_PROTOCOL_TYPE = 'fileGeneration';
+export const V1_SCHEMA_GENERATION_ELEMENT_PROTOCOL_TYPE =
+  'schemaGenerationElement';
 
 export const V1_configurationPropertyModelSchema = createModelSchema(
   V1_ConfigurationProperty,
@@ -44,5 +48,19 @@ export const V1_fileGenerationModelSchema = createModelSchema(
     package: primitive(),
     scopeElements: list(primitive()),
     type: primitive(),
+  },
+);
+
+export const V1_schemaGenerationModelSchema = createModelSchema(
+  V1_SchemaGenerationSpecification,
+  {
+    _type: usingConstantValueSchema(V1_SCHEMA_GENERATION_ELEMENT_PROTOCOL_TYPE),
+    format: primitive(),
+    modelUnit: usingModelSchema(V1_modelUnitModelSchema),
+    config: optional(
+      list(usingModelSchema(V1_configurationPropertyModelSchema)),
+    ),
+    name: primitive(),
+    package: primitive(),
   },
 );

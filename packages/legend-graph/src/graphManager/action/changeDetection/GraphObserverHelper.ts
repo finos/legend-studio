@@ -48,6 +48,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     | 'runtimesIndex'
     | 'servicesIndex'
     | 'generationSpecificationsIndex'
+    | 'schemaGenerationsIndex'
     | 'fileGenerationsIndex'
     | 'dataElementsIndex'
   >(metamodel, {
@@ -65,6 +66,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     runtimesIndex: observable,
     servicesIndex: observable,
     generationSpecificationsIndex: observable,
+    schemaGenerationsIndex: observable,
     fileGenerationsIndex: observable,
     dataElementsIndex: observable,
 
@@ -84,6 +86,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     ownRuntimes: computed,
     ownConnections: computed,
     ownFileGenerations: computed,
+    ownSchemaGenerations: computed,
     ownGenerationSpecifications: computed,
     ownDataElements: computed,
 
@@ -118,6 +121,7 @@ export const observe_DependencyManager = skipObserved(
       runtimes: computed,
       connections: computed,
       generationSpecifications: computed,
+      schemaGenerations: computed,
       fileGenerations: computed,
       dataElements: computed,
 
@@ -164,6 +168,7 @@ export const observe_Graph = (metamodel: PureModel): PureModel => {
     runtimes: computed,
     connections: computed,
     generationSpecifications: computed,
+    schemaGenerations: computed,
     fileGenerations: computed,
     dataElements: computed,
 

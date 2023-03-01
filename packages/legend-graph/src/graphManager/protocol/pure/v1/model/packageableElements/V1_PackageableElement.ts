@@ -33,6 +33,7 @@ import type { V1_Measure } from './domain/V1_Measure.js';
 import type { V1_SectionIndex } from './section/V1_SectionIndex.js';
 import type { V1_DataElement } from './data/V1_DataElement.js';
 import { ELEMENT_PATH_DELIMITER } from '../../../../../../graph/MetaModelConst.js';
+import type { V1_SchemaGenerationSpecification } from './fileGeneration/V1_SchemaGenerationSpecification.js';
 
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;
@@ -52,6 +53,7 @@ export interface V1_PackageableElementVisitor<T> {
   visit_Service(element: V1_Service): T;
   visit_GenerationSpecification(element: V1_GenerationSpecification): T;
   visit_FileGeneration(element: V1_FileGenerationSpecification): T;
+  visit_SchemaGeneration(element: V1_SchemaGenerationSpecification): T;
   visit_DataElement(element: V1_DataElement): T;
 }
 

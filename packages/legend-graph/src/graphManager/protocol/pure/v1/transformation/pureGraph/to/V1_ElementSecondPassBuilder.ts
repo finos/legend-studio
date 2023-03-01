@@ -87,6 +87,8 @@ import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
 import { getFunctionName } from '../../../../../../../graph/helpers/DomainHelper.js';
 import { GraphBuilderError } from '../../../../../../GraphManagerUtils.js';
 import { PostValidation } from '../../../../../../../graph/metamodel/pure/packageableElements/service/PostValidation.js';
+import type { V1_SchemaGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_SchemaGenerationSpecification.js';
+import { ModelUnit } from '../../../../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -365,6 +367,32 @@ export class V1_ElementSecondPassBuilder
     fileGeneration.generationOutputPath = element.generationOutputPath;
     fileGeneration.scopeElements = element.scopeElements.map((scopeElement) =>
       V1_buildScopeElement(scopeElement, this.context),
+    );
+  }
+
+  visit_SchemaGeneration(element: V1_SchemaGenerationSpecification): void {
+    assertNonEmptyString(
+      element.format,
+      `Schema generation 'type' field is missing or empty`,
+    );
+    const schemaGeneration =
+      this.context.currentSubGraph.getOwnSchemaGeneration(
+        V1_buildFullPath(element.package, element.name),
+      );
+    schemaGeneration.format = element.format;
+    schemaGeneration.config = element.config;
+    const modelUnit = new ModelUnit();
+    modelUnit.packageableElementIncludes =
+      element.modelUnit.packageableElementIncludes.map((e) =>
+        this.context.resolveElement(e, true),
+      );
+    modelUnit.packageableElementExcludes =
+      element.modelUnit.packageableElementExcludes.map((e) =>
+        this.context.resolveElement(e, true),
+      );
+    schemaGeneration.modelUnit = modelUnit;
+    schemaGeneration.config = element.config?.map(
+      V1_buildConfigurationProperty,
     );
   }
 

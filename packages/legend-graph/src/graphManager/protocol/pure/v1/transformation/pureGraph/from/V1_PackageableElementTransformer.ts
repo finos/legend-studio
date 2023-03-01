@@ -52,6 +52,7 @@ import { V1_transformSectionIndex } from './V1_SectionIndexTransformer.js';
 import {
   V1_transformFileGeneration,
   V1_transformGenerationSpecification,
+  V1_transformSchemaGeneration,
 } from './V1_GenerationSpecificationTransformer.js';
 import { V1_transformFlatData } from './V1_FlatDataTransformer.js';
 import { V1_transformDatabase } from './V1_DatabaseTransformer.js';
@@ -66,6 +67,7 @@ import type {
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import type { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import { V1_transformDataElement } from './V1_DataElementTransformer.js';
+import type { SchemaGenerationSpecification } from '../../../../../../../DSL_Generation_Exports.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -164,6 +166,12 @@ class V1_PackageableElementTransformer
     element: FileGenerationSpecification,
   ): V1_PackageableElement {
     return V1_transformFileGeneration(element);
+  }
+
+  visit_SchemaGenerationSpecification(
+    element: SchemaGenerationSpecification,
+  ): V1_PackageableElement {
+    return V1_transformSchemaGeneration(element);
   }
 
   visit_GenerationSpecification(

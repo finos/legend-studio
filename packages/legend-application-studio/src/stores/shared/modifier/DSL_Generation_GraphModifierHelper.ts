@@ -16,9 +16,11 @@
 
 import {
   type PackageableElement,
-  PackageableElementReference,
   type ConfigurationProperty,
   type GenerationSpecification,
+  type SchemaGenerationSpecification,
+  type ModelUnit,
+  PackageableElementReference,
   FileGenerationSpecification,
   GenerationTreeNode,
   PackageableElementExplicitReference,
@@ -27,6 +29,7 @@ import {
   observe_FileGenerationSpecification,
   observe_GenerationTreeNode,
   observe_ConfigurationProperty,
+  observe_ModelUnit,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -35,6 +38,20 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { action } from 'mobx';
+
+// --------------------------------------------- Schema Generation -------------------------------------
+
+export const schemaGeneration_setFormat = action(
+  (fg: SchemaGenerationSpecification, value: string): void => {
+    fg.format = value;
+  },
+);
+
+export const schemaGeneration_setModelunit = action(
+  (fg: SchemaGenerationSpecification, value: ModelUnit): void => {
+    fg.modelUnit = observe_ModelUnit(value);
+  },
+);
 
 // --------------------------------------------- File Generation -------------------------------------
 

@@ -314,9 +314,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           )}
           disabled={
             editorStore.graphState.isApplicationUpdateOperationIsRunning ||
-            actionsDisabled ||
-            !editorStore.graphManagerState.graph.ownGenerationSpecifications
-              .length
+            actionsDisabled
           }
           onClick={generate}
           tabIndex={-1}

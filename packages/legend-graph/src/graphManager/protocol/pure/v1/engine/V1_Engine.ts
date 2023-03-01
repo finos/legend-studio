@@ -100,6 +100,10 @@ import type {
 import { V1_CompilationWarning } from './compilation/V1_CompilationWarning.js';
 import { V1_GenerateSchemaInput } from './externalFormat/V1_GenerateSchemaInput.js';
 import type { GraphManagerOperationReport } from '../../../../GraphManagerMetrics.js';
+import {
+  V1_ArtifactGenerationExtensionInput,
+  V1_ArtifactGenerationExtensionOutput,
+} from './generation/V1_ArtifactGenerationExtensionApi.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -561,6 +565,18 @@ export class V1_Engine {
       V1_RunTestsInput.serialization.toJson(input),
     )) as unknown as PlainObject<V1_RunTestsResult>;
     return V1_RunTestsResult.serialization.fromJson(result);
+  }
+
+  // -------------------------------------------  Generation -------------------------------------------
+
+  async generateArtifacts(
+    input: V1_ArtifactGenerationExtensionInput,
+  ): Promise<V1_ArtifactGenerationExtensionOutput> {
+    return V1_ArtifactGenerationExtensionOutput.serialization.fromJson(
+      await this.engineServerClient.generateAritfacts(
+        V1_ArtifactGenerationExtensionInput.serialization.toJson(input),
+      ),
+    );
   }
 
   // ------------------------------------------- File Generation -------------------------------------------

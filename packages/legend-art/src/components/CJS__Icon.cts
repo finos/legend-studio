@@ -89,6 +89,7 @@ export {
   FaCircleNotch as CircleNotchIcon,
   FaRegKeyboard as KeyboardIcon,
   FaUserSecret as HackerIcon,
+  FaScroll as ScrollIcon,
   FaBuffer as BufferIcon, // to be reviewed, moved to LegendIcon
   FaSitemap as SitemapIcon, // to be reviewed, moved to LegendIcon
   FaExpand as ExpandIcon,

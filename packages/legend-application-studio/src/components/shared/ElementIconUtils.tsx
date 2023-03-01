@@ -46,6 +46,7 @@ import {
   PURE_UnitIcon,
   PURE_PackageIcon,
   PURE_DataIcon,
+  PURE_SchemaGenIcon,
 } from '@finos/legend-art';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../stores/shared/ModelClassifierUtils.js';
 
@@ -68,6 +69,7 @@ export const getElementTypeIcon = (
   editorStore: EditorStore,
   type: string | undefined,
 ): React.ReactNode => {
+  console.log("hello");
   switch (type) {
     case PACKAGEABLE_ELEMENT_TYPE.PRIMITIVE:
       return <PURE_PrimitiveTypeIcon />;
@@ -99,6 +101,8 @@ export const getElementTypeIcon = (
       return <PURE_ConnectionIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.RUNTIME:
       return <PURE_RuntimeIcon />;
+    case PACKAGEABLE_ELEMENT_TYPE.SCHEMA_GENERATION:
+      return <PURE_SchemaGenIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION:
       return <PURE_FileGenerationIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.DATA:

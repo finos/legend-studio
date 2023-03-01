@@ -66,6 +66,8 @@ import { DataElement } from '../../../../../../../graph/metamodel/pure/packageab
 import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
 import { Multiplicity } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import { PrimitiveType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import type { V1_SchemaGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_SchemaGenerationSpecification.js';
+import { SchemaGenerationSpecification } from '../../../../../../../graph/metamodel/pure/packageableElements/fileGeneration/SchemaGenerationSpecification.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -385,6 +387,31 @@ export class V1_ElementFirstPassBuilder
     return fileGeneration;
   }
 
+  visit_SchemaGeneration(
+    element: V1_SchemaGenerationSpecification,
+  ): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      'Schema generation element package is missing',
+    );
+    assertNonEmptyString(
+      element.name,
+      'Schema generation element name is missing',
+    );
+    const schemaGeneration = new SchemaGenerationSpecification(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
+      schemaGeneration,
+    );
+    this.context.currentSubGraph.setOwnSchemaGeneration(path, schemaGeneration);
+    return schemaGeneration;
+  }
   // TODO: Add support for generation specification
   visit_GenerationSpecification(
     element: V1_GenerationSpecification,

@@ -95,6 +95,7 @@ import {
   type PureModel,
   createGraphBuilderReport,
   reportGraphAnalytics,
+  SchemaGenerationSpecification,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -1525,6 +1526,8 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.CONNECTION;
     } else if (element instanceof PackageableRuntime) {
       return PACKAGEABLE_ELEMENT_TYPE.RUNTIME;
+    } else if (element instanceof SchemaGenerationSpecification) {
+      return PACKAGEABLE_ELEMENT_TYPE.SCHEMA_GENERATION;
     } else if (element instanceof FileGenerationSpecification) {
       return PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION;
     } else if (element instanceof GenerationSpecification) {

@@ -88,7 +88,7 @@ export class FileGenerationViewModeState extends ElementGenerationModeState {
   }
 
   get label(): string {
-    return this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
+    return this.editorStore.graphState.graphGenerationState.globalFileGenerationState.getFileGenerationConfiguration(
       this.elementGenerationState.fileGenerationType,
     ).label;
   }

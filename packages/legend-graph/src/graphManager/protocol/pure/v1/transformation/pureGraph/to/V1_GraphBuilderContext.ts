@@ -96,6 +96,7 @@ import {
   getSection,
 } from '../../../../../../../graph/helpers/STO_FlatData_Helper.js';
 import type { PropertyOwner } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/AbstractProperty.js';
+import type { SchemaGenerationSpecification } from '../../../../../../../graph/metamodel/pure/packageableElements/fileGeneration/SchemaGenerationSpecification.js';
 
 export const V1_buildFullPath = (
   packagePath: string | undefined,
@@ -536,6 +537,13 @@ export class V1_GraphBuilderContext {
     this.createImplicitPackageableElementReference(
       path,
       this.graph.getFileGeneration,
+    );
+  resolveSchemaGeneration = (
+    path: string,
+  ): PackageableElementImplicitReference<SchemaGenerationSpecification> =>
+    this.createImplicitPackageableElementReference(
+      path,
+      this.graph.getSchemaGeneration,
     );
   resolveDataElement = (
     path: string,

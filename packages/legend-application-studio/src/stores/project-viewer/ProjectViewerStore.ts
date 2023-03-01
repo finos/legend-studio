@@ -433,7 +433,7 @@ export class ProjectViewerStore {
 
       // fetch available file generation descriptions
       yield flowResult(
-        this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
+        this.editorStore.graphState.graphGenerationState.globalFileGenerationState.fetchAvailableFileGenerationDescriptions(),
       );
       yield flowResult(
         this.editorStore.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),

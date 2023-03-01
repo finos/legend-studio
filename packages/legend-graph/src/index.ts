@@ -230,6 +230,7 @@ export * from './graphManager/action/compilation/CompilationResult.js';
 export * from './graphManager/action/SourceInformationHelper.js';
 export * from './graphManager/action/generation/DatabaseBuilderInput.js';
 export * from './graphManager/action/generation/GenerationConfigurationDescription.js';
+export * from './graphManager/action/generation/ArtifactGenerationExtensionResult.js';
 export { GenerationOutput } from './graphManager/action/generation/GenerationOutput.js';
 export { ServiceExecutionMode } from './graphManager/action/service/ServiceExecutionMode.js';
 export { ServiceRegistrationResult } from './graphManager/action/service/ServiceRegistrationResult.js';

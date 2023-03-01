@@ -66,6 +66,7 @@ import {
 import { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
 import type { LegendSDLC } from '@finos/legend-storage';
+import { SchemaGenerationSpecification } from './metamodel/pure/packageableElements/fileGeneration/SchemaGenerationSpecification.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -127,6 +128,10 @@ export abstract class BasicModel {
   private readonly fileGenerationsIndex = new Map<
     string,
     FileGenerationSpecification
+  >();
+  private readonly schemaGenerationsIndex = new Map<
+    string,
+    SchemaGenerationSpecification
   >();
   private readonly dataElementsIndex = new Map<string, DataElement>();
 
@@ -198,8 +203,14 @@ export abstract class BasicModel {
   get ownConnections(): PackageableConnection[] {
     return Array.from(this.connectionsIndex.values());
   }
+  get ownSchemaGeneratons(): SchemaGenerationSpecification[] {
+    return Array.from(this.schemaGenerationsIndex.values());
+  }
   get ownFileGenerations(): FileGenerationSpecification[] {
     return Array.from(this.fileGenerationsIndex.values());
+  }
+  get ownSchemaGenerations(): SchemaGenerationSpecification[] {
+    return Array.from(this.schemaGenerationsIndex.values());
   }
   get ownDataElements(): DataElement[] {
     return Array.from(this.dataElementsIndex.values());
@@ -291,10 +302,15 @@ export abstract class BasicModel {
     path: string,
   ): GenerationSpecification | undefined =>
     this.generationSpecificationsIndex.get(path);
+  getOwnNullableSchemaGeneration = (
+    path: string,
+  ): SchemaGenerationSpecification | undefined =>
+    this.schemaGenerationsIndex.get(path);
   getOwnNullableFileGeneration = (
     path: string,
   ): FileGenerationSpecification | undefined =>
     this.fileGenerationsIndex.get(path);
+
   getOwnNullableDataElement = (path: string): DataElement | undefined =>
     this.dataElementsIndex.get(path);
   getOwnSectionIndex = (path: string): SectionIndex =>
@@ -384,6 +400,11 @@ export abstract class BasicModel {
       this.getOwnNullableFileGeneration(path),
       `Can't find file generation '${path}'`,
     );
+  getOwnSchemaGeneration = (path: string): SchemaGenerationSpecification =>
+    guaranteeNonNullable(
+      this.getOwnNullableSchemaGeneration(path),
+      `Can't find schema generation '${path}'`,
+    );
   getOwnDataElement = (path: string): DataElement =>
     guaranteeNonNullable(
       this.getOwnNullableDataElement(path),
@@ -440,7 +461,12 @@ export abstract class BasicModel {
   setOwnFileGeneration(path: string, val: FileGenerationSpecification): void {
     this.fileGenerationsIndex.set(path, val);
   }
-
+  setOwnSchemaGeneration(
+    path: string,
+    val: SchemaGenerationSpecification,
+  ): void {
+    this.schemaGenerationsIndex.set(path, val);
+  }
   setOwnDataElement(path: string, val: DataElement): void {
     this.dataElementsIndex.set(path, val);
   }
@@ -468,6 +494,7 @@ export abstract class BasicModel {
       ...this.ownRuntimes,
       ...this.ownConnections,
       ...this.ownGenerationSpecifications,
+      ...this.ownSchemaGenerations,
       ...this.ownFileGenerations,
       ...this.ownDataElements,
       ...this.extensions.flatMap((extension) => extension.elements),
@@ -514,6 +541,7 @@ export abstract class BasicModel {
       this.runtimesIndex.get(path) ??
       this.connectionsIndex.get(path) ??
       this.fileGenerationsIndex.get(path) ??
+      this.schemaGenerationsIndex.get(path) ??
       this.dataElementsIndex.get(path) ??
       this.generationSpecificationsIndex.get(path);
     if (!element) {
@@ -559,6 +587,8 @@ export abstract class BasicModel {
       this.setOwnConnection(element.path, element);
     } else if (element instanceof PackageableRuntime) {
       this.setOwnRuntime(element.path, element);
+    } else if (element instanceof SchemaGenerationSpecification) {
+      this.setOwnSchemaGeneration(element.path, element);
     } else if (element instanceof FileGenerationSpecification) {
       this.setOwnFileGeneration(element.path, element);
     } else if (element instanceof GenerationSpecification) {
@@ -605,6 +635,8 @@ export abstract class BasicModel {
       this.runtimesIndex.delete(element.path);
     } else if (element instanceof PackageableConnection) {
       this.connectionsIndex.delete(element.path);
+    } else if (element instanceof SchemaGenerationSpecification) {
+      this.schemaGenerationsIndex.delete(element.path);
     } else if (element instanceof FileGenerationSpecification) {
       this.fileGenerationsIndex.delete(element.path);
     } else if (element instanceof GenerationSpecification) {
@@ -724,6 +756,9 @@ export abstract class BasicModel {
     } else if (element instanceof PackageableConnection) {
       this.connectionsIndex.delete(oldPath);
       this.connectionsIndex.set(newPath, element);
+    } else if (element instanceof SchemaGenerationSpecification) {
+      this.schemaGenerationsIndex.delete(oldPath);
+      this.schemaGenerationsIndex.set(newPath, element);
     } else if (element instanceof FileGenerationSpecification) {
       this.fileGenerationsIndex.delete(oldPath);
       this.fileGenerationsIndex.set(newPath, element);

@@ -111,6 +111,7 @@ import {
   Package,
   DataElement,
   isElementReadOnly,
+  SchemaGenerationSpecification,
 } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
@@ -138,6 +139,7 @@ import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
 import { LEGEND_STUDIO_COMMAND_KEY } from './LegendStudioCommand.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
 import type { ProjectViewerEditorMode } from './project-viewer/ProjectViewerEditorMode.js';
+import { SchemaGenerationEditorState } from './editor-state/element-editor-state/file-generation/SchemaGenerationEditorState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -745,7 +747,7 @@ export class EditorStore implements CommandRegistrar {
       this.workspaceReviewState.fetchCurrentWorkspaceReview(),
       this.workspaceUpdaterState.fetchLatestCommittedReviews(),
       this.projectConfigurationEditorState.fetchLatestProjectStructureVersion(),
-      this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
+      this.graphState.graphGenerationState.globalFileGenerationState.fetchAvailableFileGenerationDescriptions(),
       this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
       this.sdlcState.fetchProjectVersions(),
     ]);
@@ -781,7 +783,7 @@ export class EditorStore implements CommandRegistrar {
       this.conflictResolutionState.initialize(),
       this.sdlcState.checkIfWorkspaceIsOutdated(),
       this.projectConfigurationEditorState.fetchLatestProjectStructureVersion(),
-      this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
+      this.graphState.graphGenerationState.globalFileGenerationState.fetchAvailableFileGenerationDescriptions(),
       this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
       this.sdlcState.fetchProjectVersions(),
     ]);
@@ -963,6 +965,8 @@ export class EditorStore implements CommandRegistrar {
       return new ServiceEditorState(this, element);
     } else if (element instanceof GenerationSpecification) {
       return new GenerationSpecificationEditorState(this, element);
+    } else if (element instanceof SchemaGenerationSpecification) {
+      return new UnsupportedElementEditorState(this, element);
     } else if (element instanceof FileGenerationSpecification) {
       return new FileGenerationEditorState(this, element);
     } else if (element instanceof DataElement) {
@@ -1170,6 +1174,7 @@ export class EditorStore implements CommandRegistrar {
         PACKAGEABLE_ELEMENT_TYPE.CONNECTION,
         PACKAGEABLE_ELEMENT_TYPE.SERVICE,
         PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION,
+        PACKAGEABLE_ELEMENT_TYPE.SCHEMA_GENERATION,
         PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION,
         PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
         PACKAGEABLE_ELEMENT_TYPE.DATABASE,

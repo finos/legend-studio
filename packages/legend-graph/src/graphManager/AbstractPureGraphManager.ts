@@ -75,6 +75,7 @@ import type {
 } from './action/compilation/CompilationResult.js';
 import type { ParameterValue } from '../DSL_Service_Exports.js';
 import type { ModelUnit } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
+import type { ArtifactGenerationExtensionResult } from './action/generation/ArtifactGenerationExtensionResult.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -343,6 +344,9 @@ export abstract class AbstractPureGraphManager {
   abstract getAvailableGenerationConfigurationDescriptions(): Promise<
     GenerationConfigurationDescription[]
   >;
+  abstract generateArtifacts(
+    graph: PureModel,
+  ): Promise<ArtifactGenerationExtensionResult>;
   abstract generateFile(
     fileGeneration: FileGenerationSpecification,
     generationMode: GenerationMode,

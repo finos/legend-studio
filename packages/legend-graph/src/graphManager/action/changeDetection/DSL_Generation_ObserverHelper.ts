@@ -20,6 +20,7 @@ import type {
   FileGenerationSpecification,
   GenerationSpecification,
   GenerationTreeNode,
+  SchemaGenerationSpecification,
 } from '../../../DSL_Generation_Exports.js';
 import { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import {
@@ -27,6 +28,23 @@ import {
   observe_PackageableElementReference,
   skipObserved,
 } from './CoreObserverHelper.js';
+import { observe_ModelUnit } from './DSL_ExternalFormat_ObserverHelper.js';
+
+export const observer_SchemaGenerationSpecification = skipObserved(
+  (metamodel: SchemaGenerationSpecification): SchemaGenerationSpecification => {
+    observe_Abstract_PackageableElement(metamodel);
+    makeObservable<SchemaGenerationSpecification, '_elementHashCode'>(
+      metamodel,
+      {
+        format: observable,
+        config: observable,
+        _elementHashCode: override,
+      },
+    );
+    observe_ModelUnit(metamodel.modelUnit);
+    return metamodel;
+  },
+);
 
 export const observe_ConfigurationProperty = skipObserved(
   (metamodel: ConfigurationProperty): ConfigurationProperty =>

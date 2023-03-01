@@ -25,6 +25,7 @@ import {
   PackageIcon,
   QuestionIcon,
   RobotIcon,
+  ScrollIcon,
   ServerIcon,
   SettingsEthernetIcon,
   ShapeLineIcon,
@@ -79,6 +80,12 @@ export const PURE_FunctionIcon: React.FC = () => (
 export const PURE_FlatDataStoreIcon: React.FC = () => (
   <div className="icon icon--flat-data color--flat-data">
     <LayerGroupIcon />
+  </div>
+);
+
+export const PURE_SchemaGenIcon: React.FC = () => (
+  <div className="icon color--file-generation">
+    <ScrollIcon />
   </div>
 );
 

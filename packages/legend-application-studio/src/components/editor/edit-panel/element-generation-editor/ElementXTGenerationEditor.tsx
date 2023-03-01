@@ -40,7 +40,7 @@ enum HIDDEN_CONFIGURATION_PROPERTIES {
   TARGET_SCHEMA_SET = 'targetSchemaSet',
 }
 
-export const ExternalFormatGeneratioConfigEditor = observer(
+export const SchemaGeneratioConfigEditor = observer(
   (props: {
     isReadOnly: boolean;
     elementEditorState: ElementEditorState;
@@ -77,7 +77,7 @@ export const ExternalFormatGeneratioConfigEditor = observer(
     };
 
     const getConfigValue = (name: string): unknown | undefined =>
-      xtState.xtGenerationState.configSpecification.configurationProperties.find(
+      xtState.xtGenerationState.configSpecification.config?.find(
         (e) => e.name === name,
       )?.value;
 
@@ -91,10 +91,7 @@ export const ExternalFormatGeneratioConfigEditor = observer(
             <button
               className="panel__header__action file-generation-editor__configuration__reset-btn"
               tabIndex={-1}
-              disabled={
-                isReadOnly ||
-                !configSpecification.configurationProperties.length
-              }
+              disabled={isReadOnly || !configSpecification.config?.length}
               onClick={resetDefaultConfiguration}
               title="Reset to default configuration"
             >
@@ -173,7 +170,7 @@ export const ElementXTGenerationEditor = observer(
                 minSize={300}
                 className="file-generation-editor__split-pane"
               >
-                <ExternalFormatGeneratioConfigEditor
+                <SchemaGeneratioConfigEditor
                   isReadOnly={currentElementState.isReadOnly}
                   elementEditorState={currentElementState}
                   xtState={elementXTState}

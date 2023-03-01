@@ -52,6 +52,7 @@ import { V1_buildMilestoningProperties } from './helpers/V1_MilestoneBuilderHelp
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper.js';
 import { MappingTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
+import type { V1_SchemaGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_SchemaGenerationSpecification.js';
 
 export class V1_ElementFourthPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -151,6 +152,10 @@ export class V1_ElementFourthPassBuilder
   }
 
   visit_SectionIndex(element: V1_SectionIndex): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_SchemaGeneration(element: V1_SchemaGenerationSpecification): void {
     throw new UnsupportedOperationError();
   }
 

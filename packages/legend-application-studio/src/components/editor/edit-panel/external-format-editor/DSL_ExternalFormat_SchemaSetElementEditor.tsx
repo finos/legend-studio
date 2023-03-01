@@ -45,7 +45,7 @@ import {
   SCHEMA_SET_TAB_TYPE,
 } from '../../../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
 import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
-import { getEditorLanguageForFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
+import { getEditorLanguageForFormat } from '../../../../stores/editor-state/ArftifactGenerationViewerState.js';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {

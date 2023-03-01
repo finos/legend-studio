@@ -65,14 +65,16 @@ import { UnsupportedElementEditor } from './UnsupportedElementEditor.js';
 import { getPrettyLabelForRevision } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { GenerationSpecificationEditorState } from '../../../stores/editor-state/GenerationSpecificationEditorState.js';
 import { GenerationSpecificationEditor } from './GenerationSpecificationEditor.js';
-import { FileGenerationViewerState } from '../../../stores/editor-state/FileGenerationViewerState.js';
-import { FileGenerationViewer } from '../../editor/edit-panel/FileGenerationViewer.js';
+import { ArtifactGenerationViewerState } from '../../../stores/editor-state/ArftifactGenerationViewerState.js';
+import { ArtifactGenerationViewer } from './ArtifactGenerationViewer.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { PackageableDataEditorState } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
 import { TabManager, type TabState } from '@finos/legend-application';
 import { ElementXTGenerationEditor } from './element-generation-editor/ElementXTGenerationEditor.js';
+import { SchemaGenerationEditor } from './element-generation-editor/SchemaGenerationEditor.js';
+import { SchemaGenerationEditorState } from '../../../stores/editor-state/element-editor-state/file-generation/SchemaGenerationEditorState.js';
 
 export const ViewerEditPanelSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -190,7 +192,7 @@ export const EditPanel = observer(() => {
       : [];
   const generationViewModes = (
     currentTabState instanceof ElementEditorState
-      ? editorStore.graphState.graphGenerationState.fileGenerationConfigurations
+      ? editorStore.graphState.graphGenerationState.globalFileGenerationState.fileGenerationConfigurations
           .slice()
           .sort((a, b): number => a.label.localeCompare(b.label))
       : []
@@ -244,6 +246,8 @@ export const EditPanel = observer(() => {
             currentTabState instanceof PackageableConnectionEditorState
           ) {
             return <PackageableConnectionEditor key={currentTabState.uuid} />;
+          } else if (currentTabState instanceof SchemaGenerationEditorState) {
+            return <SchemaGenerationEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof FileGenerationEditorState) {
             return <FileGenerationEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof PackageableDataEditorState) {
@@ -296,8 +300,8 @@ export const EditPanel = observer(() => {
           conflictEditorState={currentTabState}
         />
       );
-    } else if (currentTabState instanceof FileGenerationViewerState) {
-      return <FileGenerationViewer key={currentTabState.uuid} />;
+    } else if (currentTabState instanceof ArtifactGenerationViewerState) {
+      return <ArtifactGenerationViewer key={currentTabState.uuid} />;
     } else if (currentTabState instanceof ModelImporterState) {
       return <ModelImporter />;
     } else if (currentTabState instanceof ProjectConfigurationEditorState) {
@@ -427,7 +431,7 @@ export const EditPanel = observer(() => {
                               key={mode.key}
                               className="edit-panel__view-mode__option"
                               disabled={
-                                !editorStore.graphState.graphGenerationState.supportedFileGenerationConfigurationsForCurrentElement.includes(
+                                !editorStore.graphState.graphGenerationState.globalFileGenerationState.supportedFileGenerationConfigurationsForCurrentElement.includes(
                                   mode,
                                 )
                               }

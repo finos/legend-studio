@@ -68,7 +68,7 @@ import {
   externalFormatData_setContentType,
   externalFormatData_setData,
 } from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
-import { getEditorLanguageForFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
+import { getEditorLanguageForFormat } from '../../../../stores/editor-state/ArftifactGenerationViewerState.js';
 import type { ExternalFormatDataState } from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import { renderEmbeddedDataEditor } from './EmbeddedDataEditor.js';
 import {

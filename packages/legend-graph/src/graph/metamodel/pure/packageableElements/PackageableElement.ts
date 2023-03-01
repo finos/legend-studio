@@ -41,6 +41,7 @@ import type { Measure } from './domain/Measure.js';
 import type { SectionIndex } from './section/SectionIndex.js';
 import type { DataElement } from './data/DataElement.js';
 import { AnnotatedElement } from './domain/AnnotatedElement.js';
+import type { SchemaGenerationSpecification } from './fileGeneration/SchemaGenerationSpecification.js';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
@@ -61,6 +62,9 @@ export interface PackageableElementVisitor<T> {
   visit_Database(element: Database): T;
   visit_Service(element: Service): T;
   visit_FileGenerationSpecification(element: FileGenerationSpecification): T;
+  visit_SchemaGenerationSpecification(
+    element: SchemaGenerationSpecification,
+  ): T;
   visit_GenerationSpecification(element: GenerationSpecification): T;
   visit_DataElement(element: DataElement): T;
 }

@@ -34,7 +34,7 @@ import {
 import { decorateRuntimeWithNewMapping } from '../editor-state/element-editor-state/RuntimeEditorState.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import {
-  type FileGenerationTypeOption,
+  type GenerationTypeOption,
   DEFAULT_GENERATION_SPECIFICATION_NAME,
 } from '../editor-state/GraphGenerationState.js';
 import {
@@ -74,6 +74,8 @@ import {
   Measure,
   Multiplicity,
   PrimitiveType,
+  SchemaGenerationSpecification,
+  ModelUnit,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -84,6 +86,8 @@ import {
   fileGeneration_setScopeElements,
   fileGeneration_setType,
   generationSpecification_addGenerationElement,
+  schemaGeneration_setFormat,
+  schemaGeneration_setModelunit,
 } from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
 import {
   service_initNewService,
@@ -96,8 +100,12 @@ import {
   buildElementOption,
   type PackageableElementOption,
 } from '@finos/legend-application';
-import { EmbeddedDataType } from '../editor-state/ExternalFormatState.js';
+import {
+  EmbeddedDataType,
+  type ExternalFormatTypeOption,
+} from '../editor-state/ExternalFormatState.js';
 import { createEmbeddedData } from '../editor-state/element-editor-state/data/EmbeddedDataState.js';
+import { externalFormat_modelUnit_addPackageableElementIncludes } from '../shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 
 export const resolvePackageAndElementName = (
   _package: Package,
@@ -511,7 +519,7 @@ export class NewServiceDriver extends NewElementDriver<Service> {
 }
 
 export class NewFileGenerationDriver extends NewElementDriver<FileGenerationSpecification> {
-  typeOption?: FileGenerationTypeOption | undefined;
+  typeOption?: GenerationTypeOption | undefined;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
@@ -522,13 +530,13 @@ export class NewFileGenerationDriver extends NewElementDriver<FileGenerationSpec
     });
 
     this.typeOption = editorStore.graphState.graphGenerationState
-      .fileGenerationConfigurationOptions.length
-      ? editorStore.graphState.graphGenerationState
+      .globalFileGenerationState.fileGenerationConfigurationOptions.length
+      ? editorStore.graphState.graphGenerationState.globalFileGenerationState
           .fileGenerationConfigurationOptions[0]
       : undefined;
   }
 
-  setTypeOption(typeOption: FileGenerationTypeOption | undefined): void {
+  setTypeOption(typeOption: GenerationTypeOption | undefined): void {
     this.typeOption = typeOption;
   }
 
@@ -550,6 +558,48 @@ export class NewFileGenerationDriver extends NewElementDriver<FileGenerationSpec
         .map((element) => PackageableElementExplicitReference.create(element)),
     );
     return fileGeneration;
+  }
+}
+
+export class NewSchemaGenerationDriver extends NewElementDriver<SchemaGenerationSpecification> {
+  typeOption?: ExternalFormatTypeOption | undefined;
+
+  constructor(editorStore: EditorStore) {
+    super(editorStore);
+
+    makeObservable(this, {
+      typeOption: observable,
+      setTypeOption: action,
+    });
+    const _options =
+      editorStore.graphState.graphGenerationState.externalFormatState
+        .schemaXTTypeOptions;
+    this.typeOption = _options.length ? _options[0] : undefined;
+  }
+
+  setTypeOption(typeOption: ExternalFormatTypeOption | undefined): void {
+    this.typeOption = typeOption;
+  }
+
+  get isValid(): boolean {
+    return Boolean(this.typeOption);
+  }
+
+  createElement(name: string): SchemaGenerationSpecification {
+    const schemaGeneration = new SchemaGenerationSpecification(name);
+    schemaGeneration_setFormat(
+      schemaGeneration,
+      guaranteeNonNullable(this.typeOption).value,
+    );
+    const modelUnit = new ModelUnit();
+    this.editorStore.graphManagerState.graph.root.children
+      .filter((element) => element instanceof Package)
+      .map((element) => PackageableElementExplicitReference.create(element))
+      .forEach((e) =>
+        externalFormat_modelUnit_addPackageableElementIncludes(modelUnit, e),
+      );
+    schemaGeneration_setModelunit(schemaGeneration, modelUnit);
+    return schemaGeneration;
   }
 }
 
@@ -710,6 +760,9 @@ export class NewElementState {
         case PACKAGEABLE_ELEMENT_TYPE.CONNECTION:
           driver = new NewPackageableConnectionDriver(this.editorStore);
           break;
+        case PACKAGEABLE_ELEMENT_TYPE.SCHEMA_GENERATION:
+          driver = new NewSchemaGenerationDriver(this.editorStore);
+          break;
         case PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION:
           driver = new NewFileGenerationDriver(this.editorStore);
           break;
@@ -843,6 +896,11 @@ export class NewElementState {
       case PACKAGEABLE_ELEMENT_TYPE.RUNTIME:
         element = this.getNewElementDriver(
           NewPackageableRuntimeDriver,
+        ).createElement(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.SCHEMA_GENERATION:
+        element = this.getNewElementDriver(
+          NewSchemaGenerationDriver,
         ).createElement(name);
         break;
       case PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION:

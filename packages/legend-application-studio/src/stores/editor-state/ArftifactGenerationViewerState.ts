@@ -50,30 +50,33 @@ export const getEditorLanguageForFormat = (
   }
 };
 
-export class FileGenerationViewerState extends EditorState {
-  file: FileSystem_File;
+export class ArtifactGenerationViewerState extends EditorState {
+  artifact: FileSystem_File;
 
   constructor(editorStore: EditorStore, file: FileSystem_File) {
     super(editorStore);
 
     makeObservable(this, {
-      file: observable,
+      artifact: observable,
       label: computed,
       generatedFilePath: computed,
     });
 
-    this.file = file;
+    this.artifact = file;
   }
 
   get label(): string {
-    return this.file.name;
+    return this.artifact.name;
   }
 
   override match(tab: EditorState): boolean {
-    return tab instanceof FileGenerationViewerState && tab.file === this.file;
+    return (
+      tab instanceof ArtifactGenerationViewerState &&
+      tab.artifact === this.artifact
+    );
   }
 
   get generatedFilePath(): string {
-    return this.file.path;
+    return this.artifact.path;
   }
 }

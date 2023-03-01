@@ -32,6 +32,9 @@ import {
   V1_transformElementReferencePointer,
   V1_initPackageableElement,
 } from './V1_CoreTransformerHelper.js';
+import type { SchemaGenerationSpecification } from '../../../../../../../DSL_Generation_Exports.js';
+import { V1_SchemaGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_SchemaGenerationSpecification.js';
+import { V1_transformModelUnit } from './V1_DSL_ExternalFormat_Transformer.js';
 
 // ----------------------------------------------- GENERATION SPECIFICATION ----------------------------------------
 
@@ -89,4 +92,15 @@ export const V1_transformFileGeneration = (
   fileGeneration.type = element.type;
   fileGeneration.generationOutputPath = element.generationOutputPath;
   return fileGeneration;
+};
+
+export const V1_transformSchemaGeneration = (
+  element: SchemaGenerationSpecification,
+): V1_SchemaGenerationSpecification => {
+  const schemaGeneration = new V1_SchemaGenerationSpecification();
+  V1_initPackageableElement(schemaGeneration, element);
+  schemaGeneration.format = element.format;
+  schemaGeneration.modelUnit = V1_transformModelUnit(element.modelUnit);
+  schemaGeneration.config = element.config?.map(transformConfigurationProperty);
+  return schemaGeneration;
 };

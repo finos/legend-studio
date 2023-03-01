@@ -34,6 +34,7 @@ import {
 } from '../../../model/packageableElements/domain/V1_Measure.js';
 import { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile.js';
 import { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification.js';
+import { V1_SchemaGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_SchemaGenerationSpecification.js';
 import { V1_ConcreteFunctionDefinition } from '../../../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
 import { V1_GenerationSpecification } from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification.js';
 import { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping.js';
@@ -61,6 +62,7 @@ const FORBIDDEN_BUILDER_PROTOCOL_CLASSES = new Set<
   V1_PackageableConnection,
   V1_PackageableRuntime,
   V1_Service,
+  V1_SchemaGenerationSpecification,
   V1_FileGenerationSpecification,
   V1_GenerationSpecification,
 ]);

@@ -63,6 +63,8 @@ import {
 import {
   V1_FILE_GENERATION_ELEMENT_PROTOCOL_TYPE,
   V1_fileGenerationModelSchema,
+  V1_SCHEMA_GENERATION_ELEMENT_PROTOCOL_TYPE,
+  V1_schemaGenerationModelSchema,
 } from './serializationHelpers/V1_FileGenerationSerializationHelper.js';
 import {
   V1_GENERATION_SPECIFICATION_ELEMENT_PROTOCOL_TYPE,
@@ -100,6 +102,7 @@ import {
   V1_dataElementModelSchema,
   V1_DATA_ELEMENT_PROTOCOL_TYPE,
 } from './serializationHelpers/V1_DataElementSerializationHelper.js';
+import type { V1_SchemaGenerationSpecification } from '../../model/packageableElements/fileGeneration/V1_SchemaGenerationSpecification.js';
 
 class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
@@ -189,6 +192,12 @@ class V1_PackageableElementSerializer
     );
   }
 
+  visit_SchemaGeneration(
+    element: V1_SchemaGenerationSpecification,
+  ): PlainObject<V1_PackageableElement> {
+    return serialize(V1_schemaGenerationModelSchema, element);
+  }
+
   visit_FileGeneration(
     element: V1_FileGenerationSpecification,
   ): PlainObject<V1_PackageableElement> {
@@ -272,6 +281,8 @@ export const V1_deserializePackageableElement = (
         return deserialize(V1_packageableConnectionModelSchema(plugins), json);
       case V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_packageableRuntimeModelSchema, json);
+      case V1_SCHEMA_GENERATION_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_schemaGenerationModelSchema, json);
       case V1_FILE_GENERATION_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_fileGenerationModelSchema, json);
       case V1_GENERATION_SPECIFICATION_ELEMENT_PROTOCOL_TYPE:

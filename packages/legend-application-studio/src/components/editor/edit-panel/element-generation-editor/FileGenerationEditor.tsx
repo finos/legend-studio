@@ -1012,7 +1012,7 @@ export const FileGenerationConfigurationEditor = observer(
     const applicationStore = useApplicationStore();
     const fileGeneration = fileGenerationState.fileGeneration;
     const fileGenerationConfiguration =
-      editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
+      editorStore.graphState.graphGenerationState.globalFileGenerationState.getFileGenerationConfiguration(
         fileGeneration.type,
       ).properties;
     const debouncedRegenerate = useMemo(

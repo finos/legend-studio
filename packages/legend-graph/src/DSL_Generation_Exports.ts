@@ -21,6 +21,7 @@ export {
   GenerationTreeNode,
 } from './graph/metamodel/pure/packageableElements/generationSpecification/GenerationSpecification.js';
 export { FileGenerationSpecification } from './graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
+export { SchemaGenerationSpecification } from './graph/metamodel/pure/packageableElements/fileGeneration/SchemaGenerationSpecification.js';
 export { ConfigurationProperty } from './graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
 
 // protocols
