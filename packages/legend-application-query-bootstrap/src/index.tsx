@@ -21,8 +21,9 @@ import {
   WebConsole,
 } from '@finos/legend-shared';
 import {
-  DSL_DataSpace_GraphManagerPreset as DSL_DataSpace_GraphManagerPreset,
-  DSL_DataSpace_LegendQueryApplicationPlugin as DSL_DataSpace_LegendQueryApplicationPlugin,
+  DSL_DataSpace_GraphManagerPreset,
+  DSL_DataSpace_LegendQueryApplicationPlugin,
+  DSL_DataSpace_LegendApplicationPlugin,
 } from '@finos/legend-extension-dsl-data-space';
 import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
 import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
@@ -60,6 +61,8 @@ export class LegendQueryWebApplication {
 
       // loggers
       new WebConsole(),
+      // generic dataspace plugin
+      new DSL_DataSpace_LegendApplicationPlugin(),
     ];
   }
 

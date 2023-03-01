@@ -21,7 +21,10 @@ import {
   WebConsole,
 } from '@finos/legend-shared';
 import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space';
+import {
+  DSL_DataSpace_GraphManagerPreset,
+  DSL_DataSpace_LegendApplicationPlugin,
+} from '@finos/legend-extension-dsl-data-space';
 
 export class LegendTaxonomyWebApplication {
   static getPresetCollection(): AbstractPreset[] {
@@ -36,6 +39,8 @@ export class LegendTaxonomyWebApplication {
     return [
       // loggers
       new WebConsole(),
+      // generic dataspace plugin
+      new DSL_DataSpace_LegendApplicationPlugin(),
     ];
   }
 

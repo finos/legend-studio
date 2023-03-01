@@ -78,6 +78,7 @@
     "directory": "build/publishContent"
   },
   "extensions": {
+    "applicationPlugin": "@finos/legend-application-plugin-dsl-data-space",
     "graphManagerPreset": "@finos/legend-graph-manager-preset-dsl-data-space",
     "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-dsl-data-space",
     "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-dsl-data-space",
