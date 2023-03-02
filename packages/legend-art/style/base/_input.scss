@@ -55,6 +55,18 @@
   }
 }
 
+.input--caution {
+  border: 0.1rem solid var(--color-yellow-100);
+
+  &:hover {
+    border: 0.1rem solid var(--color-yellow-200);
+  }
+
+  &:focus {
+    border: 0.1rem solid var(--color-yellow-200) !important;
+  }
+}
+
 .input-group {
   position: relative;
 

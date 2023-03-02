@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
@@ -27,13 +27,13 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   Panel,
-  PencilIcon,
   PanelForm,
   CheckSquareIcon,
   SquareIcon,
   ExclamationTriangleIcon,
   PanelFormSection,
   PanelListItem,
+  ExternalLinkIcon,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -46,8 +46,10 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
+  DocumentationLink,
   DocumentationPreview,
   LEGEND_APPLICATION_DOCUMENTATION_KEY,
+  shouldDisplayVirtualAssistantDocumentationEntry,
   useApplicationStore,
 } from '@finos/legend-application';
 import { ProjectDependencyEditor } from './ProjectDependencyEditor.js';
@@ -87,36 +89,18 @@ const ProjectStructureEditor = observer(
       const stringValue = event.target.value;
       projectConfig.setArtifactId(stringValue);
     };
-    const [blockingEditGav, setBlockingEditGav] = useState(true);
 
-    const allowEditingGav = (): void => {
-      if (blockingEditGav) {
-        editorStore.applicationStore.setActionAlertInfo({
-          message:
-            'Please read these instructions before you edit groupid or artifactid (gav) as changing them can have downstream impact. Be aware you will lose any previous project versions. Moreover, if your current project has dependant projects you can break those too if you do not change the gav in a controlled way.',
-          documentationKey:
-            LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_GAV,
-          documentationLabel: 'View instructions documentation',
-          type: ActionAlertType.CAUTION,
-          actions: [
-            {
-              label: 'Acknowledge and Proceed',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: (): void => {
-                setBlockingEditGav(false);
-              },
-            },
-            {
-              label: 'Cancel',
-              type: ActionAlertActionType.PROCEED,
-              default: true,
-            },
-          ],
-        });
-      } else {
-        setBlockingEditGav(true);
-      }
-    };
+    const changedArtifactId =
+      projectConfig.artifactId !==
+      editorStore.tabManagerState.getCurrentEditorState(
+        ProjectConfigurationEditorState,
+      ).originalConfig.artifactId;
+
+    const changedGroupId =
+      projectConfig.groupId !==
+      editorStore.tabManagerState.getCurrentEditorState(
+        ProjectConfigurationEditorState,
+      ).originalConfig.groupId;
 
     return (
       <div className="panel__content__lists">
@@ -166,32 +150,25 @@ const ProjectStructureEditor = observer(
               <div className="input-group">
                 <input
                   className={clsx(
-                    'input input--dark input-group__input panel__content__form__section__input input--large',
+                    'input input--dark input-group__input panel__content__form__section__input input--small--set',
+                    { 'input--caution': changedGroupId },
                   )}
-                  title={
-                    blockingEditGav && !isReadOnly
-                      ? 'Click pencil icon to edit group ID'
-                      : 'Group ID'
-                  }
+                  title={'Group ID'}
                   spellCheck={false}
-                  disabled={isReadOnly || blockingEditGav}
+                  disabled={isReadOnly}
                   value={projectConfig.groupId}
                   onChange={changeGroupId}
                 />
-              </div>
 
-              <button
-                className={clsx(
-                  'panel__content__form__section__list__item__edit-btn',
-                  { 'icon--active': !blockingEditGav },
+                {changedGroupId && (
+                  <DocumentationLink
+                    className="panel__content__form__seoction__list__item__edit icon--right"
+                    documentationKey={
+                      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
+                    }
+                  />
                 )}
-                disabled={isReadOnly}
-                onClick={() => allowEditingGav()}
-                tabIndex={-1}
-                title="Edit group ID"
-              >
-                <PencilIcon />
-              </button>
+              </div>
             </PanelListItem>
           </PanelFormSection>
           <PanelFormSection>
@@ -207,32 +184,24 @@ const ProjectStructureEditor = observer(
               <div className="input-group">
                 <input
                   className={clsx(
-                    'input input--dark input-group__input panel__content__form__section__input input--large',
+                    'input input--dark input-group__input panel__content__form__section__input input--small--set',
+                    { 'input--caution': changedArtifactId },
                   )}
-                  title={
-                    blockingEditGav && !isReadOnly
-                      ? 'Click pencil icon to edit artifact ID'
-                      : 'Artifact ID'
-                  }
+                  title={'Artifact ID'}
                   spellCheck={false}
-                  disabled={isReadOnly || blockingEditGav}
+                  disabled={isReadOnly}
                   value={projectConfig.artifactId}
                   onChange={changeArtifactId}
                 />
-              </div>
-
-              <button
-                className={clsx(
-                  'panel__content__form__section__list__item__edit-btn',
-                  { 'icon--active': !blockingEditGav },
+                {changedArtifactId && (
+                  <DocumentationLink
+                    className="panel__content__form__seoction__list__item__edit icon--right"
+                    documentationKey={
+                      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
+                    }
+                  />
                 )}
-                disabled={isReadOnly}
-                title="Edit artifact ID"
-                onClick={() => allowEditingGav()}
-                tabIndex={-1}
-              >
-                <PencilIcon />
-              </button>
+              </div>
             </PanelListItem>
           </PanelFormSection>
         </PanelForm>
@@ -469,12 +438,105 @@ export const ProjectConfigurationEditor = observer(() => {
   };
   const disableAddButton =
     selectedTab !== CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES || isReadOnly;
-  const updateConfigs = (): void => {
-    editorStore.localChangesState.alertUnsavedChanges((): void => {
-      flowResult(configState.updateConfigs()).catch(
-        applicationStore.alertUnhandledError,
+
+  const updateGavConfigs = (): void => {
+    const documentationEntry =
+      applicationStore.documentationService.getDocEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES,
       );
+
+    const actions = documentationEntry
+      ? [
+          {
+            label: 'Acknowledge and Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => {
+              editorStore.localChangesState.alertUnsavedChanges((): void => {
+                flowResult(configState.updateConfigs()).catch(
+                  applicationStore.alertUnhandledError,
+                );
+              });
+            },
+          },
+          {
+            label: '',
+            content: (
+              <>
+                View Instructions
+                <div className="icon--right">
+                  <ExternalLinkIcon />
+                </div>
+              </>
+            ),
+            default: true,
+            type: ActionAlertActionType.PROCEED,
+            handler: (): void => {
+              if (
+                shouldDisplayVirtualAssistantDocumentationEntry(
+                  documentationEntry,
+                )
+              ) {
+                applicationStore.assistantService.openDocumentationEntry(
+                  'grammar.class',
+                );
+              } else if (documentationEntry.url) {
+                applicationStore.navigator.visitAddress(documentationEntry.url);
+              }
+            },
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+          },
+        ]
+      : [
+          {
+            label: 'Acknowledge and Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => {
+              editorStore.localChangesState.alertUnsavedChanges((): void => {
+                flowResult(configState.updateConfigs()).catch(
+                  applicationStore.alertUnhandledError,
+                );
+              });
+            },
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ];
+
+    editorStore.applicationStore.setActionAlertInfo({
+      message:
+        'Please read these instructions before you edit groupid or artifactid (gav) as changing them can have downstream impact. Be aware you will lose any previous project versions. Moreover, if your current project has dependant projects you can break those too if you do not change the gav in a controlled way.',
+      type: ActionAlertType.CAUTION,
+      actions: actions,
     });
+  };
+  const updateConfigs = (): void => {
+    const changedArtifactId =
+      configState.currentProjectConfiguration.artifactId !==
+      editorStore.tabManagerState.getCurrentEditorState(
+        ProjectConfigurationEditorState,
+      ).originalConfig.artifactId;
+
+    const changedGroupId =
+      configState.currentProjectConfiguration.groupId !==
+      editorStore.tabManagerState.getCurrentEditorState(
+        ProjectConfigurationEditorState,
+      ).originalConfig.groupId;
+
+    if (changedArtifactId || changedGroupId) {
+      updateGavConfigs();
+    } else {
+      editorStore.localChangesState.alertUnsavedChanges((): void => {
+        flowResult(configState.updateConfigs()).catch(
+          applicationStore.alertUnhandledError,
+        );
+      });
+    }
   };
   useEffect(() => {
     if (

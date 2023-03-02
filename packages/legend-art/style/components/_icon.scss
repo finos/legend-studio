@@ -25,11 +25,6 @@
   font-weight: 900;
   user-select: none;
 
-  &--active svg,
-  &--active svg:hover {
-    color: var(--color-yellow-100);
-  }
-
   &--left {
     margin-right: 0.5rem;
   }

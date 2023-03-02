@@ -20,10 +20,9 @@ import { useApplicationStore } from '../ApplicationStoreProvider.js';
 
 export const DocumentationLink: React.FC<{
   documentationKey: string;
-  documentationLabel?: string | undefined;
   className?: string | undefined;
 }> = (props) => {
-  const { documentationKey, documentationLabel, className } = props;
+  const { documentationKey, className } = props;
   const applicationStore = useApplicationStore();
   const documentationEntry =
     applicationStore.documentationService.getDocEntry(documentationKey);
@@ -47,16 +46,11 @@ export const DocumentationLink: React.FC<{
     return null;
   }
   return (
-    <>
-      {documentationLabel}
-      <QuestionCircleIcon
-        title="Click to see documentation"
-        onClick={openDocLink}
-        className={clsx('documentation-link', className, {
-          'icon--right': documentationLabel,
-        })}
-      />
-    </>
+    <QuestionCircleIcon
+      title="Click to see documentation"
+      onClick={openDocLink}
+      className={clsx('documentation-link', className)}
+    />
   );
 };
 

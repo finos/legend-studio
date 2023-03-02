@@ -29,13 +29,13 @@ export interface ActionAlertInfo {
   title?: string;
   message: string;
   prompt?: string;
-  documentationKey?: string;
-  documentationLabel?: string;
+  content?: React.ReactElement;
   type?: ActionAlertType;
   onClose?: () => void;
   onEnter?: () => void;
   actions: {
     label: string;
+    content?: React.ReactElement;
     default?: boolean;
     handler?: () => void; // default to dismiss
     type?: ActionAlertActionType;
