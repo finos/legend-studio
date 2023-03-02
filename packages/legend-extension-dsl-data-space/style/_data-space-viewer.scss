@@ -72,8 +72,8 @@
     &__dropdown-trigger {
       @include flexCenter;
 
+      width: 1.6rem;
       height: 3.4rem;
-      padding: 0 0.5rem;
       cursor: pointer;
       border-left: 0.1rem solid var(--color-dark-shade-50);
 
