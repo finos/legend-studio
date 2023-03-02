@@ -38,6 +38,7 @@ import {
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
+  ExternalLinkSquareIcon,
 } from '@finos/legend-art';
 import {
   type Diagram,
@@ -562,27 +563,39 @@ export const DataSpaceViewer = observer(
       <div className="data-space__viewer">
         <div className="data-space__viewer__header">
           <div className="data-space__viewer__title">
+            <button
+              className="data-space__viewer__title__btn"
+              tabIndex={-1}
+              title={`View Project (${generateGAVCoordinates(
+                dataSpaceViewerState.groupId,
+                dataSpaceViewerState.artifactId,
+                dataSpaceViewerState.versionId,
+              )})`}
+              onClick={viewProject}
+            >
+              <div
+                className="data-space__viewer__title__label"
+                title={`${analysisResult.title ?? analysisResult.name} - ${
+                  analysisResult.path
+                }`}
+              >
+                {analysisResult.title ?? analysisResult.name}
+              </div>
+              <div className="data-space__viewer__title__link">
+                <ExternalLinkSquareIcon />
+              </div>
+            </button>
             <DropdownMenu
-              className="data-space__viewer__title__dropdown-trigger btn--medium"
+              className="data-space__viewer__title__dropdown-trigger"
               content={
                 <MenuContent>
-                  <MenuContentItem
-                    title={`View Project (${generateGAVCoordinates(
-                      dataSpaceViewerState.groupId,
-                      dataSpaceViewerState.artifactId,
-                      dataSpaceViewerState.versionId,
-                    )})`}
-                    onClick={viewProject}
-                  >
-                    Project
-                  </MenuContentItem>
                   <MenuContentItem onClick={viewSDLCProject}>
-                    SDLC project
+                    View SDLC project
                   </MenuContentItem>
                 </MenuContent>
               }
             >
-              Go to... <CaretDownIcon title="Show more options..." />
+              <CaretDownIcon title="Show more options..." />
             </DropdownMenu>
           </div>
           <div
