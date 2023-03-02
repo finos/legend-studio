@@ -51,7 +51,11 @@ type KeyPressData = { modifiers: string[]; key: string };
 export type KeyBindingConfig = {
   [key: string]: {
     combinations: string[];
-    handler: (keyCombination: string, event: KeyboardEvent) => void;
+    handler: (
+      commandKey: string,
+      keyCombination: string,
+      event: KeyboardEvent,
+    ) => void;
   };
 };
 
@@ -148,9 +152,10 @@ export function createKeybindingsHandler(
       return;
     }
 
-    Object.values(config)
-      .flatMap((entry) =>
+    Object.entries(config)
+      .flatMap(([key, entry]) =>
         entry.combinations.map((combination) => ({
+          key,
           combination,
           handler: entry.handler,
         })),
@@ -199,7 +204,7 @@ export function createKeybindingsHandler(
         } else {
           // matches found, all keypresses of the combination have been fulfilled, call the handler
           possibleMatches.delete(keyCombination);
-          entry.handler(keyCombination, event);
+          entry.handler(entry.key, keyCombination, event);
         }
       });
 
