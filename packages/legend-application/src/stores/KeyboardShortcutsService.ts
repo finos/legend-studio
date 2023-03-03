@@ -98,14 +98,22 @@ export class KeyboardShortcutsService {
     ]);
   }
 
-  dispatch(keyCombination: string): void {
+  dispatch(commandKey: string, keyCombination: string): void {
     if (this.isHotkeysBlocked) {
       return;
     }
     const mappedCommandKeys = this.keyMap.get(keyCombination) ?? [];
-    for (const commandKey of mappedCommandKeys) {
-      // find the first command that works then escape
-      if (this.applicationStore.commandCenter.runCommand(commandKey)) {
+    for (const mappedCommandKey of mappedCommandKeys) {
+      // Find the first command that works then escape.
+      // Here we try to match the command key for which dispatch is
+      // called with the command key for the the command we are
+      // executing. This check is to make sure we are not executing
+      // the command for dispatch function called for different
+      // command key with the same key combination.
+      if (
+        commandKey === mappedCommandKey &&
+        this.applicationStore.commandCenter.runCommand(mappedCommandKey)
+      ) {
         return;
       }
     }
