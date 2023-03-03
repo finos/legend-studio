@@ -237,6 +237,16 @@ export class XTerm extends Terminal {
           event.stopPropagation();
           this.searchConfig.focus();
           return false;
+        } else if (
+          // NOTE: by default Ctrl+C gets sent to the shell as you wouldn't be able to use bash otherwise.
+          // We need this special handling here for normal copy behavior on Windows.
+          // We're not so sure about the root cause of paste (Ctrl+V) not working on Windows, so we would not
+          // manually handle that using `xterm.onKey` neither
+          (isMatchingKeyCombination(event, 'Control+KeyC') &&
+            this.instance.hasSelection()) ||
+          isMatchingKeyCombination(event, 'Control+KeyV')
+        ) {
+          return false;
         }
         return true; // return true to indicate the event should still be handled by xterm
       },
