@@ -47,7 +47,7 @@ import {
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
-  ProjectData,
+  StoreProjectData,
   ProjectDependencyCoordinates,
   resolveVersion,
   ProjectVersionEntities,
@@ -188,7 +188,7 @@ export class QueryProductionizerStore {
   readonly loadQueryState = ActionState.create();
   currentQuery?: LightQuery | undefined;
   currentQueryInfo?: QueryInfo | undefined;
-  currentQueryProject?: ProjectData | undefined;
+  currentQueryProject?: StoreProjectData | undefined;
   showQueryPreviewModal = false;
 
   readonly loadProjectsState = ActionState.create();
@@ -382,11 +382,11 @@ export class QueryProductionizerStore {
         (yield this.graphManagerState.graphManager.getQueryInfo(
           query.id,
         )) as QueryInfo;
-      this.currentQueryProject = ProjectData.serialization.fromJson(
+      this.currentQueryProject = StoreProjectData.serialization.fromJson(
         (yield this.depotServerClient.getProject(
           this.currentQuery.groupId,
           this.currentQuery.artifactId,
-        )) as PlainObject<ProjectData>,
+        )) as PlainObject<StoreProjectData>,
       );
       this.setWorkspaceName(`${DEFAULT_WORKSPACE_NAME_PREFIX}-${query.id}`);
       this.applicationStore.navigationService.navigator.updateCurrentLocation(

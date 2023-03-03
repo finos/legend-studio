@@ -310,10 +310,10 @@ export class ProjectViewerStore {
 
     // fetch project data
     this.editorStore.initState.setMessage(`Fetching project data...`);
-    const project = ProjectData.serialization.fromJson(
+    const project = StoreProjectData.serialization.fromJson(
       (yield flowResult(
         this.editorStore.depotServerClient.getProject(groupId, artifactId),
-      )) as PlainObject<ProjectData>,
+      )) as PlainObject<StoreProjectData>,
     );
     this.editorStore.initState.setMessage(undefined);
 

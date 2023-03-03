@@ -16,7 +16,7 @@
 
 import {
   type DepotServerClient,
-  ProjectData,
+  StoreProjectData,
 } from '@finos/legend-server-depot';
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import type { LegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStore.js';
@@ -54,7 +54,7 @@ export const createViewSDLCProjectHandler =
     entityPath: string | undefined,
   ): Promise<void> => {
     // fetch project data
-    const project = ProjectData.serialization.fromJson(
+    const project = StoreProjectData.serialization.fromJson(
       await depotServerClient.getProject(groupId, artifactId),
     );
     // find the matching SDLC instance

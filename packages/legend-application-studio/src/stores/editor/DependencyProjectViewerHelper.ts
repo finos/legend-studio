@@ -16,7 +16,7 @@
 
 import {
   type DepotServerClient,
-  ProjectData,
+  StoreProjectData,
 } from '@finos/legend-server-depot';
 import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
 import { generateViewProjectRoute } from '../../__lib__/LegendStudioNavigation.js';
@@ -28,7 +28,7 @@ export const createViewSDLCProjectHandler =
   ) =>
   async (groupId: string, artifactId: string): Promise<void> => {
     // fetch project data
-    const project = ProjectData.serialization.fromJson(
+    const project = StoreProjectData.serialization.fromJson(
       await depotServerClient.getProject(groupId, artifactId),
     );
     applicationStore.navigationService.navigator.visitAddress(

@@ -38,7 +38,7 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
         renderer: (editorStore, queryBuilderState) => {
           const openQueryProductionizer = async (): Promise<void> => {
             // fetch project data
-            const project = ProjectData.serialization.fromJson(
+            const project = StoreProjectData.serialization.fromJson(
               await editorStore.depotServerClient.getProject(
                 editorStore.query.groupId,
                 editorStore.query.artifactId,

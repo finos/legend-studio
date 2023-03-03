@@ -20,7 +20,7 @@ import {
 } from '@finos/legend-query-builder';
 import {
   type DepotServerClient,
-  ProjectData,
+  StoreProjectData,
 } from '@finos/legend-server-depot';
 import {
   ActionState,
@@ -42,10 +42,11 @@ export interface ServiceExecutionOption {
 }
 
 export class CloneServiceQuerySetupStore extends BaseQuerySetupStore {
-  projects: ProjectData[] = [];
+  projects: StoreProjectData[] = [];
   loadProjectsState = ActionState.create();
   loadServiceExecutionsState = ActionState.create();
-  currentProject?: ProjectData | undefined;
+  currentProject?: StoreProjectData | undefined;
+  currentProjectVersions?: string[] | undefined;
   currentVersionId?: string | undefined;
   currentServiceExecutionOption?: ServiceExecutionOption | undefined;
   serviceExecutionOptions: ServiceExecutionOption[] = [];
@@ -61,8 +62,10 @@ export class CloneServiceQuerySetupStore extends BaseQuerySetupStore {
       projects: observable,
       currentProject: observable,
       currentVersionId: observable,
+      currentProjectVersions: observable,
       currentServiceExecutionOption: observable,
       setCurrentProject: action,
+      setCurrentProjectVersions: action,
       setCurrentVersionId: action,
       setCurrentServiceExecutionOption: action,
       setServiceExecutionOptions: action,
@@ -71,8 +74,12 @@ export class CloneServiceQuerySetupStore extends BaseQuerySetupStore {
     });
   }
 
-  setCurrentProject(val: ProjectData | undefined): void {
+  setCurrentProject(val: StoreProjectData | undefined): void {
     this.currentProject = val;
+  }
+
+  setCurrentProjectVersions(val: string[] | undefined): void {
+    this.currentProjectVersions = val;
   }
 
   setCurrentVersionId(val: string | undefined): void {
@@ -93,8 +100,8 @@ export class CloneServiceQuerySetupStore extends BaseQuerySetupStore {
     this.loadProjectsState.inProgress();
     try {
       this.projects = (
-        (yield this.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
-      ).map((v) => ProjectData.serialization.fromJson(v));
+        (yield this.depotServerClient.getProjects()) as PlainObject<StoreProjectData>[]
+      ).map((v) => StoreProjectData.serialization.fromJson(v));
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -104,7 +111,7 @@ export class CloneServiceQuerySetupStore extends BaseQuerySetupStore {
   }
 
   *loadServiceExecutionOptions(
-    project: ProjectData,
+    project: StoreProjectData,
     versionId: string,
   ): GeneratorFn<void> {
     this.loadServiceExecutionsState.inProgress();

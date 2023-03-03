@@ -68,8 +68,8 @@ import {
 } from '@finos/legend-storage';
 import {
   type DepotServerClient,
-  ProjectData,
   resolveVersion,
+  StoreProjectData,
 } from '@finos/legend-server-depot';
 import {
   DEFAULT_TAB_SIZE,
@@ -117,7 +117,7 @@ export const createViewSDLCProjectHandler =
     entityPath: string | undefined,
   ): Promise<void> => {
     // fetch project data
-    const project = ProjectData.serialization.fromJson(
+    const project = StoreProjectData.serialization.fromJson(
       await depotServerClient.getProject(groupId, artifactId),
     );
     // find the matching SDLC instance
@@ -471,11 +471,11 @@ export abstract class QueryEditorStore {
     const { groupId, artifactId, versionId } = this.getProjectInfo();
 
     // fetch project data
-    const project = ProjectData.serialization.fromJson(
+    const project = StoreProjectData.serialization.fromJson(
       (yield this.depotServerClient.getProject(
         groupId,
         artifactId,
-      )) as PlainObject<ProjectData>,
+      )) as PlainObject<StoreProjectData>,
     );
 
     // initialize system

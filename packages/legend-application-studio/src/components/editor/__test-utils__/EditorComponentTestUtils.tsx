@@ -220,8 +220,8 @@ export const TEST__setUpEditor = async (
     projectConfiguration: PlainObject<ProjectConfiguration>;
     latestProjectStructureVersion: PlainObject<ProjectStructureVersion>;
     availableGenerationDescriptions: GenerationConfigurationDescription[];
-    projects: PlainObject<ProjectData>[];
-    projectData: PlainObject<ProjectData>[];
+    projects: PlainObject<StoreProjectData>[];
+    projectData: PlainObject<StoreProjectData>[];
     projectDependency: PlainObject<ProjectVersionEntities>[];
     dependencyReport: PlainObject<RawProjectDependencyReport>;
   },
@@ -384,8 +384,8 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
     projectConfiguration?: PlainObject<ProjectConfiguration>;
     latestProjectStructureVersion?: PlainObject<ProjectStructureVersion>;
     availableGenerationDescriptions?: GenerationConfigurationDescription[];
-    projects?: PlainObject<ProjectData>[];
-    projectData?: PlainObject<ProjectData>[];
+    projects?: PlainObject<StoreProjectData>[];
+    projectData?: PlainObject<StoreProjectData>[];
     projectDependency?: PlainObject<ProjectVersionEntities>[];
     dependencyReport?: PlainObject<RawProjectDependencyReport>;
   },

@@ -57,7 +57,7 @@ export class ProjectConfigurationEditorState extends EditorState {
   projectConfiguration?: ProjectConfiguration | undefined;
   selectedTab: CONFIGURATION_EDITOR_TAB;
   isReadOnly = false;
-  projects = new Map<string, ProjectData>();
+  projects = new Map<string, StoreProjectData>();
   queryHistory = new Set<string>();
   latestProjectStructureVersion: ProjectStructureVersion | undefined;
 
@@ -165,11 +165,9 @@ export class ProjectConfigurationEditorState extends EditorState {
     this.fetchingProjectVersionsState.inProgress();
     try {
       (
-        (yield this.editorStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
+        (yield this.editorStore.depotServerClient.getProjects()) as PlainObject<StoreProjectData>[]
       )
-        .map((v) => ProjectData.serialization.fromJson(v))
-        // filter out non versioned projects
-        .filter((p) => Boolean(p.versions.length))
+        .map((v) => StoreProjectData.serialization.fromJson(v))
         .forEach((project) => this.projects.set(project.coordinates, project));
 
       // Update the legacy dependency to newer format (using group ID and artifact ID instead of just project ID)

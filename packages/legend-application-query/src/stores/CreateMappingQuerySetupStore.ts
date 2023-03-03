@@ -21,7 +21,7 @@ import {
 } from '@finos/legend-query-builder';
 import {
   type DepotServerClient,
-  ProjectData,
+  StoreProjectData,
 } from '@finos/legend-server-depot';
 import {
   ActionState,
@@ -47,8 +47,9 @@ export class CreateMappingQuerySetupStore extends BaseQuerySetupStore {
   readonly loadProjectsState = ActionState.create();
   readonly surveyMappingRuntimeCompatibilityState = ActionState.create();
 
-  projects: ProjectData[] = [];
-  currentProject?: ProjectData | undefined;
+  projects: StoreProjectData[] = [];
+  currentProject?: StoreProjectData | undefined;
+  currentProjectVersions?: string[] | undefined;
   currentVersionId?: string | undefined;
   currentMapping?: Mapping | undefined;
   currentRuntime?: PackageableRuntime | undefined;
@@ -64,12 +65,14 @@ export class CreateMappingQuerySetupStore extends BaseQuerySetupStore {
     makeObservable(this, {
       projects: observable,
       currentProject: observable,
+      currentProjectVersions: observable,
       currentVersionId: observable,
       currentMapping: observable,
       currentRuntime: observable,
       mappingRuntimeCompatibilitySurveyResult: observable,
       compatibleRuntimes: computed,
       setCurrentProject: action,
+      setCurrentProjectVersions: action,
       setCurrentVersionId: action,
       setCurrentMapping: action,
       setCurrentRuntime: action,
@@ -78,8 +81,12 @@ export class CreateMappingQuerySetupStore extends BaseQuerySetupStore {
     });
   }
 
-  setCurrentProject(val: ProjectData | undefined): void {
+  setCurrentProject(val: StoreProjectData | undefined): void {
     this.currentProject = val;
+  }
+
+  setCurrentProjectVersions(val: string[] | undefined): void {
+    this.currentProjectVersions = val;
   }
 
   setCurrentVersionId(val: string | undefined): void {
@@ -110,8 +117,8 @@ export class CreateMappingQuerySetupStore extends BaseQuerySetupStore {
     this.loadProjectsState.inProgress();
     try {
       this.projects = (
-        (yield this.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
-      ).map((v) => ProjectData.serialization.fromJson(v));
+        (yield this.depotServerClient.getProjects()) as PlainObject<StoreProjectData>[]
+      ).map((v) => StoreProjectData.serialization.fromJson(v));
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -121,7 +128,7 @@ export class CreateMappingQuerySetupStore extends BaseQuerySetupStore {
   }
 
   *surveyMappingRuntimeCompatibility(
-    project: ProjectData,
+    project: StoreProjectData,
     versionId: string,
   ): GeneratorFn<void> {
     this.surveyMappingRuntimeCompatibilityState.inProgress();

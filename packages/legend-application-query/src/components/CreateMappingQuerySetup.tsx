@@ -25,7 +25,7 @@ import {
 import { getNullableFirstEntry, guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   generateMappingQueryCreatorRoute,
   generateQuerySetupRoute,
@@ -85,6 +85,9 @@ const useCreateMappingQuerySetupStore = (): CreateMappingQuerySetupStore =>
 const CreateMappingQuerySetupContent = observer(() => {
   const setupStore = useCreateMappingQuerySetupStore();
   const applicationStore = useApplicationStore();
+  const depotServerClient = useDepotServerClient();
+
+  const [fetchSelectedProjectVersionsStatus] = useState(ActionState.create());
 
   // actions
   const back = (): void => {
@@ -128,13 +131,31 @@ const CreateMappingQuerySetupContent = observer(() => {
     : setupStore.projects.length
     ? 'Choose a project'
     : 'You have no projects, please create or acquire access for at least one';
-  const onProjectOptionChange = (option: ProjectOption | null): void => {
+  const onProjectOptionChange = async (
+    option: ProjectOption | null,
+  ): Promise<void> => {
     if (option?.value !== setupStore.currentProject) {
       setupStore.setCurrentProject(option?.value);
       // cascade
       setupStore.setCurrentVersionId(undefined);
       setupStore.setCurrentMapping(undefined);
       setupStore.setCurrentRuntime(undefined);
+      setupStore.setCurrentProjectVersions([]);
+      try {
+        fetchSelectedProjectVersionsStatus.inProgress();
+        const v = (await flowResult(
+          depotServerClient.getVersions(
+            guaranteeNonNullable(option?.value.groupId),
+            guaranteeNonNullable(option?.value.artifactId),
+          ),
+        )) as string[];
+        setupStore.setCurrentProjectVersions(v);
+      } catch (error) {
+        assertErrorThrown(error);
+        applicationStore.notifyError(error);
+      } finally {
+        fetchSelectedProjectVersionsStatus.reset();
+      }
     }
   };
 
@@ -142,7 +163,7 @@ const CreateMappingQuerySetupContent = observer(() => {
   const versionOptions = [
     LATEST_VERSION_ALIAS,
     SNAPSHOT_VERSION_ALIAS,
-    ...(setupStore.currentProject?.versions ?? []),
+    ...setupStore.currentProjectVersions ?? [],
   ]
     .slice()
     .sort((v1, v2) => compareSemVerVersions(v2, v1))
@@ -271,9 +292,14 @@ const CreateMappingQuerySetupContent = observer(() => {
               className="query-setup__wizard__selector"
               options={versionOptions}
               disabled={!setupStore.currentProject}
+              isLoading={fetchSelectedProjectVersionsStatus.isInProgress}
               onChange={onVersionOptionChange}
               value={selectedVersionOption}
-              placeholder={versionSelectorPlaceholder}
+              placeholder={
+                fetchSelectedProjectVersionsStatus.isInProgress
+                  ? 'Fetching project versions'
+                  : versionSelectorPlaceholder
+              }
               isClearable={true}
               escapeClearsValue={true}
               darkMode={true}

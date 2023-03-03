@@ -22,10 +22,15 @@ import {
   CustomSelectorInput,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
-import { guaranteeType } from '@finos/legend-shared';
+import {
+  ActionState,
+  assertErrorThrown,
+  guaranteeNonNullable,
+  guaranteeType,
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   generateQuerySetupRoute,
   generateServiceQueryCreatorRoute,
@@ -82,6 +87,9 @@ const useCloneServiceQuerySetupStore = (): CloneServiceQuerySetupStore =>
 const CloneQueryServiceSetupContent = observer(() => {
   const applicationStore = useApplicationStore();
   const querySetupState = useCloneServiceQuerySetupStore();
+  const depotServerClient = useDepotServerClient();
+
+  const [fetchSelectedProjectVersionsStatus] = useState(ActionState.create());
 
   // actions
   const back = (): void => {
@@ -124,12 +132,30 @@ const CloneQueryServiceSetupContent = observer(() => {
     : querySetupState.projects.length
     ? 'Choose a project'
     : 'You have no projects, please create or acquire access for at least one';
-  const onProjectOptionChange = (option: ProjectOption | null): void => {
+  const onProjectOptionChange = async (
+    option: ProjectOption | null,
+  ): Promise<void> => {
     if (option?.value !== querySetupState.currentProject) {
       querySetupState.setCurrentProject(option?.value);
       // cascade
       querySetupState.setCurrentVersionId(undefined);
       querySetupState.setCurrentServiceExecutionOption(undefined);
+      querySetupState.setCurrentProjectVersions([]);
+      try {
+        fetchSelectedProjectVersionsStatus.inProgress();
+        const v = (await flowResult(
+          depotServerClient.getVersions(
+            guaranteeNonNullable(option?.value.groupId),
+            guaranteeNonNullable(option?.value.artifactId),
+          ),
+        )) as string[];
+        querySetupState.setCurrentProjectVersions(v);
+      } catch (error) {
+        assertErrorThrown(error);
+        applicationStore.notifyError(error);
+      } finally {
+        fetchSelectedProjectVersionsStatus.reset();
+      }
     }
   };
 
@@ -137,7 +163,7 @@ const CloneQueryServiceSetupContent = observer(() => {
   const versionOptions = [
     LATEST_VERSION_ALIAS,
     SNAPSHOT_VERSION_ALIAS,
-    ...(querySetupState.currentProject?.versions ?? []),
+    ...querySetupState.currentProjectVersions ?? [],
   ]
     .slice()
     .sort((v1, v2) => compareSemVerVersions(v2, v1))
@@ -253,9 +279,14 @@ const CloneQueryServiceSetupContent = observer(() => {
               className="query-setup__wizard__selector"
               options={versionOptions}
               disabled={!querySetupState.currentProject}
+              isLoading={fetchSelectedProjectVersionsStatus.isInProgress}
               onChange={onVersionOptionChange}
               value={selectedVersionOption}
-              placeholder={versionSelectorPlaceholder}
+              placeholder={
+                fetchSelectedProjectVersionsStatus.isInProgress
+                  ? 'Fetching project versions'
+                  : versionSelectorPlaceholder
+              }
               isClearable={true}
               escapeClearsValue={true}
               darkMode={true}

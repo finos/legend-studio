@@ -27,7 +27,7 @@ import {
   type DepotServerClient,
   type StoredEntity,
   DepotScope,
-  ProjectData,
+  StoreProjectData,
   MASTER_SNAPSHOT_ALIAS,
 } from '@finos/legend-server-depot';
 import {
@@ -64,7 +64,7 @@ export class UpdateServiceQuerySetupStore {
   readonly initState = ActionState.create();
   readonly loadServicesState = ActionState.create();
   services: ServiceInfo[] = [];
-  currentProject?: ProjectData | undefined;
+  currentProject?: StoreProjectData | undefined;
   currentSnapshotService?: ServiceInfo | undefined;
   currentProjectConfigurationStatus?: ProjectConfigurationStatus | undefined;
 
@@ -184,15 +184,15 @@ export class UpdateServiceQuerySetupStore {
     this.currentProjectConfigurationStatus = undefined;
 
     try {
-      let project: ProjectData | undefined;
+      let project: StoreProjectData | undefined;
       let serviceEntity: Entity | undefined;
 
       try {
-        project = ProjectData.serialization.fromJson(
+        project = StoreProjectData.serialization.fromJson(
           (yield this.depotServerClient.getProject(
             groupId,
             artifactId,
-          )) as PlainObject<ProjectData>,
+          )) as PlainObject<StoreProjectData>,
         );
         serviceEntity = (yield this.depotServerClient.getEntity(
           project,

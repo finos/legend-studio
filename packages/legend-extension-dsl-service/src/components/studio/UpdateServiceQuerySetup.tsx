@@ -108,7 +108,7 @@ const withUpdateServiceQuerySetupStore = (
 
 const CreateWorkspaceModal = observer(
   (props: {
-    selectedProject: ProjectData;
+    selectedProject: StoreProjectData;
     selectedSnapService: ServiceInfo;
   }) => {
     const { selectedProject, selectedSnapService } = props;

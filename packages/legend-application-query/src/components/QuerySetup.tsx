@@ -40,13 +40,15 @@ import {
   QuerySetupLandingPageStore,
   type BaseQuerySetupStore,
 } from '../stores/QuerySetupStore.js';
-import type { ProjectData } from '@finos/legend-server-depot';
+import type { StoreProjectData } from '@finos/legend-server-depot';
 import { useApplicationStore } from '@finos/legend-application';
 import { useLegendQueryApplicationStore } from './LegendQueryFrameworkProvider.js';
 import type { QuerySetupActionConfiguration } from '../stores/LegendQueryApplicationPlugin.js';
 
-export type ProjectOption = { label: string; value: ProjectData };
-export const buildProjectOption = (project: ProjectData): ProjectOption => ({
+export type ProjectOption = { label: string; value: StoreProjectData };
+export const buildProjectOption = (
+  project: StoreProjectData,
+): ProjectOption => ({
   label: `${project.groupId}.${project.artifactId}`,
   value: project,
 });

@@ -39,7 +39,7 @@ import {
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 import { ProjectDependantEditorState } from './ProjectDependantEditorState.js';
 import {
-  ProjectData,
+  StoreProjectData,
   ProjectVersionPlatformDependency,
 } from '@finos/legend-server-depot';
 import { compareSemVerVersions } from '@finos/legend-storage';
@@ -247,7 +247,7 @@ export class ProjectOverviewState {
       this.projectDependantEditorState.dependants?.map(
         async (dependant: ProjectVersionPlatformDependency): Promise<void> => {
           try {
-            const project = ProjectData.serialization.fromJson(
+            const project = StoreProjectData.serialization.fromJson(
               await this.editorStore.depotServerClient.getProject(
                 dependant.groupId,
                 dependant.artifactId,

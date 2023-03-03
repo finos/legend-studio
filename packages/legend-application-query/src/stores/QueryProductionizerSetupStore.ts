@@ -25,7 +25,7 @@ import {
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
-  ProjectData,
+  StoreProjectData,
 } from '@finos/legend-server-depot';
 import {
   ActionState,
@@ -66,7 +66,7 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
     }
 
     // fetch project data
-    const project = ProjectData.serialization.fromJson(
+    const project = StoreProjectData.serialization.fromJson(
       await this.depotServerClient.getProject(
         this.currentQuery.groupId,
         this.currentQuery.artifactId,

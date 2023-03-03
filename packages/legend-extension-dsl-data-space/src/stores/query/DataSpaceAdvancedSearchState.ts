@@ -25,7 +25,7 @@ import {
   type StoredEntity,
   type DepotServerClient,
   DepotScope,
-  ProjectData,
+  StoreProjectData,
   retrieveProjectEntitiesWithDependencies,
 } from '@finos/legend-server-depot';
 import {
@@ -161,13 +161,13 @@ export class DataSpaceAdvancedSearchState {
     try {
       // fetch project
       this.loadDataSpaceState.setMessage(`Fetching project...`);
-      const project = ProjectData.serialization.fromJson(
+      const project = StoreProjectData.serialization.fromJson(
         (yield flowResult(
           this.depotServerClient.getProject(
             dataSpace.groupId,
             dataSpace.artifactId,
           ),
-        )) as PlainObject<ProjectData>,
+        )) as PlainObject<StoreProjectData>,
       );
       // analyze data space
       const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
