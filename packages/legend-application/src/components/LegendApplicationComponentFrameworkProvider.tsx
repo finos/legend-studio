@@ -53,11 +53,7 @@ const PLATFORM_NATIVE_KEYBOARD_SHORTCUTS = [
 
 const buildHotkeysConfiguration = (
   commandKeyMap: Map<string, string[]>,
-  handler: (
-    commandKey: string,
-    keyCombination: string,
-    event: KeyboardEvent,
-  ) => void,
+  handler: (keyCombination: string, event: KeyboardEvent) => void,
 ): KeyBindingConfig => {
   const keyMap: KeyBindingConfig = {};
   commandKeyMap.forEach((keyCombinations, commandKey) => {
@@ -74,11 +70,7 @@ const buildHotkeysConfiguration = (
     'INTERNAL__PLATFORM_NATIVE_KEYBOARD_COMMAND';
   keyMap[PLATFORM_NATIVE_KEYBOARD_COMMAND] = {
     combinations: PLATFORM_NATIVE_KEYBOARD_SHORTCUTS,
-    handler: (
-      commandKey: string,
-      keyCombination: string,
-      event: KeyboardEvent,
-    ) => {
+    handler: (keyCombination: string, event: KeyboardEvent) => {
       // prevent default from potentially clashing key combinations
       event.preventDefault();
     },
@@ -124,7 +116,7 @@ export const LegendApplicationComponentFrameworkProvider = observer(
 
     const keyBindingMap = buildHotkeysConfiguration(
       applicationStore.keyboardShortcutsService.commandKeyMap,
-      (commandKey: string, keyCombination: string, event: KeyboardEvent) => {
+      (keyCombination: string, event: KeyboardEvent) => {
         // prevent default from potentially clashing key combinations with platform native keyboard shortcuts
         // NOTE: Though tempting since it's a good way to simplify and potentially avoid conflicts,
         // we should not call `preventDefault()` because if we have any hotkey sequence which is too short,
@@ -133,10 +125,7 @@ export const LegendApplicationComponentFrameworkProvider = observer(
         if (PLATFORM_NATIVE_KEYBOARD_SHORTCUTS.includes(keyCombination)) {
           event.preventDefault();
         }
-        applicationStore.keyboardShortcutsService.dispatch(
-          commandKey,
-          keyCombination,
-        );
+        applicationStore.keyboardShortcutsService.dispatch(keyCombination);
       },
     );
 
