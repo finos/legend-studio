@@ -810,7 +810,7 @@ export class EditorGraphState {
         ...Object.fromEntries(stopWatch.records),
         total: stopWatch.elapsed,
       };
-      LegendStudioTelemetry.logEvent_GraphCompilationSucceeded(
+      LegendStudioTelemetry.logEvent_TextCompilationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         report,
       );

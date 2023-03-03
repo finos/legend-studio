@@ -374,7 +374,6 @@ export class XTerm extends Terminal {
               ? this.computeCursorJumpMovement(true)
               : -1,
           );
-          // console.log('left', movement);
           this.instance.scrollLines(movement.scroll);
           this.instance.write(movement.seq);
         } else if (domEvent.code === 'ArrowRight') {
@@ -383,7 +382,6 @@ export class XTerm extends Terminal {
               ? this.computeCursorJumpMovement(false)
               : 1,
           );
-          // console.log('right', movement);
           this.instance.scrollLines(movement.scroll);
           this.instance.write(movement.seq);
         } else if (
