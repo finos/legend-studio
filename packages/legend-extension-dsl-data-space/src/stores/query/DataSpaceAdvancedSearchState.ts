@@ -186,6 +186,7 @@ export class DataSpaceAdvancedSearchState {
       )) as DataSpaceAnalysisResult;
       this.dataSpaceViewerState = new DataSpaceViewerState(
         this.applicationStore,
+        this.graphManagerState,
         dataSpace.groupId,
         dataSpace.artifactId,
         dataSpace.versionId,

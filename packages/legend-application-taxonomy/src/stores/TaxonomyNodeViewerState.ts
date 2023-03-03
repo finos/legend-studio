@@ -148,6 +148,7 @@ export class TaxonomyNodeViewerState {
       )) as DataSpaceAnalysisResult;
       const dataSpaceViewerState = new DataSpaceViewerState(
         this.explorerStore.applicationStore,
+        this.explorerStore.graphManagerState,
         dataSpaceTaxonomyContext.groupId,
         dataSpaceTaxonomyContext.artifactId,
         dataSpaceTaxonomyContext.versionId,
