@@ -81,7 +81,7 @@
     "jsonc-parser": "3.2.0",
     "micromatch": "4.0.5",
     "mini-css-extract-plugin": "2.7.2",
-    "monaco-editor": "0.36.0",
+    "monaco-editor": "0.36.1",
     "monaco-editor-webpack-plugin": "7.0.1",
     "postcss": "8.4.21",
     "postcss-loader": "7.0.2",
@@ -95,7 +95,7 @@
   "devDependencies": {
     "cross-env": "7.0.3",
     "eslint": "8.35.0",
-    "rimraf": "4.1.2"
+    "rimraf": "4.3.0"
   },
   "publishConfig": {
     "directory": "build/publishContent"

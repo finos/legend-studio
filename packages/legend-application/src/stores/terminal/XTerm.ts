@@ -240,8 +240,10 @@ export class XTerm extends Terminal {
         } else if (
           // NOTE: by default Ctrl+C gets sent to the shell as you wouldn't be able to use bash otherwise.
           // We need this special handling here for normal copy behavior on Windows.
-          // We're not so sure about the root cause of paste (Ctrl+V) not working on Windows, so we would not
+          // Paste (Ctrl+V) not working on Windows could also be due to the same reason, so we would not
           // manually handle that using `xterm.onKey` neither
+          // See https://github.com/xtermjs/xterm.js/issues/1868
+          // See https://github.com/microsoft/vscode/issues/6451
           (isMatchingKeyCombination(event, 'Control+KeyC') &&
             this.instance.hasSelection()) ||
           isMatchingKeyCombination(event, 'Control+KeyV')
