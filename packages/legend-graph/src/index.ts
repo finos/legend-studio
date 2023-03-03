@@ -251,6 +251,9 @@ export {
 export { V1_buildTaggedValue } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_DomainBuilderHelper.js';
 export { V1_PureModelContextData } from './graphManager/protocol/pure/v1/model/context/V1_PureModelContextData.js';
 export { V1_PureModelContext } from './graphManager/protocol/pure/v1/model/context/V1_PureModelContext.js';
+export { V1_LegendSDLC } from './graphManager/protocol/pure/v1/model/context/V1_SDLC.js';
+export { V1_Protocol } from './graphManager/protocol/pure/v1/model/V1_Protocol.js';
+export { V1_PureModelContextPointer } from './graphManager/protocol/pure/v1/model/context/V1_PureModelContextPointer.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationPathResolver.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_ElementBuilder.js';
