@@ -22,13 +22,17 @@ import {
   act,
   getByText,
 } from '@testing-library/react';
-import { TEST_DATA__simpleProjection } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
+import {
+  TEST_DATA__simpleProjection,
+  TEST_DATA__simpeDateParameters,
+} from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import { integrationTest } from '@finos/legend-shared';
 import {
   create_RawLambda,
   PrimitiveType,
+  PRIMITIVE_TYPE,
   stub_RawLambda,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
@@ -205,3 +209,81 @@ test(
     ).not.toBeNull();
   },
 );
+
+test(integrationTest('Query builder parameter default values'), async () => {
+  const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+    TEST_DATA__ComplexRelationalModel,
+    stub_RawLambda(),
+    'model::relational::tests::simpleRelationalMapping',
+    'model::MyRuntime',
+    TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+  );
+  // Date
+  const param1Lambda = TEST_DATA__simpeDateParameters(PRIMITIVE_TYPE.DATE);
+  await act(async () => {
+    queryBuilderState.initializeWithQuery(
+      create_RawLambda(param1Lambda.parameters, param1Lambda.body),
+    );
+  });
+  await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+  );
+  const parameterPanel = renderResult.getByTestId(
+    QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+  );
+  expect(getByText(parameterPanel, 'var_1')).not.toBeNull();
+  fireEvent.click(renderResult.getByText('Run Query'));
+  let executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
+  expect(getByText(executeDialog, 'Set Parameter Values'));
+  expect(getByText(executeDialog, 'var_1')).not.toBeNull();
+  expect(getByText(executeDialog, 'Date')).not.toBeNull();
+  expect(getByText(executeDialog, 'Now')).not.toBeNull();
+
+  // DateTime
+  const param2Lambda = TEST_DATA__simpeDateParameters(PRIMITIVE_TYPE.DATETIME);
+  await act(async () => {
+    queryBuilderState.initializeWithQuery(
+      create_RawLambda(param2Lambda.parameters, param2Lambda.body),
+    );
+  });
+
+  await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+  );
+  const parameter2Panel = renderResult.getByTestId(
+    QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+  );
+  expect(getByText(parameter2Panel, 'var_1')).not.toBeNull();
+  expect(getByText(parameter2Panel, 'DateTime')).not.toBeNull();
+  fireEvent.click(renderResult.getByText('Run Query'));
+  executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
+  expect(getByText(executeDialog, 'Set Parameter Values'));
+  expect(getByText(executeDialog, 'var_1')).not.toBeNull();
+  expect(getByText(executeDialog, 'DateTime')).not.toBeNull();
+  expect(getByText(executeDialog, 'Now')).not.toBeNull();
+
+  // StrictDate
+  const param3Lambda = TEST_DATA__simpeDateParameters(
+    PRIMITIVE_TYPE.STRICTDATE,
+  );
+  await act(async () => {
+    queryBuilderState.initializeWithQuery(
+      create_RawLambda(param3Lambda.parameters, param3Lambda.body),
+    );
+  });
+
+  await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+  );
+  const parameter3Panel = renderResult.getByTestId(
+    QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+  );
+  expect(getByText(parameter3Panel, 'var_1')).not.toBeNull();
+  expect(getByText(parameter3Panel, 'StrictDate')).not.toBeNull();
+  fireEvent.click(renderResult.getByText('Run Query'));
+  executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
+  expect(getByText(executeDialog, 'Set Parameter Values'));
+  expect(getByText(executeDialog, 'var_1')).not.toBeNull();
+  expect(getByText(executeDialog, 'StrictDate')).not.toBeNull();
+  expect(getByText(executeDialog, 'Today')).not.toBeNull();
+});
