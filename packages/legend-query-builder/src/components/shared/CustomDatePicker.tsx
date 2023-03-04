@@ -48,7 +48,10 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { useEffect, useRef, useState } from 'react';
-import { buildPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
+import {
+  buildPrimitiveInstanceValue,
+  createSupportedFunctionExpression,
+} from '../../stores/shared/ValueSpecificationEditorHelper.js';
 import {
   functionExpression_addParameterValue,
   instanceValue_setValue,
@@ -329,26 +332,16 @@ const buildPureDateFunctionExpression = (
   } else {
     switch (datePickerOption.value) {
       case CUSTOM_DATE_PICKER_OPTION.TODAY: {
-        const todaySFE = new SimpleFunctionExpression(
+        return createSupportedFunctionExpression(
           SUPPORTED_FUNCTIONS.TODAY,
+          PrimitiveType.STRICTDATE,
         );
-        valueSpecification_setGenericType(
-          todaySFE,
-          GenericTypeExplicitReference.create(
-            new GenericType(PrimitiveType.STRICTDATE),
-          ),
-        );
-        return todaySFE;
       }
       case CUSTOM_DATE_PICKER_OPTION.NOW: {
-        const nowSFE = new SimpleFunctionExpression(SUPPORTED_FUNCTIONS.NOW);
-        valueSpecification_setGenericType(
-          nowSFE,
-          GenericTypeExplicitReference.create(
-            new GenericType(PrimitiveType.DATETIME),
-          ),
+        return createSupportedFunctionExpression(
+          SUPPORTED_FUNCTIONS.NOW,
+          PrimitiveType.DATETIME,
         );
-        return nowSFE;
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_YEAR: {
         const firstDayOfYearSFE = new SimpleFunctionExpression(
