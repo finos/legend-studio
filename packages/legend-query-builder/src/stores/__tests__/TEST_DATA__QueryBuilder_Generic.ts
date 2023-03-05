@@ -1699,3 +1699,91 @@ export const TEST_DATA__simpleProjectionWithSubtypeFromSubtypeModel = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA__simpeDateParameters = (
+  paramType: string,
+): { parameters?: object; body?: object; _type: string } => ({
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'take',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::pure::tests::model::simple::Person',
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'age',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'Age',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'integer',
+          value: 1000,
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: paramType,
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'var_1',
+    },
+  ],
+});
