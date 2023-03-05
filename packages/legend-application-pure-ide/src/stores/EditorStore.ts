@@ -413,15 +413,9 @@ export class EditorStore implements CommandRegistrar {
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_TEXT,
       action: () => {
-        if (
-          this.auxPanelDisplayState.isOpen &&
-          this.activeAuxPanelMode === AUX_PANEL_MODE.SEARCH
-        ) {
-          this.auxPanelDisplayState.close();
-        } else {
-          this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH);
-          this.auxPanelDisplayState.open();
-        }
+        this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH);
+        this.auxPanelDisplayState.open();
+        this.textSearchState.focus();
       },
     });
     this.applicationStore.commandCenter.registerCommand({

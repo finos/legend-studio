@@ -291,13 +291,24 @@ export const TextSearchPanel = observer(() => {
   };
 
   useEffect(() => {
+    if (searchInputRef.current) {
+      searchState.setSearchInput(searchInputRef.current);
+    }
+    return () => searchState.setSearchInput(undefined);
+  }, [searchState]);
+
+  useEffect(() => {
     if (
       editorStore.auxPanelDisplayState.isOpen &&
       editorStore.activeAuxPanelMode === AUX_PANEL_MODE.SEARCH
     ) {
-      searchInputRef.current?.focus();
+      searchState.focus();
     }
-  }, [editorStore.auxPanelDisplayState.isOpen, editorStore.activeAuxPanelMode]);
+  }, [
+    searchState,
+    editorStore.auxPanelDisplayState.isOpen,
+    editorStore.activeAuxPanelMode,
+  ]);
 
   return (
     <div className="text-search-panel">
