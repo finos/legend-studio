@@ -890,4 +890,34 @@ export class XTerm extends Terminal {
       caseSensitive: this.searchConfig.matchCaseSensitive,
     });
   }
+
+  private getContent(): string {
+    const buffer = this.instance.buffer.active;
+    const lines: string[] = [];
+
+    for (let i = 0; i < buffer.length; ++i) {
+      const line = guaranteeNonNullable(buffer.getLine(i));
+      lines.push(line.translateToString());
+    }
+
+    return lines.join('\n').trimEnd();
+  }
+
+  copy(): void {
+    if (!this.instance.hasSelection()) {
+      this.applicationStore.notifyWarning(
+        `Ther terminal has no selection to copy`,
+      );
+      return;
+    }
+    this.applicationStore
+      .copyTextToClipboard(this.instance.getSelection())
+      .catch(this.applicationStore.alertUnhandledError);
+  }
+
+  copyAll(): void {
+    this.applicationStore
+      .copyTextToClipboard(this.getContent())
+      .catch(this.applicationStore.alertUnhandledError);
+  }
 }

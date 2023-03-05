@@ -22,7 +22,11 @@ import {
   CaseSensitiveIcon,
   CloseIcon,
   clsx,
+  ContextMenu,
+  CopyIcon,
   HistoryIcon,
+  MenuContent,
+  MenuContentItem,
   QuestionCircleIcon,
   RegexIcon,
   TrashIcon,
@@ -99,6 +103,12 @@ export const Console = observer(() => {
       terminal.focus();
     }
   };
+  const clear = (): void => {
+    terminal.clear();
+    terminal.focus();
+  };
+  const copy = (): void => terminal.copy();
+  const copyAll = (): void => terminal.copyAll();
 
   if (!terminal.isSetup) {
     return (
@@ -229,12 +239,17 @@ export const Console = observer(() => {
           </button>
           <button
             className="terminal-panel__header__action terminal-panel__header__group__action"
+            title="Copy Text Content"
+            tabIndex={-1}
+            onClick={copyAll}
+          >
+            <CopyIcon className="terminal-panel__header__action__icon" />
+          </button>
+          <button
+            className="terminal-panel__header__action terminal-panel__header__group__action"
             title="Clear Console"
             tabIndex={-1}
-            onClick={() => {
-              terminal.clear();
-              terminal.focus();
-            }}
+            onClick={clear}
           >
             <TrashIcon className="terminal-panel__header__action__icon" />
           </button>
@@ -251,7 +266,19 @@ export const Console = observer(() => {
           </button>
         </div>
       </div>
-      <div ref={ref} className="terminal-panel__content" />
+      <ContextMenu
+        className="terminal-panel__content"
+        content={
+          <MenuContent>
+            <MenuContentItem onClick={copy}>Copy</MenuContentItem>
+            <MenuContentItem onClick={copyAll}>Copy All</MenuContentItem>
+            <MenuContentItem onClick={clear}>Clear</MenuContentItem>
+          </MenuContent>
+        }
+        menuProps={{ elevation: 7 }}
+      >
+        <div ref={ref} className="terminal-panel__container" />
+      </ContextMenu>
     </div>
   );
 });
