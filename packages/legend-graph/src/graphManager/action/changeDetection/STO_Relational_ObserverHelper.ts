@@ -36,6 +36,7 @@ import {
   RedshiftDatasourceSpecification,
   SnowflakeDatasourceSpecification,
   StaticDatasourceSpecification,
+  SpannerDatasourceSpecification,
 } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 import { MapperPostProcessor } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/MapperPostProcessor.js';
 import type { PostProcessor } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/PostProcessor.js';
@@ -828,6 +829,18 @@ export const observe_BigQueryDatasourceSpecification = skipObserved(
     }),
 );
 
+export const observe_SpannerDatasourceSpecification = skipObserved(
+  (metamodel: SpannerDatasourceSpecification): SpannerDatasourceSpecification =>
+    makeObservable(metamodel, {
+      projectId: observable,
+      instanceId: observable,
+      databaseId: observable,
+      proxyHost: observable,
+      proxyPort: observable,
+      hashCode: computed,
+    }),
+);
+
 export const observe_DatasourceSpecification = (
   metamodel: DatasourceSpecification,
   context: ObserverContext,
@@ -846,6 +859,8 @@ export const observe_DatasourceSpecification = (
     return observe_RedshiftDatasourceSpecification(metamodel);
   } else if (metamodel instanceof BigQueryDatasourceSpecification) {
     return observe_BigQueryDatasourceSpecification(metamodel);
+  } else if (metamodel instanceof SpannerDatasourceSpecification) {
+    return observe_SpannerDatasourceSpecification(metamodel);
   }
   const extraObservers = context.plugins.flatMap(
     (plugin) =>

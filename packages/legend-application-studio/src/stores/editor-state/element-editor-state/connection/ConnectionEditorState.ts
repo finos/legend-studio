@@ -50,6 +50,7 @@ import {
   BigQueryDatasourceSpecification,
   StaticDatasourceSpecification,
   RedshiftDatasourceSpecification,
+  SpannerDatasourceSpecification,
   createValidationError,
   isStubbed_PackageableElement,
   type PostProcessor,
@@ -91,6 +92,7 @@ export enum CORE_DATASOURCE_SPEC_TYPE {
   SNOWFLAKE = 'SNOWFLAKE',
   REDSHIFT = 'REDSHIFT',
   BIGQUERY = 'BIGQUERY',
+  SPANNER = 'SPANNER',
 }
 
 export enum POST_PROCESSOR_TYPE {
@@ -195,6 +197,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_DATASOURCE_SPEC_TYPE.H2_LOCAL;
     } else if (spec instanceof RedshiftDatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.REDSHIFT;
+    } else if (spec instanceof SpannerDatasourceSpecification) {
+      return CORE_DATASOURCE_SPEC_TYPE.SPANNER;
     }
     const extraDatasourceSpecificationClassifiers =
       this.editorStore.pluginManager
@@ -255,6 +259,10 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
       case CORE_DATASOURCE_SPEC_TYPE.BIGQUERY: {
         dataSpec = new BigQueryDatasourceSpecification('', '');
+        break;
+      }
+      case CORE_DATASOURCE_SPEC_TYPE.SPANNER: {
+        dataSpec = new SpannerDatasourceSpecification('', '', '', '', '');
         break;
       }
       default: {
