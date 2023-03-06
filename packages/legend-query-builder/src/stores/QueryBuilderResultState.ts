@@ -254,13 +254,14 @@ export class QueryBuilderResultState {
       if (this.queryRunPromise === promise) {
         this.setExecutionResult(result);
         this.latestRunHashCode = currentHashCode;
-        stopWatch.record();
-        this.setExecutionDuration(stopWatch.elapsed);
 
+        const totalTime = stopWatch.elapsed;
+        this.setExecutionDuration(totalTime);
         report.timings = {
           ...report.timings,
-          total: stopWatch.elapsed,
+          total: totalTime,
         };
+
         QueryBuilderTelemetry.logEvent_QueryRunSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,
           report,
