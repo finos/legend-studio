@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 22.4.8
+
+### Patch Changes
+
+- [#1950](https://github.com/finos/legend-studio/pull/1950) [`0958b5eda`](https://github.com/finos/legend-studio/commit/0958b5edaafdbc043365e0391348760ecd4a32dd) ([@xannem](https://github.com/xannem)) - Add tab plugin extension for test runner tab.
+
 ## 22.4.7
 
 ## 22.4.6

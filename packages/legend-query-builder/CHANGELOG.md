@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 0.6.31
+
+### Patch Changes
+
+- [#1974](https://github.com/finos/legend-studio/pull/1974) [`fc7281c0b`](https://github.com/finos/legend-studio/commit/fc7281c0b83a06c7ebaa875ba1b521c8029840f6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - default parameter of type `DATE` and `DATETIME` to the function `now()` and `StrictDate` to `today()`
+
 ## 0.6.30
 
 ## 0.6.29

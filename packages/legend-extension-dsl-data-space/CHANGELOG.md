@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 9.0.46
+
+### Patch Changes
+
+- [#1971](https://github.com/finos/legend-studio/pull/1971) [`c5dadd9f0`](https://github.com/finos/legend-studio/commit/c5dadd9f0c1bb638f6a47d7d3f5dd418ea73118a) ([@xannem](https://github.com/xannem)) - Revert dataspace button
+
 ## 9.0.45
 
 ### Patch Changes
