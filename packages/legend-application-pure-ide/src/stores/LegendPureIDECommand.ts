@@ -32,7 +32,7 @@ export const LEGEND_PURE_IDE_COMMAND_CONFIG: CommandConfigData = {
   [LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_FILE]: {
     title: 'Search for file',
     defaultKeyboardShortcut: 'Control+Shift+KeyN',
-    additionalKeyboardShortcuts: ['Shift Shift', 'Control+KeyP', 'Meta+KeyP'],
+    additionalKeyboardShortcuts: ['Control+KeyP', 'Meta+KeyP'],
   },
   [LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_TEXT]: {
     title: 'Search text',

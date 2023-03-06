@@ -38,17 +38,21 @@ const PLATFORM_NATIVE_KEYBOARD_SHORTCUTS = [
   'Control+KeyP',
   'Meta+KeyS', // Save
   'Control+KeyS',
+
   'F8', // Chrome: Developer Tools > Sources: Run or pause script
   'F10', // Chrome: Developer Tools > Sources: Step over next function call
   'F11', // Chrome: Developer Tools > Sources: Step into next function call
   'Meta+Shift+KeyP', // Chrome: Developer Tools: Open Command Prompt inside developer tools
   'Control+Backquote', // Chrome: Developer Tools: Open console
-  'Control+Shift+KeyP',
+  'Control+Shift+KeyN', // Chrome: Open Private Browsing (incognito)
+
+  'Control+Shift+KeyP', // Firefox: Open Private Browsing
   'Meta+KeyB', // Firefox: Open bookmark sidebar
   'Control+KeyB',
   'F7', // Firefox: Caret browsing
   'Alt+F7', // Firefox: Caret browsing (Mac)
   'Control+Shift+KeyB',
+
   'Alt+KeyZ', // Mac: special symbol
 ];
 
