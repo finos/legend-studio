@@ -254,14 +254,13 @@ export class QueryBuilderResultState {
       if (this.queryRunPromise === promise) {
         this.setExecutionResult(result);
         this.latestRunHashCode = currentHashCode;
+        this.setExecutionDuration(stopWatch.elapsed);
 
-        const totalTime = stopWatch.elapsed;
-        this.setExecutionDuration(totalTime);
-        report.timings = {
-          ...report.timings,
-          total: totalTime,
-        };
-
+        report.timings =
+          this.queryBuilderState.applicationStore.timeService.finalizeTimingsRecord(
+            stopWatch,
+            report.timings,
+          );
         QueryBuilderTelemetry.logEvent_QueryRunSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,
           report,
@@ -351,11 +350,12 @@ export class QueryBuilderResultState {
       }
       stopWatch.record(QUERY_BUILDER_EVENT.BUILD_EXECUTION_PLAN__SUCCESS);
 
-      report.timings = {
-        ...report.timings,
-        ...Object.fromEntries(stopWatch.records),
-        total: stopWatch.elapsed,
-      };
+      // report
+      report.timings =
+        this.queryBuilderState.applicationStore.timeService.finalizeTimingsRecord(
+          stopWatch,
+          report.timings,
+        );
       if (debug) {
         QueryBuilderTelemetry.logEvent_ExecutionPlanDebugSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,

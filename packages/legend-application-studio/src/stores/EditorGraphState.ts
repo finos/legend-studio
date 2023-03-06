@@ -399,11 +399,10 @@ export class EditorGraphState {
       // report
       stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
       const graphBuilderReportData = {
-        timings: {
-          [GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS]: stopWatch.getRecord(
-            GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
+        timings:
+          this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
+            stopWatch,
           ),
-        },
         dependencies: dependency_buildReport,
         dependenciesCount:
           this.editorStore.graphManagerState.graph.dependencyManager
@@ -412,12 +411,13 @@ export class EditorGraphState {
         generations: generation_buildReport,
         generationsCount: this.graphGenerationState.generatedEntities.size,
       };
-      this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
-        graphBuilderReportData,
-      );
       ApplicationTelemetry.logEvent_GraphInitializationSucceeded(
         this.editorStore.applicationStore.telemetryService,
+        graphBuilderReportData,
+      );
+
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
         graphBuilderReportData,
       );
 
@@ -632,7 +632,11 @@ export class EditorGraphState {
         }
       }
 
-      report.timings.total = stopWatch.elapsed;
+      report.timings =
+        this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
+          stopWatch,
+          report.timings,
+        );
       LegendStudioTelemetry.logEvent_GraphCompilationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         report,
@@ -805,11 +809,11 @@ export class EditorGraphState {
         ),
       );
 
-      report.timings = {
-        ...report.timings,
-        ...Object.fromEntries(stopWatch.records),
-        total: stopWatch.elapsed,
-      };
+      report.timings =
+        this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
+          stopWatch,
+          report.timings,
+        );
       LegendStudioTelemetry.logEvent_TextCompilationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         report,

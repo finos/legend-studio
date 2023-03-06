@@ -534,26 +534,20 @@ export abstract class QueryEditorStore {
     // report
     stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
     const graphBuilderReportData = {
-      timings: {
-        [GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH_SYSTEM__SUCCESS]:
-          stopWatch.getRecord(
-            GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH_SYSTEM__SUCCESS,
-          ),
-        [GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS]: stopWatch.getRecord(
-          GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
-        ),
-      },
+      timings:
+        this.applicationStore.timeService.finalizeTimingsRecord(stopWatch),
       dependencies: dependency_buildReport,
       dependenciesCount:
         this.graphManagerState.graph.dependencyManager.numberOfDependencies,
       graph: graph_buildReport,
     };
-    this.applicationStore.log.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
-      graphBuilderReportData,
-    );
     ApplicationTelemetry.logEvent_GraphInitializationSucceeded(
       this.applicationStore.telemetryService,
+      graphBuilderReportData,
+    );
+
+    this.applicationStore.log.info(
+      LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
       graphBuilderReportData,
     );
   }

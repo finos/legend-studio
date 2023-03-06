@@ -47,6 +47,7 @@ import {
 } from './NotificationService.js';
 import { UNKNOWN_USER_ID } from './IdentityService.js';
 import { TelemetryService } from './TelemetryService.js';
+import { TimeService } from './TimeService.js';
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
@@ -58,24 +59,28 @@ export class ApplicationStore<
   V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
 > {
   readonly uuid = uuid();
-  readonly timestamp = Date.now();
 
   readonly config: T;
   readonly pluginManager: V;
 
   // user
+  // TODO: if this ever gets more complicated, rename this to `IdentityService`
   currentUser = UNKNOWN_USER_ID;
 
   // navigation
+  // TODO: rename to `NavigationService`
+  // NOTE: as of now, we only support web environment, we will not use `Application
   readonly navigator: WebApplicationNavigator;
   readonly navigationContextService: ApplicationNavigationContextService;
 
-  // TODO: refactor this to `NotificationService` including notifications and alerts
+  // TODO: refactor this to `NotificationService`
   notification?: Notification | undefined;
+
+  // TODO: refactor this to `AlertService`
   blockingAlertInfo?: BlockingAlertInfo | undefined;
   actionAlertInfo?: ActionAlertInfo | undefined;
 
-  // TODO: consider renaming this to `LogService`
+  // NOTE: we have considered consider renaming this to `LogService`
   readonly log = new Log();
   readonly terminalService: TerminalService;
 
@@ -83,7 +88,8 @@ export class ApplicationStore<
   readonly documentationService: DocumentationService;
   readonly assistantService: AssistantService;
 
-  // communication
+  // event & communication
+  readonly timeService = new TimeService();
   readonly eventService = new EventService();
   readonly telemetryService = new TelemetryService();
   readonly tracerService = new TracerService();
@@ -163,7 +169,7 @@ export class ApplicationStore<
       userId: this.currentUser,
       appName: this.config.appName,
       appSessionId: this.uuid,
-      appStartTime: this.timestamp,
+      // appStartTime: this.time timestamp,
     });
   }
 

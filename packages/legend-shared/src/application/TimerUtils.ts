@@ -16,6 +16,15 @@
 
 import { guaranteeNonNullable } from '../error/AssertionUtils.js';
 
+export type TimingsRecord = {
+  [key: string]: number;
+  /**
+   * Number of interruptions ocurred during the record
+   */
+  __numberOfInteruptions?: number;
+  total: number;
+};
+
 export class StopWatch {
   private _startTime = Date.now();
   private _time = this._startTime;
@@ -35,6 +44,10 @@ export class StopWatch {
       this._records.get(event),
       `Can't find record for event '${event}'`,
     );
+  }
+
+  get startTime(): number {
+    return this._startTime;
   }
 
   get elapsed(): number {

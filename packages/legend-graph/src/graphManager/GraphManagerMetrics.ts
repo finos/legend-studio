@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-import { isNonNullable } from '@finos/legend-shared';
+import { isNonNullable, type TimingsRecord } from '@finos/legend-shared';
 import type { PureModel } from '../graph/PureModel.js';
 import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent.js';
 
 export type GraphManagerOperationReport = {
-  timings: {
-    total: number;
-    [key: string]: number;
-  };
+  timings: TimingsRecord;
   elementCount: {
     total: number | undefined;
     [key: string]: number | undefined;

@@ -411,23 +411,23 @@ export class ProjectViewerStore {
       // report
       stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
       const graphBuilderReportData = {
-        timings: {
-          [GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS]: stopWatch.getRecord(
-            GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
+        timings:
+          this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
+            stopWatch,
           ),
-        },
         dependencies: dependency_buildReport,
         dependenciesCount:
           this.editorStore.graphManagerState.graph.dependencyManager
             .numberOfDependencies,
         graph: graph_buildReport,
       };
-      this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
-        graphBuilderReportData,
-      );
       ApplicationTelemetry.logEvent_GraphInitializationSucceeded(
         this.editorStore.applicationStore.telemetryService,
+        graphBuilderReportData,
+      );
+
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
         graphBuilderReportData,
       );
 

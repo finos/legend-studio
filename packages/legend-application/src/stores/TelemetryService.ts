@@ -49,12 +49,12 @@ export abstract class TelemetryServicePlugin extends AbstractPlugin {
   }
 
   setup(config: ApplicationTelemetryConfigData): void {
-    this.userId = config?.userId;
-    this.appName = config?.appName;
-    this.appVersion = config?.appVersion;
-    this.appEnv = config?.appEnv;
-    this.appSessionId = config?.appSessionId;
-    this.appStartTime = config?.appStartTime;
+    this.userId = config.userId;
+    this.appName = config.appName;
+    this.appVersion = config.appVersion;
+    this.appEnv = config.appEnv;
+    this.appSessionId = config.appSessionId;
+    this.appStartTime = config.appStartTime;
   }
 
   /**

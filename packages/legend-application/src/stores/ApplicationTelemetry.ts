@@ -18,6 +18,7 @@ import {
   type GraphManagerOperationReport,
   GRAPH_MANAGER_EVENT,
 } from '@finos/legend-graph';
+import type { TimingsRecord } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from './ApplicationEvent.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 import type { TelemetryService } from './TelemetryService.js';
@@ -31,7 +32,7 @@ type VirtualAssistantDocumentationEntryAccessed_TelemetryData = {
 };
 
 type GraphInitialized_TelemetryData = {
-  timings: Record<string, number>;
+  timings: TimingsRecord;
   dependencies: GraphManagerOperationReport;
   dependenciesCount: number;
   graph: GraphManagerOperationReport;
@@ -87,6 +88,15 @@ export class ApplicationTelemetry {
     telemetryService.logEvent(
       GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
       data,
+    );
+  }
+
+  static logEvent_ApplicationUsageInterrupted(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      APPLICATION_EVENT.APPLICATION_USAGE__INTERRUPT,
+      {},
     );
   }
 }
