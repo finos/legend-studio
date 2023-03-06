@@ -161,8 +161,8 @@ import {
 import type { MappingTest } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
 import type { MappingTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
 import { V1_MappingTestSuite } from '../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
-import type { MappingTestData } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestData.js';
-import { V1_MappingTestData } from '../../../model/packageableElements/mapping/V1_MappingTestData.js';
+import type { MappingStoreTestData } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
+import { V1_MappingStoreTestData } from '../../../model/packageableElements/mapping/V1_MappingStoreTestData.js';
 import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
 
 export const V1_transformPropertyReference = (
@@ -336,11 +336,11 @@ const transformMappingTestLegacy = (
   return test;
 };
 
-const transformStoreTestData = (
-  element: MappingTestData,
+const transformMappingStoreTestData = (
+  element: MappingStoreTestData,
   context: V1_GraphTransformerContext,
-): V1_MappingTestData => {
-  const testData = new V1_MappingTestData();
+): V1_MappingStoreTestData => {
+  const testData = new V1_MappingStoreTestData();
   testData.data = V1_transformEmbeddedData(element.data, context);
   testData.store = element.store.valueForSerialization ?? '';
   return testData;
@@ -367,8 +367,8 @@ export const V1_transformMappingTestSuite = (
 ): V1_MappingTestSuite => {
   const mappingTestSuite = new V1_MappingTestSuite();
   mappingTestSuite.id = element.id;
-  mappingTestSuite.storeTestDatas = element.storeTestDatas.map((testData) =>
-    transformStoreTestData(testData, context),
+  mappingTestSuite.mappingStoreTestDatas = element.mappingStoreTestDatas.map(
+    (testData) => transformMappingStoreTestData(testData, context),
   );
   mappingTestSuite.tests = element.tests.map((test) =>
     V1_transformAtomicTest(test, context),

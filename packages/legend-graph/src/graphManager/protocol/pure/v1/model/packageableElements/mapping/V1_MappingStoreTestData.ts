@@ -18,7 +18,7 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import type { V1_EmbeddedData } from '../../data/V1_EmbeddedData.js';
 
-export class V1_MappingTestData implements Hashable {
+export class V1_MappingStoreTestData implements Hashable {
   store!: string;
   data!: V1_EmbeddedData;
 
