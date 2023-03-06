@@ -31,7 +31,7 @@ export * from './stores/ApplicationTelemetry.js';
 export * from './stores/ApplicationEvent.js';
 export * from './application/LegendApplicationConfig.js';
 export { WebApplicationNavigator } from './stores/WebApplicationNavigator.js';
-export { LocalStorage } from './stores/storage/LocalStorage.js';
+export { LocalStorage } from './stores/storage/ApplicationStorage.js';
 export * from './stores/storage/StorageService.js';
 export * from './stores/DocumentationService.js';
 export * from './stores/CommandCenter.js';

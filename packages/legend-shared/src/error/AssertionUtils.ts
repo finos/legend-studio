@@ -135,6 +135,14 @@ export function assertIsBoolean(
     throw new AssertionError(message || `Value is expected to be a boolean`);
   }
 }
+export function assertIsObject(
+  val: unknown,
+  message = '',
+): asserts val is object {
+  if (!isObject(val)) {
+    throw new AssertionError(message || `Value is expected to be a object`);
+  }
+}
 export const guaranteeIsString = (val: unknown, message = ''): string => {
   assertIsString(val, message);
   return val;
@@ -145,5 +153,9 @@ export const guaranteeIsNumber = (val: unknown, message = ''): number => {
 };
 export const guaranteeIsBoolean = (val: unknown, message = ''): boolean => {
   assertIsBoolean(val, message);
+  return val;
+};
+export const guaranteeIsObject = (val: unknown, message = ''): object => {
+  assertIsObject(val, message);
   return val;
 };

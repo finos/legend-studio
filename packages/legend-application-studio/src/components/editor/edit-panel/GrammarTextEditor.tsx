@@ -109,7 +109,7 @@ import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
-import { LEGEND_STUDIO_SETTINGS_KEY } from '../../../stores/LegendStudioLocalStorage.js';
+import { LEGEND_STUDIO_SETTINGS_KEY } from '../../../stores/LegendStudioStorage.js';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   forwardRef<HTMLDivElement, { children?: React.ReactNode }>(
@@ -701,7 +701,7 @@ export const GrammarTextEditor = observer(() => {
 
   const toggleWordWrap = (): void => {
     grammarTextEditorState.setWrapText(!grammarTextEditorState.wrapText);
-    editorStore.applicationStore.storageService.persist(
+    editorStore.applicationStore.storageService.settingsStore.persist(
       LEGEND_STUDIO_SETTINGS_KEY.EDITOR_WRAP_TEXT,
       grammarTextEditorState.wrapText,
     );

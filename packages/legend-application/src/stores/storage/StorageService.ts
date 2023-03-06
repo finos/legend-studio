@@ -15,84 +15,70 @@
  */
 
 import {
-  type PlainObject,
-  SerializationFactory,
-  usingModelSchema,
+  guaranteeIsNumber,
+  guaranteeIsString,
+  guaranteeIsBoolean,
+  guaranteeIsObject,
 } from '@finos/legend-shared';
-import { createModelSchema, list, primitive } from 'serializr';
 import type { GenericLegendApplicationStore } from '../ApplicationStore.js';
-import { LocalStorage } from './LocalStorage.js';
+import { LocalStorage } from './ApplicationStorage.js';
 
 const APPLICATION_SETTINGS_STORAGE_KEY = 'application-settings-storage';
+type StoredValue = object | string | number | boolean;
 
-export class StorageItem {
-  key!: string;
-  value!: string;
+class StorageStore {
+  readonly key = APPLICATION_SETTINGS_STORAGE_KEY;
+  readonly storage: LocalStorage;
+  readonly storageService!: StorageService;
+  private value!: Record<PropertyKey, StoredValue>;
 
-  constructor(key: string, value: string) {
-    this.key = key;
-    this.value = value;
+  constructor() {
+    this.storage = new LocalStorage();
+    const storage = this.storage.getItem(this.key);
+    if (storage) {
+      const data = JSON.parse(storage) as Record<PropertyKey, StoredValue>;
+      this.value = data;
+    } else {
+      this.value = {};
+    }
   }
 
-  static create(key: string, value: string): StorageItem {
-    return new StorageItem(key, value);
+  private getValue(key: string, defaultValue: StoredValue): StoredValue {
+    return this.value[key] ?? defaultValue;
   }
-}
 
-const storageItemModelSchema = createModelSchema(StorageItem, {
-  key: primitive(),
-  value: primitive(),
-});
+  getNumberValue(key: string, defaultValue: number): number {
+    const storedValue = this.getValue(key, defaultValue);
+    return guaranteeIsNumber(storedValue);
+  }
 
-export class StorageStore {
-  items: StorageItem[] = [];
+  getStringValue(key: string, defaultValue: string): string {
+    const storedValue = this.getValue(key, defaultValue);
+    return guaranteeIsString(storedValue);
+  }
 
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(StorageStore, {
-      items: list(usingModelSchema(storageItemModelSchema)),
-    }),
-  );
+  getBooleanValue(key: string, defaultValue: boolean): boolean {
+    const storedValue = this.getValue(key, defaultValue);
+    return guaranteeIsBoolean(storedValue);
+  }
 
-  static serialize(value: StorageStore): PlainObject<StorageStore> {
-    return StorageStore.serialization.toJson(value);
+  getObjectValue(key: string, defaultValue: object): object {
+    const storedValue = this.getValue(key, defaultValue);
+    return guaranteeIsObject(storedValue);
+  }
+
+  persist(key: string, value: StoredValue): void {
+    this.value[key] = value;
+    this.storage.setItem(this.key, JSON.stringify(this.value));
   }
 }
 
 export class StorageService {
   readonly applicationStore: GenericLegendApplicationStore;
-  readonly localStorage: LocalStorage;
-  readonly storageKey: string;
-  settingsStore = new StorageStore();
+  settingsStore!: StorageStore;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     this.applicationStore = applicationStore;
-    this.localStorage = new LocalStorage();
-    this.storageKey = APPLICATION_SETTINGS_STORAGE_KEY;
-    // fetching the stored items from client side
-    const storage = this.localStorage.getItem(this.storageKey);
-    if (storage) {
-      const data = JSON.parse(storage) as StorageStore;
-      this.settingsStore = data;
-    }
-  }
-
-  get(key: string): unknown | undefined {
-    const savedItem = this.settingsStore.items.find((d) => d.key === key);
-    return savedItem ? JSON.parse(savedItem.value) : undefined;
-  }
-
-  persist(key: string, value: unknown): void {
-    const data = this.settingsStore.items.find(
-      (d: StorageItem) => d.key === key,
-    );
-    if (data) {
-      data.value = JSON.stringify(value);
-    } else {
-      this.settingsStore.items.push(
-        StorageItem.create(key, JSON.stringify(value)),
-      );
-    }
-    const serializedValue = StorageStore.serialize(this.settingsStore);
-    this.localStorage.setItem(this.storageKey, JSON.stringify(serializedValue));
+    this.settingsStore = new StorageStore();
   }
 }

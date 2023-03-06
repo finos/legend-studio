@@ -112,7 +112,7 @@ import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunner
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import { ExplorerTreeState } from './ExplorerTreeState.js';
 import { LegendStudioTelemetry } from './LegendStudioTelemetry.js';
-import { LEGEND_STUDIO_SETTINGS_KEY } from './LegendStudioLocalStorage.js';
+import { LEGEND_STUDIO_SETTINGS_KEY } from './LegendStudioStorage.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -191,12 +191,11 @@ export class EditorGraphState {
 
     this.editorStore = editorStore;
     this.graphGenerationState = new GraphGenerationState(this.editorStore);
-    const enableStrictMode =
-      this.editorStore.applicationStore.storageService.get(
-        LEGEND_STUDIO_SETTINGS_KEY.EDITOR_STRICT_MODE,
-      );
     this.enableStrictMode =
-      enableStrictMode !== undefined ? (enableStrictMode as boolean) : false;
+      this.editorStore.applicationStore.storageService.settingsStore.getBooleanValue(
+        LEGEND_STUDIO_SETTINGS_KEY.EDITOR_STRICT_MODE,
+        false,
+      );
   }
 
   get problems(): Problem[] {
