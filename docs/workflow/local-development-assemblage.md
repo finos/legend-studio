@@ -60,8 +60,21 @@ rm \"yarn.lock\" && touch \"yarn.lock\" # clear the content of yarn.lock
 ## How to Develop
 
 ```sh
+# In `legend-studio`
+yarn dev:ts
+
+# then proceed with your development workflow
+```
+
+```sh
 # In `my-new-dsl`
 yarn install
+
+yarn setup
+
+yarn dev
+
+yarn dev:ts
 
 # then proceed with your development workflow
 ```

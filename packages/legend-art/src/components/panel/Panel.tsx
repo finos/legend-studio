@@ -112,7 +112,7 @@ export const PanelTabs: React.FC<{
   const { tabTitles, changeTheTab, selectedTab, tabClassName } = props;
 
   return (
-    <div className="panel__header">
+    <div className="panel__header panel__header--dark">
       <div className="panel__header__tabs">
         {tabTitles.map((tab) => (
           <div
@@ -143,6 +143,16 @@ export const PanelList = generateSimpleDIVComponent(
 export const PanelListItem = generateSimpleDIVComponent(
   'PanelListItem',
   'panel__content__form__list__item',
+);
+
+export const PanelListItemTitle = generateSimpleDIVComponent(
+  'PanelListItemTitle',
+  'panel__content__form__list__item__title',
+);
+
+export const PanelListItemLabel = generateSimpleDIVComponent(
+  'PanelListItemLabel',
+  'panel__content__form__list__item__label',
 );
 
 export const PanelForm = generateSimpleDIVComponent(
