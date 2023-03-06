@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { TelemetryService } from '@finos/legend-shared';
+import type { TelemetryService } from '@finos/legend-application';
 import { LEGEND_QUERY_APP_EVENT } from './LegendQueryAppEvent.js';
 
 type Query_TelemetryData = {

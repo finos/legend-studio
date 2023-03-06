@@ -90,7 +90,6 @@ import {
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
   GraphBuilderError,
-  GraphManagerTelemetry,
   DataElement,
   type PackageableElement,
   type CompilationWarning,
@@ -103,6 +102,7 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
+  ApplicationTelemetry,
   type TabState,
 } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
@@ -416,7 +416,7 @@ export class EditorGraphState {
         LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
         graphBuilderReportData,
       );
-      GraphManagerTelemetry.logEvent_GraphInitializationSucceeded(
+      ApplicationTelemetry.logEvent_GraphInitializationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         graphBuilderReportData,
       );

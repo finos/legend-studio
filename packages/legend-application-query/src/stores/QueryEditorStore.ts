@@ -44,7 +44,6 @@ import {
   PackageableElementExplicitReference,
   RuntimePointer,
   GRAPH_MANAGER_EVENT,
-  GraphManagerTelemetry,
   extractElementNameFromPath,
   QuerySearchSpecification,
   Mapping,
@@ -76,6 +75,7 @@ import {
   TAB_SIZE,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+  ApplicationTelemetry,
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
@@ -552,7 +552,7 @@ export abstract class QueryEditorStore {
       LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
       graphBuilderReportData,
     );
-    GraphManagerTelemetry.logEvent_GraphInitializationSucceeded(
+    ApplicationTelemetry.logEvent_GraphInitializationSucceeded(
       this.applicationStore.telemetryService,
       graphBuilderReportData,
     );

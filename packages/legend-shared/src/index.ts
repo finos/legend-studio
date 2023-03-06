@@ -33,10 +33,6 @@ export * from './format/ValidatorUtils.js';
 
 export * from './markdown/MarkdownUtils.js';
 
-export * from './communication/EventNotifierPlugin.js';
-export * from './communication/IframeEventNotifierPlugin.js';
-export * from './communication/TelemetryService.js';
-
 export * from './application/HashUtils.js';
 export * from './application/TestUtils.js';
 export * from './application/SerializationUtils.js';

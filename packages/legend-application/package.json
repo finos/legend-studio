@@ -87,6 +87,9 @@
   "publishConfig": {
     "directory": "build/publishContent"
   },
+  "extensions": {
+    "iframeEventNotifierPlugin": "@finos/legend-event-notifier-plugin-iframe"
+  },
   "typedoc": {
     "entryPoint": "./src/index.ts",
     "readmeFile": "./README.md"

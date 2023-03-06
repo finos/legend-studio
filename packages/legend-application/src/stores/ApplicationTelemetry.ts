@@ -14,23 +14,13 @@
  * limitations under the License.
  */
 
-import type { TelemetryService } from '@finos/legend-shared';
+import {
+  type GraphManagerOperationReport,
+  GRAPH_MANAGER_EVENT,
+} from '@finos/legend-graph';
 import { APPLICATION_EVENT } from './ApplicationEvent.js';
-
-type ApplicationLoaded_TelemetryData = {
-  application: {
-    name: string;
-    version: string;
-    env: string;
-  };
-  browser: {
-    userAgent: string;
-  };
-  screen: {
-    height: number;
-    width: number;
-  };
-};
+import type { GenericLegendApplicationStore } from './ApplicationStore.js';
+import type { TelemetryService } from './TelemetryService.js';
 
 type ApplicationContextAccessed_TelemetryData = {
   key: string;
@@ -40,15 +30,34 @@ type VirtualAssistantDocumentationEntryAccessed_TelemetryData = {
   key: string;
 };
 
+type GraphInitialized_TelemetryData = {
+  timings: Record<string, number>;
+  dependencies: GraphManagerOperationReport;
+  dependenciesCount: number;
+  graph: GraphManagerOperationReport;
+  generations?: GraphManagerOperationReport;
+  generationCount?: number;
+};
+
 export class ApplicationTelemetry {
   static logEvent_ApplicationInitializationSucceeded(
     telemetryService: TelemetryService,
-    data: ApplicationLoaded_TelemetryData,
+    applicationStore: GenericLegendApplicationStore,
   ): void {
-    telemetryService.logEvent(
-      APPLICATION_EVENT.APPLICATION_LOAD__SUCCESS,
-      data,
-    );
+    telemetryService.logEvent(APPLICATION_EVENT.APPLICATION_LOAD__SUCCESS, {
+      application: {
+        name: applicationStore.config.appName,
+        version: applicationStore.config.appVersion,
+        env: applicationStore.config.env,
+      },
+      browser: {
+        userAgent: navigator.userAgent,
+      },
+      screen: {
+        height: window.screen.height,
+        width: window.screen.width,
+      },
+    });
   }
 
   static logEvent_ApplicationContextAccessed(
@@ -67,6 +76,16 @@ export class ApplicationTelemetry {
   ): void {
     telemetryService.logEvent(
       APPLICATION_EVENT.VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY__ACCESS,
+      data,
+    );
+  }
+
+  static logEvent_GraphInitializationSucceeded(
+    telemetryService: TelemetryService,
+    data: GraphInitialized_TelemetryData,
+  ): void {
+    telemetryService.logEvent(
+      GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
       data,
     );
   }

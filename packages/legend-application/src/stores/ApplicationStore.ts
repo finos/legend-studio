@@ -17,13 +17,13 @@
 import {
   type SuperGenericFunction,
   TracerService,
-  TelemetryService,
   assertTrue,
   Log,
   LogEvent,
   assertErrorThrown,
   isString,
   ApplicationError,
+  uuid,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import { APPLICATION_EVENT } from './ApplicationEvent.js';
@@ -46,6 +46,7 @@ import {
   NOTIFCATION_SEVERITY,
 } from './NotificationService.js';
 import { UNKNOWN_USER_ID } from './IdentityService.js';
+import { TelemetryService } from './TelemetryService.js';
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
@@ -56,6 +57,9 @@ export class ApplicationStore<
   T extends LegendApplicationConfig,
   V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
 > {
+  readonly uuid = uuid();
+  readonly timestamp = Date.now();
+
   readonly config: T;
   readonly pluginManager: V;
 
@@ -141,7 +145,7 @@ export class ApplicationStore<
     this.telemetryService.registerPlugins(
       pluginManager.getTelemetryServicePlugins(),
     );
-    this.telemetryService.setUserId(this.currentUser);
+    this.setupTelemetryService();
     this.commandCenter = new CommandCenter(this);
     this.keyboardShortcutsService = new KeyboardShortcutsService(this);
     this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
@@ -152,6 +156,15 @@ export class ApplicationStore<
 
   TEMPORARY__setIsLightThemeEnabled(val: boolean): void {
     this.TEMPORARY__isLightThemeEnabled = val;
+  }
+
+  setupTelemetryService(): void {
+    this.telemetryService.setup({
+      userId: this.currentUser,
+      appName: this.config.appName,
+      appSessionId: this.uuid,
+      appStartTime: this.timestamp,
+    });
   }
 
   /**

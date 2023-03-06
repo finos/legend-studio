@@ -47,7 +47,7 @@ import {
   Workspace,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
-import { TAB_SIZE } from '@finos/legend-application';
+import { ApplicationTelemetry, TAB_SIZE } from '@finos/legend-application';
 import { ProjectData, resolveVersion } from '@finos/legend-server-depot';
 import {
   type WorkflowManagerState,
@@ -55,7 +55,6 @@ import {
   ProjectWorkflowManagerState,
 } from '../sidebar-state/WorkflowManagerState.js';
 import {
-  GraphManagerTelemetry,
   GRAPH_MANAGER_EVENT,
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
@@ -427,7 +426,7 @@ export class ProjectViewerStore {
         LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
         graphBuilderReportData,
       );
-      GraphManagerTelemetry.logEvent_GraphInitializationSucceeded(
+      ApplicationTelemetry.logEvent_GraphInitializationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         graphBuilderReportData,
       );
