@@ -1,5 +1,19 @@
 # @finos/legend-application-studio
 
+## 22.4.8
+
+### Patch Changes
+
+- [#1950](https://github.com/finos/legend-studio/pull/1950) [`0958b5eda`](https://github.com/finos/legend-studio/commit/0958b5edaafdbc043365e0391348760ecd4a32dd) ([@xannem](https://github.com/xannem)) - Add tab plugin extension for test runner tab.
+
+## 22.4.7
+
+## 22.4.6
+
+### Patch Changes
+
+- [#1946](https://github.com/finos/legend-studio/pull/1946) [`90230b9d9`](https://github.com/finos/legend-studio/commit/90230b9d9446c94badfc6825d38c0a00bd7c6028) ([@xannem](https://github.com/xannem)) - Add option to edit text of H2 database table in expanded modal.
+
 ## 22.4.5
 
 ### Patch Changes

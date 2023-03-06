@@ -48,12 +48,12 @@ import {
 } from './LegendTaxonomyDataSpaceViewerHelper.js';
 
 export class StandaloneDataSpaceViewerStore {
-  applicationStore: LegendTaxonomyApplicationStore;
-  depotServerClient: DepotServerClient;
-  graphManagerState: BasicGraphManagerState;
-  pluginManager: LegendTaxonomyPluginManager;
+  readonly applicationStore: LegendTaxonomyApplicationStore;
+  readonly depotServerClient: DepotServerClient;
+  readonly graphManagerState: BasicGraphManagerState;
+  readonly pluginManager: LegendTaxonomyPluginManager;
 
-  initState = ActionState.create();
+  readonly initState = ActionState.create();
   viewerState?: DataSpaceViewerState | undefined;
 
   constructor(
@@ -64,6 +64,7 @@ export class StandaloneDataSpaceViewerStore {
       viewerState: observable,
       initialize: flow,
     });
+
     this.applicationStore = applicationStore;
     this.depotServerClient = depotServerClient;
     this.graphManagerState = new BasicGraphManagerState(
@@ -127,6 +128,7 @@ export class StandaloneDataSpaceViewerStore {
 
       this.viewerState = new DataSpaceViewerState(
         this.applicationStore,
+        this.graphManagerState,
         groupId,
         artifactId,
         versionId,

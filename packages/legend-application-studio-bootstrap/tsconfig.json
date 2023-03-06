@@ -21,6 +21,7 @@
     { "path": "../legend-extension-dsl-persistence-cloud" },
     { "path": "../legend-extension-dsl-text" },
     { "path": "../legend-extension-format-json-schema" },
+    { "path": "../legend-extension-format-graphql" },
     { "path": "../legend-extension-format-morphir" },
     { "path": "../legend-extension-store-service-store" }
   ]

@@ -1,5 +1,23 @@
 # @finos/legend-extension-dsl-data-space
 
+## 9.0.46
+
+### Patch Changes
+
+- [#1971](https://github.com/finos/legend-studio/pull/1971) [`c5dadd9f0`](https://github.com/finos/legend-studio/commit/c5dadd9f0c1bb638f6a47d7d3f5dd418ea73118a) ([@xannem](https://github.com/xannem)) - Revert dataspace button
+
+## 9.0.45
+
+### Patch Changes
+
+- [#1927](https://github.com/finos/legend-studio/pull/1927) [`e351947ff`](https://github.com/finos/legend-studio/commit/e351947fffc792113128678a83721b89f51b2361) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Create a generic application plugin of dataspace.
+
+## 9.0.44
+
+### Patch Changes
+
+- [#1955](https://github.com/finos/legend-studio/pull/1955) [`e4e9f6450`](https://github.com/finos/legend-studio/commit/e4e9f64505822bbbc6d764242e333b5700d52ded) ([@xannem](https://github.com/xannem)) - Styling button fix.
+
 ## 9.0.43
 
 ### Patch Changes

@@ -237,6 +237,18 @@ export class XTerm extends Terminal {
           event.stopPropagation();
           this.searchConfig.focus();
           return false;
+        } else if (
+          // NOTE: by default Ctrl+C gets sent to the shell as you wouldn't be able to use bash otherwise.
+          // We need this special handling here for normal copy behavior on Windows.
+          // Paste (Ctrl+V) not working on Windows could also be due to the same reason, so we would not
+          // manually handle that using `xterm.onKey` neither
+          // See https://github.com/xtermjs/xterm.js/issues/1868
+          // See https://github.com/microsoft/vscode/issues/6451
+          (isMatchingKeyCombination(event, 'Control+KeyC') &&
+            this.instance.hasSelection()) ||
+          isMatchingKeyCombination(event, 'Control+KeyV')
+        ) {
+          return false;
         }
         return true; // return true to indicate the event should still be handled by xterm
       },
@@ -364,7 +376,6 @@ export class XTerm extends Terminal {
               ? this.computeCursorJumpMovement(true)
               : -1,
           );
-          // console.log('left', movement);
           this.instance.scrollLines(movement.scroll);
           this.instance.write(movement.seq);
         } else if (domEvent.code === 'ArrowRight') {
@@ -373,7 +384,6 @@ export class XTerm extends Terminal {
               ? this.computeCursorJumpMovement(false)
               : 1,
           );
-          // console.log('right', movement);
           this.instance.scrollLines(movement.scroll);
           this.instance.write(movement.seq);
         } else if (
@@ -879,5 +889,35 @@ export class XTerm extends Terminal {
       wholeWord: this.searchConfig.matchWholeWord,
       caseSensitive: this.searchConfig.matchCaseSensitive,
     });
+  }
+
+  private getContent(): string {
+    const buffer = this.instance.buffer.active;
+    const lines: string[] = [];
+
+    for (let i = 0; i < buffer.length; ++i) {
+      const line = guaranteeNonNullable(buffer.getLine(i));
+      lines.push(line.translateToString());
+    }
+
+    return lines.join('\n').trimEnd();
+  }
+
+  copy(): void {
+    if (!this.instance.hasSelection()) {
+      this.applicationStore.notifyWarning(
+        `Ther terminal has no selection to copy`,
+      );
+      return;
+    }
+    this.applicationStore
+      .copyTextToClipboard(this.instance.getSelection())
+      .catch(this.applicationStore.alertUnhandledError);
+  }
+
+  copyAll(): void {
+    this.applicationStore
+      .copyTextToClipboard(this.getContent())
+      .catch(this.applicationStore.alertUnhandledError);
   }
 }

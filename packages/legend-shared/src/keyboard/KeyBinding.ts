@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { uniqBy } from '../CommonUtils.js';
 import { guaranteeNonNullable } from '../error/AssertionUtils.js';
 
 /**
@@ -148,14 +149,21 @@ export function createKeybindingsHandler(
       return;
     }
 
-    Object.values(config)
-      .flatMap((entry) =>
-        entry.combinations.map((combination) => ({
-          combination,
-          handler: entry.handler,
-        })),
-      )
-      .filter((entry) => entry.combination.length)
+    // NOTE: create a flat collection of key combination to handler, make sure
+    // for each combination, only the first matching entry is considered,
+    // i.e. explicitly here, we don't handle multiple handling
+    // See https://github.com/finos/legend-studio/issues/1969
+    uniqBy(
+      Object.values(config)
+        .flatMap((entry) =>
+          entry.combinations.map((combination) => ({
+            combination,
+            handler: entry.handler,
+          })),
+        )
+        .filter((entry) => entry.combination.length),
+      (val) => val.combination,
+    )
       // here, we go through each hotkey combination, and:
       // 1. parse the key combination
       // 2. if the key combination is already part of the possible matches,

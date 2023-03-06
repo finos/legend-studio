@@ -135,6 +135,10 @@
     background: var(--color-light-grey-100);
     height: calc(100% - 2.8rem);
     overflow-y: auto;
+
+    &--dark {
+      color: var(--color-light-grey-50);
+    }
   }
 
   &__content--full {
@@ -257,6 +261,16 @@
 
       &--expand-width {
         justify-content: space-between;
+      }
+
+      &__label {
+        display: flex;
+      }
+
+      &__title {
+        display: flex;
+        margin-right: 1rem;
+        font-weight: 500;
       }
     }
   }

@@ -256,4 +256,7 @@ export abstract class Terminal extends Console {
   abstract clearSearch(): void;
   abstract findPrevious(): void;
   abstract findNext(): void;
+
+  abstract copy(): void;
+  abstract copyAll(): void;
 }

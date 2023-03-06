@@ -434,15 +434,14 @@ export class V1_Engine {
       : mainGraph;
     try {
       const stopWatch = new StopWatch();
-      await this.engineServerClient.compile(pureModelContextDataJson);
+      const compilationResult = await this.engineServerClient.compile(
+        pureModelContextDataJson,
+      );
       TEMPORARY__report.timings[
         GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS
       ] = stopWatch.elapsed;
 
       const model = V1_deserializePureModelContextData(mainGraph);
-      const compilationResult = await this.engineServerClient.compile(
-        pureModelContextDataJson,
-      );
       return {
         model,
         warnings: (

@@ -14,10 +14,35 @@
  * limitations under the License.
  */
 
-import type {
-  NotificationEventData,
-  EventNotifierPlugin,
+import {
+  AbstractPlugin,
+  type AbstractPluginManager,
 } from '@finos/legend-shared';
+
+// NOTE: here, we keep event data at a very generic shape
+// One of the main motivation of event notifier is Github web-hook
+// we would need to document event as well their event data
+// See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#webhook-payload-object-common-properties
+export interface NotificationEventData {
+  [key: string]: unknown;
+}
+
+export interface EventNotifierPluginManager extends AbstractPluginManager {
+  registerEventNotifierPlugin(plugin: EventNotifierPlugin): void;
+  getEventNotifierPlugins(): EventNotifierPlugin[];
+}
+
+export abstract class EventNotifierPlugin extends AbstractPlugin {
+  install(pluginManager: EventNotifierPluginManager): void {
+    pluginManager.registerEventNotifierPlugin(this);
+  }
+
+  /**
+   * NOTE: Similar to telemetry service, event notifier should be considered "fire and forget"
+   * it should not throw any error
+   */
+  abstract notify(event: string, data: NotificationEventData): void;
+}
 
 export class EventService {
   private notifierPlugins: EventNotifierPlugin[] = [];

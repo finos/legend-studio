@@ -52,6 +52,7 @@ import {
   V1_StaticDatasourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
+  V1_SpannerDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
@@ -162,6 +163,7 @@ enum V1_DatasourceSpecificationType {
   SNOWFLAKE = 'snowflake',
   REDSHIFT = 'redshift',
   BIGQUERY = 'bigQuery',
+  SPANNER = 'spanner',
 }
 
 const staticDatasourceSpecificationModelSchema = createModelSchema(
@@ -256,6 +258,18 @@ const bigqueryDatasourceSpecificationModelSchema = createModelSchema(
   },
 );
 
+const spannerDatasourceSpecificationModelSchema = createModelSchema(
+  V1_SpannerDatasourceSpecification,
+  {
+    _type: usingConstantValueSchema(V1_DatasourceSpecificationType.SPANNER),
+    databaseId: primitive(),
+    instanceId: primitive(),
+    projectId: primitive(),
+    proxyHost: optional(primitive()),
+    proxyPort: optional(primitive()),
+  },
+);
+
 export const V1_serializeDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
   plugins: PureProtocolProcessorPlugin[],
@@ -274,6 +288,8 @@ export const V1_serializeDatasourceSpecification = (
     return serialize(localH2DatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_RedshiftDatasourceSpecification) {
     return serialize(redshiftDatasourceSpecificationModelSchema, protocol);
+  } else if (protocol instanceof V1_SpannerDatasourceSpecification) {
+    return serialize(spannerDatasourceSpecificationModelSchema, protocol);
   }
   const extraConnectionDatasourceSpecificationProtocolSerializers =
     plugins.flatMap(
@@ -314,6 +330,8 @@ export const V1_deserializeDatasourceSpecification = (
       return deserialize(localH2DatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.REDSHIFT:
       return deserialize(redshiftDatasourceSpecificationModelSchema, json);
+    case V1_DatasourceSpecificationType.SPANNER:
+      return deserialize(spannerDatasourceSpecificationModelSchema, json);
     default: {
       const extraConnectionDatasourceSpecificationProtocolDeserializers =
         plugins.flatMap(

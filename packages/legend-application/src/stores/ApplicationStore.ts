@@ -17,13 +17,13 @@
 import {
   type SuperGenericFunction,
   TracerService,
-  TelemetryService,
   assertTrue,
   Log,
   LogEvent,
   assertErrorThrown,
   isString,
   ApplicationError,
+  uuid,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import { APPLICATION_EVENT } from './ApplicationEvent.js';
@@ -47,6 +47,8 @@ import {
 } from './NotificationService.js';
 import { UNKNOWN_USER_ID } from './IdentityService.js';
 import { StorageService } from './storage/StorageService.js';
+import { TelemetryService } from './TelemetryService.js';
+import { TimeService } from './TimeService.js';
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
@@ -57,25 +59,32 @@ export class ApplicationStore<
   T extends LegendApplicationConfig,
   V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
 > {
+  readonly uuid = uuid();
+
   readonly config: T;
   readonly pluginManager: V;
 
   // user
+  // TODO: if this ever gets more complicated, rename this to `IdentityService`
   currentUser = UNKNOWN_USER_ID;
 
   // navigation
+  // TODO: rename to `NavigationService`
+  // NOTE: as of now, we only support web environment, we will not use `Application
   readonly navigator: WebApplicationNavigator;
   readonly navigationContextService: ApplicationNavigationContextService;
 
   // storage
   storageService: StorageService;
-
-  // TODO: refactor this to `NotificationService` including notifications and alerts
+  
+  // TODO: refactor this to `NotificationService`
   notification?: Notification | undefined;
+
+  // TODO: refactor this to `AlertService`
   blockingAlertInfo?: BlockingAlertInfo | undefined;
   actionAlertInfo?: ActionAlertInfo | undefined;
 
-  // TODO: consider renaming this to `LogService`
+  // NOTE: consider renaming this to `LogService`
   readonly log = new Log();
   readonly terminalService: TerminalService;
 
@@ -83,7 +92,8 @@ export class ApplicationStore<
   readonly documentationService: DocumentationService;
   readonly assistantService: AssistantService;
 
-  // communication
+  // event & communication
+  readonly timeService = new TimeService();
   readonly eventService = new EventService();
   readonly telemetryService = new TelemetryService();
   readonly tracerService = new TracerService();
@@ -146,7 +156,7 @@ export class ApplicationStore<
     this.telemetryService.registerPlugins(
       pluginManager.getTelemetryServicePlugins(),
     );
-    this.telemetryService.setUserId(this.currentUser);
+    this.setupTelemetryService();
     this.commandCenter = new CommandCenter(this);
     this.keyboardShortcutsService = new KeyboardShortcutsService(this);
     this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
@@ -157,6 +167,15 @@ export class ApplicationStore<
 
   TEMPORARY__setIsLightThemeEnabled(val: boolean): void {
     this.TEMPORARY__isLightThemeEnabled = val;
+  }
+
+  setupTelemetryService(): void {
+    this.telemetryService.setup({
+      userId: this.currentUser,
+      appName: this.config.appName,
+      appSessionId: this.uuid,
+      // appStartTime: this.time timestamp,
+    });
   }
 
   /**

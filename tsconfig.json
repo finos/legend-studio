@@ -76,6 +76,9 @@
     {
       "path": "packages/legend-extension-format-morphir"
     },
+    {
+      "path": "packages/legend-extension-format-graphql"
+    },
     // fixtures
     {
       "path": "fixtures/legend-mock-server"

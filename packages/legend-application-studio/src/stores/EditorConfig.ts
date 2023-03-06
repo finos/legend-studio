@@ -21,6 +21,10 @@ export enum EDITOR_MODE {
   VIEWER = 'VIEWER',
 }
 
+export enum GLOBAL_TEST_RUNNER_TABS {
+  GLOBAL_TEST_RUNNER = 'Global Test Runner',
+}
+
 export enum ACTIVITY_MODE {
   EXPLORER = 'EXPLORER',
   LOCAL_CHANGES = 'LOCAL_CHANGES',

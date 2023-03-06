@@ -212,13 +212,6 @@ Service my::serviceWithTestSuiteWithMultipleTests
       ]
     }
   ]
-  test: Single
-  {
-    data: '';
-    asserts:
-    [
-    ];
-  }
 }
 
 Service my::serviceWithTestSuiteWithParams

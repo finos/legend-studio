@@ -858,11 +858,12 @@ export class MappingTestState extends MappingEditorTabState {
       }
       stopWatch.record(QUERY_BUILDER_EVENT.BUILD_EXECUTION_PLAN__SUCCESS);
 
-      report.timings = {
-        ...report.timings,
-        ...Object.fromEntries(stopWatch.records),
-        total: stopWatch.elapsed,
-      };
+      // report
+      report.timings =
+        this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
+          stopWatch,
+          report.timings,
+        );
       if (debug) {
         QueryBuilderTelemetry.logEvent_ExecutionPlanDebugSucceeded(
           this.editorStore.applicationStore.telemetryService,

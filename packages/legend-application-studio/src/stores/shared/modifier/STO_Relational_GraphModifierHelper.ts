@@ -44,6 +44,7 @@ import {
   type TableAlias,
   type Mapper,
   type PostProcessor,
+  type SpannerDatasourceSpecification,
   getRelationalInputType,
   observe_DatasourceSpecification,
   observe_AuthenticationStrategy,
@@ -377,7 +378,31 @@ export const bigQueryDatasourceSpecification_setProxyPort = action(
     spec.proxyPort = val;
   },
 );
-//
+export const spannerDatasourceSpecification_setProjectId = action(
+  (spec: SpannerDatasourceSpecification, val: string): void => {
+    spec.projectId = val;
+  },
+);
+export const spannerDatasourceSpecification_setInstanceId = action(
+  (spec: SpannerDatasourceSpecification, val: string): void => {
+    spec.instanceId = val;
+  },
+);
+export const spannerDatasourceSpecification_setDatabaseId = action(
+  (spec: SpannerDatasourceSpecification, val: string): void => {
+    spec.databaseId = val;
+  },
+);
+export const spannerDatasourceSpecification_setProxyHost = action(
+  (spec: SpannerDatasourceSpecification, val: string | undefined): void => {
+    spec.proxyHost = val;
+  },
+);
+export const spannerDatasourceSpecification_setProxyPort = action(
+  (spec: SpannerDatasourceSpecification, val: string | undefined): void => {
+    spec.proxyPort = val;
+  },
+);
 
 export const relationalInputData_setData = action(
   (input: RelationalInputData, value: string): void => {
