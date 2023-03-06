@@ -123,7 +123,7 @@ import {
   observe_TestSuite,
 } from './Testable_ObserverHelper.js';
 import type { MappingTestSuite } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
-import type { MappingTestData } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestData.js';
+import type { MappingStoreTestData } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestData.js';
 import { observe_EmbeddedData } from './DSL_Data_ObserverHelper.js';
 
 // ------------------------------------- Store -------------------------------------
@@ -140,8 +140,11 @@ export const observe_Abstract_Store = (metamodel: Store): void => {
 
 // ------------------------------------- TestSuite -----------------------------------
 
-export const observe_StoreTestData = skipObservedWithContext(
-  (metamodel: MappingTestData, context: ObserverContext): MappingTestData => {
+export const observe_MappingStoreTestData = skipObservedWithContext(
+  (
+    metamodel: MappingStoreTestData,
+    context: ObserverContext,
+  ): MappingStoreTestData => {
     makeObservable(metamodel, {
       store: observable,
       data: observable,
@@ -174,13 +177,13 @@ export const observe_MappingTestSuite = skipObservedWithContext(
     makeObservable(metamodel, {
       id: observable,
       tests: observable,
-      storeTestDatas: observable,
+      mappingStoreTestDatas: observable,
       hashCode: computed,
     });
 
     metamodel.tests.forEach((test) => observe_AtomicTest(test, context));
-    metamodel.storeTestDatas.forEach((testData) =>
-      observe_StoreTestData(testData, context),
+    metamodel.mappingStoreTestDatas.forEach((testData) =>
+      observe_MappingStoreTestData(testData, context),
     );
 
     return metamodel;

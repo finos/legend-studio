@@ -1470,7 +1470,7 @@ export const TEST_DATA__MappingTestSuiteRoundtrip = [
         {
           _type: 'mappingTestSuite',
           id: 'testSuite1',
-          storeTestDatas: [
+          mappingStoreTestDatas: [
             {
               data: {
                 _type: 'reference',

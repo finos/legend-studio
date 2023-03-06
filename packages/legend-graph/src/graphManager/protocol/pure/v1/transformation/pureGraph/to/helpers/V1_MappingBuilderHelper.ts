@@ -77,8 +77,8 @@ import { V1_MappingTest } from '../../../../model/packageableElements/mapping/V1
 import type { TestSuite } from '../../../../../../../../graph/metamodel/pure/test/Test.js';
 import { MappingTest } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
 import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
-import type { V1_MappingTestData } from '../../../../model/packageableElements/mapping/V1_MappingTestData.js';
-import { MappingTestData } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestData.js';
+import type { V1_MappingStoreTestData } from '../../../../model/packageableElements/mapping/V1_MappingTestData.js';
+import { MappingStoreTestData } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestData.js';
 import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
 import { ModelStore } from '../../../../../../../../DSL_Mapping_Exports.js';
 
@@ -209,20 +209,20 @@ export const V1_buildMappingInclude = (
   return includedMapping;
 };
 
-const buildStoreTestData = (
-  element: V1_MappingTestData,
+const buildMappingStoreTestData = (
+  element: V1_MappingStoreTestData,
   context: V1_GraphBuilderContext,
-): MappingTestData => {
-  const storeTestData = new MappingTestData();
+): MappingStoreTestData => {
+  const mappingStoreTestDatat = new MappingStoreTestData();
   if (element.store === ModelStore.NAME) {
-    storeTestData.store = PackageableElementExplicitReference.create(
+    mappingStoreTestDatat.store = PackageableElementExplicitReference.create(
       ModelStore.INSTANCE,
     );
   } else {
-    storeTestData.store = context.resolveStore(element.store);
+    mappingStoreTestDatat.store = context.resolveStore(element.store);
   }
-  storeTestData.data = V1_buildEmbeddedData(element.data, context);
-  return storeTestData;
+  mappingStoreTestDatat.data = V1_buildEmbeddedData(element.data, context);
+  return mappingStoreTestDatat;
 };
 
 export const V1_buildMappingTest = (
@@ -250,8 +250,8 @@ export const V1_buildMappingTestSuite = (
 ): MappingTestSuite => {
   const mappingTestSuite = new MappingTestSuite();
   mappingTestSuite.id = element.id;
-  mappingTestSuite.storeTestDatas = element.storeTestDatas.map((testData) =>
-    buildStoreTestData(testData, context),
+  mappingTestSuite.mappingStoreTestDatas = element.mappingStoreTestDatas.map(
+    (testData) => buildMappingStoreTestData(testData, context),
   );
   mappingTestSuite.tests = element.tests.map((test) =>
     V1_buildMappingTest(

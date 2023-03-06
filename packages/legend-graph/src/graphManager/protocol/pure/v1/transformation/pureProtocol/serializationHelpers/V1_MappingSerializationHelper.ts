@@ -118,7 +118,7 @@ import {
   V1_serializeTestSuite,
   V1_TestSuiteType,
 } from './V1_TestSerializationHelper.js';
-import { V1_MappingTestData } from '../../../model/packageableElements/mapping/V1_MappingTestData.js';
+import { V1_MappingStoreTestData } from '../../../model/packageableElements/mapping/V1_MappingTestData.js';
 import {
   V1_deserializeEmbeddedDataType,
   V1_serializeEmbeddedDataType,
@@ -859,10 +859,10 @@ const V1_mappingTestModelLegacySchema = createModelSchema(
   },
 );
 
-export const V1_storeTestDataModelSchema = (
+export const V1_mappingStoreTestDataModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_MappingTestData> =>
-  createModelSchema(V1_MappingTestData, {
+): ModelSchema<V1_MappingStoreTestData> =>
+  createModelSchema(V1_MappingStoreTestData, {
     data: custom(
       (val) => V1_serializeEmbeddedDataType(val, plugins),
       (val) => V1_deserializeEmbeddedDataType(val, plugins),
@@ -888,7 +888,9 @@ export const V1_mappingTestSuiteModelSchema = (
   createModelSchema(V1_MappingTestSuite, {
     _type: usingConstantValueSchema(V1_TestSuiteType.MAPPING_TEST_SUITE),
     id: primitive(),
-    storeTestDatas: usingModelSchema(V1_storeTestDataModelSchema(plugins)),
+    mappingStoreTestDatas: usingModelSchema(
+      V1_mappingStoreTestDataModelSchema(plugins),
+    ),
     tests: list(
       custom(
         (val) => V1_serializeAtomicTest(val, plugins),
