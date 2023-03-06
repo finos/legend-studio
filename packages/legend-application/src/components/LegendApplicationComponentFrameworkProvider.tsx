@@ -71,6 +71,8 @@ const buildHotkeysConfiguration = (
   });
 
   // Disable platform native keyboard shortcuts
+  // NOTE: due to the order in which hotkey configuration is searched and applied,
+  // we must place these after application hotkey configuration
   const PLATFORM_NATIVE_KEYBOARD_COMMAND =
     'INTERNAL__PLATFORM_NATIVE_KEYBOARD_COMMAND';
   keyMap[PLATFORM_NATIVE_KEYBOARD_COMMAND] = {
