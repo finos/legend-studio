@@ -509,6 +509,11 @@ export const setupPureLanguageService = (
     },
     {
       // disable cursor move (core command)
+      keybinding: KeyMod.WinCtrl | KeyCode.KeyD,
+      command: null,
+    },
+    {
+      // disable cursor move (core command)
       keybinding: KeyMod.WinCtrl | KeyCode.KeyP,
       command: null,
     },

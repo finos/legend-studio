@@ -800,10 +800,12 @@ export class MappingExecutionState extends MappingEditorTabState {
           ),
         );
 
-        report.timings = {
-          ...report.timings,
-          total: stopWatch.elapsed,
-        };
+        // report
+        report.timings =
+          this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
+            stopWatch,
+            report.timings,
+          );
         QueryBuilderTelemetry.logEvent_QueryRunSucceeded(
           this.editorStore.applicationStore.telemetryService,
           report,
@@ -890,11 +892,12 @@ export class MappingExecutionState extends MappingEditorTabState {
         }
         stopWatch.record(QUERY_BUILDER_EVENT.BUILD_EXECUTION_PLAN__SUCCESS);
 
-        report.timings = {
-          ...report.timings,
-          ...Object.fromEntries(stopWatch.records),
-          total: stopWatch.elapsed,
-        };
+        // report
+        report.timings =
+          this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
+            stopWatch,
+            report.timings,
+          );
         if (debug) {
           QueryBuilderTelemetry.logEvent_ExecutionPlanDebugSucceeded(
             this.editorStore.applicationStore.telemetryService,
