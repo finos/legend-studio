@@ -33,7 +33,7 @@ import {
   ExclamationTriangleIcon,
   PanelFormSection,
   PanelListItem,
-  ExternalLinkIcon,
+  QuestionCircleIcon,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -154,7 +154,9 @@ const ProjectStructureEditor = observer(
                   <DocumentationLink
                     className="panel__content__form__section__list__item__edit btn--right"
                     documentationKey={
-                      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
+                      // QUESTION_HOW_TO_DEFINE_A_CONSTRAINT
+                      // QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
+                      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_CONSTRAINT
                     }
                   />
                 )}
@@ -185,9 +187,9 @@ const ProjectStructureEditor = observer(
                 />
                 {isProjectGavChanged && (
                   <DocumentationLink
-                    className="panel__content__form__section__list__item__edit icon--right"
+                    className="panel__content__form__section__list__item__edit btn--right"
                     documentationKey={
-                      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
+                      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_CONSTRAINT
                     }
                   />
                 )}
@@ -432,12 +434,40 @@ export const ProjectConfigurationEditor = observer(() => {
   const updateGavConfigs = (): void => {
     const documentationEntry =
       applicationStore.documentationService.getDocEntry(
-        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES,
+        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_CONSTRAINT,
       );
 
     const actions = [
       {
-        label: 'Acknowledge and Proceed',
+        label: (
+          <>
+            Acknowledge and Proceed
+            {documentationEntry && (
+              <button
+                className="btn--right"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  event.preventDefault();
+                  if (
+                    shouldDisplayVirtualAssistantDocumentationEntry(
+                      documentationEntry,
+                    )
+                  ) {
+                    applicationStore.assistantService.openDocumentationEntry(
+                      documentationEntry._documentationKey,
+                    );
+                  } else if (documentationEntry.url) {
+                    applicationStore.navigator.visitAddress(
+                      documentationEntry.url,
+                    );
+                  }
+                }}
+              >
+                <QuestionCircleIcon />
+              </button>
+            )}
+          </>
+        ),
         type: ActionAlertActionType.PROCEED_WITH_CAUTION,
         handler: (): void => {
           editorStore.localChangesState.alertUnsavedChanges((): void => {
@@ -448,14 +478,7 @@ export const ProjectConfigurationEditor = observer(() => {
         },
       },
       documentationEntry && {
-        label: (
-          <>
-            View Instructions
-            <div className="btn--right">
-              <ExternalLinkIcon />
-            </div>
-          </>
-        ),
+        label: <>View Instructions</>,
         default: true,
         type: ActionAlertActionType.PROCEED,
         handler: (): void => {
@@ -463,7 +486,7 @@ export const ProjectConfigurationEditor = observer(() => {
             shouldDisplayVirtualAssistantDocumentationEntry(documentationEntry)
           ) {
             applicationStore.assistantService.openDocumentationEntry(
-              'grammar.class',
+              documentationEntry._documentationKey,
             );
           } else if (documentationEntry.url) {
             applicationStore.navigator.visitAddress(documentationEntry.url);

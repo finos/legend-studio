@@ -60,6 +60,10 @@
 
 .btn--right {
   margin-left: 0.5rem;
+
+  svg {
+    color: var(--color-light-grey-50);
+  }
 }
 
 .btn--important {
