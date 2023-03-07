@@ -24,31 +24,31 @@ import {
   isString,
   ApplicationError,
   uuid,
-} from '@finos/legend-shared';
-import { action, makeObservable, observable } from 'mobx';
-import { APPLICATION_EVENT } from './ApplicationEvent.js';
-import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
-import type { WebApplicationNavigator } from './WebApplicationNavigator.js';
-import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
-import { DocumentationService } from './DocumentationService.js';
-import { AssistantService } from './AssistantService.js';
-import { EventService } from './EventService.js';
-import { ApplicationNavigationContextService } from './ApplicationNavigationContextService.js';
-import type { LegendApplicationPlugin } from './LegendApplicationPlugin.js';
-import { CommandCenter } from './CommandCenter.js';
-import { KeyboardShortcutsService } from './KeyboardShortcutsService.js';
-import { TerminalService } from './TerminalService.js';
-import type { ActionAlertInfo, BlockingAlertInfo } from './AlertService.js';
+} from "@finos/legend-shared";
+import { action, makeObservable, observable } from "mobx";
+import { APPLICATION_EVENT } from "./ApplicationEvent.js";
+import type { LegendApplicationConfig } from "../application/LegendApplicationConfig.js";
+import type { WebApplicationNavigator } from "./WebApplicationNavigator.js";
+import type { LegendApplicationPluginManager } from "../application/LegendApplicationPluginManager.js";
+import { DocumentationService } from "./DocumentationService.js";
+import { AssistantService } from "./AssistantService.js";
+import { EventService } from "./EventService.js";
+import { ApplicationNavigationContextService } from "./ApplicationNavigationContextService.js";
+import type { LegendApplicationPlugin } from "./LegendApplicationPlugin.js";
+import { CommandCenter } from "./CommandCenter.js";
+import { KeyboardShortcutsService } from "./KeyboardShortcutsService.js";
+import { TerminalService } from "./TerminalService.js";
+import type { ActionAlertInfo, BlockingAlertInfo } from "./AlertService.js";
 import {
   Notification,
   type NotificationAction,
   DEFAULT_NOTIFICATION_HIDE_TIME,
   NOTIFCATION_SEVERITY,
-} from './NotificationService.js';
-import { UNKNOWN_USER_ID } from './IdentityService.js';
-import { StorageService } from './storage/StorageService.js';
-import { TelemetryService } from './TelemetryService.js';
-import { TimeService } from './TimeService.js';
+} from "./NotificationService.js";
+import { UNKNOWN_USER_ID } from "./IdentityService.js";
+import { StorageService } from "./storage/StorageService.js";
+import { TelemetryService } from "./TelemetryService.js";
+import { TimeService } from "./TimeService.js";
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
@@ -57,7 +57,7 @@ export type GenericLegendApplicationStore = ApplicationStore<
 
 export class ApplicationStore<
   T extends LegendApplicationConfig,
-  V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
+  V extends LegendApplicationPluginManager<LegendApplicationPlugin>
 > {
   readonly uuid = uuid();
 
@@ -76,7 +76,7 @@ export class ApplicationStore<
 
   // storage
   storageService: StorageService;
-  
+
   // TODO: refactor this to `NotificationService`
   notification?: Notification | undefined;
 
@@ -149,19 +149,19 @@ export class ApplicationStore<
     this.terminalService = new TerminalService(this);
 
     this.navigationContextService = new ApplicationNavigationContextService(
-      this,
+      this
     );
     this.documentationService = new DocumentationService(this);
     this.assistantService = new AssistantService(this);
     this.telemetryService.registerPlugins(
-      pluginManager.getTelemetryServicePlugins(),
+      pluginManager.getTelemetryServicePlugins()
     );
     this.setupTelemetryService();
     this.commandCenter = new CommandCenter(this);
     this.keyboardShortcutsService = new KeyboardShortcutsService(this);
     this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
     this.eventService.registerEventNotifierPlugins(
-      pluginManager.getEventNotifierPlugins(),
+      pluginManager.getEventNotifierPlugins()
     );
   }
 
@@ -203,7 +203,7 @@ export class ApplicationStore<
   setActionAlertInfo(alertInfo: ActionAlertInfo | undefined): void {
     if (this.actionAlertInfo && alertInfo) {
       this.notifyIllegalState(
-        'Action alert is stacked: new alert is invoked while another one is being displayed',
+        "Action alert is stacked: new alert is invoked while another one is being displayed"
       );
     }
     if (alertInfo) {
@@ -225,7 +225,7 @@ export class ApplicationStore<
   notify(
     message: string,
     actions?: NotificationAction[],
-    autoHideDuration?: number | null,
+    autoHideDuration?: number | null
   ): void {
     this.setNotification(
       new Notification(
@@ -234,15 +234,15 @@ export class ApplicationStore<
         actions ?? [],
         autoHideDuration === null
           ? undefined
-          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
-      ),
+          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME
+      )
     );
   }
 
   notifySuccess(
     message: string,
     actions?: NotificationAction[],
-    autoHideDuration?: number | null,
+    autoHideDuration?: number | null
   ): void {
     this.setNotification(
       new Notification(
@@ -251,15 +251,15 @@ export class ApplicationStore<
         actions ?? [],
         autoHideDuration === null
           ? undefined
-          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
-      ),
+          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME
+      )
     );
   }
 
   notifyWarning(
     content: string | Error,
     actions?: NotificationAction[],
-    autoHideDuration?: number | null,
+    autoHideDuration?: number | null
   ): void {
     this.setNotification(
       new Notification(
@@ -268,15 +268,15 @@ export class ApplicationStore<
         actions ?? [],
         autoHideDuration === null
           ? undefined
-          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
-      ),
+          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME
+      )
     );
   }
 
   notifyIllegalState(
     message: string,
     actions?: NotificationAction[],
-    autoHideDuration?: number | null,
+    autoHideDuration?: number | null
   ): void {
     this.setNotification(
       new Notification(
@@ -285,8 +285,8 @@ export class ApplicationStore<
         actions ?? [],
         autoHideDuration === null
           ? undefined
-          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
-      ),
+          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME
+      )
     );
   }
 
@@ -306,8 +306,8 @@ export class ApplicationStore<
           NOTIFCATION_SEVERITY.ERROR,
           message,
           actions ?? [],
-          undefined,
-        ),
+          undefined
+        )
       );
     }
   }
@@ -321,7 +321,7 @@ export class ApplicationStore<
    */
   notifyAndReturnAlternativeOnError = <U extends SuperGenericFunction, W>(
     fn: U,
-    alternative: W,
+    alternative: W
   ): ReturnType<U> | W | undefined => {
     try {
       return fn();
@@ -339,8 +339,8 @@ export class ApplicationStore<
   alertUnhandledError = (error: Error): void => {
     this.log.error(
       LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
-      'Encountered unhandled error in component tree',
-      error,
+      "Encountered unhandled error in component tree",
+      error
     );
     this.notifyIllegalState(error.message);
   };
