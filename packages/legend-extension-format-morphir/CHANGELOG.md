@@ -1,5 +1,7 @@
 # @finos/legend-extension-format-morphir
 
+## 1.0.50
+
 ## 1.0.49
 
 ## 1.0.48

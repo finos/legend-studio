@@ -90,7 +90,6 @@ import {
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
   GraphBuilderError,
-  GraphManagerTelemetry,
   DataElement,
   type PackageableElement,
   type CompilationWarning,
@@ -103,6 +102,7 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
+  ApplicationTelemetry,
   type TabState,
 } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
@@ -112,6 +112,7 @@ import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunner
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import { ExplorerTreeState } from './ExplorerTreeState.js';
 import { LegendStudioTelemetry } from './LegendStudioTelemetry.js';
+import { LEGEND_STUDIO_SETTINGS_KEY } from './LegendStudioStorage.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -150,7 +151,7 @@ export class EditorGraphState {
   private mostRecentTextModeCompilationGraphHash: string | undefined;
   private mostRecentFormModeCompilationGraphHash: string | undefined;
 
-  enableStrictMode = false;
+  enableStrictMode: boolean;
 
   constructor(editorStore: EditorStore) {
     makeObservable<
@@ -191,7 +192,10 @@ export class EditorGraphState {
     this.editorStore = editorStore;
     this.graphGenerationState = new GraphGenerationState(this.editorStore);
     this.enableStrictMode =
-      editorStore.applicationStore.config.options.enableGraphBuilderStrictMode;
+      this.editorStore.applicationStore.storageService.settingsStore.getBooleanValue(
+        LEGEND_STUDIO_SETTINGS_KEY.EDITOR_STRICT_MODE,
+        false,
+      );
   }
 
   get problems(): Problem[] {
@@ -399,11 +403,10 @@ export class EditorGraphState {
       // report
       stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
       const graphBuilderReportData = {
-        timings: {
-          [GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS]: stopWatch.getRecord(
-            GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
+        timings:
+          this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
+            stopWatch,
           ),
-        },
         dependencies: dependency_buildReport,
         dependenciesCount:
           this.editorStore.graphManagerState.graph.dependencyManager
@@ -412,12 +415,13 @@ export class EditorGraphState {
         generations: generation_buildReport,
         generationsCount: this.graphGenerationState.generatedEntities.size,
       };
-      this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
+      ApplicationTelemetry.logEvent_GraphInitializationSucceeded(
+        this.editorStore.applicationStore.telemetryService,
         graphBuilderReportData,
       );
-      GraphManagerTelemetry.logEvent_GraphInitializationSucceeded(
-        this.editorStore.applicationStore.telemetryService,
+
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
         graphBuilderReportData,
       );
 
@@ -632,7 +636,11 @@ export class EditorGraphState {
         }
       }
 
-      report.timings.total = stopWatch.elapsed;
+      report.timings =
+        this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
+          stopWatch,
+          report.timings,
+        );
       LegendStudioTelemetry.logEvent_GraphCompilationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         report,
@@ -805,12 +813,12 @@ export class EditorGraphState {
         ),
       );
 
-      report.timings = {
-        ...report.timings,
-        ...Object.fromEntries(stopWatch.records),
-        total: stopWatch.elapsed,
-      };
-      LegendStudioTelemetry.logEvent_GraphCompilationSucceeded(
+      report.timings =
+        this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
+          stopWatch,
+          report.timings,
+        );
+      LegendStudioTelemetry.logEvent_TextCompilationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         report,
       );

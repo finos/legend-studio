@@ -91,10 +91,11 @@ export class DataSpaceTaxonomyContext {
 }
 
 export class TaxonomyTreeNodeData implements TreeNodeData {
-  isSelected?: boolean | undefined;
-  isOpen?: boolean | undefined;
   readonly label: string;
   readonly id: string;
+
+  isSelected?: boolean | undefined;
+  isOpen?: boolean | undefined;
   taxonomyData?: TaxonomyNodeData | undefined;
   childrenIds: string[] = [];
   dataSpaceTaxonomyContexts: DataSpaceTaxonomyContext[] = [];
@@ -110,22 +111,22 @@ export class TaxonomyTreeNodeData implements TreeNodeData {
 }
 
 export class TaxonomyExplorerStore implements CommandRegistrar {
-  applicationStore: LegendTaxonomyApplicationStore;
-  depotServerClient: DepotServerClient;
-  taxonomyServerClient: TaxonomyServerClient;
-  graphManagerState: BasicGraphManagerState;
-  pluginManager: LegendTaxonomyPluginManager;
+  readonly applicationStore: LegendTaxonomyApplicationStore;
+  readonly depotServerClient: DepotServerClient;
+  readonly taxonomyServerClient: TaxonomyServerClient;
+  readonly graphManagerState: BasicGraphManagerState;
+  readonly pluginManager: LegendTaxonomyPluginManager;
 
-  sideBarDisplayState = new PanelDisplayState({
+  readonly sideBarDisplayState = new PanelDisplayState({
     initial: 300,
     default: 300,
     snap: 150,
   });
-  searchTaxonomyNodeCommandState = new NonBlockingDialogState();
+  readonly searchTaxonomyNodeCommandState = new NonBlockingDialogState();
 
-  initState = ActionState.create();
+  readonly initState = ActionState.create();
+  readonly dataSpaceIndex = new Map<string, DataSpaceTaxonomyContext>();
 
-  dataSpaceIndex = new Map<string, DataSpaceTaxonomyContext>();
   treeData?: TreeData<TaxonomyTreeNodeData> | undefined;
 
   initialTaxonomyPath?: string | undefined;
@@ -145,6 +146,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
       internalizeDataSpacePath: action,
       initialize: flow,
     });
+
     this.applicationStore = applicationStore;
     this.taxonomyServerClient = taxonomyServerClient;
     this.depotServerClient = depotServerClient;

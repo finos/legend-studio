@@ -68,6 +68,8 @@ export class TextSearchState {
   readonly editorStore: EditorStore;
   readonly loadState = ActionState.create();
 
+  private searchInput?: HTMLInputElement | undefined;
+
   text = '';
   isCaseSensitive = false;
   isRegExp = false;
@@ -87,6 +89,14 @@ export class TextSearchState {
     });
 
     this.editorStore = editorStore;
+  }
+
+  setSearchInput(el: HTMLInputElement | undefined): void {
+    this.searchInput = el;
+  }
+
+  focus(): void {
+    this.searchInput?.focus();
   }
 
   *search(): GeneratorFn<void> {

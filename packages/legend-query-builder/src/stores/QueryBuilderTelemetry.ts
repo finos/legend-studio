@@ -15,7 +15,7 @@
  */
 
 import type { GraphManagerOperationReport } from '@finos/legend-graph';
-import type { TelemetryService } from '@finos/legend-shared';
+import type { TelemetryService } from '@finos/legend-application';
 import { QUERY_BUILDER_EVENT } from './QueryBuilderEvent.js';
 
 type LaunchQueryExecution_TelemteryData = {

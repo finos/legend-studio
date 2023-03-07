@@ -28,6 +28,7 @@ import {
   type KeyBindingConfig,
 } from '@finos/legend-shared';
 import { VirtualAssistant } from './VirtualAssistant.js';
+import { ApplicationTelemetry } from '../stores/ApplicationTelemetry.js';
 
 const APP_CONTAINER_ID = 'app.container';
 const APP_BACKDROP_CONTAINER_ID = 'app.backdrop-container';
@@ -37,27 +38,27 @@ const PLATFORM_NATIVE_KEYBOARD_SHORTCUTS = [
   'Control+KeyP',
   'Meta+KeyS', // Save
   'Control+KeyS',
+
   'F8', // Chrome: Developer Tools > Sources: Run or pause script
   'F10', // Chrome: Developer Tools > Sources: Step over next function call
   'F11', // Chrome: Developer Tools > Sources: Step into next function call
   'Meta+Shift+KeyP', // Chrome: Developer Tools: Open Command Prompt inside developer tools
   'Control+Backquote', // Chrome: Developer Tools: Open console
-  'Control+Shift+KeyP',
+  'Control+Shift+KeyN', // Chrome: Open Private Browsing (incognito)
+
+  'Control+Shift+KeyP', // Firefox: Open Private Browsing
   'Meta+KeyB', // Firefox: Open bookmark sidebar
   'Control+KeyB',
   'F7', // Firefox: Caret browsing
   'Alt+F7', // Firefox: Caret browsing (Mac)
   'Control+Shift+KeyB',
+
   'Alt+KeyZ', // Mac: special symbol
 ];
 
 const buildHotkeysConfiguration = (
   commandKeyMap: Map<string, string[]>,
-  handler: (
-    commandKey: string,
-    keyCombination: string,
-    event: KeyboardEvent,
-  ) => void,
+  handler: (keyCombination: string, event: KeyboardEvent) => void,
 ): KeyBindingConfig => {
   const keyMap: KeyBindingConfig = {};
   commandKeyMap.forEach((keyCombinations, commandKey) => {
@@ -70,15 +71,13 @@ const buildHotkeysConfiguration = (
   });
 
   // Disable platform native keyboard shortcuts
+  // NOTE: due to the order in which hotkey configuration is searched and applied,
+  // we must place these after application hotkey configuration
   const PLATFORM_NATIVE_KEYBOARD_COMMAND =
     'INTERNAL__PLATFORM_NATIVE_KEYBOARD_COMMAND';
   keyMap[PLATFORM_NATIVE_KEYBOARD_COMMAND] = {
     combinations: PLATFORM_NATIVE_KEYBOARD_SHORTCUTS,
-    handler: (
-      commandKey: string,
-      keyCombination: string,
-      event: KeyboardEvent,
-    ) => {
+    handler: (keyCombination: string, event: KeyboardEvent) => {
       // prevent default from potentially clashing key combinations
       event.preventDefault();
     },
@@ -124,7 +123,7 @@ export const LegendApplicationComponentFrameworkProvider = observer(
 
     const keyBindingMap = buildHotkeysConfiguration(
       applicationStore.keyboardShortcutsService.commandKeyMap,
-      (commandKey: string, keyCombination: string, event: KeyboardEvent) => {
+      (keyCombination: string, event: KeyboardEvent) => {
         // prevent default from potentially clashing key combinations with platform native keyboard shortcuts
         // NOTE: Though tempting since it's a good way to simplify and potentially avoid conflicts,
         // we should not call `preventDefault()` because if we have any hotkey sequence which is too short,
@@ -133,10 +132,7 @@ export const LegendApplicationComponentFrameworkProvider = observer(
         if (PLATFORM_NATIVE_KEYBOARD_SHORTCUTS.includes(keyCombination)) {
           event.preventDefault();
         }
-        applicationStore.keyboardShortcutsService.dispatch(
-          commandKey,
-          keyCombination,
-        );
+        applicationStore.keyboardShortcutsService.dispatch(keyCombination);
       },
     );
 
@@ -147,6 +143,29 @@ export const LegendApplicationComponentFrameworkProvider = observer(
         document.removeEventListener('keydown', onKeyEvent);
       };
     }, [keyBindingMap]);
+
+    /**
+     * Keep track of when the application usage is interrupted (e.g. when the app window/tab is not in focus),
+     * since for certain platform, background contexts are de-prioritized, given less resources, and hence, would
+     * run less performantly; and might require particular handlings.
+     *
+     * See https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API#policies_in_place_to_aid_background_page_performance
+     * See https://plumbr.io/blog/performance-blog/background-tabs-in-browser-load-20-times-slower
+     */
+    useEffect(() => {
+      const onVisibilityChange = (): void => {
+        if (document.hidden) {
+          ApplicationTelemetry.logEvent_ApplicationUsageInterrupted(
+            applicationStore.telemetryService,
+          );
+          applicationStore.timeService.recordUsageInterruption();
+        }
+      };
+      document.addEventListener('visibilitychange', onVisibilityChange);
+      return () => {
+        document.removeEventListener('visibilitychange', onVisibilityChange);
+      };
+    }, [applicationStore]);
 
     return (
       <LegendStyleProvider>

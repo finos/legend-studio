@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 23.0.3
+
+### Patch Changes
+
+- [#1963](https://github.com/finos/legend-studio/pull/1963) [`1fbccf052`](https://github.com/finos/legend-studio/commit/1fbccf052b7e2048f54e089ffb3f7848e434a9fe) ([@gayathrir11](https://github.com/gayathrir11)) - Fix calling `compile` api twice for compilation.
+
 ## 23.0.2
 
 ## 23.0.1

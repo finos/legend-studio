@@ -47,7 +47,8 @@ export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
 
 export class DataSpaceViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
-  graphManagerState: BasicGraphManagerState;
+  readonly graphManagerState: BasicGraphManagerState;
+
   groupId: string;
   artifactId: string;
   versionId: string;
@@ -57,6 +58,7 @@ export class DataSpaceViewerState {
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_OVERVIEW;
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
+
   viewProject: (
     groupId: string,
     artifactId: string,

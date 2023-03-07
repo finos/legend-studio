@@ -126,29 +126,14 @@ export class LegendStudioBaseStore {
       }
 
       // setup telemetry service
-      this.applicationStore.telemetryService.setUserId(
-        this.applicationStore.currentUser,
-      );
+      this.applicationStore.setupTelemetryService();
     } else {
       this.isSDLCAuthorized = undefined;
     }
 
     ApplicationTelemetry.logEvent_ApplicationInitializationSucceeded(
       this.applicationStore.telemetryService,
-      {
-        application: {
-          name: this.applicationStore.config.appName,
-          version: this.applicationStore.config.appVersion,
-          env: this.applicationStore.config.env,
-        },
-        browser: {
-          userAgent: navigator.userAgent,
-        },
-        screen: {
-          height: window.screen.height,
-          width: window.screen.width,
-        },
-      },
+      this.applicationStore,
     );
 
     LegendStudioEventService.create(

@@ -565,11 +565,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
 
       buildState.pass();
+
+      const totalTime = stopWatch.elapsed;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
-        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]:
-          stopWatch.elapsed,
-        total: stopWatch.elapsed,
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]: totalTime,
+        total: totalTime,
       };
     } catch (error) {
       assertErrorThrown(error);
@@ -654,11 +655,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
 
       buildState.pass();
+
+      const totalTime = stopWatch.elapsed;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
-        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]:
-          stopWatch.elapsed,
-        total: stopWatch.elapsed,
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]: totalTime,
+        total: totalTime,
       };
     } catch (error) {
       assertErrorThrown(error);
@@ -736,11 +738,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
 
       buildState.pass();
+
+      const totalTime = stopWatch.elapsed;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
-        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]:
-          stopWatch.elapsed,
-        total: stopWatch.elapsed,
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]: totalTime,
+        total: totalTime,
       };
     } catch (error) {
       assertErrorThrown(error);
@@ -817,11 +820,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
 
       buildState.pass();
+
+      const totalTime = stopWatch.elapsed;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
-        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]:
-          stopWatch.elapsed,
-        total: stopWatch.elapsed,
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]: totalTime,
+        total: totalTime,
       };
     } catch (error) {
       assertErrorThrown(error);
@@ -901,11 +905,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
 
       buildState.pass();
+
+      const totalTime = stopWatch.elapsed;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
-        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]:
-          stopWatch.elapsed,
-        total: stopWatch.elapsed,
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]: totalTime,
+        total: totalTime,
       };
     } catch (error) {
       assertErrorThrown(error);

@@ -17,10 +17,19 @@
 import {
   AbstractPlugin,
   type AbstractPluginManager,
-} from '../application/AbstractPluginManager.js';
-import type { PlainObject } from '../CommonUtils.js';
+  type PlainObject,
+} from '@finos/legend-shared';
 
 export type TelemetryData = PlainObject;
+
+type ApplicationTelemetryConfigData = {
+  userId?: string | undefined;
+  appName?: string | undefined;
+  appVersion?: string | undefined;
+  appEnv?: string | undefined;
+  appSessionId?: string | undefined;
+  appStartTime?: number | undefined;
+};
 
 export interface TelemetryServicePluginManager extends AbstractPluginManager {
   getTelemetryServicePlugins(): TelemetryServicePlugin[];
@@ -28,15 +37,25 @@ export interface TelemetryServicePluginManager extends AbstractPluginManager {
 }
 
 export abstract class TelemetryServicePlugin extends AbstractPlugin {
+  protected userId?: string | undefined;
+  protected appName?: string | undefined;
+  protected appVersion?: string | undefined;
+  protected appEnv?: string | undefined;
+  protected appSessionId?: string | undefined;
+  protected appStartTime?: number | undefined;
+
   install(pluginManager: TelemetryServicePluginManager): void {
     pluginManager.registerTelemetryServicePlugin(this);
   }
 
-  /**
-   * Certain telemetry service needs the user ID set in order to derive more information of the user
-   * from directory service in the telemetry server.
-   */
-  abstract setUserId(val: string): TelemetryServicePlugin;
+  setup(config: ApplicationTelemetryConfigData): void {
+    this.userId = config.userId;
+    this.appName = config.appName;
+    this.appVersion = config.appVersion;
+    this.appEnv = config.appEnv;
+    this.appSessionId = config.appSessionId;
+    this.appStartTime = config.appStartTime;
+  }
 
   /**
    * NOTE: However the telemetry server is configured,
@@ -53,8 +72,8 @@ export class TelemetryService {
     this.plugins = plugins;
   }
 
-  setUserId(val: string): void {
-    this.plugins.forEach((plugin) => plugin.setUserId(val));
+  setup(config: ApplicationTelemetryConfigData): void {
+    this.plugins.forEach((plugin) => plugin.setup(config));
   }
 
   logEvent(eventType: string, data: TelemetryData): void {

@@ -15,7 +15,7 @@
  */
 
 import type { GraphManagerOperationReport } from '@finos/legend-graph';
-import type { TelemetryService } from '@finos/legend-shared';
+import type { TelemetryService } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 
 type Compilation_TelemetryData = GraphManagerOperationReport & {

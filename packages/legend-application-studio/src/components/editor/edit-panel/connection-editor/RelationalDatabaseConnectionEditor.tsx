@@ -80,6 +80,7 @@ import {
   RedshiftDatasourceSpecification,
   PackageableElementExplicitReference,
   MapperPostProcessor,
+  SpannerDatasourceSpecification,
 } from '@finos/legend-graph';
 import type { LegendStudioApplicationPlugin } from '../../../../stores/LegendStudioApplicationPlugin.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../../stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
@@ -132,6 +133,11 @@ import {
   snowflakePublicAuthenticationStrategy_setPassPhraseVaultReference,
   snowflakePublicAuthenticationStrategy_setPrivateKeyVaultReference,
   snowflakePublicAuthenticationStrategy_setPublicUserName,
+  spannerDatasourceSpecification_setDatabaseId,
+  spannerDatasourceSpecification_setProxyHost,
+  spannerDatasourceSpecification_setInstanceId,
+  spannerDatasourceSpecification_setProxyPort,
+  spannerDatasourceSpecification_setProjectId,
   staticDatasourceSpecification_setDatabaseName,
   staticDatasourceSpecification_setHost,
   staticDatasourceSpecification_setPort,
@@ -614,6 +620,70 @@ const BigQueryDatasourceSpecificationEditor = observer(
               sourceSpec,
               value ?? '',
             )
+          }
+        />
+      </>
+    );
+  },
+);
+
+const SpannerDatasourceSpecificationEditor = observer(
+  (props: {
+    sourceSpec: SpannerDatasourceSpecification;
+    isReadOnly: boolean;
+  }) => {
+    const { sourceSpec, isReadOnly } = props;
+    return (
+      <>
+        <PanelFormTextField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.projectId}
+          name="project id"
+          prompt="Your Google Cloud Platform (GCP) project identifier"
+          update={(value: string | undefined): void =>
+            spannerDatasourceSpecification_setProjectId(sourceSpec, value ?? '')
+          }
+        />
+        <PanelFormTextField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.instanceId}
+          name="instance id"
+          prompt="Spanner instance identifier in Google Cloud Platform (GCP)"
+          update={(value: string | undefined): void =>
+            spannerDatasourceSpecification_setInstanceId(
+              sourceSpec,
+              value ?? '',
+            )
+          }
+        />
+        <PanelFormTextField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.databaseId}
+          name="database id"
+          prompt="Spanner database identifier"
+          update={(value: string | undefined): void =>
+            spannerDatasourceSpecification_setDatabaseId(
+              sourceSpec,
+              value ?? '',
+            )
+          }
+        />
+        <PanelFormTextField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.proxyHost}
+          name="proxyHost"
+          prompt="Specifies the connection host. Leave blank to use GCP defaults"
+          update={(value: string | undefined): void =>
+            spannerDatasourceSpecification_setProxyHost(sourceSpec, value ?? '')
+          }
+        />
+        <PanelFormTextField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.proxyPort}
+          name="proxyPort"
+          prompt="Specifies the connection port. Leave blank to use GCP defaults"
+          update={(value: string | undefined): void =>
+            spannerDatasourceSpecification_setProxyPort(sourceSpec, value ?? '')
           }
         />
       </>
@@ -1230,6 +1300,13 @@ const renderDatasourceSpecificationEditor = (
         isReadOnly={isReadOnly}
       />
     );
+  } else if (sourceSpec instanceof SpannerDatasourceSpecification) {
+    return (
+      <SpannerDatasourceSpecificationEditor
+        sourceSpec={sourceSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
   } else {
     const extraDatasourceSpecificationEditorRenderers = plugins.flatMap(
       (plugin) =>
@@ -1324,7 +1401,6 @@ const renderAuthenticationStrategyEditor = (
     return null;
   }
 };
-
 const RelationalConnectionGeneralEditor = observer(
   (props: {
     connectionValueState: RelationalDatabaseConnectionValueState;

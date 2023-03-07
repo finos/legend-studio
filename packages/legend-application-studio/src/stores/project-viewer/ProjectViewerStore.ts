@@ -47,7 +47,7 @@ import {
   Workspace,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
-import { TAB_SIZE } from '@finos/legend-application';
+import { ApplicationTelemetry, TAB_SIZE } from '@finos/legend-application';
 import { ProjectData, resolveVersion } from '@finos/legend-server-depot';
 import {
   type WorkflowManagerState,
@@ -55,7 +55,6 @@ import {
   ProjectWorkflowManagerState,
 } from '../sidebar-state/WorkflowManagerState.js';
 import {
-  GraphManagerTelemetry,
   GRAPH_MANAGER_EVENT,
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
@@ -412,23 +411,23 @@ export class ProjectViewerStore {
       // report
       stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
       const graphBuilderReportData = {
-        timings: {
-          [GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS]: stopWatch.getRecord(
-            GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
+        timings:
+          this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
+            stopWatch,
           ),
-        },
         dependencies: dependency_buildReport,
         dependenciesCount:
           this.editorStore.graphManagerState.graph.dependencyManager
             .numberOfDependencies,
         graph: graph_buildReport,
       };
-      this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
+      ApplicationTelemetry.logEvent_GraphInitializationSucceeded(
+        this.editorStore.applicationStore.telemetryService,
         graphBuilderReportData,
       );
-      GraphManagerTelemetry.logEvent_GraphInitializationSucceeded(
-        this.editorStore.applicationStore.telemetryService,
+
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
         graphBuilderReportData,
       );
 

@@ -39,5 +39,7 @@ export enum APPLICATION_EVENT {
 
   APPLICATION_CONTEXT__ACCESS = 'application.context.access',
 
+  APPLICATION_USAGE__INTERRUPT = 'application.usage.interrupt',
+
   VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY__ACCESS = 'application.virtual-assistant.documentation-entry.access',
 }

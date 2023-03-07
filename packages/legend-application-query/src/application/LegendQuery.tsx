@@ -20,9 +20,9 @@ import {
   ApplicationStoreProvider,
   LegendApplication,
   setupLegendApplicationUILibrary,
-  WebApplicationNavigatorProvider,
   type LegendApplicationConfigurationInput,
   BrowserRouter,
+  WebApplicationNavigatorProvider,
 } from '@finos/legend-application';
 import { LegendQueryApplication } from '../components/LegendQueryApplication.js';
 import { LegendQueryPluginManager } from './LegendQueryPluginManager.js';

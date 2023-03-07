@@ -245,7 +245,7 @@ export const ActivityBar = observer(() => {
     },
     !editorStore.isInConflictResolutionMode && {
       mode: ACTIVITY_MODE.GLOBAL_TEST_RUNNER,
-      title: 'Global Test Runner',
+      title: 'Test Runner',
       icon: <FlaskIcon />,
     },
     !editorStore.isInConflictResolutionMode && {

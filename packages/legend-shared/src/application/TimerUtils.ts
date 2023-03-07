@@ -16,17 +16,24 @@
 
 import { guaranteeNonNullable } from '../error/AssertionUtils.js';
 
+export type TimingsRecord = {
+  [key: string]: number;
+  /**
+   * Number of interruptions ocurred during the record
+   */
+  __numberOfInteruptions?: number;
+  total: number;
+};
+
 export class StopWatch {
   private _startTime = Date.now();
   private _time = this._startTime;
   private _records = new Map<string, number>();
-  private _elapsed = 0;
 
   record(event?: string | undefined): void {
     const currentTime = Date.now();
     const duration = currentTime - this._time;
     this._time = currentTime;
-    this._elapsed = currentTime - this._startTime;
     if (event) {
       this._records.set(event, duration);
     }
@@ -39,8 +46,12 @@ export class StopWatch {
     );
   }
 
+  get startTime(): number {
+    return this._startTime;
+  }
+
   get elapsed(): number {
-    return this._elapsed;
+    return Date.now() - this._startTime;
   }
 
   get records(): Map<string, number> {

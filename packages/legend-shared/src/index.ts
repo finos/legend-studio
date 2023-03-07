@@ -33,21 +33,17 @@ export * from './format/ValidatorUtils.js';
 
 export * from './markdown/MarkdownUtils.js';
 
-export * from './communication/EventNotifierPlugin.js';
-export * from './communication/IframeEventNotifierPlugin.js';
-export * from './communication/TelemetryService.js';
-
 export * from './application/HashUtils.js';
 export * from './application/TestUtils.js';
 export * from './application/SerializationUtils.js';
 export * from './application/RandomizerUtils.js';
 export * from './application/ActionState.js';
-export * from './application/StopWatch.js';
+export * from './application/TimerUtils.js';
 export * from './application/AbstractPluginManager.js';
 export * from './application/BrowserUtils.js';
 
 export * from './data-structure/Pair.js';
 export * from './data-structure/Stack.js';
 
-export * from './log/Logger.js';
+export * from './log/LogService.js';
 export * from './log/WebConsole.js';

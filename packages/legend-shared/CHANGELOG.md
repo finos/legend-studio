@@ -1,5 +1,15 @@
 # @finos/legend-shared
 
+## 7.0.0
+
+### Major Changes
+
+- [#1973](https://github.com/finos/legend-studio/pull/1973) [`830934048`](https://github.com/finos/legend-studio/commit/8309340482c7a1aa21fedbd90063cd0c521a5ddf) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Moved `EventNotifierService` and `TelemetryService` to `@finos/legend-application` and reshaped `TelemetryService` as well as `TelemetryServicePlugin` to take a `setup()` method for instead of just allowing setting the user ID via `setUserId()`.
+
+### Patch Changes
+
+- [#1973](https://github.com/finos/legend-studio/pull/1973) [`830934048`](https://github.com/finos/legend-studio/commit/8309340482c7a1aa21fedbd90063cd0c521a5ddf) ([@akphi](https://github.com/akphi)) - Fix a bug with `StopWatch` elapsed is not properly calculated.
+
 ## 6.2.23
 
 ### Patch Changes
