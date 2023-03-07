@@ -388,6 +388,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   initializeWithQuery(query: RawLambda): void {
     this.resetQueryParameterContent();
     this.rebuildWithQuery(query);
+    this.resetQueryResult();
     this.changeDetectionState.initialize(query);
   }
 
@@ -398,6 +399,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     try {
       this.resetQueryResult();
       this.resetQueryBodyContent();
+      this.resetQueryContent();
 
       if (!isStubbed_RawLambda(query)) {
         const valueSpec = observe_ValueSpecification(
@@ -426,6 +428,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       assertErrorThrown(error);
       this.resetQueryBodyContent();
       this.resetQueryResult();
+      this.resetQueryContent();
       this.unsupportedQueryState.setLambdaError(error);
       this.unsupportedQueryState.setRawLambda(query);
       this.setClass(undefined);
