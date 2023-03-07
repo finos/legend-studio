@@ -49,6 +49,7 @@ export enum DatabaseType {
   Redshift = 'Redshift',
   BigQuery = 'BigQuery',
   Spanner = 'Spanner',
+  Trino = 'Trino'
 }
 
 export abstract class DatabaseConnection extends Connection {
