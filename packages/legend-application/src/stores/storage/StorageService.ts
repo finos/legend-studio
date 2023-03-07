@@ -29,15 +29,16 @@ type StoredValue = object | string | number | boolean;
 
 class StorageStore {
   readonly storeIndex;
-  readonly storageService!: StorageService;
+  readonly storageService: StorageService;
   private readonly data!: Record<PropertyKey, StoredValue>;
 
-  constructor(storeIndex: string) {
+  constructor(storageService: StorageService, storeIndex: string) {
+    this.storageService = storageService;
     this.storeIndex = storeIndex;
-    const storage = this.storageService.storage.getItem(this.storeIndex);
+    const store = this.storageService.storage.getItem(this.storeIndex);
 
-    if (storage) {
-      const data = JSON.parse(storage) as Record<PropertyKey, StoredValue>;
+    if (store) {
+      const data = JSON.parse(store) as Record<PropertyKey, StoredValue>;
       this.data = data;
     } else {
       this.data = {};
@@ -81,6 +82,9 @@ export class StorageService {
   constructor(applicationStore: GenericLegendApplicationStore) {
     this.applicationStore = applicationStore;
     this.storage = new LocalStorage();
-    this.settingsStore = new StorageStore(APPLICATION_SETTINGS_STORAGE_KEY);
+    this.settingsStore = new StorageStore(
+      this,
+      APPLICATION_SETTINGS_STORAGE_KEY,
+    );
   }
 }
