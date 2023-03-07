@@ -15,7 +15,7 @@
  */
 
 import { useEffect } from 'react';
-import { prettyCONSTName } from '@finos/legend-shared';
+import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
   ProjectConfigurationEditorState,
@@ -435,68 +435,46 @@ export const ProjectConfigurationEditor = observer(() => {
         LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES,
       );
 
-    const actions = documentationEntry
-      ? [
-          {
-            label: 'Acknowledge and Proceed',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: (): void => {
-              editorStore.localChangesState.alertUnsavedChanges((): void => {
-                flowResult(configState.updateConfigs()).catch(
-                  applicationStore.alertUnhandledError,
-                );
-              });
-            },
-          },
-          {
-            label: '',
-            content: (
-              <>
-                View Instructions
-                <div className="btn--right">
-                  <ExternalLinkIcon />
-                </div>
-              </>
-            ),
-            default: true,
-            type: ActionAlertActionType.PROCEED,
-            handler: (): void => {
-              if (
-                shouldDisplayVirtualAssistantDocumentationEntry(
-                  documentationEntry,
-                )
-              ) {
-                applicationStore.assistantService.openDocumentationEntry(
-                  'grammar.class',
-                );
-              } else if (documentationEntry.url) {
-                applicationStore.navigator.visitAddress(documentationEntry.url);
-              }
-            },
-          },
-          {
-            label: 'Cancel',
-            type: ActionAlertActionType.PROCEED,
-          },
-        ]
-      : [
-          {
-            label: 'Acknowledge and Proceed',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: (): void => {
-              editorStore.localChangesState.alertUnsavedChanges((): void => {
-                flowResult(configState.updateConfigs()).catch(
-                  applicationStore.alertUnhandledError,
-                );
-              });
-            },
-          },
-          {
-            label: 'Cancel',
-            type: ActionAlertActionType.PROCEED,
-            default: true,
-          },
-        ];
+    const actions = [
+      {
+        label: 'Acknowledge and Proceed',
+        type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+        handler: (): void => {
+          editorStore.localChangesState.alertUnsavedChanges((): void => {
+            flowResult(configState.updateConfigs()).catch(
+              applicationStore.alertUnhandledError,
+            );
+          });
+        },
+      },
+      documentationEntry && {
+        label: (
+          <>
+            View Instructions
+            <div className="btn--right">
+              <ExternalLinkIcon />
+            </div>
+          </>
+        ),
+        default: true,
+        type: ActionAlertActionType.PROCEED,
+        handler: (): void => {
+          if (
+            shouldDisplayVirtualAssistantDocumentationEntry(documentationEntry)
+          ) {
+            applicationStore.assistantService.openDocumentationEntry(
+              'grammar.class',
+            );
+          } else if (documentationEntry.url) {
+            applicationStore.navigator.visitAddress(documentationEntry.url);
+          }
+        },
+      },
+      {
+        label: 'Cancel',
+        type: ActionAlertActionType.PROCEED,
+      },
+    ].filter(isNonNullable);
 
     editorStore.applicationStore.setActionAlertInfo({
       message:

@@ -84,7 +84,7 @@ const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
             };
             return (
               <button
-                key={action.label}
+                key={action.label?.toString()}
                 type={action.default ? 'submit' : 'button'}
                 className={`btn btn--dark ${getActionButtonClassName(
                   action.type ?? ActionAlertActionType.STANDARD,
@@ -93,7 +93,7 @@ const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
                 autoFocus={Boolean(action.default)}
                 // since this is a text button, no need for tooltip
               >
-                {action.label} {action.content}
+                {action.label}
               </button>
             );
           })}
