@@ -24,61 +24,63 @@ import type { GenericLegendApplicationStore } from '../ApplicationStore.js';
 import { LocalStorage } from './ApplicationStorage.js';
 
 const APPLICATION_SETTINGS_STORAGE_KEY = 'application-settings-storage';
+
 type StoredValue = object | string | number | boolean;
 
 class StorageStore {
-  readonly key = APPLICATION_SETTINGS_STORAGE_KEY;
-  readonly storage: LocalStorage;
+  readonly storeIndex;
   readonly storageService!: StorageService;
-  private value!: Record<PropertyKey, StoredValue>;
+  private readonly data!: Record<PropertyKey, StoredValue>;
 
-  constructor() {
-    this.storage = new LocalStorage();
-    const storage = this.storage.getItem(this.key);
+  constructor(storeIndex: string) {
+    this.storeIndex = storeIndex;
+    const storage = this.storageService.storage.getItem(this.storeIndex);
+
     if (storage) {
       const data = JSON.parse(storage) as Record<PropertyKey, StoredValue>;
-      this.value = data;
+      this.data = data;
     } else {
-      this.value = {};
+      this.data = {};
     }
   }
 
   private getValue(key: string, defaultValue: StoredValue): StoredValue {
-    return this.value[key] ?? defaultValue;
+    return this.data[key] ?? defaultValue;
   }
 
   getNumberValue(key: string, defaultValue: number): number {
-    const storedValue = this.getValue(key, defaultValue);
-    return guaranteeIsNumber(storedValue);
+    return guaranteeIsNumber(this.getValue(key, defaultValue));
   }
 
   getStringValue(key: string, defaultValue: string): string {
-    const storedValue = this.getValue(key, defaultValue);
-    return guaranteeIsString(storedValue);
+    return guaranteeIsString(this.getValue(key, defaultValue));
   }
 
   getBooleanValue(key: string, defaultValue: boolean): boolean {
-    const storedValue = this.getValue(key, defaultValue);
-    return guaranteeIsBoolean(storedValue);
+    return guaranteeIsBoolean(this.getValue(key, defaultValue));
   }
 
   getObjectValue(key: string, defaultValue: object): object {
-    const storedValue = this.getValue(key, defaultValue);
-    return guaranteeIsObject(storedValue);
+    return guaranteeIsObject(this.getValue(key, defaultValue));
   }
 
   persist(key: string, value: StoredValue): void {
-    this.value[key] = value;
-    this.storage.setItem(this.key, JSON.stringify(this.value));
+    this.data[key] = value;
+    this.storageService.storage.setItem(
+      this.storeIndex,
+      JSON.stringify(this.data),
+    );
   }
 }
 
 export class StorageService {
   readonly applicationStore: GenericLegendApplicationStore;
-  settingsStore!: StorageStore;
+  readonly storage: LocalStorage;
+  readonly settingsStore: StorageStore;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     this.applicationStore = applicationStore;
-    this.settingsStore = new StorageStore();
+    this.storage = new LocalStorage();
+    this.settingsStore = new StorageStore(APPLICATION_SETTINGS_STORAGE_KEY);
   }
 }
