@@ -87,7 +87,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         isAdvanced: false,
         isCreateAction: false,
         action: async (setupStore: QuerySetupLandingPageStore) => {
-          setupStore.applicationStore.navigator.goToLocation(
+          setupStore.applicationStore.navigationService.goToLocation(
             generateEditExistingQuerySetupRoute(),
           );
         },
@@ -102,7 +102,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         isAdvanced: false,
         isCreateAction: true,
         action: async (setupStore: QuerySetupLandingPageStore) => {
-          setupStore.applicationStore.navigator.goToAddress(
+          setupStore.applicationStore.navigationService.goToAddress(
             setupStore.applicationStore.config.taxonomyUrl,
           );
         },
@@ -115,7 +115,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         isAdvanced: true,
         isCreateAction: true,
         action: async (setupStore: QuerySetupLandingPageStore) => {
-          setupStore.applicationStore.navigator.goToLocation(
+          setupStore.applicationStore.navigationService.goToLocation(
             generateCreateMappingQuerySetupRoute(),
           );
         },
@@ -128,7 +128,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         isAdvanced: true,
         isCreateAction: true,
         action: async (setupStore: QuerySetupLandingPageStore) => {
-          setupStore.applicationStore.navigator.goToLocation(
+          setupStore.applicationStore.navigationService.goToLocation(
             generateCloneServiceQuerySetupRoute(),
           );
         },
@@ -143,7 +143,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         isCreateAction: false,
         tag: QuerySetupActionTag.PRODUCTIONIZATION,
         action: async (setupStore: QuerySetupLandingPageStore) => {
-          setupStore.applicationStore.navigator.goToLocation(
+          setupStore.applicationStore.navigationService.goToLocation(
             generateUpdateExistingServiceQuerySetup(),
           );
         },
@@ -157,7 +157,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         isCreateAction: false,
         tag: QuerySetupActionTag.PRODUCTIONIZATION,
         action: async (setupStore: QuerySetupLandingPageStore) => {
-          setupStore.applicationStore.navigator.goToLocation(
+          setupStore.applicationStore.navigationService.goToLocation(
             generateLoadProjectServiceQuerySetup(),
           );
         },
@@ -171,7 +171,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         isCreateAction: true,
         tag: QuerySetupActionTag.PRODUCTIONIZATION,
         action: async (setupStore: QuerySetupLandingPageStore) => {
-          setupStore.applicationStore.navigator.goToLocation(
+          setupStore.applicationStore.navigationService.goToLocation(
             generateQueryProductionizerSetupRoute(),
           );
         },

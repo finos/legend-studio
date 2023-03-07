@@ -29,7 +29,7 @@ export const QueryBuilderNavigationBlocker = observer(
     const applicationStore = useApplicationStore();
 
     useEffect(() => {
-      applicationStore.navigator.blockNavigation(
+      applicationStore.navigationService.blockNavigation(
         [(): boolean => queryBuilderState.changeDetectionState.hasChanged],
         (onProceed: () => void): void => {
           applicationStore.setActionAlertInfo({
@@ -57,7 +57,7 @@ export const QueryBuilderNavigationBlocker = observer(
           ),
       );
       return (): void => {
-        applicationStore.navigator.unblockNavigation();
+        applicationStore.navigationService.unblockNavigation();
       };
     }, [applicationStore, queryBuilderState]);
 

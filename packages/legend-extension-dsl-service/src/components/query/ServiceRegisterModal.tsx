@@ -175,7 +175,7 @@ const ServiceRegisterModal = observer(
                 label: 'Launch Service',
                 type: ActionAlertActionType.PROCEED,
                 handler: (): void => {
-                  editorStore.applicationStore.navigator.visitAddress(
+                  editorStore.applicationStore.navigationService.visitAddress(
                     generateServiceManagementUrl(
                       guaranteeNonNullable(serverConfig?.managementUrl),
                       serviceRegistrationResult.pattern,
@@ -192,7 +192,7 @@ const ServiceRegisterModal = observer(
           });
         } catch (error) {
           assertErrorThrown(error);
-          editorStore.applicationStore.log.error(
+          editorStore.applicationStore.logService.error(
             LogEvent.create(
               LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_FAILURE,
             ),

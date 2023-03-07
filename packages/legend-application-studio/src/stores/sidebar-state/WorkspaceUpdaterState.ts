@@ -220,7 +220,7 @@ export class WorkspaceUpdaterState {
           true,
         ),
       ]);
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
@@ -230,7 +230,7 @@ export class WorkspaceUpdaterState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -280,7 +280,7 @@ export class WorkspaceUpdaterState {
           this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
         )) as WorkspaceUpdateReport;
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.UPDATE_WORKSPACE__SUCCESS),
         Date.now() - startTime,
         'ms',
@@ -290,7 +290,7 @@ export class WorkspaceUpdaterState {
         // TODO: we might want to handle the situation more gracefully rather than just reloading the page
         case WorkspaceUpdateReportStatus.CONFLICT:
         case WorkspaceUpdateReportStatus.UPDATED:
-          this.editorStore.applicationStore.navigator.reload({
+          this.editorStore.applicationStore.navigationService.reload({
             ignoreBlocking: true,
           });
           break;
@@ -300,7 +300,7 @@ export class WorkspaceUpdaterState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -356,7 +356,7 @@ export class WorkspaceUpdaterState {
         .filter((review) => !baseReview || review.id !== baseReview.id); // make sure to exclude the base review
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );

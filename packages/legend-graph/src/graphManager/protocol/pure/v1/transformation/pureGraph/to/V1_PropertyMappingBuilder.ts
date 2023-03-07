@@ -123,7 +123,7 @@ const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (
     if (context.options?.strict) {
       throw new GraphBuilderError(message);
     }
-    context.log.warn(LogEvent.create(message));
+    context.logService.warn(LogEvent.create(message));
     return new TEMPORARY__UnresolvedSetImplementation(id, mapping);
   }
 
@@ -319,7 +319,7 @@ export class V1_PropertyMappingBuilder
       );
       if (!enumerationMapping) {
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
-        this.context.log.debug(
+        this.context.logService.debug(
           LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
           `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${topParent._PARENT.path}' (perhaps because we haven't supported included mappings)`,
         );
@@ -417,7 +417,7 @@ export class V1_PropertyMappingBuilder
       );
       if (!enumerationMapping) {
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
-        this.context.log.debug(
+        this.context.logService.debug(
           LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
           `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?._PARENT.path} (perhaps because we haven't supported included mappings)`,
         );
@@ -694,7 +694,7 @@ export class V1_PropertyMappingBuilder
       );
       if (!enumerationMapping) {
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
-        this.context.log.debug(
+        this.context.logService.debug(
           LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
           `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?._PARENT.path}' (perhaps because we haven't supported included mappings)`,
         );

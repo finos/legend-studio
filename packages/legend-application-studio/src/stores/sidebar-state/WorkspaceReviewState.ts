@@ -151,7 +151,7 @@ export class WorkspaceReviewState {
           true,
         ),
       ]);
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
@@ -161,7 +161,7 @@ export class WorkspaceReviewState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -210,7 +210,7 @@ export class WorkspaceReviewState {
         : undefined;
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -234,12 +234,12 @@ export class WorkspaceReviewState {
         this.sdlcState.activeWorkspace.workspaceId,
         this.sdlcState.activeWorkspace.workspaceType,
       );
-      this.editorStore.applicationStore.navigator.reload({
+      this.editorStore.applicationStore.navigationService.reload({
         ignoreBlocking: true,
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -263,7 +263,7 @@ export class WorkspaceReviewState {
       this.workspaceReview = undefined;
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -311,7 +311,7 @@ export class WorkspaceReviewState {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -379,7 +379,7 @@ export class WorkspaceReviewState {
             label: 'Leave',
             type: ActionAlertActionType.PROCEED,
             handler: (): void => {
-              this.editorStore.applicationStore.navigator.goToLocation(
+              this.editorStore.applicationStore.navigationService.goToLocation(
                 generateSetupRoute(
                   this.editorStore.sdlcState.activeProject.projectId,
                 ),
@@ -394,7 +394,7 @@ export class WorkspaceReviewState {
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );

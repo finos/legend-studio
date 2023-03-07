@@ -360,7 +360,7 @@ export class QueryBuilderTDSState
         });
       } catch (error) {
         assertErrorThrown(error);
-        this.queryBuilderState.applicationStore.log.error(
+        this.queryBuilderState.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );

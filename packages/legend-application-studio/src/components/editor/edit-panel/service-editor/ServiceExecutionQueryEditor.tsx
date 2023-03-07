@@ -416,7 +416,7 @@ export const ServiceExecutionQueryEditor = observer(
           versionId: SNAPSHOT_VERSION_ALIAS,
         };
       }
-      applicationStore.navigator.visitAddress(
+      applicationStore.navigationService.visitAddress(
         executionState.generateServiceQueryCreatorRoute(
           queryServerUrl,
           projectGAV.groupId,
@@ -428,8 +428,8 @@ export const ServiceExecutionQueryEditor = observer(
     };
 
     const openQueryInServiceExtension = (): void => {
-      applicationStore.navigator.visitAddress(
-        applicationStore.navigator.generateAddress(
+      applicationStore.navigationService.visitAddress(
+        applicationStore.navigationService.generateAddress(
           executionState.generateProjectServiceQueryUpdaterRoute(
             editorStore.projectConfigurationEditorState
               .currentProjectConfiguration.projectId,

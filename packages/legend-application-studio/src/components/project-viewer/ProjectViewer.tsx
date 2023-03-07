@@ -115,8 +115,8 @@ const ProjectViewerStatusBar = observer(() => {
                 title="Go back to workspace setup using the specified project"
                 tabIndex={-1}
                 onClick={(): void =>
-                  applicationStore.navigator.visitAddress(
-                    applicationStore.navigator.generateAddress(
+                  applicationStore.navigationService.visitAddress(
+                    applicationStore.navigationService.generateAddress(
                       generateSetupRoute(projectId),
                     ),
                   )

@@ -218,7 +218,7 @@ const QueryLoader = observer(
       if (selectedQueryID) {
         queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
           editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
-          applicationStore.navigator.goToLocation(
+          applicationStore.navigationService.goToLocation(
             generateExistingQueryEditorRoute(selectedQueryID),
             { ignoreBlocking: true },
           );
@@ -536,13 +536,15 @@ export const QueryEditor = observer(() => {
   const appDocUrl = applicationStore.documentationService.url;
   const goToDocumentation = (): void => {
     if (appDocUrl) {
-      applicationStore.navigator.visitAddress(appDocUrl);
+      applicationStore.navigationService.visitAddress(appDocUrl);
     }
   };
   // go to setup page
   const goToQuerySetup = (): void =>
-    applicationStore.navigator.visitAddress(
-      applicationStore.navigator.generateAddress(generateQuerySetupRoute()),
+    applicationStore.navigationService.visitAddress(
+      applicationStore.navigationService.generateAddress(
+        generateQuerySetupRoute(),
+      ),
     );
   // settings
   // NOTE: this is temporary until we find a better home for these settings in query builder
@@ -665,7 +667,7 @@ export const ServiceQueryCreator = observer(() => {
   const servicePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH];
   const executionKey = getQueryParameterValue(
     getQueryParameters<ServiceQueryCreatorQueryParams>(
-      sanitizeURL(applicationStore.navigator.getCurrentAddress()),
+      sanitizeURL(applicationStore.navigationService.getCurrentAddress()),
       true,
     ),
     LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY,

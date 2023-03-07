@@ -125,7 +125,7 @@ const NewServiceModal = observer(() => {
                 label: 'Open Service',
                 type: ActionAlertActionType.PROCEED,
                 handler: (): void => {
-                  applicationStore.navigator.goToLocation(
+                  applicationStore.navigationService.goToLocation(
                     generateProjectServiceQueryUpdaterRoute(
                       editorStore.sdlcState.activeProject.projectId,
                       editorStore.sdlcState.activeWorkspace.workspaceId,
@@ -389,8 +389,8 @@ const ServiceQueryEditorHeaderContent = observer(() => {
   const editorStore = useServiceQueryEditorStore();
   const applicationStore = useLegendStudioApplicationStore();
   const openWorkspace = (): void =>
-    applicationStore.navigator.visitAddress(
-      applicationStore.navigator.generateAddress(
+    applicationStore.navigationService.visitAddress(
+      applicationStore.navigationService.generateAddress(
         generateEditorRoute(
           editorStore.sdlcState.activeProject.projectId,
           editorStore.sdlcState.activeWorkspace.workspaceId,
@@ -411,7 +411,7 @@ const ServiceQueryEditorHeaderContent = observer(() => {
       );
     flowResult(
       editorStore.saveWorkspace(serviceEntity, false, (): void => {
-        applicationStore.navigator.goToLocation(
+        applicationStore.navigationService.goToLocation(
           generateServiceQueryUpdaterRoute(
             editorStore.projectConfigurationEditorState
               .currentProjectConfiguration.groupId,

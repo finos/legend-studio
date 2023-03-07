@@ -126,7 +126,7 @@ export class ProjectViewerStore {
     if (entityPath) {
       this.initialEntityPath = entityPath;
       if (projectId) {
-        this.editorStore.applicationStore.navigator.updateCurrentLocation(
+        this.editorStore.applicationStore.navigationService.updateCurrentLocation(
           versionId
             ? generateViewVersionRoute(projectId, versionId)
             : revisionId
@@ -139,7 +139,7 @@ export class ProjectViewerStore {
           artifactId,
           versionId: _versionId,
         } = parseGAVCoordinates(gav);
-        this.editorStore.applicationStore.navigator.updateCurrentLocation(
+        this.editorStore.applicationStore.navigationService.updateCurrentLocation(
           generateViewProjectByGAVRoute(groupId, artifactId, _versionId),
         );
       }
@@ -426,7 +426,7 @@ export class ProjectViewerStore {
         graphBuilderReportData,
       );
 
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
         graphBuilderReportData,
       );
@@ -444,7 +444,7 @@ export class ProjectViewerStore {
       assertErrorThrown(error);
 
       // if graph builder fails, we fall back to text-mode
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
@@ -612,7 +612,7 @@ export class ProjectViewerStore {
       onLeave(true);
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );

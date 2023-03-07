@@ -46,7 +46,9 @@ export const setupTerminal = (editorStore: EditorStore): void => {
       handler: (event, text) => {
         const match = text.match(LEGEND_PURE_IDE_TERMINAL_WEBLINK_REGEX);
         if (match?.groups?.url) {
-          editorStore.applicationStore.navigator.visitAddress(match.groups.url);
+          editorStore.applicationStore.navigationService.visitAddress(
+            match.groups.url,
+          );
         } else if (
           match?.groups?.path &&
           match.groups.path_sourceId &&

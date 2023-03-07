@@ -18,7 +18,7 @@ import {
   type SuperGenericFunction,
   TracerService,
   assertTrue,
-  Log,
+  LogService,
   LogEvent,
   assertErrorThrown,
   isString,
@@ -35,7 +35,7 @@ import { AssistantService } from './AssistantService.js';
 import { EventService } from './EventService.js';
 import { ApplicationNavigationContextService } from './ApplicationNavigationContextService.js';
 import type { LegendApplicationPlugin } from './LegendApplicationPlugin.js';
-import { CommandCenter } from './CommandCenter.js';
+import { CommandService } from './CommandService.js';
 import { KeyboardShortcutsService } from './KeyboardShortcutsService.js';
 import { TerminalService } from './TerminalService.js';
 import type { ActionAlertInfo, BlockingAlertInfo } from './AlertService.js';
@@ -64,18 +64,17 @@ export class ApplicationStore<
   readonly config: T;
   readonly pluginManager: V;
 
-  // user
+  // user & identity
   // TODO: if this ever gets more complicated, rename this to `IdentityService`
   currentUser = UNKNOWN_USER_ID;
 
   // navigation
-  // TODO: rename to `NavigationService`
   // NOTE: as of now, we only support web environment, we will not use `Application
-  readonly navigator: WebApplicationNavigator;
+  readonly navigationService: WebApplicationNavigator;
   readonly navigationContextService: ApplicationNavigationContextService;
 
   // storage
-  storageService: StorageService;
+  readonly storageService: StorageService;
 
   // TODO: refactor this to `NotificationService`
   notification?: Notification | undefined;
@@ -84,8 +83,7 @@ export class ApplicationStore<
   blockingAlertInfo?: BlockingAlertInfo | undefined;
   actionAlertInfo?: ActionAlertInfo | undefined;
 
-  // NOTE: consider renaming this to `LogService`
-  readonly log = new Log();
+  readonly logService = new LogService();
   readonly terminalService: TerminalService;
 
   // documentation & help
@@ -99,7 +97,7 @@ export class ApplicationStore<
   readonly tracerService = new TracerService();
 
   // control and interactions
-  readonly commandCenter: CommandCenter;
+  readonly commandService: CommandService;
   readonly keyboardShortcutsService: KeyboardShortcutsService;
 
   // TODO: config
@@ -141,11 +139,11 @@ export class ApplicationStore<
     });
 
     this.config = config;
-    this.navigator = navigator;
+    this.navigationService = navigator;
     this.storageService = new StorageService(this);
     this.pluginManager = pluginManager;
     // NOTE: set the logger first so other loading could use the configured logger
-    this.log.registerPlugins(pluginManager.getLoggerPlugins());
+    this.logService.registerPlugins(pluginManager.getLoggerPlugins());
     this.terminalService = new TerminalService(this);
 
     this.navigationContextService = new ApplicationNavigationContextService(
@@ -157,7 +155,7 @@ export class ApplicationStore<
       pluginManager.getTelemetryServicePlugins(),
     );
     this.setupTelemetryService();
-    this.commandCenter = new CommandCenter(this);
+    this.commandService = new CommandService(this);
     this.keyboardShortcutsService = new KeyboardShortcutsService(this);
     this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
     this.eventService.registerEventNotifierPlugins(
@@ -339,7 +337,7 @@ export class ApplicationStore<
    * of throwing them to the UI. This enforces that by throwing `IllegalStateError`
    */
   alertUnhandledError = (error: Error): void => {
-    this.log.error(
+    this.logService.error(
       LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
       'Encountered unhandled error in component tree',
       error,

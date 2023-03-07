@@ -179,7 +179,7 @@ export const TEST__setUpQueryEditor = async (
   // create the editor store, let's consider how we clean this up in the future
   (
     MOCK__editorStore.applicationStore as Writable<GenericLegendApplicationStore>
-  ).navigator = navigator;
+  ).navigationService = navigator;
 
   const renderResult = render(
     <Router history={history}>

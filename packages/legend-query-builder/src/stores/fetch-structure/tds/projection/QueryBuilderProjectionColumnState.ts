@@ -215,7 +215,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.queryBuilderState.applicationStore.log.error(
+        this.queryBuilderState.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
@@ -251,7 +251,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
         this.clearErrors();
       } catch (error) {
         assertErrorThrown(error);
-        this.queryBuilderState.applicationStore.log.error(
+        this.queryBuilderState.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );

@@ -190,7 +190,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.associatedProjectsAndVersionsFetched = true;
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -235,7 +235,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -257,7 +257,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         yield flowResult(this.updateProjectConfiguration(updateCommand));
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
@@ -313,7 +313,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -332,7 +332,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );

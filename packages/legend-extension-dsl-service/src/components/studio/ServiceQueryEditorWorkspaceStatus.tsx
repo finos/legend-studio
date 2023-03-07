@@ -63,7 +63,7 @@ export const ServiceQueryEditorWorkspaceStatus = observer(() => {
         {
           label: 'Proceed',
           type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-          handler: (): void => applicationStore.navigator.reload(),
+          handler: (): void => applicationStore.navigationService.reload(),
         },
         {
           label: 'Abort',

@@ -104,7 +104,7 @@ export class ExternalFormatState {
       this.fetchingDescriptionsState.complete();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.EXTERNAL_FORMAT_FAILURE),
         error,
       );

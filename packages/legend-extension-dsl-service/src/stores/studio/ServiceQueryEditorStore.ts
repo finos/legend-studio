@@ -102,7 +102,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
   ) {
     const graphManagerState = new GraphManagerState(
       applicationStore.pluginManager,
-      applicationStore.log,
+      applicationStore.logService,
     );
     super(
       applicationStore,
@@ -204,7 +204,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       this.queryBuilderState = queryBuilderState;
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );
@@ -268,14 +268,14 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
         `Can't save workspace: empty change set was pushed - this may be due to an error with change detection`,
       );
 
-      this.applicationStore.log.info(
+      this.applicationStore.logService.info(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.PUSH_LOCAL_CHANGES__SUCCESS),
       );
 
       onSuccess?.();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -313,10 +313,10 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
         this.sdlcState.activeWorkspace.workspaceId,
         this.sdlcState.activeWorkspace.workspaceType,
       );
-      this.applicationStore.navigator.reload();
+      this.applicationStore.navigationService.reload();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -394,7 +394,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
               label: 'Launch Service',
               type: ActionAlertActionType.PROCEED,
               handler: (): void => {
-                this.applicationStore.navigator.visitAddress(
+                this.applicationStore.navigationService.visitAddress(
                   generateServiceManagementUrl(
                     registrationConfig.managementUrl,
                     serviceRegistrationResult.pattern,
@@ -411,7 +411,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
         });
       } catch (error) {
         assertErrorThrown(error);
-        this.applicationStore.log.error(
+        this.applicationStore.logService.error(
           LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_FAILURE),
           error,
         );

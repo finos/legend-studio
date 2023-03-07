@@ -188,7 +188,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
         this.clearErrors();
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
@@ -669,7 +669,7 @@ export class MappingExecutionState extends MappingEditorTabState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
@@ -748,7 +748,7 @@ export class MappingExecutionState extends MappingEditorTabState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
@@ -813,7 +813,7 @@ export class MappingExecutionState extends MappingEditorTabState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
@@ -912,7 +912,7 @@ export class MappingExecutionState extends MappingEditorTabState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );

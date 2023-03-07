@@ -1298,7 +1298,7 @@ export class MappingEditorState extends ElementEditorState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.warn(
+      this.editorStore.applicationStore.logService.warn(
         LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         `Can't locate error, redirecting to text mode`,
         error,

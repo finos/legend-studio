@@ -100,7 +100,7 @@ export class UpdateProjectServiceQuerySetupStore {
     this.currentProject = undefined;
     this.groupWorkspaces = [];
     this.resetCurrentGroupWorkspace();
-    this.applicationStore.navigator.updateCurrentLocation(
+    this.applicationStore.navigationService.updateCurrentLocation(
       generateProjectServiceQueryUpdaterSetupRoute(undefined),
     );
     this.currentProjectConfigurationStatus = undefined;
@@ -132,7 +132,7 @@ export class UpdateProjectServiceQuerySetupStore {
             )) as PlainObject<Project>,
           );
         } catch {
-          this.applicationStore.navigator.updateCurrentLocation(
+          this.applicationStore.navigationService.updateCurrentLocation(
             generateProjectServiceQueryUpdaterSetupRoute(undefined),
           );
           this.initState.pass();
@@ -144,7 +144,7 @@ export class UpdateProjectServiceQuerySetupStore {
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -177,7 +177,7 @@ export class UpdateProjectServiceQuerySetupStore {
   *changeProject(project: Project): GeneratorFn<void> {
     this.currentProject = project;
     this.currentProjectConfigurationStatus = undefined;
-    this.applicationStore.navigator.updateCurrentLocation(
+    this.applicationStore.navigationService.updateCurrentLocation(
       generateProjectServiceQueryUpdaterSetupRoute(project.projectId),
     );
 
@@ -219,7 +219,7 @@ export class UpdateProjectServiceQuerySetupStore {
       this.loadWorkspacesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -283,7 +283,7 @@ export class UpdateProjectServiceQuerySetupStore {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );

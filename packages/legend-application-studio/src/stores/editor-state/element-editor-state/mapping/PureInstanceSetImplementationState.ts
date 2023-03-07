@@ -86,7 +86,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
@@ -116,7 +116,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
         this.clearErrors();
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
@@ -174,7 +174,7 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
@@ -202,7 +202,7 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
         this.clearErrors();
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
@@ -309,7 +309,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
         });
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
@@ -333,7 +333,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
         );
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );

@@ -262,7 +262,7 @@ export const QuerySetupLandingPage = withQuerySetupLandingPageStore(
     const setupStore = useQuerySetupLandingPageStore();
     const applicationStore = useLegendQueryApplicationStore();
     const params = getQueryParameters<QuerySetupQueryParams>(
-      sanitizeURL(applicationStore.navigator.getCurrentAddress()),
+      sanitizeURL(applicationStore.navigationService.getCurrentAddress()),
       true,
     );
     const showAdvancedActions = getQueryParameterValue(
@@ -278,7 +278,7 @@ export const QuerySetupLandingPage = withQuerySetupLandingPageStore(
       LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG,
     );
     const goToStudio = (): void =>
-      applicationStore.navigator.visitAddress(
+      applicationStore.navigationService.visitAddress(
         applicationStore.config.studioUrl,
       );
     const showAllActionGroup = (): void => setupStore.setShowAllGroups(true);

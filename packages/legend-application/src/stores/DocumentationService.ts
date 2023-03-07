@@ -155,7 +155,7 @@ export class DocumentationService {
         // NOTE: Entries specified natively will not override each other. This is to prevent entries from extensions
         // accidentally overide entries from core.
         if (this.hasDocEntry(entry.key)) {
-          applicationStore.log.warn(
+          applicationStore.logService.warn(
             LogEvent.create(
               APPLICATION_EVENT.APPLICATION_DOCUMENTATION_LOAD__SKIP,
             ),
@@ -190,7 +190,7 @@ export class DocumentationService {
       }
     });
     if (missingDocumentationEntries.length) {
-      applicationStore.log.warn(
+      applicationStore.logService.warn(
         LogEvent.create(
           APPLICATION_EVENT.APPLICATION_DOCUMENTATION_REQUIREMENT_CHECK__FAILURE,
         ),
@@ -209,7 +209,7 @@ export class DocumentationService {
       // This allows extensions to broaden related doc entries for contextual docs
       // If we need to support this behavior, we could create a dedicated extension method
       if (this.hasContextualDocEntry(entry.context)) {
-        applicationStore.log.warn(
+        applicationStore.logService.warn(
           LogEvent.create(
             APPLICATION_EVENT.APPLICATION_CONTEXTUAL_DOCUMENTATION_LOAD__SKIP,
           ),

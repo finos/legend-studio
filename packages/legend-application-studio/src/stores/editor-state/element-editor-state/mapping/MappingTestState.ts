@@ -168,7 +168,7 @@ export class MappingTestQueryState extends LambdaEditorState {
         this.clearErrors();
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
@@ -687,7 +687,7 @@ export class MappingTestState extends MappingEditorTabState {
       } else {
         throw new UnsupportedOperationError();
       }
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
@@ -748,7 +748,7 @@ export class MappingTestState extends MappingEditorTabState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
@@ -782,7 +782,7 @@ export class MappingTestState extends MappingEditorTabState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error.message,
       );
@@ -877,7 +877,7 @@ export class MappingTestState extends MappingEditorTabState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );

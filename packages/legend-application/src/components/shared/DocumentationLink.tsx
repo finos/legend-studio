@@ -37,7 +37,7 @@ export const DocumentationLink: React.FC<{
           documentationKey,
         );
       } else if (documentationEntry.url) {
-        applicationStore.navigator.visitAddress(documentationEntry.url);
+        applicationStore.navigationService.visitAddress(documentationEntry.url);
       }
     }
   };

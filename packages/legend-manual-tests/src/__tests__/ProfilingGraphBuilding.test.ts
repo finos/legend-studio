@@ -20,7 +20,7 @@ import fs from 'fs';
 import axios, { type AxiosResponse } from 'axios';
 import {
   WebConsole,
-  Log,
+  LogService,
   LogEvent,
   ContentType,
   type PlainObject,
@@ -114,21 +114,21 @@ function generatePureCode(options: ProfilingConfiguration): string {
 
 const logPhase = (
   phase: Profile_TEST_PHASE,
-  log: Log,
+  logService: LogService,
   debug?: boolean,
 ): void => {
   if (debug) {
-    log.info(LogEvent.create(`Running phase '${phase}'`));
+    logService.info(LogEvent.create(`Running phase '${phase}'`));
   }
 };
 
 const logSuccess = (
   phase: Profile_TEST_PHASE,
-  log: Log,
+  logService: LogService,
   debug?: boolean,
 ): void => {
   if (debug) {
-    log.info(LogEvent.create(`Success running phase '${phase}'`));
+    logService.info(LogEvent.create(`Success running phase '${phase}'`));
   }
 };
 
@@ -154,7 +154,7 @@ const runProfiling = async (config: ProfilingConfiguration): Promise<void> => {
   const pluginManager = new TEST__GraphManagerPluginManager();
   pluginManager.usePlugins([new WebConsole()]);
   pluginManager.install();
-  const log = new Log();
+  const log = new LogService();
   log.registerPlugins(pluginManager.getLoggerPlugins());
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager, log);
 

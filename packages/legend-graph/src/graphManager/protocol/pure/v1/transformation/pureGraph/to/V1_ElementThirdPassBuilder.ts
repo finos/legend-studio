@@ -128,7 +128,7 @@ export class V1_ElementThirdPassBuilder
         if (this.context.options?.strict) {
           throw new GraphBuilderError(message);
         }
-        this.context.log.warn(LogEvent.create(message));
+        this.context.logService.warn(LogEvent.create(message));
       }
       _class.properties.push(V1_buildProperty(property, this.context, _class));
       uniqueProperties.add(property.name);
@@ -157,7 +157,7 @@ export class V1_ElementThirdPassBuilder
       if (this.context.options?.strict) {
         throw new GraphBuilderError(message);
       }
-      this.context.log.warn(LogEvent.create(message));
+      this.context.logService.warn(LogEvent.create(message));
     }
     association.properties = [
       V1_buildAssociationProperty(first, second, this.context, association),

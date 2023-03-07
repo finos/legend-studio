@@ -83,7 +83,7 @@ export class LegendTaxonomyBaseStore {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(
           APPLICATION_EVENT.APPLICATION_IDENTITY_AUTO_FETCH__FAILURE,
         ),

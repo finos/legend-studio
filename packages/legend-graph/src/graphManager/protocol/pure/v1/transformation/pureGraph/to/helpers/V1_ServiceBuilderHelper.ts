@@ -271,7 +271,7 @@ export const V1_buildLegacyServiceTest = (
      * As such, here we will warn user if their executions don't have tests, and auto-fill with one.
      */
     if (executionKeys.size) {
-      context.log.error(
+      context.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         new GraphBuilderError(
           `Execution(s) with key '${Array.from(executionKeys.values()).join(

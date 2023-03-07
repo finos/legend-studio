@@ -405,7 +405,7 @@ const ImportProjectTab = observer(() => {
 
   const handleSubmit = (): void => {
     if (importProjectSuccessReport) {
-      applicationStore.navigator.visitAddress(
+      applicationStore.navigationService.visitAddress(
         importProjectSuccessReport.reviewUrl,
       );
     } else {

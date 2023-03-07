@@ -117,7 +117,7 @@ export class ProjectOverviewState {
       ).map((v) => Workspace.serialization.fromJson(v));
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -146,7 +146,7 @@ export class ProjectOverviewState {
         this.editorStore.applicationStore.notifyWarning(
           'Current workspace is deleted. Redirecting to workspace setup',
         );
-        this.editorStore.applicationStore.navigator.goToLocation(
+        this.editorStore.applicationStore.navigationService.goToLocation(
           generateSetupRoute(
             this.editorStore.sdlcState.activeProject.projectId,
           ),
@@ -157,7 +157,7 @@ export class ProjectOverviewState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -263,7 +263,7 @@ export class ProjectOverviewState {
     } catch (error) {
       assertErrorThrown(error);
       this.projectDependantEditorState.fetchingDependantInfoState.fail();
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
       );
@@ -350,7 +350,7 @@ export class ProjectOverviewState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -379,7 +379,7 @@ export class ProjectOverviewState {
       yield flowResult(this.fetchLatestProjectVersion());
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );

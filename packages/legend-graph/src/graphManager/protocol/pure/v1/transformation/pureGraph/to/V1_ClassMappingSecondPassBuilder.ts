@@ -116,7 +116,7 @@ export class V1_ClassMappingSecondPassBuilder
         );
         if (!setImplementation) {
           // TODO: we will get these cases sometimes since we haven't supported includedMappings
-          this.context.log.debug(
+          this.context.logService.debug(
             LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
             `Can't find class mapping with ID '${parameter}' in mapping '${this.parent.path}' (perhaps because we haven't supported included mappings)`,
           );

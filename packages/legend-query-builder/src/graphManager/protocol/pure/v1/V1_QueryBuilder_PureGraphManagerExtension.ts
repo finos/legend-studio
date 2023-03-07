@@ -87,7 +87,7 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
         graph,
         graph,
         this.graphManager.graphBuilderExtensions,
-        this.graphManager.log,
+        this.graphManager.logService,
       ).build();
       // build include index for compatible runtime analysis
       v1Mappings.forEach((element) => {
@@ -185,7 +185,7 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
       graph,
       graph,
       this.graphManager.graphBuilderExtensions,
-      this.graphManager.log,
+      this.graphManager.logService,
     ).build();
 
     graphBuilderInput

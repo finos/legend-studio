@@ -15,7 +15,7 @@
  */
 
 import { type RenderResult, render, waitFor } from '@testing-library/react';
-import { createSpy, Log } from '@finos/legend-shared';
+import { createSpy, LogService } from '@finos/legend-shared';
 import {
   type RawMappingModelCoverageAnalysisResult,
   type RawLambda,
@@ -55,7 +55,10 @@ export const TEST__setUpQueryBuilder = async (
 }> => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
   pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
-  const graphManagerState = new GraphManagerState(pluginManager, new Log());
+  const graphManagerState = new GraphManagerState(
+    pluginManager,
+    new LogService(),
+  );
   await graphManagerState.initializeSystem();
   await graphManagerState.graphManager.buildGraph(
     graphManagerState.graph,

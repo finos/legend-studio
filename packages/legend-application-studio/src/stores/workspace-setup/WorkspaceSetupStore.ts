@@ -117,7 +117,7 @@ export class WorkspaceSetupStore {
     this.currentProject = undefined;
     this.workspaces = [];
     this.currentWorkspace = undefined;
-    this.applicationStore.navigator.updateCurrentLocation(
+    this.applicationStore.navigationService.updateCurrentLocation(
       generateSetupRoute(undefined, undefined, undefined),
     );
     this.currentProjectConfigurationStatus = undefined;
@@ -126,7 +126,7 @@ export class WorkspaceSetupStore {
   resetWorkspace(): void {
     this.currentWorkspace = undefined;
     if (this.currentProject) {
-      this.applicationStore.navigator.updateCurrentLocation(
+      this.applicationStore.navigationService.updateCurrentLocation(
         generateSetupRoute(this.currentProject.projectId, undefined, undefined),
       );
     }
@@ -152,7 +152,7 @@ export class WorkspaceSetupStore {
             )) as PlainObject<Project>,
           );
         } catch {
-          this.applicationStore.navigator.updateCurrentLocation(
+          this.applicationStore.navigationService.updateCurrentLocation(
             generateSetupRoute(undefined),
           );
           this.initState.pass();
@@ -176,7 +176,7 @@ export class WorkspaceSetupStore {
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
       );
@@ -255,13 +255,13 @@ export class WorkspaceSetupStore {
         if (matchingWorkspace) {
           this.changeWorkspace(matchingWorkspace);
         } else {
-          this.applicationStore.navigator.updateCurrentLocation(
+          this.applicationStore.navigationService.updateCurrentLocation(
             generateSetupRoute(project.projectId),
           );
         }
       } else {
         this.currentWorkspace = undefined;
-        this.applicationStore.navigator.updateCurrentLocation(
+        this.applicationStore.navigationService.updateCurrentLocation(
           generateSetupRoute(project.projectId),
         );
       }
@@ -269,7 +269,7 @@ export class WorkspaceSetupStore {
       this.loadWorkspacesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
       );
@@ -285,7 +285,7 @@ export class WorkspaceSetupStore {
       );
     }
     this.currentWorkspace = workspace;
-    this.applicationStore.navigator.updateCurrentLocation(
+    this.applicationStore.navigationService.updateCurrentLocation(
       generateSetupRoute(
         this.currentProject.projectId,
         workspace.workspaceId,
@@ -397,7 +397,7 @@ export class WorkspaceSetupStore {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );

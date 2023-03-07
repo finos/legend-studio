@@ -114,7 +114,7 @@ export class UpdateServiceQuerySetupStore {
     this.currentSnapshotService = undefined;
     this.groupWorkspaces = [];
     this.resetCurrentGroupWorkspace();
-    this.applicationStore.navigator.updateCurrentLocation(
+    this.applicationStore.navigationService.updateCurrentLocation(
       generateServiceQueryUpdaterSetupRoute(undefined, undefined, undefined),
     );
     this.currentProjectConfigurationStatus = undefined;
@@ -141,7 +141,7 @@ export class UpdateServiceQuerySetupStore {
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
       );
@@ -205,7 +205,7 @@ export class UpdateServiceQuerySetupStore {
       }
 
       if (!project || !serviceEntity) {
-        this.applicationStore.navigator.updateCurrentLocation(
+        this.applicationStore.navigationService.updateCurrentLocation(
           generateServiceQueryUpdaterSetupRoute(
             undefined,
             undefined,
@@ -236,7 +236,7 @@ export class UpdateServiceQuerySetupStore {
         entity: serviceEntity,
       });
 
-      this.applicationStore.navigator.updateCurrentLocation(
+      this.applicationStore.navigationService.updateCurrentLocation(
         generateServiceQueryUpdaterSetupRoute(
           project.groupId,
           project.artifactId,
@@ -277,7 +277,7 @@ export class UpdateServiceQuerySetupStore {
       this.loadWorkspacesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
       );
@@ -340,7 +340,7 @@ export class UpdateServiceQuerySetupStore {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );

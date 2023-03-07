@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { type Log, ActionState, assertErrorThrown } from '@finos/legend-shared';
+import {
+  type LogService,
+  ActionState,
+  assertErrorThrown,
+} from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { DependencyManager } from '../graph/DependencyManager.js';
 import {
@@ -55,15 +59,18 @@ import type { Type } from '../graph/metamodel/pure/packageableElements/domain/Ty
 import { PrimitiveType } from '../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 
 export class BasicGraphManagerState {
-  pluginManager: GraphManagerPluginManager;
-  log: Log;
+  readonly pluginManager: GraphManagerPluginManager;
+  readonly logService: LogService;
 
   graphManager: AbstractPureGraphManager;
 
-  constructor(pluginManager: GraphManagerPluginManager, log: Log) {
+  constructor(
+    pluginManager: GraphManagerPluginManager,
+    logService: LogService,
+  ) {
     this.pluginManager = pluginManager;
-    this.log = log;
-    this.graphManager = buildPureGraphManager(this.pluginManager, log);
+    this.logService = logService;
+    this.graphManager = buildPureGraphManager(this.pluginManager, logService);
   }
 
   // -------------------------------------------------- UTILITIES -----------------------------------------------------
@@ -110,17 +117,21 @@ export class BasicGraphManagerState {
 }
 
 export class GraphManagerState extends BasicGraphManagerState {
-  coreModel: CoreModel;
-  systemModel: SystemModel;
+  readonly coreModel: CoreModel;
+  readonly systemModel: SystemModel;
+
+  readonly systemBuildState = ActionState.create();
+  readonly dependenciesBuildState = ActionState.create();
+  readonly graphBuildState = ActionState.create();
+  readonly generationsBuildState = ActionState.create();
+
   graph: PureModel;
 
-  systemBuildState = ActionState.create();
-  dependenciesBuildState = ActionState.create();
-  graphBuildState = ActionState.create();
-  generationsBuildState = ActionState.create();
-
-  constructor(pluginManager: GraphManagerPluginManager, log: Log) {
-    super(pluginManager, log);
+  constructor(
+    pluginManager: GraphManagerPluginManager,
+    logService: LogService,
+  ) {
+    super(pluginManager, logService);
 
     makeObservable(this, {
       graph: observable,
@@ -148,16 +159,13 @@ export class GraphManagerState extends BasicGraphManagerState {
       resetGraph: action,
     });
 
-    this.pluginManager = pluginManager;
-    this.log = log;
-
     const extensionElementClasses = this.pluginManager
       .getPureGraphPlugins()
       .flatMap((plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? []);
     this.systemModel = new SystemModel(extensionElementClasses);
     this.coreModel = new CoreModel(extensionElementClasses);
     this.graph = this.createEmptyGraph();
-    this.graphManager = buildPureGraphManager(this.pluginManager, log);
+    this.graphManager = buildPureGraphManager(this.pluginManager, logService);
 
     this.systemBuildState.setMessageFormatter(
       (message: string) => `[system] ${message}`,

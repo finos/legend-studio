@@ -15,7 +15,7 @@
  */
 
 import {
-  type Log,
+  type LogService,
   type PlainObject,
   type ServerClientConfig,
   LogEvent,
@@ -146,18 +146,18 @@ interface V1_EngineSetupConfig {
  * to Studio. As such, we want to encapsulate engine client within this class.
  */
 export class V1_Engine {
-  private engineServerClient: V1_EngineServerClient;
-  log: Log;
-  config: V1_EngineConfig;
+  private readonly engineServerClient: V1_EngineServerClient;
+  readonly logService: LogService;
+  readonly config: V1_EngineConfig;
 
-  constructor(clientConfig: ServerClientConfig, log: Log) {
+  constructor(clientConfig: ServerClientConfig, logService: LogService) {
     this.engineServerClient = new V1_EngineServerClient(clientConfig);
     this.config = new V1_EngineConfig(this);
     this.config.setBaseUrl(this.engineServerClient.baseUrl);
     this.config.setUseClientRequestPayloadCompression(
       this.engineServerClient.enableCompression,
     );
-    this.log = log;
+    this.logService = logService;
   }
 
   private serializePureModelContext = (
@@ -169,7 +169,11 @@ export class V1_Engine {
       graph instanceof V1_PureModelContextData
         ? GRAPH_MANAGER_EVENT.SERIALIZE_GRAPH_PROTOCOL__SUCCESS
         : GRAPH_MANAGER_EVENT.SERIALIZE_GRAPH_CONTEXT_PROTOCOL__SUCCESS;
-    this.log.info(LogEvent.create(logEvent), Date.now() - startTime, 'ms');
+    this.logService.info(
+      LogEvent.create(logEvent),
+      Date.now() - startTime,
+      'ms',
+    );
     return serializedGraph;
   };
 

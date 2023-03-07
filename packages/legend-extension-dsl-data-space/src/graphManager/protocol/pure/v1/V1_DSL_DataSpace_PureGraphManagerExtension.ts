@@ -82,7 +82,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         cachResult = await cacheRetriever();
       } catch (error) {
         assertErrorThrown(error);
-        this.graphManager.log.warn(
+        this.graphManager.logService.warn(
           LogEvent.create(GRAPH_MANAGER_EVENT.CACHE_MANAGER_FAILURE),
           `Can't fetch data space analysis result cache: ${error.message}`,
         );

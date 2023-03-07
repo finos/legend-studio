@@ -197,7 +197,7 @@ export class QueryBuilderResultState {
       this.exportDataState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.queryBuilderState.applicationStore.log.error(
+      this.queryBuilderState.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
@@ -268,7 +268,7 @@ export class QueryBuilderResultState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.queryBuilderState.applicationStore.log.error(
+      this.queryBuilderState.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
@@ -369,7 +369,7 @@ export class QueryBuilderResultState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.queryBuilderState.applicationStore.log.error(
+      this.queryBuilderState.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );

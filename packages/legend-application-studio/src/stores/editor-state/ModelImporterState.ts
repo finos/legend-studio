@@ -255,12 +255,12 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.modelImporterState.replace, entities, message },
       );
-      this.editorStore.applicationStore.navigator.reload({
+      this.editorStore.applicationStore.navigationService.reload({
         ignoreBlocking: true,
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.MODEL_LOADER_FAILURE),
         error,
       );
@@ -431,7 +431,7 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.modelImporterState.replace, entities, message },
       );
-      this.editorStore.applicationStore.navigator.reload({
+      this.editorStore.applicationStore.navigationService.reload({
         ignoreBlocking: true,
       });
     } catch (error) {

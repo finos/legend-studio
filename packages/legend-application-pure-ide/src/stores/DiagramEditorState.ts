@@ -228,22 +228,22 @@ export class DiagramEditorState
       this.editorStore.tabManagerState.currentTab === this &&
       // make sure the renderer is initialized
       this.isDiagramRendererInitialized;
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.RECENTER,
       trigger: DEFAULT_TRIGGER,
       action: () => this.renderer.recenter(),
     });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_ZOOM_TOOL,
       trigger: DEFAULT_TRIGGER,
       action: () => this.renderer.switchToZoomMode(),
     });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_VIEW_TOOL,
       trigger: DEFAULT_TRIGGER,
       action: () => this.renderer.switchToViewMode(),
     });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_PAN_TOOL,
       trigger: DEFAULT_TRIGGER,
       action: () => this.renderer.switchToPanMode(),
@@ -257,7 +257,7 @@ export class DiagramEditorState
       LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_VIEW_TOOL,
       LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_PAN_TOOL,
     ].forEach((commandKey) =>
-      this.editorStore.applicationStore.commandCenter.deregisterCommand(
+      this.editorStore.applicationStore.commandService.deregisterCommand(
         commandKey,
       ),
     );

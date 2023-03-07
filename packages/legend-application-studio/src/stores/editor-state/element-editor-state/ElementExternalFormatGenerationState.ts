@@ -126,7 +126,7 @@ export class XTGenerationState extends GeneratedFileStructureState {
       assertErrorThrown(error);
       this.fileSystemState.selectedNode = undefined;
       this.processGenerationResult([]);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );

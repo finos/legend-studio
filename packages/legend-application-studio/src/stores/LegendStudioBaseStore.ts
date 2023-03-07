@@ -99,7 +99,7 @@ export class LegendStudioBaseStore {
 
     // authorize SDLC, unless navigation location match SDLC-bypassed patterns
     if (
-      !matchPath(this.applicationStore.navigator.getCurrentLocation(), [
+      !matchPath(this.applicationStore.navigationService.getCurrentLocation(), [
         // TODO: we might want to consider making this extensible
         LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
         LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
@@ -116,7 +116,7 @@ export class LegendStudioBaseStore {
         this.applicationStore.setCurrentUser(currentUser.userId);
       } catch (error) {
         assertErrorThrown(error);
-        this.applicationStore.log.error(
+        this.applicationStore.logService.error(
           LogEvent.create(
             APPLICATION_EVENT.APPLICATION_IDENTITY_AUTO_FETCH__FAILURE,
           ),
@@ -156,10 +156,10 @@ export class LegendStudioBaseStore {
       this.isSDLCAuthorized =
         (yield this.sdlcServerClient.isAuthorized()) as boolean;
       if (!this.isSDLCAuthorized) {
-        this.applicationStore.navigator.goToAddress(
+        this.applicationStore.navigationService.goToAddress(
           SDLCServerClient.authorizeCallbackUrl(
             this.applicationStore.config.sdlcServerUrl,
-            this.applicationStore.navigator.getCurrentAddress(),
+            this.applicationStore.navigationService.getCurrentAddress(),
           ),
         );
       } else {
@@ -179,7 +179,7 @@ export class LegendStudioBaseStore {
                 default: true,
                 handler: (): void =>
                   this.SDLCServerTermsOfServicesUrlsToView.forEach((url) =>
-                    this.applicationStore.navigator.visitAddress(url),
+                    this.applicationStore.navigationService.visitAddress(url),
                   ),
                 type: ActionAlertActionType.PROCEED,
               },
@@ -188,7 +188,7 @@ export class LegendStudioBaseStore {
                 type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                 handler: (): void => {
                   this.dismissSDLCServerTermsOfServicesAlert();
-                  this.applicationStore.navigator.reload();
+                  this.applicationStore.navigationService.reload();
                 },
               },
             ],
@@ -217,7 +217,7 @@ export class LegendStudioBaseStore {
               type: ActionAlertActionType.PROCEED,
               default: true,
               handler: (): void => {
-                this.applicationStore.navigator.visitAddress(
+                this.applicationStore.navigationService.visitAddress(
                   this.sdlcServerClient.currentUserUrl,
                 );
                 this.applicationStore.setBlockingAlert({
@@ -231,7 +231,7 @@ export class LegendStudioBaseStore {
           ],
         });
       } else {
-        this.applicationStore.log.error(
+        this.applicationStore.logService.error(
           LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );

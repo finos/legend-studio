@@ -418,42 +418,42 @@ export class DiagramEditorState
         !['input', 'textarea', 'select'].includes(
           document.activeElement.tagName.toLowerCase(),
         ));
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.RECENTER,
       trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
       action: () => this.renderer.recenter(),
     });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_ZOOM_TOOL,
       trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
       action: () => this.renderer.switchToZoomMode(),
     });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_VIEW_TOOL,
       trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
       action: () => this.renderer.switchToViewMode(),
     });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_PAN_TOOL,
       trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
       action: () => this.renderer.switchToPanMode(),
     });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_PROPERTY_TOOL,
       trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
       action: () => this.renderer.switchToAddPropertyMode(),
     });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_INHERITANCE_TOOL,
       trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
       action: () => this.renderer.switchToAddInheritanceMode(),
     });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.ADD_CLASS,
       trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
       action: () => this.renderer.switchToAddClassMode(),
     });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.EJECT_PROPERTY,
       trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
       action: () => this.renderer.ejectProperty(),
@@ -471,7 +471,7 @@ export class DiagramEditorState
       DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.ADD_CLASS,
       DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.EJECT_PROPERTY,
     ].forEach((commandKey) =>
-      this.editorStore.applicationStore.commandCenter.deregisterCommand(
+      this.editorStore.applicationStore.commandService.deregisterCommand(
         commandKey,
       ),
     );

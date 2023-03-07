@@ -267,7 +267,7 @@ export class XTerm extends Terminal {
           if (!this.commandRegistry.has(command)) {
             this.commandRegistry.set(command, commandConfig);
           } else {
-            this.applicationStore.log.warn(
+            this.applicationStore.logService.warn(
               LogEvent.create(
                 APPLICATION_EVENT.APPLICATION_TERMINAL_COMMAND_CONFIGURATION_CHECK__FAILURE,
               ),

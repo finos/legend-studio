@@ -406,11 +406,11 @@ export class EditorStore implements CommandRegistrar {
   }
 
   registerCommands(): void {
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_FILE,
       action: () => this.setOpenFileSearchCommand(true),
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_TEXT,
       action: () => {
         this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH);
@@ -419,7 +419,7 @@ export class EditorStore implements CommandRegistrar {
         this.textSearchState.select();
       },
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.GO_TO_FILE,
       action: () => {
         if (this.tabManagerState.currentTab instanceof FileEditorState) {
@@ -432,7 +432,7 @@ export class EditorStore implements CommandRegistrar {
         }
       },
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_TERMINAL_PANEL,
       action: () => {
         // toggle the aux panel and activate terminal tab if needs be
@@ -455,7 +455,7 @@ export class EditorStore implements CommandRegistrar {
         }
       },
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.EXECUTE,
       action: () => {
         flowResult(this.executeGo()).catch(
@@ -463,7 +463,7 @@ export class EditorStore implements CommandRegistrar {
         );
       },
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.FULL_RECOMPILE,
       action: () => {
         flowResult(this.fullReCompile(false)).catch(
@@ -471,7 +471,7 @@ export class EditorStore implements CommandRegistrar {
         );
       },
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.FULL_RECOMPILE_WITH_FULL_INIT,
       action: () => {
         flowResult(this.fullReCompile(true)).catch(
@@ -479,7 +479,7 @@ export class EditorStore implements CommandRegistrar {
         );
       },
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.RUN_ALL_TESTS,
       action: () => {
         flowResult(this.executeFullTestSuite(false)).catch(
@@ -487,7 +487,7 @@ export class EditorStore implements CommandRegistrar {
         );
       },
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.RUN_RELAVANT_TESTS,
       action: () => {
         flowResult(this.executeFullTestSuite(true)).catch(
@@ -509,7 +509,7 @@ export class EditorStore implements CommandRegistrar {
       LEGEND_PURE_IDE_COMMAND_KEY.RUN_ALL_TESTS,
       LEGEND_PURE_IDE_COMMAND_KEY.RUN_RELAVANT_TESTS,
     ].forEach((key) =>
-      this.applicationStore.commandCenter.deregisterCommand(key),
+      this.applicationStore.commandService.deregisterCommand(key),
     );
   }
 

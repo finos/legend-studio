@@ -297,7 +297,7 @@ export abstract class LocalChangesState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -418,7 +418,7 @@ export abstract class LocalChangesState {
       this.sdlcState.setWorkspaceLatestRevision(latestRevision);
       const syncFinishedTime = Date.now();
 
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.PUSH_LOCAL_CHANGES__SUCCESS),
         syncFinishedTime - startTime,
         'ms',
@@ -462,7 +462,7 @@ export abstract class LocalChangesState {
          */
         if (error instanceof NetworkClientError) {
           if (error.response.status === HttpStatus.NOT_FOUND) {
-            this.editorStore.applicationStore.log.error(
+            this.editorStore.applicationStore.logService.error(
               LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
               `Can't fetch entities for the latest workspace revision immediately after syncing`,
               error,
@@ -501,7 +501,7 @@ export abstract class LocalChangesState {
         }
       }
       yield flowResult(this.restartChangeDetection());
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
@@ -511,7 +511,7 @@ export abstract class LocalChangesState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -705,7 +705,7 @@ export class FormLocalChangesState extends LocalChangesState {
         this.editorStore.changeDetectionState.preComputeGraphElementHashes(),
       ]);
       this.editorStore.changeDetectionState.start();
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
@@ -715,7 +715,7 @@ export class FormLocalChangesState extends LocalChangesState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -797,7 +797,7 @@ export class TextLocalChangesState extends LocalChangesState {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );

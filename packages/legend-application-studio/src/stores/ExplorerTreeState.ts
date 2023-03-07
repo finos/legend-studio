@@ -117,7 +117,7 @@ export class ExplorerTreeState {
         treeData = this.treeData;
     }
     if (!treeData || !this.buildState.hasCompleted) {
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
         `Can't get explorer tree data for root package '${rootPackageName}' as it hasn't been initialized`,
       );
@@ -524,7 +524,7 @@ export class ExplorerTreeState {
       opened = true;
     }
     if (!opened) {
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.PACKAGE_TREE_BUILDER_FAILURE),
         `Can't open package tree node for element '${element.path}' with root package '${rootPackageName}'`,
       );

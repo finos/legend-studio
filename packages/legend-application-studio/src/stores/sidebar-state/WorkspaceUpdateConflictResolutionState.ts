@@ -270,7 +270,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
           true,
         ),
       ]);
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
@@ -280,7 +280,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -363,7 +363,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       this.editorStore.changeDetectionState.stop();
       yield this.editorStore.changeDetectionState.preComputeGraphElementHashes();
       this.editorStore.changeDetectionState.start();
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
@@ -372,7 +372,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -419,7 +419,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       this.editorStore.tabManagerState.refreshCurrentEntityDiffViewer();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -453,7 +453,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       this.editorStore.tabManagerState.refreshCurrentEntityDiffViewer();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -516,12 +516,12 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
           revisionId: this.sdlcState.activeRevision.id,
         },
       );
-      this.editorStore.applicationStore.navigator.reload({
+      this.editorStore.applicationStore.navigationService.reload({
         ignoreBlocking: true,
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -573,12 +573,12 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.sdlcState.activeProject.projectId,
         this.sdlcState.activeWorkspace,
       );
-      this.editorStore.applicationStore.navigator.reload({
+      this.editorStore.applicationStore.navigationService.reload({
         ignoreBlocking: true,
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -630,12 +630,12 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.sdlcState.activeProject.projectId,
         this.sdlcState.activeWorkspace,
       );
-      this.editorStore.applicationStore.navigator.reload({
+      this.editorStore.applicationStore.navigationService.reload({
         ignoreBlocking: true,
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );

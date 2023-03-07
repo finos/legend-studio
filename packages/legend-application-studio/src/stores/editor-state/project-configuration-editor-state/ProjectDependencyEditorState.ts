@@ -412,7 +412,7 @@ export class ProjectDependencyEditorState {
       assertErrorThrown(error);
       this.fetchingDependencyInfoState.fail();
       this.dependencyReport = undefined;
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
       );

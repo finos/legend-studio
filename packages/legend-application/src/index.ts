@@ -34,7 +34,7 @@ export { WebApplicationNavigator } from './stores/WebApplicationNavigator.js';
 export { LocalStorage } from './stores/storage/ApplicationStorage.js';
 export * from './stores/storage/StorageService.js';
 export * from './stores/DocumentationService.js';
-export * from './stores/CommandCenter.js';
+export * from './stores/CommandService.js';
 export * from './stores/EventService.js';
 export * from './stores/TelemetryService.js';
 export * from './stores/IframeEventNotifierPlugin.js';

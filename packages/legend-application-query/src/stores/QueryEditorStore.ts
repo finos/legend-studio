@@ -98,7 +98,7 @@ export const createViewProjectHandler =
     versionId: string,
     entityPath: string | undefined,
   ): void =>
-    applicationStore.navigator.visitAddress(
+    applicationStore.navigationService.visitAddress(
       EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
         applicationStore.config.studioUrl,
         groupId,
@@ -128,7 +128,7 @@ export const createViewSDLCProjectHandler =
       (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
     );
     if (matchingSDLCEntry) {
-      applicationStore.navigator.visitAddress(
+      applicationStore.navigationService.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
           matchingSDLCEntry.url,
           project.projectId,
@@ -215,7 +215,7 @@ export class QueryExportState {
         );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
@@ -253,7 +253,7 @@ export class QueryExportState {
           },
         );
 
-        this.editorStore.applicationStore.navigator.goToLocation(
+        this.editorStore.applicationStore.navigationService.goToLocation(
           generateExistingQueryEditorRoute(newQuery.id),
         );
       } else {
@@ -283,7 +283,7 @@ export class QueryExportState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
@@ -384,7 +384,7 @@ export abstract class QueryEditorStore {
     this.pluginManager = applicationStore.pluginManager;
     this.graphManagerState = new GraphManagerState(
       applicationStore.pluginManager,
-      applicationStore.log,
+      applicationStore.logService,
     );
     this.queryLoaderState = new QueryLoaderState(this);
   }
@@ -450,7 +450,7 @@ export abstract class QueryEditorStore {
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
@@ -546,7 +546,7 @@ export abstract class QueryEditorStore {
       graphBuilderReportData,
     );
 
-    this.applicationStore.log.info(
+    this.applicationStore.logService.info(
       LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
       graphBuilderReportData,
     );
@@ -591,7 +591,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
       this.applicationStore,
       this.graphManagerState,
       (val: Mapping) => {
-        this.applicationStore.navigator.updateCurrentLocation(
+        this.applicationStore.navigationService.updateCurrentLocation(
           generateMappingQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -603,7 +603,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
         );
       },
       (val: Runtime) => {
-        this.applicationStore.navigator.updateCurrentLocation(
+        this.applicationStore.navigationService.updateCurrentLocation(
           generateMappingQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -688,7 +688,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
       this.graphManagerState.usableServices,
       this.executionKey,
       (val: Service): void => {
-        this.applicationStore.navigator.goToLocation(
+        this.applicationStore.navigationService.goToLocation(
           generateServiceQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -698,7 +698,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
         );
       },
       (val: ServiceExecutionContext): void => {
-        this.applicationStore.navigator.updateCurrentLocation(
+        this.applicationStore.navigationService.updateCurrentLocation(
           generateServiceQueryCreatorRoute(
             this.groupId,
             this.artifactId,

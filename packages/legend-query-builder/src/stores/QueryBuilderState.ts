@@ -268,7 +268,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   }
 
   registerCommands(): void {
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: QUERY_BUILDER_COMMAND_KEY.COMPILE,
       action: () => {
         flowResult(this.compileQuery()).catch(
@@ -291,7 +291,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   deregisterCommands(): void {
     [QUERY_BUILDER_COMMAND_KEY.COMPILE].forEach((key) =>
-      this.applicationStore.commandCenter.deregisterCommand(key),
+      this.applicationStore.commandService.deregisterCommand(key),
     );
   }
 
@@ -460,7 +460,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
         this.applicationStore.notifySuccess('Compiled successfully');
       } catch (error) {
         assertErrorThrown(error);
-        this.applicationStore.log.error(
+        this.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
           error,
         );
@@ -507,7 +507,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof CompilationError) {
-          this.applicationStore.log.error(
+          this.applicationStore.logService.error(
             LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
             error,
           );

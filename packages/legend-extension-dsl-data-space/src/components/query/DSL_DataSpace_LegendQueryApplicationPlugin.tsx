@@ -79,7 +79,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
         isAdvanced: false,
         isCreateAction: true,
         action: async (setupStore) => {
-          setupStore.applicationStore.navigator.goToLocation(
+          setupStore.applicationStore.navigationService.goToLocation(
             generateDataSpaceQuerySetupRoute(),
           );
         },
@@ -171,7 +171,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                       LegendQueryEventService.create(
                         editorStore.applicationStore.eventService,
                       ).notify_QueryCreated({ queryId: newQuery.id });
-                      editorStore.applicationStore.navigator.goToLocation(
+                      editorStore.applicationStore.navigationService.goToLocation(
                         generateExistingQueryEditorRoute(newQuery.id),
                       );
                     } else {
@@ -182,11 +182,11 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                       editorStore.applicationStore.notifySuccess(
                         `Successfully updated query!`,
                       );
-                      editorStore.applicationStore.navigator.reload();
+                      editorStore.applicationStore.navigationService.reload();
                     }
                   } catch (error) {
                     assertErrorThrown(error);
-                    editorStore.applicationStore.log.error(
+                    editorStore.applicationStore.logService.error(
                       LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
                       error,
                     );

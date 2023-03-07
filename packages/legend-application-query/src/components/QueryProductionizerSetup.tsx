@@ -74,7 +74,7 @@ const QueryProductionizerSetupContent = observer(() => {
 
   // actions
   const back = (): void => {
-    applicationStore.navigator.goToLocation(generateQuerySetupRoute());
+    applicationStore.navigationService.goToLocation(generateQuerySetupRoute());
   };
   const next = (): void => {
     if (setupStore.currentQuery) {

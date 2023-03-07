@@ -121,7 +121,7 @@ export class FMT_Morphir_LegendStudioApplicationPlugin
                     this.morphirVisualizerUrl,
                     file.content,
                   );
-                  applicationStore.navigator.visitAddress(
+                  applicationStore.navigationService.visitAddress(
                     this.morphirVisualizerUrl,
                   );
                 } catch (error) {
@@ -179,7 +179,9 @@ export class FMT_Morphir_LegendStudioApplicationPlugin
                     ir: file.content,
                     src: await code,
                   });
-                  applicationStore.navigator.visitAddress(this.linterAppUrl);
+                  applicationStore.navigationService.visitAddress(
+                    this.linterAppUrl,
+                  );
                 } catch (error) {
                   assertErrorThrown(error);
                   applicationStore.notifyError(error);

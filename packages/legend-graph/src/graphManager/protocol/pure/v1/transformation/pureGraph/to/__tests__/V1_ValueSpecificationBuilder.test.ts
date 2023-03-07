@@ -16,7 +16,7 @@
 
 import { test, describe, expect } from '@jest/globals';
 import type { Entity } from '@finos/legend-storage';
-import { unitTest, Log, ActionState } from '@finos/legend-shared';
+import { unitTest, LogService, ActionState } from '@finos/legend-shared';
 import {
   CoreModel,
   PureModel,
@@ -72,7 +72,7 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
       // setup
       const graphManager = buildPureGraphManager(
         new TEST__GraphManagerPluginManager(),
-        new Log(),
+        new LogService(),
       );
       await graphManager.buildGraph(graph, entities, ActionState.create());
       const fn = (): void => {
