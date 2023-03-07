@@ -173,8 +173,10 @@ export class ApplicationStore<
     this.telemetryService.setup({
       userId: this.currentUser,
       appName: this.config.appName,
+      appEnv: this.config.env,
+      appVersion: this.config.appVersion,
       appSessionId: this.uuid,
-      // appStartTime: this.time timestamp,
+      appStartTime: this.timeService.timestamp,
     });
   }
 
