@@ -99,6 +99,10 @@ export class TextSearchState {
     this.searchInput?.focus();
   }
 
+  select(): void {
+    this.searchInput?.select();
+  }
+
   *search(): GeneratorFn<void> {
     if (this.loadState.isInProgress) {
       return;

@@ -416,6 +416,7 @@ export class EditorStore implements CommandRegistrar {
         this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH);
         this.auxPanelDisplayState.open();
         this.textSearchState.focus();
+        this.textSearchState.select();
       },
     });
     this.applicationStore.commandCenter.registerCommand({
