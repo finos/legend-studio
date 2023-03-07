@@ -15,24 +15,25 @@
  */
 
 import { test, describe, expect } from '@jest/globals';
-import { integrationTest, PlainObject } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import {
   create_RawLambda,
   extractElementNameFromPath,
-  RawMappingModelCoverageAnalysisResult,
+  type RawMappingModelCoverageAnalysisResult,
   stub_RawLambda,
   V1_buildExecutionResult,
   V1_serializeExecutionResult,
 } from '@finos/legend-graph';
 import { act, getByText, waitFor } from '@testing-library/react';
-import { QUERY_BUILDER_TEST_ID, TEST__setUpQueryBuilder } from '../../index.js';
 import {
   TEST_DATA__modelCoverageAnalysisResult,
   TEST_DATA__result,
   TEST_DATA__ResultState_entities,
   TEST_DATA__simpleProjectionQuery,
 } from './TEST_DATA__QueryBuilder_ResultStateTest.js';
+import { TEST__setUpQueryBuilder } from '../../components/QueryBuilderComponentTestUtils.js';
+import { QUERY_BUILDER_TEST_ID } from '../../components/QueryBuilder_TestID.js';
 
 type ResultStateTestCase = [
   string,
@@ -41,7 +42,7 @@ type ResultStateTestCase = [
     _class: string;
     mapping: string;
     runtime: string;
-    result: {};
+    result: { builder: object; result: object };
     rawMappingModelCoverageAnalysisResult: RawMappingModelCoverageAnalysisResult;
     rawLambda: { parameters?: object; body?: object };
   },
