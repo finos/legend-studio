@@ -2422,7 +2422,7 @@ __metadata:
     react-dom: 18.2.0
     react-icons: 4.8.0
     react-markdown: 8.0.5
-    react-reflex: 4.0.9
+    react-reflex: 4.0.12
     react-resize-detector: 8.0.4
     react-select: 4.3.1
     react-window: 1.8.8
@@ -5817,9 +5817,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001426, caniuse-lite@npm:^1.0.30001449":
-  version: 1.0.30001460
-  resolution: "caniuse-lite@npm:1.0.30001460"
-  checksum: dad91eb82aa65aecf33ad6a04ad620b9df6f0152020dc6c1874224e8c6f4aa50695f585201b3dfcd2760b3c43326a86c9505cc03af856698fbef67b267ef786f
+  version: 1.0.30001462
+  resolution: "caniuse-lite@npm:1.0.30001462"
+  checksum: e4a57d7851eec65e7c9b6c11c4bbcecdc49d87b1b01bff3c15ea27efb05f959891b4c70ac169842067c134d6fa126d9ad5a91d0f85c7387c5bd912eaf41ea647
   languageName: node
   linkType: hard
 
@@ -7080,9 +7080,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.284":
-  version: 1.4.320
-  resolution: "electron-to-chromium@npm:1.4.320"
-  checksum: ea2c02bc286c0471ed7ad9b61225f6561921cf5f24a060cd1c46c2ea9932283ab924f66c370fbe5a229225dc1f747b395c943a0f5a9d058b72f561b1d8225787
+  version: 1.4.322
+  resolution: "electron-to-chromium@npm:1.4.322"
+  checksum: 195796a25f28b315d4e2ee17f8aac9d8f7a98c8aaad1b9633113cf6ea8394094b45132e2a7f4e191ec1492303e54fb23667c9ce7794a5a57c961a37aaccaa6cd
   languageName: node
   linkType: hard
 
@@ -13445,9 +13445,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-reflex@npm:4.0.9":
-  version: 4.0.9
-  resolution: "react-reflex@npm:4.0.9"
+"react-reflex@npm:4.0.12":
+  version: 4.0.12
+  resolution: "react-reflex@npm:4.0.12"
   dependencies:
     "@babel/runtime": ^7.0.0
     lodash.throttle: ^4.1.1
@@ -13455,7 +13455,7 @@ __metadata:
     react-measure: ^2.0.2
   peerDependencies:
     react: ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: 963294242febdfedee7e944954b5f1a53631fb9c4bd29198b0b58545a1559c5e003ed1b00ef5ad4514baedd6ea43be01c110f6d76971e14ea3b42c7fd941bb78
+  checksum: 5bbf9ff5a922e1f1219969f1fa5594d02345defe3a05c14bb1a5116929fdd8def9e657435d3da248bc6ebb817e211ccbf033d8c75c6a3299f7b06dc83a3c557d
   languageName: node
   linkType: hard
 
@@ -14678,12 +14678,12 @@ __metadata:
   linkType: hard
 
 "spdx-correct@npm:^3.0.0":
-  version: 3.1.1
-  resolution: "spdx-correct@npm:3.1.1"
+  version: 3.2.0
+  resolution: "spdx-correct@npm:3.2.0"
   dependencies:
     spdx-expression-parse: ^3.0.0
     spdx-license-ids: ^3.0.0
-  checksum: 77ce438344a34f9930feffa61be0eddcda5b55fc592906ef75621d4b52c07400a97084d8701557b13f7d2aae0cb64f808431f469e566ef3fe0a3a131dcb775a6
+  checksum: e9ae98d22f69c88e7aff5b8778dc01c361ef635580e82d29e5c60a6533cc8f4d820803e67d7432581af0cc4fb49973125076ee3b90df191d153e223c004193b2
   languageName: node
   linkType: hard
 
