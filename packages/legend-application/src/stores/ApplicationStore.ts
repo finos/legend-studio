@@ -46,6 +46,7 @@ import {
   NOTIFCATION_SEVERITY,
 } from './NotificationService.js';
 import { UNKNOWN_USER_ID } from './IdentityService.js';
+import { StorageService } from './storage/StorageService.js';
 import { TelemetryService } from './TelemetryService.js';
 import { TimeService } from './TimeService.js';
 
@@ -73,6 +74,9 @@ export class ApplicationStore<
   readonly navigator: WebApplicationNavigator;
   readonly navigationContextService: ApplicationNavigationContextService;
 
+  // storage
+  storageService: StorageService;
+
   // TODO: refactor this to `NotificationService`
   notification?: Notification | undefined;
 
@@ -80,7 +84,7 @@ export class ApplicationStore<
   blockingAlertInfo?: BlockingAlertInfo | undefined;
   actionAlertInfo?: ActionAlertInfo | undefined;
 
-  // NOTE: we have considered consider renaming this to `LogService`
+  // NOTE: consider renaming this to `LogService`
   readonly log = new Log();
   readonly terminalService: TerminalService;
 
@@ -138,6 +142,7 @@ export class ApplicationStore<
 
     this.config = config;
     this.navigator = navigator;
+    this.storageService = new StorageService(this);
     this.pluginManager = pluginManager;
     // NOTE: set the logger first so other loading could use the configured logger
     this.log.registerPlugins(pluginManager.getLoggerPlugins());

@@ -45,6 +45,7 @@ import {
 } from '@finos/legend-graph';
 import type { TextEditorPosition } from '@finos/legend-art';
 import { generatePackageableElementTreeNodeDataLabel } from '../shared/PackageTreeUtils.js';
+import { LEGEND_STUDIO_SETTINGS_KEY } from '../LegendStudioStorage.js';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,
@@ -68,7 +69,7 @@ export class GrammarTextEditorState {
 
   graphGrammarText = '';
   currentElementLabelRegexString?: string | undefined;
-  wrapText = true;
+  wrapText: boolean;
   forcedCursorPosition?: TextEditorPosition | undefined;
 
   constructor(editorStore: EditorStore) {
@@ -85,6 +86,11 @@ export class GrammarTextEditorState {
     });
 
     this.editorStore = editorStore;
+    this.wrapText =
+      this.editorStore.applicationStore.storageService.settingsStore.getBooleanValue(
+        LEGEND_STUDIO_SETTINGS_KEY.EDITOR_WRAP_TEXT,
+        true,
+      );
   }
 
   get currentTextGraphHash(): string {
