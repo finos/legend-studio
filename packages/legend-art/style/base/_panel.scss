@@ -202,10 +202,10 @@
 
   .input--small {
     max-width: 45rem;
-  }
 
-  .input--small--set {
-    width: 45rem;
+    &--full {
+      width: 45rem;
+    }
   }
 }
 

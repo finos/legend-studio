@@ -58,6 +58,10 @@
   @include flexCenter;
 }
 
+.btn--right {
+  margin-left: 0.5rem;
+}
+
 .btn--important {
   text-transform: uppercase;
   font-size: 1.2rem;

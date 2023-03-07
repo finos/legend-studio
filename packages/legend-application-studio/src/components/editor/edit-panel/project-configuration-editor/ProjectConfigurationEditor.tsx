@@ -70,6 +70,8 @@ const ProjectStructureEditor = observer(
       latestVersion &&
       (latestVersion.version > projectConfig.projectStructureVersion.version ||
         latestProjectExtensionVersion > currentProjectExtensionVersion);
+    const isProjectGavChanged =
+      editorStore.projectConfigurationEditorState.isProjectGavChanged;
     const updateVersion = (): void => {
       flowResult(
         editorStore.projectConfigurationEditorState.updateToLatestStructure(),
@@ -89,18 +91,6 @@ const ProjectStructureEditor = observer(
       const stringValue = event.target.value;
       projectConfig.setArtifactId(stringValue);
     };
-
-    const changedArtifactId =
-      projectConfig.artifactId !==
-      editorStore.tabManagerState.getCurrentEditorState(
-        ProjectConfigurationEditorState,
-      ).originalConfig.artifactId;
-
-    const changedGroupId =
-      projectConfig.groupId !==
-      editorStore.tabManagerState.getCurrentEditorState(
-        ProjectConfigurationEditorState,
-      ).originalConfig.groupId;
 
     return (
       <div className="panel__content__lists">
@@ -150,19 +140,19 @@ const ProjectStructureEditor = observer(
               <div className="input-group">
                 <input
                   className={clsx(
-                    'input input--dark input-group__input panel__content__form__section__input input--small--set',
-                    { 'input--caution': changedGroupId },
+                    'input input--dark input-group__input panel__content__form__section__input input--small--full',
+                    { 'input--caution': isProjectGavChanged },
                   )}
-                  title={'Group ID'}
+                  title="Group ID"
                   spellCheck={false}
                   disabled={isReadOnly}
                   value={projectConfig.groupId}
                   onChange={changeGroupId}
                 />
 
-                {changedGroupId && (
+                {isProjectGavChanged && (
                   <DocumentationLink
-                    className="panel__content__form__seoction__list__item__edit icon--right"
+                    className="panel__content__form__section__list__item__edit btn--right"
                     documentationKey={
                       LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
                     }
@@ -184,18 +174,18 @@ const ProjectStructureEditor = observer(
               <div className="input-group">
                 <input
                   className={clsx(
-                    'input input--dark input-group__input panel__content__form__section__input input--small--set',
-                    { 'input--caution': changedArtifactId },
+                    'input input--dark input-group__input panel__content__form__section__input input--small--full',
+                    { 'input--caution': isProjectGavChanged },
                   )}
-                  title={'Artifact ID'}
+                  title="Artifact ID"
                   spellCheck={false}
                   disabled={isReadOnly}
                   value={projectConfig.artifactId}
                   onChange={changeArtifactId}
                 />
-                {changedArtifactId && (
+                {isProjectGavChanged && (
                   <DocumentationLink
-                    className="panel__content__form__seoction__list__item__edit icon--right"
+                    className="panel__content__form__section__list__item__edit icon--right"
                     documentationKey={
                       LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
                     }
@@ -463,7 +453,7 @@ export const ProjectConfigurationEditor = observer(() => {
             content: (
               <>
                 View Instructions
-                <div className="icon--right">
+                <div className="btn--right">
                   <ExternalLinkIcon />
                 </div>
               </>
@@ -510,25 +500,17 @@ export const ProjectConfigurationEditor = observer(() => {
 
     editorStore.applicationStore.setActionAlertInfo({
       message:
-        'Please read these instructions before you edit groupid or artifactid (gav) as changing them can have downstream impact. Be aware you will lose any previous project versions. Moreover, if your current project has dependant projects you can break those too if you do not change the gav in a controlled way.',
+        'Please be cautious that modifying group ID or artifact ID (GAV coordinates) can potentially have a big downstream impact. Be aware that the project will lose all previous versions; also, any dependant projects can break too if the coordinates are not changed in a controlled way.',
       type: ActionAlertType.CAUTION,
       actions: actions,
+      ...(Boolean(documentationEntry) && {
+        prompt: 'Please see the instructions for more guidance',
+      }),
     });
   };
+
   const updateConfigs = (): void => {
-    const changedArtifactId =
-      configState.currentProjectConfiguration.artifactId !==
-      editorStore.tabManagerState.getCurrentEditorState(
-        ProjectConfigurationEditorState,
-      ).originalConfig.artifactId;
-
-    const changedGroupId =
-      configState.currentProjectConfiguration.groupId !==
-      editorStore.tabManagerState.getCurrentEditorState(
-        ProjectConfigurationEditorState,
-      ).originalConfig.groupId;
-
-    if (changedArtifactId || changedGroupId) {
+    if (configState.isProjectGavChanged) {
       updateGavConfigs();
     } else {
       editorStore.localChangesState.alertUnsavedChanges((): void => {
