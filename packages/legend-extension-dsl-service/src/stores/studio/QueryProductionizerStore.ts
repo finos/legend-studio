@@ -278,7 +278,7 @@ export class QueryProductionizerStore {
   resetCurrentQuery(): void {
     this.currentQuery = undefined;
     this.resetCurrentProject();
-    this.applicationStore.navigationService.updateCurrentLocation(
+    this.applicationStore.navigationService.navigator.updateCurrentLocation(
       generateQueryProductionizerRoute(undefined),
     );
     this.setWorkspaceName('');
@@ -339,7 +339,7 @@ export class QueryProductionizerStore {
         if (query) {
           yield flowResult(this.changeQuery(query));
         } else {
-          this.applicationStore.navigationService.updateCurrentLocation(
+          this.applicationStore.navigationService.navigator.updateCurrentLocation(
             generateQueryProductionizerRoute(undefined),
           );
         }
@@ -387,7 +387,7 @@ export class QueryProductionizerStore {
         )) as PlainObject<ProjectData>,
       );
       this.setWorkspaceName(`${DEFAULT_WORKSPACE_NAME_PREFIX}-${query.id}`);
-      this.applicationStore.navigationService.updateCurrentLocation(
+      this.applicationStore.navigationService.navigator.updateCurrentLocation(
         generateQueryProductionizerRoute(query.id),
       );
 
@@ -703,7 +703,7 @@ export class QueryProductionizerStore {
                     label: 'Open Workspace',
                     type: ActionAlertActionType.PROCEED,
                     handler: (): void => {
-                      this.applicationStore.navigationService.goToLocation(
+                      this.applicationStore.navigationService.navigator.goToLocation(
                         generateEditorRoute(
                           project.projectId,
                           this.workspaceName,
@@ -719,7 +719,7 @@ export class QueryProductionizerStore {
                     label: 'Open Service',
                     type: ActionAlertActionType.PROCEED,
                     handler: (): void => {
-                      this.applicationStore.navigationService.goToLocation(
+                      this.applicationStore.navigationService.navigator.goToLocation(
                         generateProjectServiceQueryUpdaterRoute(
                           project.projectId,
                           this.workspaceName,
@@ -733,7 +733,7 @@ export class QueryProductionizerStore {
                     label: 'Open Workspace',
                     type: ActionAlertActionType.PROCEED,
                     handler: (): void => {
-                      this.applicationStore.navigationService.goToLocation(
+                      this.applicationStore.navigationService.navigator.goToLocation(
                         generateEditorRoute(
                           project.projectId,
                           this.workspaceName,

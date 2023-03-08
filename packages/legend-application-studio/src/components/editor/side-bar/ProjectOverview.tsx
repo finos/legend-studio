@@ -71,10 +71,10 @@ const ShareProjectModal = observer(
     >();
     const projectId = editorStore.sdlcState.activeProject.projectId;
     const projectLink = selectedVersion
-      ? applicationStore.navigationService.generateAddress(
+      ? applicationStore.navigationService.navigator.generateAddress(
           generateViewVersionRoute(projectId, selectedVersion.id.id),
         )
-      : applicationStore.navigationService.generateAddress(
+      : applicationStore.navigationService.navigator.generateAddress(
           generateViewProjectRoute(projectId),
         );
     const copyProjectElementLink = (): void => {
@@ -207,8 +207,8 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
         )}
         tabIndex={-1}
         onClick={(): void =>
-          applicationStore.navigationService.visitAddress(
-            applicationStore.navigationService.generateAddress(
+          applicationStore.navigationService.navigator.visitAddress(
+            applicationStore.navigationService.navigator.generateAddress(
               generateEditorRoute(
                 workspace.projectId,
                 workspace.workspaceId,
@@ -397,8 +397,8 @@ const ReleaseEditor = observer(() => {
                       className="project-overview__release__info__current-version__link"
                       tabIndex={-1}
                       onClick={(): void =>
-                        applicationStore.navigationService.visitAddress(
-                          applicationStore.navigationService.generateAddress(
+                        applicationStore.navigationService.navigator.visitAddress(
+                          applicationStore.navigationService.navigator.generateAddress(
                             generateViewVersionRoute(
                               latestProjectVersion.projectId,
                               latestProjectVersion.id.id,
@@ -457,8 +457,8 @@ const ReleaseEditor = observer(() => {
                     className="side-bar__panel__item workspace-updater__review__link"
                     tabIndex={-1}
                     onClick={(): void =>
-                      applicationStore.navigationService.visitAddress(
-                        applicationStore.navigationService.generateAddress(
+                      applicationStore.navigationService.navigator.visitAddress(
+                        applicationStore.navigationService.navigator.generateAddress(
                           generateReviewRoute(review.projectId, review.id),
                         ),
                       )
@@ -523,8 +523,8 @@ const VersionsViewer = observer(() => {
               className="side-bar__panel__item project-overview__item__link"
               tabIndex={-1}
               onClick={(): void =>
-                applicationStore.navigationService.visitAddress(
-                  applicationStore.navigationService.generateAddress(
+                applicationStore.navigationService.navigator.visitAddress(
+                  applicationStore.navigationService.navigator.generateAddress(
                     generateViewVersionRoute(version.projectId, version.id.id),
                   ),
                 )
@@ -854,7 +854,7 @@ export const ProjectOverview = observer(() => {
   const hideShareModal = (): void => setOpenShareModal(false);
   const projectOverviewState = editorStore.projectOverviewState;
   const openProjectWebUrl = (): void =>
-    applicationStore.navigationService.visitAddress(
+    applicationStore.navigationService.navigator.visitAddress(
       editorStore.sdlcState.activeProject.webUrl,
     );
   const renderOverview = (): React.ReactNode => {

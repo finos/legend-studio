@@ -180,7 +180,7 @@ export class TaxonomyNodeViewerState {
 
   queryDataSpace(classPath?: string | undefined): void {
     if (this.dataSpaceViewerState) {
-      this.explorerStore.applicationStore.navigationService.visitAddress(
+      this.explorerStore.applicationStore.navigationService.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
           this.explorerStore.applicationStore.config.queryUrl,
           this.dataSpaceViewerState.groupId,

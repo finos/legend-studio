@@ -108,7 +108,7 @@ export const Editor = withEditorStore(
     }, [editorStore, applicationStore]);
 
     useEffect(() => {
-      applicationStore.navigationService.blockNavigation(
+      applicationStore.navigationService.navigator.blockNavigation(
         [() => true],
         undefined,
         () =>
@@ -117,7 +117,7 @@ export const Editor = withEditorStore(
           ),
       );
       return (): void => {
-        applicationStore.navigationService.unblockNavigation();
+        applicationStore.navigationService.navigator.unblockNavigation();
       };
     }, [editorStore, applicationStore]);
 

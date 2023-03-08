@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { WebApplicationNavigator } from '../stores/WebApplicationNavigator.js';
+import { WebApplicationNavigator } from '../stores/navigation/WebApplicationNavigator.js';
 import { createMemoryHistory, type History } from 'history';
 import { createMock } from '@finos/legend-shared';
 

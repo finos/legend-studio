@@ -255,7 +255,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.modelImporterState.replace, entities, message },
       );
-      this.editorStore.applicationStore.navigationService.reload({
+      this.editorStore.applicationStore.navigationService.navigator.reload({
         ignoreBlocking: true,
       });
     } catch (error) {
@@ -433,7 +433,7 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.modelImporterState.replace, entities, message },
       );
-      this.editorStore.applicationStore.navigationService.reload({
+      this.editorStore.applicationStore.navigationService.navigator.reload({
         ignoreBlocking: true,
       });
     } catch (error) {

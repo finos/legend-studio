@@ -163,7 +163,7 @@ export class QuerySetupLandingPageStore {
   }
 
   private updateCurentLocation(): void {
-    this.applicationStore.navigationService.updateCurrentLocation(
+    this.applicationStore.navigationService.navigator.updateCurrentLocation(
       generateQuerySetupRoute(
         this.showAllGroups,
         this.showAdvancedActions,

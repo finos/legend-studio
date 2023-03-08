@@ -211,7 +211,7 @@ export class DataSpaceAdvancedSearchState {
 
   *proceedToCreateQuery(_class?: Class): GeneratorFn<void> {
     if (this.dataSpaceViewerState) {
-      this.applicationStore.navigationService.goToLocation(
+      this.applicationStore.navigationService.navigator.goToLocation(
         generateDataSpaceQueryCreatorRoute(
           this.dataSpaceViewerState.groupId,
           this.dataSpaceViewerState.artifactId,

@@ -146,7 +146,7 @@ export class ProjectOverviewState {
         this.editorStore.applicationStore.notificationService.notifyWarning(
           'Current workspace is deleted. Redirecting to workspace setup',
         );
-        this.editorStore.applicationStore.navigationService.goToLocation(
+        this.editorStore.applicationStore.navigationService.navigator.goToLocation(
           generateSetupRoute(
             this.editorStore.sdlcState.activeProject.projectId,
           ),

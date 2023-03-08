@@ -25,7 +25,7 @@ import {
   languages as monacoLanguagesAPI,
   type IPosition,
 } from 'monaco-editor';
-import type { DocumentationEntry } from './DocumentationService.js';
+import type { DocumentationEntry } from '../DocumentationService.js';
 
 /**
  * This snippet suggestion is meant for an embedded content of an element

@@ -290,7 +290,7 @@ export class WorkspaceUpdaterState {
         // TODO: we might want to handle the situation more gracefully rather than just reloading the page
         case WorkspaceUpdateReportStatus.CONFLICT:
         case WorkspaceUpdateReportStatus.UPDATED:
-          this.editorStore.applicationStore.navigationService.reload({
+          this.editorStore.applicationStore.navigationService.navigator.reload({
             ignoreBlocking: true,
           });
           break;

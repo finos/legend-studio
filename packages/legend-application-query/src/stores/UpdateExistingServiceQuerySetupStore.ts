@@ -76,7 +76,7 @@ export class UpdateExistingServiceQuerySetupStore extends BaseQuerySetupStore {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      this.applicationStore.navigationService.goToAddress(
+      this.applicationStore.navigationService.navigator.goToAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl(
           matchingSDLCEntry.url,
           serviceInfo.groupId,

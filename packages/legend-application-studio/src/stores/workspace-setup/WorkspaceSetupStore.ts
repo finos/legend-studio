@@ -117,7 +117,7 @@ export class WorkspaceSetupStore {
     this.currentProject = undefined;
     this.workspaces = [];
     this.currentWorkspace = undefined;
-    this.applicationStore.navigationService.updateCurrentLocation(
+    this.applicationStore.navigationService.navigator.updateCurrentLocation(
       generateSetupRoute(undefined, undefined, undefined),
     );
     this.currentProjectConfigurationStatus = undefined;
@@ -126,7 +126,7 @@ export class WorkspaceSetupStore {
   resetWorkspace(): void {
     this.currentWorkspace = undefined;
     if (this.currentProject) {
-      this.applicationStore.navigationService.updateCurrentLocation(
+      this.applicationStore.navigationService.navigator.updateCurrentLocation(
         generateSetupRoute(this.currentProject.projectId, undefined, undefined),
       );
     }
@@ -152,7 +152,7 @@ export class WorkspaceSetupStore {
             )) as PlainObject<Project>,
           );
         } catch {
-          this.applicationStore.navigationService.updateCurrentLocation(
+          this.applicationStore.navigationService.navigator.updateCurrentLocation(
             generateSetupRoute(undefined),
           );
           this.initState.pass();
@@ -255,13 +255,13 @@ export class WorkspaceSetupStore {
         if (matchingWorkspace) {
           this.changeWorkspace(matchingWorkspace);
         } else {
-          this.applicationStore.navigationService.updateCurrentLocation(
+          this.applicationStore.navigationService.navigator.updateCurrentLocation(
             generateSetupRoute(project.projectId),
           );
         }
       } else {
         this.currentWorkspace = undefined;
-        this.applicationStore.navigationService.updateCurrentLocation(
+        this.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateSetupRoute(project.projectId),
         );
       }
@@ -285,7 +285,7 @@ export class WorkspaceSetupStore {
       );
     }
     this.currentWorkspace = workspace;
-    this.applicationStore.navigationService.updateCurrentLocation(
+    this.applicationStore.navigationService.navigator.updateCurrentLocation(
       generateSetupRoute(
         this.currentProject.projectId,
         workspace.workspaceId,

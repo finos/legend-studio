@@ -53,7 +53,8 @@ import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../stores/LegendStudioDocumenta
 const LegendStudioNotFoundRouteScreen = observer(() => {
   const applicationStore = useApplicationStore();
 
-  const currentPath = applicationStore.navigationService.getCurrentLocation();
+  const currentPath =
+    applicationStore.navigationService.navigator.getCurrentLocation();
 
   const documentation = applicationStore.documentationService.getDocEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.NOT_FOUND_HELP,
@@ -89,7 +90,9 @@ const LegendStudioNotFoundRouteScreen = observer(() => {
           <div className="not-found-screen__text-content__detail">
             The requested URL
             <span className="not-found-screen__text-content__detail__url">
-              {applicationStore.navigationService.generateAddress(currentPath)}
+              {applicationStore.navigationService.navigator.generateAddress(
+                currentPath,
+              )}
             </span>
             was not found in the application
           </div>

@@ -22,10 +22,7 @@ import {
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from './ApplicationEvent.js';
 import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
-import type {
-  ApplicationNavigator,
-  WebApplicationNavigator,
-} from './WebApplicationNavigator.js';
+import type { WebApplicationNavigator } from './navigation/WebApplicationNavigator.js';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 import { DocumentationService } from './DocumentationService.js';
 import { AssistantService } from './AssistantService.js';
@@ -43,6 +40,7 @@ import { TelemetryService } from './TelemetryService.js';
 import { TimeService } from './TimeService.js';
 import { LayoutService } from './LayoutService.js';
 import { ClipboardService } from './ClipboardService.js';
+import { NavigationService } from './navigation/NavigationService.js';
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
@@ -68,8 +66,7 @@ export class ApplicationStore<
   readonly clipboardService: ClipboardService;
   readonly terminalService: TerminalService;
   readonly logService = new LogService();
-  // NOTE: as of now, we only support web environment, we will not use `Application
-  readonly navigationService: ApplicationNavigator;
+  readonly navigationService: NavigationService;
   readonly navigationContextService: ApplicationNavigationContextService;
 
   // support
@@ -83,7 +80,15 @@ export class ApplicationStore<
   readonly telemetryService: TelemetryService;
   readonly tracerService: TracerService;
 
-  constructor(config: T, navigator: WebApplicationNavigator, pluginManager: V) {
+  constructor(
+    config: T,
+    /**
+     * NOTE: as of now, we only support web environment, we will not provide a generic `ApplicationNavigator`
+     * This is something we need to think about when we potentially move to another platform
+     */
+    navigator: WebApplicationNavigator,
+    pluginManager: V,
+  ) {
     this.config = config;
     this.pluginManager = pluginManager;
 
@@ -100,7 +105,7 @@ export class ApplicationStore<
     this.commandService = new CommandService(this);
     this.keyboardShortcutsService = new KeyboardShortcutsService(this);
 
-    this.navigationService = navigator;
+    this.navigationService = new NavigationService(navigator);
     this.navigationContextService = new ApplicationNavigationContextService(
       this,
     );

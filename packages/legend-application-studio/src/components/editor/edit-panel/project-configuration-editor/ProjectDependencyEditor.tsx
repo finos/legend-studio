@@ -213,14 +213,18 @@ const DependencyTreeNodeContextMenu = observer(
     const viewProjectUrl = getViewProjectUrl();
 
     const viewProject = (): void => {
-      applicationStore.navigationService.visitAddress(
-        applicationStore.navigationService.generateAddress(viewProjectUrl),
+      applicationStore.navigationService.navigator.visitAddress(
+        applicationStore.navigationService.navigator.generateAddress(
+          viewProjectUrl,
+        ),
       );
     };
     const viewSDLCProject = (): void => {
       if (sdlcProjectUrl) {
-        applicationStore.navigationService.visitAddress(
-          applicationStore.navigationService.generateAddress(sdlcProjectUrl),
+        applicationStore.navigationService.navigator.visitAddress(
+          applicationStore.navigationService.navigator.generateAddress(
+            sdlcProjectUrl,
+          ),
         );
       }
     };
@@ -827,8 +831,8 @@ const ProjectVersionDependencyEditor = observer(
     };
     const viewProject = (): void => {
       if (!projectDependency.isLegacyDependency) {
-        applicationStore.navigationService.visitAddress(
-          applicationStore.navigationService.generateAddress(
+        applicationStore.navigationService.navigator.visitAddress(
+          applicationStore.navigationService.navigator.generateAddress(
             generateViewProjectByGAVRoute(
               guaranteeNonNullable(projectDependency.groupId),
               guaranteeNonNullable(projectDependency.artifactId),
@@ -844,8 +848,8 @@ const ProjectVersionDependencyEditor = observer(
     // In the future, the studio instance may be part of the project data
     const viewSDLCProject = (): void => {
       if (projectDependencyData) {
-        applicationStore.navigationService.visitAddress(
-          applicationStore.navigationService.generateAddress(
+        applicationStore.navigationService.navigator.visitAddress(
+          applicationStore.navigationService.navigator.generateAddress(
             generateViewVersionRoute(projectDependencyData.projectId, version),
           ),
         );

@@ -54,7 +54,7 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
                 (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
               );
             if (matchingSDLCEntry) {
-              editorStore.applicationStore.navigationService.goToAddress(
+              editorStore.applicationStore.navigationService.navigator.goToAddress(
                 buildUrl([
                   editorStore.applicationStore.config.studioUrl,
                   generateQueryProductionizerRoute(editorStore.query.id),

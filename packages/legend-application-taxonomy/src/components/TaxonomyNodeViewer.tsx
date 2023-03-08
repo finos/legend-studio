@@ -84,7 +84,7 @@ const TaxonomyNodeDataSpaceItem = observer(
     const copyLink = (): void => {
       applicationStore.clipboardService
         .copyTextToClipboard(
-          applicationStore.navigationService.generateAddress(
+          applicationStore.navigationService.navigator.generateAddress(
             generateExploreTaxonomyTreeNodeDataSpaceRoute(
               applicationStore.config.currentTaxonomyTreeOption.key,
               taxonomyNodeViewerState.taxonomyNode.id,
@@ -207,8 +207,8 @@ const TaxonomyNodeDataSpaceViewer = observer(
     const queryDataSpace = (): void =>
       nodeViewerState.queryDataSpace(undefined);
     const viewDataSpace = (): void =>
-      applicationStore.navigationService.visitAddress(
-        applicationStore.navigationService.generateAddress(
+      applicationStore.navigationService.navigator.visitAddress(
+        applicationStore.navigationService.navigator.generateAddress(
           generateStandaloneDataSpaceViewerRoute(
             generateGAVCoordinates(
               dataSpaceViewerState.groupId,

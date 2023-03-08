@@ -236,7 +236,7 @@ export class WorkspaceReviewState {
         this.sdlcState.activeWorkspace.workspaceId,
         this.sdlcState.activeWorkspace.workspaceType,
       );
-      this.editorStore.applicationStore.navigationService.reload({
+      this.editorStore.applicationStore.navigationService.navigator.reload({
         ignoreBlocking: true,
       });
     } catch (error) {
@@ -383,7 +383,7 @@ export class WorkspaceReviewState {
             label: 'Leave',
             type: ActionAlertActionType.PROCEED,
             handler: (): void => {
-              this.editorStore.applicationStore.navigationService.goToLocation(
+              this.editorStore.applicationStore.navigationService.navigator.goToLocation(
                 generateSetupRoute(
                   this.editorStore.sdlcState.activeProject.projectId,
                 ),

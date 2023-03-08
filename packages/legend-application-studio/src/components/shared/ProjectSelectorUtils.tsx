@@ -41,21 +41,23 @@ export const getProjectOptionLabelFormatter = (
 ): ((option: ProjectOption) => React.ReactNode) =>
   function ProjectOptionLabel(option: ProjectOption): React.ReactNode {
     const viewProject = (): void =>
-      applicationStore.navigationService.visitAddress(
-        applicationStore.navigationService.generateAddress(
+      applicationStore.navigationService.navigator.visitAddress(
+        applicationStore.navigationService.navigator.generateAddress(
           generateViewProjectRoute(option.value.projectId),
         ),
       );
     const configure = (): void => {
       if (projectConfigurationStatus?.reviewUrl) {
-        applicationStore.navigationService.visitAddress(
+        applicationStore.navigationService.navigator.visitAddress(
           projectConfigurationStatus.reviewUrl,
         );
       } else {
         applicationStore.notificationService.notifyWarning(
           `Can't find project configuration review: opening the project web page...`,
         );
-        applicationStore.navigationService.visitAddress(option.value.webUrl);
+        applicationStore.navigationService.navigator.visitAddress(
+          option.value.webUrl,
+        );
       }
     };
 

@@ -174,7 +174,7 @@ export class DataSpaceQuerySetupStore extends QueryEditorStore {
       this.depotServerClient,
       (dataSpaceInfo: DataSpaceInfo) => {
         if (dataSpaceInfo.defaultExecutionContext) {
-          this.applicationStore.navigationService.goToLocation(
+          this.applicationStore.navigationService.navigator.goToLocation(
             generateDataSpaceQueryCreatorRoute(
               dataSpaceInfo.groupId,
               dataSpaceInfo.artifactId,

@@ -175,7 +175,7 @@ const ServiceRegisterModal = observer(
                 label: 'Launch Service',
                 type: ActionAlertActionType.PROCEED,
                 handler: (): void => {
-                  editorStore.applicationStore.navigationService.visitAddress(
+                  editorStore.applicationStore.navigationService.navigator.visitAddress(
                     generateServiceManagementUrl(
                       guaranteeNonNullable(serverConfig?.managementUrl),
                       serviceRegistrationResult.pattern,

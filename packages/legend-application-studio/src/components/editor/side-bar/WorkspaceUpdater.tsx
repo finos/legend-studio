@@ -227,8 +227,8 @@ export const WorkspaceUpdater = observer(() => {
                     title="See review"
                     tabIndex={-1}
                     onClick={(): void =>
-                      applicationStore.navigationService.visitAddress(
-                        applicationStore.navigationService.generateAddress(
+                      applicationStore.navigationService.navigator.visitAddress(
+                        applicationStore.navigationService.navigator.generateAddress(
                           generateReviewRoute(review.projectId, review.id),
                         ),
                       )

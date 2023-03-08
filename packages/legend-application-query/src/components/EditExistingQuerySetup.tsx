@@ -77,11 +77,13 @@ const EditExistingQuerySetupContent = observer(() => {
 
   // actions
   const back = (): void => {
-    applicationStore.navigationService.goToLocation(generateQuerySetupRoute());
+    applicationStore.navigationService.navigator.goToLocation(
+      generateQuerySetupRoute(),
+    );
   };
   const next = (): void => {
     if (setupStore.currentQuery) {
-      applicationStore.navigationService.goToLocation(
+      applicationStore.navigationService.navigator.goToLocation(
         generateExistingQueryEditorRoute(setupStore.currentQuery.id),
       );
     }

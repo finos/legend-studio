@@ -155,7 +155,7 @@ export class StandaloneDataSpaceViewerStore {
 
   queryDataSpace(classPath?: string | undefined): void {
     if (this.viewerState) {
-      this.applicationStore.navigationService.visitAddress(
+      this.applicationStore.navigationService.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
           this.applicationStore.config.queryUrl,
           this.viewerState.groupId,

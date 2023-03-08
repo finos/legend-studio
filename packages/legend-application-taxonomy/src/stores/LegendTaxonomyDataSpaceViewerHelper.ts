@@ -33,7 +33,7 @@ export const createViewProjectHandler =
     versionId: string,
     entityPath: string | undefined,
   ): void =>
-    applicationStore.navigationService.visitAddress(
+    applicationStore.navigationService.navigator.visitAddress(
       EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
         applicationStore.config.studioUrl,
         groupId,
@@ -63,7 +63,7 @@ export const createViewSDLCProjectHandler =
       (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
     );
     if (matchingSDLCEntry) {
-      applicationStore.navigationService.visitAddress(
+      applicationStore.navigationService.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
           matchingSDLCEntry.url,
           project.projectId,

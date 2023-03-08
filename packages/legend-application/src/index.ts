@@ -30,7 +30,8 @@ export * from './stores/ApplicationStore.js';
 export * from './stores/ApplicationTelemetry.js';
 export * from './stores/ApplicationEvent.js';
 export * from './application/LegendApplicationConfig.js';
-export { WebApplicationNavigator } from './stores/WebApplicationNavigator.js';
+export { WebApplicationNavigator } from './stores/navigation/WebApplicationNavigator.js';
+export { NavigationService } from './stores/navigation/NavigationService.js';
 export { LocalStorage } from './stores/storage/ApplicationStorage.js';
 export * from './stores/storage/StorageService.js';
 export * from './stores/DocumentationService.js';
@@ -49,9 +50,9 @@ export * from './stores/shared/TextSearchAdvancedConfigState.js';
 export * from './stores/LegendApplicationDocumentation.js';
 
 export * from './stores/ApplicationStoreTestUtils.js';
-export * from './stores/WebApplicationRouter.js';
-export { PURE_GRAMMAR_TOKEN } from './stores/PureLanguageSupport.js';
-export * from './stores/PureLanguageTextEditorSupport.js';
+export * from './stores/navigation/WebApplicationRouter.js';
+export { PURE_GRAMMAR_TOKEN } from './stores/pure-language/PureLanguageSupport.js';
+export * from './stores/pure-language/PureLanguageTextEditorSupport.js';
 export { DISPLAY_ANSI_ESCAPE } from './stores/terminal/Terminal.js';
 
 // ------------------------------------------- Shared components -------------------------------------------

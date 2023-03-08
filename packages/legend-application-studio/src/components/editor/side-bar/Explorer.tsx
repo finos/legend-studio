@@ -309,8 +309,8 @@ const ExplorerContextMenu = observer(
     };
     const openElementInViewerMode = (): void => {
       if (node && projectId) {
-        applicationStore.navigationService.visitAddress(
-          applicationStore.navigationService.generateAddress(
+        applicationStore.navigationService.navigator.visitAddress(
+          applicationStore.navigationService.navigator.generateAddress(
             generateViewEntityRoute(projectId, node.packageableElement.path),
           ),
         );
@@ -327,7 +327,7 @@ const ExplorerContextMenu = observer(
         if (dependency) {
           applicationStore.clipboardService
             .copyTextToClipboard(
-              applicationStore.navigationService.generateAddress(
+              applicationStore.navigationService.navigator.generateAddress(
                 editorStore.editorMode.generateDependencyElementLink(
                   node.packageableElement.path,
                   dependency,
@@ -343,7 +343,7 @@ const ExplorerContextMenu = observer(
         } else {
           applicationStore.clipboardService
             .copyTextToClipboard(
-              applicationStore.navigationService.generateAddress(
+              applicationStore.navigationService.navigator.generateAddress(
                 editorStore.editorMode.generateElementLink(
                   node.packageableElement.path,
                 ),
@@ -369,7 +369,7 @@ const ExplorerContextMenu = observer(
         if (dependency) {
           applicationStore.clipboardService
             .copyTextToClipboard(
-              applicationStore.navigationService.generateAddress(
+              applicationStore.navigationService.navigator.generateAddress(
                 generateViewProjectByGAVRoute(
                   guaranteeNonNullable(dependency.groupId),
                   guaranteeNonNullable(dependency.artifactId),
@@ -403,8 +403,8 @@ const ExplorerContextMenu = observer(
           (dep) => dep.projectId === node?.packageableElement.name,
         );
       if (projectDependency && !projectDependency.isLegacyDependency) {
-        applicationStore.navigationService.visitAddress(
-          applicationStore.navigationService.generateAddress(
+        applicationStore.navigationService.navigator.visitAddress(
+          applicationStore.navigationService.navigator.generateAddress(
             generateViewProjectByGAVRoute(
               guaranteeNonNullable(projectDependency.groupId),
               guaranteeNonNullable(projectDependency.artifactId),

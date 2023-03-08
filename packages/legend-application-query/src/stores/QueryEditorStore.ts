@@ -98,7 +98,7 @@ export const createViewProjectHandler =
     versionId: string,
     entityPath: string | undefined,
   ): void =>
-    applicationStore.navigationService.visitAddress(
+    applicationStore.navigationService.navigator.visitAddress(
       EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
         applicationStore.config.studioUrl,
         groupId,
@@ -128,7 +128,7 @@ export const createViewSDLCProjectHandler =
       (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
     );
     if (matchingSDLCEntry) {
-      applicationStore.navigationService.visitAddress(
+      applicationStore.navigationService.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
           matchingSDLCEntry.url,
           project.projectId,
@@ -253,7 +253,7 @@ export class QueryExportState {
           },
         );
 
-        this.editorStore.applicationStore.navigationService.goToLocation(
+        this.editorStore.applicationStore.navigationService.navigator.goToLocation(
           generateExistingQueryEditorRoute(newQuery.id),
         );
       } else {
@@ -591,7 +591,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
       this.applicationStore,
       this.graphManagerState,
       (val: Mapping) => {
-        this.applicationStore.navigationService.updateCurrentLocation(
+        this.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateMappingQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -603,7 +603,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
         );
       },
       (val: Runtime) => {
-        this.applicationStore.navigationService.updateCurrentLocation(
+        this.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateMappingQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -688,7 +688,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
       this.graphManagerState.usableServices,
       this.executionKey,
       (val: Service): void => {
-        this.applicationStore.navigationService.goToLocation(
+        this.applicationStore.navigationService.navigator.goToLocation(
           generateServiceQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -698,7 +698,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
         );
       },
       (val: ServiceExecutionContext): void => {
-        this.applicationStore.navigationService.updateCurrentLocation(
+        this.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateServiceQueryCreatorRoute(
             this.groupId,
             this.artifactId,

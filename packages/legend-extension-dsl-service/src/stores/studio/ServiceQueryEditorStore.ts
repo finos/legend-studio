@@ -313,7 +313,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
         this.sdlcState.activeWorkspace.workspaceId,
         this.sdlcState.activeWorkspace.workspaceType,
       );
-      this.applicationStore.navigationService.reload();
+      this.applicationStore.navigationService.navigator.reload();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.error(
@@ -394,7 +394,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
               label: 'Launch Service',
               type: ActionAlertActionType.PROCEED,
               handler: (): void => {
-                this.applicationStore.navigationService.visitAddress(
+                this.applicationStore.navigationService.navigator.visitAddress(
                   generateServiceManagementUrl(
                     registrationConfig.managementUrl,
                     serviceRegistrationResult.pattern,

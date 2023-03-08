@@ -535,7 +535,7 @@ export class EditorStore implements CommandRegistrar {
     );
     if (entityPath) {
       this.initialEntityPath = entityPath;
-      this.applicationStore.navigationService.updateCurrentLocation(
+      this.applicationStore.navigationService.navigator.updateCurrentLocation(
         generateEditorRoute(projectId, workspaceId, workspaceType),
       );
     }
@@ -600,14 +600,14 @@ export class EditorStore implements CommandRegistrar {
             default: true,
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigationService.reload();
+              this.applicationStore.navigationService.navigator.reload();
             },
           },
           {
             label: 'Back to workspace setup',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigationService.goToLocation(
+              this.applicationStore.navigationService.navigator.goToLocation(
                 generateSetupRoute(undefined),
               );
             },
@@ -649,7 +649,7 @@ export class EditorStore implements CommandRegistrar {
           this.applicationStore.notificationService.notifySuccess(
             `Workspace '${workspace.workspaceId}' is succesfully created. Reloading application...`,
           );
-          this.applicationStore.navigationService.reload();
+          this.applicationStore.navigationService.navigator.reload();
         } catch (error) {
           assertErrorThrown(error);
           this.applicationStore.logService.error(
@@ -669,7 +669,7 @@ export class EditorStore implements CommandRegistrar {
             default: true,
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigationService.goToLocation(
+              this.applicationStore.navigationService.navigator.goToLocation(
                 generateViewProjectRoute(projectId),
               );
             },
@@ -687,7 +687,7 @@ export class EditorStore implements CommandRegistrar {
             label: 'Back to workspace setup',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigationService.goToLocation(
+              this.applicationStore.navigationService.navigator.goToLocation(
                 generateSetupRoute(projectId, workspaceId, workspaceType),
               );
             },

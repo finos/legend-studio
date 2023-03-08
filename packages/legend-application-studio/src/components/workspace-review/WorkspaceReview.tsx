@@ -84,8 +84,8 @@ const WorkspaceReviewStatusBar = observer(() => {
             title="Go back to workspace setup using the specified project"
             tabIndex={-1}
             onClick={(): void =>
-              applicationStore.navigationService.visitAddress(
-                applicationStore.navigationService.generateAddress(
+              applicationStore.navigationService.navigator.visitAddress(
+                applicationStore.navigationService.navigator.generateAddress(
                   generateSetupRoute(reviewStore.projectId),
                 ),
               )
@@ -99,8 +99,8 @@ const WorkspaceReviewStatusBar = observer(() => {
             title="Go back to workspace setup using the specified workspace"
             tabIndex={-1}
             onClick={(): void =>
-              applicationStore.navigationService.visitAddress(
-                applicationStore.navigationService.generateAddress(
+              applicationStore.navigationService.navigator.visitAddress(
+                applicationStore.navigationService.navigator.generateAddress(
                   generateSetupRoute(
                     reviewStore.projectId,
                     review.workspaceId,

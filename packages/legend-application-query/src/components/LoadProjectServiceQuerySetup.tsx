@@ -64,7 +64,9 @@ const LoadProjectServiceQuerySetupContent = observer(() => {
   const setupStore = useLoadProjectServiceQuerySetupStore();
 
   const back = (): void => {
-    applicationStore.navigationService.goToLocation(generateQuerySetupRoute());
+    applicationStore.navigationService.navigator.goToLocation(
+      generateQuerySetupRoute(),
+    );
   };
 
   // project

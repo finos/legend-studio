@@ -131,7 +131,7 @@ export const Editor = withEditorStore(
     }, [editorStore, applicationStore, projectId, workspaceId, workspaceType]);
 
     useEffect(() => {
-      applicationStore.navigationService.blockNavigation(
+      applicationStore.navigationService.navigator.blockNavigation(
         [
           (): boolean =>
             editorStore.isInConflictResolutionMode ||
@@ -164,7 +164,7 @@ export const Editor = withEditorStore(
           ),
       );
       return (): void => {
-        applicationStore.navigationService.unblockNavigation();
+        applicationStore.navigationService.navigator.unblockNavigation();
       };
     }, [editorStore, applicationStore]);
 

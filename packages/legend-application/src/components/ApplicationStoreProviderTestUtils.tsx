@@ -16,7 +16,7 @@
 
 import { createMemoryHistory } from 'history';
 import { ApplicationStore } from '../stores/ApplicationStore.js';
-import { WebApplicationNavigator } from '../stores/WebApplicationNavigator.js';
+import { WebApplicationNavigator } from '../stores/navigation/WebApplicationNavigator.js';
 import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
 import { ApplicationStoreProvider } from './ApplicationStoreProvider.js';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';

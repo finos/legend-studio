@@ -283,11 +283,13 @@ const WorkflowExplorerContextMenu = observer(
     };
     const visitWeburl = (): void => {
       if (node instanceof WorkflowJobTreeNodeData) {
-        applicationStore.navigationService.visitAddress(
+        applicationStore.navigationService.navigator.visitAddress(
           node.workflowJob.webURL,
         );
       } else if (node instanceof WorkflowTreeNodeData) {
-        applicationStore.navigationService.visitAddress(node.workflow.webURL);
+        applicationStore.navigationService.navigator.visitAddress(
+          node.workflow.webURL,
+        );
       }
     };
 

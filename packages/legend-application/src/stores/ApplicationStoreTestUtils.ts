@@ -16,7 +16,7 @@
 
 import { ApplicationStore } from './ApplicationStore.js';
 import { createBrowserHistory } from 'history';
-import { WebApplicationNavigator } from './WebApplicationNavigator.js';
+import { WebApplicationNavigator } from './navigation/WebApplicationNavigator.js';
 import { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
 import { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 import type { LegendApplicationPlugin } from './LegendApplicationPlugin.js';

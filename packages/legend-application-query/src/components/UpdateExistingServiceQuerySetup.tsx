@@ -69,7 +69,9 @@ const UpdateExistingServiceQuerySetupContent = observer(() => {
   const [searchText, setSearchText] = useState('');
 
   const back = (): void => {
-    applicationStore.navigationService.goToLocation(generateQuerySetupRoute());
+    applicationStore.navigationService.navigator.goToLocation(
+      generateQuerySetupRoute(),
+    );
   };
 
   const serviceOptions = setupStore.services.map(buildServiceOption);

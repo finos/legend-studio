@@ -72,7 +72,7 @@ export class LoadProjectServiceQuerySetupStore extends BaseQuerySetupStore {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      this.applicationStore.navigationService.goToAddress(
+      this.applicationStore.navigationService.navigator.goToAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl(
           matchingSDLCEntry.url,
           project.projectId,

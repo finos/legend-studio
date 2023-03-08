@@ -281,7 +281,7 @@ export class ServiceRegistrationState {
             label: 'Launch Service',
             type: ActionAlertActionType.PROCEED,
             handler: (): void => {
-              this.editorStore.applicationStore.navigationService.visitAddress(
+              this.editorStore.applicationStore.navigationService.navigator.visitAddress(
                 generateServiceManagementUrl(
                   config.managementUrl,
                   serviceRegistrationResult.pattern,

@@ -231,7 +231,7 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
         setupStore.currentGroupWorkspace &&
         setupStore.currentWorkspaceService
       ) {
-        applicationStore.navigationService.goToLocation(
+        applicationStore.navigationService.navigator.goToLocation(
           generateServiceQueryUpdaterRoute(
             setupStore.currentProject.groupId,
             setupStore.currentProject.artifactId,
