@@ -20,7 +20,7 @@ import type { EmbeddedData } from '../../data/EmbeddedData.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
 import type { Store } from '../store/Store.js';
 
-export class MappingTestData implements Hashable {
+export class MappingStoreTestData implements Hashable {
   store!: PackageableElementReference<Store>;
   data!: EmbeddedData;
 

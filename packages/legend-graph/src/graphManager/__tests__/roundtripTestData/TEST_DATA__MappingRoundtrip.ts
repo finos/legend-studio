@@ -24,7 +24,7 @@
 // - Association mapping - stores
 // - MappingTest - inputData - flatdata
 // - MappingTest - inputData - class
-// - MappingTestData - storeTestData - class
+// - MappingStoreTestData - mappingStoreTestData - class
 export const TEST_DATA__MappingRoundtrip = [
   {
     path: 'test::tClass',
@@ -1470,7 +1470,7 @@ export const TEST_DATA__MappingTestSuiteRoundtrip = [
         {
           _type: 'mappingTestSuite',
           id: 'testSuite1',
-          storeTestDatas: [
+          mappingStoreTestDatas: [
             {
               data: {
                 _type: 'reference',
