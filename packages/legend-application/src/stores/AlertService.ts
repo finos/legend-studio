@@ -29,9 +29,9 @@ export enum ActionAlertActionType {
 }
 
 export interface ActionAlertInfo {
-  title?: string;
+  title?: string | undefined;
   message: string;
-  prompt?: string;
+  prompt?: string | undefined;
   type?: ActionAlertType;
   onClose?: () => void;
   onEnter?: () => void;

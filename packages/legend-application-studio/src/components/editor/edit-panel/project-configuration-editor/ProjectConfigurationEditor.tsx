@@ -436,13 +436,13 @@ export const ProjectConfigurationEditor = observer(() => {
         LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES,
       );
 
-    editorStore.applicationStore.setActionAlertInfo({
+    editorStore.applicationStore.alertService.setActionAlertInfo({
       message:
         'Please be cautious that modifying group ID or artifact ID (GAV coordinates) can potentially have a big downstream impact. Be aware that the project will lose all previous versions; also, any dependant projects can break too if the coordinates are not changed in a controlled way.',
       type: ActionAlertType.STANDARD,
-      ...(Boolean(documentationEntry) && {
-        prompt: 'Please see the instructions for more guidance',
-      }),
+      prompt: documentationEntry
+        ? 'Please see the instructions for more guidance'
+        : undefined,
       actions: [
         {
           label: (
@@ -479,7 +479,9 @@ export const ProjectConfigurationEditor = observer(() => {
                 documentationEntry._documentationKey,
               );
             } else if (documentationEntry.url) {
-              applicationStore.navigator.visitAddress(documentationEntry.url);
+              applicationStore.navigationService.navigator.visitAddress(
+                documentationEntry.url,
+              );
             }
           },
         },
