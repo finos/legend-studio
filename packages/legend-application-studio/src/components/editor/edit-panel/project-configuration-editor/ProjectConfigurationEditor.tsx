@@ -33,7 +33,6 @@ import {
   ExclamationTriangleIcon,
   PanelFormSection,
   PanelListItem,
-  QuestionCircleIcon,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -441,36 +440,21 @@ export const ProjectConfigurationEditor = observer(() => {
     editorStore.applicationStore.setActionAlertInfo({
       message:
         'Please be cautious that modifying group ID or artifact ID (GAV coordinates) can potentially have a big downstream impact. Be aware that the project will lose all previous versions; also, any dependant projects can break too if the coordinates are not changed in a controlled way.',
-      type: ActionAlertType.CAUTION,
+      type: ActionAlertType.STANDARD,
+      ...(Boolean(documentationEntry) && {
+        prompt: 'Please see the instructions for more guidance',
+      }),
       actions: [
         {
           label: (
             <>
               Acknowledge and Proceed
-              {documentationEntry && (
-                <button
-                  className="project-configuration-editor__documentation-btn"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    event.preventDefault();
-                    if (
-                      shouldDisplayVirtualAssistantDocumentationEntry(
-                        documentationEntry,
-                      )
-                    ) {
-                      applicationStore.assistantService.openDocumentationEntry(
-                        documentationEntry._documentationKey,
-                      );
-                    } else if (documentationEntry.url) {
-                      applicationStore.navigator.visitAddress(
-                        documentationEntry.url,
-                      );
-                    }
-                  }}
-                >
-                  <QuestionCircleIcon />
-                </button>
-              )}
+              <DocumentationLink
+                className="panel__content__form__section__list__item__edit project-configuration-editor__documentation-btn"
+                documentationKey={
+                  LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
+                }
+              />
             </>
           ),
           type: ActionAlertActionType.PROCEED_WITH_CAUTION,
@@ -505,9 +489,6 @@ export const ProjectConfigurationEditor = observer(() => {
           type: ActionAlertActionType.PROCEED,
         },
       ].filter(isNonNullable),
-      ...(Boolean(documentationEntry) && {
-        prompt: 'Please see the instructions for more guidance',
-      }),
     });
   };
 
