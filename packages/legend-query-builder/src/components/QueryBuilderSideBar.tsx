@@ -179,10 +179,14 @@ export const QueryBuilderClassSelector = observer(
               options={classOptions}
               onChange={changeClass}
               value={selectedClassOption}
-              darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+              darkMode={
+                !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+              }
               filterOption={elementFilterOption}
               formatOptionLabel={getPackageableElementOptionFormatter({
-                darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
+                darkMode:
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightThemeEnabled,
                 graph: queryBuilderState.graphManagerState.graph,
               })}
             />
@@ -337,10 +341,14 @@ const BasicQueryBuilderSetup = observer(
                 options={mappingOptions}
                 onChange={changeMapping}
                 value={selectedMappingOption}
-                darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+                darkMode={
+                  !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+                }
                 filterOption={mappingFilterOption}
                 formatOptionLabel={getPackageableElementOptionFormatter({
-                  darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
+                  darkMode:
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightThemeEnabled,
                   graph: queryBuilderState.graphManagerState.graph,
                 })}
               />
@@ -367,10 +375,14 @@ const BasicQueryBuilderSetup = observer(
                 options={runtimeOptions}
                 onChange={changeRuntime}
                 value={selectedRuntimeOption}
-                darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+                darkMode={
+                  !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+                }
                 filterOption={runtimeFilterOption}
                 formatOptionLabel={getRuntimeOptionFormatter({
-                  darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
+                  darkMode:
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightThemeEnabled,
                   pureModel: queryBuilderState.graphManagerState.graph,
                 })}
               />

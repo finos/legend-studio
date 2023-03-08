@@ -78,7 +78,7 @@ const ShareProjectModal = observer(
           generateViewProjectRoute(projectId),
         );
     const copyProjectElementLink = (): void => {
-      applicationStore
+      applicationStore.clipboardService
         .copyTextToClipboard(projectLink)
         .then(() =>
           applicationStore.notificationService.notifySuccess(

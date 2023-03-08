@@ -116,9 +116,11 @@ export const LegendApplicationComponentFrameworkProvider = observer(
       event.stopPropagation();
       event.preventDefault();
     };
-    const backdropContainer = applicationStore.backdropContainerElementID
-      ? document.getElementById(applicationStore.backdropContainerElementID) ??
-        document.getElementById(APP_BACKDROP_CONTAINER_ID)
+    const backdropContainer = applicationStore.layoutService
+      .backdropContainerElementID
+      ? document.getElementById(
+          applicationStore.layoutService.backdropContainerElementID,
+        ) ?? document.getElementById(APP_BACKDROP_CONTAINER_ID)
       : document.getElementById(APP_BACKDROP_CONTAINER_ID);
 
     const keyBindingMap = buildHotkeysConfiguration(
@@ -172,7 +174,7 @@ export const LegendApplicationComponentFrameworkProvider = observer(
         <BlockingAlert />
         <ActionAlert />
         <NotificationManager />
-        {applicationStore.showBackdrop && (
+        {applicationStore.layoutService.showBackdrop && (
           // We use <Portal> here to insert backdrop into different parts of the app
           // as backdrop relies heavily on z-index mechanism so its location in the DOM
           // really matters.
@@ -182,7 +184,7 @@ export const LegendApplicationComponentFrameworkProvider = observer(
           <Portal container={backdropContainer}>
             <Backdrop
               className="backdrop"
-              open={applicationStore.showBackdrop}
+              open={applicationStore.layoutService.showBackdrop}
             />
           </Portal>
         )}

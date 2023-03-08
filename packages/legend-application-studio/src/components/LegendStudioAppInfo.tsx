@@ -161,7 +161,7 @@ export const LegendStudioAppInfo: React.FC<{
   const applicationStore = useLegendStudioApplicationStore();
   const config = applicationStore.config;
   const copyInfo = (): void => {
-    applicationStore
+    applicationStore.clipboardService
       .copyTextToClipboard(
         [
           `Environment: ${config.env}`,

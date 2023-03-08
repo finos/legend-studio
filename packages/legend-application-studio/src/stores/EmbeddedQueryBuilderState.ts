@@ -96,12 +96,12 @@ export class EmbeddedQueryBuilderState {
       if (!this.editorStore.graphState.error) {
         this.queryBuilderState = config.setupQueryBuilderState();
         this.actionConfigs = config.actionConfigs;
-        this.editorStore.applicationStore.setBackdropContainerElementID(
+        this.editorStore.applicationStore.layoutService.setBackdropContainerElementID(
           QUERY_BUILDER_BACKDROP_CONTAINER_ID,
         );
       }
     } else {
-      this.editorStore.applicationStore.setBackdropContainerElementID(
+      this.editorStore.applicationStore.layoutService.setBackdropContainerElementID(
         undefined,
       );
       this.queryBuilderState = undefined;

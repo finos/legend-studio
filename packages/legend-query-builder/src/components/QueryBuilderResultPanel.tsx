@@ -278,11 +278,11 @@ const QueryBuilderGridResultContextMenu = observer(
     };
 
     const handleCopyCellValue = applicationStore.guardUnhandledError(() =>
-      applicationStore.copyTextToClipboard(event?.value),
+      applicationStore.clipboardService.copyTextToClipboard(event?.value),
     );
 
     const handleCopyRowValue = applicationStore.guardUnhandledError(() =>
-      applicationStore.copyTextToClipboard(
+      applicationStore.clipboardService.copyTextToClipboard(
         Object.values(event?.data).toString(),
       ),
     );

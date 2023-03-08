@@ -398,7 +398,10 @@ const ServiceGeneralEditor = observer(() => {
                     allowCreating={true}
                     isLoading={isLoadingUsers}
                     disabled={isReadOnly}
-                    darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightThemeEnabled
+                    }
                     onInputChange={onSearchTextChange}
                     onChange={onUserOptionChange}
                     isMulti={true}

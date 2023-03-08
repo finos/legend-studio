@@ -36,11 +36,11 @@ type Address = string;
  * However, this depends on how and when we move to another platform, like `electron` for example
  * See https://github.com/finos/legend-studio/issues/718
  */
-interface ApplicationNavigator {
+export interface ApplicationNavigator {
   /**
    * Reload the application using the same address
    */
-  reload(): void;
+  reload(options?: { ignoreBlocking?: boolean | undefined }): void;
 
   /**
    * Navigate to the specified location
@@ -87,6 +87,7 @@ interface ApplicationNavigator {
   blockNavigation(
     blockCheckers: (() => boolean)[],
     onBlock?: ((onProceed: () => void) => void) | undefined,
+    onNativePlatformNavigationBlock?: (() => void) | undefined,
   ): void;
   unblockNavigation(): void;
   get isNavigationBlocked(): boolean;

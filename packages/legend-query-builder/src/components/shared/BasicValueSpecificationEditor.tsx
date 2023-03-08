@@ -278,7 +278,9 @@ const StringPrimitiveInstanceValueEditor = observer(
             value={selectedValue}
             inputValue={value}
             onInputChange={handleInputChange}
-            darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+            darkMode={
+              !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+            }
             isLoading={isLoading}
             allowCreateWhileLoading={true}
             noOptionsMessage={noOptionsMessage}

@@ -14,26 +14,20 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable } from 'mobx';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 
-const UNKNOWN_USER_ID = '(unknown)';
-
-export class IdentityService {
+export class ClipboardService {
   readonly applicationStore: GenericLegendApplicationStore;
 
-  currentUser = UNKNOWN_USER_ID;
-
   constructor(applicationStore: GenericLegendApplicationStore) {
-    makeObservable(this, {
-      currentUser: observable,
-      setCurrentUser: action,
-    });
-
     this.applicationStore = applicationStore;
   }
 
-  setCurrentUser(val: string): void {
-    this.currentUser = val;
+  async copyTextToClipboard(text: string): Promise<void> {
+    // This is a much cleaner way which requires HTTPS
+    // See https://developers.google.com/web/updates/2018/03/clipboardapi
+    await navigator.clipboard.writeText(text).catch((error) => {
+      this.applicationStore.notificationService.notifyError(error);
+    });
   }
 }

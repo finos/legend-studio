@@ -121,7 +121,9 @@ const ServiceQueryBuilderSetupPanelContent = observer(
                 }
                 onChange={onServiceOptionChange}
                 value={selectedServiceOption}
-                darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+                darkMode={
+                  !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+                }
               />
             </div>
             {/* We will display mapping and runtime selector for single-execution and execution context for multi-execution */}
@@ -145,7 +147,10 @@ const ServiceQueryBuilderSetupPanelContent = observer(
                     }
                     onChange={onExecutionContextOptionChange}
                     value={selectedExecutionContextOption}
-                    darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightThemeEnabled
+                    }
                   />
                 </div>
               </>

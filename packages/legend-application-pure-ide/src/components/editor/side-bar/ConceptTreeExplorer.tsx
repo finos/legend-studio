@@ -93,7 +93,7 @@ const ConceptExplorerContextMenu = observer(
       );
     };
     const copyPath = (): void => {
-      applicationStore
+      applicationStore.clipboardService
         .copyTextToClipboard(nodeAttribute.pureId)
         .catch(applicationStore.alertUnhandledError);
     };

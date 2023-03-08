@@ -115,7 +115,9 @@ export class LegendStudioBaseStore {
           (yield this.sdlcServerClient.getCurrentUser()) as PlainObject<User>,
         );
         this.sdlcServerClient.setCurrentUser(currentUser);
-        this.applicationStore.setCurrentUser(currentUser.userId);
+        this.applicationStore.identityService.setCurrentUser(
+          currentUser.userId,
+        );
       } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.logService.error(
@@ -128,7 +130,7 @@ export class LegendStudioBaseStore {
       }
 
       // setup telemetry service
-      this.applicationStore.setupTelemetryService();
+      this.applicationStore.telemetryService.setup();
     } else {
       this.isSDLCAuthorized = undefined;
     }

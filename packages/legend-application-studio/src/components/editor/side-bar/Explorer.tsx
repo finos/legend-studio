@@ -325,7 +325,7 @@ const ExplorerContextMenu = observer(
               getElementRootPackage(node.packageableElement).name,
           );
         if (dependency) {
-          applicationStore
+          applicationStore.clipboardService
             .copyTextToClipboard(
               applicationStore.navigationService.generateAddress(
                 editorStore.editorMode.generateDependencyElementLink(
@@ -341,7 +341,7 @@ const ExplorerContextMenu = observer(
             )
             .catch(applicationStore.alertUnhandledError);
         } else {
-          applicationStore
+          applicationStore.clipboardService
             .copyTextToClipboard(
               applicationStore.navigationService.generateAddress(
                 editorStore.editorMode.generateElementLink(
@@ -367,7 +367,7 @@ const ExplorerContextMenu = observer(
               getElementRootPackage(node.packageableElement).name,
           );
         if (dependency) {
-          applicationStore
+          applicationStore.clipboardService
             .copyTextToClipboard(
               applicationStore.navigationService.generateAddress(
                 generateViewProjectByGAVRoute(

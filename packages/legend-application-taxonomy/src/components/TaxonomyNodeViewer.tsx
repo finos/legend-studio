@@ -82,7 +82,7 @@ const TaxonomyNodeDataSpaceItem = observer(
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     const copyLink = (): void => {
-      applicationStore
+      applicationStore.clipboardService
         .copyTextToClipboard(
           applicationStore.navigationService.generateAddress(
             generateExploreTaxonomyTreeNodeDataSpaceRoute(

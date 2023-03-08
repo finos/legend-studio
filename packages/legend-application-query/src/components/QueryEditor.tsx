@@ -403,8 +403,8 @@ const QueryEditorHeaderContent = observer(
       );
     };
     const toggleLightDarkMode = (): void =>
-      applicationStore.TEMPORARY__setIsLightThemeEnabled(
-        !applicationStore.TEMPORARY__isLightThemeEnabled,
+      applicationStore.layoutService.TEMPORARY__setIsLightThemeEnabled(
+        !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
       );
     const saveQuery = (): void => {
       queryBuilderState
@@ -477,7 +477,7 @@ const QueryEditorHeaderContent = observer(
               className="query-editor__header__action"
               disabled={editorStore.isViewProjectActionDisabled}
             >
-              {applicationStore.TEMPORARY__isLightThemeEnabled ? (
+              {applicationStore.layoutService.TEMPORARY__isLightThemeEnabled ? (
                 <>
                   <LightBulbIcon className="query-editor__header__action__icon--bulb--light" />
                 </>
@@ -564,9 +564,9 @@ export const QueryEditor = observer(() => {
   useEffect(() => {
     document.body.classList.toggle(
       'light-theme',
-      applicationStore.TEMPORARY__isLightThemeEnabled,
+      applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
     );
-  }, [applicationStore.TEMPORARY__isLightThemeEnabled]);
+  }, [applicationStore.layoutService.TEMPORARY__isLightThemeEnabled]);
 
   return (
     <div
@@ -574,7 +574,7 @@ export const QueryEditor = observer(() => {
         'query-editor ',
         {
           'query-editor--light':
-            applicationStore.TEMPORARY__isLightThemeEnabled,
+            applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
         },
       ])}
     >

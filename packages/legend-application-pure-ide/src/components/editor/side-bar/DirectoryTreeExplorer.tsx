@@ -78,7 +78,7 @@ const FileExplorerContextMenu = observer(
     const renameFile = (): void =>
       editorStore.directoryTreeState.setNodeForRenameFile(node);
     const copyPath = (): void => {
-      applicationStore
+      applicationStore.clipboardService
         .copyTextToClipboard(node.data.li_attr.path)
         .catch(applicationStore.alertUnhandledError);
     };

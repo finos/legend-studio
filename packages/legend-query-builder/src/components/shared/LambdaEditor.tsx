@@ -185,7 +185,7 @@ const LambdaEditorInline = observer(
         const _editor = monacoEditorAPI.create(element, {
           ...getBaseTextEditorOptions(),
           language: EDITOR_LANGUAGE.PURE,
-          theme: applicationStore.TEMPORARY__isLightThemeEnabled
+          theme: applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
             ? EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
             : EDITOR_THEME.LEGEND,
           ...lambdaEditorOptions,
@@ -464,7 +464,7 @@ const LambdaEditorPopUp = observer(
         const _editor = monacoEditorAPI.create(element, {
           ...getBaseTextEditorOptions(),
           language: EDITOR_LANGUAGE.PURE,
-          theme: applicationStore.TEMPORARY__isLightThemeEnabled
+          theme: applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
             ? EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
             : EDITOR_THEME.LEGEND,
         });
@@ -595,7 +595,7 @@ const LambdaEditorPopUp = observer(
             },
             {
               'lambda-editor--light':
-                applicationStore.TEMPORARY__isLightThemeEnabled,
+                applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
             },
           )}
         >

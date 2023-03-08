@@ -910,13 +910,13 @@ export class XTerm extends Terminal {
       );
       return;
     }
-    this.applicationStore
+    this.applicationStore.clipboardService
       .copyTextToClipboard(this.instance.getSelection())
       .catch(this.applicationStore.alertUnhandledError);
   }
 
   copyAll(): void {
-    this.applicationStore
+    this.applicationStore.clipboardService
       .copyTextToClipboard(this.getContent())
       .catch(this.applicationStore.alertUnhandledError);
   }

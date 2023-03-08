@@ -85,7 +85,7 @@ export const NotificationManager = observer(() => {
     setIsExpanded(false);
   };
   const handleCopy = applicationStore.guardUnhandledError(() =>
-    applicationStore.copyTextToClipboard(message),
+    applicationStore.clipboardService.copyTextToClipboard(message),
   );
   const toggleExpansion = (): void => setIsExpanded(!isExpanded);
 

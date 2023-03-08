@@ -71,7 +71,7 @@ export class LegendQueryBaseStore {
     this.initState.inProgress();
 
     try {
-      this.applicationStore.setCurrentUser(
+      this.applicationStore.identityService.setCurrentUser(
         (yield new NetworkClient().get(
           `${this.applicationStore.config.engineServerUrl}/server/v1/currentUser`,
         )) as string,
@@ -88,7 +88,7 @@ export class LegendQueryBaseStore {
     }
 
     // setup telemetry service
-    this.applicationStore.setupTelemetryService();
+    this.applicationStore.telemetryService.setup();
 
     ApplicationTelemetry.logEvent_ApplicationInitializationSucceeded(
       this.applicationStore.telemetryService,

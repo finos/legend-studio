@@ -160,7 +160,9 @@ const TDSColumnSelectorEditor = observer(
           disabled={options.length < 1}
           onChange={onChange}
           value={value}
-          darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+          }
         />
         <button
           className="query-builder__olap__tds__column__remove-btn btn--dark btn--caution"
@@ -269,7 +271,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
             'query-builder__olap__modal',
             {
               'query-editor--light':
-                applicationStore.TEMPORARY__isLightThemeEnabled,
+                applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
             },
           ])}
         >
@@ -315,7 +317,8 @@ const QueryBuilderWindowColumnModalEditor = observer(
                             label: windowOpColumn.columnName,
                           }}
                           darkMode={
-                            !applicationStore.TEMPORARY__isLightThemeEnabled
+                            !applicationStore.layoutService
+                              .TEMPORARY__isLightThemeEnabled
                           }
                         />
                       </div>
@@ -430,7 +433,8 @@ const QueryBuilderWindowColumnModalEditor = observer(
                           label: sortByState.columnState.columnName,
                         }}
                         darkMode={
-                          !applicationStore.TEMPORARY__isLightThemeEnabled
+                          !applicationStore.layoutService
+                            .TEMPORARY__isLightThemeEnabled
                         }
                       />
                     </div>
@@ -639,7 +643,10 @@ const TDSColumnReferenceEditor = observer(
                   disabled={options.length < 1}
                   onChange={onChange}
                   value={value}
-                  darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightThemeEnabled
+                  }
                 />
               </div>
             </div>

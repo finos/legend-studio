@@ -85,7 +85,9 @@ const VirtualAssistantDocumentationEntryViewer = observer(
       );
     };
     const copyDocumentationKey = applicationStore.guardUnhandledError(() =>
-      applicationStore.copyTextToClipboard(entry.documentationKey),
+      applicationStore.clipboardService.copyTextToClipboard(
+        entry.documentationKey,
+      ),
     );
 
     return (
@@ -163,16 +165,18 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
   const assistantService = applicationStore.assistantService;
   const contextualEntry = assistantService.currentContextualDocumentationEntry;
   const copyContextIDToClipboard = applicationStore.guardUnhandledError(() =>
-    applicationStore.copyTextToClipboard(contextualEntry?.context ?? ''),
+    applicationStore.clipboardService.copyTextToClipboard(
+      contextualEntry?.context ?? '',
+    ),
   );
   const copyCurrentContextIDToClipboard = applicationStore.guardUnhandledError(
     () =>
-      applicationStore.copyTextToClipboard(
+      applicationStore.clipboardService.copyTextToClipboard(
         applicationStore.navigationContextService.currentContext?.key ?? '',
       ),
   );
   const copyContextStackToClipboard = applicationStore.guardUnhandledError(() =>
-    applicationStore.copyTextToClipboard(
+    applicationStore.clipboardService.copyTextToClipboard(
       applicationStore.navigationContextService.contextStack
         .map((context) => context.key)
         .join(' > '),
