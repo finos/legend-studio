@@ -47,6 +47,7 @@ export enum V1_DatabaseType {
   Presto = 'Presto',
   Redshift = 'Redshift',
   Spanner = 'Spanner',
+  Trino = 'Trino',
 }
 
 export abstract class V1_DatabaseConnection extends V1_Connection {

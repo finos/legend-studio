@@ -29,6 +29,7 @@ import {
   type OAuthAuthenticationStrategy,
   type PropertyMapping,
   type RedshiftDatasourceSpecification,
+  type TrinoDatasourceSpecification,
   type RelationalDatabaseConnection,
   type RelationalInputData,
   type RelationalPropertyMapping,
@@ -39,6 +40,7 @@ import {
   type UsernamePasswordAuthenticationStrategy,
   type GCPWorkloadIdentityFederationAuthenticationStrategy,
   type MiddleTierUsernamePasswordAuthenticationStrategy,
+  type TrinoDelegatedKerberosAuthenticationStrategy,
   type ObserverContext,
   type EnumerationMappingReference,
   type TableAlias,
@@ -152,6 +154,20 @@ export const usernamePasswordAuthenticationStrategy_setPasswordVaultReference =
   action((v: UsernamePasswordAuthenticationStrategy, val: string): void => {
     v.passwordVaultReference = val;
   });
+
+export const trinoDelegatedKerberosAuthenticationStrategy_setKerberosRemoteServiceName =
+  action(
+    (v: TrinoDelegatedKerberosAuthenticationStrategy, val: string): void => {
+      v.kerberosRemoteServiceName = val;
+    },
+  );
+
+export const trinoDelegatedKerberosAuthenticationStrategy_setKerberosUseCanonicalHostname =
+  action(
+    (v: TrinoDelegatedKerberosAuthenticationStrategy, val: boolean): void => {
+      v.kerberosUseCanonicalHostname = val;
+    },
+  );
 
 export const gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail =
   action(
@@ -403,6 +419,56 @@ export const spannerDatasourceSpecification_setProxyPort = action(
     spec.proxyPort = val;
   },
 );
+
+export const trinoDatasourceSpecification_setHost = action(
+  (spec: TrinoDatasourceSpecification, val: string): void => {
+    spec.host = val;
+  },
+);
+
+export const trinoDatasourceSpecification_setPort = action(
+  (spec: TrinoDatasourceSpecification, val: number): void => {
+    spec.port = val;
+  },
+);
+
+export const trinoDatasourceSpecification_setCatalog = action(
+  (spec: TrinoDatasourceSpecification, val: string | undefined): void => {
+    spec.catalog = val;
+  },
+);
+
+export const trinoDatasourceSpecification_setSchema = action(
+  (spec: TrinoDatasourceSpecification, val: string | undefined): void => {
+    spec.schema = val;
+  },
+);
+
+export const trinoDatasourceSpecification_setClientTags = action(
+  (spec: TrinoDatasourceSpecification, val: string | undefined): void => {
+    spec.clientTags = val;
+  },
+);
+
+export const trinoDatasourceSpecification_setSsl = action(
+  (spec: TrinoDatasourceSpecification, val: boolean): void => {
+    spec.sslSpecification.ssl = val;
+  },
+);
+
+export const trinoDatasourceSpecification_setTrustStorePathVaultReference =
+  action(
+    (spec: TrinoDatasourceSpecification, val: string | undefined): void => {
+      spec.sslSpecification.trustStorePathVaultReference = val;
+    },
+  );
+
+export const trinoDatasourceSpecification_setTrustStorePasswordVaultReference =
+  action(
+    (spec: TrinoDatasourceSpecification, val: string | undefined): void => {
+      spec.sslSpecification.trustStorePasswordVaultReference = val;
+    },
+  );
 
 export const relationalInputData_setData = action(
   (input: RelationalInputData, value: string): void => {
