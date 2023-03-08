@@ -452,7 +452,7 @@ export class PostFilterConditionState implements Hashable {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.postFilterState.tdsState.queryBuilderState.applicationStore.notifyError(
+      this.postFilterState.tdsState.queryBuilderState.applicationStore.notificationService.notifyError(
         `Can't drag column '${columnState.columnName}' due to: ${error.message}`,
       );
     }

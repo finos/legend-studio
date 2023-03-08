@@ -625,7 +625,7 @@ export class MappingTestState extends MappingEditorTabState {
       }
       this.setInputDataState(newInputDataState);
     } else {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         new UnsupportedOperationError(
           `Can't build input data for source`,
           source,
@@ -639,12 +639,12 @@ export class MappingTestState extends MappingEditorTabState {
    */
   *regenerateExpectedResult(): GeneratorFn<void> {
     if (DEPRECATED__validate_MappingTest(this.test)) {
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Can't execute test '${this.test.name}'. Please make sure that the test query and input data are valid`,
       );
       return;
     } else if (this.isExecutingTest) {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         `Can't execute test '${this.test.name}' while it is running`,
       );
       return;
@@ -691,7 +691,7 @@ export class MappingTestState extends MappingEditorTabState {
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isExecutingTest = false;
     }
@@ -699,12 +699,12 @@ export class MappingTestState extends MappingEditorTabState {
 
   *runTest(): GeneratorFn<void> {
     if (DEPRECATED__validate_MappingTest(this.test)) {
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Can't run test '${this.test.name}'. Please make sure that the test is valid`,
       );
       return;
     } else if (this.isExecutingTest) {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         `Test '${this.test.name}' is already running`,
       );
       return;
@@ -881,7 +881,7 @@ export class MappingTestState extends MappingEditorTabState {
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isGeneratingPlan = false;
     }

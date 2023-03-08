@@ -14,6 +14,4 @@
  * limitations under the License.
  */
 
-export const UNKNOWN_USER_ID = '(unknown)';
-
-export class IdentityService {}
+export class LayoutService {}

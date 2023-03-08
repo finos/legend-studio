@@ -71,7 +71,7 @@ export class EditorTabManagerState extends TabManagerState {
       if (newTab) {
         this.openTab(newTab);
       } else {
-        this.editorStore.applicationStore.notifyWarning(
+        this.editorStore.applicationStore.notificationService.notifyWarning(
           `Can't open editor for element '${element.path}'`,
         );
       }

@@ -264,7 +264,9 @@ export class SchemaSetModelGenerationState {
 
   *generate(): GeneratorFn<boolean> {
     this.generatingModelsState.inProgress();
-    this.editorStore.applicationStore.setNotification(undefined);
+    this.editorStore.applicationStore.notificationService.setNotification(
+      undefined,
+    );
     try {
       const properties = [...this.configurationProperties];
       this.addInferredConfigurationProperties(properties);
@@ -283,7 +285,7 @@ export class SchemaSetModelGenerationState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.EXTERNAL_FORMAT_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.setGenerationValue('');
       return false;
     } finally {
@@ -306,7 +308,7 @@ export class SchemaSetModelGenerationState {
           undefined,
         ),
       );
-      this.editorStore.applicationStore.notifySuccess(
+      this.editorStore.applicationStore.notificationService.notifySuccess(
         'Generated elements imported into project',
       );
     } catch (error) {
@@ -315,7 +317,7 @@ export class SchemaSetModelGenerationState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.EXTERNAL_FORMAT_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.importGeneratedElementsState.complete();
     }
@@ -335,7 +337,7 @@ export class SchemaSetModelGenerationState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.EXTERNAL_FORMAT_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       throw error;
     } finally {
       this.importGeneratedElementsState.complete();
@@ -409,7 +411,7 @@ export class ImportSchemaContentState {
       this.closeModal();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Can't load patch: Error: ${error.message}`,
       );
       this.loadingSchemaContentState.fail();

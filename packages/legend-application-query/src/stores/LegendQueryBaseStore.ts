@@ -63,7 +63,9 @@ export class LegendQueryBaseStore {
 
   *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
-      this.applicationStore.notifyIllegalState('Base store is re-initialized');
+      this.applicationStore.notificationService.notifyIllegalState(
+        'Base store is re-initialized',
+      );
       return;
     }
     this.initState.inProgress();
@@ -82,7 +84,7 @@ export class LegendQueryBaseStore {
         ),
         error,
       );
-      this.applicationStore.notifyWarning(error.message);
+      this.applicationStore.notificationService.notifyWarning(error.message);
     }
 
     // setup telemetry service

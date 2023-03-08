@@ -239,7 +239,7 @@ export const PropertyMappingEditor = observer(
             mappingEditorState.openMappingElement(embedded, true);
           }
         } else {
-          applicationStore.notifyWarning(
+          applicationStore.notificationService.notifyWarning(
             `Can't visit mapping element for type '${propertyRawType.name}'`,
           );
         }

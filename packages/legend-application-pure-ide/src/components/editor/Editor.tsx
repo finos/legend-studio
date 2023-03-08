@@ -112,7 +112,7 @@ export const Editor = withEditorStore(
         [() => true],
         undefined,
         () =>
-          applicationStore.notifyWarning(
+          applicationStore.notificationService.notifyWarning(
             `Navigation from the editor is blocked`,
           ),
       );

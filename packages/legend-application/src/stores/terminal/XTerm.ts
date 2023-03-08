@@ -905,7 +905,7 @@ export class XTerm extends Terminal {
 
   copy(): void {
     if (!this.instance.hasSelection()) {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Ther terminal has no selection to copy`,
       );
       return;

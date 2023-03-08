@@ -136,7 +136,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
             ),
           );
         } else {
-          this.applicationStore.notifyWarning(
+          this.applicationStore.notificationService.notifyWarning(
             `Can't switch data space: default execution context not specified`,
           );
         }

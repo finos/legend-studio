@@ -143,7 +143,7 @@ export class ProjectOverviewState {
           workspace,
         )
       ) {
-        this.editorStore.applicationStore.notifyWarning(
+        this.editorStore.applicationStore.notificationService.notifyWarning(
           'Current workspace is deleted. Redirecting to workspace setup',
         );
         this.editorStore.applicationStore.navigationService.goToLocation(
@@ -181,7 +181,7 @@ export class ProjectOverviewState {
           tags,
         },
       );
-      this.editorStore.applicationStore.notifySuccess(
+      this.editorStore.applicationStore.notificationService.notifySuccess(
         `Project '${name}' is succesfully updated`,
       );
       yield flowResult(
@@ -191,7 +191,7 @@ export class ProjectOverviewState {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isUpdatingProject = false;
     }
@@ -361,7 +361,7 @@ export class ProjectOverviewState {
 
   *createVersion(versionType: NewVersionType): GeneratorFn<void> {
     if (!this.editorStore.sdlcServerClient.features.canCreateVersion) {
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Can't create version: not supported by SDLC server`,
       );
       return;
@@ -383,7 +383,7 @@ export class ProjectOverviewState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isCreatingVersion = false;
     }

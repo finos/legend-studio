@@ -300,7 +300,7 @@ export const UpdateProjectServiceQuerySetup =
             applicationStore.alertUnhandledError,
           );
           if (!setupStore.currentProjectConfigurationStatus?.isConfigured) {
-            applicationStore.notifyIllegalState(
+            applicationStore.notificationService.notifyIllegalState(
               `Can't edit service query as the project is not configured`,
             );
           }
@@ -320,7 +320,7 @@ export const UpdateProjectServiceQuerySetup =
         if (option) {
           setupStore.changeService(option.value.entity);
           if (!setupStore.currentProjectConfigurationStatus?.isConfigured) {
-            applicationStore.notifyIllegalState(
+            applicationStore.notificationService.notifyIllegalState(
               `Can't edit current service query as the current project is not configured`,
             );
           }

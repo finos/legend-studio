@@ -138,7 +138,7 @@ const MappingTestQueryEditor = observer(
                         await flowResult(
                           testState.queryState.updateLamba(rawLambda),
                         );
-                        applicationStore.notifySuccess(
+                        applicationStore.notificationService.notifySuccess(
                           `Mapping test query is updated`,
                         );
                         embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
@@ -146,7 +146,7 @@ const MappingTestQueryEditor = observer(
                         );
                       } catch (error) {
                         assertErrorThrown(error);
-                        applicationStore.notifyError(
+                        applicationStore.notificationService.notifyError(
                           `Can't save query: ${error.message}`,
                         );
                       }

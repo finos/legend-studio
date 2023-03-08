@@ -45,3 +45,5 @@ export interface BlockingAlertInfo {
   prompt?: string;
   showLoading?: boolean;
 }
+
+export class AlertService {}

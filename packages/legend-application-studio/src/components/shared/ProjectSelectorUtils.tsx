@@ -52,7 +52,7 @@ export const getProjectOptionLabelFormatter = (
           projectConfigurationStatus.reviewUrl,
         );
       } else {
-        applicationStore.notifyWarning(
+        applicationStore.notificationService.notifyWarning(
           `Can't find project configuration review: opening the project web page...`,
         );
         applicationStore.navigationService.visitAddress(option.value.webUrl);

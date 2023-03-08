@@ -145,7 +145,7 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.loadDataSpacesState.fail();
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     }
   }
 }
@@ -186,7 +186,7 @@ export class DataSpaceQuerySetupStore extends QueryEditorStore {
             ),
           );
         } else {
-          this.applicationStore.notifyWarning(
+          this.applicationStore.notificationService.notifyWarning(
             `Can't switch data space: default execution context not specified`,
           );
         }

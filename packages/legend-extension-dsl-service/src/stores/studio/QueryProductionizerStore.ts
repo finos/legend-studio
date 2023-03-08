@@ -366,7 +366,7 @@ export class QueryProductionizerStore {
       ).map((p) => User.serialization.fromJson(p));
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       return [];
     }
   }
@@ -410,7 +410,7 @@ export class QueryProductionizerStore {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.loadQueryState.reset();
     }
@@ -432,7 +432,7 @@ export class QueryProductionizerStore {
       this.loadQueriesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadQueriesState.fail();
     }
   }
@@ -453,7 +453,7 @@ export class QueryProductionizerStore {
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadProjectsState.fail();
     }
   }
@@ -501,7 +501,7 @@ export class QueryProductionizerStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadWorkspacesState.fail();
     }
   }
@@ -747,7 +747,7 @@ export class QueryProductionizerStore {
         } catch (error) {
           assertErrorThrown(error);
           this.applicationStore.setBlockingAlert(undefined);
-          this.applicationStore.notifyError(
+          this.applicationStore.notificationService.notifyError(
             `Can't set up workspace: ${error.message}`,
           );
           if (workspace) {
@@ -796,7 +796,7 @@ export class QueryProductionizerStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.setBlockingAlert(undefined);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.productionizeState.fail();
     }
   }

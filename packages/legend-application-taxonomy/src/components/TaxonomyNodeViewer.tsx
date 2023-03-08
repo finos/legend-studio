@@ -98,7 +98,9 @@ const TaxonomyNodeDataSpaceItem = observer(
           ),
         )
         .then(() =>
-          applicationStore.notifySuccess('Copied data space link to clipboard'),
+          applicationStore.notificationService.notifySuccess(
+            'Copied data space link to clipboard',
+          ),
         )
         .catch(applicationStore.alertUnhandledError);
     };

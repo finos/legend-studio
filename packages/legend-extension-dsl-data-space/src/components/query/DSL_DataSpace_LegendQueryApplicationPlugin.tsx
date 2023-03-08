@@ -165,7 +165,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                           _query,
                           editorStore.graphManagerState.graph,
                         );
-                      editorStore.applicationStore.notifySuccess(
+                      editorStore.applicationStore.notificationService.notifySuccess(
                         `Successfully created query!`,
                       );
                       LegendQueryEventService.create(
@@ -179,7 +179,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                         _query,
                         editorStore.graphManagerState.graph,
                       );
-                      editorStore.applicationStore.notifySuccess(
+                      editorStore.applicationStore.notificationService.notifySuccess(
                         `Successfully updated query!`,
                       );
                       editorStore.applicationStore.navigationService.reload();
@@ -190,7 +190,9 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                       LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
                       error,
                     );
-                    editorStore.applicationStore.notifyError(error);
+                    editorStore.applicationStore.notificationService.notifyError(
+                      error,
+                    );
                   }
                 };
 
@@ -221,7 +223,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                   ],
                 });
               } else {
-                editorStore.applicationStore.notifyWarning(
+                editorStore.applicationStore.notificationService.notifyWarning(
                   `Can't switch data space: default execution context not specified`,
                 );
               }

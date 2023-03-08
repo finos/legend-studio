@@ -91,7 +91,7 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
         ),
       );
     } else {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Can't find the corresponding SDLC instance to productionize the query`,
       );
     }
@@ -116,7 +116,7 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
         this.currentQueryInfo = queryInfo;
       } catch (error) {
         assertErrorThrown(error);
-        this.applicationStore.notifyError(error);
+        this.applicationStore.notificationService.notifyError(error);
       } finally {
         this.loadQueryState.reset();
       }
@@ -141,7 +141,7 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
       this.loadQueriesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadQueriesState.fail();
     }
   }

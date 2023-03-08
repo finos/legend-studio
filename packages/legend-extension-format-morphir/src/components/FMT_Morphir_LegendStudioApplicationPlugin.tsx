@@ -126,7 +126,7 @@ export class FMT_Morphir_LegendStudioApplicationPlugin
                   );
                 } catch (error) {
                   assertErrorThrown(error);
-                  applicationStore.notifyError(error);
+                  applicationStore.notificationService.notifyError(error);
                 }
               };
             if (
@@ -184,7 +184,7 @@ export class FMT_Morphir_LegendStudioApplicationPlugin
                   );
                 } catch (error) {
                   assertErrorThrown(error);
-                  applicationStore.notifyError(error);
+                  applicationStore.notificationService.notifyError(error);
                 }
               };
             if (

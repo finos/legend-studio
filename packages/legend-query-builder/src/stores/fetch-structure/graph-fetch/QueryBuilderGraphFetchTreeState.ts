@@ -181,7 +181,7 @@ export class QueryBuilderGraphFetchTreeState
     },
   ): void {
     if (!this.treeData) {
-      this.queryBuilderState.applicationStore.notifyWarning(
+      this.queryBuilderState.applicationStore.notificationService.notifyWarning(
         `Can't add property: graph-fetch tree has not been properly initialized`,
       );
       return;
@@ -211,7 +211,7 @@ export class QueryBuilderGraphFetchTreeState
 
   fetchProperties(nodes: QueryBuilderExplorerTreePropertyNodeData[]): void {
     if (!this.treeData) {
-      this.queryBuilderState.applicationStore.notifyWarning(
+      this.queryBuilderState.applicationStore.notificationService.notifyWarning(
         `Can't add property: graph-fetch tree has not been properly initialized`,
       );
       return;

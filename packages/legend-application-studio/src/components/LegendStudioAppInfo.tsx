@@ -177,7 +177,9 @@ export const LegendStudioAppInfo: React.FC<{
           .join('\n'),
       )
       .then(() =>
-        applicationStore.notifySuccess('Copied application info to clipboard'),
+        applicationStore.notificationService.notifySuccess(
+          'Copied application info to clipboard',
+        ),
       )
       .catch(applicationStore.alertUnhandledError);
   };

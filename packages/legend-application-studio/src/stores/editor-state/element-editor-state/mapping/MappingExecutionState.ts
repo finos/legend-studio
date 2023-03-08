@@ -636,7 +636,7 @@ export class MappingExecutionState extends MappingEditorTabState {
         ),
       );
     } else {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         new UnsupportedOperationError(
           `Can't build input data for the specified source`,
           source,
@@ -673,7 +673,7 @@ export class MappingExecutionState extends MappingEditorTabState {
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -752,7 +752,7 @@ export class MappingExecutionState extends MappingEditorTabState {
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -817,7 +817,7 @@ export class MappingExecutionState extends MappingEditorTabState {
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.setExecutionResultText('');
     } finally {
       this.isExecuting = false;
@@ -916,7 +916,7 @@ export class MappingExecutionState extends MappingEditorTabState {
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isGeneratingPlan = false;
     }
@@ -946,7 +946,7 @@ export class MappingExecutionState extends MappingEditorTabState {
     if (setImplementation) {
       if (this.inputDataState instanceof MappingExecutionEmptyInputDataState) {
         if (setImplementation instanceof OperationSetImplementation) {
-          this.editorStore.applicationStore.notifyWarning(
+          this.editorStore.applicationStore.notificationService.notifyWarning(
             `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead`,
           );
         } else {

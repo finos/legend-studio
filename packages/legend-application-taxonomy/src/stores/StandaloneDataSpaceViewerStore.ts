@@ -147,7 +147,7 @@ export class StandaloneDataSpaceViewerStore {
     } catch (error) {
       assertErrorThrown(error);
       this.initState.fail();
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.initState.setMessage(undefined);
     }

@@ -76,7 +76,7 @@ const TaxonomyTreeNodeContainer = observer(
         applicationStore
           .copyTextToClipboard(node.taxonomyData.guid)
           .then(() =>
-            applicationStore.notifySuccess(
+            applicationStore.notificationService.notifySuccess(
               'Copied taxonomy node ID to clipboard',
             ),
           )
@@ -94,7 +94,7 @@ const TaxonomyTreeNodeContainer = observer(
           ),
         )
         .then(() =>
-          applicationStore.notifySuccess(
+          applicationStore.notificationService.notifySuccess(
             'Copied taxonomy node link to clipboard',
           ),
         )

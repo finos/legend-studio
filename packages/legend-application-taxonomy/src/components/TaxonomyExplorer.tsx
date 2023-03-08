@@ -409,7 +409,7 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
             (option) => taxonomyTreeKey === option.key,
           );
         if (!matchingTaxonomyTreeOption) {
-          applicationStore.notifyWarning(
+          applicationStore.notificationService.notifyWarning(
             `Can't find taxonomy tree with key '${taxonomyTreeKey}'. Redirected to default tree '${applicationStore.config.defaultTaxonomyTreeOption.key}'`,
           );
           applicationStore.navigationService.updateCurrentLocation(

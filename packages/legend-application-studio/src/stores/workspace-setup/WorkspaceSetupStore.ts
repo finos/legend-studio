@@ -180,7 +180,7 @@ export class WorkspaceSetupStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.initState.fail();
     }
   }
@@ -201,7 +201,7 @@ export class WorkspaceSetupStore {
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadProjectsState.fail();
     }
   }
@@ -273,7 +273,7 @@ export class WorkspaceSetupStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadWorkspacesState.fail();
     }
   }
@@ -312,7 +312,7 @@ export class WorkspaceSetupStore {
           tags,
         })) as PlainObject<Project>,
       );
-      this.applicationStore.notifySuccess(
+      this.applicationStore.notificationService.notifySuccess(
         `Project '${name}' is succesfully created`,
       );
 
@@ -321,7 +321,7 @@ export class WorkspaceSetupStore {
       this.setShowCreateProjectModal(false);
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.createOrImportProjectState.reset();
     }
@@ -356,7 +356,7 @@ export class WorkspaceSetupStore {
       yield flowResult(this.changeProject(report.project));
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.createOrImportProjectState.reset();
     }
@@ -377,7 +377,7 @@ export class WorkspaceSetupStore {
         )) as PlainObject<Workspace>,
       );
 
-      this.applicationStore.notifySuccess(
+      this.applicationStore.notificationService.notifySuccess(
         `Workspace '${newWorkspace.workspaceId}' is succesfully created`,
       );
 
@@ -401,7 +401,7 @@ export class WorkspaceSetupStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.createWorkspaceState.reset();
     }

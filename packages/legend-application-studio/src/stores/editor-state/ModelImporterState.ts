@@ -264,7 +264,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.MODEL_LOADER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.loadModelActionState.complete();
       this.editorStore.applicationStore.setBlockingAlert(undefined);
@@ -436,7 +436,7 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.loadModelActionState.complete();
       this.editorStore.applicationStore.setBlockingAlert(undefined);

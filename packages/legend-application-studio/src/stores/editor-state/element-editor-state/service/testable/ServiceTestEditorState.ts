@@ -282,7 +282,7 @@ export class ServiceTestSetupState {
       this.addExpressionParameterValue(expression);
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.setShowNewParameterModal(false);
     }
@@ -316,7 +316,7 @@ export class ServiceTestSetupState {
       this.parameterValueStates.push(paramValueState);
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -406,7 +406,7 @@ export class ServiceTestSetupState {
       this.parameterValueStates = parameterValueStates;
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Unable to generate param values: ${error.message}`,
       );
     }

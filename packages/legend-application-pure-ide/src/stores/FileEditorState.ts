@@ -266,7 +266,7 @@ export class FileEditorState
       return;
     }
     if (this.hasChanged) {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         `Can't rename concept: source is not compiled`,
       );
       return;
@@ -502,7 +502,7 @@ export class FileEditorState
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.editorStore.applicationStore.setBlockingAlert(undefined);
     }

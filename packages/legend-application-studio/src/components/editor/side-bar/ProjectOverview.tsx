@@ -81,7 +81,7 @@ const ShareProjectModal = observer(
       applicationStore
         .copyTextToClipboard(projectLink)
         .then(() =>
-          applicationStore.notifySuccess(
+          applicationStore.notificationService.notifySuccess(
             'Copied project element link to clipboard',
           ),
         )

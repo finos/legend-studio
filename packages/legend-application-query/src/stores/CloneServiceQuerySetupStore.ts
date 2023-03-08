@@ -98,7 +98,7 @@ export class CloneServiceQuerySetupStore extends BaseQuerySetupStore {
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadProjectsState.fail();
     }
   }
@@ -144,7 +144,7 @@ export class CloneServiceQuerySetupStore extends BaseQuerySetupStore {
         LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadServiceExecutionsState.fail();
     }
   }

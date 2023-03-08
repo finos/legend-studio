@@ -208,7 +208,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -285,11 +285,11 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       ) {
         // NOTE: a confict here indicates that the reference revision ID sent along with update call
         // does not match the HEAD of the workspace, therefore, we need to prompt user to refresh the application
-        this.applicationStore.notifyWarning(
+        this.applicationStore.notificationService.notifyWarning(
           `Can't save workspace: current workspace revision is not the latest; please backup your work and refresh the application`,
         );
       } else {
-        this.applicationStore.notifyError(error);
+        this.applicationStore.notificationService.notifyError(error);
       }
     } finally {
       this.applicationStore.setBlockingAlert(undefined);
@@ -320,7 +320,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.applicationStore.setBlockingAlert(undefined);
     }
@@ -415,7 +415,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
           LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_FAILURE),
           error,
         );
-        this.applicationStore.notifyError(error);
+        this.applicationStore.notificationService.notifyError(error);
       } finally {
         this.registerServiceState.reset();
         this.registerServiceState.setMessage(undefined);

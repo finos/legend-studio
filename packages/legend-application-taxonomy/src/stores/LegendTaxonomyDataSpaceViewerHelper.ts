@@ -71,7 +71,7 @@ export const createViewSDLCProjectHandler =
         ),
       );
     } else {
-      applicationStore.notifyWarning(
+      applicationStore.notificationService.notifyWarning(
         `Can't find the corresponding SDLC instance to view the SDLC project`,
       );
     }

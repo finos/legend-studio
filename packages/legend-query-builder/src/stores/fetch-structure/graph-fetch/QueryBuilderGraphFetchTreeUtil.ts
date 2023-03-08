@@ -253,7 +253,7 @@ export const addQueryBuilderPropertyNode = (
         parentExplorerTreeNode.parentId,
       );
     } else {
-      queryBuilderState.applicationStore.notifyError(
+      queryBuilderState.applicationStore.notificationService.notifyError(
         `Can't cast the root class of graph fetch structure to its subtype`,
       );
       return;

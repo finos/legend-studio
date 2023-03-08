@@ -1131,7 +1131,7 @@ export const QueryBuilderTDSWindowPanel = observer(
           tdsWindowState.addWindowColumn(newWindowState);
         } catch (error) {
           assertErrorThrown(error);
-          applicationStore.notifyError(error.message);
+          applicationStore.notificationService.notifyError(error.message);
           return;
         }
       },

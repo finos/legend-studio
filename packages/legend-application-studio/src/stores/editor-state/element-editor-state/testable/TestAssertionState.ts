@@ -314,7 +314,7 @@ export class TestAssertionEditorState {
       this.generatingExpectedAction.complete();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Error generating expected result: ${error.message}`,
       );
       this.generatingExpectedAction.fail();

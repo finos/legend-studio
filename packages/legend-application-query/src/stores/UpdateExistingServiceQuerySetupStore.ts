@@ -85,7 +85,7 @@ export class UpdateExistingServiceQuerySetupStore extends BaseQuerySetupStore {
         ),
       );
     } else {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Can't find the corresponding SDLC instance to update the service`,
       );
     }
@@ -111,7 +111,7 @@ export class UpdateExistingServiceQuerySetupStore extends BaseQuerySetupStore {
       this.loadServicesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadServicesState.fail();
     }
   }

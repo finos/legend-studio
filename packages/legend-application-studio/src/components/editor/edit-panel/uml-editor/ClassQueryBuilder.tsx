@@ -72,10 +72,12 @@ const promoteQueryToService = async (
     await flowResult(
       embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(undefined),
     ).catch(applicationStore.alertUnhandledError);
-    applicationStore.notifySuccess(`Service '${service.name}' created`);
+    applicationStore.notificationService.notifySuccess(
+      `Service '${service.name}' created`,
+    );
   } catch (error) {
     assertErrorThrown(error);
-    applicationStore.notifyError(error);
+    applicationStore.notificationService.notifyError(error);
   }
 };
 

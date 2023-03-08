@@ -15,14 +15,9 @@
  */
 
 import {
-  type SuperGenericFunction,
   TracerService,
-  assertTrue,
   LogService,
   LogEvent,
-  assertErrorThrown,
-  isString,
-  ApplicationError,
   uuid,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
@@ -38,17 +33,17 @@ import type { LegendApplicationPlugin } from './LegendApplicationPlugin.js';
 import { CommandService } from './CommandService.js';
 import { KeyboardShortcutsService } from './KeyboardShortcutsService.js';
 import { TerminalService } from './TerminalService.js';
-import type { ActionAlertInfo, BlockingAlertInfo } from './AlertService.js';
 import {
-  Notification,
-  type NotificationAction,
-  DEFAULT_NOTIFICATION_HIDE_TIME,
-  NOTIFCATION_SEVERITY,
-} from './NotificationService.js';
+  type ActionAlertInfo,
+  AlertService,
+  type BlockingAlertInfo,
+} from './AlertService.js';
+import { NotificationService } from './NotificationService.js';
 import { UNKNOWN_USER_ID } from './IdentityService.js';
 import { StorageService } from './storage/StorageService.js';
 import { TelemetryService } from './TelemetryService.js';
 import { TimeService } from './TimeService.js';
+import { LayoutService } from './LayoutService.js';
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
@@ -64,49 +59,25 @@ export class ApplicationStore<
   readonly config: T;
   readonly pluginManager: V;
 
-  // user & identity
-  // TODO: if this ever gets more complicated, rename this to `IdentityService`
-  currentUser = UNKNOWN_USER_ID;
-
   // navigation
   // NOTE: as of now, we only support web environment, we will not use `Application
+  // move inside
   readonly navigationService: WebApplicationNavigator;
   readonly navigationContextService: ApplicationNavigationContextService;
 
-  // storage
+  // core
+  currentUser = UNKNOWN_USER_ID;
   readonly storageService: StorageService;
-
-  // TODO: refactor this to `NotificationService`
-  notification?: Notification | undefined;
-
-  // TODO: refactor this to `AlertService`
-  blockingAlertInfo?: BlockingAlertInfo | undefined;
-  actionAlertInfo?: ActionAlertInfo | undefined;
-
-  readonly logService = new LogService();
-  readonly terminalService: TerminalService;
-
-  // documentation & help
-  readonly documentationService: DocumentationService;
-  readonly assistantService: AssistantService;
-
-  // event & communication
   readonly timeService = new TimeService();
-  readonly eventService = new EventService();
-  readonly telemetryService = new TelemetryService();
-  readonly tracerService = new TracerService();
-
-  // control and interactions
   readonly commandService: CommandService;
   readonly keyboardShortcutsService: KeyboardShortcutsService;
-
-  // TODO: config
-  // See https://github.com/finos/legend-studio/issues/407
-
+  readonly layoutService = new LayoutService();
+  // user & identity
+  // TODO: if this ever gets more complicated, rename this to `IdentityService`
+  // refactor these into `layoutService`
   // backdrop
   backdropContainerElementID?: string | undefined;
   showBackdrop = false;
-
   // theme
   /**
    * NOTE: this is the poor man way of doing theming
@@ -114,27 +85,40 @@ export class ApplicationStore<
    * See https://github.com/finos/legend-studio/issues/264
    */
   TEMPORARY__isLightThemeEnabled = false;
+  // TODO: `configService` - See https://github.com/finos/legend-studio/issues/407
+  // TODO: clipboardService
+
+  // documentation & help
+  readonly documentationService: DocumentationService;
+  readonly assistantService: AssistantService;
+
+  // event & communication
+  // TODO: refactor this to `AlertService`
+  blockingAlertInfo?: BlockingAlertInfo | undefined;
+  actionAlertInfo?: ActionAlertInfo | undefined;
+  readonly alertService = new AlertService();
+  readonly notificationService = new NotificationService();
+  readonly logService = new LogService();
+  readonly terminalService: TerminalService;
+  readonly eventService = new EventService();
+  readonly telemetryService = new TelemetryService();
+  readonly tracerService = new TracerService();
 
   constructor(config: T, navigator: WebApplicationNavigator, pluginManager: V) {
     makeObservable(this, {
-      currentUser: observable,
-      notification: observable,
       blockingAlertInfo: observable,
       actionAlertInfo: observable,
+      setBlockingAlert: action,
+      setActionAlertInfo: action,
+
+      currentUser: observable,
+      setCurrentUser: action,
+
       TEMPORARY__isLightThemeEnabled: observable,
       backdropContainerElementID: observable,
       showBackdrop: observable,
       setBackdropContainerElementID: action,
       setShowBackdrop: action,
-      setBlockingAlert: action,
-      setActionAlertInfo: action,
-      setCurrentUser: action,
-      setNotification: action,
-      notify: action,
-      notifySuccess: action,
-      notifyWarning: action,
-      notifyIllegalState: action,
-      notifyError: action,
       TEMPORARY__setIsLightThemeEnabled: action,
     });
 
@@ -163,10 +147,6 @@ export class ApplicationStore<
     );
   }
 
-  TEMPORARY__setIsLightThemeEnabled(val: boolean): void {
-    this.TEMPORARY__isLightThemeEnabled = val;
-  }
-
   setupTelemetryService(): void {
     this.telemetryService.setup({
       userId: this.currentUser,
@@ -176,6 +156,10 @@ export class ApplicationStore<
       appSessionId: this.uuid,
       appStartTime: this.timeService.timestamp,
     });
+  }
+
+  TEMPORARY__setIsLightThemeEnabled(val: boolean): void {
+    this.TEMPORARY__isLightThemeEnabled = val;
   }
 
   /**
@@ -202,7 +186,7 @@ export class ApplicationStore<
 
   setActionAlertInfo(alertInfo: ActionAlertInfo | undefined): void {
     if (this.actionAlertInfo && alertInfo) {
-      this.notifyIllegalState(
+      this.notificationService.notifyIllegalState(
         'Action alert is stacked: new alert is invoked while another one is being displayed',
       );
     }
@@ -218,120 +202,6 @@ export class ApplicationStore<
     this.currentUser = val;
   }
 
-  setNotification(notification: Notification | undefined): void {
-    this.notification = notification;
-  }
-
-  notify(
-    message: string,
-    actions?: NotificationAction[],
-    autoHideDuration?: number | null,
-  ): void {
-    this.setNotification(
-      new Notification(
-        NOTIFCATION_SEVERITY.INFO,
-        message,
-        actions ?? [],
-        autoHideDuration === null
-          ? undefined
-          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
-      ),
-    );
-  }
-
-  notifySuccess(
-    message: string,
-    actions?: NotificationAction[],
-    autoHideDuration?: number | null,
-  ): void {
-    this.setNotification(
-      new Notification(
-        NOTIFCATION_SEVERITY.SUCCESS,
-        message,
-        actions ?? [],
-        autoHideDuration === null
-          ? undefined
-          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
-      ),
-    );
-  }
-
-  notifyWarning(
-    content: string | Error,
-    actions?: NotificationAction[],
-    autoHideDuration?: number | null,
-  ): void {
-    this.setNotification(
-      new Notification(
-        NOTIFCATION_SEVERITY.WARNING,
-        content instanceof Error ? content.message : content,
-        actions ?? [],
-        autoHideDuration === null
-          ? undefined
-          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
-      ),
-    );
-  }
-
-  notifyIllegalState(
-    message: string,
-    actions?: NotificationAction[],
-    autoHideDuration?: number | null,
-  ): void {
-    this.setNotification(
-      new Notification(
-        NOTIFCATION_SEVERITY.ILEGAL_STATE,
-        isString(message) ? `[PLEASE NOTIFY DEVELOPER] ${message}` : message,
-        actions ?? [],
-        autoHideDuration === null
-          ? undefined
-          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
-      ),
-    );
-  }
-
-  notifyError(content: Error | string, actions?: NotificationAction[]): void {
-    let message: string | undefined;
-    if (content instanceof ApplicationError) {
-      message = content.detail;
-    } else if (content instanceof Error) {
-      message = content.message;
-    } else {
-      assertTrue(isString(content), `Can't display error`);
-      message = content;
-    }
-    if (message) {
-      this.setNotification(
-        new Notification(
-          NOTIFCATION_SEVERITY.ERROR,
-          message,
-          actions ?? [],
-          undefined,
-        ),
-      );
-    }
-  }
-
-  /**
-   * This function creates a more user-friendly way to throw error in the UI. Rather than crashing the whole app, we will
-   * just notify and replacing the value should get with an alternative (e.g. `undefined`). A good use-case for this
-   * is where we would not expect an error to throw (i.e. `IllegalStateError`), but we want to be sure that if the error
-   * ever occurs, it still shows very apparently in the UI, as such, printing out in the console is not good enough,
-   * but crashing the app is bad too, so this is a good balance.
-   */
-  notifyAndReturnAlternativeOnError = <U extends SuperGenericFunction, W>(
-    fn: U,
-    alternative: W,
-  ): ReturnType<U> | W | undefined => {
-    try {
-      return fn();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.notifyIllegalState(error.message);
-      return alternative;
-    }
-  };
-
   /**
    * When we call store/state functions from the component, we should handle error thrown at these functions instead
    * of throwing them to the UI. This enforces that by throwing `IllegalStateError`
@@ -342,7 +212,7 @@ export class ApplicationStore<
       'Encountered unhandled error in component tree',
       error,
     );
-    this.notifyIllegalState(error.message);
+    this.notificationService.notifyIllegalState(error.message);
   };
 
   /**
@@ -358,11 +228,7 @@ export class ApplicationStore<
     // This is a much cleaner way which requires HTTPS
     // See https://developers.google.com/web/updates/2018/03/clipboardapi
     await navigator.clipboard.writeText(text).catch((error) => {
-      this.notifyError(error);
+      this.notificationService.notifyError(error);
     });
-  }
-
-  notifyUnsupportedFeature(featureName: string): void {
-    this.notifyWarning(`Unsupported feature: ${featureName}`);
   }
 }

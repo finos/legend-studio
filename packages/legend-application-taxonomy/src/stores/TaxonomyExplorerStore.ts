@@ -274,7 +274,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
       uniquePackages.add(taxonomyNodeData.package);
     }
     if (!isTaxonomyTreeDataValid) {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Found duplication in taxonomy data: taxonomy accuracy might be affected`,
       );
     }
@@ -451,7 +451,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.initState.fail();
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     }
   }
 }

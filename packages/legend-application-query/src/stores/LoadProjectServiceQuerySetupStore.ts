@@ -55,7 +55,7 @@ export class LoadProjectServiceQuerySetupStore extends BaseQuerySetupStore {
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadProjectsState.fail();
     }
   }
@@ -79,7 +79,7 @@ export class LoadProjectServiceQuerySetupStore extends BaseQuerySetupStore {
         ),
       );
     } else {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Can't find the corresponding SDLC instance to load project '${project.projectId}'`,
       );
     }

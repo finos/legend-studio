@@ -198,7 +198,7 @@ const ServiceRegisterModal = observer(
             ),
             error,
           );
-          editorStore.applicationStore.notifyError(error);
+          editorStore.applicationStore.notificationService.notifyError(error);
         } finally {
           registrationState.reset();
           registrationState.setMessage(undefined);

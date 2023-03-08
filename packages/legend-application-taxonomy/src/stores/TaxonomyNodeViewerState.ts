@@ -168,7 +168,9 @@ export class TaxonomyNodeViewerState {
       this.dataSpaceViewerState = dataSpaceViewerState;
     } catch (error) {
       assertErrorThrown(error);
-      this.explorerStore.applicationStore.notifyError(error);
+      this.explorerStore.applicationStore.notificationService.notifyError(
+        error,
+      );
       this.clearDataSpaceViewerState();
     } finally {
       this.initDataSpaceViewerState.complete();

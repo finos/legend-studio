@@ -175,13 +175,13 @@ export const createMockDataForMappingElementSource = (
       return JSON.stringify(createMockDataForClass(srcElement), undefined, 2);
     } catch (error) {
       assertErrorThrown(error);
-      editorStore.applicationStore.notifyWarning(
+      editorStore.applicationStore.notificationService.notifyWarning(
         `Can't generate test data for class '${srcElement}'. Error:\n${error.message}`,
       );
       return '';
     }
   }
-  editorStore.applicationStore.notifyWarning(
+  editorStore.applicationStore.notificationService.notifyWarning(
     new UnsupportedOperationError(
       `Can't generate test data for mapping source`,
       srcElement,

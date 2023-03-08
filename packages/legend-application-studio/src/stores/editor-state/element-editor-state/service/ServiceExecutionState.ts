@@ -276,7 +276,9 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
         };
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.notifyError(error);
+        this.editorStore.applicationStore.notificationService.notifyError(
+          error,
+        );
       } finally {
         this.loadQueryInfoState.reset();
       }
@@ -296,7 +298,9 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
         yield flowResult(this.updateLamba(lambda));
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.notifyError(error);
+        this.editorStore.applicationStore.notificationService.notifyError(
+          error,
+        );
       } finally {
         this.setOpenQueryImporter(false);
         this.importQueryState.reset();
@@ -346,7 +350,7 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.loadQueriesState.fail();
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -637,7 +641,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isGeneratingPlan = false;
     }
@@ -717,7 +721,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isRunningQuery = false;
     }

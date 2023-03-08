@@ -417,7 +417,7 @@ export class TestRunnerState {
               resolve(this.pullTestRunnerResult(testResultInfo));
             } catch (error) {
               assertErrorThrown(error);
-              this.editorStore.applicationStore.notifyWarning(
+              this.editorStore.applicationStore.notificationService.notifyWarning(
                 `Failed to run test${
                   error.message ? `: ${error.message}` : ''
                 }`,
@@ -454,7 +454,7 @@ export class TestRunnerState {
     yield this.editorStore.client.cancelTestRunner(
       this.testExecutionResult.runnerId,
     );
-    this.editorStore.applicationStore.notifyWarning(
+    this.editorStore.applicationStore.notificationService.notifyWarning(
       `Stopped running test (id: ${this.testExecutionResult.runnerId}) successfully!`,
     );
   }

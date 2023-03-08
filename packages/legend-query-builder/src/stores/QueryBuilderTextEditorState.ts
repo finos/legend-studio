@@ -194,7 +194,7 @@ export class QueryBuilderTextEditorState extends LambdaEditorState {
     if (this.mode === QueryBuilderTextEditorMode.TEXT) {
       yield flowResult(this.convertLambdaGrammarStringToObject());
       if (this.parserError) {
-        this.queryBuilderState.applicationStore.notifyError(
+        this.queryBuilderState.applicationStore.notificationService.notifyError(
           `Can't parse query. Please fix error before closing: ${this.parserError.message}`,
         );
       } else {

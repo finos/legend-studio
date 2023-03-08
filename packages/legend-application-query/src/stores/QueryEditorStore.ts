@@ -136,7 +136,7 @@ export const createViewSDLCProjectHandler =
         ),
       );
     } else {
-      applicationStore.notifyWarning(
+      applicationStore.notificationService.notifyWarning(
         `Can't find the corresponding SDLC instance to view the SDLC project`,
       );
     }
@@ -219,7 +219,7 @@ export class QueryExportState {
         LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.persistQueryState.reset();
       return;
     }
@@ -232,7 +232,7 @@ export class QueryExportState {
             query,
             this.editorStore.graphManagerState.graph,
           );
-        this.editorStore.applicationStore.notifySuccess(
+        this.editorStore.applicationStore.notificationService.notifySuccess(
           `Successfully created query!`,
         );
 
@@ -262,7 +262,7 @@ export class QueryExportState {
             query,
             this.editorStore.graphManagerState.graph,
           );
-        this.editorStore.applicationStore.notifySuccess(
+        this.editorStore.applicationStore.notificationService.notifySuccess(
           `Successfully updated query!`,
         );
 
@@ -287,7 +287,7 @@ export class QueryExportState {
         LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.persistQueryState.reset();
       this.editorStore.setExportState(undefined);
@@ -347,7 +347,7 @@ export class QueryLoaderState {
     } catch (error) {
       this.loadQueriesState.fail();
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -454,7 +454,7 @@ export abstract class QueryEditorStore {
         LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.initState.fail();
     }
   }

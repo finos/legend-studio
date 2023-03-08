@@ -148,7 +148,7 @@ export class UpdateProjectServiceQuerySetupStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.initState.fail();
     }
   }
@@ -169,7 +169,7 @@ export class UpdateProjectServiceQuerySetupStore {
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadProjectsState.fail();
     }
   }
@@ -223,7 +223,7 @@ export class UpdateProjectServiceQuerySetupStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadWorkspacesState.fail();
     }
   }
@@ -263,7 +263,7 @@ export class UpdateProjectServiceQuerySetupStore {
         )) as PlainObject<Workspace>,
       );
 
-      this.applicationStore.notifySuccess(
+      this.applicationStore.notificationService.notifySuccess(
         `Workspace '${newGroupWorkspace.workspaceId}' is succesfully created`,
       );
 
@@ -287,7 +287,7 @@ export class UpdateProjectServiceQuerySetupStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.createWorkspaceState.reset();
     }

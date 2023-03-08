@@ -498,7 +498,7 @@ export class TestableState {
       this.isRunningTests.complete();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.isRunningTests.fail();
     } finally {
       if (
@@ -516,7 +516,7 @@ export class TestableState {
       this.results.set(testResult.atomicTest, testResult);
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Unable to update test result: ${error.message}`,
       );
     }
@@ -623,7 +623,7 @@ export class GlobalTestRunnerState {
       this.isRunningTests.complete();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.isRunningTests.fail();
     }
   }

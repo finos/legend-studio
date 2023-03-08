@@ -145,7 +145,7 @@ export class UpdateServiceQuerySetupStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.initState.fail();
     }
   }
@@ -170,7 +170,7 @@ export class UpdateServiceQuerySetupStore {
       this.loadServicesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadServicesState.fail();
     }
   }
@@ -281,7 +281,7 @@ export class UpdateServiceQuerySetupStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadWorkspacesState.fail();
     }
   }
@@ -318,7 +318,7 @@ export class UpdateServiceQuerySetupStore {
         )) as PlainObject<Workspace>,
       );
 
-      this.applicationStore.notifySuccess(
+      this.applicationStore.notificationService.notifySuccess(
         `Workspace '${newGroupWorkspace.workspaceId}' is succesfully created`,
       );
 
@@ -344,7 +344,7 @@ export class UpdateServiceQuerySetupStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.createWorkspaceState.reset();
     }

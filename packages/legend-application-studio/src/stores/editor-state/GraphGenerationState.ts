@@ -209,7 +209,7 @@ export class GraphGenerationState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -233,7 +233,7 @@ export class GraphGenerationState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
-      this.editorStore.graphState.editorStore.applicationStore.notifyError(
+      this.editorStore.graphState.editorStore.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
     } finally {
@@ -288,7 +288,7 @@ export class GraphGenerationState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
-      this.editorStore.graphState.editorStore.applicationStore.notifyError(
+      this.editorStore.graphState.editorStore.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
     }
@@ -342,7 +342,7 @@ export class GraphGenerationState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
-      this.editorStore.graphState.editorStore.applicationStore.notifyError(
+      this.editorStore.graphState.editorStore.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
     }

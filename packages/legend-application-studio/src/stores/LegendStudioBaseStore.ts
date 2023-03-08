@@ -92,7 +92,9 @@ export class LegendStudioBaseStore {
 
   *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
-      this.applicationStore.notifyIllegalState('Base store is re-initialized');
+      this.applicationStore.notificationService.notifyIllegalState(
+        'Base store is re-initialized',
+      );
       return;
     }
     this.initState.inProgress();
@@ -122,7 +124,7 @@ export class LegendStudioBaseStore {
           ),
           error,
         );
-        this.applicationStore.notifyWarning(error.message);
+        this.applicationStore.notificationService.notifyWarning(error.message);
       }
 
       // setup telemetry service
@@ -235,7 +237,7 @@ export class LegendStudioBaseStore {
           LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
-        this.applicationStore.notifyError(error);
+        this.applicationStore.notificationService.notifyError(error);
       }
     }
   }

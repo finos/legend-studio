@@ -75,7 +75,7 @@ export class EmbeddedQueryBuilderState {
         switch (compilationOutcome) {
           case FormModeCompilationOutcome.SKIPPED: {
             this.editorStore.applicationStore.setBlockingAlert(undefined);
-            this.editorStore.applicationStore.notifyWarning(
+            this.editorStore.applicationStore.notificationService.notifyWarning(
               `Can't open query builder: Can't compile at this time, please try again later`,
             );
             return;
@@ -85,7 +85,7 @@ export class EmbeddedQueryBuilderState {
             break;
           }
           default: {
-            this.editorStore.applicationStore.notifyWarning(
+            this.editorStore.applicationStore.notificationService.notifyWarning(
               `Can't open query builder: Compilation failed! Please fix the compilation issue and try again`,
             );
             this.editorStore.applicationStore.setBlockingAlert(undefined);

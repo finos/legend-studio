@@ -195,7 +195,7 @@ export class ConnectionTestDataState {
       this.generatingTestDataSate.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Unable to generate test data: ${error.message}`,
       );
       this.generatingTestDataSate.fail();

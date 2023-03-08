@@ -436,7 +436,7 @@ export class ProjectDependencyEditorState {
         assertErrorThrown(error);
         this.setConflictStates([]);
         this.buildConflictPathState.fail();
-        this.editorStore.applicationStore.notifyError(
+        this.editorStore.applicationStore.notificationService.notifyError(
           `Unable to build conflict paths ${error.message}`,
         );
       }

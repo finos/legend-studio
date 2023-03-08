@@ -451,7 +451,7 @@ export class ProjectViewerStore {
       if (error instanceof DependencyGraphBuilderError) {
         // no recovery if dependency models cannot be built, this makes assumption that all dependencies models are compiled successfully
         // TODO: we might want to handle this more gracefully when we can show people the dependency model element in the future
-        this.editorStore.applicationStore.notifyError(
+        this.editorStore.applicationStore.notificationService.notifyError(
           `Can't initialize dependency models. Error: ${error.message}`,
         );
         this.editorStore.applicationStore.setBlockingAlert({
@@ -460,7 +460,7 @@ export class ProjectViewerStore {
         });
       } else if (error instanceof GraphDataDeserializationError) {
         // if something goes wrong with de-serialization, we can't really do anything but to alert
-        this.editorStore.applicationStore.notifyError(
+        this.editorStore.applicationStore.notificationService.notifyError(
           `Can't deserialize graph. Error: ${error.message}`,
         );
         this.editorStore.applicationStore.setBlockingAlert({
@@ -469,7 +469,7 @@ export class ProjectViewerStore {
         });
       } else if (error instanceof GraphBuilderError) {
         // TODO: we should split this into 2 notifications when we support multiple notifications
-        this.editorStore.applicationStore.notifyError(
+        this.editorStore.applicationStore.notificationService.notifyError(
           `Can't build graph. Redirected to text mode for debugging. Error: ${error.message}`,
         );
         try {
@@ -500,7 +500,9 @@ export class ProjectViewerStore {
           }),
         );
       } else {
-        this.editorStore.applicationStore.notifyError(error);
+        this.editorStore.applicationStore.notificationService.notifyError(
+          error,
+        );
       }
       return false;
     }
@@ -616,7 +618,7 @@ export class ProjectViewerStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       onLeave(false);
     }
   }

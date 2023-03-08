@@ -201,7 +201,9 @@ export class QueryBuilderResultState {
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.queryBuilderState.applicationStore.notifyError(error);
+      this.queryBuilderState.applicationStore.notificationService.notifyError(
+        error,
+      );
       this.exportDataState.fail();
     }
   }
@@ -272,7 +274,9 @@ export class QueryBuilderResultState {
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.queryBuilderState.applicationStore.notifyError(error);
+      this.queryBuilderState.applicationStore.notificationService.notifyError(
+        error,
+      );
     } finally {
       this.setIsRunningQuery(false);
       this.pressedRunQuery.complete();
@@ -373,7 +377,9 @@ export class QueryBuilderResultState {
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.queryBuilderState.applicationStore.notifyError(error);
+      this.queryBuilderState.applicationStore.notificationService.notifyError(
+        error,
+      );
     } finally {
       this.isGeneratingPlan = false;
     }

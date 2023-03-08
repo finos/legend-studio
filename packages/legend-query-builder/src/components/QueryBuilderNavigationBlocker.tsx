@@ -52,7 +52,7 @@ export const QueryBuilderNavigationBlocker = observer(
           });
         },
         () =>
-          applicationStore.notifyWarning(
+          applicationStore.notificationService.notifyWarning(
             `Navigation from the query builder is blocked`,
           ),
       );

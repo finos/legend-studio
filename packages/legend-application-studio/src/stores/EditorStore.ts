@@ -567,7 +567,7 @@ export class EditorStore implements CommandRegistrar {
         this.changeDetectionState.start();
         return;
       }
-      this.applicationStore.notifyIllegalState(
+      this.applicationStore.notificationService.notifyIllegalState(
         'Editor store is re-initialized',
       );
       return;
@@ -646,7 +646,7 @@ export class EditorStore implements CommandRegistrar {
             workspaceType,
           );
           this.applicationStore.setBlockingAlert(undefined);
-          this.applicationStore.notifySuccess(
+          this.applicationStore.notificationService.notifySuccess(
             `Workspace '${workspace.workspaceId}' is succesfully created. Reloading application...`,
           );
           this.applicationStore.navigationService.reload();
@@ -656,7 +656,7 @@ export class EditorStore implements CommandRegistrar {
             LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
             error,
           );
-          this.applicationStore.notifyError(error);
+          this.applicationStore.notificationService.notifyError(error);
         }
       };
       this.applicationStore.setActionAlertInfo({
@@ -1133,7 +1133,7 @@ export class EditorStore implements CommandRegistrar {
         );
       } catch (error) {
         assertErrorThrown(error);
-        this.applicationStore.notifyWarning(
+        this.applicationStore.notificationService.notifyWarning(
           `Can't enter text mode: transformation to grammar text failed. Error: ${error.message}`,
         );
         this.applicationStore.setBlockingAlert(undefined);

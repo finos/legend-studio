@@ -108,7 +108,7 @@ export class ExternalFormatState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.EXTERNAL_FORMAT_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.fetchingDescriptionsState.fail();
     }
   }

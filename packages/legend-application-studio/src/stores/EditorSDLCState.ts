@@ -189,7 +189,9 @@ export class EditorSDLCState {
         error,
       );
       if (!options?.suppressNotification) {
-        this.editorStore.applicationStore.notifyError(error);
+        this.editorStore.applicationStore.notificationService.notifyError(
+          error,
+        );
       }
     } finally {
       this.isFetchingProject = false;
@@ -226,7 +228,9 @@ export class EditorSDLCState {
         error,
       );
       if (!options?.suppressNotification) {
-        this.editorStore.applicationStore.notifyError(error);
+        this.editorStore.applicationStore.notificationService.notifyError(
+          error,
+        );
       }
     }
   }
@@ -285,7 +289,7 @@ export class EditorSDLCState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -315,7 +319,7 @@ export class EditorSDLCState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -337,7 +341,7 @@ export class EditorSDLCState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isCheckingIfWorkspaceIsOutdated = false;
     }
@@ -393,7 +397,7 @@ export class EditorSDLCState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -423,7 +427,7 @@ export class EditorSDLCState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -452,7 +456,7 @@ export class EditorSDLCState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -471,7 +475,7 @@ export class EditorSDLCState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 }

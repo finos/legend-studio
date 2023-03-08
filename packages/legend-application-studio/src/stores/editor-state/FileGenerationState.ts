@@ -248,7 +248,7 @@ export class FileGenerationState extends GeneratedFileStructureState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.generatingAction.complete();
     }

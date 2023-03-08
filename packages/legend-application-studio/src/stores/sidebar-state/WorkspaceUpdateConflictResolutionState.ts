@@ -284,7 +284,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.sdlcState.handleChangeDetectionRefreshIssue(error);
       throw error;
     }
@@ -376,7 +376,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -423,7 +423,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -457,7 +457,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -485,7 +485,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
           prompt: 'Please refresh the application',
         });
       } else {
-        this.editorStore.applicationStore.notifyWarning(
+        this.editorStore.applicationStore.notificationService.notifyWarning(
           'Failed to check if current workspace is in conflict resolution mode',
         );
       }
@@ -525,7 +525,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isAcceptingConflictResolution = false;
     }
@@ -555,7 +555,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
           prompt: 'Please refresh the application',
         });
       } else {
-        this.editorStore.applicationStore.notifyWarning(
+        this.editorStore.applicationStore.notificationService.notifyWarning(
           'Failed to check if current workspace is in conflict resolution mode',
         );
       }
@@ -582,7 +582,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isDiscardingConflictResolutionChanges = false;
     }
@@ -612,7 +612,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
           prompt: 'Please refresh the application',
         });
       } else {
-        this.editorStore.applicationStore.notifyWarning(
+        this.editorStore.applicationStore.notificationService.notifyWarning(
           'Failed to check if current workspace is in conflict resolution mode',
         );
       }
@@ -639,7 +639,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isAbortingConflictResolution = false;
     }

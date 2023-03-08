@@ -259,7 +259,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
         )
       ).map((usage) => deserialize(PackageableElementUsage, usage));
     } catch {
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Can't find usage for child packageable elements`,
       );
       return;
@@ -319,7 +319,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
               )
             ).map((usage) => deserialize(PackageableElementUsage, usage));
           } catch {
-            this.editorStore.applicationStore.notifyError(
+            this.editorStore.applicationStore.notificationService.notifyError(
               `Can't find usage for child packageable elements`,
             );
             return;
@@ -367,7 +367,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       return;
     } finally {
       this.editorStore.applicationStore.setBlockingAlert(undefined);

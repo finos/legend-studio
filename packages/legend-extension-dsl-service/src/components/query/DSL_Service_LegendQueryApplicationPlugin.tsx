@@ -62,7 +62,7 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
                 { ignoreBlocking: true },
               );
             } else {
-              editorStore.applicationStore.notifyWarning(
+              editorStore.applicationStore.notificationService.notifyWarning(
                 `Can't find the corresponding SDLC instance to productionize the query`,
               );
             }

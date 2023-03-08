@@ -335,7 +335,7 @@ const ExplorerContextMenu = observer(
               ),
             )
             .then(() =>
-              applicationStore.notifySuccess(
+              applicationStore.notificationService.notifySuccess(
                 'Copied workspace element link to clipboard',
               ),
             )
@@ -350,7 +350,7 @@ const ExplorerContextMenu = observer(
               ),
             )
             .then(() =>
-              applicationStore.notifySuccess(
+              applicationStore.notificationService.notifySuccess(
                 'Copied workspace element link to clipboard',
               ),
             )
@@ -380,7 +380,7 @@ const ExplorerContextMenu = observer(
               ),
             )
             .then(() =>
-              applicationStore.notifySuccess(
+              applicationStore.notificationService.notifySuccess(
                 'Copied SDLC project link to clipboard',
               ),
             )

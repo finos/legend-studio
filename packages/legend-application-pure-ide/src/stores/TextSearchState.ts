@@ -120,7 +120,7 @@ export class TextSearchState {
       this.loadState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.loadState.fail();
     }
   }

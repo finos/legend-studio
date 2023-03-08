@@ -302,7 +302,7 @@ export class ServiceRegistrationState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.registrationState.reset();
       this.registrationState.setMessage(undefined);

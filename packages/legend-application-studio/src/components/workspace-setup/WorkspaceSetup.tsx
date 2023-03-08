@@ -159,7 +159,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
       if (val) {
         setupStore.changeWorkspace(val.value);
         if (!setupStore.currentProjectConfigurationStatus?.isConfigured) {
-          applicationStore.notifyIllegalState(
+          applicationStore.notificationService.notifyIllegalState(
             `Can't edit current workspace as the current project is not configured`,
           );
         }

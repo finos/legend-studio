@@ -158,7 +158,9 @@ export class FilterConditionState implements Hashable {
       new FilterConditionState(this.filterState, propertyExpression);
     } catch (error) {
       assertErrorThrown(error);
-      this.filterState.queryBuilderState.applicationStore.notifyError(error);
+      this.filterState.queryBuilderState.applicationStore.notificationService.notifyError(
+        error,
+      );
       return;
     }
 

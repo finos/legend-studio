@@ -263,7 +263,7 @@ export class EditorStore implements CommandRegistrar {
     fastCompile: string | undefined,
   ): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
-      this.applicationStore.notifyIllegalState(
+      this.applicationStore.notificationService.notifyIllegalState(
         'Editor store is re-initialized',
       );
       return;
@@ -284,7 +284,7 @@ export class EditorStore implements CommandRegistrar {
         .initialize(!fullInit)
         .catch((error) => {
           assertErrorThrown(error);
-          this.applicationStore.notifyError(error);
+          this.applicationStore.notificationService.notifyError(error);
           this.initState.fail();
           this.applicationStore.setBlockingAlert({
             message: `Failed to initialize IDE`,
@@ -342,7 +342,7 @@ export class EditorStore implements CommandRegistrar {
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.initState.fail();
       this.applicationStore.setActionAlertInfo({
         message: `Failed to initialize IDE`,
@@ -631,13 +631,13 @@ export class EditorStore implements CommandRegistrar {
     },
   ): GeneratorFn<void> {
     if (!this.initState.hasCompleted) {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Can't execute while initializing application`,
       );
       return;
     }
     if (this.executionState.isInProgress) {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         'Another execution is already in progress!',
       );
       return;
@@ -709,7 +709,7 @@ export class EditorStore implements CommandRegistrar {
       );
       this.applicationStore.setBlockingAlert(undefined);
       if (result instanceof ExecutionFailureResult) {
-        this.applicationStore.notifyError(
+        this.applicationStore.notificationService.notifyError(
           `Execution failed${result.text ? `: ${result.text}` : ''}`,
         );
         this.applicationStore.terminalService.terminal.fail(result.text, {
@@ -734,7 +734,9 @@ export class EditorStore implements CommandRegistrar {
           );
         }
         if (result instanceof ExecutionSuccessResult) {
-          this.applicationStore.notifySuccess('Execution succeeded!');
+          this.applicationStore.notificationService.notifySuccess(
+            'Execution succeeded!',
+          );
           if (result.reinit) {
             this.applicationStore.setBlockingAlert({
               message: 'Reinitializing...',
@@ -768,7 +770,7 @@ export class EditorStore implements CommandRegistrar {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.applicationStore.terminalService.terminal.fail(error.message, {
         systemCommand: command ?? 'execute',
       });
@@ -893,13 +895,13 @@ export class EditorStore implements CommandRegistrar {
 
   *executeTests(path: string, relevantTestsOnly?: boolean): GeneratorFn<void> {
     if (relevantTestsOnly) {
-      this.applicationStore.notifyUnsupportedFeature(
+      this.applicationStore.notificationService.notifyUnsupportedFeature(
         `Run relevant tests! (reason: VCS required)`,
       );
       return;
     }
     if (this.testRunState.isInProgress) {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         'Test runner is working. Please try again later',
       );
       return;
@@ -994,7 +996,7 @@ export class EditorStore implements CommandRegistrar {
 
   *navigateBack(): GeneratorFn<void> {
     if (this.navigationStack.length === 0) {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Can't navigate back any further - navigation stack is empty`,
       );
       return;
@@ -1079,7 +1081,7 @@ export class EditorStore implements CommandRegistrar {
         coordinate.column,
       );
     } catch {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Can't find concept info. Please make sure that the code compiles and that you are looking for references of non primitive types!`,
       );
       return;
@@ -1111,7 +1113,7 @@ export class EditorStore implements CommandRegistrar {
       }
       this.conceptTreeState.setSelectedNode(currentNode);
     } catch {
-      this.applicationStore.notifyWarning(errorMessage);
+      this.applicationStore.notificationService.notifyWarning(errorMessage);
     } finally {
       this.applicationStore.setBlockingAlert(undefined);
     }
@@ -1127,7 +1129,7 @@ export class EditorStore implements CommandRegistrar {
       );
       if (result instanceof CommandFailureResult) {
         if (result.errorDialog) {
-          this.applicationStore.notifyWarning(
+          this.applicationStore.notificationService.notifyWarning(
             `Can't run command '${command}': ${result.text}`,
           );
         } else {
@@ -1140,7 +1142,7 @@ export class EditorStore implements CommandRegistrar {
       return true;
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.applicationStore.terminalService.terminal.fail(error.message, {
         systemCommand: command,
       });
@@ -1159,7 +1161,7 @@ export class EditorStore implements CommandRegistrar {
       );
       return concept;
     } catch {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Can't find concept info. Please make sure that the code compiles and that you are looking for references of non primitive types!`,
       );
       return undefined;
@@ -1229,7 +1231,7 @@ export class EditorStore implements CommandRegistrar {
       this.auxPanelDisplayState.open();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.applicationStore.setBlockingAlert(undefined);
       this.referenceUsageLoadState.complete();
@@ -1258,12 +1260,14 @@ export class EditorStore implements CommandRegistrar {
         yield this.reloadFile(file);
       }
       yield this.refreshTrees();
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Please re-compile the code after refacting`,
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(`Can't rename concept '${oldName}'`);
+      this.applicationStore.notificationService.notifyError(
+        `Can't rename concept '${oldName}'`,
+      );
     }
   }
 
@@ -1297,12 +1301,12 @@ export class EditorStore implements CommandRegistrar {
         yield this.reloadFile(file);
       }
       yield this.refreshTrees();
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Please re-compile the code after refacting`,
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(
+      this.applicationStore.notificationService.notifyError(
         `Can't move packageable elements:\n${error.message}`,
       );
     }
@@ -1347,12 +1351,14 @@ export class EditorStore implements CommandRegistrar {
           yield this.reloadFile(file);
         }
       }
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Please re-compile the code after refacting`,
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(`Can't update file '${path}'`);
+      this.applicationStore.notificationService.notifyError(
+        `Can't update file '${path}'`,
+      );
     }
   }
 
@@ -1380,7 +1386,7 @@ export class EditorStore implements CommandRegistrar {
       yield flowResult(this.directoryTreeState.refreshTreeData());
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -1398,7 +1404,7 @@ export class EditorStore implements CommandRegistrar {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -1419,7 +1425,7 @@ export class EditorStore implements CommandRegistrar {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     }
   }
 

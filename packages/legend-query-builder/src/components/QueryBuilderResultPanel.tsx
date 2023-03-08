@@ -188,7 +188,7 @@ const QueryBuilderGridResultContextMenu = observer(
         );
       } catch (error) {
         assertErrorThrown(error);
-        applicationStore.notifyWarning(error.message);
+        applicationStore.notificationService.notifyWarning(error.message);
         return;
       }
       postFilterState.addNodeFromNode(
