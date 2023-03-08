@@ -72,7 +72,7 @@ const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
           <div className="blocking-alert__prompt-text">{prompt}</div>
         </ModalBody>
         <ModalFooter>
-          {actions.map((action) => {
+          {actions.map((action, idx) => {
             // NOTE: need to prevent default for the submit button, otherwise, we would get the warning "Form submission canceled because the form is not connected"
             // See https://stackoverflow.com/a/58234405
             const handler: React.ReactEventHandler<HTMLButtonElement> = (
@@ -82,9 +82,11 @@ const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
               action.handler?.();
               handleClose();
             };
+
             return (
               <button
-                key={action.label}
+                // eslint-disable-next-line react/no-array-index-key
+                key={idx}
                 type={action.default ? 'submit' : 'button'}
                 className={`btn btn--dark ${getActionButtonClassName(
                   action.type ?? ActionAlertActionType.STANDARD,

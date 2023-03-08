@@ -33,7 +33,7 @@ export interface ActionAlertInfo {
   onClose?: () => void;
   onEnter?: () => void;
   actions: {
-    label: string;
+    label: React.ReactNode;
     default?: boolean;
     handler?: () => void; // default to dismiss
     type?: ActionAlertActionType;

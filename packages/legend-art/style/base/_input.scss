@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@use 'mixins' as *;
 
 .input {
   height: 2.8rem;
@@ -55,7 +56,21 @@
   }
 }
 
+.input--caution {
+  border: 0.1rem solid var(--color-yellow-100);
+
+  &:hover {
+    border: 0.1rem solid var(--color-yellow-200);
+  }
+
+  &:focus {
+    border: 0.1rem solid var(--color-yellow-200) !important;
+  }
+}
+
 .input-group {
+  @include flexCenter;
+
   position: relative;
 
   &__input {

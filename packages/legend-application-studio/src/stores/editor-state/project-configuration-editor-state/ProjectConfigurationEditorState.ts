@@ -81,6 +81,9 @@ export class ProjectConfigurationEditorState extends EditorState {
       latestProjectStructureVersion: observable,
       projectDependencyEditorState: observable,
       originalConfig: computed,
+      isGroupIdChanged: computed,
+      isArtifactIdChanged: computed,
+
       setOriginalProjectConfiguration: action,
       setProjectConfiguration: action,
       setSelectedTab: action,
@@ -133,6 +136,20 @@ export class ProjectConfigurationEditorState extends EditorState {
     return guaranteeNonNullable(
       this.originalProjectConfiguration,
       'Original project configuration is not set',
+    );
+  }
+
+  get isGroupIdChanged(): boolean {
+    return (
+      this.currentProjectConfiguration.groupId !==
+      this.originalProjectConfiguration?.groupId
+    );
+  }
+
+  get isArtifactIdChanged(): boolean {
+    return (
+      this.currentProjectConfiguration.artifactId !==
+      this.originalProjectConfiguration?.artifactId
     );
   }
 

@@ -26,7 +26,11 @@ export const DocumentationLink: React.FC<{
   const applicationStore = useApplicationStore();
   const documentationEntry =
     applicationStore.documentationService.getDocEntry(documentationKey);
-  const openDocLink = (): void => {
+  const openDocLink: React.MouseEventHandler<HTMLDivElement> = (
+    event,
+  ): void => {
+    event.preventDefault();
+    event.stopPropagation();
     if (documentationEntry) {
       if (shouldDisplayVirtualAssistantDocumentationEntry(documentationEntry)) {
         applicationStore.assistantService.openDocumentationEntry(
@@ -46,11 +50,13 @@ export const DocumentationLink: React.FC<{
     return null;
   }
   return (
-    <QuestionCircleIcon
-      title="Click to see documentation"
+    <div
       onClick={openDocLink}
+      title="Click to see documentation"
       className={clsx('documentation-link', className)}
-    />
+    >
+      <QuestionCircleIcon />
+    </div>
   );
 };
 

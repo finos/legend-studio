@@ -207,6 +207,10 @@
   .input--small {
     max-width: 45rem;
   }
+
+  .input--full {
+    width: 45rem;
+  }
 }
 
 .panel__list-selector {
@@ -256,6 +260,8 @@
     margin: 1rem 0;
 
     &__item {
+      @include flexVCenter;
+
       width: 100%;
       display: flex;
 
