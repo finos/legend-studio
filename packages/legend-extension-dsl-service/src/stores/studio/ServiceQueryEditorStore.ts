@@ -226,7 +226,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
     }
 
     this.localChangesState.pushChangesState.inProgress();
-    this.applicationStore.setBlockingAlert({
+    this.applicationStore.alertService.setBlockingAlert({
       message: `Saving workspace...`,
       prompt: 'Please do not close the application',
       showLoading: true,
@@ -292,14 +292,14 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
         this.applicationStore.notificationService.notifyError(error);
       }
     } finally {
-      this.applicationStore.setBlockingAlert(undefined);
+      this.applicationStore.alertService.setBlockingAlert(undefined);
       this.localChangesState.pushChangesState.complete();
     }
   }
 
   *recreateWorkspace(): GeneratorFn<void> {
     try {
-      this.applicationStore.setBlockingAlert({
+      this.applicationStore.alertService.setBlockingAlert({
         message: 'Recreating workspace...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -322,7 +322,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       );
       this.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.applicationStore.setBlockingAlert(undefined);
+      this.applicationStore.alertService.setBlockingAlert(undefined);
     }
   }
 
@@ -384,7 +384,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
           'Service registration pattern is missing or empty',
         );
 
-        this.applicationStore.setActionAlertInfo({
+        this.applicationStore.alertService.setActionAlertInfo({
           message: `Service with pattern ${serviceRegistrationResult.pattern} registered and activated`,
           prompt:
             'You can now launch and monitor the operation of your service',

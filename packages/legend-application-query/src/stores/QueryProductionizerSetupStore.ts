@@ -79,7 +79,7 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
       (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
     );
     if (matchingSDLCEntry) {
-      this.applicationStore.setBlockingAlert({
+      this.applicationStore.alertService.setBlockingAlert({
         message: `Loading query...`,
         prompt: 'Please do not close the application',
         showLoading: true,

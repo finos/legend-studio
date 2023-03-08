@@ -86,7 +86,7 @@ export abstract class BaseQuerySetupStore {
         LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
-      this.applicationStore.setBlockingAlert({
+      this.applicationStore.alertService.setBlockingAlert({
         message: `Can't initialize query setup store`,
       });
       this.initState.fail();

@@ -301,7 +301,7 @@ const MappingExecutionQueryEditor = observer(
               );
             }
           } else {
-            applicationStore.setActionAlertInfo({
+            applicationStore.alertService.setActionAlertInfo({
               message: 'Mapping execution input data is already set',
               prompt: 'Do you want to regenerate the input data?',
               type: ActionAlertType.CAUTION,

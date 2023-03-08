@@ -454,7 +454,7 @@ export class ProjectViewerStore {
         this.editorStore.applicationStore.notificationService.notifyError(
           `Can't initialize dependency models. Error: ${error.message}`,
         );
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: `Can't initialize dependencies`,
           prompt: 'Please use editor to better invesigate the issue',
         });
@@ -463,7 +463,7 @@ export class ProjectViewerStore {
         this.editorStore.applicationStore.notificationService.notifyError(
           `Can't deserialize graph. Error: ${error.message}`,
         );
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: `Can't deserialize graph`,
           prompt: 'Please use editor to better invesigate the issue',
         });
@@ -484,7 +484,7 @@ export class ProjectViewerStore {
           );
         } catch {
           // nothing we can do here so we will just block the user
-          this.editorStore.applicationStore.setBlockingAlert({
+          this.editorStore.applicationStore.alertService.setBlockingAlert({
             message: `Can't compose Pure code from graph models`,
             prompt: 'Please use editor to better invesigate the issue',
           });

@@ -61,7 +61,7 @@ export class EmbeddedQueryBuilderState {
         return;
       }
       if (!config.disableCompile) {
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: 'Compiling graph before building query...',
           showLoading: true,
         });
@@ -74,21 +74,27 @@ export class EmbeddedQueryBuilderState {
         )) as FormModeCompilationOutcome;
         switch (compilationOutcome) {
           case FormModeCompilationOutcome.SKIPPED: {
-            this.editorStore.applicationStore.setBlockingAlert(undefined);
+            this.editorStore.applicationStore.alertService.setBlockingAlert(
+              undefined,
+            );
             this.editorStore.applicationStore.notificationService.notifyWarning(
               `Can't open query builder: Can't compile at this time, please try again later`,
             );
             return;
           }
           case FormModeCompilationOutcome.SUCCEEDED: {
-            this.editorStore.applicationStore.setBlockingAlert(undefined);
+            this.editorStore.applicationStore.alertService.setBlockingAlert(
+              undefined,
+            );
             break;
           }
           default: {
             this.editorStore.applicationStore.notificationService.notifyWarning(
               `Can't open query builder: Compilation failed! Please fix the compilation issue and try again`,
             );
-            this.editorStore.applicationStore.setBlockingAlert(undefined);
+            this.editorStore.applicationStore.alertService.setBlockingAlert(
+              undefined,
+            );
             return;
           }
         }

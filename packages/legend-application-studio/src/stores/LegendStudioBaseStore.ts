@@ -173,7 +173,7 @@ export class LegendStudioBaseStore {
         this.SDLCServerTermsOfServicesUrlsToView =
           (yield this.sdlcServerClient.hasAcceptedTermsOfService()) as string[];
         if (this.SDLCServerTermsOfServicesUrlsToView.length) {
-          this.applicationStore.setActionAlertInfo({
+          this.applicationStore.alertService.setActionAlertInfo({
             message: `Please read and accept the SDLC servers' terms of service`,
             prompt: `Click 'Done' when you have accepted all the terms`,
             type: ActionAlertType.CAUTION,
@@ -211,7 +211,7 @@ export class LegendStudioBaseStore {
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.UNAUTHORIZED
       ) {
-        this.applicationStore.setActionAlertInfo({
+        this.applicationStore.alertService.setActionAlertInfo({
           message:
             'The first time the application starts in development mode, the developer would need to authenticate using SDLC server. Please do so then manually reload the app',
           type: ActionAlertType.STANDARD,
@@ -224,7 +224,7 @@ export class LegendStudioBaseStore {
                 this.applicationStore.navigationService.visitAddress(
                   this.sdlcServerClient.currentUserUrl,
                 );
-                this.applicationStore.setBlockingAlert({
+                this.applicationStore.alertService.setBlockingAlert({
                   message:
                     'Waiting for the developer to authenticate using SDLC server',
                   prompt:

@@ -517,7 +517,7 @@ export class EditorGraphState {
 
   private redirectToModelImporterForDebugging(error: Error): void {
     if (this.editorStore.isInConflictResolutionMode) {
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: `Can't de-serialize graph model from entities`,
         prompt: `Please refresh the application and abort conflict resolution`,
       });
@@ -858,7 +858,7 @@ export class EditorGraphState {
     try {
       this.isApplicationLeavingTextMode = true;
       this.clearProblems();
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: 'Compiling graph before leaving text mode...',
         showLoading: true,
       });
@@ -872,14 +872,16 @@ export class EditorGraphState {
             // therefore, the editor will not be able to get the focus
             {
               onError: () =>
-                this.editorStore.applicationStore.setBlockingAlert(undefined),
+                this.editorStore.applicationStore.alertService.setBlockingAlert(
+                  undefined,
+                ),
             },
           )) as TextCompilationResult;
 
         this.warnings = compilationResult.warnings
           ? this.TEMPORARY__removeDependencyProblems(compilationResult.warnings)
           : [];
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: 'Leaving text mode and rebuilding graph...',
           showLoading: true,
         });
@@ -922,7 +924,7 @@ export class EditorGraphState {
           this.editorStore.applicationStore.notificationService.notifyWarning(
             `Compilation failed: ${error.message}`,
           );
-          this.editorStore.applicationStore.setActionAlertInfo({
+          this.editorStore.applicationStore.alertService.setActionAlertInfo({
             message: 'Project is not in a compiled state',
             prompt:
               'All changes made since the last time the graph was built successfully will be lost',
@@ -956,7 +958,9 @@ export class EditorGraphState {
       );
     } finally {
       this.isApplicationLeavingTextMode = false;
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
       this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.currentEntityHashesIndex =
         new Map<string, string>();
     }
@@ -1210,7 +1214,7 @@ export class EditorGraphState {
       // Note: in the future this function will probably be ideal to refactor when we have different classes for each mode
       // as we would handle this error differently in `text` mode and `form` mode.
       if (error instanceof GraphBuilderError) {
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: `Can't build graph: ${error.message}`,
           prompt: 'Refreshing full application...',
           showLoading: true,
@@ -1221,7 +1225,9 @@ export class EditorGraphState {
       }
     } finally {
       this.isUpdatingApplication = false;
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
   }
 
@@ -1276,7 +1282,9 @@ export class EditorGraphState {
       }
     } finally {
       this.isUpdatingApplication = false;
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
   }
 

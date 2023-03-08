@@ -163,7 +163,7 @@ const ServiceRegisterModal = observer(
             'Service registration pattern is missing or empty',
           );
 
-          editorStore.applicationStore.setActionAlertInfo({
+          editorStore.applicationStore.alertService.setActionAlertInfo({
             message: `Service with pattern ${
               serviceRegistrationResult.pattern
             } registered ${activateService ? 'and activated ' : ''}`,

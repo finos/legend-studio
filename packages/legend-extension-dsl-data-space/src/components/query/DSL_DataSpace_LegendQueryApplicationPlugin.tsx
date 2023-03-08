@@ -196,7 +196,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                   }
                 };
 
-                editorStore.applicationStore.setActionAlertInfo({
+                editorStore.applicationStore.alertService.setActionAlertInfo({
                   message: `To change the data space associated with this query, you need to ${
                     query.isCurrentUserQuery
                       ? 'update the query'

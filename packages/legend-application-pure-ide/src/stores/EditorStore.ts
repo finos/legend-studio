@@ -244,8 +244,8 @@ export class EditorStore implements CommandRegistrar {
     // end up blocking other parts of the app
     // e.g. trying going to an unknown workspace, we will be redirected to the home page
     // but the blocking alert for not-found workspace will still block the app
-    this.applicationStore.setBlockingAlert(undefined);
-    this.applicationStore.setActionAlertInfo(undefined);
+    this.applicationStore.alertService.setBlockingAlert(undefined);
+    this.applicationStore.alertService.setActionAlertInfo(undefined);
 
     // dispose the terminal
     this.applicationStore.terminalService.terminal.dispose();
@@ -274,7 +274,7 @@ export class EditorStore implements CommandRegistrar {
     // initialize editor
     this.initState.inProgress();
     try {
-      this.applicationStore.setBlockingAlert({
+      this.applicationStore.alertService.setBlockingAlert({
         message: 'Loading Pure IDE...',
         prompt:
           'Please be patient as we are building the initial application state',
@@ -286,13 +286,13 @@ export class EditorStore implements CommandRegistrar {
           assertErrorThrown(error);
           this.applicationStore.notificationService.notifyError(error);
           this.initState.fail();
-          this.applicationStore.setBlockingAlert({
+          this.applicationStore.alertService.setBlockingAlert({
             message: `Failed to initialize IDE`,
             prompt: `Before debugging, make sure the server is running then restart the application`,
           });
         });
       yield this.pullInitializationActivity();
-      this.applicationStore.setBlockingAlert(undefined);
+      this.applicationStore.alertService.setBlockingAlert(undefined);
       const openWelcomeFilePromise = flowResult(
         this.loadFile(WELCOME_FILE_PATH),
       );
@@ -310,7 +310,7 @@ export class EditorStore implements CommandRegistrar {
       }
       if (result instanceof InitializationFailureResult) {
         if (result.sessionError) {
-          this.applicationStore.setBlockingAlert({
+          this.applicationStore.alertService.setBlockingAlert({
             message: 'Session corrupted',
             prompt: result.sessionError,
           });
@@ -344,7 +344,7 @@ export class EditorStore implements CommandRegistrar {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(error);
       this.initState.fail();
-      this.applicationStore.setActionAlertInfo({
+      this.applicationStore.alertService.setActionAlertInfo({
         message: `Failed to initialize IDE`,
         prompt: `This can either due to an internal server error, which you would need to manually resolve; or a compilation, which you can proceed to debug`,
         type: ActionAlertType.CAUTION,
@@ -368,14 +368,14 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *checkIfSessionWakingUp(message?: string): GeneratorFn<void> {
-    this.applicationStore.setBlockingAlert({
+    this.applicationStore.alertService.setBlockingAlert({
       message: message ?? 'Checking IDE session...',
       showLoading: true,
     });
     yield this.pullInitializationActivity(
       (activity: InitializationActivity) => {
         if (activity.text) {
-          this.applicationStore.setBlockingAlert({
+          this.applicationStore.alertService.setBlockingAlert({
             message: message ?? 'Checking IDE session...',
             prompt: activity.text,
             showLoading: true,
@@ -383,7 +383,7 @@ export class EditorStore implements CommandRegistrar {
         }
       },
     );
-    this.applicationStore.setBlockingAlert(undefined);
+    this.applicationStore.alertService.setBlockingAlert(undefined);
   }
 
   async pullInitializationActivity(
@@ -686,14 +686,16 @@ export class EditorStore implements CommandRegistrar {
           setTimeout(
             () => {
               if (!executionPromiseFinished && checkExecutionStatus) {
-                this.applicationStore.setBlockingAlert({
+                this.applicationStore.alertService.setBlockingAlert({
                   message: 'Executing...',
                   prompt: 'Please do not refresh the application',
                   showLoading: true,
                 });
                 resolve(
                   this.pullExecutionStatus().finally(() => {
-                    this.applicationStore.setBlockingAlert(undefined);
+                    this.applicationStore.alertService.setBlockingAlert(
+                      undefined,
+                    );
                   }),
                 );
               }
@@ -707,7 +709,7 @@ export class EditorStore implements CommandRegistrar {
       const result = deserializeExecutionResult(
         guaranteeNonNullable(executionPromiseResult),
       );
-      this.applicationStore.setBlockingAlert(undefined);
+      this.applicationStore.alertService.setBlockingAlert(undefined);
       if (result instanceof ExecutionFailureResult) {
         this.applicationStore.notificationService.notifyError(
           `Execution failed${result.text ? `: ${result.text}` : ''}`,
@@ -716,7 +718,7 @@ export class EditorStore implements CommandRegistrar {
           systemCommand: command ?? 'execute',
         });
         if (result.sessionError) {
-          this.applicationStore.setBlockingAlert({
+          this.applicationStore.alertService.setBlockingAlert({
             message: 'Session corrupted',
             prompt: result.sessionError,
           });
@@ -738,7 +740,7 @@ export class EditorStore implements CommandRegistrar {
             'Execution succeeded!',
           );
           if (result.reinit) {
-            this.applicationStore.setBlockingAlert({
+            this.applicationStore.alertService.setBlockingAlert({
               message: 'Reinitializing...',
               prompt: 'Please do not refresh the application',
               showLoading: true,
@@ -775,7 +777,7 @@ export class EditorStore implements CommandRegistrar {
         systemCommand: command ?? 'execute',
       });
     } finally {
-      this.applicationStore.setBlockingAlert(undefined);
+      this.applicationStore.alertService.setBlockingAlert(undefined);
       this.executionState.reset();
     }
   }
@@ -785,7 +787,7 @@ export class EditorStore implements CommandRegistrar {
   async pullExecutionStatus(): Promise<void> {
     const result =
       (await this.client.getExecutionActivity()) as unknown as ExecutionActivity;
-    this.applicationStore.setBlockingAlert({
+    this.applicationStore.alertService.setBlockingAlert({
       message: 'Executing...',
       prompt: result.text
         ? result.text
@@ -805,7 +807,7 @@ export class EditorStore implements CommandRegistrar {
         }, 500),
       );
     }
-    this.applicationStore.setBlockingAlert({
+    this.applicationStore.alertService.setBlockingAlert({
       message: 'Executing...',
       prompt: 'Please do not refresh the application',
       showLoading: true,
@@ -1010,7 +1012,7 @@ export class EditorStore implements CommandRegistrar {
   }
 
   *fullReCompile(fullInit: boolean): GeneratorFn<void> {
-    this.applicationStore.setActionAlertInfo({
+    this.applicationStore.alertService.setActionAlertInfo({
       message: 'Are you sure you want to perform a full re-compile?',
       prompt: 'This may take a long time to complete',
       type: ActionAlertType.CAUTION,
@@ -1089,7 +1091,7 @@ export class EditorStore implements CommandRegistrar {
     if (!concept.path) {
       return;
     }
-    this.applicationStore.setBlockingAlert({
+    this.applicationStore.alertService.setBlockingAlert({
       message: 'Revealing concept in tree...',
       showLoading: true,
     });
@@ -1115,7 +1117,7 @@ export class EditorStore implements CommandRegistrar {
     } catch {
       this.applicationStore.notificationService.notifyWarning(errorMessage);
     } finally {
-      this.applicationStore.setBlockingAlert(undefined);
+      this.applicationStore.alertService.setBlockingAlert(undefined);
     }
   }
 
@@ -1187,7 +1189,7 @@ export class EditorStore implements CommandRegistrar {
   *findUsages(concept: ConceptInfo): GeneratorFn<void> {
     try {
       this.referenceUsageLoadState.inProgress();
-      this.applicationStore.setBlockingAlert({
+      this.applicationStore.alertService.setBlockingAlert({
         message: 'Finding concept usages...',
         prompt: `Finding references of ${getConceptInfoLabel(concept)}`,
         showLoading: true,
@@ -1233,7 +1235,7 @@ export class EditorStore implements CommandRegistrar {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.applicationStore.setBlockingAlert(undefined);
+      this.applicationStore.alertService.setBlockingAlert(undefined);
       this.referenceUsageLoadState.complete();
     }
   }
@@ -1454,7 +1456,7 @@ export class EditorStore implements CommandRegistrar {
     if (isDirectory === undefined || hasChildContent === undefined) {
       _delete().catch(this.applicationStore.alertUnhandledError);
     } else {
-      this.applicationStore.setActionAlertInfo({
+      this.applicationStore.alertService.setActionAlertInfo({
         message: `Are you sure you would like to delete this ${
           isDirectory ? 'directory' : 'file'
         }?`,

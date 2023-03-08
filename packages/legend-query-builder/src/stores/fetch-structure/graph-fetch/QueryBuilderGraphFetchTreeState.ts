@@ -224,7 +224,7 @@ export class QueryBuilderGraphFetchTreeState
 
   checkBeforeChangingImplementation(onChange: () => void): void {
     if (this.treeData?.rootIds.length) {
-      this.queryBuilderState.applicationStore.setActionAlertInfo({
+      this.queryBuilderState.applicationStore.alertService.setActionAlertInfo({
         message:
           'Current graph-fetch will be lost when switching to projection mode. Do you still want to proceed?',
         type: ActionAlertType.CAUTION,

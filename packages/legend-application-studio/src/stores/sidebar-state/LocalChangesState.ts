@@ -224,7 +224,7 @@ export abstract class LocalChangesState {
 
   alertUnsavedChanges(onProceed: () => void): void {
     if (this.hasUnpushedChanges) {
-      this.editorStore.applicationStore.setActionAlertInfo({
+      this.editorStore.applicationStore.alertService.setActionAlertInfo({
         message:
           'Unsaved changes to your query will be lost if you continue. Do you still want to proceed?',
         type: ActionAlertType.CAUTION,
@@ -363,7 +363,7 @@ export abstract class LocalChangesState {
       yield flowResult(
         this.editorStore.changeDetectionState.computeAggregatedWorkspaceRemoteChanges(),
       );
-      this.editorStore.applicationStore.setActionAlertInfo({
+      this.editorStore.applicationStore.alertService.setActionAlertInfo({
         message: 'Local workspace is out-of-sync',
         prompt: 'Please pull remote changes before pushing your local changes',
         type: ActionAlertType.CAUTION,
@@ -468,7 +468,7 @@ export abstract class LocalChangesState {
               error,
             );
           }
-          this.editorStore.applicationStore.setActionAlertInfo({
+          this.editorStore.applicationStore.alertService.setActionAlertInfo({
             message: `Change detection engine failed to build hashes index for workspace after syncing`,
             prompt:
               'To fix this, you can either try to keep refreshing local changes until success or trust and reuse current workspace hashes index',
@@ -734,7 +734,7 @@ export class FormLocalChangesState extends LocalChangesState {
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (isInConflictResolutionMode) {
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
           prompt: 'Please refresh the application',
         });

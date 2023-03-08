@@ -162,7 +162,7 @@ export class WorkspaceUpdaterState {
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (isInConflictResolutionMode) {
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -174,7 +174,7 @@ export class WorkspaceUpdaterState {
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND
       ) {
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: 'Current project or workspace no longer exists',
           prompt: 'Please refresh the application',
         });
@@ -254,7 +254,7 @@ export class WorkspaceUpdaterState {
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (isInConflictResolutionMode) {
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -270,7 +270,7 @@ export class WorkspaceUpdaterState {
 
     this.isUpdatingWorkspace = true;
     try {
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: 'Updating workspace...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -306,7 +306,9 @@ export class WorkspaceUpdaterState {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
       this.isUpdatingWorkspace = false;
     }
   }

@@ -376,8 +376,8 @@ export class EditorStore implements CommandRegistrar {
     // end up blocking other parts of the app
     // e.g. trying going to an unknown workspace, we will be redirected to the home page
     // but the blocking alert for not-found workspace will still block the app
-    this.applicationStore.setBlockingAlert(undefined);
-    this.applicationStore.setActionAlertInfo(undefined);
+    this.applicationStore.alertService.setBlockingAlert(undefined);
+    this.applicationStore.alertService.setActionAlertInfo(undefined);
     // stop change detection to avoid memory-leak
     this.changeDetectionState.stop();
   }
@@ -590,7 +590,7 @@ export class EditorStore implements CommandRegistrar {
       // instead, we give them the option to:
       // - reload the page (in case they later gain access)
       // - back to the setup page
-      this.applicationStore.setActionAlertInfo({
+      this.applicationStore.alertService.setActionAlertInfo({
         message: `Project not found or inaccessible`,
         prompt: 'Please check that the project exists and request access to it',
         type: ActionAlertType.STANDARD,
@@ -636,7 +636,7 @@ export class EditorStore implements CommandRegistrar {
       // - back to the setup page
       const createWorkspaceAndRelaunch = async (): Promise<void> => {
         try {
-          this.applicationStore.setBlockingAlert({
+          this.applicationStore.alertService.setBlockingAlert({
             message: 'Creating workspace...',
             prompt: 'Please do not close the application',
           });
@@ -645,7 +645,7 @@ export class EditorStore implements CommandRegistrar {
             workspaceId,
             workspaceType,
           );
-          this.applicationStore.setBlockingAlert(undefined);
+          this.applicationStore.alertService.setBlockingAlert(undefined);
           this.applicationStore.notificationService.notifySuccess(
             `Workspace '${workspace.workspaceId}' is succesfully created. Reloading application...`,
           );
@@ -659,7 +659,7 @@ export class EditorStore implements CommandRegistrar {
           this.applicationStore.notificationService.notifyError(error);
         }
       };
-      this.applicationStore.setActionAlertInfo({
+      this.applicationStore.alertService.setActionAlertInfo({
         message: 'Workspace not found',
         prompt: `Please note that you can check out the project in viewer mode. Workspace is only required if you need to work on the project.`,
         type: ActionAlertType.STANDARD,
@@ -752,7 +752,7 @@ export class EditorStore implements CommandRegistrar {
   }
 
   private *initConflictResolutionMode(): GeneratorFn<void> {
-    this.applicationStore.setActionAlertInfo({
+    this.applicationStore.alertService.setActionAlertInfo({
       message: 'Failed to update workspace.',
       prompt:
         'You can discard all of your changes or review them, resolve all merge conflicts and fix any potential compilation issues as well as test failures',
@@ -1119,7 +1119,7 @@ export class EditorStore implements CommandRegistrar {
       if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
         return;
       }
-      this.applicationStore.setBlockingAlert({
+      this.applicationStore.alertService.setBlockingAlert({
         message: 'Switching to text mode...',
         showLoading: true,
       });
@@ -1136,10 +1136,10 @@ export class EditorStore implements CommandRegistrar {
         this.applicationStore.notificationService.notifyWarning(
           `Can't enter text mode: transformation to grammar text failed. Error: ${error.message}`,
         );
-        this.applicationStore.setBlockingAlert(undefined);
+        this.applicationStore.alertService.setBlockingAlert(undefined);
         return;
       }
-      this.applicationStore.setBlockingAlert(undefined);
+      this.applicationStore.alertService.setBlockingAlert(undefined);
       yield flowResult(this.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT));
       // navigate to the currently opened element immediately after entering text mode editor
       if (this.tabManagerState.currentTab instanceof ElementEditorState) {

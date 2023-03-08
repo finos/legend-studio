@@ -959,7 +959,7 @@ export class MappingExecutionState extends MappingEditorTabState {
           );
         }
       } else {
-        this.editorStore.applicationStore.setActionAlertInfo({
+        this.editorStore.applicationStore.alertService.setActionAlertInfo({
           message: 'Mapping execution input data is already set',
           prompt: 'Do you want to regenerate the input data?',
           type: ActionAlertType.CAUTION,

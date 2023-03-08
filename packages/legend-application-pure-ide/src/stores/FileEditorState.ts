@@ -441,7 +441,7 @@ export class FileEditorState
       );
     };
     if (this.hasChanged) {
-      this.editorStore.applicationStore.setActionAlertInfo({
+      this.editorStore.applicationStore.alertService.setActionAlertInfo({
         message:
           'Source is not compiled, finding concept usages might be inaccurate. Do you want compile to proceed?',
         type: ActionAlertType.CAUTION,
@@ -473,7 +473,7 @@ export class FileEditorState
     }
     const concept = this.renameConceptState.concept;
     try {
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: 'Finding concept usages...',
         showLoading: true,
       });
@@ -504,7 +504,9 @@ export class FileEditorState
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
   }
 

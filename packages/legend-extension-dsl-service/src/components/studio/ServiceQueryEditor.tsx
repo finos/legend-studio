@@ -116,7 +116,7 @@ const NewServiceModal = observer(() => {
       flowResult(
         editorStore.saveWorkspace(serviceEntity, true, (): void => {
           onClose();
-          applicationStore.setActionAlertInfo({
+          applicationStore.alertService.setActionAlertInfo({
             message: `Successfully created service '${serviceName}'. Now your service can be found in workspace '${editorStore.sdlcState.activeWorkspace.workspaceId}' of project '${editorStore.sdlcState.activeProject.name}' (${editorStore.sdlcState.activeProject.projectId})`,
             prompt: `Please make sure to review the service and submit a review to officially make the service part of the project`,
             type: ActionAlertType.STANDARD,

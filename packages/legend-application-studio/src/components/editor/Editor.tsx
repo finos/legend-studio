@@ -138,7 +138,7 @@ export const Editor = withEditorStore(
             editorStore.localChangesState.hasUnpushedChanges,
         ],
         (onProceed: () => void): void => {
-          applicationStore.setActionAlertInfo({
+          applicationStore.alertService.setActionAlertInfo({
             // TODO?: should we make this message generic like the `BeforeUnloadEvent` message?
             message: editorStore.isInConflictResolutionMode
               ? 'You have not accepted the conflict resolution, the current resolution will be discarded. Leave anyway?'

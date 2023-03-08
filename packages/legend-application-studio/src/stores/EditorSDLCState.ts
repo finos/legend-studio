@@ -160,12 +160,12 @@ export class EditorSDLCState {
       (error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND)
     ) {
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: 'Current project or workspace no longer exists',
         prompt: 'Please refresh the application',
       });
     } else {
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: error.message,
       });
     }

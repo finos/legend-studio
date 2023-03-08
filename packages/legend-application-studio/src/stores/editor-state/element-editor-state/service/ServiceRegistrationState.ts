@@ -270,7 +270,7 @@ export class ServiceRegistrationState {
         'Service registration pattern is missing or empty',
       );
 
-      this.editorStore.applicationStore.setActionAlertInfo({
+      this.editorStore.applicationStore.alertService.setActionAlertInfo({
         message: `Service with pattern ${
           serviceRegistrationResult.pattern
         } registered ${this.activatePostRegistration ? 'and activated ' : ''}`,

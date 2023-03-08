@@ -125,7 +125,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
         if (!embeddedSetImpls.length) {
           setSourceElementForSourceSelectorModal(null);
         } else {
-          applicationStore.setActionAlertInfo({
+          applicationStore.alertService.setActionAlertInfo({
             message: CHANGING_SOURCE_ON_EMBEDDED,
             actions: [
               {
@@ -218,7 +218,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
           if (!embeddedSetImpls.length) {
             changeClassMappingSourceDriver(droppedPackagableElement);
           } else {
-            applicationStore.setActionAlertInfo({
+            applicationStore.alertService.setActionAlertInfo({
               message: CHANGING_SOURCE_ON_EMBEDDED,
               actions: [
                 {

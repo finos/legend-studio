@@ -456,7 +456,7 @@ export const QueryBuilderResultPanel = observer(
     };
 
     const confirmExport = (format: EXECUTION_SERIALIZATION_FORMAT): void => {
-      applicationStore.setActionAlertInfo({
+      applicationStore.alertService.setActionAlertInfo({
         message: USER_ATTESTATION_MESSAGE,
         type: ActionAlertType.CAUTION,
         actions: [

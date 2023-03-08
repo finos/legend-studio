@@ -226,7 +226,7 @@ export class WorkspaceReviewState {
   *recreateWorkspaceAfterCommittingReview(): GeneratorFn<void> {
     try {
       this.isRecreatingWorkspaceAfterCommittingReview = true;
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: 'Recreating workspace...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -247,7 +247,9 @@ export class WorkspaceReviewState {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
       this.isRecreatingWorkspaceAfterCommittingReview = false;
     }
   }
@@ -345,7 +347,7 @@ export class WorkspaceReviewState {
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (isInConflictResolutionMode) {
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -365,7 +367,7 @@ export class WorkspaceReviewState {
         review.id,
         { message: `${review.title} [review]` },
       );
-      this.editorStore.applicationStore.setActionAlertInfo({
+      this.editorStore.applicationStore.alertService.setActionAlertInfo({
         message: 'Committed review successfully',
         prompt:
           'You can create a new workspace with the same name or leave for the start page',

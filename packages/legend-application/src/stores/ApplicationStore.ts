@@ -20,7 +20,6 @@ import {
   LogEvent,
   uuid,
 } from '@finos/legend-shared';
-import { action, makeObservable, observable } from 'mobx';
 import { APPLICATION_EVENT } from './ApplicationEvent.js';
 import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
 import type {
@@ -36,11 +35,7 @@ import type { LegendApplicationPlugin } from './LegendApplicationPlugin.js';
 import { CommandService } from './CommandService.js';
 import { KeyboardShortcutsService } from './KeyboardShortcutsService.js';
 import { TerminalService } from './TerminalService.js';
-import {
-  type ActionAlertInfo,
-  AlertService,
-  type BlockingAlertInfo,
-} from './AlertService.js';
+import { AlertService } from './AlertService.js';
 import { NotificationService } from './NotificationService.js';
 import { IdentityService } from './IdentityService.js';
 import { StorageService } from './storage/StorageService.js';
@@ -71,89 +66,61 @@ export class ApplicationStore<
   readonly keyboardShortcutsService: KeyboardShortcutsService;
   readonly layoutService = new LayoutService();
   readonly clipboardService: ClipboardService;
-
-  // navigation
+  readonly terminalService: TerminalService;
+  readonly logService = new LogService();
   // NOTE: as of now, we only support web environment, we will not use `Application
   readonly navigationService: ApplicationNavigator;
   readonly navigationContextService: ApplicationNavigationContextService;
 
-  // documentation & help
+  // support
   readonly documentationService: DocumentationService;
   readonly assistantService: AssistantService;
 
-  // event & communication
-  // TODO: refactor this to `AlertService`
-  blockingAlertInfo?: BlockingAlertInfo | undefined;
-  actionAlertInfo?: ActionAlertInfo | undefined;
-  readonly alertService = new AlertService();
-  readonly notificationService = new NotificationService();
-  readonly logService = new LogService();
-  readonly terminalService: TerminalService;
-  readonly eventService = new EventService();
+  // event
+  readonly alertService: AlertService;
+  readonly notificationService: NotificationService;
+  readonly eventService: EventService;
   readonly telemetryService: TelemetryService;
-  readonly tracerService = new TracerService();
+  readonly tracerService: TracerService;
 
   constructor(config: T, navigator: WebApplicationNavigator, pluginManager: V) {
-    makeObservable(this, {
-      blockingAlertInfo: observable,
-      actionAlertInfo: observable,
-      setBlockingAlert: action,
-      setActionAlertInfo: action,
-    });
-
     this.config = config;
     this.pluginManager = pluginManager;
+
+    this.timeService = new TimeService();
+    this.layoutService = new LayoutService();
+    // NOTE: set the logger first so other loading could use the configured logger
+    this.logService = new LogService();
+    this.logService.registerPlugins(pluginManager.getLoggerPlugins());
+
+    this.identityService = new IdentityService(this);
+    this.storageService = new StorageService(this);
+    this.clipboardService = new ClipboardService(this);
+    this.terminalService = new TerminalService(this);
+    this.commandService = new CommandService(this);
+    this.keyboardShortcutsService = new KeyboardShortcutsService(this);
 
     this.navigationService = navigator;
     this.navigationContextService = new ApplicationNavigationContextService(
       this,
     );
 
-    this.identityService = new IdentityService(this);
-    this.storageService = new StorageService(this);
-    this.clipboardService = new ClipboardService(this);
-
-    // NOTE: set the logger first so other loading could use the configured logger
-    this.logService.registerPlugins(pluginManager.getLoggerPlugins());
-    this.terminalService = new TerminalService(this);
-
     this.documentationService = new DocumentationService(this);
     this.assistantService = new AssistantService(this);
 
+    this.alertService = new AlertService(this);
+    this.notificationService = new NotificationService();
+    this.eventService = new EventService();
+    this.eventService.registerEventNotifierPlugins(
+      pluginManager.getEventNotifierPlugins(),
+    );
     this.telemetryService = new TelemetryService(this);
     this.telemetryService.registerPlugins(
       pluginManager.getTelemetryServicePlugins(),
     );
     this.telemetryService.setup();
-    this.commandService = new CommandService(this);
-    this.keyboardShortcutsService = new KeyboardShortcutsService(this);
+    this.tracerService = new TracerService();
     this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
-    this.eventService.registerEventNotifierPlugins(
-      pluginManager.getEventNotifierPlugins(),
-    );
-  }
-
-  setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
-    if (alertInfo) {
-      this.keyboardShortcutsService.blockGlobalHotkeys();
-    } else {
-      this.keyboardShortcutsService.unblockGlobalHotkeys();
-    }
-    this.blockingAlertInfo = alertInfo;
-  }
-
-  setActionAlertInfo(alertInfo: ActionAlertInfo | undefined): void {
-    if (this.actionAlertInfo && alertInfo) {
-      this.notificationService.notifyIllegalState(
-        'Action alert is stacked: new alert is invoked while another one is being displayed',
-      );
-    }
-    if (alertInfo) {
-      this.keyboardShortcutsService.blockGlobalHotkeys();
-    } else {
-      this.keyboardShortcutsService.unblockGlobalHotkeys();
-    }
-    this.actionAlertInfo = alertInfo;
   }
 
   /**
