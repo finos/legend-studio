@@ -81,7 +81,9 @@ export class ProjectConfigurationEditorState extends EditorState {
       latestProjectStructureVersion: observable,
       projectDependencyEditorState: observable,
       originalConfig: computed,
-      isProjectGavChanged: computed,
+      isGroupIdChanged: computed,
+      isArtifactIdChanged: computed,
+
       setOriginalProjectConfiguration: action,
       setProjectConfiguration: action,
       setSelectedTab: action,
@@ -137,12 +139,17 @@ export class ProjectConfigurationEditorState extends EditorState {
     );
   }
 
-  get isProjectGavChanged(): boolean {
+  get isGroupIdChanged(): boolean {
+    return (
+      this.currentProjectConfiguration.groupId !==
+      this.originalProjectConfiguration?.groupId
+    );
+  }
+
+  get isArtifactIdChanged(): boolean {
     return (
       this.currentProjectConfiguration.artifactId !==
-        this.originalProjectConfiguration?.artifactId ||
-      this.currentProjectConfiguration.groupId !==
-        this.originalProjectConfiguration.groupId
+      this.originalProjectConfiguration?.artifactId
     );
   }
 

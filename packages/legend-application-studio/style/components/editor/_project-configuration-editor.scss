@@ -131,6 +131,14 @@
     }
   }
 
+  &__documentation-btn {
+    margin-left: 0.5rem;
+
+    svg {
+      color: var(--color-light-grey-50);
+    }
+  }
+
   &__project__structure__version {
     display: flex;
     height: 3rem;

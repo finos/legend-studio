@@ -58,14 +58,6 @@
   @include flexCenter;
 }
 
-.btn--right {
-  margin-left: 0.5rem;
-
-  svg {
-    color: var(--color-light-grey-50);
-  }
-}
-
 .btn--important {
   text-transform: uppercase;
   font-size: 1.2rem;

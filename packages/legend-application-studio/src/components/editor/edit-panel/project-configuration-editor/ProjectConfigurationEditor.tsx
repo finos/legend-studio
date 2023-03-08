@@ -70,8 +70,11 @@ const ProjectStructureEditor = observer(
       latestVersion &&
       (latestVersion.version > projectConfig.projectStructureVersion.version ||
         latestProjectExtensionVersion > currentProjectExtensionVersion);
-    const isProjectGavChanged =
-      editorStore.projectConfigurationEditorState.isProjectGavChanged;
+    const isGroupIdChanged =
+      editorStore.projectConfigurationEditorState.isGroupIdChanged;
+    const isArtifactIdChanged =
+      editorStore.projectConfigurationEditorState.isArtifactIdChanged;
+
     const updateVersion = (): void => {
       flowResult(
         editorStore.projectConfigurationEditorState.updateToLatestStructure(),
@@ -140,8 +143,8 @@ const ProjectStructureEditor = observer(
               <div className="input-group">
                 <input
                   className={clsx(
-                    'input input--dark input-group__input panel__content__form__section__input input--small--full',
-                    { 'input--caution': isProjectGavChanged },
+                    'input input--dark input-group__input panel__content__form__section__input input--full',
+                    { 'input--caution': isGroupIdChanged },
                   )}
                   title="Group ID"
                   spellCheck={false}
@@ -150,13 +153,11 @@ const ProjectStructureEditor = observer(
                   onChange={changeGroupId}
                 />
 
-                {isProjectGavChanged && (
+                {isGroupIdChanged && (
                   <DocumentationLink
-                    className="panel__content__form__section__list__item__edit btn--right"
+                    className="panel__content__form__section__list__item__edit project-configuration-editor__documentation-btn"
                     documentationKey={
-                      // QUESTION_HOW_TO_DEFINE_A_CONSTRAINT
-                      // QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
-                      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_CONSTRAINT
+                      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
                     }
                   />
                 )}
@@ -176,8 +177,8 @@ const ProjectStructureEditor = observer(
               <div className="input-group">
                 <input
                   className={clsx(
-                    'input input--dark input-group__input panel__content__form__section__input input--small--full',
-                    { 'input--caution': isProjectGavChanged },
+                    'input input--dark input-group__input panel__content__form__section__input input--full',
+                    { 'input--caution': isArtifactIdChanged },
                   )}
                   title="Artifact ID"
                   spellCheck={false}
@@ -185,11 +186,11 @@ const ProjectStructureEditor = observer(
                   value={projectConfig.artifactId}
                   onChange={changeArtifactId}
                 />
-                {isProjectGavChanged && (
+                {isArtifactIdChanged && (
                   <DocumentationLink
-                    className="panel__content__form__section__list__item__edit btn--right"
+                    className="panel__content__form__section__list__item__edit project-configuration-editor__documentation-btn"
                     documentationKey={
-                      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_CONSTRAINT
+                      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
                     }
                   />
                 )}
@@ -434,76 +435,76 @@ export const ProjectConfigurationEditor = observer(() => {
   const updateGavConfigs = (): void => {
     const documentationEntry =
       applicationStore.documentationService.getDocEntry(
-        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_CONSTRAINT,
+        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES,
       );
-
-    const actions = [
-      {
-        label: (
-          <>
-            Acknowledge and Proceed
-            {documentationEntry && (
-              <button
-                className="btn--right"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  event.preventDefault();
-                  if (
-                    shouldDisplayVirtualAssistantDocumentationEntry(
-                      documentationEntry,
-                    )
-                  ) {
-                    applicationStore.assistantService.openDocumentationEntry(
-                      documentationEntry._documentationKey,
-                    );
-                  } else if (documentationEntry.url) {
-                    applicationStore.navigator.visitAddress(
-                      documentationEntry.url,
-                    );
-                  }
-                }}
-              >
-                <QuestionCircleIcon />
-              </button>
-            )}
-          </>
-        ),
-        type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-        handler: (): void => {
-          editorStore.localChangesState.alertUnsavedChanges((): void => {
-            flowResult(configState.updateConfigs()).catch(
-              applicationStore.alertUnhandledError,
-            );
-          });
-        },
-      },
-      documentationEntry && {
-        label: <>View Instructions</>,
-        default: true,
-        type: ActionAlertActionType.PROCEED,
-        handler: (): void => {
-          if (
-            shouldDisplayVirtualAssistantDocumentationEntry(documentationEntry)
-          ) {
-            applicationStore.assistantService.openDocumentationEntry(
-              documentationEntry._documentationKey,
-            );
-          } else if (documentationEntry.url) {
-            applicationStore.navigator.visitAddress(documentationEntry.url);
-          }
-        },
-      },
-      {
-        label: 'Cancel',
-        type: ActionAlertActionType.PROCEED,
-      },
-    ].filter(isNonNullable);
 
     editorStore.applicationStore.setActionAlertInfo({
       message:
         'Please be cautious that modifying group ID or artifact ID (GAV coordinates) can potentially have a big downstream impact. Be aware that the project will lose all previous versions; also, any dependant projects can break too if the coordinates are not changed in a controlled way.',
       type: ActionAlertType.CAUTION,
-      actions: actions,
+      actions: [
+        {
+          label: (
+            <>
+              Acknowledge and Proceed
+              {documentationEntry && (
+                <button
+                  className="project-configuration-editor__documentation-btn"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    if (
+                      shouldDisplayVirtualAssistantDocumentationEntry(
+                        documentationEntry,
+                      )
+                    ) {
+                      applicationStore.assistantService.openDocumentationEntry(
+                        documentationEntry._documentationKey,
+                      );
+                    } else if (documentationEntry.url) {
+                      applicationStore.navigator.visitAddress(
+                        documentationEntry.url,
+                      );
+                    }
+                  }}
+                >
+                  <QuestionCircleIcon />
+                </button>
+              )}
+            </>
+          ),
+          type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+          handler: (): void => {
+            editorStore.localChangesState.alertUnsavedChanges((): void => {
+              flowResult(configState.updateConfigs()).catch(
+                applicationStore.alertUnhandledError,
+              );
+            });
+          },
+        },
+        documentationEntry && {
+          label: 'View Instructions',
+          default: true,
+          type: ActionAlertActionType.PROCEED,
+          handler: (): void => {
+            if (
+              shouldDisplayVirtualAssistantDocumentationEntry(
+                documentationEntry,
+              )
+            ) {
+              applicationStore.assistantService.openDocumentationEntry(
+                documentationEntry._documentationKey,
+              );
+            } else if (documentationEntry.url) {
+              applicationStore.navigator.visitAddress(documentationEntry.url);
+            }
+          },
+        },
+        {
+          label: 'Cancel',
+          type: ActionAlertActionType.PROCEED,
+        },
+      ].filter(isNonNullable),
       ...(Boolean(documentationEntry) && {
         prompt: 'Please see the instructions for more guidance',
       }),
@@ -511,7 +512,7 @@ export const ProjectConfigurationEditor = observer(() => {
   };
 
   const updateConfigs = (): void => {
-    if (configState.isProjectGavChanged) {
+    if (configState.isArtifactIdChanged || configState.isGroupIdChanged) {
       updateGavConfigs();
     } else {
       editorStore.localChangesState.alertUnsavedChanges((): void => {
