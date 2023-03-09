@@ -136,7 +136,7 @@ class RevisionChangeDetectionState {
     }
     this.changes = changes;
     if (!quiet) {
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
         ),
@@ -225,7 +225,7 @@ class RevisionChangeDetectionState {
       TextLocalChangesState,
     ).localChanges = entityChanges;
     if (!quiet) {
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
         ),
@@ -253,7 +253,7 @@ class RevisionChangeDetectionState {
       this.setEntityHashesIndex(hashesIndex);
       this.setIsBuildingEntityHashesIndex(false);
       if (!quiet) {
-        this.editorStore.applicationStore.log.info(
+        this.editorStore.applicationStore.logService.info(
           logEvent,
           '[ASYNC]',
           Date.now() - startTime,
@@ -262,7 +262,7 @@ class RevisionChangeDetectionState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION__FAILURE),
         `Can't build hashes index`,
       );
@@ -546,7 +546,7 @@ export class ChangeDetectionState {
       snapshot.set(el.path, el.hashCode),
     );
     if (!quiet) {
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_GRAPH_HASHES_INDEX__SUCCESS,
         ),
@@ -604,7 +604,7 @@ export class ChangeDetectionState {
         ),
       );
       if (!quiet) {
-        this.editorStore.applicationStore.log.info(
+        this.editorStore.applicationStore.logService.info(
           LogEvent.create(
             CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
           ),
@@ -684,7 +684,7 @@ export class ChangeDetectionState {
       ),
     )) as EntityChangeConflict[];
     if (!quiet) {
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_WORKSPACE_UPDATE_CONFLICTS__SUCCESS,
         ),
@@ -716,7 +716,7 @@ export class ChangeDetectionState {
       ),
     )) as EntityChangeConflict[];
     if (!quiet) {
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CONFLICT_RESOLUTION_CONFLICTS__SUCCESS,
         ),
@@ -845,7 +845,7 @@ export class ChangeDetectionState {
       this.conflictResolutionBaseRevisionState.computeChanges(quiet), // for conflict resolution changes detection
     ]);
     if (!quiet) {
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
         ),
@@ -867,7 +867,7 @@ export class ChangeDetectionState {
       ),
     ]);
     if (!quiet) {
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
         ),
@@ -900,7 +900,7 @@ export class ChangeDetectionState {
       this.editorStore.graphManagerState.graph,
       this.editorStore.changeDetectionState.observerContext,
     );
-    this.editorStore.applicationStore.log.info(
+    this.editorStore.applicationStore.logService.info(
       LogEvent.create(
         CHANGE_DETECTION_EVENT.CHANGE_DETECTION_OBSERVE_GRAPH__SUCCESS,
       ),
@@ -942,7 +942,7 @@ export class ChangeDetectionState {
     // save the `keepAlive` computation disposers to dispose after we start change detection
     // so the first call of change detection still get the benefit of computed value
     this.graphElementHashCodeKeepAliveComputationDisposers = disposers;
-    this.editorStore.applicationStore.log.info(
+    this.editorStore.applicationStore.logService.info(
       LogEvent.create(
         CHANGE_DETECTION_EVENT.CHANGE_DETECTION_PRECOMPUTE_GRAPH_HASHES__SUCCESS,
       ),

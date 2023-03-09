@@ -1,0 +1,19 @@
+###Relational
+Database store::db
+(
+)
+
+
+###Connection
+RelationalDatabaseConnection connection::spanner
+{
+  store: store::db;
+  type: Spanner;
+  specification: Spanner
+  {
+    projectId: 'test-project';
+    instanceId: 'test-instance';
+    databaseId: 'test-db';
+  };
+  auth: GCPApplicationDefaultCredentials;
+}

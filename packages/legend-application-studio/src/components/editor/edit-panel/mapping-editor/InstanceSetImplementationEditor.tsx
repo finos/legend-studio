@@ -125,7 +125,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
         if (!embeddedSetImpls.length) {
           setSourceElementForSourceSelectorModal(null);
         } else {
-          applicationStore.setActionAlertInfo({
+          applicationStore.alertService.setActionAlertInfo({
             message: CHANGING_SOURCE_ON_EMBEDDED,
             actions: [
               {
@@ -164,7 +164,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
         } else if (droppedPackagableElement instanceof FlatData) {
           const allRecordTypes = getAllRecordTypes(droppedPackagableElement);
           if (allRecordTypes.length === 0) {
-            applicationStore.notifyWarning(
+            applicationStore.notificationService.notifyWarning(
               `Source flat-data store '${droppedPackagableElement.path}' must have at least one action`,
             );
             return;
@@ -184,7 +184,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
             (schema.tables as (Table | View)[]).concat(schema.views),
           );
           if (relations.length === 0) {
-            applicationStore.notifyWarning(
+            applicationStore.notificationService.notifyWarning(
               `Source database '${droppedPackagableElement.path}' must have at least one table or view`,
             );
             return;
@@ -218,7 +218,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
           if (!embeddedSetImpls.length) {
             changeClassMappingSourceDriver(droppedPackagableElement);
           } else {
-            applicationStore.setActionAlertInfo({
+            applicationStore.alertService.setActionAlertInfo({
               message: CHANGING_SOURCE_ON_EMBEDDED,
               actions: [
                 {

@@ -63,30 +63,32 @@ export class LegendQueryBaseStore {
 
   *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
-      this.applicationStore.notifyIllegalState('Base store is re-initialized');
+      this.applicationStore.notificationService.notifyIllegalState(
+        'Base store is re-initialized',
+      );
       return;
     }
     this.initState.inProgress();
 
     try {
-      this.applicationStore.setCurrentUser(
+      this.applicationStore.identityService.setCurrentUser(
         (yield new NetworkClient().get(
           `${this.applicationStore.config.engineServerUrl}/server/v1/currentUser`,
         )) as string,
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(
           APPLICATION_EVENT.APPLICATION_IDENTITY_AUTO_FETCH__FAILURE,
         ),
         error,
       );
-      this.applicationStore.notifyWarning(error.message);
+      this.applicationStore.notificationService.notifyWarning(error.message);
     }
 
     // setup telemetry service
-    this.applicationStore.setupTelemetryService();
+    this.applicationStore.telemetryService.setup();
 
     ApplicationTelemetry.logEvent_ApplicationInitializationSucceeded(
       this.applicationStore.telemetryService,

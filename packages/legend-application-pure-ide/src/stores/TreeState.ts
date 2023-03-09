@@ -65,7 +65,7 @@ export abstract class TreeState<
 
   *initialize(): GeneratorFn<void> {
     if (this.loadInitialDataState.isInProgress) {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         'Tree state initialization is in progress',
       );
       return;
@@ -76,7 +76,7 @@ export abstract class TreeState<
       this.loadInitialDataState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.loadInitialDataState.fail();
     }
   }
@@ -119,7 +119,9 @@ export abstract class TreeState<
         this.refreshTree();
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.notifyError(error);
+        this.editorStore.applicationStore.notificationService.notifyError(
+          error,
+        );
       } finally {
         node.isLoading = false;
       }
@@ -141,7 +143,7 @@ export abstract class TreeState<
       this.treeData = this.buildTreeData((yield this.getRootNodes()) as V[]);
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.refreshDataState.fail();
       return;
     }

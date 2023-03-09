@@ -160,7 +160,7 @@ export class ServiceTestSuiteState {
       this.isRunningTest.complete();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.isRunningTest.fail();
     } finally {
       this.testStates.forEach((t) => t.runningTestAction.complete());
@@ -198,7 +198,7 @@ export class ServiceTestSuiteState {
       this.isRunningTest.complete();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.isRunningTest.fail();
     } finally {
       this.testStates.forEach((t) => t.runningTestAction.complete());

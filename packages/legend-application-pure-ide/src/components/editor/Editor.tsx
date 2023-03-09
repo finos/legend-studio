@@ -108,11 +108,16 @@ export const Editor = withEditorStore(
     }, [editorStore, applicationStore]);
 
     useEffect(() => {
-      applicationStore.navigator.blockNavigation([() => true], undefined, () =>
-        applicationStore.notifyWarning(`Navigation from the editor is blocked`),
+      applicationStore.navigationService.navigator.blockNavigation(
+        [() => true],
+        undefined,
+        () =>
+          applicationStore.notificationService.notifyWarning(
+            `Navigation from the editor is blocked`,
+          ),
       );
       return (): void => {
-        applicationStore.navigator.unblockNavigation();
+        applicationStore.navigationService.navigator.unblockNavigation();
       };
     }, [editorStore, applicationStore]);
 

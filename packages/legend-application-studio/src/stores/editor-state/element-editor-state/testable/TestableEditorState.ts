@@ -159,7 +159,7 @@ export class TestableTestEditorState {
       this.runningTestAction.complete();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Error running test: ${error.message}`,
       );
       this.runningTestAction.fail();

@@ -51,7 +51,7 @@ export class EditorTabManagerState extends TabManagerState {
 
   override closeTab(tab: TabState): void {
     if (tab instanceof FileEditorState && tab.hasChanged) {
-      this.editorStore.applicationStore.setActionAlertInfo({
+      this.editorStore.applicationStore.alertService.setActionAlertInfo({
         message:
           'Unsaved changes will be lost if you continue. Do you still want to proceed?',
         prompt: 'To save changes, abort and compile',

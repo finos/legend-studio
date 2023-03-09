@@ -78,7 +78,7 @@ export const TextInputEditor: React.FC<{
       const element = textInputRef.current;
       const _editor = monacoEditorAPI.create(element, {
         ...getBaseTextEditorOptions(),
-        theme: applicationStore.TEMPORARY__isLightThemeEnabled
+        theme: applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
           ? EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
           : EDITOR_THEME.LEGEND,
         formatOnType: true,

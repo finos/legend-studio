@@ -20,7 +20,7 @@ import {
   ROOT_PACKAGE_NAME,
 } from '../../../../../../../graph/MetaModelConst.js';
 import {
-  type Log,
+  type LogService,
   uniq,
   guaranteeNonNullable,
   assertNonEmptyString,
@@ -124,7 +124,7 @@ interface ResolutionResult<T> {
 export class V1_GraphBuilderContext {
   private readonly autoImports: Package[];
   private readonly sectionImports: Package[] = [];
-  readonly log: Log;
+  readonly logService: LogService;
   readonly currentSubGraph: BasicModel;
   readonly extensions: V1_GraphBuilderExtensions;
   readonly graph: PureModel;
@@ -132,7 +132,7 @@ export class V1_GraphBuilderContext {
   readonly options?: GraphBuilderOptions | undefined;
 
   constructor(builder: V1_GraphBuilderContextBuilder) {
-    this.log = builder.log;
+    this.logService = builder.logService;
     this.graph = builder.graph;
     this.autoImports = this.graph.autoImports;
     this.currentSubGraph = builder.currentSubGraph;
@@ -547,7 +547,7 @@ export class V1_GraphBuilderContext {
 }
 
 export class V1_GraphBuilderContextBuilder {
-  log: Log;
+  readonly logService: LogService;
   /**
    * The (sub) graph where the current processing is taking place.
    * This information is important because each sub-graph holds their
@@ -555,9 +555,10 @@ export class V1_GraphBuilderContextBuilder {
    *
    * e.g. dependency graph, generation graph, system graph, etc.
    */
-  currentSubGraph: BasicModel;
-  extensions: V1_GraphBuilderExtensions;
-  graph: PureModel;
+  readonly currentSubGraph: BasicModel;
+  readonly extensions: V1_GraphBuilderExtensions;
+  readonly graph: PureModel;
+
   sectionImports: Package[] = [];
   section?: Section | undefined;
   options?: GraphBuilderOptions | undefined;
@@ -566,13 +567,13 @@ export class V1_GraphBuilderContextBuilder {
     graph: PureModel,
     currentSubGraph: BasicModel,
     extensions: V1_GraphBuilderExtensions,
-    log: Log,
+    logService: LogService,
     options?: GraphBuilderOptions,
   ) {
     this.graph = graph;
     this.currentSubGraph = currentSubGraph;
     this.extensions = extensions;
-    this.log = log;
+    this.logService = logService;
     this.options = options;
   }
 

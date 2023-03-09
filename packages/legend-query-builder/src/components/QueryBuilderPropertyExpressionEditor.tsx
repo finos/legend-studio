@@ -169,7 +169,7 @@ const DerivedPropertyParameterValueEditor = observer(
         isDefaultDatePropagationSupported(nextExpression, queryBuilderState) &&
         nextExpression.func.value.genericType.value.rawType instanceof Class
       ) {
-        queryBuilderState.applicationStore.setActionAlertInfo({
+        queryBuilderState.applicationStore.alertService.setActionAlertInfo({
           message:
             'You have just changed a milestoning date in the property expression chain, this date will be propagated down the rest of the chain. Do you want to proceed? Otherwise, you can choose to propagate the default milestoning dates instead.',
           type: ActionAlertType.CAUTION,

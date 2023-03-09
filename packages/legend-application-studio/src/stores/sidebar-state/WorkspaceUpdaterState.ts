@@ -162,7 +162,7 @@ export class WorkspaceUpdaterState {
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (isInConflictResolutionMode) {
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -174,12 +174,12 @@ export class WorkspaceUpdaterState {
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND
       ) {
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: 'Current project or workspace no longer exists',
           prompt: 'Please refresh the application',
         });
       } else {
-        this.editorStore.applicationStore.notifyWarning(
+        this.editorStore.applicationStore.notificationService.notifyWarning(
           'Failed to check if current workspace is in conflict resolution mode',
         );
       }
@@ -220,7 +220,7 @@ export class WorkspaceUpdaterState {
           true,
         ),
       ]);
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
@@ -230,11 +230,11 @@ export class WorkspaceUpdaterState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.sdlcState.handleChangeDetectionRefreshIssue(error);
     } finally {
       this.isRefreshingWorkspaceUpdater = false;
@@ -254,7 +254,7 @@ export class WorkspaceUpdaterState {
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (isInConflictResolutionMode) {
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -262,7 +262,7 @@ export class WorkspaceUpdaterState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         'Failed to check if current workspace is in conflict resolution mode',
       );
       return;
@@ -270,7 +270,7 @@ export class WorkspaceUpdaterState {
 
     this.isUpdatingWorkspace = true;
     try {
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: 'Updating workspace...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -280,7 +280,7 @@ export class WorkspaceUpdaterState {
           this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
         )) as WorkspaceUpdateReport;
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.UPDATE_WORKSPACE__SUCCESS),
         Date.now() - startTime,
         'ms',
@@ -290,7 +290,7 @@ export class WorkspaceUpdaterState {
         // TODO: we might want to handle the situation more gracefully rather than just reloading the page
         case WorkspaceUpdateReportStatus.CONFLICT:
         case WorkspaceUpdateReportStatus.UPDATED:
-          this.editorStore.applicationStore.navigator.reload({
+          this.editorStore.applicationStore.navigationService.navigator.reload({
             ignoreBlocking: true,
           });
           break;
@@ -300,13 +300,15 @@ export class WorkspaceUpdaterState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
       this.isUpdatingWorkspace = false;
     }
   }
@@ -356,11 +358,11 @@ export class WorkspaceUpdaterState {
         .filter((review) => !baseReview || review.id !== baseReview.id); // make sure to exclude the base review
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 }

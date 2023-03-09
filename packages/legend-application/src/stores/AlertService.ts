@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import { action, makeObservable, observable } from 'mobx';
+import type { GenericLegendApplicationStore } from './ApplicationStore.js';
+
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
   CAUTION = 'CAUTION',
@@ -26,9 +29,9 @@ export enum ActionAlertActionType {
 }
 
 export interface ActionAlertInfo {
-  title?: string;
+  title?: string | undefined;
   message: string;
-  prompt?: string;
+  prompt?: string | undefined;
   type?: ActionAlertType;
   onClose?: () => void;
   onEnter?: () => void;
@@ -44,4 +47,45 @@ export interface BlockingAlertInfo {
   message: string;
   prompt?: string;
   showLoading?: boolean;
+}
+
+export class AlertService {
+  readonly applicationStore: GenericLegendApplicationStore;
+
+  blockingAlertInfo?: BlockingAlertInfo | undefined;
+  actionAlertInfo?: ActionAlertInfo | undefined;
+
+  constructor(applicationStore: GenericLegendApplicationStore) {
+    makeObservable(this, {
+      blockingAlertInfo: observable,
+      actionAlertInfo: observable,
+      setBlockingAlert: action,
+      setActionAlertInfo: action,
+    });
+
+    this.applicationStore = applicationStore;
+  }
+
+  setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
+    if (alertInfo) {
+      this.applicationStore.keyboardShortcutsService.blockGlobalHotkeys();
+    } else {
+      this.applicationStore.keyboardShortcutsService.unblockGlobalHotkeys();
+    }
+    this.blockingAlertInfo = alertInfo;
+  }
+
+  setActionAlertInfo(alertInfo: ActionAlertInfo | undefined): void {
+    if (this.actionAlertInfo && alertInfo) {
+      this.applicationStore.notificationService.notifyIllegalState(
+        'Action alert is stacked: new alert is invoked while another one is being displayed',
+      );
+    }
+    if (alertInfo) {
+      this.applicationStore.keyboardShortcutsService.blockGlobalHotkeys();
+    } else {
+      this.applicationStore.keyboardShortcutsService.unblockGlobalHotkeys();
+    }
+    this.actionAlertInfo = alertInfo;
+  }
 }

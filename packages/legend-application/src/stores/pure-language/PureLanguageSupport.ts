@@ -28,7 +28,7 @@ import {
   KeyMod,
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
-import { EDITOR_LANGUAGE, EDITOR_THEME } from '../const.js';
+import { EDITOR_LANGUAGE, EDITOR_THEME } from '../../const.js';
 
 /**
  * The postfix to be added to all token types, i.e. identifier.pure, number.pure, etc.

@@ -82,7 +82,9 @@ const CreateMappingQuerySetupContent = observer(() => {
 
   // actions
   const back = (): void => {
-    applicationStore.navigator.goToLocation(generateQuerySetupRoute());
+    applicationStore.navigationService.navigator.goToLocation(
+      generateQuerySetupRoute(),
+    );
   };
   const next = (): void => {
     if (
@@ -91,7 +93,7 @@ const CreateMappingQuerySetupContent = observer(() => {
       setupStore.currentMapping &&
       setupStore.currentRuntime
     ) {
-      applicationStore.navigator.goToLocation(
+      applicationStore.navigationService.navigator.goToLocation(
         generateMappingQueryCreatorRoute(
           setupStore.currentProject.groupId,
           setupStore.currentProject.artifactId,

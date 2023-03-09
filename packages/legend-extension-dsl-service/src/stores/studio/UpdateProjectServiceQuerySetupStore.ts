@@ -100,7 +100,7 @@ export class UpdateProjectServiceQuerySetupStore {
     this.currentProject = undefined;
     this.groupWorkspaces = [];
     this.resetCurrentGroupWorkspace();
-    this.applicationStore.navigator.updateCurrentLocation(
+    this.applicationStore.navigationService.navigator.updateCurrentLocation(
       generateProjectServiceQueryUpdaterSetupRoute(undefined),
     );
     this.currentProjectConfigurationStatus = undefined;
@@ -132,7 +132,7 @@ export class UpdateProjectServiceQuerySetupStore {
             )) as PlainObject<Project>,
           );
         } catch {
-          this.applicationStore.navigator.updateCurrentLocation(
+          this.applicationStore.navigationService.navigator.updateCurrentLocation(
             generateProjectServiceQueryUpdaterSetupRoute(undefined),
           );
           this.initState.pass();
@@ -144,11 +144,11 @@ export class UpdateProjectServiceQuerySetupStore {
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.initState.fail();
     }
   }
@@ -169,7 +169,7 @@ export class UpdateProjectServiceQuerySetupStore {
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadProjectsState.fail();
     }
   }
@@ -177,7 +177,7 @@ export class UpdateProjectServiceQuerySetupStore {
   *changeProject(project: Project): GeneratorFn<void> {
     this.currentProject = project;
     this.currentProjectConfigurationStatus = undefined;
-    this.applicationStore.navigator.updateCurrentLocation(
+    this.applicationStore.navigationService.navigator.updateCurrentLocation(
       generateProjectServiceQueryUpdaterSetupRoute(project.projectId),
     );
 
@@ -219,11 +219,11 @@ export class UpdateProjectServiceQuerySetupStore {
       this.loadWorkspacesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadWorkspacesState.fail();
     }
   }
@@ -263,7 +263,7 @@ export class UpdateProjectServiceQuerySetupStore {
         )) as PlainObject<Workspace>,
       );
 
-      this.applicationStore.notifySuccess(
+      this.applicationStore.notificationService.notifySuccess(
         `Workspace '${newGroupWorkspace.workspaceId}' is succesfully created`,
       );
 
@@ -283,11 +283,11 @@ export class UpdateProjectServiceQuerySetupStore {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.createWorkspaceState.reset();
     }

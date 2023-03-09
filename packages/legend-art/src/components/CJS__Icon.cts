@@ -146,6 +146,7 @@ export {
   FaTable as TableIcon,
   FaArchive as ArchiveIcon,
   FaBrain as BrainIcon,
+  FaLevelDownAlt as LevelDownIcon, // to be reviewed/combined
 } from 'react-icons/fa';
 export {
   GiWaterDrop as WaterDropIcon,
@@ -259,3 +260,4 @@ export {
   TbMathFunction as FunctionIcon,
   TbBook as RepoIcon,
 } from 'react-icons/tb';
+export { HiCode as CodeIcon } from 'react-icons/hi';

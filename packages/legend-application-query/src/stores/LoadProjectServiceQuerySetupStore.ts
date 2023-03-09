@@ -55,7 +55,7 @@ export class LoadProjectServiceQuerySetupStore extends BaseQuerySetupStore {
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadProjectsState.fail();
     }
   }
@@ -67,19 +67,19 @@ export class LoadProjectServiceQuerySetupStore extends BaseQuerySetupStore {
       (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
     );
     if (matchingSDLCEntry) {
-      this.applicationStore.setBlockingAlert({
+      this.applicationStore.alertService.setBlockingAlert({
         message: `Loading service project...`,
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      this.applicationStore.navigator.goToAddress(
+      this.applicationStore.navigationService.navigator.goToAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl(
           matchingSDLCEntry.url,
           project.projectId,
         ),
       );
     } else {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Can't find the corresponding SDLC instance to load project '${project.projectId}'`,
       );
     }

@@ -79,7 +79,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
         isAdvanced: false,
         isCreateAction: true,
         action: async (setupStore) => {
-          setupStore.applicationStore.navigator.goToLocation(
+          setupStore.applicationStore.navigationService.navigator.goToLocation(
             generateDataSpaceQuerySetupRoute(),
           );
         },
@@ -165,13 +165,13 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                           _query,
                           editorStore.graphManagerState.graph,
                         );
-                      editorStore.applicationStore.notifySuccess(
+                      editorStore.applicationStore.notificationService.notifySuccess(
                         `Successfully created query!`,
                       );
                       LegendQueryEventService.create(
                         editorStore.applicationStore.eventService,
                       ).notify_QueryCreated({ queryId: newQuery.id });
-                      editorStore.applicationStore.navigator.goToLocation(
+                      editorStore.applicationStore.navigationService.navigator.goToLocation(
                         generateExistingQueryEditorRoute(newQuery.id),
                       );
                     } else {
@@ -179,22 +179,24 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                         _query,
                         editorStore.graphManagerState.graph,
                       );
-                      editorStore.applicationStore.notifySuccess(
+                      editorStore.applicationStore.notificationService.notifySuccess(
                         `Successfully updated query!`,
                       );
-                      editorStore.applicationStore.navigator.reload();
+                      editorStore.applicationStore.navigationService.navigator.reload();
                     }
                   } catch (error) {
                     assertErrorThrown(error);
-                    editorStore.applicationStore.log.error(
+                    editorStore.applicationStore.logService.error(
                       LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
                       error,
                     );
-                    editorStore.applicationStore.notifyError(error);
+                    editorStore.applicationStore.notificationService.notifyError(
+                      error,
+                    );
                   }
                 };
 
-                editorStore.applicationStore.setActionAlertInfo({
+                editorStore.applicationStore.alertService.setActionAlertInfo({
                   message: `To change the data space associated with this query, you need to ${
                     query.isCurrentUserQuery
                       ? 'update the query'
@@ -221,7 +223,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                   ],
                 });
               } else {
-                editorStore.applicationStore.notifyWarning(
+                editorStore.applicationStore.notificationService.notifyWarning(
                   `Can't switch data space: default execution context not specified`,
                 );
               }

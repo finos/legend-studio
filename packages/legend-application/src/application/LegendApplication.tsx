@@ -38,7 +38,7 @@ import { APPLICATION_EVENT } from '../stores/ApplicationEvent.js';
 import { configureComponents } from '@finos/legend-art';
 import type { GraphManagerPluginManager } from '@finos/legend-graph';
 import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager.js';
-import { setupPureLanguageService } from '../stores/PureLanguageSupport.js';
+import { setupPureLanguageService } from '../stores/pure-language/PureLanguageSupport.js';
 import {
   collectKeyedDocumnetationEntriesFromConfig,
   type DocumentationConfigEntry,

@@ -363,7 +363,7 @@ export class EditorStore implements CommandRegistrar {
         );
       } catch (error) {
         assertErrorThrown(error);
-        this.applicationStore.log.warn(
+        this.applicationStore.logService.warn(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
@@ -376,8 +376,8 @@ export class EditorStore implements CommandRegistrar {
     // end up blocking other parts of the app
     // e.g. trying going to an unknown workspace, we will be redirected to the home page
     // but the blocking alert for not-found workspace will still block the app
-    this.applicationStore.setBlockingAlert(undefined);
-    this.applicationStore.setActionAlertInfo(undefined);
+    this.applicationStore.alertService.setBlockingAlert(undefined);
+    this.applicationStore.alertService.setActionAlertInfo(undefined);
     // stop change detection to avoid memory-leak
     this.changeDetectionState.stop();
   }
@@ -397,7 +397,7 @@ export class EditorStore implements CommandRegistrar {
   }
 
   registerCommands(): void {
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.COMPILE,
       trigger: this.createEditorCommandTrigger(
         () =>
@@ -417,7 +417,7 @@ export class EditorStore implements CommandRegistrar {
         }
       },
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.GENERATE,
       trigger: this.createEditorCommandTrigger(
         () =>
@@ -431,17 +431,17 @@ export class EditorStore implements CommandRegistrar {
         );
       },
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.CREATE_ELEMENT,
       trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
       action: () => this.newElementState.openModal(),
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.SEARCH_ELEMENT,
       trigger: this.createEditorCommandTrigger(),
       action: () => this.searchElementCommandState.open(),
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_TEXT_MODE,
       trigger: this.createEditorCommandTrigger(
         () =>
@@ -455,12 +455,12 @@ export class EditorStore implements CommandRegistrar {
         );
       },
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_MODEL_LOADER,
       trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
       action: () => this.tabManagerState.openTab(this.modelImporterState),
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.SYNC_WITH_WORKSPACE,
       trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
       action: () => {
@@ -469,27 +469,27 @@ export class EditorStore implements CommandRegistrar {
         );
       },
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_AUX_PANEL,
       trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
       action: () => this.auxPanelDisplayState.toggle(),
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_EXPLORER,
       trigger: this.createEditorCommandTrigger(),
       action: () => this.setActiveActivity(ACTIVITY_MODE.EXPLORER),
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_LOCAL_CHANGES,
       trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
       action: () => this.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES),
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
       trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
       action: () => this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_REVIEW),
     });
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
       trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
       action: () => this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_UPDATER),
@@ -511,7 +511,7 @@ export class EditorStore implements CommandRegistrar {
       LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
       LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
     ].forEach((key) =>
-      this.applicationStore.commandCenter.deregisterCommand(key),
+      this.applicationStore.commandService.deregisterCommand(key),
     );
   }
 
@@ -535,7 +535,7 @@ export class EditorStore implements CommandRegistrar {
     );
     if (entityPath) {
       this.initialEntityPath = entityPath;
-      this.applicationStore.navigator.updateCurrentLocation(
+      this.applicationStore.navigationService.navigator.updateCurrentLocation(
         generateEditorRoute(projectId, workspaceId, workspaceType),
       );
     }
@@ -560,14 +560,14 @@ export class EditorStore implements CommandRegistrar {
        */
       // eslint-disable-next-line no-process-env
       if (process.env.NODE_ENV === 'development') {
-        this.applicationStore.log.info(
+        this.applicationStore.logService.info(
           LogEvent.create(APPLICATION_EVENT.DEVELOPMENT_ISSUE),
           `Fast-refreshing the app - undoing cleanUp() and preventing initialize() recall in editor store...`,
         );
         this.changeDetectionState.start();
         return;
       }
-      this.applicationStore.notifyIllegalState(
+      this.applicationStore.notificationService.notifyIllegalState(
         'Editor store is re-initialized',
       );
       return;
@@ -590,7 +590,7 @@ export class EditorStore implements CommandRegistrar {
       // instead, we give them the option to:
       // - reload the page (in case they later gain access)
       // - back to the setup page
-      this.applicationStore.setActionAlertInfo({
+      this.applicationStore.alertService.setActionAlertInfo({
         message: `Project not found or inaccessible`,
         prompt: 'Please check that the project exists and request access to it',
         type: ActionAlertType.STANDARD,
@@ -600,14 +600,14 @@ export class EditorStore implements CommandRegistrar {
             default: true,
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigator.reload();
+              this.applicationStore.navigationService.navigator.reload();
             },
           },
           {
             label: 'Back to workspace setup',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigator.goToLocation(
+              this.applicationStore.navigationService.navigator.goToLocation(
                 generateSetupRoute(undefined),
               );
             },
@@ -636,7 +636,7 @@ export class EditorStore implements CommandRegistrar {
       // - back to the setup page
       const createWorkspaceAndRelaunch = async (): Promise<void> => {
         try {
-          this.applicationStore.setBlockingAlert({
+          this.applicationStore.alertService.setBlockingAlert({
             message: 'Creating workspace...',
             prompt: 'Please do not close the application',
           });
@@ -645,21 +645,21 @@ export class EditorStore implements CommandRegistrar {
             workspaceId,
             workspaceType,
           );
-          this.applicationStore.setBlockingAlert(undefined);
-          this.applicationStore.notifySuccess(
+          this.applicationStore.alertService.setBlockingAlert(undefined);
+          this.applicationStore.notificationService.notifySuccess(
             `Workspace '${workspace.workspaceId}' is succesfully created. Reloading application...`,
           );
-          this.applicationStore.navigator.reload();
+          this.applicationStore.navigationService.navigator.reload();
         } catch (error) {
           assertErrorThrown(error);
-          this.applicationStore.log.error(
+          this.applicationStore.logService.error(
             LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
             error,
           );
-          this.applicationStore.notifyError(error);
+          this.applicationStore.notificationService.notifyError(error);
         }
       };
-      this.applicationStore.setActionAlertInfo({
+      this.applicationStore.alertService.setActionAlertInfo({
         message: 'Workspace not found',
         prompt: `Please note that you can check out the project in viewer mode. Workspace is only required if you need to work on the project.`,
         type: ActionAlertType.STANDARD,
@@ -669,7 +669,7 @@ export class EditorStore implements CommandRegistrar {
             default: true,
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigator.goToLocation(
+              this.applicationStore.navigationService.navigator.goToLocation(
                 generateViewProjectRoute(projectId),
               );
             },
@@ -687,7 +687,7 @@ export class EditorStore implements CommandRegistrar {
             label: 'Back to workspace setup',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigator.goToLocation(
+              this.applicationStore.navigationService.navigator.goToLocation(
                 generateSetupRoute(projectId, workspaceId, workspaceType),
               );
             },
@@ -752,7 +752,7 @@ export class EditorStore implements CommandRegistrar {
   }
 
   private *initConflictResolutionMode(): GeneratorFn<void> {
-    this.applicationStore.setActionAlertInfo({
+    this.applicationStore.alertService.setActionAlertInfo({
       message: 'Failed to update workspace.',
       prompt:
         'You can discard all of your changes or review them, resolve all merge conflicts and fix any potential compilation issues as well as test failures',
@@ -813,7 +813,7 @@ export class EditorStore implements CommandRegistrar {
       this.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
         entities,
       );
-      this.applicationStore.log.info(
+      this.applicationStore.logService.info(
         LogEvent.create(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS),
         Date.now() - startTime,
         'ms',
@@ -891,7 +891,7 @@ export class EditorStore implements CommandRegistrar {
         this.changeDetectionState.computeAggregatedWorkspaceChanges(true),
         this.changeDetectionState.computeAggregatedProjectLatestChanges(true),
       ]);
-      this.applicationStore.log.info(
+      this.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
@@ -900,7 +900,7 @@ export class EditorStore implements CommandRegistrar {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
@@ -1119,7 +1119,7 @@ export class EditorStore implements CommandRegistrar {
       if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
         return;
       }
-      this.applicationStore.setBlockingAlert({
+      this.applicationStore.alertService.setBlockingAlert({
         message: 'Switching to text mode...',
         showLoading: true,
       });
@@ -1133,13 +1133,13 @@ export class EditorStore implements CommandRegistrar {
         );
       } catch (error) {
         assertErrorThrown(error);
-        this.applicationStore.notifyWarning(
+        this.applicationStore.notificationService.notifyWarning(
           `Can't enter text mode: transformation to grammar text failed. Error: ${error.message}`,
         );
-        this.applicationStore.setBlockingAlert(undefined);
+        this.applicationStore.alertService.setBlockingAlert(undefined);
         return;
       }
-      this.applicationStore.setBlockingAlert(undefined);
+      this.applicationStore.alertService.setBlockingAlert(undefined);
       yield flowResult(this.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT));
       // navigate to the currently opened element immediately after entering text mode editor
       if (this.tabManagerState.currentTab instanceof ElementEditorState) {

@@ -213,14 +213,18 @@ const DependencyTreeNodeContextMenu = observer(
     const viewProjectUrl = getViewProjectUrl();
 
     const viewProject = (): void => {
-      applicationStore.navigator.visitAddress(
-        applicationStore.navigator.generateAddress(viewProjectUrl),
+      applicationStore.navigationService.navigator.visitAddress(
+        applicationStore.navigationService.navigator.generateAddress(
+          viewProjectUrl,
+        ),
       );
     };
     const viewSDLCProject = (): void => {
       if (sdlcProjectUrl) {
-        applicationStore.navigator.visitAddress(
-          applicationStore.navigator.generateAddress(sdlcProjectUrl),
+        applicationStore.navigationService.navigator.visitAddress(
+          applicationStore.navigationService.navigator.generateAddress(
+            sdlcProjectUrl,
+          ),
         );
       }
     };
@@ -818,7 +822,7 @@ const ProjectVersionDependencyEditor = observer(
           );
         } catch (error) {
           assertErrorThrown(error);
-          applicationStore.log.error(
+          applicationStore.logService.error(
             LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
             error,
           );
@@ -827,8 +831,8 @@ const ProjectVersionDependencyEditor = observer(
     };
     const viewProject = (): void => {
       if (!projectDependency.isLegacyDependency) {
-        applicationStore.navigator.visitAddress(
-          applicationStore.navigator.generateAddress(
+        applicationStore.navigationService.navigator.visitAddress(
+          applicationStore.navigationService.navigator.generateAddress(
             generateViewProjectByGAVRoute(
               guaranteeNonNullable(projectDependency.groupId),
               guaranteeNonNullable(projectDependency.artifactId),
@@ -844,8 +848,8 @@ const ProjectVersionDependencyEditor = observer(
     // In the future, the studio instance may be part of the project data
     const viewSDLCProject = (): void => {
       if (projectDependencyData) {
-        applicationStore.navigator.visitAddress(
-          applicationStore.navigator.generateAddress(
+        applicationStore.navigationService.navigator.visitAddress(
+          applicationStore.navigationService.navigator.generateAddress(
             generateViewVersionRoute(projectDependencyData.projectId, version),
           ),
         );

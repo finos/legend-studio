@@ -259,12 +259,14 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
         )
       ).map((usage) => deserialize(PackageableElementUsage, usage));
     } catch {
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Can't find usage for child packageable elements`,
       );
       return;
     } finally {
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
     const inputs = [];
     assertTrue(
@@ -291,7 +293,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
     const oldName = attr.pureName ?? attr.pureId;
     let usages: Usage[] = [];
     try {
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: 'Finding concept usages...',
         showLoading: true,
       });
@@ -319,12 +321,14 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
               )
             ).map((usage) => deserialize(PackageableElementUsage, usage));
           } catch {
-            this.editorStore.applicationStore.notifyError(
+            this.editorStore.applicationStore.notificationService.notifyError(
               `Can't find usage for child packageable elements`,
             );
             return;
           } finally {
-            this.editorStore.applicationStore.setBlockingAlert(undefined);
+            this.editorStore.applicationStore.alertService.setBlockingAlert(
+              undefined,
+            );
           }
           const inputs = [];
           assertTrue(
@@ -367,10 +371,12 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       return;
     } finally {
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
     await flowResult(
       this.editorStore.renameConcept(oldName, newName, attr.pureType, usages),

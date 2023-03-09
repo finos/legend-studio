@@ -163,7 +163,7 @@ const ServiceRegisterModal = observer(
             'Service registration pattern is missing or empty',
           );
 
-          editorStore.applicationStore.setActionAlertInfo({
+          editorStore.applicationStore.alertService.setActionAlertInfo({
             message: `Service with pattern ${
               serviceRegistrationResult.pattern
             } registered ${activateService ? 'and activated ' : ''}`,
@@ -175,7 +175,7 @@ const ServiceRegisterModal = observer(
                 label: 'Launch Service',
                 type: ActionAlertActionType.PROCEED,
                 handler: (): void => {
-                  editorStore.applicationStore.navigator.visitAddress(
+                  editorStore.applicationStore.navigationService.navigator.visitAddress(
                     generateServiceManagementUrl(
                       guaranteeNonNullable(serverConfig?.managementUrl),
                       serviceRegistrationResult.pattern,
@@ -192,13 +192,13 @@ const ServiceRegisterModal = observer(
           });
         } catch (error) {
           assertErrorThrown(error);
-          editorStore.applicationStore.log.error(
+          editorStore.applicationStore.logService.error(
             LogEvent.create(
               LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_FAILURE,
             ),
             error,
           );
-          editorStore.applicationStore.notifyError(error);
+          editorStore.applicationStore.notificationService.notifyError(error);
         } finally {
           registrationState.reset();
           registrationState.setMessage(undefined);

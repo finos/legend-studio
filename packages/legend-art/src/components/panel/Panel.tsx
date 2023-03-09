@@ -222,7 +222,7 @@ export const PanelFormTextField = forwardRef<
       <div className="input-group">
         <input
           className={clsx(
-            'input  input-group__input panel__content__form__section__input',
+            'input input-group__input panel__content__form__section__input',
             className,
             { 'input--dark': darkMode ? darkMode : true },
             { 'input--small': !fullWidth },

@@ -218,7 +218,7 @@ const QueryLoader = observer(
       if (selectedQueryID) {
         queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
           editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
-          applicationStore.navigator.goToLocation(
+          applicationStore.navigationService.navigator.goToLocation(
             generateExistingQueryEditorRoute(selectedQueryID),
             { ignoreBlocking: true },
           );
@@ -403,8 +403,8 @@ const QueryEditorHeaderContent = observer(
       );
     };
     const toggleLightDarkMode = (): void =>
-      applicationStore.TEMPORARY__setIsLightThemeEnabled(
-        !applicationStore.TEMPORARY__isLightThemeEnabled,
+      applicationStore.layoutService.TEMPORARY__setIsLightThemeEnabled(
+        !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
       );
     const saveQuery = (): void => {
       queryBuilderState
@@ -477,7 +477,7 @@ const QueryEditorHeaderContent = observer(
               className="query-editor__header__action"
               disabled={editorStore.isViewProjectActionDisabled}
             >
-              {applicationStore.TEMPORARY__isLightThemeEnabled ? (
+              {applicationStore.layoutService.TEMPORARY__isLightThemeEnabled ? (
                 <>
                   <LightBulbIcon className="query-editor__header__action__icon--bulb--light" />
                 </>
@@ -536,13 +536,15 @@ export const QueryEditor = observer(() => {
   const appDocUrl = applicationStore.documentationService.url;
   const goToDocumentation = (): void => {
     if (appDocUrl) {
-      applicationStore.navigator.visitAddress(appDocUrl);
+      applicationStore.navigationService.navigator.visitAddress(appDocUrl);
     }
   };
   // go to setup page
   const goToQuerySetup = (): void =>
-    applicationStore.navigator.visitAddress(
-      applicationStore.navigator.generateAddress(generateQuerySetupRoute()),
+    applicationStore.navigationService.navigator.visitAddress(
+      applicationStore.navigationService.navigator.generateAddress(
+        generateQuerySetupRoute(),
+      ),
     );
   // settings
   // NOTE: this is temporary until we find a better home for these settings in query builder
@@ -562,9 +564,9 @@ export const QueryEditor = observer(() => {
   useEffect(() => {
     document.body.classList.toggle(
       'light-theme',
-      applicationStore.TEMPORARY__isLightThemeEnabled,
+      applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
     );
-  }, [applicationStore.TEMPORARY__isLightThemeEnabled]);
+  }, [applicationStore.layoutService.TEMPORARY__isLightThemeEnabled]);
 
   return (
     <div
@@ -572,7 +574,7 @@ export const QueryEditor = observer(() => {
         'query-editor ',
         {
           'query-editor--light':
-            applicationStore.TEMPORARY__isLightThemeEnabled,
+            applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
         },
       ])}
     >
@@ -665,7 +667,9 @@ export const ServiceQueryCreator = observer(() => {
   const servicePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH];
   const executionKey = getQueryParameterValue(
     getQueryParameters<ServiceQueryCreatorQueryParams>(
-      sanitizeURL(applicationStore.navigator.getCurrentAddress()),
+      sanitizeURL(
+        applicationStore.navigationService.navigator.getCurrentAddress(),
+      ),
       true,
     ),
     LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY,

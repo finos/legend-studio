@@ -258,8 +258,8 @@ export const WorkspaceReview = observer(() => {
                       className="workspace-review__title__content__input__link"
                       tabIndex={-1}
                       onClick={(): void =>
-                        applicationStore.navigator.visitAddress(
-                          applicationStore.navigator.generateAddress(
+                        applicationStore.navigationService.navigator.visitAddress(
+                          applicationStore.navigationService.navigator.generateAddress(
                             generateReviewRoute(
                               workspaceReview.projectId,
                               workspaceReview.id,

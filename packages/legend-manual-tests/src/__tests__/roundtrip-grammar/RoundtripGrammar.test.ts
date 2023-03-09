@@ -22,7 +22,7 @@ import {
   type PlainObject,
   type TEMPORARY__JestMatcher,
   WebConsole,
-  Log,
+  LogService,
   LogEvent,
   ContentType,
   HttpHeader,
@@ -85,12 +85,12 @@ type GrammarRoundtripOptions = {
 const logPhase = (
   phase: ROUNTRIP_TEST_PHASES,
   excludeConfig: ROUNTRIP_TEST_PHASES[] | typeof SKIP,
-  log: Log,
+  logService: LogService,
   debug?: boolean,
 ): void => {
   if (debug) {
     const skip = excludeConfig === SKIP || excludeConfig.includes(phase);
-    log.info(
+    logService.info(
       LogEvent.create(`${skip ? 'Skipping' : 'Running'} phase '${phase}'`),
     );
   }
@@ -98,11 +98,11 @@ const logPhase = (
 
 const logSuccess = (
   phase: ROUNTRIP_TEST_PHASES,
-  log: Log,
+  logService: LogService,
   debug?: boolean,
 ): void => {
   if (debug) {
-    log.info(LogEvent.create(`Success running phase '${phase}' `));
+    logService.info(LogEvent.create(`Success running phase '${phase}' `));
   }
 };
 
@@ -134,7 +134,7 @@ const checkGrammarRoundtrip = async (
     ])
     .usePlugins([new WebConsole()]);
   pluginManager.install();
-  const log = new Log();
+  const log = new LogService();
   log.registerPlugins(pluginManager.getLoggerPlugins());
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager, log);
 

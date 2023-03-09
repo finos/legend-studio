@@ -41,7 +41,7 @@ import {
   TEST__getTestApplicationStore,
   Router,
   createMemoryHistory,
-  type GenericLegendApplicationStore,
+  type NavigationService,
 } from '@finos/legend-application';
 import { TEST__getTestLegendQueryApplicationConfig } from '../stores/QueryEditorStoreTestUtils.js';
 import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
@@ -178,7 +178,8 @@ export const TEST__setUpQueryEditor = async (
   // TODO: this is not the proper way to do this, we prefer to mock and inject this when we
   // create the editor store, let's consider how we clean this up in the future
   (
-    MOCK__editorStore.applicationStore as Writable<GenericLegendApplicationStore>
+    MOCK__editorStore.applicationStore
+      .navigationService as Writable<NavigationService>
   ).navigator = navigator;
 
   const renderResult = render(

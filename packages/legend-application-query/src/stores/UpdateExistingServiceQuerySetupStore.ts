@@ -71,12 +71,12 @@ export class UpdateExistingServiceQuerySetupStore extends BaseQuerySetupStore {
       (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
     );
     if (matchingSDLCEntry) {
-      this.applicationStore.setBlockingAlert({
+      this.applicationStore.alertService.setBlockingAlert({
         message: `Loading service...`,
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      this.applicationStore.navigator.goToAddress(
+      this.applicationStore.navigationService.navigator.goToAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl(
           matchingSDLCEntry.url,
           serviceInfo.groupId,
@@ -85,7 +85,7 @@ export class UpdateExistingServiceQuerySetupStore extends BaseQuerySetupStore {
         ),
       );
     } else {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Can't find the corresponding SDLC instance to update the service`,
       );
     }
@@ -111,7 +111,7 @@ export class UpdateExistingServiceQuerySetupStore extends BaseQuerySetupStore {
       this.loadServicesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadServicesState.fail();
     }
   }

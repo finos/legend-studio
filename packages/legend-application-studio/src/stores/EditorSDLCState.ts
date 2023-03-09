@@ -160,12 +160,12 @@ export class EditorSDLCState {
       (error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND)
     ) {
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: 'Current project or workspace no longer exists',
         prompt: 'Please refresh the application',
       });
     } else {
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: error.message,
       });
     }
@@ -184,12 +184,14 @@ export class EditorSDLCState {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       if (!options?.suppressNotification) {
-        this.editorStore.applicationStore.notifyError(error);
+        this.editorStore.applicationStore.notificationService.notifyError(
+          error,
+        );
       }
     } finally {
       this.isFetchingProject = false;
@@ -221,12 +223,14 @@ export class EditorSDLCState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       if (!options?.suppressNotification) {
-        this.editorStore.applicationStore.notifyError(error);
+        this.editorStore.applicationStore.notificationService.notifyError(
+          error,
+        );
       }
     }
   }
@@ -241,7 +245,7 @@ export class EditorSDLCState {
       ).map((v) => Version.serialization.fromJson(v));
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -281,11 +285,11 @@ export class EditorSDLCState {
       this.setWorkspaceLatestRevision(latestRevision);
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -311,11 +315,11 @@ export class EditorSDLCState {
       this.setWorkspaceLatestRevision(currentRevision);
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -333,11 +337,11 @@ export class EditorSDLCState {
           )) as boolean);
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isCheckingIfWorkspaceIsOutdated = false;
     }
@@ -389,11 +393,11 @@ export class EditorSDLCState {
       this.editorStore.tabManagerState.refreshCurrentEntityDiffViewer();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -419,11 +423,11 @@ export class EditorSDLCState {
       this.editorStore.tabManagerState.refreshCurrentEntityDiffViewer();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -448,11 +452,11 @@ export class EditorSDLCState {
       this.editorStore.tabManagerState.refreshCurrentEntityDiffViewer();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -467,11 +471,11 @@ export class EditorSDLCState {
       ).map((v) => Workflow.serialization.fromJson(v));
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 }

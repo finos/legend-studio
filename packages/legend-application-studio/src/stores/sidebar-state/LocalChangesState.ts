@@ -147,7 +147,7 @@ class PatchLoaderState {
     } catch (error) {
       assertErrorThrown(error);
       this.setIsValidPatch(false);
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Can't load patch: Error: ${error.message}`,
       );
     }
@@ -166,7 +166,7 @@ class PatchLoaderState {
         );
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.notifyError(
+        this.editorStore.applicationStore.notificationService.notifyError(
           `Can't apply patch changes: Error: ${error.message}`,
         );
       }
@@ -224,7 +224,7 @@ export abstract class LocalChangesState {
 
   alertUnsavedChanges(onProceed: () => void): void {
     if (this.hasUnpushedChanges) {
-      this.editorStore.applicationStore.setActionAlertInfo({
+      this.editorStore.applicationStore.alertService.setActionAlertInfo({
         message:
           'Unsaved changes to your query will be lost if you continue. Do you still want to proceed?',
         type: ActionAlertType.CAUTION,
@@ -297,7 +297,7 @@ export abstract class LocalChangesState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -363,7 +363,7 @@ export abstract class LocalChangesState {
       yield flowResult(
         this.editorStore.changeDetectionState.computeAggregatedWorkspaceRemoteChanges(),
       );
-      this.editorStore.applicationStore.setActionAlertInfo({
+      this.editorStore.applicationStore.alertService.setActionAlertInfo({
         message: 'Local workspace is out-of-sync',
         prompt: 'Please pull remote changes before pushing your local changes',
         type: ActionAlertType.CAUTION,
@@ -418,7 +418,7 @@ export abstract class LocalChangesState {
       this.sdlcState.setWorkspaceLatestRevision(latestRevision);
       const syncFinishedTime = Date.now();
 
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.PUSH_LOCAL_CHANGES__SUCCESS),
         syncFinishedTime - startTime,
         'ms',
@@ -462,13 +462,13 @@ export abstract class LocalChangesState {
          */
         if (error instanceof NetworkClientError) {
           if (error.response.status === HttpStatus.NOT_FOUND) {
-            this.editorStore.applicationStore.log.error(
+            this.editorStore.applicationStore.logService.error(
               LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
               `Can't fetch entities for the latest workspace revision immediately after syncing`,
               error,
             );
           }
-          this.editorStore.applicationStore.setActionAlertInfo({
+          this.editorStore.applicationStore.alertService.setActionAlertInfo({
             message: `Change detection engine failed to build hashes index for workspace after syncing`,
             prompt:
               'To fix this, you can either try to keep refreshing local changes until success or trust and reuse current workspace hashes index',
@@ -501,7 +501,7 @@ export abstract class LocalChangesState {
         }
       }
       yield flowResult(this.restartChangeDetection());
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
@@ -511,7 +511,7 @@ export abstract class LocalChangesState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
@@ -521,12 +521,14 @@ export abstract class LocalChangesState {
       ) {
         // NOTE: a confict here indicates that the reference revision ID sent along with update call
         // does not match the HEAD of the workspace, therefore, we need to prompt user to refresh the application
-        this.editorStore.applicationStore.notifyWarning(
+        this.editorStore.applicationStore.notificationService.notifyWarning(
           'Syncing failed. Current workspace revision is not the latest. Please backup your work and refresh the application',
         );
         // TODO: maybe we should do more here, e.g. prompt the user to download the patch, but that is for later
       } else {
-        this.editorStore.applicationStore.notifyError(error);
+        this.editorStore.applicationStore.notificationService.notifyError(
+          error,
+        );
       }
     } finally {
       this.pushChangesState.complete();
@@ -705,7 +707,7 @@ export class FormLocalChangesState extends LocalChangesState {
         this.editorStore.changeDetectionState.preComputeGraphElementHashes(),
       ]);
       this.editorStore.changeDetectionState.start();
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
@@ -715,11 +717,11 @@ export class FormLocalChangesState extends LocalChangesState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.sdlcState.handleChangeDetectionRefreshIssue(error);
     } finally {
       this.refreshLocalChangesDetectorState.complete();
@@ -732,7 +734,7 @@ export class FormLocalChangesState extends LocalChangesState {
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (isInConflictResolutionMode) {
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -740,7 +742,7 @@ export class FormLocalChangesState extends LocalChangesState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         'Failed to check if current workspace is in conflict resolution mode',
       );
       return;
@@ -797,11 +799,11 @@ export class TextLocalChangesState extends LocalChangesState {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.sdlcState.handleChangeDetectionRefreshIssue(error);
     } finally {
       this.refreshLocalChangesDetectorState.complete();

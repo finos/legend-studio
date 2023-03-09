@@ -131,14 +131,14 @@ export const Editor = withEditorStore(
     }, [editorStore, applicationStore, projectId, workspaceId, workspaceType]);
 
     useEffect(() => {
-      applicationStore.navigator.blockNavigation(
+      applicationStore.navigationService.navigator.blockNavigation(
         [
           (): boolean =>
             editorStore.isInConflictResolutionMode ||
             editorStore.localChangesState.hasUnpushedChanges,
         ],
         (onProceed: () => void): void => {
-          applicationStore.setActionAlertInfo({
+          applicationStore.alertService.setActionAlertInfo({
             // TODO?: should we make this message generic like the `BeforeUnloadEvent` message?
             message: editorStore.isInConflictResolutionMode
               ? 'You have not accepted the conflict resolution, the current resolution will be discarded. Leave anyway?'
@@ -159,12 +159,12 @@ export const Editor = withEditorStore(
           });
         },
         () =>
-          applicationStore.notifyWarning(
+          applicationStore.notificationService.notifyWarning(
             `Navigation from the editor is blocked`,
           ),
       );
       return (): void => {
-        applicationStore.navigator.unblockNavigation();
+        applicationStore.navigationService.navigator.unblockNavigation();
       };
     }, [editorStore, applicationStore]);
 

@@ -270,7 +270,7 @@ export class ServiceRegistrationState {
         'Service registration pattern is missing or empty',
       );
 
-      this.editorStore.applicationStore.setActionAlertInfo({
+      this.editorStore.applicationStore.alertService.setActionAlertInfo({
         message: `Service with pattern ${
           serviceRegistrationResult.pattern
         } registered ${this.activatePostRegistration ? 'and activated ' : ''}`,
@@ -281,7 +281,7 @@ export class ServiceRegistrationState {
             label: 'Launch Service',
             type: ActionAlertActionType.PROCEED,
             handler: (): void => {
-              this.editorStore.applicationStore.navigator.visitAddress(
+              this.editorStore.applicationStore.navigationService.navigator.visitAddress(
                 generateServiceManagementUrl(
                   config.managementUrl,
                   serviceRegistrationResult.pattern,
@@ -298,11 +298,11 @@ export class ServiceRegistrationState {
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.registrationState.reset();
       this.registrationState.setMessage(undefined);

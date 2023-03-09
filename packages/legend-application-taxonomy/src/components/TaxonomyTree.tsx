@@ -73,10 +73,10 @@ const TaxonomyTreeNodeContainer = observer(
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     const copyGuid = (): void => {
       if (node.taxonomyData) {
-        applicationStore
+        applicationStore.clipboardService
           .copyTextToClipboard(node.taxonomyData.guid)
           .then(() =>
-            applicationStore.notifySuccess(
+            applicationStore.notificationService.notifySuccess(
               'Copied taxonomy node ID to clipboard',
             ),
           )
@@ -84,9 +84,9 @@ const TaxonomyTreeNodeContainer = observer(
       }
     };
     const copyLink = (): void => {
-      applicationStore
+      applicationStore.clipboardService
         .copyTextToClipboard(
-          applicationStore.navigator.generateAddress(
+          applicationStore.navigationService.navigator.generateAddress(
             generateExploreTaxonomyTreeNodeRoute(
               applicationStore.config.currentTaxonomyTreeOption.key,
               node.id,
@@ -94,7 +94,7 @@ const TaxonomyTreeNodeContainer = observer(
           ),
         )
         .then(() =>
-          applicationStore.notifySuccess(
+          applicationStore.notificationService.notifySuccess(
             'Copied taxonomy node link to clipboard',
           ),
         )

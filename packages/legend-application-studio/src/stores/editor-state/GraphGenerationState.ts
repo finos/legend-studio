@@ -205,11 +205,11 @@ export class GraphGenerationState {
         );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -229,11 +229,11 @@ export class GraphGenerationState {
       yield flowResult(this.generateFiles());
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
-      this.editorStore.graphState.editorStore.applicationStore.notifyError(
+      this.editorStore.graphState.editorStore.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
     } finally {
@@ -284,11 +284,11 @@ export class GraphGenerationState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
-      this.editorStore.graphState.editorStore.applicationStore.notifyError(
+      this.editorStore.graphState.editorStore.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
     }
@@ -338,11 +338,11 @@ export class GraphGenerationState {
       this.processGenerationResult(generationOutputIndex);
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
-      this.editorStore.graphState.editorStore.applicationStore.notifyError(
+      this.editorStore.graphState.editorStore.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
     }
@@ -432,7 +432,7 @@ export class GraphGenerationState {
       generationOutputs.forEach((genOutput) => {
         genOutput.cleanFileName(rootFolder);
         if (generationResultIndex.has(genOutput.fileName)) {
-          this.editorStore.applicationStore.log.warn(
+          this.editorStore.applicationStore.logService.warn(
             LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
             `Found 2 generation outputs with same path '${genOutput.fileName}'`,
           );

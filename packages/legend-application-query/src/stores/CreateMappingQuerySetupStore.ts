@@ -115,7 +115,7 @@ export class CreateMappingQuerySetupStore extends BaseQuerySetupStore {
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadProjectsState.fail();
     }
   }
@@ -144,11 +144,11 @@ export class CreateMappingQuerySetupStore extends BaseQuerySetupStore {
       this.surveyMappingRuntimeCompatibilityState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.surveyMappingRuntimeCompatibilityState.fail();
     }
   }

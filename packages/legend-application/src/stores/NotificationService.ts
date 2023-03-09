@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
+import {
+  ApplicationError,
+  assertErrorThrown,
+  assertTrue,
+  isString,
+  type SuperGenericFunction,
+} from '@finos/legend-shared';
+import { action, makeObservable, observable } from 'mobx';
+
 export const DEFAULT_NOTIFICATION_HIDE_TIME = 6000; // ms
 export const DEFAULT_ERROR_NOTIFICATION_HIDE_TIME = 10000; // ms
 
@@ -47,4 +56,138 @@ export class Notification {
     this.actions = actions;
     this.autoHideDuration = autoHideDuration;
   }
+}
+
+export class NotificationService {
+  notification?: Notification | undefined;
+
+  constructor() {
+    makeObservable(this, {
+      notification: observable,
+      setNotification: action,
+      notify: action,
+      notifySuccess: action,
+      notifyWarning: action,
+      notifyIllegalState: action,
+      notifyError: action,
+    });
+  }
+
+  setNotification(notification: Notification | undefined): void {
+    this.notification = notification;
+  }
+
+  notify(
+    message: string,
+    actions?: NotificationAction[],
+    autoHideDuration?: number | null,
+  ): void {
+    this.setNotification(
+      new Notification(
+        NOTIFCATION_SEVERITY.INFO,
+        message,
+        actions ?? [],
+        autoHideDuration === null
+          ? undefined
+          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
+      ),
+    );
+  }
+
+  notifySuccess(
+    message: string,
+    actions?: NotificationAction[],
+    autoHideDuration?: number | null,
+  ): void {
+    this.setNotification(
+      new Notification(
+        NOTIFCATION_SEVERITY.SUCCESS,
+        message,
+        actions ?? [],
+        autoHideDuration === null
+          ? undefined
+          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
+      ),
+    );
+  }
+
+  notifyWarning(
+    content: string | Error,
+    actions?: NotificationAction[],
+    autoHideDuration?: number | null,
+  ): void {
+    this.setNotification(
+      new Notification(
+        NOTIFCATION_SEVERITY.WARNING,
+        content instanceof Error ? content.message : content,
+        actions ?? [],
+        autoHideDuration === null
+          ? undefined
+          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
+      ),
+    );
+  }
+
+  notifyError(content: Error | string, actions?: NotificationAction[]): void {
+    let message: string | undefined;
+    if (content instanceof ApplicationError) {
+      message = content.detail;
+    } else if (content instanceof Error) {
+      message = content.message;
+    } else {
+      assertTrue(isString(content), `Can't display error`);
+      message = content;
+    }
+    if (message) {
+      this.setNotification(
+        new Notification(
+          NOTIFCATION_SEVERITY.ERROR,
+          message,
+          actions ?? [],
+          undefined,
+        ),
+      );
+    }
+  }
+
+  notifyIllegalState(
+    message: string,
+    actions?: NotificationAction[],
+    autoHideDuration?: number | null,
+  ): void {
+    this.setNotification(
+      new Notification(
+        NOTIFCATION_SEVERITY.ILEGAL_STATE,
+        isString(message) ? `[PLEASE NOTIFY DEVELOPER] ${message}` : message,
+        actions ?? [],
+        autoHideDuration === null
+          ? undefined
+          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
+      ),
+    );
+  }
+
+  notifyUnsupportedFeature(featureName: string): void {
+    this.notifyWarning(`Unsupported feature: ${featureName}`);
+  }
+
+  /**
+   * This function creates a more user-friendly way to throw error in the UI. Rather than crashing the whole app, we will
+   * just notify and replacing the value should get with an alternative (e.g. `undefined`). A good use-case for this
+   * is where we would not expect an error to throw (i.e. `IllegalStateError`), but we want to be sure that if the error
+   * ever occurs, it still shows very apparently in the UI, as such, printing out in the console is not good enough,
+   * but crashing the app is bad too, so this is a good balance.
+   */
+  notifyAndReturnAlternativeOnError = <U extends SuperGenericFunction, W>(
+    fn: U,
+    alternative: W,
+  ): ReturnType<U> | W | undefined => {
+    try {
+      return fn();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.notifyIllegalState(error.message);
+      return alternative;
+    }
+  };
 }

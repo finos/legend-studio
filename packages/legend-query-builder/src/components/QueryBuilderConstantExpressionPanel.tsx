@@ -144,9 +144,13 @@ const QueryBuilderConstantExpressionEditor = observer(
                 options={typeOptions}
                 onChange={changeType}
                 value={selectedType}
-                darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+                darkMode={
+                  !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+                }
                 formatOptionLabel={getPackageableElementOptionFormatter({
-                  darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
+                  darkMode:
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightThemeEnabled,
                   graph: queryBuilderState.graphManagerState.graph,
                 })}
               />

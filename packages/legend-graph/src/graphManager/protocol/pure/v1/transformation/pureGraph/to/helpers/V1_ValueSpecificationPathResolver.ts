@@ -360,7 +360,7 @@ const V1_resolveLambdaElementPaths = (
     assertErrorThrown(error);
     // silently return orginal lambda if anything goes wrong
     error.message = `Can't resolve element paths for lambda:\n${error.message}`;
-    context.log.warn(
+    context.logService.warn(
       LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
       error,
     );

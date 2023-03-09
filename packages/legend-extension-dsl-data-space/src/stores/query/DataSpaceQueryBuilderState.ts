@@ -203,7 +203,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.loadDataSpacesState.fail();
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     }
   }
 

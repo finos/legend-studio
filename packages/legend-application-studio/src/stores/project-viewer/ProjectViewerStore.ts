@@ -126,7 +126,7 @@ export class ProjectViewerStore {
     if (entityPath) {
       this.initialEntityPath = entityPath;
       if (projectId) {
-        this.editorStore.applicationStore.navigator.updateCurrentLocation(
+        this.editorStore.applicationStore.navigationService.navigator.updateCurrentLocation(
           versionId
             ? generateViewVersionRoute(projectId, versionId)
             : revisionId
@@ -139,7 +139,7 @@ export class ProjectViewerStore {
           artifactId,
           versionId: _versionId,
         } = parseGAVCoordinates(gav);
-        this.editorStore.applicationStore.navigator.updateCurrentLocation(
+        this.editorStore.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateViewProjectByGAVRoute(groupId, artifactId, _versionId),
         );
       }
@@ -426,7 +426,7 @@ export class ProjectViewerStore {
         graphBuilderReportData,
       );
 
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
         graphBuilderReportData,
       );
@@ -444,32 +444,32 @@ export class ProjectViewerStore {
       assertErrorThrown(error);
 
       // if graph builder fails, we fall back to text-mode
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       if (error instanceof DependencyGraphBuilderError) {
         // no recovery if dependency models cannot be built, this makes assumption that all dependencies models are compiled successfully
         // TODO: we might want to handle this more gracefully when we can show people the dependency model element in the future
-        this.editorStore.applicationStore.notifyError(
+        this.editorStore.applicationStore.notificationService.notifyError(
           `Can't initialize dependency models. Error: ${error.message}`,
         );
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: `Can't initialize dependencies`,
           prompt: 'Please use editor to better invesigate the issue',
         });
       } else if (error instanceof GraphDataDeserializationError) {
         // if something goes wrong with de-serialization, we can't really do anything but to alert
-        this.editorStore.applicationStore.notifyError(
+        this.editorStore.applicationStore.notificationService.notifyError(
           `Can't deserialize graph. Error: ${error.message}`,
         );
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: `Can't deserialize graph`,
           prompt: 'Please use editor to better invesigate the issue',
         });
       } else if (error instanceof GraphBuilderError) {
         // TODO: we should split this into 2 notifications when we support multiple notifications
-        this.editorStore.applicationStore.notifyError(
+        this.editorStore.applicationStore.notificationService.notifyError(
           `Can't build graph. Redirected to text mode for debugging. Error: ${error.message}`,
         );
         try {
@@ -484,7 +484,7 @@ export class ProjectViewerStore {
           );
         } catch {
           // nothing we can do here so we will just block the user
-          this.editorStore.applicationStore.setBlockingAlert({
+          this.editorStore.applicationStore.alertService.setBlockingAlert({
             message: `Can't compose Pure code from graph models`,
             prompt: 'Please use editor to better invesigate the issue',
           });
@@ -500,7 +500,9 @@ export class ProjectViewerStore {
           }),
         );
       } else {
-        this.editorStore.applicationStore.notifyError(error);
+        this.editorStore.applicationStore.notificationService.notifyError(
+          error,
+        );
       }
       return false;
     }
@@ -612,11 +614,11 @@ export class ProjectViewerStore {
       onLeave(true);
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       onLeave(false);
     }
   }

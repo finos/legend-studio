@@ -15,7 +15,7 @@
  */
 
 import { useEffect } from 'react';
-import type { CommandRegistrar } from '../stores/CommandCenter.js';
+import type { CommandRegistrar } from '../stores/CommandService.js';
 
 export const useCommands = (registrar: CommandRegistrar): void => {
   useEffect(() => {

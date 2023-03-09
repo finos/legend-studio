@@ -429,7 +429,7 @@ export class WorkspaceSyncState {
   *pullChanges(): GeneratorFn<void> {
     try {
       assertTrue(this.sdlcState.isWorkspaceOutOfSync);
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: `Pulling latest changes...`,
         showLoading: true,
       });
@@ -446,8 +446,10 @@ export class WorkspaceSyncState {
           this.editorStore.changeDetectionState.potentialWorkspacePullConflicts;
       }
       if (conflicts.length) {
-        this.editorStore.applicationStore.setBlockingAlert(undefined);
-        this.editorStore.applicationStore.setActionAlertInfo({
+        this.editorStore.applicationStore.alertService.setBlockingAlert(
+          undefined,
+        );
+        this.editorStore.applicationStore.alertService.setActionAlertInfo({
           message: 'Conflicts found while pulling changes',
           prompt:
             'You can either force-pull (override local changes) or resolve these conflicts manually',
@@ -482,7 +484,7 @@ export class WorkspaceSyncState {
       yield flowResult(this.loadChanges(localChanges));
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Can't pull changes. Error: ${error.message}`,
       );
     } finally {
@@ -533,23 +535,25 @@ export class WorkspaceSyncState {
     try {
       const changes = this.editorStore.graphState.computeLocalEntityChanges();
       yield flowResult(this.loadChanges(changes));
-      this.editorStore.applicationStore.notifySuccess(
+      this.editorStore.applicationStore.notificationService.notifySuccess(
         'Workspace changes were force-pulled',
       );
     } catch (error) {
       assertErrorThrown(error);
       this.resetConflictState();
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Can't force-pull remote workspace changes. Error: ${error.message}`,
       );
     } finally {
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
   }
 
   *applyResolutionChanges(): GeneratorFn<void> {
     try {
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: `Applying resolutions and reloading graph...`,
         showLoading: true,
       });
@@ -561,11 +565,13 @@ export class WorkspaceSyncState {
     } catch (error) {
       assertErrorThrown(error);
       this.resetConflictState();
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Can't apply resolutions to local workspace. Error: ${error.message}`,
       );
     } finally {
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
   }
 }

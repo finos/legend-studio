@@ -679,7 +679,9 @@ export class QueryBuilderExplorerState {
         this.refreshTreeData();
       } catch (error) {
         assertErrorThrown(error);
-        this.queryBuilderState.applicationStore.notifyError(error.message);
+        this.queryBuilderState.applicationStore.notificationService.notifyError(
+          error.message,
+        );
       } finally {
         this.mappingModelCoverageAnalysisState.complete();
       }
@@ -691,7 +693,7 @@ export class QueryBuilderExplorerState {
   ): GeneratorFn<void> {
     const runtime = this.queryBuilderState.runtimeValue;
     if (!runtime) {
-      this.queryBuilderState.applicationStore.notifyWarning(
+      this.queryBuilderState.applicationStore.notificationService.notifyWarning(
         `Can't preview data for property '${node.property.name}': runtime is not specified`,
       );
       return;
@@ -704,7 +706,7 @@ export class QueryBuilderExplorerState {
       return;
     }
     if (this.previewDataState.isGeneratingPreviewData) {
-      this.queryBuilderState.applicationStore.notifyWarning(
+      this.queryBuilderState.applicationStore.notificationService.notifyWarning(
         `Can't preview data for property '${node.property.name}': another preview request is being executed`,
       );
       return;
@@ -786,7 +788,7 @@ export class QueryBuilderExplorerState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.queryBuilderState.applicationStore.notifyWarning(
+      this.queryBuilderState.applicationStore.notificationService.notifyWarning(
         `Can't preview data for property '${node.property.name}'. Error: ${error.message}`,
       );
       this.previewDataState.setPreviewData(undefined);

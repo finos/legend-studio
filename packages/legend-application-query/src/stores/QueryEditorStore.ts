@@ -98,7 +98,7 @@ export const createViewProjectHandler =
     versionId: string,
     entityPath: string | undefined,
   ): void =>
-    applicationStore.navigator.visitAddress(
+    applicationStore.navigationService.navigator.visitAddress(
       EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
         applicationStore.config.studioUrl,
         groupId,
@@ -128,7 +128,7 @@ export const createViewSDLCProjectHandler =
       (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
     );
     if (matchingSDLCEntry) {
-      applicationStore.navigator.visitAddress(
+      applicationStore.navigationService.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
           matchingSDLCEntry.url,
           project.projectId,
@@ -136,7 +136,7 @@ export const createViewSDLCProjectHandler =
         ),
       );
     } else {
-      applicationStore.notifyWarning(
+      applicationStore.notificationService.notifyWarning(
         `Can't find the corresponding SDLC instance to view the SDLC project`,
       );
     }
@@ -215,11 +215,11 @@ export class QueryExportState {
         );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.persistQueryState.reset();
       return;
     }
@@ -232,7 +232,7 @@ export class QueryExportState {
             query,
             this.editorStore.graphManagerState.graph,
           );
-        this.editorStore.applicationStore.notifySuccess(
+        this.editorStore.applicationStore.notificationService.notifySuccess(
           `Successfully created query!`,
         );
 
@@ -253,7 +253,7 @@ export class QueryExportState {
           },
         );
 
-        this.editorStore.applicationStore.navigator.goToLocation(
+        this.editorStore.applicationStore.navigationService.navigator.goToLocation(
           generateExistingQueryEditorRoute(newQuery.id),
         );
       } else {
@@ -262,7 +262,7 @@ export class QueryExportState {
             query,
             this.editorStore.graphManagerState.graph,
           );
-        this.editorStore.applicationStore.notifySuccess(
+        this.editorStore.applicationStore.notificationService.notifySuccess(
           `Successfully updated query!`,
         );
 
@@ -283,11 +283,11 @@ export class QueryExportState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.persistQueryState.reset();
       this.editorStore.setExportState(undefined);
@@ -347,7 +347,7 @@ export class QueryLoaderState {
     } catch (error) {
       this.loadQueriesState.fail();
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -384,7 +384,7 @@ export abstract class QueryEditorStore {
     this.pluginManager = applicationStore.pluginManager;
     this.graphManagerState = new GraphManagerState(
       applicationStore.pluginManager,
-      applicationStore.log,
+      applicationStore.logService,
     );
     this.queryLoaderState = new QueryLoaderState(this);
   }
@@ -450,11 +450,11 @@ export abstract class QueryEditorStore {
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.initState.fail();
     }
   }
@@ -546,7 +546,7 @@ export abstract class QueryEditorStore {
       graphBuilderReportData,
     );
 
-    this.applicationStore.log.info(
+    this.applicationStore.logService.info(
       LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
       graphBuilderReportData,
     );
@@ -591,7 +591,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
       this.applicationStore,
       this.graphManagerState,
       (val: Mapping) => {
-        this.applicationStore.navigator.updateCurrentLocation(
+        this.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateMappingQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -603,7 +603,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
         );
       },
       (val: Runtime) => {
-        this.applicationStore.navigator.updateCurrentLocation(
+        this.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateMappingQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -688,7 +688,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
       this.graphManagerState.usableServices,
       this.executionKey,
       (val: Service): void => {
-        this.applicationStore.navigator.goToLocation(
+        this.applicationStore.navigationService.navigator.goToLocation(
           generateServiceQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -698,7 +698,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
         );
       },
       (val: ServiceExecutionContext): void => {
-        this.applicationStore.navigator.updateCurrentLocation(
+        this.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateServiceQueryCreatorRoute(
             this.groupId,
             this.artifactId,

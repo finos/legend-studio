@@ -168,7 +168,9 @@ export class TaxonomyNodeViewerState {
       this.dataSpaceViewerState = dataSpaceViewerState;
     } catch (error) {
       assertErrorThrown(error);
-      this.explorerStore.applicationStore.notifyError(error);
+      this.explorerStore.applicationStore.notificationService.notifyError(
+        error,
+      );
       this.clearDataSpaceViewerState();
     } finally {
       this.initDataSpaceViewerState.complete();
@@ -178,7 +180,7 @@ export class TaxonomyNodeViewerState {
 
   queryDataSpace(classPath?: string | undefined): void {
     if (this.dataSpaceViewerState) {
-      this.explorerStore.applicationStore.navigator.visitAddress(
+      this.explorerStore.applicationStore.navigationService.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
           this.explorerStore.applicationStore.config.queryUrl,
           this.dataSpaceViewerState.groupId,

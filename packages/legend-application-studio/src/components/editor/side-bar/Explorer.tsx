@@ -42,6 +42,14 @@ import {
   SearchIcon,
   FileImportIcon,
   SettingsEthernetIcon,
+  MenuContentDivider,
+  createFilter,
+  CustomSelectorInput,
+  type SelectComponent,
+  LevelDownIcon,
+  CaretDownIcon,
+  PURE_ClassIcon,
+  CodeIcon,
 } from '@finos/legend-art';
 import {
   getElementIcon,
@@ -93,7 +101,13 @@ import {
   getFunctionNameWithPath,
   getElementRootPackage,
 } from '@finos/legend-graph';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  EDITOR_LANGUAGE,
+  getPackageableElementOptionFormatter,
+  type PackageableElementOption,
+  TextInputEditor,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
 import { queryClass } from '../edit-panel/uml-editor/ClassQueryBuilder.js';
@@ -102,6 +116,10 @@ import {
   MASTER_SNAPSHOT_ALIAS,
   SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
+import {
+  CLASS_MOCK_DATA_GENERATION_FORMAT,
+  createMockDataForClassWithFormat,
+} from '../../../stores/shared/MockDataUtils.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -240,6 +258,180 @@ const ElementRenamer = observer(() => {
   );
 });
 
+const GENERATION_DEFAULT_DEPTH = 100;
+const GENERATION_DEFAULT_FORMAT = CLASS_MOCK_DATA_GENERATION_FORMAT.JSON;
+const getMockDataEditorLanguage = (
+  format: CLASS_MOCK_DATA_GENERATION_FORMAT,
+): EDITOR_LANGUAGE => {
+  switch (format) {
+    case CLASS_MOCK_DATA_GENERATION_FORMAT.JSON:
+      return EDITOR_LANGUAGE.JSON;
+    case CLASS_MOCK_DATA_GENERATION_FORMAT.XML:
+      return EDITOR_LANGUAGE.XML;
+    case CLASS_MOCK_DATA_GENERATION_FORMAT.YAML:
+      return EDITOR_LANGUAGE.YAML;
+    default:
+      return EDITOR_LANGUAGE.TEXT;
+  }
+};
+
+const SampleDataGenerator = observer(() => {
+  const editorStore = useEditorStore();
+  const explorerTreeState = editorStore.explorerTreeState;
+  const selectedClass = explorerTreeState.classToGenerateSampleData;
+  const [format, setFormat] = useState(GENERATION_DEFAULT_FORMAT);
+  const [depth, setDepth] = useState(GENERATION_DEFAULT_DEPTH);
+  const [resultText, setResultText] = useState('');
+
+  const changeDepth: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+    setDepth(parseInt(event.target.value, 10));
+  };
+
+  // class
+  const classSelectorRef = useRef<SelectComponent>(null);
+  const elementFilterOption = createFilter({
+    ignoreCase: true,
+    ignoreAccents: false,
+    stringify: (option: PackageableElementOption<Class>): string =>
+      option.value.path,
+  });
+  const classOptions = editorStore.graphManagerState.usableClasses.map(
+    (_class) => ({
+      value: _class,
+      label: _class.name,
+    }),
+  );
+  const selectedClassOption = selectedClass
+    ? {
+        value: selectedClass,
+        label: selectedClass.name,
+      }
+    : null;
+  const changeClass = (val: PackageableElementOption<Class>): void => {
+    if (val.value === selectedClass) {
+      return;
+    }
+    explorerTreeState.setClassToGenerateSampleData(val.value);
+  };
+
+  useEffect(() => {
+    if (selectedClass) {
+      setResultText(
+        createMockDataForClassWithFormat(selectedClass, format, depth),
+      );
+    }
+  }, [selectedClass, format, depth]);
+
+  const abort = (): void => {
+    setFormat(GENERATION_DEFAULT_FORMAT);
+    setDepth(GENERATION_DEFAULT_DEPTH);
+    explorerTreeState.setClassToGenerateSampleData(undefined);
+  };
+  const regenerate = (): void => {
+    if (selectedClass) {
+      setResultText(
+        createMockDataForClassWithFormat(selectedClass, format, depth),
+      );
+    }
+  };
+  const onEnter = (): void => classSelectorRef.current?.focus();
+
+  return (
+    <Dialog
+      open={Boolean(selectedClass)}
+      onClose={abort}
+      TransitionProps={{
+        onEnter: onEnter,
+      }}
+      classes={{ container: 'search-modal__container' }}
+      PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+    >
+      <div className="modal modal--dark search-modal explorer__element-renamer">
+        <div className="modal__title">Generate Sample Data</div>
+        <div className="sample-data-generator__controller">
+          <div
+            className="sample-data-generator__controller__icon"
+            title="class"
+          >
+            <PURE_ClassIcon />
+          </div>
+          <CustomSelectorInput
+            ref={classSelectorRef}
+            className="sample-data-generator__controller__class-selector"
+            options={classOptions}
+            onChange={changeClass}
+            value={selectedClassOption}
+            darkMode={true}
+            filterOption={elementFilterOption}
+            formatOptionLabel={getPackageableElementOptionFormatter({
+              darkMode: true,
+              graph: editorStore.graphManagerState.graph,
+            })}
+          />
+          <div
+            className="sample-data-generator__controller__icon"
+            title="format"
+          >
+            <CodeIcon />
+          </div>
+          <DropdownMenu
+            className="sample-data-generator__controller__format-selector"
+            title="Choose Element Type..."
+            content={
+              <MenuContent className="sample-data-generator__controller__format-selector__options">
+                {Object.values(CLASS_MOCK_DATA_GENERATION_FORMAT).map((val) => (
+                  <MenuContentItem
+                    key={val}
+                    className="sample-data-generator__controller__format-selector__option"
+                    onClick={() => setFormat(val)}
+                  >
+                    {val}
+                  </MenuContentItem>
+                ))}
+              </MenuContent>
+            }
+          >
+            <div className="sample-data-generator__controller__format-selector__label">
+              {format}
+            </div>
+            <div className="sample-data-generator__controller__format-selector__dropdown-indicator">
+              <CaretDownIcon />
+            </div>
+          </DropdownMenu>
+          <div
+            className="sample-data-generator__controller__icon"
+            title="depth"
+          >
+            <LevelDownIcon />
+          </div>
+          <input
+            className="input input--dark sample-data-generator__controller__depth"
+            value={depth}
+            type="number"
+            onChange={changeDepth}
+          />
+        </div>
+        <div className="sample-data-generator__result">
+          <TextInputEditor
+            inputValue={resultText}
+            isReadOnly={true}
+            hideGutter={true}
+            language={getMockDataEditorLanguage(format)}
+          />
+        </div>
+        <div className="search-modal__actions">
+          <button type="button" className="btn btn--dark" onClick={abort}>
+            Cancel
+          </button>
+          <button className="btn btn--dark" onClick={regenerate}>
+            Regenerate
+          </button>
+        </div>
+      </div>
+    </Dialog>
+  );
+});
+
 const ExplorerContextMenu = observer(
   forwardRef<
     HTMLDivElement,
@@ -293,6 +485,15 @@ const ExplorerContextMenu = observer(
         }
       },
     );
+    const generateSampleData = editorStore.applicationStore.guardUnhandledError(
+      async () => {
+        if (node?.packageableElement instanceof Class) {
+          editorStore.explorerTreeState.setClassToGenerateSampleData(
+            node.packageableElement,
+          );
+        }
+      },
+    );
     const removeElement = (): void => {
       if (node) {
         flowResult(editorStore.deleteElement(node.packageableElement)).catch(
@@ -309,11 +510,23 @@ const ExplorerContextMenu = observer(
     };
     const openElementInViewerMode = (): void => {
       if (node && projectId) {
-        applicationStore.navigator.visitAddress(
-          applicationStore.navigator.generateAddress(
+        applicationStore.navigationService.navigator.visitAddress(
+          applicationStore.navigationService.navigator.generateAddress(
             generateViewEntityRoute(projectId, node.packageableElement.path),
           ),
         );
+      }
+    };
+    const copyPath = (): void => {
+      if (node) {
+        applicationStore.clipboardService
+          .copyTextToClipboard(node.packageableElement.path)
+          .then(() =>
+            applicationStore.notificationService.notifySuccess(
+              'Copied element path to clipboard',
+            ),
+          )
+          .catch(applicationStore.alertUnhandledError);
       }
     };
     const copyWorkspaceElementLink = (): void => {
@@ -325,9 +538,9 @@ const ExplorerContextMenu = observer(
               getElementRootPackage(node.packageableElement).name,
           );
         if (dependency) {
-          applicationStore
+          applicationStore.clipboardService
             .copyTextToClipboard(
-              applicationStore.navigator.generateAddress(
+              applicationStore.navigationService.navigator.generateAddress(
                 editorStore.editorMode.generateDependencyElementLink(
                   node.packageableElement.path,
                   dependency,
@@ -335,22 +548,22 @@ const ExplorerContextMenu = observer(
               ),
             )
             .then(() =>
-              applicationStore.notifySuccess(
+              applicationStore.notificationService.notifySuccess(
                 'Copied workspace element link to clipboard',
               ),
             )
             .catch(applicationStore.alertUnhandledError);
         } else {
-          applicationStore
+          applicationStore.clipboardService
             .copyTextToClipboard(
-              applicationStore.navigator.generateAddress(
+              applicationStore.navigationService.navigator.generateAddress(
                 editorStore.editorMode.generateElementLink(
                   node.packageableElement.path,
                 ),
               ),
             )
             .then(() =>
-              applicationStore.notifySuccess(
+              applicationStore.notificationService.notifySuccess(
                 'Copied workspace element link to clipboard',
               ),
             )
@@ -367,9 +580,9 @@ const ExplorerContextMenu = observer(
               getElementRootPackage(node.packageableElement).name,
           );
         if (dependency) {
-          applicationStore
+          applicationStore.clipboardService
             .copyTextToClipboard(
-              applicationStore.navigator.generateAddress(
+              applicationStore.navigationService.navigator.generateAddress(
                 generateViewProjectByGAVRoute(
                   guaranteeNonNullable(dependency.groupId),
                   guaranteeNonNullable(dependency.artifactId),
@@ -380,7 +593,7 @@ const ExplorerContextMenu = observer(
               ),
             )
             .then(() =>
-              applicationStore.notifySuccess(
+              applicationStore.notificationService.notifySuccess(
                 'Copied SDLC project link to clipboard',
               ),
             )
@@ -403,8 +616,8 @@ const ExplorerContextMenu = observer(
           (dep) => dep.projectId === node?.packageableElement.name,
         );
       if (projectDependency && !projectDependency.isLegacyDependency) {
-        applicationStore.navigator.visitAddress(
-          applicationStore.navigator.generateAddress(
+        applicationStore.navigationService.navigator.visitAddress(
+          applicationStore.navigationService.navigator.generateAddress(
             generateViewProjectByGAVRoute(
               guaranteeNonNullable(projectDependency.groupId),
               guaranteeNonNullable(projectDependency.artifactId),
@@ -460,46 +673,60 @@ const ExplorerContextMenu = observer(
               </MenuContentItemLabel>
             </MenuContentItem>
           ))}
-          <MenuContentItem onClick={renameElement}>
-            <MenuContentItemBlankIcon />
-            <MenuContentItemLabel>Rename</MenuContentItemLabel>
-          </MenuContentItem>
           {node && (
-            <MenuContentItem onClick={removeElement}>
-              <MenuContentItemBlankIcon />
-              <MenuContentItemLabel>Remove</MenuContentItemLabel>
-            </MenuContentItem>
+            <>
+              <MenuContentItem onClick={renameElement}>
+                <MenuContentItemBlankIcon />
+                <MenuContentItemLabel>Rename</MenuContentItemLabel>
+              </MenuContentItem>
+              <MenuContentItem onClick={removeElement}>
+                <MenuContentItemBlankIcon />
+                <MenuContentItemLabel>Remove</MenuContentItemLabel>
+              </MenuContentItem>
+            </>
           )}
         </MenuContent>
       );
     }
 
+    if (!node) {
+      return null;
+    }
     return (
       <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
-        <MenuContentItem onClick={buildQuery}>Query...</MenuContentItem>
+        {node.packageableElement instanceof Class && (
+          <>
+            <MenuContentItem onClick={buildQuery}>Query...</MenuContentItem>
+            <MenuContentItem onClick={generateSampleData}>
+              Generate Sample Data...
+            </MenuContentItem>
+            <MenuContentDivider />
+          </>
+        )}
         {extraExplorerContextMenuItems}
-        {!isReadOnly && node && (
+        {Boolean(extraExplorerContextMenuItems.length) && (
+          <MenuContentDivider />
+        )}
+        {!isReadOnly && (
           <>
             <MenuContentItem onClick={renameElement}>Rename</MenuContentItem>
             <MenuContentItem onClick={removeElement}>Remove</MenuContentItem>
           </>
         )}
-        {node && (
-          <>
-            {!editorStore.isInViewerMode && !isDependencyProjectElement && (
-              <MenuContentItem onClick={openElementInViewerMode}>
-                View in Project
-              </MenuContentItem>
-            )}
-            <MenuContentItem onClick={copyWorkspaceElementLink}>
-              Copy Link
-            </MenuContentItem>
-            {isDependencyProjectElement && (
-              <MenuContentItem onClick={copySDLCProjectLink}>
-                Copy SDLC Project Link
-              </MenuContentItem>
-            )}
-          </>
+        <MenuContentDivider />
+        {!editorStore.isInViewerMode && !isDependencyProjectElement && (
+          <MenuContentItem onClick={openElementInViewerMode}>
+            View in Project
+          </MenuContentItem>
+        )}
+        <MenuContentItem onClick={copyPath}>Copy Path</MenuContentItem>
+        <MenuContentItem onClick={copyWorkspaceElementLink}>
+          Copy Link
+        </MenuContentItem>
+        {isDependencyProjectElement && (
+          <MenuContentItem onClick={copySDLCProjectLink}>
+            Copy SDLC Project Link
+          </MenuContentItem>
         )}
       </MenuContent>
     );
@@ -791,6 +1018,7 @@ const ExplorerTrees = observer(() => {
                 }}
               />
               <ElementRenamer />
+              <SampleDataGenerator />
               {editorStore.projectConfigurationEditorState
                 .projectConfiguration && <ProjectConfig />}
               {/* SYSTEM TREE */}

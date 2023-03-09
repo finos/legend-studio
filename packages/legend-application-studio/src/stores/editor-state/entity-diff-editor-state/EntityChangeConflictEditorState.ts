@@ -450,7 +450,7 @@ export class EntityChangeConflictEditorState extends EntityDiffViewerState {
           ),
         );
       } else {
-        this.editorStore.applicationStore.notifyWarning(
+        this.editorStore.applicationStore.notificationService.notifyWarning(
           `Can't mark conflict as resolved: more than one element found in parsed text`,
         );
         return;
@@ -459,7 +459,7 @@ export class EntityChangeConflictEditorState extends EntityDiffViewerState {
       assertErrorThrown(error);
       if (error instanceof ParserError) {
         this.mergeEditorParserError = error;
-        this.editorStore.applicationStore.notifyWarning(
+        this.editorStore.applicationStore.notificationService.notifyWarning(
           `Can't mark conflict as resolved. Parsing error: ${this.mergeEditorParserError.message}`,
         );
       }

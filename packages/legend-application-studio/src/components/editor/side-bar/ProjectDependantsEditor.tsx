@@ -58,8 +58,8 @@ const ProjectDependantEditor = observer(
     const viewProject = (
       dependency: ProjectVersionPlatformDependency,
     ): void => {
-      applicationStore.navigator.visitAddress(
-        applicationStore.navigator.generateAddress(
+      applicationStore.navigationService.navigator.visitAddress(
+        applicationStore.navigationService.navigator.generateAddress(
           generateViewProjectByGAVRoute(
             dependency.groupId,
             dependency.artifactId,
@@ -76,8 +76,8 @@ const ProjectDependantEditor = observer(
       dependency: ProjectVersionPlatformDependency,
     ): void => {
       if (dependency.projectId && dependency.versionId) {
-        applicationStore.navigator.visitAddress(
-          applicationStore.navigator.generateAddress(
+        applicationStore.navigationService.navigator.visitAddress(
+          applicationStore.navigationService.navigator.generateAddress(
             generateViewVersionRoute(
               dependency.projectId,
               dependency.versionId,
@@ -197,7 +197,7 @@ export const ProjectDependantsEditor = observer(() => {
             className="btn btn--dark"
             tabIndex={-1}
             onClick={() => {
-              applicationStore.navigator.visitAddress(
+              applicationStore.navigationService.navigator.visitAddress(
                 generateExtensionUrlPattern(
                   generateDependencyDashboardRoute(
                     configState.currentProjectConfiguration.projectId,

@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { isNonNullable, LogEvent } from '@finos/legend-shared';
+import { isNonNullable } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
-import { APPLICATION_EVENT } from './ApplicationEvent.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 
 export class KeyboardShortcutsService {
@@ -61,18 +60,6 @@ export class KeyboardShortcutsService {
           }
         }
       });
-
-    // Warn when detected multiple commands bound to the same key combination
-    Array.from(this.keyMap.entries()).forEach(([keyCombination, commands]) => {
-      if (commands.length > 1) {
-        this.applicationStore.log.warn(
-          LogEvent.create(
-            APPLICATION_EVENT.APPLICATION_KEYBOARD_SHORTCUTS_CONFIGURATION_CHECK__FAILURE,
-          ),
-          `Found multiple commands with key binding '${keyCombination}'`,
-        );
-      }
-    });
   }
 
   blockGlobalHotkeys(): void {
@@ -105,7 +92,7 @@ export class KeyboardShortcutsService {
     const mappedCommandKeys = this.keyMap.get(keyCombination) ?? [];
     for (const commandKey of mappedCommandKeys) {
       // find the first command that works then escape
-      if (this.applicationStore.commandCenter.runCommand(commandKey)) {
+      if (this.applicationStore.commandService.runCommand(commandKey)) {
         return;
       }
     }

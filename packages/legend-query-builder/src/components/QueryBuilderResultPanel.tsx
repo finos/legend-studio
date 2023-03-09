@@ -188,7 +188,7 @@ const QueryBuilderGridResultContextMenu = observer(
         );
       } catch (error) {
         assertErrorThrown(error);
-        applicationStore.notifyWarning(error.message);
+        applicationStore.notificationService.notifyWarning(error.message);
         return;
       }
       postFilterState.addNodeFromNode(
@@ -278,11 +278,11 @@ const QueryBuilderGridResultContextMenu = observer(
     };
 
     const handleCopyCellValue = applicationStore.guardUnhandledError(() =>
-      applicationStore.copyTextToClipboard(event?.value),
+      applicationStore.clipboardService.copyTextToClipboard(event?.value),
     );
 
     const handleCopyRowValue = applicationStore.guardUnhandledError(() =>
-      applicationStore.copyTextToClipboard(
+      applicationStore.clipboardService.copyTextToClipboard(
         Object.values(event?.data).toString(),
       ),
     );
@@ -456,7 +456,7 @@ export const QueryBuilderResultPanel = observer(
     };
 
     const confirmExport = (format: EXECUTION_SERIALIZATION_FORMAT): void => {
-      applicationStore.setActionAlertInfo({
+      applicationStore.alertService.setActionAlertInfo({
         message: USER_ATTESTATION_MESSAGE,
         type: ActionAlertType.CAUTION,
         actions: [

@@ -75,7 +75,7 @@ const getFileEditorLanguage = (filePath: string): string => {
     case 'json':
       return EDITOR_LANGUAGE.JSON;
     case 'xml':
-      return EDITOR_LANGUAGE.MARKDOWN;
+      return EDITOR_LANGUAGE.XML;
     case 'yml':
     case 'yaml':
       return EDITOR_LANGUAGE.YAML;
@@ -266,7 +266,7 @@ export class FileEditorState
       return;
     }
     if (this.hasChanged) {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         `Can't rename concept: source is not compiled`,
       );
       return;
@@ -301,7 +301,7 @@ export class FileEditorState
 
   registerCommands(): void {
     if (this.textEditorState.language === EDITOR_LANGUAGE.PURE) {
-      this.editorStore.applicationStore.commandCenter.registerCommand({
+      this.editorStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_DEFINITION,
         trigger: () =>
           this.editorStore.tabManagerState.currentTab === this &&
@@ -321,7 +321,7 @@ export class FileEditorState
           }
         },
       });
-      this.editorStore.applicationStore.commandCenter.registerCommand({
+      this.editorStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_BACK,
         action: () => {
           flowResult(this.editorStore.navigateBack()).catch(
@@ -329,7 +329,7 @@ export class FileEditorState
           );
         },
       });
-      this.editorStore.applicationStore.commandCenter.registerCommand({
+      this.editorStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE,
         trigger: () =>
           this.editorStore.tabManagerState.currentTab === this &&
@@ -349,7 +349,7 @@ export class FileEditorState
           }
         },
       });
-      this.editorStore.applicationStore.commandCenter.registerCommand({
+      this.editorStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.FIND_USAGES,
         trigger: () =>
           this.editorStore.tabManagerState.currentTab === this &&
@@ -366,7 +366,7 @@ export class FileEditorState
           }
         },
       });
-      this.editorStore.applicationStore.commandCenter.registerCommand({
+      this.editorStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
         trigger: () =>
           this.editorStore.tabManagerState.currentTab === this &&
@@ -391,7 +391,7 @@ export class FileEditorState
         },
       });
     }
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.DELETE_LINE,
       trigger: () =>
         this.editorStore.tabManagerState.currentTab === this &&
@@ -418,14 +418,14 @@ export class FileEditorState
         }
       },
     });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_LINE,
       trigger: () => this.editorStore.tabManagerState.currentTab === this,
       action: () => {
         this.setShowGoToLinePrompt(true);
       },
     });
-    this.editorStore.applicationStore.commandCenter.registerCommand({
+    this.editorStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.TOGGLE_TEXT_WRAP,
       trigger: () => this.editorStore.tabManagerState.currentTab === this,
       action: () => {
@@ -441,7 +441,7 @@ export class FileEditorState
       );
     };
     if (this.hasChanged) {
-      this.editorStore.applicationStore.setActionAlertInfo({
+      this.editorStore.applicationStore.alertService.setActionAlertInfo({
         message:
           'Source is not compiled, finding concept usages might be inaccurate. Do you want compile to proceed?',
         type: ActionAlertType.CAUTION,
@@ -473,7 +473,7 @@ export class FileEditorState
     }
     const concept = this.renameConceptState.concept;
     try {
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: 'Finding concept usages...',
         showLoading: true,
       });
@@ -502,9 +502,11 @@ export class FileEditorState
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
   }
 
@@ -517,14 +519,14 @@ export class FileEditorState
         LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.FIND_USAGES,
         LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
       ].forEach((key) =>
-        this.editorStore.applicationStore.commandCenter.deregisterCommand(key),
+        this.editorStore.applicationStore.commandService.deregisterCommand(key),
       );
     }
     [
       LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_LINE,
       LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.TOGGLE_TEXT_WRAP,
     ].forEach((key) =>
-      this.editorStore.applicationStore.commandCenter.deregisterCommand(key),
+      this.editorStore.applicationStore.commandService.deregisterCommand(key),
     );
   }
 }

@@ -239,7 +239,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
   async loadModel(): Promise<void> {
     try {
       this.loadModelActionState.inProgress();
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: 'Loading model...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -255,19 +255,21 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.modelImporterState.replace, entities, message },
       );
-      this.editorStore.applicationStore.navigator.reload({
+      this.editorStore.applicationStore.navigationService.navigator.reload({
         ignoreBlocking: true,
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.MODEL_LOADER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.loadModelActionState.complete();
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
   }
 }
@@ -403,7 +405,7 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
     this.loadModelActionState.inProgress();
     try {
       this.loadModelActionState.inProgress();
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: 'Loading model...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -431,15 +433,17 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.modelImporterState.replace, entities, message },
       );
-      this.editorStore.applicationStore.navigator.reload({
+      this.editorStore.applicationStore.navigationService.navigator.reload({
         ignoreBlocking: true,
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.loadModelActionState.complete();
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
   }
 }

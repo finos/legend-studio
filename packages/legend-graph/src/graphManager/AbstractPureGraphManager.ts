@@ -47,7 +47,7 @@ import type { ExecutionNode } from '../graph/metamodel/pure/executionPlan/nodes/
 import {
   ActionState,
   type PlainObject,
-  type Log,
+  type LogService,
   type ServerClientConfig,
   type TracerService,
 } from '@finos/legend-shared';
@@ -134,13 +134,16 @@ export abstract class AbstractPureGraphManagerExtension {
 }
 
 export abstract class AbstractPureGraphManager {
-  extensions: AbstractPureGraphManagerExtension[] = [];
-  pluginManager: GraphManagerPluginManager;
-  log: Log;
+  readonly extensions: AbstractPureGraphManagerExtension[] = [];
+  readonly pluginManager: GraphManagerPluginManager;
+  readonly logService: LogService;
 
-  constructor(pluginManager: GraphManagerPluginManager, log: Log) {
+  constructor(
+    pluginManager: GraphManagerPluginManager,
+    logService: LogService,
+  ) {
     this.pluginManager = pluginManager;
-    this.log = log;
+    this.logService = logService;
     this.extensions = pluginManager
       .getPureGraphManagerPlugins()
       .flatMap(

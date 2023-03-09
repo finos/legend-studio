@@ -38,7 +38,7 @@ import {
 
 export const NotificationManager = observer(() => {
   const applicationStore = useApplicationStore();
-  const notification = applicationStore.notification;
+  const notification = applicationStore.notificationService.notification;
   const isOpen = Boolean(notification);
   const message = notification?.message ?? '';
   const severity = notification?.severity ?? NOTIFCATION_SEVERITY.INFO;
@@ -81,11 +81,11 @@ export const NotificationManager = observer(() => {
       break;
   }
   const handleClose = (): void => {
-    applicationStore.setNotification(undefined);
+    applicationStore.notificationService.setNotification(undefined);
     setIsExpanded(false);
   };
   const handleCopy = applicationStore.guardUnhandledError(() =>
-    applicationStore.copyTextToClipboard(message),
+    applicationStore.clipboardService.copyTextToClipboard(message),
   );
   const toggleExpansion = (): void => setIsExpanded(!isExpanded);
 
@@ -114,8 +114,8 @@ export const NotificationManager = observer(() => {
       open={isOpen}
       // setting the auto-hide duration to null will stop it from hiding automatically
       autoHideDuration={
-        applicationStore.notification
-          ? applicationStore.notification.autoHideDuration ?? null
+        notification
+          ? notification.autoHideDuration ?? null
           : DEFAULT_NOTIFICATION_HIDE_TIME
       }
       onClose={onSnackbarAutoHideOrClickAway}

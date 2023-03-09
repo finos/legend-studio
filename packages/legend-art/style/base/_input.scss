@@ -58,6 +58,7 @@
 
 .input--caution {
   border: 0.1rem solid var(--color-yellow-100);
+  background: var(--color-dark-yellow-500);
 
   &:hover {
     border: 0.1rem solid var(--color-yellow-200);

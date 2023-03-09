@@ -27,7 +27,7 @@ export const ClassDiagramPreview = observer((props: { _class: Class }) => {
   const applicationStore = useApplicationStore();
   const classHash = isElementReadOnly(_class)
     ? undefined
-    : applicationStore.notifyAndReturnAlternativeOnError(
+    : applicationStore.notificationService.notifyAndReturnAlternativeOnError(
         () => _class.hashCode,
         undefined,
       ); // attempting to read the hashCode of immutable element will throw an error

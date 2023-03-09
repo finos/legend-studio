@@ -68,9 +68,13 @@ const MappingExecutionQueryBuilderSetupPanelContent = observer(
                 disabled={true}
                 options={[]}
                 value={selectedMappingOption}
-                darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+                darkMode={
+                  !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+                }
                 formatOptionLabel={getPackageableElementOptionFormatter({
-                  darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
+                  darkMode:
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightThemeEnabled,
                   graph: editorStore.graphManagerState.graph,
                 })}
               />

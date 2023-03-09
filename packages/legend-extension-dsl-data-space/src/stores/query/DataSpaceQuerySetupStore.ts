@@ -145,7 +145,7 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.loadDataSpacesState.fail();
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     }
   }
 }
@@ -174,7 +174,7 @@ export class DataSpaceQuerySetupStore extends QueryEditorStore {
       this.depotServerClient,
       (dataSpaceInfo: DataSpaceInfo) => {
         if (dataSpaceInfo.defaultExecutionContext) {
-          this.applicationStore.navigator.goToLocation(
+          this.applicationStore.navigationService.navigator.goToLocation(
             generateDataSpaceQueryCreatorRoute(
               dataSpaceInfo.groupId,
               dataSpaceInfo.artifactId,
@@ -186,7 +186,7 @@ export class DataSpaceQuerySetupStore extends QueryEditorStore {
             ),
           );
         } else {
-          this.applicationStore.notifyWarning(
+          this.applicationStore.notificationService.notifyWarning(
             `Can't switch data space: default execution context not specified`,
           );
         }

@@ -209,7 +209,7 @@ export class EntityDiffViewState extends EntityDiffViewerState {
         this.setFromGrammarText(
           '/* Failed to transform grammar text, see JSON diff instead */',
         );
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
@@ -232,7 +232,7 @@ export class EntityDiffViewState extends EntityDiffViewerState {
         this.setFromGrammarText(
           '/* Failed to transform grammar text, see JSON diff instead */',
         );
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );

@@ -267,7 +267,7 @@ export const ServiceExecutionQueryEditor = observer(
         const selectedExecutionState =
           executionState.selectedExecutionContextState;
         if (selectedExecutionState?.executionContext.mapping === undefined) {
-          applicationStore.notifyError(
+          applicationStore.notificationService.notifyError(
             'Editing query without runtime and mapping is unsupported via query builder, please leverage the text mode to edit query',
           );
           executionState.setOpeningQueryEditor(false);
@@ -310,7 +310,7 @@ export const ServiceExecutionQueryEditor = observer(
                             await flowResult(
                               executionState.queryState.updateLamba(rawLambda),
                             );
-                            applicationStore.notifySuccess(
+                            applicationStore.notificationService.notifySuccess(
                               `Service query is updated`,
                             );
                             embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
@@ -318,7 +318,7 @@ export const ServiceExecutionQueryEditor = observer(
                             );
                           } catch (error) {
                             assertErrorThrown(error);
-                            applicationStore.notifyError(
+                            applicationStore.notificationService.notifyError(
                               `Can't save query: ${error.message}`,
                             );
                           }
@@ -348,7 +348,7 @@ export const ServiceExecutionQueryEditor = observer(
             executionState.setOpeningQueryEditor(false);
             return;
           }
-          applicationStore.notifyWarning(
+          applicationStore.notificationService.notifyWarning(
             'Please specify a mapping and a runtime for the execution context to edit with query builder',
           );
           executionState.setOpeningQueryEditor(false);
@@ -416,7 +416,7 @@ export const ServiceExecutionQueryEditor = observer(
           versionId: SNAPSHOT_VERSION_ALIAS,
         };
       }
-      applicationStore.navigator.visitAddress(
+      applicationStore.navigationService.navigator.visitAddress(
         executionState.generateServiceQueryCreatorRoute(
           queryServerUrl,
           projectGAV.groupId,
@@ -428,8 +428,8 @@ export const ServiceExecutionQueryEditor = observer(
     };
 
     const openQueryInServiceExtension = (): void => {
-      applicationStore.navigator.visitAddress(
-        applicationStore.navigator.generateAddress(
+      applicationStore.navigationService.navigator.visitAddress(
+        applicationStore.navigationService.navigator.generateAddress(
           executionState.generateProjectServiceQueryUpdaterRoute(
             editorStore.projectConfigurationEditorState
               .currentProjectConfiguration.projectId,

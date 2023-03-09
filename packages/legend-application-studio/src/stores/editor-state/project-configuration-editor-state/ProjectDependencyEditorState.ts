@@ -412,7 +412,7 @@ export class ProjectDependencyEditorState {
       assertErrorThrown(error);
       this.fetchingDependencyInfoState.fail();
       this.dependencyReport = undefined;
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
       );
@@ -436,7 +436,7 @@ export class ProjectDependencyEditorState {
         assertErrorThrown(error);
         this.setConflictStates([]);
         this.buildConflictPathState.fail();
-        this.editorStore.applicationStore.notifyError(
+        this.editorStore.applicationStore.notificationService.notifyError(
           `Unable to build conflict paths ${error.message}`,
         );
       }

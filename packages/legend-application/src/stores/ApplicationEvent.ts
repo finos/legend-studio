@@ -26,7 +26,6 @@ export enum APPLICATION_EVENT {
   APPLICATION_DOCUMENTATION_FETCH__FAILURE = 'application.fetch.documentation.failure',
   APPLICATION_DOCUMENTATION_LOAD__SKIP = 'application.load.documentation.skip',
   APPLICATION_DOCUMENTATION_REQUIREMENT_CHECK__FAILURE = 'application.load.documentation.requirement-check.failure',
-  APPLICATION_KEYBOARD_SHORTCUTS_CONFIGURATION_CHECK__FAILURE = 'application.load.keyboard-shortcuts.configuration-check.failure',
   APPLICATION_TERMINAL_COMMAND_CONFIGURATION_CHECK__FAILURE = 'application.load.terminal-command.configuration-check.failure',
   APPLICATION_CONTEXTUAL_DOCUMENTATION_LOAD__SKIP = 'application.load.contextual-documentation.skip',
 

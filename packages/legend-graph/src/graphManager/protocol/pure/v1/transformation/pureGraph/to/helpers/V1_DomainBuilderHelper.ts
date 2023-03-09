@@ -278,7 +278,7 @@ const validateAssociationProperty = (
     if (context.options?.strict) {
       throw new GraphBuilderError(message);
     }
-    context.log.warn(LogEvent.create(message));
+    context.logService.warn(LogEvent.create(message));
   }
 };
 

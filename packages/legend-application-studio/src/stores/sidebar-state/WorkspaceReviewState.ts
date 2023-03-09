@@ -151,7 +151,7 @@ export class WorkspaceReviewState {
           true,
         ),
       ]);
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
@@ -161,11 +161,11 @@ export class WorkspaceReviewState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.sdlcState.handleChangeDetectionRefreshIssue(error);
     } finally {
       this.isRefreshingWorkspaceChangesDetector = false;
@@ -202,7 +202,9 @@ export class WorkspaceReviewState {
           );
         } catch (error) {
           assertErrorThrown(error);
-          this.editorStore.applicationStore.notifyWarning(error.message);
+          this.editorStore.applicationStore.notificationService.notifyWarning(
+            error.message,
+          );
         }
       }
       this.workspaceReview = review
@@ -210,11 +212,11 @@ export class WorkspaceReviewState {
         : undefined;
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.sdlcState.handleChangeDetectionRefreshIssue(error);
     } finally {
       this.isFetchingCurrentWorkspaceReview = false;
@@ -224,7 +226,7 @@ export class WorkspaceReviewState {
   *recreateWorkspaceAfterCommittingReview(): GeneratorFn<void> {
     try {
       this.isRecreatingWorkspaceAfterCommittingReview = true;
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: 'Recreating workspace...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -234,18 +236,20 @@ export class WorkspaceReviewState {
         this.sdlcState.activeWorkspace.workspaceId,
         this.sdlcState.activeWorkspace.workspaceType,
       );
-      this.editorStore.applicationStore.navigator.reload({
+      this.editorStore.applicationStore.navigationService.navigator.reload({
         ignoreBlocking: true,
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
       this.isRecreatingWorkspaceAfterCommittingReview = false;
     }
   }
@@ -263,11 +267,11 @@ export class WorkspaceReviewState {
       this.workspaceReview = undefined;
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isClosingWorkspaceReview = false;
     }
@@ -287,7 +291,7 @@ export class WorkspaceReviewState {
       this.editorStore.projectConfigurationEditorState
         .containsSnapshotDependencies
     ) {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         `Can't create review: workspace contains snapshot dependencies`,
       );
       return;
@@ -311,11 +315,11 @@ export class WorkspaceReviewState {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isCreatingWorkspaceReview = false;
     }
@@ -329,7 +333,7 @@ export class WorkspaceReviewState {
       this.editorStore.projectConfigurationEditorState
         .containsSnapshotDependencies
     ) {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         `Can't commit review: workspace contains snapshot dependencies`,
       );
       return;
@@ -343,7 +347,7 @@ export class WorkspaceReviewState {
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (isInConflictResolutionMode) {
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -351,7 +355,7 @@ export class WorkspaceReviewState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         'Failed to check if current workspace is in conflict resolution mode',
       );
       return;
@@ -363,7 +367,7 @@ export class WorkspaceReviewState {
         review.id,
         { message: `${review.title} [review]` },
       );
-      this.editorStore.applicationStore.setActionAlertInfo({
+      this.editorStore.applicationStore.alertService.setActionAlertInfo({
         message: 'Committed review successfully',
         prompt:
           'You can create a new workspace with the same name or leave for the start page',
@@ -379,7 +383,7 @@ export class WorkspaceReviewState {
             label: 'Leave',
             type: ActionAlertActionType.PROCEED,
             handler: (): void => {
-              this.editorStore.applicationStore.navigator.goToLocation(
+              this.editorStore.applicationStore.navigationService.navigator.goToLocation(
                 generateSetupRoute(
                   this.editorStore.sdlcState.activeProject.projectId,
                 ),
@@ -394,11 +398,11 @@ export class WorkspaceReviewState {
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isCommittingWorkspaceReview = false;
     }

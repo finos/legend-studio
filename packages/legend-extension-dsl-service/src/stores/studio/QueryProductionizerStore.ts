@@ -278,7 +278,7 @@ export class QueryProductionizerStore {
   resetCurrentQuery(): void {
     this.currentQuery = undefined;
     this.resetCurrentProject();
-    this.applicationStore.navigator.updateCurrentLocation(
+    this.applicationStore.navigationService.navigator.updateCurrentLocation(
       generateQueryProductionizerRoute(undefined),
     );
     this.setWorkspaceName('');
@@ -339,7 +339,7 @@ export class QueryProductionizerStore {
         if (query) {
           yield flowResult(this.changeQuery(query));
         } else {
-          this.applicationStore.navigator.updateCurrentLocation(
+          this.applicationStore.navigationService.navigator.updateCurrentLocation(
             generateQueryProductionizerRoute(undefined),
           );
         }
@@ -348,11 +348,11 @@ export class QueryProductionizerStore {
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERIC_FAILURE),
         error,
       );
-      this.applicationStore.setBlockingAlert({
+      this.applicationStore.alertService.setBlockingAlert({
         message: `Can't initialize query productionizer store`,
       });
       this.initState.fail();
@@ -366,7 +366,7 @@ export class QueryProductionizerStore {
       ).map((p) => User.serialization.fromJson(p));
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       return [];
     }
   }
@@ -387,7 +387,7 @@ export class QueryProductionizerStore {
         )) as PlainObject<ProjectData>,
       );
       this.setWorkspaceName(`${DEFAULT_WORKSPACE_NAME_PREFIX}-${query.id}`);
-      this.applicationStore.navigator.updateCurrentLocation(
+      this.applicationStore.navigationService.navigator.updateCurrentLocation(
         generateQueryProductionizerRoute(query.id),
       );
 
@@ -410,7 +410,7 @@ export class QueryProductionizerStore {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.loadQueryState.reset();
     }
@@ -432,7 +432,7 @@ export class QueryProductionizerStore {
       this.loadQueriesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadQueriesState.fail();
     }
   }
@@ -453,7 +453,7 @@ export class QueryProductionizerStore {
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadProjectsState.fail();
     }
   }
@@ -497,11 +497,11 @@ export class QueryProductionizerStore {
       this.loadWorkspacesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadWorkspacesState.fail();
     }
   }
@@ -529,7 +529,7 @@ export class QueryProductionizerStore {
       this.productionizeState.inProgress();
 
       // 1. prepare project entities
-      this.applicationStore.setBlockingAlert({
+      this.applicationStore.alertService.setBlockingAlert({
         message: `Fetching query project information...`,
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -581,7 +581,7 @@ export class QueryProductionizerStore {
       }
 
       // 3. check if the graph compiles properly
-      this.applicationStore.setBlockingAlert({
+      this.applicationStore.alertService.setBlockingAlert({
         message: `Checking workspace compilation status...`,
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -626,7 +626,7 @@ export class QueryProductionizerStore {
       const setupWorkspace = async (): Promise<void> => {
         let workspace: Workspace | undefined;
         try {
-          this.applicationStore.setBlockingAlert({
+          this.applicationStore.alertService.setBlockingAlert({
             message: `Creating workspace...`,
             prompt: 'Please do not close the application',
             showLoading: true,
@@ -643,7 +643,7 @@ export class QueryProductionizerStore {
 
           // ii. add dependencies if needed
           if (dependenciesToAdd.length) {
-            this.applicationStore.setBlockingAlert({
+            this.applicationStore.alertService.setBlockingAlert({
               message: `Adding service dependencies...`,
               prompt: 'Please do not close the application',
               showLoading: true,
@@ -667,7 +667,7 @@ export class QueryProductionizerStore {
           }
 
           // iii. add service
-          this.applicationStore.setBlockingAlert({
+          this.applicationStore.alertService.setBlockingAlert({
             message: `Adding service...`,
             prompt: 'Please do not close the application',
             showLoading: true,
@@ -689,9 +689,9 @@ export class QueryProductionizerStore {
           );
 
           // iv. complete, redirect user to the service query editor screen
-          this.applicationStore.setBlockingAlert(undefined);
+          this.applicationStore.alertService.setBlockingAlert(undefined);
           this.productionizeState.pass();
-          this.applicationStore.setActionAlertInfo({
+          this.applicationStore.alertService.setActionAlertInfo({
             message: `Successfully promoted query into service '${this.servicePath}'. Now your service can be found in workspace '${this.workspaceName}' of project '${project.name}' (${project.projectId})`,
             prompt: compilationFailed
               ? `The workspace might not compile at the moment, please make sure to fix the issue and submit a review to make the service part of the project to complete productionization`
@@ -703,7 +703,7 @@ export class QueryProductionizerStore {
                     label: 'Open Workspace',
                     type: ActionAlertActionType.PROCEED,
                     handler: (): void => {
-                      this.applicationStore.navigator.goToLocation(
+                      this.applicationStore.navigationService.navigator.goToLocation(
                         generateEditorRoute(
                           project.projectId,
                           this.workspaceName,
@@ -719,7 +719,7 @@ export class QueryProductionizerStore {
                     label: 'Open Service',
                     type: ActionAlertActionType.PROCEED,
                     handler: (): void => {
-                      this.applicationStore.navigator.goToLocation(
+                      this.applicationStore.navigationService.navigator.goToLocation(
                         generateProjectServiceQueryUpdaterRoute(
                           project.projectId,
                           this.workspaceName,
@@ -733,7 +733,7 @@ export class QueryProductionizerStore {
                     label: 'Open Workspace',
                     type: ActionAlertActionType.PROCEED,
                     handler: (): void => {
-                      this.applicationStore.navigator.goToLocation(
+                      this.applicationStore.navigationService.navigator.goToLocation(
                         generateEditorRoute(
                           project.projectId,
                           this.workspaceName,
@@ -746,8 +746,8 @@ export class QueryProductionizerStore {
           });
         } catch (error) {
           assertErrorThrown(error);
-          this.applicationStore.setBlockingAlert(undefined);
-          this.applicationStore.notifyError(
+          this.applicationStore.alertService.setBlockingAlert(undefined);
+          this.applicationStore.notificationService.notifyError(
             `Can't set up workspace: ${error.message}`,
           );
           if (workspace) {
@@ -762,9 +762,9 @@ export class QueryProductionizerStore {
         }
       };
 
-      this.applicationStore.setBlockingAlert(undefined);
+      this.applicationStore.alertService.setBlockingAlert(undefined);
       if (compilationFailed) {
-        this.applicationStore.setActionAlertInfo({
+        this.applicationStore.alertService.setActionAlertInfo({
           message: `We have found compilation issues with the workspace. Your query can still be productionized, but you would need to fix compilation issues afterwards`,
           prompt: `Do you still want to proceed to productionize the query?`,
           type: ActionAlertType.STANDARD,
@@ -795,8 +795,8 @@ export class QueryProductionizerStore {
       this.productionizeState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.setBlockingAlert(undefined);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.alertService.setBlockingAlert(undefined);
+      this.applicationStore.notificationService.notifyError(error);
       this.productionizeState.fail();
     }
   }

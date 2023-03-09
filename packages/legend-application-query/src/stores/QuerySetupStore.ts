@@ -51,7 +51,7 @@ export abstract class BaseQuerySetupStore {
     this.applicationStore = applicationStore;
     this.graphManagerState = new BasicGraphManagerState(
       applicationStore.pluginManager,
-      applicationStore.log,
+      applicationStore.logService,
     );
     this.depotServerClient = depotServerClient;
     this.pluginManager = applicationStore.pluginManager;
@@ -82,11 +82,11 @@ export abstract class BaseQuerySetupStore {
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
-      this.applicationStore.setBlockingAlert({
+      this.applicationStore.alertService.setBlockingAlert({
         message: `Can't initialize query setup store`,
       });
       this.initState.fail();
@@ -163,7 +163,7 @@ export class QuerySetupLandingPageStore {
   }
 
   private updateCurentLocation(): void {
-    this.applicationStore.navigator.updateCurrentLocation(
+    this.applicationStore.navigationService.navigator.updateCurrentLocation(
       generateQuerySetupRoute(
         this.showAllGroups,
         this.showAdvancedActions,

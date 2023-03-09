@@ -37,6 +37,9 @@ import {
   getClassPropertyType,
 } from './ModelClassifierUtils.js';
 import type { MappingElementSource } from '../editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { TAB_SIZE } from '@finos/legend-application';
+import { XMLBuilder } from 'fast-xml-parser';
+import { stringify as YAML_stringify } from 'yaml';
 
 export const createMockPrimitiveProperty = (
   primitiveType: PrimitiveType,
@@ -166,22 +169,60 @@ export const createMockDataForClass = (
   return createMockClassInstance(element, true, depth);
 };
 
+export enum CLASS_MOCK_DATA_GENERATION_FORMAT {
+  JSON = 'JSON',
+  XML = 'XML',
+  YAML = 'YAML',
+}
+
+export const createMockDataForClassWithFormat = (
+  element: Class,
+  format: CLASS_MOCK_DATA_GENERATION_FORMAT,
+  maxDepth = 100,
+  depthForCycle = 3,
+): string => {
+  const depth = classHasCycle(element, true, new Set<string>())
+    ? Math.max(depthForCycle, 0)
+    : Math.max(maxDepth, 0);
+  const obj = createMockClassInstance(element, true, depth);
+  switch (format) {
+    case CLASS_MOCK_DATA_GENERATION_FORMAT.JSON:
+      return JSON.stringify(obj, undefined, TAB_SIZE);
+    case CLASS_MOCK_DATA_GENERATION_FORMAT.XML: {
+      return new XMLBuilder({
+        indentBy: ' '.repeat(TAB_SIZE),
+        format: true,
+      }).build(obj);
+    }
+    case CLASS_MOCK_DATA_GENERATION_FORMAT.YAML:
+      return YAML_stringify(obj, { indent: TAB_SIZE });
+    default:
+      throw new UnsupportedOperationError(
+        `Can't create mock data for class with format '${format}'`,
+      );
+  }
+};
+
 export const createMockDataForMappingElementSource = (
   srcElement: MappingElementSource,
   editorStore: EditorStore,
 ): string => {
   if (srcElement instanceof Class) {
     try {
-      return JSON.stringify(createMockDataForClass(srcElement), undefined, 2);
+      return JSON.stringify(
+        createMockDataForClass(srcElement),
+        undefined,
+        TAB_SIZE,
+      );
     } catch (error) {
       assertErrorThrown(error);
-      editorStore.applicationStore.notifyWarning(
+      editorStore.applicationStore.notificationService.notifyWarning(
         `Can't generate test data for class '${srcElement}'. Error:\n${error.message}`,
       );
       return '';
     }
   }
-  editorStore.applicationStore.notifyWarning(
+  editorStore.applicationStore.notificationService.notifyWarning(
     new UnsupportedOperationError(
       `Can't generate test data for mapping source`,
       srcElement,

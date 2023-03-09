@@ -538,7 +538,7 @@ const IdentifiedConnectionEditor = observer(
             currentRuntimeEditorTabState.createDefaultConnection();
         } catch (error) {
           assertErrorThrown(error);
-          applicationStore.notifyWarning(error.message);
+          applicationStore.notificationService.notifyWarning(error.message);
           return;
         }
         const newIdentifiedConnection = new IdentifiedConnection(

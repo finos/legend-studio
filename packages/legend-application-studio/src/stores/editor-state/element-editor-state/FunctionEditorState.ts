@@ -82,7 +82,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
@@ -139,7 +139,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
         this.isConvertingFunctionBodyToString = false;
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
@@ -199,7 +199,7 @@ export class FunctionEditorState extends ElementEditorState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.warn(
+      this.editorStore.applicationStore.logService.warn(
         LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         `Can't locate error`,
         error,

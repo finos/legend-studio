@@ -146,7 +146,7 @@ export class ServiceEditorState extends ElementEditorState {
       ).map((p) => User.serialization.fromJson(p));
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       return [];
     }
   }

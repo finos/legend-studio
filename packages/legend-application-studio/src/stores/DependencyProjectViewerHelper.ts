@@ -31,8 +31,8 @@ export const createViewSDLCProjectHandler =
     const project = ProjectData.serialization.fromJson(
       await depotServerClient.getProject(groupId, artifactId),
     );
-    applicationStore.navigator.visitAddress(
-      applicationStore.navigator.generateAddress(
+    applicationStore.navigationService.navigator.visitAddress(
+      applicationStore.navigationService.navigator.generateAddress(
         generateViewProjectRoute(project.projectId),
       ),
     );

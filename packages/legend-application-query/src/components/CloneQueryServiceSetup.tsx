@@ -79,7 +79,9 @@ const CloneQueryServiceSetupContent = observer(() => {
 
   // actions
   const back = (): void => {
-    applicationStore.navigator.goToLocation(generateQuerySetupRoute());
+    applicationStore.navigationService.navigator.goToLocation(
+      generateQuerySetupRoute(),
+    );
   };
   const next = (): void => {
     if (
@@ -87,7 +89,7 @@ const CloneQueryServiceSetupContent = observer(() => {
       querySetupState.currentVersionId &&
       querySetupState.currentServiceExecutionOption
     ) {
-      applicationStore.navigator.goToLocation(
+      applicationStore.navigationService.navigator.goToLocation(
         generateServiceQueryCreatorRoute(
           querySetupState.currentProject.groupId,
           querySetupState.currentProject.artifactId,

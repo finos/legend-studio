@@ -54,7 +54,7 @@ export const fetchProjectConfigurationStatus = async (
     }
   }
   if (!status.projectConfigured) {
-    applicationStore.notifyWarning(
+    applicationStore.notificationService.notifyWarning(
       `Project is not configured: please check and commit the project setup review`,
     );
   }

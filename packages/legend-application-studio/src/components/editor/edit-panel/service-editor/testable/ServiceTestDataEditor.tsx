@@ -80,7 +80,7 @@ export const ConnectionTestDataEditor = observer(
       );
     };
     const confirmGenerateUnAnonmyizedData = (): void => {
-      applicationStore.setActionAlertInfo({
+      applicationStore.alertService.setActionAlertInfo({
         message: USER_ATTESTATION_MESSAGE,
         type: ActionAlertType.CAUTION,
         actions: [

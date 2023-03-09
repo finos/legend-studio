@@ -79,19 +79,19 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
       (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
     );
     if (matchingSDLCEntry) {
-      this.applicationStore.setBlockingAlert({
+      this.applicationStore.alertService.setBlockingAlert({
         message: `Loading query...`,
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      this.applicationStore.navigator.goToAddress(
+      this.applicationStore.navigationService.navigator.goToAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl(
           matchingSDLCEntry.url,
           this.currentQuery.id,
         ),
       );
     } else {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Can't find the corresponding SDLC instance to productionize the query`,
       );
     }
@@ -116,7 +116,7 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
         this.currentQueryInfo = queryInfo;
       } catch (error) {
         assertErrorThrown(error);
-        this.applicationStore.notifyError(error);
+        this.applicationStore.notificationService.notifyError(error);
       } finally {
         this.loadQueryState.reset();
       }
@@ -141,7 +141,7 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
       this.loadQueriesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadQueriesState.fail();
     }
   }

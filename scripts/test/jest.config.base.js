@@ -35,6 +35,8 @@ export const getBaseJestConfig = (isGlobal) => {
       'filter-obj',
       'decode-uri-component',
       'split-on-first',
+
+      'yaml',
     ],
   });
 

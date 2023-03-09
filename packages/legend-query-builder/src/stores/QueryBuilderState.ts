@@ -268,7 +268,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   }
 
   registerCommands(): void {
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: QUERY_BUILDER_COMMAND_KEY.COMPILE,
       action: () => {
         flowResult(this.compileQuery()).catch(
@@ -291,7 +291,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   deregisterCommands(): void {
     [QUERY_BUILDER_COMMAND_KEY.COMPILE].forEach((key) =>
-      this.applicationStore.commandCenter.deregisterCommand(key),
+      this.applicationStore.commandService.deregisterCommand(key),
     );
   }
 
@@ -439,7 +439,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       await onSaveQuery(query);
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(`Can't save query: ${error.message}`);
+      this.applicationStore.notificationService.notifyError(
+        `Can't save query: ${error.message}`,
+      );
     }
   }
 
@@ -457,10 +459,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
           this.graphManagerState.graph,
           { keepSourceInformation: true },
         )) as string;
-        this.applicationStore.notifySuccess('Compiled successfully');
+        this.applicationStore.notificationService.notifySuccess(
+          'Compiled successfully',
+        );
       } catch (error) {
         assertErrorThrown(error);
-        this.applicationStore.log.error(
+        this.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
           error,
         );
@@ -476,7 +480,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
         // decide if we need to fall back to text mode for debugging
         if (fallbackToTextModeForDebugging) {
-          this.applicationStore.notifyWarning(
+          this.applicationStore.notificationService.notifyWarning(
             'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
           );
           this.textEditorState.openModal(QueryBuilderTextEditorMode.TEXT);
@@ -487,7 +491,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
           // of query builder text-mode
           // See https://github.com/finos/legend-studio/issues/319
         } else {
-          this.applicationStore.notifyWarning(
+          this.applicationStore.notificationService.notifyWarning(
             `Compilation failed: ${error.message}`,
           );
         }
@@ -503,15 +507,17 @@ export abstract class QueryBuilderState implements CommandRegistrar {
           this.graphManagerState.graph,
           { keepSourceInformation: true },
         )) as string;
-        this.applicationStore.notifySuccess('Compiled successfully');
+        this.applicationStore.notificationService.notifySuccess(
+          'Compiled successfully',
+        );
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof CompilationError) {
-          this.applicationStore.log.error(
+          this.applicationStore.logService.error(
             LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
             error,
           );
-          this.applicationStore.notifyWarning(
+          this.applicationStore.notificationService.notifyWarning(
             `Compilation failed: ${error.message}`,
           );
           const errorElementCoordinates = extractSourceInformationCoordinates(

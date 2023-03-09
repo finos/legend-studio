@@ -114,7 +114,7 @@ export class UpdateServiceQuerySetupStore {
     this.currentSnapshotService = undefined;
     this.groupWorkspaces = [];
     this.resetCurrentGroupWorkspace();
-    this.applicationStore.navigator.updateCurrentLocation(
+    this.applicationStore.navigationService.navigator.updateCurrentLocation(
       generateServiceQueryUpdaterSetupRoute(undefined, undefined, undefined),
     );
     this.currentProjectConfigurationStatus = undefined;
@@ -141,11 +141,11 @@ export class UpdateServiceQuerySetupStore {
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.initState.fail();
     }
   }
@@ -170,7 +170,7 @@ export class UpdateServiceQuerySetupStore {
       this.loadServicesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadServicesState.fail();
     }
   }
@@ -205,7 +205,7 @@ export class UpdateServiceQuerySetupStore {
       }
 
       if (!project || !serviceEntity) {
-        this.applicationStore.navigator.updateCurrentLocation(
+        this.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateServiceQueryUpdaterSetupRoute(
             undefined,
             undefined,
@@ -236,7 +236,7 @@ export class UpdateServiceQuerySetupStore {
         entity: serviceEntity,
       });
 
-      this.applicationStore.navigator.updateCurrentLocation(
+      this.applicationStore.navigationService.navigator.updateCurrentLocation(
         generateServiceQueryUpdaterSetupRoute(
           project.groupId,
           project.artifactId,
@@ -277,11 +277,11 @@ export class UpdateServiceQuerySetupStore {
       this.loadWorkspacesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadWorkspacesState.fail();
     }
   }
@@ -318,7 +318,7 @@ export class UpdateServiceQuerySetupStore {
         )) as PlainObject<Workspace>,
       );
 
-      this.applicationStore.notifySuccess(
+      this.applicationStore.notificationService.notifySuccess(
         `Workspace '${newGroupWorkspace.workspaceId}' is succesfully created`,
       );
 
@@ -340,11 +340,11 @@ export class UpdateServiceQuerySetupStore {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
+      this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.createWorkspaceState.reset();
     }

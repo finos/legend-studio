@@ -14,4 +14,26 @@
  * limitations under the License.
  */
 
-export const UNKNOWN_USER_ID = '(unknown)';
+import { action, makeObservable, observable } from 'mobx';
+import type { GenericLegendApplicationStore } from './ApplicationStore.js';
+
+const UNKNOWN_USER_ID = '(unknown)';
+
+export class IdentityService {
+  readonly applicationStore: GenericLegendApplicationStore;
+
+  currentUser = UNKNOWN_USER_ID;
+
+  constructor(applicationStore: GenericLegendApplicationStore) {
+    makeObservable(this, {
+      currentUser: observable,
+      setCurrentUser: action,
+    });
+
+    this.applicationStore = applicationStore;
+  }
+
+  setCurrentUser(val: string): void {
+    this.currentUser = val;
+  }
+}

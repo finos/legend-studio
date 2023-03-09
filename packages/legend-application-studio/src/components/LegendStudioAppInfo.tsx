@@ -161,7 +161,7 @@ export const LegendStudioAppInfo: React.FC<{
   const applicationStore = useLegendStudioApplicationStore();
   const config = applicationStore.config;
   const copyInfo = (): void => {
-    applicationStore
+    applicationStore.clipboardService
       .copyTextToClipboard(
         [
           `Environment: ${config.env}`,
@@ -177,7 +177,9 @@ export const LegendStudioAppInfo: React.FC<{
           .join('\n'),
       )
       .then(() =>
-        applicationStore.notifySuccess('Copied application info to clipboard'),
+        applicationStore.notificationService.notifySuccess(
+          'Copied application info to clipboard',
+        ),
       )
       .catch(applicationStore.alertUnhandledError);
   };

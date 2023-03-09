@@ -203,7 +203,7 @@ export abstract class ElementEditorState extends EditorState {
           error,
         ),
       );
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
         error,
       );
@@ -229,7 +229,7 @@ export abstract class ElementEditorState extends EditorState {
           error,
         ),
       );
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
         error,
       );

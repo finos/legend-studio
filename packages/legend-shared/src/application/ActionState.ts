@@ -24,7 +24,7 @@ enum ACTION_STATE {
 }
 
 export class ActionState {
-  state: ACTION_STATE;
+  private state: ACTION_STATE;
   private _message: string | undefined;
   private _messageFormatter: ((message: string) => string) | undefined;
 
@@ -69,6 +69,19 @@ export class ActionState {
     return this;
   }
 
+  sync(val: ActionState): void {
+    const data = val.exportData();
+    this.state = data.state;
+    this._message = data.message;
+  }
+
+  exportData(): { state: ACTION_STATE; message: string | undefined } {
+    return {
+      state: this.state,
+      message: this._message,
+    };
+  }
+
   get isInInitialState(): boolean {
     return this.state === ACTION_STATE.INITIAL;
   }
@@ -102,21 +115,25 @@ export class ActionState {
   }
 
   static create(): ActionState {
-    return makeObservable<ActionState, '_message'>(new ActionState(), {
-      state: observable,
-      _message: observable,
-      reset: action,
-      inProgress: action,
-      pass: action,
-      fail: action,
-      complete: action,
-      setMessage: action,
-      isInInitialState: computed,
-      isInProgress: computed,
-      hasFailed: computed,
-      hasSucceeded: computed,
-      hasCompleted: computed,
-      message: computed,
-    });
+    return makeObservable<ActionState, 'state' | '_message'>(
+      new ActionState(),
+      {
+        state: observable,
+        _message: observable,
+        reset: action,
+        inProgress: action,
+        pass: action,
+        fail: action,
+        complete: action,
+        setMessage: action,
+        sync: action,
+        isInInitialState: computed,
+        isInProgress: computed,
+        hasFailed: computed,
+        hasSucceeded: computed,
+        hasCompleted: computed,
+        message: computed,
+      },
+    );
   }
 }

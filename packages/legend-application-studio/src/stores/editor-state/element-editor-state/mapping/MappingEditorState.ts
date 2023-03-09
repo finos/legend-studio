@@ -835,7 +835,7 @@ export class MappingEditorState extends ElementEditorState {
     openInAdjacentTab: boolean,
   ): void {
     if (mappingElement instanceof AssociationImplementation) {
-      this.editorStore.applicationStore.notifyUnsupportedFeature(
+      this.editorStore.applicationStore.notificationService.notifyUnsupportedFeature(
         'Association mapping editor',
       );
       return;
@@ -1298,7 +1298,7 @@ export class MappingEditorState extends ElementEditorState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.warn(
+      this.editorStore.applicationStore.logService.warn(
         LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         `Can't locate error, redirecting to text mode`,
         error,
@@ -1462,7 +1462,7 @@ export class MappingEditorState extends ElementEditorState {
       this.editorStore.pluginManager.getApplicationPlugins(),
     );
     if (setImplementation instanceof OperationSetImplementation) {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead`,
       );
     }

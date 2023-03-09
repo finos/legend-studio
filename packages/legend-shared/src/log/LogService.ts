@@ -93,7 +93,7 @@ export abstract class LoggerPlugin extends AbstractPlugin {
   }
 }
 
-export class Log {
+export class LogService {
   private loggers: LoggerPlugin[] = [];
 
   registerPlugins(loggerPlugins: LoggerPlugin[]): void {

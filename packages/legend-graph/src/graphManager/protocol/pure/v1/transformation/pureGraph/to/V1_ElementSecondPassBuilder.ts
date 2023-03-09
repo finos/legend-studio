@@ -120,7 +120,7 @@ export class V1_ElementSecondPassBuilder
         if (this.context.options?.strict) {
           throw new GraphBuilderError(message);
         }
-        this.context.log.warn(LogEvent.create(message));
+        this.context.logService.warn(LogEvent.create(message));
       }
       uniqueStereotypes.add(stereotype);
       return new Stereotype(profile, stereotype);
@@ -138,7 +138,7 @@ export class V1_ElementSecondPassBuilder
         if (this.context.options?.strict) {
           throw new GraphBuilderError(message);
         }
-        this.context.log.warn(LogEvent.create(message));
+        this.context.logService.warn(LogEvent.create(message));
       }
       uniqueTags.add(tag);
       return new Tag(profile, tag);
@@ -172,7 +172,7 @@ export class V1_ElementSecondPassBuilder
         if (this.context.options?.strict) {
           throw new GraphBuilderError(message);
         }
-        this.context.log.warn(LogEvent.create(message));
+        this.context.logService.warn(LogEvent.create(message));
       }
       const _enum = new Enum(enumValue.value, enumeration);
       _enum.stereotypes = enumValue.stereotypes

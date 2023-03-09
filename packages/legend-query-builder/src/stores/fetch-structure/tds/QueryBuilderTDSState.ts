@@ -360,7 +360,7 @@ export class QueryBuilderTDSState
         });
       } catch (error) {
         assertErrorThrown(error);
-        this.queryBuilderState.applicationStore.log.error(
+        this.queryBuilderState.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
@@ -609,7 +609,7 @@ export class QueryBuilderTDSState
   }
 
   checkBeforeClearingColumns(onChange: () => void): void {
-    this.queryBuilderState.applicationStore.setActionAlertInfo({
+    this.queryBuilderState.applicationStore.alertService.setActionAlertInfo({
       message:
         'You will be clearing all projection columns. Do you still want to proceed?',
       type: ActionAlertType.CAUTION,
@@ -637,7 +637,7 @@ export class QueryBuilderTDSState
       // but we make the assumption that if there is no projection column, there should
       // not be any post-filter at all
     ) {
-      this.queryBuilderState.applicationStore.setActionAlertInfo({
+      this.queryBuilderState.applicationStore.alertService.setActionAlertInfo({
         message:
           this.showPostFilterPanel && this.postFilterState.nodes.size > 0
             ? 'With graph-fetch mode, post filter is not supported. Current projection columns and post filters will be lost when switching to the graph-fetch mode. Do you still want to proceed?'

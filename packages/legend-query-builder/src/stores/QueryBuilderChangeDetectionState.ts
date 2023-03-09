@@ -143,7 +143,7 @@ export class QueryBuilderChangeDetectionState {
 
   alertUnsavedChanges(onProceed: () => void): void {
     if (this.hasChanged) {
-      this.querybuilderState.applicationStore.setActionAlertInfo({
+      this.querybuilderState.applicationStore.alertService.setActionAlertInfo({
         message:
           'Unsaved changes to your query will be lost if you continue. Do you still want to proceed?',
         type: ActionAlertType.CAUTION,

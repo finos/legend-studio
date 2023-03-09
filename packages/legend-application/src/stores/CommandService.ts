@@ -55,7 +55,7 @@ export type Command = {
   action?: (args?: CommandArguments) => void;
 };
 
-export class CommandCenter {
+export class CommandService {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly commandRegistry = new Map<string, Command>();
 
@@ -72,7 +72,7 @@ export class CommandCenter {
   registerCommand(command: Command): void {
     const commandKey = command.key;
     if (this.commandRegistry.has(commandKey)) {
-      this.applicationStore.log.warn(
+      this.applicationStore.logService.warn(
         LogEvent.create(
           APPLICATION_EVENT.APPLICATION_COMMAND_CENTER_REGISTRATION__FAILURE,
         ),

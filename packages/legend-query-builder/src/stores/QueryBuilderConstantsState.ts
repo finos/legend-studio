@@ -77,7 +77,9 @@ export class QueryBuilderConstantExpressionState implements Hashable {
         this.setValueSpec(valSpec);
       } catch (error) {
         assertErrorThrown(error);
-        this.queryBuilderState.applicationStore.notifyError(error.message);
+        this.queryBuilderState.applicationStore.notificationService.notifyError(
+          error.message,
+        );
       }
     }
   }

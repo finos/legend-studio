@@ -24,7 +24,7 @@ import {
 import type {
   EventNotifierPlugin,
   EventNotifierPluginManager,
-} from '../stores/EventService.js';
+} from '../stores/event/EventService.js';
 import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';
 import type {
   TelemetryServicePlugin,

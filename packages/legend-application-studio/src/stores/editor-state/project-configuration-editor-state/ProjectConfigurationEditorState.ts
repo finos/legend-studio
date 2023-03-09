@@ -190,11 +190,11 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.associatedProjectsAndVersionsFetched = true;
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Can't get project dependencies data. Error:\n${error.message}`,
       );
     } finally {
@@ -235,11 +235,11 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.updatingConfigurationState.complete();
     }
@@ -257,11 +257,13 @@ export class ProjectConfigurationEditorState extends EditorState {
         yield flowResult(this.updateProjectConfiguration(updateCommand));
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
-        this.editorStore.applicationStore.notifyError(error);
+        this.editorStore.applicationStore.notificationService.notifyError(
+          error,
+        );
       }
     }
   }
@@ -270,7 +272,7 @@ export class ProjectConfigurationEditorState extends EditorState {
   // See https://github.com/finos/legend-studio/issues/952
   *updateConfigs(): GeneratorFn<void> {
     this.updatingConfigurationState.inProgress();
-    this.editorStore.applicationStore.setBlockingAlert({
+    this.editorStore.applicationStore.alertService.setBlockingAlert({
       message: `Updating project configuration...`,
       prompt: `Please do not reload the application`,
       showLoading: true,
@@ -313,14 +315,16 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.updatingConfigurationState.complete();
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
   }
 
@@ -332,11 +336,11 @@ export class ProjectConfigurationEditorState extends EditorState {
         );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 }

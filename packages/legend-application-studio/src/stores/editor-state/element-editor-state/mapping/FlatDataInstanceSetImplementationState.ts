@@ -96,7 +96,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
@@ -129,7 +129,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
           this.clearErrors();
         } catch (error) {
           assertErrorThrown(error);
-          this.editorStore.applicationStore.log.error(
+          this.editorStore.applicationStore.logService.error(
             LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
             error,
           );
@@ -234,7 +234,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
         });
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );

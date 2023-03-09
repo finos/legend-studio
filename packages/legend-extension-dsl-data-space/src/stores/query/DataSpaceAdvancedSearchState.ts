@@ -145,7 +145,7 @@ export class DataSpaceAdvancedSearchState {
     } catch (error) {
       assertErrorThrown(error);
       this.loadDataSpacesState.fail();
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     }
   }
 
@@ -203,7 +203,7 @@ export class DataSpaceAdvancedSearchState {
     } catch (error) {
       assertErrorThrown(error);
       this.loadDataSpaceState.fail();
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.loadDataSpaceState.setMessage(undefined);
     }
@@ -211,7 +211,7 @@ export class DataSpaceAdvancedSearchState {
 
   *proceedToCreateQuery(_class?: Class): GeneratorFn<void> {
     if (this.dataSpaceViewerState) {
-      this.applicationStore.navigator.goToLocation(
+      this.applicationStore.navigationService.navigator.goToLocation(
         generateDataSpaceQueryCreatorRoute(
           this.dataSpaceViewerState.groupId,
           this.dataSpaceViewerState.artifactId,

@@ -21,7 +21,7 @@ import {
 } from '../../../../graph/MetaModelConst.js';
 import {
   type Clazz,
-  type Log,
+  type LogService,
   type PlainObject,
   type ServerClientConfig,
   ActionState,
@@ -450,11 +450,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   static readonly PROD_PROTOCOL_VERSION = undefined;
 
   engine: V1_Engine;
-  graphBuilderExtensions: V1_GraphBuilderExtensions;
+  readonly graphBuilderExtensions: V1_GraphBuilderExtensions;
 
-  constructor(pluginManager: GraphManagerPluginManager, log: Log) {
-    super(pluginManager, log);
-    this.engine = new V1_Engine({}, log);
+  constructor(
+    pluginManager: GraphManagerPluginManager,
+    logService: LogService,
+  ) {
+    super(pluginManager, logService);
+    this.engine = new V1_Engine({}, logService);
 
     // setup plugins
     this.graphBuilderExtensions = new V1_GraphBuilderExtensions(
@@ -489,7 +492,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       tracerService?: TracerService | undefined;
     },
   ): Promise<void> {
-    this.engine = new V1_Engine(config.clientConfig, this.log);
+    this.engine = new V1_Engine(config.clientConfig, this.logService);
     this.engine
       .getEngineServerClient()
       .setTracerService(options?.tracerService ?? new TracerService());
@@ -575,7 +578,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     } catch (error) {
       assertErrorThrown(error);
       buildState.fail();
-      this.log.error(
+      this.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
@@ -664,7 +667,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       };
     } catch (error) {
       assertErrorThrown(error);
-      this.log.error(
+      this.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
@@ -747,7 +750,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       };
     } catch (error) {
       assertErrorThrown(error);
-      this.log.error(
+      this.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
@@ -829,7 +832,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       };
     } catch (error) {
       assertErrorThrown(error);
-      this.log.error(
+      this.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
@@ -914,7 +917,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       };
     } catch (error) {
       assertErrorThrown(error);
-      this.log.error(
+      this.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
@@ -1025,7 +1028,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graph,
       currentSubGraph,
       this.graphBuilderExtensions,
-      this.log,
+      this.logService,
       options,
     )
       .withElement(element)
@@ -1560,7 +1563,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const grammarToJson = await this.engine.pureModelContextDataToPureCode(
       graphData,
     );
-    this.log.info(
+    this.logService.info(
       LogEvent.create(
         GRAPH_MANAGER_EVENT.TRANSFORM_GRAPH_META_MODEL_TO_GRAMMAR__SUCCESS,
       ),
@@ -1579,7 +1582,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const grammarToJson = await this.engine.pureModelContextDataToPureCode(
       await this.entitiesToPureModelContextData(entities),
     );
-    this.log.info(
+    this.logService.info(
       LogEvent.create(
         GRAPH_MANAGER_EVENT.TRANSFORM_GRAPH_META_MODEL_TO_GRAMMAR__SUCCESS,
       ),
@@ -1985,7 +1988,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         graph,
         graph,
         this.graphBuilderExtensions,
-        this.log,
+        this.logService,
       ).build(),
     );
   }
@@ -2013,7 +2016,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           graph,
           graph,
           this.graphBuilderExtensions,
-          this.log,
+          this.logService,
         ).build(),
       ),
     );
@@ -2462,7 +2465,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         graph,
         graph,
         this.graphBuilderExtensions,
-        this.log,
+        this.logService,
       ).build(),
     );
   }
@@ -3093,7 +3096,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         keepSourceInformation: options?.keepSourceInformation,
       }),
     );
-    this.log.info(
+    this.logService.info(
       LogEvent.create(
         GRAPH_MANAGER_EVENT.TRANSFORM_GRAPH_META_MODEL_TO_PROTOCOL__SUCCESS,
       ),
@@ -3114,7 +3117,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ...dependencyManager.allOwnElements,
       ...generatedModel.allOwnElements,
     ].map((element) => this.elementToProtocol(element));
-    this.log.info(
+    this.logService.info(
       LogEvent.create(
         GRAPH_MANAGER_EVENT.COLLECT_GRAPH_COMPILE_CONTEXT__SUCCESS,
       ),

@@ -159,7 +159,7 @@ const updateFunctionName = (
     );
   } catch (error) {
     assertErrorThrown(error);
-    applicationStore.notifyError(error);
+    applicationStore.notificationService.notifyError(error);
   }
 };
 

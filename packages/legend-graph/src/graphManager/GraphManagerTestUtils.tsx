@@ -19,7 +19,7 @@ import {
   type LoggerPlugin,
   type TEMPORARY__JestMatcher,
   type PlainObject,
-  Log,
+  LogService,
   AbstractPluginManager,
   promisify,
   createMock,
@@ -80,11 +80,11 @@ export class TEST__GraphManagerPluginManager
 
 export const TEST__getTestGraphManagerState = (
   pluginManager?: GraphManagerPluginManager,
-  log?: Log,
+  logService?: LogService,
 ): GraphManagerState =>
   new GraphManagerState(
     pluginManager ?? new TEST__GraphManagerPluginManager(),
-    log ?? new Log(),
+    logService ?? new LogService(),
   );
 
 export const TEST__provideMockedGraphManagerState = (customization?: {
@@ -105,7 +105,7 @@ export const TEST__GraphManagerStateProvider: React.FC<{
 }> = ({ children }) => (
   <GraphManagerStateProvider
     pluginManager={new TEST__GraphManagerPluginManager()}
-    log={new Log()}
+    logService={new LogService()}
   >
     {children}
   </GraphManagerStateProvider>

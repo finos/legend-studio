@@ -143,7 +143,9 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
                 value={selectedDataSpaceOption}
                 placeholder="Search for data space..."
                 escapeClearsValue={true}
-                darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+                darkMode={
+                  !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+                }
                 formatOptionLabel={formatDataSpaceOptionLabel}
               />
               <button

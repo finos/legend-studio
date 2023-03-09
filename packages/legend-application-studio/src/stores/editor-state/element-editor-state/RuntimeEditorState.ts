@@ -412,7 +412,9 @@ export abstract class IdentifiedConnectionsEditorTabState extends RuntimeEditorT
         newConnection = this.createDefaultConnection();
       } catch (error) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.notifyWarning(error.message);
+        this.editorStore.applicationStore.notificationService.notifyWarning(
+          error.message,
+        );
         return;
       }
     }

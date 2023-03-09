@@ -3377,7 +3377,7 @@ export class DiagramRenderer {
             cursorY +
             (classView.hideStereotypes
               ? 0
-              : _class.stereotypes.length * this.fontSize);
+              : _class.stereotypes.length * this.lineHeight);
 
           // Check hover class name
           const classNameWidth = this.computeClassNameWidth(classView);
@@ -3390,7 +3390,6 @@ export class DiagramRenderer {
                   cursorY,
                 ),
               ),
-              // cursorY
               new Rectangle(
                 classNameWidth,
                 this.lineHeight, // class name takes 1 line
@@ -3411,8 +3410,10 @@ export class DiagramRenderer {
             cursorY +
             (classView.hideTaggedValues
               ? 0
-              : _class.taggedValues.length * this.fontSize);
-          cursorY += this.classViewSpaceY;
+              : _class.taggedValues.length * this.lineHeight);
+
+          // 2 spaces: 1 space (below for class name) and 1 space (above) for properties block
+          cursorY += this.classViewSpaceY * 2;
 
           // Check hover class property
           for (const property of getAllOwnClassProperties(_class)) {
@@ -3437,7 +3438,7 @@ export class DiagramRenderer {
                       0,
                       true,
                     ) * this.zoom,
-                    this.fontSize * this.zoom, // property takes 1 line
+                    this.lineHeight * this.zoom, // property takes 1 line
                   ),
                 ).contains(
                   eventPointInCanvasCoordinate.x,
@@ -3446,7 +3447,7 @@ export class DiagramRenderer {
               ) {
                 this.setMouseOverClassProperty(property);
               }
-              cursorY = cursorY + this.fontSize;
+              cursorY = cursorY + this.lineHeight;
             }
           }
           break;

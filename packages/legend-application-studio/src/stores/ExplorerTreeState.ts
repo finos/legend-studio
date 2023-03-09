@@ -47,6 +47,7 @@ import {
   PrimitiveType,
   getElementRootPackage,
   isDependencyElement,
+  type Class,
 } from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 
@@ -58,7 +59,10 @@ export enum ExplorerTreeRootPackageLabel {
 }
 
 export class ExplorerTreeState {
-  editorStore: EditorStore;
+  readonly editorStore: EditorStore;
+
+  readonly buildState = ActionState.create();
+
   treeData?: TreeData<PackageTreeNodeData> | undefined;
   generationTreeData?: TreeData<PackageTreeNodeData> | undefined;
   systemTreeData?: TreeData<PackageTreeNodeData> | undefined;
@@ -66,8 +70,9 @@ export class ExplorerTreeState {
   dependencyTreeData?: TreeData<PackageTreeNodeData> | undefined;
   selectedNode?: PackageTreeNodeData | undefined;
   fileGenerationTreeData?: TreeData<FileSystemTreeNodeData> | undefined;
+
   elementToRename?: PackageableElement | undefined;
-  buildState = ActionState.create();
+  classToGenerateSampleData?: Class | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -76,9 +81,10 @@ export class ExplorerTreeState {
       systemTreeData: observable.ref,
       legalTreeData: observable.ref,
       dependencyTreeData: observable.ref,
-      selectedNode: observable.ref,
       fileGenerationTreeData: observable.ref,
-      elementToRename: observable.ref,
+      selectedNode: observable.ref,
+      elementToRename: observable,
+      classToGenerateSampleData: observable,
       setTreeData: action,
       setGenerationTreeData: action,
       setSystemTreeData: action,
@@ -87,6 +93,7 @@ export class ExplorerTreeState {
       setFileGenerationTreeData: action,
       setSelectedNode: action,
       setElementToRename: action,
+      setClassToGenerateSampleData: action,
       build: action,
       buildImmutableModelTrees: action,
       buildTreeInTextMode: action,
@@ -117,7 +124,7 @@ export class ExplorerTreeState {
         treeData = this.treeData;
     }
     if (!treeData || !this.buildState.hasCompleted) {
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
         `Can't get explorer tree data for root package '${rootPackageName}' as it hasn't been initialized`,
       );
@@ -158,6 +165,9 @@ export class ExplorerTreeState {
   }
   setElementToRename(val: PackageableElement | undefined): void {
     this.elementToRename = val;
+  }
+  setClassToGenerateSampleData(val: Class | undefined): void {
+    this.classToGenerateSampleData = val;
   }
 
   setSelectedNode(node: PackageTreeNodeData | undefined): void {
@@ -524,7 +534,7 @@ export class ExplorerTreeState {
       opened = true;
     }
     if (!opened) {
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.PACKAGE_TREE_BUILDER_FAILURE),
         `Can't open package tree node for element '${element.path}' with root package '${rootPackageName}'`,
       );

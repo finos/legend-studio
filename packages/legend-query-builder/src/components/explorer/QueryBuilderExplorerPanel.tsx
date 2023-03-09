@@ -488,7 +488,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
           !(
             node instanceof QueryBuilderExplorerTreePropertyNodeData ||
             node instanceof QueryBuilderExplorerTreeRootNodeData
-          ) || applicationStore.showBackdrop
+          ) || applicationStore.layoutService.showBackdrop
         }
         menuProps={{ elevation: 7 }}
         onOpen={onContextMenuOpen}
@@ -852,7 +852,7 @@ export const QueryBuilderExplorerPanel = observer(
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER}
         className={clsx('panel query-builder__explorer', {
-          backdrop__element: applicationStore.showBackdrop,
+          backdrop__element: applicationStore.layoutService.showBackdrop,
         })}
       >
         <div className="panel__header">

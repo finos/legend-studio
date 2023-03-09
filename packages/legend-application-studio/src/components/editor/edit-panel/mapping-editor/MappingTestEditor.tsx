@@ -138,7 +138,7 @@ const MappingTestQueryEditor = observer(
                         await flowResult(
                           testState.queryState.updateLamba(rawLambda),
                         );
-                        applicationStore.notifySuccess(
+                        applicationStore.notificationService.notifySuccess(
                           `Mapping test query is updated`,
                         );
                         embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
@@ -146,7 +146,7 @@ const MappingTestQueryEditor = observer(
                         );
                       } catch (error) {
                         assertErrorThrown(error);
-                        applicationStore.notifyError(
+                        applicationStore.notificationService.notifyError(
                           `Can't save query: ${error.message}`,
                         );
                       }
@@ -198,7 +198,7 @@ const MappingTestQueryEditor = observer(
 
         // Attempt to generate data for input data panel as we pick the class mapping
         if (setImplementation) {
-          applicationStore.setActionAlertInfo({
+          applicationStore.alertService.setActionAlertInfo({
             message: 'Mapping test input data is already set',
             prompt: 'Do you want to regenerate the input data?',
             type: ActionAlertType.CAUTION,

@@ -152,7 +152,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
     this.depotServerClient = depotServerClient;
     this.graphManagerState = new BasicGraphManagerState(
       applicationStore.pluginManager,
-      applicationStore.log,
+      applicationStore.logService,
     );
     this.pluginManager = applicationStore.pluginManager;
 
@@ -176,7 +176,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
   }
 
   registerCommands(): void {
-    this.applicationStore.commandCenter.registerCommand({
+    this.applicationStore.commandService.registerCommand({
       key: LEGEND_TAXONOMY_COMMAND_KEY.SEARCH_TAXONOMY,
       action: () => this.searchTaxonomyNodeCommandState.open(),
     });
@@ -184,7 +184,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
 
   deregisterCommands(): void {
     [LEGEND_TAXONOMY_COMMAND_KEY.SEARCH_TAXONOMY].forEach((key) =>
-      this.applicationStore.commandCenter.deregisterCommand(key),
+      this.applicationStore.commandService.deregisterCommand(key),
     );
   }
 
@@ -195,7 +195,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
       if (gav && dataSpacePath) {
         this.initialDataSpaceId = `${gav}${DATA_SPACE_ID_DELIMITER}${dataSpacePath}`;
       }
-      this.applicationStore.navigator.updateCurrentLocation(
+      this.applicationStore.navigationService.navigator.updateCurrentLocation(
         generateExploreTaxonomyTreeRoute(
           this.applicationStore.config.currentTaxonomyTreeOption.key,
         ),
@@ -254,7 +254,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
     for (const taxonomyNodeData of taxonomyData) {
       if (uniqueNodeIds.has(taxonomyNodeData.guid)) {
         isTaxonomyTreeDataValid = false;
-        this.applicationStore.log.warn(
+        this.applicationStore.logService.warn(
           LogEvent.create(
             LEGEND_TAXONOMY_APP_EVENT.TAXONOMY_DATA_CHECK__FAILURE,
           ),
@@ -264,7 +264,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
       uniqueNodeIds.add(taxonomyNodeData.guid);
       if (uniquePackages.has(taxonomyNodeData.package)) {
         isTaxonomyTreeDataValid = false;
-        this.applicationStore.log.warn(
+        this.applicationStore.logService.warn(
           LogEvent.create(
             LEGEND_TAXONOMY_APP_EVENT.TAXONOMY_DATA_CHECK__FAILURE,
           ),
@@ -274,7 +274,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
       uniquePackages.add(taxonomyNodeData.package);
     }
     if (!isTaxonomyTreeDataValid) {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Found duplication in taxonomy data: taxonomy accuracy might be affected`,
       );
     }
@@ -451,7 +451,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.initState.fail();
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     }
   }
 }

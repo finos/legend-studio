@@ -88,7 +88,7 @@ export abstract class GeneratedFileStructureState {
     output.forEach((entry) => {
       entry.cleanFileName(rootFolder);
       if (generationResultIndex.has(entry.fileName)) {
-        this.editorStore.applicationStore.log.warn(
+        this.editorStore.applicationStore.logService.warn(
           LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
           'Found 2 generation outputs with same path',
         );
@@ -244,11 +244,11 @@ export class FileGenerationState extends GeneratedFileStructureState {
       assertErrorThrown(error);
       this.fileSystemState.selectedNode = undefined;
       this.processGenerationResult([]);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.generatingAction.complete();
     }

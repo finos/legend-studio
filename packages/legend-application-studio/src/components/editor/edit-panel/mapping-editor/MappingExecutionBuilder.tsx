@@ -215,7 +215,7 @@ const MappingExecutionQueryEditor = observer(
                         await flowResult(
                           executionState.queryState.updateLamba(rawLambda),
                         );
-                        applicationStore.notifySuccess(
+                        applicationStore.notificationService.notifySuccess(
                           `Mapping execution query is updated`,
                         );
                         embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
@@ -223,7 +223,7 @@ const MappingExecutionQueryEditor = observer(
                         );
                       } catch (error) {
                         assertErrorThrown(error);
-                        applicationStore.notifyError(
+                        applicationStore.notificationService.notifyError(
                           `Can't save query: ${error.message}`,
                         );
                       }
@@ -288,7 +288,7 @@ const MappingExecutionQueryEditor = observer(
             MappingExecutionEmptyInputDataState
           ) {
             if (setImplementation instanceof OperationSetImplementation) {
-              applicationStore.notifyWarning(
+              applicationStore.notificationService.notifyWarning(
                 `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead`,
               );
             } else {
@@ -301,7 +301,7 @@ const MappingExecutionQueryEditor = observer(
               );
             }
           } else {
-            applicationStore.setActionAlertInfo({
+            applicationStore.alertService.setActionAlertInfo({
               message: 'Mapping execution input data is already set',
               prompt: 'Do you want to regenerate the input data?',
               type: ActionAlertType.CAUTION,

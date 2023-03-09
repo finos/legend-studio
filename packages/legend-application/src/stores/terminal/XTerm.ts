@@ -267,7 +267,7 @@ export class XTerm extends Terminal {
           if (!this.commandRegistry.has(command)) {
             this.commandRegistry.set(command, commandConfig);
           } else {
-            this.applicationStore.log.warn(
+            this.applicationStore.logService.warn(
               LogEvent.create(
                 APPLICATION_EVENT.APPLICATION_TERMINAL_COMMAND_CONFIGURATION_CHECK__FAILURE,
               ),
@@ -905,18 +905,18 @@ export class XTerm extends Terminal {
 
   copy(): void {
     if (!this.instance.hasSelection()) {
-      this.applicationStore.notifyWarning(
+      this.applicationStore.notificationService.notifyWarning(
         `Ther terminal has no selection to copy`,
       );
       return;
     }
-    this.applicationStore
+    this.applicationStore.clipboardService
       .copyTextToClipboard(this.instance.getSelection())
       .catch(this.applicationStore.alertUnhandledError);
   }
 
   copyAll(): void {
-    this.applicationStore
+    this.applicationStore.clipboardService
       .copyTextToClipboard(this.getContent())
       .catch(this.applicationStore.alertUnhandledError);
   }

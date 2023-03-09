@@ -69,7 +69,7 @@ export class StandaloneDataSpaceViewerStore {
     this.depotServerClient = depotServerClient;
     this.graphManagerState = new BasicGraphManagerState(
       applicationStore.pluginManager,
-      applicationStore.log,
+      applicationStore.logService,
     );
     this.pluginManager = applicationStore.pluginManager;
   }
@@ -147,7 +147,7 @@ export class StandaloneDataSpaceViewerStore {
     } catch (error) {
       assertErrorThrown(error);
       this.initState.fail();
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.initState.setMessage(undefined);
     }
@@ -155,7 +155,7 @@ export class StandaloneDataSpaceViewerStore {
 
   queryDataSpace(classPath?: string | undefined): void {
     if (this.viewerState) {
-      this.applicationStore.navigator.visitAddress(
+      this.applicationStore.navigationService.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
           this.applicationStore.config.queryUrl,
           this.viewerState.groupId,

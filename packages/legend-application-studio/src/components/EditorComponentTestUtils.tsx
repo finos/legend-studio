@@ -76,7 +76,7 @@ import {
   Router,
   createMemoryHistory,
   Route,
-  type GenericLegendApplicationStore,
+  type NavigationService,
 } from '@finos/legend-application';
 import { TEST__getLegendStudioApplicationConfig } from '../stores/EditorStoreTestUtils.js';
 import type { LegendStudioApplicationStore } from '../stores/LegendStudioBaseStore.js';
@@ -350,7 +350,8 @@ export const TEST__setUpEditor = async (
   // TODO: this is not the proper way to do this, we prefer to mock and inject this when we
   // create the editor store, let's consider how we clean this up in the future
   (
-    MOCK__editorStore.applicationStore as Writable<GenericLegendApplicationStore>
+    MOCK__editorStore.applicationStore
+      .navigationService as Writable<NavigationService>
   ).navigator = navigator;
 
   const renderResult = render(

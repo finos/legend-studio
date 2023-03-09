@@ -308,7 +308,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
         ) {
           node.condition.setValue(item.variable);
         } else {
-          applicationStore.notifyWarning(
+          applicationStore.notificationService.notifyWarning(
             `Incompatible parameter type ${parameterType?.name}. ${parameterType?.name} is not compatible with type ${conditionValueType?.name}.`,
           );
         }
@@ -508,7 +508,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
             );
           } catch (error) {
             assertErrorThrown(error);
-            applicationStore.notifyWarning(error.message);
+            applicationStore.notificationService.notifyWarning(error.message);
             return;
           }
           if (node instanceof QueryBuilderPostFilterTreeGroupNodeData) {
@@ -842,7 +842,7 @@ const QueryBuilderPostFilterPanelContent = observer(
           );
         } catch (error) {
           assertErrorThrown(error);
-          applicationStore.notifyError(error.message);
+          applicationStore.notificationService.notifyError(error.message);
           return;
         }
         // NOTE: unfocus the current node when DnD a new node to the tree

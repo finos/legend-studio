@@ -259,11 +259,11 @@ export class DatabaseBuilderState {
       this.setTreeData(treeData);
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isBuildingDatabase = false;
     }
@@ -318,11 +318,11 @@ export class DatabaseBuilderState {
       this.setTreeData({ ...treeData });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isBuildingDatabase = false;
     }
@@ -359,11 +359,11 @@ export class DatabaseBuilderState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isBuildingDatabase = false;
     }
@@ -481,11 +481,11 @@ export class DatabaseBuilderState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isBuildingDatabase = false;
     }
@@ -572,7 +572,7 @@ export class DatabaseBuilderState {
       if (this.treeData) {
         const schemas = this.getSchemasFromTreeNode(this.treeData);
         this.updateDatabase(currentDatabase, database, schemas);
-        this.editorStore.applicationStore.notifySuccess(
+        this.editorStore.applicationStore.notificationService.notifySuccess(
           `Database successfully '${isUpdating ? 'updated' : 'created'}. ${
             !isUpdating ? 'Recompiling...' : ''
           }`,
@@ -588,11 +588,11 @@ export class DatabaseBuilderState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isSavingDatabase = false;
     }

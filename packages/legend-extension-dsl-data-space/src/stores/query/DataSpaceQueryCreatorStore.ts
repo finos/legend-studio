@@ -124,7 +124,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       ),
       (dataSpaceInfo: DataSpaceInfo) => {
         if (dataSpaceInfo.defaultExecutionContext) {
-          this.applicationStore.navigator.goToLocation(
+          this.applicationStore.navigationService.navigator.goToLocation(
             generateDataSpaceQueryCreatorRoute(
               dataSpaceInfo.groupId,
               dataSpaceInfo.artifactId,
@@ -136,7 +136,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
             ),
           );
         } else {
-          this.applicationStore.notifyWarning(
+          this.applicationStore.notificationService.notifyWarning(
             `Can't switch data space: default execution context not specified`,
           );
         }
@@ -147,7 +147,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
           queryBuilderState.runtimeValue,
           RuntimePointer,
         );
-        this.applicationStore.navigator.updateCurrentLocation(
+        this.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateDataSpaceQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -164,7 +164,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       },
       (runtimeValue: Runtime) => {
         const runtimePointer = guaranteeType(runtimeValue, RuntimePointer);
-        queryBuilderState.applicationStore.navigator.updateCurrentLocation(
+        queryBuilderState.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateDataSpaceQueryCreatorRoute(
             queryBuilderState.groupId,
             queryBuilderState.artifactId,
@@ -185,7 +185,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
           queryBuilderState.runtimeValue,
           RuntimePointer,
         );
-        queryBuilderState.applicationStore.navigator.updateCurrentLocation(
+        queryBuilderState.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateDataSpaceQueryCreatorRoute(
             queryBuilderState.groupId,
             queryBuilderState.artifactId,

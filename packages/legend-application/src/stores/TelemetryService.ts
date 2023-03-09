@@ -19,6 +19,7 @@ import {
   type AbstractPluginManager,
   type PlainObject,
 } from '@finos/legend-shared';
+import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 
 export type TelemetryData = PlainObject;
 
@@ -66,13 +67,26 @@ export abstract class TelemetryServicePlugin extends AbstractPlugin {
 }
 
 export class TelemetryService {
+  readonly applicationStore: GenericLegendApplicationStore;
   private plugins: TelemetryServicePlugin[] = [];
+
+  constructor(applicationStore: GenericLegendApplicationStore) {
+    this.applicationStore = applicationStore;
+  }
 
   registerPlugins(plugins: TelemetryServicePlugin[]): void {
     this.plugins = plugins;
   }
 
-  setup(config: ApplicationTelemetryConfigData): void {
+  setup(): void {
+    const config = {
+      userId: this.applicationStore.identityService.currentUser,
+      appName: this.applicationStore.config.appName,
+      appEnv: this.applicationStore.config.env,
+      appVersion: this.applicationStore.config.appVersion,
+      appSessionId: this.applicationStore.uuid,
+      appStartTime: this.applicationStore.timeService.timestamp,
+    };
     this.plugins.forEach((plugin) => plugin.setup(config));
   }
 

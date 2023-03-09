@@ -258,7 +258,9 @@ export const QueryBuilder = observer(
     );
     const openQueryTutorial = (): void => {
       if (queryDocEntry?.url) {
-        applicationStore.navigator.visitAddress(queryDocEntry.url);
+        applicationStore.navigationService.navigator.visitAddress(
+          queryDocEntry.url,
+        );
       }
     };
     const toggleShowFunctionPanel = (): void => {

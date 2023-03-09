@@ -82,7 +82,7 @@ export class EditExistingQuerySetupStore extends BaseQuerySetupStore {
         this.currentQueryInfo = queryInfo;
       } catch (error) {
         assertErrorThrown(error);
-        this.applicationStore.notifyError(error);
+        this.applicationStore.notificationService.notifyError(error);
       } finally {
         this.loadQueryState.reset();
       }
@@ -109,7 +109,7 @@ export class EditExistingQuerySetupStore extends BaseQuerySetupStore {
       this.loadQueriesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
+      this.applicationStore.notificationService.notifyError(error);
       this.loadQueriesState.fail();
     }
   }

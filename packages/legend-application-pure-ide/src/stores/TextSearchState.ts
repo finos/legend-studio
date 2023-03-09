@@ -99,6 +99,10 @@ export class TextSearchState {
     this.searchInput?.focus();
   }
 
+  select(): void {
+    this.searchInput?.select();
+  }
+
   *search(): GeneratorFn<void> {
     if (this.loadState.isInProgress) {
       return;
@@ -116,7 +120,7 @@ export class TextSearchState {
       this.loadState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       this.loadState.fail();
     }
   }

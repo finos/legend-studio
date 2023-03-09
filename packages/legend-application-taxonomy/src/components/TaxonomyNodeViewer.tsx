@@ -82,9 +82,9 @@ const TaxonomyNodeDataSpaceItem = observer(
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     const copyLink = (): void => {
-      applicationStore
+      applicationStore.clipboardService
         .copyTextToClipboard(
-          applicationStore.navigator.generateAddress(
+          applicationStore.navigationService.navigator.generateAddress(
             generateExploreTaxonomyTreeNodeDataSpaceRoute(
               applicationStore.config.currentTaxonomyTreeOption.key,
               taxonomyNodeViewerState.taxonomyNode.id,
@@ -98,7 +98,9 @@ const TaxonomyNodeDataSpaceItem = observer(
           ),
         )
         .then(() =>
-          applicationStore.notifySuccess('Copied data space link to clipboard'),
+          applicationStore.notificationService.notifySuccess(
+            'Copied data space link to clipboard',
+          ),
         )
         .catch(applicationStore.alertUnhandledError);
     };
@@ -205,8 +207,8 @@ const TaxonomyNodeDataSpaceViewer = observer(
     const queryDataSpace = (): void =>
       nodeViewerState.queryDataSpace(undefined);
     const viewDataSpace = (): void =>
-      applicationStore.navigator.visitAddress(
-        applicationStore.navigator.generateAddress(
+      applicationStore.navigationService.navigator.visitAddress(
+        applicationStore.navigationService.navigator.generateAddress(
           generateStandaloneDataSpaceViewerRoute(
             generateGAVCoordinates(
               dataSpaceViewerState.groupId,

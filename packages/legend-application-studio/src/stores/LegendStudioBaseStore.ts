@@ -92,18 +92,23 @@ export class LegendStudioBaseStore {
 
   *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
-      this.applicationStore.notifyIllegalState('Base store is re-initialized');
+      this.applicationStore.notificationService.notifyIllegalState(
+        'Base store is re-initialized',
+      );
       return;
     }
     this.initState.inProgress();
 
     // authorize SDLC, unless navigation location match SDLC-bypassed patterns
     if (
-      !matchPath(this.applicationStore.navigator.getCurrentLocation(), [
-        // TODO: we might want to consider making this extensible
-        LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
-        LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
-      ])
+      !matchPath(
+        this.applicationStore.navigationService.navigator.getCurrentLocation(),
+        [
+          // TODO: we might want to consider making this extensible
+          LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
+          LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+        ],
+      )
     ) {
       // setup SDLC server client
       yield flowResult(this.initializeSDLCServerClient());
@@ -113,20 +118,22 @@ export class LegendStudioBaseStore {
           (yield this.sdlcServerClient.getCurrentUser()) as PlainObject<User>,
         );
         this.sdlcServerClient.setCurrentUser(currentUser);
-        this.applicationStore.setCurrentUser(currentUser.userId);
+        this.applicationStore.identityService.setCurrentUser(
+          currentUser.userId,
+        );
       } catch (error) {
         assertErrorThrown(error);
-        this.applicationStore.log.error(
+        this.applicationStore.logService.error(
           LogEvent.create(
             APPLICATION_EVENT.APPLICATION_IDENTITY_AUTO_FETCH__FAILURE,
           ),
           error,
         );
-        this.applicationStore.notifyWarning(error.message);
+        this.applicationStore.notificationService.notifyWarning(error.message);
       }
 
       // setup telemetry service
-      this.applicationStore.setupTelemetryService();
+      this.applicationStore.telemetryService.setup();
     } else {
       this.isSDLCAuthorized = undefined;
     }
@@ -156,10 +163,10 @@ export class LegendStudioBaseStore {
       this.isSDLCAuthorized =
         (yield this.sdlcServerClient.isAuthorized()) as boolean;
       if (!this.isSDLCAuthorized) {
-        this.applicationStore.navigator.goToAddress(
+        this.applicationStore.navigationService.navigator.goToAddress(
           SDLCServerClient.authorizeCallbackUrl(
             this.applicationStore.config.sdlcServerUrl,
-            this.applicationStore.navigator.getCurrentAddress(),
+            this.applicationStore.navigationService.navigator.getCurrentAddress(),
           ),
         );
       } else {
@@ -169,7 +176,7 @@ export class LegendStudioBaseStore {
         this.SDLCServerTermsOfServicesUrlsToView =
           (yield this.sdlcServerClient.hasAcceptedTermsOfService()) as string[];
         if (this.SDLCServerTermsOfServicesUrlsToView.length) {
-          this.applicationStore.setActionAlertInfo({
+          this.applicationStore.alertService.setActionAlertInfo({
             message: `Please read and accept the SDLC servers' terms of service`,
             prompt: `Click 'Done' when you have accepted all the terms`,
             type: ActionAlertType.CAUTION,
@@ -179,7 +186,9 @@ export class LegendStudioBaseStore {
                 default: true,
                 handler: (): void =>
                   this.SDLCServerTermsOfServicesUrlsToView.forEach((url) =>
-                    this.applicationStore.navigator.visitAddress(url),
+                    this.applicationStore.navigationService.navigator.visitAddress(
+                      url,
+                    ),
                   ),
                 type: ActionAlertActionType.PROCEED,
               },
@@ -188,7 +197,7 @@ export class LegendStudioBaseStore {
                 type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                 handler: (): void => {
                   this.dismissSDLCServerTermsOfServicesAlert();
-                  this.applicationStore.navigator.reload();
+                  this.applicationStore.navigationService.navigator.reload();
                 },
               },
             ],
@@ -207,7 +216,7 @@ export class LegendStudioBaseStore {
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.UNAUTHORIZED
       ) {
-        this.applicationStore.setActionAlertInfo({
+        this.applicationStore.alertService.setActionAlertInfo({
           message:
             'The first time the application starts in development mode, the developer would need to authenticate using SDLC server. Please do so then manually reload the app',
           type: ActionAlertType.STANDARD,
@@ -217,10 +226,10 @@ export class LegendStudioBaseStore {
               type: ActionAlertActionType.PROCEED,
               default: true,
               handler: (): void => {
-                this.applicationStore.navigator.visitAddress(
+                this.applicationStore.navigationService.navigator.visitAddress(
                   this.sdlcServerClient.currentUserUrl,
                 );
-                this.applicationStore.setBlockingAlert({
+                this.applicationStore.alertService.setBlockingAlert({
                   message:
                     'Waiting for the developer to authenticate using SDLC server',
                   prompt:
@@ -231,11 +240,11 @@ export class LegendStudioBaseStore {
           ],
         });
       } else {
-        this.applicationStore.log.error(
+        this.applicationStore.logService.error(
           LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
-        this.applicationStore.notifyError(error);
+        this.applicationStore.notificationService.notifyError(error);
       }
     }
   }

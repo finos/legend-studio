@@ -31,7 +31,7 @@ import { useApplicationStore } from './ApplicationStoreProvider.js';
  */
 export const BlockingAlert = observer(() => {
   const applicationStore = useApplicationStore();
-  const info = applicationStore.blockingAlertInfo;
+  const info = applicationStore.alertService.blockingAlertInfo;
 
   if (!info) {
     return null;

@@ -160,7 +160,7 @@ export class EditorGraphState {
       | 'updateGraphAndApplicationInTextMode'
       | 'mostRecentFormModeCompilationGraphHash'
       | 'mostRecentTextModeCompilationGraphHash'
-      | 'buildDependencies'
+      | 'rebuildDependencies'
     >(this, {
       isInitializingGraph: observable,
       isRunningGlobalCompile: observable,
@@ -186,7 +186,7 @@ export class EditorGraphState {
       updateGraphAndApplicationInFormMode: flow,
       updateGraphAndApplicationInTextMode: flow,
       updateGenerationGraphAndApplication: flow,
-      buildDependencies: flow,
+      rebuildDependencies: flow,
     });
 
     this.editorStore = editorStore;
@@ -247,31 +247,31 @@ export class EditorGraphState {
 
   checkIfApplicationUpdateOperationIsRunning(): boolean {
     if (this.isRunningGlobalGenerate) {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         'Please wait for model generation to complete',
       );
       return true;
     }
     if (this.isRunningGlobalCompile) {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         'Please wait for graph compilation to complete',
       );
       return true;
     }
     if (this.isApplicationLeavingTextMode) {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         'Please wait for editor to leave text mode completely',
       );
       return true;
     }
     if (this.isUpdatingApplication) {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         'Please wait for editor state to rebuild',
       );
       return true;
     }
     if (this.isInitializingGraph) {
-      this.editorStore.applicationStore.notifyWarning(
+      this.editorStore.applicationStore.notificationService.notifyWarning(
         'Please wait for editor initialization to complete',
       );
       return true;
@@ -420,7 +420,7 @@ export class EditorGraphState {
         graphBuilderReportData,
       );
 
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
         graphBuilderReportData,
       );
@@ -435,7 +435,7 @@ export class EditorGraphState {
       };
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
@@ -443,7 +443,7 @@ export class EditorGraphState {
         this.editorStore.graphManagerState.graphBuildState.fail();
         // no recovery if dependency models cannot be built, this makes assumption that all dependencies models are compiled successfully
         // TODO: we might want to handle this more gracefully when we can show people the dependency model element in the future
-        this.editorStore.applicationStore.notifyError(
+        this.editorStore.applicationStore.notificationService.notifyError(
           `Can't initialize dependency models. Error: ${error.message}`,
         );
         const projectConfigurationEditorState =
@@ -459,12 +459,12 @@ export class EditorGraphState {
         this.redirectToModelImporterForDebugging(error);
       } else if (error instanceof NetworkClientError) {
         this.editorStore.graphManagerState.graphBuildState.fail();
-        this.editorStore.applicationStore.notifyWarning(
+        this.editorStore.applicationStore.notificationService.notifyWarning(
           `Can't build graph. Error: ${error.message}`,
         );
       } else {
         // TODO: we should split this into 2 notifications when we support multiple notifications
-        this.editorStore.applicationStore.notifyError(
+        this.editorStore.applicationStore.notificationService.notifyError(
           `Can't build graph. Redirected to text mode for debugging. Error: ${error.message}`,
         );
         try {
@@ -479,7 +479,7 @@ export class EditorGraphState {
           );
         } catch (error2) {
           assertErrorThrown(error2);
-          this.editorStore.applicationStore.log.error(
+          this.editorStore.applicationStore.logService.error(
             LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
             error2,
           );
@@ -517,13 +517,13 @@ export class EditorGraphState {
 
   private redirectToModelImporterForDebugging(error: Error): void {
     if (this.editorStore.isInConflictResolutionMode) {
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: `Can't de-serialize graph model from entities`,
         prompt: `Please refresh the application and abort conflict resolution`,
       });
       return;
     }
-    this.editorStore.applicationStore.notifyWarning(
+    this.editorStore.applicationStore.notificationService.notifyWarning(
       `Can't de-serialize graph model from entities. Redirected to model importer for debugging. Error: ${error.message}`,
     );
     const nativeImporterState =
@@ -562,7 +562,7 @@ export class EditorGraphState {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Can't load entity changes: ${error.message}`,
       );
     }
@@ -624,12 +624,12 @@ export class EditorGraphState {
 
       if (!options?.disableNotificationOnSuccess) {
         if (this.warnings.length) {
-          this.editorStore.applicationStore.notifyWarning(
+          this.editorStore.applicationStore.notificationService.notifyWarning(
             `Compilation suceeded with warnings`,
           );
         } else {
           if (!options?.disableNotificationOnSuccess) {
-            this.editorStore.applicationStore.notifySuccess(
+            this.editorStore.applicationStore.notificationService.notifySuccess(
               'Compiled successfully',
             );
           }
@@ -652,7 +652,7 @@ export class EditorGraphState {
       // TODO: we probably should make this pattern of error the handling for all other exceptions in the codebase
       // i.e. there should be a catch-all handler (we can use if-else construct to check error types)
       assertType(error, EngineError, `Unhandled exception:\n${error}`);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         error,
       );
@@ -692,7 +692,7 @@ export class EditorGraphState {
       // decide if we need to fall back to text mode for debugging
       if (fallbackToTextModeForDebugging) {
         // TODO: when we support showing multiple notifications, we can split this into 2
-        this.editorStore.applicationStore.notifyWarning(
+        this.editorStore.applicationStore.notificationService.notifyWarning(
           options?.message ??
             'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
         );
@@ -704,7 +704,7 @@ export class EditorGraphState {
           this.editorStore.grammarTextEditorState.setGraphGrammarText(code);
         } catch (error2) {
           assertErrorThrown(error2);
-          this.editorStore.applicationStore.notifyWarning(
+          this.editorStore.applicationStore.notificationService.notifyWarning(
             `Can't enter text mode. Transformation to grammar text failed: ${error2.message}`,
           );
           return FormModeCompilationOutcome.FAILED;
@@ -722,7 +722,7 @@ export class EditorGraphState {
         return FormModeCompilationOutcome.FAILED_AND_FALLBACK_TO_TEXT_MODE;
       } else {
         this.error = error;
-        this.editorStore.applicationStore.notifyWarning(
+        this.editorStore.applicationStore.notificationService.notifyWarning(
           `Compilation failed: ${error.message}`,
         );
         return FormModeCompilationOutcome.FAILED_WITH_ERROR_REVEALED;
@@ -786,12 +786,12 @@ export class EditorGraphState {
 
       if (!options?.disableNotificationOnSuccess) {
         if (this.warnings.length) {
-          this.editorStore.applicationStore.notifyWarning(
+          this.editorStore.applicationStore.notificationService.notifyWarning(
             `Compilation suceeded with warnings`,
           );
         } else {
           if (!options?.disableNotificationOnSuccess) {
-            this.editorStore.applicationStore.notifySuccess(
+            this.editorStore.applicationStore.notificationService.notifySuccess(
               'Compiled successfully',
             );
           }
@@ -835,10 +835,10 @@ export class EditorGraphState {
         }
       }
       if (
-        !this.editorStore.applicationStore.notification ||
+        !this.editorStore.applicationStore.notificationService.notification ||
         !options?.suppressCompilationFailureMessage
       ) {
-        this.editorStore.applicationStore.notifyWarning(
+        this.editorStore.applicationStore.notificationService.notifyWarning(
           `Compilation failed: ${error.message}`,
         );
       }
@@ -858,7 +858,7 @@ export class EditorGraphState {
     try {
       this.isApplicationLeavingTextMode = true;
       this.clearProblems();
-      this.editorStore.applicationStore.setBlockingAlert({
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: 'Compiling graph before leaving text mode...',
         showLoading: true,
       });
@@ -872,14 +872,16 @@ export class EditorGraphState {
             // therefore, the editor will not be able to get the focus
             {
               onError: () =>
-                this.editorStore.applicationStore.setBlockingAlert(undefined),
+                this.editorStore.applicationStore.alertService.setBlockingAlert(
+                  undefined,
+                ),
             },
           )) as TextCompilationResult;
 
         this.warnings = compilationResult.warnings
           ? this.TEMPORARY__removeDependencyProblems(compilationResult.warnings)
           : [];
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: 'Leaving text mode and rebuilding graph...',
           showLoading: true,
         });
@@ -908,21 +910,21 @@ export class EditorGraphState {
             column: error.sourceInformation.startColumn,
           });
         }
-        this.editorStore.applicationStore.log.error(
+        this.editorStore.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
           'Compilation failed:',
           error,
         );
         if (this.editorStore.graphManagerState.graphBuildState.hasFailed) {
           // TODO: when we support showing multiple notification, we can split this into 2 messages
-          this.editorStore.applicationStore.notifyWarning(
+          this.editorStore.applicationStore.notificationService.notifyWarning(
             `Can't build graph, please resolve compilation error before leaving text mode. Compilation failed with error: ${error.message}`,
           );
         } else {
-          this.editorStore.applicationStore.notifyWarning(
+          this.editorStore.applicationStore.notificationService.notifyWarning(
             `Compilation failed: ${error.message}`,
           );
-          this.editorStore.applicationStore.setActionAlertInfo({
+          this.editorStore.applicationStore.alertService.setActionAlertInfo({
             message: 'Project is not in a compiled state',
             prompt:
               'All changes made since the last time the graph was built successfully will be lost',
@@ -950,13 +952,15 @@ export class EditorGraphState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         error,
       );
     } finally {
       this.isApplicationLeavingTextMode = false;
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
       this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.currentEntityHashesIndex =
         new Map<string, string>();
     }
@@ -968,7 +972,7 @@ export class EditorGraphState {
    *
    * @risk memory-leak
    */
-  private *buildDependencies(newGraph: PureModel): GeneratorFn<void> {
+  private *rebuildDependencies(newGraph: PureModel): GeneratorFn<void> {
     if (
       this.editorStore.graphManagerState.dependenciesBuildState.hasSucceeded
     ) {
@@ -997,8 +1001,11 @@ export class EditorGraphState {
         >,
         dependenciesBuildState,
       );
-      this.editorStore.graphManagerState.dependenciesBuildState =
-        dependenciesBuildState;
+      // NOTE: here we don't want to modify the current graph build state directly
+      // instead, we quietly run this in the background and then sync it with the current build state
+      this.editorStore.graphManagerState.dependenciesBuildState.sync(
+        dependenciesBuildState,
+      );
     }
   }
 
@@ -1086,7 +1093,7 @@ export class EditorGraphState {
     this.isUpdatingGraph = true;
     try {
       const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
-      yield flowResult(this.buildDependencies(newGraph));
+      yield flowResult(this.rebuildDependencies(newGraph));
 
       /**
        * Backup and editor states info before resetting. Here we store the element paths of the
@@ -1156,9 +1163,12 @@ export class EditorGraphState {
       );
 
       this.editorStore.graphManagerState.graph = newGraph;
-      this.editorStore.graphManagerState.graphBuildState = graphBuildState;
-      this.editorStore.graphManagerState.generationsBuildState =
-        generationsBuildState;
+      // NOTE: here we don't want to modify the current graph build state directly
+      // instead, we quietly run this in the background and then sync it with the current build state
+      this.editorStore.graphManagerState.graphBuildState.sync(graphBuildState);
+      this.editorStore.graphManagerState.generationsBuildState.sync(
+        generationsBuildState,
+      );
 
       this.editorStore.explorerTreeState.reprocess();
 
@@ -1172,7 +1182,7 @@ export class EditorGraphState {
         currentTabElementPath,
       );
 
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(GRAPH_MANAGER_EVENT.UPDATE_AND_REBUILD_GRAPH__SUCCESS),
         '[TOTAL]',
         Date.now() - startTime,
@@ -1185,7 +1195,7 @@ export class EditorGraphState {
       yield flowResult(this.editorStore.changeDetectionState.observeGraph());
       yield this.editorStore.changeDetectionState.preComputeGraphElementHashes();
       this.editorStore.changeDetectionState.start();
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(
           CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
@@ -1195,7 +1205,7 @@ export class EditorGraphState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
@@ -1204,7 +1214,7 @@ export class EditorGraphState {
       // Note: in the future this function will probably be ideal to refactor when we have different classes for each mode
       // as we would handle this error differently in `text` mode and `form` mode.
       if (error instanceof GraphBuilderError) {
-        this.editorStore.applicationStore.setBlockingAlert({
+        this.editorStore.applicationStore.alertService.setBlockingAlert({
           message: `Can't build graph: ${error.message}`,
           prompt: 'Refreshing full application...',
           showLoading: true,
@@ -1215,7 +1225,9 @@ export class EditorGraphState {
       }
     } finally {
       this.isUpdatingApplication = false;
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
   }
 
@@ -1227,7 +1239,7 @@ export class EditorGraphState {
     this.isUpdatingGraph = true;
     try {
       const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
-      yield flowResult(this.buildDependencies(newGraph));
+      yield flowResult(this.rebuildDependencies(newGraph));
       yield flowResult(graph_dispose(this.editorStore.graphManagerState.graph));
 
       const graphBuildState = ActionState.create();
@@ -1244,10 +1256,12 @@ export class EditorGraphState {
       );
 
       this.editorStore.graphManagerState.graph = newGraph;
-      this.editorStore.graphManagerState.graphBuildState = graphBuildState;
+      // NOTE: here we don't want to modify the current graph build state directly
+      // instead, we quietly run this in the background and then sync it with the current build state
+      this.editorStore.graphManagerState.graphBuildState.sync(graphBuildState);
       this.reprocessExplorerTreeInTextMode();
 
-      this.editorStore.applicationStore.log.info(
+      this.editorStore.applicationStore.logService.info(
         LogEvent.create(GRAPH_MANAGER_EVENT.UPDATE_AND_REBUILD_GRAPH__SUCCESS),
         '[TOTAL]',
         Date.now() - startTime,
@@ -1256,19 +1270,21 @@ export class EditorGraphState {
       this.isUpdatingGraph = false;
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       this.isUpdatingGraph = false;
       if (error instanceof GraphBuilderError) {
-        this.editorStore.applicationStore.notifyError(
+        this.editorStore.applicationStore.notificationService.notifyError(
           `Can't build graph: ${error.message}`,
         );
       }
     } finally {
       this.isUpdatingApplication = false;
-      this.editorStore.applicationStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
   }
 
@@ -1324,11 +1340,11 @@ export class EditorGraphState {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(
+      this.editorStore.applicationStore.notificationService.notifyError(
         `Can't build graph: ${error.message}`,
       );
     } finally {
@@ -1409,7 +1425,7 @@ export class EditorGraphState {
             dependencyInfo = buildDependencyReport(rawReport);
           } catch (error) {
             assertErrorThrown(error);
-            this.editorStore.applicationStore.log.error(
+            this.editorStore.applicationStore.logService.error(
               LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
               error,
             );
@@ -1447,11 +1463,11 @@ export class EditorGraphState {
     } catch (error) {
       assertErrorThrown(error);
       const message = `Can't acquire dependency entitites. Error: ${error.message}`;
-      this.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         message,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
       throw new DependencyGraphBuilderError(error);
     }
     return dependencyEntitiesIndex;

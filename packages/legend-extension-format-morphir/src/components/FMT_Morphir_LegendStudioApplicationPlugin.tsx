@@ -121,12 +121,12 @@ export class FMT_Morphir_LegendStudioApplicationPlugin
                     this.morphirVisualizerUrl,
                     file.content,
                   );
-                  applicationStore.navigator.visitAddress(
+                  applicationStore.navigationService.navigator.visitAddress(
                     this.morphirVisualizerUrl,
                   );
                 } catch (error) {
                   assertErrorThrown(error);
-                  applicationStore.notifyError(error);
+                  applicationStore.notificationService.notifyError(error);
                 }
               };
             if (
@@ -179,10 +179,12 @@ export class FMT_Morphir_LegendStudioApplicationPlugin
                     ir: file.content,
                     src: await code,
                   });
-                  applicationStore.navigator.visitAddress(this.linterAppUrl);
+                  applicationStore.navigationService.navigator.visitAddress(
+                    this.linterAppUrl,
+                  );
                 } catch (error) {
                   assertErrorThrown(error);
-                  applicationStore.notifyError(error);
+                  applicationStore.notificationService.notifyError(error);
                 }
               };
             if (
