@@ -43,6 +43,7 @@ import {
   PanelEntryDropZonePlaceholder,
   useDragPreviewLayer,
   PanelContent,
+  MoreVerticalIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderFilterConditionDragSource,
@@ -84,6 +85,7 @@ import {
   type QueryBuilderVariableDragSource,
   QUERY_BUILDER_VARIABLE_DND_TYPE,
 } from '../shared/BasicValueSpecificationEditor.js';
+import { QueryBuilderTelemetry } from '../../stores/QueryBuilderTelemetry.js';
 
 const QueryBuilderFilterGroupConditionEditor = observer(
   (props: {
@@ -335,6 +337,13 @@ const QueryBuilderFilterConditionContextMenu = observer(
       filterState.addGroupConditionNodeFromNode(node);
     };
     const newGroupWithCondition = (): void => {
+      QueryBuilderTelemetry.logEvent_FilterCreateGroupFromConditionClicked(
+        queryBuilderState.applicationStore.telemetryService,
+        {
+          applicationContext: queryBuilderState.applicationContext,
+        },
+      );
+
       filterState.suppressClickawayEventListener();
       filterState.newGroupWithConditionFromNode(undefined, node);
     };
@@ -677,26 +686,57 @@ const QueryBuilderFilterTree = observer(
 export const QueryBuilderFilterPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+
     const applicationStore = useApplicationStore();
     const filterState = queryBuilderState.filterState;
     const rootNode = filterState.getRootNode();
     const collapseTree = (): void => {
+      QueryBuilderTelemetry.logEvent_FilterCollapseTreeClicked(
+        queryBuilderState.applicationStore.telemetryService,
+        {
+          applicationContext: queryBuilderState.applicationContext,
+        },
+      );
       filterState.setSelectedNode(undefined);
       filterState.collapseTree();
     };
     const expandTree = (): void => {
+      QueryBuilderTelemetry.logEvent_FilterExpandTreeClicked(
+        queryBuilderState.applicationStore.telemetryService,
+        {
+          applicationContext: queryBuilderState.applicationContext,
+        },
+      );
       filterState.setSelectedNode(undefined);
       filterState.expandTree();
     };
     const pruneTree = (): void => {
+      QueryBuilderTelemetry.logEvent_FilterCleanupTreeClicked(
+        queryBuilderState.applicationStore.telemetryService,
+        {
+          applicationContext: queryBuilderState.applicationContext,
+        },
+      );
       filterState.suppressClickawayEventListener();
       filterState.pruneTree();
     };
     const simplifyTree = (): void => {
+      QueryBuilderTelemetry.logEvent_FilterSimplifyTreeClicked(
+        queryBuilderState.applicationStore.telemetryService,
+        {
+          applicationContext: queryBuilderState.applicationContext,
+        },
+      );
       filterState.suppressClickawayEventListener();
       filterState.simplifyTree();
     };
     const createCondition = (): void => {
+      QueryBuilderTelemetry.logEvent_FilterCreateConditionClicked(
+        queryBuilderState.applicationStore.telemetryService,
+        {
+          applicationContext: queryBuilderState.applicationContext,
+        },
+      );
       filterState.suppressClickawayEventListener();
       filterState.addNodeFromNode(
         new QueryBuilderFilterTreeBlankConditionNodeData(undefined),
@@ -709,6 +749,12 @@ export const QueryBuilderFilterPanel = observer(
         (filterState.selectedNode !== rootNode || // either not a root node
           rootNode instanceof QueryBuilderFilterTreeGroupNodeData)); // or if it is the root note, it has to be a group node
     const createGroupCondition = (): void => {
+      QueryBuilderTelemetry.logEvent_FilterCreateLogicalGroupClicked(
+        queryBuilderState.applicationStore.telemetryService,
+        {
+          applicationContext: queryBuilderState.applicationContext,
+        },
+      );
       filterState.suppressClickawayEventListener();
       if (allowGroupCreation) {
         filterState.addGroupConditionNodeFromNode(filterState.selectedNode);
@@ -812,70 +858,52 @@ export const QueryBuilderFilterPanel = observer(
           <div className="panel__header__title">
             <div className="panel__header__title__label">filter</div>
           </div>
+
           <div className="panel__header__actions">
-            <button
+            <DropdownMenu
               className="panel__header__action"
-              onClick={createCondition}
-              tabIndex={-1}
-              title="Create Condition"
-            >
-              <PlusIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              disabled={
-                !(
-                  filterState.selectedNode instanceof
-                  QueryBuilderFilterTreeConditionNodeData
-                )
+              title="Show Filter Options Menu..."
+              content={
+                <MenuContent>
+                  <MenuContentItem onClick={createCondition}>
+                    <PlusIcon />
+                    Create Condition
+                  </MenuContentItem>
+                  <MenuContentItem
+                    disabled={
+                      !(
+                        filterState.selectedNode instanceof
+                        QueryBuilderFilterTreeConditionNodeData
+                      )
+                    }
+                    onClick={newGroupWithCondition}
+                  >
+                    <PlusCircleIcon />
+                    Create Group From Condition
+                  </MenuContentItem>
+                  <MenuContentItem
+                    disabled={!allowGroupCreation}
+                    onClick={createGroupCondition}
+                  >
+                    <NewFolderIcon /> Create Logical Group
+                  </MenuContentItem>
+                  <MenuContentItem onClick={pruneTree}>
+                    <TrashIcon /> Cleanup Tree
+                  </MenuContentItem>
+                  <MenuContentItem onClick={simplifyTree}>
+                    <CircleIcon /> Simplify Tree
+                  </MenuContentItem>
+                  <MenuContentItem onClick={collapseTree}>
+                    <CompressIcon /> Collapse Tree
+                  </MenuContentItem>
+                  <MenuContentItem onClick={expandTree}>
+                    <ExpandIcon /> Expand Tree
+                  </MenuContentItem>
+                </MenuContent>
               }
-              onClick={newGroupWithCondition}
-              tabIndex={-1}
-              title="Create Group From Condition"
             >
-              <PlusCircleIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              disabled={!allowGroupCreation}
-              onClick={createGroupCondition}
-              tabIndex={-1}
-              title="Create Logical Group"
-            >
-              <NewFolderIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              onClick={pruneTree}
-              tabIndex={-1}
-              title="Cleanup Tree"
-            >
-              <TrashIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              onClick={simplifyTree}
-              tabIndex={-1}
-              title="Simplify Tree"
-            >
-              <CircleIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              onClick={collapseTree}
-              tabIndex={-1}
-              title="Collapse Tree"
-            >
-              <CompressIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              onClick={expandTree}
-              tabIndex={-1}
-              title="Expand Tree"
-            >
-              <ExpandIcon />
-            </button>
+              <MoreVerticalIcon className="query-builder__icon__more-options" />
+            </DropdownMenu>
           </div>
         </div>
         <PanelContent>

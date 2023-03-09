@@ -24,3 +24,13 @@ export enum QUERY_BUILDER_EVENT {
   DEBUG_EXECUTION_PLAN__SUCCESS = 'query-builder.debug-plan.success',
   BUILD_EXECUTION_PLAN__SUCCESS = 'query-builder.build-plan.success',
 }
+
+export enum QUERY_BUILDER_FILTER_EVENT {
+  CREATE_CONDITION = 'editor.filter.create-condition.click',
+  CREATE_GROUP_FROM_CONDITION = 'editor.filter.create-group-from-condition.click',
+  CREATE_LOGICAL_GROUP = 'editor.filter.create-logical-group.click',
+  CLEANUP_TREE = 'editor.filter.cleanup-tree.click',
+  SIMPLIFY_TREE = 'editor.filter.simplify-tree.click',
+  COLLAPSE_TREE = 'editor.filter.collapse-tree.click',
+  EXPAND_TREE = 'editor.filter.expand-tree.click',
+}

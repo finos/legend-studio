@@ -107,9 +107,14 @@
     }
   }
 
-  &__footer__close-btn {
+  &__footer__btn {
     border-color: var(--color-blue-200);
     background: var(--color-blue-300);
+
+    svg {
+      margin-right: 0.5rem;
+      font-size: 1.7rem;
+    }
   }
 }
 

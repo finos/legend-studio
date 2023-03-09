@@ -166,6 +166,7 @@ export class QueryExportState {
     makeObservable(this, {
       queryName: observable,
       allowPersist: computed,
+      unallowedPersistInfo: computed,
       setQueryName: action,
     });
 
@@ -188,6 +189,19 @@ export class QueryExportState {
       Boolean(this.queryBuilderState.mapping) &&
       this.queryBuilderState.runtimeValue instanceof RuntimePointer
     );
+  }
+
+  get unallowedPersistInfo(): string | undefined {
+    if (this.persistQueryState.isInProgress) {
+      return 'Query state is in progress';
+    }
+    if (!this.queryBuilderState.mapping) {
+      return 'Query has no mapping';
+    }
+    if (!(this.queryBuilderState.runtimeValue instanceof RuntimePointer)) {
+      return 'Query has invalid runtime value';
+    }
+    return undefined;
   }
 
   async persistQuery(createNew: boolean): Promise<void> {

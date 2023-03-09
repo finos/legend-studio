@@ -43,6 +43,8 @@ import {
   ManageSearchIcon,
   LightBulbIcon,
   EmptyLightBulbIcon,
+  SaveCurrIcon,
+  SaveAsIcon,
 } from '@finos/legend-art';
 import { debounce } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -87,12 +89,12 @@ const QueryExportDialogContent = observer(
   (props: { exportState: QueryExportState }) => {
     const { exportState } = props;
     const applicationStore = useApplicationStore();
-    const allowCreate = exportState.allowPersist;
+    const allowSaveNewQuery = exportState.allowPersist;
     const allowSave = exportState.allowPersist && exportState.allowUpdate;
-    const create = applicationStore.guardUnhandledError(() =>
+    const saveAsNewQuery = applicationStore.guardUnhandledError(() =>
       exportState.persistQuery(true),
     );
-    const save = applicationStore.guardUnhandledError(() =>
+    const overwriteExistingQuery = applicationStore.guardUnhandledError(() =>
       exportState.persistQuery(false),
     );
 
@@ -120,16 +122,27 @@ const QueryExportDialogContent = observer(
           />
         </ModalBody>
         <ModalFooter>
-          {allowSave && <ModalFooterButton text="Save" onClick={save} />}
-          <button
-            className="btn modal__footer__close-btn btn--dark"
-            // TODO?: we should probably annotate here why,
-            // when we disable this action
-            disabled={!allowCreate}
-            onClick={create}
+          {allowSave && (
+            <ModalFooterButton
+              title="Save/overwrite existing query"
+              text="Overwrite existing"
+              onClick={overwriteExistingQuery}
+            >
+              <SaveCurrIcon />
+            </ModalFooterButton>
+          )}
+          <ModalFooterButton
+            text="Save as New Query"
+            title={
+              exportState.unallowedPersistInfo
+                ? `Cannot save as new query because ${exportState.unallowedPersistInfo}`
+                : 'Save as New Query'
+            }
+            inProgress={!allowSaveNewQuery}
+            onClick={saveAsNewQuery}
           >
-            Create
-          </button>
+            <SaveAsIcon />
+          </ModalFooterButton>
         </ModalFooter>
       </>
     );

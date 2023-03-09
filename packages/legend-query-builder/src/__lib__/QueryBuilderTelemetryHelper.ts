@@ -16,7 +16,10 @@
 
 import type { GraphManagerOperationReport } from '@finos/legend-graph';
 import type { TelemetryService } from '@finos/legend-application';
-import { QUERY_BUILDER_EVENT } from './QueryBuilderEvent.js';
+import {
+  QUERY_BUILDER_EVENT,
+  QUERY_BUILDER_FILTER_EVENT,
+} from './QueryBuilderEvent.js';
 
 type QueryExecution_TelemetryData = GraphManagerOperationReport & {
   dependenciesCount: number;
@@ -70,5 +73,63 @@ export class QueryBuilderTelemetryHelper {
       QUERY_BUILDER_EVENT.DEBUG_EXECUTION_PLAN__SUCCESS,
       data,
     );
+  }
+
+  static logEvent_FilterCreateConditionClicked(
+    telemetryService: TelemetryService,
+    data: LaunchQueryExecution_TelemteryData,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_FILTER_EVENT.CREATE_CONDITION,
+      data,
+    );
+  }
+
+  static logEvent_FilterCleanupTreeClicked(
+    telemetryService: TelemetryService,
+    data: LaunchQueryExecution_TelemteryData,
+  ): void {
+    telemetryService.logEvent(QUERY_BUILDER_FILTER_EVENT.CLEANUP_TREE, data);
+  }
+
+  static logEvent_FilterCollapseTreeClicked(
+    telemetryService: TelemetryService,
+    data: LaunchQueryExecution_TelemteryData,
+  ): void {
+    telemetryService.logEvent(QUERY_BUILDER_FILTER_EVENT.COLLAPSE_TREE, data);
+  }
+
+  static logEvent_FilterCreateGroupFromConditionClicked(
+    telemetryService: TelemetryService,
+    data: LaunchQueryExecution_TelemteryData,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_FILTER_EVENT.CREATE_GROUP_FROM_CONDITION,
+      data,
+    );
+  }
+
+  static logEvent_FilterCreateLogicalGroupClicked(
+    telemetryService: TelemetryService,
+    data: LaunchQueryExecution_TelemteryData,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_FILTER_EVENT.CREATE_LOGICAL_GROUP,
+      data,
+    );
+  }
+
+  static logEvent_FilterExpandTreeClicked(
+    telemetryService: TelemetryService,
+    data: LaunchQueryExecution_TelemteryData,
+  ): void {
+    telemetryService.logEvent(QUERY_BUILDER_FILTER_EVENT.EXPAND_TREE, data);
+  }
+
+  static logEvent_FilterSimplifyTreeClicked(
+    telemetryService: TelemetryService,
+    data: LaunchQueryExecution_TelemteryData,
+  ): void {
+    telemetryService.logEvent(QUERY_BUILDER_FILTER_EVENT.SIMPLIFY_TREE, data);
   }
 }
