@@ -48,9 +48,7 @@
   }
 
   &__options {
-    height: 20rem;
-    overflow: overlay;
-    width: 5rem;
+    width: 4.2rem;
   }
 
   &__option {
@@ -58,7 +56,7 @@
 
     height: 2.8rem;
     background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-200);
+    border-bottom: 0.1rem solid var(--color-dark-grey-200);
     color: var(--color-light-grey-300);
     border-top: none;
     cursor: pointer;

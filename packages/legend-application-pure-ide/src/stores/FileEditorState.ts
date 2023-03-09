@@ -75,7 +75,7 @@ const getFileEditorLanguage = (filePath: string): string => {
     case 'json':
       return EDITOR_LANGUAGE.JSON;
     case 'xml':
-      return EDITOR_LANGUAGE.MARKDOWN;
+      return EDITOR_LANGUAGE.XML;
     case 'yml':
     case 'yaml':
       return EDITOR_LANGUAGE.YAML;

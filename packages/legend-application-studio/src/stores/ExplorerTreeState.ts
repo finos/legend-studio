@@ -47,6 +47,7 @@ import {
   PrimitiveType,
   getElementRootPackage,
   isDependencyElement,
+  type Class,
 } from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 
@@ -58,7 +59,10 @@ export enum ExplorerTreeRootPackageLabel {
 }
 
 export class ExplorerTreeState {
-  editorStore: EditorStore;
+  readonly editorStore: EditorStore;
+
+  readonly buildState = ActionState.create();
+
   treeData?: TreeData<PackageTreeNodeData> | undefined;
   generationTreeData?: TreeData<PackageTreeNodeData> | undefined;
   systemTreeData?: TreeData<PackageTreeNodeData> | undefined;
@@ -66,8 +70,9 @@ export class ExplorerTreeState {
   dependencyTreeData?: TreeData<PackageTreeNodeData> | undefined;
   selectedNode?: PackageTreeNodeData | undefined;
   fileGenerationTreeData?: TreeData<FileSystemTreeNodeData> | undefined;
+
   elementToRename?: PackageableElement | undefined;
-  buildState = ActionState.create();
+  classToGenerateSampleData?: Class | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -76,9 +81,10 @@ export class ExplorerTreeState {
       systemTreeData: observable.ref,
       legalTreeData: observable.ref,
       dependencyTreeData: observable.ref,
-      selectedNode: observable.ref,
       fileGenerationTreeData: observable.ref,
-      elementToRename: observable.ref,
+      selectedNode: observable.ref,
+      elementToRename: observable,
+      classToGenerateSampleData: observable,
       setTreeData: action,
       setGenerationTreeData: action,
       setSystemTreeData: action,
@@ -87,6 +93,7 @@ export class ExplorerTreeState {
       setFileGenerationTreeData: action,
       setSelectedNode: action,
       setElementToRename: action,
+      setClassToGenerateSampleData: action,
       build: action,
       buildImmutableModelTrees: action,
       buildTreeInTextMode: action,
@@ -158,6 +165,9 @@ export class ExplorerTreeState {
   }
   setElementToRename(val: PackageableElement | undefined): void {
     this.elementToRename = val;
+  }
+  setClassToGenerateSampleData(val: Class | undefined): void {
+    this.classToGenerateSampleData = val;
   }
 
   setSelectedNode(node: PackageTreeNodeData | undefined): void {

@@ -26,6 +26,8 @@ import {
   MoreHorizontalIcon,
   CaretDownIcon,
   Modal,
+  MenuContent,
+  MenuContentItem,
 } from '@finos/legend-art';
 import { getElementTypeIcon } from '../../shared/ElementIconUtils.js';
 import type { PackageableElement } from '@finos/legend-graph';
@@ -105,23 +107,23 @@ export const ProjectSearchCommand = observer(() => {
             className="project-search-command__type"
             title="Choose Element Type..."
             content={
-              <div className="project-search-command__options">
-                <div
+              <MenuContent className="project-search-command__options">
+                <MenuContentItem
                   className="project-search-command__option"
                   onClick={changeType(undefined)}
                 >
                   <MoreHorizontalIcon />
-                </div>
+                </MenuContentItem>
                 {types.map((type) => (
-                  <div
+                  <MenuContentItem
                     key={type}
                     className="project-search-command__option"
                     onClick={changeType(type)}
                   >
                     {getElementTypeIcon(editorStore, type)}
-                  </div>
+                  </MenuContentItem>
                 ))}
-              </div>
+              </MenuContent>
             }
           >
             <div className="project-search-command__type__label">
