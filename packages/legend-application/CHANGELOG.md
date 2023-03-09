@@ -1,5 +1,15 @@
 # @finos/legend-application
 
+## 12.0.0
+
+### Major Changes
+
+- [#1987](https://github.com/finos/legend-studio/pull/1987) [`28ca8adae`](https://github.com/finos/legend-studio/commit/28ca8adaec6eb5e2cd850d247685489b21a5bfbb) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed services in `ApplicationStore`: `log -> logService`, `commandCenter -> commandService`, `navigator -> navigationService`. Moved `notification` logic inside of `NotificationService`, moved `alert` logic inside of `AlertService`.
+
+### Minor Changes
+
+- [#1874](https://github.com/finos/legend-studio/pull/1874) [`04a31ba2f`](https://github.com/finos/legend-studio/commit/04a31ba2f2790937cc2289b29fc89f4e59e351d2) ([@gayathrir11](https://github.com/gayathrir11)) - Add support for client-side storage to persist user settings
+
 ## 11.0.3
 
 ## 11.0.2

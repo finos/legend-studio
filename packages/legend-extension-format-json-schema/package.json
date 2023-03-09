@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-format-json-schema",
-  "version": "1.0.38",
+  "version": "1.0.39",
   "description": "Legend extension for JSON Schema format",
   "keywords": [
     "legend",
