@@ -79,7 +79,7 @@ export const DataSpacePreview = observer(() => {
         className="editor-modal data-space-preview__dialog"
       >
         <ModalHeader className="data-space-preview__dialog__header">
-          <ModalTitle title="Search for data space " />
+          <ModalTitle title="Preview Data Space" />
           <ModalHeaderActions>
             <button
               className="modal__header__action"

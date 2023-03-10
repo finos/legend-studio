@@ -36,7 +36,9 @@ import type {
 } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
-  MODELS_OVERVIEW = 'MODELS_OVERVIEW',
+  OVERVIEW = 'OVERVIEW',
+  DOCUMENTATION = 'DOCUMENTATION',
+  SAMPLE_DATA_TABLE = 'SAMPLE_DATA_TABLE',
   EXECUTION = 'EXECUTION',
   ENTITLEMENT = 'ENTITLEMENT',
   TEST_DATA = 'TEST_DATA',
@@ -55,7 +57,7 @@ export class DataSpaceViewerState {
   dataSpaceAnalysisResult: DataSpaceAnalysisResult;
   _renderer?: DiagramRenderer | undefined;
   currentDiagram?: Diagram | undefined;
-  currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_OVERVIEW;
+  currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.OVERVIEW;
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
 
@@ -184,6 +186,7 @@ export class DataSpaceViewerState {
 
   setupRenderer(): void {
     this.renderer.setIsReadOnly(true);
+    this.renderer.setEnableLayoutAutoAdjustment(true);
     this.renderer.onClassViewDoubleClick = (classView: ClassView): void =>
       this.onDiagramClassDoubleClick(classView);
   }
