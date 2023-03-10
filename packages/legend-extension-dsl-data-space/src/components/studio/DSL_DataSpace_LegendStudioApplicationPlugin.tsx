@@ -31,6 +31,9 @@ import {
   type PureGrammarParserElementSnippetSuggestionsGetter,
   UnsupportedElementEditorState,
   LegendStudioApplicationPlugin,
+  type ExplorerContextMenuItemRendererConfiguration,
+  type EditorExtensionStateCreator,
+  type EditorExtensionComponentRendererConfiguration,
 } from '@finos/legend-application-studio';
 import {
   PackageableElementExplicitReference,
@@ -53,6 +56,11 @@ import type {
   PureGrammarTextSuggestion,
 } from '@finos/legend-application';
 import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
+import { DataSpacePreviewState } from '../../stores/studio/DataSpacePreviewState.js';
+import {
+  DataSpacePreview,
+  DataSpacePreviewAction,
+} from './DataSpacePreview.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -70,6 +78,33 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
     return [
       DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_DATA_SPACE,
       DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
+  }
+
+  override getExtraExplorerContextMenuItemRendererConfigurations(): ExplorerContextMenuItemRendererConfiguration[] {
+    return [
+      {
+        key: 'data-space-preview',
+        renderer: (editorStore, element) => {
+          if (element instanceof DataSpace) {
+            return <DataSpacePreviewAction dataSpace={element} />;
+          }
+          return undefined;
+        },
+      },
+    ];
+  }
+
+  override getExtraEditorExtensionStateCreators(): EditorExtensionStateCreator[] {
+    return [(editorStore) => new DataSpacePreviewState(editorStore)];
+  }
+
+  override getExtraEditorExtensionComponentRendererConfigurations(): EditorExtensionComponentRendererConfiguration[] {
+    return [
+      {
+        key: 'data-space-preview',
+        renderer: (editorStore) => <DataSpacePreview />,
+      },
     ];
   }
 

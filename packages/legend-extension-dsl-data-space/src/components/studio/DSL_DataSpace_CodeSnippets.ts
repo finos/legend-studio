@@ -31,6 +31,26 @@ export const SIMPLE_DATA_SPACE_SNIPPET = `DataSpace \${1:model::NewDataSpace}
   // [
   //   model::SomeDiagram
   // ];
+  // elements:
+  // [
+  //   model::SomeClass,
+  // ];
+  // sampleTDSQueries:
+  // [
+  //   {
+  //     name: 'SomeQuery';
+  //     description: 'description of the query';
+  //     query: | 'a lambda that returns TDS';
+  //     columns:
+  //     [
+  //       {
+  //         name: 'SomeColumn';
+  //         description: 'description of the column';
+  //         sampleValues: ['Val1', 'Val2'];
+  //       }
+  //     ];
+  //   }
+  // ];
   // supportInfo: Email {
   //   address: 'someEmail@test.org';
   // };
