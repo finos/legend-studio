@@ -80,10 +80,13 @@ import { QueryBuilderConstantsState } from './QueryBuilderConstantsState.js';
 import { QueryBuilderCheckEntitlementsState } from './entitlements/QueryBuilderCheckEntitlementsState.js';
 
 export abstract class QueryBuilderState implements CommandRegistrar {
-  applicationStore: GenericLegendApplicationStore;
-  graphManagerState: GraphManagerState;
+  readonly applicationStore: GenericLegendApplicationStore;
+  readonly graphManagerState: GraphManagerState;
 
-  changeDetectionState: QueryBuilderChangeDetectionState;
+  readonly changeDetectionState: QueryBuilderChangeDetectionState;
+  readonly queryCompileState = ActionState.create();
+  readonly observableContext: ObserverContext;
+
   explorerState: QueryBuilderExplorerState;
   functionsExplorerState: QueryFunctionsExplorerState;
   parametersState: QueryBuilderParametersState;
@@ -98,10 +101,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   resultState: QueryBuilderResultState;
   textEditorState: QueryBuilderTextEditorState;
   unsupportedQueryState: QueryBuilderUnsupportedQueryState;
-  observableContext: ObserverContext;
-  titleOfQuery: string | undefined;
 
-  queryCompileState = ActionState.create();
+  titleOfQuery: string | undefined;
   showFunctionsExplorerPanel = false;
   showParametersPanel = false;
   isEditingWatermark = false;
@@ -110,8 +111,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   class?: Class | undefined;
   mapping?: Mapping | undefined;
   runtimeValue?: Runtime | undefined;
-
-  applicationContext?: string | undefined;
 
   // NOTE: this makes it so that we need to import components in stores code,
   // we probably want to refactor to an extension mechanism

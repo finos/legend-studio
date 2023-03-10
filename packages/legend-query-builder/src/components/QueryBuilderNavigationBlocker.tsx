@@ -33,9 +33,8 @@ export const QueryBuilderNavigationBlocker = observer(
         [(): boolean => queryBuilderState.changeDetectionState.hasChanged],
         (onProceed: () => void): void => {
           applicationStore.alertService.setActionAlertInfo({
-            // TODO?: should we make this message generic like the `BeforeUnloadEvent` message?
             message:
-              'Unsaved changes to your query will be lost if you continue. Do you still want to proceed?',
+              'Unsaved changes will be lost if you continue. Do you still want to proceed?',
             type: ActionAlertType.CAUTION,
             actions: [
               {

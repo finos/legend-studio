@@ -90,7 +90,6 @@ import {
 } from '../../../../stores/shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { MappingExecutionQueryBuilderState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -193,9 +192,9 @@ const MappingExecutionQueryEditor = observer(
           embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
             setupQueryBuilderState: (): QueryBuilderState => {
               const queryBuilderState = new MappingExecutionQueryBuilderState(
-                executionState.mappingEditorState.mapping,
                 embeddedQueryBuilderState.editorStore.applicationStore,
                 embeddedQueryBuilderState.editorStore.graphManagerState,
+                executionState.mappingEditorState.mapping,
               );
               queryBuilderState.initializeWithQuery(
                 executionState.queryState.query,
@@ -244,8 +243,6 @@ const MappingExecutionQueryEditor = observer(
             disableCompile: isStubbed_RawLambda(
               executionState.queryState.query,
             ),
-            applicationContext:
-              LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_EXECUTION_EDITOR,
           }),
         );
       },
