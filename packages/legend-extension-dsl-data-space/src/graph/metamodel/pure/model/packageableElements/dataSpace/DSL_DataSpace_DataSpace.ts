@@ -21,6 +21,10 @@ import {
   type Mapping,
   type PackageableRuntime,
   type PackageableElementVisitor,
+  type RawLambda,
+  type Class,
+  type Enumeration,
+  type Association,
 } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSL_DataSpace_HashUtils.js';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram';
@@ -60,12 +64,53 @@ export class DataSpaceExecutionContext implements Hashable {
   }
 }
 
+export class DataSpaceSampleTDSQueryColumn implements Hashable {
+  name!: string;
+  description?: string | undefined;
+  sampleValues?: string[] | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_SAMPLE_TDS_QUERY_COLUMN,
+      this.name,
+      this.description ?? '',
+      hashArray(this.sampleValues ?? []),
+    ]);
+  }
+}
+
+export class DataSpaceSampleTDSQuery implements Hashable {
+  name!: string;
+  description?: string | undefined;
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  query!: RawLambda;
+  columns?: DataSpaceSampleTDSQueryColumn[] | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_SAMPLE_TDS_QUERY,
+      this.name,
+      this.description ?? '',
+      this.query,
+      hashArray(this.columns ?? []),
+    ]);
+  }
+}
+
+export type DataSpaceElement = Class | Enumeration | Association;
+
 export class DataSpace extends PackageableElement implements Hashable {
+  title?: string | undefined;
+  description?: string | undefined;
   executionContexts: DataSpaceExecutionContext[] = [];
   defaultExecutionContext!: DataSpaceExecutionContext;
   featuredDiagrams?: PackageableElementReference<Diagram>[] | undefined;
-  title?: string | undefined;
-  description?: string | undefined;
+  elements?: PackageableElementReference<DataSpaceElement>[] | undefined;
+  sampleTDSQueries?: DataSpaceSampleTDSQuery[] | undefined;
   supportInfo?: DataSpaceSupportInfo | undefined;
 
   protected override get _elementHashCode(): string {
@@ -75,6 +120,8 @@ export class DataSpace extends PackageableElement implements Hashable {
         this.stereotypes.map((stereotype) => stereotype.pointerHashCode),
       ),
       hashArray(this.taggedValues),
+      this.title ?? '',
+      this.description ?? '',
       hashArray(this.executionContexts),
       this.defaultExecutionContext.name,
       hashArray(
@@ -82,8 +129,12 @@ export class DataSpace extends PackageableElement implements Hashable {
           (diagram) => diagram.valueForSerialization ?? '',
         ),
       ),
-      this.title ?? '',
-      this.description ?? '',
+      hashArray(
+        (this.elements ?? []).map(
+          (element) => element.valueForSerialization ?? '',
+        ),
+      ),
+      hashArray(this.sampleTDSQueries ?? []),
       this.supportInfo ?? '',
     ]);
   }

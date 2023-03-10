@@ -20,6 +20,11 @@ import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
 import { AtomicTest } from '../../test/Test.js';
 
 export class MappingTest extends AtomicTest implements Hashable {
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
   query!: RawLambda;
 
   get hashCode(): string {

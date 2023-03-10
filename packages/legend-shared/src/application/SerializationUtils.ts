@@ -187,3 +187,35 @@ export const optionalCustom = (
     (val) => (val ? serializer(val) : SKIP),
     (val) => (val ? deserializer(val) : SKIP),
   );
+
+/**
+ * This is the idiomatic usage pattern for serialization of optional list of objects.
+ *
+ * Notice our particular usage of `serializeArray` and `deserializeArray` that is deisnged
+ * for testing and accounting for logic mismatches between servers and studio
+ */
+export const optionalListWithSchema = <T>(schema: ModelSchema<T>): PropSchema =>
+  optionalCustom(
+    (values) =>
+      serializeArray(values, (value) => serialize(schema, value), {
+        skipIfEmpty: true,
+        INTERNAL__forceReturnEmptyInTest: true,
+      }),
+    (values) =>
+      deserializeArray(values, (value) => deserialize(schema, value), {
+        skipIfEmpty: false,
+      }),
+  );
+
+export const optionalPrimitiveList = (): PropSchema =>
+  optionalCustom(
+    (values) =>
+      serializeArray(values, (value) => value, {
+        skipIfEmpty: true,
+        INTERNAL__forceReturnEmptyInTest: true,
+      }),
+    (values) =>
+      deserializeArray(values, (value) => value, {
+        skipIfEmpty: false,
+      }),
+  );

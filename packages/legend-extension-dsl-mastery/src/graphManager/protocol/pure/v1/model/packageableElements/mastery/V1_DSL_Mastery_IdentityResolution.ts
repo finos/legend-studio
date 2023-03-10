@@ -32,6 +32,11 @@ export class V1_IdentityResolution implements Hashable {
 }
 
 export class V1_ResolutionQuery implements Hashable {
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
   queries!: V1_RawLambda[];
   keyType!: string;
   precedence!: number;

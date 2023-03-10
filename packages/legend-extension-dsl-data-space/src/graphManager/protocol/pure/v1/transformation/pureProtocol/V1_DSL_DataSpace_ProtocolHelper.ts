@@ -29,21 +29,23 @@ import {
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
   V1_packageableElementPointerDeserializerSchema,
+  V1_rawLambdaModelSchema,
 } from '@finos/legend-graph';
 import {
   type PlainObject,
-  deserializeArray,
-  serializeArray,
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
-  optionalCustom,
+  optionalListWithSchema,
+  optionalPrimitiveList,
 } from '@finos/legend-shared';
 import {
   type V1_DataSpaceSupportInfo,
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
   V1_DataSpaceSupportEmail,
+  V1_DataSpaceSampleTDSQuery,
+  V1_DataSpaceSampleTDSQueryColumn,
 } from '../../model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 
 export const V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE = 'dataSpace';
@@ -58,6 +60,27 @@ const V1_dataSpaceExecutionContextModelSchema = createModelSchema(
     description: optional(primitive()),
     mapping: usingModelSchema(V1_packageableElementPointerDeserializerSchema),
     name: primitive(),
+  },
+);
+
+const V1_dataSpaceSampleTDSQueryColumnModelSchema = createModelSchema(
+  V1_DataSpaceSampleTDSQueryColumn,
+  {
+    description: optional(primitive()),
+    name: primitive(),
+    sampleValues: optionalPrimitiveList(),
+  },
+);
+
+const V1_dataSpaceSampleTDSQueryModelSchema = createModelSchema(
+  V1_DataSpaceSampleTDSQuery,
+  {
+    columns: optionalListWithSchema(
+      V1_dataSpaceSampleTDSQueryColumnModelSchema,
+    ),
+    description: optional(primitive()),
+    name: primitive(),
+    query: usingModelSchema(V1_rawLambdaModelSchema),
   },
 );
 
@@ -99,63 +122,23 @@ export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
   _type: usingConstantValueSchema(V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE),
   defaultExecutionContext: primitive(),
   description: optional(primitive()),
+  elements: optionalListWithSchema(
+    V1_packageableElementPointerDeserializerSchema,
+  ),
   executionContexts: list(object(V1_dataSpaceExecutionContextModelSchema)),
-  featuredDiagrams: optionalCustom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) =>
-          serialize(V1_packageableElementPointerDeserializerSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(
-        values,
-        (value) =>
-          deserialize(V1_packageableElementPointerDeserializerSchema, value),
-        {
-          skipIfEmpty: false,
-        },
-      ),
+  featuredDiagrams: optionalListWithSchema(
+    V1_packageableElementPointerDeserializerSchema,
   ),
   name: primitive(),
   package: primitive(),
-  stereotypes: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_stereotypePtrSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
-        skipIfEmpty: false,
-      }),
+  sampleTDSQueries: optionalListWithSchema(
+    V1_dataSpaceSampleTDSQueryModelSchema,
   ),
+  stereotypes: optionalListWithSchema(V1_stereotypePtrSchema),
   supportInfo: custom(
     (val) => V1_serializeSupportInfo(val),
     (val) => V1_deserializeSupportInfo(val),
   ),
-  taggedValues: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_taggedValueSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
+  taggedValues: optionalListWithSchema(V1_taggedValueSchema),
   title: optional(primitive()),
 });

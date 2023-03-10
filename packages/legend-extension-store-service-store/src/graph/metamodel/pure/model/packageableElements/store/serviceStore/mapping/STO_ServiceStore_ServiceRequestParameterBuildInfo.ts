@@ -21,6 +21,11 @@ import type { ServiceParameter } from '../model/STO_ServiceStore_ServiceParamete
 
 export class ServiceRequestParameterBuildInfo implements Hashable {
   serviceParameter!: ServiceParameter;
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
   transform!: RawLambda;
 
   get hashCode(): string {

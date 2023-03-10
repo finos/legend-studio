@@ -16,6 +16,15 @@
 
 export const TEST_DATA__roundtrip = [
   {
+    path: 'model::Person',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'model',
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
     path: 'test::model::TestMapping',
     content: {
       _type: 'mapping',
@@ -51,6 +60,12 @@ export const TEST_DATA__roundtrip = [
     path: 'test::model::TestDataSpace',
     content: {
       _type: 'dataSpace',
+      elements: [
+        {
+          type: 'CLASS',
+          path: 'model::Person',
+        },
+      ],
       defaultExecutionContext: 'INT',
       description: 'some description 2',
       executionContexts: [
@@ -69,10 +84,25 @@ export const TEST_DATA__roundtrip = [
       ],
       name: 'TestDataSpace',
       package: 'test::model',
+      stereotypes: [
+        {
+          profile: 'meta::pure::profiles::doc',
+          value: 'deprecated',
+        },
+      ],
       supportInfo: {
         _type: 'email',
         address: 'testEmail@test.org',
       },
+      taggedValues: [
+        {
+          tag: {
+            profile: 'meta::pure::profiles::doc',
+            value: 'doc',
+          },
+          value: 'test',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
   },

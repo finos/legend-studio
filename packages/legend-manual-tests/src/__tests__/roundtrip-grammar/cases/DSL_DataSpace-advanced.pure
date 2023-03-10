@@ -1,0 +1,75 @@
+Class model::DummyClass
+{
+}
+
+Enum model::DummyEnum
+{
+}
+
+
+###Mapping
+Mapping model::DummyMapping
+(
+)
+
+
+###Runtime
+Runtime model::DummyRuntime
+{
+  mappings:
+  [
+    model::DummyMapping
+  ];
+}
+
+
+###Diagram
+Diagram model::DummyDiagram
+{
+}
+
+
+###DataSpace
+DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      description: 'some information about the context';
+      mapping: model::DummyMapping;
+      defaultRuntime: model::DummyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  title: 'Untitled';
+  description: 'some description';
+  featuredDiagrams:
+  [
+    model::DummyDiagram
+  ];
+  elements:
+  [
+    model::DummyClass,
+    model::DummyClass
+  ];
+  sampleTDSQueries:
+  [
+    {
+      name: 'MyQuery';
+      description: 'some information about the query';
+      query: |'';
+      columns:
+      [
+        {
+          name: 'Column 1';
+          description: 'some information about the column';
+          sampleValues: ['1', '2', 'Silver Bird'];
+        }
+      ];
+    }
+  ];
+  supportInfo: Email {
+    address: 'someEmail@test.org';
+  };
+}
