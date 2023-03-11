@@ -1,5 +1,17 @@
 # @finos/legend-application-studio
 
+## 22.5.0
+
+### Minor Changes
+
+- [#1987](https://github.com/finos/legend-studio/pull/1987) [`28ca8adae`](https://github.com/finos/legend-studio/commit/28ca8adaec6eb5e2cd850d247685489b21a5bfbb) ([@akphi](https://github.com/akphi)) - Add support for generating sample data (i.e. mock data) for classes (can be triggered via explorer context menu).
+
+### Patch Changes
+
+- [#1941](https://github.com/finos/legend-studio/pull/1941) [`cda3e0bcb`](https://github.com/finos/legend-studio/commit/cda3e0bcb94464d52ac88d59ce6c725c9a8b1e27) ([@xannem](https://github.com/xannem)) - Add warning for users changing project's group ID or artifact ID
+
+- [#1874](https://github.com/finos/legend-studio/pull/1874) [`04a31ba2f`](https://github.com/finos/legend-studio/commit/04a31ba2f2790937cc2289b29fc89f4e59e351d2) ([@gayathrir11](https://github.com/gayathrir11)) - Persist user preferences for `wrapText` and `enableStrictMode`.
+
 ## 22.4.8
 
 ### Patch Changes

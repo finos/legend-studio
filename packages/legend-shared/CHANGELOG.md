@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 8.0.0
+
+### Major Changes
+
+- [#1987](https://github.com/finos/legend-studio/pull/1987) [`28ca8adae`](https://github.com/finos/legend-studio/commit/28ca8adaec6eb5e2cd850d247685489b21a5bfbb) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `Log` to `LogService`.
+
 ## 7.0.0
 
 ### Major Changes

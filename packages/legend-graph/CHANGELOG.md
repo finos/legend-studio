@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 23.1.0
+
+### Minor Changes
+
+- [#1985](https://github.com/finos/legend-studio/pull/1985) [`9068bebc4`](https://github.com/finos/legend-studio/commit/9068bebc4203f3407e04ef9961a2e4929763a0ed) ([@gs-gunjan](https://github.com/gs-gunjan)) - Renaming mapping test data as per engine
+
+- [#1313](https://github.com/finos/legend-studio/pull/1313) [`53604b117`](https://github.com/finos/legend-studio/commit/53604b1173d4b8b5de430cfcdef82287c9045593) ([@roasher](https://github.com/roasher)) - Added support for Google Cloud Platform Spanner Database
+
 ## 23.0.3
 
 ### Patch Changes
