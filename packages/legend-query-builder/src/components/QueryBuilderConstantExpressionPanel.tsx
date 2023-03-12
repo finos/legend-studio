@@ -52,7 +52,7 @@ import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationE
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 
-// Note: We currently only allow constant variables for primitive types of multiplicity ONE.
+// NOTE: We currently only allow constant variables for primitive types of multiplicity ONE.
 // This is why we don't show multiplicity in the editor.
 const QueryBuilderConstantExpressionEditor = observer(
   (props: { constantState: QueryBuilderConstantExpressionState }) => {

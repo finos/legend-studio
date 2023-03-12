@@ -553,7 +553,7 @@ export class NewFileGenerationDriver extends NewElementDriver<FileGenerationSpec
   }
 }
 
-// Note: Main reason for driver is to disallow if generation specification already exists
+// NOTE: Main reason for driver is to disallow if generation specification already exists
 export class NewGenerationSpecificationDriver extends NewElementDriver<GenerationSpecification> {
   constructor(editorStore: EditorStore) {
     super(editorStore);

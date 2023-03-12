@@ -58,7 +58,7 @@ test(
           TEST_DATA__simpleProjection.body,
         ),
       );
-      // Note: Render result will not currently find the
+      // NOTE: Render result will not currently find the
       // 'show constant(s)' panel so we will directly force
       // the panel to show for now
       queryBuilderState.constantState.setShowConstantPanel(true);
@@ -107,7 +107,7 @@ test(
       queryBuilderState.initializeWithQuery(
         create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
       );
-      // Note: Render result will not currently find the
+      // NOTE: Render result will not currently find the
       // 'show parameter(s)' panel so we will directly force
       // the panel to show for now
       queryBuilderState.setShowParametersPanel(true);
