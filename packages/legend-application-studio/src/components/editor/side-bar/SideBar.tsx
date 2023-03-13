@@ -25,6 +25,7 @@ import { ProjectOverview } from './ProjectOverview.js';
 import { WorkflowManager } from './WorkflowManager.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { GlobalTestRunner } from './testable/GlobalTestRunner.js';
+import { RegisterService } from './RegisterService.js';
 
 /**
  * Wrapper component around different implementations of sidebar, such as to view domain, to manage SDLC, etc.
@@ -56,6 +57,14 @@ export const SideBar = observer(() => {
         return (
           <GlobalTestRunner
             globalTestRunnerState={editorStore.globalTestRunnerState}
+          />
+        );
+      case ACTIVITY_MODE.REGISTER_SERVICES:
+        return (
+          <RegisterService
+            bulkServiceRegistrationState={
+              editorStore.bulkServiceRegistrationState
+            }
           />
         );
       default:

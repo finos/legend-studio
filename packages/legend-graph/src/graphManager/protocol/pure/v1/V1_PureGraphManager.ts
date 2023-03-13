@@ -275,6 +275,11 @@ import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_S
 import { V1_transformModelUnit } from './transformation/pureGraph/from/V1_DSL_ExternalFormat_Transformer.js';
 import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 import { V1_LambdaReturnTypeInput } from './engine/compilation/V1_LambdaReturnType.js';
+import {
+  type BulkServiceRegistrationResult,
+  BulkRegistrationResultSuccess,
+  BulkRegistrationResultFail,
+} from '../../../action/service/BulkServiceRegistrationResult.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2599,6 +2604,137 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  async bulkServiceRegistration(
+    services: Service[],
+    graph: PureModel,
+    groupId: string,
+    artifactId: string,
+    version: string | undefined,
+    server: string,
+    executionMode: ServiceExecutionMode,
+    options?: ServiceRegistrationOptions,
+  ): Promise<BulkServiceRegistrationResult[]> {
+    const serverServiceInfo = await this.engine.getServerServiceInfo();
+    //input
+    const input: V1_PureModelContext[] = [];
+    const result: BulkServiceRegistrationResult[] = [];
+
+    const protocol = new V1_Protocol(
+      'pure',
+      serverServiceInfo.services.dependencies.pure,
+    );
+    switch (executionMode) {
+      case ServiceExecutionMode.FULL_INTERACTIVE: {
+        const pmcp = this.createBulkServiceRegistrationInput(graph, services);
+        pmcp.forEach((data) => {
+          data.origin = new V1_PureModelContextPointer(protocol);
+          input.push(data);
+        });
+        break;
+      }
+      case ServiceExecutionMode.SEMI_INTERACTIVE: {
+        services.forEach((service) => {
+          const sdlcInfo = new V1_LegendSDLC(groupId, artifactId, version);
+          const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
+          // data
+          const data = new V1_PureModelContextData();
+          data.origin = new V1_PureModelContextPointer(protocol);
+          const serviceProtocol = this.elementToProtocol<V1_Service>(service);
+
+          // override the URL pattern if specified
+          if (options?.TEMPORARY__semiInteractiveOverridePattern) {
+            serviceProtocol.pattern =
+              options.TEMPORARY__semiInteractiveOverridePattern;
+          }
+
+          data.elements = [serviceProtocol];
+
+          // SDLC info
+          // TODO: We may need to add `runtime` pointers if the runtime defned in the service is a packageable runtime
+          // and not embedded.
+          const execution = service.execution;
+          if (execution instanceof PureSingleExecution) {
+            if (execution.mapping) {
+              sdlcInfo.packageableElementPointers = [
+                new V1_PackageableElementPointer(
+                  PackageableElementPointerType.MAPPING,
+                  execution.mapping.value.path,
+                ),
+              ];
+            }
+          } else if (execution instanceof PureMultiExecution) {
+            sdlcInfo.packageableElementPointers =
+              execution.executionParameters.map(
+                (e) =>
+                  new V1_PackageableElementPointer(
+                    PackageableElementPointerType.MAPPING,
+                    e.mapping.value.path,
+                  ),
+              );
+          } else {
+            throw new UnsupportedOperationError(
+              `Can't register service with the specified execution`,
+              execution,
+            );
+          }
+          // composite input
+          input.push(new V1_PureModelContextComposite(protocol, data, pointer));
+        });
+        break;
+      }
+      case ServiceExecutionMode.PROD: {
+        services.forEach((service) => {
+          const sdlcInfo = new V1_LegendSDLC(groupId, artifactId, version);
+          const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
+          const data = new V1_PackageableElementPointer(
+            PackageableElementPointerType.SERVICE,
+            service.path,
+          );
+          sdlcInfo.packageableElementPointers.push(data);
+          input.push(pointer);
+        });
+        break;
+      }
+      default: {
+        throw new UnsupportedOperationError(
+          `Can't register service with execution mode '${executionMode}'`,
+        );
+      }
+    }
+
+    new Promise((resolve, reject) => {
+      input.forEach(async (res) => {
+        const seviceResult = await this.engine.registerService(
+          res,
+          server,
+          executionMode,
+          Boolean(options?.TEMPORARY__useStoreModel),
+        );
+        if (seviceResult.status === '200') {
+          resolve(
+            result.push(
+              new BulkRegistrationResultSuccess(
+                seviceResult.serverURL,
+                seviceResult.pattern,
+                seviceResult.serviceInstanceId,
+              ),
+            ),
+          );
+        } else {
+          reject(
+            result.push(
+              new BulkRegistrationResultFail(
+                `Failed to Register Service: ${seviceResult.pattern}`,
+              ),
+            ),
+          );
+        }
+      });
+    });
+
+    return result;
+  }
+
   async activateService(serviceUrl: string, serviceId: string): Promise<void> {
     const serviceStorage = await this.engine.getServiceVersionInfo(
       serviceUrl,
@@ -2622,7 +2758,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     prunedGraphData.elements.push(this.elementToProtocol<V1_Service>(service));
     return prunedGraphData;
   };
-
+  private createBulkServiceRegistrationInput = (
+    graph: PureModel,
+    services: Service[],
+  ): V1_PureModelContextData[] => {
+    const graphData = this.getFullGraphModelData(graph);
+    const results: V1_PureModelContextData[] = [];
+    services.forEach((service) => {
+      const prunedGraphData = new V1_PureModelContextData();
+      prunedGraphData.elements = graphData.elements.filter(
+        (element) => !(element instanceof V1_Service),
+      );
+      prunedGraphData.elements.push(
+        this.elementToProtocol<V1_Service>(service),
+      );
+      results.push(prunedGraphData);
+    });
+    return results;
+  };
   // --------------------------------------------- Query ---------------------------------------------
 
   async searchQueries(

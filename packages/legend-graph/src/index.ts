@@ -232,6 +232,11 @@ export * from './graphManager/action/generation/GenerationConfigurationDescripti
 export { GenerationOutput } from './graphManager/action/generation/GenerationOutput.js';
 export { ServiceExecutionMode } from './graphManager/action/service/ServiceExecutionMode.js';
 export { ServiceRegistrationResult } from './graphManager/action/service/ServiceRegistrationResult.js';
+export {
+  BulkServiceRegistrationResult,
+  BulkRegistrationResultFail,
+  BulkRegistrationResultSuccess,
+} from './graphManager/action/service/BulkServiceRegistrationResult.js';
 export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graphManager/action/SourceInformation.js';
 export * from './graphManager/protocol/pure/PureProtocolProcessorPlugin.js';

@@ -138,6 +138,7 @@ import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
 import { LEGEND_STUDIO_COMMAND_KEY } from './LegendStudioCommand.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
 import type { ProjectViewerEditorMode } from './project-viewer/ProjectViewerEditorMode.js';
+import { BulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -183,6 +184,7 @@ export class EditorStore implements CommandRegistrar {
   devToolState: DevToolState;
   embeddedQueryBuilderState: EmbeddedQueryBuilderState;
   newElementState: NewElementState;
+  bulkServiceRegistrationState: BulkServiceRegistrationState;
   /**
    * Since we want to share element generation state across all element in the editor, we will create 1 element generate state
    * per file generation configuration type.
@@ -281,6 +283,10 @@ export class EditorStore implements CommandRegistrar {
       this.sdlcState,
     );
     this.newElementState = new NewElementState(this);
+    this.bulkServiceRegistrationState = new BulkServiceRegistrationState(
+      this,
+      this.sdlcState,
+    );
     // special (singleton) editors
     this.grammarTextEditorState = new GrammarTextEditorState(this);
     this.modelImporterState = new ModelImporterState(this);
