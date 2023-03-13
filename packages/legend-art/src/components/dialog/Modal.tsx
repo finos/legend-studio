@@ -84,6 +84,7 @@ export const ModalFooterButton: React.FC<{
   text?: string;
   darkMode?: boolean;
   inProgress?: boolean;
+  disabled?: boolean;
   inProgressText?: string;
   children?: React.ReactNode;
   className?: string;
@@ -96,6 +97,7 @@ export const ModalFooterButton: React.FC<{
     text,
     title,
     children,
+    disabled,
     className,
     darkMode,
   } = props;
@@ -119,7 +121,7 @@ export const ModalFooterButton: React.FC<{
       )}
       title={title}
       onClick={onClick}
-      disabled={inProgress}
+      disabled={inProgress ?? disabled}
     >
       {buttonText}
       {children}
