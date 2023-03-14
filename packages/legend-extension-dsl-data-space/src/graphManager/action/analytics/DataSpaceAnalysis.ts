@@ -46,6 +46,23 @@ export class DataSpaceStereotypeInfo {
   value!: string;
 }
 
+export class DataSpaceDocumentationEntry {
+  readonly uuid = uuid();
+  readonly elementPath: string;
+  readonly subElementText?: string | undefined;
+  readonly doc: string;
+
+  constructor(
+    elementPath: string,
+    subElementText: string | undefined,
+    documentation: string,
+  ) {
+    this.elementPath = elementPath;
+    this.subElementText = subElementText;
+    this.doc = documentation;
+  }
+}
+
 export class DataSpaceAnalysisResult {
   name!: string;
   package!: string;
@@ -62,4 +79,6 @@ export class DataSpaceAnalysisResult {
   defaultExecutionContext!: DataSpaceExecutionContextAnalysisResult;
 
   featuredDiagrams: Diagram[] = [];
+
+  elementDocs: DataSpaceDocumentationEntry[] = [];
 }

@@ -19,8 +19,6 @@ import V1_SYSTEM_MODELS from './v1/V1_DSL_DataSpace_SystemModels.json';
 import {
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
-  V1_DataSpaceSampleTDSQuery,
-  V1_DataSpaceSampleTDSQueryColumn,
   V1_DataSpaceSupportEmail,
 } from './v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import {
@@ -40,8 +38,6 @@ import { getOwnDataSpace } from '../../DSL_DataSpace_GraphManagerHelper.js';
 import {
   DataSpace,
   DataSpaceExecutionContext,
-  DataSpaceSampleTDSQuery,
-  DataSpaceSampleTDSQueryColumn,
   DataSpaceSupportEmail,
 } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import {
@@ -69,9 +65,6 @@ import {
   Class,
   Enumeration,
   Association,
-  V1_buildRawLambdaWithResolvedPaths,
-  V1_RawValueSpecificationTransformer,
-  type V1_RawLambda,
 } from '@finos/legend-graph';
 import {
   V1_DSL_Diagram_PackageableElementPointerType,
@@ -181,38 +174,6 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
                 `Can't find data space element (only allow class, enumartion, association) '${pointer.path}'`,
               );
             });
-          }
-          if (elementProtocol.sampleTDSQueries) {
-            element.sampleTDSQueries = elementProtocol.sampleTDSQueries.map(
-              (queryProtocol) => {
-                const query = new DataSpaceSampleTDSQuery();
-                query.name = guaranteeNonEmptyString(
-                  queryProtocol.name,
-                  `Data space sample TDS query 'name' field is missing or empty`,
-                );
-                query.description = queryProtocol.description;
-                query.query = V1_buildRawLambdaWithResolvedPaths(
-                  queryProtocol.query.parameters,
-                  queryProtocol.query.body,
-                  context,
-                );
-                if (queryProtocol.columns) {
-                  query.columns = queryProtocol.columns.map(
-                    (columnProtocol) => {
-                      const colmun = new DataSpaceSampleTDSQueryColumn();
-                      colmun.name = guaranteeNonEmptyString(
-                        columnProtocol.name,
-                        `Data space sample TDS query column 'name' field is missing or empty`,
-                      );
-                      colmun.description = columnProtocol.description;
-                      colmun.sampleValues = columnProtocol.sampleValues;
-                      return colmun;
-                    },
-                  );
-                }
-                return query;
-              },
-            );
           }
           if (elementProtocol.supportInfo) {
             if (
@@ -328,30 +289,6 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
                 elPath.valueForSerialization ?? '',
               ),
           );
-          if (metamodel.sampleTDSQueries) {
-            protocol.sampleTDSQueries = metamodel.sampleTDSQueries.map(
-              (query) => {
-                const queryProtocol = new V1_DataSpaceSampleTDSQuery();
-                queryProtocol.name = query.name;
-                queryProtocol.description = query.description;
-                queryProtocol.query =
-                  query.query.accept_RawValueSpecificationVisitor(
-                    new V1_RawValueSpecificationTransformer(context),
-                  ) as V1_RawLambda;
-                if (query.columns) {
-                  queryProtocol.columns = query.columns.map((column) => {
-                    const columnProtocol =
-                      new V1_DataSpaceSampleTDSQueryColumn();
-                    columnProtocol.name = column.name;
-                    columnProtocol.description = column.description;
-                    columnProtocol.sampleValues = column.sampleValues;
-                    return columnProtocol;
-                  });
-                }
-                return queryProtocol;
-              },
-            );
-          }
           if (metamodel.supportInfo) {
             if (metamodel.supportInfo instanceof DataSpaceSupportEmail) {
               const supportEmail = new V1_DataSpaceSupportEmail();

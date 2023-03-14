@@ -51,28 +51,28 @@ export class DataSpaceViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly graphManagerState: BasicGraphManagerState;
 
-  groupId: string;
-  artifactId: string;
-  versionId: string;
-  dataSpaceAnalysisResult: DataSpaceAnalysisResult;
-  _renderer?: DiagramRenderer | undefined;
-  currentDiagram?: Diagram | undefined;
-  currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.OVERVIEW;
-  currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
-  currentRuntime: PackageableRuntime;
-
-  viewProject: (
+  readonly groupId: string;
+  readonly artifactId: string;
+  readonly versionId: string;
+  readonly dataSpaceAnalysisResult: DataSpaceAnalysisResult;
+  readonly viewProject: (
     groupId: string,
     artifactId: string,
     versionId: string,
     entityPath: string | undefined,
   ) => void;
-  viewSDLCProject: (
+  readonly viewSDLCProject: (
     groupId: string,
     artifactId: string,
     entityPath: string | undefined,
   ) => Promise<void>;
-  onDiagramClassDoubleClick: (classView: ClassView) => void;
+  readonly onDiagramClassDoubleClick: (classView: ClassView) => void;
+
+  _renderer?: DiagramRenderer | undefined;
+  currentDiagram?: Diagram | undefined;
+  currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.OVERVIEW;
+  currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
+  currentRuntime: PackageableRuntime;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,

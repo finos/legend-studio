@@ -196,6 +196,45 @@ const DataSpaceOverview = observer(
   },
 );
 
+const DataSpaceDocumentation = observer(
+  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
+    const { dataSpaceViewerState } = props;
+    const documentationEntries =
+      dataSpaceViewerState.dataSpaceAnalysisResult.elementDocs;
+
+    if (documentationEntries.length === 0) {
+      return <BlankPanelContent>No documentation available</BlankPanelContent>;
+    }
+    return (
+      <div className="data-space__viewer__main-panel__content data-space__viewer__overview">
+        <table className="table">
+          <thead>
+            <tr>
+              <th className="table__cell--left">Element</th>
+              <th className="table__cell--left"></th>
+              <th className="table__cell--left">Documentation</th>
+            </tr>
+          </thead>
+          <tbody>
+            {documentationEntries.map((entry) => (
+              <tr
+                key={entry.uuid}
+                className={'query-editor__query-loader__body__table__row'}
+              >
+                <td className="table__cell--left">{entry.elementPath}</td>
+                <td className="table__cell--left">
+                  {entry.subElementText ?? ''}
+                </td>
+                <td className="table__cell--left">{entry.doc}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  },
+);
+
 type ExecutionContextOption = {
   label: string;
   value: DataSpaceExecutionContextAnalysisResult;
@@ -543,24 +582,24 @@ export const DataSpaceViewer = observer(
         icon: <DocumentationIcon />,
       },
       {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.SAMPLE_DATA_TABLE,
-        title: 'Sample Data Table',
-        icon: <TableIcon />,
-      },
-      {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION,
         title: 'Execution Context',
         icon: <PlayIcon />,
       },
       {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT,
-        title: 'Entitlement',
-        icon: <KeyIcon />,
-      },
-      {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA,
         title: 'Test Data',
         icon: <FlaskIcon />,
+      },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.SAMPLE_DATA_TABLE,
+        title: 'Sample Data Table',
+        icon: <TableIcon />,
+      },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT,
+        title: 'Entitlement',
+        icon: <KeyIcon />,
       },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_COVERAGE,
@@ -665,21 +704,21 @@ export const DataSpaceViewer = observer(
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.DOCUMENTATION && (
-                <BlankPanelContent>
-                  View documentation (Work in Progress)
-                </BlankPanelContent>
-              )}
-              {dataSpaceViewerState.currentActivity ===
-                DATA_SPACE_VIEWER_ACTIVITY_MODE.SAMPLE_DATA_TABLE && (
-                <BlankPanelContent>
-                  View sample data table (Work in Progress)
-                </BlankPanelContent>
+                <DataSpaceDocumentation
+                  dataSpaceViewerState={dataSpaceViewerState}
+                />
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION && (
                 <DataSpaceExecutionViewer
                   dataSpaceViewerState={dataSpaceViewerState}
                 />
+              )}
+              {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.SAMPLE_DATA_TABLE && (
+                <BlankPanelContent>
+                  View sample data table (Work in Progress)
+                </BlankPanelContent>
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT &&

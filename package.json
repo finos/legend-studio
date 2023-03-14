@@ -42,7 +42,7 @@
     "fix:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{mjs,cjs,js,ts,tsx}\" --report-unused-disable-directives --fix && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --parallel --exclude legend-studio --verbose run lint:js --fix",
     "fix:style": "yarn lint:style --fix",
     "git:install-hooks": "husky install",
-    "git:pre-commit": "lint-staged",
+    "git:pre-commit": "lint-staged --config ./package.json",
     "git:upstream:setup": "git remote add upstream https://github.com/finos/legend-studio.git",
     "git:upstream:sync": "git pull --rebase upstream",
     "info:env": "node ./scripts/workflow/checkEnvInfo.js",

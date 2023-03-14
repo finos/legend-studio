@@ -46,12 +46,18 @@ import { DataSpaceSupportEmail } from '../../../../graph/metamodel/pure/model/pa
 import { V1_DataSpaceSupportEmail } from '../../../../graphManager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import {
   DataSpaceAnalysisResult,
+  DataSpaceDocumentationEntry,
   DataSpaceExecutionContextAnalysisResult,
   DataSpaceStereotypeInfo,
   DataSpaceTaggedValueInfo,
 } from '../../../action/analytics/DataSpaceAnalysis.js';
 import { DSL_DataSpace_PureGraphManagerExtension } from '../DSL_DataSpace_PureGraphManagerExtension.js';
-import { V1_DataSpaceAnalysisResult } from './engine/analytics/V1_DataSpaceAnalysis.js';
+import {
+  V1_DataSpaceAnalysisResult,
+  V1_DataSpaceAssociationDocumentationEntry,
+  V1_DataSpaceClassDocumentationEntry,
+  V1_DataSpaceEnumerationDocumentationEntry,
+} from './engine/analytics/V1_DataSpaceAnalysis.js';
 
 const ANALYZE_DATA_SPACE_TRACE = 'analyze data space';
 
@@ -254,7 +260,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       ActionState.create(),
     );
 
-    // build execution context info
+    // execution context
     result.executionContextsIndex = new Map<
       string,
       DataSpaceExecutionContextAnalysisResult
@@ -280,10 +286,67 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       result.executionContextsIndex.get(analysisResult.defaultExecutionContext),
     );
 
-    // find featured diagrams
+    // featured diagrams
     result.featuredDiagrams = analysisResult.featuredDiagrams.map((path) =>
       getDiagram(path, graph),
     );
+
+    // elements documentation
+    result.elementDocs = analysisResult.elementDocs.flatMap((docEntry) => {
+      const entries: DataSpaceDocumentationEntry[] = [];
+      entries.push(
+        new DataSpaceDocumentationEntry(
+          docEntry.path,
+          undefined,
+          docEntry.docs.join('\n'),
+        ),
+      );
+      if (docEntry instanceof V1_DataSpaceClassDocumentationEntry) {
+        docEntry.properties.forEach((property) => {
+          entries.push(
+            new DataSpaceDocumentationEntry(
+              docEntry.path,
+              property.name,
+              property.docs.join('\n'),
+            ),
+          );
+        });
+        docEntry.inheritedProperties.forEach((property) => {
+          entries.push(
+            new DataSpaceDocumentationEntry(
+              docEntry.path,
+              property.name,
+              property.docs.join('\n'),
+            ),
+          );
+        });
+      } else if (
+        docEntry instanceof V1_DataSpaceEnumerationDocumentationEntry
+      ) {
+        docEntry.enumValues.forEach((enumValue) => {
+          entries.push(
+            new DataSpaceDocumentationEntry(
+              docEntry.path,
+              enumValue.name,
+              enumValue.docs.join('\n'),
+            ),
+          );
+        });
+      } else if (
+        docEntry instanceof V1_DataSpaceAssociationDocumentationEntry
+      ) {
+        docEntry.properties.forEach((property) => {
+          entries.push(
+            new DataSpaceDocumentationEntry(
+              docEntry.path,
+              property.name,
+              property.docs.join('\n'),
+            ),
+          );
+        });
+      }
+      return entries;
+    });
 
     return result;
   }

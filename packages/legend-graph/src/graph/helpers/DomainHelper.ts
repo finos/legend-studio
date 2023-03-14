@@ -27,6 +27,7 @@ import {
   ROOT_PACKAGE_NAME,
   MILESTONING_VERSION_PROPERTY_SUFFIX,
   FUNCTION_SIGNATURE_MULTIPLICITY_INFINITE_TOKEN,
+  PURE_DOC_TAG,
 } from '../MetaModelConst.js';
 import { Package } from '../metamodel/pure/packageableElements/domain/Package.js';
 import type { PackageableElement } from '../metamodel/pure/packageableElements/PackageableElement.js';
@@ -622,6 +623,23 @@ export const isElementDeprecated = (
         .getProfile(CORE_PURE_PATH.PROFILE_DOC)
         .p_stereotypes.find((s) => s.value === PURE_DEPRECATED_STEREOTYPE),
   );
+
+export const extractAnnotatedElementDocumentation = (
+  el: AnnotatedElement,
+): string | undefined => {
+  let result: string | undefined = undefined;
+  for (const taggedValue of el.taggedValues) {
+    if (
+      taggedValue.tag.ownerReference.value.path ===
+        CORE_PURE_PATH.PROFILE_DOC &&
+      taggedValue.tag.value.value === PURE_DOC_TAG
+    ) {
+      result = taggedValue.value;
+      break;
+    }
+  }
+  return result;
+};
 
 /**
  *  Gets the generated milestoned properties of a property owner

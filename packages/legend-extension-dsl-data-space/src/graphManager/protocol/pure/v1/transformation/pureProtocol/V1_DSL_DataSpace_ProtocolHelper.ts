@@ -29,7 +29,6 @@ import {
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
   V1_packageableElementPointerDeserializerSchema,
-  V1_rawLambdaModelSchema,
 } from '@finos/legend-graph';
 import {
   type PlainObject,
@@ -37,15 +36,12 @@ import {
   usingConstantValueSchema,
   usingModelSchema,
   optionalListWithSchema,
-  optionalPrimitiveList,
 } from '@finos/legend-shared';
 import {
   type V1_DataSpaceSupportInfo,
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
   V1_DataSpaceSupportEmail,
-  V1_DataSpaceSampleTDSQuery,
-  V1_DataSpaceSampleTDSQueryColumn,
 } from '../../model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 
 export const V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE = 'dataSpace';
@@ -60,27 +56,6 @@ const V1_dataSpaceExecutionContextModelSchema = createModelSchema(
     description: optional(primitive()),
     mapping: usingModelSchema(V1_packageableElementPointerDeserializerSchema),
     name: primitive(),
-  },
-);
-
-const V1_dataSpaceSampleTDSQueryColumnModelSchema = createModelSchema(
-  V1_DataSpaceSampleTDSQueryColumn,
-  {
-    description: optional(primitive()),
-    name: primitive(),
-    sampleValues: optionalPrimitiveList(),
-  },
-);
-
-const V1_dataSpaceSampleTDSQueryModelSchema = createModelSchema(
-  V1_DataSpaceSampleTDSQuery,
-  {
-    columns: optionalListWithSchema(
-      V1_dataSpaceSampleTDSQueryColumnModelSchema,
-    ),
-    description: optional(primitive()),
-    name: primitive(),
-    query: usingModelSchema(V1_rawLambdaModelSchema),
   },
 );
 
@@ -131,9 +106,6 @@ export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
   ),
   name: primitive(),
   package: primitive(),
-  sampleTDSQueries: optionalListWithSchema(
-    V1_dataSpaceSampleTDSQueryModelSchema,
-  ),
   stereotypes: optionalListWithSchema(V1_stereotypePtrSchema),
   supportInfo: custom(
     (val) => V1_serializeSupportInfo(val),
