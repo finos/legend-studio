@@ -48,6 +48,10 @@ interface ApplicationStorage {
   clear(): void;
 }
 
+export enum LEGEND_APPLICATION_SETTINGS_KEY {
+  EDITOR_THEME = 'editor.theme',
+}
+
 export class LocalStorage implements ApplicationStorage {
   private get localStorage(): Storage {
     return guaranteeNonNullable(
