@@ -44,6 +44,7 @@ export * from './stores/AlertService.js';
 export * from './stores/AssistantService.js';
 export * from './stores/ApplicationNavigationContextService.js';
 export * from './stores/LegendApplicationPlugin.js';
+export * from './stores/LegendApplicationStorage.js';
 
 export * from './components/shared/TextSearchAdvancedConfigMenu.js';
 export * from './stores/shared/TextSearchAdvancedConfigState.js';

@@ -411,7 +411,7 @@ const QueryEditorHeaderContent = observer(
         !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
       );
       applicationStore.storageService.settingsStore.persist(
-        LEGEND_APPLICATION_SETTINGS_KEY.EDITOR_THEME,
+        LEGEND_APPLICATION_SETTINGS_KEY.TEMPORARY__ENABLE_LIGHT_THEME,
         applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
       );
     };

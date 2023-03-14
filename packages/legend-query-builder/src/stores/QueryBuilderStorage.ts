@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-export enum LEGEND_QUERY_SETTINGS_KEY {
-  EDITOR_SHOW_POST_FILTER = 'editor.showPostFilter',
+export enum QUERY_BUILDER_SETTINGS_KEY {
+  SHOW_POST_FILTER_PANEL = 'query-builder.showPostFilterPanel',
 }
