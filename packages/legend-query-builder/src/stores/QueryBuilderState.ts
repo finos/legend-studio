@@ -159,6 +159,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
       resetQueryResult: action,
       resetQueryContent: action,
+      resetQueryBodyContent: action,
+      resetQueryParameterContent: action,
       changeClass: action,
       changeMapping: action,
 
@@ -301,7 +303,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.resultState = resultState;
   }
 
-  resetQueryContent(): void {
+  resetQueryBodyContent(): void {
     this.textEditorState = new QueryBuilderTextEditorState(this);
     this.unsupportedQueryState = new QueryBuilderUnsupportedQueryState(this);
     this.milestoningState = new QueryBuilderMilestoningState(this);
@@ -313,7 +315,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
         mappingModelCoverageAnalysisResult;
     }
     this.explorerState.refreshTreeData();
-    this.parametersState = new QueryBuilderParametersState(this);
     this.constantState = new QueryBuilderConstantsState(this);
     this.functionsExplorerState = new QueryFunctionsExplorerState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
@@ -331,6 +332,15 @@ export abstract class QueryBuilderState implements CommandRegistrar {
         currentFetchStructureImplementationType,
       );
     }
+  }
+
+  resetQueryParameterContent(): void {
+    this.parametersState = new QueryBuilderParametersState(this);
+  }
+
+  resetQueryContent(): void {
+    this.resetQueryParameterContent();
+    this.resetQueryBodyContent();
   }
 
   changeClass(val: Class): void {
@@ -377,6 +387,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   }
 
   initializeWithQuery(query: RawLambda): void {
+    this.resetQueryParameterContent();
     this.rebuildWithQuery(query);
     this.changeDetectionState.initialize(query);
   }
@@ -387,7 +398,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   rebuildWithQuery(query: RawLambda): void {
     try {
       this.resetQueryResult();
-      this.resetQueryContent();
+      this.resetQueryBodyContent();
 
       if (!isStubbed_RawLambda(query)) {
         const valueSpec = observe_ValueSpecification(
@@ -414,7 +425,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.resetQueryContent();
+      this.resetQueryBodyContent();
       this.resetQueryResult();
       this.unsupportedQueryState.setLambdaError(error);
       this.unsupportedQueryState.setRawLambda(query);

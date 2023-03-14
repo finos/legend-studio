@@ -133,6 +133,40 @@ export const isDefaultDatePropagationSupported = (
   return false;
 };
 
+export const checkIfEquivalent = (
+  param1: ValueSpecification | undefined,
+  param2: ValueSpecification | undefined,
+): boolean => {
+  if (
+    param1?.multiplicity.lowerBound !== param2?.multiplicity.lowerBound ||
+    param1?.multiplicity.upperBound !== param2?.multiplicity.upperBound
+  ) {
+    return false;
+  }
+  if (
+    param1 instanceof VariableExpression &&
+    param2 instanceof VariableExpression
+  ) {
+    return param1.name === param2.name;
+  } else if (
+    param1 instanceof PrimitiveInstanceValue &&
+    param2 instanceof PrimitiveInstanceValue
+  ) {
+    if (
+      param1.genericType.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE &&
+      param2.genericType.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE
+    ) {
+      return true;
+    }
+    return (
+      param1.genericType.value.rawType.name ===
+        param2.genericType.value.rawType.name &&
+      param1.values[0] === param2.values[0]
+    );
+  }
+  return false;
+};
+
 /**
  * Check if the parameter value of the milestoned property is
  * the same as those specified in global scope, so that we can
@@ -144,33 +178,6 @@ export const matchMilestoningParameterValue = (
   parameterValue: ValueSpecification,
   milestoningDate: QueryBuilderMilestoningState,
 ): boolean => {
-  const checkIfEquivalent = (
-    param1: ValueSpecification | undefined,
-    param2: ValueSpecification | undefined,
-  ): boolean => {
-    if (
-      param1 instanceof VariableExpression &&
-      param2 instanceof VariableExpression
-    ) {
-      return param1.name === param2.name;
-    } else if (
-      param1 instanceof PrimitiveInstanceValue &&
-      param2 instanceof PrimitiveInstanceValue
-    ) {
-      if (
-        param1.genericType.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE &&
-        param2.genericType.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE
-      ) {
-        return true;
-      }
-      return (
-        param1.genericType.value.rawType.name ===
-          param2.genericType.value.rawType.name &&
-        param1.values[0] === param2.values[0]
-      );
-    }
-    return false;
-  };
   switch (stereotype) {
     case MILESTONING_STEREOTYPE.BITEMPORAL:
       return (

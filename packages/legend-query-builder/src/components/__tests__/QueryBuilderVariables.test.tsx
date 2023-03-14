@@ -287,3 +287,54 @@ test(integrationTest('Query builder parameter default values'), async () => {
   expect(getByText(executeDialog, 'StrictDate')).not.toBeNull();
   expect(getByText(executeDialog, 'Today')).not.toBeNull();
 });
+
+test(
+  integrationTest(
+    'Query builder parameter values match when we go to text mode and come back to query state',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    const param1Lambda = TEST_DATA__simpeDateParameters(PRIMITIVE_TYPE.DATE);
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(param1Lambda.parameters, param1Lambda.body),
+      );
+    });
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    const parameterPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+    );
+    expect(getByText(parameterPanel, 'var_1')).not.toBeNull();
+    fireEvent.click(renderResult.getByText('Run Query'));
+    let executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
+    expect(getByText(executeDialog, 'Set Parameter Values'));
+
+    const parameterValue = getByText(executeDialog, 'var_1');
+
+    // Here we mimic the toggling to text mode by calling the rebuildWithQuery function.
+    await act(async () => {
+      queryBuilderState.rebuildWithQuery(
+        create_RawLambda(param1Lambda.parameters, param1Lambda.body),
+      );
+    });
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    const paramPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+    );
+    expect(getByText(paramPanel, 'var_1')).not.toBeNull();
+    fireEvent.click(renderResult.getByText('Run Query'));
+    executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
+    expect(getByText(executeDialog, 'Set Parameter Values'));
+    expect(getByText(executeDialog, 'var_1')).toBe(parameterValue);
+  },
+);

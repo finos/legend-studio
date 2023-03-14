@@ -69,6 +69,7 @@ import { LambdaParameterState } from './shared/LambdaParameterState.js';
 import { processTDS_OLAPGroupByExpression } from './fetch-structure/tds/window/QueryBuilderWindowStateBuilder.js';
 import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkStateBuilder.js';
 import { QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
+import { checkIfEquivalent } from './milestoning/QueryBuilderMilestoningHelper.js';
 
 const processGetAllExpression = (
   expression: SimpleFunctionExpression,
@@ -608,14 +609,26 @@ export const processParameters = (
   queryBuilderState: QueryBuilderState,
 ): void => {
   const queryParameterState = queryBuilderState.parametersState;
-  parameters.forEach((parameter) => {
-    const parameterState = new LambdaParameterState(
-      parameter,
-      queryBuilderState.observableContext,
-      queryBuilderState.graphManagerState.graph,
+  // Here we won't process the parameters which are present in the previous state
+  // because we don't want to lose the parameter value
+  queryParameterState.parameterStates =
+    queryParameterState.parameterStates.filter((p) =>
+      parameters.find((param) => checkIfEquivalent(param, p.parameter)),
     );
-    parameterState.mockParameterValue();
-    queryParameterState.addParameter(parameterState);
+  parameters.forEach((parameter) => {
+    if (
+      queryParameterState.parameterStates.find((ps) =>
+        checkIfEquivalent(ps.parameter, parameter),
+      ) === undefined
+    ) {
+      const parameterState = new LambdaParameterState(
+        parameter,
+        queryBuilderState.observableContext,
+        queryBuilderState.graphManagerState.graph,
+      );
+      parameterState.mockParameterValue();
+      queryParameterState.addParameter(parameterState);
+    }
   });
 };
 
