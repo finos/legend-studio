@@ -62,7 +62,7 @@ export class ApplicationStore<
   readonly timeService = new TimeService();
   readonly commandService: CommandService;
   readonly keyboardShortcutsService: KeyboardShortcutsService;
-  readonly layoutService = new LayoutService();
+  readonly layoutService: LayoutService;
   readonly clipboardService: ClipboardService;
   readonly terminalService: TerminalService;
   readonly logService = new LogService();
@@ -93,13 +93,13 @@ export class ApplicationStore<
     this.pluginManager = pluginManager;
 
     this.timeService = new TimeService();
-    this.layoutService = new LayoutService();
     // NOTE: set the logger first so other loading could use the configured logger
     this.logService = new LogService();
     this.logService.registerPlugins(pluginManager.getLoggerPlugins());
 
     this.identityService = new IdentityService(this);
     this.storageService = new StorageService(this);
+    this.layoutService = new LayoutService(this);
     this.clipboardService = new ClipboardService(this);
     this.terminalService = new TerminalService(this);
     this.commandService = new CommandService(this);

@@ -32,7 +32,7 @@ export * from './stores/ApplicationEvent.js';
 export * from './application/LegendApplicationConfig.js';
 export { WebApplicationNavigator } from './stores/navigation/WebApplicationNavigator.js';
 export { NavigationService } from './stores/navigation/NavigationService.js';
-export { LocalStorage } from './stores/storage/ApplicationStorage.js';
+export * from './stores/storage/ApplicationStorage.js';
 export * from './stores/storage/StorageService.js';
 export * from './stores/DocumentationService.js';
 export * from './stores/CommandService.js';
