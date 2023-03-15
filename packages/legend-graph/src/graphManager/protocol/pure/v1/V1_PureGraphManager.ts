@@ -281,6 +281,8 @@ import {
   BulkRegistrationResultFail,
 } from '../../../action/service/BulkServiceRegistrationResult.js';
 
+import { toJS } from 'mobx';
+
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
   nativeElements: V1_PackageableElement[] = [];
@@ -2702,36 +2704,50 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
     }
 
-    new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       input.forEach(async (res) => {
-        const seviceResult = await this.engine.registerService(
-          res,
-          server,
-          executionMode,
-          Boolean(options?.TEMPORARY__useStoreModel),
-        );
-        if (seviceResult.status === '200') {
-          resolve(
-            result.push(
-              new BulkRegistrationResultSuccess(
-                seviceResult.serverURL,
-                seviceResult.pattern,
-                seviceResult.serviceInstanceId,
-              ),
-            ),
-          );
-        } else {
-          reject(
-            result.push(
-              new BulkRegistrationResultFail(
-                `Failed to Register Service: ${seviceResult.pattern}`,
-              ),
-            ),
-          );
-        }
+        const seviceResult = await this.engine
+          .registerService(
+            res,
+            server,
+            executionMode,
+            Boolean(options?.TEMPORARY__useStoreModel),
+          )
+          .then((seviceResult) => {
+            if (seviceResult.status === 'success') {
+              result.push(
+                new BulkRegistrationResultSuccess(
+                  seviceResult.serverURL,
+                  seviceResult.pattern,
+                  seviceResult.serviceInstanceId,
+                ),
+              );
+            }
+            if (result.length === input.length) {
+              resolve(result);
+            }
+          })
+          .catch((errorResult) => {
+            assertErrorThrown(errorResult);
+            const failedResult = new BulkRegistrationResultFail(
+              errorResult.message,
+            );
+
+            if (res instanceof V1_PureModelContextData) {
+              const service = res.elements.filter(filterByType(V1_Service))[0];
+              const metamodelService = service
+                ? graph.getNullableService(service.path)
+                : undefined;
+              failedResult.servicePath = metamodelService?.pattern;
+              failedResult.servicePath = service?.path;
+            }
+            result.push(failedResult);
+            if (result.length === input.length) {
+              reject(result);
+            }
+          });
       });
     });
-
     return result;
   }
 

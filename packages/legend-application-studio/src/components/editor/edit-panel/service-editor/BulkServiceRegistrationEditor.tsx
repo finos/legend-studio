@@ -29,13 +29,13 @@ import { flowResult } from 'mobx';
 import { Version } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
+import { Dialog, Modal, ModalBody, TimesIcon } from '@finos/legend-art';
 
 export const BulkServiceRegistrationEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const serviceState = editorStore.bulkServiceRegistrationState;
   const registrationState = serviceState.serviceConfigState;
-
   // env & execution server
   const envOptions = registrationState?.options.map((info) => ({
     label: info.env.toUpperCase(),
@@ -134,6 +134,58 @@ export const BulkServiceRegistrationEditor = observer(() => {
             >
               Register
             </button>
+            <Dialog
+              open={editorStore.bulkServiceRegistrationState.showSuccessModel}
+            >
+              <Modal darkMode={true} className="blocking-alert__summary-text">
+                <div>
+                  <button
+                    className="query-builder__dialog__header__action"
+                    tabIndex={-1}
+                    onClick={() => {
+                      editorStore.bulkServiceRegistrationState.setSuccessModal(
+                        false,
+                      );
+                    }}
+                  >
+                    <TimesIcon />
+                  </button>
+                </div>
+                <ModalBody>
+                  <div>
+                    Successful Services:
+                    {editorStore.bulkServiceRegistrationState.serviceConfigState.registrationResult?.successfulServices.map(
+                      (service) => (
+                        <div key={service}>
+                          <a
+                            href={editorStore.bulkServiceRegistrationState.serviceConfigState.registrationResult?.serviceLinks.at(
+                              editorStore.bulkServiceRegistrationState.serviceConfigState.registrationResult?.successfulServices.indexOf(
+                                service,
+                              ),
+                            )}
+                          >
+                            {service}
+                          </a>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                  <>
+                    {editorStore.bulkServiceRegistrationState.serviceConfigState.registrationResult?.successfulServices.forEach(
+                      (element) => {
+                        <div>{element}</div>;
+                      },
+                    )}
+                  </>
+                  <div>
+                    Failed Services:{' '}
+                    {editorStore.bulkServiceRegistrationState.serviceConfigState.registrationResult?.failedServices.join(
+                      '\n',
+                    )}
+                  </div>
+                </ModalBody>
+              </Modal>
+            </Dialog>
           </div>
         </div>
       </div>

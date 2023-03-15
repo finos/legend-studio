@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { action, computed, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable, flow } from 'mobx';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import type { EditorStore } from '../EditorStore.js';
 import {
@@ -25,7 +25,8 @@ import {
   VariableExpression,
   ServiceExecutionMode,
   type BulkRegistrationResultFail,
-  type BulkRegistrationResultSuccess,
+  BulkRegistrationResultSuccess,
+  type BulkServiceRegistrationResult,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -48,9 +49,10 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
+import { generateServiceManagementUrl } from '../editor-state/element-editor-state/service/ServiceRegistrationState.js';
+import type { $mobx } from '../../../../../node_modules/mobx/dist/internal.js';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
-
 const getServiceExecutionMode = (mode: string): ServiceExecutionMode => {
   switch (mode) {
     case ServiceExecutionMode.FULL_INTERACTIVE:
@@ -65,16 +67,20 @@ const getServiceExecutionMode = (mode: string): ServiceExecutionMode => {
       );
   }
 };
-
 interface ServiceVersionOption {
   label: string;
   value: Version | string;
 }
-
+interface ServiceRegistrationResult {
+  successfulServices: string[];
+  failedServices: string[];
+  serviceLinks: string[];
+}
 export class ServiceConfigState {
   readonly editorStore: EditorStore;
   readonly registrationOptions: ServiceRegistrationEnvironmentConfig[] = [];
   readonly registrationState = ActionState.create();
+  registrationResult: ServiceRegistrationResult | undefined;
   serviceEnv?: string | undefined;
   serviceExecutionMode?: ServiceExecutionMode | undefined;
   projectVersion?: Version | string | undefined;
@@ -210,11 +216,15 @@ export class BulkServiceRegistrationState {
   editorStore: EditorStore;
   sdlcState: EditorSDLCState;
   serviceConfigState: ServiceConfigState;
+  showSuccessModel = false;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     makeObservable(this, {
+      showSuccessModel: observable,
       editorStore: false,
       sdlcState: false,
+      registerServices: flow,
+      setSuccessModal: action,
     });
     this.editorStore = editorStore;
     this.sdlcState = sdlcState;
@@ -225,9 +235,14 @@ export class BulkServiceRegistrationState {
         editorStore.sdlcServerClient.features.canCreateVersion,
     );
   }
-
+  setSuccessModal(val: boolean): void {
+    this.showSuccessModel = val;
+  }
   *registerServices(): GeneratorFn<void> {
-    console.log('In Bulk ServiceRegistrationState');
+    const successfulServices: string[] = [];
+    const failedServices: string[] = [];
+    const serviceManagementURL: string[] = [];
+
     this.serviceConfigState?.registrationState.inProgress();
     this.validateServiceForRegistration();
     try {
@@ -245,8 +260,8 @@ export class BulkServiceRegistrationState {
           (info) => info.env === this.serviceConfigState?.serviceEnv,
         ),
       );
-      yield this.editorStore.graphManagerState.graphManager
-        .bulkServiceRegistration(
+      const serviceRegistrationResult =
+        (yield this.editorStore.graphManagerState.graphManager.bulkServiceRegistration(
           this.editorStore.graphManagerState.graph.ownServices,
           this.editorStore.graphManagerState.graph,
           projectConfig.groupId,
@@ -258,47 +273,32 @@ export class BulkServiceRegistrationState {
             TEMPORARY__useStoreModel:
               this.serviceConfigState?.TEMPORARY__useStoreModel,
           },
-        )
-        .then((sucessfulResult) => {
-          const success = sucessfulResult as BulkRegistrationResultSuccess[];
-          const servicePatterns: string[] = [];
-          success.forEach((res) => {
-            servicePatterns.push(res.pattern);
-          });
+        )) as BulkServiceRegistrationResult[];
 
-          this.editorStore.applicationStore.alertService.setActionAlertInfo({
-            message: `The following services has been registered ${servicePatterns.join(
-              ',',
-            )}`,
-            prompt:
-              'You can now launch and monitor the operation of your service',
-            type: ActionAlertType.STANDARD,
-            actions: [
-              {
-                label: 'Close',
-                type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              },
-            ],
-          });
-        })
-        .catch((failedResult) => {
-          const failed = failedResult as BulkRegistrationResultFail[];
-          const failedServiceMessages: string[] = [];
-          failed.forEach((res) => {
-            failedServiceMessages.push(res.errorMessage);
-          });
-          this.editorStore.applicationStore.alertService.setActionAlertInfo({
-            message: `${failedServiceMessages.join(',')}`,
-            prompt: undefined,
-            type: ActionAlertType.STANDARD,
-            actions: [
-              {
-                label: 'Close',
-                type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              },
-            ],
-          });
-        });
+      serviceRegistrationResult.forEach((result) => {
+        if (result instanceof BulkRegistrationResultSuccess) {
+          let serviceURL = generateServiceManagementUrl(
+            config.managementUrl,
+            (result as BulkRegistrationResultSuccess).pattern,
+          );
+          serviceManagementURL.push(serviceURL);
+          successfulServices.push(
+            (result as BulkRegistrationResultSuccess).pattern,
+          );
+        } else {
+          failedServices.push(
+            result.servicePath +
+              'ERROR: ' +
+              (result as BulkRegistrationResultFail).errorMessage,
+          );
+        }
+      });
+      this.serviceConfigState.registrationResult = {
+        successfulServices: successfulServices,
+        serviceLinks: serviceManagementURL,
+        failedServices: failedServices,
+      };
+      this.showSuccessModel = true;
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
