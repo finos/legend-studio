@@ -1,5 +1,5 @@
 ---
-'@finos/legend-application-studio': patch
+'@finos/legend-application-studio': minor
 ---
 
-generating changeset
+Enable Global Bulk Service Registration
