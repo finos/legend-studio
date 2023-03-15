@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 22.6.0
+
+### Minor Changes
+
+- [#2010](https://github.com/finos/legend-studio/pull/2010) [`cf33b0229`](https://github.com/finos/legend-studio/commit/cf33b0229922932be2502ad8ea5b9b27b7bc6fe7) ([@janeenyamak1](https://github.com/janeenyamak1)) - Enable Global Bulk Service Registration
+
 ## 22.5.0
 
 ### Minor Changes

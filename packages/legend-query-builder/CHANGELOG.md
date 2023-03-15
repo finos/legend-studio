@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 0.6.33
+
+### Patch Changes
+
+- [#1990](https://github.com/finos/legend-studio/pull/1990) [`da47de951`](https://github.com/finos/legend-studio/commit/da47de9510525a8714692786c187c4e7fd838f83) ([@xannem](https://github.com/xannem)) - Restore source information of errors in query builder text editor.
+
+- [#1997](https://github.com/finos/legend-studio/pull/1997) [`a56ca9065`](https://github.com/finos/legend-studio/commit/a56ca906553ace05f1c2bb1bb74ec5b3784e18b0) ([@gayathrir11](https://github.com/gayathrir11)) - Persist user preferences for `editorTheme` and `showPostFilterPanel`.
+
 ## 0.6.32
 
 ## 0.6.31
