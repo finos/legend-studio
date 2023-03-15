@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@braintree/sanitize-url": "6.0.2",
-    "@types/lodash-es": "4.17.6",
+    "@types/lodash-es": "4.17.7",
     "@types/object-hash": "3.0.2",
     "@types/pako": "2.0.0",
     "@types/papaparse": "5.3.7",
