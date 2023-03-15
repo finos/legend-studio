@@ -20,6 +20,11 @@ import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../../graph/S
 
 export class V1_ServiceRequestParameterBuildInfo implements Hashable {
   serviceParameter!: string;
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
   transform!: V1_RawLambda;
 
   get hashCode(): string {

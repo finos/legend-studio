@@ -104,6 +104,7 @@ import type { ProjectViewerEditorMode } from './project-viewer/ProjectViewerEdit
 import { GraphEditFormModeState } from './GraphEditFormModeState.js';
 import type { GraphEditorMode } from './GraphEditorMode.js';
 import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
+import { BulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -148,6 +149,7 @@ export class EditorStore implements CommandRegistrar {
   devToolState: DevToolState;
   embeddedQueryBuilderState: EmbeddedQueryBuilderState;
   newElementState: NewElementState;
+  bulkServiceRegistrationState: BulkServiceRegistrationState;
   /**
    * Since we want to share element generation state across all element in the editor, we will create 1 element generate state
    * per file generation configuration type.
@@ -242,6 +244,10 @@ export class EditorStore implements CommandRegistrar {
       this.sdlcState,
     );
     this.newElementState = new NewElementState(this);
+    this.bulkServiceRegistrationState = new BulkServiceRegistrationState(
+      this,
+      this.sdlcState,
+    );
     // special (singleton) editors
     this.modelImporterState = new ModelImporterState(this);
     this.projectConfigurationEditorState = new ProjectConfigurationEditorState(

@@ -95,7 +95,6 @@ import {
   QueryBuilderTelemetry,
   QUERY_BUILDER_EVENT,
 } from '@finos/legend-query-builder';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../LegendStudioApplicationNavigationContext.js';
 
 enum DSL_SERVICE_PATH_PARAM_TOKEN {
   PROJECT_ID = 'projectId',
@@ -571,10 +570,6 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       if (debug) {
         QueryBuilderTelemetry.logEvent_ExecutionPlanDebugLaunched(
           this.editorStore.applicationStore.telemetryService,
-          {
-            applicationContext:
-              LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SERVICE_EDITOR_EXECUTION,
-          },
         );
         const debugResult =
           (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
@@ -589,10 +584,6 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       } else {
         QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationLaunched(
           this.editorStore.applicationStore.telemetryService,
-          {
-            applicationContext:
-              LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SERVICE_EDITOR_EXECUTION,
-          },
         );
         rawPlan =
           (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
@@ -667,10 +658,6 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
 
     QueryBuilderTelemetry.logEvent_QueryRunLaunched(
       this.editorStore.applicationStore.telemetryService,
-      {
-        applicationContext:
-          LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SERVICE_EDITOR_EXECUTION,
-      },
     );
 
     try {

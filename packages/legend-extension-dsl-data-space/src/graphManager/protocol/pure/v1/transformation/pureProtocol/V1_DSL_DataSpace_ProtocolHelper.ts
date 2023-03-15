@@ -32,12 +32,11 @@ import {
 } from '@finos/legend-graph';
 import {
   type PlainObject,
-  deserializeArray,
-  serializeArray,
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
-  optionalCustom,
+  optionalCustomListWithSchema,
+  customListWithSchema,
 } from '@finos/legend-shared';
 import {
   type V1_DataSpaceSupportInfo,
@@ -99,63 +98,24 @@ export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
   _type: usingConstantValueSchema(V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE),
   defaultExecutionContext: primitive(),
   description: optional(primitive()),
+  elements: optionalCustomListWithSchema(
+    V1_packageableElementPointerDeserializerSchema,
+  ),
   executionContexts: list(object(V1_dataSpaceExecutionContextModelSchema)),
-  featuredDiagrams: optionalCustom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) =>
-          serialize(V1_packageableElementPointerDeserializerSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(
-        values,
-        (value) =>
-          deserialize(V1_packageableElementPointerDeserializerSchema, value),
-        {
-          skipIfEmpty: false,
-        },
-      ),
+  featuredDiagrams: optionalCustomListWithSchema(
+    V1_packageableElementPointerDeserializerSchema,
   ),
   name: primitive(),
   package: primitive(),
-  stereotypes: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_stereotypePtrSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
+  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
   supportInfo: custom(
     (val) => V1_serializeSupportInfo(val),
     (val) => V1_deserializeSupportInfo(val),
   ),
-  taggedValues: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_taggedValueSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
+  taggedValues: customListWithSchema(V1_taggedValueSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
   title: optional(primitive()),
 });

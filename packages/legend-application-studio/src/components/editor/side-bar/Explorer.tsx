@@ -83,6 +83,7 @@ import {
 import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
+  isNonNullable,
   toTitleCase,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -453,11 +454,14 @@ const ExplorerContextMenu = observer(
           plugin.getExtraExplorerContextMenuItemRendererConfigurations?.() ??
           [],
       )
-      .map((config) => (
-        <Fragment key={config.key}>
-          {config.renderer(editorStore, node?.packageableElement)}
-        </Fragment>
-      ));
+      .map((config) => {
+        const action = config.renderer(editorStore, node?.packageableElement);
+        if (!action) {
+          return null;
+        }
+        return <Fragment key={config.key}>{action}</Fragment>;
+      })
+      .filter(isNonNullable);
     const projectId = editorStore.sdlcState.currentProject?.projectId;
     const isReadOnly = editorStore.isInViewerMode || Boolean(nodeIsImmutable);
     const isDependencyProjectElement =

@@ -71,7 +71,6 @@ import { useLegendStudioApplicationStore } from '../../../LegendStudioBaseStoreP
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { SNAPSHOT_VERSION_ALIAS } from '@finos/legend-server-depot';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -341,8 +340,6 @@ export const ServiceExecutionQueryEditor = observer(
                 disableCompile: isStubbed_RawLambda(
                   executionState.queryState.query,
                 ),
-                applicationContext:
-                  LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_TEST_EDITOR,
               }),
             );
             executionState.setOpeningQueryEditor(false);

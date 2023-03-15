@@ -19,6 +19,11 @@ import type { V1_RawLambda } from '@finos/legend-graph';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../../graph/STO_ServiceStore_HashUtils.js';
 
 export class V1_ServiceRequestBodyBuildInfo implements Hashable {
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
   transform!: V1_RawLambda;
 
   get hashCode(): string {

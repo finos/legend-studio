@@ -18,39 +18,30 @@ import type { GraphManagerOperationReport } from '@finos/legend-graph';
 import type { TelemetryService } from '@finos/legend-application';
 import { QUERY_BUILDER_EVENT } from './QueryBuilderEvent.js';
 
-type LaunchQueryExecution_TelemteryData = {
-  applicationContext?: string | undefined;
-};
-
 type QueryExecution_TelemetryData = GraphManagerOperationReport & {
   dependenciesCount: number;
 };
 
 export class QueryBuilderTelemetry {
-  static logEvent_QueryRunLaunched(
-    telemetryService: TelemetryService,
-    data: LaunchQueryExecution_TelemteryData,
-  ): void {
-    telemetryService.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__LAUNCH, data);
+  static logEvent_QueryRunLaunched(telemetryService: TelemetryService): void {
+    telemetryService.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__LAUNCH, {});
   }
 
   static logEvent_ExecutionPlanGenerationLaunched(
     telemetryService: TelemetryService,
-    data: LaunchQueryExecution_TelemteryData,
   ): void {
     telemetryService.logEvent(
       QUERY_BUILDER_EVENT.GENERATE_EXECUTION_PLAN__LAUNCH,
-      data,
+      {},
     );
   }
 
   static logEvent_ExecutionPlanDebugLaunched(
     telemetryService: TelemetryService,
-    data: LaunchQueryExecution_TelemteryData,
   ): void {
     telemetryService.logEvent(
       QUERY_BUILDER_EVENT.DEBUG_EXECUTION_PLAN__LAUNCH,
-      data,
+      {},
     );
   }
 

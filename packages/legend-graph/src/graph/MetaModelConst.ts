@@ -148,6 +148,7 @@ export const PROCESSING_DATE_MILESTONING_PROPERTY_NAME = 'processingDate';
 export const BUSINESS_DATE_MILESTONING_PROPERTY_NAME = 'businessDate';
 
 export enum PackageableElementPointerType {
+  CLASS = 'CLASS',
   STORE = 'STORE',
   MAPPING = 'MAPPING',
   RUNTIME = 'RUNTIME',

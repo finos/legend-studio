@@ -52,7 +52,7 @@ jobs:
         id: yarn-cache-dir-path
         run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
       - name: Setup Yarn cache
-        uses: actions/cache@v3.2.6
+        uses: actions/cache@v3.3.1
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
@@ -67,7 +67,7 @@ jobs:
       - name: Build image
         run: yarn workspace ${{ matrix.package }} build-dry:docker ${{ github.sha }}
       - name: Scan image for security issues
-        uses: aquasecurity/trivy-action@0.9.1
+        uses: aquasecurity/trivy-action@0.9.2
         with:
           # TODO: we should probably also setup misconfiguration scanning
           # See https://github.com/aquasecurity/trivy-action#using-trivy-to-scan-infrastucture-as-code

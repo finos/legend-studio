@@ -228,11 +228,6 @@ export class QueryBuilderResultState {
 
       QueryBuilderTelemetry.logEvent_QueryRunLaunched(
         this.queryBuilderState.applicationStore.telemetryService,
-        this.queryBuilderState.applicationContext
-          ? {
-              applicationContext: this.queryBuilderState.applicationContext,
-            }
-          : {},
       );
 
       const stopWatch = new StopWatch();
@@ -305,11 +300,6 @@ export class QueryBuilderResultState {
       if (debug) {
         QueryBuilderTelemetry.logEvent_ExecutionPlanDebugLaunched(
           this.queryBuilderState.applicationStore.telemetryService,
-          this.queryBuilderState.applicationContext
-            ? {
-                applicationContext: this.queryBuilderState.applicationContext,
-              }
-            : {},
         );
         const debugResult =
           (yield this.queryBuilderState.graphManagerState.graphManager.debugExecutionPlanGeneration(
@@ -324,11 +314,6 @@ export class QueryBuilderResultState {
       } else {
         QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationLaunched(
           this.queryBuilderState.applicationStore.telemetryService,
-          this.queryBuilderState.applicationContext
-            ? {
-                applicationContext: this.queryBuilderState.applicationContext,
-              }
-            : {},
         );
         rawPlan =
           (yield this.queryBuilderState.graphManagerState.graphManager.generateExecutionPlan(

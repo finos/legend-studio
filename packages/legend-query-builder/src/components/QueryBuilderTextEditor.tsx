@@ -22,6 +22,7 @@ import {
   Modal,
   ModalBody,
   ModalFooter,
+  ModalFooterButton,
   ModalFooterStatus,
   ModalHeader,
   PanelLoadingIndicator,
@@ -120,13 +121,20 @@ export const QueryBuilderTextEditor = observer(
               .isInProgress && (
               <ModalFooterStatus>Closing Query...</ModalFooterStatus>
             )}
+            {queryBuilderState.queryCompileState.isInProgress && (
+              <ModalFooterStatus>
+                <div className="loading-icon__container--spinning">
+                  <RefreshIcon />
+                </div>
+                Compiling Query...
+              </ModalFooterStatus>
+            )}
             {mode === QueryBuilderTextEditorMode.TEXT && (
-              <button
-                className="btn btn--dark btn--caution"
+              <ModalFooterButton
+                className="btn--caution"
                 onClick={discardChanges}
-              >
-                Discard changes
-              </button>
+                text="Discard Changes"
+              />
             )}
             <button
               className="btn btn--dark"

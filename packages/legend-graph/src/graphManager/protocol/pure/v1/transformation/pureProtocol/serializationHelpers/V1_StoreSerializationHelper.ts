@@ -31,6 +31,7 @@ import {
   UnsupportedOperationError,
   serializeArray,
   usingModelSchema,
+  customEquivalentList,
 } from '@finos/legend-shared';
 import { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData.js';
 import { V1_FlatDataProperty } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataProperty.js';
@@ -282,17 +283,7 @@ function V1_flatDataSectionDeserializer(value: {
 
 export const V1_flatDataModelSchema = createModelSchema(V1_FlatData, {
   _type: usingConstantValueSchema(V1_FLAT_DATA_ELEMENT_PROTOCOL_TYPE),
-  includedStores: custom(
-    (values) =>
-      serializeArray(values, (value: string) => value, {
-        skipIfEmpty: true,
-        INTERNAL__forceReturnEmptyInTest: true,
-      }),
-    (values) =>
-      deserializeArray(values, (value) => value, {
-        skipIfEmpty: false,
-      }),
-  ),
+  includedStores: customEquivalentList(),
   name: primitive(),
   package: primitive(),
   sections: list(

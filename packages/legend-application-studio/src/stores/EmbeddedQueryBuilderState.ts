@@ -33,7 +33,6 @@ type EmbeddedQueryBuilderConfiguration = {
   setupQueryBuilderState: () => QueryBuilderState;
   disableCompile?: boolean | undefined;
   actionConfigs: EmbeddedQueryBuilderActionConfiguration[];
-  applicationContext: string;
 };
 
 export class EmbeddedQueryBuilderState {

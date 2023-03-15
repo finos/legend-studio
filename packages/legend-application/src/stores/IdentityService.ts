@@ -33,6 +33,10 @@ export class IdentityService {
     this.applicationStore = applicationStore;
   }
 
+  get isAnonymous(): boolean {
+    return this.currentUser === UNKNOWN_USER_ID;
+  }
+
   setCurrentUser(val: string): void {
     this.currentUser = val;
   }

@@ -30,8 +30,7 @@ import {
   usingConstantValueSchema,
   IllegalStateError,
   UnsupportedOperationError,
-  serializeArray,
-  deserializeArray,
+  customEquivalentList,
 } from '@finos/legend-shared';
 import { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection.js';
 import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection.js';
@@ -191,16 +190,7 @@ const localH2DatasourceSpecificationModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.H2_LOCAL),
     testDataSetupCsv: optional(primitive()),
-    testDataSetupSqls: custom(
-      (values) =>
-        serializeArray(values, (value) => value, {
-          skipIfEmpty: true,
-        }),
-      (values) =>
-        deserializeArray(values, (v) => v, {
-          skipIfEmpty: false,
-        }),
-    ),
+    testDataSetupSqls: customEquivalentList(),
   },
 );
 

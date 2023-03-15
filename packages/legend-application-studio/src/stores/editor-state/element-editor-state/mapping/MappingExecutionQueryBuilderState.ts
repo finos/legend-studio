@@ -26,9 +26,9 @@ export class MappingExecutionQueryBuilderState extends QueryBuilderState {
     renderMappingExecutionQueryBuilderSetupPanelContent(this);
 
   constructor(
-    mapping: Mapping,
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
+    mapping: Mapping,
   ) {
     super(applicationStore, graphManagerState);
 

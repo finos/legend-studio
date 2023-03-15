@@ -15,8 +15,11 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
+import type { GenericLegendApplicationStore } from './ApplicationStore.js';
+import { LEGEND_APPLICATION_SETTINGS_KEY } from './LegendApplicationStorage.js';
 
 export class LayoutService {
+  readonly applicationStore: GenericLegendApplicationStore;
   // backdrop
   backdropContainerElementID?: string | undefined;
   showBackdrop = false;
@@ -29,7 +32,7 @@ export class LayoutService {
    */
   TEMPORARY__isLightThemeEnabled = false;
 
-  constructor() {
+  constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {
       TEMPORARY__isLightThemeEnabled: observable,
       backdropContainerElementID: observable,
@@ -38,6 +41,12 @@ export class LayoutService {
       setShowBackdrop: action,
       TEMPORARY__setIsLightThemeEnabled: action,
     });
+    this.applicationStore = applicationStore;
+    this.TEMPORARY__isLightThemeEnabled =
+      this.applicationStore.storageService.settingsStore.getBooleanValue(
+        LEGEND_APPLICATION_SETTINGS_KEY.TEMPORARY__ENABLE_LIGHT_THEME,
+        false,
+      );
   }
 
   TEMPORARY__setIsLightThemeEnabled(val: boolean): void {

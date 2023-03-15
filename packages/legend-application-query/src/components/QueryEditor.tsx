@@ -69,7 +69,11 @@ import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from '../stores/QueryEditorStore.js';
-import { useApplicationStore, useParams } from '@finos/legend-application';
+import {
+  LEGEND_APPLICATION_SETTINGS_KEY,
+  useApplicationStore,
+  useParams,
+} from '@finos/legend-application';
 import {
   MappingQueryCreatorStoreProvider,
   ExistingQueryEditorStoreProvider,
@@ -402,10 +406,15 @@ const QueryEditorHeaderContent = observer(
         applicationStore.alertUnhandledError,
       );
     };
-    const toggleLightDarkMode = (): void =>
+    const toggleLightDarkMode = (): void => {
       applicationStore.layoutService.TEMPORARY__setIsLightThemeEnabled(
         !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
       );
+      applicationStore.storageService.settingsStore.persist(
+        LEGEND_APPLICATION_SETTINGS_KEY.TEMPORARY__ENABLE_LIGHT_THEME,
+        applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
+      );
+    };
     const saveQuery = (): void => {
       queryBuilderState
         .saveQuery(async (lambda: RawLambda) => {

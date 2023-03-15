@@ -135,7 +135,6 @@ import {
   QUERY_BUILDER_EVENT,
 } from '@finos/legend-query-builder';
 import { MappingEditorTabState } from './MappingTabManagerState.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../LegendStudioApplicationNavigationContext.js';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -773,10 +772,6 @@ export class MappingExecutionState extends MappingEditorTabState {
 
         QueryBuilderTelemetry.logEvent_QueryRunLaunched(
           this.editorStore.applicationStore.telemetryService,
-          {
-            applicationContext:
-              LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_EXECUTION_EDITOR,
-          },
         );
 
         const stopWatch = new StopWatch();
@@ -848,10 +843,6 @@ export class MappingExecutionState extends MappingEditorTabState {
         if (debug) {
           QueryBuilderTelemetry.logEvent_ExecutionPlanDebugLaunched(
             this.editorStore.applicationStore.telemetryService,
-            {
-              applicationContext:
-                LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_EXECUTION_EDITOR,
-            },
           );
           const debugResult =
             (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
@@ -867,10 +858,6 @@ export class MappingExecutionState extends MappingEditorTabState {
         } else {
           QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationLaunched(
             this.editorStore.applicationStore.telemetryService,
-            {
-              applicationContext:
-                LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_EXECUTION_EDITOR,
-            },
           );
           rawPlan =
             (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(

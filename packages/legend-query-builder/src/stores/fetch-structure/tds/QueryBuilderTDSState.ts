@@ -96,6 +96,7 @@ import { QueryBuilderWindowState } from './window/QueryBuilderWindowState.js';
 import type { QueryBuilderTDS_WindowOperator } from './window/operators/QueryBuilderTDS_WindowOperator.js';
 import { getQueryBuilderCoreWindowOperators } from './window/QueryBuilderWindowGroupByOperatorLoader.js';
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
+import { QUERY_BUILDER_SETTINGS_KEY } from '../../QueryBuilderStorage.js';
 
 export class QueryBuilderTDSState
   extends QueryBuilderFetchStructureImplementationState
@@ -107,7 +108,7 @@ export class QueryBuilderTDSState
   readonly resultSetModifierState: QueryResultSetModifierState;
   projectionColumns: QueryBuilderProjectionColumnState[] = [];
   isConvertDerivationProjectionObjects = false;
-  showPostFilterPanel = false;
+  showPostFilterPanel: boolean;
   showWindowFuncPanel = false;
 
   postFilterOperators: QueryBuilderPostFilterOperator[] =
@@ -152,6 +153,11 @@ export class QueryBuilderTDSState
       this,
       this.windowFuncOperators,
     );
+    this.showPostFilterPanel =
+      this.queryBuilderState.applicationStore.storageService.settingsStore.getBooleanValue(
+        QUERY_BUILDER_SETTINGS_KEY.SHOW_POST_FILTER_PANEL,
+        false,
+      );
   }
 
   get type(): string {

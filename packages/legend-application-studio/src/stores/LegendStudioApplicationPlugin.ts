@@ -98,14 +98,14 @@ export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlu
   getExtraEditorExtensionStateCreators?(): EditorExtensionStateCreator[];
 
   /**
-   * Get the list of renderers for the preview panel of a class.
-   */
-  getExtraClassPreviewRenderers?(): ClassPreviewRenderer[];
-
-  /**
    * Get the list of configurations for the renderer of editor extension states.
    */
   getExtraEditorExtensionComponentRendererConfigurations?(): EditorExtensionComponentRendererConfiguration[];
+
+  /**
+   * Get the list of renderers for the preview panel of a class.
+   */
+  getExtraClassPreviewRenderers?(): ClassPreviewRenderer[];
 
   /**
    * Get the list of extension configurations for model importer.

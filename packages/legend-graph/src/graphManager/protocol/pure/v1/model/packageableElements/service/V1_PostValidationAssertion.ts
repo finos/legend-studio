@@ -20,6 +20,11 @@ import type { V1_RawLambda } from '../../rawValueSpecification/V1_RawLambda.js';
 
 export class V1_PostValidationAssertion implements Hashable {
   id!: string;
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
   assertion!: V1_RawLambda;
 
   get hashCode(): string {

@@ -20,7 +20,7 @@ module.exports = {
   // using `stylelint-processor-styled-components` and `stylelint-config-styled-components`
   // Refer to `material-ui` for their setup of `.stylelintrc.js` and `package.json`
   // See https://github.com/mui-org/material-ui/blob/next/package.json
-  extends: ['stylelint-config-standard', 'stylelint-config-prettier'],
+  extends: ['stylelint-config-standard'],
   customSyntax: 'postcss-scss',
   rules: {
     // Since we use Sass, some @ rules like @include, @use, are not native to CSS
@@ -31,7 +31,8 @@ module.exports = {
     // to test and clean up this to enable this rule
     // See https://stylelint.io/user-guide/rules/no-descending-specificity
     'no-descending-specificity': null,
-    // We don't really care about these naming conventions
+    // We don't really care about these naming conventions or stylistic rules
+    'at-rule-empty-line-before': null,
     'selector-class-pattern': null,
     'custom-property-pattern': null,
     'keyframes-name-pattern': null,

@@ -15,14 +15,13 @@
  */
 
 import {
-  deserializeArray,
   type PlainObject,
-  serializeArray,
   UnsupportedOperationError,
   usingConstantValueSchema,
   serializeMap,
   deserializeMap,
   usingModelSchema,
+  customListWithSchema,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -180,38 +179,10 @@ export const V1_dataElementModelSchema = (
     ),
     name: primitive(),
     package: primitive(),
-    stereotypes: custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value) => serialize(V1_stereotypePtrSchema, value),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(
-          values,
-          (v) => deserialize(V1_stereotypePtrSchema, v),
-          {
-            skipIfEmpty: false,
-          },
-        ),
-    ),
-    taggedValues: custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value) => serialize(V1_taggedValueSchema, value),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
-          skipIfEmpty: false,
-        }),
-    ),
+    stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
+    taggedValues: customListWithSchema(V1_taggedValueSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
   });
