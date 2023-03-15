@@ -26,13 +26,12 @@ import {
 import {
   type PlainObject,
   optionalCustom,
-  deserializeArray,
-  serializeArray,
   deserializeMap,
   serializeMap,
   usingModelSchema,
   usingConstantValueSchema,
   UnsupportedOperationError,
+  customList,
 } from '@finos/legend-shared';
 import type { V1_ExecutionPlan } from '../../../../model/executionPlan/V1_ExecutionPlan.js';
 import { V1_SimpleExecutionPlan } from '../../../../model/executionPlan/V1_SimpleExecutionPlan.js';
@@ -145,20 +144,9 @@ const SQLExecutionNodeModelSchema = createModelSchema(V1_SQLExecutionNode, {
     (val) => V1_serializeDatabaseConnectionValue(val),
     (val) => V1_deserializeDatabaseConnectionValue(val),
   ),
-  executionNodes: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value: V1_ResultType) => V1_serializeExecutionNode(value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (value) => V1_deserializeExecutionNode(value), {
-        skipIfEmpty: false,
-      }),
+  executionNodes: customList(
+    V1_serializeExecutionNode,
+    V1_deserializeExecutionNode,
   ),
   onConnectionCloseCommitQuery: optional(primitive()),
   onConnectionCloseRollbackQuery: optional(primitive()),

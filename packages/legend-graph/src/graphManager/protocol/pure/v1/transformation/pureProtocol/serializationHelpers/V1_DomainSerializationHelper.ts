@@ -20,15 +20,13 @@ import {
   list,
   raw,
   alias,
-  serialize,
-  custom,
-  deserialize,
   optional,
   SKIP,
 } from 'serializr';
 import {
-  deserializeArray,
-  serializeArray,
+  customEquivalentList,
+  customList,
+  customListWithSchema,
   usingConstantValueSchema,
   usingModelSchema,
 } from '@finos/legend-shared';
@@ -99,36 +97,12 @@ export const V1_profileSchema = createModelSchema(V1_Profile, {
 // ------------------------------------- Enumeration -------------------------------------
 
 export const V1_enumValueSchema = createModelSchema(V1_EnumValue, {
-  stereotypes: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_stereotypePtrSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
-  taggedValues: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_taggedValueSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
+  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
+  taggedValues: customListWithSchema(V1_taggedValueSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
   value: primitive(),
 });
 
@@ -136,36 +110,12 @@ export const V1_enumerationSchema = createModelSchema(V1_Enumeration, {
   _type: usingConstantValueSchema(V1_ENUMERATION_ELEMENT_PROTOCOL_TYPE),
   name: primitive(),
   package: primitive(),
-  stereotypes: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_stereotypePtrSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
-  taggedValues: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_taggedValueSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
+  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
+  taggedValues: customListWithSchema(V1_taggedValueSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
   values: list(usingModelSchema(V1_enumValueSchema)),
 });
 
@@ -193,36 +143,12 @@ export const V1_propertySchema = createModelSchema(V1_Property, {
   aggregation: optional(primitive()),
   multiplicity: usingModelSchema(V1_multiplicitySchema),
   name: primitive(),
-  stereotypes: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_stereotypePtrSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
-  taggedValues: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_taggedValueSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
+  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
+  taggedValues: customListWithSchema(V1_taggedValueSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
   type: primitive(),
 });
 
@@ -232,36 +158,12 @@ export const V1_derivedPropertySchema = createModelSchema(V1_DerivedProperty, {
   parameters: raw(),
   returnMultiplicity: usingModelSchema(V1_multiplicitySchema),
   returnType: primitive(),
-  stereotypes: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_stereotypePtrSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
-  taggedValues: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_taggedValueSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
+  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
+  taggedValues: customListWithSchema(V1_taggedValueSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
 });
 
 export const V1_constraintSchema = createModelSchema(V1_Constraint, {
@@ -274,17 +176,9 @@ export const V1_constraintSchema = createModelSchema(V1_Constraint, {
 
 export const V1_classSchema = createModelSchema(V1_Class, {
   _type: usingConstantValueSchema(V1_CLASS_ELEMENT_PROTOCOL_TYPE),
-  constraints: custom(
-    (values) =>
-      serializeArray(values, (value) => serialize(V1_constraintSchema, value), {
-        skipIfEmpty: true,
-        INTERNAL__forceReturnEmptyInTest: true,
-      }),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_constraintSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
+  constraints: customListWithSchema(V1_constraintSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
   name: primitive(),
   /**
    * Omit this information during protocol transformation as it can be
@@ -294,92 +188,32 @@ export const V1_classSchema = createModelSchema(V1_Class, {
    *
    * @discrepancy grammar-roundtrip
    */
-  originalMilestonedProperties: custom(
-    (values) =>
-      serializeArray(values, (value) => SKIP, {
-        skipIfEmpty: true,
-        INTERNAL__forceReturnEmptyInTest: true,
-      }),
-    (values) =>
-      deserializeArray(values, (v) => SKIP, {
-        skipIfEmpty: false,
-      }),
+  originalMilestonedProperties: customList(
+    () => SKIP,
+    () => SKIP,
+    {
+      INTERNAL__forceReturnEmptyInTest: true,
+    },
   ),
   package: primitive(),
-  properties: custom(
-    (values) =>
-      serializeArray(values, (value) => serialize(V1_propertySchema, value), {
-        skipIfEmpty: true,
-        INTERNAL__forceReturnEmptyInTest: true,
-      }),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_propertySchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
+  properties: customListWithSchema(V1_propertySchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
   derivedProperties: alias(
     'qualifiedProperties', // 'derived properties' used to be called 'qualified properties'
-    custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value) => serialize(V1_derivedPropertySchema, value),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(
-          values,
-          (v) => deserialize(V1_derivedPropertySchema, v),
-          {
-            skipIfEmpty: false,
-          },
-        ),
-    ),
+    customListWithSchema(V1_derivedPropertySchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
   ),
-  stereotypes: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_stereotypePtrSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
-  superTypes: custom(
-    (values) =>
-      serializeArray(values, (value: string) => value, {
-        skipIfEmpty: true,
-        INTERNAL__forceReturnEmptyInTest: true,
-      }),
-    (values) =>
-      deserializeArray(values, (v) => v, {
-        skipIfEmpty: false,
-      }),
-  ),
-  taggedValues: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_taggedValueSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
+  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
+  superTypes: customEquivalentList({
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
+  taggedValues: customListWithSchema(V1_taggedValueSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
 });
 
 // ------------------------------------- Association -------------------------------------
@@ -395,71 +229,27 @@ export const V1_associationSchema = createModelSchema(V1_Association, {
    *
    * @discrepancy grammar-roundtrip
    */
-  originalMilestonedProperties: custom(
-    (values) =>
-      serializeArray(values, (value) => SKIP, {
-        skipIfEmpty: true,
-        INTERNAL__forceReturnEmptyInTest: true,
-      }),
-    (values) =>
-      deserializeArray(values, (v) => SKIP, {
-        skipIfEmpty: false,
-      }),
+  originalMilestonedProperties: customList(
+    () => SKIP,
+    () => SKIP,
+    {
+      INTERNAL__forceReturnEmptyInTest: true,
+    },
   ),
   package: primitive(),
   properties: list(usingModelSchema(V1_propertySchema)),
   derivedProperties: alias(
     'qualifiedProperties', // 'derived properties' used to be called 'qualified properties'
-    custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value) => serialize(V1_derivedPropertySchema, value),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(
-          values,
-          (v) => deserialize(V1_derivedPropertySchema, v),
-          {
-            skipIfEmpty: false,
-          },
-        ),
-    ),
+    customListWithSchema(V1_derivedPropertySchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
   ),
-  stereotypes: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_stereotypePtrSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
-  taggedValues: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_taggedValueSchema, value),
-        {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
-        skipIfEmpty: false,
-      }),
-  ),
+  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
+  taggedValues: customListWithSchema(V1_taggedValueSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
 });
 
 // ------------------------------------- Function -------------------------------------
@@ -476,39 +266,11 @@ export const V1_functionSchema = createModelSchema(
     preConstraints: list(primitive()), // NOTE: these are not currently supported and just added to pass roundtrip test
     returnMultiplicity: usingModelSchema(V1_multiplicitySchema),
     returnType: primitive(),
-    stereotypes: custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value) => serialize(V1_stereotypePtrSchema, value),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(
-          values,
-          (v) => deserialize(V1_stereotypePtrSchema, v),
-          {
-            skipIfEmpty: false,
-          },
-        ),
-    ),
-    taggedValues: custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value) => serialize(V1_taggedValueSchema, value),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
-          skipIfEmpty: false,
-        }),
-    ),
+    stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
+    taggedValues: customListWithSchema(V1_taggedValueSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
   },
 );

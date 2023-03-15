@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import { createModelSchema, list, primitive, custom } from 'serializr';
+import { createModelSchema, list, primitive } from 'serializr';
 import {
-  serializeArray,
-  deserializeArray,
   usingModelSchema,
   usingConstantValueSchema,
+  customEquivalentList,
 } from '@finos/legend-shared';
 import { V1_packageableElementPointerDeserializerSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import {
@@ -33,17 +32,7 @@ export const V1_GENERATION_SPECIFICATION_ELEMENT_PROTOCOL_TYPE =
 export const V1_generationTreeNodeModelSchema = createModelSchema(
   V1_GenerationTreeNode,
   {
-    children: custom(
-      (values) =>
-        serializeArray(values, (value) => value, {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        }),
-      (values) =>
-        deserializeArray(values, (value) => value, {
-          skipIfEmpty: false,
-        }),
-    ),
+    children: customEquivalentList(),
     generationElement: primitive(),
     id: primitive(),
   },

@@ -17,18 +17,15 @@
 import {
   createModelSchema,
   custom,
-  deserialize,
   list,
   object,
   optional,
   primitive,
-  serialize,
   SKIP,
 } from 'serializr';
 import {
-  deserializeArray,
+  customListWithSchema,
   SerializationFactory,
-  serializeArray,
   usingModelSchema,
 } from '@finos/legend-shared';
 import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
@@ -70,24 +67,7 @@ export class V1_ExecuteInput {
         () => SKIP,
       ),
       context: usingModelSchema(V1_rawBaseExecutionContextModelSchema),
-      parameterValues: custom(
-        (values) =>
-          serializeArray(
-            values,
-            (value) => serialize(V1_parameterValueModelSchema, value),
-            {
-              skipIfEmpty: true,
-            },
-          ),
-        (values) =>
-          deserializeArray(
-            values,
-            (v) => deserialize(V1_parameterValueModelSchema, v),
-            {
-              skipIfEmpty: false,
-            },
-          ),
-      ),
+      parameterValues: customListWithSchema(V1_parameterValueModelSchema),
     }),
   );
 }

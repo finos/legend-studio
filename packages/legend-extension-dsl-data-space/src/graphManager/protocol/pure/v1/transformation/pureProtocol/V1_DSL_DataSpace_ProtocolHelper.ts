@@ -35,7 +35,8 @@ import {
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
-  optionalListWithSchema,
+  optionalCustomListWithSchema,
+  customListWithSchema,
 } from '@finos/legend-shared';
 import {
   type V1_DataSpaceSupportInfo,
@@ -97,20 +98,24 @@ export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
   _type: usingConstantValueSchema(V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE),
   defaultExecutionContext: primitive(),
   description: optional(primitive()),
-  elements: optionalListWithSchema(
+  elements: optionalCustomListWithSchema(
     V1_packageableElementPointerDeserializerSchema,
   ),
   executionContexts: list(object(V1_dataSpaceExecutionContextModelSchema)),
-  featuredDiagrams: optionalListWithSchema(
+  featuredDiagrams: optionalCustomListWithSchema(
     V1_packageableElementPointerDeserializerSchema,
   ),
   name: primitive(),
   package: primitive(),
-  stereotypes: optionalListWithSchema(V1_stereotypePtrSchema),
+  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
   supportInfo: custom(
     (val) => V1_serializeSupportInfo(val),
     (val) => V1_deserializeSupportInfo(val),
   ),
-  taggedValues: optionalListWithSchema(V1_taggedValueSchema),
+  taggedValues: customListWithSchema(V1_taggedValueSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
   title: optional(primitive()),
 });

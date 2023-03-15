@@ -34,11 +34,10 @@ import {
   V1_serializeValueSpecification,
 } from '@finos/legend-graph';
 import {
-  deserializeArray,
   type PlainObject,
-  serializeArray,
   UnsupportedOperationError,
   usingConstantValueSchema,
+  customListWithSchema,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -215,25 +214,8 @@ export const V1_persistenceContextModelSchema = (
       (val) => V1_serializePersistencePlatform(val, plugins),
       (val) => V1_deserializePersistencePlatform(val, plugins),
     ),
-    serviceParameters: custom(
-      (val) =>
-        serializeArray(
-          val,
-          (v: V1_ServiceParameter) =>
-            serialize(V1_serviceParameterModelSchema(plugins), v),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (val) =>
-        deserializeArray(
-          val,
-          (v) => deserialize(V1_serviceParameterModelSchema(plugins), v),
-          {
-            skipIfEmpty: false,
-          },
-        ),
+    serviceParameters: customListWithSchema(
+      V1_serviceParameterModelSchema(plugins),
     ),
     sinkConnection: custom(
       (val) => (val ? V1_serializeConnectionValue(val, true, plugins) : SKIP),

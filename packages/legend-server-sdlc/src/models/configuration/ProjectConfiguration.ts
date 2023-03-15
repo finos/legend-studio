@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  list,
-  createModelSchema,
-  primitive,
-  serialize,
-  deserialize,
-} from 'serializr';
+import { list, createModelSchema, primitive } from 'serializr';
 import { observable, action, computed, makeObservable } from 'mobx';
 import { ProjectStructureVersion } from '../configuration/ProjectStructureVersion.js';
 import { ProjectDependency } from '../configuration/ProjectDependency.js';
@@ -31,9 +25,7 @@ import {
   deleteEntry,
   SerializationFactory,
   usingModelSchema,
-  serializeArray,
-  deserializeArray,
-  optionalCustom,
+  optionalCustomListWithSchema,
 } from '@finos/legend-shared';
 import { ENTITY_PATH_DELIMITER } from '@finos/legend-storage';
 import { PlatformConfiguration } from './PlatformConfiguration.js';
@@ -68,15 +60,8 @@ export class ProjectConfiguration implements Hashable {
     createModelSchema(ProjectConfiguration, {
       artifactId: primitive(),
       groupId: primitive(),
-      platformConfigurations: optionalCustom(
-        (values) =>
-          serializeArray(values, (value) =>
-            serialize(PlatformConfiguration.serialization.schema, value),
-          ),
-        (values) =>
-          deserializeArray(values, (v) =>
-            deserialize(PlatformConfiguration.serialization.schema, v),
-          ),
+      platformConfigurations: optionalCustomListWithSchema(
+        PlatformConfiguration.serialization.schema,
       ),
       projectDependencies: list(
         usingModelSchema(ProjectDependency.serialization.schema),

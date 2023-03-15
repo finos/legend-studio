@@ -72,64 +72,6 @@ export const usingModelSchema = <T>(schema: ModelSchema<T>): PropSchema =>
     (value) => deserialize(schema, value),
   );
 
-export const deserializeArray = <T>(
-  values: unknown,
-  itemDeserializer: (val: PlainObject<T>) => T,
-  options?: {
-    skipIfEmpty?: boolean;
-  },
-): T[] | typeof SKIP => {
-  if (Array.isArray(values)) {
-    return (values as PlainObject<T>[]).map(itemDeserializer);
-  }
-  return options?.skipIfEmpty ? SKIP : [];
-};
-
-export const serializeArray = <T>(
-  values: unknown,
-  itemSerializer: (val: T) => T extends object ? PlainObject<T> : T,
-  options?: {
-    /**
-     * If the array is empty, skip serializing it (the property will not
-     * appear in the JSON, this is different to setting it to `undefined`)
-     */
-    skipIfEmpty?: boolean;
-    /**
-     * In engine, the initialization handling of list-types attributes in protocol models, either done
-     * by the grammar parser or set natively in the model is fairly inconsistent. This produces protocol
-     * JSONs with the field sometimes being set as empty array, or sometimes being set as nullish (hence,
-     * omitted from the JSON).
-     *
-     * In Studio, we avoid serialize empty array altogether to lessen the size of the serialized graph to save bandwidth,
-     * this optimization will cause protocol roundtrip test to fail. As such, we add this flag to make sure
-     * roundtrip test can run fine. Setting this flag to `true` will override the effect of `skipIfEmpty=true`
-     */
-    INTERNAL__forceReturnEmptyInTest?: boolean;
-  },
-): (T extends object ? PlainObject<T> : T)[] | typeof SKIP => {
-  let forceReturnEmptyInTest = false;
-  // NOTE: this block is meant for test, `webpack` will tree-shake it
-  // so we never reach inside, else we would get error about `process is not defined` as we're
-  // in browser environment
-  // eslint-disable-next-line no-process-env
-  if (process.env.NODE_ENV === 'test') {
-    forceReturnEmptyInTest =
-      Boolean(options?.INTERNAL__forceReturnEmptyInTest) &&
-      // eslint-disable-next-line no-process-env
-      process.env.TEST_MODE === 'grammar';
-  }
-  if (Array.isArray(values)) {
-    return values.length
-      ? values.map((value) => itemSerializer(value))
-      : forceReturnEmptyInTest
-      ? []
-      : options?.skipIfEmpty
-      ? SKIP
-      : [];
-  }
-  return forceReturnEmptyInTest ? [] : SKIP;
-};
-
 // NOTE: we need these methods because `map()` of `serializr` tries to smartly
 // determines if it should produce object or ES6 Map but we always want ES6 Map,
 // so we would use this function
@@ -188,18 +130,82 @@ export const optionalCustom = (
     (val) => (val ? deserializer(val) : SKIP),
   );
 
+export const deserializeArray = <T>(
+  values: unknown,
+  itemDeserializer: (val: PlainObject<T>) => T,
+  options?: {
+    skipIfEmpty?: boolean;
+  },
+): T[] | typeof SKIP => {
+  if (Array.isArray(values)) {
+    return (values as PlainObject<T>[]).map(itemDeserializer);
+  }
+  return options?.skipIfEmpty ? SKIP : [];
+};
+
+export const serializeArray = <T>(
+  values: unknown,
+  itemSerializer: (val: T) => T extends object ? PlainObject<T> : T,
+  options?: {
+    /**
+     * If the array is empty, skip serializing it (the property will not
+     * appear in the JSON, this is different to setting it to `undefined`)
+     */
+    skipIfEmpty?: boolean | undefined;
+    /**
+     * In engine, the initialization handling of list-types attributes in protocol models, either done
+     * by the grammar parser or set natively in the model is fairly inconsistent. This produces protocol
+     * JSONs with the field sometimes being set as empty array, or sometimes being set as nullish (hence,
+     * omitted from the JSON).
+     *
+     * In Studio, we avoid serialize empty array altogether to lessen the size of the serialized graph to save bandwidth,
+     * this optimization will cause protocol roundtrip test to fail. As such, we add this flag to make sure
+     * roundtrip test can pass. Setting this flag to `true` will override the effect of `skipIfEmpty=true`
+     */
+    INTERNAL__forceReturnEmptyInTest?: boolean | undefined;
+  },
+): (T extends object ? PlainObject<T> : T)[] | typeof SKIP => {
+  let forceReturnEmptyInTest = false;
+  // NOTE: this block is meant for test, `webpack` will tree-shake it
+  // so we never reach inside, else we would get error about `process is not defined` as we're
+  // in browser environment
+  // eslint-disable-next-line no-process-env
+  if (process.env.NODE_ENV === 'test') {
+    forceReturnEmptyInTest =
+      Boolean(options?.INTERNAL__forceReturnEmptyInTest) &&
+      // eslint-disable-next-line no-process-env
+      process.env.TEST_MODE === 'grammar';
+  }
+  if (Array.isArray(values)) {
+    return values.length
+      ? values.map((value) => itemSerializer(value))
+      : forceReturnEmptyInTest
+      ? []
+      : options?.skipIfEmpty
+      ? SKIP
+      : [];
+  }
+  return forceReturnEmptyInTest ? [] : SKIP;
+};
+
 /**
  * This is the idiomatic usage pattern for serialization of optional list of objects.
  *
  * Notice our particular usage of `serializeArray` and `deserializeArray` that is deisnged
  * for testing and accounting for logic mismatches between servers and studio
  */
-export const optionalListWithSchema = <T>(schema: ModelSchema<T>): PropSchema =>
-  optionalCustom(
+export const customListWithSchema = <T>(
+  schema: ModelSchema<T>,
+  options?: {
+    INTERNAL__forceReturnEmptyInTest?: boolean | undefined;
+  },
+): PropSchema =>
+  custom(
     (values) =>
       serializeArray(values, (value) => serialize(schema, value), {
         skipIfEmpty: true,
-        INTERNAL__forceReturnEmptyInTest: true,
+        INTERNAL__forceReturnEmptyInTest:
+          options?.INTERNAL__forceReturnEmptyInTest,
       }),
     (values) =>
       deserializeArray(values, (value) => deserialize(schema, value), {
@@ -207,15 +213,70 @@ export const optionalListWithSchema = <T>(schema: ModelSchema<T>): PropSchema =>
       }),
   );
 
-export const optionalPrimitiveList = (): PropSchema =>
-  optionalCustom(
+export const customList = <T>(
+  serializer: (val: T) => T extends object ? PlainObject<T> : T,
+  deserializer: (val: PlainObject<T>) => T,
+  options?: {
+    INTERNAL__forceReturnEmptyInTest?: boolean | undefined;
+  },
+): PropSchema =>
+  custom(
     (values) =>
-      serializeArray(values, (value) => value, {
+      serializeArray(values, (value: T) => serializer(value), {
         skipIfEmpty: true,
-        INTERNAL__forceReturnEmptyInTest: true,
+        INTERNAL__forceReturnEmptyInTest:
+          options?.INTERNAL__forceReturnEmptyInTest,
       }),
     (values) =>
-      deserializeArray(values, (value) => value, {
+      deserializeArray(values, (value) => deserializer(value), {
+        skipIfEmpty: false,
+      }),
+  );
+
+export const customEquivalentList = (options?: {
+  INTERNAL__forceReturnEmptyInTest?: boolean | undefined;
+}): PropSchema =>
+  customList(
+    (value) => value,
+    (value) => value,
+    options,
+  );
+
+export const optionalCustomListWithSchema = <T>(
+  schema: ModelSchema<T>,
+  options?: {
+    INTERNAL__forceReturnEmptyInTest?: boolean | undefined;
+  },
+): PropSchema =>
+  optionalCustom(
+    (values) =>
+      serializeArray(values, (value) => serialize(schema, value), {
+        skipIfEmpty: true,
+        INTERNAL__forceReturnEmptyInTest:
+          options?.INTERNAL__forceReturnEmptyInTest,
+      }),
+    (values) =>
+      deserializeArray(values, (value) => deserialize(schema, value), {
+        skipIfEmpty: false,
+      }),
+  );
+
+export const optionalCustomList = <T>(
+  serializer: (val: T) => T extends object ? PlainObject<T> : T,
+  deserializer: (val: PlainObject<T>) => T,
+  options?: {
+    INTERNAL__forceReturnEmptyInTest?: boolean | undefined;
+  },
+): PropSchema =>
+  optionalCustom(
+    (values) =>
+      serializeArray(values, (value: T) => serializer(value), {
+        skipIfEmpty: true,
+        INTERNAL__forceReturnEmptyInTest:
+          options?.INTERNAL__forceReturnEmptyInTest,
+      }),
+    (values) =>
+      deserializeArray(values, (value) => deserializer(value), {
         skipIfEmpty: false,
       }),
   );

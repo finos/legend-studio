@@ -90,18 +90,17 @@ import {
   V1_serializeTestAssertion,
   V1_deserializeTestAssertion,
   V1_externalFormatDataModelSchema,
-  type V1_TestAssertion,
   V1_serializeAtomicTest,
   V1_deserializeAtomicTest,
 } from '@finos/legend-graph';
 import {
-  deserializeArray,
-  optionalCustom,
   type PlainObject,
-  serializeArray,
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
+  optionalCustomList,
+  customList,
+  customListWithSchema,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -168,17 +167,7 @@ export const V1_deserializeNotifyee = (
 };
 
 const V1_notifierModelSchema = createModelSchema(V1_Notifier, {
-  notifyees: custom(
-    (val) =>
-      serializeArray(val, (v: V1_Notifyee) => V1_serializeNotifyee(v), {
-        skipIfEmpty: true,
-        INTERNAL__forceReturnEmptyInTest: true,
-      }),
-    (val) =>
-      deserializeArray(val, (v) => V1_deserializeNotifyee(v), {
-        skipIfEmpty: false,
-      }),
-  ),
+  notifyees: customList(V1_serializeNotifyee, V1_deserializeNotifyee),
 });
 
 /**********
@@ -871,21 +860,7 @@ const V1_multiFlatTargetPartSchema = createModelSchema(V1_MultiFlatTargetPart, {
 const V1_multiFlatTargetModelSchema = createModelSchema(V1_MultiFlatTarget, {
   _type: usingConstantValueSchema(V1_TargetShapeType.MULTI_FLAT_TARGET),
   modelClass: primitive(),
-  parts: custom(
-    (val) =>
-      serializeArray(val, (v) => serialize(V1_multiFlatTargetPartSchema, v), {
-        skipIfEmpty: true,
-        INTERNAL__forceReturnEmptyInTest: true,
-      }),
-    (val) =>
-      deserializeArray(
-        val,
-        (v) => deserialize(V1_multiFlatTargetPartSchema, v),
-        {
-          skipIfEmpty: false,
-        },
-      ),
-  ),
+  parts: customListWithSchema(V1_multiFlatTargetPartSchema),
   transactionScope: primitive(),
 });
 
@@ -1073,15 +1048,9 @@ export const V1_persistenceTestBatchModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_PersistenceTestBatch> =>
   createModelSchema(V1_PersistenceTestBatch, {
-    assertions: custom(
-      (values) =>
-        serializeArray(values, (value: V1_TestAssertion) =>
-          V1_serializeTestAssertion(value),
-        ),
-      (values) =>
-        deserializeArray(values, (v) => V1_deserializeTestAssertion(v), {
-          skipIfEmpty: false,
-        }),
+    assertions: customList(
+      V1_serializeTestAssertion,
+      V1_deserializeTestAssertion,
     ),
     batchId: primitive(),
     id: primitive(),
@@ -1095,25 +1064,8 @@ export const V1_persistenceTestModelSchema = (
     _type: usingConstantValueSchema(V1_AtomicTestType.PERSISTENCE_TEST),
     id: primitive(),
     isTestDataFromServiceOutput: primitive(),
-    testBatches: custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value) =>
-            serialize(V1_persistenceTestBatchModelSchema(plugins), value),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(
-          values,
-          (v) => deserialize(V1_persistenceTestBatchModelSchema(plugins), v),
-          {
-            skipIfEmpty: false,
-          },
-        ),
+    testBatches: customListWithSchema(
+      V1_persistenceTestBatchModelSchema(plugins),
     ),
   });
 
@@ -1140,20 +1092,12 @@ export const V1_persistenceModelSchema = (
       (val) => V1_deserializePersister(val, plugins),
     ),
     service: primitive(),
-    tests: optionalCustom(
-      (values) =>
-        serializeArray(
-          values,
-          (value: V1_AtomicTest) => V1_serializeAtomicTest(value, plugins),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(values, (v) => V1_deserializeAtomicTest(v, plugins), {
-          skipIfEmpty: true,
-        }),
+    tests: optionalCustomList(
+      (value: V1_AtomicTest) => V1_serializeAtomicTest(value, plugins),
+      (value) => V1_deserializeAtomicTest(value, plugins),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
     ),
     trigger: custom(
       (val) => V1_serializeTrigger(val, plugins),

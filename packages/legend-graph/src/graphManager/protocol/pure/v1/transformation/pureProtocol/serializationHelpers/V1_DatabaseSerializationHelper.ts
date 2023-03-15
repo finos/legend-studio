@@ -29,10 +29,10 @@ import {
   type PlainObject,
   optionalCustom,
   usingConstantValueSchema,
-  deserializeArray,
   UnsupportedOperationError,
-  serializeArray,
   usingModelSchema,
+  customList,
+  customEquivalentList,
 } from '@finos/legend-shared';
 import { V1_Column } from '../../../model/packageableElements/store/relational/model/V1_Column.js';
 import { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database.js';
@@ -502,25 +502,10 @@ const V1_setupTableSerialization = (
 ): void => {
   createModelSchema(V1_Table, {
     columns: list(usingModelSchema(columnModelSchema)),
-    milestoning: custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value: V1_Milestoning) => V1_serializeMilestoning(value, plugins),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(
-          values,
-          (value: PlainObject<V1_Milestoning>) =>
-            V1_deserializeMilestoning(value, plugins),
-          {
-            skipIfEmpty: false,
-          },
-        ),
+    milestoning: customList(
+      (value: V1_Milestoning) => V1_serializeMilestoning(value, plugins),
+      (value) => V1_deserializeMilestoning(value, plugins),
+      { INTERNAL__forceReturnEmptyInTest: true },
     ),
     name: primitive(),
     primaryKey: list(primitive()),
@@ -546,36 +531,13 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
     store: alias('element', primitive()),
     quoteIdentifiers: optional(primitive()),
     timeZone: optional(primitive()),
-    postProcessors: custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value: V1_PostProcessor) =>
-            V1_serializePostProcessor(value, plugins),
-          {
-            skipIfEmpty: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(
-          values,
-          (value) => V1_deserializePostProcessor(value, plugins),
-          {
-            skipIfEmpty: false,
-          },
-        ),
+    postProcessors: customList(
+      (value: V1_PostProcessor) => V1_serializePostProcessor(value, plugins),
+      (value) => V1_deserializePostProcessor(value, plugins),
     ),
-    postProcessorWithParameter: custom(
-      (values) =>
-        serializeArray(values, (value) => value, {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        }),
-      (values) =>
-        deserializeArray(values, (value) => value, {
-          skipIfEmpty: false,
-        }),
-    ),
+    postProcessorWithParameter: customEquivalentList({
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
     type: primitive(),
   });
 };
