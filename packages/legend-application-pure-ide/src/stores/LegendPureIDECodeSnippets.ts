@@ -161,8 +161,8 @@ export const BLANK_RELATIONAL_DATABASE_SNIPPET = `Database \${1:model::NewDataba
 // ------------------------------------- Diagram -------------------------------------
 
 export const BLANK_DIAGRAM_SNIPPET = `Diagram \${1:model::NewDiagram}(width=0.0, height=0.0)
-(
+{
   // NOTE: it is recommended to use diagram visual editor
   // to edit diagram: double-click on the diagram in
   // the concept explorer tree to open the editor
-)`;
+}`;
