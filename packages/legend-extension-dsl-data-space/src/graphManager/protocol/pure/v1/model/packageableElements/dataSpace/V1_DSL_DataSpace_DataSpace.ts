@@ -62,11 +62,12 @@ export class V1_DataSpaceExecutionContext implements Hashable {
 export class V1_DataSpace extends V1_PackageableElement implements Hashable {
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
+  title?: string | undefined;
+  description?: string | undefined;
   executionContexts!: V1_DataSpaceExecutionContext[];
   defaultExecutionContext!: string;
   featuredDiagrams?: V1_PackageableElementPointer[] | undefined;
-  title?: string | undefined;
-  description?: string | undefined;
+  elements?: V1_PackageableElementPointer[] | undefined;
   supportInfo?: V1_DataSpaceSupportInfo | undefined;
 
   override get hashCode(): string {
@@ -74,11 +75,12 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE,
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),
+      this.title ?? '',
+      this.description ?? '',
       hashArray(this.executionContexts),
       this.defaultExecutionContext,
       hashArray((this.featuredDiagrams ?? []).map((pointer) => pointer.path)),
-      this.title ?? '',
-      this.description ?? '',
+      hashArray((this.elements ?? []).map((pointer) => pointer.path)),
       this.supportInfo ?? '',
     ]);
   }

@@ -62,6 +62,9 @@ import {
   V1_ElementBuilder,
   V1_initPackageableElement,
   V1_buildFullPath,
+  Class,
+  Enumeration,
+  Association,
 } from '@finos/legend-graph';
 import {
   V1_DSL_Diagram_PackageableElementPointerType,
@@ -156,6 +159,21 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
                   getDiagram(pointer.path, context.graph),
                 ),
             );
+          }
+          if (elementProtocol.elements) {
+            element.elements = elementProtocol.elements.map((pointer) => {
+              const el = context.graph.getElement(pointer.path);
+              if (
+                el instanceof Class ||
+                el instanceof Enumeration ||
+                el instanceof Association
+              ) {
+                return PackageableElementExplicitReference.create(el);
+              }
+              throw new UnsupportedOperationError(
+                `Can't find data space element (only allow class, enumartion, association) '${pointer.path}'`,
+              );
+            });
           }
           if (elementProtocol.supportInfo) {
             if (
@@ -262,6 +280,13 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
               new V1_PackageableElementPointer(
                 V1_DSL_Diagram_PackageableElementPointerType,
                 diagramPath.valueForSerialization ?? '',
+              ),
+          );
+          protocol.elements = metamodel.elements?.map(
+            (elPath) =>
+              new V1_PackageableElementPointer(
+                PackageableElementPointerType.CLASS,
+                elPath.valueForSerialization ?? '',
               ),
           );
           if (metamodel.supportInfo) {

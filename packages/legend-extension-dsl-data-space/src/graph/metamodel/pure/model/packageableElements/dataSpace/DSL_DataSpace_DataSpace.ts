@@ -21,6 +21,9 @@ import {
   type Mapping,
   type PackageableRuntime,
   type PackageableElementVisitor,
+  type Class,
+  type Enumeration,
+  type Association,
 } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSL_DataSpace_HashUtils.js';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram';
@@ -60,12 +63,15 @@ export class DataSpaceExecutionContext implements Hashable {
   }
 }
 
+export type DataSpaceElement = Class | Enumeration | Association;
+
 export class DataSpace extends PackageableElement implements Hashable {
+  title?: string | undefined;
+  description?: string | undefined;
   executionContexts: DataSpaceExecutionContext[] = [];
   defaultExecutionContext!: DataSpaceExecutionContext;
   featuredDiagrams?: PackageableElementReference<Diagram>[] | undefined;
-  title?: string | undefined;
-  description?: string | undefined;
+  elements?: PackageableElementReference<DataSpaceElement>[] | undefined;
   supportInfo?: DataSpaceSupportInfo | undefined;
 
   protected override get _elementHashCode(): string {
@@ -75,6 +81,8 @@ export class DataSpace extends PackageableElement implements Hashable {
         this.stereotypes.map((stereotype) => stereotype.pointerHashCode),
       ),
       hashArray(this.taggedValues),
+      this.title ?? '',
+      this.description ?? '',
       hashArray(this.executionContexts),
       this.defaultExecutionContext.name,
       hashArray(
@@ -82,8 +90,11 @@ export class DataSpace extends PackageableElement implements Hashable {
           (diagram) => diagram.valueForSerialization ?? '',
         ),
       ),
-      this.title ?? '',
-      this.description ?? '',
+      hashArray(
+        (this.elements ?? []).map(
+          (element) => element.valueForSerialization ?? '',
+        ),
+      ),
       this.supportInfo ?? '',
     ]);
   }

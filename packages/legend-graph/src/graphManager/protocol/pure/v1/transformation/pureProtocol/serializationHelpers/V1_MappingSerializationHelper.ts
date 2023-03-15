@@ -29,7 +29,6 @@ import {
 import {
   type PlainObject,
   usingConstantValueSchema,
-  deserializeArray,
   assertTrue,
   guaranteeIsNumber,
   guaranteeIsString,
@@ -37,9 +36,10 @@ import {
   isNonNullable,
   shallowStringify,
   UnsupportedOperationError,
-  serializeArray,
   usingModelSchema,
   optionalCustom,
+  optionalCustomList,
+  customList,
 } from '@finos/legend-shared';
 import {
   ATOMIC_TEST_TYPE,
@@ -105,7 +105,6 @@ import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../..
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_BindingTransformer.js';
 import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
-import type { V1_RelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement.js';
 import { V1_FlatDataAssociationMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationMapping.js';
 import { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
 import { V1_MappingTestSuite } from '../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
@@ -255,25 +254,10 @@ const rootRelationalClassMappingModelSchema = createModelSchema(
     extendsClassMappingId: optional(primitive()),
     distinct: primitive(),
     filter: usingModelSchema(V1_filterMappingModelSchema),
-    groupBy: custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value: V1_RelationalOperationElement) =>
-            V1_serializeRelationalOperationElement(value),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(
-          values,
-          (val) => V1_deserializeRelationalOperationElement(val),
-          {
-            skipIfEmpty: false,
-          },
-        ),
+    groupBy: customList(
+      V1_serializeRelationalOperationElement,
+      V1_deserializeRelationalOperationElement,
+      { INTERNAL__forceReturnEmptyInTest: true },
     ),
     id: optional(primitive()),
     mainTable: usingModelSchema(V1_tablePtrModelSchema),
@@ -1174,25 +1158,12 @@ export const V1_mappingModelSchema = (
 ): ModelSchema<V1_Mapping> =>
   createModelSchema(V1_Mapping, {
     _type: usingConstantValueSchema(V1_MAPPING_ELEMENT_PROTOCOL_TYPE),
-    associationMappings: custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value: V1_AssociationMapping) =>
-            V1_serializeAssociationMapping(value),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(
-          values,
-          (val) => V1_deserializeAssociationMapping(val),
-          {
-            skipIfEmpty: false,
-          },
-        ),
+    associationMappings: customList(
+      V1_serializeAssociationMapping,
+      V1_deserializeAssociationMapping,
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
     ),
     classMappings: list(
       custom(
@@ -1221,19 +1192,9 @@ export const V1_mappingModelSchema = (
     ),
     name: primitive(),
     package: primitive(),
-    testSuites: optionalCustom(
-      (values) =>
-        serializeArray(
-          values,
-          (value: V1_TestSuite) => V1_serializeTestSuite(value, plugins),
-          {
-            skipIfEmpty: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(values, (v) => V1_deserializeTestSuite(v, plugins), {
-          skipIfEmpty: false,
-        }),
+    testSuites: optionalCustomList(
+      (value: V1_TestSuite) => V1_serializeTestSuite(value, plugins),
+      (value) => V1_deserializeTestSuite(value, plugins),
     ),
     tests: list(usingModelSchema(V1_mappingTestModelLegacySchema)),
   });

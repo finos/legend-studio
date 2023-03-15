@@ -28,7 +28,7 @@
 
     flex-direction: column;
     padding: 2rem;
-    height: 13rem;
+    height: 7rem;
   }
 
   &__title {
@@ -74,6 +74,7 @@
 
       width: 1.6rem;
       height: 3.4rem;
+      background: var(--color-blue-150);
       cursor: pointer;
       border-left: 0.1rem solid var(--color-dark-shade-50);
 
@@ -84,32 +85,10 @@
     }
   }
 
-  &__description {
-    cursor: default;
-    user-select: none;
-    padding: 1rem;
-    margin-top: 1rem;
-    height: 5rem;
-    width: 100%;
-    background: var(--color-dark-grey-100);
-    overflow: auto;
-    line-height: 1.6rem;
-    color: var(--color-dark-grey-500);
-    font-family: Roboto, sans-serif;
-    font-size: 1.2rem;
-
-    &--empty {
-      @include flexCenter;
-
-      font-weight: 500;
-      color: var(--color-dark-grey-300);
-    }
-  }
-
   &__content {
     @include flexCenter;
 
-    height: calc(100% - 13rem);
+    height: calc(100% - 7rem);
     padding: 0 2rem 2rem;
   }
 
@@ -168,60 +147,138 @@
     }
   }
 
-  &__diagrams {
-    display: flex;
-    flex-direction: column;
+  &__overview {
     height: 100%;
     width: 100%;
+    padding: 0.25rem;
 
-    &__header {
-      @include flexVCenter;
+    &__description {
+      @include flexCenter;
 
-      height: 3.4rem;
+      height: 100%;
       width: 100%;
-    }
+      padding: 0.25rem;
 
-    &__footer {
-      @include flexVCenter;
+      &__content {
+        overflow: auto;
+        height: 100%;
+        border: 0.1rem solid var(--color-blue-300);
+        border-radius: 0.2rem;
+      }
 
-      height: 2rem;
-      background: var(--color-dark-grey-250);
-      color: var(--color-light-grey-400);
-      padding: 0 0.5rem;
-      user-select: none;
-      cursor: default;
+      &__content__markdown-content {
+        color: var(--color-light-grey-200);
+      }
 
-      &__icon {
+      &--empty {
         @include flexCenter;
 
         height: 100%;
+        width: 100%;
+        font-weight: 500;
+        color: var(--color-dark-grey-300);
+        border-radius: 0.2rem;
+        border: 0.2rem dashed var(--color-dark-grey-280);
+      }
+    }
 
-        svg {
-          font-size: 1.2rem;
+    &__diagrams {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+      padding: 0.25rem;
+
+      &__header {
+        @include flexVCenter;
+
+        height: 3.4rem;
+        width: 100%;
+
+        &__tabs {
+          height: 3.4rem;
+          border-bottom: 0.2rem solid var(--color-dark-grey-85);
+          width: 100%;
+          display: flex;
+          overflow-x: overlay;
+          overflow-y: hidden;
+          background: var(--color-dark-grey-200);
+        }
+
+        &__tab {
+          @include flexCenter;
+
+          height: 100%;
+          display: inline-flex;
+          padding: 0 1rem;
+          border-right: 0.2rem solid var(--color-dark-grey-80);
+          white-space: nowrap;
+          cursor: pointer;
+          background: var(--color-dark-grey-200);
+          color: var(--color-dark-grey-500);
+        }
+
+        &__tab:hover {
+          color: var(--color-light-grey-200);
+        }
+
+        &__tab--active {
+          color: var(--color-light-grey-200);
+          position: relative;
+        }
+
+        &__tab--active::after {
+          content: '';
+          height: 0.2rem;
+          width: 100%;
+          position: absolute;
+          bottom: 0;
+          background: var(--color-yellow-200);
         }
       }
 
-      &__text {
-        margin-left: 0.5rem;
-        font-size: 1.2rem;
-        font-weight: 500;
+      &__footer {
+        @include flexVCenter;
+
+        height: 2rem;
+        background: var(--color-dark-grey-250);
+        color: var(--color-light-grey-400);
+        padding: 0 0.5rem;
+        user-select: none;
+        cursor: default;
+
+        &__icon {
+          @include flexCenter;
+
+          height: 100%;
+
+          svg {
+            font-size: 1.2rem;
+          }
+        }
+
+        &__text {
+          margin-left: 0.5rem;
+          font-size: 1.2rem;
+          font-weight: 500;
+        }
       }
-    }
 
-    &__diagram-selector {
-      width: 100%;
-    }
+      &__diagram-selector {
+        width: 100%;
+      }
 
-    &__content {
-      height: calc(100% - 5.4rem);
-      width: 100%;
-    }
+      &__content {
+        height: calc(100% - 5.4rem);
+        width: 100%;
+      }
 
-    &__dropdown {
-      width: 100%;
+      &__dropdown {
+        width: 100%;
 
-      &__container {
-        padding: 0.3rem;
+        &__container {
+          padding: 0.3rem;
+        }
       }
     }
   }

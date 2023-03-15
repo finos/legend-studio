@@ -16,7 +16,7 @@
 
 import { action, makeObservable, observable } from 'mobx';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
-import { LEGEND_APPLICATION_SETTINGS_KEY } from './storage/ApplicationStorage.js';
+import { LEGEND_APPLICATION_SETTINGS_KEY } from './LegendApplicationStorage.js';
 
 export class LayoutService {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -44,7 +44,7 @@ export class LayoutService {
     this.applicationStore = applicationStore;
     this.TEMPORARY__isLightThemeEnabled =
       this.applicationStore.storageService.settingsStore.getBooleanValue(
-        LEGEND_APPLICATION_SETTINGS_KEY.EDITOR_THEME,
+        LEGEND_APPLICATION_SETTINGS_KEY.TEMPORARY__ENABLE_LIGHT_THEME,
         false,
       );
   }

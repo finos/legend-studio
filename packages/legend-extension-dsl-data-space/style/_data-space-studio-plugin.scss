@@ -1,0 +1,82 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.data-space-preview__dialog {
+  height: calc(100vh - 4rem);
+  width: calc(100vw - 4rem);
+  border: none !important;
+
+  &__container__content {
+    max-height: 100vh !important;
+  }
+
+  &__header {
+    @include flexVCenter;
+
+    height: 3.8rem;
+  }
+
+  &__header__actions {
+    @include flexVCenter;
+
+    height: 100%;
+  }
+
+  &__header__action {
+    @include flexCenter;
+
+    height: 100%;
+    width: 3.8rem;
+
+    svg {
+      font-size: 1.6rem;
+      color: var(--color-dark-shade-300);
+    }
+
+    &:hover svg {
+      color: var(--color-dark-shade-800);
+    }
+  }
+
+  &__content {
+    height: calc(100% - 3.8rem);
+    border: 0.1rem solid var(--color-dark-grey-80);
+
+    &--failed {
+      @include flexVCenter;
+
+      height: 2.8rem;
+
+      &__icon {
+        @include flexCenter;
+
+        height: 100%;
+      }
+
+      &__text {
+        margin-left: 0.5rem;
+        color: var(--color-dark-grey-300);
+        font-weight: 700;
+        cursor: default;
+        user-select: none;
+        text-align: center;
+        line-height: 2.8rem;
+      }
+    }
+  }
+}

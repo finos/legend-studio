@@ -68,7 +68,7 @@ import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSP
 import { QueryBuilderWatermarkEditor } from './watermark/QueryBuilderWatermark.js';
 import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpressionPanel.js';
 import { QueryBuilder_LegendApplicationPlugin } from './QueryBuilder_LegendApplicationPlugin.js';
-import { LEGEND_QUERY_SETTINGS_KEY } from '../stores/LegendQueryStorage.js';
+import { QUERY_BUILDER_SETTINGS_KEY } from '../stores/QueryBuilderStorage.js';
 
 export const QUERY_BUILDER_BACKDROP_CONTAINER_ID =
   'query-builder.backdrop-container';
@@ -292,7 +292,7 @@ export const QueryBuilder = observer(
         const tdsState = queryBuilderState.fetchStructureState.implementation;
         tdsState.setShowPostFilterPanel(!tdsState.showPostFilterPanel);
         queryBuilderState.applicationStore.storageService.settingsStore.persist(
-          LEGEND_QUERY_SETTINGS_KEY.EDITOR_SHOW_POST_FILTER,
+          QUERY_BUILDER_SETTINGS_KEY.SHOW_POST_FILTER_PANEL,
           tdsState.showPostFilterPanel,
         );
       }

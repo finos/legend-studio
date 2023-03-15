@@ -30,7 +30,6 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
 import type { EmbeddedQueryBuilderState } from '../../../../stores/EmbeddedQueryBuilderState.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 import {
   service_initNewService,
   service_setExecution,
@@ -157,8 +156,6 @@ export const queryClass = async (
           ),
         },
       ],
-      applicationContext:
-        LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EDITOR,
     }),
   );
 };

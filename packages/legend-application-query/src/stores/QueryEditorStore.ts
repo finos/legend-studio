@@ -88,7 +88,6 @@ import {
   ServiceQueryBuilderState,
 } from '@finos/legend-query-builder';
 import { LegendQueryTelemetry } from './LegendQueryTelemetry.js';
-import { LEGEND_QUERY_APPLICATION_NAVIGATION_CONTEXT_KEY } from './LegendQueryApplicationNavigationContext.js';
 
 export const createViewProjectHandler =
   (applicationStore: LegendQueryApplicationStore) =>
@@ -795,9 +794,6 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     queryBuilderState =
       queryBuilderState ??
       new ClassQueryBuilderState(this.applicationStore, this.graphManagerState);
-
-    queryBuilderState.applicationContext =
-      LEGEND_QUERY_APPLICATION_NAVIGATION_CONTEXT_KEY.EDITOR;
 
     queryBuilderState.setMapping(query.mapping.value);
     queryBuilderState.setRuntimeValue(

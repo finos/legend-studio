@@ -39,6 +39,12 @@ import {
   MenuContentItem,
   CaretDownIcon,
   ExternalLinkSquareIcon,
+  DocumentationIcon,
+  TableIcon,
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
+  MarkdownTextViewer,
 } from '@finos/legend-art';
 import {
   type Diagram,
@@ -108,62 +114,122 @@ const DataSpaceDiagramCanvas = observer(
   }),
 );
 
-type DiagramOption = { label: string; value: Diagram };
-const buildDiagramOption = (diagram: Diagram): DiagramOption => ({
-  label: diagram.name,
-  value: diagram,
-});
-
-const DataSpaceModelsOverview = observer(
+const DataSpaceOverview = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
 
     // diagram selector
     const diagramCanvasRef = useRef<HTMLDivElement>(null);
-    const diagramOptions =
-      analysisResult.featuredDiagrams.map(buildDiagramOption);
-    const selectedDiagramOption = dataSpaceViewerState.currentDiagram
-      ? buildDiagramOption(dataSpaceViewerState.currentDiagram)
-      : null;
-    const onDiagramOptionChange = (option: DiagramOption): void => {
-      if (option.value !== dataSpaceViewerState.currentDiagram) {
-        dataSpaceViewerState.setCurrentDiagram(option.value);
-      }
-    };
 
     if (analysisResult.featuredDiagrams.length === 0) {
       return <BlankPanelContent>No diagrams available</BlankPanelContent>;
     }
     return (
-      <div className="data-space__viewer__main-panel__content data-space__viewer__diagrams">
-        <div className="data-space__viewer__diagrams__header">
-          <CustomSelectorInput
-            className="data-space__viewer__diagrams__diagram-selector"
-            options={diagramOptions}
-            onChange={onDiagramOptionChange}
-            value={selectedDiagramOption}
-            placeholder="Search for a diagram"
-            darkMode={true}
-          />
-        </div>
-        <div className="data-space__viewer__diagrams__content">
-          {dataSpaceViewerState.currentDiagram && (
-            <DataSpaceDiagramCanvas
-              dataSpaceViewerState={dataSpaceViewerState}
-              diagram={dataSpaceViewerState.currentDiagram}
-              ref={diagramCanvasRef}
-            />
-          )}
-        </div>
-        <div className="data-space__viewer__diagrams__footer">
-          <div className="data-space__viewer__diagrams__footer__icon">
-            <LightBulbIcon />
-          </div>
-          <div className="data-space__viewer__diagrams__footer__text">
-            Double-click a class to start a query for that class
-          </div>
-        </div>
+      <div className="data-space__viewer__main-panel__content data-space__viewer__overview">
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel size={250} minSize={100}>
+            <div className="data-space__viewer__overview__description">
+              {analysisResult.description !== undefined && (
+                <div className="data-space__viewer__overview__description__content">
+                  <MarkdownTextViewer
+                    className="data-space__viewer__overview__description__content__markdown-content"
+                    value={{
+                      value: analysisResult.description,
+                    }}
+                  />
+                </div>
+              )}
+              {analysisResult.description === undefined && (
+                <div className="data-space__viewer__overview__description--empty">
+                  No description
+                </div>
+              )}
+            </div>
+          </ResizablePanel>
+          <ResizablePanelSplitter />
+          <ResizablePanel minSize={100}>
+            <div className="data-space__viewer__overview__diagrams">
+              <div className="data-space__viewer__overview__diagrams__header">
+                <div className="data-space__viewer__overview__diagrams__header__tabs">
+                  {analysisResult.featuredDiagrams.map((diagram) => (
+                    <button
+                      key={diagram.path}
+                      className={clsx(
+                        'data-space__viewer__overview__diagrams__header__tab',
+                        {
+                          'data-space__viewer__overview__diagrams__header__tab--active':
+                            dataSpaceViewerState.currentDiagram === diagram,
+                        },
+                      )}
+                      onClick={() =>
+                        dataSpaceViewerState.setCurrentDiagram(diagram)
+                      }
+                    >
+                      {diagram.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="data-space__viewer__overview__diagrams__content">
+                {dataSpaceViewerState.currentDiagram && (
+                  <DataSpaceDiagramCanvas
+                    dataSpaceViewerState={dataSpaceViewerState}
+                    diagram={dataSpaceViewerState.currentDiagram}
+                    ref={diagramCanvasRef}
+                  />
+                )}
+              </div>
+              <div className="data-space__viewer__overview__diagrams__footer">
+                <div className="data-space__viewer__overview__diagrams__footer__icon">
+                  <LightBulbIcon />
+                </div>
+                <div className="data-space__viewer__overview__diagrams__footer__text">
+                  Double-click a class to start a query for that class
+                </div>
+              </div>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
+    );
+  },
+);
+
+const DataSpaceDocumentation = observer(
+  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
+    const { dataSpaceViewerState } = props;
+    const documentationEntries =
+      dataSpaceViewerState.dataSpaceAnalysisResult.elementDocs;
+
+    if (documentationEntries.length === 0) {
+      return <BlankPanelContent>No documentation available</BlankPanelContent>;
+    }
+    return (
+      <div className="data-space__viewer__main-panel__content data-space__viewer__overview">
+        <table className="table">
+          <thead>
+            <tr>
+              <th className="table__cell--left">Element</th>
+              <th className="table__cell--left"></th>
+              <th className="table__cell--left">Documentation</th>
+            </tr>
+          </thead>
+          <tbody>
+            {documentationEntries.map((entry) => (
+              <tr
+                key={entry.uuid}
+                className={'query-editor__query-loader__body__table__row'}
+              >
+                <td className="table__cell--left">{entry.elementPath}</td>
+                <td className="table__cell--left">
+                  {entry.subElementText ?? ''}
+                </td>
+                <td className="table__cell--left">{entry.doc}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   },
@@ -506,9 +572,14 @@ export const DataSpaceViewer = observer(
 
     const activities: DataSpaceViewerActivityConfig[] = [
       {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_OVERVIEW,
-        title: 'Models Overview',
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.OVERVIEW,
+        title: 'Overview',
         icon: <ShapesIcon />,
+      },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.DOCUMENTATION,
+        title: 'Documentation',
+        icon: <DocumentationIcon />,
       },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION,
@@ -516,14 +587,19 @@ export const DataSpaceViewer = observer(
         icon: <PlayIcon />,
       },
       {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT,
-        title: 'Entitlement',
-        icon: <KeyIcon />,
-      },
-      {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA,
         title: 'Test Data',
         icon: <FlaskIcon />,
+      },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.SAMPLE_DATA_TABLE,
+        title: 'Sample Data Table',
+        icon: <TableIcon />,
+      },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT,
+        title: 'Entitlement',
+        icon: <KeyIcon />,
       },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_COVERAGE,
@@ -598,16 +674,6 @@ export const DataSpaceViewer = observer(
               <CaretDownIcon title="Show more options..." />
             </DropdownMenu>
           </div>
-          <div
-            className={clsx('data-space__viewer__description', {
-              'data-space__viewer__description--empty':
-                !analysisResult.description,
-            })}
-          >
-            {analysisResult.description
-              ? analysisResult.description
-              : 'No description'}
-          </div>
         </div>
         <div className="data-space__viewer__content">
           <div className="data-space__viewer__body">
@@ -631,8 +697,14 @@ export const DataSpaceViewer = observer(
             </div>
             <div className="data-space__viewer__main-panel">
               {dataSpaceViewerState.currentActivity ===
-                DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_OVERVIEW && (
-                <DataSpaceModelsOverview
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.OVERVIEW && (
+                <DataSpaceOverview
+                  dataSpaceViewerState={dataSpaceViewerState}
+                />
+              )}
+              {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.DOCUMENTATION && (
+                <DataSpaceDocumentation
                   dataSpaceViewerState={dataSpaceViewerState}
                 />
               )}
@@ -641,6 +713,12 @@ export const DataSpaceViewer = observer(
                 <DataSpaceExecutionViewer
                   dataSpaceViewerState={dataSpaceViewerState}
                 />
+              )}
+              {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.SAMPLE_DATA_TABLE && (
+                <BlankPanelContent>
+                  View sample data table (Work in Progress)
+                </BlankPanelContent>
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT &&

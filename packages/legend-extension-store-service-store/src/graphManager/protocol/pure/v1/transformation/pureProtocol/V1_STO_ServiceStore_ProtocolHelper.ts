@@ -20,10 +20,9 @@ import {
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
-  serializeArray,
-  deserializeArray,
   serializeMap,
   deserializeMap,
+  customList,
 } from '@finos/legend-shared';
 import {
   type ModelSchema,
@@ -498,20 +497,9 @@ const V1_deserializeStringValuePattern = (
 export const V1_serviceRequestPatternModelSchema = createModelSchema(
   V1_ServiceRequestPattern,
   {
-    bodyPatterns: custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value: V1_StringValuePattern) =>
-            V1_serializeStringValuePattern(value),
-          {
-            skipIfEmpty: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(values, (v) => V1_deserializeStringValuePattern(v), {
-          skipIfEmpty: false,
-        }),
+    bodyPatterns: customList(
+      V1_serializeStringValuePattern,
+      V1_deserializeStringValuePattern,
     ),
     headerParams: optionalCustom(
       (val) => serializeMap(val, V1_serializeStringValuePattern),

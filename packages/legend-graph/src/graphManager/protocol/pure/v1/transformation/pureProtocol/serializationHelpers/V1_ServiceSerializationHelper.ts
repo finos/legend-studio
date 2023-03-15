@@ -28,11 +28,12 @@ import {
 import {
   type PlainObject,
   usingConstantValueSchema,
-  deserializeArray,
   UnsupportedOperationError,
-  serializeArray,
   usingModelSchema,
   optionalCustom,
+  customListWithSchema,
+  customEquivalentList,
+  customList,
 } from '@finos/legend-shared';
 import {
   type V1_ServiceExecution,
@@ -159,24 +160,7 @@ export const V1_serviceTestModelSchema = createModelSchema(V1_ServiceTest, {
   ),
   id: primitive(),
   keys: list(primitive()),
-  parameters: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_parameterValueModelSchema, value),
-        {
-          skipIfEmpty: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(
-        values,
-        (v) => deserialize(V1_parameterValueModelSchema, v),
-        {
-          skipIfEmpty: false,
-        },
-      ),
-  ),
+  parameters: customListWithSchema(V1_parameterValueModelSchema),
   serializationFormat: optional(primitive()),
 });
 
@@ -298,17 +282,9 @@ const testContainerModelSchema = createModelSchema(
   V1_DEPRECATED__TestContainer,
   {
     assert: usingModelSchema(V1_rawLambdaModelSchema),
-    parametersValues: custom(
-      (values) =>
-        serializeArray(values, (value) => value, {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        }),
-      (values) =>
-        deserializeArray(values, (v) => v, {
-          skipIfEmpty: false,
-        }),
-    ),
+    parametersValues: customEquivalentList({
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
   },
 );
 
@@ -379,77 +355,24 @@ export const V1_serviceModelSchema = (
     owners: list(primitive()),
     package: primitive(),
     pattern: primitive(),
-    stereotypes: custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value) => serialize(V1_stereotypePtrSchema, value),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(
-          values,
-          (v) => deserialize(V1_stereotypePtrSchema, v),
-          {
-            skipIfEmpty: false,
-          },
-        ),
-    ),
-    taggedValues: custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value) => serialize(V1_taggedValueSchema, value),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
-          skipIfEmpty: false,
-        }),
-    ),
+    stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
+    taggedValues: customListWithSchema(V1_taggedValueSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
     test: optionalCustom(
       V1_serializeLegacyServiceTest,
       V1_deserializeLegacyServiceTest,
     ),
-    testSuites: custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value: V1_TestSuite) => V1_serializeTestSuite(value, plugins),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(values, (v) => V1_deserializeTestSuite(v, plugins), {
-          skipIfEmpty: false,
-        }),
+    testSuites: customList(
+      (value: V1_TestSuite) => V1_serializeTestSuite(value, plugins),
+      (value) => V1_deserializeTestSuite(value, plugins),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
     ),
-    postValidations: custom(
-      (values) =>
-        serializeArray(
-          values,
-          (value: V1_PostValidation) =>
-            serialize(V1_servicePostValidationModelSchema, value),
-          {
-            skipIfEmpty: true,
-            INTERNAL__forceReturnEmptyInTest: true,
-          },
-        ),
-      (values) =>
-        deserializeArray(
-          values,
-          (v) => deserialize(V1_servicePostValidationModelSchema, v),
-          {
-            skipIfEmpty: false,
-          },
-        ),
-    ),
+    postValidations: customListWithSchema(V1_servicePostValidationModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
   });

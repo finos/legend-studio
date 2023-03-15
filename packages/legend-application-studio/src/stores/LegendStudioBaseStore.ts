@@ -22,6 +22,7 @@ import {
   ActionState,
   LogEvent,
   assertErrorThrown,
+  NetworkClient,
 } from '@finos/legend-shared';
 import {
   type ApplicationStore,
@@ -136,6 +137,26 @@ export class LegendStudioBaseStore {
       this.applicationStore.telemetryService.setup();
     } else {
       this.isSDLCAuthorized = undefined;
+    }
+
+    // retrieved the user identity is not already configured
+    if (this.applicationStore.identityService.isAnonymous) {
+      try {
+        this.applicationStore.identityService.setCurrentUser(
+          (yield new NetworkClient().get(
+            `${this.applicationStore.config.engineServerUrl}/server/v1/currentUser`,
+          )) as string,
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.logService.error(
+          LogEvent.create(
+            APPLICATION_EVENT.APPLICATION_IDENTITY_AUTO_FETCH__FAILURE,
+          ),
+          error,
+        );
+        this.applicationStore.notificationService.notifyWarning(error.message);
+      }
     }
 
     ApplicationTelemetry.logEvent_ApplicationInitializationSucceeded(

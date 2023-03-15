@@ -131,6 +131,7 @@ export class DiagramRenderer {
   diagram: Diagram;
 
   isReadOnly: boolean;
+  enableLayoutAutoAdjustment: boolean;
 
   div: HTMLDivElement;
   canvas: HTMLCanvasElement;
@@ -300,6 +301,7 @@ export class DiagramRenderer {
   constructor(div: HTMLDivElement, diagram: Diagram) {
     makeObservable(this, {
       isReadOnly: observable,
+      enableLayoutAutoAdjustment: observable,
       interactionMode: observable,
       relationshipMode: observable,
       zoom: observable,
@@ -318,6 +320,7 @@ export class DiagramRenderer {
       rightClick: observable,
       changeMode: action,
       setIsReadOnly: action,
+      setEnableLayoutAutoAdjustment: action,
       setMouseOverClassView: action,
       setMouseOverClassName: action,
       setMouseOverClassCorner: action,
@@ -431,6 +434,7 @@ export class DiagramRenderer {
     this.interactionMode = DIAGRAM_INTERACTION_MODE.LAYOUT;
     this.relationshipMode = DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE;
     this.isReadOnly = false;
+    this.enableLayoutAutoAdjustment = false;
     this.screenPadding = 20;
     this.classViewSpaceX = 10;
     this.classViewSpaceY = 4;
@@ -458,6 +462,10 @@ export class DiagramRenderer {
 
   setIsReadOnly(val: boolean): void {
     this.isReadOnly = val;
+  }
+
+  setEnableLayoutAutoAdjustment(val: boolean): void {
+    this.enableLayoutAutoAdjustment = val;
   }
 
   setMouseOverClassView(val: ClassView | undefined): void {
@@ -1677,7 +1685,7 @@ export class DiagramRenderer {
 
     classMinWidth = classMinWidth + this.classViewSpaceX * 2;
     // Modify the dimension according to the newly computed height and width
-    if (!this.isReadOnly) {
+    if (!this.isReadOnly || this.enableLayoutAutoAdjustment) {
       const width =
         classView.rectangle.width && classView.rectangle.width > classMinWidth
           ? classView.rectangle.width

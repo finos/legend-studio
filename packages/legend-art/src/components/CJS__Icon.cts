@@ -146,6 +146,7 @@ export {
   FaTable as TableIcon,
   FaArchive as ArchiveIcon,
   FaBrain as BrainIcon,
+  FaBookOpen as DocumentationIcon,
   FaLevelDownAlt as LevelDownIcon, // to be reviewed/combined
 } from 'react-icons/fa';
 export {

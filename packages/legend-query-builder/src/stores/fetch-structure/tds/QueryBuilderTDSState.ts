@@ -96,7 +96,7 @@ import { QueryBuilderWindowState } from './window/QueryBuilderWindowState.js';
 import type { QueryBuilderTDS_WindowOperator } from './window/operators/QueryBuilderTDS_WindowOperator.js';
 import { getQueryBuilderCoreWindowOperators } from './window/QueryBuilderWindowGroupByOperatorLoader.js';
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
-import { LEGEND_QUERY_SETTINGS_KEY } from '../../LegendQueryStorage.js';
+import { QUERY_BUILDER_SETTINGS_KEY } from '../../QueryBuilderStorage.js';
 
 export class QueryBuilderTDSState
   extends QueryBuilderFetchStructureImplementationState
@@ -155,7 +155,7 @@ export class QueryBuilderTDSState
     );
     this.showPostFilterPanel =
       this.queryBuilderState.applicationStore.storageService.settingsStore.getBooleanValue(
-        LEGEND_QUERY_SETTINGS_KEY.EDITOR_SHOW_POST_FILTER,
+        QUERY_BUILDER_SETTINGS_KEY.SHOW_POST_FILTER_PANEL,
         false,
       );
   }

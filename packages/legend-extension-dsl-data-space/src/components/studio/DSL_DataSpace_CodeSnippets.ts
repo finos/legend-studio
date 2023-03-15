@@ -31,6 +31,10 @@ export const SIMPLE_DATA_SPACE_SNIPPET = `DataSpace \${1:model::NewDataSpace}
   // [
   //   model::SomeDiagram
   // ];
+  // elements:
+  // [
+  //   model::SomeClass,
+  // ];
   // supportInfo: Email {
   //   address: 'someEmail@test.org';
   // };
