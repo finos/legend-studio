@@ -281,8 +281,6 @@ import {
   BulkRegistrationResultFail,
 } from '../../../action/service/BulkServiceRegistrationResult.js';
 
-import { toJS } from 'mobx';
-
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
   nativeElements: V1_PackageableElement[] = [];
@@ -2704,27 +2702,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
     }
 
-    await new Promise((resolve, reject) => {
-      input.forEach(async (res) => {
-        const seviceResult = await this.engine
+    await Promise.all(
+      input.map(async (res) => {
+        await this.engine
           .registerService(
             res,
             server,
             executionMode,
             Boolean(options?.TEMPORARY__useStoreModel),
           )
-          .then((seviceResult) => {
-            if (seviceResult.status === 'success') {
+          .then((serviceResult) => {
+            if (serviceResult.status === 'success') {
               result.push(
                 new BulkRegistrationResultSuccess(
-                  seviceResult.serverURL,
-                  seviceResult.pattern,
-                  seviceResult.serviceInstanceId,
+                  serviceResult.serverURL,
+                  serviceResult.pattern,
+                  serviceResult.serviceInstanceId,
                 ),
               );
-            }
-            if (result.length === input.length) {
-              resolve(result);
             }
           })
           .catch((errorResult) => {
@@ -2742,13 +2737,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               failedResult.servicePath = service?.path;
             }
             result.push(failedResult);
-            if (result.length === input.length) {
-              reject(result);
-            }
           });
-      });
-    });
-    return result;
+      }),
+    );
+    return Promise.resolve(result);
   }
 
   async activateService(serviceUrl: string, serviceId: string): Promise<void> {

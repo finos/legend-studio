@@ -21,6 +21,10 @@ import {
   CheckSquareIcon,
   SquareIcon,
   PanelLoadingIndicator,
+  Dialog,
+  Modal,
+  ModalBody,
+  TimesIcon,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
@@ -29,7 +33,6 @@ import { flowResult } from 'mobx';
 import { Version } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { Dialog, Modal, ModalBody, TimesIcon } from '@finos/legend-art';
 
 export const BulkServiceRegistrationEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -37,67 +40,67 @@ export const BulkServiceRegistrationEditor = observer(() => {
   const serviceState = editorStore.bulkServiceRegistrationState;
   const registrationState = serviceState.serviceConfigState;
   // env & execution server
-  const envOptions = registrationState?.options.map((info) => ({
+  const envOptions = registrationState.options.map((info) => ({
     label: info.env.toUpperCase(),
     value: info.env,
   }));
-  const selectedEnvOption = registrationState?.serviceEnv
+  const selectedEnvOption = registrationState.serviceEnv
     ? {
-        label: registrationState?.serviceEnv.toUpperCase(),
-        value: registrationState?.serviceEnv,
+        label: registrationState.serviceEnv.toUpperCase(),
+        value: registrationState.serviceEnv,
       }
     : null;
   const onServerEnvChange = (
     val: { label: string; value: string } | null,
   ): void => {
-    registrationState?.updateEnv(val?.value);
+    registrationState.updateEnv(val?.value);
   };
 
   // execution mode
-  const serviceTypesOptions = registrationState?.executionModes.map((mode) => ({
+  const serviceTypesOptions = registrationState.executionModes.map((mode) => ({
     label: prettyCONSTName(mode),
     value: mode,
   }));
-  const selectedServiceType = registrationState?.serviceExecutionMode
+  const selectedServiceType = registrationState.serviceExecutionMode
     ? {
-        label: prettyCONSTName(registrationState?.serviceExecutionMode),
-        value: registrationState?.serviceExecutionMode,
+        label: prettyCONSTName(registrationState.serviceExecutionMode),
+        value: registrationState.serviceExecutionMode,
       }
     : null;
   const onServiceTypeSelectionChange = (
     val: { label: ServiceExecutionMode; value: ServiceExecutionMode } | null,
   ): void => {
-    registrationState?.updateType(val?.value);
+    registrationState.updateType(val?.value);
   };
 
   // version
-  const selectedVersion = registrationState?.projectVersion
+  const selectedVersion = registrationState.projectVersion
     ? {
         label:
-          registrationState?.projectVersion instanceof Version
-            ? registrationState?.projectVersion.id.id
-            : registrationState?.projectVersion,
-        value: registrationState?.projectVersion,
+          registrationState.projectVersion instanceof Version
+            ? registrationState.projectVersion.id.id
+            : registrationState.projectVersion,
+        value: registrationState.projectVersion,
       }
     : null;
   const onVersionSelectionChange = (
     val: { label: string; value: Version | string } | null,
   ): void => {
-    registrationState?.setProjectVersion(val?.value);
+    registrationState.setProjectVersion(val?.value);
   };
   const versionPlaceholder =
-    registrationState?.versionOptions === undefined
+    registrationState.versionOptions === undefined
       ? `Only valid for ${prettyCONSTName(
           ServiceExecutionMode.SEMI_INTERACTIVE,
         )} and ${prettyCONSTName(ServiceExecutionMode.PROD)} service types`
-      : !registrationState?.versionOptions.length
+      : !registrationState.versionOptions.length
       ? 'Project has no versions'
       : undefined;
 
   // store model for full interactive
   const toggleUseStoreModel = (): void => {
-    registrationState?.setUseStoreModelWithFullInteractive(
-      !registrationState?.TEMPORARY__useStoreModel,
+    registrationState.setUseStoreModelWithFullInteractive(
+      !registrationState.TEMPORARY__useStoreModel,
     );
   };
 
@@ -112,7 +115,7 @@ export const BulkServiceRegistrationEditor = observer(() => {
   const disableRegistration =
     !selectedEnvOption ||
     !selectedServiceType ||
-    registrationState?.registrationState.isInProgress;
+    registrationState.registrationState.isInProgress;
 
   return (
     <div
@@ -159,7 +162,7 @@ export const BulkServiceRegistrationEditor = observer(() => {
                         <div key={service}>
                           <a
                             href={editorStore.bulkServiceRegistrationState.serviceConfigState.registrationResult?.serviceLinks.at(
-                              editorStore.bulkServiceRegistrationState.serviceConfigState.registrationResult?.successfulServices.indexOf(
+                              editorStore.bulkServiceRegistrationState.serviceConfigState.registrationResult.successfulServices.indexOf(
                                 service,
                               ),
                             )}
@@ -193,7 +196,7 @@ export const BulkServiceRegistrationEditor = observer(() => {
         isLoading={registrationState.registrationState.isInProgress}
       />
       <div className="panel__content__form">
-        {registrationState?.registrationState.message && (
+        {registrationState.registrationState.message && (
           <div className="service-registration-editor__progress-msg">
             {`${registrationState.registrationState.message}...`}
           </div>
@@ -227,7 +230,7 @@ export const BulkServiceRegistrationEditor = observer(() => {
             darkMode={true}
           />
         </div>
-        {registrationState?.serviceExecutionMode ===
+        {registrationState.serviceExecutionMode ===
           ServiceExecutionMode.FULL_INTERACTIVE && (
           <div className="panel__content__form__section">
             <div className="panel__content__form__section__header__label">
@@ -265,11 +268,11 @@ export const BulkServiceRegistrationEditor = observer(() => {
             relevant for semi-interactive and production services.
           </div>
           <CustomSelectorInput
-            options={registrationState?.versionOptions ?? []}
+            options={registrationState.versionOptions ?? []}
             onChange={onVersionSelectionChange}
             value={selectedVersion}
             darkMode={true}
-            disabled={registrationState?.versionOptions === undefined}
+            disabled={registrationState.versionOptions === undefined}
             placeholder={versionPlaceholder}
             isLoading={editorStore.sdlcState.isFetchingProjectVersions}
           />

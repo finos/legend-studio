@@ -44,7 +44,7 @@ export const RegisterService = observer(
 
     const renderTestables = (): React.ReactNode => (
       <>
-        {(services ?? []).map((service) => (
+        {services.map((service) => (
           <ContextMenu key={service._UUID}>
             <div
               className={clsx(

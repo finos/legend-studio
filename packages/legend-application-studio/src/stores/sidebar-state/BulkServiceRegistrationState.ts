@@ -45,12 +45,7 @@ import { Version } from '@finos/legend-server-sdlc';
 import { MINIMUM_SERVICE_OWNERS } from '../editor-state/element-editor-state/service/ServiceEditorState.js';
 import { ServiceRegistrationEnvironmentConfig } from '../../application/LegendStudioApplicationConfig.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
-import {
-  ActionAlertActionType,
-  ActionAlertType,
-} from '@finos/legend-application';
 import { generateServiceManagementUrl } from '../editor-state/element-editor-state/service/ServiceRegistrationState.js';
-import type { $mobx } from '../../../../../node_modules/mobx/dist/internal.js';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 const getServiceExecutionMode = (mode: string): ServiceExecutionMode => {
@@ -243,7 +238,7 @@ export class BulkServiceRegistrationState {
     const failedServices: string[] = [];
     const serviceManagementURL: string[] = [];
 
-    this.serviceConfigState?.registrationState.inProgress();
+    this.serviceConfigState.registrationState.inProgress();
     this.validateServiceForRegistration();
     try {
       const projectConfig = guaranteeNonNullable(
@@ -251,13 +246,13 @@ export class BulkServiceRegistrationState {
       );
 
       const versionInput =
-        this.serviceConfigState?.projectVersion instanceof Version
-          ? this.serviceConfigState?.projectVersion.id.id
+        this.serviceConfigState.projectVersion instanceof Version
+          ? this.serviceConfigState.projectVersion.id.id
           : undefined;
 
       const config = guaranteeNonNullable(
-        this.serviceConfigState?.options.find(
-          (info) => info.env === this.serviceConfigState?.serviceEnv,
+        this.serviceConfigState.options.find(
+          (info) => info.env === this.serviceConfigState.serviceEnv,
         ),
       );
       const serviceRegistrationResult =
@@ -268,28 +263,26 @@ export class BulkServiceRegistrationState {
           projectConfig.artifactId,
           versionInput,
           config.executionUrl,
-          guaranteeNonNullable(this.serviceConfigState?.serviceExecutionMode),
+          guaranteeNonNullable(this.serviceConfigState.serviceExecutionMode),
           {
             TEMPORARY__useStoreModel:
-              this.serviceConfigState?.TEMPORARY__useStoreModel,
+              this.serviceConfigState.TEMPORARY__useStoreModel,
           },
         )) as BulkServiceRegistrationResult[];
 
       serviceRegistrationResult.forEach((result) => {
         if (result instanceof BulkRegistrationResultSuccess) {
-          let serviceURL = generateServiceManagementUrl(
+          const serviceURL = generateServiceManagementUrl(
             config.managementUrl,
-            (result as BulkRegistrationResultSuccess).pattern,
+            result.pattern,
           );
           serviceManagementURL.push(serviceURL);
-          successfulServices.push(
-            (result as BulkRegistrationResultSuccess).pattern,
-          );
+          successfulServices.push(result.pattern);
         } else {
           failedServices.push(
-            result.servicePath +
-              'ERROR: ' +
-              (result as BulkRegistrationResultFail).errorMessage,
+            `${result.servicePath} ERROR: ${
+              (result as BulkRegistrationResultFail).errorMessage
+            }`,
           );
         }
       });
@@ -307,8 +300,8 @@ export class BulkServiceRegistrationState {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.serviceConfigState?.registrationState.reset();
-      this.serviceConfigState?.registrationState.setMessage(undefined);
+      this.serviceConfigState.registrationState.reset();
+      this.serviceConfigState.registrationState.setMessage(undefined);
     }
   }
 
@@ -324,21 +317,21 @@ export class BulkServiceRegistrationState {
         `Service needs to have at least 2 owners in order to be registered`,
       );
       guaranteeNonNullable(
-        this.serviceConfigState?.serviceEnv,
+        this.serviceConfigState.serviceEnv,
         'Service registration environment can not be empty',
       );
       guaranteeNonNullable(
-        this.serviceConfigState?.serviceExecutionMode,
+        this.serviceConfigState.serviceExecutionMode,
         'Service type can not be empty',
       );
       if (
-        this.serviceConfigState?.serviceExecutionMode ===
+        this.serviceConfigState.serviceExecutionMode ===
           ServiceExecutionMode.PROD ||
-        this.serviceConfigState?.serviceExecutionMode ===
+        this.serviceConfigState.serviceExecutionMode ===
           ServiceExecutionMode.SEMI_INTERACTIVE
       ) {
         guaranteeNonNullable(
-          this.serviceConfigState?.projectVersion,
+          this.serviceConfigState.projectVersion,
           'Service version can not be empty in Semi-interactive and Prod service type',
         );
       }
