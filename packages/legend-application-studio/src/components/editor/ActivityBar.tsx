@@ -35,6 +35,7 @@ import {
   MenuIcon,
   MenuContentDivider,
   FlaskIcon,
+  RobotIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { forwardRef, useState } from 'react';
@@ -249,6 +250,11 @@ export const ActivityBar = observer(() => {
       mode: ACTIVITY_MODE.GLOBAL_TEST_RUNNER,
       title: 'Test Runner',
       icon: <FlaskIcon />,
+    },
+    !editorStore.isInConflictResolutionMode && {
+      mode: ACTIVITY_MODE.REGISTER_SERVICES,
+      title: 'Register Service',
+      icon: <RobotIcon />,
     },
     !editorStore.isInConflictResolutionMode && {
       mode: ACTIVITY_MODE.LOCAL_CHANGES,
