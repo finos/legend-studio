@@ -151,7 +151,6 @@ export const NotificationManager = observer(() => {
         action={[
           <button
             className="notification__action"
-            id="expand_button"
             key="expand"
             onClick={toggleExpansion}
             tabIndex={-1}

@@ -69,9 +69,7 @@ import { QueryBuilderWatermarkEditor } from './watermark/QueryBuilderWatermark.j
 import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpressionPanel.js';
 import { QueryBuilder_LegendApplicationPlugin } from './QueryBuilder_LegendApplicationPlugin.js';
 import { QUERY_BUILDER_SETTINGS_KEY } from '../stores/QueryBuilderStorage.js';
-
-export const QUERY_BUILDER_BACKDROP_CONTAINER_ID =
-  'query-builder.backdrop-container';
+import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -349,7 +347,9 @@ export const QueryBuilder = observer(
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER}
         className="query-builder"
       >
-        <BackdropContainer elementID={QUERY_BUILDER_BACKDROP_CONTAINER_ID} />
+        <BackdropContainer
+          elementId={QUERY_BUILDER_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER}
+        />
         <div className="query-builder__body">
           <div className="query-builder__content">
             <div className="query-builder__sub-header">

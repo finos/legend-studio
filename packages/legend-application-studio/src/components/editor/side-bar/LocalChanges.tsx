@@ -77,12 +77,7 @@ const PatchLoader = observer(() => {
         <ModalBody>
           <PanelLoadingIndicator isLoading={patchState.isLoadingChanges} />
           <div>
-            <input
-              id="upload-file"
-              type="file"
-              name="myFiles"
-              onChange={onChange}
-            />
+            <input type="file" name="myFiles" onChange={onChange} />
           </div>
           {Boolean(patchState.overiddingChanges.length) && (
             <div className="panel__content__form__section">

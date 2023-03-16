@@ -53,6 +53,10 @@ export class LayoutService {
     this.TEMPORARY__isLightThemeEnabled = val;
   }
 
+  getElementByID(val: string): Element | undefined {
+    return document.querySelector(`[data-elementid='${val}']`) ?? undefined;
+  }
+
   /**
    * Change the ID used to find the base element to mount the backdrop on.
    * This is useful when we want to use backdrop with embedded application which

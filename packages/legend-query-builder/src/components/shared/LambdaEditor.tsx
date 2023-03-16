@@ -97,7 +97,6 @@ const LambdaEditorInline = observer(
     disableExpansion?: boolean | undefined;
     forceExpansion?: boolean | undefined;
     disablePopUp?: boolean | undefined;
-    backdropSetter?: ((val: boolean) => void) | undefined;
     openInPopUp: () => void;
     onEditorFocus?: (() => void) | undefined;
   }) => {
@@ -110,7 +109,6 @@ const LambdaEditorInline = observer(
       onExpectedTypeLabelSelect,
       matchedExpectedType,
       forceBackdrop,
-      backdropSetter,
       disableExpansion,
       forceExpansion,
       disablePopUp,
@@ -220,17 +218,15 @@ const LambdaEditorInline = observer(
 
     // set backdrop to force user to fix parser error when it happens
     useEffect(() => {
-      if (backdropSetter) {
-        if (parserError) {
-          backdropSetter(true);
-        } else if (!forceBackdrop) {
-          // make sure the backdrop is no longer `needed` for blocking by another parser error before hiding it
-          // NOTE: this has a serious drawback, see the documentation for `forceBackdrop` prop of `LambdaEditor`
-          // for better context
-          backdropSetter(false);
-        }
+      if (parserError) {
+        applicationStore.layoutService.setShowBackdrop(true);
+      } else if (!forceBackdrop) {
+        // make sure the backdrop is no longer `needed` for blocking by another parser error before hiding it
+        // NOTE: this has a serious drawback, see the documentation for `forceBackdrop` prop of `LambdaEditor`
+        // for better context
+        applicationStore.layoutService.setShowBackdrop(false);
       }
-    }, [parserError, forceBackdrop, backdropSetter]);
+    }, [applicationStore, parserError, forceBackdrop]);
 
     if (editor) {
       /**
@@ -672,11 +668,6 @@ export const LambdaEditor = observer(
      */
     forceBackdrop: boolean;
     /**
-     * (de)activator for backdrop that is usually used to block any background interactions
-     * while there is a parser error in the editor
-     */
-    backdropSetter?: ((val: boolean) => void) | undefined;
-    /**
      * To whether or not disable expasipn toggler
      */
     disableExpansion?: boolean | undefined;
@@ -706,7 +697,6 @@ export const LambdaEditor = observer(
       lambdaEditorState,
       disabled,
       forceBackdrop,
-      backdropSetter,
       expectedType,
       onExpectedTypeLabelSelect,
       matchedExpectedType,
@@ -780,7 +770,6 @@ export const LambdaEditor = observer(
         matchedExpectedType={matchedExpectedType}
         onExpectedTypeLabelSelect={onExpectedTypeLabelSelect}
         forceBackdrop={forceBackdrop}
-        backdropSetter={backdropSetter}
         disableExpansion={disableExpansion}
         forceExpansion={
           disableExpansion !== undefined

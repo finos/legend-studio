@@ -29,9 +29,12 @@ import {
 } from '@finos/legend-shared';
 import { VirtualAssistant } from './VirtualAssistant.js';
 import { ApplicationTelemetry } from '../stores/ApplicationTelemetry.js';
+import type { GenericLegendApplicationStore } from '../stores/ApplicationStore.js';
 
-const APP_CONTAINER_ID = 'app.container';
-const APP_BACKDROP_CONTAINER_ID = 'app.backdrop-container';
+enum APPLICATION_COMPONENT_ELEMENT_ID {
+  TOP_LEVEL_CONTAINER = 'application.top-level-container',
+  BACKDROP_CONTAINER = 'application.backdrop-container',
+}
 
 const PLATFORM_NATIVE_KEYBOARD_SHORTCUTS = [
   'Meta+KeyP', // Print
@@ -92,9 +95,12 @@ const buildHotkeysConfiguration = (
  * method forces those event to surface to the top of the app and being handled
  * by keybinding service
  */
-export const forceDispatchKeyboardEvent = (event: KeyboardEvent): void => {
-  document
-    .getElementById(APP_CONTAINER_ID)
+export const forceDispatchKeyboardEvent = (
+  event: KeyboardEvent,
+  applicationStore: GenericLegendApplicationStore,
+): void => {
+  applicationStore.layoutService
+    .getElementByID(APPLICATION_COMPONENT_ELEMENT_ID.TOP_LEVEL_CONTAINER)
     ?.dispatchEvent(new KeyboardEvent(event.type, event));
 };
 
@@ -104,8 +110,8 @@ export const forceDispatchKeyboardEvent = (event: KeyboardEvent): void => {
  * NOTE: we usually want the backdrop container to be the first child of its immediate parent
  * so that it properly lies under the content that we pick to show on top of the backdrop
  */
-export const BackdropContainer: React.FC<{ elementID: string }> = (props) => (
-  <div className="backdrop__container" id={props.elementID} />
+export const BackdropContainer: React.FC<{ elementId: string }> = (props) => (
+  <div className="backdrop__container" data-elementid={props.elementId} />
 );
 
 export const LegendApplicationComponentFrameworkProvider = observer(
@@ -116,12 +122,6 @@ export const LegendApplicationComponentFrameworkProvider = observer(
       event.stopPropagation();
       event.preventDefault();
     };
-    const backdropContainer = applicationStore.layoutService
-      .backdropContainerElementID
-      ? document.getElementById(
-          applicationStore.layoutService.backdropContainerElementID,
-        ) ?? document.getElementById(APP_BACKDROP_CONTAINER_ID)
-      : document.getElementById(APP_BACKDROP_CONTAINER_ID);
 
     const keyBindingMap = buildHotkeysConfiguration(
       applicationStore.keyboardShortcutsService.commandKeyMap,
@@ -181,7 +181,14 @@ export const LegendApplicationComponentFrameworkProvider = observer(
           // For example, the default location of the backdrop works fine for most cases
           // but if we want to use the backdrop for elements within modal dialogs, we would
           // need to mount the backdrop at a different location
-          <Portal container={backdropContainer}>
+          <Portal
+            container={
+              applicationStore.layoutService.getElementByID(
+                applicationStore.layoutService.backdropContainerElementID ??
+                  APPLICATION_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER,
+              ) ?? null
+            }
+          >
             <Backdrop
               className="backdrop"
               open={applicationStore.layoutService.showBackdrop}
@@ -193,11 +200,15 @@ export const LegendApplicationComponentFrameworkProvider = observer(
             className="app__container"
             // NOTE: this `id` is used to quickly identify this DOM node so we could manually
             // dispatch keyboard event here in order to be captured by our global hotkeys matchers
-            id={APP_CONTAINER_ID}
+            data-elementid={
+              APPLICATION_COMPONENT_ELEMENT_ID.TOP_LEVEL_CONTAINER
+            }
             // Disable global context menu so that only places in the app that supports context-menu will be effective
             onContextMenu={disableContextMenu}
           >
-            <BackdropContainer elementID={APP_BACKDROP_CONTAINER_ID} />
+            <BackdropContainer
+              elementId={APPLICATION_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER}
+            />
             <VirtualAssistant />
             {children}
           </div>

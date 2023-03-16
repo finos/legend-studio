@@ -396,7 +396,7 @@ export class XTerm extends Terminal {
         } else {
           // for the rest, allow the keyboard event to be bubbled to
           // application keyboard shortcuts handler
-          forceDispatchKeyboardEvent(domEvent);
+          forceDispatchKeyboardEvent(domEvent, this.applicationStore);
         }
       },
     );
