@@ -87,6 +87,7 @@ export const TagIcon = FA.FaTag;
 export const TagsIcon = FA.FaTags;
 export const BoltIcon = FA.FaBolt;
 export const CheckCircleIcon = FA.FaCheckCircle;
+export const ExclamationIcon = FA.FaExclamation;
 export const ExclamationTriangleIcon = FA.FaExclamationTriangle;
 export const BugIcon = FA.FaBug;
 export const CircleNotchIcon = FA.FaCircleNotch;

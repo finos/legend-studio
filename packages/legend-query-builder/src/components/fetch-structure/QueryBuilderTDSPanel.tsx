@@ -36,6 +36,7 @@ import {
   PlusIcon,
   PanelContent,
   TrashIcon,
+  ExperimentalFeatureWrapper,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -572,6 +573,10 @@ export const QueryBuilderTDSPanel = observer(
           >
             <OptionsIcon className="query-builder__icon query-builder__icon__query-option" />
           </button>
+
+          <ExperimentalFeatureWrapper>
+            <OptionsIcon />
+          </ExperimentalFeatureWrapper>
           <button
             className="panel__header__action"
             disabled={tdsState.projectionColumns.length < 1}

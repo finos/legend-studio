@@ -20,6 +20,8 @@ import {
   BlankPanelContent,
   Panel,
   PanelContent,
+  ExperimentalFeatureWrapper,
+  QuestionIcon,
 } from '@finos/legend-art';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { prettyCONSTName } from '@finos/legend-shared';
@@ -82,7 +84,14 @@ export const QueryBuilderFetchStructurePanel = observer(
       <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
-            <div className="panel__header__title__label">fetch structure</div>
+            <div className="panel__header__title__label">
+              fetch structure
+              <div>
+                <ExperimentalFeatureWrapper>
+                  <QuestionIcon />
+                </ExperimentalFeatureWrapper>
+              </div>
+            </div>
             <QueryBuilderPanelIssueCountBadge
               issues={fetchStructureState.implementation.validationIssues}
             />
