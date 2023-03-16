@@ -70,6 +70,7 @@ import { processTDS_OLAPGroupByExpression } from './fetch-structure/tds/window/Q
 import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkStateBuilder.js';
 import { QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
 import { checkIfEquivalent } from './milestoning/QueryBuilderMilestoningHelper.js';
+import { QueryBuilderParametersState } from './QueryBuilderParametersState.js';
 
 const processGetAllExpression = (
   expression: SimpleFunctionExpression,
@@ -608,19 +609,19 @@ export const processParameters = (
   parameters: VariableExpression[],
   queryBuilderState: QueryBuilderState,
 ): void => {
-  const queryParameterState = queryBuilderState.parametersState;
+  const queryParameterState = new QueryBuilderParametersState(
+    queryBuilderState,
+  );
   // Here we won't process the parameters which are present in the previous state
   // because we don't want to lose the parameter value
-  queryParameterState.parameterStates =
-    queryParameterState.parameterStates.filter((p) =>
-      parameters.find((param) => checkIfEquivalent(param, p.parameter)),
-    );
   parameters.forEach((parameter) => {
-    if (
-      queryParameterState.parameterStates.find((ps) =>
+    const oldParamterState =
+      queryBuilderState.parametersState.parameterStates.find((ps) =>
         checkIfEquivalent(ps.parameter, parameter),
-      ) === undefined
-    ) {
+      );
+    if (oldParamterState) {
+      queryParameterState.addParameter(oldParamterState);
+    } else {
       const parameterState = new LambdaParameterState(
         parameter,
         queryBuilderState.observableContext,
@@ -630,6 +631,7 @@ export const processParameters = (
       queryParameterState.addParameter(parameterState);
     }
   });
+  queryBuilderState.parametersState = queryParameterState;
 };
 
 export const processQueryLambdaFunction = (
