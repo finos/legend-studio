@@ -296,6 +296,10 @@ const NewConnectionDriverEditor = observer(() => {
   let storeOptions: { label: string; value?: Store | undefined }[] = [
     { label: 'ModelStore', value: undefined },
   ];
+  // TODO: we should think more about this and filter the store by the connection type
+  // or think about a way to completely revamp this workflow, maybe to let people select
+  // the store first and then the type of the connection
+  // See
   storeOptions = storeOptions.concat(
     editorStore.graphManagerState.usableStores
       .map(buildElementOption)
