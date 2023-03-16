@@ -107,7 +107,7 @@ export const StereotypeSelector = observer(
       }
     };
     const visitProfile = (): void =>
-      editorStore.tabManagerState.openElementEditor(selectedProfile.value);
+      editorStore.graphEditorMode.openElement(selectedProfile.value);
     // Stereotype
     const stereotypeOptions = selectedProfile.value.p_stereotypes.map((st) => ({
       label: st.value,

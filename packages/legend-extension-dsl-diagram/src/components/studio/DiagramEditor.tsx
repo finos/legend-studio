@@ -744,9 +744,9 @@ const DiagramEditorInlineClassRenamerContent = observer(
       event.preventDefault();
       if (canRenameClass) {
         diagramEditorState.setInlineClassRenamerState(undefined);
-        flowResult(editorStore.renameElement(_class, newClassPath)).catch(
-          applicationStore.alertUnhandledError,
-        );
+        flowResult(
+          editorStore.graphEditorMode.renameElement(_class, newClassPath),
+        ).catch(applicationStore.alertUnhandledError);
       }
     };
     const pathInputRef = useRef<HTMLInputElement>(null);
@@ -869,7 +869,9 @@ const DiagramEditorInlineClassCreatorContent = observer(
         diagramEditorState.setInlineClassCreatorState(undefined);
         const [packagePath, name] = resolvePackagePathAndElementName(path);
         const _class = new Class(name);
-        await flowResult(editorStore.addElement(_class, packagePath, false));
+        await flowResult(
+          editorStore.graphEditorMode.addElement(_class, packagePath, false),
+        );
         diagramEditorState.renderer.addClassView(
           _class,
           inlineClassCreatorState.point,

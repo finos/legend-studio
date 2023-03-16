@@ -22,13 +22,11 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
-import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
+import { GRAPH_EDITOR_MODE } from './EditorConfig.js';
 import {
   type GeneratorFn,
   type PlainObject,
   LogEvent,
-  assertType,
   UnsupportedOperationError,
   assertErrorThrown,
   assertTrue,
@@ -52,7 +50,6 @@ import {
 import {
   type EntityChange,
   type ProjectDependency,
-  EntityChangeType,
   ProjectConfiguration,
   applyEntityChanges,
 } from '@finos/legend-server-sdlc';
@@ -66,9 +63,7 @@ import {
 } from '@finos/legend-server-depot';
 import {
   GRAPH_MANAGER_EVENT,
-  CompilationError,
-  EngineError,
-  extractSourceInformationCoordinates,
+  type EngineError,
   Package,
   Profile,
   PrimitiveType,
@@ -89,29 +84,16 @@ import {
   SectionIndex,
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
-  GraphBuilderError,
   DataElement,
   type PackageableElement,
   type CompilationWarning,
-  type TextCompilationResult,
-  type CompilationResult,
   type PureModel,
   createGraphBuilderReport,
-  reportGraphAnalytics,
 } from '@finos/legend-graph';
-import {
-  ActionAlertActionType,
-  ActionAlertType,
-  ApplicationTelemetry,
-  type TabState,
-} from '@finos/legend-application';
+import { ApplicationTelemetry, type TabState } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
-import { graph_dispose } from './shared/modifier/GraphModifierHelper.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
-import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
-import { ExplorerTreeState } from './ExplorerTreeState.js';
-import { LegendStudioTelemetry } from './LegendStudioTelemetry.js';
 import { LEGEND_STUDIO_SETTINGS_KEY } from './LegendStudioStorage.js';
 
 export enum GraphBuilderStatus {
@@ -120,12 +102,10 @@ export enum GraphBuilderStatus {
   REDIRECTED_TO_TEXT_MODE = 'REDIRECTED_TO_TEXT_MODE',
 }
 
-export enum FormModeCompilationOutcome {
+export enum GraphCompilationOutcome {
   SKIPPED = 'SKIPPED',
   SUCCEEDED = 'SUCCEEDED',
   FAILED = 'FAILED',
-  FAILED_WITH_ERROR_REVEALED = 'FAILED_WITH_ERROR_REVEALED',
-  FAILED_AND_FALLBACK_TO_TEXT_MODE = 'FAILED_AND_FALLBACK_TO_TEXTMODE',
 }
 
 export interface GraphBuilderResult {
@@ -142,49 +122,39 @@ export class EditorGraphState {
   isInitializingGraph = false;
   isRunningGlobalCompile = false;
   isRunningGlobalGenerate = false;
-  isApplicationLeavingTextMode = false;
+  isApplicationLeavingGraphEditMode = false;
   isUpdatingGraph = false; // critical synchronous update to refresh the graph
   isUpdatingApplication = false; // including graph update and async operations such as change detection
 
   warnings: CompilationWarning[] = [];
   error: EngineError | undefined;
-  private mostRecentTextModeCompilationGraphHash: string | undefined;
-  private mostRecentFormModeCompilationGraphHash: string | undefined;
+  compilationResultEntities: Entity[] = [];
 
   enableStrictMode: boolean;
+  mostRecentCompilationGraphHash: string | undefined = undefined;
+  mostRecentCompilationOutcome: GraphCompilationOutcome | undefined = undefined;
 
   constructor(editorStore: EditorStore) {
-    makeObservable<
-      EditorGraphState,
-      | 'updateGraphAndApplicationInFormMode'
-      | 'updateGraphAndApplicationInTextMode'
-      | 'mostRecentFormModeCompilationGraphHash'
-      | 'mostRecentTextModeCompilationGraphHash'
-      | 'rebuildDependencies'
-    >(this, {
+    makeObservable(this, {
       isInitializingGraph: observable,
       isRunningGlobalCompile: observable,
       isRunningGlobalGenerate: observable,
-      isApplicationLeavingTextMode: observable,
+      isApplicationLeavingGraphEditMode: observable,
       isUpdatingGraph: observable,
       isUpdatingApplication: observable,
+      mostRecentCompilationGraphHash: observable,
+      mostRecentCompilationOutcome: observable,
       warnings: observable,
       error: observable,
-      mostRecentFormModeCompilationGraphHash: observable,
-      mostRecentTextModeCompilationGraphHash: observable,
       enableStrictMode: observable,
       problems: computed,
       areProblemsStale: computed,
       isApplicationUpdateOperationIsRunning: computed,
       clearProblems: action,
       setEnableStrictMode: action,
+      setMostRecentCompilationGraphHash: action,
       buildGraph: flow,
       loadEntityChangesToGraph: flow,
-      globalCompileInFormMode: flow,
-      globalCompileInTextMode: flow,
-      leaveTextMode: flow,
-      updateGraphAndApplicationInFormMode: flow,
-      updateGraphAndApplicationInTextMode: flow,
       updateGenerationGraphAndApplication: flow,
       rebuildDependencies: flow,
     });
@@ -224,14 +194,20 @@ export class EditorGraphState {
     });
   }
 
+  setMostRecentCompilationGraphHash(val: string | undefined): void {
+    this.mostRecentCompilationGraphHash = val;
+  }
+
+  setMostRecentCompilationOutcome(
+    val: GraphCompilationOutcome | undefined,
+  ): void {
+    this.mostRecentCompilationOutcome = val;
+  }
+
   get areProblemsStale(): boolean {
     return (
-      (this.editorStore.isInFormMode &&
-        this.mostRecentFormModeCompilationGraphHash !==
-          this.editorStore.changeDetectionState.currentGraphHash) ||
-      (this.editorStore.isInGrammarTextMode &&
-        this.mostRecentTextModeCompilationGraphHash !==
-          this.editorStore.grammarTextEditorState.currentTextGraphHash)
+      this.mostRecentCompilationGraphHash !==
+      this.editorStore.graphEditorMode.getCurrentGraphHash()
     );
   }
 
@@ -239,7 +215,7 @@ export class EditorGraphState {
     return (
       this.isRunningGlobalCompile ||
       this.isRunningGlobalGenerate ||
-      this.isApplicationLeavingTextMode ||
+      this.isApplicationLeavingGraphEditMode ||
       this.isUpdatingApplication ||
       this.isInitializingGraph
     );
@@ -258,9 +234,9 @@ export class EditorGraphState {
       );
       return true;
     }
-    if (this.isApplicationLeavingTextMode) {
+    if (this.isApplicationLeavingGraphEditMode) {
       this.editorStore.applicationStore.notificationService.notifyWarning(
-        'Please wait for editor to leave text mode completely',
+        'Please wait for editor to leave edit mode completely',
       );
       return true;
     }
@@ -279,57 +255,12 @@ export class EditorGraphState {
     return false;
   }
 
-  /**
-   * Get entitiy changes to prepare for syncing
-   */
-  computeLocalEntityChanges(): EntityChange[] {
-    const baseHashesIndex = this.editorStore.isInConflictResolutionMode
-      ? this.editorStore.changeDetectionState
-          .conflictResolutionHeadRevisionState.entityHashesIndex
-      : this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
-          .entityHashesIndex;
-    const originalPaths = new Set(Array.from(baseHashesIndex.keys()));
-    const entityChanges: EntityChange[] = [];
-    this.editorStore.graphManagerState.graph.allOwnElements.forEach(
-      (element) => {
-        const elementPath = element.path;
-        if (baseHashesIndex.get(elementPath) !== element.hashCode) {
-          const entity =
-            this.editorStore.graphManagerState.graphManager.elementToEntity(
-              element,
-              {
-                pruneSourceInformation: true,
-              },
-            );
-          entityChanges.push({
-            classifierPath: entity.classifierPath,
-            entityPath: element.path,
-            content: entity.content,
-            type:
-              baseHashesIndex.get(elementPath) !== undefined
-                ? EntityChangeType.MODIFY
-                : EntityChangeType.CREATE,
-          });
-        }
-        originalPaths.delete(elementPath);
-      },
-    );
-    Array.from(originalPaths).forEach((path) => {
-      entityChanges.push({
-        type: EntityChangeType.DELETE,
-        entityPath: path,
-      });
-    });
-    return entityChanges;
-  }
-
   clearProblems(): void {
     this.error = undefined;
     this.editorStore.tabManagerState.tabs
       .filter(filterByType(ElementEditorState))
       .forEach((editorState) => editorState.clearCompilationError());
-    this.mostRecentFormModeCompilationGraphHash = undefined;
-    this.mostRecentTextModeCompilationGraphHash = undefined;
+    this.mostRecentCompilationGraphHash = undefined;
     this.warnings = [];
   }
 
@@ -468,14 +399,10 @@ export class EditorGraphState {
           `Can't build graph. Redirected to text mode for debugging. Error: ${error.message}`,
         );
         try {
-          const editorGrammar =
-            (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
-              entities,
-            )) as string;
           yield flowResult(
-            this.editorStore.grammarTextEditorState.setGraphGrammarText(
-              editorGrammar,
-            ),
+            this.editorStore.switchModes(GRAPH_EDITOR_MODE.GRAMMAR_TEXT, {
+              isGraphBuildFailure: true,
+            }),
           );
         } catch (error2) {
           assertErrorThrown(error2);
@@ -491,16 +418,13 @@ export class EditorGraphState {
               error: error2,
             };
           }
+          if (error2 instanceof Error) {
+            return {
+              status: GraphBuilderStatus.FAILED,
+              error: error2,
+            };
+          }
         }
-        yield flowResult(
-          this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT),
-        );
-        yield flowResult(
-          this.globalCompileInTextMode({
-            ignoreBlocking: true,
-            suppressCompilationFailureMessage: true,
-          }),
-        );
         return {
           status: GraphBuilderStatus.REDIRECTED_TO_TEXT_MODE,
           error,
@@ -546,7 +470,7 @@ export class EditorGraphState {
   ): GeneratorFn<void> {
     try {
       assertTrue(
-        this.editorStore.isInFormMode,
+        this.editorStore.graphEditorMode.mode === GRAPH_EDITOR_MODE.FORM,
         `Can't apply entity changes: operation only supported in form mode`,
       );
       const entities =
@@ -558,7 +482,9 @@ export class EditorGraphState {
         );
       const modifiedEntities = applyEntityChanges(entities, changes);
       yield flowResult(
-        this.updateGraphAndApplicationInFormMode(modifiedEntities),
+        this.editorStore.graphEditorMode.updateGraphAndApplication(
+          modifiedEntities,
+        ),
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -568,411 +494,13 @@ export class EditorGraphState {
     }
   }
 
-  // TODO: when we support showing multiple notifications, we can take this options out as the only users of this
-  // is delete element flow, where we want to say `re-compiling graph after deletion`, but because sometimes, compilation
-  // is so fast, the message flashes, so we want to combine with the message in this method
-  *globalCompileInFormMode(options?: {
-    message?: string;
-    disableNotificationOnSuccess?: boolean;
-    openConsole?: boolean;
-  }): GeneratorFn<FormModeCompilationOutcome> {
-    assertTrue(
-      this.editorStore.isInFormMode,
-      'Editor must be in form mode to call this method',
-    );
-
-    if (this.checkIfApplicationUpdateOperationIsRunning()) {
-      return FormModeCompilationOutcome.SKIPPED;
-    }
-
-    const stopWatch = new StopWatch();
-    const report = reportGraphAnalytics(
-      this.editorStore.graphManagerState.graph,
-    );
-    LegendStudioTelemetry.logEvent_GraphCompilationLaunched(
-      this.editorStore.applicationStore.telemetryService,
-    );
-
-    const currentGraphHash =
-      this.editorStore.changeDetectionState.currentGraphHash;
-
-    try {
-      this.isRunningGlobalCompile = true;
-      this.clearProblems();
-      if (options?.openConsole) {
-        this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
-      }
-
-      // NOTE: here we always keep the source information while compiling in form mode
-      // so that the form parts where the user interacted with (i.e. where the lamdbas source
-      // information are populated), can reveal compilation error. If compilation errors
-      // show up in other parts, the user will get redirected to text-mode
-      const compilationResult =
-        (yield this.editorStore.graphManagerState.graphManager.compileGraph(
-          this.editorStore.graphManagerState.graph,
-          {
-            keepSourceInformation: true,
-          },
-          report,
-        )) as CompilationResult;
-
-      this.warnings = compilationResult.warnings
-        ? this.TEMPORARY__removeDependencyProblems(compilationResult.warnings)
-        : [];
-
-      this.mostRecentFormModeCompilationGraphHash = currentGraphHash;
-
-      if (!options?.disableNotificationOnSuccess) {
-        if (this.warnings.length) {
-          this.editorStore.applicationStore.notificationService.notifyWarning(
-            `Compilation suceeded with warnings`,
-          );
-        } else {
-          if (!options?.disableNotificationOnSuccess) {
-            this.editorStore.applicationStore.notificationService.notifySuccess(
-              'Compiled successfully',
-            );
-          }
-        }
-      }
-
-      report.timings =
-        this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
-          stopWatch,
-          report.timings,
-        );
-      LegendStudioTelemetry.logEvent_GraphCompilationSucceeded(
-        this.editorStore.applicationStore.telemetryService,
-        report,
-      );
-
-      return FormModeCompilationOutcome.SUCCEEDED;
-    } catch (error) {
-      assertErrorThrown(error);
-      // TODO: we probably should make this pattern of error the handling for all other exceptions in the codebase
-      // i.e. there should be a catch-all handler (we can use if-else construct to check error types)
-      assertType(error, EngineError, `Unhandled exception:\n${error}`);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
-        error,
-      );
-      this.mostRecentFormModeCompilationGraphHash = currentGraphHash;
-      let fallbackToTextModeForDebugging = true;
-      // if compilation failed, we try to reveal the error in form mode,
-      // if even this fail, we will fall back to show it in text mode
-      if (error instanceof CompilationError) {
-        const errorCoordinates = extractSourceInformationCoordinates(
-          error.sourceInformation,
-        );
-        if (errorCoordinates) {
-          const element =
-            this.editorStore.graphManagerState.graph.getNullableElement(
-              guaranteeNonNullable(
-                errorCoordinates[0],
-                `Can't reveal compilation error: element path is missing`,
-              ),
-              false,
-            );
-          if (element) {
-            this.editorStore.tabManagerState.openElementEditor(element);
-            if (
-              this.editorStore.tabManagerState.currentTab instanceof
-              ElementEditorState
-            ) {
-              // check if we can reveal the error in the element editor state
-              fallbackToTextModeForDebugging =
-                !this.editorStore.tabManagerState.currentTab.revealCompilationError(
-                  error,
-                );
-            }
-          }
-        }
-      }
-
-      // decide if we need to fall back to text mode for debugging
-      if (fallbackToTextModeForDebugging) {
-        // TODO: when we support showing multiple notifications, we can split this into 2
-        this.editorStore.applicationStore.notificationService.notifyWarning(
-          options?.message ??
-            'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
-        );
-        try {
-          const code =
-            (yield this.editorStore.graphManagerState.graphManager.graphToPureCode(
-              this.editorStore.graphManagerState.graph,
-            )) as string;
-          this.editorStore.grammarTextEditorState.setGraphGrammarText(code);
-        } catch (error2) {
-          assertErrorThrown(error2);
-          this.editorStore.applicationStore.notificationService.notifyWarning(
-            `Can't enter text mode. Transformation to grammar text failed: ${error2.message}`,
-          );
-          return FormModeCompilationOutcome.FAILED;
-        }
-        yield flowResult(
-          this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT),
-        );
-        yield flowResult(
-          this.globalCompileInTextMode({
-            ignoreBlocking: true,
-            suppressCompilationFailureMessage: true,
-            disableNotificationOnSuccess: options?.disableNotificationOnSuccess,
-          }),
-        );
-        return FormModeCompilationOutcome.FAILED_AND_FALLBACK_TO_TEXT_MODE;
-      } else {
-        this.error = error;
-        this.editorStore.applicationStore.notificationService.notifyWarning(
-          `Compilation failed: ${error.message}`,
-        );
-        return FormModeCompilationOutcome.FAILED_WITH_ERROR_REVEALED;
-      }
-    } finally {
-      this.isRunningGlobalCompile = false;
-    }
-  }
-
-  // TODO: when we support showing multiple notifications, we can take this `suppressCompilationFailureMessage` out as
-  // we can show the transition between form mode and text mode warning and the compilation failure warning at the same time
-  *globalCompileInTextMode(options?: {
-    ignoreBlocking?: boolean | undefined;
-    suppressCompilationFailureMessage?: boolean | undefined;
-    disableNotificationOnSuccess?: boolean | undefined;
-    openConsole?: boolean;
-  }): GeneratorFn<void> {
-    assertTrue(
-      this.editorStore.isInGrammarTextMode,
-      'Editor must be in text mode to call this method',
-    );
-
-    if (
-      !options?.ignoreBlocking &&
-      this.checkIfApplicationUpdateOperationIsRunning()
-    ) {
-      return;
-    }
-
-    const stopWatch = new StopWatch();
-    const report = reportGraphAnalytics(
-      this.editorStore.graphManagerState.graph,
-    );
-    LegendStudioTelemetry.logEvent_TextCompilationLaunched(
-      this.editorStore.applicationStore.telemetryService,
-    );
-
-    const currentGraphHash =
-      this.editorStore.grammarTextEditorState.currentTextGraphHash;
-
-    try {
-      this.isRunningGlobalCompile = true;
-      this.clearProblems();
-      if (options?.openConsole) {
-        this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
-      }
-
-      const compilationResult =
-        (yield this.editorStore.graphManagerState.graphManager.compileText(
-          this.editorStore.grammarTextEditorState.graphGrammarText,
-          this.editorStore.graphManagerState.graph,
-          {},
-          report,
-        )) as TextCompilationResult;
-
-      const entities = compilationResult.entities;
-      this.mostRecentTextModeCompilationGraphHash = currentGraphHash;
-      this.warnings = compilationResult.warnings
-        ? this.TEMPORARY__removeDependencyProblems(compilationResult.warnings)
-        : [];
-
-      if (!options?.disableNotificationOnSuccess) {
-        if (this.warnings.length) {
-          this.editorStore.applicationStore.notificationService.notifyWarning(
-            `Compilation suceeded with warnings`,
-          );
-        } else {
-          if (!options?.disableNotificationOnSuccess) {
-            this.editorStore.applicationStore.notificationService.notifySuccess(
-              'Compiled successfully',
-            );
-          }
-        }
-      }
-
-      stopWatch.record();
-      yield flowResult(this.updateGraphAndApplicationInTextMode(entities));
-      stopWatch.record(GRAPH_MANAGER_EVENT.UPDATE_AND_REBUILD_GRAPH__SUCCESS);
-
-      // Remove `SectionIndex when computing changes in text mode as engine after
-      // transforming grammarToJson would return `SectionIndex` which is not
-      // required to do change detection.
-      yield flowResult(
-        this.editorStore.changeDetectionState.computeLocalChangesInTextMode(
-          this.editorStore.graphManagerState.graphManager.getElementEntities(
-            entities,
-          ),
-        ),
-      );
-
-      report.timings =
-        this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
-          stopWatch,
-          report.timings,
-        );
-      LegendStudioTelemetry.logEvent_TextCompilationSucceeded(
-        this.editorStore.applicationStore.telemetryService,
-        report,
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      this.mostRecentTextModeCompilationGraphHash = currentGraphHash;
-      if (error instanceof EngineError) {
-        this.error = error;
-        if (error.sourceInformation) {
-          this.editorStore.grammarTextEditorState.setForcedCursorPosition({
-            lineNumber: error.sourceInformation.startLine,
-            column: error.sourceInformation.startColumn,
-          });
-        }
-      }
-      if (
-        !this.editorStore.applicationStore.notificationService.notification ||
-        !options?.suppressCompilationFailureMessage
-      ) {
-        this.editorStore.applicationStore.notificationService.notifyWarning(
-          `Compilation failed: ${error.message}`,
-        );
-      }
-    } finally {
-      this.isRunningGlobalCompile = false;
-    }
-  }
-
-  *leaveTextMode(): GeneratorFn<void> {
-    assertTrue(
-      this.editorStore.isInGrammarTextMode,
-      'Editor must be in text mode to call this method',
-    );
-    if (this.checkIfApplicationUpdateOperationIsRunning()) {
-      return;
-    }
-    try {
-      this.isApplicationLeavingTextMode = true;
-      this.clearProblems();
-      this.editorStore.applicationStore.alertService.setBlockingAlert({
-        message: 'Compiling graph before leaving text mode...',
-        showLoading: true,
-      });
-      try {
-        const compilationResult =
-          (yield this.editorStore.graphManagerState.graphManager.compileText(
-            this.editorStore.grammarTextEditorState.graphGrammarText,
-            this.editorStore.graphManagerState.graph,
-            // surpress the modal to reveal error properly in the text editor
-            // if the blocking modal is not dismissed, the edior will not be able to gain focus as modal has a focus trap
-            // therefore, the editor will not be able to get the focus
-            {
-              onError: () =>
-                this.editorStore.applicationStore.alertService.setBlockingAlert(
-                  undefined,
-                ),
-            },
-          )) as TextCompilationResult;
-
-        this.warnings = compilationResult.warnings
-          ? this.TEMPORARY__removeDependencyProblems(compilationResult.warnings)
-          : [];
-        this.editorStore.applicationStore.alertService.setBlockingAlert({
-          message: 'Leaving text mode and rebuilding graph...',
-          showLoading: true,
-        });
-        yield flowResult(
-          this.updateGraphAndApplicationInFormMode(compilationResult.entities),
-        );
-        this.mostRecentFormModeCompilationGraphHash =
-          this.editorStore.changeDetectionState.getCurrentGraphHash();
-        this.editorStore.grammarTextEditorState.setGraphGrammarText('');
-        this.editorStore.grammarTextEditorState.resetCurrentElementLabelRegexString();
-        yield flowResult(
-          this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.FORM),
-        );
-        if (this.editorStore.tabManagerState.currentTab) {
-          this.editorStore.tabManagerState.openTab(
-            this.editorStore.tabManagerState.currentTab,
-          );
-        }
-      } catch (error) {
-        assertErrorThrown(error);
-        this.mostRecentFormModeCompilationGraphHash =
-          this.editorStore.changeDetectionState.getCurrentGraphHash();
-        if (error instanceof EngineError && error.sourceInformation) {
-          this.editorStore.grammarTextEditorState.setForcedCursorPosition({
-            lineNumber: error.sourceInformation.startLine,
-            column: error.sourceInformation.startColumn,
-          });
-        }
-        this.editorStore.applicationStore.logService.error(
-          LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
-          'Compilation failed:',
-          error,
-        );
-        if (this.editorStore.graphManagerState.graphBuildState.hasFailed) {
-          // TODO: when we support showing multiple notification, we can split this into 2 messages
-          this.editorStore.applicationStore.notificationService.notifyWarning(
-            `Can't build graph, please resolve compilation error before leaving text mode. Compilation failed with error: ${error.message}`,
-          );
-        } else {
-          this.editorStore.applicationStore.notificationService.notifyWarning(
-            `Compilation failed: ${error.message}`,
-          );
-          this.editorStore.applicationStore.alertService.setActionAlertInfo({
-            message: 'Project is not in a compiled state',
-            prompt:
-              'All changes made since the last time the graph was built successfully will be lost',
-            type: ActionAlertType.CAUTION,
-            actions: [
-              {
-                label: 'Discard Changes',
-                handler: () => {
-                  flowResult(
-                    this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.FORM),
-                  ).catch(
-                    this.editorStore.applicationStore.alertUnhandledError,
-                  );
-                },
-                type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              },
-              {
-                label: 'Stay',
-                default: true,
-                type: ActionAlertActionType.PROCEED,
-              },
-            ],
-          });
-        }
-      }
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
-        error,
-      );
-    } finally {
-      this.isApplicationLeavingTextMode = false;
-      this.editorStore.applicationStore.alertService.setBlockingAlert(
-        undefined,
-      );
-      this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.currentEntityHashesIndex =
-        new Map<string, string>();
-    }
-  }
-
   /**
    * NOTE: this can post memory-leak issue if we start having immutable elements referencing current graph elements:
    * e.g. subclass analytics on the immutable class, etc.
    *
    * @risk memory-leak
    */
-  private *rebuildDependencies(newGraph: PureModel): GeneratorFn<void> {
+  *rebuildDependencies(newGraph: PureModel): GeneratorFn<void> {
     if (
       this.editorStore.graphManagerState.dependenciesBuildState.hasSucceeded
     ) {
@@ -1005,285 +533,6 @@ export class EditorGraphState {
       // instead, we quietly run this in the background and then sync it with the current build state
       this.editorStore.graphManagerState.dependenciesBuildState.sync(
         dependenciesBuildState,
-      );
-    }
-  }
-
-  /**
-   * Creates a new explorer tree state when compiling in text mode. It resets the explorer state properly
-   * after the new graph is built. It tries to maintain the explorer state similar to what it was before compilation.
-   * To achieve that we store node ids of the opened nodes before creating a new explorer state. After creating a
-   * new state we open the nodes which were opened before so that user see the same explorer state as before.
-   */
-  reprocessExplorerTreeInTextMode(): void {
-    const mainTreeOpenedNodeIds = this.editorStore.explorerTreeState.treeData
-      ? Array.from(this.editorStore.explorerTreeState.treeData.nodes.values())
-          .filter((node) => node.isOpen)
-          .map((node) => node.id)
-      : [];
-    const generationTreeOpenedNodeIds = this.editorStore.explorerTreeState
-      .generationTreeData
-      ? Array.from(
-          this.editorStore.explorerTreeState.generationTreeData.nodes.values(),
-        )
-          .filter((node) => node.isOpen)
-          .map((node) => node.id)
-      : [];
-    // Storing dependencyTree, filegenerationTree, systemTree as is as they don't
-    // hold any reference to actual graph
-    const systemTreeData = this.editorStore.explorerTreeState.systemTreeData;
-    const dependencyTreeData =
-      this.editorStore.explorerTreeState.dependencyTreeData;
-    const selectedNodeId = this.editorStore.explorerTreeState.selectedNode?.id;
-    this.editorStore.explorerTreeState = new ExplorerTreeState(
-      this.editorStore,
-    );
-    this.editorStore.explorerTreeState.systemTreeData = systemTreeData;
-    this.editorStore.explorerTreeState.dependencyTreeData = dependencyTreeData;
-    this.editorStore.explorerTreeState.buildTreeInTextMode();
-    this.editorStore.explorerTreeState.openExplorerTreeNodes(
-      mainTreeOpenedNodeIds,
-      generationTreeOpenedNodeIds,
-      selectedNodeId,
-    );
-  }
-
-  /**
-   * NOTE: IMPORTANT! This method is both a savior and a sinner. It helps reprocessing the graph state to use a new graph
-   * built from the new model context data, it resets the graph properly. The bane here is that resetting the graph properly is
-   * not trivial, for example, in the cleanup phase, there are things we want to re-use, such as the one-time processed system
-   * metamodels or the `reusable` metamodels from project dependencies. There are also explorer states like the package tree,
-   * opened tabs, change detection, etc. to take care of. There are a lot of potential pitfalls. For these, we will add the
-   * marker:
-   *
-   * @risk memory-leak
-   *
-   * to indicate we should check carefully these pieces when we detect memory issue as it might still
-   * be referring to the old graph
-   *
-   * In the past, we have found that there are a few potential root causes for memory leak:
-   * 1. State management Mobx allows references, as such, it is sometimes hard to trace down which references can cause problem
-   *    We have to understand that the behind this updater is very simple (replace), yet to do it cleanly is not easy, since
-   *    so far it is tempting to refer to elements in the graph from various editor state. On top of that, change detection
-   *    sometimes obfuscate the investigation but we have cleared it out with explicit disposing of reaction
-   * 2. Reusable models, at this point in time, we haven't completed stabilize the logic for handling generated models, as well
-   *    as dependencies, we intended to save computation time by reusing these while updating the graph. This can pose potential
-   *    danger as well. Beware the way when we start to make system/project dependencies references elements of current graph
-   *    e.g. when we have a computed value in a immutable class that get all subclasses, etc.
-   * 3. We reprocess editor states to ensure good UX, e.g. find tabs to keep open, find tree nodes to expand, etc.
-   *    after updating the graph. These in our experience is the **MOST COMMON** source of memory leak. It is actually
-   *    quite predictable since structures like tabs and tree node embeds graph data, which are references to the old graph
-   *
-   * NOTE: One big obfuscating factor is overlapping graph refresh. Sometimes, we observed that calling this update graph
-   * method multiple times can throws Mobx off and causes reusing change detection state to cause memory-leak. As such,
-   * we have blocked the possibility of calling compilation/graph-update/generation simultaneously
-   *
-   * A note on how to debug memory-leak issue:
-   * 1. Open browser Memory monitor
-   * 2. Go to text mode and compile multiple times (triggering graph update)
-   * 3. Try to force garbage collection, if we see memory goes up after while, it's pretty clear that this is memory-leak
-   * (note that since we disallow stacking multiple compilation and graph update, we have simplify the detection a lot)
-   * See https://auth0.com/blog/four-types-of-leaks-in-your-javascript-code-and-how-to-get-rid-of-them/
-   */
-  private *updateGraphAndApplicationInFormMode(
-    entities: Entity[],
-  ): GeneratorFn<void> {
-    const startTime = Date.now();
-    this.isUpdatingApplication = true;
-    this.isUpdatingGraph = true;
-    try {
-      const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
-      yield flowResult(this.rebuildDependencies(newGraph));
-
-      /**
-       * Backup and editor states info before resetting. Here we store the element paths of the
-       * elements editors as element paths don't refer to the actual graph. We can find the element
-       * from the new graph that is built by using element path and can reprocess the element editor states.
-       * The other kind of editors we reprocess are file generation editors, we store them as is as they don't
-       * hold any reference to the actual graph.
-       */
-      const openedTabPaths: string[] = [];
-      this.editorStore.tabManagerState.tabs.forEach((state: TabState) => {
-        if (state instanceof ElementEditorState) {
-          openedTabPaths.push(state.elementPath);
-        }
-      });
-      // Only stores editor state for file generation editors as they don't hold any references to the
-      // actual graph.
-      const currentTabState =
-        this.editorStore.tabManagerState.currentTab instanceof
-        ElementEditorState
-          ? undefined
-          : this.editorStore.tabManagerState.currentTab;
-      const currentTabElementPath =
-        this.editorStore.tabManagerState.currentTab instanceof
-        ElementEditorState
-          ? this.editorStore.tabManagerState.currentTab.elementPath
-          : undefined;
-      /**
-       * We remove the current editor state so that we no longer let React displays the element that belongs to the old graph
-       * NOTE: this causes an UI flash, but this is in many way, acceptable since the user probably should know that we are
-       * refreshing the memory graph anyway.
-       *
-       * If this is really bothering, we can handle it by building mocked replica of the current editor state using stub element
-       * e.g. if the current editor is a class, we stub the class, create a new class editor state around it and copy over
-       * navigation information, etc.
-       */
-      this.editorStore.tabManagerState.closeAllTabs();
-
-      this.editorStore.changeDetectionState.stop(); // stop change detection before disposing hash
-
-      yield flowResult(graph_dispose(this.editorStore.graphManagerState.graph));
-
-      const graphBuildState = ActionState.create();
-      yield this.editorStore.graphManagerState.graphManager.buildGraph(
-        newGraph,
-        entities,
-        graphBuildState,
-        {
-          TEMPORARY__preserveSectionIndex:
-            this.editorStore.applicationStore.config.options
-              .TEMPORARY__preserveSectionIndex,
-          strict: this.enableStrictMode,
-        },
-      );
-
-      // Activity States
-      this.editorStore.globalTestRunnerState = new GlobalTestRunnerState(
-        this.editorStore,
-        this.editorStore.sdlcState,
-      );
-
-      // NOTE: build model generation entities every-time we rebuild the graph - should we do this?
-      const generationsBuildState = ActionState.create();
-      yield this.editorStore.graphManagerState.graphManager.buildGenerations(
-        newGraph,
-        this.graphGenerationState.generatedEntities,
-        generationsBuildState,
-      );
-
-      this.editorStore.graphManagerState.graph = newGraph;
-      // NOTE: here we don't want to modify the current graph build state directly
-      // instead, we quietly run this in the background and then sync it with the current build state
-      this.editorStore.graphManagerState.graphBuildState.sync(graphBuildState);
-      this.editorStore.graphManagerState.generationsBuildState.sync(
-        generationsBuildState,
-      );
-
-      this.editorStore.explorerTreeState.reprocess();
-
-      /**
-       * Re-build the editor states which were opened before from the information we have stored before
-       * creating the new graph
-       */
-      this.editorStore.tabManagerState.recoverTabs(
-        openedTabPaths,
-        currentTabState,
-        currentTabElementPath,
-      );
-
-      this.editorStore.applicationStore.logService.info(
-        LogEvent.create(GRAPH_MANAGER_EVENT.UPDATE_AND_REBUILD_GRAPH__SUCCESS),
-        '[TOTAL]',
-        Date.now() - startTime,
-        'ms',
-      );
-      this.isUpdatingGraph = false;
-
-      // ======= (RE)START CHANGE DETECTION =======
-
-      yield flowResult(this.editorStore.changeDetectionState.observeGraph());
-      yield this.editorStore.changeDetectionState.preComputeGraphElementHashes();
-      this.editorStore.changeDetectionState.start();
-      this.editorStore.applicationStore.logService.info(
-        LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
-        ),
-        '[ASYNC]',
-      );
-
-      // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
-        error,
-      );
-      this.editorStore.changeDetectionState.stop(true); // force stop change detection
-      this.isUpdatingGraph = false;
-      // Note: in the future this function will probably be ideal to refactor when we have different classes for each mode
-      // as we would handle this error differently in `text` mode and `form` mode.
-      if (error instanceof GraphBuilderError) {
-        this.editorStore.applicationStore.alertService.setBlockingAlert({
-          message: `Can't build graph: ${error.message}`,
-          prompt: 'Refreshing full application...',
-          showLoading: true,
-        });
-        this.editorStore.tabManagerState.closeAllTabs();
-        this.editorStore.cleanUp();
-        yield flowResult(this.editorStore.buildGraph(entities));
-      }
-    } finally {
-      this.isUpdatingApplication = false;
-      this.editorStore.applicationStore.alertService.setBlockingAlert(
-        undefined,
-      );
-    }
-  }
-
-  private *updateGraphAndApplicationInTextMode(
-    entities: Entity[],
-  ): GeneratorFn<void> {
-    const startTime = Date.now();
-    this.isUpdatingApplication = true;
-    this.isUpdatingGraph = true;
-    try {
-      const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
-      yield flowResult(this.rebuildDependencies(newGraph));
-      yield flowResult(graph_dispose(this.editorStore.graphManagerState.graph));
-
-      const graphBuildState = ActionState.create();
-      yield this.editorStore.graphManagerState.graphManager.buildLightGraph(
-        newGraph,
-        entities,
-        graphBuildState,
-        {
-          TEMPORARY__preserveSectionIndex:
-            this.editorStore.applicationStore.config.options
-              .TEMPORARY__preserveSectionIndex,
-          strict: this.enableStrictMode,
-        },
-      );
-
-      this.editorStore.graphManagerState.graph = newGraph;
-      // NOTE: here we don't want to modify the current graph build state directly
-      // instead, we quietly run this in the background and then sync it with the current build state
-      this.editorStore.graphManagerState.graphBuildState.sync(graphBuildState);
-      this.reprocessExplorerTreeInTextMode();
-
-      this.editorStore.applicationStore.logService.info(
-        LogEvent.create(GRAPH_MANAGER_EVENT.UPDATE_AND_REBUILD_GRAPH__SUCCESS),
-        '[TOTAL]',
-        Date.now() - startTime,
-        'ms',
-      );
-      this.isUpdatingGraph = false;
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
-        error,
-      );
-      this.isUpdatingGraph = false;
-      if (error instanceof GraphBuilderError) {
-        this.editorStore.applicationStore.notificationService.notifyError(
-          `Can't build graph: ${error.message}`,
-        );
-      }
-    } finally {
-      this.isUpdatingApplication = false;
-      this.editorStore.applicationStore.alertService.setBlockingAlert(
-        undefined,
       );
     }
   }

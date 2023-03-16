@@ -76,10 +76,7 @@ export const ProjectSearchCommand = observer(() => {
       closeModal();
       // NOTE: since it takes time to close the modal, this will prevent any auto-focus effort when we open a new element
       // to fail as the focus is still trapped in this modal, we need to use `setTimeout` here
-      setTimeout(
-        () => editorStore.tabManagerState.openElementEditor(val.value),
-        0,
-      );
+      setTimeout(() => editorStore.graphEditorMode.openElement(val.value), 0);
     }
   };
   const handleEnter = (): void => {

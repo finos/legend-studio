@@ -50,6 +50,7 @@ import {
   getNullableTable,
 } from '@finos/legend-graph';
 import { connection_setStore } from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { GraphEditFormModeState } from '../../../GraphEditFormModeState.js';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
   isOpen?: boolean | undefined;
@@ -563,7 +564,11 @@ export class DatabaseBuilderState {
           'Database package is missing',
         );
         yield flowResult(
-          this.editorStore.addElement(newDatabase, packagePath, false),
+          this.editorStore.graphEditorMode.addElement(
+            newDatabase,
+            packagePath,
+            false,
+          ),
         );
         currentDatabase = newDatabase;
       } else {
@@ -580,9 +585,11 @@ export class DatabaseBuilderState {
         this.fetchSchemaDefinitions();
         if (isUpdating) {
           yield flowResult(
-            this.editorStore.graphState.globalCompileInFormMode({
-              message: `Can't compile graph after editing database. Redirecting you to text mode`,
-            }),
+            this.editorStore
+              .getGraphEditorMode(GraphEditFormModeState)
+              .globalCompile({
+                message: `Can't compile graph after editing database. Redirecting you to text mode`,
+              }),
           );
         }
       }

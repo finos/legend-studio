@@ -62,7 +62,10 @@ import {
 import { useDrag } from 'react-dnd';
 import { ElementDragSource } from '../../../stores/shared/DnDUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
-import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
+import {
+  ACTIVITY_MODE,
+  GRAPH_EDITOR_MODE,
+} from '../../../stores/EditorConfig.js';
 import {
   generatePackageableElementTreeNodeDataLabel,
   getTreeChildNodes,
@@ -185,7 +188,7 @@ const ElementRenamer = observer(() => {
     if (element && canRenameElement) {
       explorerTreeState.setElementToRename(undefined);
       flowResult(
-        editorStore.renameElement(
+        editorStore.graphEditorMode.renameElement(
           element,
           element instanceof ConcreteFunctionDefinition
             ? path + getFunctionSignature(element)
@@ -500,9 +503,9 @@ const ExplorerContextMenu = observer(
     );
     const removeElement = (): void => {
       if (node) {
-        flowResult(editorStore.deleteElement(node.packageableElement)).catch(
-          applicationStore.alertUnhandledError,
-        );
+        flowResult(
+          editorStore.graphEditorMode.deleteElement(node.packageableElement),
+        ).catch(applicationStore.alertUnhandledError);
       }
     };
     const renameElement = (): void => {
@@ -920,7 +923,9 @@ const ExplorerDropdownMenu = observer(() => {
 
 const ExplorerTrees = observer(() => {
   const editorStore = useEditorStore();
-  const { isInGrammarTextMode, isInViewerMode } = editorStore;
+  const { isInViewerMode } = editorStore;
+  const isInGrammarTextMode =
+    editorStore.graphEditorMode.mode === GRAPH_EDITOR_MODE.GRAMMAR_TEXT;
   const openModelImport = (): void =>
     editorStore.tabManagerState.openTab(editorStore.modelImporterState);
   const graph = editorStore.graphManagerState.graph;
@@ -1115,7 +1120,8 @@ const ExplorerTrees = observer(() => {
 const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
   const { disabled } = props;
   const editorStore = useEditorStore();
-  const isInGrammarMode = editorStore.isInGrammarTextMode;
+  const isInGrammarMode =
+    editorStore.graphEditorMode.mode === GRAPH_EDITOR_MODE.GRAMMAR_TEXT;
   const showSearchModal = (): void =>
     editorStore.searchElementCommandState.open();
   // Explorer tree
@@ -1202,7 +1208,7 @@ export const Explorer = observer(() => {
   const sdlcState = editorStore.sdlcState;
   const isLoading =
     ((!editorStore.explorerTreeState.buildState.hasCompleted &&
-      !editorStore.isInGrammarTextMode) ||
+      editorStore.graphEditorMode.mode !== GRAPH_EDITOR_MODE.GRAMMAR_TEXT) ||
       editorStore.graphState.isUpdatingGraph) &&
     !editorStore.graphManagerState.graphBuildState.hasFailed;
   const showExplorerTrees =
@@ -1214,7 +1220,7 @@ export const Explorer = observer(() => {
     // don't edit elements that fast in form mode, but this could throw off
     // test runner
     (editorStore.isInViewerMode ||
-      editorStore.isInGrammarTextMode ||
+      editorStore.graphEditorMode.mode === GRAPH_EDITOR_MODE.GRAMMAR_TEXT ||
       editorStore.changeDetectionState.graphObserveState.hasSucceeded);
   // conflict resolution
   const showConflictResolutionContent =

@@ -22,7 +22,6 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { ClassEditorState } from './editor-state/element-editor-state/ClassEditorState.js';
 import { ExplorerTreeState } from './ExplorerTreeState.js';
 import {
   ACTIVITY_MODE,
@@ -30,8 +29,6 @@ import {
   GRAPH_EDITOR_MODE,
   EDITOR_MODE,
 } from './EditorConfig.js';
-import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
-import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   type GraphBuilderResult,
   EditorGraphState,
@@ -45,10 +42,8 @@ import { WorkspaceReviewState } from './sidebar-state/WorkspaceReviewState.js';
 import {
   FormLocalChangesState,
   type LocalChangesState,
-  TextLocalChangesState,
 } from './sidebar-state/LocalChangesState.js';
 import { WorkspaceWorkflowManagerState } from './sidebar-state/WorkflowManagerState.js';
-import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -59,20 +54,13 @@ import {
   UnsupportedOperationError,
   ActionState,
   AssertionError,
+  guaranteeType,
+  type Clazz,
 } from '@finos/legend-shared';
-import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState.js';
-import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState.js';
 import { EditorSDLCState } from './EditorSDLCState.js';
 import { ModelImporterState } from './editor-state/ModelImporterState.js';
-import { FunctionEditorState } from './editor-state/element-editor-state/FunctionEditorState.js';
 import { ProjectConfigurationEditorState } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
-import { PackageableRuntimeEditorState } from './editor-state/element-editor-state/RuntimeEditorState.js';
-import { PackageableConnectionEditorState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
-import { PackageableDataEditorState } from './editor-state/element-editor-state/data/DataEditorState.js';
-import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState.js';
 import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
-import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState.js';
-import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState.js';
 import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState.js';
 import { DevToolState } from './aux-panel-state/DevToolState.js';
 import {
@@ -90,27 +78,8 @@ import {
   type SDLCServerClient,
 } from '@finos/legend-server-sdlc';
 import {
-  type PackageableElement,
   type GraphManagerState,
   GRAPH_MANAGER_EVENT,
-  PrimitiveType,
-  Class,
-  Enumeration,
-  Profile,
-  Association,
-  ConcreteFunctionDefinition,
-  Measure,
-  Database,
-  FlatData,
-  Mapping,
-  Service,
-  PackageableRuntime,
-  PackageableConnection,
-  FileGenerationSpecification,
-  GenerationSpecification,
-  Package,
-  DataElement,
-  isElementReadOnly,
 } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
@@ -125,12 +94,6 @@ import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import type { EditorMode } from './editor/EditorMode.js';
 import { StandardEditorMode } from './editor/StandardEditorMode.js';
 import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState.js';
-import {
-  graph_addElement,
-  graph_deleteElement,
-  graph_deleteOwnElement,
-  graph_renameElement,
-} from './shared/modifier/GraphModifierHelper.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
@@ -138,6 +101,9 @@ import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
 import { LEGEND_STUDIO_COMMAND_KEY } from './LegendStudioCommand.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
 import type { ProjectViewerEditorMode } from './project-viewer/ProjectViewerEditorMode.js';
+import { GraphEditFormModeState } from './GraphEditFormModeState.js';
+import type { GraphEditorMode } from './GraphEditorMode.js';
+import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
 import { BulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
 
 export abstract class EditorExtensionState {
@@ -156,7 +122,6 @@ export class EditorStore implements CommandRegistrar {
 
   readonly initState = ActionState.create();
   initialEntityPath?: string | undefined;
-  graphEditMode = GRAPH_EDITOR_MODE.FORM;
   editorMode: EditorMode;
   // NOTE: once we clear up the editor store to make modes more separated
   // we should remove these sets of functions. They are basically hacks to
@@ -170,8 +135,8 @@ export class EditorStore implements CommandRegistrar {
   sdlcState: EditorSDLCState;
   graphState: EditorGraphState;
   graphManagerState: GraphManagerState;
+  graphEditorMode: GraphEditorMode;
   changeDetectionState: ChangeDetectionState;
-  grammarTextEditorState: GrammarTextEditorState;
   modelImporterState: ModelImporterState;
   projectConfigurationEditorState: ProjectConfigurationEditorState;
   projectOverviewState: ProjectOverviewState;
@@ -218,15 +183,13 @@ export class EditorStore implements CommandRegistrar {
     >(this, {
       editorMode: observable,
       mode: observable,
-      graphEditMode: observable,
       activeAuxPanelMode: observable,
       activeActivity: observable,
+      graphEditorMode: observable,
 
       isInViewerMode: computed,
       isInConflictResolutionMode: computed,
       isInitialized: computed,
-      isInGrammarTextMode: computed,
-      isInFormMode: computed,
 
       setEditorMode: action,
       setMode: action,
@@ -234,7 +197,6 @@ export class EditorStore implements CommandRegistrar {
       setActiveAuxPanelMode: action,
       cleanUp: action,
       reset: action,
-      setGraphEditMode: flow,
       setActiveActivity: action,
 
       initialize: flow,
@@ -242,10 +204,8 @@ export class EditorStore implements CommandRegistrar {
       initStandardMode: flow,
       initConflictResolutionMode: flow,
       buildGraph: flow,
-      addElement: flow,
-      deleteElement: flow,
-      renameElement: flow,
       toggleTextMode: flow,
+      switchModes: flow,
     });
 
     this.applicationStore = applicationStore;
@@ -258,6 +218,7 @@ export class EditorStore implements CommandRegistrar {
     this.sdlcState = new EditorSDLCState(this);
     this.graphState = new EditorGraphState(this);
     this.graphManagerState = graphManagerState;
+    this.graphEditorMode = new GraphEditFormModeState(this);
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);
     this.devToolState = new DevToolState(this);
     this.embeddedQueryBuilderState = new EmbeddedQueryBuilderState(this);
@@ -288,7 +249,6 @@ export class EditorStore implements CommandRegistrar {
       this.sdlcState,
     );
     // special (singleton) editors
-    this.grammarTextEditorState = new GrammarTextEditorState(this);
     this.modelImporterState = new ModelImporterState(this);
     this.projectConfigurationEditorState = new ProjectConfigurationEditorState(
       this,
@@ -328,14 +288,6 @@ export class EditorStore implements CommandRegistrar {
     }
   }
 
-  get isInGrammarTextMode(): boolean {
-    return this.graphEditMode === GRAPH_EDITOR_MODE.GRAMMAR_TEXT;
-  }
-
-  get isInFormMode(): boolean {
-    return this.graphEditMode === GRAPH_EDITOR_MODE.FORM;
-  }
-
   get isInViewerMode(): boolean {
     return this.mode === EDITOR_MODE.VIEWER;
   }
@@ -350,31 +302,6 @@ export class EditorStore implements CommandRegistrar {
 
   setMode(val: EDITOR_MODE): void {
     this.mode = val;
-  }
-
-  *setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): GeneratorFn<void> {
-    this.graphEditMode = graphEditor;
-    this.changeLocalChangesState();
-    this.graphState.clearProblems();
-    if (graphEditor === GRAPH_EDITOR_MODE.GRAMMAR_TEXT) {
-      // Stop change detection as we don't need the actual change detection in text mode
-      this.changeDetectionState.stop();
-      try {
-        yield flowResult(
-          this.changeDetectionState.computeLocalChangesInTextMode(
-            (yield this.graphManagerState.graphManager.pureCodeToEntities(
-              this.grammarTextEditorState.graphGrammarText,
-            )) as Entity[],
-          ),
-        );
-      } catch (error) {
-        assertErrorThrown(error);
-        this.applicationStore.logService.warn(
-          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
-          error,
-        );
-      }
-    }
   }
 
   cleanUp(): void {
@@ -412,15 +339,9 @@ export class EditorStore implements CommandRegistrar {
             this.conflictResolutionState.hasResolvedAllConflicts),
       ),
       action: () => {
-        if (this.isInFormMode) {
-          flowResult(this.graphState.globalCompileInFormMode()).catch(
-            this.applicationStore.alertUnhandledError,
-          );
-        } else if (this.isInGrammarTextMode) {
-          flowResult(this.graphState.globalCompileInTextMode()).catch(
-            this.applicationStore.alertUnhandledError,
-          );
-        }
+        flowResult(this.graphEditorMode.globalCompile()).catch(
+          this.applicationStore.alertUnhandledError,
+        );
       },
     });
     this.applicationStore.commandService.registerCommand({
@@ -865,7 +786,7 @@ export class EditorStore implements CommandRegistrar {
         this.initialEntityPath
       ) {
         try {
-          this.tabManagerState.openElementEditor(
+          this.graphEditorMode.openElement(
             this.graphManagerState.graph.getElement(this.initialEntityPath),
           );
         } catch {
@@ -936,225 +857,18 @@ export class EditorStore implements CommandRegistrar {
     this.activeAuxPanelMode = val;
   }
 
-  createElementEditorState(
-    element: PackageableElement,
-  ): ElementEditorState | undefined {
-    if (element instanceof PrimitiveType) {
-      throw new UnsupportedOperationError(
-        `Can't create element state for primitive type`,
-      );
-    } else if (element instanceof Class) {
-      return new ClassEditorState(this, element);
-    } else if (
-      element instanceof Association ||
-      element instanceof Enumeration ||
-      element instanceof Profile
-    ) {
-      return new UMLEditorState(this, element);
-    } else if (element instanceof ConcreteFunctionDefinition) {
-      return new FunctionEditorState(this, element);
-    } else if (
-      element instanceof Measure ||
-      element instanceof Database ||
-      element instanceof FlatData
-    ) {
-      return new UnsupportedElementEditorState(this, element);
-    } else if (element instanceof PackageableRuntime) {
-      return new PackageableRuntimeEditorState(this, element);
-    } else if (element instanceof PackageableConnection) {
-      return new PackageableConnectionEditorState(this, element);
-    } else if (element instanceof Mapping) {
-      return new MappingEditorState(this, element);
-    } else if (element instanceof Service) {
-      return new ServiceEditorState(this, element);
-    } else if (element instanceof GenerationSpecification) {
-      return new GenerationSpecificationEditorState(this, element);
-    } else if (element instanceof FileGenerationSpecification) {
-      return new FileGenerationEditorState(this, element);
-    } else if (element instanceof DataElement) {
-      return new PackageableDataEditorState(this, element);
-    }
-    const extraElementEditorStateCreators = this.pluginManager
-      .getApplicationPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_LegendStudioApplicationPlugin_Extension
-          ).getExtraElementEditorStateCreators?.() ?? [],
-      );
-    for (const creator of extraElementEditorStateCreators) {
-      const elementEditorState = creator(this, element);
-      if (elementEditorState) {
-        return elementEditorState;
-      }
-    }
-    throw new UnsupportedOperationError(
-      `Can't create editor state for element: no compatible editor state creator available from plugins`,
-      element,
-    );
-  }
-
-  *addElement(
-    element: PackageableElement,
-    packagePath: string | undefined,
-    openAfterCreate: boolean,
-  ): GeneratorFn<void> {
-    graph_addElement(
-      this.graphManagerState.graph,
-      element,
-      packagePath,
-      this.changeDetectionState.observerContext,
-    );
-    this.explorerTreeState.reprocess();
-
-    if (openAfterCreate) {
-      this.tabManagerState.openElementEditor(element);
-    }
-  }
-
-  *deleteElement(element: PackageableElement): GeneratorFn<void> {
-    if (
-      this.graphState.checkIfApplicationUpdateOperationIsRunning() ||
-      isElementReadOnly(element)
-    ) {
-      return;
-    }
-    const generatedChildrenElements = (
-      this.graphState.graphGenerationState.generatedEntities.get(
-        element.path,
-      ) ?? []
-    )
-      .map((genChildEntity) =>
-        this.graphManagerState.graph.generationModel.allOwnElements.find(
-          (genElement) => genElement.path === genChildEntity.path,
-        ),
-      )
-      .filter(isNonNullable);
-    const elementsToDelete = [element, ...generatedChildrenElements];
-    this.tabManagerState.tabs = this.tabManagerState.tabs.filter(
-      (elementState) => {
-        if (elementState instanceof ElementEditorState) {
-          if (elementState === this.tabManagerState.currentTab) {
-            // avoid closing the current editor state as this will be taken care of
-            // by the `closeState()` call later
-            return true;
-          }
-          return !elementsToDelete.includes(elementState.element);
-        }
-        return true;
-      },
-    );
-    if (
-      this.tabManagerState.currentTab &&
-      this.tabManagerState.currentTab instanceof ElementEditorState &&
-      elementsToDelete.includes(this.tabManagerState.currentTab.element)
-    ) {
-      this.tabManagerState.closeTab(this.tabManagerState.currentTab);
-    }
-    // remove/retire the element's generated children before remove the element itself
-    generatedChildrenElements.forEach((el) =>
-      graph_deleteOwnElement(this.graphManagerState.graph.generationModel, el),
-    );
-    graph_deleteElement(this.graphManagerState.graph, element);
-
-    const extraElementEditorPostDeleteActions = this.pluginManager
-      .getApplicationPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_LegendStudioApplicationPlugin_Extension
-          ).getExtraElementEditorPostDeleteActions?.() ?? [],
-      );
-    for (const postDeleteAction of extraElementEditorPostDeleteActions) {
-      postDeleteAction(this, element);
-    }
-
-    // reprocess project explorer tree
-    this.explorerTreeState.reprocess();
-    // recompile
-    yield flowResult(
-      this.graphState.globalCompileInFormMode({
-        message: `Can't compile graph after deletion and error cannot be located in form mode. Redirected to text mode for debugging`,
-      }),
-    );
-  }
-
-  *renameElement(
-    element: PackageableElement,
-    newPath: string,
-  ): GeneratorFn<void> {
-    if (isElementReadOnly(element)) {
-      return;
-    }
-    graph_renameElement(
-      this.graphManagerState.graph,
-      element,
-      newPath,
-      this.changeDetectionState.observerContext,
-    );
-
-    const extraElementEditorPostRenameActions = this.pluginManager
-      .getApplicationPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_LegendStudioApplicationPlugin_Extension
-          ).getExtraElementEditorPostRenameActions?.() ?? [],
-      );
-    for (const postRenameAction of extraElementEditorPostRenameActions) {
-      postRenameAction(this, element);
-    }
-
-    // reprocess project explorer tree
-    this.explorerTreeState.reprocess();
-    if (element instanceof Package) {
-      this.explorerTreeState.openNode(element);
-    } else if (element.package) {
-      this.explorerTreeState.openNode(element.package);
-    }
-    // recompile
-    yield flowResult(
-      this.graphState.globalCompileInFormMode({
-        message: `Can't compile graph after renaming and error cannot be located in form mode. Redirected to text mode for debugging`,
-      }),
-    );
-  }
-
   *toggleTextMode(): GeneratorFn<void> {
-    if (this.isInFormMode) {
-      if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
-        return;
-      }
-      this.applicationStore.alertService.setBlockingAlert({
-        message: 'Switching to text mode...',
-        showLoading: true,
-      });
-      try {
-        const graphGrammar =
-          (yield this.graphManagerState.graphManager.graphToPureCode(
-            this.graphManagerState.graph,
-          )) as string;
-        yield flowResult(
-          this.grammarTextEditorState.setGraphGrammarText(graphGrammar),
-        );
-      } catch (error) {
-        assertErrorThrown(error);
-        this.applicationStore.notificationService.notifyWarning(
-          `Can't enter text mode: transformation to grammar text failed. Error: ${error.message}`,
-        );
-        this.applicationStore.alertService.setBlockingAlert(undefined);
-        return;
-      }
-      this.applicationStore.alertService.setBlockingAlert(undefined);
-      yield flowResult(this.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT));
-      // navigate to the currently opened element immediately after entering text mode editor
-      if (this.tabManagerState.currentTab instanceof ElementEditorState) {
-        this.grammarTextEditorState.setCurrentElementLabelRegexString(
-          this.tabManagerState.currentTab.element,
-        );
-      }
-    } else if (this.isInGrammarTextMode) {
-      yield flowResult(this.graphState.leaveTextMode());
+    if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
+      return;
+    }
+    this.applicationStore.alertService.setBlockingAlert({
+      message: 'Switching to text mode...',
+      showLoading: true,
+    });
+    if (this.graphEditorMode instanceof GraphEditFormModeState) {
+      yield flowResult(this.switchModes(GRAPH_EDITOR_MODE.GRAMMAR_TEXT));
+    } else if (this.graphEditorMode instanceof GraphEditGrammarModeState) {
+      yield flowResult(this.switchModes(GRAPH_EDITOR_MODE.FORM));
     } else {
       throw new UnsupportedOperationError(
         'Editor only support form mode and text mode at the moment',
@@ -1193,11 +907,73 @@ export class EditorStore implements CommandRegistrar {
     );
   }
 
-  changeLocalChangesState(): void {
-    if (this.isInFormMode) {
-      this.localChangesState = new FormLocalChangesState(this, this.sdlcState);
-    } else {
-      this.localChangesState = new TextLocalChangesState(this, this.sdlcState);
+  *switchModes(
+    to: GRAPH_EDITOR_MODE,
+    fallbackOptions?: {
+      isCompilationFailure?: boolean;
+      isGraphBuildFailure?: boolean;
+    },
+  ): GeneratorFn<void> {
+    switch (to) {
+      case GRAPH_EDITOR_MODE.GRAMMAR_TEXT: {
+        const graphEditorMode = new GraphEditGrammarModeState(this);
+        try {
+          yield flowResult(
+            graphEditorMode.cleanupBeforeEntering(fallbackOptions),
+          );
+          this.graphEditorMode = graphEditorMode;
+          yield flowResult(
+            this.graphEditorMode.initialize(Boolean(fallbackOptions)),
+          );
+        } catch (error) {
+          assertErrorThrown(error);
+          this.applicationStore.notificationService.notifyWarning(
+            `Can't enter text mode: transformation to grammar text failed. Error: ${error.message}`,
+          );
+          this.applicationStore.alertService.setBlockingAlert(undefined);
+          return;
+        }
+        break;
+      }
+      case GRAPH_EDITOR_MODE.FORM: {
+        if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
+          return;
+        }
+        try {
+          try {
+            yield flowResult(this.graphEditorMode.onLeave(fallbackOptions));
+            this.graphEditorMode = new GraphEditFormModeState(this);
+            yield flowResult(this.graphEditorMode.initialize());
+          } catch (error) {
+            yield flowResult(this.graphEditorMode.handleCleanupFailure(error));
+          }
+        } catch (error) {
+          assertErrorThrown(error);
+          this.applicationStore.logService.error(
+            LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
+            error,
+          );
+        } finally {
+          this.graphState.isApplicationLeavingGraphEditMode = false;
+          this.applicationStore.alertService.setBlockingAlert(undefined);
+          this.changeDetectionState.workspaceLocalLatestRevisionState.currentEntityHashesIndex =
+            new Map<string, string>();
+        }
+
+        break;
+      }
+      default:
+        throw new UnsupportedOperationError(
+          `Editor does not support ${to} mode at the moment `,
+        );
     }
+  }
+
+  getGraphEditorMode<T extends GraphEditorMode>(clazz: Clazz<T>): T {
+    return guaranteeType(
+      this.graphEditorMode,
+      clazz,
+      `Graph editor mode is not of the specified type (this is likely caused by calling this method at the wrong place)`,
+    );
   }
 }

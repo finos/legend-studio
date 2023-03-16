@@ -99,7 +99,7 @@ const ModelGenerationItem = observer(
     const deleteNode = (): void =>
       specState.deleteGenerationTreeNode(generationTreeNode);
     const visitModelGeneration = (): void =>
-      editorStore.tabManagerState.openElementEditor(modelGeneration);
+      editorStore.graphEditorMode.openElement(modelGeneration);
     // generation id
     const isUnique =
       specState.spec.generationNodes.filter(
@@ -368,7 +368,7 @@ const FileGenerationItem = observer(
         fileGeneraitonRef,
       );
     const visitFileGen = (): void =>
-      editorStore.tabManagerState.openElementEditor(fileGeneration);
+      editorStore.graphEditorMode.openElement(fileGeneration);
     return (
       <div className="generation-spec-file-generation-editor__item">
         <div className="btn--sm generation-spec-file-generation-editor__item__label">

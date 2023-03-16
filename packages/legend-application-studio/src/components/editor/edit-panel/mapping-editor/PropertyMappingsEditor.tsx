@@ -193,7 +193,7 @@ export const PropertyMappingEditor = observer(
             const parent = rootMappingElement._PARENT;
             if (parent !== mappingEditorState.element) {
               // TODO: think more about this flow. Right now we open the mapping element in the parent mapping
-              editorStore.tabManagerState.openElementEditor(parent);
+              editorStore.graphEditorMode.openElement(parent);
               editorStore.tabManagerState
                 .getCurrentEditorState(MappingEditorState)
                 .openMappingElement(rootMappingElement, false);

@@ -534,7 +534,7 @@ export const EnumerationEditor = observer(
       : undefined;
     const visitGenerationParentElement = (): void => {
       if (generationParentElement) {
-        editorStore.tabManagerState.openElementEditor(generationParentElement);
+        editorStore.graphEditorMode.openElement(generationParentElement);
       }
     };
 

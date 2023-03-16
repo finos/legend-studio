@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { EditPanel } from '../editor/edit-panel/EditPanel.js';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor.js';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
-import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
+import { ACTIVITY_MODE, GRAPH_EDITOR_MODE } from '../../stores/EditorConfig.js';
 import {
   type ResizablePanelHandlerProps,
   clsx,
@@ -143,7 +143,8 @@ const ProjectViewerStatusBar = observer(() => {
             'editor__status-bar__action editor__status-bar__action__toggler',
             {
               'editor__status-bar__action__toggler--active':
-                editorStore.isInGrammarTextMode,
+                editorStore.graphEditorMode.mode ===
+                GRAPH_EDITOR_MODE.GRAMMAR_TEXT,
             },
           )}
           onClick={handleTextModeClick}
@@ -329,8 +330,10 @@ export const ProjectViewer = withEditorStore(
                       {...sideBarCollapsiblePanelGroupProps.remainingPanel}
                       minSize={300}
                     >
-                      {editorStore.isInFormMode && <EditPanel />}
-                      {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
+                      {editorStore.graphEditorMode.mode ===
+                        GRAPH_EDITOR_MODE.FORM && <EditPanel />}
+                      {editorStore.graphEditorMode.mode ===
+                        GRAPH_EDITOR_MODE.GRAMMAR_TEXT && <GrammarTextEditor />}
                     </ResizablePanel>
                   </ResizablePanelGroup>
                 </div>

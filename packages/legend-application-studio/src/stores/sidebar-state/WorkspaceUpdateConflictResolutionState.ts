@@ -500,7 +500,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         showLoading: true,
       });
       const entityChanges =
-        this.editorStore.graphState.computeLocalEntityChanges();
+        this.editorStore.localChangesState.computeLocalEntityChanges();
       yield this.editorStore.sdlcServerClient.acceptConflictResolution(
         this.sdlcState.activeProject.projectId,
         this.sdlcState.activeWorkspace,

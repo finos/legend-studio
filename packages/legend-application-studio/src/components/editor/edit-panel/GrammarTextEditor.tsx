@@ -110,6 +110,7 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../store
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_SETTINGS_KEY } from '../../../stores/LegendStudioStorage.js';
+import { GraphEditGrammarModeState } from '../../../stores/GraphEditGrammarModeState.js';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   forwardRef<HTMLDivElement, { children?: React.ReactNode }>(
@@ -684,7 +685,9 @@ export const GrammarTextEditor = observer(() => {
   >();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const grammarTextEditorState = editorStore.grammarTextEditorState;
+  const grammarTextEditorState = editorStore.getGraphEditorMode(
+    GraphEditGrammarModeState,
+  ).grammarTextEditorState;
   const currentElementLabelRegexString =
     grammarTextEditorState.currentElementLabelRegexString;
   const error = editorStore.graphState.error;
@@ -1043,7 +1046,9 @@ export const GrammarTextEditor = observer(() => {
           <div className="edit-panel__text-mode__tab">
             <button
               className="edit-panel__text-mode__tab__label"
-              disabled={editorStore.graphState.isApplicationLeavingTextMode}
+              disabled={
+                editorStore.graphState.isApplicationLeavingGraphEditMode
+              }
               onClick={leaveTextMode}
               tabIndex={-1}
               title="Click to exit text mode and go back to form mode"

@@ -20,7 +20,8 @@ import {
 } from '@finos/legend-query-builder';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { flow, flowResult, makeObservable, observable } from 'mobx';
-import { FormModeCompilationOutcome } from './EditorGraphState.js';
+import { GRAPH_EDITOR_MODE } from './EditorConfig.js';
+import { GraphCompilationOutcome } from './EditorGraphState.js';
 import type { EditorStore } from './EditorStore.js';
 
 type EmbeddedQueryBuilderActionConfiguration = {
@@ -56,7 +57,7 @@ export class EmbeddedQueryBuilderState {
     config: EmbeddedQueryBuilderConfiguration | undefined,
   ): GeneratorFn<void> {
     if (config) {
-      if (!this.editorStore.isInFormMode) {
+      if (this.editorStore.graphEditorMode.mode !== GRAPH_EDITOR_MODE.FORM) {
         return;
       }
       if (!config.disableCompile) {
@@ -64,15 +65,15 @@ export class EmbeddedQueryBuilderState {
           message: 'Compiling graph before building query...',
           showLoading: true,
         });
-        const compilationOutcome = (yield flowResult(
-          this.editorStore.graphState.globalCompileInFormMode({
+        yield flowResult(
+          this.editorStore.graphEditorMode.globalCompile({
             // we don't want to notify about compilation success since this is just a simple check
             // in order to be able to open query builder
             disableNotificationOnSuccess: true,
           }),
-        )) as FormModeCompilationOutcome;
-        switch (compilationOutcome) {
-          case FormModeCompilationOutcome.SKIPPED: {
+        );
+        switch (this.editorStore.graphState.mostRecentCompilationOutcome) {
+          case GraphCompilationOutcome.SKIPPED: {
             this.editorStore.applicationStore.alertService.setBlockingAlert(
               undefined,
             );
@@ -81,7 +82,7 @@ export class EmbeddedQueryBuilderState {
             );
             return;
           }
-          case FormModeCompilationOutcome.SUCCEEDED: {
+          case GraphCompilationOutcome.SUCCEEDED: {
             this.editorStore.applicationStore.alertService.setBlockingAlert(
               undefined,
             );

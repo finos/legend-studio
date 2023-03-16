@@ -480,7 +480,7 @@ export class WorkspaceSyncState {
         return;
       }
       const localChanges =
-        this.editorStore.graphState.computeLocalEntityChanges();
+        this.editorStore.localChangesState.computeLocalEntityChanges();
       yield flowResult(this.loadChanges(localChanges));
     } catch (error) {
       assertErrorThrown(error);
@@ -533,7 +533,8 @@ export class WorkspaceSyncState {
 
   *forcePull(): GeneratorFn<void> {
     try {
-      const changes = this.editorStore.graphState.computeLocalEntityChanges();
+      const changes =
+        this.editorStore.localChangesState.computeLocalEntityChanges();
       yield flowResult(this.loadChanges(changes));
       this.editorStore.applicationStore.notificationService.notifySuccess(
         'Workspace changes were force-pulled',

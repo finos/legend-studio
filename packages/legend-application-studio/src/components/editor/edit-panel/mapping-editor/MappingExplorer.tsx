@@ -465,7 +465,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
     : undefined;
   const visitGenerationParentElement = (): void => {
     if (generationParentElement) {
-      editorStore.tabManagerState.openElementEditor(generationParentElement);
+      editorStore.graphEditorMode.openElement(generationParentElement);
     }
   };
   // explorer tree data

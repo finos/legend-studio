@@ -113,7 +113,7 @@ export const TaggedValueEditor = observer(
       }
     };
     const visitProfile = (): void =>
-      editorStore.tabManagerState.openElementEditor(selectedProfile.value);
+      editorStore.graphEditorMode.openElement(selectedProfile.value);
     // Tag
     const tagOptions = selectedProfile.value.p_tags.map((tag) => ({
       label: tag.value,

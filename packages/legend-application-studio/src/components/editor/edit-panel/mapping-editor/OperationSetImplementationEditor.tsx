@@ -169,7 +169,7 @@ export const OperationSetImplementationEditor = observer(
         const parent = param.setImplementation.value._PARENT;
         // TODO: think more about this flow. Right now we open the mapping element in the parent mapping
         if (parent !== mappingEditorState.element) {
-          editorStore.tabManagerState.openElementEditor(parent);
+          editorStore.graphEditorMode.openElement(parent);
           editorStore.tabManagerState
             .getCurrentEditorState(MappingEditorState)
             .openMappingElement(param.setImplementation.value, false);

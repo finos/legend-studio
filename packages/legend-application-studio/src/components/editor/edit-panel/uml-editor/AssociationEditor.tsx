@@ -205,7 +205,7 @@ const AssociationPropertyBasicEditor = observer(
     // Other
     const openElement = (): void => {
       if (!(propertyType instanceof PrimitiveType)) {
-        editorStore.tabManagerState.openElementEditor(
+        editorStore.graphEditorMode.openElement(
           propertyType instanceof Unit ? propertyType.measure : propertyType,
         );
       }

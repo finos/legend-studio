@@ -398,7 +398,11 @@ export class GraphGenerationState {
           [...modelGenerationElements, ...fileGenerations][0]?.package,
         );
         yield flowResult(
-          this.editorStore.addElement(generationSpec, specPackage.path, false),
+          this.editorStore.graphEditorMode.addElement(
+            generationSpec,
+            specPackage.path,
+            false,
+          ),
         );
       }
     }

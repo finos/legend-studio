@@ -472,17 +472,12 @@ export class ProjectViewerStore {
         this.editorStore.applicationStore.notificationService.notifyError(
           `Can't build graph. Redirected to text mode for debugging. Error: ${error.message}`,
         );
-        try {
-          const editorGrammar =
-            (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
-              entities,
-            )) as string;
-          yield flowResult(
-            this.editorStore.grammarTextEditorState.setGraphGrammarText(
-              editorGrammar,
-            ),
-          );
-        } catch {
+        yield flowResult(
+          this.editorStore.switchModes(GRAPH_EDITOR_MODE.GRAMMAR_TEXT, {
+            isGraphBuildFailure: true,
+          }),
+        );
+        if (this.editorStore.graphEditorMode.mode === GRAPH_EDITOR_MODE.FORM) {
           // nothing we can do here so we will just block the user
           this.editorStore.applicationStore.alertService.setBlockingAlert({
             message: `Can't compose Pure code from graph models`,
@@ -490,15 +485,6 @@ export class ProjectViewerStore {
           });
           return false;
         }
-        yield flowResult(
-          this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT),
-        );
-        yield flowResult(
-          this.editorStore.graphState.globalCompileInTextMode({
-            ignoreBlocking: true,
-            suppressCompilationFailureMessage: true,
-          }),
-        );
       } else {
         this.editorStore.applicationStore.notificationService.notifyError(
           error,
@@ -580,7 +566,7 @@ export class ProjectViewerStore {
         this.initialEntityPath
       ) {
         try {
-          this.editorStore.tabManagerState.openElementEditor(
+          this.editorStore.graphEditorMode.openElement(
             this.editorStore.graphManagerState.graph.getElement(
               this.initialEntityPath,
             ),

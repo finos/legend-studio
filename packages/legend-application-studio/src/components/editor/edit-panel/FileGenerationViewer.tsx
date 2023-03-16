@@ -43,7 +43,7 @@ export const FileGenerationViewer = observer(() => {
       )
     : undefined;
   const visitFileGeneration = (fg: FileGenerationSpecification): void =>
-    editorStore.tabManagerState.openElementEditor(fg);
+    editorStore.graphEditorMode.openElement(fg);
 
   return (
     <div className="file-generation-viewer">

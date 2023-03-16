@@ -143,7 +143,7 @@ export const handlePostCreateAction = async (
         DEFAULT_GENERATION_SPECIFICATION_NAME,
       );
       await flowResult(
-        editorStore.addElement(
+        editorStore.graphEditorMode.addElement(
           generationSpec,
           guaranteeNonNullable(generationElement.package).path,
           false,
@@ -776,7 +776,11 @@ export class NewElementState {
       } else {
         const element = this.createElement(elementName);
         yield flowResult(
-          this.editorStore.addElement(element, packagePath, true),
+          this.editorStore.graphEditorMode.addElement(
+            element,
+            packagePath,
+            true,
+          ),
         );
 
         // post creation handling

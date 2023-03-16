@@ -17,6 +17,7 @@
 import { test, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../EditorStoreTestUtils.js';
+import { GrammarTextEditorState } from '../editor-state/GrammarTextEditorState.js';
 
 const entities = [
   {
@@ -113,18 +114,13 @@ test(unitTest('Test Grammar Element Type Label Regex String'), async () => {
   const _function = editorStore.graphManagerState.graph.getFunction(
     'model::testFunc_String_1__String_1__String_1_',
   );
-  editorStore.grammarTextEditorState.setCurrentElementLabelRegexString(
-    _function,
-  );
-  expect(
-    editorStore.grammarTextEditorState.currentElementLabelRegexString,
-  ).toBe(
+  const grammarTextEditorState = new GrammarTextEditorState(editorStore);
+  grammarTextEditorState.setCurrentElementLabelRegexString(_function);
+  expect(grammarTextEditorState.currentElementLabelRegexString).toBe(
     '^([^\\S\\n])*function(\\s+<<.*>>)?(\\s+\\{.*\\})?\\s+model::testFunc\\(param1: String\\[1\\], param2: String\\[1\\]\\): String\\[1\\][\\s\\n]',
   );
-  editorStore.grammarTextEditorState.setCurrentElementLabelRegexString(_class);
-  expect(
-    editorStore.grammarTextEditorState.currentElementLabelRegexString,
-  ).toBe(
+  grammarTextEditorState.setCurrentElementLabelRegexString(_class);
+  expect(grammarTextEditorState.currentElementLabelRegexString).toBe(
     '^([^\\S\\n])*Class(\\s+<<.*>>)?(\\s+\\{.*\\})?\\s+model::Person[\\s\\n]',
   );
 });

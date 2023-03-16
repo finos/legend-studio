@@ -54,6 +54,7 @@ import {
   EntityDiff,
   EntityChange,
   Revision,
+  EntityChangeType,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import { WorkspaceSyncState } from './WorkspaceSyncState.js';
@@ -213,7 +214,7 @@ export abstract class LocalChangesState {
     const content = JSON.stringify(
       {
         message: '', // TODO?
-        entityChanges: this.editorStore.graphState.computeLocalEntityChanges(),
+        entityChanges: this.computeLocalEntityChanges(),
         revisionId: this.sdlcState.activeRevision.id,
       },
       undefined,
@@ -262,7 +263,7 @@ export abstract class LocalChangesState {
         this.sdlcState.activeRemoteWorkspaceRevision.id
       ) {
         if (this.sdlcState.isWorkspaceOutOfSync) {
-          this.editorStore.localChangesState.workspaceSyncState.fetchIncomingRevisions();
+          this.workspaceSyncState.fetchIncomingRevisions();
           const remoteWorkspaceEntities =
             (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
               this.sdlcState.activeProject.projectId,
@@ -310,13 +311,13 @@ export abstract class LocalChangesState {
 
   abstract processConflicts(): GeneratorFn<void>;
 
-  abstract getLocalChanges(): EntityChange[];
-
   abstract getCurrentHashIndexes(): Map<string, string>;
 
   abstract stopChangeDetection(): void;
 
   abstract restartChangeDetection(): GeneratorFn<void>;
+
+  abstract computeLocalEntityChanges(): EntityChange[];
 
   *pushLocalChanges(pushMessage?: string): GeneratorFn<void> {
     if (
@@ -330,7 +331,7 @@ export abstract class LocalChangesState {
 
     this.pushChangesState.inProgress();
     const startTime = Date.now();
-    const localChanges = this.getLocalChanges();
+    const localChanges = this.computeLocalEntityChanges();
     if (!localChanges.length) {
       this.pushChangesState.complete();
       return;
@@ -374,9 +375,9 @@ export abstract class LocalChangesState {
             default: true,
             handler: (): void => {
               this.editorStore.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES);
-              flowResult(
-                this.editorStore.localChangesState.workspaceSyncState.pullChanges(),
-              ).catch(this.editorStore.applicationStore.alertUnhandledError);
+              flowResult(this.workspaceSyncState.pullChanges()).catch(
+                this.editorStore.applicationStore.alertUnhandledError,
+              );
             },
           },
           {
@@ -749,8 +750,48 @@ export class FormLocalChangesState extends LocalChangesState {
     }
   }
 
-  getLocalChanges(): EntityChange[] {
-    return this.editorStore.graphState.computeLocalEntityChanges();
+  /**
+   * Get entitiy changes to prepare for syncing
+   */
+  computeLocalEntityChanges(): EntityChange[] {
+    const baseHashesIndex = this.editorStore.isInConflictResolutionMode
+      ? this.editorStore.changeDetectionState
+          .conflictResolutionHeadRevisionState.entityHashesIndex
+      : this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
+          .entityHashesIndex;
+    const originalPaths = new Set(Array.from(baseHashesIndex.keys()));
+    const entityChanges: EntityChange[] = [];
+    this.editorStore.graphManagerState.graph.allOwnElements.forEach(
+      (element) => {
+        const elementPath = element.path;
+        if (baseHashesIndex.get(elementPath) !== element.hashCode) {
+          const entity =
+            this.editorStore.graphManagerState.graphManager.elementToEntity(
+              element,
+              {
+                pruneSourceInformation: true,
+              },
+            );
+          entityChanges.push({
+            classifierPath: entity.classifierPath,
+            entityPath: element.path,
+            content: entity.content,
+            type:
+              baseHashesIndex.get(elementPath) !== undefined
+                ? EntityChangeType.MODIFY
+                : EntityChangeType.CREATE,
+          });
+        }
+        originalPaths.delete(elementPath);
+      },
+    );
+    Array.from(originalPaths).forEach((path) => {
+      entityChanges.push({
+        type: EntityChangeType.DELETE,
+        entityPath: path,
+      });
+    });
+    return entityChanges;
   }
 
   getCurrentHashIndexes(): Map<string, string> {
@@ -814,10 +855,6 @@ export class TextLocalChangesState extends LocalChangesState {
     return;
   }
 
-  getLocalChanges(): EntityChange[] {
-    return this.localChanges;
-  }
-
   getCurrentHashIndexes(): Map<string, string> {
     return this.editorStore.changeDetectionState
       .workspaceLocalLatestRevisionState.currentEntityHashesIndex;
@@ -825,6 +862,10 @@ export class TextLocalChangesState extends LocalChangesState {
 
   stopChangeDetection(): void {
     this.localChanges = [];
+  }
+
+  computeLocalEntityChanges(): EntityChange[] {
+    return this.localChanges;
   }
 
   *restartChangeDetection(): GeneratorFn<void> {
