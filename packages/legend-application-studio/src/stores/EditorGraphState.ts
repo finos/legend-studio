@@ -90,11 +90,14 @@ import {
   type PureModel,
   createGraphBuilderReport,
 } from '@finos/legend-graph';
-import { ApplicationTelemetry, type TabState } from '@finos/legend-application';
+import {
+  LegendApplicationTelemetryHelper,
+  type TabState,
+} from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
-import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
-import { LEGEND_STUDIO_SETTINGS_KEY } from './LegendStudioStorage.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_SETTINGS_KEY } from '../application/LegendStudioStorage.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -346,7 +349,7 @@ export class EditorGraphState {
         generations: generation_buildReport,
         generationsCount: this.graphGenerationState.generatedEntities.size,
       };
-      ApplicationTelemetry.logEvent_GraphInitializationSucceeded(
+      LegendApplicationTelemetryHelper.logEvent_GraphInitializationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         graphBuilderReportData,
       );

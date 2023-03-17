@@ -90,7 +90,7 @@ import { EditorTabManagerState } from './EditorTabManagerState.js';
 import {
   LEGEND_PURE_IDE_COMMAND_KEY,
   LEGEND_PURE_IDE_TERMINAL_COMMAND,
-} from './LegendPureIDECommand.js';
+} from '../application/LegendPureIDECommand.js';
 import { ExecutionError } from '../server/models/ExecutionError.js';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import type { SourceModificationResult } from '../server/models/Source.js';

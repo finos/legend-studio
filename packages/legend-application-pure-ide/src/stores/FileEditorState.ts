@@ -59,7 +59,7 @@ import {
 } from '../server/models/Usage.js';
 import type { EditorStore } from './EditorStore.js';
 import { EditorTabState } from './EditorTabManagerState.js';
-import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from './LegendPureIDECommand.js';
+import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../application/LegendPureIDECommand.js';
 
 const getFileEditorLanguage = (filePath: string): string => {
   const extension = getNullableLastElement(filePath.split('.'));

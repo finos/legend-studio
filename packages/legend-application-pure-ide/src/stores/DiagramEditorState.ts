@@ -50,7 +50,7 @@ import {
 import { FileCoordinate, trimPathLeadingSlash } from '../server/models/File.js';
 import type { EditorStore } from './EditorStore.js';
 import { EditorTabState } from './EditorTabManagerState.js';
-import { LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY } from './LegendPureIDECommand.js';
+import { LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY } from '../application/LegendPureIDECommand.js';
 
 export class DiagramEditorState
   extends EditorTabState

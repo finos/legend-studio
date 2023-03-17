@@ -24,7 +24,7 @@ import {
 import { isValidUrl } from '@finos/legend-shared';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { observe_TEMPORARY__AbstractEngineConfig } from '@finos/legend-graph';
-import { LEGEND_STUDIO_SETTINGS_KEY } from '../../../stores/LegendStudioStorage.js';
+import { LEGEND_STUDIO_SETTINGS_KEY } from '../../../application/LegendStudioStorage.js';
 
 export const DevTool = observer(() => {
   const editorStore = useEditorStore();

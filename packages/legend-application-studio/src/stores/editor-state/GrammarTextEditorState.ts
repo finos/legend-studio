@@ -45,7 +45,7 @@ import {
 } from '@finos/legend-graph';
 import type { TextEditorPosition } from '@finos/legend-art';
 import { generatePackageableElementTreeNodeDataLabel } from '../shared/PackageTreeUtils.js';
-import { LEGEND_STUDIO_SETTINGS_KEY } from '../LegendStudioStorage.js';
+import { LEGEND_STUDIO_SETTINGS_KEY } from '../../application/LegendStudioStorage.js';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,

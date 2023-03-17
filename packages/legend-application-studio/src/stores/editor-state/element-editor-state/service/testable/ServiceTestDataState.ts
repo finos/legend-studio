@@ -70,7 +70,7 @@ import {
 } from '../../data/DataEditorState.js';
 import { createEmbeddedData } from '../../data/EmbeddedDataState.js';
 import type { ServiceTestSuiteState } from './ServiceTestableState.js';
-import { LegendStudioTelemetry } from '../../../../LegendStudioTelemetry.js';
+import { LegendStudioTelemetryHelper } from '../../../../../application/LegendStudioTelemetryHelper.js';
 
 const buildTestDataParameters = (
   rawLambda: RawLambda,
@@ -146,7 +146,7 @@ export class ConnectionTestDataState {
         // NOTE: since we don't have a generic mechanism for test-data generation
         // we will only report metrics around API usage, when we genericize, we will
         // move this out
-        LegendStudioTelemetry.logEvent_TestDataGenerationLaunched(
+        LegendStudioTelemetryHelper.logEvent_TestDataGenerationLaunched(
           this.testDataState.editorStore.applicationStore.telemetryService,
         );
         const report = reportGraphAnalytics(
@@ -172,7 +172,7 @@ export class ConnectionTestDataState {
         // NOTE: since we don't have a generic mechanism for test-data generation
         // we will only report metrics around API usage, when we genericize, we will
         // move this out
-        LegendStudioTelemetry.logEvent_TestDataGenerationSucceeded(
+        LegendStudioTelemetryHelper.logEvent_TestDataGenerationSucceeded(
           this.editorStore.applicationStore.telemetryService,
           report,
         );

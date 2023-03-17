@@ -148,13 +148,14 @@ const MappingQueryBuilderSetupPanelContent = observer(
                 onChange={changeMapping}
                 value={selectedMappingOption}
                 darkMode={
-                  !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
                 }
                 filterOption={mappingFilterOption}
                 formatOptionLabel={getPackageableElementOptionFormatter({
                   darkMode:
                     !applicationStore.layoutService
-                      .TEMPORARY__isLightThemeEnabled,
+                      .TEMPORARY__isLightColorThemeEnabled,
                   graph: queryBuilderState.graphManagerState.graph,
                 })}
               />
@@ -175,13 +176,14 @@ const MappingQueryBuilderSetupPanelContent = observer(
                 onChange={changeRuntime}
                 value={selectedRuntimeOption}
                 darkMode={
-                  !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
                 }
                 filterOption={runtimeFilterOption}
                 formatOptionLabel={getRuntimeOptionFormatter({
                   darkMode:
                     !applicationStore.layoutService
-                      .TEMPORARY__isLightThemeEnabled,
+                      .TEMPORARY__isLightColorThemeEnabled,
                   pureModel: queryBuilderState.graphManagerState.graph,
                 })}
               />

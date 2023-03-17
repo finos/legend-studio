@@ -96,7 +96,7 @@ import { QueryBuilderWindowState } from './window/QueryBuilderWindowState.js';
 import type { QueryBuilderTDS_WindowOperator } from './window/operators/QueryBuilderTDS_WindowOperator.js';
 import { getQueryBuilderCoreWindowOperators } from './window/QueryBuilderWindowGroupByOperatorLoader.js';
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
-import { QUERY_BUILDER_SETTINGS_KEY } from '../../QueryBuilderStorage.js';
+import { QUERY_BUILDER_SETTINGS_KEY } from '../../../application/QueryBuilderStorage.js';
 
 export class QueryBuilderTDSState
   extends QueryBuilderFetchStructureImplementationState

@@ -14,23 +14,6 @@
  * limitations under the License.
  */
 
-import {
-  APPLICATION_EVENT,
-  type EventService,
-} from '@finos/legend-application';
-
-export class LegendStudioEventService {
-  private eventService!: EventService;
-
-  private constructor(eventService: EventService) {
-    this.eventService = eventService;
-  }
-
-  static create(eventService: EventService): LegendStudioEventService {
-    return new LegendStudioEventService(eventService);
-  }
-
-  notify_ApplicationLoaded(): void {
-    this.eventService.notify(APPLICATION_EVENT.APPLICATION_LOAD__SUCCESS, {});
-  }
+export enum LEGEND_APPLICATION_SETTINGS_KEY {
+  COLOR_THEME = 'application.layout.colorTheme',
 }

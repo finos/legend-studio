@@ -90,7 +90,7 @@ import {
   APPLICATION_EVENT,
   TAB_SIZE,
 } from '@finos/legend-application';
-import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../application/LegendStudioEvent.js';
 import type { EditorMode } from './editor/EditorMode.js';
 import { StandardEditorMode } from './editor/StandardEditorMode.js';
 import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState.js';
@@ -98,7 +98,7 @@ import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
-import { LEGEND_STUDIO_COMMAND_KEY } from './LegendStudioCommand.js';
+import { LEGEND_STUDIO_COMMAND_KEY } from '../application/LegendStudioCommand.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
 import type { ProjectViewerEditorMode } from './project-viewer/ProjectViewerEditorMode.js';
 import { GraphEditFormModeState } from './GraphEditFormModeState.js';

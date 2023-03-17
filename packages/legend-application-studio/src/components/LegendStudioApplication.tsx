@@ -48,7 +48,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../stores/LegendStudioDocumentation.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../application/LegendStudioDocumentation.js';
 
 const LegendStudioNotFoundRouteScreen = observer(() => {
   const applicationStore = useApplicationStore();

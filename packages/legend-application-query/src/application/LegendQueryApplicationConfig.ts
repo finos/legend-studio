@@ -26,13 +26,7 @@ import {
   type LegendApplicationConfigurationInput,
   type LegendApplicationConfigurationData,
 } from '@finos/legend-application';
-import {
-  createModelSchema,
-  optional,
-  primitive,
-  list,
-  object,
-} from 'serializr';
+import { createModelSchema, primitive, list, object } from 'serializr';
 
 export class ServiceRegistrationEnvironmentConfig {
   env!: string;
@@ -52,17 +46,6 @@ export class ServiceRegistrationEnvironmentConfig {
 
 class LegendQueryApplicationCoreOptions {
   /**
-   * Indicates if we should enable theme switcher.
-   *
-   * NOTE: support for theme switcher is fairly basic at the moment, so we really should
-   * just keep this feature as a beta.
-   *
-   * This flag will be kept until we have full support for themeing
-   * See https://github.com/finos/legend-studio/issues/264
-   */
-  TEMPORARY__enableThemeSwitcher = false;
-
-  /**
    * Provides service registration environment configs.
    *
    * TODO: when we modularize service, we can move this config to DSL Service preset. Then, we can remove
@@ -76,7 +59,6 @@ class LegendQueryApplicationCoreOptions {
 
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendQueryApplicationCoreOptions, {
-      TEMPORARY__enableThemeSwitcher: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),
       ),

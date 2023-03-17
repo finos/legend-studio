@@ -70,7 +70,7 @@ import {
   createViewSDLCProjectHandler,
 } from '../stores/QueryEditorStore.js';
 import {
-  LEGEND_APPLICATION_SETTINGS_KEY,
+  LEGEND_APPLICATION_COLOR_THEME,
   useApplicationStore,
   useParams,
 } from '@finos/legend-application';
@@ -407,12 +407,11 @@ const QueryEditorHeaderContent = observer(
       );
     };
     const toggleLightDarkMode = (): void => {
-      applicationStore.layoutService.TEMPORARY__setIsLightThemeEnabled(
-        !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
-      );
-      applicationStore.storageService.settingsStore.persist(
-        LEGEND_APPLICATION_SETTINGS_KEY.TEMPORARY__ENABLE_LIGHT_THEME,
-        applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
+      applicationStore.layoutService.setColorTheme(
+        applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          ? LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK
+          : LEGEND_APPLICATION_COLOR_THEME.LEGACY_LIGHT,
+        { persist: true },
       );
     };
     const saveQuery = (): void => {
@@ -479,24 +478,23 @@ const QueryEditorHeaderContent = observer(
               queryBuilderState={queryBuilderState}
             />
           )}
-          {applicationStore.config.options.TEMPORARY__enableThemeSwitcher && (
-            <button
-              title="Toggle light/dark mode"
-              onClick={toggleLightDarkMode}
-              className="query-editor__header__action"
-              disabled={editorStore.isViewProjectActionDisabled}
-            >
-              {applicationStore.layoutService.TEMPORARY__isLightThemeEnabled ? (
-                <>
-                  <LightBulbIcon className="query-editor__header__action__icon--bulb--light" />
-                </>
-              ) : (
-                <>
-                  <EmptyLightBulbIcon className="query-editor__header__action__icon--bulb--dark" />
-                </>
-              )}
-            </button>
-          )}
+          <button
+            title="Toggle light/dark mode"
+            onClick={toggleLightDarkMode}
+            className="query-editor__header__action"
+            disabled={editorStore.isViewProjectActionDisabled}
+          >
+            {applicationStore.layoutService
+              .TEMPORARY__isLightColorThemeEnabled ? (
+              <>
+                <LightBulbIcon className="query-editor__header__action__icon--bulb--light" />
+              </>
+            ) : (
+              <>
+                <EmptyLightBulbIcon className="query-editor__header__action__icon--bulb--dark" />
+              </>
+            )}
+          </button>
 
           <DropdownMenu
             className="query-editor__header__action btn--medium"
@@ -573,9 +571,9 @@ export const QueryEditor = observer(() => {
   useEffect(() => {
     document.body.classList.toggle(
       'light-theme',
-      applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
+      applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
     );
-  }, [applicationStore.layoutService.TEMPORARY__isLightThemeEnabled]);
+  }, [applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled]);
 
   return (
     <div
@@ -583,7 +581,7 @@ export const QueryEditor = observer(() => {
         'query-editor ',
         {
           'query-editor--light':
-            applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
+            applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
         },
       ])}
     >
@@ -598,7 +596,6 @@ export const QueryEditor = observer(() => {
             }}
             content={
               <MenuContent>
-                {/* <MenuContentItem onClick={openHelp}>Help...</MenuContentItem> */}
                 <MenuContentItem
                   disabled={!appDocUrl}
                   onClick={goToDocumentation}

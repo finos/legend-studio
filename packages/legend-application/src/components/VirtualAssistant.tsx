@@ -56,7 +56,7 @@ import {
 import { useApplicationStore } from './ApplicationStoreProvider.js';
 import Draggable from 'react-draggable';
 import { DATE_TIME_FORMAT } from '@finos/legend-graph';
-import { ApplicationTelemetry } from '../stores/ApplicationTelemetry.js';
+import { LegendApplicationTelemetryHelper } from '../application/LegendApplicationTelemetry.js';
 import { TextSearchAdvancedConfigMenu } from './shared/TextSearchAdvancedConfigMenu.js';
 
 const WIZARD_GREETING = `Bonjour, It's Pierre!`;
@@ -67,7 +67,7 @@ const VirtualAssistantDocumentationEntryViewer = observer(
     const applicationStore = useApplicationStore();
     const toggleExpand = (): void => {
       if (!entry.isOpen) {
-        ApplicationTelemetry.logEvent_VirtualAssistantDocumentationEntryAccessed(
+        LegendApplicationTelemetryHelper.logEvent_VirtualAssistantDocumentationEntryAccessed(
           applicationStore.telemetryService,
           {
             key: entry.documentationKey,
@@ -77,7 +77,7 @@ const VirtualAssistantDocumentationEntryViewer = observer(
       entry.setIsOpen(!entry.isOpen);
     };
     const onDocumentationLinkClick = (): void => {
-      ApplicationTelemetry.logEvent_VirtualAssistantDocumentationEntryAccessed(
+      LegendApplicationTelemetryHelper.logEvent_VirtualAssistantDocumentationEntryAccessed(
         applicationStore.telemetryService,
         {
           key: entry.documentationKey,

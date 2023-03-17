@@ -36,7 +36,7 @@ import {
   Review,
   areWorkspacesEquivalent,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import { ProjectDependantEditorState } from './ProjectDependantEditorState.js';
 import {
   ProjectData,

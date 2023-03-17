@@ -29,7 +29,7 @@ import {
   optional,
   primitive,
 } from 'serializr';
-import { APPLICATION_EVENT } from './ApplicationEvent.js';
+import { APPLICATION_EVENT } from '../application/LegendApplicationEvent.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 
 export type DocumentationRegistryEntry = {

@@ -20,7 +20,7 @@ import {
   LogEvent,
   uuid,
 } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from './ApplicationEvent.js';
+import { APPLICATION_EVENT } from '../application/LegendApplicationEvent.js';
 import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
 import type { WebApplicationNavigator } from './navigation/WebApplicationNavigator.js';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';

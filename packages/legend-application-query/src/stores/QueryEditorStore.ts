@@ -58,7 +58,7 @@ import {
   generateMappingQueryCreatorRoute,
   generateServiceQueryCreatorRoute,
 } from './LegendQueryRouter.js';
-import { LEGEND_QUERY_APP_EVENT } from './LegendQueryAppEvent.js';
+import { LEGEND_QUERY_APP_EVENT } from '../application/LegendQueryEvent.js';
 import {
   type Entity,
   type ProjectGAVCoordinates,
@@ -75,10 +75,10 @@ import {
   TAB_SIZE,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-  ApplicationTelemetry,
+  LegendApplicationTelemetryHelper,
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import { LegendQueryEventService } from './LegendQueryEventService.js';
+import { LegendQueryEventHelper } from '../application/LegendQueryEventHelper.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import {
   type QueryBuilderState,
@@ -87,7 +87,7 @@ import {
   MappingQueryBuilderState,
   ServiceQueryBuilderState,
 } from '@finos/legend-query-builder';
-import { LegendQueryTelemetry } from './LegendQueryTelemetry.js';
+import { LegendQueryTelemetryHelper } from '../application/LegendQueryTelemetryHelper.js';
 
 export const createViewProjectHandler =
   (applicationStore: LegendQueryApplicationStore) =>
@@ -235,11 +235,12 @@ export class QueryExportState {
           `Successfully created query!`,
         );
 
-        LegendQueryEventService.create(
+        LegendQueryEventHelper.notify_QueryCreateSucceeded(
           this.editorStore.applicationStore.eventService,
-        ).notify_QueryCreated({ queryId: newQuery.id });
+          { queryId: newQuery.id },
+        );
 
-        LegendQueryTelemetry.logEvent_CreateQuerySucceeded(
+        LegendQueryTelemetryHelper.logEvent_CreateQuerySucceeded(
           this.editorStore.applicationStore.telemetryService,
           {
             query: {
@@ -265,7 +266,7 @@ export class QueryExportState {
           `Successfully updated query!`,
         );
 
-        LegendQueryTelemetry.logEvent_UpdateQuerySucceeded(
+        LegendQueryTelemetryHelper.logEvent_UpdateQuerySucceeded(
           this.editorStore.applicationStore.telemetryService,
           {
             query: {
@@ -540,7 +541,7 @@ export abstract class QueryEditorStore {
         this.graphManagerState.graph.dependencyManager.numberOfDependencies,
       graph: graph_buildReport,
     };
-    ApplicationTelemetry.logEvent_GraphInitializationSucceeded(
+    LegendApplicationTelemetryHelper.logEvent_GraphInitializationSucceeded(
       this.applicationStore.telemetryService,
       graphBuilderReportData,
     );
@@ -808,7 +809,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
 
     // send analytics
-    LegendQueryTelemetry.logEvent_ViewQuerySucceeded(
+    LegendQueryTelemetryHelper.logEvent_ViewQuerySucceeded(
       this.applicationStore.telemetryService,
       {
         query: {

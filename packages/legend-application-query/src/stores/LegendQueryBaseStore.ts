@@ -17,7 +17,7 @@
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import {
   type ApplicationStore,
-  ApplicationTelemetry,
+  LegendApplicationTelemetryHelper,
   APPLICATION_EVENT,
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
@@ -90,7 +90,7 @@ export class LegendQueryBaseStore {
     // setup telemetry service
     this.applicationStore.telemetryService.setup();
 
-    ApplicationTelemetry.logEvent_ApplicationInitializationSucceeded(
+    LegendApplicationTelemetryHelper.logEvent_ApplicationInitializationSucceeded(
       this.applicationStore.telemetryService,
       this.applicationStore,
     );

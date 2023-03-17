@@ -222,7 +222,7 @@ import {
   createGraphBuilderReport,
   createGraphManagerOperationReport,
   type GraphManagerOperationReport,
-} from '../../../GraphManagerMetrics.js';
+} from '../../../GraphManagerStatistics.js';
 import type { Package } from '../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
 import { V1_DataElement } from './model/packageableElements/data/V1_DataElement.js';
 import {

@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
-export enum LEGEND_APPLICATION_SETTINGS_KEY {
-  TEMPORARY__ENABLE_LIGHT_THEME = 'TEMPORARY__application.layout.enableLightTheme',
+import {
+  APPLICATION_EVENT,
+  type EventService,
+} from '@finos/legend-application';
+
+export class LegendStudioEventHelper {
+  static notify_ApplicationLoadSucceeded(service: EventService): void {
+    service.notify(APPLICATION_EVENT.APPLICATION_LOAD__SUCCESS, {});
+  }
 }

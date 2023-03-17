@@ -122,7 +122,8 @@ const ServiceQueryBuilderSetupPanelContent = observer(
                 onChange={onServiceOptionChange}
                 value={selectedServiceOption}
                 darkMode={
-                  !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
                 }
               />
             </div>
@@ -149,7 +150,7 @@ const ServiceQueryBuilderSetupPanelContent = observer(
                     value={selectedExecutionContextOption}
                     darkMode={
                       !applicationStore.layoutService
-                        .TEMPORARY__isLightThemeEnabled
+                        .TEMPORARY__isLightColorThemeEnabled
                     }
                   />
                 </div>

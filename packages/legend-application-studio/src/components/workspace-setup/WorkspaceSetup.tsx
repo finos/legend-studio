@@ -38,10 +38,10 @@ import {
   useApplicationNavigationContext,
   useParams,
 } from '@finos/legend-application';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/LegendStudioDocumentation.js';
 import { CreateProjectModal } from './CreateProjectModal.js';
 import { ActivityBarMenu } from '../editor/ActivityBar.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/LegendStudioApplicationNavigationContext.js';
 import { CreateWorkspaceModal } from './CreateWorkspaceModal.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 import {

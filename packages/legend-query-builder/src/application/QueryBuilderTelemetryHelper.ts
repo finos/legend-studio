@@ -22,7 +22,7 @@ type QueryExecution_TelemetryData = GraphManagerOperationReport & {
   dependenciesCount: number;
 };
 
-export class QueryBuilderTelemetry {
+export class QueryBuilderTelemetryHelper {
   static logEvent_QueryRunLaunched(telemetryService: TelemetryService): void {
     telemetryService.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__LAUNCH, {});
   }

@@ -19,9 +19,9 @@ import {
   GRAPH_MANAGER_EVENT,
 } from '@finos/legend-graph';
 import type { TimingsRecord } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from './ApplicationEvent.js';
-import type { GenericLegendApplicationStore } from './ApplicationStore.js';
-import type { TelemetryService } from './TelemetryService.js';
+import { APPLICATION_EVENT } from './LegendApplicationEvent.js';
+import type { GenericLegendApplicationStore } from '../stores/ApplicationStore.js';
+import type { TelemetryService } from '../stores/TelemetryService.js';
 
 type ApplicationContextAccessed_TelemetryData = {
   key: string;
@@ -40,7 +40,7 @@ type GraphInitialized_TelemetryData = {
   generationCount?: number;
 };
 
-export class ApplicationTelemetry {
+export class LegendApplicationTelemetryHelper {
   static logEvent_ApplicationInitializationSucceeded(
     telemetryService: TelemetryService,
     applicationStore: GenericLegendApplicationStore,

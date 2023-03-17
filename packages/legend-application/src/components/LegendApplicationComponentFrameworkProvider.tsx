@@ -28,7 +28,7 @@ import {
   type KeyBindingConfig,
 } from '@finos/legend-shared';
 import { VirtualAssistant } from './VirtualAssistant.js';
-import { ApplicationTelemetry } from '../stores/ApplicationTelemetry.js';
+import { LegendApplicationTelemetryHelper } from '../application/LegendApplicationTelemetry.js';
 import type { GenericLegendApplicationStore } from '../stores/ApplicationStore.js';
 
 enum APPLICATION_COMPONENT_ELEMENT_ID {
@@ -157,7 +157,7 @@ export const LegendApplicationComponentFrameworkProvider = observer(
     useEffect(() => {
       const onVisibilityChange = (): void => {
         if (document.hidden) {
-          ApplicationTelemetry.logEvent_ApplicationUsageInterrupted(
+          LegendApplicationTelemetryHelper.logEvent_ApplicationUsageInterrupted(
             applicationStore.telemetryService,
           );
           applicationStore.timeService.recordUsageInterruption();

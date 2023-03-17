@@ -16,8 +16,13 @@
 
 export * from './const.js';
 
-export * from './application/LegendApplicationPluginManager.js';
 export * from './application/LegendApplication.js';
+export * from './application/LegendApplicationConfig.js';
+export * from './application/LegendApplicationPluginManager.js';
+export * from './application/LegendApplicationEvent.js';
+export * from './application/LegendApplicationDocumentation.js';
+export * from './application/LegendApplicationTelemetry.js';
+
 export * from './components/ApplicationStoreProvider.js';
 export * from './components/WebApplicationNavigatorProvider.js';
 export * from './components/LegendApplicationComponentFrameworkProvider.js';
@@ -27,9 +32,6 @@ export * from './components/ApplicationStoreProviderTestUtils.js';
 export * from './components/WebApplicationNavigatorProviderTestUtils.js';
 
 export * from './stores/ApplicationStore.js';
-export * from './stores/ApplicationTelemetry.js';
-export * from './stores/ApplicationEvent.js';
-export * from './application/LegendApplicationConfig.js';
 export { WebApplicationNavigator } from './stores/navigation/WebApplicationNavigator.js';
 export { NavigationService } from './stores/navigation/NavigationService.js';
 export * from './stores/storage/ApplicationStorage.js';
@@ -44,30 +46,31 @@ export * from './stores/AlertService.js';
 export * from './stores/AssistantService.js';
 export * from './stores/ApplicationNavigationContextService.js';
 export * from './stores/LegendApplicationPlugin.js';
-export * from './stores/LegendApplicationStorage.js';
-
-export * from './components/shared/TextSearchAdvancedConfigMenu.js';
-export * from './stores/shared/TextSearchAdvancedConfigState.js';
-export * from './stores/LegendApplicationDocumentation.js';
+export * from './application/LegendApplicationStorage.js';
+export { LEGEND_APPLICATION_COLOR_THEME } from './stores/LayoutService.js';
 
 export * from './stores/ApplicationStoreTestUtils.js';
 export * from './stores/navigation/WebApplicationRouter.js';
-export { PURE_GRAMMAR_TOKEN } from './stores/pure-language/PureLanguageSupport.js';
-export * from './stores/pure-language/PureLanguageTextEditorSupport.js';
 export { DISPLAY_ANSI_ESCAPE } from './stores/terminal/Terminal.js';
 
 // ------------------------------------------- Shared components -------------------------------------------
 
 export * from './components/shared/DocumentationLink.js';
-export * from './components/shared/TextInputEditor.js';
-export * from './components/shared/PackageableElementOptionLabel.js';
-export * from './components/shared/TabManager.js';
-
-export * from './stores/shared/PackageableElementOption.js';
-export * from './stores/shared/TabManagerState.js';
 
 /**
+ * To be moved to other packages
  * @modularize
  */
 export * from './components/execution-plan-viewer/ExecutionPlanViewer.js';
 export * from './stores/ExecutionPlanState.js';
+
+export * from './components/shared/TextInputEditor.js';
+export * from './components/shared/PackageableElementOptionLabel.js';
+export { PURE_GRAMMAR_TOKEN } from './stores/pure-language/PureLanguageSupport.js';
+export * from './stores/pure-language/PureLanguageTextEditorSupport.js';
+export * from './stores/shared/PackageableElementOption.js';
+
+export * from './components/shared/TabManager.js';
+export * from './stores/shared/TabManagerState.js';
+export * from './components/shared/TextSearchAdvancedConfigMenu.js';
+export * from './stores/shared/TextSearchAdvancedConfigState.js';

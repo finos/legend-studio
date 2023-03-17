@@ -19,6 +19,7 @@ import {
   guaranteeIsString,
   guaranteeIsBoolean,
   guaranteeIsObject,
+  isNonNullable,
 } from '@finos/legend-shared';
 import type { GenericLegendApplicationStore } from '../ApplicationStore.js';
 import { LocalStorage } from './ApplicationStorage.js';
@@ -65,14 +66,28 @@ class StorageStore {
     return guaranteeIsObject(this.getValue(key, defaultValue));
   }
 
-  persist(key: string, value: StoredValue): void {
-    this.data[key] = value;
+  hasValue(key: string): boolean {
+    return isNonNullable(this.data[key]);
+  }
+
+  persist(key: string, value: StoredValue | undefined): void {
+    if (value !== undefined) {
+      this.data[key] = value;
+    } else {
+      delete this.data[key];
+    }
     this.storageService.storage.setItem(
       this.storeIndex,
       JSON.stringify(this.data),
     );
   }
 }
+
+// class SettingsStore extends StorageStore {
+//   override persist(key: string, value: StoredValue | undefined): void {
+
+//   }
+// }
 
 export class StorageService {
   readonly applicationStore: GenericLegendApplicationStore;

@@ -68,7 +68,7 @@ import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSP
 import { QueryBuilderWatermarkEditor } from './watermark/QueryBuilderWatermark.js';
 import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpressionPanel.js';
 import { QueryBuilder_LegendApplicationPlugin } from './QueryBuilder_LegendApplicationPlugin.js';
-import { QUERY_BUILDER_SETTINGS_KEY } from '../stores/QueryBuilderStorage.js';
+import { QUERY_BUILDER_SETTINGS_KEY } from '../application/QueryBuilderStorage.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
 
 const QueryBuilderStatusBar = observer(

@@ -21,8 +21,8 @@ import {
   type ExistingQueryEditorStore,
   LegendQueryApplicationPlugin,
   generateExistingQueryEditorRoute,
-  LegendQueryEventService,
   LEGEND_QUERY_APP_EVENT,
+  LegendQueryEventHelper,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from '@finos/legend-application-query';
@@ -168,9 +168,10 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                       editorStore.applicationStore.notificationService.notifySuccess(
                         `Successfully created query!`,
                       );
-                      LegendQueryEventService.create(
+                      LegendQueryEventHelper.notify_QueryCreateSucceeded(
                         editorStore.applicationStore.eventService,
-                      ).notify_QueryCreated({ queryId: newQuery.id });
+                        { queryId: newQuery.id },
+                      );
                       editorStore.applicationStore.navigationService.navigator.goToLocation(
                         generateExistingQueryEditorRoute(newQuery.id),
                       );

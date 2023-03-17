@@ -45,8 +45,8 @@ import {
   getExecutionQueryFromRawLambda,
 } from './shared/LambdaParameterState.js';
 import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificationBuilderHelper.js';
-import { QueryBuilderTelemetry } from './QueryBuilderTelemetry.js';
-import { QUERY_BUILDER_EVENT } from './QueryBuilderEvent.js';
+import { QueryBuilderTelemetryHelper } from '../application/QueryBuilderTelemetryHelper.js';
+import { QUERY_BUILDER_EVENT } from '../application/QueryBuilderEvent.js';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -226,7 +226,7 @@ export class QueryBuilderResultState {
         this.queryBuilderState.graphManagerState,
       );
 
-      QueryBuilderTelemetry.logEvent_QueryRunLaunched(
+      QueryBuilderTelemetryHelper.logEvent_QueryRunLaunched(
         this.queryBuilderState.applicationStore.telemetryService,
       );
 
@@ -258,7 +258,7 @@ export class QueryBuilderResultState {
             stopWatch,
             report.timings,
           );
-        QueryBuilderTelemetry.logEvent_QueryRunSucceeded(
+        QueryBuilderTelemetryHelper.logEvent_QueryRunSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,
           report,
         );
@@ -298,7 +298,7 @@ export class QueryBuilderResultState {
       );
 
       if (debug) {
-        QueryBuilderTelemetry.logEvent_ExecutionPlanDebugLaunched(
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugLaunched(
           this.queryBuilderState.applicationStore.telemetryService,
         );
         const debugResult =
@@ -312,7 +312,7 @@ export class QueryBuilderResultState {
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
       } else {
-        QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationLaunched(
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanGenerationLaunched(
           this.queryBuilderState.applicationStore.telemetryService,
         );
         rawPlan =
@@ -346,12 +346,12 @@ export class QueryBuilderResultState {
           report.timings,
         );
       if (debug) {
-        QueryBuilderTelemetry.logEvent_ExecutionPlanDebugSucceeded(
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,
           report,
         );
       } else {
-        QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationSucceeded(
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanGenerationSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,
           report,
         );

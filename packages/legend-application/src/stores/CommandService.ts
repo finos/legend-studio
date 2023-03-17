@@ -16,7 +16,7 @@
 
 import { LogEvent } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
-import { APPLICATION_EVENT } from './ApplicationEvent.js';
+import { APPLICATION_EVENT } from '../application/LegendApplicationEvent.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 
 export interface CommandRegistrar {

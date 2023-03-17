@@ -15,27 +15,17 @@
  */
 
 import type { EventService } from '@finos/legend-application';
-import { LEGEND_QUERY_APP_EVENT } from './LegendQueryAppEvent.js';
+import { LEGEND_QUERY_APP_EVENT } from './LegendQueryEvent.js';
 
 type QueryCreated_EventData = {
   queryId: string;
 };
 
-export class LegendQueryEventService {
-  private eventService!: EventService;
-
-  private constructor(eventService: EventService) {
-    this.eventService = eventService;
-  }
-
-  static create(eventService: EventService): LegendQueryEventService {
-    return new LegendQueryEventService(eventService);
-  }
-
-  notify_QueryCreated(data: QueryCreated_EventData): void {
-    this.eventService.notify(
-      LEGEND_QUERY_APP_EVENT.CREATE_QUERY__SUCCESS,
-      data,
-    );
+export class LegendQueryEventHelper {
+  static notify_QueryCreateSucceeded(
+    service: EventService,
+    data: QueryCreated_EventData,
+  ): void {
+    service.notify(LEGEND_QUERY_APP_EVENT.CREATE_QUERY__SUCCESS, data);
   }
 }

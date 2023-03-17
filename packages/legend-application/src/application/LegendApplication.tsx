@@ -34,7 +34,7 @@ import {
   type ExtensionsConfigurationData,
   createRegExpPatternFromWildcardPattern,
 } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from '../stores/ApplicationEvent.js';
+import { APPLICATION_EVENT } from './LegendApplicationEvent.js';
 import { configureComponents } from '@finos/legend-art';
 import type { GraphManagerPluginManager } from '@finos/legend-graph';
 import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager.js';

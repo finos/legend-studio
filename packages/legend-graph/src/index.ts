@@ -205,7 +205,7 @@ export {
   AbstractPureGraphManager,
   type GraphBuilderOptions,
 } from './graphManager/AbstractPureGraphManager.js';
-export * from './graphManager/GraphManagerMetrics.js';
+export * from './graphManager/GraphManagerStatistics.js';
 export * from './graphManager/GraphManagerUtils.js';
 export * from './graphManager/GraphManagerEvent.js';
 export * from './graphManager/DSL_Mapping_PureGraphManagerPlugin_Extension.js';

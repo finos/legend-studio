@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+// application
+export * from './application/QueryBuilderTelemetryHelper.js';
+export * from './application/QueryBuilderEvent.js';
+
 export * from './stores/QueryBuilderBootstraper.js';
 export { QueryBuilder_GraphManagerPreset } from './graphManager/QueryBuilder_GraphManagerPreset.js';
 
@@ -47,8 +51,6 @@ export * from './stores/ServiceInfo.js';
 export * from './components/ServiceQuerySetupUtils.js';
 export * from './components/QuerySetupUtils.js';
 export * from './components/QueryBuilderTextEditor.js';
-export * from './stores/QueryBuilderTelemetry.js';
-export * from './stores/QueryBuilderEvent.js';
 
 export { TEST__setUpQueryBuilder } from './components/QueryBuilderComponentTestUtils.js';
 

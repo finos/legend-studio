@@ -23,7 +23,7 @@ import {
 } from '@finos/legend-shared';
 import { flow, action, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import { ElementXTSchemaGenerationState } from './element-editor-state/ElementExternalFormatGenerationState.js';
 
 export type ExternalFormatTypeOption = {

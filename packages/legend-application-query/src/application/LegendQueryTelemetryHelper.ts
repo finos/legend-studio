@@ -15,7 +15,7 @@
  */
 
 import type { TelemetryService } from '@finos/legend-application';
-import { LEGEND_QUERY_APP_EVENT } from './LegendQueryAppEvent.js';
+import { LEGEND_QUERY_APP_EVENT } from './LegendQueryEvent.js';
 
 type Query_TelemetryData = {
   query: {
@@ -27,7 +27,7 @@ type Query_TelemetryData = {
   };
 };
 
-export class LegendQueryTelemetry {
+export class LegendQueryTelemetryHelper {
   static logEvent_ViewQuerySucceeded(
     telemetryService: TelemetryService,
     data: Query_TelemetryData,

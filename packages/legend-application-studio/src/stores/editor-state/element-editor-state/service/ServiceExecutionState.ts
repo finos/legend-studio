@@ -92,7 +92,7 @@ import {
   LambdaParametersState,
   LambdaParameterState,
   PARAMETER_SUBMIT_ACTION,
-  QueryBuilderTelemetry,
+  QueryBuilderTelemetryHelper,
   QUERY_BUILDER_EVENT,
 } from '@finos/legend-query-builder';
 
@@ -568,7 +568,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       );
 
       if (debug) {
-        QueryBuilderTelemetry.logEvent_ExecutionPlanDebugLaunched(
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugLaunched(
           this.editorStore.applicationStore.telemetryService,
         );
         const debugResult =
@@ -582,7 +582,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
       } else {
-        QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationLaunched(
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanGenerationLaunched(
           this.editorStore.applicationStore.telemetryService,
         );
         rawPlan =
@@ -616,12 +616,12 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
           report.timings,
         );
       if (debug) {
-        QueryBuilderTelemetry.logEvent_ExecutionPlanDebugSucceeded(
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugSucceeded(
           this.editorStore.applicationStore.telemetryService,
           report,
         );
       } else {
-        QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationSucceeded(
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanGenerationSucceeded(
           this.editorStore.applicationStore.telemetryService,
           report,
         );
@@ -656,7 +656,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       return;
     }
 
-    QueryBuilderTelemetry.logEvent_QueryRunLaunched(
+    QueryBuilderTelemetryHelper.logEvent_QueryRunLaunched(
       this.editorStore.applicationStore.telemetryService,
     );
 
@@ -697,7 +697,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
             stopWatch,
             report.timings,
           );
-        QueryBuilderTelemetry.logEvent_QueryRunSucceeded(
+        QueryBuilderTelemetryHelper.logEvent_QueryRunSucceeded(
           this.editorStore.applicationStore.telemetryService,
           report,
         );
