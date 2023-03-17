@@ -70,8 +70,6 @@
 }
 
 .input-group {
-  @include flexCenter;
-
   position: relative;
 
   &__input {

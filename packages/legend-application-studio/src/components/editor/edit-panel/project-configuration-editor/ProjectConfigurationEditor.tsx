@@ -138,7 +138,7 @@ const ProjectStructureEditor = observer(
               pipeline and published to an artifact repository
             </div>
             <PanelListItem>
-              <div className="input-group">
+              <div className="input-group project-configuration-editor__input">
                 <input
                   className={clsx(
                     'input input--dark input-group__input panel__content__form__section__input input--full',
@@ -172,7 +172,7 @@ const ProjectStructureEditor = observer(
               published to an artifact repository
             </div>
             <PanelListItem>
-              <div className="input-group">
+              <div className="input-group project-configuration-editor__input">
                 <input
                   className={clsx(
                     'input input--dark input-group__input panel__content__form__section__input input--full',
