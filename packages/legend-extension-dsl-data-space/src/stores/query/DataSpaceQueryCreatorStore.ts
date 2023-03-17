@@ -38,6 +38,7 @@ import {
 } from '@finos/legend-shared';
 import {
   QUERY_PROFILE_PATH,
+  QUERY_PROFILE_TAG_CLASS,
   QUERY_PROFILE_TAG_DATA_SPACE,
 } from '../../DSL_DataSpace_Const.js';
 import { getDataSpace } from '../../graphManager/DSL_DataSpace_GraphManagerHelper.js';
@@ -55,6 +56,16 @@ export const createQueryDataSpaceTaggedValue = (
   taggedValue.profile = QUERY_PROFILE_PATH;
   taggedValue.tag = QUERY_PROFILE_TAG_DATA_SPACE;
   taggedValue.value = dataSpacePath;
+  return taggedValue;
+};
+
+export const createQueryClassTaggedValue = (
+  classPath: string,
+): QueryTaggedValue => {
+  const taggedValue = new QueryTaggedValue();
+  taggedValue.profile = QUERY_PROFILE_PATH;
+  taggedValue.tag = QUERY_PROFILE_TAG_CLASS;
+  taggedValue.value = classPath;
   return taggedValue;
 };
 
@@ -237,6 +248,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         query.versionId = this.versionId;
         query.taggedValues = [
           createQueryDataSpaceTaggedValue(this.dataSpacePath),
+          createQueryClassTaggedValue(guaranteeNonNullable(this.classPath)),
         ];
       },
     };
