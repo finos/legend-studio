@@ -5,8 +5,7 @@
   "workspaces": [
     "packages/*",
     "fixtures/*",
-    "scripts/github-bot",
-    "scripts/typedoc-theme"
+    "scripts/github-bot"
   ],
   "scripts": {
     "build": "yarn clean && npm-run-all build:ts build:sass",
@@ -113,7 +112,7 @@
     "semver": "7.3.8",
     "sort-package-json": "2.4.1",
     "stylelint": "15.3.0",
-    "typedoc": "0.23.27",
+    "typedoc": "0.23.28",
     "typescript": "5.0.2",
     "yargs": "17.7.1"
   },

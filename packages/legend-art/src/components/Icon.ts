@@ -27,7 +27,7 @@
  */
 import ReactIcons from './CJS__ReactIcons.cjs';
 
-// eslint-disable @typescript-eslint/no-unsafe-assignment
+/* eslint @typescript-eslint/no-unsafe-assignment: 0 */
 const FA = ReactIcons.FA;
 export const HistoryIcon = FA.FaHistory;
 export const CrosshairsIcon = FA.FaCrosshairs;
