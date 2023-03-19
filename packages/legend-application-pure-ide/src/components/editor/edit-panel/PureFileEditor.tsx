@@ -561,6 +561,8 @@ export const PureFileEditor = observer(
             )
             .forEach((element) => {
               const menuItem = element.parentElement?.parentElement;
+              // NOTE: we must not remove this item since vscode would
+              // still keep it in memory and calculate context menu height wrong
               if (menuItem) {
                 menuItem.classList.add('disabled');
                 menuItem.style.opacity = '0.3';

@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-import { getBaseJestDOMProjectConfig } from '../../scripts/test/jest.config.base.js';
-import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
+import { V1_PersistencePlatform } from './V1_DSL_Persistence_PersistencePlatform.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+export class V1_AwsGluePersistencePlatform
+  extends V1_PersistencePlatform
+  implements Hashable
+{
+  dataProcessingUnits!: number;
 
-const packageJson = loadJSON(resolve(__dirname, './package.json'));
-
-export default getBaseJestDOMProjectConfig(
-  packageJson.name,
-  'packages/legend-extension-dsl-persistence-cloud',
-);
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.AWS_GLUE_PERSISTENCE_PLATFORM,
+      this.dataProcessingUnits.toString(),
+    ]);
+  }
+}

@@ -19,6 +19,7 @@ import { DSL_Persistence_GraphManagerPreset } from '../../DSL_Persistence_Extens
 import {
   TEST_DATA__roundtrip_case1,
   TEST_DATA__roundtrip_case2,
+  TEST_DATA__cloud__roundtrip,
 } from './TEST_DATA__DSL_Persistence_Roundtrip.js';
 import {
   DSL_ExternalFormat_GraphPreset,
@@ -43,6 +44,10 @@ test(unitTest('DSL Persistence roundtrip'), async () => {
   );
   await TEST__checkBuildingElementsRoundtrip(
     TEST_DATA__roundtrip_case2 as Entity[],
+    pluginManager,
+  );
+  await TEST__checkBuildingElementsRoundtrip(
+    TEST_DATA__cloud__roundtrip as Entity[],
     pluginManager,
   );
 });

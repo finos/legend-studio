@@ -46,6 +46,8 @@ import {
   V1_buildConnection,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
+import { V1_AwsGluePersistencePlatform } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_AwsGluePersistencePlatform.js';
+import { AwsGluePersistencePlatform } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_AwsGluePersistencePlatform.js';
 
 /**********
  * persistence platform
@@ -57,6 +59,10 @@ export const V1_buildPersistencePlatform = (
 ): PersistencePlatform => {
   if (protocol instanceof V1_DefaultPersistencePlatform) {
     return new DefaultPersistencePlatform();
+  } else if (protocol instanceof V1_AwsGluePersistencePlatform) {
+    const metamodel = new AwsGluePersistencePlatform();
+    metamodel.dataProcessingUnits = protocol.dataProcessingUnits;
+    return metamodel;
   }
   const extraPersistencePlatformBuilders = context.extensions.plugins.flatMap(
     (plugin) =>

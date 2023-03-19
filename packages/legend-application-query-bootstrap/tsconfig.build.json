@@ -15,7 +15,6 @@
     { "path": "../legend-extension-dsl-diagram/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-persistence/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-mastery/tsconfig.build.json" },
-    { "path": "../legend-extension-dsl-persistence-cloud/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-service/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-text/tsconfig.build.json" },
     {

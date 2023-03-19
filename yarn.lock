@@ -2131,7 +2131,6 @@ __metadata:
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-extension-dsl-mastery": "workspace:*"
     "@finos/legend-extension-dsl-persistence": "workspace:*"
-    "@finos/legend-extension-dsl-persistence-cloud": "workspace:*"
     "@finos/legend-extension-dsl-service": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
     "@finos/legend-extension-format-graphql": "workspace:*"
@@ -2214,7 +2213,6 @@ __metadata:
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-extension-dsl-mastery": "workspace:*"
     "@finos/legend-extension-dsl-persistence": "workspace:*"
-    "@finos/legend-extension-dsl-persistence-cloud": "workspace:*"
     "@finos/legend-extension-dsl-service": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
     "@finos/legend-extension-format-graphql": "workspace:*"
@@ -2601,33 +2599,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-extension-dsl-persistence-cloud@workspace:*, @finos/legend-extension-dsl-persistence-cloud@workspace:packages/legend-extension-dsl-persistence-cloud":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-extension-dsl-persistence-cloud@workspace:packages/legend-extension-dsl-persistence-cloud"
-  dependencies:
-    "@finos/legend-application": "workspace:*"
-    "@finos/legend-application-studio": "workspace:*"
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-extension-dsl-persistence": "workspace:*"
-    "@finos/legend-graph": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@finos/legend-storage": "workspace:*"
-    "@jest/globals": 29.5.0
-    "@types/react": 18.0.28
-    cross-env: 7.0.3
-    eslint: 8.36.0
-    jest: 29.5.0
-    mobx: 6.8.0
-    npm-run-all: 4.1.5
-    react: 18.2.0
-    rimraf: 4.4.0
-    serializr: 3.0.2
-    typescript: 5.0.2
-  peerDependencies:
-    react: ^18.0.0
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-extension-dsl-persistence@workspace:*, @finos/legend-extension-dsl-persistence@workspace:packages/legend-extension-dsl-persistence":
   version: 0.0.0-use.local
   resolution: "@finos/legend-extension-dsl-persistence@workspace:packages/legend-extension-dsl-persistence"
@@ -2954,7 +2925,6 @@ __metadata:
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-extension-dsl-mastery": "workspace:*"
     "@finos/legend-extension-dsl-persistence": "workspace:*"
-    "@finos/legend-extension-dsl-persistence-cloud": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
     "@finos/legend-extension-store-service-store": "workspace:*"
     "@finos/legend-graph": "workspace:*"
@@ -3120,7 +3090,7 @@ __metadata:
     stylelint-config-standard: 31.0.0
     stylelint-scss: 4.5.0
   peerDependencies:
-    stylelint: ^14.0.0
+    stylelint: ^15.0.0
   languageName: unknown
   linkType: soft
 

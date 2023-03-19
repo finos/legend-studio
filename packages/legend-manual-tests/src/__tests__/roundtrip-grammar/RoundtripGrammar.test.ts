@@ -41,7 +41,6 @@ import { DSL_Diagram_GraphManagerPreset as DSL_Diagram_GraphManagerPreset } from
 import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space';
 import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
 import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery';
-import { DSL_PersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
 import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store';
 
 const engineConfig = JSON.parse(

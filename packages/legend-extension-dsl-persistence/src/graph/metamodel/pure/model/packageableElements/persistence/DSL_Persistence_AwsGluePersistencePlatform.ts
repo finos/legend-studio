@@ -14,6 +14,20 @@
  * limitations under the License.
  */
 
-export enum PERSISTENCE_CLOUD_HASH_STRUCTURE {
-  AWS_GLUE_PERSISTENCE_PLATFORM = 'AWS_GLUE_PERSISTENCE_PLATFORM',
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
+import { PersistencePlatform } from './DSL_Persistence_PersistencePlatform.js';
+
+export class AwsGluePersistencePlatform
+  extends PersistencePlatform
+  implements Hashable
+{
+  dataProcessingUnits!: number;
+
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.AWS_GLUE_PERSISTENCE_PLATFORM,
+      this.dataProcessingUnits.toString(),
+    ]);
+  }
 }

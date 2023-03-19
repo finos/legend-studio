@@ -48,19 +48,27 @@ import {
   serialize,
   SKIP,
 } from 'serializr';
-
-/**********
- * persistence platfrom
- **********/
+import { V1_AwsGluePersistencePlatform } from '../../model/packageableElements/persistence/V1_DSL_Persistence_AwsGluePersistencePlatform.js';
 
 enum V1_PersistencePlatformType {
   DEFAULT = 'default',
+  AWS_GLUE = 'awsGlue',
 }
+
+// ----------------------------- Persistence Platform --------------------------------
 
 const V1_defaultPersistencePlatformModelSchema = createModelSchema(
   V1_DefaultPersistencePlatform,
   {
     _type: usingConstantValueSchema(V1_PersistencePlatformType.DEFAULT),
+  },
+);
+
+export const V1_awsGluePersistencePlatformModelSchema = createModelSchema(
+  V1_AwsGluePersistencePlatform,
+  {
+    _type: usingConstantValueSchema(V1_PersistencePlatformType.AWS_GLUE),
+    dataProcessingUnits: primitive(),
   },
 );
 
@@ -70,6 +78,8 @@ export const V1_serializePersistencePlatform = (
 ): PlainObject<V1_PersistencePlatform> => {
   if (protocol instanceof V1_DefaultPersistencePlatform) {
     return serialize(V1_defaultPersistencePlatformModelSchema, protocol);
+  } else if (protocol instanceof V1_AwsGluePersistencePlatform) {
+    return serialize(V1_awsGluePersistencePlatformModelSchema, protocol);
   }
   const extraPersistencePlatformProtocolSerializers = plugins.flatMap(
     (plugin) =>
@@ -96,6 +106,8 @@ export const V1_deserializePersistencePlatform = (
   switch (json._type) {
     case V1_PersistencePlatformType.DEFAULT:
       return deserialize(V1_defaultPersistencePlatformModelSchema, json);
+    case V1_PersistencePlatformType.AWS_GLUE:
+      return deserialize(V1_awsGluePersistencePlatformModelSchema, json);
     default: {
       const extraPersistencePlatformProtocolDeserializers = plugins.flatMap(
         (plugin) =>
@@ -115,10 +127,6 @@ export const V1_deserializePersistencePlatform = (
     }
   }
 };
-
-/**********
- * service parameters
- **********/
 
 enum V1_ServiceParameterValueType {
   PRIMITIVE_TYPE_VALUE = 'primitiveTypeValue',
@@ -193,9 +201,7 @@ const V1_serviceParameterModelSchema = (
     ),
   });
 
-/**********
- * persistence context
- **********/
+// ----------------------------- Persistence Context --------------------------------
 
 export const V1_PERSISTENCE_CONTEXT_ELEMENT_PROTOCOL_TYPE =
   'persistenceContext';
