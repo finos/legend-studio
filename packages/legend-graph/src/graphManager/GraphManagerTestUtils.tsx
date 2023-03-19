@@ -22,11 +22,9 @@ import {
   LogService,
   AbstractPluginManager,
   promisify,
-  createMock,
 } from '@finos/legend-shared';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
 import { GraphManagerState } from './GraphManagerState.js';
-import { GraphManagerStateProvider } from './GraphManagerStateProvider.js';
 import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
 import type { PureProtocolProcessorPlugin } from '../graphManager/protocol/pure/PureProtocolProcessorPlugin.js';
 import type { Entity } from '@finos/legend-storage';
@@ -86,30 +84,6 @@ export const TEST__getTestGraphManagerState = (
     pluginManager ?? new TEST__GraphManagerPluginManager(),
     logService ?? new LogService(),
   );
-
-export const TEST__provideMockedGraphManagerState = (customization?: {
-  mock?: GraphManagerState;
-  pluginManager?: GraphManagerPluginManager;
-}): GraphManagerState => {
-  const value =
-    customization?.mock ??
-    TEST__getTestGraphManagerState(customization?.pluginManager);
-  const MOCK__GraphManagerStateProvider = require('./GraphManagerStateProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MOCK__GraphManagerStateProvider.useGraphManagerState = createMock();
-  MOCK__GraphManagerStateProvider.useGraphManagerState.mockReturnValue(value);
-  return value;
-};
-
-export const TEST__GraphManagerStateProvider: React.FC<{
-  children: React.ReactNode;
-}> = ({ children }) => (
-  <GraphManagerStateProvider
-    pluginManager={new TEST__GraphManagerPluginManager()}
-    logService={new LogService()}
-  >
-    {children}
-  </GraphManagerStateProvider>
-);
 
 export const TEST__excludeSectionIndex = (entities: Entity[]): Entity[] =>
   entities.filter((entity) => entity.path !== SECTION_INDEX_ELEMENT_PATH);

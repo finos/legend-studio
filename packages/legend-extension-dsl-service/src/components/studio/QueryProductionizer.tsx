@@ -50,7 +50,7 @@ import {
   RepoIcon,
   SquareIcon,
 } from '@finos/legend-art';
-import { type QueryInfo, useGraphManagerState } from '@finos/legend-graph';
+import type { QueryInfo } from '@finos/legend-graph';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import {
   DocumentationLink,
@@ -77,14 +77,12 @@ const QueryProductionizerStoreProvider: React.FC<{
   const applicationStore = useLegendStudioApplicationStore();
   const sdlcServerClient = useSDLCServerClient();
   const depotServerClient = useDepotServerClient();
-  const graphManagerState = useGraphManagerState();
   const store = useLocalObservable(
     () =>
       new QueryProductionizerStore(
         applicationStore,
         sdlcServerClient,
         depotServerClient,
-        graphManagerState,
       ),
   );
   return (

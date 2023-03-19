@@ -545,6 +545,7 @@ export const PureFileEditor = observer(
       // this causes a problem with the UI, so we just can disable the item until an official API
       // is supported and we can removed this hack
       // See https://github.com/microsoft/monaco-editor/issues/1567
+      // See https://github.com/microsoft/monaco-editor/issues/1280
       if (isContextMenuOpen) {
         const contextMenuNode = document.querySelector(
           '.file-editor .monaco-menu',

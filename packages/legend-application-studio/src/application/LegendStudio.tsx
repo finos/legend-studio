@@ -87,10 +87,7 @@ export class LegendStudio extends LegendApplication {
             config={this.config}
             pluginManager={this.pluginManager}
           >
-            <LegendStudioApplication
-              config={this.config}
-              pluginManager={this.pluginManager}
-            />
+            <LegendStudioApplication config={this.config} />
           </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,

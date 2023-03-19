@@ -30,7 +30,6 @@ import {
 import {
   type Service,
   type ServiceRegistrationResult,
-  GraphManagerState,
   PureExecution,
   ServiceExecutionMode,
 } from '@finos/legend-graph';
@@ -100,16 +99,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
   ) {
-    const graphManagerState = new GraphManagerState(
-      applicationStore.pluginManager,
-      applicationStore.logService,
-    );
-    super(
-      applicationStore,
-      sdlcServerClient,
-      depotServerClient,
-      graphManagerState,
-    );
+    super(applicationStore, sdlcServerClient, depotServerClient);
 
     makeObservable(this, {
       queryBuilderState: observable,

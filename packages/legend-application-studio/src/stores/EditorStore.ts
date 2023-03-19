@@ -77,10 +77,7 @@ import {
   WorkspaceType,
   type SDLCServerClient,
 } from '@finos/legend-server-sdlc';
-import {
-  type GraphManagerState,
-  GRAPH_MANAGER_EVENT,
-} from '@finos/legend-graph';
+import { GraphManagerState, GRAPH_MANAGER_EVENT } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import {
@@ -175,7 +172,6 @@ export class EditorStore implements CommandRegistrar {
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
-    graphManagerState: GraphManagerState,
   ) {
     makeObservable<
       EditorStore,
@@ -217,7 +213,10 @@ export class EditorStore implements CommandRegistrar {
 
     this.sdlcState = new EditorSDLCState(this);
     this.graphState = new EditorGraphState(this);
-    this.graphManagerState = graphManagerState;
+    this.graphManagerState = new GraphManagerState(
+      applicationStore.pluginManager,
+      applicationStore.logService,
+    );
     this.graphEditorMode = new GraphEditFormModeState(this);
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);
     this.devToolState = new DevToolState(this);

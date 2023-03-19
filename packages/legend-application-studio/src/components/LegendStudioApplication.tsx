@@ -39,7 +39,6 @@ import {
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
 } from './LegendStudioBaseStoreProvider.js';
-import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   generateExtensionUrlPattern,
   LegendApplicationComponentFrameworkProvider,
@@ -212,12 +211,8 @@ export const LegendStudioApplicationRoot = observer(() => {
 });
 
 export const LegendStudioApplication = observer(
-  (props: {
-    config: LegendStudioApplicationConfig;
-    pluginManager: LegendStudioPluginManager;
-  }) => {
-    const { config, pluginManager } = props;
-    const applicationStore = useApplicationStore();
+  (props: { config: LegendStudioApplicationConfig }) => {
+    const { config } = props;
 
     return (
       <SDLCServerClientProvider
@@ -232,16 +227,11 @@ export const LegendStudioApplication = observer(
             serverUrl: config.depotServerUrl,
           }}
         >
-          <GraphManagerStateProvider
-            pluginManager={pluginManager}
-            logService={applicationStore.logService}
-          >
-            <LegendStudioBaseStoreProvider>
-              <LegendApplicationComponentFrameworkProvider>
-                <LegendStudioApplicationRoot />
-              </LegendApplicationComponentFrameworkProvider>
-            </LegendStudioBaseStoreProvider>
-          </GraphManagerStateProvider>
+          <LegendStudioBaseStoreProvider>
+            <LegendApplicationComponentFrameworkProvider>
+              <LegendStudioApplicationRoot />
+            </LegendApplicationComponentFrameworkProvider>
+          </LegendStudioBaseStoreProvider>
         </DepotServerClientProvider>
       </SDLCServerClientProvider>
     );

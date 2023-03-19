@@ -54,8 +54,6 @@ import {
   type GenerationConfigurationDescription,
   type GenerationMode,
   type GraphManagerState,
-  TEST__GraphManagerStateProvider,
-  TEST__getTestGraphManagerState,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
 import {
@@ -170,8 +168,6 @@ export const TEST__provideMockedEditorStore = (customization?: {
         ),
       customization?.sdlcServerClient ?? TEST__getTestSDLCServerClient(),
       customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
-      customization?.graphManagerState ??
-        TEST__getTestGraphManagerState(customization?.pluginManager),
     );
   const MOCK__EditorStoreProvider = require('./editor/EditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MOCK__EditorStoreProvider.useEditorStore = createMock();
@@ -362,15 +358,13 @@ export const TEST__setUpEditor = async (
       >
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
-            <TEST__GraphManagerStateProvider>
-              <TEST__LegendStudioBaseStoreProvider>
-                <LegendApplicationComponentFrameworkProvider>
-                  <Route path={[LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE]}>
-                    <Editor />
-                  </Route>
-                </LegendApplicationComponentFrameworkProvider>
-              </TEST__LegendStudioBaseStoreProvider>
-            </TEST__GraphManagerStateProvider>
+            <TEST__LegendStudioBaseStoreProvider>
+              <LegendApplicationComponentFrameworkProvider>
+                <Route path={[LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE]}>
+                  <Editor />
+                </Route>
+              </LegendApplicationComponentFrameworkProvider>
+            </TEST__LegendStudioBaseStoreProvider>
           </TEST__DepotServerClientProvider>
         </TEST__SDLCServerClientProvider>
       </TEST__ApplicationStoreProvider>

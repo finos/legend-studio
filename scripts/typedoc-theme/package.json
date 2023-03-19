@@ -9,25 +9,14 @@
   },
   "license": "Apache-2.0",
   "scripts": {
-    "build": "yarn clean && yarn build:ts",
-    "build:ts": "tsc",
-    "clean": "npm-run-all clean:cache clean:lib",
+    "clean": "yarn clean:cache",
     "clean:cache": "rimraf \"build\"",
-    "clean:lib": "rimraf \"lib\"",
-    "dev": "yarn dev:ts",
-    "dev:ts": "tsc --watch --preserveWatchOutput",
-    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./src/**/*.{js,ts,tsx}\""
-  },
-  "dependencies": {
-    "@types/react": "18.0.28",
-    "react": "18.2.0"
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=requireConfigFile:false \"./*.{mjs,cjs,js}\" \"src/**/*.{mjs,cjs,js}\""
   },
   "devDependencies": {
     "cross-env": "7.0.3",
     "eslint": "8.36.0",
-    "npm-run-all": "4.1.5",
     "rimraf": "4.4.0",
-    "typedoc": "0.23.27",
-    "typescript": "5.0.2"
+    "typedoc": "0.23.27"
   }
 }

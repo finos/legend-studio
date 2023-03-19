@@ -128,7 +128,6 @@ const checkGrammarRoundtrip = async (
       new DSL_ExternalFormat_GraphPreset(),
       new DSL_Persistence_GraphManagerPreset(),
       new DSL_Mastery_GraphManagerPreset(),
-      new DSL_PersistenceCloud_GraphManagerPreset(),
       new STO_ServiceStore_GraphManagerPreset(),
     ])
     .usePlugins([new WebConsole()]);

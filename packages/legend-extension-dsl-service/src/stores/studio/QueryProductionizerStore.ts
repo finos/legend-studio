@@ -31,7 +31,7 @@ import {
 import {
   type LightQuery,
   type QueryInfo,
-  type GraphManagerState,
+  GraphManagerState,
   QuerySearchSpecification,
   isValidFullPath,
   validate_ServicePattern,
@@ -209,7 +209,6 @@ export class QueryProductionizerStore {
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
-    graphManagerState: GraphManagerState,
   ) {
     makeObservable(this, {
       queries: observable,
@@ -248,7 +247,10 @@ export class QueryProductionizerStore {
     this.applicationStore = applicationStore;
     this.sdlcServerClient = sdlcServerClient;
     this.depotServerClient = depotServerClient;
-    this.graphManagerState = graphManagerState;
+    this.graphManagerState = new GraphManagerState(
+      applicationStore.pluginManager,
+      applicationStore.logService,
+    );
   }
 
   setShowQueryPreviewModal(val: boolean): void {

@@ -26,16 +26,25 @@ export const getBaseJestConfig = (isGlobal) => {
     babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
     TEMPORARY__esmPackagesToTransform: [
       // These packages went full ESM so we would need to transpile them until we can switch to run Jest in ESM mode
+
+      // react-dnd
       // See https://github.com/react-dnd/react-dnd/issues/3443
       'react-dnd',
       'dnd-core',
       '@react-dnd',
+
+      // query-string
       // See https://github.com/sindresorhus/query-string/releases/tag/v8.0.0
       'query-string',
       'filter-obj',
       'decode-uri-component',
       'split-on-first',
 
+      // fuse.js
+      // See https://github.com/krisk/Fuse/pull/692
+      'fuse.js',
+
+      // yaml
       'yaml',
     ],
   });
@@ -64,6 +73,11 @@ export const getBaseJestConfig = (isGlobal) => {
       // See https://github.com/lodash/lodash/issues/5107
       // See https://github.com/finos/legend-studio/issues/502
       '^lodash-es$': 'lodash',
+      // Force to use the ESM distribution of Fuse
+      // as it does not yet have proper support for Typescript ESM
+      // See https://github.com/krisk/Fuse/pull/692
+      // However, if we
+      '^fuse.js$': 'fuse.js/dist/fuse.esm.js',
     },
     modulePathIgnorePatterns: [
       'packages/.*/lib/',

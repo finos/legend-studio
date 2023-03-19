@@ -32,5 +32,5 @@
 import Fuse = require('fuse.js');
 
 export = {
-  Fuse: Fuse.default,
+  Fuse,
 };
