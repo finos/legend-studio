@@ -15,7 +15,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { VerticalAlignBottomIcon, AddIcon, EditIcon } from '../CJS__Icon.cjs';
+import { VerticalAlignBottomIcon, AddIcon, EditIcon } from '../Icon.js';
 import { useResizeDetector } from 'react-resize-detector';
 import { BlankPanelContent } from './BlankPanelContent.js';
 import { clsx } from 'clsx';

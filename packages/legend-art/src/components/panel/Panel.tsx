@@ -18,7 +18,7 @@ import { capitalize, prettyCONSTName, toTitleCase } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { forwardRef } from 'react';
-import { CheckSquareIcon, SquareIcon } from '../CJS__Icon.cjs';
+import { CheckSquareIcon, SquareIcon } from '../Icon.js';
 import { generateSimpleDIVComponent } from '../ComponentCreatorUtils.js';
 
 export const Panel = generateSimpleDIVComponent('Panel', 'panel');

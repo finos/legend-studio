@@ -37,7 +37,8 @@
     "./JestConfigUtils": "./JestConfigUtils.js",
     "./ProjectReferenceConfigChecker": "./ProjectReferenceConfigChecker.js",
     "./TypescriptConfigUtils": "./TypescriptConfigUtils.js",
-    "./WebpackConfigUtils": "./WebpackConfigUtils.js"
+    "./WebpackConfigUtils": "./WebpackConfigUtils.js",
+    "./tsconfig.base.json": "./tsconfig.base.json"
   },
   "types": "index.d.ts",
   "scripts": {
@@ -80,17 +81,17 @@
     "jest-watch-typeahead": "2.2.2",
     "jsonc-parser": "3.2.0",
     "micromatch": "4.0.5",
-    "mini-css-extract-plugin": "2.7.3",
+    "mini-css-extract-plugin": "2.7.5",
     "monaco-editor": "0.36.1",
     "monaco-editor-webpack-plugin": "7.0.1",
     "postcss": "8.4.21",
-    "postcss-loader": "7.0.2",
+    "postcss-loader": "7.1.0",
     "react-refresh": "0.14.0",
     "resolve": "1.22.1",
     "sass": "1.59.3",
-    "sass-loader": "13.2.0",
-    "typescript": "4.9.5",
-    "webpack": "5.76.1"
+    "sass-loader": "13.2.1",
+    "typescript": "5.0.2",
+    "webpack": "5.76.2"
   },
   "devDependencies": {
     "cross-env": "7.0.3",

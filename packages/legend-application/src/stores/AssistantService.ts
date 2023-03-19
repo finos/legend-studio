@@ -17,7 +17,7 @@
 import { action, makeObservable, observable, computed } from 'mobx';
 import type { DocumentationEntry } from './DocumentationService.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
-import { Fuse } from '@finos/legend-art';
+import { FuzzySearchEngine } from '@finos/legend-art';
 import {
   type MarkdownText,
   guaranteeNonEmptyString,
@@ -112,7 +112,7 @@ export class AssistantService {
   currentDocumentationEntry: VirtualAssistantDocumentationEntry | undefined;
 
   // search text
-  private readonly searchEngine: Fuse<DocumentationEntry>;
+  private readonly searchEngine: FuzzySearchEngine<DocumentationEntry>;
   searchConfigurationState: TextSearchAdvancedConfigState;
   searchState = ActionState.create();
   searchText = '';
@@ -144,7 +144,7 @@ export class AssistantService {
     });
 
     this.applicationStore = applicationStore;
-    this.searchEngine = new Fuse(
+    this.searchEngine = new FuzzySearchEngine(
       this.applicationStore.documentationService
         .getAllDocEntries()
         .filter(isValidVirtualAssistantDocumentationEntry),

@@ -15,7 +15,6 @@
  */
 
 import packageJson from '../package.json';
-import { SpanBuilder } from './CJS__Zipkin.cjs';
 import { BatchRecorder, jsonEncoder } from 'zipkin';
 import { HttpLogger } from 'zipkin-transport-http';
 import type { Span as ZipkinSpan } from 'opentracing';
@@ -32,13 +31,27 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 
+/**
+ * Previously, these exports rely on ES module interop to expose `default` export
+ * properly. But since we use `ESM` for Typescript resolution now, we lose this
+ * so we have to workaround by importing these and re-export them from CJS
+ *
+ * TODO: remove these when the package properly work with Typescript's nodenext
+ * module resolution
+ *
+ * @workaround ESM
+ * See https://github.com/microsoft/TypeScript/issues/49298
+ */
+import { default as SpanBuilder } from './CJS__Zipkin.cjs';
+import { default as ZipkinSpanBuilder } from 'zipkin-javascript-opentracing';
+
 type ZipkinTracerPluginConfigData = {
   url: string;
   serviceName: string;
 };
 
 export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
-  private _spanBuilder?: SpanBuilder;
+  private _spanBuilder?: ZipkinSpanBuilder;
 
   constructor() {
     super(packageJson.extensions.tracerPlugin, packageJson.version);
@@ -55,7 +68,7 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
       configData.serviceName,
       `Can't configure Zipkin tracer: 'serviceName' field is missing or empty`,
     );
-    this._spanBuilder = new SpanBuilder({
+    this._spanBuilder = new SpanBuilder.Zipkin({
       recorder: new BatchRecorder({
         logger: new HttpLogger({
           endpoint: configData.url,
@@ -83,7 +96,7 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
     return this;
   }
 
-  get spanBuilder(): SpanBuilder {
+  get spanBuilder(): ZipkinSpanBuilder {
     return guaranteeNonNullable(
       this._spanBuilder,
       `Can't configure Zipkin tracer: Tracer service has not been configured`,
@@ -126,7 +139,7 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
     // See https://github.com/DanielMSchmidt/zipkin-javascript-opentracing
     this.spanBuilder.inject(
       clientSpan,
-      SpanBuilder.FORMAT_HTTP_HEADERS,
+      SpanBuilder.Zipkin.FORMAT_HTTP_HEADERS,
       headers,
     );
     const serverSpan = this.spanBuilder.startSpan('http request', {

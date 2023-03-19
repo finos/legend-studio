@@ -21,21 +21,33 @@ import React, {
   forwardRef,
   type LegacyRef,
 } from 'react';
-import { CaretDownIcon, TimesIcon, CircleNotchIcon } from './CJS__Icon.cjs';
+import { CaretDownIcon, TimesIcon, CircleNotchIcon } from './Icon.js';
 import { FixedSizeList } from 'react-window';
-import {
-  type Props,
-  type InputActionMeta,
-  CreatableSelect,
-  Select,
-  createFilter as _createFilter,
-  baseComponents,
-  type InputProps,
-} from './CJS__ReactSelect.cjs';
 import type { PlainObject } from '@finos/legend-shared';
 
-export type { InputActionMeta };
-export const createFilter = _createFilter;
+/**
+ * Previously, these exports rely on ES module interop to expose `default` export
+ * properly. But since we use `ESM` for Typescript resolution now, we lose this
+ * so we have to workaround by importing these and re-export them from CJS
+ *
+ * TODO: remove these when the package properly work with Typescript's nodenext
+ * module resolution
+ *
+ * @workaround ESM
+ * See https://github.com/microsoft/TypeScript/issues/49298
+ */
+import { default as ReactSelect } from './CJS__ReactSelect.cjs';
+import type { default as CreatableSelect } from 'react-select/creatable';
+import type {
+  default as Select,
+  InputProps,
+  Props,
+  InputActionMeta,
+} from 'react-select';
+
+export type InputActionData = InputActionMeta;
+
+export const createFilter = ReactSelect.Select.createFilter;
 interface ListChildComponentProps {
   index: number;
   style: React.CSSProperties;
@@ -159,7 +171,7 @@ const ClearIndicator: React.FC<{
 // Enable edit of the selected tag
 // See https://github.com/JedWatson/react-select/issues/1558
 const CustomInput: React.FC<InputProps> = (props) => (
-  <baseComponents.Input {...props} isHidden={false} />
+  <ReactSelect.Select.components.Input {...props} isHidden={false} />
 );
 
 export interface SelectOption {
@@ -177,7 +189,9 @@ interface CustomSelectorInputProps extends Props<SelectOption, true> {
   option?: React.Component;
 }
 
-export type SelectComponent = CreatableSelect<SelectOption> | Select;
+export type SelectComponent =
+  | CreatableSelect.default<SelectOption>
+  | Select.default;
 
 export const CustomSelectorInput = forwardRef<
   SelectComponent,
@@ -206,8 +220,8 @@ export const CustomSelectorInput = forwardRef<
   // when we update to `react@18`
   // See https://github.com/finos/legend-studio/issues/615
   const SelectComponent: React.ElementType = allowCreating
-    ? CreatableSelect
-    : Select;
+    ? ReactSelect.CreatableSelect.default
+    : ReactSelect.Select.default;
   const stylePrefix = darkMode ? STYLE_PREFIX__DARK : STYLE_PREFIX;
   return (
     <SelectComponent

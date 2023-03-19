@@ -24,13 +24,10 @@
  *
  * @workaround ESM
  * See https://github.com/microsoft/TypeScript/issues/49298
- *
- * In addition to that, due to our upgrade to Typescript 5.0, we are forced to enable
- * --verbatimModuleSyntax flag, so we have to use CommonJS syntax in this file
- * See https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/#verbatimmodulesyntax
  */
-import Zipkin = require('zipkin-javascript-opentracing');
+import { default as Fuse } from './CJS__Fuse.cjs';
+import type { default as FuseType } from 'fuse.js';
 
-export = {
-  Zipkin,
-};
+export const FuzzySearchEngine = Fuse.Fuse;
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type FuzzySearchEngine<T> = FuseType.default<T>;
