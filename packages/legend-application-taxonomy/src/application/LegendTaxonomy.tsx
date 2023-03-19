@@ -23,6 +23,7 @@ import {
   WebApplicationNavigatorProvider,
   type LegendApplicationConfigurationInput,
   BrowserRouter,
+  Core_LegendApplicationPlugin,
 } from '@finos/legend-application';
 import { LegendTaxonomyApplication } from '../components/LegendTaxonomyApplication.js';
 import { LegendTaxonomyPluginManager } from './LegendTaxonomyPluginManager.js';
@@ -47,6 +48,7 @@ export class LegendTaxonomy extends LegendApplication {
       LegendTaxonomyPluginManager.create(),
     );
     application.withBasePlugins([
+      new Core_LegendApplicationPlugin(),
       new Core_PureGraphManagerPlugin(),
       new Core_LegendTaxonomyApplicationPlugin(),
     ]);

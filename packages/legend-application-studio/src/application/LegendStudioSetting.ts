@@ -14,7 +14,18 @@
  * limitations under the License.
  */
 
-export enum LEGEND_STUDIO_SETTINGS_KEY {
+import type { SettingConfigurationData } from '@finos/legend-application';
+
+export enum LEGEND_STUDIO_SETTING_KEY {
   EDITOR_STRICT_MODE = 'editor.strictMode',
   EDITOR_WRAP_TEXT = 'editor.wrapText',
 }
+
+export const LEGEND_STUDIO_SETTING_CONFIG: SettingConfigurationData = {
+  [LEGEND_STUDIO_SETTING_KEY.EDITOR_STRICT_MODE]: {
+    defaultValue: false,
+  },
+  [LEGEND_STUDIO_SETTING_KEY.EDITOR_WRAP_TEXT]: {
+    defaultValue: false,
+  },
+};

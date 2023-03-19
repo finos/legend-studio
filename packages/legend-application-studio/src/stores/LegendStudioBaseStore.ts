@@ -125,9 +125,7 @@ export class LegendStudioBaseStore {
       } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.logService.error(
-          LogEvent.create(
-            APPLICATION_EVENT.APPLICATION_IDENTITY_AUTO_FETCH__FAILURE,
-          ),
+          LogEvent.create(APPLICATION_EVENT.IDENTITY_AUTO_FETCH__FAILURE),
           error,
         );
         this.applicationStore.notificationService.notifyWarning(error.message);
@@ -150,9 +148,7 @@ export class LegendStudioBaseStore {
       } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.logService.error(
-          LogEvent.create(
-            APPLICATION_EVENT.APPLICATION_IDENTITY_AUTO_FETCH__FAILURE,
-          ),
+          LogEvent.create(APPLICATION_EVENT.IDENTITY_AUTO_FETCH__FAILURE),
           error,
         );
         this.applicationStore.notificationService.notifyWarning(error.message);

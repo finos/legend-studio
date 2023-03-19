@@ -15,30 +15,35 @@
  */
 
 export enum APPLICATION_EVENT {
-  LOAD_TEXT_EDITOR_FONT__SUCCESS = 'application.load.font.success',
   APPLICATION_SETUP__FAILURE = 'application.setup.failure',
+  APPLICATION_LOAD__SUCCESS = 'application.load.success',
+  APPLICATION_LOAD__FAILURE = 'application.load.failure',
 
   ILLEGAL_APPLICATION_STATE_OCCURRED = 'application.error.illegal-state',
   APPLICATION_CONFIGURATION__FAILURE = 'application.configuration.failure',
 
-  APPLICATION_IDENTITY_AUTO_FETCH__FAILURE = 'application.identity.auto-fetch.failure',
+  IDENTITY_AUTO_FETCH__FAILURE = 'application.identity.auto-fetch.failure',
 
-  APPLICATION_DOCUMENTATION_FETCH__FAILURE = 'application.fetch.documentation.failure',
-  APPLICATION_DOCUMENTATION_LOAD__SKIP = 'application.load.documentation.skip',
-  APPLICATION_DOCUMENTATION_REQUIREMENT_CHECK__FAILURE = 'application.load.documentation.requirement-check.failure',
-  APPLICATION_TERMINAL_COMMAND_CONFIGURATION_CHECK__FAILURE = 'application.load.terminal-command.configuration-check.failure',
-  APPLICATION_CONTEXTUAL_DOCUMENTATION_LOAD__SKIP = 'application.load.contextual-documentation.skip',
+  DOCUMENTATION_FETCH__FAILURE = 'application.documentation.fetch.failure',
+  DOCUMENTATION_LOAD__SKIP = 'application.documentation.load.skip',
+  DOCUMENTATION_REQUIREMENT_CHECK__FAILURE = 'application.documentation.requirement-check.failure',
 
-  APPLICATION_COMMAND_CENTER_REGISTRATION__FAILURE = 'application.command-center.registration.failure',
+  CONTEXTUAL_DOCUMENTATION_LOAD__SKIP = 'application.virtual-assistant.contextual-documentation-load.skip',
+  VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY__ACCESS = 'application.virtual-assistant.documentation-entry.access',
 
-  APPLICATION_LOAD__SUCCESS = 'application.load.success',
-  APPLICATION_LOAD__FAILURE = 'application.load.failure',
+  TERMINAL_COMMAND_CONFIGURATION_CHECK__FAILURE = 'application.load.terminal-command.configuration-check.failure',
+
+  COLOR_THEME_CONFIGURATION_CHECK__FAILURE = 'application.layout.color-theme.configuration-check.failure',
+  LOAD_TEXT_EDITOR_FONT__SUCCESS = 'application.load.font.success',
+
+  SETTING_CONFIGURATION_CHECK__FAILURE = 'application.setting.configuration-check.failure',
+  SETTING_RETRIVE_FAILURE = 'application.setting.retrieve.failure',
+
+  COMMAND_CENTER_REGISTRATION__FAILURE = 'application.command.registration.failure',
 
   DEVELOPMENT_ISSUE = 'development.issue',
 
   APPLICATION_CONTEXT__ACCESS = 'application.context.access',
 
   APPLICATION_USAGE__INTERRUPT = 'application.usage.interrupt',
-
-  VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY__ACCESS = 'application.virtual-assistant.documentation-entry.access',
 }

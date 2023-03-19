@@ -406,7 +406,7 @@ const QueryEditorHeaderContent = observer(
         applicationStore.alertUnhandledError,
       );
     };
-    const toggleLightDarkMode = (): void => {
+    const TEMPORARY__toggleLightDarkMode = (): void => {
       applicationStore.layoutService.setColorTheme(
         applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           ? LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK
@@ -480,9 +480,8 @@ const QueryEditorHeaderContent = observer(
           )}
           <button
             title="Toggle light/dark mode"
-            onClick={toggleLightDarkMode}
+            onClick={TEMPORARY__toggleLightDarkMode}
             className="query-editor__header__action"
-            disabled={editorStore.isViewProjectActionDisabled}
           >
             {applicationStore.layoutService
               .TEMPORARY__isLightColorThemeEnabled ? (
@@ -568,23 +567,8 @@ export const QueryEditor = observer(() => {
     );
   }, [editorStore, applicationStore]);
 
-  useEffect(() => {
-    document.body.classList.toggle(
-      'light-theme',
-      applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
-    );
-  }, [applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled]);
-
   return (
-    <div
-      className={clsx([
-        'query-editor ',
-        {
-          'query-editor--light':
-            applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
-        },
-      ])}
-    >
+    <div className="query-editor">
       <div className="query-editor__header">
         <div className="query-editor__header__menu">
           <DropdownMenu

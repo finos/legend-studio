@@ -22,6 +22,8 @@ export * from './application/LegendApplicationPluginManager.js';
 export * from './application/LegendApplicationEvent.js';
 export * from './application/LegendApplicationDocumentation.js';
 export * from './application/LegendApplicationTelemetry.js';
+export * from './application/LegendApplicationSetting.js';
+export { LEGEND_APPLICATION_COLOR_THEME } from './application/LegendApplicationTheme.js';
 
 export * from './components/ApplicationStoreProvider.js';
 export * from './components/WebApplicationNavigatorProvider.js';
@@ -36,6 +38,7 @@ export { WebApplicationNavigator } from './stores/navigation/WebApplicationNavig
 export { NavigationService } from './stores/navigation/NavigationService.js';
 export * from './stores/storage/ApplicationStorage.js';
 export * from './stores/storage/StorageService.js';
+export * from './stores/SettingService.js';
 export * from './stores/DocumentationService.js';
 export * from './stores/CommandService.js';
 export * from './stores/event/EventService.js';
@@ -46,8 +49,7 @@ export * from './stores/AlertService.js';
 export * from './stores/AssistantService.js';
 export * from './stores/ApplicationNavigationContextService.js';
 export * from './stores/LegendApplicationPlugin.js';
-export * from './application/LegendApplicationStorage.js';
-export { LEGEND_APPLICATION_COLOR_THEME } from './stores/LayoutService.js';
+export * from './stores/Core_LegendApplicationPlugin.js';
 
 export * from './stores/ApplicationStoreTestUtils.js';
 export * from './stores/navigation/WebApplicationRouter.js';
@@ -71,6 +73,6 @@ export * from './stores/pure-language/PureLanguageTextEditorSupport.js';
 export * from './stores/shared/PackageableElementOption.js';
 
 export * from './components/shared/TabManager.js';
-export * from './stores/shared/TabManagerState.js';
 export * from './components/shared/TextSearchAdvancedConfigMenu.js';
+export * from './stores/shared/TabManagerState.js';
 export * from './stores/shared/TextSearchAdvancedConfigState.js';

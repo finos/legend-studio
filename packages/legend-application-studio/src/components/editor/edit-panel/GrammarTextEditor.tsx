@@ -109,7 +109,7 @@ import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../application/LegendStudioApplicationNavigationContext.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
-import { LEGEND_STUDIO_SETTINGS_KEY } from '../../../application/LegendStudioStorage.js';
+import { LEGEND_STUDIO_SETTING_KEY } from '../../../application/LegendStudioSetting.js';
 import { GraphEditGrammarModeState } from '../../../stores/GraphEditGrammarModeState.js';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
@@ -704,8 +704,8 @@ export const GrammarTextEditor = observer(() => {
 
   const toggleWordWrap = (): void => {
     grammarTextEditorState.setWrapText(!grammarTextEditorState.wrapText);
-    editorStore.applicationStore.storageService.settingsStore.persist(
-      LEGEND_STUDIO_SETTINGS_KEY.EDITOR_WRAP_TEXT,
+    editorStore.applicationStore.settingService.persistValue(
+      LEGEND_STUDIO_SETTING_KEY.EDITOR_WRAP_TEXT,
       grammarTextEditorState.wrapText,
     );
   };

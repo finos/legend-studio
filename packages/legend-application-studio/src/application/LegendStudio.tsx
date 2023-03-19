@@ -26,6 +26,7 @@ import {
   WebApplicationNavigatorProvider,
   type LegendApplicationConfigurationInput,
   BrowserRouter,
+  Core_LegendApplicationPlugin,
 } from '@finos/legend-application';
 import { Core_PureGraphManagerPlugin } from '@finos/legend-graph';
 import { getRootElement } from '@finos/legend-art';
@@ -55,6 +56,7 @@ export class LegendStudio extends LegendApplication {
   static create(): LegendStudio {
     const application = new LegendStudio(LegendStudioPluginManager.create());
     application.withBasePlugins([
+      new Core_LegendApplicationPlugin(),
       new Core_PureGraphManagerPlugin(),
       new Core_LegendStudioApplicationPlugin(),
       new QueryBuilder_LegendApplicationPlugin(),

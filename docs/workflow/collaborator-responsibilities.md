@@ -32,10 +32,10 @@ The most important thing to pay attention to as maintainers is when merging PRs,
 - When working on a bug fix:
   - If there is no issue filed for the bug, please create one with a **minimal** reproducible test case and make sure to mention this issue in your PR and `changeset` of your PR..
   - Remember that `changeset` is meant to be brief, you don't really need to add a full post-mortem, instead, put that in the description of the PR
-  - If this is a notable bug, please add it to the release note and link the documnetation PR to your PR
+  - If this is a notable bug, please add it to the release note and link the documentation PR to your PR
 - When working on a new feature:
   - If there is no issue filed for the feature, and you are just start thinking about what you need to do or need to discuss with other on your plan, please create a new `Feature Request` with detailed implementation steps, this would be used to keep track of the progress of your work using [tasks list](https://docs.github.com/en/issues/tracking-your-work-with-issues/about-task-lists).
-  - Add documentation with `screenshots` and `GIFs` and link the documnetation PR to your PR.
+  - Add documentation with `screenshots` and `GIFs` and link the documentation PR to your PR.
 
 > If you plan to work on some enhancement, refactoring or plan to make **substantial** code changes with your new feature, instead of filing a new `Feature Request`, file a `Request for Comments (RFC)` instead. Use `RFC` as the place you gather feedback on your idea and implementation plan, to build up good design documentations.
 >

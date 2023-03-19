@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
-import { LEGEND_APPLICATION_SETTINGS_KEY } from '../application/LegendApplicationStorage.js';
+import { LEGEND_APPLICATION_SETTING_KEY } from '../application/LegendApplicationSetting.js';
+import {
+  DEFAULT_DARK_COLOR_THEME,
+  LEGEND_APPLICATION_COLOR_THEME,
+} from '../application/LegendApplicationTheme.js';
+import { LogEvent } from '@finos/legend-shared';
+import { APPLICATION_EVENT } from '../application/LegendApplicationEvent.js';
 
 export type ColorTheme = {
   name: string;
@@ -26,48 +31,23 @@ export type ColorTheme = {
    * When we eventually refactor theme into palette, we can remove this
    * See https://github.com/finos/legend-studio/issues/264
    */
-  TEMPORARY__globalCSSClassName?: string | undefined;
-};
-
-export enum LEGEND_APPLICATION_COLOR_THEME {
-  DEFAULT_DARK = 'default-dark',
-  LEGACY_LIGHT = 'legacy-light',
-  HIGH_CONTRAST_LIGHT = 'hc-light',
-}
-
-const DEFAULT_DARK_COLOR_THEME: ColorTheme = {
-  name: 'Default Dark (default)',
-  key: LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK,
-};
-
-const LEGACY_LIGHT_COLOR_THEME: ColorTheme = {
-  name: 'Legacy Light',
-  key: LEGEND_APPLICATION_COLOR_THEME.LEGACY_LIGHT,
-  TEMPORARY__globalCSSClassName: 'legacy-light',
-};
-
-const HIGH_CONTRAST_LIGHT_COLOR_THEME: ColorTheme = {
-  name: 'High Contrast Light',
-  key: LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
-  TEMPORARY__globalCSSClassName: 'hc-light',
+  TEMPORARY__globalCSSClassName: string;
 };
 
 export class LayoutService {
   readonly applicationStore: GenericLegendApplicationStore;
-
-  private readonly DEFAULT_THEME!: ColorTheme;
 
   // backdrop
   backdropContainerElementID?: string | undefined;
   showBackdrop = false;
 
   // color theme
-  colorThemeRegistry = new Map<string, ColorTheme>();
+  private readonly colorThemeRegistry = new Map<string, ColorTheme>();
   currentColorTheme!: ColorTheme;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {
-      currentColorTheme: observable,
+      currentColorTheme: observable.ref,
       TEMPORARY__isLightColorThemeEnabled: computed,
       backdropContainerElementID: observable,
       showBackdrop: observable,
@@ -77,28 +57,36 @@ export class LayoutService {
     });
     this.applicationStore = applicationStore;
 
-    // theme
-    this.DEFAULT_THEME = DEFAULT_DARK_COLOR_THEME;
     this.colorThemeRegistry.set(
       LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK,
-      this.DEFAULT_THEME,
+      DEFAULT_DARK_COLOR_THEME,
     );
-    this.colorThemeRegistry.set(
-      LEGEND_APPLICATION_COLOR_THEME.LEGACY_LIGHT,
-      LEGACY_LIGHT_COLOR_THEME,
-    );
-    this.colorThemeRegistry.set(
-      LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
-      HIGH_CONTRAST_LIGHT_COLOR_THEME,
-    );
-    this.currentColorTheme = guaranteeNonNullable(
-      this.colorThemeRegistry.get(
-        this.applicationStore.storageService.settingsStore.getStringValue(
-          LEGEND_APPLICATION_SETTINGS_KEY.COLOR_THEME,
-          this.DEFAULT_THEME.key,
-        ),
-      ),
-    );
+    this.applicationStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap((plugin) => plugin.getExtraColorThemes?.() ?? [])
+      .forEach((colorTheme) => {
+        // NOTE: in the future, when we need to make theme extensible, we might want to reconsider this decision here
+        // perhaps, each extension can define a new set of color keys that each theme supports and the core theme is extensible
+        // while non-core themes are left in a separate package/module and might/might not have support for those color keys
+        if (this.colorThemeRegistry.has(colorTheme.key)) {
+          this.applicationStore.logService.warn(
+            LogEvent.create(
+              APPLICATION_EVENT.COLOR_THEME_CONFIGURATION_CHECK__FAILURE,
+            ),
+            `Found duplicated color themes with key '${colorTheme.key}'`,
+          );
+          return;
+        }
+        this.colorThemeRegistry.set(colorTheme.key, colorTheme);
+      });
+
+    const themeKey =
+      this.applicationStore.settingService.getStringValue(
+        LEGEND_APPLICATION_SETTING_KEY.COLOR_THEME,
+      ) ?? DEFAULT_DARK_COLOR_THEME.key;
+    this.currentColorTheme =
+      this.colorThemeRegistry.get(themeKey) ?? DEFAULT_DARK_COLOR_THEME;
+    this.TEMPORARY__syncGlobalCSSClassName(this.currentColorTheme, undefined);
   }
 
   getElementByID(val: string): Element | undefined {
@@ -128,21 +116,38 @@ export class LayoutService {
    * See https://github.com/finos/legend-studio/issues/264
    */
   get TEMPORARY__isLightColorThemeEnabled(): boolean {
-    return this.currentColorTheme !== this.DEFAULT_THEME;
+    return this.currentColorTheme !== DEFAULT_DARK_COLOR_THEME;
+  }
+
+  private TEMPORARY__syncGlobalCSSClassName(
+    theme: ColorTheme,
+    previousTheme: ColorTheme | undefined,
+  ): void {
+    if (previousTheme) {
+      document.body.classList.remove(
+        previousTheme.TEMPORARY__globalCSSClassName,
+      );
+    }
+    document.body.classList.add(theme.TEMPORARY__globalCSSClassName);
   }
 
   setColorTheme(
-    val: string,
+    key: string,
     options?: { persist?: boolean | undefined },
   ): void {
-    this.currentColorTheme = val
-      ? this.colorThemeRegistry.get(val) ?? this.DEFAULT_THEME
-      : this.DEFAULT_THEME;
+    const newColorTheme = this.colorThemeRegistry.get(key);
+    if (key === this.currentColorTheme.key || !newColorTheme) {
+      return;
+    }
+
+    const previousColorTheme = this.currentColorTheme;
+    this.currentColorTheme = newColorTheme;
+    this.TEMPORARY__syncGlobalCSSClassName(newColorTheme, previousColorTheme);
 
     if (options?.persist) {
-      this.applicationStore.storageService.settingsStore.persist(
-        LEGEND_APPLICATION_SETTINGS_KEY.COLOR_THEME,
-        val === this.DEFAULT_THEME.key ? undefined : val,
+      this.applicationStore.settingService.persistValue(
+        LEGEND_APPLICATION_SETTING_KEY.COLOR_THEME,
+        key,
       );
     }
   }

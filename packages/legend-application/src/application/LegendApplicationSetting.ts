@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
-export enum LEGEND_APPLICATION_SETTINGS_KEY {
+import { LEGEND_APPLICATION_COLOR_THEME } from './LegendApplicationTheme.js';
+
+export enum LEGEND_APPLICATION_SETTING_KEY {
   COLOR_THEME = 'application.layout.colorTheme',
 }
+
+export const LEGEND_APPLICATION_SETTING_CONFIG = {
+  [LEGEND_APPLICATION_SETTING_KEY.COLOR_THEME]: {
+    defaultValue: LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK,
+  },
+};

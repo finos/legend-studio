@@ -269,7 +269,7 @@ export class XTerm extends Terminal {
           } else {
             this.applicationStore.logService.warn(
               LogEvent.create(
-                APPLICATION_EVENT.APPLICATION_TERMINAL_COMMAND_CONFIGURATION_CHECK__FAILURE,
+                APPLICATION_EVENT.TERMINAL_COMMAND_CONFIGURATION_CHECK__FAILURE,
               ),
               `Found multiple duplicated terminal commands '${command}'`,
             );

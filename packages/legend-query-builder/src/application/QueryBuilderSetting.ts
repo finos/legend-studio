@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-export enum QUERY_BUILDER_SETTINGS_KEY {
+import type { SettingConfigurationData } from '@finos/legend-application';
+
+export enum QUERY_BUILDER_SETTING_KEY {
   SHOW_POST_FILTER_PANEL = 'query-builder.showPostFilterPanel',
 }
 
-// export const QUERY_BUILDER_SETTINGS_CONFIG = {
-//   [QUERY_BUILDER_SETTINGS_KEY.SHOW_POST_FILTER_PANEL]: {
-//     d,
-//   },
-// };
+export const QUERY_BUILDER_SETTING_CONFIG: SettingConfigurationData = {
+  [QUERY_BUILDER_SETTING_KEY.SHOW_POST_FILTER_PANEL]: {
+    defaultValue: false,
+  },
+};

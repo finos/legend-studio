@@ -1,9 +1,9 @@
 ---
-'@finos/legend-application-pure-ide': patch
-'@finos/legend-application-taxonomy': patch
-'@finos/legend-application-studio': patch
-'@finos/legend-application-query': patch
-'@finos/legend-query-builder': patch
+'@finos/legend-application-pure-ide': major
+'@finos/legend-application-taxonomy': major
+'@finos/legend-application-studio': major
+'@finos/legend-application-query': major
+'@finos/legend-query-builder': major
 ---
 
-Renamed `*Telemetry` and `*EventService` wrappers around `TelemetryService` and `EventService` respectively to `*TelemetryHelper` and `*EventHelper` respectively.
+**BREAKING CHANGE:** Renamed `*Telemetry` and `*EventService` wrappers around `TelemetryService` and `EventService` respectively to `*TelemetryHelper` and `*EventHelper` respectively.

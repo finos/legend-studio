@@ -40,8 +40,8 @@ import type { GraphManagerPluginManager } from '@finos/legend-graph';
 import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager.js';
 import { setupPureLanguageService } from '../stores/pure-language/PureLanguageSupport.js';
 import {
-  collectKeyedDocumnetationEntriesFromConfig,
-  type DocumentationConfigEntry,
+  collectKeyedDocumentationEntriesFromConfig,
+  type DocumentationEntryData,
   type DocumentationRegistryData,
   type DocumentationRegistryEntry,
 } from '../stores/DocumentationService.js';
@@ -145,7 +145,7 @@ export interface LegendApplicationConfigurationInput<
   baseUrl: string;
   configData: T;
   versionData: LegendApplicationVersionData;
-  docEntries?: Record<string, DocumentationConfigEntry>;
+  docEntries?: Record<string, DocumentationEntryData>;
 }
 
 export abstract class LegendApplication {
@@ -264,7 +264,7 @@ export abstract class LegendApplication {
   async loadDocumentationRegistryData(
     config: LegendApplicationConfig,
   ): Promise<void> {
-    const entries: Record<string, DocumentationConfigEntry> = {};
+    const entries: Record<string, DocumentationEntryData> = {};
 
     await Promise.all(
       [
@@ -316,9 +316,7 @@ export abstract class LegendApplication {
         } catch (error) {
           assertErrorThrown(error);
           this.logger.warn(
-            LogEvent.create(
-              APPLICATION_EVENT.APPLICATION_DOCUMENTATION_FETCH__FAILURE,
-            ),
+            LogEvent.create(APPLICATION_EVENT.DOCUMENTATION_FETCH__FAILURE),
             error,
           );
         }
@@ -327,7 +325,7 @@ export abstract class LegendApplication {
 
     // NOTE: config entries will override
     (config as Writable<LegendApplicationConfig>).keyedDocumentationEntries = [
-      ...collectKeyedDocumnetationEntriesFromConfig(entries),
+      ...collectKeyedDocumentationEntriesFromConfig(entries),
       ...config.keyedDocumentationEntries,
     ];
   }

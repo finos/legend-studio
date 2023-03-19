@@ -88,6 +88,7 @@
     "directory": "build/publishContent"
   },
   "extensions": {
+    "applicationPlugin": "@finos/legend-application-plugin-core",
     "iframeEventNotifierPlugin": "@finos/legend-event-notifier-plugin-iframe"
   },
   "typedoc": {

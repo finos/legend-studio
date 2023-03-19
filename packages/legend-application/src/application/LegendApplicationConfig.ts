@@ -21,10 +21,10 @@ import {
 } from '@finos/legend-shared';
 import type { LegendApplicationConfigurationInput } from './LegendApplication.js';
 import {
-  collectKeyedDocumnetationEntriesFromConfig,
-  collectContextualDocumnetationEntries,
+  collectKeyedDocumentationEntriesFromConfig,
+  collectContextualDocumentationEntries,
   type KeyedDocumentationEntry,
-  type DocumentationConfigEntry,
+  type DocumentationEntryData,
   type ContextualDocumentationConfig,
   type ContextualDocumentationEntry,
   type DocumentationRegistryEntry,
@@ -42,7 +42,7 @@ export interface LegendApplicationConfigurationData {
   documentation?: {
     url: string;
     registry?: DocumentationRegistryEntry[];
-    entries?: Record<string, DocumentationConfigEntry>;
+    entries?: Record<string, DocumentationEntryData>;
     contextualEntries?: ContextualDocumentationConfig;
   };
   // TODO: when we support vault-like settings, we could support `settingOverrides`
@@ -84,10 +84,10 @@ export abstract class LegendApplicationConfig {
     this.documentationUrl = input.configData.documentation?.url;
     this.documentationRegistryEntries =
       input.configData.documentation?.registry ?? [];
-    this.keyedDocumentationEntries = collectKeyedDocumnetationEntriesFromConfig(
+    this.keyedDocumentationEntries = collectKeyedDocumentationEntriesFromConfig(
       input.configData.documentation?.entries ?? {},
     );
-    this.contextualDocEntries = collectContextualDocumnetationEntries(
+    this.contextualDocEntries = collectContextualDocumentationEntries(
       input.configData.documentation?.contextualEntries ?? {},
     );
 

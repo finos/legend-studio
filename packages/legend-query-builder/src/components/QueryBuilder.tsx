@@ -68,7 +68,7 @@ import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSP
 import { QueryBuilderWatermarkEditor } from './watermark/QueryBuilderWatermark.js';
 import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpressionPanel.js';
 import { QueryBuilder_LegendApplicationPlugin } from './QueryBuilder_LegendApplicationPlugin.js';
-import { QUERY_BUILDER_SETTINGS_KEY } from '../application/QueryBuilderStorage.js';
+import { QUERY_BUILDER_SETTING_KEY } from '../application/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
 
 const QueryBuilderStatusBar = observer(
@@ -289,8 +289,8 @@ export const QueryBuilder = observer(
       ) {
         const tdsState = queryBuilderState.fetchStructureState.implementation;
         tdsState.setShowPostFilterPanel(!tdsState.showPostFilterPanel);
-        queryBuilderState.applicationStore.storageService.settingsStore.persist(
-          QUERY_BUILDER_SETTINGS_KEY.SHOW_POST_FILTER_PANEL,
+        queryBuilderState.applicationStore.settingService.persistValue(
+          QUERY_BUILDER_SETTING_KEY.SHOW_POST_FILTER_PANEL,
           tdsState.showPostFilterPanel,
         );
       }

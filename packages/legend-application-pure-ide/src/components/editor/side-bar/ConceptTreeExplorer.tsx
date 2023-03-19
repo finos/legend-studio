@@ -87,9 +87,8 @@ const ConceptExplorerContextMenu = observer(
     };
     const viewSource = (): void => viewConceptSource(node);
     const serviceJSON = (): void => {
-      window.open(
+      applicationStore.navigationService.navigator.visitAddress(
         `${editorStore.client.baseUrl}/execute?func=${nodeAttribute.pureId}&mode=${editorStore.client.mode}`,
-        '_blank',
       );
     };
     const copyPath = (): void => {

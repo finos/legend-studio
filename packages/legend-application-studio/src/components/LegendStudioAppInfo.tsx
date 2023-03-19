@@ -171,7 +171,6 @@ export const LegendStudioAppInfo: React.FC<{
           `SDLC Server: ${config.sdlcServerUrl}`,
           `Engine Server: ${config.engineServerUrl}`,
           `Depot Server: ${config.depotServerUrl}`,
-          `User Agent: ${window.navigator.userAgent}`,
         ]
           .filter(isNonNullable)
           .join('\n'),

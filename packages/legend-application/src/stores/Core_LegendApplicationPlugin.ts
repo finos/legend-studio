@@ -14,28 +14,25 @@
  * limitations under the License.
  */
 
-import {
-  collectKeyedCommandConfigEntriesFromConfig,
-  collectSettingConfigurationEntriesFromConfig,
-  LegendApplicationPlugin,
-  type SettingConfigurationEntry,
-  type KeyedCommandConfigEntry,
-  type LegendApplicationPluginManager,
-} from '@finos/legend-application';
 import packageJson from '../../package.json';
-import { QUERY_BUILDER_SETTING_CONFIG } from '../application/QueryBuilderSetting.js';
-import { QUERY_BUILDER_COMMAND_CONFIG } from '../stores/QueryBuilderCommand.js';
-import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
+import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
+import { LEGEND_APPLICATION_SETTING_CONFIG } from '../application/LegendApplicationSetting.js';
+import {
+  HIGH_CONTRAST_LIGHT_COLOR_THEME,
+  LEGACY_LIGHT_COLOR_THEME,
+} from '../application/LegendApplicationTheme.js';
+import type { ColorTheme } from './LayoutService.js';
+import { LegendApplicationPlugin } from './LegendApplicationPlugin.js';
+import {
+  collectSettingConfigurationEntriesFromConfig,
+  type SettingConfigurationEntry,
+} from './SettingService.js';
 
-export type CheckEntitlementEditorRender = (
-  queryBuilderState: QueryBuilderState,
-) => React.ReactNode | undefined;
-
-export class QueryBuilder_LegendApplicationPlugin extends LegendApplicationPlugin {
+export class Core_LegendApplicationPlugin extends LegendApplicationPlugin {
   static NAME = packageJson.extensions.applicationPlugin;
 
   constructor() {
-    super(QueryBuilder_LegendApplicationPlugin.NAME, packageJson.version);
+    super(Core_LegendApplicationPlugin.NAME, packageJson.version);
   }
 
   install(
@@ -44,19 +41,13 @@ export class QueryBuilder_LegendApplicationPlugin extends LegendApplicationPlugi
     pluginManager.registerApplicationPlugin(this);
   }
 
-  override getExtraKeyedCommandConfigEntries(): KeyedCommandConfigEntry[] {
-    return collectKeyedCommandConfigEntriesFromConfig(
-      QUERY_BUILDER_COMMAND_CONFIG,
-    );
+  override getExtraColorThemes(): ColorTheme[] {
+    return [LEGACY_LIGHT_COLOR_THEME, HIGH_CONTRAST_LIGHT_COLOR_THEME];
   }
 
   override getExtraSettingConfigurationEntries(): SettingConfigurationEntry[] {
     return collectSettingConfigurationEntriesFromConfig(
-      QUERY_BUILDER_SETTING_CONFIG,
+      LEGEND_APPLICATION_SETTING_CONFIG,
     );
-  }
-
-  getCheckEntitlementsEditorRender(): CheckEntitlementEditorRender | undefined {
-    return undefined;
   }
 }
