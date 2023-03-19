@@ -15,18 +15,18 @@
  */
 
 import type { PlainObject } from '@finos/legend-shared';
-import type { Connection } from '../../../graph/metamodel/pure/packageableElements/connection/Connection.js';
-import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
-import type { InstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
-import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin.js';
-import type { V1_Connection } from '../pure/v1/model/packageableElements/connection/V1_Connection.js';
-import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
-import type { V1_ClassMapping } from '../pure/v1/model/packageableElements/mapping/V1_ClassMapping.js';
-import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
-import type { Store } from '../../../graph/metamodel/pure/packageableElements/store/Store.js';
-import type { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
-import type { PropertyMapping } from '../../../DSL_Mapping_Exports.js';
-import type { V1_PropertyMapping } from './v1/model/packageableElements/mapping/V1_PropertyMapping.js';
+import type { Connection } from '../../../../graph/metamodel/pure/packageableElements/connection/Connection.js';
+import type { Mapping } from '../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
+import type { InstanceSetImplementation } from '../../../../graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
+import type { PureProtocolProcessorPlugin } from '../PureProtocolProcessorPlugin.js';
+import type { V1_Connection } from '../../pure/v1/model/packageableElements/connection/V1_Connection.js';
+import type { V1_GraphTransformerContext } from '../v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
+import type { V1_ClassMapping } from '../../pure/v1/model/packageableElements/mapping/V1_ClassMapping.js';
+import type { V1_GraphBuilderContext } from '../v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { Store } from '../../../../graph/metamodel/pure/packageableElements/store/Store.js';
+import type { PackageableElementReference } from '../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
+import type { V1_PropertyMapping } from '../v1/model/packageableElements/mapping/V1_PropertyMapping.js';
+import type { PropertyMapping } from '../../../../graph/metamodel/pure/packageableElements/mapping/PropertyMapping.js';
 
 export type V1_ClassMappingFirstPassBuilder = (
   classMapping: V1_ClassMapping,

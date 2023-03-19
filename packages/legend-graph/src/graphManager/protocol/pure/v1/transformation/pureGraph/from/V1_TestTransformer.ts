@@ -37,7 +37,7 @@ import type {
 } from '../../../../../../../graph/metamodel/pure/test/Test.js';
 import { EqualToTDS } from '../../../../../../../graph/metamodel/pure/test/assertion/EqualToTDS.js';
 import { V1_EqualToTDS } from '../../../model/test/assertion/V1_EqualToTDS.js';
-import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../Testable_PureProtocolProcessorPlugin_Extension.js';
+import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/Testable_PureProtocolProcessorPlugin_Extension.js';
 import {
   V1_transformMappingTest,
   V1_transformMappingTestSuite,

@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../../../../graph/DSL_ExternalFormat_HashUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../graph/Core_HashUtils.js';
 
 export class V1_ModelUnit implements Hashable {
   packageableElementIncludes: string[] = [];
@@ -23,7 +23,7 @@ export class V1_ModelUnit implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      DSL_EXTERNAL_FORMAT_HASH_STRUCTURE.MODEL_UNIT,
+      CORE_HASH_STRUCTURE.MODEL_UNIT,
       hashArray(this.packageableElementIncludes),
       hashArray(this.packageableElementExcludes),
     ]);

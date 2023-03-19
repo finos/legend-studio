@@ -42,8 +42,6 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "mobx": "6.8.0",
-    "mobx-react-lite": "3.4.3",
-    "react": "18.2.0",
     "serializr": "3.0.2"
   },
   "devDependencies": {
@@ -60,8 +58,8 @@
     "directory": "build/publishContent"
   },
   "extensions": {
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-core",
     "pureGraphManagerPlugin": "@finos/legend-graph-manager-plugin-core-pure",
-    "dsl_external_format_graphManagerPreset": "@finos/legend-graph-manager-preset-dsl-external-format",
     "dsl_external_format_pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-dsl-external-format",
     "dsl_external_format_pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-dsl-external-format",
     "dsl_external_format_pureGraphPlugin": "@finos/legend-pure-graph-plugin-dsl-external-format"

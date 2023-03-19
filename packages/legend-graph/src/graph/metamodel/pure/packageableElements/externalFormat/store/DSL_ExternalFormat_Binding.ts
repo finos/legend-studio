@@ -19,7 +19,7 @@ import type { SchemaSet } from '../schemaSet/DSL_ExternalFormat_SchemaSet.js';
 import { Store } from '../../store/Store.js';
 import type { ModelUnit } from './DSL_ExternalFormat_ModelUnit.js';
 import type { PackageableElementVisitor } from '../../PackageableElement.js';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSL_ExternalFormat_HashUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../Core_HashUtils.js';
 import type { PackageableElementReference } from '../../PackageableElementReference.js';
 
 // NOTE: in the metamodel, `Binding` extends `ModelStore`, we could consider doing the same
@@ -33,7 +33,7 @@ export class Binding extends Store implements Hashable {
 
   protected override get _elementHashCode(): string {
     return hashArray([
-      DSL_EXTERNAL_FORMAT_HASH_STRUCTURE.BINDING,
+      CORE_HASH_STRUCTURE.BINDING,
       this.path,
       this.schemaSet?.valueForSerialization ?? '',
       this.schemaId ?? '',

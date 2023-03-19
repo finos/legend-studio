@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { ModelGenerationSpecification } from '../graph/metamodel/pure/packageableElements/generationSpecification/ModelGenerationSpecification.js';
-import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
-import type { PureModel } from '../graph/PureModel.js';
+import type { ModelGenerationSpecification } from '../../graph/metamodel/pure/packageableElements/generationSpecification/ModelGenerationSpecification.js';
+import type { PureGraphManagerPlugin } from '../PureGraphManagerPlugin.js';
+import type { PureModel } from '../../graph/PureModel.js';
 
 export type ModelGenerationElementGetter = (
   graph: PureModel,

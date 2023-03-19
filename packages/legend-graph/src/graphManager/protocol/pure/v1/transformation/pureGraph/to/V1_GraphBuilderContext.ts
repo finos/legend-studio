@@ -79,7 +79,6 @@ import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions.js';
 import type { GraphBuilderOptions } from '../../../../../../../graphManager/AbstractPureGraphManager.js';
 import { DataType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/DataType.js';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils.js';
-import type { DataElement } from '../../../../../../../DSL_Data_Exports.js';
 import {
   getClassProperty,
   getEnumValue,
@@ -96,6 +95,7 @@ import {
   getSection,
 } from '../../../../../../../graph/helpers/STO_FlatData_Helper.js';
 import type { PropertyOwner } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/AbstractProperty.js';
+import type { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
 
 export const V1_buildFullPath = (
   packagePath: string | undefined,

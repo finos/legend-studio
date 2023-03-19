@@ -30,7 +30,6 @@ import {
   LEGEND_STUDIO_ROUTE_PATTERN,
   LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN,
 } from '../stores/LegendStudioRouter.js';
-import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import { flowResult } from 'mobx';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';

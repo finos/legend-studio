@@ -15,17 +15,17 @@
  */
 
 import type { PlainObject } from '@finos/legend-shared';
-import type { AuthenticationStrategy } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
-import type { DatasourceSpecification } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
-import type { PostProcessor } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/PostProcessor.js';
-import type { Milestoning } from '../../../graph/metamodel/pure/packageableElements/store/relational/model/milestoning/Milestoning.js';
-import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin.js';
-import type { V1_PostProcessor } from './v1/model/packageableElements/store/relational/connection/postprocessor/V1_PostProcessor.js';
-import type { V1_AuthenticationStrategy } from './v1/model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
-import type { V1_DatasourceSpecification } from './v1/model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
-import type { V1_Milestoning } from './v1/model/packageableElements/store/relational/model/milestoning/V1_Milestoning.js';
-import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
-import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { AuthenticationStrategy } from '../../../../graph/metamodel/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
+import type { DatasourceSpecification } from '../../../../graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
+import type { PostProcessor } from '../../../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/PostProcessor.js';
+import type { Milestoning } from '../../../../graph/metamodel/pure/packageableElements/store/relational/model/milestoning/Milestoning.js';
+import type { PureProtocolProcessorPlugin } from '../PureProtocolProcessorPlugin.js';
+import type { V1_PostProcessor } from '../v1/model/packageableElements/store/relational/connection/postprocessor/V1_PostProcessor.js';
+import type { V1_AuthenticationStrategy } from '../v1/model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
+import type { V1_DatasourceSpecification } from '../v1/model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
+import type { V1_Milestoning } from '../v1/model/packageableElements/store/relational/model/milestoning/V1_Milestoning.js';
+import type { V1_GraphTransformerContext } from '../v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
+import type { V1_GraphBuilderContext } from '../v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
 
 // milestoning
 

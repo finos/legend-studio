@@ -15,13 +15,13 @@
  */
 
 import type { PlainObject } from '@finos/legend-shared';
-import type { TestAssertion } from '../../../graph/metamodel/pure/test/assertion/TestAssertion.js';
-import type { AtomicTest } from '../../../graph/metamodel/pure/test/Test.js';
-import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin.js';
-import type { V1_AssertionStatus } from './v1/model/test/assertion/status/V1_AssertionStatus.js';
-import type { V1_AtomicTest } from './v1/model/test/V1_AtomicTest.js';
-import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
-import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { TestAssertion } from '../../../../graph/metamodel/pure/test/assertion/TestAssertion.js';
+import type { AtomicTest } from '../../../../graph/metamodel/pure/test/Test.js';
+import type { PureProtocolProcessorPlugin } from '../PureProtocolProcessorPlugin.js';
+import type { V1_AssertionStatus } from '../v1/model/test/assertion/status/V1_AssertionStatus.js';
+import type { V1_AtomicTest } from '../v1/model/test/V1_AtomicTest.js';
+import type { V1_GraphTransformerContext } from '../v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
+import type { V1_GraphBuilderContext } from '../v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
 
 export type V1_AtomicTestBuilder = (
   protocol: V1_AtomicTest,

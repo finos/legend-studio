@@ -20,7 +20,7 @@ import {
   type PackageableElementVisitor,
   PackageableElement,
 } from '../../PackageableElement.js';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSL_ExternalFormat_HashUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../Core_HashUtils.js';
 
 export class SchemaSet extends PackageableElement implements Hashable {
   format!: string;
@@ -28,7 +28,7 @@ export class SchemaSet extends PackageableElement implements Hashable {
 
   protected override get _elementHashCode(): string {
     return hashArray([
-      DSL_EXTERNAL_FORMAT_HASH_STRUCTURE.SCHEMA_SET,
+      CORE_HASH_STRUCTURE.SCHEMA_SET,
       this.path,
       this.format,
       hashArray(this.schemas),

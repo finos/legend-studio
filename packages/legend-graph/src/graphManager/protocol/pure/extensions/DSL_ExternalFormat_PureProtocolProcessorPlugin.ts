@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../../../package.json';
+import packageJson from '../../../../../package.json';
 import {
   type PlainObject,
   assertType,
@@ -23,30 +23,30 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
-import type { PureModel } from '../../../graph/PureModel.js';
+import type { PureModel } from '../../../../graph/PureModel.js';
 import {
   getOwnBinding,
   getOwnSchemaSet,
-} from '../../DSL_ExternalFormat_GraphManagerHelper.js';
-import type { Connection } from '../../../graph/metamodel/pure/packageableElements/connection/Connection.js';
-import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
-import type { PackageableElement } from '../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
-import { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
-import type { Runtime } from '../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
-import { ExternalFormatConnection } from '../../../graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_ExternalFormatConnection.js';
-import { UrlStream } from '../../../graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_UrlStream.js';
-import { Schema } from '../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_Schema.js';
-import { SchemaSet } from '../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
-import { Binding } from '../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
-import { ModelUnit } from '../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
-import type { Store } from '../../../graph/metamodel/pure/packageableElements/store/Store.js';
+} from '../../../helpers/DSL_ExternalFormat_GraphManagerHelper.js';
+import type { Connection } from '../../../../graph/metamodel/pure/packageableElements/connection/Connection.js';
+import type { Mapping } from '../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
+import type { PackageableElement } from '../../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
+import { PackageableElementReference } from '../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
+import type { Runtime } from '../../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
+import { ExternalFormatConnection } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_ExternalFormatConnection.js';
+import { UrlStream } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_UrlStream.js';
+import { Schema } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_Schema.js';
+import { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
+import { Binding } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
+import { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
+import type { Store } from '../../../../graph/metamodel/pure/packageableElements/store/Store.js';
 import type {
   DSL_Mapping_PureProtocolProcessorPlugin_Extension,
   V1_ConnectionBuilder,
   V1_ConnectionProtocolDeserializer,
   V1_ConnectionProtocolSerializer,
   V1_ConnectionTransformer,
-} from './DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
+} from '../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import {
   type V1_ElementProtocolClassifierPathGetter,
   type V1_ElementProtocolDeserializer,
@@ -55,27 +55,27 @@ import {
   type V1_ExecutionInputCollector,
   type V1_MappingModelCoverageAnalysisInputCollector,
   PureProtocolProcessorPlugin,
-} from './PureProtocolProcessorPlugin.js';
-import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData.js';
-import type { V1_Connection } from './v1/model/packageableElements/connection/V1_Connection.js';
-import { V1_ExternalFormatConnection } from './v1/model/packageableElements/externalFormat/connection/V1_DSL_ExternalFormat_ExternalFormatConnection.js';
-import { V1_UrlStream } from './v1/model/packageableElements/externalFormat/connection/V1_DSL_ExternalFormat_UrlStream.js';
-import { V1_Schema } from './v1/model/packageableElements/externalFormat/schemaSet/V1_DSL_ExternalFormat_Schema.js';
-import { V1_SchemaSet } from './v1/model/packageableElements/externalFormat/schemaSet/V1_DSL_ExternalFormat_SchemaSet.js';
-import { V1_Binding } from './v1/model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_Binding.js';
-import { V1_ModelUnit } from './v1/model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_ModelUnit.js';
-import type { V1_PackageableElement } from './v1/model/packageableElements/V1_PackageableElement.js';
-import { V1_initPackageableElement } from './v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
-import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
+} from '../PureProtocolProcessorPlugin.js';
+import type { V1_PureModelContextData } from '../v1/model/context/V1_PureModelContextData.js';
+import type { V1_Connection } from '../v1/model/packageableElements/connection/V1_Connection.js';
+import { V1_ExternalFormatConnection } from '../v1/model/packageableElements/externalFormat/connection/V1_DSL_ExternalFormat_ExternalFormatConnection.js';
+import { V1_UrlStream } from '../v1/model/packageableElements/externalFormat/connection/V1_DSL_ExternalFormat_UrlStream.js';
+import { V1_Schema } from '../v1/model/packageableElements/externalFormat/schemaSet/V1_DSL_ExternalFormat_Schema.js';
+import { V1_SchemaSet } from '../v1/model/packageableElements/externalFormat/schemaSet/V1_DSL_ExternalFormat_SchemaSet.js';
+import { V1_Binding } from '../v1/model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_Binding.js';
+import { V1_ModelUnit } from '../v1/model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_ModelUnit.js';
+import type { V1_PackageableElement } from '../v1/model/packageableElements/V1_PackageableElement.js';
+import { V1_initPackageableElement } from '../v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
+import type { V1_GraphTransformerContext } from '../v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
 import {
   V1_resolveBinding,
   V1_resolveSchemaSet,
-} from './v1/transformation/pureGraph/to/V1_DSL_ExternalFormat_GraphBuilderHelper.js';
-import { V1_ElementBuilder } from './v1/transformation/pureGraph/to/V1_ElementBuilder.js';
+} from '../v1/transformation/pureGraph/to/V1_DSL_ExternalFormat_GraphBuilderHelper.js';
+import { V1_ElementBuilder } from '../v1/transformation/pureGraph/to/V1_ElementBuilder.js';
 import {
   V1_buildFullPath,
   type V1_GraphBuilderContext,
-} from './v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
+} from '../v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import {
   V1_bindingModelSchema,
   V1_BINDING_ELEMENT_PROTOCOL_TYPE,
@@ -83,7 +83,7 @@ import {
   V1_EXTERNAL_FORMAT_CONNECTION_ELEMENT_PROTOCOL_TYPE,
   V1_schemaSetModelSchema,
   V1_SCHEMA_SET_ELEMENT_PROTOCOL_TYPE,
-} from './v1/transformation/pureProtocol/serializationHelpers/V1_DSL_ExternalFormat_ProtocolHelper.js';
+} from '../v1/transformation/pureProtocol/serializationHelpers/V1_DSL_ExternalFormat_ProtocolHelper.js';
 
 const BINDING_ELEMENT_CLASSIFIER_PATH =
   'meta::external::shared::format::binding::Binding';

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { RelationalInputData } from '../../../STO_Relational_Exports.js';
 import { isStubbed_PackageableElement } from '../../../graph/helpers/creator/DomainModelCreatorHelper.js';
+import type { RelationalInputData } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
 import {
   type ValidationIssue,
   createValidationError,

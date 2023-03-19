@@ -28,7 +28,7 @@ import {
   primitive,
   serialize,
 } from 'serializr';
-import type { Mapping } from '../../../../../../DSL_Mapping_Exports.js';
+import type { Mapping } from '../../../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import {
   EntityMappedProperty,
   EnumMappedProperty,

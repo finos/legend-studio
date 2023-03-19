@@ -26,7 +26,7 @@ import {
   RelationalCSVData,
 } from '../../../graph/metamodel/pure/data/RelationalCSVData.js';
 import type { DataElement } from '../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
-import type { EmbeddedData_PureGraphManagerPlugin_Extension } from '../../EmbeddedData_PureGraphManagerPlugin_Extension.js';
+import type { EmbeddedData_PureGraphManagerPlugin_Extension } from '../../extensions/DSL_Data_PureGraphManagerPlugin_Extension.js';
 import {
   type ObserverContext,
   observe_Abstract_PackageableElement,

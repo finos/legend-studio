@@ -64,7 +64,7 @@ export * from './graph/metamodel/pure/packageableElements/store/relational/conne
 export * from './graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 
 // protocols
-export * from './graphManager/protocol/pure/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
+export * from './graphManager/protocol/pure/extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 export * from './graphManager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_TablePtr.js';
 export { V1_transformTableToTablePointer } from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_DatabaseTransformer.js';
 export {
@@ -83,4 +83,10 @@ export {
   V1_serializeMapper,
   V1_deserializeMapper,
 } from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_PostProcessorSerializationHelper.js';
-export * from './graphManager/STO_Relational_PureGraphManagerPlugin_Extension.js';
+export * from './graphManager/extensions/STO_Relational_PureGraphManagerPlugin_Extension.js';
+
+export * from './graph/metamodel/pure/data/RelationalCSVData.js';
+export { SQLExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/SQLExecutionNode.js';
+export { SQLResultColumn } from './graph/metamodel/pure/executionPlan/nodes/SQLResultColumn.js';
+export { RelationalTDSInstantiationExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/RelationalInstantiationExecutionNode.js';
+export { createExplicitRelationReference } from './graph/metamodel/pure/packageableElements/store/relational/model/RelationReference.js';

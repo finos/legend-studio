@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
+import packageJson from '../../../package.json';
 import type { Clazz } from '@finos/legend-shared';
-import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
-import { PureGraphPlugin } from './PureGraphPlugin.js';
-import { Binding } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
-import { SchemaSet } from './metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
+import type { PackageableElement } from '../metamodel/pure/packageableElements/PackageableElement.js';
+import { PureGraphPlugin } from '../PureGraphPlugin.js';
+import { Binding } from '../metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
+import { SchemaSet } from '../metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
 
 export class DSL_ExternalFormat_PureGraphPlugin extends PureGraphPlugin {
   constructor() {

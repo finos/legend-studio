@@ -29,7 +29,7 @@ import {
   V1_SchemaNameMapper,
   V1_TableNameMapper,
 } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_Mapper.js';
-import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../STO_Relational_PureProtocolProcessorPlugin_Extension.js';
+import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 import type { ViewReference } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/ViewReference.js';
 import type { TableReference } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/TableReference.js';
 import { V1_TablePtr } from '../../../model/packageableElements/store/relational/model/V1_TablePtr.js';

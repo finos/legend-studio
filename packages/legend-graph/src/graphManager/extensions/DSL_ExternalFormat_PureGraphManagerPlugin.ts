@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
-import type { Connection } from '../DSL_Mapping_Exports.js';
-import { ExternalFormatConnection } from '../graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_ExternalFormatConnection.js';
-import { SchemaSet } from '../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
-import { Binding } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
-import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
-import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
+import packageJson from '../../../package.json';
+import type { Connection } from '../../graph/metamodel/pure/packageableElements/connection/Connection.js';
+import { ExternalFormatConnection } from '../../graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_ExternalFormatConnection.js';
+import { SchemaSet } from '../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
+import { Binding } from '../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
+import type { PackageableElement } from '../../graph/metamodel/pure/packageableElements/PackageableElement.js';
+import type { ObserverContext } from '../action/changeDetection/CoreObserverHelper.js';
 import {
   observe_Binding,
   observe_ExternalFormatConnection,
   observe_SchemaSet,
-} from './action/changeDetection/DSL_ExternalFormat_ObserverHelper.js';
+} from '../action/changeDetection/DSL_ExternalFormat_ObserverHelper.js';
 import type {
   ConnectionObserver,
   DSL_Mapping_PureGraphManagerPlugin_Extension,
@@ -35,7 +35,7 @@ import {
   type PureGrammarElementLabeler,
   type ElementObserver,
   PureGraphManagerPlugin,
-} from './PureGraphManagerPlugin.js';
+} from '../PureGraphManagerPlugin.js';
 
 export const PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME = 'ExternalFormat';
 export const PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL = 'Binding';

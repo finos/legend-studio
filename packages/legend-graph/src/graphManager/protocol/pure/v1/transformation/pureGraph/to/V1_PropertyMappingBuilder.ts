@@ -97,7 +97,7 @@ import {
   getClassProperty,
 } from '../../../../../../../graph/helpers/DomainHelper.js';
 import { SetImplementationImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/SetImplementationReference.js';
-import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import { EnumerationMappingExplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/EnumerationMappingReference.js';
 import type { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
 import { FlatDataAssociationPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';

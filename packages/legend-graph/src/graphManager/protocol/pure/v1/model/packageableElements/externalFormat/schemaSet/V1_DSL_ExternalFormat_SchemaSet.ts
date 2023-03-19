@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../../../../graph/DSL_ExternalFormat_HashUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../graph/Core_HashUtils.js';
 import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
@@ -28,7 +28,7 @@ export class V1_SchemaSet extends V1_PackageableElement implements Hashable {
 
   override get hashCode(): string {
     return hashArray([
-      DSL_EXTERNAL_FORMAT_HASH_STRUCTURE.SCHEMA_SET,
+      CORE_HASH_STRUCTURE.SCHEMA_SET,
       this.path,
       this.format,
       hashArray(this.schemas),

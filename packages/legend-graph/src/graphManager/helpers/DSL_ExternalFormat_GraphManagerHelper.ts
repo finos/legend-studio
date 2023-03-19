@@ -15,10 +15,10 @@
  */
 
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
-import type { BasicModel } from '../graph/BasicModel.js';
-import type { PureModel } from '../graph/PureModel.js';
-import { SchemaSet } from '../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
-import { Binding } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
+import type { BasicModel } from '../../graph/BasicModel.js';
+import type { PureModel } from '../../graph/PureModel.js';
+import { SchemaSet } from '../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
+import { Binding } from '../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
 
 export const getSchemaSet = (path: string, graph: PureModel): SchemaSet =>
   graph.getExtensionElement(path, SchemaSet, `Can't find schema set '${path}'`);

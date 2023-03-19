@@ -64,7 +64,7 @@ import {
   getAllEnumerationMappings,
   getOwnClassMappingById,
 } from '../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
-import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
 
 export class V1_ClassMappingSecondPassBuilder

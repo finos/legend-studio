@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-export enum DSL_EXTERNAL_FORMAT_HASH_STRUCTURE {
-  BINDING = 'BINDING',
-  SCHEMA_SET = 'SCHEMA_SET',
-  SCHEMA = 'SCHEMA',
-  MODEL_UNIT = 'MODEL_UNIT',
-  URL_STREAM = 'URL_STREAM',
-  EXTERNAL_FORMAT_CONNECTION = 'EXTERNAL_FORMAT_CONNECTION',
+import type { EmbeddedData } from '../../graph/metamodel/pure/data/EmbeddedData.js';
+import type { ObserverContext } from '../action/changeDetection/CoreObserverHelper.js';
+import type { PureGraphManagerPlugin } from '../PureGraphManagerPlugin.js';
+
+export type EmbeddedDataObserver = (
+  embeddedData: EmbeddedData,
+  context: ObserverContext,
+) => EmbeddedData | undefined;
+
+export interface EmbeddedData_PureGraphManagerPlugin_Extension
+  extends PureGraphManagerPlugin {
+  getExtraEmbeddedDataObservers?(): EmbeddedDataObserver[];
 }

@@ -55,7 +55,7 @@ import {
   V1_buildDatasourceSpecification,
   V1_buildAuthenticationStrategy,
 } from './V1_RelationalConnectionBuilderHelper.js';
-import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../../DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_ModelChainConnection } from '../../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection.js';
 import { V1_buildPostProcessor } from './V1_PostProcessorBuilderHelper.js';
 

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
-import { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
-import { CORE_PURE_PATH } from '../graph/MetaModelConst.js';
+import packageJson from '../../../package.json';
+import { PureGraphManagerPlugin } from '../PureGraphManagerPlugin.js';
+import { CORE_PURE_PATH } from '../../graph/MetaModelConst.js';
 
 export class Core_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   static NAME = packageJson.extensions.pureGraphManagerPlugin;

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type { AuthenticationStrategy } from '../graph/metamodel/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
-import type { DatasourceSpecification } from '../graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
-import type { PostProcessor } from '../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/PostProcessor.js';
-import type { Milestoning } from '../graph/metamodel/pure/packageableElements/store/relational/model/milestoning/Milestoning.js';
-import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
-import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
+import type { AuthenticationStrategy } from '../../graph/metamodel/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
+import type { DatasourceSpecification } from '../../graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
+import type { PostProcessor } from '../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/PostProcessor.js';
+import type { Milestoning } from '../../graph/metamodel/pure/packageableElements/store/relational/model/milestoning/Milestoning.js';
+import type { ObserverContext } from '../action/changeDetection/CoreObserverHelper.js';
+import type { PureGraphManagerPlugin } from '../PureGraphManagerPlugin.js';
 
 export type MilestoningObserver = (
   milestoning: Milestoning,

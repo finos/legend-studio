@@ -15,11 +15,11 @@
  */
 
 import type { PlainObject } from '@finos/legend-shared';
-import type { EmbeddedData } from '../../../graph/metamodel/pure/data/EmbeddedData.js';
-import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin.js';
-import type { V1_EmbeddedData } from './v1/model/data/V1_EmbeddedData.js';
-import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
-import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { EmbeddedData } from '../../../../graph/metamodel/pure/data/EmbeddedData.js';
+import type { PureProtocolProcessorPlugin } from '../PureProtocolProcessorPlugin.js';
+import type { V1_EmbeddedData } from '../v1/model/data/V1_EmbeddedData.js';
+import type { V1_GraphTransformerContext } from '../v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
+import type { V1_GraphBuilderContext } from '../v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
 
 export type V1_EmbeddedDataBuilder = (
   protocol: V1_EmbeddedData,

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import type { AtomicTest } from '../graph/metamodel/pure/test/Test.js';
-import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
-import type { PureModel } from '../graph/PureModel.js';
-import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
-import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
+import type { AtomicTest } from '../../graph/metamodel/pure/test/Test.js';
+import type { Testable } from '../../graph/metamodel/pure/test/Testable.js';
+import type { PureModel } from '../../graph/PureModel.js';
+import type { ObserverContext } from '../action/changeDetection/CoreObserverHelper.js';
+import type { PureGraphManagerPlugin } from '../PureGraphManagerPlugin.js';
 
 export type AtomicTestObserver = (
   metamodel: AtomicTest,

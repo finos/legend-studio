@@ -79,15 +79,20 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   Profile,
   Measure,
   Unit,
-  SectionIndex,
+
+  DataElement,
+
   Store,
   Mapping,
   PackageableConnection,
   PackageableRuntime,
-  Service,
+
   GenerationSpecification,
   FileGenerationSpecification,
-  DataElement,
+
+  Service, // to be modularized
+
+  SectionIndex,
 ]);
 
 /**

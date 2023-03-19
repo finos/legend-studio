@@ -22,10 +22,10 @@ import {
   TEST__checkBuildingElementsRoundtrip,
   TEST__GraphManagerPluginManager,
 } from '../../GraphManagerTestUtils.js';
-import { DSL_ExternalFormat_GraphPreset } from '../../../DSL_ExternalFormat_Extension.js';
+import { Core_GraphManagerPreset } from '../../../Core_GraphManagerPreset.js';
 
 const pluginManager = new TEST__GraphManagerPluginManager();
-pluginManager.usePresets([new DSL_ExternalFormat_GraphPreset()]).install();
+pluginManager.usePresets([new Core_GraphManagerPreset()]).install();
 
 test(unitTest('DSL External Format import resolution roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(

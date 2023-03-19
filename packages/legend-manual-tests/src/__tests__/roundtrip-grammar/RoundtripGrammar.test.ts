@@ -34,7 +34,7 @@ import {
   TEST__checkGraphHashUnchanged,
   TEST__getTestGraphManagerState,
   GRAPH_MANAGER_EVENT,
-  DSL_ExternalFormat_GraphPreset,
+  Core_GraphManagerPreset,
 } from '@finos/legend-graph';
 import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
 import { DSL_Diagram_GraphManagerPreset as DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
@@ -122,10 +122,10 @@ const checkGrammarRoundtrip = async (
   // See https://github.com/finos/legend-studio/issues/820
   pluginManager
     .usePresets([
+      new Core_GraphManagerPreset(),
       new DSL_Text_GraphManagerPreset(),
       new DSL_Diagram_GraphManagerPreset(),
       new DSL_DataSpace_GraphManagerPreset(),
-      new DSL_ExternalFormat_GraphPreset(),
       new DSL_Persistence_GraphManagerPreset(),
       new DSL_Mastery_GraphManagerPreset(),
       new STO_ServiceStore_GraphManagerPreset(),

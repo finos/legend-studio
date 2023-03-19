@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../../../../graph/DSL_ExternalFormat_HashUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../graph/Core_HashUtils.js';
 import {
   V1_Connection,
   type V1_ConnectionVisitor,
@@ -30,7 +30,7 @@ export class V1_ExternalFormatConnection
 
   get hashCode(): string {
     return hashArray([
-      DSL_EXTERNAL_FORMAT_HASH_STRUCTURE.EXTERNAL_FORMAT_CONNECTION,
+      CORE_HASH_STRUCTURE.EXTERNAL_FORMAT_CONNECTION,
       this.store ?? '',
       this.externalSource,
     ]);

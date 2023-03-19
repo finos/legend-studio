@@ -15,9 +15,9 @@
  */
 
 import { computed, makeObservable, observable } from 'mobx';
-import { ServiceTest } from '../../../DSL_Service_Exports.js';
 import { MappingTest } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
 import { MappingTestSuite } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
+import { ServiceTest } from '../../../graph/metamodel/pure/packageableElements/service/ServiceTest.js';
 import { ServiceTestSuite } from '../../../graph/metamodel/pure/packageableElements/service/ServiceTestSuite.js';
 import { EqualTo } from '../../../graph/metamodel/pure/test/assertion/EqualTo.js';
 import { EqualToJson } from '../../../graph/metamodel/pure/test/assertion/EqualToJson.js';
@@ -27,7 +27,7 @@ import type {
   AtomicTest,
   TestSuite,
 } from '../../../graph/metamodel/pure/test/Test.js';
-import type { Testable_PureGraphManagerPlugin_Extension } from '../../Testable_PureGraphManagerPlugin_Extension.js';
+import type { Testable_PureGraphManagerPlugin_Extension } from '../../extensions/Testable_PureGraphManagerPlugin_Extension.js';
 import { type ObserverContext, skipObserved } from './CoreObserverHelper.js';
 import { observe_ExternalFormatData } from './DSL_Data_ObserverHelper.js';
 import {

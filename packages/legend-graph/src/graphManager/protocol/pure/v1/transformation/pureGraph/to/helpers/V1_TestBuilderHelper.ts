@@ -37,7 +37,7 @@ import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
 import { V1_buildMappingTestSuite } from './V1_MappingBuilderHelper.js';
 import { V1_buildServiceTestSuite } from './V1_ServiceBuilderHelper.js';
 import type { V1_AtomicTest } from '../../../../model/test/V1_AtomicTest.js';
-import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../../Testable_PureProtocolProcessorPlugin_Extension.js';
+import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/Testable_PureProtocolProcessorPlugin_Extension.js';
 
 const V1_buildEqualTo = (
   element: V1_EqualTo,

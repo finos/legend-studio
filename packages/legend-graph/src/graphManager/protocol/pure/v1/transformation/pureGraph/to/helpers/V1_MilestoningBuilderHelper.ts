@@ -28,7 +28,7 @@ import { BusinessSnapshotMilestoning } from '../../../../../../../../graph/metam
 import { V1_ProcessingMilestoning } from '../../../../model/packageableElements/store/relational/model/milestoning/V1_ProcessingMilestoning.js';
 import { ProcessingMilestoning } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/milestoning/ProcessingMilestoning.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
-import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../../STO_Relational_PureProtocolProcessorPlugin_Extension.js';
+import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 import { RawPrimitiveInstanceValue } from '../../../../../../../../graph/metamodel/pure/rawValueSpecification/RawPrimitiveInstanceValue.js';
 import { V1_RawValueSpecificationBuilder } from '../V1_RawValueSpecificationBuilder.js';
 

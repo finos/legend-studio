@@ -43,7 +43,7 @@ import {
  * See https://github.com/microsoft/TypeScript/issues/49298
  */
 import { default as SpanBuilder } from './CJS__Zipkin.cjs';
-import { default as ZipkinSpanBuilder } from 'zipkin-javascript-opentracing';
+import type { default as ZipkinSpanBuilder } from 'zipkin-javascript-opentracing';
 
 type ZipkinTracerPluginConfigData = {
   url: string;

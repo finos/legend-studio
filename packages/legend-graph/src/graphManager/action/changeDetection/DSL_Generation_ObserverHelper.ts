@@ -15,12 +15,12 @@
  */
 
 import { computed, makeObservable, observable, override } from 'mobx';
+import type { ConfigurationProperty } from '../../../graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
+import type { FileGenerationSpecification } from '../../../graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
 import type {
-  ConfigurationProperty,
-  FileGenerationSpecification,
   GenerationSpecification,
   GenerationTreeNode,
-} from '../../../DSL_Generation_Exports.js';
+} from '../../../graph/metamodel/pure/packageableElements/generationSpecification/GenerationSpecification.js';
 import { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import {
   observe_Abstract_PackageableElement,

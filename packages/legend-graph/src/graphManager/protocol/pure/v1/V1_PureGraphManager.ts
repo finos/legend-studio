@@ -164,7 +164,7 @@ import {
   V1_setupEngineRuntimeSerialization,
   V1_setupLegacyRuntimeSerialization,
 } from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
-import type { DSL_Generation_PureProtocolProcessorPlugin_Extension } from '../DSL_Generation_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Generation_PureProtocolProcessorPlugin_Extension } from '../extensions/DSL_Generation_PureProtocolProcessorPlugin_Extension.js';
 import type { RawRelationalOperationElement } from '../../../../graph/metamodel/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
 import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext.js';
 import type {
@@ -238,11 +238,6 @@ import {
   TestExecuted,
   TestExecutionStatus,
 } from '../../../../graph/metamodel/pure/test/result/TestResult.js';
-import {
-  type Service,
-  type ParameterValue,
-  MultiExecutionServiceTestResult,
-} from '../../../../DSL_Service_Exports.js';
 import type { Testable } from '../../../../graph/metamodel/pure/test/Testable.js';
 import {
   getNullableIDFromTestable,
@@ -280,6 +275,9 @@ import {
   BulkRegistrationResultSuccess,
   BulkRegistrationResultFail,
 } from '../../../action/service/BulkServiceRegistrationResult.js';
+import { MultiExecutionServiceTestResult } from '../../../../graph/metamodel/pure/packageableElements/service/MultiExecutionServiceTestResult.js';
+import type { ParameterValue } from '../../../../graph/metamodel/pure/packageableElements/service/ParameterValue.js';
+import type { Service } from '../../../../graph/metamodel/pure/packageableElements/service/Service.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];

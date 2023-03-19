@@ -33,7 +33,7 @@ import {
   optional,
   list,
 } from 'serializr';
-import type { DSL_Data_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Data_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Data_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Data_PureProtocolProcessorPlugin_Extension.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import {
   type V1_EmbeddedData,
