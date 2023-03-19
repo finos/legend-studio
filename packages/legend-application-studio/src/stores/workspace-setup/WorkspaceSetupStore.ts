@@ -24,7 +24,7 @@ import {
   ActionState,
   IllegalStateError,
 } from '@finos/legend-shared';
-import { generateSetupRoute } from '../LegendStudioRouter.js';
+import { generateSetupRoute } from '../../application/LegendStudioNavigation.js';
 import {
   type SDLCServerClient,
   WorkspaceType,

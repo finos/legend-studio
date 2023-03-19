@@ -39,7 +39,7 @@ import {
   flowResult,
   computed,
 } from 'mobx';
-import { EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl } from './LegendTaxonomyRouter.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl } from '../application/LegendTaxonomyNavigation.js';
 import type {
   DataSpaceTaxonomyContext,
   TaxonomyExplorerStore,

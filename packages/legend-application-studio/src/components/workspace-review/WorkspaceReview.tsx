@@ -40,7 +40,7 @@ import {
 import {
   type ReviewPathParams,
   generateSetupRoute,
-} from '../../stores/LegendStudioRouter.js';
+} from '../../application/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import {
   useEditorStore,

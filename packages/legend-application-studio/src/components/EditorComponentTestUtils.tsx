@@ -28,7 +28,7 @@ import { Editor } from './editor/Editor.js';
 import {
   generateEditorRoute,
   LEGEND_STUDIO_ROUTE_PATTERN,
-} from '../stores/LegendStudioRouter.js';
+} from '../application/LegendStudioNavigation.js';
 import {
   createMock,
   createSpy,

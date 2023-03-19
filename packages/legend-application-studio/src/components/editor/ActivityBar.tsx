@@ -41,7 +41,7 @@ import { useEditorStore } from './EditorStoreProvider.js';
 import { forwardRef, useState } from 'react';
 import { VIRTUAL_ASSISTANT_TAB } from '@finos/legend-application';
 import { LegendStudioAppInfo } from '../LegendStudioAppInfo.js';
-import { generateSetupRoute } from '../../stores/LegendStudioRouter.js';
+import { generateSetupRoute } from '../../application/LegendStudioNavigation.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 
 const SettingsMenu = observer(

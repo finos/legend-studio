@@ -34,12 +34,7 @@ import {
   ResizablePanelSplitter,
   getCollapsiblePanelGroupProps,
 } from '@finos/legend-art';
-import { getQueryParameters } from '@finos/legend-shared';
-
-interface EditorQueryParams {
-  mode?: string;
-  fastCompile?: string;
-}
+import { LEGEND_PURE_IDE_ROUTE_PATTERN_TOKEN } from '../../application/LegendPureIDENavigation.js';
 
 export const Editor = withEditorStore(
   observer(() => {
@@ -94,15 +89,16 @@ export const Editor = withEditorStore(
 
     // Initialize the app
     useEffect(() => {
-      const queryParams = getQueryParameters<EditorQueryParams>(
-        window.location.search,
-      );
       flowResult(
         editorStore.initialize(
           false,
           undefined,
-          queryParams.mode,
-          queryParams.fastCompile,
+          applicationStore.navigationService.navigator.getAddressParameterValue(
+            LEGEND_PURE_IDE_ROUTE_PATTERN_TOKEN.MODE,
+          ),
+          applicationStore.navigationService.navigator.getAddressParameterValue(
+            LEGEND_PURE_IDE_ROUTE_PATTERN_TOKEN.FAST_COMPILE,
+          ),
         ),
       ).catch(applicationStore.alertUnhandledError);
     }, [editorStore, applicationStore]);

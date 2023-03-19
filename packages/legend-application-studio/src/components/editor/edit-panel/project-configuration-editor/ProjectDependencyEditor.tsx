@@ -84,7 +84,7 @@ import {
   generateViewProjectByGAVRoute,
   generateViewProjectRoute,
   generateViewVersionRoute,
-} from '../../../../stores/LegendStudioRouter.js';
+} from '../../../../application/LegendStudioNavigation.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 

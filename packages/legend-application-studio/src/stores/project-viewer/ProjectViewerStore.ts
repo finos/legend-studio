@@ -31,7 +31,7 @@ import {
   generateViewVersionRoute,
   generateViewRevisionRoute,
   generateViewProjectRoute,
-} from '../LegendStudioRouter.js';
+} from '../../application/LegendStudioNavigation.js';
 import {
   type Entity,
   type ProjectGAVCoordinates,

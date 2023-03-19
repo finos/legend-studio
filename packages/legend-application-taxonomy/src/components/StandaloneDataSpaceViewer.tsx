@@ -17,7 +17,7 @@
 import { createContext, useContext, useEffect } from 'react';
 import { useApplicationStore, useParams } from '@finos/legend-application';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import type { LegendTaxonomyStandaloneDataSpaceViewerPathParams } from '../stores/LegendTaxonomyRouter.js';
+import type { LegendTaxonomyStandaloneDataSpaceViewerPathParams } from '../application/LegendTaxonomyNavigation.js';
 import { flowResult } from 'mobx';
 import {
   ArrowRightIcon,

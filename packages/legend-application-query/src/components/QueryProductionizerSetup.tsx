@@ -41,7 +41,7 @@ import {
   buildQueryOption,
   type QueryOption,
 } from '@finos/legend-query-builder';
-import { generateQuerySetupRoute } from '../stores/LegendQueryRouter.js';
+import { generateQuerySetupRoute } from '../application/LegendQueryNavigation.js';
 
 const QueryProductionizerSetupStoreProvider: React.FC<{
   children: React.ReactNode;

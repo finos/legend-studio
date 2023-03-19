@@ -44,24 +44,18 @@ import {
   LightBulbIcon,
   EmptyLightBulbIcon,
 } from '@finos/legend-art';
-import {
-  debounce,
-  getQueryParameters,
-  getQueryParameterValue,
-  sanitizeURL,
-} from '@finos/legend-shared';
+import { debounce } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
   type MappingQueryCreatorPathParams,
   type ExistingQueryEditorPathParams,
   type ServiceQueryCreatorPathParams,
-  type ServiceQueryCreatorQueryParams,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
-  LEGEND_QUERY_PATH_PARAM_TOKEN,
+  LEGEND_QUERY_ROUTE_PATTERN_TOKEN,
   generateExistingQueryEditorRoute,
   generateQuerySetupRoute,
-} from '../stores/LegendQueryRouter.js';
+} from '../application/LegendQueryNavigation.js';
 import {
   type QueryEditorStore,
   ExistingQueryEditorStore,
@@ -641,7 +635,7 @@ export const QueryEditor = observer(() => {
 
 export const ExistingQueryEditor = observer(() => {
   const params = useParams<ExistingQueryEditorPathParams>();
-  const queryId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID];
+  const queryId = params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.QUERY_ID];
 
   return (
     <ExistingQueryEditorStoreProvider queryId={queryId}>
@@ -652,18 +646,13 @@ export const ExistingQueryEditor = observer(() => {
 
 export const ServiceQueryCreator = observer(() => {
   const applicationStore = useApplicationStore();
-  const params = useParams<ServiceQueryCreatorPathParams>();
-  const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
-  const servicePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH];
-  const executionKey = getQueryParameterValue(
-    getQueryParameters<ServiceQueryCreatorQueryParams>(
-      sanitizeURL(
-        applicationStore.navigationService.navigator.getCurrentAddress(),
-      ),
-      true,
-    ),
-    LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY,
-  );
+  const parameters = useParams<ServiceQueryCreatorPathParams>();
+  const gav = parameters[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV];
+  const servicePath = parameters[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.SERVICE_PATH];
+  const executionKey =
+    applicationStore.navigationService.navigator.getAddressParameterValue(
+      LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY,
+    );
 
   return (
     <ServiceQueryCreatorStoreProvider
@@ -678,9 +667,9 @@ export const ServiceQueryCreator = observer(() => {
 
 export const MappingQueryCreator = observer(() => {
   const params = useParams<MappingQueryCreatorPathParams>();
-  const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
-  const mappingPath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH];
-  const runtimePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH];
+  const gav = params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV];
+  const mappingPath = params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.MAPPING_PATH];
+  const runtimePath = params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.RUNTIME_PATH];
 
   return (
     <MappingQueryCreatorStoreProvider

@@ -43,7 +43,7 @@ import {
 import {
   type ViewerPathParams,
   generateSetupRoute,
-} from '../../stores/LegendStudioRouter.js';
+} from '../../application/LegendStudioNavigation.js';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { flowResult } from 'mobx';
 import {

@@ -68,7 +68,7 @@ import {
   generateSetupRoute,
   generateViewProjectRoute,
   type WorkspaceEditorPathParams,
-} from './LegendStudioRouter.js';
+} from '../application/LegendStudioNavigation.js';
 import { NonBlockingDialogState, PanelDisplayState } from '@finos/legend-art';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 import type { Entity } from '@finos/legend-storage';

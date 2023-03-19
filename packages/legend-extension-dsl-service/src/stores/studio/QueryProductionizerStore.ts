@@ -86,7 +86,7 @@ import {
 import {
   generateProjectServiceQueryUpdaterRoute,
   generateQueryProductionizerRoute,
-} from './DSL_Service_LegendStudioRouter.js';
+} from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
 
 const projectDependencyToProjectCoordinates = (
   projectDependency: ProjectDependency,

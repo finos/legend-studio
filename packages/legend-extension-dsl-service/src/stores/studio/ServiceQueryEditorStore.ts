@@ -71,7 +71,7 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { parseServiceCoordinates } from './DSL_Service_LegendStudioRouter.js';
+import { parseServiceCoordinates } from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
 
 type ProjectServiceCoordinates = {
   projectId: string;

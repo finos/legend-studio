@@ -50,7 +50,7 @@ import { LEGEND_TAXONOMY_COMMAND_KEY } from '../application/LegendTaxonomyComman
 import {
   generateExploreTaxonomyTreeRoute,
   type LegendTaxonomyPathParams,
-} from './LegendTaxonomyRouter.js';
+} from '../application/LegendTaxonomyNavigation.js';
 import { TaxonomyNodeViewerState } from './TaxonomyNodeViewerState.js';
 import {
   type TaxonomyServerClient,

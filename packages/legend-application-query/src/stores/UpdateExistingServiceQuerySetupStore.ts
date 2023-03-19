@@ -37,7 +37,7 @@ import {
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import { flow, makeObservable, observable } from 'mobx';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
-import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl } from './LegendQueryRouter.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl } from '../application/LegendQueryNavigation.js';
 import { BaseQuerySetupStore } from './QuerySetupStore.js';
 
 export class UpdateExistingServiceQuerySetupStore extends BaseQuerySetupStore {

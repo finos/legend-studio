@@ -19,8 +19,8 @@ import { observer } from 'mobx-react-lite';
 import {
   type LegendTaxonomyPathParams,
   generateExploreTaxonomyTreeRoute,
-  LEGEND_TAXONOMY_PARAM_TOKEN,
-} from '../stores/LegendTaxonomyRouter.js';
+  LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN,
+} from '../application/LegendTaxonomyNavigation.js';
 import { flowResult } from 'mobx';
 import {
   type ResizablePanelHandlerProps,
@@ -384,7 +384,7 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
     const explorerStore = useTaxonomyExplorerStore();
 
     const taxonomyTreeKey =
-      params[LEGEND_TAXONOMY_PARAM_TOKEN.TAXONOMY_TREE_KEY];
+      params[LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN.TAXONOMY_TREE_KEY];
 
     // layout
     const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>

@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-// application
-export * from './application/LegendTaxonomy.js';
+export enum LEGEND_PURE_IDE_ROUTE_PATTERN_TOKEN {
+  MODE = 'mode',
+  FAST_COMPILE = 'fastCompile',
+}
 
-export { useLegendTaxonomyApplicationStore } from './components/LegendTaxonomyBaseStoreProvider.js';
-export type { LegendTaxonomyApplicationStore } from './stores/LegendTaxonomyBaseStore.js';
+export type EditorPathParams = {
+  [LEGEND_PURE_IDE_ROUTE_PATTERN_TOKEN.MODE]?: string | undefined;
+  [LEGEND_PURE_IDE_ROUTE_PATTERN_TOKEN.FAST_COMPILE]?: string | undefined;
+};

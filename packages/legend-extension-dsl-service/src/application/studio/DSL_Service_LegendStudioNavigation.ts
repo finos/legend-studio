@@ -24,6 +24,26 @@ import {
   parseGACoordinates,
 } from '@finos/legend-storage';
 
+export enum DSL_SERVICE_ROUTE_PATTERN_TOKEN {
+  SERVICE_COORDINATES = 'serviceCoordinates',
+  PROJECT_ID = 'projectId',
+  GROUP_WORKSPACE_ID = 'groupWorkspaceId',
+  SERVICE_PATH = 'servicePath',
+  QUERY_ID = 'queryId',
+}
+
+export const DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
+  UPDATE_SERVICE_QUERY_SETUP: `/update-service-query/:${DSL_SERVICE_ROUTE_PATTERN_TOKEN.SERVICE_COORDINATES}?`,
+  UPDATE_SERVICE_QUERY: `/update-service-query/:${DSL_SERVICE_ROUTE_PATTERN_TOKEN.SERVICE_COORDINATES}/:${DSL_SERVICE_ROUTE_PATTERN_TOKEN.GROUP_WORKSPACE_ID}`,
+  UPDATE_PROJECT_SERVICE_QUERY_SETUP: `/update-project-service-query/:${DSL_SERVICE_ROUTE_PATTERN_TOKEN.PROJECT_ID}?`,
+  UPDATE_PROJECT_SERVICE_QUERY: `/update-project-service-query/:${DSL_SERVICE_ROUTE_PATTERN_TOKEN.PROJECT_ID}/:${DSL_SERVICE_ROUTE_PATTERN_TOKEN.GROUP_WORKSPACE_ID}/:${DSL_SERVICE_ROUTE_PATTERN_TOKEN.SERVICE_PATH}`,
+  PRODUCTIONIZE_QUERY: `/productionize-query/:${DSL_SERVICE_ROUTE_PATTERN_TOKEN.QUERY_ID}?`,
+});
+
+export type ServiceQueryUpdaterSetupPathParams = {
+  [DSL_SERVICE_ROUTE_PATTERN_TOKEN.SERVICE_COORDINATES]?: string;
+};
+
 const SERVICE_COORDINATE_DELIMITER = '@';
 
 export const parseServiceCoordinates = (
@@ -65,26 +85,6 @@ export const generateServiceCoordinates = (
     undefined,
   )}`;
 
-export enum DSL_SERVICE_PATH_PARAM_TOKEN {
-  SERVICE_COORDINATES = 'serviceCoordinates',
-  PROJECT_ID = 'projectId',
-  GROUP_WORKSPACE_ID = 'groupWorkspaceId',
-  SERVICE_PATH = 'servicePath',
-  QUERY_ID = 'queryId',
-}
-
-export const DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
-  UPDATE_SERVICE_QUERY_SETUP: `/update-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES}?`,
-  UPDATE_SERVICE_QUERY: `/update-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES}/:${DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}`,
-  UPDATE_PROJECT_SERVICE_QUERY_SETUP: `/update-project-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID}?`,
-  UPDATE_PROJECT_SERVICE_QUERY: `/update-project-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID}/:${DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH}`,
-  PRODUCTIONIZE_QUERY: `/productionize-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.QUERY_ID}?`,
-});
-
-export interface ServiceQueryUpdaterSetupPathParams {
-  [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES]?: string;
-}
-
 export const generateServiceQueryUpdaterSetupRoute = (
   groupId?: string,
   artifactId?: string,
@@ -95,17 +95,17 @@ export const generateServiceQueryUpdaterSetupRoute = (
       DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_SERVICE_QUERY_SETUP,
     ),
     {
-      [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES]:
+      [DSL_SERVICE_ROUTE_PATTERN_TOKEN.SERVICE_COORDINATES]:
         groupId && artifactId && servicePath
           ? generateServiceCoordinates(groupId, artifactId, servicePath)
           : undefined,
     },
   );
 
-export interface ServiceQueryUpdaterPathParams {
-  [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES]: string;
-  [DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]: string;
-}
+export type ServiceQueryUpdaterPathParams = {
+  [DSL_SERVICE_ROUTE_PATTERN_TOKEN.SERVICE_COORDINATES]: string;
+  [DSL_SERVICE_ROUTE_PATTERN_TOKEN.GROUP_WORKSPACE_ID]: string;
+};
 
 export const generateServiceQueryUpdaterRoute = (
   groupId: string,
@@ -118,15 +118,15 @@ export const generateServiceQueryUpdaterRoute = (
       DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_SERVICE_QUERY,
     ),
     {
-      [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES]:
+      [DSL_SERVICE_ROUTE_PATTERN_TOKEN.SERVICE_COORDINATES]:
         generateServiceCoordinates(groupId, artifactId, servicePath),
-      [DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]: groupWorkspaceId,
+      [DSL_SERVICE_ROUTE_PATTERN_TOKEN.GROUP_WORKSPACE_ID]: groupWorkspaceId,
     },
   );
 
-export interface ProjectServiceQueryUpdaterSetupPathParams {
-  [DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID]?: string;
-}
+export type ProjectServiceQueryUpdaterSetupPathParams = {
+  [DSL_SERVICE_ROUTE_PATTERN_TOKEN.PROJECT_ID]?: string;
+};
 
 export const generateProjectServiceQueryUpdaterSetupRoute = (
   projectId?: string,
@@ -136,15 +136,15 @@ export const generateProjectServiceQueryUpdaterSetupRoute = (
       DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_PROJECT_SERVICE_QUERY_SETUP,
     ),
     {
-      [DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID]: projectId,
+      [DSL_SERVICE_ROUTE_PATTERN_TOKEN.PROJECT_ID]: projectId,
     },
   );
 
-export interface ProjectServiceQueryUpdaterPathParams {
-  [DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID]: string;
-  [DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]: string;
-  [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH]: string;
-}
+export type ProjectServiceQueryUpdaterPathParams = {
+  [DSL_SERVICE_ROUTE_PATTERN_TOKEN.PROJECT_ID]: string;
+  [DSL_SERVICE_ROUTE_PATTERN_TOKEN.GROUP_WORKSPACE_ID]: string;
+  [DSL_SERVICE_ROUTE_PATTERN_TOKEN.SERVICE_PATH]: string;
+};
 
 export const generateProjectServiceQueryUpdaterRoute = (
   projectId: string,
@@ -156,15 +156,15 @@ export const generateProjectServiceQueryUpdaterRoute = (
       DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_PROJECT_SERVICE_QUERY,
     ),
     {
-      [DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID]: projectId,
-      [DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]: groupWorkspaceId,
-      [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH]: servicePath,
+      [DSL_SERVICE_ROUTE_PATTERN_TOKEN.PROJECT_ID]: projectId,
+      [DSL_SERVICE_ROUTE_PATTERN_TOKEN.GROUP_WORKSPACE_ID]: groupWorkspaceId,
+      [DSL_SERVICE_ROUTE_PATTERN_TOKEN.SERVICE_PATH]: servicePath,
     },
   );
 
-export interface QueryProductionizerPathParams {
-  [DSL_SERVICE_PATH_PARAM_TOKEN.QUERY_ID]?: string;
-}
+export type QueryProductionizerPathParams = {
+  [DSL_SERVICE_ROUTE_PATTERN_TOKEN.QUERY_ID]?: string;
+};
 
 export const generateQueryProductionizerRoute = (
   queryId: string | undefined,
@@ -174,6 +174,6 @@ export const generateQueryProductionizerRoute = (
       DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.PRODUCTIONIZE_QUERY,
     ),
     {
-      [DSL_SERVICE_PATH_PARAM_TOKEN.QUERY_ID]: queryId,
+      [DSL_SERVICE_ROUTE_PATTERN_TOKEN.QUERY_ID]: queryId,
     },
   );

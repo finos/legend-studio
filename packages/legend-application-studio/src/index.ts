@@ -19,6 +19,7 @@ export * from './application/LegendStudio.js';
 export * from './application/LegendStudioApplicationConfig.js';
 export * from './application/LegendStudioPluginManager.js';
 export * from './application/LegendStudioEvent.js';
+export * from './application/LegendStudioNavigation.js';
 export { useLegendStudioApplicationStore } from './components/LegendStudioBaseStoreProvider.js';
 export type { LegendStudioApplicationStore } from './stores/LegendStudioBaseStore.js';
 
@@ -56,7 +57,6 @@ export * from './stores/shared/modifier/DSL_Service_GraphModifierHelper.js';
 // components
 export { queryClass } from './components/editor/edit-panel/uml-editor/ClassQueryBuilder.js';
 export * from './components/editor/EditorStoreProvider.js';
-export * from './stores/LegendStudioRouter.js';
 export { ActivityBarMenu } from './components/editor/ActivityBar.js';
 export * from './components/shared/ProjectSelectorUtils.js';
 export * from './components/shared/WorkspaceSelectorUtils.js';

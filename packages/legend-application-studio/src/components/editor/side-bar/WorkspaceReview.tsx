@@ -30,7 +30,7 @@ import {
   PanelContent,
 } from '@finos/legend-art';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
-import { generateReviewRoute } from '../../../stores/LegendStudioRouter.js';
+import { generateReviewRoute } from '../../../application/LegendStudioNavigation.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';

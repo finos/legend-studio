@@ -32,7 +32,7 @@ import {
 } from '@finos/legend-art';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor.js';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
-import { generateReviewRoute } from '../../../stores/LegendStudioRouter.js';
+import { generateReviewRoute } from '../../../application/LegendStudioNavigation.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
 import type {

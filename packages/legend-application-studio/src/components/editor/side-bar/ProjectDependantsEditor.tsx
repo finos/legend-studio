@@ -46,7 +46,7 @@ import {
   generateDependencyDashboardRoute,
   generateViewProjectByGAVRoute,
   generateViewVersionRoute,
-} from '../../../stores/LegendStudioRouter.js';
+} from '../../../application/LegendStudioNavigation.js';
 
 const ProjectDependantEditor = observer(
   (props: { dependant: ProjectVersionPlatformDependency }) => {

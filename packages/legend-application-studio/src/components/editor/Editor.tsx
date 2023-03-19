@@ -31,7 +31,7 @@ import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel.js';
 import { GrammarTextEditor } from './edit-panel/GrammarTextEditor.js';
 import { StatusBar } from './StatusBar.js';
 import { ActivityBar } from './ActivityBar.js';
-import type { WorkspaceEditorPathParams } from '../../stores/LegendStudioRouter.js';
+import type { WorkspaceEditorPathParams } from '../../application/LegendStudioNavigation.js';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';

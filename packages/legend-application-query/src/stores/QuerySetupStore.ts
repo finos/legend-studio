@@ -29,7 +29,7 @@ import { LEGEND_QUERY_APP_EVENT } from '../application/LegendQueryEvent.js';
 import { TAB_SIZE } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
-import { generateQuerySetupRoute } from './LegendQueryRouter.js';
+import { generateQuerySetupRoute } from '../application/LegendQueryNavigation.js';
 import type { QuerySetupActionConfiguration } from './LegendQueryApplicationPlugin.js';
 
 export abstract class BaseQuerySetupStore {

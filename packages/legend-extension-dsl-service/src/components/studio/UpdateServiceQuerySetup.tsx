@@ -40,7 +40,7 @@ import {
 import {
   type ServiceQueryUpdaterSetupPathParams,
   generateServiceQueryUpdaterRoute,
-} from '../../stores/studio/DSL_Service_LegendStudioRouter.js';
+} from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import {
   type ServiceInfo,

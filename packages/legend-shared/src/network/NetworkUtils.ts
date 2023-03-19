@@ -535,10 +535,10 @@ export const getQueryParameters = <T>(url: string, isFullUrl = false): T => {
 };
 
 export const getQueryParameterValue = (
+  key: string,
   data: Record<string, string | undefined>,
-  paramKey: string,
 ): string | undefined => {
-  const paramValue = data[paramKey];
+  const paramValue = data[key];
   return paramValue ? decodeURIComponent(paramValue) : undefined;
 };
 

@@ -25,7 +25,7 @@ export type { LegendQueryApplicationStore } from './stores/LegendQueryBaseStore.
 
 // stores
 export * from './stores/LegendQueryApplicationPlugin.js';
-export * from './stores/LegendQueryRouter.js';
+export * from './application/LegendQueryNavigation.js';
 export { BaseQuerySetupStore } from './stores/QuerySetupStore.js';
 export {
   createViewProjectHandler,

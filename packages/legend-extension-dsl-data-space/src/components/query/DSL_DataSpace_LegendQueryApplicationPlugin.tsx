@@ -35,7 +35,7 @@ import {
 import {
   DATA_SPACE_QUERY_ROUTE_PATTERN,
   generateDataSpaceQuerySetupRoute,
-} from '../../stores/query/DSL_DataSpace_LegendQueryRouter.js';
+} from '../../application/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { DataSpaceQueryCreator } from './DataSpaceQueryCreator.js';
 import { createQueryDataSpaceTaggedValue } from '../../stores/query/DataSpaceQueryCreatorStore.js';
 import { Query, isValidFullPath } from '@finos/legend-graph';

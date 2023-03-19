@@ -41,7 +41,7 @@ import type { LegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStore.j
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
   type LegendTaxonomyStandaloneDataSpaceViewerPathParams,
-} from './LegendTaxonomyRouter.js';
+} from '../application/LegendTaxonomyNavigation.js';
 import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,

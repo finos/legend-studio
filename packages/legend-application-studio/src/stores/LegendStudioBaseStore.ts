@@ -46,7 +46,7 @@ import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
 import { LegendStudioEventHelper } from '../application/LegendStudioEventHelper.js';
-import { LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN } from './LegendStudioRouter.js';
+import { LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN } from '../application/LegendStudioNavigation.js';
 
 export type LegendStudioApplicationStore = ApplicationStore<
   LegendStudioApplicationConfig,

@@ -32,18 +32,10 @@ import {
   MenuContentDivider,
   AssistantIcon,
 } from '@finos/legend-art';
-import {
-  getQueryParameters,
-  getQueryParameterValue,
-  guaranteeNonNullable,
-  sanitizeURL,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import React, { createContext, useContext, useEffect } from 'react';
-import {
-  LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN,
-  type QuerySetupQueryParams,
-} from '../stores/LegendQueryRouter.js';
+import { LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN } from '../application/LegendQueryNavigation.js';
 import {
   QuerySetupLandingPageStore,
   type BaseQuerySetupStore,
@@ -261,24 +253,18 @@ export const QuerySetupLandingPage = withQuerySetupLandingPageStore(
   observer(() => {
     const setupStore = useQuerySetupLandingPageStore();
     const applicationStore = useLegendQueryApplicationStore();
-    const params = getQueryParameters<QuerySetupQueryParams>(
-      sanitizeURL(
-        applicationStore.navigationService.navigator.getCurrentAddress(),
-      ),
-      true,
-    );
-    const showAdvancedActions = getQueryParameterValue(
-      params,
-      LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ADVANCED_ACTIONS,
-    );
-    const showAllGroups = getQueryParameterValue(
-      params,
-      LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ALL_GROUPS,
-    );
-    const tagToFocus = getQueryParameterValue(
-      params,
-      LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG,
-    );
+    const showAdvancedActions =
+      applicationStore.navigationService.navigator.getAddressParameterValue(
+        LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ADVANCED_ACTIONS,
+      );
+    const showAllGroups =
+      applicationStore.navigationService.navigator.getAddressParameterValue(
+        LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ALL_GROUPS,
+      );
+    const tagToFocus =
+      applicationStore.navigationService.navigator.getAddressParameterValue(
+        LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG,
+      );
     const goToStudio = (): void =>
       applicationStore.navigationService.navigator.visitAddress(
         applicationStore.config.studioUrl,

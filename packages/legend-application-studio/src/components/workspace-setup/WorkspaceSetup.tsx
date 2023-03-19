@@ -30,8 +30,8 @@ import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import {
   type SetupPathParams,
   generateEditorRoute,
-  LEGEND_STUDIO_PATH_PARAM_TOKEN,
-} from '../../stores/LegendStudioRouter.js';
+  LEGEND_STUDIO_ROUTE_PATTERN_TOKEN,
+} from '../../application/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import {
   DocumentationLink,
@@ -95,10 +95,10 @@ const withWorkspaceSetupStore = (WrappedComponent: React.FC): React.FC =>
 export const WorkspaceSetup = withWorkspaceSetupStore(
   observer(() => {
     const params = useParams<SetupPathParams>();
-    const projectId = params[LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID];
-    const workspaceId = params[LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID];
+    const projectId = params[LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.PROJECT_ID];
+    const workspaceId = params[LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.WORKSPACE_ID];
     const groupWorkspaceId =
-      params[LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID];
+      params[LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.GROUP_WORKSPACE_ID];
     const setupStore = useWorkspaceSetupStore();
     const applicationStore = useLegendStudioApplicationStore();
     const [projectSearchText, setProjectSearchText] = useState('');

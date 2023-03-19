@@ -57,7 +57,7 @@ import {
   generateExistingQueryEditorRoute,
   generateMappingQueryCreatorRoute,
   generateServiceQueryCreatorRoute,
-} from './LegendQueryRouter.js';
+} from '../application/LegendQueryNavigation.js';
 import { LEGEND_QUERY_APP_EVENT } from '../application/LegendQueryEvent.js';
 import {
   type Entity,
