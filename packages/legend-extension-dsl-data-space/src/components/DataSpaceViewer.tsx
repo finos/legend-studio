@@ -34,10 +34,6 @@ import {
   InfoCircleIcon,
   ExternalLinkIcon,
   useResizeDetector,
-  DropdownMenu,
-  MenuContent,
-  MenuContentItem,
-  CaretDownIcon,
   ExternalLinkSquareIcon,
   DocumentationIcon,
   TableIcon,
@@ -625,15 +621,6 @@ export const DataSpaceViewer = observer(
         dataSpaceViewerState.versionId,
         analysisResult.path,
       );
-    const viewSDLCProject = (): void => {
-      dataSpaceViewerState
-        .viewSDLCProject(
-          dataSpaceViewerState.groupId,
-          dataSpaceViewerState.artifactId,
-          analysisResult.path,
-        )
-        .catch(applicationStore.alertUnhandledError);
-    };
 
     return (
       <div className="data-space__viewer">
@@ -661,18 +648,6 @@ export const DataSpaceViewer = observer(
                 <ExternalLinkSquareIcon />
               </div>
             </button>
-            <DropdownMenu
-              className="data-space__viewer__title__dropdown-trigger"
-              content={
-                <MenuContent>
-                  <MenuContentItem onClick={viewSDLCProject}>
-                    View SDLC project
-                  </MenuContentItem>
-                </MenuContent>
-              }
-            >
-              <CaretDownIcon title="Show more options..." />
-            </DropdownMenu>
           </div>
         </div>
         <div className="data-space__viewer__content">
