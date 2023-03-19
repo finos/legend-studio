@@ -21,6 +21,10 @@
   width: 100%;
   background: var(--color-dark-grey-50);
 
+  &__input {
+    @include flexCenter;
+  }
+
   .panel {
     height: 100%;
 
