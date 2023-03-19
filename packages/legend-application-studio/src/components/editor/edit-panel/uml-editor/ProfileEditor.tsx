@@ -52,7 +52,7 @@ import {
   profile_swapStereotypes,
 } from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
 import { useRef, useCallback } from 'react';
 import { useDrop, useDrag } from 'react-dnd';
 

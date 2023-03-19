@@ -15,7 +15,7 @@
  */
 
 import { clsx } from 'clsx';
-import { TimesCircleIcon } from './CJS__Icon.cjs';
+import { TimesCircleIcon } from './Icon.js';
 
 export const InputWithInlineValidation: React.FC<
   React.InputHTMLAttributes<HTMLInputElement> & {

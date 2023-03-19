@@ -80,7 +80,7 @@ import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
 import type { V1_MappingStoreTestData } from '../../../../model/packageableElements/mapping/V1_MappingStoreTestData.js';
 import { MappingStoreTestData } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
 import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
-import { ModelStore } from '../../../../../../../../DSL_Mapping_Exports.js';
+import { ModelStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/model/ModelStore.js';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,

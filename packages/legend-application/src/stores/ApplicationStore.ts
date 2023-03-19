@@ -20,7 +20,7 @@ import {
   LogEvent,
   uuid,
 } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from './ApplicationEvent.js';
+import { APPLICATION_EVENT } from '../application/LegendApplicationEvent.js';
 import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
 import type { WebApplicationNavigator } from './navigation/WebApplicationNavigator.js';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
@@ -41,6 +41,7 @@ import { TimeService } from './TimeService.js';
 import { LayoutService } from './LayoutService.js';
 import { ClipboardService } from './ClipboardService.js';
 import { NavigationService } from './navigation/NavigationService.js';
+import { SettingService } from './SettingService.js';
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
@@ -57,15 +58,19 @@ export class ApplicationStore<
   readonly pluginManager: V;
 
   // core
-  readonly identityService: IdentityService;
+  readonly timeService: TimeService;
+  readonly logService: LogService;
   readonly storageService: StorageService;
-  readonly timeService = new TimeService();
+  readonly settingService: SettingService;
+  readonly alertService: AlertService;
+  readonly notificationService: NotificationService;
+
+  readonly identityService: IdentityService;
   readonly commandService: CommandService;
   readonly keyboardShortcutsService: KeyboardShortcutsService;
   readonly layoutService: LayoutService;
   readonly clipboardService: ClipboardService;
   readonly terminalService: TerminalService;
-  readonly logService = new LogService();
   readonly navigationService: NavigationService;
   readonly navigationContextService: ApplicationNavigationContextService;
 
@@ -74,8 +79,6 @@ export class ApplicationStore<
   readonly assistantService: AssistantService;
 
   // event
-  readonly alertService: AlertService;
-  readonly notificationService: NotificationService;
   readonly eventService: EventService;
   readonly telemetryService: TelemetryService;
   readonly tracerService: TracerService;
@@ -96,9 +99,12 @@ export class ApplicationStore<
     // NOTE: set the logger first so other loading could use the configured logger
     this.logService = new LogService();
     this.logService.registerPlugins(pluginManager.getLoggerPlugins());
+    this.storageService = new StorageService(this);
+    this.settingService = new SettingService(this);
+    this.alertService = new AlertService(this);
+    this.notificationService = new NotificationService();
 
     this.identityService = new IdentityService(this);
-    this.storageService = new StorageService(this);
     this.layoutService = new LayoutService(this);
     this.clipboardService = new ClipboardService(this);
     this.terminalService = new TerminalService(this);
@@ -113,8 +119,6 @@ export class ApplicationStore<
     this.documentationService = new DocumentationService(this);
     this.assistantService = new AssistantService(this);
 
-    this.alertService = new AlertService(this);
-    this.notificationService = new NotificationService();
     this.eventService = new EventService();
     this.eventService.registerEventNotifierPlugins(
       pluginManager.getEventNotifierPlugins(),

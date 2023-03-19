@@ -19,15 +19,14 @@ import {
   guaranteeIsString,
   guaranteeIsBoolean,
   guaranteeIsObject,
+  isNonNullable,
 } from '@finos/legend-shared';
 import type { GenericLegendApplicationStore } from '../ApplicationStore.js';
 import { LocalStorage } from './ApplicationStorage.js';
 
-const APPLICATION_SETTINGS_STORAGE_KEY = 'application-settings-storage';
-
 type StoredValue = object | string | number | boolean;
 
-class StorageStore {
+export class StorageStore {
   readonly storeIndex;
   readonly storageService: StorageService;
   private readonly data!: Record<PropertyKey, StoredValue>;
@@ -45,28 +44,40 @@ class StorageStore {
     }
   }
 
-  private getValue(key: string, defaultValue: StoredValue): StoredValue {
-    return this.data[key] ?? defaultValue;
+  getValue(key: string): StoredValue | undefined {
+    return this.data[key];
   }
 
-  getNumberValue(key: string, defaultValue: number): number {
-    return guaranteeIsNumber(this.getValue(key, defaultValue));
+  getNumericValue(key: string): number | undefined {
+    const value = this.getValue(key);
+    return value !== undefined ? guaranteeIsNumber(value) : undefined;
   }
 
-  getStringValue(key: string, defaultValue: string): string {
-    return guaranteeIsString(this.getValue(key, defaultValue));
+  getStringValue(key: string): string | undefined {
+    const value = this.getValue(key);
+    return value !== undefined ? guaranteeIsString(value) : undefined;
   }
 
-  getBooleanValue(key: string, defaultValue: boolean): boolean {
-    return guaranteeIsBoolean(this.getValue(key, defaultValue));
+  getBooleanValue(key: string): boolean | undefined {
+    const value = this.getValue(key);
+    return value !== undefined ? guaranteeIsBoolean(value) : undefined;
   }
 
-  getObjectValue(key: string, defaultValue: object): object {
-    return guaranteeIsObject(this.getValue(key, defaultValue));
+  getObjectValue(key: string): object | undefined {
+    const value = this.getValue(key);
+    return value !== undefined ? guaranteeIsObject(value) : undefined;
   }
 
-  persist(key: string, value: StoredValue): void {
-    this.data[key] = value;
+  hasValue(key: string): boolean {
+    return isNonNullable(this.data[key]);
+  }
+
+  persistValue(key: string, value: StoredValue | undefined): void {
+    if (value !== undefined) {
+      this.data[key] = value;
+    } else {
+      delete this.data[key];
+    }
     this.storageService.storage.setItem(
       this.storeIndex,
       JSON.stringify(this.data),
@@ -77,14 +88,9 @@ class StorageStore {
 export class StorageService {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly storage: LocalStorage;
-  readonly settingsStore: StorageStore;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     this.applicationStore = applicationStore;
     this.storage = new LocalStorage();
-    this.settingsStore = new StorageStore(
-      this,
-      APPLICATION_SETTINGS_STORAGE_KEY,
-    );
   }
 }

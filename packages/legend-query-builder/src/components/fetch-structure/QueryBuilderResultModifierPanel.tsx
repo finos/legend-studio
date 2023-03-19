@@ -85,7 +85,7 @@ const ColumnSortEditor = observer(
           onChange={onChange}
           value={value}
           darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
         />
         <div className="query-builder__projection__options__sort__sortby">

@@ -68,7 +68,7 @@ import {
   generateSetupRoute,
   generateViewProjectRoute,
   type WorkspaceEditorPathParams,
-} from './LegendStudioRouter.js';
+} from '../application/LegendStudioNavigation.js';
 import { NonBlockingDialogState, PanelDisplayState } from '@finos/legend-art';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 import type { Entity } from '@finos/legend-storage';
@@ -77,10 +77,7 @@ import {
   WorkspaceType,
   type SDLCServerClient,
 } from '@finos/legend-server-sdlc';
-import {
-  type GraphManagerState,
-  GRAPH_MANAGER_EVENT,
-} from '@finos/legend-graph';
+import { GraphManagerState, GRAPH_MANAGER_EVENT } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import {
@@ -90,7 +87,7 @@ import {
   APPLICATION_EVENT,
   TAB_SIZE,
 } from '@finos/legend-application';
-import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../application/LegendStudioEvent.js';
 import type { EditorMode } from './editor/EditorMode.js';
 import { StandardEditorMode } from './editor/StandardEditorMode.js';
 import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState.js';
@@ -98,7 +95,7 @@ import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
-import { LEGEND_STUDIO_COMMAND_KEY } from './LegendStudioCommand.js';
+import { LEGEND_STUDIO_COMMAND_KEY } from '../application/LegendStudioCommand.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
 import type { ProjectViewerEditorMode } from './project-viewer/ProjectViewerEditorMode.js';
 import { GraphEditFormModeState } from './GraphEditFormModeState.js';
@@ -175,7 +172,6 @@ export class EditorStore implements CommandRegistrar {
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
-    graphManagerState: GraphManagerState,
   ) {
     makeObservable<
       EditorStore,
@@ -217,7 +213,10 @@ export class EditorStore implements CommandRegistrar {
 
     this.sdlcState = new EditorSDLCState(this);
     this.graphState = new EditorGraphState(this);
-    this.graphManagerState = graphManagerState;
+    this.graphManagerState = new GraphManagerState(
+      applicationStore.pluginManager,
+      applicationStore.logService,
+    );
     this.graphEditorMode = new GraphEditFormModeState(this);
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);
     this.devToolState = new DevToolState(this);

@@ -24,7 +24,7 @@ import {
 import { isValidUrl } from '@finos/legend-shared';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { observe_TEMPORARY__AbstractEngineConfig } from '@finos/legend-graph';
-import { LEGEND_STUDIO_SETTINGS_KEY } from '../../../stores/LegendStudioStorage.js';
+import { LEGEND_STUDIO_SETTING_KEY } from '../../../application/LegendStudioSetting.js';
 
 export const DevTool = observer(() => {
   const editorStore = useEditorStore();
@@ -45,8 +45,8 @@ export const DevTool = observer(() => {
     editorStore.graphState.setEnableStrictMode(
       !editorStore.graphState.enableStrictMode,
     );
-    editorStore.applicationStore.storageService.settingsStore.persist(
-      LEGEND_STUDIO_SETTINGS_KEY.EDITOR_STRICT_MODE,
+    editorStore.applicationStore.settingService.persistValue(
+      LEGEND_STUDIO_SETTING_KEY.EDITOR_STRICT_MODE,
       editorStore.graphState.enableStrictMode,
     );
   };

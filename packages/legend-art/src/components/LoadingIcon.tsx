@@ -15,7 +15,7 @@
  */
 
 import { clsx } from 'clsx';
-import { RefreshIcon } from './CJS__Icon.cjs';
+import { RefreshIcon } from './Icon.js';
 
 export const LoadingIcon: React.FC<{
   isLoading: boolean;

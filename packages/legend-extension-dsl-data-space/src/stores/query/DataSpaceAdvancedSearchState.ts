@@ -33,7 +33,7 @@ import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { DSL_DataSpace_getGraphManagerExtension } from '../../graphManager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graphManager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
-import { generateDataSpaceQueryCreatorRoute } from './DSL_DataSpace_LegendQueryRouter.js';
+import { generateDataSpaceQueryCreatorRoute } from '../../application/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
 import {
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,

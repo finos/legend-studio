@@ -16,7 +16,7 @@
 
 import type { EditorStore } from '../EditorStore.js';
 import { observable, action, makeObservable, flow } from 'mobx';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import {
   type FileSystem_File,
   type FileResult,

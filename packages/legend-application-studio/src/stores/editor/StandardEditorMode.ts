@@ -24,7 +24,7 @@ import type { EditorStore } from '../EditorStore.js';
 import {
   generateEditorRoute,
   generateViewProjectByGAVRoute,
-} from '../LegendStudioRouter.js';
+} from '../../application/LegendStudioNavigation.js';
 import { EditorMode } from './EditorMode.js';
 
 export class StandardEditorMode extends EditorMode {

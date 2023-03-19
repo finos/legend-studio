@@ -44,7 +44,7 @@ import {
 import { Version } from '@finos/legend-server-sdlc';
 import { MINIMUM_SERVICE_OWNERS } from '../editor-state/element-editor-state/service/ServiceEditorState.js';
 import { ServiceRegistrationEnvironmentConfig } from '../../application/LegendStudioApplicationConfig.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import { generateServiceManagementUrl } from '../editor-state/element-editor-state/service/ServiceRegistrationState.js';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';

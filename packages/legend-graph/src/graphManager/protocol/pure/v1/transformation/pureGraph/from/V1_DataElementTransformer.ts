@@ -26,7 +26,7 @@ import {
   RelationalCSVData,
 } from '../../../../../../../graph/metamodel/pure/data/RelationalCSVData.js';
 import type { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
-import type { DSL_Data_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Data_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Data_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Data_PureProtocolProcessorPlugin_Extension.js';
 import {
   type V1_EmbeddedData,
   V1_DataElementReference,

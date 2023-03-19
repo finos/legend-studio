@@ -27,5 +27,6 @@
   // needed this to be `on` instead of `auto` so auto-import suggestion works properly with monorepo
   "typescript.preferences.includePackageJsonAutoImports": "on",
   "javascript.preferences.quoteStyle": "single",
-  "typescript.preferences.quoteStyle": "single"
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

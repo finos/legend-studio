@@ -53,7 +53,7 @@ import {
   graph_renameElement,
 } from './shared/modifier/GraphModifierHelper.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
-import { LegendStudioTelemetry } from './LegendStudioTelemetry.js';
+import { LegendStudioTelemetryHelper } from '../application/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
 
 export class GraphEditFormModeState extends GraphEditorMode {
@@ -429,7 +429,7 @@ export class GraphEditFormModeState extends GraphEditorMode {
     const report = reportGraphAnalytics(
       this.editorStore.graphManagerState.graph,
     );
-    LegendStudioTelemetry.logEvent_GraphCompilationLaunched(
+    LegendStudioTelemetryHelper.logEvent_GraphCompilationLaunched(
       this.editorStore.applicationStore.telemetryService,
     );
 
@@ -484,7 +484,7 @@ export class GraphEditFormModeState extends GraphEditorMode {
           stopWatch,
           report.timings,
         );
-      LegendStudioTelemetry.logEvent_GraphCompilationSucceeded(
+      LegendStudioTelemetryHelper.logEvent_GraphCompilationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         report,
       );

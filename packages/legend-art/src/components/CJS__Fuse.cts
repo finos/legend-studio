@@ -24,6 +24,13 @@
  *
  * @workaround ESM
  * See https://github.com/microsoft/TypeScript/issues/49298
- * See https://github.com/krisk/Fuse/pull/692
+ *
+ * In addition to that, due to our upgrade to Typescript 5.0, we are forced to enable
+ * --verbatimModuleSyntax flag, so we have to use CommonJS syntax in this file
+ * See https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/#verbatimmodulesyntax
  */
-export { default as Fuse } from 'fuse.js';
+import Fuse = require('fuse.js');
+
+export = {
+  Fuse,
+};

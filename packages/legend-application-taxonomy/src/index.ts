@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+// application
 export * from './application/LegendTaxonomy.js';
-export * from './components/LegendTaxonomyBaseStoreProvider.js';
-export * from './stores/LegendTaxonomyBaseStore.js';
+
+export { useLegendTaxonomyApplicationStore } from './components/LegendTaxonomyBaseStoreProvider.js';
+export type { LegendTaxonomyApplicationStore } from './stores/LegendTaxonomyBaseStore.js';

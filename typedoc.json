@@ -22,7 +22,7 @@
     "**/packages/legend-application-*",
     "**/packages/legend-extension-*"
   ],
-  "plugin": ["./scripts/typedoc-theme/lib/index.js"],
+  "plugin": ["./website/custom-typedoc-theme.cjs"],
   "intentionallyNotExported": [],
   "excludeExternals": false,
   "excludeInternal": true,

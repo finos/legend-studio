@@ -22,6 +22,8 @@ import type {
   DocumentationRegistryEntry,
   KeyedDocumentationEntry,
 } from './DocumentationService.js';
+import type { ColorTheme } from './LayoutService.js';
+import type { SettingConfigurationEntry } from './SettingService.js';
 
 export type LegendApplicationSetup = <T extends LegendApplicationPlugin>(
   pluginManager: LegendApplicationPluginManager<T>,
@@ -86,4 +88,14 @@ export abstract class LegendApplicationPlugin extends AbstractPlugin {
    * when their corresponding contexts are accessed
    */
   getExtraAccessEventLoggingApplicationContextKeys?(): string[];
+
+  /**
+   * Get the list of color themes
+   */
+  getExtraColorThemes?(): ColorTheme[];
+
+  /**
+   * Get the list of setting configuration entries
+   */
+  getExtraSettingConfigurationEntries?(): SettingConfigurationEntry[];
 }

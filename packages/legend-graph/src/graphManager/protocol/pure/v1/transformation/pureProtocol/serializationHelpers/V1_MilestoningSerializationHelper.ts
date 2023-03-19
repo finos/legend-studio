@@ -31,7 +31,7 @@ import { V1_BusinessSnapshotMilestoning } from '../../../model/packageableElemen
 import type { V1_Milestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_Milestoning.js';
 import { V1_ProcessingMilestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_ProcessingMilestoning.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
-import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../STO_Relational_PureProtocolProcessorPlugin_Extension.js';
+import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 import {
   V1_deserializeRawValueSpecification,
   V1_serializeRawValueSpecification,

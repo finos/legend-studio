@@ -16,6 +16,8 @@
 
 export type Location = string;
 export type Address = string;
+export type AddressParameterKey = string;
+export type AddressParameterValue = string | undefined;
 
 /**
  * This is an initial attempt to generalize the application navigation to other platforms
@@ -71,8 +73,14 @@ export interface ApplicationNavigator {
    * location without doing any navigation
    */
   updateCurrentLocation(location: Location): void;
+
   getCurrentAddress(): Address;
   getCurrentLocation(): Location;
+  getAddressParameters<
+    T extends Record<AddressParameterKey, AddressParameterValue>,
+  >(): T;
+  getAddressParameterValue(key: AddressParameterKey): AddressParameterValue;
+
   generateAddress(location: Location): Address;
 
   /**

@@ -16,13 +16,14 @@
 
 import { LogEvent } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
-import { APPLICATION_EVENT } from './ApplicationEvent.js';
+import { APPLICATION_EVENT } from '../application/LegendApplicationEvent.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 
 export interface CommandRegistrar {
   registerCommands(): void;
   deregisterCommands(): void;
 }
+
 export type CommandConfigEntry = {
   title?: string;
   /**
@@ -34,10 +35,12 @@ export type CommandConfigEntry = {
   additionalKeyboardShortcuts?: string[];
   when?: string;
 };
+
 export type KeyedCommandConfigEntry = {
   key: string;
   content: CommandConfigEntry;
 };
+
 export type CommandConfigData = Record<string, CommandConfigEntry>;
 export const collectKeyedCommandConfigEntriesFromConfig = (
   rawEntries: Record<string, CommandConfigEntry>,
@@ -46,9 +49,11 @@ export const collectKeyedCommandConfigEntriesFromConfig = (
     key: entry[0],
     content: entry[1],
   }));
+
 export type CommandArguments = {
   event?: Event;
 };
+
 export type Command = {
   key: string;
   trigger?: () => boolean;
@@ -73,9 +78,7 @@ export class CommandService {
     const commandKey = command.key;
     if (this.commandRegistry.has(commandKey)) {
       this.applicationStore.logService.warn(
-        LogEvent.create(
-          APPLICATION_EVENT.APPLICATION_COMMAND_CENTER_REGISTRATION__FAILURE,
-        ),
+        LogEvent.create(APPLICATION_EVENT.COMMAND_CENTER_REGISTRATION__FAILURE),
         `Can't register command: command is already registered`,
       );
       return;

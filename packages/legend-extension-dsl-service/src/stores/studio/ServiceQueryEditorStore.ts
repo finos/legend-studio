@@ -30,7 +30,6 @@ import {
 import {
   type Service,
   type ServiceRegistrationResult,
-  GraphManagerState,
   PureExecution,
   ServiceExecutionMode,
 } from '@finos/legend-graph';
@@ -72,7 +71,7 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { parseServiceCoordinates } from './DSL_Service_LegendStudioRouter.js';
+import { parseServiceCoordinates } from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
 
 type ProjectServiceCoordinates = {
   projectId: string;
@@ -100,16 +99,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
   ) {
-    const graphManagerState = new GraphManagerState(
-      applicationStore.pluginManager,
-      applicationStore.logService,
-    );
-    super(
-      applicationStore,
-      sdlcServerClient,
-      depotServerClient,
-      graphManagerState,
-    );
+    super(applicationStore, sdlcServerClient, depotServerClient);
 
     makeObservable(this, {
       queryBuilderState: observable,

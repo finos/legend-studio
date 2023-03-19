@@ -175,12 +175,13 @@ const VariableExpressionEditor = observer(
                 onChange={changeType}
                 value={selectedType}
                 darkMode={
-                  !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
                 }
                 formatOptionLabel={getPackageableElementOptionFormatter({
                   darkMode:
                     !applicationStore.layoutService
-                      .TEMPORARY__isLightThemeEnabled,
+                      .TEMPORARY__isLightColorThemeEnabled,
                   graph: queryBuilderState.graphManagerState.graph,
                 })}
               />
@@ -204,7 +205,8 @@ const VariableExpressionEditor = observer(
                   )
                 }
                 darkMode={
-                  !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
                 }
               />
             </div>

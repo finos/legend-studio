@@ -84,7 +84,7 @@ import type { RelationalInstanceSetImplementation } from '../../../graph/metamod
 import type { RelationalPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';
 import type { RootRelationalInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
 import type { Store } from '../../../graph/metamodel/pure/packageableElements/store/Store.js';
-import type { DSL_Mapping_PureGraphManagerPlugin_Extension } from '../../DSL_Mapping_PureGraphManagerPlugin_Extension.js';
+import type { DSL_Mapping_PureGraphManagerPlugin_Extension } from '../../extensions/DSL_Mapping_PureGraphManagerPlugin_Extension.js';
 import {
   type ObserverContext,
   observe_Abstract_PackageableElement,

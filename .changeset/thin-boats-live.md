@@ -1,7 +1,6 @@
 ---
 '@finos/legend-application-pure-ide-deployment': patch
 '@finos/legend-application-taxonomy-deployment': patch
-'@finos/legend-extension-dsl-persistence-cloud': patch
 '@finos/legend-application-taxonomy-bootstrap': patch
 '@finos/legend-application-studio-deployment': patch
 '@finos/legend-extension-store-service-store': patch

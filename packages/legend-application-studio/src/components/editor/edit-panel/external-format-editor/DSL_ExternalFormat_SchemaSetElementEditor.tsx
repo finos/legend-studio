@@ -91,7 +91,6 @@ const SchemaLoader = observer(
             />
             <div>
               <input
-                id="upload-file"
                 type="file"
                 name="myFiles"
                 onChange={onChange}

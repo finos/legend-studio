@@ -17,7 +17,7 @@
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { PackageableElementReference } from '../../PackageableElementReference.js';
 import type { PackageableElement } from '../../PackageableElement.js';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSL_ExternalFormat_HashUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../Core_HashUtils.js';
 
 export class ModelUnit implements Hashable {
   packageableElementIncludes: PackageableElementReference<PackageableElement>[] =
@@ -27,7 +27,7 @@ export class ModelUnit implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      DSL_EXTERNAL_FORMAT_HASH_STRUCTURE.MODEL_UNIT,
+      CORE_HASH_STRUCTURE.MODEL_UNIT,
       hashArray(
         this.packageableElementIncludes.map(
           (element) => element.valueForSerialization ?? '',

@@ -18,7 +18,7 @@ import { action, makeObservable, flowResult, observable, flow } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -29,7 +29,7 @@ import {
 } from '@finos/legend-shared';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
-import { generateSetupRoute } from '../LegendStudioRouter.js';
+import { generateSetupRoute } from '../../application/LegendStudioNavigation.js';
 import type { Entity } from '@finos/legend-storage';
 import {
   type Revision,

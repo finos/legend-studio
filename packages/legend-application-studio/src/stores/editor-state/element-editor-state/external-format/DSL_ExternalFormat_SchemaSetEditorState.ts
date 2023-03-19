@@ -53,7 +53,7 @@ import type { Entity } from '@finos/legend-storage';
 import { type EntityChange, EntityChangeType } from '@finos/legend-server-sdlc';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../application/LegendStudioEvent.js';
 import {
   configurationProperty_addConfigurationProperty,
   configurationProperty_setValue,

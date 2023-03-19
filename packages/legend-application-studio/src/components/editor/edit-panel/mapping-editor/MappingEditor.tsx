@@ -68,7 +68,7 @@ import {
   useApplicationNavigationContext,
   useApplicationStore,
 } from '@finos/legend-application';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
 import type { MappingEditorTabState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTabManagerState.js';
 
 export const MappingEditorSplashScreen: React.FC = () => {

@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { LEGEND_QUERY_ROUTE_PATTERN } from '../stores/LegendQueryRouter.js';
+import { LEGEND_QUERY_ROUTE_PATTERN } from '../application/LegendQueryNavigation.js';
 import { QuerySetupLandingPage } from './QuerySetup.js';
 import {
   MappingQueryCreator,

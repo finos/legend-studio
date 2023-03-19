@@ -46,7 +46,7 @@ import {
   prettyCONSTName,
   uniqBy,
 } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from '../ApplicationEvent.js';
+import { APPLICATION_EVENT } from '../../application/LegendApplicationEvent.js';
 import { forceDispatchKeyboardEvent } from '../../components/LegendApplicationComponentFrameworkProvider.js';
 
 const LEGEND_XTERM_THEME: XTermTheme = {
@@ -269,7 +269,7 @@ export class XTerm extends Terminal {
           } else {
             this.applicationStore.logService.warn(
               LogEvent.create(
-                APPLICATION_EVENT.APPLICATION_TERMINAL_COMMAND_CONFIGURATION_CHECK__FAILURE,
+                APPLICATION_EVENT.TERMINAL_COMMAND_CONFIGURATION_CHECK__FAILURE,
               ),
               `Found multiple duplicated terminal commands '${command}'`,
             );
@@ -396,7 +396,7 @@ export class XTerm extends Terminal {
         } else {
           // for the rest, allow the keyboard event to be bubbled to
           // application keyboard shortcuts handler
-          forceDispatchKeyboardEvent(domEvent);
+          forceDispatchKeyboardEvent(domEvent, this.applicationStore);
         }
       },
     );

@@ -29,7 +29,7 @@ import { useContext, useEffect } from 'react';
 import {
   generateMappingQueryCreatorRoute,
   generateQuerySetupRoute,
-} from '../stores/LegendQueryRouter.js';
+} from '../application/LegendQueryNavigation.js';
 import {
   LATEST_VERSION_ALIAS,
   SNAPSHOT_VERSION_ALIAS,

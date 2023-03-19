@@ -33,7 +33,7 @@ import {
 } from 'serializr';
 import { ATOMIC_TEST_TYPE } from '../../../../../../../graph/MetaModelConst.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
-import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../Testable_PureProtocolProcessorPlugin_Extension.js';
+import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/Testable_PureProtocolProcessorPlugin_Extension.js';
 import { V1_MappingTest } from '../../../model/packageableElements/mapping/V1_MappingTest.js';
 import { V1_MappingTestSuite } from '../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
 import { V1_MultiExecutionServiceTestResult } from '../../../model/packageableElements/service/V1_MultiExecutionServiceTestResult.js';

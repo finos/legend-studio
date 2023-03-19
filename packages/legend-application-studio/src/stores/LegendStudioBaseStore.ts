@@ -28,7 +28,7 @@ import {
   type ApplicationStore,
   ActionAlertActionType,
   ActionAlertType,
-  ApplicationTelemetry,
+  LegendApplicationTelemetryHelper,
   matchPath,
   APPLICATION_EVENT,
 } from '@finos/legend-application';
@@ -41,12 +41,12 @@ import {
   observable,
 } from 'mobx';
 import { User, SDLCServerClient } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../application/LegendStudioEvent.js';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
-import { LegendStudioEventService } from './LegendStudioEventService.js';
-import { LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN } from './LegendStudioRouter.js';
+import { LegendStudioEventHelper } from '../application/LegendStudioEventHelper.js';
+import { LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN } from '../application/LegendStudioNavigation.js';
 
 export type LegendStudioApplicationStore = ApplicationStore<
   LegendStudioApplicationConfig,
@@ -125,9 +125,7 @@ export class LegendStudioBaseStore {
       } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.logService.error(
-          LogEvent.create(
-            APPLICATION_EVENT.APPLICATION_IDENTITY_AUTO_FETCH__FAILURE,
-          ),
+          LogEvent.create(APPLICATION_EVENT.IDENTITY_AUTO_FETCH__FAILURE),
           error,
         );
         this.applicationStore.notificationService.notifyWarning(error.message);
@@ -150,23 +148,21 @@ export class LegendStudioBaseStore {
       } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.logService.error(
-          LogEvent.create(
-            APPLICATION_EVENT.APPLICATION_IDENTITY_AUTO_FETCH__FAILURE,
-          ),
+          LogEvent.create(APPLICATION_EVENT.IDENTITY_AUTO_FETCH__FAILURE),
           error,
         );
         this.applicationStore.notificationService.notifyWarning(error.message);
       }
     }
 
-    ApplicationTelemetry.logEvent_ApplicationInitializationSucceeded(
+    LegendApplicationTelemetryHelper.logEvent_ApplicationInitializationSucceeded(
       this.applicationStore.telemetryService,
       this.applicationStore,
     );
 
-    LegendStudioEventService.create(
+    LegendStudioEventHelper.notify_ApplicationLoadSucceeded(
       this.applicationStore.eventService,
-    ).notify_ApplicationLoaded();
+    );
 
     this.initState.complete();
   }

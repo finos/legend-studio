@@ -29,8 +29,7 @@ import {
 import {
   LEGEND_STUDIO_ROUTE_PATTERN,
   LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN,
-} from '../stores/LegendStudioRouter.js';
-import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
+} from '../application/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
@@ -39,7 +38,6 @@ import {
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
 } from './LegendStudioBaseStoreProvider.js';
-import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   generateExtensionUrlPattern,
   LegendApplicationComponentFrameworkProvider,
@@ -48,7 +46,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../stores/LegendStudioDocumentation.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../application/LegendStudioDocumentation.js';
 
 const LegendStudioNotFoundRouteScreen = observer(() => {
   const applicationStore = useApplicationStore();
@@ -212,12 +210,8 @@ export const LegendStudioApplicationRoot = observer(() => {
 });
 
 export const LegendStudioApplication = observer(
-  (props: {
-    config: LegendStudioApplicationConfig;
-    pluginManager: LegendStudioPluginManager;
-  }) => {
-    const { config, pluginManager } = props;
-    const applicationStore = useApplicationStore();
+  (props: { config: LegendStudioApplicationConfig }) => {
+    const { config } = props;
 
     return (
       <SDLCServerClientProvider
@@ -232,16 +226,11 @@ export const LegendStudioApplication = observer(
             serverUrl: config.depotServerUrl,
           }}
         >
-          <GraphManagerStateProvider
-            pluginManager={pluginManager}
-            logService={applicationStore.logService}
-          >
-            <LegendStudioBaseStoreProvider>
-              <LegendApplicationComponentFrameworkProvider>
-                <LegendStudioApplicationRoot />
-              </LegendApplicationComponentFrameworkProvider>
-            </LegendStudioBaseStoreProvider>
-          </GraphManagerStateProvider>
+          <LegendStudioBaseStoreProvider>
+            <LegendApplicationComponentFrameworkProvider>
+              <LegendStudioApplicationRoot />
+            </LegendApplicationComponentFrameworkProvider>
+          </LegendStudioBaseStoreProvider>
         </DepotServerClientProvider>
       </SDLCServerClientProvider>
     );

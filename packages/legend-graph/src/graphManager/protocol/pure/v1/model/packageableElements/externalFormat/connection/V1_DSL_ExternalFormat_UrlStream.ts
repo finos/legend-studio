@@ -15,12 +15,12 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../../../../graph/DSL_ExternalFormat_HashUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../graph/Core_HashUtils.js';
 
 export class V1_UrlStream implements Hashable {
   url = '';
 
   get hashCode(): string {
-    return hashArray([DSL_EXTERNAL_FORMAT_HASH_STRUCTURE.URL_STREAM, this.url]);
+    return hashArray([CORE_HASH_STRUCTURE.URL_STREAM, this.url]);
   }
 }

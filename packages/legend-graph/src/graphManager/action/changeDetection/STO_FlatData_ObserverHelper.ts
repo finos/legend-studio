@@ -30,12 +30,6 @@ import {
 import type { FlatDataProperty } from '../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatDataProperty.js';
 import type { FlatDataSection } from '../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatDataSection.js';
 import type { RootFlatDataRecordTypeReference } from '../../../graph/metamodel/pure/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference.js';
-import type {
-  EmbeddedFlatDataPropertyMapping,
-  FlatDataInputData,
-  FlatDataPropertyMapping,
-  FlatDataSectionReference,
-} from '../../../STO_FlatData_Exports.js';
 import {
   observe_Abstract_PackageableElement,
   observe_PackageableElementReference,
@@ -48,6 +42,10 @@ import {
 } from './DSL_Mapping_ObserverHelper.js';
 import { observe_RawLambda } from './RawValueSpecificationObserver.js';
 import type { FlatDataAssociationPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
+import type { EmbeddedFlatDataPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
+import type { FlatDataPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping.js';
+import type { FlatDataInputData } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
+import type { FlatDataSectionReference } from '../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatDataSectionReference.js';
 
 // ------------------------------------- Store -------------------------------------
 

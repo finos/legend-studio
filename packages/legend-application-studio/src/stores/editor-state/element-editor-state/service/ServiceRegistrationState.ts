@@ -31,7 +31,7 @@ import {
   URL_SEPARATOR,
   filterByType,
 } from '@finos/legend-shared';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../application/LegendStudioEvent.js';
 import { Version } from '@finos/legend-server-sdlc';
 import {
   type Service,

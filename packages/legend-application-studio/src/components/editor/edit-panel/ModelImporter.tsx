@@ -45,7 +45,7 @@ import {
   TextInputEditor,
 } from '@finos/legend-application';
 import type { ModelImporterExtensionConfiguration } from '../../../stores/LegendStudioApplicationPlugin.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../application/LegendStudioApplicationNavigationContext.js';
 import { SCHEMA_SET_TAB_TYPE } from '../../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
 import { SchemaSetModelGenerationEditor } from './external-format-editor/DSL_ExternalFormat_SchemaSetModelGenerationEditor.js';
 import { SchemaSetGeneralEditor } from './external-format-editor/DSL_ExternalFormat_SchemaSetElementEditor.js';

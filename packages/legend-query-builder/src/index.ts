@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+// application
+export * from './application/QueryBuilderTelemetryHelper.js';
+export * from './application/QueryBuilderEvent.js';
+
 export * from './stores/QueryBuilderBootstraper.js';
 export { QueryBuilder_GraphManagerPreset } from './graphManager/QueryBuilder_GraphManagerPreset.js';
 
@@ -23,10 +27,8 @@ export {
   QueryBuilder_LegendApplicationPlugin,
 } from './components/QueryBuilder_LegendApplicationPlugin.js';
 export { QueryBuilderNavigationBlocker } from './components/QueryBuilderNavigationBlocker.js';
-export {
-  QueryBuilder,
-  QUERY_BUILDER_BACKDROP_CONTAINER_ID,
-} from './components/QueryBuilder.js';
+export { QueryBuilder } from './components/QueryBuilder.js';
+export { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './components/QueryBuilderComponentElement.js';
 export { QueryBuilderState } from './stores/QueryBuilderState.js';
 
 export { QueryBuilderPropertySearchState } from './stores/explorer/QueryBuilderPropertySearchState.js';
@@ -49,8 +51,6 @@ export * from './stores/ServiceInfo.js';
 export * from './components/ServiceQuerySetupUtils.js';
 export * from './components/QuerySetupUtils.js';
 export * from './components/QueryBuilderTextEditor.js';
-export * from './stores/QueryBuilderTelemetry.js';
-export * from './stores/QueryBuilderEvent.js';
 
 export { TEST__setUpQueryBuilder } from './components/QueryBuilderComponentTestUtils.js';
 

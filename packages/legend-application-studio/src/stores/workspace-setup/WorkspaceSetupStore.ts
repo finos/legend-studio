@@ -15,7 +15,7 @@
  */
 
 import { observable, action, flowResult, makeObservable, flow } from 'mobx';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -24,7 +24,7 @@ import {
   ActionState,
   IllegalStateError,
 } from '@finos/legend-shared';
-import { generateSetupRoute } from '../LegendStudioRouter.js';
+import { generateSetupRoute } from '../../application/LegendStudioNavigation.js';
 import {
   type SDLCServerClient,
   WorkspaceType,

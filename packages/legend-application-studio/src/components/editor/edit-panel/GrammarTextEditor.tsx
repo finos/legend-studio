@@ -73,7 +73,7 @@ import {
   PURE_PARSER,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../stores/EditorStore.js';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../stores/LegendStudioDocumentation.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../application/LegendStudioDocumentation.js';
 import {
   BLANK_CLASS_SNIPPET,
   CLASS_WITH_CONSTRAINT_SNIPPET,
@@ -104,12 +104,12 @@ import {
   MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
   POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET,
   createConnectionSnippetWithPostProcessorSuggestionSnippet,
-} from '../../../stores/LegendStudioCodeSnippets.js';
+} from '../../../stores/Core_CodeSnippets.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../application/LegendStudioApplicationNavigationContext.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
-import { LEGEND_STUDIO_SETTINGS_KEY } from '../../../stores/LegendStudioStorage.js';
+import { LEGEND_STUDIO_SETTING_KEY } from '../../../application/LegendStudioSetting.js';
 import { GraphEditGrammarModeState } from '../../../stores/GraphEditGrammarModeState.js';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
@@ -704,8 +704,8 @@ export const GrammarTextEditor = observer(() => {
 
   const toggleWordWrap = (): void => {
     grammarTextEditorState.setWrapText(!grammarTextEditorState.wrapText);
-    editorStore.applicationStore.storageService.settingsStore.persist(
-      LEGEND_STUDIO_SETTINGS_KEY.EDITOR_WRAP_TEXT,
+    editorStore.applicationStore.settingService.persistValue(
+      LEGEND_STUDIO_SETTING_KEY.EDITOR_WRAP_TEXT,
       grammarTextEditorState.wrapText,
     );
   };

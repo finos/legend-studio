@@ -137,7 +137,7 @@ import { RelationalInputData } from '../../../../../../../graph/metamodel/pure/p
 import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
-import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { InstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
 import type { SubstituteStore } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/SubstituteStore.js';
 import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_BindingTransformer.js';

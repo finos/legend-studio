@@ -15,12 +15,19 @@
  */
 
 import type { History } from 'history';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  getQueryParameterValue,
+  getQueryParameters,
+  guaranteeNonNullable,
+  sanitizeURL,
+} from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import type {
   Address,
   Location,
   ApplicationNavigator,
+  AddressParameterKey,
+  AddressParameterValue,
 } from './NavigationService.js';
 
 export class WebApplicationNavigator implements ApplicationNavigator {
@@ -134,6 +141,23 @@ export class WebApplicationNavigator implements ApplicationNavigator {
 
   getCurrentLocation(): Location {
     return this.historyAPI.location.pathname;
+  }
+
+  getAddressParameters<
+    T extends Record<AddressParameterKey, AddressParameterValue>,
+  >(): T {
+    const result: Record<AddressParameterKey, AddressParameterValue> = {};
+    const parameters = getQueryParameters<
+      Record<AddressParameterKey, AddressParameterValue>
+    >(sanitizeURL(this.getCurrentAddress()), true);
+    Object.keys(parameters).forEach((key) => {
+      result[key] = getQueryParameterValue(key, parameters);
+    });
+    return result as T;
+  }
+
+  getAddressParameterValue(key: AddressParameterKey): AddressParameterValue {
+    return this.getAddressParameters()[key];
   }
 
   generateAddress(location: Location): string {

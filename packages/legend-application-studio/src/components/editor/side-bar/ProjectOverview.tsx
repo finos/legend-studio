@@ -44,7 +44,7 @@ import {
   generateViewProjectRoute,
   generateViewVersionRoute,
   generateReviewRoute,
-} from '../../../stores/LegendStudioRouter.js';
+} from '../../../application/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import {
   type Workspace,

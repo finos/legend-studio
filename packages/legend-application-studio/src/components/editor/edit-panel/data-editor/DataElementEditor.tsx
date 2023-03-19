@@ -77,7 +77,7 @@ import {
   useApplicationNavigationContext,
   useApplicationStore,
 } from '@finos/legend-application';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
 
 export const ExternalFormatDataEditor = observer(
   (props: {

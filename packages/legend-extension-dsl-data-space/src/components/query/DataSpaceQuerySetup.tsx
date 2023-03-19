@@ -144,7 +144,8 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
                 placeholder="Search for data space..."
                 escapeClearsValue={true}
                 darkMode={
-                  !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
                 }
                 formatOptionLabel={formatDataSpaceOptionLabel}
               />

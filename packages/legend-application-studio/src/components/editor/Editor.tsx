@@ -31,7 +31,7 @@ import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel.js';
 import { GrammarTextEditor } from './edit-panel/GrammarTextEditor.js';
 import { StatusBar } from './StatusBar.js';
 import { ActivityBar } from './ActivityBar.js';
-import type { WorkspaceEditorPathParams } from '../../stores/LegendStudioRouter.js';
+import type { WorkspaceEditorPathParams } from '../../application/LegendStudioNavigation.js';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -46,7 +46,7 @@ import {
 } from '@finos/legend-application';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { WorkspaceSyncConflictResolver } from './side-bar/WorkspaceSyncConflictResolver.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/LegendStudioApplicationNavigationContext.js';
 import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
 import { GRAPH_EDITOR_MODE } from '../../stores/EditorConfig.js';
 

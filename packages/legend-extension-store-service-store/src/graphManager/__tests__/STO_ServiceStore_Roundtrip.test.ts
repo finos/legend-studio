@@ -22,14 +22,14 @@ import { STO_ServiceStore_GraphManagerPreset } from '../../STO_ServiceStore_Exte
 import {
   TEST__GraphManagerPluginManager,
   TEST__checkBuildingElementsRoundtrip,
-  DSL_ExternalFormat_GraphPreset,
+  Core_GraphManagerPreset,
 } from '@finos/legend-graph';
 
 const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager
   .usePresets([
+    new Core_GraphManagerPreset(),
     new STO_ServiceStore_GraphManagerPreset(),
-    new DSL_ExternalFormat_GraphPreset(),
   ])
   .install();
 

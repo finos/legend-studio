@@ -16,7 +16,7 @@
 
 import {
   type QueryBuilderState,
-  QUERY_BUILDER_BACKDROP_CONTAINER_ID,
+  QUERY_BUILDER_COMPONENT_ELEMENT_ID,
 } from '@finos/legend-query-builder';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { flow, flowResult, makeObservable, observable } from 'mobx';
@@ -103,7 +103,7 @@ export class EmbeddedQueryBuilderState {
         this.queryBuilderState = config.setupQueryBuilderState();
         this.actionConfigs = config.actionConfigs;
         this.editorStore.applicationStore.layoutService.setBackdropContainerElementID(
-          QUERY_BUILDER_BACKDROP_CONTAINER_ID,
+          QUERY_BUILDER_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER,
         );
       }
     } else {

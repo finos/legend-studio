@@ -23,11 +23,12 @@ import {
   type LegendApplicationConfigurationInput,
   BrowserRouter,
   WebApplicationNavigatorProvider,
+  Core_LegendApplicationPlugin,
 } from '@finos/legend-application';
 import { LegendQueryApplication } from '../components/LegendQueryApplication.js';
 import { LegendQueryPluginManager } from './LegendQueryPluginManager.js';
 import { getRootElement } from '@finos/legend-art';
-import { Core_PureGraphManagerPlugin } from '@finos/legend-graph';
+import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import {
   type LegendQueryApplicationConfigurationData,
   LegendQueryApplicationConfig,
@@ -49,9 +50,12 @@ export class LegendQuery extends LegendApplication {
 
   static create(): LegendQuery {
     const application = new LegendQuery(LegendQueryPluginManager.create());
-    application.withBasePresets([new QueryBuilder_GraphManagerPreset()]);
+    application.withBasePresets([
+      new Core_GraphManagerPreset(),
+      new QueryBuilder_GraphManagerPreset(),
+    ]);
     application.withBasePlugins([
-      new Core_PureGraphManagerPlugin(),
+      new Core_LegendApplicationPlugin(),
       new Core_LegendQueryApplicationPlugin(),
       new QueryBuilder_LegendApplicationPlugin(),
     ]);

@@ -18,9 +18,9 @@ export * from './utils/ComponentUtils.js';
 export * from './utils/PanelDisplayState.js';
 export * from './utils/TextEditorUtils.js';
 
-export * from './components/CJS__Fuse.cjs';
+export * from './components/FuzzySearch.js';
 
-export * from './components/CJS__Icon.cjs';
+export * from './components/Icon.js';
 export * from './components/TypeIcon.js';
 export * from './components/LoadingIcon.js';
 export * from './components/Input.js';

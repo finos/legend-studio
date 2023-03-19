@@ -272,7 +272,8 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 placeholder="Search for data space..."
                 escapeClearsValue={true}
                 darkMode={
-                  !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
                 }
                 formatOptionLabel={formatDataSpaceOptionLabel}
               />
@@ -316,7 +317,8 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 onChange={onExecutionContextOptionChange}
                 value={selectedExecutionContextOption}
                 darkMode={
-                  !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
                 }
               />
             </div>
@@ -337,13 +339,13 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                   value={selectedRuntimeOption}
                   darkMode={
                     !applicationStore.layoutService
-                      .TEMPORARY__isLightThemeEnabled
+                      .TEMPORARY__isLightColorThemeEnabled
                   }
                   filterOption={runtimeFilterOption}
                   formatOptionLabel={getRuntimeOptionFormatter({
                     darkMode:
                       !applicationStore.layoutService
-                        .TEMPORARY__isLightThemeEnabled,
+                        .TEMPORARY__isLightColorThemeEnabled,
                     pureModel: queryBuilderState.graphManagerState.graph,
                   })}
                 />

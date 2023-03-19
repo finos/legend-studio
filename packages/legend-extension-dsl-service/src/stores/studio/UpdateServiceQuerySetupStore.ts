@@ -48,7 +48,7 @@ import {
 import {
   generateServiceQueryUpdaterSetupRoute,
   parseServiceCoordinates,
-} from './DSL_Service_LegendStudioRouter.js';
+} from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
 import { CORE_PURE_PATH } from '@finos/legend-graph';
 import { type Entity, generateGAVCoordinates } from '@finos/legend-storage';
 import {

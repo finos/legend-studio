@@ -67,7 +67,7 @@ import {
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
   V1_MiddleTierUsernamePasswordAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
-import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../../STO_Relational_PureProtocolProcessorPlugin_Extension.js';
+import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 
 export const V1_buildDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,

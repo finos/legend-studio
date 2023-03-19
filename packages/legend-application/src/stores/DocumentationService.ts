@@ -29,7 +29,7 @@ import {
   optional,
   primitive,
 } from 'serializr';
-import { APPLICATION_EVENT } from './ApplicationEvent.js';
+import { APPLICATION_EVENT } from '../application/LegendApplicationEvent.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 
 export type DocumentationRegistryEntry = {
@@ -56,10 +56,10 @@ export type DocumentationRegistryEntry = {
 };
 
 export type DocumentationRegistryData = {
-  entries: Record<string, DocumentationConfigEntry>;
+  entries: Record<string, DocumentationEntryData>;
 };
 
-export type DocumentationConfigEntry = {
+export type DocumentationEntryData = {
   markdownText?: MarkdownText | undefined;
   title?: string | undefined;
   text?: string | undefined;
@@ -100,13 +100,13 @@ export class DocumentationEntry {
   }
 }
 
-export interface KeyedDocumentationEntry {
+export type KeyedDocumentationEntry = {
   key: string;
   content: DocumentationEntry;
-}
+};
 
-export const collectKeyedDocumnetationEntriesFromConfig = (
-  rawEntries: Record<string, DocumentationConfigEntry>,
+export const collectKeyedDocumentationEntriesFromConfig = (
+  rawEntries: Record<string, DocumentationEntryData>,
 ): KeyedDocumentationEntry[] =>
   Object.entries(rawEntries).map((entry) => ({
     key: entry[0],
@@ -118,7 +118,7 @@ export type ContextualDocumentationEntry = {
   context: string;
   documentationKey: string;
 };
-export const collectContextualDocumnetationEntries = (
+export const collectContextualDocumentationEntries = (
   config: ContextualDocumentationConfig,
 ): ContextualDocumentationEntry[] =>
   Object.entries(config).map((entry) => ({
@@ -156,9 +156,7 @@ export class DocumentationService {
         // accidentally overide entries from core.
         if (this.hasDocEntry(entry.key)) {
           applicationStore.logService.warn(
-            LogEvent.create(
-              APPLICATION_EVENT.APPLICATION_DOCUMENTATION_LOAD__SKIP,
-            ),
+            LogEvent.create(APPLICATION_EVENT.DOCUMENTATION_LOAD__SKIP),
             entry.key,
           );
         } else {
@@ -192,7 +190,7 @@ export class DocumentationService {
     if (missingDocumentationEntries.length) {
       applicationStore.logService.warn(
         LogEvent.create(
-          APPLICATION_EVENT.APPLICATION_DOCUMENTATION_REQUIREMENT_CHECK__FAILURE,
+          APPLICATION_EVENT.DOCUMENTATION_REQUIREMENT_CHECK__FAILURE,
         ),
         `Can't find corresponding documentation entry for keys:\n${missingDocumentationEntries
           .map((key) => `- ${key}`)
@@ -211,7 +209,7 @@ export class DocumentationService {
       if (this.hasContextualDocEntry(entry.context)) {
         applicationStore.logService.warn(
           LogEvent.create(
-            APPLICATION_EVENT.APPLICATION_CONTEXTUAL_DOCUMENTATION_LOAD__SKIP,
+            APPLICATION_EVENT.CONTEXTUAL_DOCUMENTATION_LOAD__SKIP,
           ),
           entry.context,
         );
@@ -252,8 +250,8 @@ export class DocumentationService {
     return Array.from(this.docRegistry.values());
   }
 
-  publishDocRegistry(): Record<string, DocumentationConfigEntry> {
-    const result: Record<string, DocumentationConfigEntry> = {};
+  publishDocRegistry(): Record<string, DocumentationEntryData> {
+    const result: Record<string, DocumentationEntryData> = {};
     this.docRegistry.forEach((value, key) => {
       result[key] = DocumentationEntry.serialization.toJson(value);
     });

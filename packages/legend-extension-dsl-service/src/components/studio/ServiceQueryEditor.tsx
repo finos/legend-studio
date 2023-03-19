@@ -46,10 +46,10 @@ import {
 import {
   type ProjectServiceQueryUpdaterPathParams,
   type ServiceQueryUpdaterPathParams,
-  DSL_SERVICE_PATH_PARAM_TOKEN,
+  DSL_SERVICE_ROUTE_PATTERN_TOKEN,
   generateServiceQueryUpdaterRoute,
   generateProjectServiceQueryUpdaterRoute,
-} from '../../stores/studio/DSL_Service_LegendStudioRouter.js';
+} from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
 import {
   ProjectServiceQueryUpdaterStoreProvider,
   ServiceQueryUpdaterStoreProvider,
@@ -530,9 +530,9 @@ export const ServiceQueryEditor = observer(() => {
 export const ServiceQueryUpdater = observer(() => {
   const params = useParams<ServiceQueryUpdaterPathParams>();
   const serviceCoordinates =
-    params[DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES];
+    params[DSL_SERVICE_ROUTE_PATTERN_TOKEN.SERVICE_COORDINATES];
   const groupWorkspaceId =
-    params[DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID];
+    params[DSL_SERVICE_ROUTE_PATTERN_TOKEN.GROUP_WORKSPACE_ID];
 
   return (
     <ServiceQueryUpdaterStoreProvider
@@ -546,10 +546,10 @@ export const ServiceQueryUpdater = observer(() => {
 
 export const ProjectServiceQueryUpdater = observer(() => {
   const params = useParams<ProjectServiceQueryUpdaterPathParams>();
-  const projectId = params[DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID];
+  const projectId = params[DSL_SERVICE_ROUTE_PATTERN_TOKEN.PROJECT_ID];
   const groupWorkspaceId =
-    params[DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID];
-  const servicePath = params[DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH];
+    params[DSL_SERVICE_ROUTE_PATTERN_TOKEN.GROUP_WORKSPACE_ID];
+  const servicePath = params[DSL_SERVICE_ROUTE_PATTERN_TOKEN.SERVICE_PATH];
 
   return (
     <ProjectServiceQueryUpdaterStoreProvider

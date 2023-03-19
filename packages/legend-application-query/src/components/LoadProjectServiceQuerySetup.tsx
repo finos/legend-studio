@@ -19,7 +19,7 @@ import { guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useContext, useEffect } from 'react';
-import { generateQuerySetupRoute } from '../stores/LegendQueryRouter.js';
+import { generateQuerySetupRoute } from '../application/LegendQueryNavigation.js';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
 import { LoadProjectServiceQuerySetupStore } from '../stores/LoadProjectServiceQuerySetupStore.js';

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ChevronDownIcon, ChevronRightIcon } from './CJS__Icon.cjs';
+import { ChevronDownIcon, ChevronRightIcon } from './Icon.js';
 import { isNonNullable, type PlainObject } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 

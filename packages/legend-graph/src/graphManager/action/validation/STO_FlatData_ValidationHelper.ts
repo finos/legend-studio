@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { FlatDataInputData } from '../../../STO_FlatData_Exports.js';
 import { isStubbed_PackageableElement } from '../../../graph/helpers/creator/DomainModelCreatorHelper.js';
+import type { FlatDataInputData } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
 import {
   type ValidationIssue,
   createValidationError,

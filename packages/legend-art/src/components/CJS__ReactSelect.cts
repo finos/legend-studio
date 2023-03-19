@@ -24,12 +24,15 @@
  *
  * @workaround ESM
  * See https://github.com/microsoft/TypeScript/issues/49298
+ *
+ * In addition to that, due to our upgrade to Typescript 5.0, we are forced to enable
+ * --verbatimModuleSyntax flag, so we have to use CommonJS syntax in this file
+ * See https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/#verbatimmodulesyntax
  */
-export { default as CreatableSelect, type Props } from 'react-select/creatable';
-export {
-  default as Select,
-  createFilter,
-  type InputActionMeta,
-  components as baseComponents,
-  type InputProps,
-} from 'react-select';
+import CreatableSelect = require('react-select/creatable');
+import Select = require('react-select');
+
+export = {
+  CreatableSelect,
+  Select,
+};

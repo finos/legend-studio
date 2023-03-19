@@ -26,8 +26,9 @@ import {
   WebApplicationNavigatorProvider,
   type LegendApplicationConfigurationInput,
   BrowserRouter,
+  Core_LegendApplicationPlugin,
 } from '@finos/legend-application';
-import { Core_PureGraphManagerPlugin } from '@finos/legend-graph';
+import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import { getRootElement } from '@finos/legend-art';
 import {
   type LegendStudioApplicationConfigurationData,
@@ -54,12 +55,15 @@ export class LegendStudio extends LegendApplication {
 
   static create(): LegendStudio {
     const application = new LegendStudio(LegendStudioPluginManager.create());
+    application.withBasePresets([
+      new Core_GraphManagerPreset(),
+      new QueryBuilder_GraphManagerPreset(),
+    ]);
     application.withBasePlugins([
-      new Core_PureGraphManagerPlugin(),
+      new Core_LegendApplicationPlugin(),
       new Core_LegendStudioApplicationPlugin(),
       new QueryBuilder_LegendApplicationPlugin(),
     ]);
-    application.withBasePresets([new QueryBuilder_GraphManagerPreset()]);
     return application;
   }
 
@@ -85,10 +89,7 @@ export class LegendStudio extends LegendApplication {
             config={this.config}
             pluginManager={this.pluginManager}
           >
-            <LegendStudioApplication
-              config={this.config}
-              pluginManager={this.pluginManager}
-            />
+            <LegendStudioApplication config={this.config} />
           </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,

@@ -23,6 +23,7 @@ import {
   WebApplicationNavigatorProvider,
   BrowserRouter,
   ApplicationStoreProvider,
+  Core_LegendApplicationPlugin,
 } from '@finos/legend-application';
 import { getRootElement } from '@finos/legend-art';
 import {
@@ -40,7 +41,10 @@ export class LegendPureIDE extends LegendApplication {
 
   static create(): LegendPureIDE {
     const application = new LegendPureIDE(LegendPureIDEPluginManager.create());
-    application.withBasePlugins([new Core_LegendPureIDEApplicationPlugin()]);
+    application.withBasePlugins([
+      new Core_LegendApplicationPlugin(),
+      new Core_LegendPureIDEApplicationPlugin(),
+    ]);
     application.withBasePresets([new DSL_Diagram_GraphManagerPreset()]);
     return application;
   }

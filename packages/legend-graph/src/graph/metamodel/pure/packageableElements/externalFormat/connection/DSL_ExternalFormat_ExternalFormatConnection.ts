@@ -22,7 +22,7 @@ import {
   type ConnectionVisitor,
 } from '../../connection/Connection.js';
 import type { PackageableElementReference } from '../../PackageableElementReference.js';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSL_ExternalFormat_HashUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../Core_HashUtils.js';
 
 export class ExternalFormatConnection extends Connection implements Hashable {
   declare store: PackageableElementReference<Binding>;
@@ -30,7 +30,7 @@ export class ExternalFormatConnection extends Connection implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      DSL_EXTERNAL_FORMAT_HASH_STRUCTURE.EXTERNAL_FORMAT_CONNECTION,
+      CORE_HASH_STRUCTURE.EXTERNAL_FORMAT_CONNECTION,
       this.store.valueForSerialization ?? '',
       this.externalSource,
     ]);

@@ -16,7 +16,7 @@
 
 import { BaseRadioGroup, InfoCircleIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '../../stores/LegendApplicationDocumentation.js';
+import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '../../application/LegendApplicationDocumentation.js';
 import {
   ADVANCED_TEXT_SEARCH_MODE,
   type TextSearchAdvancedConfigState,

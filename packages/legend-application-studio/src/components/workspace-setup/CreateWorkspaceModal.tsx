@@ -32,7 +32,7 @@ import {
   useApplicationStore,
   DocumentationLink,
 } from '@finos/legend-application';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/LegendStudioDocumentation.js';
 import { useWorkspaceSetupStore } from './WorkspaceSetup.js';
 
 export const CreateWorkspaceModal = observer(

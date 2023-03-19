@@ -38,7 +38,7 @@ import {
 import {
   generateSetupRoute,
   type WorkspaceEditorPathParams,
-} from '../../stores/LegendStudioRouter.js';
+} from '../../application/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';

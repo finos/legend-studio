@@ -40,7 +40,7 @@ import { UpdateProjectServiceQuerySetupStore } from '../../stores/studio/UpdateP
 import {
   type ProjectServiceQueryUpdaterSetupPathParams,
   generateProjectServiceQueryUpdaterRoute,
-} from '../../stores/studio/DSL_Service_LegendStudioRouter.js';
+} from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import {
   compareLabelFn,

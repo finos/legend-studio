@@ -79,12 +79,12 @@ import {
   ProjectDependencyTreeNodeData,
   type ProjectDependencyEditorState,
 } from '../../../../stores/editor-state/project-configuration-editor-state/ProjectDependencyEditorState.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../../stores/LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../application/LegendStudioEvent.js';
 import {
   generateViewProjectByGAVRoute,
   generateViewProjectRoute,
   generateViewVersionRoute,
-} from '../../../../stores/LegendStudioRouter.js';
+} from '../../../../application/LegendStudioNavigation.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 

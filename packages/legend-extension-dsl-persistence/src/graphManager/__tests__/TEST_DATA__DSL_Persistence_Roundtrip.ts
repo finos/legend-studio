@@ -599,3 +599,348 @@ export const TEST_DATA__roundtrip_case2 = [
     },
   },
 ];
+
+export const TEST_DATA__cloud__roundtrip = [
+  {
+    path: 'org::dxl::Zoo',
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Zoo',
+      package: 'org::dxl',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'zookeeper',
+          type: 'org::dxl::Person',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'owner',
+          type: 'org::dxl::Person',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'admin',
+          type: 'org::dxl::Person',
+        },
+        {
+          multiplicity: {
+            lowerBound: 0,
+          },
+          name: 'animals',
+          type: 'org::dxl::Animal',
+        },
+      ],
+    },
+  },
+  {
+    path: 'org::dxl::Person',
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'org::dxl',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'effectiveDateFrom',
+          type: 'DateTime',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'effectiveDateThru',
+          type: 'DateTime',
+        },
+      ],
+    },
+  },
+  {
+    path: 'org::dxl::Animal',
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Animal',
+      package: 'org::dxl',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+          type: 'String',
+        },
+      ],
+    },
+  },
+  {
+    path: 'org::dxl::ZooBinding',
+    classifierPath: 'meta::external::shared::format::binding::Binding',
+    content: {
+      _type: 'binding',
+      contentType: 'application/json',
+      includedStores: [],
+      modelUnit: {
+        packageableElementExcludes: [],
+        packageableElementIncludes: ['org::dxl::Person'],
+      },
+      name: 'ZooBinding',
+      package: 'org::dxl',
+      schemaSet: undefined,
+    },
+  },
+  {
+    classifierPath: 'meta::relational::metamodel::Database',
+    path: 'org::dxl::ZooDb',
+    content: {
+      _type: 'relational',
+      filters: [],
+      includedStores: [],
+      joins: [],
+      name: 'ZooDb',
+      package: 'org::dxl',
+      schemas: [],
+    },
+  },
+  {
+    path: 'org::dxl::Mapping',
+    classifierPath: 'meta::pure::mapping::Mapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'Mapping',
+      package: 'org::dxl',
+      tests: [],
+    },
+  },
+  {
+    path: 'org::dxl::ZooService',
+    classifierPath: 'meta::legend::service::metamodel::Service',
+    content: {
+      _type: 'service',
+      autoActivateUpdates: true,
+      documentation: 'test',
+      execution: {
+        _type: 'pureSingleExecution',
+        func: {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'property',
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'src',
+                },
+              ],
+              property: 'name',
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              class: 'org::dxl::Zoo',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              name: 'src',
+            },
+          ],
+        },
+        mapping: 'org::dxl::Mapping',
+        runtime: {
+          _type: 'engineRuntime',
+          connections: [],
+          mappings: [
+            {
+              path: 'org::dxl::Mapping',
+              type: 'MAPPING',
+            },
+          ],
+        },
+      },
+      name: 'ZooService',
+      owners: [],
+      package: 'org::dxl',
+      pattern: 'test',
+      test: {
+        _type: 'singleExecutionTest',
+        asserts: [],
+        data: 'test',
+      },
+    },
+  },
+  {
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+    path: 'org::dxl::ZooDbConnection',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'h2Default',
+        },
+        databaseType: 'H2',
+        datasourceSpecification: {
+          _type: 'h2Local',
+        },
+        element: 'org::dxl::ZooDb',
+        type: 'H2',
+      },
+      name: 'ZooDbConnection',
+      package: 'org::dxl',
+    },
+  },
+  {
+    path: 'org::dxl::ZooPersistence',
+    classifierPath: 'meta::pure::persistence::metamodel::Persistence',
+    content: {
+      _type: 'persistence',
+      documentation: 'A persistence specification for Zoos.',
+      name: 'ZooPersistence',
+      notifier: {
+        notifyees: [
+          {
+            _type: 'emailNotifyee',
+            address: 'abc@xyz.com',
+          },
+          {
+            _type: 'pagerDutyNotifyee',
+            url: 'https://xyz.com',
+          },
+        ],
+      },
+      package: 'org::dxl',
+      persister: {
+        _type: 'batchPersister',
+        ingestMode: {
+          _type: 'bitemporalSnapshot',
+          transactionMilestoning: {
+            _type: 'batchIdAndDateTimeTransactionMilestoning',
+            batchIdInName: 'batchIdIn',
+            batchIdOutName: 'batchIdOut',
+            dateTimeInName: 'IN_Z',
+            dateTimeOutName: 'OUT_Z',
+            derivation: {
+              _type: 'sourceSpecifiesInAndOutDateTime',
+              sourceDateTimeInField: 'systemIn',
+              sourceDateTimeOutField: 'systemOut',
+            },
+          },
+          validityMilestoning: {
+            _type: 'dateTimeValidityMilestoning',
+            dateTimeFromName: 'FROM_Z',
+            dateTimeThruName: 'THRU_Z',
+            derivation: {
+              _type: 'sourceSpecifiesFromAndThruDateTime',
+              sourceDateTimeFromField: 'effectiveFrom',
+              sourceDateTimeThruField: 'effectiveThru',
+            },
+          },
+        },
+        sink: {
+          _type: 'objectStorageSink',
+          binding: 'org::dxl::ZooBinding',
+        },
+        targetShape: {
+          _type: 'multiFlatTarget',
+          modelClass: 'org::dxl::Zoo',
+          parts: [
+            {
+              deduplicationStrategy: {
+                _type: 'noDeduplicationStrategy',
+              },
+              modelProperty: 'zookeeper',
+              partitionFields: [],
+              targetName: 'PersonDataset1',
+            },
+            {
+              deduplicationStrategy: {
+                _type: 'maxVersionDeduplicationStrategy',
+                versionField: 'version',
+              },
+              modelProperty: 'admin',
+              partitionFields: [],
+              targetName: 'PersonDataset2',
+            },
+            {
+              deduplicationStrategy: {
+                _type: 'duplicateCountDeduplicationStrategy',
+                duplicateCountName: 'DUP_COUNT',
+              },
+              modelProperty: 'owner',
+              partitionFields: [],
+              targetName: 'PersonDataset3',
+            },
+          ],
+          transactionScope: 'ALL_TARGETS',
+        },
+      },
+      service: 'org::dxl::ZooService',
+      trigger: {
+        _type: 'manualTrigger',
+      },
+    },
+  },
+  {
+    path: 'org::dxl::ZooPersistenceContext',
+    classifierPath: 'meta::pure::persistence::metamodel::PersistenceContext',
+    content: {
+      _type: 'persistenceContext',
+      name: 'ZooPersistenceContext',
+      package: 'org::dxl',
+      persistence: 'org::dxl::ZooPersistence',
+      platform: {
+        _type: 'awsGlue',
+        dataProcessingUnits: 10,
+      },
+      sinkConnection: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'h2Default',
+        },
+        databaseType: 'H2',
+        datasourceSpecification: {
+          _type: 'h2Local',
+        },
+        element: 'org::dxl::ZooDb',
+        type: 'H2',
+      },
+    },
+  },
+];

@@ -63,7 +63,7 @@ import {
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { FileCoordinate } from '../../../server/models/File.js';
-import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../../../stores/LegendPureIDECommand.js';
+import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../../../application/LegendPureIDECommand.js';
 import { GoToLinePrompt } from './GenericFileEditor.js';
 
 const IDENTIFIER_PATTERN = /^\w[\w$]*$/;
@@ -545,6 +545,7 @@ export const PureFileEditor = observer(
       // this causes a problem with the UI, so we just can disable the item until an official API
       // is supported and we can removed this hack
       // See https://github.com/microsoft/monaco-editor/issues/1567
+      // See https://github.com/microsoft/monaco-editor/issues/1280
       if (isContextMenuOpen) {
         const contextMenuNode = document.querySelector(
           '.file-editor .monaco-menu',
@@ -561,6 +562,8 @@ export const PureFileEditor = observer(
             )
             .forEach((element) => {
               const menuItem = element.parentElement?.parentElement;
+              // NOTE: we must not remove this item since vscode would
+              // still keep it in memory and calculate context menu height wrong
               if (menuItem) {
                 menuItem.classList.add('disabled');
                 menuItem.style.opacity = '0.3';

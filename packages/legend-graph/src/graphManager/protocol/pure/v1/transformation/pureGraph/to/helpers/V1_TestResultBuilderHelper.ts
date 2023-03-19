@@ -46,7 +46,7 @@ import {
   V1_TestError,
 } from '../../../../model/test/result/V1_TestResult.js';
 import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
-import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../../Testable_PureProtocolProcessorPlugin_Extension.js';
+import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/Testable_PureProtocolProcessorPlugin_Extension.js';
 
 const buildTestSuite = (
   testable: Testable,

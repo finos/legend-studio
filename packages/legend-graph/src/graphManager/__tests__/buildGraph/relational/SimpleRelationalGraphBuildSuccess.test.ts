@@ -38,12 +38,12 @@ import {
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 import { RelationalPropertyMapping } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';
 import { TEST_DATA__SemiStructuredRelationalTypeRoundtrip } from './TEST_DATA__SemiStructuredRelationalTypeRoundtrip.js';
-import { DSL_ExternalFormat_GraphPreset } from '../../../../DSL_ExternalFormat_Extension.js';
 import {
   getSchema,
   getTable,
 } from '../../../../graph/helpers/STO_Relational_Helper.js';
 import { PrimitiveType } from '../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import { Core_GraphManagerPreset } from '../../../../Core_GraphManagerPreset.js';
 
 let graphManagerState: GraphManagerState;
 
@@ -135,7 +135,7 @@ test(unitTest('Relational Mapping is loaded properly'), () => {
 });
 
 const pluginManager = new TEST__GraphManagerPluginManager();
-pluginManager.usePresets([new DSL_ExternalFormat_GraphPreset()]).install();
+pluginManager.usePresets([new Core_GraphManagerPreset()]).install();
 
 test(unitTest('SemiStructured relational type roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(

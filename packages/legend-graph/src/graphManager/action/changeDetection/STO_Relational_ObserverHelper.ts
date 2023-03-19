@@ -38,6 +38,11 @@ import {
   StaticDatasourceSpecification,
   SpannerDatasourceSpecification,
 } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
+import {
+  type Mapper,
+  SchemaNameMapper,
+  TableNameMapper,
+} from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/Mapper.js';
 import { MapperPostProcessor } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/MapperPostProcessor.js';
 import type { PostProcessor } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/PostProcessor.js';
 import type {
@@ -104,12 +109,7 @@ import {
 } from '../../../graph/metamodel/pure/packageableElements/store/relational/model/TableReference.js';
 import type { View } from '../../../graph/metamodel/pure/packageableElements/store/relational/model/View.js';
 import { ViewReference } from '../../../graph/metamodel/pure/packageableElements/store/relational/model/ViewReference.js';
-import {
-  type Mapper,
-  SchemaNameMapper,
-  TableNameMapper,
-} from '../../../STO_Relational_Exports.js';
-import type { STO_Relational_PureGraphManagerPlugin_Extension } from '../../STO_Relational_PureGraphManagerPlugin_Extension.js';
+import type { STO_Relational_PureGraphManagerPlugin_Extension } from '../../extensions/STO_Relational_PureGraphManagerPlugin_Extension.js';
 import {
   type ObserverContext,
   observe_Abstract_PackageableElement,

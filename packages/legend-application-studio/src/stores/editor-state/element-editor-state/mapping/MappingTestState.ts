@@ -97,7 +97,7 @@ import {
 } from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
 import {
   LambdaEditorState,
-  QueryBuilderTelemetry,
+  QueryBuilderTelemetryHelper,
   QUERY_BUILDER_EVENT,
 } from '@finos/legend-query-builder';
 import { MappingEditorTabState } from './MappingTabManagerState.js';
@@ -808,7 +808,7 @@ export class MappingTestState extends MappingEditorTabState {
       );
 
       if (debug) {
-        QueryBuilderTelemetry.logEvent_ExecutionPlanDebugLaunched(
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugLaunched(
           this.editorStore.applicationStore.telemetryService,
         );
         const debugResult =
@@ -822,7 +822,7 @@ export class MappingTestState extends MappingEditorTabState {
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
       } else {
-        QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationLaunched(
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanGenerationLaunched(
           this.editorStore.applicationStore.telemetryService,
         );
         rawPlan =
@@ -856,12 +856,12 @@ export class MappingTestState extends MappingEditorTabState {
           report.timings,
         );
       if (debug) {
-        QueryBuilderTelemetry.logEvent_ExecutionPlanDebugSucceeded(
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugSucceeded(
           this.editorStore.applicationStore.telemetryService,
           report,
         );
       } else {
-        QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationSucceeded(
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanGenerationSucceeded(
           this.editorStore.applicationStore.telemetryService,
           report,
         );

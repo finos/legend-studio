@@ -33,7 +33,7 @@ import {
   WELCOME_FILE_PATH,
 } from './EditorConfig.js';
 import type { EditorStore } from './EditorStore.js';
-import { LEGEND_PURE_IDE_TERMINAL_COMMAND } from './LegendPureIDECommand.js';
+import { LEGEND_PURE_IDE_TERMINAL_COMMAND } from '../application/LegendPureIDECommand.js';
 
 const PACKAGE_PATH_PATTERN = /^(?:(?:\w[\w$]*)::)*\w[\w$]*$/;
 const FILE_PATH_PATTERN = /^\/?(?:\w+\/)*\w+(?:\.\w+)*$/;

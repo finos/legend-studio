@@ -47,7 +47,7 @@ import {
   Workspace,
   WorkspaceAccessType,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../application/LegendStudioEvent.js';
 
 export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number =>
   extractEntityNameFromPath(a.newPath ?? a.oldPath ?? '').localeCompare(

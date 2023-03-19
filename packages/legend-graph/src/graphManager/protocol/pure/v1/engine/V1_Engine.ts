@@ -101,7 +101,7 @@ import type {
 } from './compilation/V1_CompilationResult.js';
 import { V1_CompilationWarning } from './compilation/V1_CompilationWarning.js';
 import { V1_GenerateSchemaInput } from './externalFormat/V1_GenerateSchemaInput.js';
-import type { GraphManagerOperationReport } from '../../../../GraphManagerMetrics.js';
+import type { GraphManagerOperationReport } from '../../../../GraphManagerStatistics.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;

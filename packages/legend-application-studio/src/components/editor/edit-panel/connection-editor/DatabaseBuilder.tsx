@@ -55,7 +55,7 @@ import {
   renderColumnTypeIcon,
 } from './DatabaseEditorHelper.js';
 import { flowResult } from 'mobx';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
 
 const getNodeIcon = (node: DatabaseBuilderTreeNodeData): React.ReactNode => {
   if (node instanceof SchemaDatabaseBuilderTreeNodeData) {

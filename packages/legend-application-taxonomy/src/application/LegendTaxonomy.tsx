@@ -23,11 +23,12 @@ import {
   WebApplicationNavigatorProvider,
   type LegendApplicationConfigurationInput,
   BrowserRouter,
+  Core_LegendApplicationPlugin,
 } from '@finos/legend-application';
 import { LegendTaxonomyApplication } from '../components/LegendTaxonomyApplication.js';
 import { LegendTaxonomyPluginManager } from './LegendTaxonomyPluginManager.js';
 import { getRootElement } from '@finos/legend-art';
-import { Core_PureGraphManagerPlugin } from '@finos/legend-graph';
+import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import {
   type LegendTaxonomyApplicationConfigurationData,
   LegendTaxonomyApplicationConfig,
@@ -46,8 +47,9 @@ export class LegendTaxonomy extends LegendApplication {
     const application = new LegendTaxonomy(
       LegendTaxonomyPluginManager.create(),
     );
+    application.withBasePresets([new Core_GraphManagerPreset()]);
     application.withBasePlugins([
-      new Core_PureGraphManagerPlugin(),
+      new Core_LegendApplicationPlugin(),
       new Core_LegendTaxonomyApplicationPlugin(),
     ]);
     return application;

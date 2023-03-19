@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { TEST__provideMockedGraphManagerState } from '@finos/legend-graph';
 import { TEST__provideMockedApplicationStore } from '@finos/legend-application';
 import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
 import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager.js';
@@ -31,7 +30,6 @@ export const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
       TEST__getLegendStudioApplicationConfig(),
       pluginManager,
     ),
-    graphManagerState: TEST__provideMockedGraphManagerState({ pluginManager }),
     pluginManager,
   });
 };

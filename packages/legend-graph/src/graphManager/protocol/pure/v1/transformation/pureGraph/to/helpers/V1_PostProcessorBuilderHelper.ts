@@ -30,7 +30,7 @@ import {
   TableNameMapper,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/Mapper.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
-import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../../STO_Relational_PureProtocolProcessorPlugin_Extension.js';
+import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 
 const buildSchemaNameMapper = (schema: V1_SchemaNameMapper): SchemaNameMapper =>
   new SchemaNameMapper(schema.from, schema.to);

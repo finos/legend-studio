@@ -161,7 +161,7 @@ const TDSColumnSelectorEditor = observer(
           onChange={onChange}
           value={value}
           darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
         />
         <button
@@ -271,7 +271,8 @@ const QueryBuilderWindowColumnModalEditor = observer(
             'query-builder__olap__modal',
             {
               'query-editor--light':
-                applicationStore.layoutService.TEMPORARY__isLightThemeEnabled,
+                applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled,
             },
           ])}
         >
@@ -318,7 +319,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
                           }}
                           darkMode={
                             !applicationStore.layoutService
-                              .TEMPORARY__isLightThemeEnabled
+                              .TEMPORARY__isLightColorThemeEnabled
                           }
                         />
                       </div>
@@ -434,7 +435,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
                         }}
                         darkMode={
                           !applicationStore.layoutService
-                            .TEMPORARY__isLightThemeEnabled
+                            .TEMPORARY__isLightColorThemeEnabled
                         }
                       />
                     </div>
@@ -645,7 +646,7 @@ const TDSColumnReferenceEditor = observer(
                   value={value}
                   darkMode={
                     !applicationStore.layoutService
-                      .TEMPORARY__isLightThemeEnabled
+                      .TEMPORARY__isLightColorThemeEnabled
                   }
                 />
               </div>

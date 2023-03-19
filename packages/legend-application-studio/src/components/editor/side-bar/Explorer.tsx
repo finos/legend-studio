@@ -79,7 +79,7 @@ import { FileSystemTree } from '../edit-panel/element-generation-editor/FileSyst
 import {
   generateViewEntityRoute,
   generateViewProjectByGAVRoute,
-} from '../../../stores/LegendStudioRouter.js';
+} from '../../../application/LegendStudioNavigation.js';
 import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,

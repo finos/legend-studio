@@ -20,7 +20,7 @@ import {
   LegendQueryApplicationPlugin,
 } from '@finos/legend-application-query';
 import { ArrowCircleUpIcon } from '@finos/legend-art';
-import { generateQueryProductionizerRoute } from '../../stores/studio/DSL_Service_LegendStudioRouter.js';
+import { generateQueryProductionizerRoute } from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
 import { ProjectData } from '@finos/legend-server-depot';
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import { buildUrl } from '@finos/legend-shared';

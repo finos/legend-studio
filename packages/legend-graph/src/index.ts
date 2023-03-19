@@ -23,8 +23,6 @@ export * from './graph/metamodel/pure/packageableElements/PackageableElementRefe
 export * from './graph/metamodel/pure/packageableElements/mapping/SetImplementationReference.js';
 export { SectionIndex } from './graph/metamodel/pure/packageableElements/section/SectionIndex.js';
 
-export { createExplicitRelationReference } from './graph/metamodel/pure/packageableElements/store/relational/model/RelationReference.js';
-
 export { Multiplicity } from './graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 export { Type } from './graph/metamodel/pure/packageableElements/domain/Type.js';
 export { DataType } from './graph/metamodel/pure/packageableElements/domain/DataType.js';
@@ -71,28 +69,7 @@ export {
   TagReference,
   TagExplicitReference,
 } from './graph/metamodel/pure/packageableElements/domain/TagReference.js';
-export {
-  RuntimePointer,
-  StoreConnections,
-} from './graph/metamodel/pure/packageableElements/runtime/Runtime.js';
-// relational packageable elements
-export { Database } from './graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
-// metamodel external formats
-export { Binding } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
-export { ModelUnit } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
-export { SchemaSet } from './graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
-export { Schema as ExternalFormatSchema } from './graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_Schema.js';
-export { ExternalFormatConnection } from './graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_ExternalFormatConnection.js';
-export { UrlStream } from './graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_UrlStream.js';
-export { DSL_ExternalFormat_GraphPreset } from './DSL_ExternalFormat_Extension.js';
-export { BindingTransformer } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_BindingTransformer.js';
-export * from './graphManager/DSL_ExternalFormat_PureGraphManagerPlugin.js';
-// V1 protocols
-export * from './graphManager/protocol/pure/v1/model/packageableElements/V1_PackageableElement.js';
-export { V1_StereotypePtr } from './graphManager/protocol/pure/v1/model/packageableElements/domain/V1_StereotypePtr.js';
-export { V1_TaggedValue } from './graphManager/protocol/pure/v1/model/packageableElements/domain/V1_TaggedValue.js';
-export { V1_PropertyPointer } from './graphManager/protocol/pure/v1/model/packageableElements/domain/V1_PropertyPointer.js';
-export { V1_SectionIndex } from './graphManager/protocol/pure/v1/model/packageableElements/section/V1_SectionIndex.js';
+
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 
 // metamodels
@@ -143,13 +120,11 @@ export { V1_ExternalFormatModelGenerationInput } from './graphManager/protocol/p
 export { V1_ExecuteInput } from './graphManager/protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
 export { V1_buildExecutionResult } from './graphManager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';
 export { V1_serializeExecutionResult } from './graphManager/protocol/pure/v1/engine/execution/V1_ExecutionResult.js';
+
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
 export * from './graph/metamodel/pure/executionPlan/ExecutionPlan.js';
 export { ExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/ExecutionNode.js';
-export { SQLExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/SQLExecutionNode.js';
-export { SQLResultColumn } from './graph/metamodel/pure/executionPlan/nodes/SQLResultColumn.js';
-export { RelationalTDSInstantiationExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/RelationalInstantiationExecutionNode.js';
 export { ResultType } from './graph/metamodel/pure/executionPlan/result/ResultType.js';
 export { TDSResultType } from './graph/metamodel/pure/executionPlan/result/TDSResultType.js';
 
@@ -193,24 +168,21 @@ export * from './graph/PureGraphPlugin.js';
 // --------------------------------------------- GRAPH MANAGER --------------------------------------------------
 
 export { type GraphManagerPluginManager } from './graphManager/GraphManagerPluginManager.js';
-export { Core_PureGraphManagerPlugin } from './graphManager/Core_PureGraphManagerPlugin.js';
+export { Core_GraphManagerPreset } from './Core_GraphManagerPreset.js';
+export { Core_PureGraphManagerPlugin } from './graphManager/extensions/Core_PureGraphManagerPlugin.js';
 export {
   BasicGraphManagerState,
   GraphManagerState,
 } from './graphManager/GraphManagerState.js';
-export * from './graphManager/GraphManagerStateProvider.js';
 export * from './graphManager/GraphManagerTestUtils.js';
 export {
   AbstractPureGraphManagerExtension,
   AbstractPureGraphManager,
   type GraphBuilderOptions,
 } from './graphManager/AbstractPureGraphManager.js';
-export * from './graphManager/GraphManagerMetrics.js';
+export * from './graphManager/GraphManagerStatistics.js';
 export * from './graphManager/GraphManagerUtils.js';
 export * from './graphManager/GraphManagerEvent.js';
-export * from './graphManager/DSL_Mapping_PureGraphManagerPlugin_Extension.js';
-export * from './graphManager/DSL_Generation_PureGraphManagerPlugin_Extension.js';
-export * from './graphManager/Testable_PureGraphManagerPlugin_Extension.js';
 export {
   ExecutionResult,
   TDSExecutionResult as TDSExecutionResult,
@@ -240,7 +212,6 @@ export {
 export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graphManager/action/SourceInformation.js';
 export * from './graphManager/protocol/pure/PureProtocolProcessorPlugin.js';
-export * from './graphManager/protocol/pure/Testable_PureProtocolProcessorPlugin_Extension.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
 
@@ -310,6 +281,7 @@ export * from './graphManager/protocol/pure/v1/transformation/pureProtocol/seria
 // --------------------------------------------- TESTING --------------------------------------------------
 
 export * from './graph/metamodel/pure/test/Testable.js';
+export * from './graphManager/protocol/pure/extensions/Testable_PureProtocolProcessorPlugin_Extension.js';
 export * from './graph/metamodel/pure/test/result/RunTestsTestableInput.js';
 export * from './graph/metamodel/pure/test/result/TestResult.js';
 export * from './graph/metamodel/pure/test/assertion/status/AssertionStatus.js';
@@ -326,6 +298,7 @@ export * from './graphManager/protocol/pure/v1/model/test/V1_AtomicTest.js';
 export * from './graphManager/protocol/pure/v1/model/test/assertion/V1_EqualToJson.js';
 export * from './graphManager/protocol/pure/v1/model/test/assertion/V1_TestAssertion.js';
 export * from './graphManager/protocol/pure/v1/model/test/assertion/status/V1_AssertionStatus.js';
+export * from './graphManager/extensions/Testable_PureGraphManagerPlugin_Extension.js';
 
 // --------------------------------------------- VALIDATION --------------------------------------------------
 
@@ -351,12 +324,169 @@ export * from './graphManager/action/changeDetection/Testable_ObserverHelper.js'
 
 export * from './graphManager/action/changeDetection/EngineObserverHelper.js';
 
-// --------------------------------------------- DSL --------------------------------------------------
+// ------------------------------------- DSL Data --------------------------------------------
 
-export * from './DSL_Mapping_Exports.js';
-export * from './DSL_Generation_Exports.js';
-export * from './DSL_Data_Exports.js';
+export { DataElement } from './graph/metamodel/pure/packageableElements/data/DataElement.js';
+export { V1_DataElement } from './graphManager/protocol/pure/v1/model/packageableElements/data/V1_DataElement.js';
+export {
+  EmbeddedData,
+  ModelStoreData,
+  DataElementReference,
+  ExternalFormatData,
+  type EmbeddedDataVisitor,
+} from './graph/metamodel/pure/data/EmbeddedData.js';
+export {
+  V1_EmbeddedData,
+  V1_ExternalFormatData,
+  type V1_EmbeddedDataVisitor,
+} from './graphManager/protocol/pure/v1/model/data/V1_EmbeddedData.js';
+export * from './graphManager/protocol/pure/extensions/DSL_Data_PureProtocolProcessorPlugin_Extension.js';
+export * from './graphManager/extensions/DSL_Data_PureGraphManagerPlugin_Extension.js';
+export { V1_buildEmbeddedData } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_DataElementBuilderHelper.js';
+export {
+  observe_ExternalFormatData,
+  observe_EmbeddedData,
+  observe_RelationalDataTable,
+  observe_DataElement,
+} from './graphManager/action/changeDetection/DSL_Data_ObserverHelper.js';
+export { V1_transformExternalFormatData } from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';
+export { V1_externalFormatDataModelSchema } from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper.js';
 
+// --------------------------------------------- DSL External Format --------------------------------------------------
+
+export { Binding } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
+export { ModelUnit } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
+export { SchemaSet } from './graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
+export { Schema as ExternalFormatSchema } from './graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_Schema.js';
+export { ExternalFormatConnection } from './graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_ExternalFormatConnection.js';
+export { UrlStream } from './graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_UrlStream.js';
+export { BindingTransformer } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_BindingTransformer.js';
+export * from './graphManager/extensions/DSL_ExternalFormat_PureGraphManagerPlugin.js';
+// V1 protocols
+export * from './graphManager/protocol/pure/v1/model/packageableElements/V1_PackageableElement.js';
+export { V1_StereotypePtr } from './graphManager/protocol/pure/v1/model/packageableElements/domain/V1_StereotypePtr.js';
+export { V1_TaggedValue } from './graphManager/protocol/pure/v1/model/packageableElements/domain/V1_TaggedValue.js';
+export { V1_PropertyPointer } from './graphManager/protocol/pure/v1/model/packageableElements/domain/V1_PropertyPointer.js';
+export { V1_SectionIndex } from './graphManager/protocol/pure/v1/model/packageableElements/section/V1_SectionIndex.js';
+
+// ------------------------------------- DSL Generation --------------------------------------------
+
+export * from './graphManager/extensions/DSL_Generation_PureGraphManagerPlugin_Extension.js';
+
+// metamodels
+export { ModelGenerationSpecification } from './graph/metamodel/pure/packageableElements/generationSpecification/ModelGenerationSpecification.js';
+export {
+  GenerationSpecification,
+  GenerationTreeNode,
+} from './graph/metamodel/pure/packageableElements/generationSpecification/GenerationSpecification.js';
+export { FileGenerationSpecification } from './graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
+export { ConfigurationProperty } from './graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
+
+// protocols
+export * from './graphManager/protocol/pure/extensions/DSL_Generation_PureProtocolProcessorPlugin_Extension.js';
+export { V1_ModelGenerationSpecification } from './graphManager/protocol/pure/v1/model/packageableElements/generationSpecification/V1_ModelGenerationSpecification.js';
+
+export { V1_GenerationInput } from './graphManager/protocol/pure/v1/engine/generation/V1_GenerationInput.js';
+export { V1_GenerationOutput } from './graphManager/protocol/pure/v1/engine/generation/V1_GenerationOutput.js';
+
+// ------------------------------------- DSL Mapping --------------------------------------------
+
+export * from './graphManager/extensions/DSL_Mapping_PureGraphManagerPlugin_Extension.js';
+
+// metamodels
+export { Store } from './graph/metamodel/pure/packageableElements/store/Store.js';
+export { Mapping } from './graph/metamodel/pure/packageableElements/mapping/Mapping.js';
+export {
+  Runtime,
+  EngineRuntime,
+  RuntimePointer,
+  IdentifiedConnection,
+  StoreConnections,
+} from './graph/metamodel/pure/packageableElements/runtime/Runtime.js';
+export { PackageableRuntime } from './graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
+export { PureInstanceSetImplementation } from './graph/metamodel/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation.js';
+export {
+  OperationSetImplementation,
+  OperationType,
+} from './graph/metamodel/pure/packageableElements/mapping/OperationSetImplementation.js';
+export { PropertyMapping } from './graph/metamodel/pure/packageableElements/mapping/PropertyMapping.js';
+export * from './graph/metamodel/pure/packageableElements/connection/Connection.js';
+export { PackageableConnection } from './graph/metamodel/pure/packageableElements/connection/PackageableConnection.js';
+export { ModelStore } from './graph/metamodel/pure/packageableElements/store/modelToModel/model/ModelStore.js';
+export { PureModelConnection } from './graph/metamodel/pure/packageableElements/store/modelToModel/connection/PureModelConnection.js';
+export { JsonModelConnection } from './graph/metamodel/pure/packageableElements/store/modelToModel/connection/JsonModelConnection.js';
+export { ModelChainConnection } from './graph/metamodel/pure/packageableElements/store/modelToModel/connection/ModelChainConnection.js';
+export { XmlModelConnection } from './graph/metamodel/pure/packageableElements/store/modelToModel/connection/XmlModelConnection.js';
+export * from './graph/metamodel/pure/packageableElements/mapping/SetImplementation.js';
+export * from './graph/metamodel/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation.js';
+export { PurePropertyMapping } from './graph/metamodel/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping.js';
+export { InstanceSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
+export { EnumerationMapping } from './graph/metamodel/pure/packageableElements/mapping/EnumerationMapping.js';
+export * from './graph/metamodel/pure/packageableElements/mapping/EnumValueMapping.js';
+export { AssociationImplementation } from './graph/metamodel/pure/packageableElements/mapping/AssociationImplementation.js';
+export { SetImplementationContainer } from './graph/metamodel/pure/packageableElements/mapping/SetImplementationContainer.js';
+export { AggregationAwareSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation.js';
+export * from './graph/metamodel/pure/packageableElements/mapping/InferableMappingElementId.js';
+export * from './graph/metamodel/pure/packageableElements/mapping/InferableMappingElementRoot.js';
+export { SetImplementationExplicitReference } from './graph/metamodel/pure/packageableElements/mapping/SetImplementationReference.js';
+export * from './graph/metamodel/pure/packageableElements/mapping/EnumerationMappingReference.js';
+export { DEPRECATED__MappingTest } from './graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
+export { MappingTest } from './graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
+export { MappingTestSuite } from './graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
+export { InputData } from './graph/metamodel/pure/packageableElements/mapping/InputData.js';
+export { MappingTestAssert } from './graph/metamodel/pure/packageableElements/mapping/MappingTestAssert.js';
+export { ExpectedOutputMappingTestAssert } from './graph/metamodel/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert.js';
+export {
+  ObjectInputData,
+  ObjectInputType,
+} from './graph/metamodel/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
+export { type EmbeddedSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/EmbeddedSetImplementation.js';
+
+export {
+  type RawMappingModelCoverageAnalysisResult,
+  MappingModelCoverageAnalysisResult,
+  MappedEntity,
+  MappedProperty,
+  EntityMappedProperty,
+  EnumMappedProperty,
+} from './graphManager/action/analytics/MappingModelCoverageAnalysis.js';
+
+// protocols
+export {
+  V1_Connection,
+  type V1_ConnectionVisitor,
+} from './graphManager/protocol/pure/v1/model/packageableElements/connection/V1_Connection.js';
+export { V1_ConnectionPointer } from './graphManager/protocol/pure/v1/model/packageableElements/connection/V1_ConnectionPointer.js';
+export { V1_Mapping } from './graphManager/protocol/pure/v1/model/packageableElements/mapping/V1_Mapping.js';
+export { V1_PackageableRuntime } from './graphManager/protocol/pure/v1/model/packageableElements/runtime/V1_PackageableRuntime.js';
+export { V1_Store } from './graphManager/protocol/pure/v1/model/packageableElements/store/V1_Store.js';
+export {
+  V1_EngineRuntime,
+  V1_LegacyRuntime,
+  V1_Runtime,
+  V1_IdentifiedConnection,
+  V1_StoreConnections,
+  V1_RuntimePointer,
+} from './graphManager/protocol/pure/v1/model/packageableElements/runtime/V1_Runtime.js';
+export {
+  V1_ClassMapping,
+  type V1_ClassMappingVisitor,
+} from './graphManager/protocol/pure/v1/model/packageableElements/mapping/V1_ClassMapping.js';
+export * from './graphManager/protocol/pure/extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
+export { V1_MAPPING_ELEMENT_PROTOCOL_TYPE } from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_MappingSerializationHelper.js';
+export {
+  V1_runtimePointerModelSchema,
+  V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
+} from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
+export { MappingInclude } from './graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
+export { V1_buildConnection } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ConnectionBuilderHelper.js';
+export {
+  V1_deserializeConnectionValue,
+  V1_serializeConnectionValue,
+} from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper.js';
+export { V1_buildEngineRuntime } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper.js';
+
+// ------------------------------------- TO BE MODULARIZED --------------------------------------------
 /**
  * @modularize
  * See https://github.com/finos/legend-studio/issues/65

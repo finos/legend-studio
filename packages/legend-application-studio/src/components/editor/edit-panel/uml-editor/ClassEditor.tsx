@@ -131,7 +131,7 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '../../../../stores/shared/ModelClassifierUtils.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 
 type ClassPropertyDragSource = {

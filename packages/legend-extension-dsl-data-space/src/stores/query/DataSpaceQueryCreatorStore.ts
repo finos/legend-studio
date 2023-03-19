@@ -44,7 +44,7 @@ import {
 import { getDataSpace } from '../../graphManager/DSL_DataSpace_GraphManagerHelper.js';
 import { DataSpaceQueryBuilderState } from './DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from './DataSpaceInfo.js';
-import { generateDataSpaceQueryCreatorRoute } from './DSL_DataSpace_LegendQueryRouter.js';
+import { generateDataSpaceQueryCreatorRoute } from '../../application/query/DSL_DataSpace_LegendQueryNavigation.js';
 import type { DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';

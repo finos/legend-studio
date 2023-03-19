@@ -105,7 +105,7 @@ import {
   rawVariableExpression_setName,
   rawVariableExpression_setType,
 } from '../../../stores/shared/modifier/RawValueSpecificationGraphModifierHelper.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../application/LegendStudioApplicationNavigationContext.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 import type { EditorStore } from '../../../stores/EditorStore.js';
 import { graph_renameElement } from '../../../stores/shared/modifier/GraphModifierHelper.js';

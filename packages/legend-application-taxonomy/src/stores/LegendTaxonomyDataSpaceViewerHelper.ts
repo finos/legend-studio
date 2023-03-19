@@ -23,7 +23,7 @@ import type { LegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStore.j
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
-} from './LegendTaxonomyRouter.js';
+} from '../application/LegendTaxonomyNavigation.js';
 
 export const createViewProjectHandler =
   (applicationStore: LegendTaxonomyApplicationStore) =>

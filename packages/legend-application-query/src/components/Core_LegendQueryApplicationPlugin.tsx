@@ -37,7 +37,7 @@ import {
   generateQueryProductionizerSetupRoute,
   generateUpdateExistingServiceQuerySetup,
   LEGEND_QUERY_ROUTE_PATTERN,
-} from '../stores/LegendQueryRouter.js';
+} from '../application/LegendQueryNavigation.js';
 import type { ApplicationPageEntry } from '@finos/legend-application';
 import { CloneQueryServiceSetup } from './CloneQueryServiceSetup.js';
 import { QueryProductionizerSetup } from './QueryProductionizerSetup.js';

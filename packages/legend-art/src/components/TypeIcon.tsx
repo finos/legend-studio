@@ -30,7 +30,7 @@ import {
   ShapeLineIcon,
   TableIcon,
   TabulatedDataFileIcon,
-} from './CJS__Icon.cjs';
+} from './Icon.js';
 
 export const PURE_PrimitiveTypeIcon: React.FC = () => (
   <div className="icon icon--primitive color--primitive">p</div>

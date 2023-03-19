@@ -16,11 +16,14 @@
 
 import {
   collectKeyedCommandConfigEntriesFromConfig,
+  collectSettingConfigurationEntriesFromConfig,
   LegendApplicationPlugin,
+  type SettingConfigurationEntry,
   type KeyedCommandConfigEntry,
   type LegendApplicationPluginManager,
 } from '@finos/legend-application';
 import packageJson from '../../package.json';
+import { QUERY_BUILDER_SETTING_CONFIG } from '../application/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMMAND_CONFIG } from '../stores/QueryBuilderCommand.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 
@@ -44,6 +47,12 @@ export class QueryBuilder_LegendApplicationPlugin extends LegendApplicationPlugi
   override getExtraKeyedCommandConfigEntries(): KeyedCommandConfigEntry[] {
     return collectKeyedCommandConfigEntriesFromConfig(
       QUERY_BUILDER_COMMAND_CONFIG,
+    );
+  }
+
+  override getExtraSettingConfigurationEntries(): SettingConfigurationEntry[] {
+    return collectSettingConfigurationEntriesFromConfig(
+      QUERY_BUILDER_SETTING_CONFIG,
     );
   }
 

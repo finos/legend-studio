@@ -53,7 +53,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { validate_ServicePattern } from '@finos/legend-graph';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
 import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
 import { flowResult } from 'mobx';
 
@@ -400,7 +400,7 @@ const ServiceGeneralEditor = observer(() => {
                     disabled={isReadOnly}
                     darkMode={
                       !applicationStore.layoutService
-                        .TEMPORARY__isLightThemeEnabled
+                        .TEMPORARY__isLightColorThemeEnabled
                     }
                     onInputChange={onSearchTextChange}
                     onChange={onUserOptionChange}

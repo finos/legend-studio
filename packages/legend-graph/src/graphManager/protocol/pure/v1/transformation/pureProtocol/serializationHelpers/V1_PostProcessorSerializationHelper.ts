@@ -36,7 +36,7 @@ import {
 } from '@finos/legend-shared';
 import { V1_MapperPostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_MapperPostProcessor.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
-import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../STO_Relational_PureProtocolProcessorPlugin_Extension.js';
+import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 
 enum V1_MapperType {
   TABLE = 'table',

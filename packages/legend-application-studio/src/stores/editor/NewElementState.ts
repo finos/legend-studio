@@ -338,7 +338,7 @@ export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDri
 
 export class NewPackageableConnectionDriver extends NewElementDriver<PackageableConnection> {
   store: Store;
-  newConnectionValueDriver: NewConnectionValueDriver<Connection>;
+  newConnectionValueDriver: NewConnectionValueDriver<Connection> | undefined;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
@@ -356,7 +356,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
   }
 
   geDriverConnectionType(): string {
-    return this.newConnectionValueDriver.getConnectionType();
+    return this.newConnectionValueDriver?.getConnectionType() ?? '';
   }
 
   changeConnectionState(val: string): void {
@@ -391,9 +391,11 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
             return;
           }
         }
-        throw new UnsupportedOperationError(
-          `Can't create new connection driver for type: no compatible creator available from plugins`,
-          val,
+        this.editorStore.applicationStore.notificationService.notifyError(
+          new UnsupportedOperationError(
+            `Can't create new connection driver for type: no compatible creator available from plugins`,
+            val,
+          ),
         );
       }
     }
@@ -401,11 +403,13 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
 
   getNewConnectionValueDriverBasedOnStore(
     store: Store,
-  ): NewConnectionValueDriver<Connection> {
+  ): NewConnectionValueDriver<Connection> | undefined {
     if (store instanceof ModelStore) {
       return new NewPureModelConnectionDriver(this.editorStore);
     } else if (store instanceof FlatData) {
       return new NewFlatDataConnectionDriver(this.editorStore);
+    } else if (store instanceof Database) {
+      return new NewRelationalDatabaseConnectionDriver(this.editorStore);
     }
     const extraNewConnectionDriverCreators = this.editorStore.pluginManager
       .getApplicationPlugins()
@@ -421,29 +425,37 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
         return driver;
       }
     }
-    throw new UnsupportedOperationError(
-      `Can't create new connection driver for store: no compatible creator available from plugins`,
-      store,
+    this.editorStore.applicationStore.notificationService.notifyError(
+      new UnsupportedOperationError(
+        `Can't create new connection driver for store: no compatible creator available from plugins`,
+        store,
+      ),
     );
+    return undefined;
   }
 
   setStore(store: Store): void {
-    this.store = store;
-    this.newConnectionValueDriver =
-      this.getNewConnectionValueDriverBasedOnStore(store);
+    const newDriver = this.getNewConnectionValueDriverBasedOnStore(store);
+    if (newDriver) {
+      this.store = store;
+      this.newConnectionValueDriver = newDriver;
+    }
+    return;
   }
 
   get isValid(): boolean {
-    return this.newConnectionValueDriver.isValid;
+    return this.newConnectionValueDriver?.isValid ?? true;
   }
 
   createElement(name: string): PackageableConnection {
     const connection = new PackageableConnection(name);
-    packageableConnection_setConnectionValue(
-      connection,
-      this.newConnectionValueDriver.createConnection(this.store),
-      this.editorStore.changeDetectionState.observerContext,
-    ); // default to model store
+    if (this.newConnectionValueDriver) {
+      packageableConnection_setConnectionValue(
+        connection,
+        this.newConnectionValueDriver.createConnection(this.store),
+        this.editorStore.changeDetectionState.observerContext,
+      ); // default to model store
+    }
     return connection;
   }
 }

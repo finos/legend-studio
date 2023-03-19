@@ -19,7 +19,7 @@ import type { PureModel } from '../../graph/PureModel.js';
 import type { PureGraphManagerPlugin } from '../PureGraphManagerPlugin.js';
 import { PackageableElement } from '../../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import type { Testable } from '../../graph/metamodel/pure/test/Testable.js';
-import type { Testable_PureGraphManagerPlugin_Extension } from '../Testable_PureGraphManagerPlugin_Extension.js';
+import type { Testable_PureGraphManagerPlugin_Extension } from '../extensions/Testable_PureGraphManagerPlugin_Extension.js';
 
 export const DEFAULT_TEST_SUITE_PREFIX = 'testSuite';
 export const DEFAULT_TEST_PREFIX = 'test';

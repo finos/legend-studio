@@ -30,7 +30,7 @@ import {
   TreeView,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
-import { generateExploreTaxonomyTreeNodeRoute } from '../stores/LegendTaxonomyRouter.js';
+import { generateExploreTaxonomyTreeNodeRoute } from '../application/LegendTaxonomyNavigation.js';
 import { useTaxonomyExplorerStore } from './TaxonomyExplorerStoreProvider.js';
 import type { TaxonomyTreeNodeData } from '../stores/TaxonomyExplorerStore.js';
 import { TaxonomyNodeViewerState } from '../stores/TaxonomyNodeViewerState.js';

@@ -16,7 +16,6 @@
 
 import { EditorStore } from './EditorStore.js';
 import { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
-import { TEST__getTestGraphManagerState } from '@finos/legend-graph';
 import { TEST__getTestSDLCServerClient } from '@finos/legend-server-sdlc';
 import { TEST__getTestDepotServerClient } from '@finos/legend-server-depot';
 import {
@@ -67,6 +66,5 @@ export const TEST__getTestEditorStore = (
     applicationStore,
     TEST__getTestSDLCServerClient(),
     TEST__getTestDepotServerClient(),
-    TEST__getTestGraphManagerState(pluginManager),
   );
 };

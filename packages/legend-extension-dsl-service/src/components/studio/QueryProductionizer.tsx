@@ -28,7 +28,7 @@ import {
 } from '@finos/legend-application-studio';
 import { QueryProductionizerStore } from '../../stores/studio/QueryProductionizerStore.js';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import type { QueryProductionizerPathParams } from '../../stores/studio/DSL_Service_LegendStudioRouter.js';
+import type { QueryProductionizerPathParams } from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import {
   type QueryOption,
@@ -50,7 +50,7 @@ import {
   RepoIcon,
   SquareIcon,
 } from '@finos/legend-art';
-import { type QueryInfo, useGraphManagerState } from '@finos/legend-graph';
+import type { QueryInfo } from '@finos/legend-graph';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import {
   DocumentationLink,
@@ -58,7 +58,7 @@ import {
   TextInputEditor,
   useParams,
 } from '@finos/legend-application';
-import { DSL_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/studio/DSL_Service_LegendStudioDocumentation.js';
+import { DSL_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/studio/DSL_Service_LegendStudioDocumentation.js';
 
 export type UserOption = { label: string; value: string };
 
@@ -77,14 +77,12 @@ const QueryProductionizerStoreProvider: React.FC<{
   const applicationStore = useLegendStudioApplicationStore();
   const sdlcServerClient = useSDLCServerClient();
   const depotServerClient = useDepotServerClient();
-  const graphManagerState = useGraphManagerState();
   const store = useLocalObservable(
     () =>
       new QueryProductionizerStore(
         applicationStore,
         sdlcServerClient,
         depotServerClient,
-        graphManagerState,
       ),
   );
   return (

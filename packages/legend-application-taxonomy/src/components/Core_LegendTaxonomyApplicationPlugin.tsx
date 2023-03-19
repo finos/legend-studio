@@ -21,7 +21,7 @@ import {
   type LegendApplicationPluginManager,
 } from '@finos/legend-application';
 import packageJson from '../../package.json';
-import { LEGEND_TAXONOMY_COMMAND_CONFIG } from '../stores/LegendTaxonomyCommand.js';
+import { LEGEND_TAXONOMY_COMMAND_CONFIG } from '../application/LegendTaxonomyCommand.js';
 
 export class Core_LegendTaxonomyApplicationPlugin extends LegendApplicationPlugin {
   static NAME = packageJson.extensions.applicationTaxonomyPlugin;

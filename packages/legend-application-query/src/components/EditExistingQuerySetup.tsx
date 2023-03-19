@@ -32,7 +32,7 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   generateExistingQueryEditorRoute,
   generateQuerySetupRoute,
-} from '../stores/LegendQueryRouter.js';
+} from '../application/LegendQueryNavigation.js';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import {
   useApplicationStore,

@@ -131,7 +131,7 @@ import {
 import { SERIALIZATION_FORMAT } from '../service/testable/ServiceTestEditorState.js';
 import {
   LambdaEditorState,
-  QueryBuilderTelemetry,
+  QueryBuilderTelemetryHelper,
   QUERY_BUILDER_EVENT,
 } from '@finos/legend-query-builder';
 import { MappingEditorTabState } from './MappingTabManagerState.js';
@@ -770,7 +770,7 @@ export class MappingExecutionState extends MappingEditorTabState {
       ) {
         this.isExecuting = true;
 
-        QueryBuilderTelemetry.logEvent_QueryRunLaunched(
+        QueryBuilderTelemetryHelper.logEvent_QueryRunLaunched(
           this.editorStore.applicationStore.telemetryService,
         );
 
@@ -805,7 +805,7 @@ export class MappingExecutionState extends MappingEditorTabState {
             stopWatch,
             report.timings,
           );
-        QueryBuilderTelemetry.logEvent_QueryRunSucceeded(
+        QueryBuilderTelemetryHelper.logEvent_QueryRunSucceeded(
           this.editorStore.applicationStore.telemetryService,
           report,
         );
@@ -841,7 +841,7 @@ export class MappingExecutionState extends MappingEditorTabState {
         );
 
         if (debug) {
-          QueryBuilderTelemetry.logEvent_ExecutionPlanDebugLaunched(
+          QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugLaunched(
             this.editorStore.applicationStore.telemetryService,
           );
           const debugResult =
@@ -856,7 +856,7 @@ export class MappingExecutionState extends MappingEditorTabState {
           rawPlan = debugResult.plan;
           this.executionPlanState.setDebugText(debugResult.debug);
         } else {
-          QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationLaunched(
+          QueryBuilderTelemetryHelper.logEvent_ExecutionPlanGenerationLaunched(
             this.editorStore.applicationStore.telemetryService,
           );
           rawPlan =
@@ -890,12 +890,12 @@ export class MappingExecutionState extends MappingEditorTabState {
             report.timings,
           );
         if (debug) {
-          QueryBuilderTelemetry.logEvent_ExecutionPlanDebugSucceeded(
+          QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugSucceeded(
             this.editorStore.applicationStore.telemetryService,
             report,
           );
         } else {
-          QueryBuilderTelemetry.logEvent_ExecutionPlanGenerationSucceeded(
+          QueryBuilderTelemetryHelper.logEvent_ExecutionPlanGenerationSucceeded(
             this.editorStore.applicationStore.telemetryService,
             report,
           );

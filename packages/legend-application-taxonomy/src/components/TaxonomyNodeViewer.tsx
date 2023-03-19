@@ -36,7 +36,7 @@ import { generateGAVCoordinates } from '@finos/legend-storage';
 import {
   generateStandaloneDataSpaceViewerRoute,
   generateExploreTaxonomyTreeNodeDataSpaceRoute,
-} from '../stores/LegendTaxonomyRouter.js';
+} from '../application/LegendTaxonomyNavigation.js';
 import {
   DataSpaceViewer,
   type DataSpaceViewerState,

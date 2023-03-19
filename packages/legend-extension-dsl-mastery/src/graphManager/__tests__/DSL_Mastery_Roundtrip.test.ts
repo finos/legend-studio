@@ -18,7 +18,7 @@ import { test } from '@jest/globals';
 import { DSL_Mastery_GraphManagerPreset } from '../../DSL_Mastery_Extension.js';
 import { TEST_DATA__roundtrip } from './TEST_DATA__DSL_Mastery_Roundtrip.js';
 import {
-  DSL_ExternalFormat_GraphPreset,
+  Core_GraphManagerPreset,
   TEST__checkBuildingElementsRoundtrip,
   TEST__GraphManagerPluginManager,
 } from '@finos/legend-graph';
@@ -28,8 +28,8 @@ import type { Entity } from '@finos/legend-storage';
 const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager
   .usePresets([
+    new Core_GraphManagerPreset(),
     new DSL_Mastery_GraphManagerPreset(),
-    new DSL_ExternalFormat_GraphPreset(),
   ])
   .install();
 

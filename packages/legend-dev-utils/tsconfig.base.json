@@ -11,11 +11,7 @@
     "module": "NodeNext",
     "skipLibCheck": true, // skip type checking of all declaration files (*.d.ts)
     "resolveJsonModule": true, // include JSON files module and auto-interpret types
-    // `babel` will always behave as if `isolatedModules=true`
-    // so we enable this to catch problems early
-    // See https://babeljs.io/docs/en/babel-plugin-transform-typescript#caveats
-    "isolatedModules": true,
-    "importsNotUsedAsValues": "error", // enforce differentiating between type-imports and standard imports
+    "verbatimModuleSyntax": true,
     // Other settings
     "strict": true,
     "noImplicitOverride": true,

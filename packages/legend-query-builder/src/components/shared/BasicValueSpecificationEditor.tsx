@@ -17,7 +17,7 @@
 import { useApplicationStore } from '@finos/legend-application';
 import {
   type TooltipPlacement,
-  type InputActionMeta,
+  type InputActionData,
   Tooltip,
   DollarIcon,
   clsx,
@@ -241,7 +241,7 @@ const StringPrimitiveInstanceValueEditor = observer(
     };
     const handleInputChange = (
       inputValue: string,
-      actionChange: InputActionMeta,
+      actionChange: InputActionData,
     ): void => {
       if (actionChange.action === 'input-change') {
         updateValueSpec(inputValue);
@@ -279,7 +279,8 @@ const StringPrimitiveInstanceValueEditor = observer(
             inputValue={value}
             onInputChange={handleInputChange}
             darkMode={
-              !applicationStore.layoutService.TEMPORARY__isLightThemeEnabled
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
             }
             isLoading={isLoading}
             allowCreateWhileLoading={true}
