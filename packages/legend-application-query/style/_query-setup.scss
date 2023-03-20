@@ -514,6 +514,11 @@
 }
 
 .query-setup__existing-query {
+  width: 60rem;
+  height: 60rem;
+  position: absolute;
+  top: 5vw;
+
   &__header {
     background: var(--color-magenta-50);
   }
@@ -526,93 +531,17 @@
     width: 46.7rem;
   }
 
-  &__input {
-    @include flexVCenter;
-
-    width: 50rem;
-  }
-
-  &__query-option {
-    @include flexVCenter;
-
-    &__label {
-      @include ellipsisTextOverflow;
-
-      width: calc(100% - 6rem);
-    }
-
-    &__action {
-      @include flexCenter;
-
-      width: 5rem;
-      height: 1.8rem;
-      border-radius: 0.2rem;
-      font-size: 1rem;
-      font-weight: 500;
-      background: var(--color-dark-grey-250);
-      color: var(--color-dark-grey-500);
-      margin-left: 1rem;
-
-      &:hover {
-        background: var(--color-magenta-50);
-        color: var(--color-dark-shade-800);
-      }
-    }
-
-    &__user {
-      @include flexCenter;
-
-      width: 5rem;
-      height: 1.8rem;
-      border-radius: 0.2rem;
-      font-size: 1rem;
-      font-weight: 500;
-      background: var(--color-dark-grey-250);
-      color: var(--color-dark-grey-500);
-      margin-left: 1rem;
-
-      &--mine {
-        background: var(--color-magenta-50);
-        color: var(--color-dark-shade-800);
-      }
-    }
-  }
-
-  &__preview {
-    width: 53.3rem;
-    height: 30rem;
-    margin-top: 0.5rem;
-    position: relative;
-    border: 0.1rem solid var(--color-dark-grey-200);
-  }
-
-  &__btn {
-    @include flexCenter;
-    @include flexConstantDimension;
-
-    width: 2.8rem;
-    height: 2.8rem;
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-250);
-    margin-left: 0.5rem;
-    border-radius: 0.2rem;
-
-    svg {
-      color: var(--color-dark-grey-500);
-    }
-
-    &--active {
-      background: var(--color-magenta-50);
-      border: none;
-
-      svg {
-        color: var(--color-dark-shade-300);
-      }
-    }
+  &__content {
+    padding: 1rem;
   }
 }
 
 .query-setup__productionize-query {
+  width: 60rem;
+  height: 60rem;
+  position: absolute;
+  top: 5vw;
+
   &__header {
     background: var(--color-magenta-50);
   }
@@ -625,46 +554,7 @@
     width: 50rem;
   }
 
-  &__query-option {
-    @include flexVCenter;
-
-    &__label {
-      @include ellipsisTextOverflow;
-
-      width: 100%;
-    }
-  }
-
-  &__preview {
-    width: 53.3rem;
-    height: 30rem;
-    margin-top: 0.5rem;
-    position: relative;
-    border: 0.1rem solid var(--color-dark-grey-200);
-  }
-
-  &__btn {
-    @include flexCenter;
-    @include flexConstantDimension;
-
-    width: 2.8rem;
-    height: 2.8rem;
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-250);
-    margin-left: 0.5rem;
-    border-radius: 0.2rem;
-
-    svg {
-      color: var(--color-dark-grey-500);
-    }
-
-    &--active {
-      background: var(--color-magenta-50);
-      border: none;
-
-      svg {
-        color: var(--color-dark-shade-300);
-      }
-    }
+  &__content {
+    padding: 1rem;
   }
 }

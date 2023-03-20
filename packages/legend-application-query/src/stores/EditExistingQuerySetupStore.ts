@@ -14,103 +14,36 @@
  * limitations under the License.
  */
 
-import {
-  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-} from '@finos/legend-application';
-import {
-  QuerySearchSpecification,
-  type LightQuery,
-  type QueryInfo,
-} from '@finos/legend-graph';
-import type { DepotServerClient } from '@finos/legend-server-depot';
-import {
-  ActionState,
-  assertErrorThrown,
-  type GeneratorFn,
-} from '@finos/legend-shared';
-import { action, flow, makeObservable, observable } from 'mobx';
-import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
+import { QueryLoaderState } from '@finos/legend-query-builder';
 import { BaseQuerySetupStore } from './QuerySetupStore.js';
+import type { DepotServerClient } from '@finos/legend-server-depot';
+import type { PlainObject } from '@finos/legend-shared';
+import { LEGEND_QUERY_USER_DATA_KEY } from '../application/LegendQueryUserData.js';
+import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
+import {
+  QueryStorageState,
+  persistQueryIds,
+  removePersistedQuery,
+} from './QueryEditorStore.js';
 
 export class EditExistingQuerySetupStore extends BaseQuerySetupStore {
-  readonly loadQueriesState = ActionState.create();
-  readonly loadQueryState = ActionState.create();
-
-  queries: LightQuery[] = [];
-  currentQuery?: LightQuery | undefined;
-  currentQueryInfo?: QueryInfo | undefined;
-  showCurrentUserQueriesOnly = false;
-
+  queryLoaderState: QueryLoaderState;
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
   ) {
     super(applicationStore, depotServerClient);
-
-    makeObservable(this, {
-      queries: observable,
-      currentQuery: observable,
-      currentQueryInfo: observable,
-      showCurrentUserQueriesOnly: observable,
-      setShowCurrentUserQueriesOnly: action,
-      setCurrentQuery: flow,
-      loadQueries: flow,
-    });
-  }
-
-  setShowCurrentUserQueriesOnly(val: boolean): void {
-    this.showCurrentUserQueriesOnly = val;
-  }
-
-  *setCurrentQuery(queryId: string | undefined): GeneratorFn<void> {
-    if (queryId) {
-      try {
-        this.loadQueryState.inProgress();
-        this.currentQuery =
-          (yield this.graphManagerState.graphManager.getLightQuery(
-            queryId,
-          )) as LightQuery;
-        const queryInfo =
-          (yield this.graphManagerState.graphManager.getQueryInfo(
-            queryId,
-          )) as QueryInfo;
-        queryInfo.content =
-          (yield this.graphManagerState.graphManager.prettyLambdaContent(
-            queryInfo.content,
-          )) as string;
-        this.currentQueryInfo = queryInfo;
-      } catch (error) {
-        assertErrorThrown(error);
-        this.applicationStore.notificationService.notifyError(error);
-      } finally {
-        this.loadQueryState.reset();
-      }
-    } else {
-      this.currentQuery = undefined;
-    }
-  }
-
-  *loadQueries(searchText: string): GeneratorFn<void> {
-    const isValidSearchString =
-      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
-    this.loadQueriesState.inProgress();
-    try {
-      const searchSpecification = new QuerySearchSpecification();
-      searchSpecification.searchTerm = isValidSearchString
-        ? searchText
-        : undefined;
-      searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
-      searchSpecification.showCurrentUserQueriesOnly =
-        this.showCurrentUserQueriesOnly;
-      this.queries = (yield this.graphManagerState.graphManager.searchQueries(
-        searchSpecification,
-      )) as LightQuery[];
-      this.loadQueriesState.pass();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(error);
-      this.loadQueriesState.fail();
-    }
+    const queryStorage = applicationStore.userDataService.getValue(
+      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
+    );
+    const queryStorageState = QueryStorageState.create(
+      queryStorage ? (queryStorage as PlainObject<QueryStorageState>) : {},
+    );
+    this.queryLoaderState = new QueryLoaderState(
+      applicationStore,
+      queryStorageState.persistedQueries,
+      persistQueryIds,
+      removePersistedQuery,
+    );
   }
 }

@@ -15,15 +15,9 @@
  */
 
 import {
-  type SelectComponent,
   Dialog,
   PanelLoadingIndicator,
   BlankPanelContent,
-  clsx,
-  SearchIcon,
-  TimesIcon,
-  CheckSquareIcon,
-  SquareIcon,
   DropdownMenu,
   MenuContent,
   MenuContentItem,
@@ -37,7 +31,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalTitle,
   ModalFooterButton,
   ManageSearchIcon,
   LightBulbIcon,
@@ -47,10 +40,10 @@ import {
   ExclamationTriangleIcon,
   PanelListItem,
   Button,
+  clsx,
 } from '@finos/legend-art';
-import { debounce } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef } from 'react';
 import {
   type MappingQueryCreatorPathParams,
   type ExistingQueryEditorPathParams,
@@ -61,8 +54,8 @@ import {
   generateQuerySetupRoute,
 } from '../__lib__/LegendQueryNavigation.js';
 import {
-  type QueryEditorStore,
   QuerySaveAsState,
+  ExistingQueryEditorStore,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
   QuerySaveState,
@@ -79,16 +72,21 @@ import {
   ServiceQueryCreatorStoreProvider,
   useQueryEditorStore,
 } from './QueryEditorStoreProvider.js';
-import type { RawLambda } from '@finos/legend-graph';
+import type { LightQuery, RawLambda } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useLegendQueryApplicationStore } from './LegendQueryFrameworkProvider.js';
 import {
   QueryBuilder,
   QueryBuilderNavigationBlocker,
+  QueryLoader,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
-import type { QueryEditorHelpMenuEntry } from '../stores/LegendQueryApplicationPlugin.js';
 import { QUERY_DOCUMENTATION_KEY } from '../application/LegendQueryDocumentation.js';
+import {
+  type ActionState,
+  assertErrorThrown,
+  debounce,
+} from '@finos/legend-shared';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
 const QuerySaveAsDialogContent = observer(
@@ -201,231 +199,6 @@ const QuerySaveDialog = observer(() => {
   );
 });
 
-const QueryLoader = observer(
-  (props: {
-    editorStore: QueryEditorStore;
-    queryBuilderState: QueryBuilderState;
-  }) => {
-    const { editorStore, queryBuilderState } = props;
-    const applicationStore = useApplicationStore();
-
-    const queryFinderRef = useRef<SelectComponent>(null);
-    const searchInputRef = useRef<HTMLInputElement>(null);
-    const [selectedQueryID, setSelectedQueryID] = useState('');
-    const [isMineOnly, setIsMineOnly] = useState(false);
-    const [searchText, setSearchText] = useState('');
-
-    // search text
-    const debouncedLoadQueries = useMemo(
-      () =>
-        debounce((input: string): void => {
-          flowResult(editorStore.queryLoaderState.loadQueries(input)).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }, 500),
-      [applicationStore, editorStore.queryLoaderState],
-    );
-    const onSearchTextChange: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      if (event.target.value !== searchText) {
-        setSearchText(event.target.value);
-        debouncedLoadQueries.cancel();
-        debouncedLoadQueries(event.target.value);
-      }
-    };
-    const clearQuerySearching = (): void => {
-      setSearchText('');
-      debouncedLoadQueries.cancel();
-      debouncedLoadQueries('');
-    };
-    const toggleShowCurrentUserQueriesOnly = (): void => {
-      editorStore.queryLoaderState.setShowCurrentUserQueriesOnly(
-        !editorStore.queryLoaderState.showCurrentUserQueriesOnly,
-      );
-      setIsMineOnly(!isMineOnly);
-      debouncedLoadQueries.cancel();
-      debouncedLoadQueries(searchText);
-    };
-
-    useEffect(() => {
-      flowResult(editorStore.queryLoaderState.loadQueries('')).catch(
-        applicationStore.alertUnhandledError,
-      );
-    }, [applicationStore, editorStore.queryLoaderState]);
-
-    // actions
-    const loadQuery = (): void => {
-      if (selectedQueryID) {
-        queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
-          editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
-          applicationStore.navigationService.navigator.goToLocation(
-            generateExistingQueryEditorRoute(selectedQueryID),
-            { ignoreBlocking: true },
-          );
-        });
-      }
-    };
-
-    // life-cycle
-    const close = (): void => {
-      editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
-      editorStore.queryLoaderState.reset();
-    };
-    const onEnter = (): void => queryFinderRef.current?.focus();
-
-    return (
-      <Dialog
-        open={editorStore.queryLoaderState.isQueryLoaderOpen}
-        onClose={close}
-        TransitionProps={{
-          onEnter,
-        }}
-        classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
-      >
-        <Modal darkMode={true} className="search-modal">
-          <ModalTitle title="Load Query" />
-          <div className="query-editor__query-loader__filter-section">
-            <div className="query-editor__query-loader__filter-section__section__toggler">
-              <button
-                className={clsx(
-                  'query-editor__query-loader__filter-section__section__toggler__btn',
-                  {
-                    'query-editor__query-loader__filter-section__section__toggler__btn--toggled':
-                      isMineOnly,
-                  },
-                )}
-                onClick={toggleShowCurrentUserQueriesOnly}
-                tabIndex={-1}
-              >
-                {isMineOnly ? <CheckSquareIcon /> : <SquareIcon />}
-              </button>
-              <div
-                className="query-editor__query-loader__filter-section__section__toggler__prompt"
-                onClick={toggleShowCurrentUserQueriesOnly}
-              >
-                Mine Only
-              </div>
-            </div>
-          </div>
-          <div className="query-editor__query-loader__search-section">
-            <div className="query-editor__query-loader__search-section__input__container">
-              <input
-                ref={searchInputRef}
-                className={clsx(
-                  'query-editor__query-loader__search-section__input input--dark',
-                  {
-                    'query-editor__query-loader__search-section__input--searching':
-                      searchText,
-                  },
-                )}
-                onChange={onSearchTextChange}
-                value={searchText}
-                placeholder="Search a query by name"
-              />
-              {!searchText ? (
-                <div className="query-editor__query-loader__search-section__input__search__icon">
-                  <SearchIcon />
-                </div>
-              ) : (
-                <>
-                  <button
-                    className="query-editor__query-loader__search-section__input__clear-btn"
-                    tabIndex={-1}
-                    onClick={clearQuerySearching}
-                    title="Clear"
-                  >
-                    <TimesIcon />
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-          <div className="query-editor__query-loader__body">
-            {editorStore.queryLoaderState.loadQueriesState.hasCompleted && (
-              <>
-                {editorStore.queryLoaderState.queries.length > 0 && (
-                  <>
-                    <table className="table">
-                      <thead>
-                        <tr>
-                          <th className="table__cell--left">Name</th>
-                          <th className="table__cell--left">Author</th>
-                          <th className="table__cell--left">Version</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {editorStore.queryLoaderState.queries.map((query) => (
-                          <tr
-                            key={query.id}
-                            className={clsx(
-                              'query-editor__query-loader__body__table__row',
-                              {
-                                'query-editor__query-loader__body__table__row--selected':
-                                  selectedQueryID === query.id,
-                              },
-                            )}
-                            onClick={(event) => setSelectedQueryID(query.id)}
-                          >
-                            <td className="table__cell--left">{query.name}</td>
-                            <td className="table__cell--left">
-                              {query.owner ?? 'anonymous'}
-                            </td>
-                            <td className="table__cell--left">
-                              {query.versionId}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </>
-                )}
-                {editorStore.queryLoaderState.queries.length === 0 && (
-                  <BlankPanelContent>No query available</BlankPanelContent>
-                )}
-              </>
-            )}
-            {!editorStore.queryLoaderState.loadQueriesState.hasCompleted && (
-              <>
-                <PanelLoadingIndicator
-                  isLoading={
-                    !editorStore.queryLoaderState.loadQueriesState.hasCompleted
-                  }
-                />
-                <BlankPanelContent>Loading queries...</BlankPanelContent>
-              </>
-            )}
-          </div>
-          <div className="search-modal__actions">
-            <button
-              className="btn btn--dark"
-              onClick={loadQuery}
-              disabled={selectedQueryID === ''}
-            >
-              Load Query
-            </button>
-            <button className="btn btn--dark" onClick={close}>
-              Close
-            </button>
-          </div>
-        </Modal>
-      </Dialog>
-    );
-  },
-);
-
-const HelpMenuContentItemRenderer = (
-  props: QueryEditorHelpMenuEntry,
-): React.ReactElement => (
-  <MenuContentItem title={props.title ?? ''} onClick={props.onClick}>
-    {props.icon && <MenuContentItemIcon>{props.icon}</MenuContentItemIcon>}
-    <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-      {props.label}
-    </MenuContentItemLabel>
-  </MenuContentItem>
-);
-
 const QueryEditorHeaderContent = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
@@ -492,9 +265,13 @@ const QueryEditorHeaderContent = observer(
         .catch(applicationStore.alertUnhandledError);
     };
 
-    const renameQuery = applicationStore.guardUnhandledError(async () => {
-      await renameState?.renameQuery();
-    });
+    const renameQuery = (): void => {
+      if (renameState?.renameQuery) {
+        flowResult(renameState.renameQuery()).catch(
+          applicationStore.alertUnhandledError,
+        );
+      }
+    };
 
     const saveQuery = (): void => {
       queryBuilderState
@@ -529,6 +306,50 @@ const QueryEditorHeaderContent = observer(
           );
         })
         .catch(applicationStore.alertUnhandledError);
+    };
+    const loadQuery = (selectedQuery: LightQuery): void => {
+      queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
+        editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
+        applicationStore.navigationService.navigator.goToLocation(
+          generateExistingQueryEditorRoute(selectedQuery.id),
+          { ignoreBlocking: true },
+        );
+      });
+    };
+    const renameQuery2 = async (
+      selectedQuery: LightQuery,
+      updatedQueryName: string,
+      renameQueryState: ActionState,
+    ): Promise<void> => {
+      try {
+        renameQueryState.inProgress();
+        await queryBuilderState.graphManagerState.graphManager.renameQuery(
+          selectedQuery.id,
+          updatedQueryName,
+        );
+        applicationStore.notificationService.notifySuccess(
+          `Successfully updated query!`,
+        );
+
+        LegendQueryTelemetryHelper.logEvent_RenameQuerySucceeded(
+          applicationStore.telemetryService,
+          {
+            query: {
+              id: selectedQuery.id,
+              name: selectedQuery.name,
+              groupId: selectedQuery.groupId,
+              artifactId: selectedQuery.artifactId,
+              versionId: selectedQuery.versionId,
+            },
+          },
+        );
+        selectedQuery.name = updatedQueryName;
+        renameQueryState.pass();
+      } catch (error) {
+        renameQueryState.fail();
+        assertErrorThrown(error);
+        applicationStore.notificationService.notifyError(error);
+      }
     };
 
     const toggleAssistant = (): void =>
@@ -584,7 +405,18 @@ const QueryEditorHeaderContent = observer(
     const extraHelpMenuContentItems = applicationStore.pluginManager
       .getApplicationPlugins()
       .flatMap((plugin) => plugin.getExtraQueryEditorHelpMenuEntries?.() ?? [])
-      .map((item) => <>{HelpMenuContentItemRenderer(item)}</>);
+      .map((item) => (
+        <MenuContentItem
+          key={item.key}
+          title={item.title ?? ''}
+          onClick={item.onClick}
+        >
+          {item.icon && <MenuContentItemIcon>{item.icon}</MenuContentItemIcon>}
+          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+            {item.label}
+          </MenuContentItemLabel>
+        </MenuContentItem>
+      ));
 
     return (
       <div className="query-editor__header__content">
@@ -720,8 +552,20 @@ const QueryEditorHeaderContent = observer(
           </DropdownMenu>
           {editorStore.queryLoaderState.isQueryLoaderOpen && (
             <QueryLoader
-              editorStore={editorStore}
-              queryBuilderState={queryBuilderState}
+              queryLoaderState={editorStore.queryLoaderState}
+              graphManager={queryBuilderState.graphManagerState.graphManager}
+              loadQuery={loadQuery}
+              renameQuery={renameQuery2}
+              moreOptions={{
+                loadAsDialog: true,
+                isDeleteSupported: true,
+                includeDefaultQueries: true,
+              }}
+              currentQueryId={
+                editorStore instanceof ExistingQueryEditorStore
+                  ? editorStore.query.id
+                  : undefined
+              }
             />
           )}
           <button

@@ -83,4 +83,14 @@ export class LegendQueryTelemetryHelper {
       data,
     );
   }
+
+  static logEvent_RenameQuerySucceeded(
+    telemetryService: TelemetryService,
+    data: Query_TelemetryData,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_QUERY_APP_EVENT.RENAME_QUERY__SUCCESS,
+      data,
+    );
+  }
 }

@@ -48,6 +48,7 @@ export class Query {
   // Store query in text to be more compact and stable
   content!: string;
 
+  lastUpdatedAt?: number | undefined;
   isCurrentUserQuery = false;
 }
 
@@ -58,6 +59,7 @@ export class LightQuery {
   groupId!: string;
   artifactId!: string;
   owner?: string | undefined;
+  lastUpdatedAt?: number | undefined;
 
   isCurrentUserQuery = false;
 }

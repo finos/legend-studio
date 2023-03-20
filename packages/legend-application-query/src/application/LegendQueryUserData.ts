@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-export enum LEGEND_QUERY_APP_EVENT {
-  // TODO: split this into specific events
-  GENERIC_FAILURE = 'application.failure.generic',
-
-  VIEW_QUERY__SUCCESS = 'query-editor.view-query.success',
-  CREATE_QUERY__SUCCESS = 'query-editor.create-query.success',
-  UPDATE_QUERY__SUCCESS = 'query-editor.update-query.success',
-  RENAME_QUERY__SUCCESS = 'query-editor.rename.query.success',
-
-  VIEW_PROJECT__LAUNCH = 'query-editor.view-project.launch',
-  VIEW_SDLC_PROJECT__LAUNCH = 'query-editor.view-sdlc-project.launch',
+export enum LEGEND_QUERY_USER_DATA_KEY {
+  RECENTLY_VIEWED_QUERIES = 'query-editor.recent-queries',
 }
+
+export const USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT = 10;

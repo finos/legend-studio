@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  BlankPanelContent,
-  clsx,
-  CustomSelectorInput,
-  PanelLoadingIndicator,
-  SearchIcon,
-  type SelectComponent,
-} from '@finos/legend-art';
-import { debounce, guaranteeType } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
+import { ArrowLeftIcon } from '@finos/legend-art';
+import { guaranteeType } from '@finos/legend-shared';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useContext } from 'react';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   useLegendQueryApplicationStore,
@@ -35,15 +25,9 @@ import {
 } from './LegendQueryFrameworkProvider.js';
 import { QueryProductionizerSetupStore } from '../stores/QueryProductionizerSetupStore.js';
 import { BaseQuerySetup, BaseQuerySetupStoreContext } from './QuerySetup.js';
-import {
-  buildQueryOption,
-  type QueryOption,
-} from '@finos/legend-query-builder';
 import { generateQuerySetupRoute } from '../__lib__/LegendQueryNavigation.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import type { LightQuery } from '@finos/legend-graph';
+import { QueryLoader } from '@finos/legend-query-builder';
 
 const QueryProductionizerSetupStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -74,8 +58,6 @@ const useQueryProductionizerSetupStore = (): QueryProductionizerSetupStore =>
 const QueryProductionizerSetupContent = observer(() => {
   const applicationStore = useApplicationStore();
   const setupStore = useQueryProductionizerSetupStore();
-  const querySearchRef = useRef<SelectComponent>(null);
-  const [searchText, setSearchText] = useState('');
 
   // actions
   const back = (): void => {
@@ -83,53 +65,13 @@ const QueryProductionizerSetupContent = observer(() => {
       generateQuerySetupRoute(),
     );
   };
-  const next = (): void => {
-    if (setupStore.currentQuery) {
-      setupStore
-        .loadQueryProductionizer()
-        .catch(applicationStore.alertUnhandledError);
-    }
+
+  const loadQuery = (selectedQuery: LightQuery): void => {
+    setupStore.queryLoaderState.setIsQueryLoaderOpen(false);
+    setupStore
+      .loadQueryProductionizer(selectedQuery)
+      .catch(applicationStore.alertUnhandledError);
   };
-  const canProceed = setupStore.currentQuery;
-
-  // query
-  const queryOptions = setupStore.queries.map(buildQueryOption);
-  const selectedQueryOption = setupStore.currentQuery
-    ? buildQueryOption(setupStore.currentQuery)
-    : null;
-  const onQueryOptionChange = (option: QueryOption | null): void => {
-    if (option?.value !== setupStore.currentQuery) {
-      setupStore.setCurrentQuery(option?.value.id);
-    }
-  };
-
-  // search text
-  const debouncedLoadQueries = useMemo(
-    () =>
-      debounce((input: string): void => {
-        flowResult(setupStore.loadQueries(input)).catch(
-          applicationStore.alertUnhandledError,
-        );
-      }, 500),
-    [applicationStore, setupStore],
-  );
-  const onSearchTextChange = (value: string): void => {
-    if (value !== searchText) {
-      setSearchText(value);
-      debouncedLoadQueries.cancel();
-      debouncedLoadQueries(value);
-    }
-  };
-
-  useEffect(() => {
-    flowResult(setupStore.loadQueries('')).catch(
-      applicationStore.alertUnhandledError,
-    );
-  }, [setupStore, applicationStore]);
-
-  useEffect(() => {
-    querySearchRef.current?.focus();
-  }, []);
 
   return (
     <div className="query-setup__wizard query-setup__productionize-query">
@@ -144,61 +86,14 @@ const QueryProductionizerSetupContent = observer(() => {
         <div className="query-setup__wizard__header__title">
           Productionizing an existing query...
         </div>
-        <button
-          className={clsx('query-setup__wizard__header__btn', {
-            'query-setup__wizard__header__btn--ready': canProceed,
-          })}
-          onClick={next}
-          disabled={!canProceed}
-          title="Productionize query"
-        >
-          <ArrowRightIcon />
-        </button>
       </div>
-      <div className="query-setup__wizard__content">
-        <div className="query-setup__wizard__group query-setup__wizard__group--inline">
-          <div className="query-setup__wizard__group__title">
-            <SearchIcon />
-          </div>
-          <CustomSelectorInput
-            ref={querySearchRef}
-            className="query-setup__wizard__selector"
-            options={queryOptions}
-            isLoading={setupStore.loadQueriesState.isInProgress}
-            onInputChange={onSearchTextChange}
-            inputValue={searchText}
-            onChange={onQueryOptionChange}
-            value={selectedQueryOption}
-            placeholder="Search for query by name..."
-            isClearable={true}
-            escapeClearsValue={true}
-            darkMode={true}
-          />
-        </div>
-        <div className="query-setup__productionize-query__preview">
-          <PanelLoadingIndicator
-            isLoading={setupStore.loadQueryState.isInProgress}
-          />
-          {setupStore.currentQuery && (
-            <>
-              {!setupStore.currentQueryInfo && (
-                <BlankPanelContent>{`Can't preview query`}</BlankPanelContent>
-              )}
-              {setupStore.currentQueryInfo && (
-                <CodeEditor
-                  inputValue={setupStore.currentQueryInfo.content}
-                  isReadOnly={true}
-                  language={CODE_EDITOR_LANGUAGE.PURE}
-                  showMiniMap={false}
-                  hideGutter={true}
-                />
-              )}
-            </>
-          )}
-          {!setupStore.currentQuery && (
-            <BlankPanelContent>No query to preview</BlankPanelContent>
-          )}
-        </div>
+      <div className="query-setup__productionize-query__content">
+        <QueryLoader
+          queryLoaderState={setupStore.queryLoaderState}
+          graphManager={setupStore.graphManagerState.graphManager}
+          loadQuery={loadQuery}
+          modalTitle="productionize query"
+        />
       </div>
     </div>
   );

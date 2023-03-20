@@ -65,6 +65,7 @@ export type QueryEditorActionConfiguration = {
 };
 
 export type QueryEditorHelpMenuEntry = {
+  key: string;
   title?: string;
   label: string;
   onClick: () => void;

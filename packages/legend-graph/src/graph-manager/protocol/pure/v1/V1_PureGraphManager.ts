@@ -2933,6 +2933,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  async getQueries(queryIds: string[]): Promise<LightQuery[]> {
+    return (await this.engine.getQueries(queryIds)).map((protocol) =>
+      V1_buildLightQuery(protocol, this.engine.getCurrentUserId()),
+    );
+  }
+
   async getLightQuery(queryId: string): Promise<LightQuery> {
     return V1_buildLightQuery(
       await this.engine.getQuery(queryId),
@@ -2978,6 +2984,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graph,
       this.engine.getCurrentUserId(),
     );
+  }
+
+  async renameQuery(queryId: string, queryName: string): Promise<void> {
+    const query = await this.engine.getQuery(queryId);
+    query.name = queryName;
+    await this.engine.updateQuery(query);
   }
 
   async deleteQuery(queryId: string): Promise<void> {

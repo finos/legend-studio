@@ -720,6 +720,12 @@ export class V1_Engine {
     ).map((v) => V1_LightQuery.serialization.fromJson(v));
   }
 
+  async getQueries(queryIds: string[]): Promise<V1_LightQuery[]> {
+    return (await this.engineServerClient.getQueries(queryIds)).map((v) =>
+      V1_LightQuery.serialization.fromJson(v),
+    );
+  }
+
   async getQuery(queryId: string): Promise<V1_Query> {
     return V1_Query.serialization.fromJson(
       await this.engineServerClient.getQuery(queryId),

@@ -268,41 +268,52 @@
 
   // ---------------------------- Query Loader -------------------------------
 
-  .query-editor__query-loader {
+  .query-loader {
     &__filter-section {
-      &__section__toggler__btn {
-        svg {
-          color: var(--color-legacylight-light-blue-100);
-        }
+      &__toggler__btn {
+        border-color: var(--color-legacylight-dark-grey-200);
+        color: var(--color-legacylight-dark-grey-200);
       }
 
-      &__section__toggler__prompt {
-        color: var(--color-legacylight-dark-grey-200);
+      &__toggler__btn--toggled {
+        background-color: var(--color-legacylight-light-blue-100);
+        color: var(--color-legacylight-light-grey-200);
       }
     }
 
     &__search-section {
-      border-color: var(--color-legacylight-light-grey-200);
-
       &__input {
-        border-color: var(--color-legacylight-light-grey-200);
+        &__search__icon {
+          svg {
+            color: var(--color-dark-shade-100);
+          }
+        }
       }
     }
 
-    &__body {
-      .table {
-        color: var(--color-legacylight-dark-grey-200);
-      }
+    &__result__section {
+      border-color: var(--color-legacylight-dark-grey-200);
+      background: var(--color-legacylight-light-grey-100);
+    }
 
-      &__table__row:hover {
-        color: var(--color-legacylight-light-blue-100);
-        background: var(--color-legacylight-light-grey-200);
-      }
+    &__result__section:hover {
+      background: var(--color-legacylight-light-grey-200);
+    }
 
-      &__table__row--selected:hover,
-      &__table__row--selected {
-        background: var(--color-legacylight-light-grey-200);
-      }
+    &__result__title {
+      color: var(--color-legacylight-dark-grey-200);
+    }
+
+    &__result__section__message {
+      color: var(--color-legacylight-dark-grey-200);
+    }
+
+    &__result__section__action-btn {
+      color: var(--color-legacylight-light-grey-300);
+    }
+
+    &__search-modal__actions {
+      color: var(--color-legacylight-dark-grey-200);
     }
   }
 

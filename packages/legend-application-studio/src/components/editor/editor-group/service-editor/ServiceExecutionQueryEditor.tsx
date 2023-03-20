@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import type {
-  ServicePureExecutionQueryState,
-  ServicePureExecutionState,
-} from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceExecutionState.js';
+import type { ServicePureExecutionState } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceExecutionState.js';
 import {
   Dialog,
-  type SelectComponent,
-  BlankPanelContent,
-  clsx,
-  CustomSelectorInput,
   PanelLoadingIndicator,
   PlayIcon,
   DropdownMenu,
@@ -38,17 +31,11 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
-  ModalTitle,
   MoreVerticalIcon,
 } from '@finos/legend-art';
-import {
-  assertErrorThrown,
-  debounce,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import { useApplicationStore } from '@finos/legend-application';
 import {
   type LightQuery,
   isStubbed_PackageableElement,
@@ -60,6 +47,7 @@ import {
   ServiceQueryBuilderState,
   LambdaParameterValuesEditor,
   QueryBuilderTextEditorMode,
+  QueryLoader,
   ExecutionPlanViewer,
 } from '@finos/legend-query-builder';
 import { ProjectViewerEditorMode } from '../../../../stores/project-view/ProjectViewerEditorMode.js';
@@ -108,141 +96,6 @@ const ServiceExecutionResultViewer = observer(
               Close
             </button>
           </ModalFooter>
-        </Modal>
-      </Dialog>
-    );
-  },
-);
-
-type QueryOption = { label: string; value: LightQuery };
-const buildQueryOption = (query: LightQuery): QueryOption => ({
-  label: query.name,
-  value: query,
-});
-
-const ServiceExecutionQueryImporter = observer(
-  (props: { queryState: ServicePureExecutionQueryState }) => {
-    const { queryState } = props;
-    const applicationStore = useApplicationStore();
-    const queryFinderRef = useRef<SelectComponent>(null);
-    const closeQueryImporter = (): void =>
-      queryState.setOpenQueryImporter(false);
-    const handleEnterQueryImporter = (): void =>
-      queryFinderRef.current?.focus();
-
-    // query finder
-    const [searchText, setSearchText] = useState('');
-    const queryOptions = queryState.queries.map(buildQueryOption);
-    const selectedQueryOption = queryState.selectedQueryInfo
-      ? {
-          label: queryState.selectedQueryInfo.query.name,
-          value: queryState.selectedQueryInfo.query,
-        }
-      : null;
-    const onQueryOptionChange = (option: QueryOption | null): void => {
-      if (option?.value !== queryState.selectedQueryInfo?.query.id) {
-        flowResult(queryState.setSelectedQueryInfo(option?.value)).catch(
-          applicationStore.alertUnhandledError,
-        );
-      }
-    };
-    const formatQueryOptionLabel = (option: QueryOption): React.ReactNode => (
-      <div className="service-query-importer__query-option">
-        <div className="service-query-importer__query-option__label">
-          {option.label}
-        </div>
-        {Boolean(option.value.owner) && (
-          <div
-            className={clsx('service-query-importer__query-option__user', {
-              'service-query-importer__query-option__user--mine':
-                option.value.isCurrentUserQuery,
-            })}
-          >
-            {option.value.isCurrentUserQuery ? 'mine' : option.value.owner}
-          </div>
-        )}
-      </div>
-    );
-
-    const debouncedLoadQueries = useMemo(
-      () =>
-        debounce((input: string): void => {
-          flowResult(queryState.loadQueries(input)).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }, 500),
-      [applicationStore, queryState],
-    );
-    const onSearchTextChange = (value: string): void => {
-      if (value !== searchText) {
-        setSearchText(value);
-        debouncedLoadQueries.cancel();
-        debouncedLoadQueries(value);
-      }
-    };
-    const importQuery = (): void => {
-      flowResult(queryState.importQuery()).catch(
-        applicationStore.alertUnhandledError,
-      );
-    };
-
-    useEffect(() => {
-      flowResult(queryState.loadQueries('')).catch(
-        applicationStore.alertUnhandledError,
-      );
-    }, [queryState, applicationStore]);
-
-    return (
-      <Dialog
-        open={queryState.openQueryImporter}
-        onClose={closeQueryImporter}
-        TransitionProps={{
-          onEnter: handleEnterQueryImporter,
-        }}
-        classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
-      >
-        <Modal darkMode={true} className="search-modal">
-          <ModalTitle title="Import Query" />
-          <CustomSelectorInput
-            ref={queryFinderRef}
-            options={queryOptions}
-            isLoading={queryState.loadQueriesState.isInProgress}
-            onInputChange={onSearchTextChange}
-            inputValue={searchText}
-            onChange={onQueryOptionChange}
-            value={selectedQueryOption}
-            placeholder="Search for a query by name..."
-            darkMode={true}
-            isClearable={true}
-            formatOptionLabel={formatQueryOptionLabel}
-          />
-          <div className="service-query-importer__query-preview">
-            <PanelLoadingIndicator
-              isLoading={queryState.loadQueryInfoState.isInProgress}
-            />
-            {queryState.selectedQueryInfo && (
-              <CodeEditor
-                inputValue={queryState.selectedQueryInfo.content}
-                isReadOnly={true}
-                language={CODE_EDITOR_LANGUAGE.PURE}
-                showMiniMap={false}
-                hideGutter={true}
-              />
-            )}
-            {!queryState.selectedQueryInfo && (
-              <BlankPanelContent>No query to preview</BlankPanelContent>
-            )}
-          </div>
-          <div className="search-modal__actions">
-            <button
-              className="btn btn--dark"
-              disabled={!queryState.selectedQueryInfo}
-              onClick={importQuery}
-            >
-              Import
-            </button>
-          </div>
         </Modal>
       </Dialog>
     );
@@ -353,7 +206,10 @@ export const ServiceExecutionQueryEditor = observer(
       });
 
     const importQuery = (): void => {
-      queryState.setOpenQueryImporter(true);
+      flowResult(queryState.initializeQueryImporter()).catch(
+        applicationStore.alertUnhandledError,
+      );
+      queryState.queryLoaderState.setIsQueryLoaderOpen(true);
     };
 
     const runQuery = applicationStore.guardUnhandledError(() =>
@@ -433,6 +289,12 @@ export const ServiceExecutionQueryEditor = observer(
             service.path,
           ),
         ),
+      );
+    };
+
+    const loadQuery = (selectedQuery: LightQuery): void => {
+      flowResult(queryState.importQuery(selectedQuery.id)).catch(
+        applicationStore.alertUnhandledError,
       );
     };
 
@@ -612,8 +474,17 @@ export const ServiceExecutionQueryEditor = observer(
             executionPlanState={executionState.executionPlanState}
           />
           <ServiceExecutionResultViewer executionState={executionState} />
-          {queryState.openQueryImporter && (
-            <ServiceExecutionQueryImporter queryState={queryState} />
+          {queryState.queryLoaderState.isQueryLoaderOpen && (
+            <QueryLoader
+              queryLoaderState={queryState.queryLoaderState}
+              graphManager={editorStore.graphManagerState.graphManager}
+              loadQuery={loadQuery}
+              modalTitle="import query"
+              moreOptions={{
+                loadAsDialog: true,
+                includeDefaultQueries: true,
+              }}
+            />
           )}
           {executionState.parameterState.parameterValuesEditorState
             .showModal && (
