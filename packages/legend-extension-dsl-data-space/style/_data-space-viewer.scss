@@ -22,6 +22,7 @@
   height: 100%;
   width: 100%;
   background: var(--color-dark-grey-80);
+  color: var(--color-light-grey-200);
 
   &__header {
     @include flexCenter;
@@ -66,21 +67,6 @@
       svg {
         font-size: 1.6rem;
         color: var(--color-light-grey-0);
-      }
-    }
-
-    &__dropdown-trigger {
-      @include flexCenter;
-
-      width: 1.6rem;
-      height: 3.4rem;
-      background: var(--color-blue-150);
-      cursor: pointer;
-      border-left: 0.1rem solid var(--color-dark-shade-50);
-
-      svg {
-        color: var(--color-light-grey-0);
-        font-size: 1.2rem;
       }
     }
   }
@@ -162,6 +148,7 @@
       &__content {
         overflow: auto;
         height: 100%;
+        width: 100%;
         border: 0.1rem solid var(--color-blue-300);
         border-radius: 0.2rem;
       }
@@ -182,90 +169,106 @@
       }
     }
 
-    &__diagrams {
+    &__diagrams__carousel {
       display: flex;
       flex-direction: column;
       height: 100%;
       width: 100%;
       padding: 0.25rem;
 
-      &__header {
-        @include flexVCenter;
-
-        height: 3.4rem;
-        width: 100%;
-
-        &__tabs {
-          height: 3.4rem;
-          border-bottom: 0.2rem solid var(--color-dark-grey-85);
-          width: 100%;
-          display: flex;
-          overflow-x: overlay;
-          overflow-y: hidden;
-          background: var(--color-dark-grey-200);
-        }
-
-        &__tab {
-          @include flexCenter;
-
-          height: 100%;
-          display: inline-flex;
-          padding: 0 1rem;
-          border-right: 0.2rem solid var(--color-dark-grey-80);
-          white-space: nowrap;
-          cursor: pointer;
-          background: var(--color-dark-grey-200);
-          color: var(--color-dark-grey-500);
-        }
-
-        &__tab:hover {
-          color: var(--color-light-grey-200);
-        }
-
-        &__tab--active {
-          color: var(--color-light-grey-200);
-          position: relative;
-        }
-
-        &__tab--active::after {
-          content: '';
-          height: 0.2rem;
-          width: 100%;
-          position: absolute;
-          bottom: 0;
-          background: var(--color-yellow-200);
-        }
+      .diagram-canvas {
+        border-radius: 0.2rem;
       }
 
-      &__footer {
-        @include flexVCenter;
+      &__frame {
+        height: 100%;
+        width: 100%;
+        position: relative;
 
-        height: 2rem;
-        background: var(--color-dark-grey-250);
-        color: var(--color-light-grey-400);
-        padding: 0 0.5rem;
-        user-select: none;
-        cursor: default;
+        &__display {
+          height: 100%;
+          width: 100%;
+        }
 
-        &__icon {
+        &__navigator {
           @include flexCenter;
 
           height: 100%;
+          width: 3rem;
+          background: transparent;
+          position: absolute;
+          top: 0;
+
+          &--back {
+            left: 0;
+          }
+
+          &--next {
+            right: 0;
+          }
 
           svg {
-            font-size: 1.2rem;
+            font-size: 2rem;
+            color: transparent;
+          }
+
+          &:hover {
+            background: var(--color-dark-shade-50);
+            cursor: pointer;
+
+            svg {
+              color: var(--color-dark-shade-800);
+            }
+          }
+
+          &[disabled] {
+            cursor: not-allowed;
+
+            svg {
+              color: transparent;
+            }
+
+            &:hover svg {
+              color: var(--color-dark-shade-200);
+            }
           }
         }
 
-        &__text {
-          margin-left: 0.5rem;
-          font-size: 1.2rem;
-          font-weight: 500;
-        }
-      }
+        &__indicators {
+          @include flexCenter;
 
-      &__diagram-selector {
-        width: 100%;
+          height: 2.4rem;
+          width: 100%;
+          position: absolute;
+          bottom: 0;
+          background: transparent;
+          color: var(--color-light-grey-400);
+          padding: 0 0.5rem;
+          user-select: none;
+          cursor: default;
+        }
+
+        &__indicators__notch {
+          @include flexCenter;
+
+          height: 100%;
+          background: var(--color-dark-shade-50);
+          padding: 0 3rem;
+          border-radius: 1rem 1rem 0 0;
+        }
+
+        &__indicator {
+          margin: 0 0.5rem;
+
+          svg {
+            font-size: 1.2rem;
+            color: var(--color-dark-shade-50);
+          }
+        }
+
+        &__indicator--active svg {
+          color: var(--color-blue-150);
+        }
       }
 
       &__content {
@@ -533,6 +536,101 @@
         border-left: 0.1rem solid var(--color-dark-grey-50);
         user-select: none;
       }
+    }
+  }
+
+  &__usages {
+    padding: 1rem 0;
+  }
+
+  &__usage {
+    padding: 2rem;
+
+    & + & {
+      border-top: 1rem solid var(--color-dark-grey-100);
+    }
+
+    &__title {
+      font-size: 2.4rem;
+      font-weight: 900;
+    }
+
+    &__description__markdown-content {
+      padding: 0;
+      margin: 2rem 0;
+    }
+
+    &__query {
+      height: 20rem;
+    }
+
+    &__block {
+      min-height: 20rem;
+    }
+
+    &__block + &__block {
+      margin-top: 1rem;
+    }
+
+    &__block--collapsed {
+      height: 2.8rem;
+      min-height: 2.8rem;
+    }
+
+    &__block__header {
+      @include flexVCenter;
+
+      background: var(--color-blue-150);
+      color: var(--color-light-grey-0);
+      height: 2.8rem;
+      width: 100%;
+      border-radius: 0.2rem;
+
+      &__toggler {
+        @include flexCenter;
+
+        width: 2.8rem;
+
+        svg {
+          font-size: 1.6rem;
+        }
+      }
+
+      &__title {
+        @include flexVCenter;
+
+        font-family: 'Roboto Mono', monospace;
+        font-weight: 700;
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      &__actions {
+        @include flexVCenter;
+
+        height: 2.8rem;
+      }
+
+      &__action {
+        @include flexCenter;
+        @include flexConstantDimension;
+
+        height: 2.8rem;
+        width: 2.8rem;
+        color: var(--color-light-grey-0);
+
+        &:hover {
+          background: var(--color-dark-shade-100);
+        }
+      }
+    }
+
+    &__block__content {
+      height: calc(100% - 2.8rem);
+    }
+
+    &__block__content__table {
+      width: 100%;
     }
   }
 }

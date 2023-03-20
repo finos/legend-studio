@@ -26,6 +26,7 @@ import {
   type DocumentationEntry,
   type PureGrammarTextSuggestion,
   LegendApplicationPlugin,
+  type ApplicationPageEntry,
 } from '@finos/legend-application';
 import type { TestableMetadata } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type {
@@ -69,6 +70,10 @@ export type ModelImporterExtensionConfiguration = {
   ) => Promise<void>;
 };
 
+export type LegendStudioApplicationPageEntry = ApplicationPageEntry & {
+  bypassSDLC?: boolean | undefined;
+};
+
 export type TestableMetadataGetter = (
   testable: Testable,
   editorStore: EditorStore,
@@ -84,6 +89,11 @@ export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlu
   install(pluginManager: LegendStudioPluginManager): void {
     pluginManager.registerApplicationPlugin(this);
   }
+
+  /**
+   * Get the list of application page entries to be rendered
+   */
+  override getExtraApplicationPageEntries?(): LegendStudioApplicationPageEntry[];
 
   /**
    * Get the list of items to be rendered in the explorer context menu.

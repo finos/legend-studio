@@ -65,6 +65,9 @@ export class DataSpacePreviewState extends EditorExtensionState {
 
   setDataSpace(val: DataSpace | undefined): void {
     this.dataSpace = val;
+    if (val === undefined) {
+      this.dataSpaceViewerState = undefined;
+    }
   }
 
   *previewDataSpace(dataSpace: DataSpace): GeneratorFn<void> {
@@ -128,6 +131,11 @@ export class DataSpacePreviewState extends EditorExtensionState {
               this.editorStore.applicationStore.alertUnhandledError,
             );
           },
+        },
+        {
+          HACKY__previewExperimentalFeatures:
+            this.editorStore.applicationStore.config.options
+              .HACKY__previewExperimentalFeatures,
         },
       );
       this.loadDataSpaceState.pass();

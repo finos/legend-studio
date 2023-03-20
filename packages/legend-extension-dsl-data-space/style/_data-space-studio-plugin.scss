@@ -80,3 +80,30 @@
     }
   }
 }
+
+.data-space-preview {
+  height: 100%;
+  width: 100%;
+
+  &__failure {
+    @include flexVCenter;
+
+    height: 2.8rem;
+
+    &__icon {
+      @include flexCenter;
+
+      height: 100%;
+    }
+
+    &__text {
+      margin-left: 0.5rem;
+      color: var(--color-dark-grey-300);
+      font-weight: 700;
+      cursor: default;
+      user-select: none;
+      text-align: center;
+      line-height: 2.8rem;
+    }
+  }
+}

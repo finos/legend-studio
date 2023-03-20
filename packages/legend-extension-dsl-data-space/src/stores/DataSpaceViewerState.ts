@@ -38,7 +38,7 @@ import type {
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   OVERVIEW = 'OVERVIEW',
   DOCUMENTATION = 'DOCUMENTATION',
-  SAMPLE_DATA_TABLE = 'SAMPLE_DATA_TABLE',
+  USAGE_SHOWCASE = 'USAGE SHOWCASE',
   EXECUTION = 'EXECUTION',
   ENTITLEMENT = 'ENTITLEMENT',
   TEST_DATA = 'TEST_DATA',
@@ -74,6 +74,8 @@ export class DataSpaceViewerState {
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
 
+  HACKY__previewExperimentalFeatures = false;
+
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: BasicGraphManagerState,
@@ -94,6 +96,9 @@ export class DataSpaceViewerState {
         entityPath: string | undefined,
       ) => Promise<void>;
       onDiagramClassDoubleClick: (classView: ClassView) => void;
+    },
+    options?: {
+      HACKY__previewExperimentalFeatures?: boolean | undefined;
     },
   ) {
     makeObservable(this, {
@@ -125,6 +130,9 @@ export class DataSpaceViewerState {
     this.viewProject = actions.viewProject;
     this.viewSDLCProject = actions.viewSDLCProject;
     this.onDiagramClassDoubleClick = actions.onDiagramClassDoubleClick;
+    this.HACKY__previewExperimentalFeatures = Boolean(
+      options?.HACKY__previewExperimentalFeatures,
+    );
   }
 
   get renderer(): DiagramRenderer {

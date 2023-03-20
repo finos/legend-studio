@@ -27,24 +27,24 @@ import {
   PURE_MappingIcon,
   PURE_RuntimeIcon,
   CogIcon,
-  KeyIcon,
-  FlaskIcon,
-  ShieldIcon,
-  LightBulbIcon,
   InfoCircleIcon,
   ExternalLinkIcon,
   useResizeDetector,
-  DropdownMenu,
-  MenuContent,
-  MenuContentItem,
-  CaretDownIcon,
   ExternalLinkSquareIcon,
   DocumentationIcon,
-  TableIcon,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
   MarkdownTextViewer,
+  PencilIcon,
+  DisplayIcon,
+  ChevronRightIcon,
+  ChevronLeftIcon,
+  CircleIcon,
+  CaretDownIcon,
+  CaretRightIcon,
+  CopyIcon,
+  MoreHorizontalIcon,
 } from '@finos/legend-art';
 import {
   type Diagram,
@@ -61,8 +61,22 @@ import {
 } from '../stores/DataSpaceViewerState.js';
 import type { DataSpaceExecutionContextAnalysisResult } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  EDITOR_LANGUAGE,
+  TextInputEditor,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { DSL_DataSpace_LegendApplicationPlugin } from './DSL_DataSpace_LegendApplicationPlugin.js';
+import {
+  getNullableFirstElement,
+  getNullableLastElement,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
+import {
+  HACKY__DataSpaceUsageShowcaseTDSOutputDescription,
+  type HACKY__DataSpaceUsageShowcase,
+  HACKY__DataSpaceUsageShowcaseTDSSampleOutput,
+} from '../graphManager/action/analytics/HACKY__DataSpaceUsageShowcase.js';
 
 interface DataSpaceViewerActivityConfig {
   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE;
@@ -122,6 +136,35 @@ const DataSpaceOverview = observer(
     // diagram selector
     const diagramCanvasRef = useRef<HTMLDivElement>(null);
 
+    const showPreviousDiagram = (): void => {
+      if (!dataSpaceViewerState.currentDiagram) {
+        return;
+      }
+      const idx = analysisResult.featuredDiagrams.indexOf(
+        dataSpaceViewerState.currentDiagram,
+      );
+      if (idx === 0 || idx === -1) {
+        return;
+      }
+      dataSpaceViewerState.setCurrentDiagram(
+        guaranteeNonNullable(analysisResult.featuredDiagrams[idx - 1]),
+      );
+    };
+    const showNextDiagram = (): void => {
+      if (!dataSpaceViewerState.currentDiagram) {
+        return;
+      }
+      const idx = analysisResult.featuredDiagrams.indexOf(
+        dataSpaceViewerState.currentDiagram,
+      );
+      if (idx === analysisResult.featuredDiagrams.length - 1 || idx === -1) {
+        return;
+      }
+      dataSpaceViewerState.setCurrentDiagram(
+        guaranteeNonNullable(analysisResult.featuredDiagrams[idx + 1]),
+      );
+    };
+
     if (analysisResult.featuredDiagrams.length === 0) {
       return <BlankPanelContent>No diagrams available</BlankPanelContent>;
     }
@@ -149,43 +192,61 @@ const DataSpaceOverview = observer(
           </ResizablePanel>
           <ResizablePanelSplitter />
           <ResizablePanel minSize={100}>
-            <div className="data-space__viewer__overview__diagrams">
-              <div className="data-space__viewer__overview__diagrams__header">
-                <div className="data-space__viewer__overview__diagrams__header__tabs">
-                  {analysisResult.featuredDiagrams.map((diagram) => (
-                    <button
-                      key={diagram.path}
-                      className={clsx(
-                        'data-space__viewer__overview__diagrams__header__tab',
-                        {
-                          'data-space__viewer__overview__diagrams__header__tab--active':
-                            dataSpaceViewerState.currentDiagram === diagram,
-                        },
-                      )}
-                      onClick={() =>
-                        dataSpaceViewerState.setCurrentDiagram(diagram)
-                      }
-                    >
-                      {diagram.name}
-                    </button>
-                  ))}
+            <div className="data-space__viewer__overview__diagrams__carousel">
+              <div className="data-space__viewer__overview__diagrams__carousel__frame">
+                <div className="data-space__viewer__overview__diagrams__carousel__frame__display">
+                  {dataSpaceViewerState.currentDiagram && (
+                    <DataSpaceDiagramCanvas
+                      dataSpaceViewerState={dataSpaceViewerState}
+                      diagram={dataSpaceViewerState.currentDiagram}
+                      ref={diagramCanvasRef}
+                    />
+                  )}
                 </div>
-              </div>
-              <div className="data-space__viewer__overview__diagrams__content">
-                {dataSpaceViewerState.currentDiagram && (
-                  <DataSpaceDiagramCanvas
-                    dataSpaceViewerState={dataSpaceViewerState}
-                    diagram={dataSpaceViewerState.currentDiagram}
-                    ref={diagramCanvasRef}
-                  />
-                )}
-              </div>
-              <div className="data-space__viewer__overview__diagrams__footer">
-                <div className="data-space__viewer__overview__diagrams__footer__icon">
-                  <LightBulbIcon />
-                </div>
-                <div className="data-space__viewer__overview__diagrams__footer__text">
-                  Double-click a class to start a query for that class
+                <button
+                  className="data-space__viewer__overview__diagrams__carousel__frame__navigator data-space__viewer__overview__diagrams__carousel__frame__navigator--back"
+                  tabIndex={-1}
+                  title="Previous"
+                  disabled={
+                    getNullableFirstElement(analysisResult.featuredDiagrams) ===
+                    dataSpaceViewerState.currentDiagram
+                  }
+                  onClick={showPreviousDiagram}
+                >
+                  <ChevronLeftIcon />
+                </button>
+                <button
+                  className="data-space__viewer__overview__diagrams__carousel__frame__navigator data-space__viewer__overview__diagrams__carousel__frame__navigator--next"
+                  tabIndex={-1}
+                  title="Previous"
+                  disabled={
+                    getNullableLastElement(analysisResult.featuredDiagrams) ===
+                    dataSpaceViewerState.currentDiagram
+                  }
+                  onClick={showNextDiagram}
+                >
+                  <ChevronRightIcon />
+                </button>
+                <div className="data-space__viewer__overview__diagrams__carousel__frame__indicators">
+                  <div className="data-space__viewer__overview__diagrams__carousel__frame__indicators__notch">
+                    {analysisResult.featuredDiagrams.map((diagram) => (
+                      <button
+                        key={diagram.path}
+                        className={clsx(
+                          'data-space__viewer__overview__diagrams__carousel__frame__indicator',
+                          {
+                            'data-space__viewer__overview__diagrams__carousel__frame__indicator--active':
+                              dataSpaceViewerState.currentDiagram === diagram,
+                          },
+                        )}
+                        onClick={() =>
+                          dataSpaceViewerState.setCurrentDiagram(diagram)
+                        }
+                      >
+                        <CircleIcon />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -217,10 +278,7 @@ const DataSpaceDocumentation = observer(
           </thead>
           <tbody>
             {documentationEntries.map((entry) => (
-              <tr
-                key={entry.uuid}
-                className={'query-editor__query-loader__body__table__row'}
-              >
+              <tr key={entry.uuid}>
                 <td className="table__cell--left">{entry.elementPath}</td>
                 <td className="table__cell--left">
                   {entry.subElementText ?? ''}
@@ -379,7 +437,9 @@ const DataSpaceExecutionViewer = observer(
 const DataSpaceInfo = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+    const applicationStore = useApplicationStore();
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
+
     const viewProject = (): void =>
       dataSpaceViewerState.viewProject(
         dataSpaceViewerState.groupId,
@@ -394,6 +454,15 @@ const DataSpaceInfo = observer(
         dataSpaceViewerState.versionId,
         analysisResult.path,
       );
+    const viewDataSpaceInSDLCProject = (): void => {
+      dataSpaceViewerState
+        .viewSDLCProject(
+          dataSpaceViewerState.groupId,
+          dataSpaceViewerState.artifactId,
+          analysisResult.path,
+        )
+        .catch(applicationStore.alertUnhandledError);
+    };
 
     return (
       <div className="data-space__viewer__info">
@@ -405,7 +474,7 @@ const DataSpaceInfo = observer(
             <button
               className="data-space__viewer__info__project-info__value"
               tabIndex={-1}
-              title="View Project"
+              title="Click to View Project"
               onClick={viewProject}
             >
               {generateGAVCoordinates(
@@ -414,9 +483,14 @@ const DataSpaceInfo = observer(
                 dataSpaceViewerState.versionId,
               )}
             </button>
-            <div className="data-space__viewer__info__project-info__link">
+            <button
+              className="data-space__viewer__info__project-info__link"
+              tabIndex={-1}
+              title="View Project"
+              onClick={viewProject}
+            >
               <ExternalLinkIcon />
-            </div>
+            </button>
           </div>
           <div className="data-space__viewer__info__section__entry">
             <div className="data-space__viewer__info__project-info__label">
@@ -425,14 +499,27 @@ const DataSpaceInfo = observer(
             <button
               className="data-space__viewer__info__project-info__value"
               tabIndex={-1}
-              title="View Data Space"
+              title="Click to View Data Space"
               onClick={viewDataSpaceInProject}
             >
               {analysisResult.path}
             </button>
-            <div className="data-space__viewer__info__project-info__link">
+            <button
+              className="data-space__viewer__info__project-info__link"
+              tabIndex={-1}
+              title="Edit Data Space"
+              onClick={viewDataSpaceInSDLCProject}
+            >
+              <PencilIcon />
+            </button>
+            <button
+              className="data-space__viewer__info__project-info__link"
+              tabIndex={-1}
+              title="View Data Space"
+              onClick={viewDataSpaceInProject}
+            >
               <ExternalLinkIcon />
-            </div>
+            </button>
           </div>
         </div>
         <div className="data-space__viewer__info__section">
@@ -560,6 +647,305 @@ const renderDataSpaceCheckEntitlementsEditor = (
   );
 };
 
+const DataSpaceUsageShowcaseTDSSampleOutputViewer = observer(
+  (props: {
+    dataSpaceViewerState: DataSpaceViewerState;
+    showcase: HACKY__DataSpaceUsageShowcase;
+    sampleOutput: HACKY__DataSpaceUsageShowcaseTDSSampleOutput;
+  }) => {
+    const { showcase, sampleOutput: sampleOutput } = props;
+
+    const toggleShowSampleOutput = (): void =>
+      showcase.setShowSampleOutput(!showcase.showSampleOutput);
+
+    return (
+      <div
+        className={clsx('data-space__viewer__usage__block', {
+          'data-space__viewer__usage__block--collapsed':
+            !showcase.showSampleOutput,
+        })}
+      >
+        <button
+          className="data-space__viewer__usage__block__header"
+          tabIndex={-1}
+          onClick={toggleShowSampleOutput}
+        >
+          <div className="data-space__viewer__usage__block__header__toggler">
+            {showcase.showSampleOutput ? <CaretDownIcon /> : <CaretRightIcon />}
+          </div>
+          <div className="data-space__viewer__usage__block__header__title">
+            Sample Output
+          </div>
+        </button>
+        {showcase.showSampleOutput && (
+          <div className="data-space__viewer__usage__block__content">
+            <table className="table data-space__viewer__usage__block__content__table">
+              <thead>
+                <tr>
+                  {sampleOutput.headers.map((header, idx) => (
+                    // eslint-disable-next-line react/no-array-index-key
+                    <th key={idx} className="table__cell--left">
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sampleOutput.rows.map((row, idx) => (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <tr key={idx}>
+                    {row.map((cell, rowIdx) => (
+                      // eslint-disable-next-line react/no-array-index-key
+                      <td key={rowIdx} className="table__cell--left">
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+
+const DataSpaceUsageShowcaseSampleOutputViewer = observer(
+  (props: {
+    dataSpaceViewerState: DataSpaceViewerState;
+    showcase: HACKY__DataSpaceUsageShowcase;
+  }) => {
+    const { dataSpaceViewerState, showcase } = props;
+    if (
+      showcase.outputDescription.sampleOutput instanceof
+      HACKY__DataSpaceUsageShowcaseTDSSampleOutput
+    ) {
+      return (
+        <DataSpaceUsageShowcaseTDSSampleOutputViewer
+          dataSpaceViewerState={dataSpaceViewerState}
+          showcase={showcase}
+          sampleOutput={showcase.outputDescription.sampleOutput}
+        />
+      );
+    }
+    return (
+      <BlankPanelContent>Can&apos;t display sample output</BlankPanelContent>
+    );
+  },
+);
+
+const DataSpaceUsageShowcaseTDSOutputDescriptionViewer = observer(
+  (props: {
+    dataSpaceViewerState: DataSpaceViewerState;
+    showcase: HACKY__DataSpaceUsageShowcase;
+    description: HACKY__DataSpaceUsageShowcaseTDSOutputDescription;
+  }) => {
+    const { showcase, description: description } = props;
+
+    const toggleShowOutputDescription = (): void =>
+      showcase.setShowOutputDescription(!showcase.showOutputDescription);
+
+    return (
+      <div
+        className={clsx('data-space__viewer__usage__block', {
+          'data-space__viewer__usage__block--collapsed':
+            !showcase.showOutputDescription,
+        })}
+      >
+        <button
+          className="data-space__viewer__usage__block__header"
+          tabIndex={-1}
+          onClick={toggleShowOutputDescription}
+        >
+          <div className="data-space__viewer__usage__block__header__toggler">
+            {showcase.showOutputDescription ? (
+              <CaretDownIcon />
+            ) : (
+              <CaretRightIcon />
+            )}
+          </div>
+          <div className="data-space__viewer__usage__block__header__title">
+            Output Description
+          </div>
+        </button>
+        {showcase.showOutputDescription && (
+          <div className="data-space__viewer__usage__block__content">
+            <table className="table data-space__viewer__usage__block__content__table">
+              <thead>
+                <tr>
+                  <th className="table__cell--left">Column Name</th>
+                  <th className="table__cell--left">Description</th>
+                  <th className="table__cell--left">Sample Values</th>
+                </tr>
+              </thead>
+              <tbody>
+                {description.columns.map((column) => (
+                  <tr key={column.uuid}>
+                    <td className="table__cell--left">{column.name}</td>
+                    <td className="table__cell--left">{column.description}</td>
+                    <td className="table__cell--left">
+                      {column.sampleValues.join(', ')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+
+const DataSpaceUsageShowcaseOutputDescriptionViewer = observer(
+  (props: {
+    dataSpaceViewerState: DataSpaceViewerState;
+    showcase: HACKY__DataSpaceUsageShowcase;
+  }) => {
+    const { dataSpaceViewerState, showcase } = props;
+    if (
+      showcase.outputDescription instanceof
+      HACKY__DataSpaceUsageShowcaseTDSOutputDescription
+    ) {
+      return (
+        <DataSpaceUsageShowcaseTDSOutputDescriptionViewer
+          dataSpaceViewerState={dataSpaceViewerState}
+          showcase={showcase}
+          description={showcase.outputDescription}
+        />
+      );
+    }
+    return (
+      <BlankPanelContent>
+        Can&apos;t display output description
+      </BlankPanelContent>
+    );
+  },
+);
+
+const DataSpaceUsageShowcaseViewer = observer(
+  (props: {
+    dataSpaceViewerState: DataSpaceViewerState;
+    showcase: HACKY__DataSpaceUsageShowcase;
+  }) => {
+    const { dataSpaceViewerState, showcase } = props;
+    const applicationStore = useApplicationStore();
+
+    const toggleShowQuery = (): void =>
+      showcase.setShowQuery(!showcase.showQuery);
+    const copyQuery: React.MouseEventHandler<HTMLButtonElement> = (
+      event,
+    ): void => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      applicationStore.clipboardService
+        .copyTextToClipboard(showcase.query)
+        .catch(applicationStore.alertUnhandledError);
+    };
+
+    return (
+      <div className="data-space__viewer__usage">
+        <div className="data-space__viewer__usage__title">{showcase.title}</div>
+        {showcase.description !== undefined && (
+          <div className="data-data-space__viewer__usage__description">
+            <MarkdownTextViewer
+              className="data-space__viewer__usage__description__markdown-content"
+              value={{
+                value: showcase.description,
+              }}
+            />
+          </div>
+        )}
+        <div
+          className={clsx(
+            'data-space__viewer__usage__block data-space__viewer__usage__query',
+            {
+              'data-space__viewer__usage__block--collapsed':
+                !showcase.showQuery,
+            },
+          )}
+        >
+          <button
+            className="data-space__viewer__usage__block__header"
+            tabIndex={-1}
+            onClick={toggleShowQuery}
+          >
+            <div className="data-space__viewer__usage__block__header__toggler">
+              {showcase.showQuery ? <CaretDownIcon /> : <CaretRightIcon />}
+            </div>
+            <div className="data-space__viewer__usage__block__header__title">
+              Query
+            </div>
+            <div className="data-space__viewer__usage__block__header__actions">
+              <button
+                className="data-space__viewer__usage__block__header__action"
+                tabIndex={-1}
+                onClick={copyQuery}
+              >
+                <CopyIcon />
+              </button>
+              <button
+                className="data-space__viewer__usage__block__header__action"
+                tabIndex={-1}
+              >
+                <MoreHorizontalIcon />
+              </button>
+            </div>
+          </button>
+          {showcase.showQuery && (
+            <div className="data-space__viewer__usage__block__content">
+              <TextInputEditor
+                inputValue={showcase.query}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.PURE}
+                hideGutter={true}
+                showMiniMap={false}
+              />
+            </div>
+          )}
+        </div>
+        <DataSpaceUsageShowcaseOutputDescriptionViewer
+          dataSpaceViewerState={dataSpaceViewerState}
+          showcase={showcase}
+        />
+        <DataSpaceUsageShowcaseSampleOutputViewer
+          dataSpaceViewerState={dataSpaceViewerState}
+          showcase={showcase}
+        />
+      </div>
+    );
+  },
+);
+
+const DataSpaceUsageShowcasesPanel = observer(
+  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
+    const { dataSpaceViewerState } = props;
+
+    if (!dataSpaceViewerState.HACKY__previewExperimentalFeatures) {
+      return (
+        <BlankPanelContent>
+          Usage Showcases (Work in Progress)
+        </BlankPanelContent>
+      );
+    }
+    return (
+      <div className="data-space__viewer__main-panel__content data-space__viewer__usages">
+        {dataSpaceViewerState.dataSpaceAnalysisResult.HACKY__usageShowcases.map(
+          (showcase) => (
+            <DataSpaceUsageShowcaseViewer
+              key={showcase.uuid}
+              dataSpaceViewerState={dataSpaceViewerState}
+              showcase={showcase}
+            />
+          ),
+        )}
+      </div>
+    );
+  },
+);
+
 export const DataSpaceViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
@@ -582,30 +968,30 @@ export const DataSpaceViewer = observer(
         icon: <DocumentationIcon />,
       },
       {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.USAGE_SHOWCASE,
+        title: 'Usage Showcase',
+        icon: <DisplayIcon />,
+      },
+      {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION,
         title: 'Execution Context',
         icon: <PlayIcon />,
       },
-      {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA,
-        title: 'Test Data',
-        icon: <FlaskIcon />,
-      },
-      {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.SAMPLE_DATA_TABLE,
-        title: 'Sample Data Table',
-        icon: <TableIcon />,
-      },
-      {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT,
-        title: 'Entitlement',
-        icon: <KeyIcon />,
-      },
-      {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_COVERAGE,
-        title: 'Test Coverage',
-        icon: <ShieldIcon />,
-      },
+      // {
+      //   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA,
+      //   title: 'Test Data',
+      //   icon: <FlaskIcon />,
+      // },
+      // {
+      //   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT,
+      //   title: 'Entitlement',
+      //   icon: <KeyIcon />,
+      // },
+      // {
+      //   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_COVERAGE,
+      //   title: 'Test Coverage',
+      //   icon: <ShieldIcon />,
+      // },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO,
         title: 'Info',
@@ -625,15 +1011,6 @@ export const DataSpaceViewer = observer(
         dataSpaceViewerState.versionId,
         analysisResult.path,
       );
-    const viewSDLCProject = (): void => {
-      dataSpaceViewerState
-        .viewSDLCProject(
-          dataSpaceViewerState.groupId,
-          dataSpaceViewerState.artifactId,
-          analysisResult.path,
-        )
-        .catch(applicationStore.alertUnhandledError);
-    };
 
     return (
       <div className="data-space__viewer">
@@ -661,18 +1038,6 @@ export const DataSpaceViewer = observer(
                 <ExternalLinkSquareIcon />
               </div>
             </button>
-            <DropdownMenu
-              className="data-space__viewer__title__dropdown-trigger"
-              content={
-                <MenuContent>
-                  <MenuContentItem onClick={viewSDLCProject}>
-                    View SDLC project
-                  </MenuContentItem>
-                </MenuContent>
-              }
-            >
-              <CaretDownIcon title="Show more options..." />
-            </DropdownMenu>
           </div>
         </div>
         <div className="data-space__viewer__content">
@@ -715,10 +1080,10 @@ export const DataSpaceViewer = observer(
                 />
               )}
               {dataSpaceViewerState.currentActivity ===
-                DATA_SPACE_VIEWER_ACTIVITY_MODE.SAMPLE_DATA_TABLE && (
-                <BlankPanelContent>
-                  View sample data table (Work in Progress)
-                </BlankPanelContent>
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.USAGE_SHOWCASE && (
+                <DataSpaceUsageShowcasesPanel
+                  dataSpaceViewerState={dataSpaceViewerState}
+                />
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT &&
@@ -731,7 +1096,7 @@ export const DataSpaceViewer = observer(
                         plugin instanceof DSL_DataSpace_LegendApplicationPlugin,
                     ) as DSL_DataSpace_LegendApplicationPlugin[],
                 )}
-              {dataSpaceViewerState.currentActivity ===
+              {/* {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA && (
                 <BlankPanelContent>
                   View test data (Work in Progress)
@@ -742,7 +1107,7 @@ export const DataSpaceViewer = observer(
                 <BlankPanelContent>
                   View test coverage (Work in Progress)
                 </BlankPanelContent>
-              )}
+              )} */}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO && (
                 <DataSpaceInfo dataSpaceViewerState={dataSpaceViewerState} />

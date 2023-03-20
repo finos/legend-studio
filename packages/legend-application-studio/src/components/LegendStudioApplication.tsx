@@ -115,6 +115,12 @@ export const LegendStudioApplicationRoot = observer(() => {
   const extraApplicationPageEntries = applicationStore.pluginManager
     .getApplicationPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
+  const SDLCBypassedPageEntries = extraApplicationPageEntries.filter(
+    (entry) => entry.bypassSDLC,
+  );
+  const SDLCPageEntries = extraApplicationPageEntries.filter(
+    (entry) => !entry.bypassSDLC,
+  );
 
   useEffect(() => {
     flowResult(baseStore.initialize()).catch(
@@ -144,6 +150,14 @@ export const LegendStudioApplicationRoot = observer(() => {
               ]}
               component={ProjectViewer}
             />
+            {SDLCBypassedPageEntries.map((entry) => (
+              <Route
+                key={entry.key}
+                exact={true}
+                path={entry.urlPatterns.map(generateExtensionUrlPattern)}
+                component={entry.renderer as React.ComponentType<unknown>}
+              />
+            ))}
             <Route>
               <LegendStudioNotFoundRouteScreen />
             </Route>
@@ -191,7 +205,7 @@ export const LegendStudioApplicationRoot = observer(() => {
               ]}
               component={WorkspaceSetup}
             />
-            {extraApplicationPageEntries.map((entry) => (
+            {SDLCPageEntries.map((entry) => (
               <Route
                 key={entry.key}
                 exact={true}

@@ -40,6 +40,7 @@ import {
   uniq,
   IllegalStateError,
   filterByType,
+  getNullableFirstElement,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -2613,12 +2614,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: ServiceRegistrationOptions,
   ): Promise<BulkServiceRegistrationResult[]> {
     const serverServiceInfo = await this.engine.getServerServiceInfo();
-    //input
     const input: V1_PureModelContext[] = [];
-    const result: BulkServiceRegistrationResult[] = [];
 
     const protocol = new V1_Protocol(
-      'pure',
+      V1_PureGraphManager.PURE_PROTOCOL_NAME,
       serverServiceInfo.services.dependencies.pure,
     );
     switch (executionMode) {
@@ -2700,45 +2699,39 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
     }
 
-    await Promise.all(
-      input.map(async (res) => {
-        await this.engine
-          .registerService(
-            res,
-            server,
-            executionMode,
-            Boolean(options?.TEMPORARY__useStoreModel),
-          )
-          .then((serviceResult) => {
-            if (serviceResult.status === 'success') {
-              result.push(
-                new BulkRegistrationResultSuccess(
-                  serviceResult.serverURL,
-                  serviceResult.pattern,
-                  serviceResult.serviceInstanceId,
-                ),
+    const results = (
+      await Promise.all(
+        input.map(async (graphData) => {
+          try {
+            const result = await this.engine.registerService(
+              graphData,
+              server,
+              executionMode,
+              Boolean(options?.TEMPORARY__useStoreModel),
+            );
+            if (result.status === 'success') {
+              return new BulkRegistrationResultSuccess(
+                result.serverURL,
+                result.pattern,
+                result.serviceInstanceId,
               );
             }
-          })
-          .catch((errorResult) => {
-            assertErrorThrown(errorResult);
-            const failedResult = new BulkRegistrationResultFail(
-              errorResult.message,
-            );
-
-            if (res instanceof V1_PureModelContextData) {
-              const service = res.elements.filter(filterByType(V1_Service))[0];
-              const metamodelService = service
-                ? graph.getNullableService(service.path)
-                : undefined;
-              failedResult.servicePath = metamodelService?.pattern;
-              failedResult.servicePath = service?.path;
+            return undefined;
+          } catch (error) {
+            assertErrorThrown(error);
+            const result = new BulkRegistrationResultFail(error.message);
+            if (graphData instanceof V1_PureModelContextData) {
+              result.servicePath = getNullableFirstElement(
+                graphData.elements.filter(filterByType(V1_Service)),
+              )?.path;
             }
-            result.push(failedResult);
-          });
-      }),
-    );
-    return Promise.resolve(result);
+            return result;
+          }
+        }),
+      )
+    ).filter(isNonNullable);
+
+    return results;
   }
 
   async activateService(serviceUrl: string, serviceId: string): Promise<void> {
