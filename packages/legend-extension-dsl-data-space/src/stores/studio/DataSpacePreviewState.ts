@@ -132,6 +132,11 @@ export class DataSpacePreviewState extends EditorExtensionState {
             );
           },
         },
+        {
+          HACKY__previewExperimentalFeatures:
+            this.editorStore.applicationStore.config.options
+              .HACKY__previewExperimentalFeatures,
+        },
       );
       this.loadDataSpaceState.pass();
     } catch (error) {
