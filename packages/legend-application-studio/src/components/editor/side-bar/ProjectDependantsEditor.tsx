@@ -15,10 +15,7 @@
  */
 
 import { useEffect } from 'react';
-import {
-  useApplicationStore,
-  generateExtensionUrlPattern,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   PanelListItem,
   Badge,
@@ -43,7 +40,6 @@ import { observer } from 'mobx-react-lite';
 import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
-  generateDependencyDashboardRoute,
   generateViewProjectByGAVRoute,
   generateViewVersionRoute,
 } from '../../../application/LegendStudioNavigation.js';
@@ -146,7 +142,6 @@ export const ProjectDependantsEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const projectOverviewState = editorStore.projectOverviewState;
-  const configState = editorStore.projectConfigurationEditorState;
   const dependantEditorState = projectOverviewState.projectDependantEditorState;
   const dependants = dependantEditorState.dependants;
   const isLoading =
@@ -196,19 +191,20 @@ export const ProjectDependantsEditor = observer(() => {
           <button
             className="btn btn--dark"
             tabIndex={-1}
-            onClick={() => {
-              applicationStore.navigationService.navigator.visitAddress(
-                generateExtensionUrlPattern(
-                  generateDependencyDashboardRoute(
-                    configState.currentProjectConfiguration.projectId,
-                    configState.currentProjectConfiguration.groupId,
-                    configState.currentProjectConfiguration.artifactId,
-                    undefined,
-                    undefined,
-                  ),
-                ),
-              );
-            }}
+            // FIXME: @xannem we must modularize this instead of depending on an extension-specific logic like this
+            // onClick={() => {
+            //   applicationStore.navigationService.navigator.visitAddress(
+            //     generateExtensionUrlPattern(
+            //       generateDependencyDashboardRoute(
+            //         configState.currentProjectConfiguration.projectId,
+            //         configState.currentProjectConfiguration.groupId,
+            //         configState.currentProjectConfiguration.artifactId,
+            //         undefined,
+            //         undefined,
+            //       ),
+            //     ),
+            //   );
+            // }}
             title="Open dependants dashboard"
           >
             Open Dependants Dashboard

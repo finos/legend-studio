@@ -22,6 +22,7 @@ export * from './application/LegendStudioEvent.js';
 export {
   generateEditorRoute,
   generateReviewRoute,
+  generateViewProjectRoute,
 } from './application/LegendStudioNavigation.js';
 export { useLegendStudioApplicationStore } from './components/LegendStudioBaseStoreProvider.js';
 export type { LegendStudioApplicationStore } from './stores/LegendStudioBaseStore.js';

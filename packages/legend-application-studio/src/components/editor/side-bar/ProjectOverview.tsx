@@ -863,6 +863,7 @@ export const ProjectOverview = observer(() => {
         return <OverviewViewer />;
       case PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE:
         return <ReleaseEditor />;
+      // TODO: @xannem move this into dependency dashboard extension
       case PROJECT_OVERVIEW_ACTIVITY_MODE.DEPENDANTS:
         return <ProjectDependantsEditor />;
       case PROJECT_OVERVIEW_ACTIVITY_MODE.VERSIONS:

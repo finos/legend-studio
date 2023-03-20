@@ -51,8 +51,6 @@ export const LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN = Object.freeze({
   VIEW_BY_GAV_ENTITY: `/view/archive/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.GAV}/entity/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.ENTITY_PATH}`,
 });
 
-export const LEGEND_DEPENDENCY_ROUTE_PATTERN = `/dependencies/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.PROJECT_ID}?/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.GAV}?/:testsBatchId?`;
-
 export type ReviewPathParams = {
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.PROJECT_ID]: string;
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.REVIEW_ID]: string;
@@ -232,43 +230,3 @@ export const generateViewRevisionRoute = (
         revisionId,
         entityPath,
       });
-
-const generateDependencyDashboardGavRoute = (
-  projectId: string,
-  groupId: string,
-  artifactId: string,
-  versionId?: string,
-  testsBatchId?: string | undefined,
-): string => {
-  if (testsBatchId) {
-    return generatePath(LEGEND_DEPENDENCY_ROUTE_PATTERN, {
-      projectId: projectId,
-      gav: generateGAVCoordinates(groupId, artifactId, versionId),
-      testsBatchId: testsBatchId,
-    });
-  }
-  return generatePath(LEGEND_DEPENDENCY_ROUTE_PATTERN, {
-    projectId: projectId,
-    gav: generateGAVCoordinates(groupId, artifactId, versionId),
-  });
-};
-
-export const generateDependencyDashboardRoute = (
-  projectId?: string | undefined,
-  groupId?: string | undefined,
-  artifactId?: string | undefined,
-  versionId?: string | undefined,
-  testsBatchId?: string | undefined,
-): string => {
-  if (groupId && artifactId && projectId) {
-    return generateDependencyDashboardGavRoute(
-      projectId,
-      groupId,
-      artifactId,
-      versionId,
-      testsBatchId ?? undefined,
-    );
-  } else {
-    return generatePath(LEGEND_DEPENDENCY_ROUTE_PATTERN);
-  }
-};
