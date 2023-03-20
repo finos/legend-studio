@@ -19,7 +19,10 @@ export * from './application/LegendStudio.js';
 export * from './application/LegendStudioApplicationConfig.js';
 export * from './application/LegendStudioPluginManager.js';
 export * from './application/LegendStudioEvent.js';
-export * from './application/LegendStudioNavigation.js';
+export {
+  generateEditorRoute,
+  generateReviewRoute,
+} from './application/LegendStudioNavigation.js';
 export { useLegendStudioApplicationStore } from './components/LegendStudioBaseStoreProvider.js';
 export type { LegendStudioApplicationStore } from './stores/LegendStudioBaseStore.js';
 

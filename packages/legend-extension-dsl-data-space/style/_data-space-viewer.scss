@@ -22,6 +22,7 @@
   height: 100%;
   width: 100%;
   background: var(--color-dark-grey-80);
+  color: var(--color-light-grey-200);
 
   &__header {
     @include flexCenter;

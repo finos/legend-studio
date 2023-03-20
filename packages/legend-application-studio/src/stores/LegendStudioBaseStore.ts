@@ -31,6 +31,7 @@ import {
   LegendApplicationTelemetryHelper,
   matchPath,
   APPLICATION_EVENT,
+  generateExtensionUrlPattern,
 } from '@finos/legend-application';
 import {
   action,
@@ -100,14 +101,20 @@ export class LegendStudioBaseStore {
     }
     this.initState.inProgress();
 
+    const SDLCBypassedRoutePatterns = this.applicationStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? [])
+      .filter((entry) => entry.bypassSDLC)
+      .flatMap((entry) => entry.urlPatterns.map(generateExtensionUrlPattern));
+
     // authorize SDLC, unless navigation location match SDLC-bypassed patterns
     if (
       !matchPath(
         this.applicationStore.navigationService.navigator.getCurrentLocation(),
         [
-          // TODO: we might want to consider making this extensible
           LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
           LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+          ...SDLCBypassedRoutePatterns,
         ],
       )
     ) {

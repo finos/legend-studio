@@ -18,7 +18,6 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useApplicationStore, useParams } from '@finos/legend-application';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import {
-  LEGEND_QUERY_ROUTE_PATTERN_TOKEN,
   QueryEditor,
   QueryEditorStoreContext,
   useLegendQueryApplicationStore,
@@ -73,12 +72,13 @@ const DataSpaceQueryCreatorStoreProvider: React.FC<{
 export const DataSpaceQueryCreator = observer(() => {
   const applicationStore = useApplicationStore();
   const parameters = useParams<DataSpaceQueryCreatorPathParams>();
-  const gav = parameters[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV];
+  const gav = parameters[DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV];
   const dataSpacePath =
     parameters[DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH];
   const executionContext =
     parameters[DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_CONTEXT];
-  const runtimePath = parameters[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.RUNTIME_PATH];
+  const runtimePath =
+    parameters[DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.RUNTIME_PATH];
   const classPath =
     applicationStore.navigationService.navigator.getAddressParameterValue(
       DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH,

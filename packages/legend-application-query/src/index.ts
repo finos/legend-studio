@@ -22,10 +22,10 @@ export * from './application/LegendQueryEvent.js';
 export * from './application/LegendQueryEventHelper.js';
 export { useLegendQueryApplicationStore } from './components/LegendQueryBaseStoreProvider.js';
 export type { LegendQueryApplicationStore } from './stores/LegendQueryBaseStore.js';
+export { generateExistingQueryEditorRoute } from './application/LegendQueryNavigation.js';
 
 // stores
 export * from './stores/LegendQueryApplicationPlugin.js';
-export * from './application/LegendQueryNavigation.js';
 export { BaseQuerySetupStore } from './stores/QuerySetupStore.js';
 export {
   createViewProjectHandler,

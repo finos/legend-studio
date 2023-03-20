@@ -34,6 +34,7 @@ import {
   type ExplorerContextMenuItemRendererConfiguration,
   type EditorExtensionStateCreator,
   type EditorExtensionComponentRendererConfiguration,
+  type LegendStudioApplicationPageEntry,
 } from '@finos/legend-application-studio';
 import {
   PackageableElementExplicitReference,
@@ -45,12 +46,12 @@ import {
   DataSpace,
   DataSpaceExecutionContext,
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
-import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSL_DataSpace_LegendStudioDocumentation.js';
+import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/studio/DSL_DataSpace_LegendStudioDocumentation.js';
 import {
   PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
 } from '../../graphManager/DSL_DataSpace_PureGraphManagerPlugin.js';
-import { SIMPLE_DATA_SPACE_SNIPPET } from './DSL_DataSpace_CodeSnippets.js';
+import { SIMPLE_DATA_SPACE_SNIPPET } from '../../application/studio/DSL_DataSpace_CodeSnippets.js';
 import type {
   DocumentationEntry,
   PureGrammarTextSuggestion,
@@ -58,9 +59,11 @@ import type {
 import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
 import { DataSpacePreviewState } from '../../stores/studio/DataSpacePreviewState.js';
 import {
-  DataSpacePreview,
+  DataSpacePreviewDialog,
   DataSpacePreviewAction,
-} from './DataSpacePreview.js';
+} from './DataSpacePreviewAction.js';
+import { DATA_SPACE_STUDIO_ROUTE_PATTERN } from '../../application/studio/DSL_DataSpace_LegendStudioNavigation.js';
+import { DataSpacePreview } from './DataSpacePreview.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -72,6 +75,18 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
 {
   constructor() {
     super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
+  }
+
+  override getExtraApplicationPageEntries(): LegendStudioApplicationPageEntry[] {
+    return [
+      // data space preview
+      {
+        key: 'data-space-preview',
+        urlPatterns: [DATA_SPACE_STUDIO_ROUTE_PATTERN.PREVIEW],
+        renderer: DataSpacePreview,
+        bypassSDLC: true,
+      },
+    ];
   }
 
   override getExtraRequiredDocumentationKeys(): string[] {
@@ -103,7 +118,7 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
     return [
       {
         key: 'data-space-preview',
-        renderer: (editorStore) => <DataSpacePreview />,
+        renderer: (editorStore) => <DataSpacePreviewDialog />,
       },
     ];
   }
