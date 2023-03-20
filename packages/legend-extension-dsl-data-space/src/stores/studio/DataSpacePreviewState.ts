@@ -65,6 +65,9 @@ export class DataSpacePreviewState extends EditorExtensionState {
 
   setDataSpace(val: DataSpace | undefined): void {
     this.dataSpace = val;
+    if (val === undefined) {
+      this.dataSpaceViewerState = undefined;
+    }
   }
 
   *previewDataSpace(dataSpace: DataSpace): GeneratorFn<void> {

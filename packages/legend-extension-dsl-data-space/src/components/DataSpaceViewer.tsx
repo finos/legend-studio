@@ -27,20 +27,20 @@ import {
   PURE_MappingIcon,
   PURE_RuntimeIcon,
   CogIcon,
-  KeyIcon,
-  FlaskIcon,
-  ShieldIcon,
-  LightBulbIcon,
   InfoCircleIcon,
   ExternalLinkIcon,
   useResizeDetector,
   ExternalLinkSquareIcon,
   DocumentationIcon,
-  TableIcon,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
   MarkdownTextViewer,
+  PencilIcon,
+  DisplayIcon,
+  ChevronRightIcon,
+  ChevronLeftIcon,
+  CircleIcon,
 } from '@finos/legend-art';
 import {
   type Diagram,
@@ -59,6 +59,11 @@ import type { DataSpaceExecutionContextAnalysisResult } from '../graphManager/ac
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { useApplicationStore } from '@finos/legend-application';
 import { DSL_DataSpace_LegendApplicationPlugin } from './DSL_DataSpace_LegendApplicationPlugin.js';
+import {
+  getNullableFirstElement,
+  getNullableLastElement,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 
 interface DataSpaceViewerActivityConfig {
   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE;
@@ -118,6 +123,35 @@ const DataSpaceOverview = observer(
     // diagram selector
     const diagramCanvasRef = useRef<HTMLDivElement>(null);
 
+    const showPreviousDiagram = (): void => {
+      if (!dataSpaceViewerState.currentDiagram) {
+        return;
+      }
+      const idx = analysisResult.featuredDiagrams.indexOf(
+        dataSpaceViewerState.currentDiagram,
+      );
+      if (idx === 0 || idx === -1) {
+        return;
+      }
+      dataSpaceViewerState.setCurrentDiagram(
+        guaranteeNonNullable(analysisResult.featuredDiagrams[idx - 1]),
+      );
+    };
+    const showNextDiagram = (): void => {
+      if (!dataSpaceViewerState.currentDiagram) {
+        return;
+      }
+      const idx = analysisResult.featuredDiagrams.indexOf(
+        dataSpaceViewerState.currentDiagram,
+      );
+      if (idx === analysisResult.featuredDiagrams.length - 1 || idx === -1) {
+        return;
+      }
+      dataSpaceViewerState.setCurrentDiagram(
+        guaranteeNonNullable(analysisResult.featuredDiagrams[idx + 1]),
+      );
+    };
+
     if (analysisResult.featuredDiagrams.length === 0) {
       return <BlankPanelContent>No diagrams available</BlankPanelContent>;
     }
@@ -145,43 +179,61 @@ const DataSpaceOverview = observer(
           </ResizablePanel>
           <ResizablePanelSplitter />
           <ResizablePanel minSize={100}>
-            <div className="data-space__viewer__overview__diagrams">
-              <div className="data-space__viewer__overview__diagrams__header">
-                <div className="data-space__viewer__overview__diagrams__header__tabs">
-                  {analysisResult.featuredDiagrams.map((diagram) => (
-                    <button
-                      key={diagram.path}
-                      className={clsx(
-                        'data-space__viewer__overview__diagrams__header__tab',
-                        {
-                          'data-space__viewer__overview__diagrams__header__tab--active':
-                            dataSpaceViewerState.currentDiagram === diagram,
-                        },
-                      )}
-                      onClick={() =>
-                        dataSpaceViewerState.setCurrentDiagram(diagram)
-                      }
-                    >
-                      {diagram.name}
-                    </button>
-                  ))}
+            <div className="data-space__viewer__overview__diagrams__carousel">
+              <div className="data-space__viewer__overview__diagrams__carousel__frame">
+                <div className="data-space__viewer__overview__diagrams__carousel__frame__display">
+                  {dataSpaceViewerState.currentDiagram && (
+                    <DataSpaceDiagramCanvas
+                      dataSpaceViewerState={dataSpaceViewerState}
+                      diagram={dataSpaceViewerState.currentDiagram}
+                      ref={diagramCanvasRef}
+                    />
+                  )}
                 </div>
-              </div>
-              <div className="data-space__viewer__overview__diagrams__content">
-                {dataSpaceViewerState.currentDiagram && (
-                  <DataSpaceDiagramCanvas
-                    dataSpaceViewerState={dataSpaceViewerState}
-                    diagram={dataSpaceViewerState.currentDiagram}
-                    ref={diagramCanvasRef}
-                  />
-                )}
-              </div>
-              <div className="data-space__viewer__overview__diagrams__footer">
-                <div className="data-space__viewer__overview__diagrams__footer__icon">
-                  <LightBulbIcon />
-                </div>
-                <div className="data-space__viewer__overview__diagrams__footer__text">
-                  Double-click a class to start a query for that class
+                <button
+                  className="data-space__viewer__overview__diagrams__carousel__frame__navigator data-space__viewer__overview__diagrams__carousel__frame__navigator--back"
+                  tabIndex={-1}
+                  title="Previous"
+                  disabled={
+                    getNullableFirstElement(analysisResult.featuredDiagrams) ===
+                    dataSpaceViewerState.currentDiagram
+                  }
+                  onClick={showPreviousDiagram}
+                >
+                  <ChevronLeftIcon />
+                </button>
+                <button
+                  className="data-space__viewer__overview__diagrams__carousel__frame__navigator data-space__viewer__overview__diagrams__carousel__frame__navigator--next"
+                  tabIndex={-1}
+                  title="Previous"
+                  disabled={
+                    getNullableLastElement(analysisResult.featuredDiagrams) ===
+                    dataSpaceViewerState.currentDiagram
+                  }
+                  onClick={showNextDiagram}
+                >
+                  <ChevronRightIcon />
+                </button>
+                <div className="data-space__viewer__overview__diagrams__carousel__frame__indicators">
+                  <div className="data-space__viewer__overview__diagrams__carousel__frame__indicators__notch">
+                    {analysisResult.featuredDiagrams.map((diagram) => (
+                      <button
+                        key={diagram.path}
+                        className={clsx(
+                          'data-space__viewer__overview__diagrams__carousel__frame__indicator',
+                          {
+                            'data-space__viewer__overview__diagrams__carousel__frame__indicator--active':
+                              dataSpaceViewerState.currentDiagram === diagram,
+                          },
+                        )}
+                        onClick={() =>
+                          dataSpaceViewerState.setCurrentDiagram(diagram)
+                        }
+                      >
+                        <CircleIcon />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -375,7 +427,9 @@ const DataSpaceExecutionViewer = observer(
 const DataSpaceInfo = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+    const applicationStore = useApplicationStore();
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
+
     const viewProject = (): void =>
       dataSpaceViewerState.viewProject(
         dataSpaceViewerState.groupId,
@@ -390,6 +444,15 @@ const DataSpaceInfo = observer(
         dataSpaceViewerState.versionId,
         analysisResult.path,
       );
+    const viewDataSpaceInSDLCProject = (): void => {
+      dataSpaceViewerState
+        .viewSDLCProject(
+          dataSpaceViewerState.groupId,
+          dataSpaceViewerState.artifactId,
+          analysisResult.path,
+        )
+        .catch(applicationStore.alertUnhandledError);
+    };
 
     return (
       <div className="data-space__viewer__info">
@@ -401,7 +464,7 @@ const DataSpaceInfo = observer(
             <button
               className="data-space__viewer__info__project-info__value"
               tabIndex={-1}
-              title="View Project"
+              title="Click to View Project"
               onClick={viewProject}
             >
               {generateGAVCoordinates(
@@ -410,9 +473,14 @@ const DataSpaceInfo = observer(
                 dataSpaceViewerState.versionId,
               )}
             </button>
-            <div className="data-space__viewer__info__project-info__link">
+            <button
+              className="data-space__viewer__info__project-info__link"
+              tabIndex={-1}
+              title="View Project"
+              onClick={viewProject}
+            >
               <ExternalLinkIcon />
-            </div>
+            </button>
           </div>
           <div className="data-space__viewer__info__section__entry">
             <div className="data-space__viewer__info__project-info__label">
@@ -421,14 +489,27 @@ const DataSpaceInfo = observer(
             <button
               className="data-space__viewer__info__project-info__value"
               tabIndex={-1}
-              title="View Data Space"
+              title="Click to View Data Space"
               onClick={viewDataSpaceInProject}
             >
               {analysisResult.path}
             </button>
-            <div className="data-space__viewer__info__project-info__link">
+            <button
+              className="data-space__viewer__info__project-info__link"
+              tabIndex={-1}
+              title="Edit Data Space"
+              onClick={viewDataSpaceInSDLCProject}
+            >
+              <PencilIcon />
+            </button>
+            <button
+              className="data-space__viewer__info__project-info__link"
+              tabIndex={-1}
+              title="View Data Space"
+              onClick={viewDataSpaceInProject}
+            >
               <ExternalLinkIcon />
-            </div>
+            </button>
           </div>
         </div>
         <div className="data-space__viewer__info__section">
@@ -578,30 +659,30 @@ export const DataSpaceViewer = observer(
         icon: <DocumentationIcon />,
       },
       {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.USAGE_SHOWCASE,
+        title: 'Usage Showcase',
+        icon: <DisplayIcon />,
+      },
+      {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION,
         title: 'Execution Context',
         icon: <PlayIcon />,
       },
-      {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA,
-        title: 'Test Data',
-        icon: <FlaskIcon />,
-      },
-      {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.SAMPLE_DATA_TABLE,
-        title: 'Sample Data Table',
-        icon: <TableIcon />,
-      },
-      {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT,
-        title: 'Entitlement',
-        icon: <KeyIcon />,
-      },
-      {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_COVERAGE,
-        title: 'Test Coverage',
-        icon: <ShieldIcon />,
-      },
+      // {
+      //   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA,
+      //   title: 'Test Data',
+      //   icon: <FlaskIcon />,
+      // },
+      // {
+      //   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT,
+      //   title: 'Entitlement',
+      //   icon: <KeyIcon />,
+      // },
+      // {
+      //   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_COVERAGE,
+      //   title: 'Test Coverage',
+      //   icon: <ShieldIcon />,
+      // },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO,
         title: 'Info',
@@ -690,7 +771,7 @@ export const DataSpaceViewer = observer(
                 />
               )}
               {dataSpaceViewerState.currentActivity ===
-                DATA_SPACE_VIEWER_ACTIVITY_MODE.SAMPLE_DATA_TABLE && (
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.USAGE_SHOWCASE && (
                 <BlankPanelContent>
                   View sample data table (Work in Progress)
                 </BlankPanelContent>
@@ -706,7 +787,7 @@ export const DataSpaceViewer = observer(
                         plugin instanceof DSL_DataSpace_LegendApplicationPlugin,
                     ) as DSL_DataSpace_LegendApplicationPlugin[],
                 )}
-              {dataSpaceViewerState.currentActivity ===
+              {/* {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA && (
                 <BlankPanelContent>
                   View test data (Work in Progress)
@@ -717,7 +798,7 @@ export const DataSpaceViewer = observer(
                 <BlankPanelContent>
                   View test coverage (Work in Progress)
                 </BlankPanelContent>
-              )}
+              )} */}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO && (
                 <DataSpaceInfo dataSpaceViewerState={dataSpaceViewerState} />

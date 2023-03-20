@@ -202,6 +202,7 @@ export const ExpandTreeIcon = VSC.VscExpandAll;
 const GO = ReactIcons.GO;
 export const ChevronDownIcon = GO.GoChevronDown;
 export const ChevronUpIcon = GO.GoChevronUp;
+export const ChevronLeftIcon = GO.GoChevronLeft;
 export const ChevronRightIcon = GO.GoChevronRight;
 export const BinaryTypeIcon = GO.GoFileBinary;
 export const GitPullRequestIcon = GO.GoGitPullRequest;
@@ -224,6 +225,7 @@ export const BeakerIcon = IO.IoBeaker;
 export const FlaskIcon = IO.IoFlaskSharp;
 
 const BS = ReactIcons.BS;
+export const DisplayIcon = BS.BsDisplayFill;
 export const ChevronDownThinIcon = BS.BsChevronDown;
 export const FilledTriangleIcon = BS.BsFillTriangleFill;
 export const TabulatedDataFileIcon = BS.BsFillFileEarmarkSpreadsheetFill;
