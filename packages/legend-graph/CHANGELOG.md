@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 24.0.0
+
+### Major Changes
+
+- [#2019](https://github.com/finos/legend-studio/pull/2019) [`e31cc1bcb`](https://github.com/finos/legend-studio/commit/e31cc1bcbb61306b4b127788854775a8325bfa57) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Hide `DSL_ExternalFormat_GraphManagerPreset`, it is now exposed as part of `Core_GraphManagerPreset`
+
 ## 23.1.1
 
 ## 23.1.0

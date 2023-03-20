@@ -1,5 +1,17 @@
 # @finos/legend-extension-dsl-data-space
 
+## 9.1.0
+
+### Minor Changes
+
+- [#2004](https://github.com/finos/legend-studio/pull/2004) [`645c33111`](https://github.com/finos/legend-studio/commit/645c33111445aa914699e66a8a09d5a0499f1f9f) ([@akphi](https://github.com/akphi)) - Add model support for `elements`.
+
+- [#2004](https://github.com/finos/legend-studio/pull/2004) [`645c33111`](https://github.com/finos/legend-studio/commit/645c33111445aa914699e66a8a09d5a0499f1f9f) ([@akphi](https://github.com/akphi)) - Add support for previewing data-space in `Legend Studio`.
+
+### Patch Changes
+
+- [#2018](https://github.com/finos/legend-studio/pull/2018) [`4f622a809`](https://github.com/finos/legend-studio/commit/4f622a809c4d7913394d673b914b3e747a83bc44) ([@gayathrir11](https://github.com/gayathrir11)) - Modify `Query` to have `classPath` as tagged value when we save it via dataspace workflow
+
 ## 9.0.48
 
 ## 9.0.47
