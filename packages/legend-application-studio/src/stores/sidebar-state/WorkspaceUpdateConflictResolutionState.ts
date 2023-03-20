@@ -16,7 +16,6 @@
 
 import { action, flowResult, makeObservable, observable, flow } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
-import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import {
@@ -272,7 +271,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       ]);
       this.editorStore.applicationStore.logService.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -365,7 +364,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       this.editorStore.changeDetectionState.start();
       this.editorStore.applicationStore.logService.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
         '[ASNYC]',
       );
@@ -412,7 +411,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.editorStore.changeDetectionState.conflictResolutionHeadRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
+            LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
           ),
         ),
       );
@@ -446,7 +445,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.buildEntityHashesIndex(
           workspaceBaseEntities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_WORKSPACE_HASHES_INDEX__SUCCESS,
+            LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_WORKSPACE_HASHES_INDEX__SUCCESS,
           ),
         ),
       );

@@ -30,7 +30,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
-import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../DSL_Data_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   dataElementReference_setDataElement,

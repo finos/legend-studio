@@ -72,7 +72,7 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '../../../../stores/shared/ModelClassifierUtils.js';
-import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import { Fragment } from 'react';
 
 export const getExpectedReturnType = (

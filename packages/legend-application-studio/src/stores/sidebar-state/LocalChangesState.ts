@@ -24,7 +24,6 @@ import {
 } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
-import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -277,7 +276,7 @@ export abstract class LocalChangesState {
             this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.buildEntityHashesIndex(
               remoteWorkspaceEntities,
               LogEvent.create(
-                CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
+                LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
               ),
             ),
           );
@@ -357,7 +356,7 @@ export abstract class LocalChangesState {
         this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.buildEntityHashesIndex(
           remoteWorkspaceEntities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
+            LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
           ),
         ),
       );
@@ -447,7 +446,7 @@ export abstract class LocalChangesState {
           this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
             entities,
             LogEvent.create(
-              CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
+              LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
             ),
           ),
         );
@@ -504,7 +503,7 @@ export abstract class LocalChangesState {
       yield flowResult(this.restartChangeDetection());
       this.editorStore.applicationStore.logService.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
         Date.now() - syncFinishedTime,
         'ms',
@@ -710,7 +709,7 @@ export class FormLocalChangesState extends LocalChangesState {
       this.editorStore.changeDetectionState.start();
       this.editorStore.applicationStore.logService.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',

@@ -22,7 +22,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './../ElementEditorState.js';
-import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../STO_Relational_LegendStudioApplicationPlugin_Extension.js';
+import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 import { DatabaseBuilderState } from './DatabaseBuilderState.js';
 import {
   type PackageableElement,
@@ -56,7 +56,7 @@ import {
   type PostProcessor,
   MapperPostProcessor,
 } from '@finos/legend-graph';
-import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   relationDbConnection_setNewAuthenticationStrategy,
   relationDbConnection_setDatasourceSpecification,

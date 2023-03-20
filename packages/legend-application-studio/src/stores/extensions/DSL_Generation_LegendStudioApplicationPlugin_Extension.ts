@@ -15,8 +15,8 @@
  */
 
 import type { PackageableElement } from '@finos/legend-graph';
-import type { GeneratedFileStructureState } from './editor-state/FileGenerationState.js';
-import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
+import type { GeneratedFileStructureState } from '../editor-state/FileGenerationState.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 
 export type FileGenerationResultViewerActionConfiguration = {
   key: string;

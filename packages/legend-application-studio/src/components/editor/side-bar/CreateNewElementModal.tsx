@@ -47,10 +47,10 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-application';
 import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
-import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
 import { EmbeddedDataType } from '../../../stores/editor-state/ExternalFormatState.js';
-import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 
 export const getElementTypeLabel = (
   editorStore: EditorStore,

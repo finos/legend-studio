@@ -60,7 +60,6 @@ import {
 import { EditorSDLCState } from './EditorSDLCState.js';
 import { ModelImporterState } from './editor-state/ModelImporterState.js';
 import { ProjectConfigurationEditorState } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
-import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
 import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState.js';
 import { DevToolState } from './aux-panel-state/DevToolState.js';
 import {
@@ -97,7 +96,7 @@ import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
 import { LEGEND_STUDIO_COMMAND_KEY } from '../application/LegendStudioCommand.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
-import type { ProjectViewerEditorMode } from './project-viewer/ProjectViewerEditorMode.js';
+import type { ProjectViewerEditorMode } from './project-view/ProjectViewerEditorMode.js';
 import { GraphEditFormModeState } from './GraphEditFormModeState.js';
 import type { GraphEditorMode } from './GraphEditorMode.js';
 import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
@@ -764,7 +763,7 @@ export class EditorStore implements CommandRegistrar {
             this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
               entities,
               LogEvent.create(
-                CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
+                LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
               ),
             ),
           );
@@ -805,7 +804,7 @@ export class EditorStore implements CommandRegistrar {
         this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
+            LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
           ),
         ),
 
@@ -819,7 +818,7 @@ export class EditorStore implements CommandRegistrar {
       ]);
       this.applicationStore.logService.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
         '[ASNYC]',
       );

@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import type {
   DatasourceSpecification,
   AuthenticationStrategy,
   PostProcessor,
   ObserverContext,
 } from '@finos/legend-graph';
-import type { RelationalDatabaseConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
-import type { PostProcessorEditorState } from './editor-state/element-editor-state/connection/PostProcessorEditorState.js';
+import type { RelationalDatabaseConnectionValueState } from '../editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import type { PostProcessorEditorState } from '../editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 import type { ElementEmbeddedContentSnippetSuggestion } from '@finos/legend-application';
 
 /**

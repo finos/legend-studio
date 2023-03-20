@@ -53,7 +53,7 @@ import {
   TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 
 export const FileSystemTreeNodeContainer: React.FC<
   TreeNodeContainerProps<

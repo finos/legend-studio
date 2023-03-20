@@ -17,7 +17,6 @@
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import { action, makeObservable, flowResult, observable, flow } from 'mobx';
-import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -222,7 +221,7 @@ export class WorkspaceUpdaterState {
       ]);
       this.editorStore.applicationStore.logService.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_RESTART__SUCCESS,
         ),
         Date.now() - restartChangeDetectionStartTime,
         'ms',

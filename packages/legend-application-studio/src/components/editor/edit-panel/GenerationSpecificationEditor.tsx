@@ -51,7 +51,7 @@ import {
   type FileGenerationSourceDropTarget,
 } from '../../../stores/shared/DnDUtils.js';
 import { getNullableFirstElement } from '@finos/legend-shared';
-import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {

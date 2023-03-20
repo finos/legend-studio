@@ -127,7 +127,7 @@ import {
 import {
   createEmptyEqualToJsonAssertion,
   createBareExternalFormat,
-} from '../../../shared/testable/TestableUtils.js';
+} from '../../../shared/TestableUtils.js';
 import { SERIALIZATION_FORMAT } from '../service/testable/ServiceTestEditorState.js';
 import {
   LambdaEditorState,

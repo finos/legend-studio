@@ -30,7 +30,7 @@ import {
   deleteEntry,
   ActionState,
 } from '@finos/legend-shared';
-import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import {
   type EntityDiffViewerState,
@@ -507,7 +507,7 @@ export class WorkspaceSyncState {
       this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
         entities,
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
         ),
       ),
     );

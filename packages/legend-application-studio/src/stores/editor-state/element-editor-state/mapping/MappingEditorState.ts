@@ -102,7 +102,7 @@ import {
 import type {
   DSL_Mapping_LegendStudioApplicationPlugin_Extension,
   MappingElementLabel,
-} from '../../../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+} from '../../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { LegendStudioApplicationPlugin } from '../../../LegendStudioApplicationPlugin.js';
 import { flatData_setSourceRootRecordType } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {

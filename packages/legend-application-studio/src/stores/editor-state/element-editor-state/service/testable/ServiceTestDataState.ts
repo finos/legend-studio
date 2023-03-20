@@ -62,7 +62,7 @@ import {
   EmbeddedDataConnectionTypeVisitor,
   getAllIdentifiedConnectionsFromRuntime,
   TEMPORARY__EmbeddedDataConnectionVisitor,
-} from '../../../../shared/testable/TestableUtils.js';
+} from '../../../../shared/TestableUtils.js';
 import { EmbeddedDataType } from '../../../ExternalFormatState.js';
 import {
   type EmbeddedDataTypeOption,

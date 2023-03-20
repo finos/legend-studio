@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
+import packageJson from '../../../package.json';
 import { BufferIcon, SitemapIcon } from '@finos/legend-art';
-import { SchemaSetEditor } from './editor/edit-panel/external-format-editor/DSL_ExternalFormat_SchemaSetElementEditor.js';
+import { SchemaSetEditor } from '../editor/edit-panel/external-format-editor/DSL_ExternalFormat_SchemaSetElementEditor.js';
 import {
   type Connection,
   type PackageableElement,
@@ -35,8 +35,8 @@ import {
   ExternalFormatConnectionEditor,
   ExternalFormatConnectionValueState,
   NewExternalFormatConnectionDriver,
-} from './editor/edit-panel/external-format-editor/DSL_ExternalFormat_ExternalFormatConnectionEditor.js';
-import { BindingEditor } from './editor/edit-panel/external-format-editor/DSL_ExternalFormat_BindingElementEditor.js';
+} from '../editor/edit-panel/external-format-editor/DSL_ExternalFormat_ExternalFormatConnectionEditor.js';
+import { BindingEditor } from '../editor/edit-panel/external-format-editor/DSL_ExternalFormat_BindingElementEditor.js';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import type { ReactNode } from 'react';
 import {
@@ -53,7 +53,7 @@ import {
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   LegendStudioApplicationPlugin,
-} from '../stores/LegendStudioApplicationPlugin.js';
+} from '../../stores/LegendStudioApplicationPlugin.js';
 import type {
   ConnectionEditorRenderer,
   ConnectionTypeOption,
@@ -62,37 +62,37 @@ import type {
   DSL_Mapping_LegendStudioApplicationPlugin_Extension,
   NewConnectionDriverCreator,
   RuntimeConnectionTooltipTextBuilder,
-} from '../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
-import type { EditorStore } from '../stores/EditorStore.js';
-import type { ElementEditorState } from '../stores/editor-state/element-editor-state/ElementEditorState.js';
-import { SchemaSetEditorState } from '../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
-import { BindingEditorState } from '../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_BindingEditorState.js';
-import type { ConnectionValueState } from '../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+} from '../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import type { EditorStore } from '../../stores/EditorStore.js';
+import type { ElementEditorState } from '../../stores/editor-state/element-editor-state/ElementEditorState.js';
+import { SchemaSetEditorState } from '../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
+import { BindingEditorState } from '../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_BindingEditorState.js';
+import type { ConnectionValueState } from '../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import {
   externalFormat_Binding_setContentType,
   externalFormat_urlStream_setUrl,
-} from '../stores/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+} from '../../stores/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import type {
   DocumentationEntry,
   PureGrammarTextSuggestion,
 } from '@finos/legend-application';
-import { DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSL_ExternalFormat_LegendStudioDocumentation.js';
+import { DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/DSL_ExternalFormat_LegendStudioDocumentation.js';
 import {
   BASIC_BINDING_SNIPPET,
   BASIC_SCHEMASET_SNIPPET,
   SCHEMASET_WITH_JSON_SCHEMA_SNIPPET,
   SCHEMASET_WITH_XML_SCHEMA_SNIPPET,
   SCHEMASET_WITH_FLAT_DATA_SCHEMA_SNIPPET,
-} from './DSL_ExternalFormat_CodeSnippets.js';
+} from '../../application/DSL_ExternalFormat_CodeSnippets.js';
 import {
   NewSchemaSetDriver,
   NewSchemaSetDriverEditor,
-} from './editor/edit-panel/external-format-editor/DSL_ExternalFormat_NewSchemaSetDriver.js';
+} from '../editor/edit-panel/external-format-editor/DSL_ExternalFormat_NewSchemaSetDriver.js';
 import type {
   NewConnectionValueDriver,
   NewElementDriver,
   NewElementState,
-} from '../stores/editor/NewElementState.js';
+} from '../../stores/editor/NewElementState.js';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
 const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

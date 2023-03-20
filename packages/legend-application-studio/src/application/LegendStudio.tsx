@@ -34,7 +34,7 @@ import {
   type LegendStudioApplicationConfigurationData,
   LegendStudioApplicationConfig,
 } from './LegendStudioApplicationConfig.js';
-import { Core_LegendStudioApplicationPlugin } from '../components/Core_LegendStudioApplicationPlugin.js';
+import { Core_LegendStudioApplicationPlugin } from '../components/extensions/Core_LegendStudioApplicationPlugin.js';
 import {
   QueryBuilder_GraphManagerPreset,
   QueryBuilder_LegendApplicationPlugin,

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -149,13 +148,13 @@ export class WorkspaceReviewStore {
         this.editorStore.changeDetectionState.workspaceBaseRevisionState.buildEntityHashesIndex(
           fromEntities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_WORKSPACE_HASHES_INDEX__SUCCESS,
+            LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_WORKSPACE_HASHES_INDEX__SUCCESS,
           ),
         ),
         this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
           toEntities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
+            LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
           ),
         ),
       ]);

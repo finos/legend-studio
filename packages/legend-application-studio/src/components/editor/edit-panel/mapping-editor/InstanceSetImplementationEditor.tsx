@@ -87,7 +87,7 @@ import {
   PrimitiveType,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
-import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 
 export const InstanceSetImplementationSourceExplorer = observer(

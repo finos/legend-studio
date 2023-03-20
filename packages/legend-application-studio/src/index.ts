@@ -52,9 +52,9 @@ export {
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState.js';
 export * from './stores/shared/modifier/GraphModifierHelper.js';
 export * from './stores/shared/modifier/DomainGraphModifierHelper.js';
-export * from './stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
-export * from './stores/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
-export * from './stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
+export * from './stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+export * from './stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
+export * from './stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/shared/modifier/DSL_Generation_GraphModifierHelper.js';
 export * from './stores/shared/modifier/DSL_Service_GraphModifierHelper.js';
 
@@ -96,9 +96,9 @@ export { getElementIcon } from './components/shared/ElementIconUtils.js';
  * See https://github.com/finos/legend-studio/issues/65
  */
 
-export * from './stores/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
-export * from './stores/STO_ProjectOverview_LegendStudioApplicationPlugin_Extension.js';
-export * from './stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
+export * from './stores/extensions/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
+export * from './stores/extensions/STO_ProjectOverview_LegendStudioApplicationPlugin_Extension.js';
+export * from './stores/extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 
 export { MINIMUM_SERVICE_OWNERS } from './stores/editor-state/element-editor-state/service/ServiceEditorState.js';
 export {
@@ -112,7 +112,7 @@ export {
   FileGenerationState,
   GeneratedFileStructureState,
 } from './stores/editor-state/FileGenerationState.js';
-export { DSL_ExternalFormat_LegendStudioApplicationPlugin } from './components/DSL_ExternalFormat_LegendStudioApplicationPlugin.js';
+export { DSL_ExternalFormat_LegendStudioApplicationPlugin } from './components/extensions/DSL_ExternalFormat_LegendStudioApplicationPlugin.js';
 export {
   externalFormatData_setData,
   externalFormatData_setContentType,

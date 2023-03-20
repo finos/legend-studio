@@ -22,7 +22,7 @@ import {
   type PureGraphPlugin,
   type PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
-import { Core_LegendStudioApplicationPlugin } from '../components/Core_LegendStudioApplicationPlugin.js';
+import { Core_LegendStudioApplicationPlugin } from '../components/extensions/Core_LegendStudioApplicationPlugin.js';
 import type { LegendStudioApplicationPlugin } from '../stores/LegendStudioApplicationPlugin.js';
 
 export class LegendStudioPluginManager

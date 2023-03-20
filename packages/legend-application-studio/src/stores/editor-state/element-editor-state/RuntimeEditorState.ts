@@ -66,7 +66,7 @@ import {
   getAllIdentifiedConnections,
   generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
-import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import { packageableElementReference_setValue } from '../../shared/modifier/DomainGraphModifierHelper.js';
 import {
   runtime_addIdentifiedConnection,

@@ -15,25 +15,25 @@
  */
 
 import type { PureGrammarTextSuggestion } from '@finos/legend-application';
-import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
-import type { ConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
-import type { EditorStore } from './EditorStore.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
+import type { ConnectionValueState } from '../editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import type { EditorStore } from '../EditorStore.js';
 import type {
   Store,
   Connection,
   SetImplementation,
   InstanceSetImplementation,
 } from '@finos/legend-graph';
-import type { NewConnectionValueDriver } from './editor/NewElementState.js';
+import type { NewConnectionValueDriver } from '../editor/NewElementState.js';
 import type {
   MappingElement,
   MappingElementSource,
-} from './editor-state/element-editor-state/mapping/MappingEditorState.js';
+} from '../editor-state/element-editor-state/mapping/MappingEditorState.js';
 import type {
   InstanceSetImplementationState,
   MappingElementState,
   PropertyMappingState,
-} from './editor-state/element-editor-state/mapping/MappingElementState.js';
+} from '../editor-state/element-editor-state/mapping/MappingElementState.js';
 
 type MappingSourceTypeInfo = {
   sourceType: string;

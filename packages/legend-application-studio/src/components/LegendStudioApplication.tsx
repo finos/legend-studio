@@ -18,7 +18,7 @@ import { useEffect } from 'react';
 import { WorkspaceSetup } from './workspace-setup/WorkspaceSetup.js';
 import { Editor } from './editor/Editor.js';
 import { WorkspaceReview } from './workspace-review/WorkspaceReview.js';
-import { ProjectViewer } from './project-viewer/ProjectViewer.js';
+import { ProjectViewer } from './project-view/ProjectViewer.js';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -150,6 +150,13 @@ export const LegendStudioApplicationRoot = observer(() => {
               ]}
               component={ProjectViewer}
             />
+            {/* <Route
+              exact={true}
+              path={[
+                LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.PREVIEW_BY_GAV_ENTITY,
+              ]}
+              component={ElementPreview}
+            /> */}
             {SDLCBypassedPageEntries.map((entry) => (
               <Route
                 key={entry.key}

@@ -37,7 +37,7 @@ import {
 import { action, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
 import { atomicTest_addAssertion } from '../../../shared/modifier/Testable_GraphModifierHelper.js';
-import { createEmptyEqualToJsonAssertion } from '../../../shared/testable/TestableUtils.js';
+import { createEmptyEqualToJsonAssertion } from '../../../shared/TestableUtils.js';
 import { TESTABLE_RESULT } from '../../../sidebar-state/testable/GlobalTestRunnerState.js';
 import {
   TestAssertionEditorState,

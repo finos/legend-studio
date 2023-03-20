@@ -24,7 +24,7 @@ import {
   makeObservable,
   isComputedProp,
 } from 'mobx';
-import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../application/LegendStudioEvent.js';
 import {
   type GeneratorFn,
   LogEvent,
@@ -138,7 +138,7 @@ class RevisionChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.logService.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -227,7 +227,7 @@ class RevisionChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.logService.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -263,7 +263,7 @@ class RevisionChangeDetectionState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
-        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION__FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION__FAILURE),
         `Can't build hashes index`,
       );
       this.setEntityHashesIndex(new Map<string, string>());
@@ -548,7 +548,7 @@ export class ChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.logService.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_GRAPH_HASHES_INDEX__SUCCESS,
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_GRAPH_HASHES_INDEX__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -606,7 +606,7 @@ export class ChangeDetectionState {
       if (!quiet) {
         this.editorStore.applicationStore.logService.info(
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
+            LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
           ),
           Date.now() - startTime,
           'ms',
@@ -686,7 +686,7 @@ export class ChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.logService.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_WORKSPACE_UPDATE_CONFLICTS__SUCCESS,
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_COMPUTE_WORKSPACE_UPDATE_CONFLICTS__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -718,7 +718,7 @@ export class ChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.logService.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CONFLICT_RESOLUTION_CONFLICTS__SUCCESS,
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_COMPUTE_CONFLICT_RESOLUTION_CONFLICTS__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -847,7 +847,7 @@ export class ChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.logService.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -869,7 +869,7 @@ export class ChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.logService.info(
         LogEvent.create(
-          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS,
         ),
         Date.now() - startTime,
         'ms',
@@ -902,7 +902,7 @@ export class ChangeDetectionState {
     );
     this.editorStore.applicationStore.logService.info(
       LogEvent.create(
-        CHANGE_DETECTION_EVENT.CHANGE_DETECTION_OBSERVE_GRAPH__SUCCESS,
+        LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_OBSERVE_GRAPH__SUCCESS,
       ),
       '[ASYNC]',
       Date.now() - startTime,
@@ -944,7 +944,7 @@ export class ChangeDetectionState {
     this.graphElementHashCodeKeepAliveComputationDisposers = disposers;
     this.editorStore.applicationStore.logService.info(
       LogEvent.create(
-        CHANGE_DETECTION_EVENT.CHANGE_DETECTION_PRECOMPUTE_GRAPH_HASHES__SUCCESS,
+        LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_PRECOMPUTE_GRAPH_HASHES__SUCCESS,
       ),
       '[ASYNC]',
       Date.now() - startTime,

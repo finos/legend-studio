@@ -22,15 +22,15 @@ import {
   type SettingConfigurationEntry,
   collectSettingConfigurationEntriesFromConfig,
 } from '@finos/legend-application';
-import packageJson from '../../package.json';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../application/LegendStudioApplicationNavigationContext.js';
+import packageJson from '../../../package.json';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/LegendStudioApplicationNavigationContext.js';
 import {
   CORE_CONTEXTUAL_DOCUMENTATION_CONFIG,
   LEGEND_STUDIO_DOCUMENTATION_KEY,
-} from '../application/LegendStudioDocumentation.js';
-import { LegendStudioApplicationPlugin } from '../stores/LegendStudioApplicationPlugin.js';
-import { LEGEND_STUDIO_COMMAND_CONFIG } from '../application/LegendStudioCommand.js';
-import { LEGEND_STUDIO_SETTING_CONFIG } from '../application/LegendStudioSetting.js';
+} from '../../application/LegendStudioDocumentation.js';
+import { LegendStudioApplicationPlugin } from '../../stores/LegendStudioApplicationPlugin.js';
+import { LEGEND_STUDIO_COMMAND_CONFIG } from '../../application/LegendStudioCommand.js';
+import { LEGEND_STUDIO_SETTING_CONFIG } from '../../application/LegendStudioSetting.js';
 
 export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationPlugin {
   static NAME = packageJson.extensions.applicationStudioPlugin;

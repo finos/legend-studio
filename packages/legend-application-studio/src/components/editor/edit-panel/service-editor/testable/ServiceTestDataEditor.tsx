@@ -59,7 +59,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { prettyCONSTName } from '@finos/legend-shared';
-import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { useEditorStore } from '../../../EditorStoreProvider.js';
 
 export const ConnectionTestDataEditor = observer(

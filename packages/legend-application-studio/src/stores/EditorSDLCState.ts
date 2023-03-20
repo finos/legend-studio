@@ -33,7 +33,6 @@ import {
   guaranteeNonNullable,
   assertTrue,
 } from '@finos/legend-shared';
-import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig.js';
 import { type Entity, extractEntityNameFromPath } from '@finos/legend-storage';
 import {
@@ -386,7 +385,7 @@ export class EditorSDLCState {
         this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
+            LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
           ),
         ),
       );
@@ -416,7 +415,7 @@ export class EditorSDLCState {
         this.editorStore.changeDetectionState.workspaceBaseRevisionState.buildEntityHashesIndex(
           workspaceBaseEntities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_WORKSPACE_HASHES_INDEX__SUCCESS,
+            LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_WORKSPACE_HASHES_INDEX__SUCCESS,
           ),
         ),
       );
@@ -445,7 +444,7 @@ export class EditorSDLCState {
         this.editorStore.changeDetectionState.projectLatestRevisionState.buildEntityHashesIndex(
           projectLatestEntities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_PROJECT_LATEST_HASHES_INDEX__SUCCESS,
+            LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_PROJECT_LATEST_HASHES_INDEX__SUCCESS,
           ),
         ),
       );

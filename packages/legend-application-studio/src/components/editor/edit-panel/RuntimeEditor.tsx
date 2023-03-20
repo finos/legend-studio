@@ -105,7 +105,7 @@ import {
   buildElementOption,
   type PackageableElementOption,
 } from '@finos/legend-application';
-import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   runtime_addIdentifiedConnection,
   runtime_deleteIdentifiedConnection,

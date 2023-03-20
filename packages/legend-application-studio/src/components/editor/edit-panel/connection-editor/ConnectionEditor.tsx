@@ -28,7 +28,7 @@ import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedEl
 import type { Class } from '@finos/legend-graph';
 import { CustomSelectorInput, LockIcon, PanelContent } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   modelConnection_setClass,
   modelConnection_setUrl,

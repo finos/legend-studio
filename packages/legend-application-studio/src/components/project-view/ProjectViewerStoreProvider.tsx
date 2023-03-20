@@ -16,11 +16,11 @@
 
 import { useContext, createContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { ProjectViewerStore } from '../../stores/project-viewer/ProjectViewerStore.js';
+import { ProjectViewerStore } from '../../stores/project-view/ProjectViewerStore.js';
 import { EDITOR_MODE } from '../../stores/EditorConfig.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
-import { ProjectViewerEditorMode } from '../../stores/project-viewer/ProjectViewerEditorMode.js';
+import { ProjectViewerEditorMode } from '../../stores/project-view/ProjectViewerEditorMode.js';
 
 const ProjectViewerStoreContext = createContext<ProjectViewerStore | undefined>(
   undefined,

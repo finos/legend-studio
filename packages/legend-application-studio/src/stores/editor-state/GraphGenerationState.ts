@@ -61,7 +61,7 @@ import {
   GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
-import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../extensions/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import { ExternalFormatState } from './ExternalFormatState.js';
 import {
   generationSpecification_addFileGeneration,

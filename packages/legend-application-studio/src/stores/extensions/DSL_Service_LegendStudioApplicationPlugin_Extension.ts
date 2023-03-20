@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import type { Connection, Runtime } from '@finos/legend-graph';
 
 export type ServiceTestRuntimeConnectionBuilder = (

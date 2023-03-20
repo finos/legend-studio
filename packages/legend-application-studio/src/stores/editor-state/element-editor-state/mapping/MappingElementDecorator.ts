@@ -76,7 +76,7 @@ import {
   purePropertyMapping_setTransformer,
 } from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import { rootRelationalSetImp_setPropertyMappings } from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
-import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 
 /**
  * Iterate through all properties (including supertypes' properties) of the set implementation

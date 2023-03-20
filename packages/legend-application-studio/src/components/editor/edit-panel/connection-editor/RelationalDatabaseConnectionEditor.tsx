@@ -83,7 +83,7 @@ import {
   SpannerDatasourceSpecification,
 } from '@finos/legend-graph';
 import type { LegendStudioApplicationPlugin } from '../../../../stores/LegendStudioApplicationPlugin.js';
-import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../../stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
+import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 import { DatabaseBuilder } from './DatabaseBuilder.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {

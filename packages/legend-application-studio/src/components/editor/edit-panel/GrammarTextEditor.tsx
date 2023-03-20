@@ -104,11 +104,11 @@ import {
   MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
   POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET,
   createConnectionSnippetWithPostProcessorSuggestionSnippet,
-} from '../../../stores/Core_CodeSnippets.js';
-import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
+} from '../../../application/Core_CodeSnippets.js';
+import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../application/LegendStudioApplicationNavigationContext.js';
-import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
-import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../../application/LegendStudioSetting.js';
 import { GraphEditGrammarModeState } from '../../../stores/GraphEditGrammarModeState.js';
 
