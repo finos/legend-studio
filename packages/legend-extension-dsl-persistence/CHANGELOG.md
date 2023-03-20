@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-persistence
 
+## 4.0.53
+
+### Patch Changes
+
+- [#2019](https://github.com/finos/legend-studio/pull/2019) [`e31cc1bcb`](https://github.com/finos/legend-studio/commit/e31cc1bcbb61306b4b127788854775a8325bfa57) ([@akphi](https://github.com/akphi)) - Temporarliy merged DSL Persistenc Cloud into DSL Persistence core.
+
 ## 4.0.52
 
 ## 4.0.51

@@ -1,5 +1,13 @@
 # @finos/legend-application
 
+## 13.0.0
+
+### Major Changes
+
+- [#2019](https://github.com/finos/legend-studio/pull/2019) [`e31cc1bcb`](https://github.com/finos/legend-studio/commit/e31cc1bcbb61306b4b127788854775a8325bfa57) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `DocumentationConfigEntry` to `DocumentationEntryData`
+
+- [#2019](https://github.com/finos/legend-studio/pull/2019) [`e31cc1bcb`](https://github.com/finos/legend-studio/commit/e31cc1bcbb61306b4b127788854775a8325bfa57) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Added partial support for configurable color themes: although, we lack proper support for light color themes in many other places across the apps, this mechanism sets the foundation for the themeing strategy we want to converge to. Legacy flag `LayoutService.TEMPORARY__isLightThemeEnabled` is kept for convenience, but underlying, the binary/boolean theme setting `TEMPORARY__application.layout.enableLightTheme` has been removed in favor of `application.layout.colorTheme` which now takes the color theme key, e.g. `legacy-light` (Legacy Light), `hc-light` (High-Contract Light), etc.
+
 ## 12.0.1
 
 ## 12.0.0
