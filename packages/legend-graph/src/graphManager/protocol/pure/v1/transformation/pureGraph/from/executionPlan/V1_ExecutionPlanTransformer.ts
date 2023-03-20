@@ -60,6 +60,7 @@ import { V1_transformMultiplicity } from '../V1_CoreTransformerHelper.js';
 import { V1_transformConnection } from '../V1_ConnectionTransformer.js';
 import { V1_DatabaseConnection } from '../../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
 import { PureClientVersion } from '../../../../../../../../graphManager/GraphManagerUtils.js';
+import { V1_PureGraphManager } from '../../../../V1_PureGraphManager.js';
 
 const stringifyDataType = (dataType: RelationalDataType): string => {
   if (dataType instanceof Integer) {
@@ -235,7 +236,10 @@ export const V1_transformExecutionPlan = (
   context: V1_GraphTransformerContext,
 ): V1_ExecutionPlan => {
   const protocol = new V1_SimpleExecutionPlan();
-  protocol.serializer = new V1_Protocol('pure', PureClientVersion.VX_X_X);
+  protocol.serializer = new V1_Protocol(
+    V1_PureGraphManager.PURE_PROTOCOL_NAME,
+    PureClientVersion.VX_X_X,
+  );
   protocol.authDependent = metamodel.authDependent;
   protocol.kerberos = metamodel.kerberos;
   protocol.templateFunctions = metamodel.processingTemplateFunctions;
