@@ -26,7 +26,7 @@ import {
   CustomSelectorInput,
   RepoIcon,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
 import {
   type SetupPathParams,
   generateEditorRoute,
@@ -48,12 +48,12 @@ import {
   type ProjectOption,
   buildProjectOption,
   getProjectOptionLabelFormatter,
-} from '../shared/ProjectSelectorUtils.js';
+} from './ProjectSelectorUtils.js';
 import {
   type WorkspaceOption,
   buildWorkspaceOption,
   formatWorkspaceOptionLabel,
-} from '../shared/WorkspaceSelectorUtils.js';
+} from './WorkspaceSelectorUtils.js';
 import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
 import { WorkspaceSetupStore } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';

@@ -41,7 +41,7 @@ import {
   INTERNAL__BasicQueryBuilderState,
 } from '../stores/QueryBuilderState.js';
 import { QueryBuilder_GraphManagerPreset } from '../graphManager/QueryBuilder_GraphManagerPreset.js';
-import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
+import { QUERY_BUILDER_TEST_ID } from '../application/QueryBuilderTesting.js';
 
 export const TEST__setUpQueryBuilder = async (
   entities: Entity[],

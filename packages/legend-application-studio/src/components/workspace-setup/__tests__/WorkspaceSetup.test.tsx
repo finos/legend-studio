@@ -29,7 +29,7 @@ import {
   TEST__ApplicationStoreProvider,
   TEST__provideMockedWebApplicationNavigator,
 } from '@finos/legend-application';
-import { TEST__getLegendStudioApplicationConfig } from '../../../stores/EditorStoreTestUtils.js';
+import { TEST__getLegendStudioApplicationConfig } from '../../../stores/editor/EditorStoreTestUtils.js';
 import { LegendStudioPluginManager } from '../../../application/LegendStudioPluginManager.js';
 
 let sdlcServerClient: SDLCServerClient;

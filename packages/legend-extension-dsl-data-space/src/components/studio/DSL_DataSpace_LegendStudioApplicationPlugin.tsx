@@ -51,7 +51,7 @@ import {
   PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
 } from '../../graphManager/DSL_DataSpace_PureGraphManagerPlugin.js';
-import { SIMPLE_DATA_SPACE_SNIPPET } from '../../application/studio/DSL_DataSpace_CodeSnippets.js';
+import { SIMPLE_DATA_SPACE_SNIPPET } from '../../application/studio/DSL_DataSpace_LegendStudioCodeSnippet.js';
 import type {
   DocumentationEntry,
   PureGrammarTextSuggestion,

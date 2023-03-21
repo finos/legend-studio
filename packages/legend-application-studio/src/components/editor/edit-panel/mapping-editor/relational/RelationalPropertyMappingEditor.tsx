@@ -20,11 +20,11 @@ import {
   EmbeddedRelationalInstanceSetImplementationState,
   type RelationalPropertyMappingState,
   type RootRelationalInstanceSetImplementationState,
-} from '../../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState.js';
+} from '../../../../../stores/editor/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState.js';
 import {
   type MappingElement,
   MappingEditorState,
-} from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+} from '../../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   clsx,
   CustomSelectorInput,
@@ -45,12 +45,12 @@ import {
   getRawGenericType,
   EnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
-import { relationalPropertyMapping_setTransformer } from '../../../../../stores/shared/modifier/STO_Relational_GraphModifierHelper.js';
+import { relationalPropertyMapping_setTransformer } from '../../../../../stores/editor/shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { getExpectedReturnType } from '../PropertyMappingsEditor.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../../stores/shared/ModelClassifierUtils.js';
+} from '../../../../../stores/editor/shared/ModelClassifierUtils.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 
 const SimplePropertyMappingEditor = observer(

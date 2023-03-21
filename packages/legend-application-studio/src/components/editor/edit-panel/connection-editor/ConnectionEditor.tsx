@@ -23,16 +23,16 @@ import {
   JsonModelConnectionValueState,
   FlatDataConnectionValueState,
   PackageableConnectionEditorState,
-} from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor.js';
 import type { Class } from '@finos/legend-graph';
 import { CustomSelectorInput, LockIcon, PanelContent } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   modelConnection_setClass,
   modelConnection_setUrl,
-} from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,

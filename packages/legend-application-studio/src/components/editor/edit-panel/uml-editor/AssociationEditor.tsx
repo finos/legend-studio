@@ -19,12 +19,12 @@ import { observer } from 'mobx-react-lite';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,
-} from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/UMLEditorState.js';
 import {
   CORE_DND_TYPE,
   type UMLEditorElementDropTarget,
   type ElementDragSource,
-} from '../../../../stores/shared/DnDUtils.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
 import { useDrop } from 'react-dnd';
 import {
   clsx,
@@ -47,7 +47,7 @@ import {
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import {
   StereotypeDragPreviewLayer,
   StereotypeSelector,
@@ -84,11 +84,11 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteTaggedValue,
   association_changePropertyType,
-} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/shared/ModelClassifierUtils.js';
+} from '../../../../stores/editor/shared/ModelClassifierUtils.js';
 import {
   buildElementOption,
   useApplicationNavigationContext,

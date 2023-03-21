@@ -18,8 +18,8 @@ import { TEST__provideMockedApplicationStore } from '@finos/legend-application';
 import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
 import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager.js';
 import { TEST__provideMockedEditorStore } from '../EditorComponentTestUtils.js';
-import { TEST__getLegendStudioApplicationConfig } from '../../stores/EditorStoreTestUtils.js';
-import type { EditorStore } from '../../stores/EditorStore.js';
+import { TEST__getLegendStudioApplicationConfig } from '../../stores/editor/EditorStoreTestUtils.js';
+import type { EditorStore } from '../../stores/editor/EditorStore.js';
 
 export const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
   const pluginManager = LegendStudioPluginManager.create();

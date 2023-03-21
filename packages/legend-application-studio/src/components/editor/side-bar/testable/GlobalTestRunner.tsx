@@ -58,7 +58,7 @@ import {
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useState } from 'react';
-import { GLOBAL_TEST_RUNNER_TABS } from '../../../../stores/EditorConfig.js';
+import { GLOBAL_TEST_RUNNER_TABS } from '../../../../stores/editor/EditorConfig.js';
 import {
   type TestableExplorerTreeNodeData,
   type GlobalTestRunnerState,
@@ -71,9 +71,9 @@ import {
   getNodeTestableResult,
   getAtomicTest_TestResult,
   getAssertionStatus,
-} from '../../../../stores/sidebar-state/testable/GlobalTestRunnerState.js';
-import type { STO_ProjectOverview_LegendStudioApplicationPlugin_Extension } from '../../../../stores/STO_ProjectOverview_LegendStudioApplicationPlugin_Extension.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+} from '../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
+import type { STO_ProjectOverview_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/STO_ProjectOverview_LegendStudioApplicationPlugin_Extension.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { TextDiffView } from '../../../shared/DiffView.js';
 import { getElementTypeIcon } from '../../../shared/ElementIconUtils.js';
 import { UnsupportedEditorPanel } from '../../edit-panel/UnsupportedElementEditor.js';

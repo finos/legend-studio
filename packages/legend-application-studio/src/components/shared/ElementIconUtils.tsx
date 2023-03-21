@@ -15,7 +15,7 @@
  */
 
 import { returnUndefOnError } from '@finos/legend-shared';
-import type { EditorStore } from '../../stores/EditorStore.js';
+import type { EditorStore } from '../../stores/editor/EditorStore.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../stores/LegendStudioApplicationPlugin.js';
 import {
   type PackageableElement,
@@ -47,7 +47,7 @@ import {
   PURE_PackageIcon,
   PURE_DataIcon,
 } from '@finos/legend-art';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../stores/shared/ModelClassifierUtils.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../stores/editor/shared/ModelClassifierUtils.js';
 
 export const getClassPropertyIcon = (type: Type): React.ReactNode => {
   if (type instanceof PrimitiveType) {

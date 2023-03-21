@@ -116,7 +116,7 @@ import {
   classView_setHideStereotypes,
   classView_setHideTaggedValues,
 } from '../../stores/studio/DSL_Diagram_GraphModifierHelper.js';
-import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
 
 const DiagramEditorContextMenu = observer(
   forwardRef<

@@ -45,21 +45,21 @@ import {
   PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
 } from '../../graphManager/DSL_Diagram_PureGraphManagerPlugin.js';
-import { DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSL_Diagram_LegendStudioDocumentation.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/studio/DSL_Diagram_LegendStudioDocumentation.js';
 import {
   EMPTY_DIAGRAM_SNIPPET,
   getDiagramSnippetWithGeneralizationView,
   getDiagramSnippetWithOneClassView,
   getDiagramSnippetWithPropertyView,
-} from './DSL_Diagram_CodeSnippets.js';
+} from '../../application/studio/DSL_Diagram_LegendStudioCodeSnippet.js';
 import {
   collectKeyedCommandConfigEntriesFromConfig,
   type PureGrammarTextSuggestion,
   type DocumentationEntry,
   type KeyedCommandConfigEntry,
 } from '@finos/legend-application';
-import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
-import { DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_CONFIG } from './DSL_Diagram_LegendStudioCommand.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_CONFIG } from '../../application/studio/DSL_Diagram_LegendStudioCommand.js';
 
 const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';
 const DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_DIAGRAM';

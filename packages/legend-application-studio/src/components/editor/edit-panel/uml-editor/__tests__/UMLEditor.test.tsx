@@ -30,14 +30,14 @@ import {
   waitFor,
   fireEvent,
 } from '@testing-library/react';
-import TEST_DATA__m2mGraphEntities from '../../../../../stores/__tests__/TEST_DATA__M2MGraphEntities.json';
+import TEST_DATA__m2mGraphEntities from '../../../../../stores/editor/__tests__/TEST_DATA__M2MGraphEntities.json';
 import { guaranteeNonNullable, integrationTest } from '@finos/legend-shared';
 import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../../EditorComponentTestUtils.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../../application/LegendStudioTesting.js';
 
 let renderResult: RenderResult;
 

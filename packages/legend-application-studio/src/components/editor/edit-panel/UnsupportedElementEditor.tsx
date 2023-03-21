@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { BlankPanelContent, LockIcon, Panel } from '@finos/legend-art';
-import { UnsupportedElementEditorState } from '../../../stores/editor-state/UnsupportedElementEditorState.js';
+import { UnsupportedElementEditorState } from '../../../stores/editor/editor-state/UnsupportedElementEditorState.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';

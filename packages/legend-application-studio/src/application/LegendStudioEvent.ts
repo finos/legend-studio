@@ -45,4 +45,21 @@ export enum LEGEND_STUDIO_APP_EVENT {
   // Depot
   // TODO: consider to split this generic errors into more specific events
   DEPOT_MANAGER_FAILURE = 'depot.manager.failure',
+
+  // TODO: split this into specific events
+  CHANGE_DETECTION__FAILURE = 'change-detection.failure',
+
+  CHANGE_DETECTION_RESTART__SUCCESS = 'change-detection.restart.success',
+
+  CHANGE_DETECTION_COMPUTE_CHANGES__SUCCESS = 'change-detection.computation.changes.success',
+  CHANGE_DETECTION_COMPUTE_CONFLICT_RESOLUTION_CONFLICTS__SUCCESS = 'change-detection.computation.conflicts.success',
+
+  CHANGE_DETECTION_BUILD_GRAPH_HASHES_INDEX__SUCCESS = 'change-detection.hash-indexing.graph.success',
+  CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS = 'change-detection.hash-indexing.local.success',
+  CHANGE_DETECTION_BUILD_WORKSPACE_HASHES_INDEX__SUCCESS = 'change-detection.hash-indexing.workspace.success',
+  CHANGE_DETECTION_BUILD_PROJECT_LATEST_HASHES_INDEX__SUCCESS = 'change-detection.hash-indexing.project-latest.success',
+  CHANGE_DETECTION_COMPUTE_WORKSPACE_UPDATE_CONFLICTS__SUCCESS = 'change-detection.hash-indexing.workspace-update.success',
+
+  CHANGE_DETECTION_PRECOMPUTE_GRAPH_HASHES__SUCCESS = 'change-detection.graph.pre-hash.success',
+  CHANGE_DETECTION_OBSERVE_GRAPH__SUCCESS = 'change-detection.graph.observation.success',
 }

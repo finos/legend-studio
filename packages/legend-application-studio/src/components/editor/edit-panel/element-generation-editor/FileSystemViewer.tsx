@@ -20,7 +20,7 @@ import { flowResult } from 'mobx';
 import {
   getTextContent,
   getEditorLanguageForFormat,
-} from '../../../../stores/editor-state/FileGenerationViewerState.js';
+} from '../../../../stores/editor/editor-state/FileGenerationViewerState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   type TreeNodeContainerProps,
@@ -42,18 +42,18 @@ import {
   FileCodeIcon,
   PanelContent,
 } from '@finos/legend-art';
-import type { GeneratedFileStructureState } from '../../../../stores/editor-state/FileGenerationState.js';
+import type { GeneratedFileStructureState } from '../../../../stores/editor/editor-state/FileGenerationState.js';
 import {
   type FileSystemTreeNodeData,
   FileSystem_Directory,
   FileSystem_File,
   getFileSystemChildNodes,
-} from '../../../../stores/shared/FileSystemTreeUtils.js';
+} from '../../../../stores/editor/shared/FileSystemTreeUtils.js';
 import {
   TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 
 export const FileSystemTreeNodeContainer: React.FC<
   TreeNodeContainerProps<

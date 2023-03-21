@@ -23,7 +23,7 @@ import {
   TEST__openElementFromExplorerTree,
   LegendStudioPluginManager,
 } from '@finos/legend-application-studio';
-import { DSL_DIAGRAM_TEST_ID } from '../DSL_Diagram_TestID.js';
+import { DSL_DIAGRAM_TEST_ID } from '../../../application/studio/DSL_Diagram_LegendStudioTesting.js';
 import { DSL_Diagram_GraphManagerPreset } from '../../../DSL_Diagram_Extension.js';
 import { DSL_Diagram_LegendStudioApplicationPlugin } from '../DSL_Diagram_LegendStudioApplicationPlugin.js';
 

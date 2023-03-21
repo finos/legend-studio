@@ -15,38 +15,38 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { MultiplicityBadge } from '../../../shared/MultiplicityBadge.js';
 import { PurePropertyMappingEditor } from './PurePropertyMappingEditor.js';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import {
   type MappingElement,
   MappingEditorState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import type {
   InstanceSetImplementationState,
   PropertyMappingState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingElementState.js';
 import {
   PurePropertyMappingState,
   PureInstanceSetImplementationState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
 import {
   clsx,
   ArrowCircleRightIcon,
   TimesCircleIcon,
   TimesIcon,
+  AsteriskIcon,
 } from '@finos/legend-art';
 import { guaranteeType } from '@finos/legend-shared';
 import {
   type FlatDataPropertyMappingState,
   FlatDataInstanceSetImplementationState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState.js';
 import { FlatDataPropertyMappingEditor } from './FlatDataPropertyMappingEditor.js';
 import { RelationalPropertyMappingEditor } from './relational/RelationalPropertyMappingEditor.js';
 import type {
   RelationalPropertyMappingState,
   RootRelationalInstanceSetImplementationState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type Property,
@@ -61,19 +61,42 @@ import {
   OperationSetImplementation,
   FlatDataInstanceSetImplementation,
   RootRelationalInstanceSetImplementation,
+  MULTIPLICITY_INFINITE,
+  type Multiplicity,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   instanceSetImplementation_deletePropertyMapping,
   setImpl_nominateRoot,
   setImplementation_setRoot,
-} from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/shared/ModelClassifierUtils.js';
-import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+} from '../../../../stores/editor/shared/ModelClassifierUtils.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import { Fragment } from 'react';
+
+const MultiplicityBadge: React.FC<{
+  multiplicity: Multiplicity;
+}> = (props) => {
+  const { multiplicity } = props;
+  const isRequired = multiplicity.lowerBound && multiplicity.lowerBound > 0;
+  const tooltipText = `${isRequired ? '[required]' : '[optional]'}${
+    isRequired ? ` minimum: ${multiplicity.lowerBound}` : ''
+  } maximum: ${multiplicity.upperBound ?? MULTIPLICITY_INFINITE}`;
+
+  return (
+    <div
+      className={`multiplicity-badge ${
+        isRequired ? 'multiplicity-badge--required' : ''
+      }`}
+      title={tooltipText}
+    >
+      {multiplicity.upperBound ? null : <AsteriskIcon />}
+    </div>
+  );
+};
 
 export const getExpectedReturnType = (
   targetSetImplementation: SetImplementation | undefined,

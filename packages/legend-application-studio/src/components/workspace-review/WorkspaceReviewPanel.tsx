@@ -27,9 +27,9 @@ import { filterByType } from '@finos/legend-shared';
 import {
   EntityDiffViewState,
   DIFF_VIEW_MODE,
-} from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+} from '../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { EntityDiffView } from '../editor/edit-panel/diff-editor/EntityDiffView.js';
-import type { EditorState } from '../../stores/editor-state/EditorState.js';
+import type { EditorState } from '../../stores/editor/editor-state/EditorState.js';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 import { forwardRef } from 'react';
 

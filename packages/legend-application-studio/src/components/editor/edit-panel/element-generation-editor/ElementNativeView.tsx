@@ -16,8 +16,8 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { ElementEditorState } from '../../../../stores/editor-state/element-editor-state/ElementEditorState.js';
-import { ELEMENT_NATIVE_VIEW_MODE } from '../../../../stores/EditorConfig.js';
+import type { ElementEditorState } from '../../../../stores/editor/editor-state/element-editor-state/ElementEditorState.js';
+import { ELEMENT_NATIVE_VIEW_MODE } from '../../../../stores/editor/EditorConfig.js';
 import { flowResult } from 'mobx';
 import {
   useApplicationStore,

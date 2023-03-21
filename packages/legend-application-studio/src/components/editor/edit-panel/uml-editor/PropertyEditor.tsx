@@ -21,7 +21,7 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtils.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
 import {
   clsx,
   CustomSelectorInput,
@@ -41,9 +41,9 @@ import {
   TaggedValueDragPreviewLayer,
   TaggedValueEditor,
 } from './TaggedValueEditor.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
-import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
+import { UML_EDITOR_TAB } from '../../../../stores/editor/editor-state/element-editor-state/UMLEditorState.js';
 import {
   type AbstractProperty,
   type StereotypeReference,
@@ -63,7 +63,7 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteStereotype,
   property_setAggregationKind,
-} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
 
 type AggregationKindOption = { label: string; value: AggregationKind };
 const buildAggregationKindOption = (

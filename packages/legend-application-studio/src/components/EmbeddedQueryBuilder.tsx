@@ -36,7 +36,7 @@ import {
 } from '@finos/legend-query-builder';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../application/LegendStudioApplicationNavigationContext.js';
 import { useEditorStore } from './editor/EditorStoreProvider.js';
-import type { EmbeddedQueryBuilderState } from '../stores/EmbeddedQueryBuilderState.js';
+import type { EmbeddedQueryBuilderState } from '../stores/editor/EmbeddedQueryBuilderState.js';
 
 /**
  * NOTE: Query builder is by right a mini-app so we have it hosted in a full-screen modal dialog

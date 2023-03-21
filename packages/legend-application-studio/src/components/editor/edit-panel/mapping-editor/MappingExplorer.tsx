@@ -21,7 +21,7 @@ import {
   type ElementDragSource,
   CORE_DND_TYPE,
   MappingElementDragSource,
-} from '../../../../stores/shared/DnDUtils.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
 import {
   type TreeNodeContainerProps,
   clsx,
@@ -39,7 +39,7 @@ import {
   MenuContent,
   MenuContentItem,
 } from '@finos/legend-art';
-import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
+import { MappingElementState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingElementState.js';
 import { useDrop, useDrag } from 'react-dnd';
 import { toSentenceCase } from '@finos/legend-shared';
 import {
@@ -50,11 +50,11 @@ import {
   getMappingElementType,
   MappingEditorState,
   getMappingElementLabel,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-editor/NewMappingElementModal.js';
-import { MappingElementDecorator } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
+import { MappingElementDecorator } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -69,8 +69,8 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   PureInstanceSetImplementationFilterState,
   PureInstanceSetImplementationState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
-import { pureInstanceSetImpl_setMappingFilter } from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
+import { pureInstanceSetImpl_setMappingFilter } from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 
 export const MappingExplorerContextMenu = observer(
   forwardRef<

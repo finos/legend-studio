@@ -36,23 +36,23 @@ import {
   ModalFooter,
   ModalHeader,
 } from '@finos/legend-art';
-import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+import { EntityDiffViewState } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
 import { flowResult } from 'mobx';
 import type {
   EntityChange,
   EntityChangeConflict,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSDLCState.js';
+import { entityDiffSorter } from '../../../stores/editor/EditorSDLCState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { useEffect } from 'react';
-import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
+import { EntityChangeConflictEditorState } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import { EntityChangeConflictSideBarItem } from '../edit-panel/diff-editor/EntityChangeConflictEditor.js';
-import { FormLocalChangesState } from '../../../stores/sidebar-state/LocalChangesState.js';
-import { GRAPH_EDITOR_MODE } from '../../../stores/EditorConfig.js';
+import { FormLocalChangesState } from '../../../stores/editor/sidebar-state/LocalChangesState.js';
+import { GRAPH_EDITOR_MODE } from '../../../stores/editor/EditorConfig.js';
 
 const PatchLoader = observer(() => {
   const editorStore = useEditorStore();

@@ -26,7 +26,7 @@ import {
 import { integrationTest } from '@finos/legend-shared';
 import TEST_DATA__QueryBuilder_Model_PropertySearch from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_PropertySearch.json';
 import { stub_RawLambda } from '@finos/legend-graph';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
+import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
 

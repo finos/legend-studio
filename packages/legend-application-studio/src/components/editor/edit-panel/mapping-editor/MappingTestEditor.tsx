@@ -24,7 +24,7 @@ import {
   MappingTestFlatDataInputDataState,
   MappingTestExpectedOutputAssertionState,
   MappingTestRelationalInputDataState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTestState.js';
 import { JsonDiffView } from '../../../shared/DiffView.js';
 import {
   clsx,
@@ -51,7 +51,7 @@ import { useDrop } from 'react-dnd';
 import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/shared/DnDUtils.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
 import {
   IllegalStateError,
   guaranteeType,
@@ -75,7 +75,7 @@ import { MappingTestStatusIndicator } from './MappingTestsExplorer.js';
 import {
   getMappingElementSource,
   getMappingElementTarget,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   Class,
@@ -86,16 +86,16 @@ import {
   isStubbed_RawLambda,
   DEPRECATED__validate_MappingTestAssert,
 } from '@finos/legend-graph';
-import { flatData_setData } from '../../../../stores/shared/modifier/STO_FlatData_GraphModifierHelper.js';
+import { flatData_setData } from '../../../../stores/editor/shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/shared/modifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/STO_Relational_GraphModifierHelper.js';
 import {
   type QueryBuilderState,
   QueryBuilderTextEditorMode,
 } from '@finos/legend-query-builder';
-import { MappingExecutionQueryBuilderState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
+import { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {

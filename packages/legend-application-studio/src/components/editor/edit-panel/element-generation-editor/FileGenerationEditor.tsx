@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { flowResult, runInAction } from 'mobx';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import { useDrop } from 'react-dnd';
-import { FileGenerationEditorState } from '../../../../stores/editor-state/element-editor-state/FileGenerationEditorState.js';
+import { FileGenerationEditorState } from '../../../../stores/editor/editor-state/element-editor-state/FileGenerationEditorState.js';
 import {
   type DebouncedFunc,
   UnsupportedOperationError,
@@ -50,10 +50,10 @@ import {
   type FileGenerationSourceDropTarget,
   type ElementDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/shared/DnDUtils.js';
-import type { FileGenerationState } from '../../../../stores/editor-state/FileGenerationState.js';
-import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
+import type { FileGenerationState } from '../../../../stores/editor/editor-state/FileGenerationState.js';
+import type { ElementFileGenerationState } from '../../../../stores/editor/editor-state/element-editor-state/ElementFileGenerationState.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type GenerationProperty,
@@ -71,7 +71,7 @@ import {
   fileGeneration_changeScopeElement,
   fileGeneration_deleteScopeElement,
   fileGeneration_setGenerationOutputPath,
-} from '../../../../stores/shared/modifier/DSL_Generation_GraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/DSL_Generation_GraphModifierHelper.js';
 import { FileSystemViewer } from './FileSystemViewer.js';
 
 const FileGenerationScopeEditor = observer(

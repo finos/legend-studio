@@ -33,7 +33,7 @@ import {
 import {
   BINDING_TAB_TYPE,
   BindingEditorState,
-} from '../../../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_BindingEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/external-format/DSL_ExternalFormat_BindingEditorState.js';
 import {
   PackageableElementExplicitReference,
   SchemaSet,
@@ -49,7 +49,7 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtils.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
 import {
   externalFormat_Binding_setContentType,
   externalFormat_Binding_setSchemaId,
@@ -58,7 +58,7 @@ import {
   externalFormat_modelUnit_addPackageableElementIncludes,
   externalFormat_modelUnit_deletePackageableElementExcludes,
   externalFormat_modelUnit_deletePackageableElementIncludes,
-} from '../../../../stores/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 
 const ModelUnitPackagableElementEntryEditor = observer(
   (props: {

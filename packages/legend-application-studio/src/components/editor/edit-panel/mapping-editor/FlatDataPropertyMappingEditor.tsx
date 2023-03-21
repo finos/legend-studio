@@ -20,15 +20,15 @@ import {
   type FlatDataPropertyMappingTransformDropTarget,
   CORE_DND_TYPE,
   FlatDataColumnDragSource,
-} from '../../../../stores/shared/DnDUtils.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
 import {
   type MappingElement,
   MappingEditorState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import type {
   FlatDataPropertyMappingState,
   FlatDataInstanceSetImplementationState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState.js';
 import {
   clsx,
   CustomSelectorInput,
@@ -45,11 +45,11 @@ import {
   getRawGenericType,
   EnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
-import { flatDataPropertyMapping_setTransformer } from '../../../../stores/shared/modifier/STO_FlatData_GraphModifierHelper.js';
+import { flatDataPropertyMapping_setTransformer } from '../../../../stores/editor/shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/shared/ModelClassifierUtils.js';
+} from '../../../../stores/editor/shared/ModelClassifierUtils.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 
 const SimplePropertyMappingEditor = observer(

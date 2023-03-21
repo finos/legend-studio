@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -30,8 +29,8 @@ import {
   flow,
   computed,
 } from 'mobx';
-import type { EditorStore } from '../EditorStore.js';
-import { ACTIVITY_MODE } from '../EditorConfig.js';
+import type { EditorStore } from '../editor/EditorStore.js';
+import { ACTIVITY_MODE } from '../editor/EditorConfig.js';
 import type { Entity } from '@finos/legend-storage';
 import { Project, Review } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
@@ -149,13 +148,13 @@ export class WorkspaceReviewStore {
         this.editorStore.changeDetectionState.workspaceBaseRevisionState.buildEntityHashesIndex(
           fromEntities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_WORKSPACE_HASHES_INDEX__SUCCESS,
+            LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_WORKSPACE_HASHES_INDEX__SUCCESS,
           ),
         ),
         this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
           toEntities,
           LogEvent.create(
-            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
+            LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
           ),
         ),
       ]);

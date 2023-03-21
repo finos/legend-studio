@@ -23,7 +23,7 @@ import {
 import { CustomSelectorInput, PURE_MappingIcon } from '@finos/legend-art';
 import { getMappingCompatibleClasses } from '@finos/legend-graph';
 import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
-import type { MappingExecutionQueryBuilderState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
+import type { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 
 /**

@@ -32,30 +32,30 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type MappingElementSourceDropTarget,
-} from '../../../../stores/shared/DnDUtils.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import {
   InstanceSetImplementationState,
   MappingElementState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingElementState.js';
 import {
   type PureInstanceSetImplementationFilterState,
   PureInstanceSetImplementationState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
 import { guaranteeNonNullable, noop } from '@finos/legend-shared';
 import {
   getMappingElementSource,
   MappingEditorState,
   getEmbeddedSetImplementations,
   type MappingElementSource,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
-import { TypeTree } from '../../../shared/TypeTree.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { TypeTree } from './TypeTree.js';
 import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree.js';
 import { PropertyMappingEditor } from './PropertyMappingsEditor.js';
 import { useDrop } from 'react-dnd';
-import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState.js';
-import { MappingElementDecorationCleaner } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
-import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
+import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState.js';
+import { MappingElementDecorationCleaner } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
+import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor.js';
 import { TableOrViewSourceTree } from './relational/TableOrViewSourceTree.js';
 import {
@@ -86,8 +86,8 @@ import {
   getAllClassProperties,
   PrimitiveType,
 } from '@finos/legend-graph';
-import type { EditorStore } from '../../../../stores/EditorStore.js';
-import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 
 export const InstanceSetImplementationSourceExplorer = observer(

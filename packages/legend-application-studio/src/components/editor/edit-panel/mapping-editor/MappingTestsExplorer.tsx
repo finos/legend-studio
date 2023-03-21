@@ -21,7 +21,7 @@ import {
   type MappingTestState,
   MAPPING_TEST_EDITOR_TAB_TYPE,
   TEST_RESULT,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTestState.js';
 import {
   clsx,
   ContextMenu,
@@ -43,14 +43,14 @@ import {
 import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/shared/DnDUtils.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
 import { ClassMappingSelectorModal } from './MappingExecutionBuilder.js';
 import { flowResult } from 'mobx';
 import { Randomizer } from '@finos/legend-shared';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { SetImplementation } from '@finos/legend-graph';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { MappingEditorState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 
 const addTestPromps = [
   `Let's add some test!`,

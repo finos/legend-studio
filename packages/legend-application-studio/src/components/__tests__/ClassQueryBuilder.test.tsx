@@ -27,8 +27,8 @@ import {
   TEST__openElementFromExplorerTree,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../EditorComponentTestUtils.js';
-import { GraphCompilationOutcome } from '../../stores/EditorGraphState.js';
-import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
+import { GraphCompilationOutcome } from '../../stores/editor/EditorGraphState.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
 import { queryClass } from '../editor/edit-panel/uml-editor/ClassQueryBuilder.js';
 import { extractElementNameFromPath } from '@finos/legend-graph';
 import TEST_DATA__ClassQueryBuilder from './TEST_DATA__ClassQueryBuilderModel.json';

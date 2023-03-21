@@ -20,7 +20,7 @@ import {
 } from '@finos/legend-server-depot';
 import type { ProjectDependency } from '@finos/legend-server-sdlc';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from './EditorStore.js';
 import {
   generateEditorRoute,
   generateViewProjectByGAVRoute,

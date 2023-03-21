@@ -40,14 +40,14 @@ import {
   EntityChangeConflictEditor,
   EntityChangeConflictSideBarItem,
 } from '../edit-panel/diff-editor/EntityChangeConflictEditor.js';
-import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
-import type { EntityDiffViewerState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
+import { EntityChangeConflictEditorState } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
+import type { EntityDiffViewerState } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import {
   EntityDiffSideBarItem,
   EntityDiffView,
 } from '../edit-panel/diff-editor/EntityDiffView.js';
-import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
-import { entityDiffSorter } from '../../../stores/EditorSDLCState.js';
+import { EntityDiffViewState } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+import { entityDiffSorter } from '../../../stores/editor/EditorSDLCState.js';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 

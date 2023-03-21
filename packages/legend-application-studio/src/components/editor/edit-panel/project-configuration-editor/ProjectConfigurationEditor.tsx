@@ -20,7 +20,7 @@ import { observer } from 'mobx-react-lite';
 import {
   ProjectConfigurationEditorState,
   CONFIGURATION_EDITOR_TAB,
-} from '../../../../stores/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
+} from '../../../../stores/editor/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import {
   clsx,
   PlusIcon,

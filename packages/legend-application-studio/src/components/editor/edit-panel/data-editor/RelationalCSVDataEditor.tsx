@@ -31,7 +31,7 @@ import {
 import type { RelationalCSVDataTable } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useState } from 'react';
-import type { RelationalCSVDataState } from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
+import type { RelationalCSVDataState } from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
 
 const RelationalTableIdentifierModal = observer(
   (props: { dataState: RelationalCSVDataState; isReadOnly: boolean }) => {

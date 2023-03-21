@@ -30,9 +30,9 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../../EditorComponentTestUtils.js';
 import { TEST_DATA__multiEXecutionService } from './TEST_DATA__ServiceEditor.js';
-import type { EditorStore } from '../../../../../stores/EditorStore.js';
+import type { EditorStore } from '../../../../../stores/editor/EditorStore.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../../application/LegendStudioTesting.js';
 
 let renderResult: RenderResult;
 let MOCK__editorStore: EditorStore;

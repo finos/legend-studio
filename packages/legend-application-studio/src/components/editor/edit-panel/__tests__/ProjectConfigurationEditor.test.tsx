@@ -28,8 +28,8 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../EditorComponentTestUtils.js';
 import { TEST_DATA__EmptyProjectDependencyReport } from './TEST_DATA__ProjectDependencyReport.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
-import type { EditorStore } from '../../../../stores/EditorStore.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
+import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 
 let renderResult: RenderResult;
 

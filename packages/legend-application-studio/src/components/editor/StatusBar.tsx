@@ -29,12 +29,12 @@ import {
   ErrorIcon,
   WarningIcon,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
 import {
   ACTIVITY_MODE,
   AUX_PANEL_MODE,
   GRAPH_EDITOR_MODE,
-} from '../../stores/EditorConfig.js';
+} from '../../stores/editor/EditorConfig.js';
 import {
   generateSetupRoute,
   type WorkspaceEditorPathParams,

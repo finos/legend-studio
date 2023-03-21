@@ -16,7 +16,7 @@
 
 import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
 import {
   clsx,
   CustomSelectorInput,
@@ -38,7 +38,7 @@ import {
   MenuContentItem,
   MenuContent,
 } from '@finos/legend-art';
-import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState.js';
+import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/editor/sidebar-state/ProjectOverviewState.js';
 import {
   generateEditorRoute,
   generateViewProjectRoute,
@@ -863,6 +863,7 @@ export const ProjectOverview = observer(() => {
         return <OverviewViewer />;
       case PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE:
         return <ReleaseEditor />;
+      // TODO: @xannem move this into dependency dashboard extension
       case PROJECT_OVERVIEW_ACTIVITY_MODE.DEPENDANTS:
         return <ProjectDependantsEditor />;
       case PROJECT_OVERVIEW_ACTIVITY_MODE.VERSIONS:

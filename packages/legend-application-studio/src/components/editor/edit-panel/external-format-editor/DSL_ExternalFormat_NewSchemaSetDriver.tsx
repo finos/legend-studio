@@ -20,10 +20,10 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { makeObservable, observable, action } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import type { EditorStore } from '../../../../stores/EditorStore.js';
-import { externalFormat_schemaSet_setFormat } from '../../../../stores/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
+import { externalFormat_schemaSet_setFormat } from '../../../../stores/editor/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import { NewElementDriver } from '../../../../stores/editor/NewElementState.js';
-import type { ExternalFormatTypeOption } from '../../../../stores/editor-state/ExternalFormatState.js';
+import type { ExternalFormatTypeOption } from '../../../../stores/editor/editor-state/ExternalFormatState.js';
 
 export class NewSchemaSetDriver extends NewElementDriver<SchemaSet> {
   formatOption?: ExternalFormatTypeOption | undefined;

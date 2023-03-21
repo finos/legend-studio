@@ -45,6 +45,9 @@ import {
   CaretRightIcon,
   CopyIcon,
   MoreHorizontalIcon,
+  FlaskIcon,
+  KeyIcon,
+  ShieldIcon,
 } from '@finos/legend-art';
 import {
   type Diagram,
@@ -665,9 +668,8 @@ const DataSpaceUsageShowcaseTDSSampleOutputViewer = observer(
             !showcase.showSampleOutput,
         })}
       >
-        <button
+        <div
           className="data-space__viewer__usage__block__header"
-          tabIndex={-1}
           onClick={toggleShowSampleOutput}
         >
           <div className="data-space__viewer__usage__block__header__toggler">
@@ -676,7 +678,7 @@ const DataSpaceUsageShowcaseTDSSampleOutputViewer = observer(
           <div className="data-space__viewer__usage__block__header__title">
             Sample Output
           </div>
-        </button>
+        </div>
         {showcase.showSampleOutput && (
           <div className="data-space__viewer__usage__block__content">
             <table className="table data-space__viewer__usage__block__content__table">
@@ -753,9 +755,8 @@ const DataSpaceUsageShowcaseTDSOutputDescriptionViewer = observer(
             !showcase.showOutputDescription,
         })}
       >
-        <button
+        <div
           className="data-space__viewer__usage__block__header"
-          tabIndex={-1}
           onClick={toggleShowOutputDescription}
         >
           <div className="data-space__viewer__usage__block__header__toggler">
@@ -768,7 +769,7 @@ const DataSpaceUsageShowcaseTDSOutputDescriptionViewer = observer(
           <div className="data-space__viewer__usage__block__header__title">
             Output Description
           </div>
-        </button>
+        </div>
         {showcase.showOutputDescription && (
           <div className="data-space__viewer__usage__block__content">
             <table className="table data-space__viewer__usage__block__content__table">
@@ -867,9 +868,8 @@ const DataSpaceUsageShowcaseViewer = observer(
             },
           )}
         >
-          <button
+          <div
             className="data-space__viewer__usage__block__header"
-            tabIndex={-1}
             onClick={toggleShowQuery}
           >
             <div className="data-space__viewer__usage__block__header__toggler">
@@ -893,7 +893,7 @@ const DataSpaceUsageShowcaseViewer = observer(
                 <MoreHorizontalIcon />
               </button>
             </div>
-          </button>
+          </div>
           {showcase.showQuery && (
             <div className="data-space__viewer__usage__block__content">
               <TextInputEditor
@@ -977,21 +977,21 @@ export const DataSpaceViewer = observer(
         title: 'Execution Context',
         icon: <PlayIcon />,
       },
-      // {
-      //   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA,
-      //   title: 'Test Data',
-      //   icon: <FlaskIcon />,
-      // },
-      // {
-      //   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT,
-      //   title: 'Entitlement',
-      //   icon: <KeyIcon />,
-      // },
-      // {
-      //   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_COVERAGE,
-      //   title: 'Test Coverage',
-      //   icon: <ShieldIcon />,
-      // },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA,
+        title: 'Test Data',
+        icon: <FlaskIcon />,
+      },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT,
+        title: 'Entitlement',
+        icon: <KeyIcon />,
+      },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_COVERAGE,
+        title: 'Test Coverage',
+        icon: <ShieldIcon />,
+      },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO,
         title: 'Info',
@@ -1096,7 +1096,7 @@ export const DataSpaceViewer = observer(
                         plugin instanceof DSL_DataSpace_LegendApplicationPlugin,
                     ) as DSL_DataSpace_LegendApplicationPlugin[],
                 )}
-              {/* {dataSpaceViewerState.currentActivity ===
+              {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA && (
                 <BlankPanelContent>
                   View test data (Work in Progress)
@@ -1107,7 +1107,7 @@ export const DataSpaceViewer = observer(
                 <BlankPanelContent>
                   View test coverage (Work in Progress)
                 </BlankPanelContent>
-              )} */}
+              )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO && (
                 <DataSpaceInfo dataSpaceViewerState={dataSpaceViewerState} />

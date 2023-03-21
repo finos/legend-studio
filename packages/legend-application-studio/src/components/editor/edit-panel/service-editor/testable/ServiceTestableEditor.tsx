@@ -33,12 +33,12 @@ import type { ServiceTestSuite } from '@finos/legend-graph';
 import { ServiceTestDataEditor } from './ServiceTestDataEditor.js';
 import { ServiceTestsEditor } from './ServiceTestsEditor.js';
 import { forwardRef, useEffect, useState } from 'react';
-import { testSuite_setId } from '../../../../../stores/shared/modifier/Testable_GraphModifierHelper.js';
+import { testSuite_setId } from '../../../../../stores/editor/shared/modifier/Testable_GraphModifierHelper.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type {
   ServiceTestableState,
   ServiceTestSuiteState,
-} from '../../../../../stores/editor-state/element-editor-state/service/testable/ServiceTestableState.js';
+} from '../../../../../stores/editor/editor-state/element-editor-state/service/testable/ServiceTestableState.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../../application/LegendStudioApplicationNavigationContext.js';
 

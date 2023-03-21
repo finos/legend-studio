@@ -19,13 +19,13 @@ import { observer } from 'mobx-react-lite';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,
-} from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/UMLEditorState.js';
 import { useDrag, useDrop } from 'react-dnd';
 import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtils.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
 import { prettyCONSTName } from '@finos/legend-shared';
 import {
   BlankPanelContent,
@@ -50,7 +50,7 @@ import {
   Panel,
   PanelContent,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import {
   StereotypeDragPreviewLayer,
   StereotypeSelector,
@@ -82,7 +82,7 @@ import {
   enum_deleteValue,
   enum_addValue,
   enum_swapValues,
-} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
 

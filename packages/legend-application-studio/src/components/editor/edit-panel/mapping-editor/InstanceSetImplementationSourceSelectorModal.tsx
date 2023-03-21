@@ -26,7 +26,7 @@ import {
   getMappingElementSource,
   type MappingElementSource,
   type MappingEditorState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   type InstanceSetImplementation,
   type View,

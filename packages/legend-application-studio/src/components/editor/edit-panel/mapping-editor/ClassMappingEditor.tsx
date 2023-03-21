@@ -25,7 +25,7 @@ import {
   CheckSquareIcon,
 } from '@finos/legend-art';
 import { getElementTypeIcon } from '../../../shared/ElementIconUtils.js';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { MappingEditorState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type SetImplementation,
@@ -42,8 +42,8 @@ import {
   operationMapping_setOperation,
   operationMapping_setParameters,
   setImplementation_setRoot,
-} from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
-import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+} from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 
 export const OperatorSelector = observer(
   (props: {

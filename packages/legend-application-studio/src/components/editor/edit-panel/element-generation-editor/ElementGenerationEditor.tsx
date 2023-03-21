@@ -21,8 +21,8 @@ import {
   resolvePackagePathAndElementName,
   Package,
 } from '@finos/legend-graph';
-import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState.js';
-import type { ElementEditorState } from '../../../../stores/editor-state/element-editor-state/ElementEditorState.js';
+import type { ElementFileGenerationState } from '../../../../stores/editor/editor-state/element-editor-state/ElementFileGenerationState.js';
+import type { ElementEditorState } from '../../../../stores/editor/editor-state/element-editor-state/ElementEditorState.js';
 import { guaranteeType } from '@finos/legend-shared';
 import { FileGenerationConfigurationEditor } from '../../../editor/edit-panel/element-generation-editor/FileGenerationEditor.js';
 import { flowResult } from 'mobx';

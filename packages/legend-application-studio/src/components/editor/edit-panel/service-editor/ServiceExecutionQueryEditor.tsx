@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import type {
   ServicePureExecutionQueryState,
   ServicePureExecutionState,
-} from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceExecutionState.js';
 import {
   Dialog,
   type SelectComponent,
@@ -66,7 +66,7 @@ import {
   LambdaParameterValuesEditor,
   QueryBuilderTextEditorMode,
 } from '@finos/legend-query-builder';
-import { ProjectViewerEditorMode } from '../../../../stores/project-viewer/ProjectViewerEditorMode.js';
+import { ProjectViewerEditorMode } from '../../../../stores/project-view/ProjectViewerEditorMode.js';
 import { useLegendStudioApplicationStore } from '../../../LegendStudioBaseStoreProvider.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { SNAPSHOT_VERSION_ALIAS } from '@finos/legend-server-depot';

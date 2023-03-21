@@ -19,7 +19,7 @@ import {
   FileGenerationViewerState,
   getTextContent,
   getEditorLanguageForFormat,
-} from '../../../stores/editor-state/FileGenerationViewerState.js';
+} from '../../../stores/editor/editor-state/FileGenerationViewerState.js';
 import {
   LockIcon,
   FireIcon,

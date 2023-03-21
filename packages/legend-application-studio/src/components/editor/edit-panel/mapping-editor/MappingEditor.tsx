@@ -46,14 +46,14 @@ import {
   getMappingElementType,
   MAPPING_ELEMENT_TYPE,
   getMappingElementLabel,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
-import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { MappingElementState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingElementState.js';
 import { MappingExplorer } from './MappingExplorer.js';
 import { MappingTestEditor } from './MappingTestEditor.js';
-import { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState.js';
+import { MappingTestState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTestState.js';
 import { MappingTestsExplorer } from './MappingTestsExplorer.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
-import { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
+import { MappingExecutionState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionState.js';
 import { MappingExecutionBuilder } from './MappingExecutionBuilder.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -69,7 +69,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
-import type { MappingEditorTabState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTabManagerState.js';
+import type { MappingEditorTabState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTabManagerState.js';
 
 export const MappingEditorSplashScreen: React.FC = () => {
   const logoWidth = 280;
