@@ -34,7 +34,7 @@ import {
   ACTIVITY_MODE,
   AUX_PANEL_MODE,
   GRAPH_EDITOR_MODE,
-} from '../../stores/EditorConfig.js';
+} from '../../stores/editor/EditorConfig.js';
 import {
   generateSetupRoute,
   type WorkspaceEditorPathParams,

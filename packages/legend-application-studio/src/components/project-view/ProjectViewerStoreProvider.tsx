@@ -17,7 +17,7 @@
 import { useContext, createContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { ProjectViewerStore } from '../../stores/project-view/ProjectViewerStore.js';
-import { EDITOR_MODE } from '../../stores/EditorConfig.js';
+import { EDITOR_MODE } from '../../stores/editor/EditorConfig.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 import { ProjectViewerEditorMode } from '../../stores/project-view/ProjectViewerEditorMode.js';

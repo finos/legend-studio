@@ -39,7 +39,7 @@ import {
   ContentType,
   StopWatch,
 } from '@finos/legend-shared';
-import type { EditorStore } from '../../../EditorStore.js';
+import type { EditorStore } from '../../../editor/EditorStore.js';
 import { observable, flow, action, makeObservable, flowResult } from 'mobx';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
 import {

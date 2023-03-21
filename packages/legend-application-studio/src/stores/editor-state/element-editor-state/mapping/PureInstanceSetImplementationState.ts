@@ -19,7 +19,7 @@ import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from './MappingElementState.js';
-import type { EditorStore } from '../../../EditorStore.js';
+import type { EditorStore } from '../../../editor/EditorStore.js';
 import { MappingElementDecorator } from './MappingElementDecorator.js';
 import {
   type GeneratorFn,

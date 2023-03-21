@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import { observable, action, makeObservable, flow } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import {

@@ -72,7 +72,7 @@ import {
   PURE_ELEMENT_NAME,
   PURE_PARSER,
 } from '@finos/legend-graph';
-import type { EditorStore } from '../../../stores/EditorStore.js';
+import type { EditorStore } from '../../../stores/editor/EditorStore.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../application/LegendStudioDocumentation.js';
 import {
   BLANK_CLASS_SNIPPET,
@@ -110,7 +110,7 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../appli
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../../application/LegendStudioSetting.js';
-import { GraphEditGrammarModeState } from '../../../stores/GraphEditGrammarModeState.js';
+import { GraphEditGrammarModeState } from '../../../stores/editor/GraphEditGrammarModeState.js';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   forwardRef<HTMLDivElement, { children?: React.ReactNode }>(

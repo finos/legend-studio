@@ -107,7 +107,7 @@ import {
 } from '../../../stores/shared/modifier/RawValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../application/LegendStudioApplicationNavigationContext.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
-import type { EditorStore } from '../../../stores/EditorStore.js';
+import type { EditorStore } from '../../../stores/editor/EditorStore.js';
 import { graph_renameElement } from '../../../stores/shared/modifier/GraphModifierHelper.js';
 
 enum FUNCTION_PARAMETER_TYPE {

@@ -47,7 +47,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { EmbeddedDataType } from '../editor-state/ExternalFormatState.js';
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import { createMockDataForMappingElementSource } from './MockDataUtils.js';
 
 export const createBareExternalFormat = (

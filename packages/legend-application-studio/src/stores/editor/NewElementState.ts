@@ -22,7 +22,7 @@ import {
   flowResult,
   flow,
 } from 'mobx';
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from './EditorStore.js';
 import {
   type Clazz,
   type GeneratorFn,

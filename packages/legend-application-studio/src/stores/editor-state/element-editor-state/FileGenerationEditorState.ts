@@ -17,7 +17,7 @@
 import { computed, action, observable, makeObservable, flowResult } from 'mobx';
 import { ElementEditorState } from './ElementEditorState.js';
 import { assertType, guaranteeType } from '@finos/legend-shared';
-import type { EditorStore } from '../../EditorStore.js';
+import type { EditorStore } from '../../editor/EditorStore.js';
 import { FileGenerationState } from '../../editor-state/FileGenerationState.js';
 import {
   type PackageableElement,

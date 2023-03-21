@@ -33,7 +33,7 @@ import {
   assertTrue,
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import type { Entity } from '@finos/legend-storage';
 import { TAB_SIZE } from '@finos/legend-application';
 import type {

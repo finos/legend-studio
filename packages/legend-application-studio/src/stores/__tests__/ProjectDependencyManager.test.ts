@@ -21,7 +21,7 @@ import {
   guaranteeNonNullable,
   createSpy,
 } from '@finos/legend-shared';
-import { TEST__getTestEditorStore } from '../EditorStoreTestUtils.js';
+import { TEST__getTestEditorStore } from '../editor/EditorStoreTestUtils.js';
 import type { Entity } from '@finos/legend-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import {
@@ -37,7 +37,7 @@ import {
 } from '@finos/legend-graph';
 import TEST_DATA__M2MGraphEntities from './TEST_DATA__M2MGraphEntities.json';
 import { TEST_DATA__ProjectDependencyReportWithConflict } from '../../components/editor/edit-panel/__tests__/TEST_DATA__ProjectDependencyReport.js';
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import {
   TEST_DATA__projectVersionDependencyEntities,
   TEST_DATA__dependencyMainGraphEntities,

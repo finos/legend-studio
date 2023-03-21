@@ -29,9 +29,9 @@ export type { LegendStudioApplicationStore } from './stores/LegendStudioBaseStor
 
 // stores
 export * from './stores/LegendStudioApplicationPlugin.js';
-export * from './stores/EditorTabManagerState.js';
-export * from './stores/EditorStore.js';
-export * from './stores/EditorConfig.js';
+export * from './stores/editor/EditorTabManagerState.js';
+export * from './stores/editor/EditorStore.js';
+export * from './stores/editor/EditorConfig.js';
 export * from './stores/editor-state/ModelImporterState.js';
 export * from './stores/workspace-setup/ProjectConfigurationStatus.js';
 export { ClassEditorState } from './stores/editor-state/element-editor-state/ClassEditorState.js';
@@ -49,7 +49,7 @@ export {
   type UMLEditorElementDropTarget,
   type TransformDropTarget,
 } from './stores/shared/DnDUtils.js';
-export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState.js';
+export { ExplorerTreeRootPackageLabel } from './stores/editor/ExplorerTreeState.js';
 export * from './stores/shared/modifier/GraphModifierHelper.js';
 export * from './stores/shared/modifier/DomainGraphModifierHelper.js';
 export * from './stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
@@ -76,7 +76,7 @@ export {
   TEST__openElementFromExplorerTree,
 } from './components/EditorComponentTestUtils.js';
 export * from './application/LegendStudioTesting.js';
-export * from './stores/EditorStoreTestUtils.js';
+export * from './stores/editor/EditorStoreTestUtils.js';
 
 export { PostProcessorEditorState } from './stores/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState.js';

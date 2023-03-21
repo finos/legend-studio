@@ -65,7 +65,7 @@ import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.
 import {
   ACTIVITY_MODE,
   GRAPH_EDITOR_MODE,
-} from '../../../stores/EditorConfig.js';
+} from '../../../stores/editor/EditorConfig.js';
 import {
   generatePackageableElementTreeNodeDataLabel,
   getTreeChildNodes,
@@ -115,7 +115,7 @@ import {
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
 import { queryClass } from '../edit-panel/uml-editor/ClassQueryBuilder.js';
-import { createViewSDLCProjectHandler } from '../../../stores/DependencyProjectViewerHelper.js';
+import { createViewSDLCProjectHandler } from '../../../stores/editor/DependencyProjectViewerHelper.js';
 import {
   MASTER_SNAPSHOT_ALIAS,
   SNAPSHOT_VERSION_ALIAS,

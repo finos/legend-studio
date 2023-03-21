@@ -26,7 +26,7 @@ import {
   CONSTRAINT_SOURCE_ID_LABEL,
   DERIVED_PROPERTY_SOURCE_ID_LABEL,
 } from './ClassState.js';
-import type { EditorStore } from '../../EditorStore.js';
+import type { EditorStore } from '../../editor/EditorStore.js';
 import {
   type CompilationError,
   type PackageableElement,

@@ -20,7 +20,7 @@ import {
   getMappingElementTarget,
   generateMappingTestName,
 } from './MappingEditorState.js';
-import type { EditorStore } from '../../../EditorStore.js';
+import type { EditorStore } from '../../../editor/EditorStore.js';
 import {
   observable,
   action,

@@ -15,14 +15,14 @@
  */
 
 import { EditorStore } from './EditorStore.js';
-import { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
+import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager.js';
 import { TEST__getTestSDLCServerClient } from '@finos/legend-server-sdlc';
 import { TEST__getTestDepotServerClient } from '@finos/legend-server-depot';
 import {
   TEST_DATA__applicationVersion,
   TEST__getTestApplicationStore,
 } from '@finos/legend-application';
-import { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
+import { LegendStudioApplicationConfig } from '../../application/LegendStudioApplicationConfig.js';
 
 const TEST_DATA__appConfig = {
   appName: 'test-studio-app',

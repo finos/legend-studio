@@ -15,7 +15,7 @@
  */
 
 import { computed, action, observable, makeObservable } from 'mobx';
-import type { EditorStore } from '../../EditorStore.js';
+import type { EditorStore } from '../../editor/EditorStore.js';
 import {
   guaranteeType,
   uuid,

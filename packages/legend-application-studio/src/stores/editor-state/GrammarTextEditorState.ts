@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import { action, makeObservable, observable } from 'mobx';
 import { hashValue, UnsupportedOperationError } from '@finos/legend-shared';
 import {

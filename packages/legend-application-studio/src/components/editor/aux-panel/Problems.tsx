@@ -24,9 +24,9 @@ import {
   WarningIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import type { Problem } from '../../../stores/EditorGraphState.js';
+import type { Problem } from '../../../stores/editor/EditorGraphState.js';
 import { CompilationWarning, EngineError } from '@finos/legend-graph';
-import { GRAPH_EDITOR_MODE } from '../../../stores/EditorConfig.js';
+import { GRAPH_EDITOR_MODE } from '../../../stores/editor/EditorConfig.js';
 
 const ProblemItem = observer((props: { problem: Problem }) => {
   const { problem } = props;

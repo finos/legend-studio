@@ -65,7 +65,7 @@ import {
   EnumerationMappingExplicitReference,
   SetImplementationExplicitReference,
 } from '@finos/legend-graph';
-import type { EditorStore } from '../../../EditorStore.js';
+import type { EditorStore } from '../../../editor/EditorStore.js';
 import {
   enumerationMapping_setEnumValueMappings,
   enumValueMapping_addSourceValue,

@@ -18,7 +18,7 @@ import type { ElementEmbeddedContentSnippetSuggestion } from '@finos/legend-appl
 import type { EmbeddedData } from '@finos/legend-graph';
 import type { EmbeddedDataTypeOption } from '../editor-state/element-editor-state/data/DataEditorState.js';
 import type { EmbeddedDataState } from '../editor-state/element-editor-state/data/EmbeddedDataState.js';
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 
 export type EmbeddedDataEditorStateBuilder = (

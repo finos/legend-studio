@@ -21,7 +21,7 @@ import {
 } from '@finos/legend-shared';
 import type { PackageTreeNodeData } from './TreeUtils.js';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import { CORE_DND_TYPE } from './DnDUtils.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import {
@@ -47,7 +47,7 @@ import {
   generateFunctionPrettyName,
   getElementRootPackage,
 } from '@finos/legend-graph';
-import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState.js';
+import { ExplorerTreeRootPackageLabel } from '../editor/ExplorerTreeState.js';
 import { GAV_DELIMITER } from '@finos/legend-storage';
 
 /**

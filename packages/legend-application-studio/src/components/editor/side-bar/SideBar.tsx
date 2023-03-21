@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
+import { ACTIVITY_MODE } from '../../../stores/editor/EditorConfig.js';
 import { Explorer } from './Explorer.js';
 import { LocalChanges } from './LocalChanges.js';
 import { WorkspaceReview } from './WorkspaceReview.js';

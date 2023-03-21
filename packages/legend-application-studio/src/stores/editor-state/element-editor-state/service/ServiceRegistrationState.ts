@@ -16,7 +16,7 @@
 
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { MINIMUM_SERVICE_OWNERS } from '../../../editor-state/element-editor-state/service/ServiceEditorState.js';
-import type { EditorStore } from '../../../EditorStore.js';
+import type { EditorStore } from '../../../editor/EditorStore.js';
 import {
   type GeneratorFn,
   assertErrorThrown,

@@ -15,7 +15,7 @@
  */
 
 import { returnUndefOnError } from '@finos/legend-shared';
-import type { EditorStore } from '../../stores/EditorStore.js';
+import type { EditorStore } from '../../stores/editor/EditorStore.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../stores/LegendStudioApplicationPlugin.js';
 import {
   type PackageableElement,

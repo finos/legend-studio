@@ -23,7 +23,7 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { computed, observable, makeObservable, action } from 'mobx';
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import {
   GenerationSpecification,
   type GenerationTreeNode,

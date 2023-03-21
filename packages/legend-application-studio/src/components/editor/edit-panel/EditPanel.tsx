@@ -36,7 +36,7 @@ import {
   FileGenerationViewModeState,
 } from '../../../stores/editor-state/element-editor-state/ElementEditorState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
-import { ELEMENT_NATIVE_VIEW_MODE } from '../../../stores/EditorConfig.js';
+import { ELEMENT_NATIVE_VIEW_MODE } from '../../../stores/editor/EditorConfig.js';
 import {
   DIFF_VIEW_MODE,
   EntityDiffViewState,

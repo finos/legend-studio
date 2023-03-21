@@ -31,7 +31,7 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../EditorComponentTestUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
-import type { EditorStore } from '../../../../stores/EditorStore.js';
+import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import type { ProjectDependency } from '@finos/legend-server-sdlc';
 import { TEST_DATA__ProjectDependencyReport } from './TEST_DATA__ProjectDependencyReport.js';
 import {

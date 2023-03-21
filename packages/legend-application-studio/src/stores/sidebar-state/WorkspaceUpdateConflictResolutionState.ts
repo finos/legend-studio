@@ -15,9 +15,9 @@
  */
 
 import { action, flowResult, makeObservable, observable, flow } from 'mobx';
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
-import type { EditorSDLCState } from '../EditorSDLCState.js';
+import type { EditorSDLCState } from '../editor/EditorSDLCState.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -34,7 +34,7 @@ import {
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
-import { ACTIVITY_MODE } from '../EditorConfig.js';
+import { ACTIVITY_MODE } from '../editor/EditorConfig.js';
 import type { Entity } from '@finos/legend-storage';
 import {
   type EntityChangeConflict,
@@ -45,8 +45,8 @@ import {
   Revision,
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
-import type { GraphBuilderResult } from '../EditorGraphState.js';
-import { AbstractConflictResolutionState } from '../AbstractConflictResolutionState.js';
+import type { GraphBuilderResult } from '../editor/EditorGraphState.js';
+import { AbstractConflictResolutionState } from '../editor/AbstractConflictResolutionState.js';
 
 export class WorkspaceUpdateConflictResolutionState extends AbstractConflictResolutionState {
   isInitializingConflictResolution = false;

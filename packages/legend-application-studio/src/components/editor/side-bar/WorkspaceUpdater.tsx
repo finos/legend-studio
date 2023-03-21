@@ -39,7 +39,7 @@ import type {
   EntityChangeConflict,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSDLCState.js';
+import { entityDiffSorter } from '../../../stores/editor/EditorSDLCState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
 

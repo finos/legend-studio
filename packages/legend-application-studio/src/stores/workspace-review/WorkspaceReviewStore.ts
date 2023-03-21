@@ -29,8 +29,8 @@ import {
   flow,
   computed,
 } from 'mobx';
-import type { EditorStore } from '../EditorStore.js';
-import { ACTIVITY_MODE } from '../EditorConfig.js';
+import type { EditorStore } from '../editor/EditorStore.js';
+import { ACTIVITY_MODE } from '../editor/EditorConfig.js';
 import type { Entity } from '@finos/legend-storage';
 import { Project, Review } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';

@@ -15,7 +15,7 @@
  */
 
 import { ElementEditorState } from './element-editor-state/ElementEditorState.js';
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import type { PackageableElement } from '@finos/legend-graph';
 
 export class UnsupportedElementEditorState extends ElementEditorState {

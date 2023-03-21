@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../../EditorStore.js';
+import type { EditorStore } from '../../editor/EditorStore.js';
 import type { ProjectConfigurationEditorState } from './ProjectConfigurationEditorState.js';
 import { flow, observable, makeObservable, flowResult, action } from 'mobx';
 import {

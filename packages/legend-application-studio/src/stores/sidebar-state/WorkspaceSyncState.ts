@@ -15,8 +15,8 @@
  */
 
 import { flowResult, action, flow, makeObservable, observable } from 'mobx';
-import type { EditorStore } from '../EditorStore.js';
-import type { EditorSDLCState } from '../EditorSDLCState.js';
+import type { EditorStore } from '../editor/EditorStore.js';
+import type { EditorSDLCState } from '../editor/EditorSDLCState.js';
 import type { Entity } from '@finos/legend-storage';
 import {
   type GeneratorFn,
@@ -50,7 +50,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
-import { AbstractConflictResolutionState } from '../AbstractConflictResolutionState.js';
+import { AbstractConflictResolutionState } from '../editor/AbstractConflictResolutionState.js';
 
 class WorkspaceSyncConflictResolutionState extends AbstractConflictResolutionState {
   showModal = false;

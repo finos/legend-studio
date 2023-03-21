@@ -22,7 +22,7 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import type { EditorStore } from '../../EditorStore.js';
+import type { EditorStore } from '../../editor/EditorStore.js';
 import {
   type SPECIAL_REVISION_ALIAS,
   EntityDiffViewerState,
@@ -36,7 +36,7 @@ import { mergeDiff3 } from 'node-diff3';
 import { type Entity, extractEntityNameFromPath } from '@finos/legend-storage';
 import { EntityChangeConflictResolution } from '@finos/legend-server-sdlc';
 import { ParserError } from '@finos/legend-graph';
-import type { AbstractConflictResolutionState } from '../../AbstractConflictResolutionState.js';
+import type { AbstractConflictResolutionState } from '../../editor/AbstractConflictResolutionState.js';
 import type { EditorState } from '../EditorState.js';
 
 const START_HEADER_MARKER = '<<<<<<<';

@@ -38,10 +38,10 @@ import {
   ActionState,
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore.js';
-import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
-import { GraphGenerationState } from './editor-state/GraphGenerationState.js';
-import { MODEL_IMPORT_NATIVE_INPUT_TYPE } from './editor-state/ModelImporterState.js';
-import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
+import { ElementEditorState } from '../editor-state/element-editor-state/ElementEditorState.js';
+import { GraphGenerationState } from '../editor-state/GraphGenerationState.js';
+import { MODEL_IMPORT_NATIVE_INPUT_TYPE } from '../editor-state/ModelImporterState.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import {
   type Entity,
   EntitiesWithOrigin,
@@ -94,10 +94,10 @@ import {
   LegendApplicationTelemetryHelper,
   type TabState,
 } from '@finos/legend-application';
-import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../application/LegendStudioEvent.js';
-import { LEGEND_STUDIO_SETTING_KEY } from '../application/LegendStudioSetting.js';
+import { CONFIGURATION_EDITOR_TAB } from '../editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../shared/ModelClassifierUtils.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_SETTING_KEY } from '../../application/LegendStudioSetting.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',

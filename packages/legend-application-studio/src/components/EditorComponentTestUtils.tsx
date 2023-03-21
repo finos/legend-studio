@@ -23,7 +23,7 @@ import {
   getByText,
 } from '@testing-library/react';
 import { LEGEND_STUDIO_TEST_ID } from '../application/LegendStudioTesting.js';
-import { EditorStore } from '../stores/EditorStore.js';
+import { EditorStore } from '../stores/editor/EditorStore.js';
 import { Editor } from './editor/Editor.js';
 import {
   generateEditorRoute,
@@ -76,7 +76,7 @@ import {
   Route,
   type NavigationService,
 } from '@finos/legend-application';
-import { TEST__getLegendStudioApplicationConfig } from '../stores/EditorStoreTestUtils.js';
+import { TEST__getLegendStudioApplicationConfig } from '../stores/editor/EditorStoreTestUtils.js';
 import type { LegendStudioApplicationStore } from '../stores/LegendStudioBaseStore.js';
 
 export const TEST_DATA__DefaultSDLCInfo = {

@@ -29,12 +29,12 @@ import {
   ExternalLinkSquareIcon,
   PanelContent,
 } from '@finos/legend-art';
-import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
+import { ACTIVITY_MODE } from '../../../stores/editor/EditorConfig.js';
 import { generateReviewRoute } from '../../../application/LegendStudioNavigation.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSDLCState.js';
+import { entityDiffSorter } from '../../../stores/editor/EditorSDLCState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
 import { formatDistanceToNow } from '@finos/legend-shared';

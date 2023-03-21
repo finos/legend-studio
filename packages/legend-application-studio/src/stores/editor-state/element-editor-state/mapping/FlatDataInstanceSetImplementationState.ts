@@ -27,7 +27,7 @@ import {
   guaranteeType,
   IllegalStateError,
 } from '@finos/legend-shared';
-import type { EditorStore } from '../../../EditorStore.js';
+import type { EditorStore } from '../../../editor/EditorStore.js';
 import { MappingElementDecorator } from './MappingElementDecorator.js';
 import {
   type SourceInformation,

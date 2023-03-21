@@ -17,7 +17,7 @@
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { WorkspaceReviewStore } from '../../stores/workspace-review/WorkspaceReviewStore.js';
-import { EDITOR_MODE } from '../../stores/EditorConfig.js';
+import { EDITOR_MODE } from '../../stores/editor/EditorConfig.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 

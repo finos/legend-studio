@@ -22,7 +22,7 @@ import {
 } from './WorkspaceReviewStoreProvider.js';
 import { WorkspaceReviewSideBar } from './WorkspaceReviewSideBar.js';
 import { WorkspaceReviewPanel } from './WorkspaceReviewPanel.js';
-import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
+import { ACTIVITY_MODE } from '../../stores/editor/EditorConfig.js';
 import {
   type ResizablePanelHandlerProps,
   getCollapsiblePanelGroupProps,

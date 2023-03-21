@@ -21,7 +21,7 @@ import {
 } from '@finos/legend-graph';
 import { guaranteeType, uuid } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
-import type { EditorStore } from '../../../EditorStore.js';
+import type { EditorStore } from '../../../editor/EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
 import {
   type EmbeddedDataState,

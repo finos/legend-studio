@@ -48,7 +48,7 @@ import {
   uniq,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
-import type { EditorStore } from '../../../../EditorStore.js';
+import type { EditorStore } from '../../../../editor/EditorStore.js';
 import {
   service_addConnectionTestData,
   service_setConnectionTestDataEmbeddedData,

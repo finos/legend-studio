@@ -28,7 +28,7 @@ import {
   CONNECTION_TYPE,
 } from '../../../stores/editor/NewElementState.js';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
-import type { EditorStore } from '../../../stores/EditorStore.js';
+import type { EditorStore } from '../../../stores/editor/EditorStore.js';
 import { prettyCONSTName } from '@finos/legend-shared';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { useEditorStore } from '../EditorStoreProvider.js';

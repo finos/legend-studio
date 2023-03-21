@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 
 // TODO: We might potentially make this persisting data to local storage
 // as such the logic in this state might get a little more complicated, so we just leave it like this for now

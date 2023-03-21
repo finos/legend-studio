@@ -15,7 +15,7 @@
  */
 
 import type { Workspace } from '@finos/legend-server-sdlc';
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 
 export type TestRunnerTabRenderer = (

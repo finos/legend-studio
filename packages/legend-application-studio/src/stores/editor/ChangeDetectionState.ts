@@ -24,7 +24,7 @@ import {
   makeObservable,
   isComputedProp,
 } from 'mobx';
-import { LEGEND_STUDIO_APP_EVENT } from '../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import {
   type GeneratorFn,
   LogEvent,
@@ -54,7 +54,7 @@ import {
   observe_GraphElements,
 } from '@finos/legend-graph';
 import { type IDisposer, keepAlive } from 'mobx-utils';
-import { TextLocalChangesState } from './sidebar-state/LocalChangesState.js';
+import { TextLocalChangesState } from '../sidebar-state/LocalChangesState.js';
 
 class RevisionChangeDetectionState {
   editorStore: EditorStore;

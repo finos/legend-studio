@@ -29,7 +29,7 @@ import {
 } from '../../../EditorComponentTestUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { TEST_DATA__ProjectDependencyReport } from '../../edit-panel/__tests__/TEST_DATA__ProjectDependencyReport.js';
-import type { EditorStore } from '../../../../stores/EditorStore.js';
+import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 
 let renderResult: RenderResult;
 

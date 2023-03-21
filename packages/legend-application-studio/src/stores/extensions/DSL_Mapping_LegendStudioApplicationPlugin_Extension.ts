@@ -17,7 +17,7 @@
 import type { PureGrammarTextSuggestion } from '@finos/legend-application';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import type { ConnectionValueState } from '../editor-state/element-editor-state/connection/ConnectionEditorState.js';
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import type {
   Store,
   Connection,

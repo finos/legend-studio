@@ -74,7 +74,7 @@ import {
   generateGAVCoordinates,
 } from '@finos/legend-storage';
 import { runtime_addMapping } from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
-import type { EditorStore } from '../../../EditorStore.js';
+import type { EditorStore } from '../../../editor/EditorStore.js';
 import {
   keyedExecutionParameter_setKey,
   pureExecution_setFunction,

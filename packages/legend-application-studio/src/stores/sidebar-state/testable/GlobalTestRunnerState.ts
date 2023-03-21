@@ -46,8 +46,8 @@ import {
   filterByType,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
-import type { EditorSDLCState } from '../../EditorSDLCState.js';
-import type { EditorStore } from '../../EditorStore.js';
+import type { EditorSDLCState } from '../../editor/EditorSDLCState.js';
+import type { EditorStore } from '../../editor/EditorStore.js';
 import type {
   LegendStudioApplicationPlugin,
   TestableMetadataGetter,

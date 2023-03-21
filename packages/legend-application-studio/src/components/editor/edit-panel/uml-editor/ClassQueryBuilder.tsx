@@ -28,8 +28,8 @@ import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import type { EditorStore } from '../../../../stores/EditorStore.js';
-import type { EmbeddedQueryBuilderState } from '../../../../stores/EmbeddedQueryBuilderState.js';
+import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
+import type { EmbeddedQueryBuilderState } from '../../../../stores/editor/EmbeddedQueryBuilderState.js';
 import {
   service_initNewService,
   service_setExecution,

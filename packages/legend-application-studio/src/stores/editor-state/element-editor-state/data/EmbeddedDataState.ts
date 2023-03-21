@@ -31,7 +31,7 @@ import {
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
-import type { EditorStore } from '../../../EditorStore.js';
+import type { EditorStore } from '../../../editor/EditorStore.js';
 import {
   dataElementReference_setDataElement,
   externalFormatData_setContentType,

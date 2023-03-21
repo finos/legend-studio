@@ -22,7 +22,7 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import type { EditorStore } from '../../../EditorStore.js';
+import type { EditorStore } from '../../../editor/EditorStore.js';
 import {
   InstanceSetImplementationState,
   MappingElementState,

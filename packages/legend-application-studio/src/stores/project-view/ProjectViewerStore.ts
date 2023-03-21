@@ -15,7 +15,7 @@
  */
 
 import { computed, flow, flowResult, makeObservable, observable } from 'mobx';
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -64,7 +64,7 @@ import {
   GraphBuilderError,
   createGraphBuilderReport,
 } from '@finos/legend-graph';
-import { GRAPH_EDITOR_MODE } from '../EditorConfig.js';
+import { GRAPH_EDITOR_MODE } from '../editor/EditorConfig.js';
 
 interface ProjectViewerGraphBuilderMaterial {
   entities: Entity[];

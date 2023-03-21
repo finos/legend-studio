@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import { observable, makeObservable, action } from 'mobx';
 import { ActionState } from '@finos/legend-shared';
 import type { ProjectVersionPlatformDependency } from '@finos/legend-server-depot';

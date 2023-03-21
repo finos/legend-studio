@@ -17,8 +17,8 @@
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import { observable, action, flowResult, makeObservable, flow } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
-import type { EditorStore } from '../EditorStore.js';
-import type { EditorSDLCState } from '../EditorSDLCState.js';
+import type { EditorStore } from '../editor/EditorStore.js';
+import type { EditorSDLCState } from '../editor/EditorSDLCState.js';
 import {
   type GeneratorFn,
   type PlainObject,

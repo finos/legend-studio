@@ -28,7 +28,7 @@ import {
   PanelHeaderActionItem,
 } from '@finos/legend-art';
 import { Console } from './Console.js';
-import { AUX_PANEL_MODE } from '../../../stores/EditorConfig.js';
+import { AUX_PANEL_MODE } from '../../../stores/editor/EditorConfig.js';
 import { isNonNullable } from '@finos/legend-shared';
 import { DevTool } from './DevTool.js';
 import { useEditorStore } from '../EditorStoreProvider.js';

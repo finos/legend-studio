@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore.js';
+import type { EditorStore } from '../editor/EditorStore.js';
 import { EditorState } from './EditorState.js';
 import { observable, makeObservable, computed } from 'mobx';
 import type { FileSystem_File } from '../shared/FileSystemTreeUtils.js';

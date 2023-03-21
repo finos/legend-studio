@@ -19,7 +19,10 @@ import { observer } from 'mobx-react-lite';
 import { EditPanel } from '../editor/edit-panel/EditPanel.js';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
-import { ACTIVITY_MODE, GRAPH_EDITOR_MODE } from '../../stores/EditorConfig.js';
+import {
+  ACTIVITY_MODE,
+  GRAPH_EDITOR_MODE,
+} from '../../stores/editor/EditorConfig.js';
 import {
   type ResizablePanelHandlerProps,
   clsx,

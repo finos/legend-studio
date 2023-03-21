@@ -63,7 +63,7 @@ import type {
   NewConnectionDriverCreator,
   RuntimeConnectionTooltipTextBuilder,
 } from '../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
-import type { EditorStore } from '../../stores/EditorStore.js';
+import type { EditorStore } from '../../stores/editor/EditorStore.js';
 import type { ElementEditorState } from '../../stores/editor-state/element-editor-state/ElementEditorState.js';
 import { SchemaSetEditorState } from '../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
 import { BindingEditorState } from '../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_BindingEditorState.js';

@@ -58,7 +58,7 @@ import {
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useState } from 'react';
-import { GLOBAL_TEST_RUNNER_TABS } from '../../../../stores/EditorConfig.js';
+import { GLOBAL_TEST_RUNNER_TABS } from '../../../../stores/editor/EditorConfig.js';
 import {
   type TestableExplorerTreeNodeData,
   type GlobalTestRunnerState,

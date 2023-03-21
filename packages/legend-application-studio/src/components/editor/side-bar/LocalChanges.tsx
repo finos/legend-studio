@@ -45,14 +45,14 @@ import type {
   EntityChangeConflict,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSDLCState.js';
+import { entityDiffSorter } from '../../../stores/editor/EditorSDLCState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { useEffect } from 'react';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import { EntityChangeConflictSideBarItem } from '../edit-panel/diff-editor/EntityChangeConflictEditor.js';
 import { FormLocalChangesState } from '../../../stores/sidebar-state/LocalChangesState.js';
-import { GRAPH_EDITOR_MODE } from '../../../stores/EditorConfig.js';
+import { GRAPH_EDITOR_MODE } from '../../../stores/editor/EditorConfig.js';
 
 const PatchLoader = observer(() => {
   const editorStore = useEditorStore();

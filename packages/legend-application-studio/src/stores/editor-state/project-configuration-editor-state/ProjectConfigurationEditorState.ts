@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../../EditorStore.js';
+import type { EditorStore } from '../../editor/EditorStore.js';
 import { EditorState } from '../EditorState.js';
 import {
   action,
@@ -33,7 +33,7 @@ import {
   hashArray,
   ActionState,
 } from '@finos/legend-shared';
-import type { EditorSDLCState } from '../../EditorSDLCState.js';
+import type { EditorSDLCState } from '../../editor/EditorSDLCState.js';
 import {
   type ProjectConfiguration,
   ProjectStructureVersion,

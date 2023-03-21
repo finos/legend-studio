@@ -51,7 +51,7 @@ import {
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import { type EntityChange, EntityChangeType } from '@finos/legend-server-sdlc';
-import type { EditorStore } from '../../../EditorStore.js';
+import type { EditorStore } from '../../../editor/EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../application/LegendStudioEvent.js';
 import {

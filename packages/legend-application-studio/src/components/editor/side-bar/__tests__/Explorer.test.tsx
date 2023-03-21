@@ -23,7 +23,7 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../EditorComponentTestUtils.js';
-import type { EditorStore } from '../../../../stores/EditorStore.js';
+import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 
 const packageRootChildren = ['ui'];
 

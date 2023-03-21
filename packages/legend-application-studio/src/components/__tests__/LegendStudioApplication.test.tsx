@@ -39,7 +39,7 @@ import {
   TEST__SDLCServerClientProvider,
 } from '@finos/legend-server-sdlc';
 import { TEST__DepotServerClientProvider } from '@finos/legend-server-depot';
-import { TEST__getLegendStudioApplicationConfig } from '../../stores/EditorStoreTestUtils.js';
+import { TEST__getLegendStudioApplicationConfig } from '../../stores/editor/EditorStoreTestUtils.js';
 import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager.js';
 
 test(
