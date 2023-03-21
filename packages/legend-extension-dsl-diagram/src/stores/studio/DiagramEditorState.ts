@@ -48,7 +48,7 @@ import type { ClassView } from '../../graph/metamodel/pure/packageableElements/d
 import type { Point } from '../../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Point.js';
 import { Diagram } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
 import type { PropertyHolderView } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_PropertyHolderView.js';
-import { DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY } from '../../components/studio/DSL_Diagram_LegendStudioCommand.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY } from '../../application/studio/DSL_Diagram_LegendStudioCommand.js';
 import type { CommandRegistrar } from '@finos/legend-application';
 
 export abstract class DiagramEditorSidePanelState {

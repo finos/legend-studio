@@ -49,8 +49,8 @@ import {
 import {
   BLANK_PERSISTENCE_CONTEXT_SNIPPET,
   BLANK_PERSISTENCE_SNIPPET,
-} from './DSL_Persistence_CodeSnippets.js';
-import { DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSL_Persistence_LegendStudioDocumentation.js';
+} from '../../application/studio/DSL_Persistence_LegendStudioCodeSnippet.js';
+import { DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/studio/DSL_Persistence_LegendStudioDocumentation.js';
 
 const PERSISTENCE_ELEMENT_TYPE = 'PERSISTENCE';
 const PERSISTENCE_CONTEXT_ELEMENT_TYPE = 'PERSISTENCE_CONTEXT';

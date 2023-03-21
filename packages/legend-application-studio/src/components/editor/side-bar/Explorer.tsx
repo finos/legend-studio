@@ -61,7 +61,7 @@ import {
 } from './CreateNewElementModal.js';
 import { useDrag } from 'react-dnd';
 import { ElementDragSource } from '../../../stores/shared/DnDUtils.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
 import {
   ACTIVITY_MODE,
   GRAPH_EDITOR_MODE,

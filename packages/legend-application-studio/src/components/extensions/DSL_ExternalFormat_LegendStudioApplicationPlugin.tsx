@@ -83,7 +83,7 @@ import {
   SCHEMASET_WITH_JSON_SCHEMA_SNIPPET,
   SCHEMASET_WITH_XML_SCHEMA_SNIPPET,
   SCHEMASET_WITH_FLAT_DATA_SCHEMA_SNIPPET,
-} from '../../application/DSL_ExternalFormat_CodeSnippets.js';
+} from '../../application/DSL_ExternalFormat_LegendStudioCodeSnippet.js';
 import {
   NewSchemaSetDriver,
   NewSchemaSetDriverEditor,

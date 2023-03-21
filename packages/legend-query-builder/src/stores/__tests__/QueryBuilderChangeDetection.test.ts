@@ -29,7 +29,7 @@ import { expect, test } from '@jest/globals';
 import { waitFor, getByText } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import { TEST__setUpQueryBuilder } from '../../components/QueryBuilderComponentTestUtils.js';
-import { QUERY_BUILDER_TEST_ID } from '../../components/QueryBuilder_TestID.js';
+import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
 import { QueryBuilderTDSState } from '../fetch-structure/tds/QueryBuilderTDSState.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ChangeDetection } from './TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ChangeDetectionModel from './TEST_DATA__QueryBuilder_Model_ChangeDetection.json';

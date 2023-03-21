@@ -57,7 +57,7 @@ import {
   renderPropertyTypeIcon,
 } from './QueryBuilderExplorerPanel.js';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
+import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
 import { TextSearchAdvancedConfigMenu } from '@finos/legend-application';
 
 const prettyPropertyNameFromNodeId = (name: string): string => {

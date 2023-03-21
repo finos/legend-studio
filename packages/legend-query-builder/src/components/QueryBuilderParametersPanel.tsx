@@ -52,7 +52,7 @@ import { variableExpression_setName } from '../stores/shared/ValueSpecificationM
 import { LambdaParameterState } from '../stores/shared/LambdaParameterState.js';
 import { LambdaParameterValuesEditor } from './shared/LambdaParameterValuesEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
-import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
+import { QUERY_BUILDER_TEST_ID } from '../application/QueryBuilderTesting.js';
 
 type MultiplicityOption = { label: string; value: Multiplicity };
 

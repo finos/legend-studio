@@ -75,7 +75,7 @@ export {
   TEST__setUpEditorWithDefaultSDLCData,
   TEST__openElementFromExplorerTree,
 } from './components/EditorComponentTestUtils.js';
-export * from './components/LegendStudioTestID.js';
+export * from './application/LegendStudioTesting.js';
 export * from './stores/EditorStoreTestUtils.js';
 
 export { PostProcessorEditorState } from './stores/editor-state/element-editor-state/connection/PostProcessorEditorState.js';

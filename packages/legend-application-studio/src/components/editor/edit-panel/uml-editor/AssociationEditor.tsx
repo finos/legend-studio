@@ -47,7 +47,7 @@ import {
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import {
   StereotypeDragPreviewLayer,
   StereotypeSelector,

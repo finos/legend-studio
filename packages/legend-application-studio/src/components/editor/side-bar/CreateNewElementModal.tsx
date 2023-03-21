@@ -15,7 +15,7 @@
  */
 
 import { useRef } from 'react';
-import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
 import { observer } from 'mobx-react-lite';
 import {
   NewPackageableRuntimeDriver,

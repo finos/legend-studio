@@ -35,7 +35,7 @@ import {
 } from '@finos/legend-art';
 import { debounce, prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { ServiceRegistrationEditor } from './ServiceRegistrationEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {

@@ -87,7 +87,7 @@ import {
   instanceValue_setValues,
 } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { PARAMETER_SUBMIT_ACTION } from '../stores/shared/LambdaParameterState.js';
-import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
+import { QUERY_BUILDER_TEST_ID } from '../application/QueryBuilderTesting.js';
 
 const QueryBuilderGridResultContextMenu = observer(
   forwardRef<

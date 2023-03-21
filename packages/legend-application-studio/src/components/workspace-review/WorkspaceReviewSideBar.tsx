@@ -27,7 +27,7 @@ import {
   PanelContent,
 } from '@finos/legend-art';
 import { EntityDiffViewState } from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
-import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
 import { flowResult } from 'mobx';
 import { type EntityDiff, ReviewState } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../stores/EditorSDLCState.js';

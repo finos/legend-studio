@@ -44,7 +44,7 @@ import {
   Modal,
   ModalFooterButton,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
 import { flowResult } from 'mobx';
 import { WorkflowJobStatus, WorkflowStatus } from '@finos/legend-server-sdlc';
 import {

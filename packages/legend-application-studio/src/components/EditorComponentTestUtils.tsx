@@ -22,7 +22,7 @@ import {
   waitFor,
   getByText,
 } from '@testing-library/react';
-import { LEGEND_STUDIO_TEST_ID } from './LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../application/LegendStudioTesting.js';
 import { EditorStore } from '../stores/EditorStore.js';
 import { Editor } from './editor/Editor.js';
 import {

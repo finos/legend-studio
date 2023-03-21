@@ -31,7 +31,7 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../EditorComponentTestUtils.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 
 let renderResult: RenderResult;
 

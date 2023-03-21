@@ -41,7 +41,7 @@ import {
   TaggedValueDragPreviewLayer,
   TaggedValueEditor,
 } from './TaggedValueEditor.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import {

@@ -46,7 +46,7 @@ import {
   CORE_DND_TYPE,
   TypeDragSource,
 } from '../../../../stores/shared/DnDUtils.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { noop } from '@finos/legend-shared';
 import {
   MappingElementDecorator,

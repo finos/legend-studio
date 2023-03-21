@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { ACTIVITY_MODE, AUX_PANEL_MODE } from '../../stores/EditorConfig.js';
-import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
 import {
   clsx,
   DropdownMenu,

@@ -26,7 +26,7 @@ import {
   CustomSelectorInput,
   RepoIcon,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
 import {
   type SetupPathParams,
   generateEditorRoute,

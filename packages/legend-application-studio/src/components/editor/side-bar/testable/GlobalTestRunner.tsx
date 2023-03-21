@@ -73,7 +73,7 @@ import {
   getAssertionStatus,
 } from '../../../../stores/sidebar-state/testable/GlobalTestRunnerState.js';
 import type { STO_ProjectOverview_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/STO_ProjectOverview_LegendStudioApplicationPlugin_Extension.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { TextDiffView } from '../../../shared/DiffView.js';
 import { getElementTypeIcon } from '../../../shared/ElementIconUtils.js';
 import { UnsupportedEditorPanel } from '../../edit-panel/UnsupportedElementEditor.js';

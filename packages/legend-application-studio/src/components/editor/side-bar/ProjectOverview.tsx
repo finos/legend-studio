@@ -16,7 +16,7 @@
 
 import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
 import {
   clsx,
   CustomSelectorInput,

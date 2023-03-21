@@ -37,7 +37,7 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditor,
 } from '../../../../EditorComponentTestUtils.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../../application/LegendStudioTesting.js';
 import type { EditorStore } from '../../../../../stores/EditorStore.js';
 import { ServiceEditorState } from '../../../../../stores/editor-state/element-editor-state/service/ServiceEditorState.js';
 import { TEST__provideMockedApplicationStore } from '@finos/legend-application';

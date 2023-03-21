@@ -85,7 +85,7 @@ import {
   generateViewProjectRoute,
   generateViewVersionRoute,
 } from '../../../../application/LegendStudioNavigation.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 
 interface VersionOption {

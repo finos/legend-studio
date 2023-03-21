@@ -52,7 +52,7 @@ import { MappingExplorer } from './MappingExplorer.js';
 import { MappingTestEditor } from './MappingTestEditor.js';
 import { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState.js';
 import { MappingTestsExplorer } from './MappingTestsExplorer.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState.js';
 import { MappingExecutionBuilder } from './MappingExecutionBuilder.js';
 import { flowResult } from 'mobx';

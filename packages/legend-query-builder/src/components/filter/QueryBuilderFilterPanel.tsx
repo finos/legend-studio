@@ -68,7 +68,7 @@ import {
   debounce,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
+import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
 import { useApplicationStore } from '@finos/legend-application';
 import type { ValueSpecification } from '@finos/legend-graph';
 import {

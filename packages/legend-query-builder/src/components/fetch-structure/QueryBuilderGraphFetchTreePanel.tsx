@@ -30,7 +30,7 @@ import {
   InfoCircleIcon,
   PanelDropZone,
 } from '@finos/legend-art';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
+import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
 import { isNonNullable } from '@finos/legend-shared';
 import {
   type QueryBuilderGraphFetchTreeData,

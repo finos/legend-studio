@@ -104,7 +104,7 @@ import {
   MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
   POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET,
   createConnectionSnippetWithPostProcessorSuggestionSnippet,
-} from '../../../application/Core_CodeSnippets.js';
+} from '../../../application/LegendStudioCodeSnippet.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../application/LegendStudioApplicationNavigationContext.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';

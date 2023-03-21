@@ -33,7 +33,7 @@ import {
   type ElementDragSource,
   type MappingElementSourceDropTarget,
 } from '../../../../stores/shared/DnDUtils.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import {
   InstanceSetImplementationState,
   MappingElementState,

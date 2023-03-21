@@ -51,7 +51,7 @@ import {
   MappingEditorState,
   getMappingElementLabel,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-editor/NewMappingElementModal.js';
 import { MappingElementDecorator } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';

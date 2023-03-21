@@ -21,7 +21,7 @@ export * from './application/QueryBuilderEvent.js';
 export * from './stores/QueryBuilderBootstraper.js';
 export { QueryBuilder_GraphManagerPreset } from './graphManager/QueryBuilder_GraphManagerPreset.js';
 
-export { QUERY_BUILDER_TEST_ID } from './components/QueryBuilder_TestID.js';
+export { QUERY_BUILDER_TEST_ID } from './application/QueryBuilderTesting.js';
 export {
   type CheckEntitlementEditorRender,
   QueryBuilder_LegendApplicationPlugin,

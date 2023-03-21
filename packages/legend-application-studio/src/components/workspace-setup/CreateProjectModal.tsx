@@ -31,7 +31,7 @@ import {
   PanelForm,
   PanelDivider,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
 import { isNumber } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import {
