@@ -45,6 +45,9 @@ import {
   CaretRightIcon,
   CopyIcon,
   MoreHorizontalIcon,
+  FlaskIcon,
+  KeyIcon,
+  ShieldIcon,
 } from '@finos/legend-art';
 import {
   type Diagram,
@@ -974,21 +977,21 @@ export const DataSpaceViewer = observer(
         title: 'Execution Context',
         icon: <PlayIcon />,
       },
-      // {
-      //   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA,
-      //   title: 'Test Data',
-      //   icon: <FlaskIcon />,
-      // },
-      // {
-      //   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT,
-      //   title: 'Entitlement',
-      //   icon: <KeyIcon />,
-      // },
-      // {
-      //   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_COVERAGE,
-      //   title: 'Test Coverage',
-      //   icon: <ShieldIcon />,
-      // },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA,
+        title: 'Test Data',
+        icon: <FlaskIcon />,
+      },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT,
+        title: 'Entitlement',
+        icon: <KeyIcon />,
+      },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_COVERAGE,
+        title: 'Test Coverage',
+        icon: <ShieldIcon />,
+      },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO,
         title: 'Info',
@@ -1093,7 +1096,7 @@ export const DataSpaceViewer = observer(
                         plugin instanceof DSL_DataSpace_LegendApplicationPlugin,
                     ) as DSL_DataSpace_LegendApplicationPlugin[],
                 )}
-              {/* {dataSpaceViewerState.currentActivity ===
+              {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA && (
                 <BlankPanelContent>
                   View test data (Work in Progress)
@@ -1104,7 +1107,7 @@ export const DataSpaceViewer = observer(
                 <BlankPanelContent>
                   View test coverage (Work in Progress)
                 </BlankPanelContent>
-              )} */}
+              )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO && (
                 <DataSpaceInfo dataSpaceViewerState={dataSpaceViewerState} />
