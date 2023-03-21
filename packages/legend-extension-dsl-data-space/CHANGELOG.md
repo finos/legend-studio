@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 9.1.2
+
+### Patch Changes
+
+- [#2033](https://github.com/finos/legend-studio/pull/2033) [`cb747750e`](https://github.com/finos/legend-studio/commit/cb747750edc0bb30a343adac9dd537c1af997d33) ([@xannem](https://github.com/xannem)) - Fix bug for creating new query from dataspace
+
 ## 9.1.1
 
 ## 9.1.0
