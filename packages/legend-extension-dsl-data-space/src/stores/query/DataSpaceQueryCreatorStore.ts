@@ -248,7 +248,9 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         query.versionId = this.versionId;
         query.taggedValues = [
           createQueryDataSpaceTaggedValue(this.dataSpacePath),
-          createQueryClassTaggedValue(guaranteeNonNullable(this.classPath)),
+          createQueryClassTaggedValue(
+            guaranteeNonNullable(this.queryBuilderState?.class?.path),
+          ),
         ];
       },
     };
