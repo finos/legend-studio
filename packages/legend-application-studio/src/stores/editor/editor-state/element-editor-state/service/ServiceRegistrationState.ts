@@ -87,7 +87,7 @@ interface ServiceVersionOption {
 
 export class ServiceRegistrationState {
   readonly editorStore: EditorStore;
-  readonly service: Service;
+  readonly service: Service | undefined;
   readonly registrationOptions: ServiceRegistrationEnvironmentConfig[] = [];
   readonly registrationState = ActionState.create();
 
@@ -100,7 +100,7 @@ export class ServiceRegistrationState {
 
   constructor(
     editorStore: EditorStore,
-    service: Service,
+    service: Service | undefined,
     registrationOptions: ServiceRegistrationEnvironmentConfig[],
     enableModesWithVersioning: boolean,
   ) {
@@ -247,7 +247,7 @@ export class ServiceRegistrationState {
       this.registrationState.setMessage(`Registering service...`);
       const serviceRegistrationResult =
         (yield this.editorStore.graphManagerState.graphManager.registerService(
-          this.service,
+          guaranteeNonNullable(this.service),
           this.editorStore.graphManagerState.graph,
           projectConfig.groupId,
           projectConfig.artifactId,
@@ -310,11 +310,12 @@ export class ServiceRegistrationState {
   }
 
   validateServiceForRegistration(): void {
-    this.service.owners.forEach((owner) =>
+    guaranteeNonNullable(this.service).owners.forEach((owner) =>
       assertNonEmptyString(owner, `Service can't have an empty owner name`),
     );
     assertTrue(
-      this.service.owners.length >= MINIMUM_SERVICE_OWNERS,
+      guaranteeNonNullable(this.service).owners.length >=
+        MINIMUM_SERVICE_OWNERS,
       `Service needs to have at least 2 owners in order to be registered`,
     );
     guaranteeNonNullable(
@@ -342,7 +343,7 @@ export class ServiceRegistrationState {
       Multiplicity.ZERO_ONE,
     ];
     const invalidParams = buildLambdaVariableExpressions(
-      (this.service.execution as PureExecution).func,
+      (guaranteeNonNullable(this.service).execution as PureExecution).func,
       this.editorStore.graphManagerState,
     )
       .filter(filterByType(VariableExpression))

@@ -18,7 +18,10 @@ import type {
   ExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
 } from './action/execution/ExecutionResult.js';
-import type { ServiceRegistrationResult } from './action/service/ServiceRegistrationResult.js';
+import type {
+  ServiceRegistrationResult,
+  BulkServiceRegistrationResult,
+} from './action/service/ServiceRegistrationResult.js';
 import type { Service } from '../graph/metamodel/pure/packageableElements/service/Service.js';
 import type { FileGenerationSpecification } from '../graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
 import type { GenerationOutput } from './action/generation/GenerationOutput.js';
@@ -79,7 +82,6 @@ import type {
 } from './action/compilation/CompilationResult.js';
 import type { ParameterValue } from '../DSL_Service_Exports.js';
 import type { ModelUnit } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
-import type { BulkServiceRegistrationResult } from './action/service/BulkServiceRegistrationResult.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;

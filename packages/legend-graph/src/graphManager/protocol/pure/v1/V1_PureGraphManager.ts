@@ -40,7 +40,6 @@ import {
   uniq,
   IllegalStateError,
   filterByType,
-  getNullableFirstElement,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -68,7 +67,12 @@ import type {
   GenerationConfigurationDescription,
   GenerationMode,
 } from '../../../../graphManager/action/generation/GenerationConfigurationDescription.js';
-import type { ServiceRegistrationResult } from '../../../../graphManager/action/service/ServiceRegistrationResult.js';
+import {
+  type ServiceRegistrationResult,
+  type BulkServiceRegistrationResult,
+  BulkRegistrationResultSuccess,
+  BulkRegistrationResultFail,
+} from '../../../../graphManager/action/service/ServiceRegistrationResult.js';
 import type { ExecutionResult } from '../../../../graphManager/action/execution/ExecutionResult.js';
 import type { GenerationOutput } from '../../../../graphManager/action/generation/GenerationOutput.js';
 import type { ValueSpecification } from '../../../../graph/metamodel/pure/valueSpecification/ValueSpecification.js';
@@ -271,11 +275,6 @@ import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_S
 import { V1_transformModelUnit } from './transformation/pureGraph/from/V1_DSL_ExternalFormat_Transformer.js';
 import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 import { V1_LambdaReturnTypeInput } from './engine/compilation/V1_LambdaReturnType.js';
-import {
-  type BulkServiceRegistrationResult,
-  BulkRegistrationResultSuccess,
-  BulkRegistrationResultFail,
-} from '../../../action/service/BulkServiceRegistrationResult.js';
 import { MultiExecutionServiceTestResult } from '../../../../graph/metamodel/pure/packageableElements/service/MultiExecutionServiceTestResult.js';
 import type { ParameterValue } from '../../../../graph/metamodel/pure/packageableElements/service/ParameterValue.js';
 import type { Service } from '../../../../graph/metamodel/pure/packageableElements/service/Service.js';
@@ -2720,11 +2719,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           } catch (error) {
             assertErrorThrown(error);
             const result = new BulkRegistrationResultFail(error.message);
-            if (graphData instanceof V1_PureModelContextData) {
-              result.servicePath = getNullableFirstElement(
-                graphData.elements.filter(filterByType(V1_Service)),
-              )?.path;
-            }
+            // if (graphData instanceof V1_PureModelContextData) { //TODO
+            //   result.service = getNullableFirstElement(
+            //     graphData.elements.filter(filterByType(V1_Service)),
+            //   );
+            // }
             return result;
           }
         }),
