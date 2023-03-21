@@ -20,7 +20,7 @@ import {
   DATA_TAB_TYPE,
   type EmbeddedDataEditorState,
   PackageableDataEditorState,
-} from '../../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 import {
   CaretDownIcon,
   clsx,
@@ -48,13 +48,13 @@ import {
   annotatedElement_addTaggedValue,
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
-} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
 import { useDrop } from 'react-dnd';
 import {
   CORE_DND_TYPE,
   type UMLEditorElementDropTarget,
   type ElementDragSource,
-} from '../../../../stores/shared/DnDUtils.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
 import {
   TaggedValueDragPreviewLayer,
   TaggedValueEditor,
@@ -67,9 +67,9 @@ import {
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
-} from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
-import { getEditorLanguageForFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
-import type { ExternalFormatDataState } from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
+} from '../../../../stores/editor/shared/modifier/DSL_Data_GraphModifierHelper.js';
+import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/FileGenerationViewerState.js';
+import type { ExternalFormatDataState } from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import { renderEmbeddedDataEditor } from './EmbeddedDataEditor.js';
 import {
   LEGEND_APPLICATION_DOCUMENTATION_KEY,

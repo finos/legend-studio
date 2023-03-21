@@ -60,7 +60,7 @@ import {
   CreateNewElementModal,
 } from './CreateNewElementModal.js';
 import { useDrag } from 'react-dnd';
-import { ElementDragSource } from '../../../stores/shared/DnDUtils.js';
+import { ElementDragSource } from '../../../stores/editor/shared/DnDUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
 import {
   ACTIVITY_MODE,
@@ -69,12 +69,12 @@ import {
 import {
   generatePackageableElementTreeNodeDataLabel,
   getTreeChildNodes,
-} from '../../../stores/shared/PackageTreeUtils.js';
-import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtils.js';
+} from '../../../stores/editor/shared/PackageTreeUtils.js';
+import type { PackageTreeNodeData } from '../../../stores/editor/shared/TreeUtils.js';
 import {
   type FileSystemTreeNodeData,
   getFileSystemChildNodes,
-} from '../../../stores/shared/FileSystemTreeUtils.js';
+} from '../../../stores/editor/shared/FileSystemTreeUtils.js';
 import { FileSystemTree } from '../edit-panel/element-generation-editor/FileSystemViewer.js';
 import {
   generateViewEntityRoute,
@@ -112,7 +112,7 @@ import {
   TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/shared/ModelClassifierUtils.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
 import { queryClass } from '../edit-panel/uml-editor/ClassQueryBuilder.js';
 import { createViewSDLCProjectHandler } from '../../../stores/editor/DependencyProjectViewerHelper.js';
@@ -123,7 +123,7 @@ import {
 import {
   CLASS_MOCK_DATA_GENERATION_FORMAT,
   createMockDataForClassWithFormat,
-} from '../../../stores/shared/MockDataUtils.js';
+} from '../../../stores/editor/shared/MockDataUtils.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();

@@ -19,10 +19,10 @@ import { observer } from 'mobx-react-lite';
 import {
   type EntityDiffViewState,
   DIFF_VIEW_MODE,
-} from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+} from '../../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { TextDiffView, JsonDiffView } from '../../../shared/DiffView.js';
 import { clsx, GoToFileIcon, CompareIcon } from '@finos/legend-art';
-import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
+import { getPrettyLabelForRevision } from '../../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { flowResult } from 'mobx';
 import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';

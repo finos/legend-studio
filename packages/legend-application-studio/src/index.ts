@@ -32,11 +32,11 @@ export * from './stores/LegendStudioApplicationPlugin.js';
 export * from './stores/editor/EditorTabManagerState.js';
 export * from './stores/editor/EditorStore.js';
 export * from './stores/editor/EditorConfig.js';
-export * from './stores/editor-state/ModelImporterState.js';
+export * from './stores/editor/editor-state/ModelImporterState.js';
 export * from './stores/workspace-setup/ProjectConfigurationStatus.js';
-export { ClassEditorState } from './stores/editor-state/element-editor-state/ClassEditorState.js';
-export { ElementEditorState } from './stores/editor-state/element-editor-state/ElementEditorState.js';
-export { UnsupportedElementEditorState } from './stores/editor-state/UnsupportedElementEditorState.js';
+export { ClassEditorState } from './stores/editor/editor-state/element-editor-state/ClassEditorState.js';
+export { ElementEditorState } from './stores/editor/editor-state/element-editor-state/ElementEditorState.js';
+export { UnsupportedElementEditorState } from './stores/editor/editor-state/UnsupportedElementEditorState.js';
 export {
   NewElementState,
   NewElementDriver,
@@ -48,25 +48,25 @@ export {
   TypeDragSource,
   type UMLEditorElementDropTarget,
   type TransformDropTarget,
-} from './stores/shared/DnDUtils.js';
+} from './stores/editor/shared/DnDUtils.js';
 export { ExplorerTreeRootPackageLabel } from './stores/editor/ExplorerTreeState.js';
-export * from './stores/shared/modifier/GraphModifierHelper.js';
-export * from './stores/shared/modifier/DomainGraphModifierHelper.js';
+export * from './stores/editor/shared/modifier/GraphModifierHelper.js';
+export * from './stores/editor/shared/modifier/DomainGraphModifierHelper.js';
+export * from './stores/editor/shared/modifier/DSL_Generation_GraphModifierHelper.js';
+export * from './stores/editor/shared/modifier/DSL_Service_GraphModifierHelper.js';
 export * from './stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
-export * from './stores/shared/modifier/DSL_Generation_GraphModifierHelper.js';
-export * from './stores/shared/modifier/DSL_Service_GraphModifierHelper.js';
 
 // components
 export { queryClass } from './components/editor/edit-panel/uml-editor/ClassQueryBuilder.js';
 export * from './components/editor/EditorStoreProvider.js';
 export { ActivityBarMenu } from './components/editor/ActivityBar.js';
-export * from './components/shared/ProjectSelectorUtils.js';
-export * from './components/shared/WorkspaceSelectorUtils.js';
+export * from './components/workspace-setup/ProjectSelectorUtils.js';
+export * from './components/workspace-setup/WorkspaceSelectorUtils.js';
 export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor.js';
-export { TypeTree } from './components/shared/TypeTree.js';
-export * from './stores/sidebar-state/testable/GlobalTestRunnerState.js';
+export { TypeTree } from './components/editor/edit-panel/mapping-editor/TypeTree.js';
+export * from './stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 
 // test
 export {
@@ -78,16 +78,16 @@ export {
 export * from './application/LegendStudioTesting.js';
 export * from './stores/editor/EditorStoreTestUtils.js';
 
-export { PostProcessorEditorState } from './stores/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
-export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState.js';
-export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState.js';
+export { PostProcessorEditorState } from './stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
+export { MappingExecutionState } from './stores/editor/editor-state/element-editor-state/mapping/MappingExecutionState.js';
+export { MappingTestState } from './stores/editor/editor-state/element-editor-state/mapping/MappingTestState.js';
 export {
   ConnectionValueState,
   RelationalDatabaseConnectionValueState,
-} from './stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
-export * from './stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
-export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState.js';
-export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
+} from './stores/editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+export * from './stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
+export { MappingElementState } from './stores/editor/editor-state/element-editor-state/mapping/MappingElementState.js';
+export { UnsupportedInstanceSetImplementationState } from './stores/editor/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
 export { getElementIcon } from './components/shared/ElementIconUtils.js';
 
 // --------------------------------------------- DSL --------------------------------------------------
@@ -100,26 +100,26 @@ export * from './stores/extensions/DSL_Generation_LegendStudioApplicationPlugin_
 export * from './stores/extensions/STO_ProjectOverview_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 
-export { MINIMUM_SERVICE_OWNERS } from './stores/editor-state/element-editor-state/service/ServiceEditorState.js';
+export { MINIMUM_SERVICE_OWNERS } from './stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
 export {
   LATEST_PROJECT_REVISION,
   generateServiceManagementUrl,
-} from './stores/editor-state/element-editor-state/service/ServiceRegistrationState.js';
-export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
+} from './stores/editor/editor-state/element-editor-state/service/ServiceRegistrationState.js';
+export { ServicePureExecutionState } from './stores/editor/editor-state/element-editor-state/service/ServiceExecutionState.js';
 export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal.js';
-export { FileSystem_File as GenerationFile } from './stores/shared/FileSystemTreeUtils.js';
+export { FileSystem_File as GenerationFile } from './stores/editor/shared/FileSystemTreeUtils.js';
 export {
   FileGenerationState,
   GeneratedFileStructureState,
-} from './stores/editor-state/FileGenerationState.js';
+} from './stores/editor/editor-state/FileGenerationState.js';
 export { DSL_ExternalFormat_LegendStudioApplicationPlugin } from './components/extensions/DSL_ExternalFormat_LegendStudioApplicationPlugin.js';
 export {
   externalFormatData_setData,
   externalFormatData_setContentType,
-} from './stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
+} from './stores/editor/shared/modifier/DSL_Data_GraphModifierHelper.js';
 export { ExternalFormatDataEditor } from './components/editor/edit-panel/data-editor/DataElementEditor.js';
 export {
   ExternalFormatDataState,
   EmbeddedDataState,
-} from './stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
-export type { EmbeddedDataTypeOption } from './stores/editor-state/element-editor-state/data/DataEditorState.js';
+} from './stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
+export type { EmbeddedDataTypeOption } from './stores/editor/editor-state/element-editor-state/data/DataEditorState.js';

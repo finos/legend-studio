@@ -56,7 +56,7 @@ import {
 import {
   type ElementDragSource,
   CORE_DND_TYPE,
-} from '../../../stores/shared/DnDUtils.js';
+} from '../../../stores/editor/shared/DnDUtils.js';
 import { useDrop } from 'react-dnd';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { flowResult } from 'mobx';

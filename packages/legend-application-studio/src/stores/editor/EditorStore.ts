@@ -36,14 +36,14 @@ import {
 } from './EditorGraphState.js';
 import { ChangeDetectionState } from './ChangeDetectionState.js';
 import { NewElementState } from './NewElementState.js';
-import { WorkspaceUpdaterState } from '../sidebar-state/WorkspaceUpdaterState.js';
-import { ProjectOverviewState } from '../sidebar-state/ProjectOverviewState.js';
-import { WorkspaceReviewState } from '../sidebar-state/WorkspaceReviewState.js';
+import { WorkspaceUpdaterState } from './sidebar-state/WorkspaceUpdaterState.js';
+import { ProjectOverviewState } from './sidebar-state/ProjectOverviewState.js';
+import { WorkspaceReviewState } from './sidebar-state/WorkspaceReviewState.js';
 import {
   FormLocalChangesState,
   type LocalChangesState,
-} from '../sidebar-state/LocalChangesState.js';
-import { WorkspaceWorkflowManagerState } from '../sidebar-state/WorkflowManagerState.js';
+} from './sidebar-state/LocalChangesState.js';
+import { WorkspaceWorkflowManagerState } from './sidebar-state/WorkflowManagerState.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -58,10 +58,10 @@ import {
   type Clazz,
 } from '@finos/legend-shared';
 import { EditorSDLCState } from './EditorSDLCState.js';
-import { ModelImporterState } from '../editor-state/ModelImporterState.js';
-import { ProjectConfigurationEditorState } from '../editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
-import type { ElementFileGenerationState } from '../editor-state/element-editor-state/ElementFileGenerationState.js';
-import { DevToolState } from '../aux-panel-state/DevToolState.js';
+import { ModelImporterState } from './editor-state/ModelImporterState.js';
+import { ProjectConfigurationEditorState } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
+import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState.js';
+import { DevToolState } from './aux-panel-state/DevToolState.js';
 import {
   generateEditorRoute,
   generateSetupRoute,
@@ -89,9 +89,9 @@ import {
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import type { EditorMode } from './EditorMode.js';
 import { StandardEditorMode } from './StandardEditorMode.js';
-import { WorkspaceUpdateConflictResolutionState } from '../sidebar-state/WorkspaceUpdateConflictResolutionState.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../shared/ModelClassifierUtils.js';
-import { GlobalTestRunnerState } from '../sidebar-state/testable/GlobalTestRunnerState.js';
+import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
+import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
 import { LEGEND_STUDIO_COMMAND_KEY } from '../../application/LegendStudioCommand.js';
@@ -100,7 +100,7 @@ import type { ProjectViewerEditorMode } from '../project-view/ProjectViewerEdito
 import { GraphEditFormModeState } from './GraphEditFormModeState.js';
 import type { GraphEditorMode } from './GraphEditorMode.js';
 import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
-import { BulkServiceRegistrationState } from '../sidebar-state/BulkServiceRegistrationState.js';
+import { BulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
 
 export abstract class EditorExtensionState {
   /**

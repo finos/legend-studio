@@ -31,12 +31,12 @@ import {
   UnsupportedOperationError,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { decorateRuntimeWithNewMapping } from '../editor-state/element-editor-state/RuntimeEditorState.js';
+import { decorateRuntimeWithNewMapping } from './editor-state/element-editor-state/RuntimeEditorState.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import {
   type FileGenerationTypeOption,
   DEFAULT_GENERATION_SPECIFICATION_NAME,
-} from '../editor-state/GraphGenerationState.js';
+} from './editor-state/GraphGenerationState.js';
 import {
   type PackageableElement,
   type Runtime,
@@ -79,25 +79,25 @@ import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../ext
 import {
   packageableConnection_setConnectionValue,
   runtime_addMapping,
-} from '../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from './shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   fileGeneration_setScopeElements,
   fileGeneration_setType,
   generationSpecification_addGenerationElement,
-} from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
+} from './shared/modifier/DSL_Generation_GraphModifierHelper.js';
 import {
   service_initNewService,
   service_setExecution,
-} from '../shared/modifier/DSL_Service_GraphModifierHelper.js';
-import type { EmbeddedDataTypeOption } from '../editor-state/element-editor-state/data/DataEditorState.js';
-import { dataElement_setEmbeddedData } from '../shared/modifier/DSL_Data_GraphModifierHelper.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../shared/ModelClassifierUtils.js';
+} from './shared/modifier/DSL_Service_GraphModifierHelper.js';
+import type { EmbeddedDataTypeOption } from './editor-state/element-editor-state/data/DataEditorState.js';
+import { dataElement_setEmbeddedData } from './shared/modifier/DSL_Data_GraphModifierHelper.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import {
   buildElementOption,
   type PackageableElementOption,
 } from '@finos/legend-application';
-import { EmbeddedDataType } from '../editor-state/ExternalFormatState.js';
-import { createEmbeddedData } from '../editor-state/element-editor-state/data/EmbeddedDataState.js';
+import { EmbeddedDataType } from './editor-state/ExternalFormatState.js';
+import { createEmbeddedData } from './editor-state/element-editor-state/data/EmbeddedDataState.js';
 
 export const resolvePackageAndElementName = (
   _package: Package,

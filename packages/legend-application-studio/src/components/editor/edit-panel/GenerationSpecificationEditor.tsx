@@ -21,7 +21,7 @@ import {
   type GenerationSpecNodeDragSource,
   type GenerationSpecNodeDropTarget,
   type GenerationTreeNodeState,
-} from '../../../stores/editor-state/GenerationSpecificationEditorState.js';
+} from '../../../stores/editor/editor-state/GenerationSpecificationEditorState.js';
 import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
 import {
@@ -49,7 +49,7 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type FileGenerationSourceDropTarget,
-} from '../../../stores/shared/DnDUtils.js';
+} from '../../../stores/editor/shared/DnDUtils.js';
 import { getNullableFirstElement } from '@finos/legend-shared';
 import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import { flowResult } from 'mobx';
@@ -67,12 +67,12 @@ import {
   useApplicationStore,
   type PackageableElementOption,
 } from '@finos/legend-application';
-import { packageableElementReference_setValue } from '../../../stores/shared/modifier/DomainGraphModifierHelper.js';
+import { packageableElementReference_setValue } from '../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_deleteFileGeneration,
   generationSpecification_setId,
-} from '../../../stores/shared/modifier/DSL_Generation_GraphModifierHelper.js';
+} from '../../../stores/editor/shared/modifier/DSL_Generation_GraphModifierHelper.js';
 
 const GENERATION_SPEC_NODE_DND_TYPE = 'GENERATION_SPEC_NODE';
 

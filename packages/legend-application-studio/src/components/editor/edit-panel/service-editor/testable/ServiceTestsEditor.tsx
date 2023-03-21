@@ -49,23 +49,23 @@ import {
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useState } from 'react';
-import type { ServiceTestSuiteState } from '../../../../../stores/editor-state/element-editor-state/service/testable/ServiceTestableState.js';
+import type { ServiceTestSuiteState } from '../../../../../stores/editor/editor-state/element-editor-state/service/testable/ServiceTestableState.js';
 import {
   type KeyOption,
   type ServiceTestSetupState,
   type ServiceTestState,
   ServiceValueSpecificationTestParameterState,
-} from '../../../../../stores/editor-state/element-editor-state/service/testable/ServiceTestEditorState.js';
-import { TESTABLE_TEST_TAB } from '../../../../../stores/editor-state/element-editor-state/testable/TestableEditorState.js';
-import type { TestAssertionEditorState } from '../../../../../stores/editor-state/element-editor-state/testable/TestAssertionState.js';
+} from '../../../../../stores/editor/editor-state/element-editor-state/service/testable/ServiceTestEditorState.js';
+import { TESTABLE_TEST_TAB } from '../../../../../stores/editor/editor-state/element-editor-state/testable/TestableEditorState.js';
+import type { TestAssertionEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/testable/TestAssertionState.js';
 import {
   atomicTest_setId,
   testAssertion_setId,
-} from '../../../../../stores/shared/modifier/Testable_GraphModifierHelper.js';
+} from '../../../../../stores/editor/shared/modifier/Testable_GraphModifierHelper.js';
 import {
   getTestableResultFromTestResult,
   TESTABLE_RESULT,
-} from '../../../../../stores/sidebar-state/testable/GlobalTestRunnerState.js';
+} from '../../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import { getTestableResultIcon } from '../../../side-bar/testable/GlobalTestRunner.js';
 import { TestAssertionEditor } from '../../testable/TestAssertionEditor.js';
 import { RenameModal } from './ServiceTestableEditor.js';

@@ -29,7 +29,7 @@ import {
   EmptyWindowRestoreIcon,
   WindowMaximizeIcon,
 } from '@finos/legend-art';
-import type { BulkServiceRegistrationState } from '../../../stores/sidebar-state/BulkServiceRegistrationState.js';
+import type { BulkServiceRegistrationState } from '../../../stores/editor/sidebar-state/BulkServiceRegistrationState.js';
 import { BulkServiceRegistrationEditor } from '../edit-panel/service-editor/BulkServiceRegistrationEditor.js';
 import { noop } from '@finos/legend-shared';
 

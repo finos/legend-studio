@@ -23,7 +23,7 @@ import {
   IdentifiedConnectionsEditorTabState,
   IdentifiedConnectionsPerClassEditorTabState,
   IdentifiedConnectionsPerStoreEditorTabState,
-} from '../../../stores/editor-state/element-editor-state/RuntimeEditorState.js';
+} from '../../../stores/editor/editor-state/element-editor-state/RuntimeEditorState.js';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
 import {
   clsx,
@@ -64,20 +64,20 @@ import {
   Modal,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
-import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtils.js';
+import type { RuntimeExplorerTreeNodeData } from '../../../stores/editor/shared/TreeUtils.js';
 import { ConnectionEditor } from './connection-editor/ConnectionEditor.js';
 import {
   type UMLEditorElementDropTarget,
   CORE_DND_TYPE,
   ElementDragSource,
-} from '../../../stores/shared/DnDUtils.js';
+} from '../../../stores/editor/shared/DnDUtils.js';
 import { useDrop } from 'react-dnd';
 import {
   assertErrorThrown,
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { ConnectionEditorState } from '../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import type { ConnectionEditorState } from '../../../stores/editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   type PackageableElementReference,
@@ -109,7 +109,7 @@ import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../
 import {
   runtime_addIdentifiedConnection,
   runtime_deleteIdentifiedConnection,
-} from '../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../application/LegendStudioApplicationNavigationContext.js';
 
 const getConnectionTooltipText = (

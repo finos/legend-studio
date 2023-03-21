@@ -21,8 +21,8 @@ import type {
   PostProcessor,
   ObserverContext,
 } from '@finos/legend-graph';
-import type { RelationalDatabaseConnectionValueState } from '../editor-state/element-editor-state/connection/ConnectionEditorState.js';
-import type { PostProcessorEditorState } from '../editor-state/element-editor-state/connection/PostProcessorEditorState.js';
+import type { RelationalDatabaseConnectionValueState } from '../editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import type { PostProcessorEditorState } from '../editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 import type { ElementEmbeddedContentSnippetSuggestion } from '@finos/legend-application';
 
 /**

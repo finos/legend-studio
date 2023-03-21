@@ -43,9 +43,9 @@ import {
   SchemaSetEditorState,
   type InnerSchemaSetEditorState,
   SCHEMA_SET_TAB_TYPE,
-} from '../../../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
 import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
-import { getEditorLanguageForFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
+import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/FileGenerationViewerState.js';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -54,7 +54,7 @@ import {
   externalFormat_schema_setContent,
   externalFormat_schema_setId,
   externalFormat_schema_setLocation,
-} from '../../../../stores/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import { SchemaSetModelGenerationEditor } from './DSL_ExternalFormat_SchemaSetModelGenerationEditor.js';
 
 const SchemaLoader = observer(

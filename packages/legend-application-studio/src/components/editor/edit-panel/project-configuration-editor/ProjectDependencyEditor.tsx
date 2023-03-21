@@ -68,7 +68,7 @@ import {
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useRef, useState } from 'react';
-import { ProjectConfigurationEditorState } from '../../../../stores/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
+import { ProjectConfigurationEditorState } from '../../../../stores/editor/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import {
   type ProjectDependencyConflictTreeNodeData,
   ConflictTreeNodeData,
@@ -78,7 +78,7 @@ import {
   openAllDependencyNodesInTree,
   ProjectDependencyTreeNodeData,
   type ProjectDependencyEditorState,
-} from '../../../../stores/editor-state/project-configuration-editor-state/ProjectDependencyEditorState.js';
+} from '../../../../stores/editor/editor-state/project-configuration-editor-state/ProjectDependencyEditorState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../application/LegendStudioEvent.js';
 import {
   generateViewProjectByGAVRoute,

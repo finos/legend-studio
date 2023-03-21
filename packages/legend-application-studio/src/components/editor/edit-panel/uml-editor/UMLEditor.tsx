@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { UMLEditorState } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
+import { UMLEditorState } from '../../../../stores/editor/editor-state/element-editor-state/UMLEditorState.js';
 import { ClassEditor } from './ClassEditor.js';
 import { EnumerationEditor } from './EnumerationEditor.js';
 import { AssociationEditor } from './AssociationEditor.js';

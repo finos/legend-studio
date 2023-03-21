@@ -24,7 +24,7 @@ import {
   queryByText,
   getByTitle,
 } from '@testing-library/react';
-import TEST_DATA__m2mGraphEntities from '../../../../stores/__tests__/TEST_DATA__M2MGraphEntities.json';
+import TEST_DATA__m2mGraphEntities from '../../../../stores/editor/__tests__/TEST_DATA__M2MGraphEntities.json';
 import { integrationTest } from '@finos/legend-shared';
 import {
   TEST__openElementFromExplorerTree,

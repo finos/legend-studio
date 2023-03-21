@@ -44,9 +44,9 @@ import {
   type TestAssertionResultState,
   type TestAssertionEditorState,
   type TestAssertionState,
-} from '../../../../stores/editor-state/element-editor-state/testable/TestAssertionState.js';
-import { externalFormatData_setData } from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
-import { TESTABLE_RESULT } from '../../../../stores/sidebar-state/testable/GlobalTestRunnerState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/testable/TestAssertionState.js';
+import { externalFormatData_setData } from '../../../../stores/editor/shared/modifier/DSL_Data_GraphModifierHelper.js';
+import { TESTABLE_RESULT } from '../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import { JsonDiffView } from '../../../shared/DiffView.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 

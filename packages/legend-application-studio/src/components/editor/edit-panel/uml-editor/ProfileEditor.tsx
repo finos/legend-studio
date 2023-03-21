@@ -18,7 +18,7 @@ import { prettyCONSTName } from '@finos/legend-shared';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,
-} from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/UMLEditorState.js';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -50,7 +50,7 @@ import {
   tagStereotype_setValue,
   profile_swapTags,
   profile_swapStereotypes,
-} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
 import { useRef, useCallback } from 'react';

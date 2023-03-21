@@ -59,7 +59,7 @@ import {
   type WorkflowState,
   WorkflowJobTreeNodeData,
   WorkflowTreeNodeData,
-} from '../../../stores/sidebar-state/WorkflowManagerState.js';
+} from '../../../stores/editor/sidebar-state/WorkflowManagerState.js';
 import {
   formatDistanceToNow,
   guaranteeNonNullable,

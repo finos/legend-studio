@@ -16,20 +16,20 @@
 
 import { useEffect, useCallback, useState, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState.js';
+import { ServiceEditorState } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
 import {
   type ServiceExecutionContextState,
   SingleServicePureExecutionState,
   ServicePureExecutionState,
   MultiServicePureExecutionState,
-} from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceExecutionState.js';
 import { EmbeddedRuntimeEditor } from '../../../editor/edit-panel/RuntimeEditor.js';
 import { useDrop } from 'react-dnd';
 import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtils.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor.js';
 import {
   clsx,

@@ -33,7 +33,7 @@ import {
   type MergeConflict,
   type EntityChangeConflictEditorState,
   ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE,
-} from '../../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
+} from '../../../../stores/editor/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import {
   IllegalStateError,
   shallowStringify,
@@ -58,7 +58,7 @@ import {
   clearMarkers,
 } from '@finos/legend-art';
 import { TextDiffView } from '../../../shared/DiffView.js';
-import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
+import { getPrettyLabelForRevision } from '../../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { flowResult } from 'mobx';
 import type { EntityChangeConflict } from '@finos/legend-server-sdlc';
 

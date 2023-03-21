@@ -21,7 +21,7 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtils.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
 import {
   clsx,
   CustomSelectorInput,
@@ -57,8 +57,8 @@ import {
   TaggedValueEditor,
   TaggedValueDragPreviewLayer,
 } from './TaggedValueEditor.js';
-import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
-import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState.js';
+import { UML_EDITOR_TAB } from '../../../../stores/editor/editor-state/element-editor-state/UMLEditorState.js';
+import { ClassEditorState } from '../../../../stores/editor/editor-state/element-editor-state/ClassEditorState.js';
 import { flowResult } from 'mobx';
 import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -126,11 +126,11 @@ import {
   class_swapConstraints,
   class_swapSuperTypes,
   setGenericTypeReferenceValue,
-} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/shared/ModelClassifierUtils.js';
+} from '../../../../stores/editor/shared/ModelClassifierUtils.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 

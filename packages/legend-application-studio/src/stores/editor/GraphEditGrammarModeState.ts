@@ -36,17 +36,17 @@ import {
 } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import { makeObservable, flow, flowResult, observable } from 'mobx';
-import { GrammarTextEditorState } from '../editor-state/GrammarTextEditorState.js';
+import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState.js';
 import type { EditorStore } from './EditorStore.js';
 import { ExplorerTreeState } from './ExplorerTreeState.js';
 
-import { TextLocalChangesState } from '../sidebar-state/LocalChangesState.js';
+import { TextLocalChangesState } from './sidebar-state/LocalChangesState.js';
 import { GraphCompilationOutcome, type Problem } from './EditorGraphState.js';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
-import { graph_dispose } from '../shared/modifier/GraphModifierHelper.js';
+import { graph_dispose } from './shared/modifier/GraphModifierHelper.js';
 import { LegendStudioTelemetryHelper } from '../../application/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
-import { ElementEditorState } from '../editor-state/element-editor-state/ElementEditorState.js';
+import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 
 export class GraphEditGrammarModeState extends GraphEditorMode {
   grammarTextEditorState: GrammarTextEditorState;

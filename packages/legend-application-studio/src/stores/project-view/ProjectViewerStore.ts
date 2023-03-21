@@ -56,7 +56,7 @@ import {
   type WorkflowManagerState,
   ProjectVersionWorkflowManagerState,
   ProjectWorkflowManagerState,
-} from '../sidebar-state/WorkflowManagerState.js';
+} from '../editor/sidebar-state/WorkflowManagerState.js';
 import {
   GRAPH_MANAGER_EVENT,
   DependencyGraphBuilderError,

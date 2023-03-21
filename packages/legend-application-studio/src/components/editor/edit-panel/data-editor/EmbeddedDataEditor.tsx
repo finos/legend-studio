@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import type { EmbeddedDataEditorState } from '../../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
+import type { EmbeddedDataEditorState } from '../../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 import {
   CaretDownIcon,
   clsx,
@@ -35,15 +35,15 @@ import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
-} from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/DSL_Data_GraphModifierHelper.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
-import { getEditorLanguageForFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
+import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/FileGenerationViewerState.js';
 import {
   type EmbeddedDataState,
   DataElementReferenceState,
   ExternalFormatDataState,
   RelationalCSVDataState,
-} from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import type { DataElement } from '@finos/legend-graph';
 import { buildElementOption, TextInputEditor } from '@finos/legend-application';
 import { RelationalCSVDataEditor } from './RelationalCSVDataEditor.js';

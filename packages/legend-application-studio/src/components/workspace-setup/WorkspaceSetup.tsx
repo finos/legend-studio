@@ -48,12 +48,12 @@ import {
   type ProjectOption,
   buildProjectOption,
   getProjectOptionLabelFormatter,
-} from '../shared/ProjectSelectorUtils.js';
+} from './ProjectSelectorUtils.js';
 import {
   type WorkspaceOption,
   buildWorkspaceOption,
   formatWorkspaceOptionLabel,
-} from '../shared/WorkspaceSelectorUtils.js';
+} from './WorkspaceSelectorUtils.js';
 import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
 import { WorkspaceSetupStore } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';

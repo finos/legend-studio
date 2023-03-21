@@ -39,9 +39,9 @@ import {
 } from '../../../../EditorComponentTestUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../application/LegendStudioTesting.js';
 import type { EditorStore } from '../../../../../stores/editor/EditorStore.js';
-import { ServiceEditorState } from '../../../../../stores/editor-state/element-editor-state/service/ServiceEditorState.js';
+import { ServiceEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
 import { TEST__provideMockedApplicationStore } from '@finos/legend-application';
-import { LATEST_PROJECT_REVISION } from '../../../../../stores/editor-state/element-editor-state/service/ServiceRegistrationState.js';
+import { LATEST_PROJECT_REVISION } from '../../../../../stores/editor/editor-state/element-editor-state/service/ServiceRegistrationState.js';
 import { flowResult } from 'mobx';
 import type { Project, Version, Workspace } from '@finos/legend-server-sdlc';
 import {
@@ -50,7 +50,7 @@ import {
 } from '@finos/legend-graph';
 import { TEST__getLegendStudioApplicationConfig } from '../../../../../stores/editor/EditorStoreTestUtils.js';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
-import { service_deleteOwner } from '../../../../../stores/shared/modifier/DSL_Service_GraphModifierHelper.js';
+import { service_deleteOwner } from '../../../../../stores/editor/shared/modifier/DSL_Service_GraphModifierHelper.js';
 
 let renderResult: RenderResult;
 

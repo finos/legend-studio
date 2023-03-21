@@ -64,14 +64,14 @@ import type {
   RuntimeConnectionTooltipTextBuilder,
 } from '../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { EditorStore } from '../../stores/editor/EditorStore.js';
-import type { ElementEditorState } from '../../stores/editor-state/element-editor-state/ElementEditorState.js';
-import { SchemaSetEditorState } from '../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
-import { BindingEditorState } from '../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_BindingEditorState.js';
-import type { ConnectionValueState } from '../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import type { ElementEditorState } from '../../stores/editor/editor-state/element-editor-state/ElementEditorState.js';
+import { SchemaSetEditorState } from '../../stores/editor/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
+import { BindingEditorState } from '../../stores/editor/editor-state/element-editor-state/external-format/DSL_ExternalFormat_BindingEditorState.js';
+import type { ConnectionValueState } from '../../stores/editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import {
   externalFormat_Binding_setContentType,
   externalFormat_urlStream_setUrl,
-} from '../../stores/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+} from '../../stores/editor/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import type {
   DocumentationEntry,
   PureGrammarTextSuggestion,

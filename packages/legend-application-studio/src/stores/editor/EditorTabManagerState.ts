@@ -41,20 +41,20 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { makeObservable, action } from 'mobx';
-import type { EditorState } from '../editor-state/EditorState.js';
-import { ClassEditorState } from '../editor-state/element-editor-state/ClassEditorState.js';
-import { PackageableConnectionEditorState } from '../editor-state/element-editor-state/connection/ConnectionEditorState.js';
-import { PackageableDataEditorState } from '../editor-state/element-editor-state/data/DataEditorState.js';
-import { ElementEditorState } from '../editor-state/element-editor-state/ElementEditorState.js';
-import { FileGenerationEditorState } from '../editor-state/element-editor-state/FileGenerationEditorState.js';
-import { FunctionEditorState } from '../editor-state/element-editor-state/FunctionEditorState.js';
-import { MappingEditorState } from '../editor-state/element-editor-state/mapping/MappingEditorState.js';
-import { PackageableRuntimeEditorState } from '../editor-state/element-editor-state/RuntimeEditorState.js';
-import { ServiceEditorState } from '../editor-state/element-editor-state/service/ServiceEditorState.js';
-import { UMLEditorState } from '../editor-state/element-editor-state/UMLEditorState.js';
-import { EntityDiffViewerState } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
-import { GenerationSpecificationEditorState } from '../editor-state/GenerationSpecificationEditorState.js';
-import { UnsupportedElementEditorState } from '../editor-state/UnsupportedElementEditorState.js';
+import type { EditorState } from './editor-state/EditorState.js';
+import { ClassEditorState } from './editor-state/element-editor-state/ClassEditorState.js';
+import { PackageableConnectionEditorState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import { PackageableDataEditorState } from './editor-state/element-editor-state/data/DataEditorState.js';
+import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
+import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState.js';
+import { FunctionEditorState } from './editor-state/element-editor-state/FunctionEditorState.js';
+import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { PackageableRuntimeEditorState } from './editor-state/element-editor-state/RuntimeEditorState.js';
+import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState.js';
+import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState.js';
+import { EntityDiffViewerState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
+import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState.js';
+import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState.js';
 import type { EditorStore } from './EditorStore.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 

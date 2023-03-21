@@ -40,8 +40,8 @@ import {
 import type { Entity } from '@finos/legend-storage';
 import { flowResult } from 'mobx';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
-import { FormLocalChangesState } from '../sidebar-state/LocalChangesState.js';
-import { GlobalTestRunnerState } from '../sidebar-state/testable/GlobalTestRunnerState.js';
+import { FormLocalChangesState } from './sidebar-state/LocalChangesState.js';
+import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import { GraphCompilationOutcome, type Problem } from './EditorGraphState.js';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
@@ -51,8 +51,8 @@ import {
   graph_deleteOwnElement,
   graph_dispose,
   graph_renameElement,
-} from '../shared/modifier/GraphModifierHelper.js';
-import { ElementEditorState } from '../editor-state/element-editor-state/ElementEditorState.js';
+} from './shared/modifier/GraphModifierHelper.js';
+import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import { LegendStudioTelemetryHelper } from '../../application/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
 

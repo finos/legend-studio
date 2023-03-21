@@ -104,7 +104,7 @@ const ProjectViewerStatusBar = observer(() => {
   return (
     <div
       data-testid={LEGEND_STUDIO_TEST_ID.STATUS_BAR}
-      className="editor__status-bar project-viewer__status-bar"
+      className="editor__status-bar project-view__status-bar"
     >
       <div className="editor__status-bar__left">
         {currentProject && (

@@ -20,7 +20,7 @@ import {
   MINIMUM_SERVICE_OWNERS,
   ServiceEditorState,
   SERVICE_TAB,
-} from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
 import {
   clsx,
   PencilIcon,
@@ -46,7 +46,7 @@ import {
   service_setDocumentation,
   service_setPattern,
   service_updateOwner,
-} from '../../../../stores/shared/modifier/DSL_Service_GraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/DSL_Service_GraphModifierHelper.js';
 import {
   LEGEND_APPLICATION_DOCUMENTATION_KEY,
   useApplicationNavigationContext,

@@ -29,7 +29,7 @@ import {
   createEnumerationMapping,
   getAllMappingElements,
   MappingEditorState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   guaranteeNonNullable,
   UnsupportedOperationError,
@@ -43,7 +43,7 @@ import {
   Association,
   PrimitiveType,
 } from '@finos/legend-graph';
-import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelClassifierUtils.js';
+import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/editor/shared/ModelClassifierUtils.js';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,

@@ -16,6 +16,25 @@
 
 @use 'mixins' as *;
 
+.multiplicity-badge {
+  @include flexCenter;
+
+  border-radius: 0.2rem;
+  width: 1.6rem;
+  height: 2.8rem;
+  font-size: 1rem;
+  color: var(--color-dark-shade-100);
+  background: var(--color-light-grey-200);
+
+  &--required {
+    background: var(--color-required-label);
+  }
+
+  & svg {
+    font-size: 0.8rem;
+  }
+}
+
 .property-mapping-editor {
   padding: 1rem;
   background: var(--color-light-grey-0);

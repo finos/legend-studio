@@ -22,7 +22,7 @@ import {
   CORE_DATASOURCE_SPEC_TYPE,
   RELATIONAL_DATABASE_TAB_TYPE,
   POST_PROCESSOR_TYPE,
-} from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -92,7 +92,7 @@ import {
   type PackageableElementOption,
   TextInputEditor,
 } from '@finos/legend-application';
-import { connection_setStore } from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { connection_setStore } from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   apiTokenAuthenticationStrategy_setApiToken,
   bigQueryDatasourceSpecification_setDefaultDataset,
@@ -149,10 +149,10 @@ import {
   middleTierUsernamePasswordAuthenticationStrategy_setVaultReference,
   relationalDatabaseConnection_addPostProcessor,
   relationalDatabaseConnection_deletePostProcessor,
-} from '../../../../stores/shared/modifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
-import type { MapperPostProcessorEditorState } from '../../../../stores/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
+import type { MapperPostProcessorEditorState } from '../../../../stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 
 const LocalH2DatasourceSpecificationEditor = observer(
   (props: {

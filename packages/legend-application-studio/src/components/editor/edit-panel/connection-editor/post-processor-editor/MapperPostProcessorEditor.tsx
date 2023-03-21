@@ -41,7 +41,7 @@ import {
   SchemaNameMapper,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
-import type { MapperPostProcessorEditorState } from '../../../../../stores/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
+import type { MapperPostProcessorEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 import {
   mapperPostProcessor_addMapper,
   mapperPostProcessor_deleteMapper,
@@ -49,7 +49,7 @@ import {
   mapper_setTo,
   schemaNameMapper_setFrom,
   schemaNameMapper_setTo,
-} from '../../../../../stores/shared/modifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../../stores/editor/shared/modifier/STO_Relational_GraphModifierHelper.js';
 
 export const MapperPostProcessorEditor = observer(
   (props: {

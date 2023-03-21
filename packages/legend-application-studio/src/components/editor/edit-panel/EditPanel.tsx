@@ -27,49 +27,49 @@ import {
 } from '@finos/legend-art';
 import { MappingEditor } from './mapping-editor/MappingEditor.js';
 import { UMLEditor } from './uml-editor/UMLEditor.js';
-import { MappingEditorState } from '../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
-import { UMLEditorState } from '../../../stores/editor-state/element-editor-state/UMLEditorState.js';
+import { MappingEditorState } from '../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { UMLEditorState } from '../../../stores/editor/editor-state/element-editor-state/UMLEditorState.js';
 import {
   ElementEditorState,
   ELEMENT_GENERATION_MODE,
   ExternalFormatElementGenerationViewModeState,
   FileGenerationViewModeState,
-} from '../../../stores/editor-state/element-editor-state/ElementEditorState.js';
+} from '../../../stores/editor/editor-state/element-editor-state/ElementEditorState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
 import { ELEMENT_NATIVE_VIEW_MODE } from '../../../stores/editor/EditorConfig.js';
 import {
   DIFF_VIEW_MODE,
   EntityDiffViewState,
-} from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+} from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { EntityDiffView } from '../../editor/edit-panel/diff-editor/EntityDiffView.js';
 import { ModelImporter } from './ModelImporter.js';
-import { ModelImporterState } from '../../../stores/editor-state/ModelImporterState.js';
-import { FunctionEditorState } from '../../../stores/editor-state/element-editor-state/FunctionEditorState.js';
-import { ServiceEditorState } from '../../../stores/editor-state/element-editor-state/service/ServiceEditorState.js';
-import { ProjectConfigurationEditorState } from '../../../stores/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
+import { ModelImporterState } from '../../../stores/editor/editor-state/ModelImporterState.js';
+import { FunctionEditorState } from '../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
+import { ServiceEditorState } from '../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
+import { ProjectConfigurationEditorState } from '../../../stores/editor/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { ProjectConfigurationEditor } from '../../editor/edit-panel/project-configuration-editor/ProjectConfigurationEditor.js';
 import { ElementGenerationEditor } from './element-generation-editor/ElementGenerationEditor.js';
 import { FunctionEditor } from './FunctionEditor.js';
 import { ElementNativeView } from './element-generation-editor/ElementNativeView.js';
 import { ServiceEditor } from './service-editor/ServiceEditor.js';
 import { PackageableRuntimeEditor } from './RuntimeEditor.js';
-import { PackageableRuntimeEditorState } from '../../../stores/editor-state/element-editor-state/RuntimeEditorState.js';
-import { PackageableConnectionEditorState } from '../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import { PackageableRuntimeEditorState } from '../../../stores/editor/editor-state/element-editor-state/RuntimeEditorState.js';
+import { PackageableConnectionEditorState } from '../../../stores/editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { PackageableConnectionEditor } from './connection-editor/ConnectionEditor.js';
-import { FileGenerationEditorState } from '../../../stores/editor-state/element-editor-state/FileGenerationEditorState.js';
+import { FileGenerationEditorState } from '../../../stores/editor/editor-state/element-editor-state/FileGenerationEditorState.js';
 import { FileGenerationEditor } from './element-generation-editor/FileGenerationEditor.js';
-import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
+import { EntityChangeConflictEditorState } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import { EntityChangeConflictEditor } from './diff-editor/EntityChangeConflictEditor.js';
-import { UnsupportedElementEditorState } from '../../../stores/editor-state/UnsupportedElementEditorState.js';
+import { UnsupportedElementEditorState } from '../../../stores/editor/editor-state/UnsupportedElementEditorState.js';
 import { UnsupportedElementEditor } from './UnsupportedElementEditor.js';
-import { getPrettyLabelForRevision } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
-import { GenerationSpecificationEditorState } from '../../../stores/editor-state/GenerationSpecificationEditorState.js';
+import { getPrettyLabelForRevision } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
+import { GenerationSpecificationEditorState } from '../../../stores/editor/editor-state/GenerationSpecificationEditorState.js';
 import { GenerationSpecificationEditor } from './GenerationSpecificationEditor.js';
-import { FileGenerationViewerState } from '../../../stores/editor-state/FileGenerationViewerState.js';
+import { FileGenerationViewerState } from '../../../stores/editor/editor-state/FileGenerationViewerState.js';
 import { FileGenerationViewer } from '../../editor/edit-panel/FileGenerationViewer.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import { PackageableDataEditorState } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
+import { PackageableDataEditorState } from '../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
 import { TabManager, type TabState } from '@finos/legend-application';
 import { ElementXTGenerationEditor } from './element-generation-editor/ElementXTGenerationEditor.js';

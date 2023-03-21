@@ -19,12 +19,12 @@ import { observer } from 'mobx-react-lite';
 import {
   FunctionEditorState,
   FUNCTION_SPEC_TAB,
-} from '../../../stores/editor-state/element-editor-state/FunctionEditorState.js';
+} from '../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
 import {
   CORE_DND_TYPE,
   type UMLEditorElementDropTarget,
   type ElementDragSource,
-} from '../../../stores/shared/DnDUtils.js';
+} from '../../../stores/editor/shared/DnDUtils.js';
 import {
   assertErrorThrown,
   prettyCONSTName,
@@ -99,16 +99,16 @@ import {
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
   function_swapParameters,
-} from '../../../stores/shared/modifier/DomainGraphModifierHelper.js';
+} from '../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
 import {
   rawVariableExpression_setMultiplicity,
   rawVariableExpression_setName,
   rawVariableExpression_setType,
-} from '../../../stores/shared/modifier/RawValueSpecificationGraphModifierHelper.js';
+} from '../../../stores/editor/shared/modifier/RawValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../application/LegendStudioApplicationNavigationContext.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
-import { graph_renameElement } from '../../../stores/shared/modifier/GraphModifierHelper.js';
+import { graph_renameElement } from '../../../stores/editor/shared/modifier/GraphModifierHelper.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',

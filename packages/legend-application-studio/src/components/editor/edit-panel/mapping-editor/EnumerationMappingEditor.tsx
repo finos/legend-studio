@@ -36,8 +36,8 @@ import {
   ModalTitle,
   Modal,
 } from '@finos/legend-art';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
-import { TypeTree } from '../../../shared/TypeTree.js';
+import { MappingEditorState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { TypeTree } from './TypeTree.js';
 import { useDrop } from 'react-dnd';
 import {
   type TransformDropTarget,
@@ -45,13 +45,13 @@ import {
   type MappingElementSourceDropTarget,
   CORE_DND_TYPE,
   TypeDragSource,
-} from '../../../../stores/shared/DnDUtils.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { noop } from '@finos/legend-shared';
 import {
   MappingElementDecorator,
   MappingElementDecorationCleaner,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   Type,
@@ -70,7 +70,7 @@ import {
   enumValueMapping_addSourceValue,
   enumValueMapping_deleteSourceValue,
   enumValueMapping_updateSourceValue,
-} from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,

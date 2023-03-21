@@ -49,13 +49,13 @@ import {
   getMappingElementSource,
   getMappingElementTarget,
   getMappingElementLabel,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { useDrop } from 'react-dnd';
 import { NewServiceModal } from '../service-editor/NewServiceModal.js';
 import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/shared/DnDUtils.js';
+} from '../../../../stores/editor/shared/DnDUtils.js';
 import { assertErrorThrown, guaranteeType, uniq } from '@finos/legend-shared';
 import {
   type MappingExecutionState,
@@ -63,7 +63,7 @@ import {
   MappingExecutionObjectInputDataState,
   MappingExecutionFlatDataInputDataState,
   MappingExecutionRelationalInputDataState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionState.js';
 import {
   EDITOR_LANGUAGE,
   ActionAlertActionType,
@@ -82,13 +82,13 @@ import {
   stub_RawLambda,
   isStubbed_RawLambda,
 } from '@finos/legend-graph';
-import { objectInputData_setData } from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
-import { flatData_setData } from '../../../../stores/shared/modifier/STO_FlatData_GraphModifierHelper.js';
+import { objectInputData_setData } from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { flatData_setData } from '../../../../stores/editor/shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/shared/modifier/STO_Relational_GraphModifierHelper.js';
-import { MappingExecutionQueryBuilderState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
+} from '../../../../stores/editor/shared/modifier/STO_Relational_GraphModifierHelper.js';
+import { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 
 interface ClassMappingSelectOption {

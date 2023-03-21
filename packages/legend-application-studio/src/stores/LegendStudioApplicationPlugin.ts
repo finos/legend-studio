@@ -15,7 +15,7 @@
  */
 
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
-import type { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
+import type { ElementEditorState } from './editor/editor-state/element-editor-state/ElementEditorState.js';
 import type {
   EditorExtensionState,
   EditorStore,
@@ -31,11 +31,11 @@ import {
   LegendApplicationPlugin,
   type ApplicationPageEntry,
 } from '@finos/legend-application';
-import type { TestableMetadata } from './sidebar-state/testable/GlobalTestRunnerState.js';
+import type { TestableMetadata } from './editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import type {
   ExtensionModelImportRendererState,
   ModelImporterState,
-} from './editor-state/ModelImporterState.js';
+} from './editor/editor-state/ModelImporterState.js';
 
 export type ExplorerContextMenuItemRendererConfiguration = {
   key: string;

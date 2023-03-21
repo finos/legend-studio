@@ -46,10 +46,10 @@ import { forwardRef, useState } from 'react';
 import type {
   ConnectionTestDataState,
   ServiceTestDataState,
-} from '../../../../../stores/editor-state/element-editor-state/service/testable/ServiceTestDataState.js';
-import type { EmbeddedDataTypeOption } from '../../../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
+} from '../../../../../stores/editor/editor-state/element-editor-state/service/testable/ServiceTestDataState.js';
+import type { EmbeddedDataTypeOption } from '../../../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 import { EmbeddedDataEditor } from '../../data-editor/EmbeddedDataEditor.js';
-import { EmbeddedDataType } from '../../../../../stores/editor-state/ExternalFormatState.js';
+import { EmbeddedDataType } from '../../../../../stores/editor/editor-state/ExternalFormatState.js';
 import { flowResult } from 'mobx';
 import {
   ActionAlertActionType,

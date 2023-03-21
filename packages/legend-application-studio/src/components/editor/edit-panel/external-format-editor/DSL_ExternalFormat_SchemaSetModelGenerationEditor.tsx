@@ -18,7 +18,7 @@ import { type GenerationProperty, isValidFullPath } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useMemo } from 'react';
-import type { SchemaSetModelGenerationState } from '../../../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
+import type { SchemaSetModelGenerationState } from '../../../../stores/editor/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
 import { debounce } from '@finos/legend-shared';
 import {
   InputWithInlineValidation,

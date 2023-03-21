@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState.js';
+import { ServiceEditorState } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
 import {
   clsx,
   PanelLoadingIndicator,

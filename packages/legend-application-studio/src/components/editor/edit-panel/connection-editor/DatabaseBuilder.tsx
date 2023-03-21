@@ -42,7 +42,7 @@ import {
   ColumnDatabaseBuilderTreeNodeData,
   SchemaDatabaseBuilderTreeNodeData,
   TableDatabaseBuilderTreeNodeData,
-} from '../../../../stores/editor-state/element-editor-state/connection/DatabaseBuilderState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/connection/DatabaseBuilderState.js';
 import { capitalize } from '@finos/legend-shared';
 import {
   EDITOR_LANGUAGE,

@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import type {
   ServicePureExecutionQueryState,
   ServicePureExecutionState,
-} from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceExecutionState.js';
 import {
   Dialog,
   type SelectComponent,
