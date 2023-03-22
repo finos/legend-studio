@@ -82,7 +82,7 @@ const cases: TestCase[] = [
       rawLambda: TEST_DATA__projectionWithNestedSubtype,
       rawMappingModelCoverageAnalysisResult:
         TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
-      nodesToExpand: ['Address', '@Addresstype1', '@Addresstype2'],
+      nodesToExpand: ['Address', '@Address Type 1', '@Address Type 2'],
       expectedNumberOfUsedPropertyNode: 5,
     },
   ],
@@ -110,7 +110,7 @@ const cases: TestCase[] = [
       rawLambda: TEST_DATA__graphFetchWithNestedSubtype,
       rawMappingModelCoverageAnalysisResult:
         TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
-      nodesToExpand: ['Address', '@Addresstype1', '@Addresstype2'],
+      nodesToExpand: ['Address', '@Address Type 1', '@Address Type 2'],
       expectedNumberOfUsedPropertyNode: 5,
     },
   ],
