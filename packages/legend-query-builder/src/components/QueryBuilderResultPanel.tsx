@@ -379,6 +379,7 @@ const QueryBuilderGridResult = observer(
           onCellMouseOver={(event): void => {
             setCellDoubleClickedEvent(event);
           }}
+          suppressFieldDotNotation={true}
           columnDefs={columns.map((colName) => ({
             minWidth: 50,
             sortable: true,
