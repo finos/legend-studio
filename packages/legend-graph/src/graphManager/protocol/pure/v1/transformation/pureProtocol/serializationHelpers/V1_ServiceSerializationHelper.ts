@@ -47,11 +47,11 @@ import {
   type V1_Runtime,
   V1_EngineRuntime,
   V1_LegacyRuntime,
-  V1_RuntimePointer,
 } from '../../../model/packageableElements/runtime/V1_Runtime.js';
 import {
   V1_runtimePointerModelSchema,
   V1_RuntimeType,
+  V1_serializeRuntime,
 } from './V1_RuntimeSerializationHelper.js';
 import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest.js';
 import {
@@ -179,25 +179,7 @@ export const V1_serviceTestSuiteModelSchema = (
     ),
   });
 
-const V1_serializeRuntimeValue = (
-  protocol: V1_Runtime,
-): PlainObject<V1_Runtime> => {
-  if (protocol instanceof V1_RuntimePointer) {
-    return serialize(V1_runtimePointerModelSchema, protocol);
-  } else if (protocol instanceof V1_EngineRuntime) {
-    return serialize(V1_EngineRuntime, protocol);
-  } else if (protocol instanceof V1_LegacyRuntime) {
-    return serialize(V1_LegacyRuntime, protocol);
-  }
-  throw new UnsupportedOperationError(
-    `Can't serialize runtime value`,
-    protocol,
-  );
-};
-
-const V1_deserializeRuntimeValue = (
-  json: PlainObject<V1_Runtime>,
-): V1_Runtime => {
+const V1_deserializeRuntime = (json: PlainObject<V1_Runtime>): V1_Runtime => {
   switch (json._type) {
     case V1_RuntimeType.RUNTIME_POINTER:
       return deserialize(V1_runtimePointerModelSchema, json);
@@ -222,8 +204,8 @@ const pureSingleExecutionModelSchema = createModelSchema(
     func: usingModelSchema(V1_rawLambdaModelSchema),
     mapping: optional(primitive()),
     runtime: optionalCustom(
-      (val) => V1_serializeRuntimeValue(val),
-      (val) => V1_deserializeRuntimeValue(val),
+      (val) => V1_serializeRuntime(val),
+      (val) => V1_deserializeRuntime(val),
     ),
   },
 );
@@ -234,8 +216,8 @@ const keyedExecutionParamaterModelSchema = createModelSchema(
     key: primitive(),
     mapping: primitive(),
     runtime: custom(
-      (val) => V1_serializeRuntimeValue(val),
-      (val) => V1_deserializeRuntimeValue(val),
+      (val) => V1_serializeRuntime(val),
+      (val) => V1_deserializeRuntime(val),
     ),
   },
 );

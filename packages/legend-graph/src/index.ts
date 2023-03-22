@@ -475,6 +475,7 @@ export {
 export * from './graphManager/protocol/pure/extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 export { V1_MAPPING_ELEMENT_PROTOCOL_TYPE } from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_MappingSerializationHelper.js';
 export {
+  V1_serializeRuntime,
   V1_runtimePointerModelSchema,
   V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
 } from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
