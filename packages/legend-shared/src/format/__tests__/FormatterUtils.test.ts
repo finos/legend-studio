@@ -66,18 +66,6 @@ test(unitTest('Prettify CONST name'), () => {
   expect(prettyCONSTName('TOM_TOM')).toEqual('Tom Tom');
 });
 
-test(unitTest('Prettify CONST name with ID'), () => {
-  expect(prettyCONSTName('PersonID')).toEqual('Person ID');
-  expect(prettyCONSTName('PERSONID')).toEqual('Person ID');
-  expect(prettyCONSTName('PersonId')).toEqual('Person ID');
-  expect(prettyCONSTName('ID')).toEqual('ID');
-  expect(prettyCONSTName('Id')).toEqual('ID');
-  expect(prettyCONSTName('Personid')).toEqual('Personid');
-  expect(prettyCONSTName('somethingPersonPartyID')).toEqual(
-    'Something Person Party ID',
-  );
-});
-
 test(unitTest('Camel/Pascal case check'), () => {
   expect(isCamelCase('aSomething')).toBe(true);
   expect(isCamelCase('Something')).toBe(true);
@@ -89,6 +77,33 @@ test(unitTest('Camel/Pascal case check'), () => {
   expect(isCamelCase('AAAAA_AAAA')).toBe(false);
   expect(isCamelCase('AABASD')).toBe(false);
   expect(isCamelCase('AAasd')).toBe(false);
+});
+
+test(unitTest('Prettify CONST name with capitaliztions'), () => {
+  expect(prettyCONSTName('fiveTwoEight')).toEqual('Five Two Eight');
+  expect(prettyCONSTName('FIVETwoEight')).toEqual('FIVE Two Eight');
+  expect(prettyCONSTName('fiveTWOEight')).toEqual('Five TWO Eight');
+  expect(prettyCONSTName('fiveTwoEIGHT')).toEqual('Five Two EIGHT');
+  expect(prettyCONSTName('   fiveTwoEIGHT   ')).toEqual('Five Two EIGHT');
+  expect(prettyCONSTName('five_Two_EIGHT')).toEqual('Five Two Eight');
+  expect(prettyCONSTName('five5TWOEight')).toEqual('Five 5TWO Eight');
+  expect(prettyCONSTName('five5TwoEIGHT')).toEqual('Five 5 Two EIGHT');
+  expect(prettyCONSTName('five5TWOEight9Two')).toEqual('Five 5TWO Eight 9 Two');
+
+  expect(prettyCONSTName('FIVE5TwoEIGHT')).toEqual('FIVE5 Two EIGHT');
+  expect(prettyCONSTName('a')).toEqual('A');
+});
+
+test(unitTest('Prettify CONST name with ID acronym'), () => {
+  expect(prettyCONSTName('Personid')).toEqual('Personid');
+  expect(prettyCONSTName('PERSONID')).toEqual('Personid');
+  expect(prettyCONSTName('PersonId')).toEqual('Person Id');
+  expect(prettyCONSTName('PersonID')).toEqual('Person ID');
+  expect(prettyCONSTName('ID')).toEqual('ID');
+  expect(prettyCONSTName('Id')).toEqual('Id');
+  expect(prettyCONSTName('somethingPersonPartyID')).toEqual(
+    'Something Person Party ID',
+  );
 });
 
 test(unitTest('Minify JSON string'), () => {
