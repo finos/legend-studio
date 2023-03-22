@@ -26,8 +26,6 @@ import {
   Dialog,
   Modal,
   TimesIcon,
-  EmptyWindowRestoreIcon,
-  WindowMaximizeIcon,
 } from '@finos/legend-art';
 import type { BulkServiceRegistrationState } from '../../../stores/editor/sidebar-state/BulkServiceRegistrationState.js';
 import { BulkServiceRegistrationEditor } from '../edit-panel/service-editor/BulkServiceRegistrationEditor.js';
@@ -38,9 +36,6 @@ export const RegisterService = observer(
     const editorStore = useEditorStore();
     const services = editorStore.graphManagerState.graph.ownServices;
     const [showRegistrationModel, setOpen] = useState(false);
-
-    const [isMaximized, setIsMaximized] = useState(false);
-    const toggleMaximize = (): void => setIsMaximized(!isMaximized);
 
     const serviceItems = (): React.ReactNode => (
       <>
@@ -90,24 +85,10 @@ export const RegisterService = observer(
               darkMode={true}
               className={clsx(
                 'editor-modal bulk-service-registration__service__editor',
-                {
-                  'bulk-service-registration--expanded': isMaximized,
-                },
               )}
             >
               <div className="bulk-service-registration__header">
                 <div className="bulk-service-registration__header__actions"></div>
-                <button
-                  className="bulk-service-registration__header__action"
-                  tabIndex={-1}
-                  onClick={toggleMaximize}
-                >
-                  {isMaximized ? (
-                    <EmptyWindowRestoreIcon />
-                  ) : (
-                    <WindowMaximizeIcon />
-                  )}
-                </button>
                 <button
                   className="bulk-service-registration__header__action"
                   tabIndex={-1}

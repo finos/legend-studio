@@ -2719,11 +2719,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           } catch (error) {
             assertErrorThrown(error);
             const result = new BulkRegistrationResultFail(error.message);
-            // if (graphData instanceof V1_PureModelContextData) { //TODO
-            //   result.service = getNullableFirstElement(
-            //     graphData.elements.filter(filterByType(V1_Service)),
-            //   );
-            // }
             return result;
           }
         }),

@@ -48,10 +48,12 @@ export const BulkServiceRegistrationEditor = observer(() => {
   const applicationStore = useApplicationStore();
   const bulkServiceRegistrationState = editorStore.bulkServiceRegistrationState;
   // env & execution server
-  const envOptions = bulkServiceRegistrationState.options.map((info) => ({
-    label: info.env.toUpperCase(),
-    value: info.env,
-  }));
+  const envOptions = bulkServiceRegistrationState.options
+    .filter((info) => info.env !== 'prod')
+    .map((info) => ({
+      label: info.env.toUpperCase(),
+      value: info.env,
+    }));
   const selectedEnvOption = bulkServiceRegistrationState.serviceEnv
     ? {
         label: bulkServiceRegistrationState.serviceEnv.toUpperCase(),
@@ -65,12 +67,12 @@ export const BulkServiceRegistrationEditor = observer(() => {
   };
 
   // execution mode
-  const serviceTypesOptions = bulkServiceRegistrationState.executionModes.map(
-    (mode) => ({
+  const serviceTypesOptions = bulkServiceRegistrationState.executionModes
+    .filter((mode) => mode !== ServiceExecutionMode.PROD)
+    .map((mode) => ({
       label: prettyCONSTName(mode),
       value: mode,
-    }),
-  );
+    }));
   const selectedServiceType = bulkServiceRegistrationState.serviceExecutionMode
     ? {
         label: prettyCONSTName(
@@ -163,7 +165,7 @@ export const BulkServiceRegistrationEditor = observer(() => {
             >
               <Modal
                 darkMode={true}
-                className="editor-modal bulk-service-registration__service__editor"
+                className="editor-modal bulk-service-registration__service__response"
               >
                 <div className="bulk-service-registration__header">
                   <button
@@ -175,14 +177,17 @@ export const BulkServiceRegistrationEditor = observer(() => {
                   </button>
                 </div>
                 <ModalBody>
-                  <div className="bulk-service-registration__service__label">
-                    Successful Services:
+                  <div className="bulk-service-registration__service__result__header">
+                    Successful Services
                     {editorStore.bulkServiceRegistrationState.registrationResult
                       ?.filter(filterByType(BulkRegistrationResultSuccess))
                       .map((service) => (
-                        <div key={service.pattern}>
+                        <div
+                          className="bulk-service-registration__service__link__label"
+                          key={service.pattern}
+                        >
                           <a
-                            className="bulk-service-registration__service_link"
+                            className="bulk-service-registration__service__link__label__service__link"
                             href={generateServiceManagementUrl(
                               config.managementUrl,
                               service.pattern,
@@ -194,12 +199,22 @@ export const BulkServiceRegistrationEditor = observer(() => {
                       ))}
                   </div>
                   <div>
-                    Failed Services:
+                    {editorStore.bulkServiceRegistrationState.registrationResult?.filter(
+                      filterByType(BulkRegistrationResultFail),
+                    ).length === 0 ? (
+                      <div className="bulk-service-registration__service__result__header">
+                        Failed Services
+                      </div>
+                    ) : (
+                      <div> </div>
+                    )}
                     <>
                       {editorStore.bulkServiceRegistrationState.registrationResult
                         ?.filter(filterByType(BulkRegistrationResultFail))
                         .forEach((service) => {
-                          <div>{service.errorMessage}</div>;
+                          <div className="bulk-service-registration__service__link__label">
+                            {service.errorMessage}
+                          </div>;
                         })}
                     </>
                   </div>

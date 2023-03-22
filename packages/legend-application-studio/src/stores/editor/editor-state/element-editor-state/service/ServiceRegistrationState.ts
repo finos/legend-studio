@@ -91,6 +91,7 @@ export class ServiceRegistrationState {
   readonly registrationOptions: ServiceRegistrationEnvironmentConfig[] = [];
   readonly registrationState = ActionState.create();
 
+  bulkService: Service[] = [];
   serviceEnv?: string | undefined;
   serviceExecutionMode?: ServiceExecutionMode | undefined;
   projectVersion?: Version | string | undefined;
@@ -365,5 +366,22 @@ export class ServiceRegistrationState {
         (m) => ` [${generateMultiplicityString(m.lowerBound, m.upperBound)}]`,
       )}.`,
     );
+  }
+
+  validateBulkServiceForRegistration(
+    editorStore: EditorStore,
+    services: Service[],
+    registrationOptions: ServiceRegistrationEnvironmentConfig[],
+    enableModesWithVersioning: boolean,
+  ): void {
+    services.forEach((service) => {
+      const serviceRegState = new ServiceRegistrationState(
+        editorStore,
+        service,
+        registrationOptions,
+        enableModesWithVersioning,
+      );
+      serviceRegState.validateServiceForRegistration();
+    });
   }
 }
