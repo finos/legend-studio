@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 1.0.2
+
+### Patch Changes
+
+- [#2037](https://github.com/finos/legend-studio/pull/2037) [`765f50cb5`](https://github.com/finos/legend-studio/commit/765f50cb580cb2edf094fbf80a612cb3c78ff2aa) ([@xannem](https://github.com/xannem)) - Fix for allowing column names that include '.' to render data
+
+- [#2005](https://github.com/finos/legend-studio/pull/2005) [`eceebdc42`](https://github.com/finos/legend-studio/commit/eceebdc42556abe802154e5b42fc40b84bf98abd) ([@gayathrir11](https://github.com/gayathrir11)) - Save parameter value state when you switch to text mode and back in query builder
+
 ## 1.0.1
 
 ## 1.0.0
