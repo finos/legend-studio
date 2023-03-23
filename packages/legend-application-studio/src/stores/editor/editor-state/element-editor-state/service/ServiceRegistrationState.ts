@@ -91,7 +91,6 @@ export class ServiceRegistrationState {
   readonly registrationOptions: ServiceRegistrationEnvironmentConfig[] = [];
   readonly registrationState = ActionState.create();
 
-  bulkService: Service[] = [];
   serviceEnv?: string | undefined;
   serviceExecutionMode?: ServiceExecutionMode | undefined;
   projectVersion?: Version | string | undefined;
