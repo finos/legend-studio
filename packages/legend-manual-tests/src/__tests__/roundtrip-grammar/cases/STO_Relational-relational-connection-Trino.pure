@@ -17,11 +17,11 @@ RelationalDatabaseConnection connection::relational::MyTrino
     schema: 'tiny';
     clientTags: 'cg::vega';
     sslSpecification:
-      {
-        ssl: false;
-        trustStorePathVaultReference: 'abc12cde';
-        trustStorePasswordVaultReference: 'abc12cde';
-      };
+    {
+      ssl: false;
+      trustStorePathVaultReference: 'abc12cde';
+      trustStorePasswordVaultReference: 'abc12cde';
+    };
   };
   auth: TrinoDelegatedKerberos
   {

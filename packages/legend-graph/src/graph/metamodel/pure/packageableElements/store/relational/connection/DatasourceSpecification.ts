@@ -321,7 +321,7 @@ export class TrinoDatasourceSpecification
     return hashArray([
       CORE_HASH_STRUCTURE.TRINO_DATASOURCE_SPECIFICATION,
       this.host,
-      this.port,
+      this.port.toString(),
       this.sslSpecification,
       this.catalog ?? '',
       this.schema ?? '',
