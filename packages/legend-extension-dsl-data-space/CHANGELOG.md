@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-data-space
 
+## 9.1.3
+
 ## 9.1.2
 
 ### Patch Changes
