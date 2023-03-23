@@ -77,7 +77,7 @@ const TDSResultTypeModelSchema = createModelSchema(V1_TDSResultType, {
   tdsColumns: list(usingModelSchema(TDSColumnModelSchema)),
 });
 
-const V1_serializeExecutionResultType = (
+export const V1_serializeResultType = (
   protocol: V1_ResultType,
 ): PlainObject<V1_ResultType> => {
   if (protocol instanceof V1_DataTypeResultType) {
@@ -91,7 +91,7 @@ const V1_serializeExecutionResultType = (
   );
 };
 
-const V1_deserializeExecutionResultType = (
+export const V1_deserializeResultType = (
   json: PlainObject<V1_ResultType>,
 ): V1_ResultType => {
   switch (json._type) {
@@ -127,8 +127,8 @@ const relationalTDSInstantationExecutionNodeModelSchema = createModelSchema(
     ),
     resultSizeRange: usingModelSchema(V1_multiplicitySchema),
     resultType: custom(
-      (val) => V1_serializeExecutionResultType(val),
-      (val) => V1_deserializeExecutionResultType(val),
+      (val) => V1_serializeResultType(val),
+      (val) => V1_deserializeResultType(val),
     ),
   },
 );
@@ -153,8 +153,8 @@ const SQLExecutionNodeModelSchema = createModelSchema(V1_SQLExecutionNode, {
   resultColumns: list(usingModelSchema(SQLResultColumnModelSchema)),
   resultSizeRange: usingModelSchema(V1_multiplicitySchema),
   resultType: custom(
-    (val) => V1_serializeExecutionResultType(val),
-    (val) => V1_deserializeExecutionResultType(val),
+    (val) => V1_serializeResultType(val),
+    (val) => V1_deserializeResultType(val),
   ),
   sqlQuery: primitive(),
 });

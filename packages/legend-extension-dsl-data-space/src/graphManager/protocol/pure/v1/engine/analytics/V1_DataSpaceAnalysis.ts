@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-import { V1_PureModelContextData } from '@finos/legend-graph';
+import {
+  V1_PureModelContextData,
+  V1_ResultType,
+  V1_deserializeResultType,
+} from '@finos/legend-graph';
 import {
   SerializationFactory,
   optionalCustom,
   type PlainObject,
   UnsupportedOperationError,
+  customListWithSchema,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -172,6 +177,22 @@ function V1_deserializeModelDocumentationEntry(
   }
 }
 
+export class V1_DataSpaceExecutableAnalysisResult {
+  title!: string;
+  description?: string | undefined;
+  executable!: string;
+  resultType!: V1_ResultType;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataSpaceBasicDocumentationEntry, {
+      executable: primitive(),
+      description: optional(primitive()),
+      resultType: custom(() => SKIP, V1_deserializeResultType),
+      title: primitive(),
+    }),
+  );
+}
+
 export class V1_DataSpaceAnalysisResult {
   name!: string;
   package!: string;
@@ -193,6 +214,8 @@ export class V1_DataSpaceAnalysisResult {
 
   elements: string[] = [];
   elementDocs: V1_DataSpaceModelDocumentationEntry[] = [];
+
+  executables: V1_DataSpaceExecutableAnalysisResult[] = [];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_DataSpaceAnalysisResult, {
@@ -222,6 +245,10 @@ export class V1_DataSpaceAnalysisResult {
       elements: list(primitive()),
       elementDocs: list(
         custom(() => SKIP, V1_deserializeModelDocumentationEntry),
+      ),
+
+      executables: customListWithSchema(
+        V1_DataSpaceExecutableAnalysisResult.serialization.schema,
       ),
     }),
   );

@@ -53,6 +53,14 @@ DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} mod
     model::DummyClass,
     model::DummyClass
   ];
+  executables:
+  [
+    {
+      title: 'My Executable';
+      description: 'This is a dummy executable';
+      executable: 'model::MyExecutable';
+    }
+  ];
   supportInfo: Email {
     address: 'someEmail@test.org';
   };

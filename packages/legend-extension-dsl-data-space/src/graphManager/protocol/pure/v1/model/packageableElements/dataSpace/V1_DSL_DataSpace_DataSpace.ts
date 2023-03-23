@@ -59,6 +59,21 @@ export class V1_DataSpaceExecutionContext implements Hashable {
   }
 }
 
+export class V1_DataSpaceExecutable implements Hashable {
+  title!: string;
+  description?: string | undefined;
+  executable!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTABLE,
+      this.title,
+      this.description ?? '',
+      this.executable,
+    ]);
+  }
+}
+
 export class V1_DataSpace extends V1_PackageableElement implements Hashable {
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
@@ -68,6 +83,7 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
   defaultExecutionContext!: string;
   featuredDiagrams?: V1_PackageableElementPointer[] | undefined;
   elements?: V1_PackageableElementPointer[] | undefined;
+  executables?: V1_DataSpaceExecutable[] | undefined;
   supportInfo?: V1_DataSpaceSupportInfo | undefined;
 
   override get hashCode(): string {
@@ -81,6 +97,7 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
       this.defaultExecutionContext,
       hashArray((this.featuredDiagrams ?? []).map((pointer) => pointer.path)),
       hashArray((this.elements ?? []).map((pointer) => pointer.path)),
+      hashArray(this.executables ?? []),
       this.supportInfo ?? '',
     ]);
   }

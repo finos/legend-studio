@@ -63,6 +63,21 @@ export class DataSpaceExecutionContext implements Hashable {
   }
 }
 
+export class DataSpaceExecutable implements Hashable {
+  title!: string;
+  description?: string | undefined;
+  executable!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTABLE,
+      this.title,
+      this.description ?? '',
+      this.executable,
+    ]);
+  }
+}
+
 export type DataSpaceElement = Class | Enumeration | Association;
 
 export class DataSpace extends PackageableElement implements Hashable {
@@ -72,6 +87,7 @@ export class DataSpace extends PackageableElement implements Hashable {
   defaultExecutionContext!: DataSpaceExecutionContext;
   featuredDiagrams?: PackageableElementReference<Diagram>[] | undefined;
   elements?: PackageableElementReference<DataSpaceElement>[] | undefined;
+  executables?: DataSpaceExecutable[] | undefined;
   supportInfo?: DataSpaceSupportInfo | undefined;
 
   protected override get _elementHashCode(): string {
@@ -95,6 +111,7 @@ export class DataSpace extends PackageableElement implements Hashable {
           (element) => element.valueForSerialization ?? '',
         ),
       ),
+      hashArray(this.executables ?? []),
       this.supportInfo ?? '',
     ]);
   }
