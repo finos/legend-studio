@@ -40,6 +40,7 @@ import {
   uniq,
   IllegalStateError,
   filterByType,
+  getNullableFirstElement,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -2718,7 +2719,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             return undefined;
           } catch (error) {
             assertErrorThrown(error);
-            const result = new BulkRegistrationResultFail(error.message);
+            let result = new BulkRegistrationResultFail(error.message);
+
+            if (graphData instanceof V1_PureModelContextData) {
+              const servicePath = getNullableFirstElement(
+                graphData.elements.filter(filterByType(V1_Service)),
+              )?.path;
+
+              result = new BulkRegistrationResultFail(
+                `${servicePath} ${error.message}`,
+              );
+            }
+
             return result;
           }
         }),

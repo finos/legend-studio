@@ -199,24 +199,21 @@ export const BulkServiceRegistrationEditor = observer(() => {
                       ))}
                   </div>
                   <div>
-                    {editorStore.bulkServiceRegistrationState.registrationResult?.filter(
-                      filterByType(BulkRegistrationResultFail),
-                    ).length === 0 ? (
-                      <div className="bulk-service-registration__service__result__header">
-                        Failed Services
-                      </div>
-                    ) : (
-                      <div> </div>
-                    )}
-                    <>
+                    <div className="bulk-service-registration__service__result__header">
+                      Failed Services
+                    </div>
+                    <div>
                       {editorStore.bulkServiceRegistrationState.registrationResult
                         ?.filter(filterByType(BulkRegistrationResultFail))
-                        .forEach((service) => {
-                          <div className="bulk-service-registration__service__link__label">
+                        .map((service) => (
+                          <div
+                            key={service.errorMessage}
+                            className="bulk-service-registration__service__link__label"
+                          >
                             {service.errorMessage}
-                          </div>;
-                        })}
-                    </>
+                          </div>
+                        ))}
+                    </div>
                   </div>
                 </ModalBody>
               </Modal>

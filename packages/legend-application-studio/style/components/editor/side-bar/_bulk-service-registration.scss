@@ -18,21 +18,18 @@
 
 .bulk-service-registration {
   &__service__editor {
-    height: calc(75vh - 4rem);
-    width: calc(50vw - 2rem);
+    height: calc(800px - 4rem);
+    width: calc(800px - 2rem);
     border: none !important;
   }
 
-  &__service__editor2 {
-    height: calc(100vh - 30rem);
-    width: calc(100vw - 80rem);
-    border: none !important;
+  &__panel__content__form {
     @include flexCenter;
   }
 
   &__service__response {
-    height: calc(35vh - 4rem);
-    width: calc(35vw - 4rem);
+    height: calc(400px - 4rem);
+    width: calc(800px - 4rem);
     border: none !important;
     overflow: auto;
   }

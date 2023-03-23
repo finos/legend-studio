@@ -97,7 +97,9 @@ export const RegisterService = observer(
                   <TimesIcon />
                 </button>
               </div>
-              <BulkServiceRegistrationEditor />;
+              <div className="bulk-service-registration__panel__content__form">
+                <BulkServiceRegistrationEditor />
+              </div>
             </Modal>
           </Dialog>
         </div>
