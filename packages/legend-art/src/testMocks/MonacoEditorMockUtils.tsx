@@ -70,6 +70,7 @@ export const MockedMonacoEditorInstance = {
   onDidChangeCursorPosition: createMock(),
   onDidFocusEditorText: createMock(),
   onDidBlurEditorText: createMock(),
+  onDidFocusEditorWidget: createMock(),
 };
 
 export const MockedMonacoEditorAPI = {
@@ -86,6 +87,7 @@ export const MockedMonacoEditorAPI = {
   setModelLanguage: createMock(),
   defineTheme: createMock(),
   EndOfLinePreference: MockedMonacoEditorEndOfLinePreference,
+  removeAllMarkers: createMock(),
 };
 
 export enum MockedMonacoLanguageCompletionItemKind {

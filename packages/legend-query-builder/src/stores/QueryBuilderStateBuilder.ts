@@ -69,6 +69,8 @@ import { LambdaParameterState } from './shared/LambdaParameterState.js';
 import { processTDS_OLAPGroupByExpression } from './fetch-structure/tds/window/QueryBuilderWindowStateBuilder.js';
 import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkStateBuilder.js';
 import { QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
+import { checkIfEquivalent } from './milestoning/QueryBuilderMilestoningHelper.js';
+import { QueryBuilderParametersState } from './QueryBuilderParametersState.js';
 
 const processGetAllExpression = (
   expression: SimpleFunctionExpression,
@@ -607,16 +609,29 @@ export const processParameters = (
   parameters: VariableExpression[],
   queryBuilderState: QueryBuilderState,
 ): void => {
-  const queryParameterState = queryBuilderState.parametersState;
+  const queryParameterState = new QueryBuilderParametersState(
+    queryBuilderState,
+  );
+  // Here we won't process the parameters which are present in the previous state
+  // because we don't want to lose the parameter value
   parameters.forEach((parameter) => {
-    const parameterState = new LambdaParameterState(
-      parameter,
-      queryBuilderState.observableContext,
-      queryBuilderState.graphManagerState.graph,
-    );
-    parameterState.mockParameterValue();
-    queryParameterState.addParameter(parameterState);
+    const oldParamterState =
+      queryBuilderState.parametersState.parameterStates.find((ps) =>
+        checkIfEquivalent(ps.parameter, parameter),
+      );
+    if (oldParamterState) {
+      queryParameterState.addParameter(oldParamterState);
+    } else {
+      const parameterState = new LambdaParameterState(
+        parameter,
+        queryBuilderState.observableContext,
+        queryBuilderState.graphManagerState.graph,
+      );
+      parameterState.mockParameterValue();
+      queryParameterState.addParameter(parameterState);
+    }
   });
+  queryBuilderState.parametersState = queryParameterState;
 };
 
 export const processQueryLambdaFunction = (

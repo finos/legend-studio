@@ -28,7 +28,7 @@ import {
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
-import { integrationTest } from '@finos/legend-shared';
+import { createMock, integrationTest } from '@finos/legend-shared';
 import {
   create_RawLambda,
   PrimitiveType,
@@ -38,6 +38,10 @@ import {
 import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
 import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
 import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
+import {
+  MockedMonacoEditorInstance,
+  MockedMonacoEditorAPI,
+} from '@finos/legend-art';
 
 test(
   integrationTest(
@@ -287,3 +291,67 @@ test(integrationTest('Query builder parameter default values'), async () => {
   expect(getByText(executeDialog, 'StrictDate')).not.toBeNull();
   expect(getByText(executeDialog, 'Today')).not.toBeNull();
 });
+
+test(
+  integrationTest(
+    'Query builder parameter values match when we go to text mode and come back to query state',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    const param1Lambda = TEST_DATA__simpeDateParameters(PRIMITIVE_TYPE.DATE);
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(param1Lambda.parameters, param1Lambda.body),
+      );
+    });
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
+    );
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    const parameterPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+    );
+    expect(getByText(parameterPanel, 'var_1')).not.toBeNull();
+    fireEvent.click(renderResult.getByText('Run Query'));
+    let executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
+    expect(getByText(executeDialog, 'Set Parameter Values'));
+
+    const parameterValue = getByText(executeDialog, 'var_1');
+
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+    MockedMonacoEditorAPI.removeAllMarkers.mockReturnValue(null);
+    MockedMonacoEditorInstance.onDidFocusEditorWidget.mockReturnValue(null);
+
+    // Here we mimic the toggling to text mode.
+    fireEvent.click(renderResult.getByTitle('View Query in Pure'));
+    const lambdaEditor = await waitFor(() => renderResult.getByRole('dialog'));
+    const MOCK__globalCompileInFormModeFn = createMock();
+    queryBuilderState.graphManagerState.graphManager.pureCodeToLambda =
+      MOCK__globalCompileInFormModeFn;
+    MOCK__globalCompileInFormModeFn.mockResolvedValue(
+      create_RawLambda(param1Lambda.parameters, param1Lambda.body),
+    );
+    fireEvent.click(getByText(lambdaEditor, 'Close'));
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    const paramPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+    );
+    expect(getByText(paramPanel, 'var_1')).not.toBeNull();
+    fireEvent.click(renderResult.getByText('Run Query'));
+    executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
+    expect(getByText(executeDialog, 'Set Parameter Values'));
+    expect(getByText(executeDialog, 'var_1')).toStrictEqual(parameterValue);
+  },
+);
