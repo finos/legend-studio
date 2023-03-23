@@ -58,11 +58,11 @@ export class BulkServiceRegistrationState extends ServiceRegistrationState {
   }
   *registerServices(): GeneratorFn<void> {
     this.registrationState.inProgress();
+    const bulkService = this.editorStore.graphManagerState.graph.ownServices;
     try {
-      this.bulkService = this.editorStore.graphManagerState.graph.ownServices;
       this.validateBulkServiceForRegistration(
         this.editorStore,
-        this.bulkService,
+        bulkService,
         this.registrationOptions,
         this.enableModesWithVersioning,
       );
@@ -80,7 +80,7 @@ export class BulkServiceRegistrationState extends ServiceRegistrationState {
       );
       this.registrationResult =
         (yield this.editorStore.graphManagerState.graphManager.bulkServiceRegistration(
-          this.bulkService,
+          bulkService,
           this.editorStore.graphManagerState.graph,
           projectConfig.groupId,
           projectConfig.artifactId,

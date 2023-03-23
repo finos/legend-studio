@@ -193,7 +193,7 @@ export const BulkServiceRegistrationEditor = observer(() => {
                               service.pattern,
                             )}
                           >
-                            <div>{service.pattern}</div>
+                            {service.pattern}
                           </a>
                         </div>
                       ))}

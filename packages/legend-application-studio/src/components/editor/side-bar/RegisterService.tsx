@@ -35,7 +35,7 @@ export const RegisterService = observer(
   (props: { bulkServiceRegistrationState: BulkServiceRegistrationState }) => {
     const editorStore = useEditorStore();
     const services = editorStore.graphManagerState.graph.ownServices;
-    const [showRegistrationModel, setOpen] = useState(false);
+    const [showRegistrationModel, setShowRegistrationModel] = useState(false);
 
     const serviceItems = (): React.ReactNode => (
       <>
@@ -74,7 +74,7 @@ export const RegisterService = observer(
           <div className="panel__header__actions side-bar__header__actions"></div>
           <button
             className="panel__header__action side-bar__header__action bulk-service-registration__play-btn"
-            onClick={() => setOpen(true)}
+            onClick={() => setShowRegistrationModel(true)}
             tabIndex={-1}
             title="Register All Services"
           >
@@ -92,7 +92,7 @@ export const RegisterService = observer(
                 <button
                   className="bulk-service-registration__header__action"
                   tabIndex={-1}
-                  onClick={() => setOpen(false)}
+                  onClick={() => setShowRegistrationModel(false)}
                 >
                   <TimesIcon />
                 </button>
