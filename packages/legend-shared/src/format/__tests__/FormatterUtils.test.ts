@@ -86,11 +86,12 @@ test(unitTest('Prettify CONST name with capitaliztions'), () => {
   expect(prettyCONSTName('fiveTwoEIGHT')).toEqual('Five Two EIGHT');
   expect(prettyCONSTName('   fiveTwoEIGHT   ')).toEqual('Five Two EIGHT');
   expect(prettyCONSTName('five_Two_EIGHT')).toEqual('Five Two Eight');
-  expect(prettyCONSTName('five5TWOEight')).toEqual('Five 5TWO Eight');
+  expect(prettyCONSTName('five5TWOEight')).toEqual('Five 5 TWO Eight');
   expect(prettyCONSTName('five5TwoEIGHT')).toEqual('Five 5 Two EIGHT');
-  expect(prettyCONSTName('five5TWOEight9Two')).toEqual('Five 5TWO Eight 9 Two');
-
-  expect(prettyCONSTName('FIVE5TwoEIGHT')).toEqual('FIVE5 Two EIGHT');
+  expect(prettyCONSTName('five5TWOEight9Two')).toEqual(
+    'Five 5 TWO Eight 9 Two',
+  );
+  expect(prettyCONSTName('FIVE5TwoEIGHT')).toEqual('FIVE 5 Two EIGHT');
   expect(prettyCONSTName('a')).toEqual('A');
 });
 
