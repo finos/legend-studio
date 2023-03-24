@@ -15,7 +15,7 @@
  */
 
 import { test, describe, expect } from '@jest/globals';
-import { integrationTest } from '@finos/legend-shared';
+import { createMock, integrationTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import {
   create_RawLambda,
@@ -25,7 +25,7 @@ import {
   V1_buildExecutionResult,
   V1_serializeExecutionResult,
 } from '@finos/legend-graph';
-import { act, getByText, waitFor } from '@testing-library/react';
+import { act, fireEvent, getByText, waitFor } from '@testing-library/react';
 import {
   TEST_DATA__modelCoverageAnalysisResult,
   TEST_DATA__result,
@@ -33,7 +33,11 @@ import {
   TEST_DATA__simpleProjectionQuery,
 } from './TEST_DATA__QueryBuilder_ResultStateTest.js';
 import { TEST__setUpQueryBuilder } from '../../components/QueryBuilderComponentTestUtils.js';
-import { QUERY_BUILDER_TEST_ID } from '../../components/QueryBuilder_TestID.js';
+import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import {
+  MockedMonacoEditorInstance,
+  MockedMonacoEditorAPI,
+} from '@finos/legend-art';
 
 type ResultStateTestCase = [
   string,
@@ -111,15 +115,31 @@ describe(integrationTest('Query builder result state'), () => {
       const executionResult = V1_buildExecutionResult(
         V1_serializeExecutionResult(result),
       );
-      // Here we try to set the result state and mimick the toggle to text mode
-      // by calling the function which rebuilds the query when we exit text mode in query buider.
       await act(async () => {
         queryBuilderState.resultState.setExecutionResult(executionResult);
       });
 
-      await act(async () => {
-        queryBuilderState.rebuildWithQuery(lambda);
+      // Here we mimic the toggling to text mode.
+      MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+        readOnly: true,
       });
+      MockedMonacoEditorAPI.removeAllMarkers.mockReturnValue(null);
+      MockedMonacoEditorInstance.onDidFocusEditorWidget.mockReturnValue(null);
+      const MOCK__pureCodeToLambda = createMock();
+      const MOCK__lambdaToPureCode = createMock();
+      queryBuilderState.graphManagerState.graphManager.pureCodeToLambda =
+        MOCK__pureCodeToLambda;
+      queryBuilderState.graphManagerState.graphManager.lambdasToPureCode =
+        MOCK__lambdaToPureCode;
+      MOCK__pureCodeToLambda.mockResolvedValue(lambda);
+      const mockValue = new Map<string, string>();
+      mockValue.set('query-builder', 'test');
+      MOCK__lambdaToPureCode.mockResolvedValue(mockValue);
+      fireEvent.click(renderResult.getByTitle('View Query in Pure'));
+      const lambdaEditor = await waitFor(() =>
+        renderResult.getByRole('dialog'),
+      );
+      fireEvent.click(getByText(lambdaEditor, 'Close'));
       expect(queryBuilderState.resultState.executionResult).toEqual(
         executionResult,
       );

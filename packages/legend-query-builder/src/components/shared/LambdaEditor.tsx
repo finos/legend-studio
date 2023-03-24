@@ -584,7 +584,6 @@ const LambdaEditorPopUp = observer(
       >
         <Modal
           darkMode={true}
-          data-testid={QUERY_BUILDER_TEST_ID.LAMBDA_EDITOR__EDITOR_INPUT}
           className={clsx(
             'editor-modal lambda-editor__popup__modal',
             {

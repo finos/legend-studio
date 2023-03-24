@@ -333,14 +333,20 @@ test(
     MockedMonacoEditorInstance.onDidFocusEditorWidget.mockReturnValue(null);
 
     // Here we mimic the toggling to text mode.
-    fireEvent.click(renderResult.getByTitle('View Query in Pure'));
-    const lambdaEditor = await waitFor(() => renderResult.getByRole('dialog'));
-    const MOCK__globalCompileInFormModeFn = createMock();
+    const MOCK__pureCodeToLambda = createMock();
+    const MOCK__lambdaToPureCode = createMock();
     queryBuilderState.graphManagerState.graphManager.pureCodeToLambda =
-      MOCK__globalCompileInFormModeFn;
-    MOCK__globalCompileInFormModeFn.mockResolvedValue(
+      MOCK__pureCodeToLambda;
+    queryBuilderState.graphManagerState.graphManager.lambdasToPureCode =
+      MOCK__lambdaToPureCode;
+    MOCK__pureCodeToLambda.mockResolvedValue(
       create_RawLambda(param1Lambda.parameters, param1Lambda.body),
     );
+    const mockValue = new Map<string, string>();
+    mockValue.set('query-builder', 'test');
+    MOCK__lambdaToPureCode.mockResolvedValue(mockValue);
+    fireEvent.click(renderResult.getByTitle('View Query in Pure'));
+    const lambdaEditor = await waitFor(() => renderResult.getByRole('dialog'));
     fireEvent.click(getByText(lambdaEditor, 'Close'));
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
@@ -349,6 +355,11 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
     );
     expect(getByText(paramPanel, 'var_1')).not.toBeNull();
+    await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
+      ),
+    );
     fireEvent.click(renderResult.getByText('Run Query'));
     executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
     expect(getByText(executeDialog, 'Set Parameter Values'));

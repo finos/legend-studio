@@ -61,6 +61,7 @@ import {
   isStubbed_RawLambda,
   buildLambdaVariableExpressions,
   buildRawLambdaFromLambdaFunction,
+  type ValueSpecification,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import type {
@@ -158,8 +159,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
       resetQueryResult: action,
       resetQueryContent: action,
-      resetQueryBodyContent: action,
-      resetQueryParameterContent: action,
       changeClass: action,
       changeMapping: action,
 
@@ -296,13 +295,18 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     );
   }
 
-  resetQueryResult(): void {
+  resetQueryResult(preserveResult?: boolean): void {
     const resultState = new QueryBuilderResultState(this);
     resultState.setPreviewLimit(this.resultState.previewLimit);
+    if (preserveResult) {
+      resultState.setExecutionResult(this.resultState.executionResult);
+      resultState.setExecutionDuration(this.resultState.executionDuration);
+      resultState.latestRunHashCode = this.resultState.latestRunHashCode;
+    }
     this.resultState = resultState;
   }
 
-  resetQueryBodyContent(): void {
+  resetQueryContent(): void {
     this.textEditorState = new QueryBuilderTextEditorState(this);
     this.unsupportedQueryState = new QueryBuilderUnsupportedQueryState(this);
     this.milestoningState = new QueryBuilderMilestoningState(this);
@@ -316,6 +320,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.explorerState.refreshTreeData();
     this.constantState = new QueryBuilderConstantsState(this);
     this.functionsExplorerState = new QueryFunctionsExplorerState(this);
+    this.parametersState = new QueryBuilderParametersState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.watermarkState = new QueryBuilderWatermarkState(this);
     this.checkEntitlementsState = new QueryBuilderCheckEntitlementsState(this);
@@ -331,15 +336,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
         currentFetchStructureImplementationType,
       );
     }
-  }
-
-  resetQueryParameterContent(): void {
-    this.parametersState = new QueryBuilderParametersState(this);
-  }
-
-  resetQueryContent(): void {
-    this.resetQueryParameterContent();
-    this.resetQueryBodyContent();
   }
 
   changeClass(val: Class): void {
@@ -386,7 +382,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   }
 
   initializeWithQuery(query: RawLambda): void {
-    this.resetQueryParameterContent();
     this.rebuildWithQuery(query);
     this.resetQueryResult();
     this.changeDetectionState.initialize(query);
@@ -395,10 +390,25 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   /**
    * Process the provided query, and rebuild the query builder state.
    */
-  rebuildWithQuery(query: RawLambda): void {
+  rebuildWithQuery(
+    query: RawLambda,
+    options?: {
+      preserveParameterValues?: boolean | undefined;
+      preserveResult?: boolean | undefined;
+    },
+  ): void {
+    const previousStateParameterValues = new Map<
+      VariableExpression,
+      ValueSpecification | undefined
+    >();
     try {
-      this.resetQueryResult();
-      this.resetQueryBodyContent();
+      if (options?.preserveParameterValues) {
+        // Preserving parameter values
+        this.parametersState.parameterStates.forEach((ps) => {
+          previousStateParameterValues.set(ps.parameter, ps.value);
+        });
+      }
+      this.resetQueryResult(options?.preserveResult);
       this.resetQueryContent();
 
       if (!isStubbed_RawLambda(query)) {
@@ -419,6 +429,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
         processQueryLambdaFunction(
           guaranteeNonNullable(compiledValueSpecification.values[0]),
           this,
+          previousStateParameterValues,
         );
       }
       if (this.parametersState.parameterStates.length > 0) {
@@ -426,7 +437,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.resetQueryBodyContent();
       this.resetQueryResult();
       this.resetQueryContent();
       this.unsupportedQueryState.setLambdaError(error);
