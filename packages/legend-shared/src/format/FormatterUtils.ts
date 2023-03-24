@@ -32,7 +32,7 @@ export const toSentenceCase = (value: string | undefined): string =>
   (value ?? '').trim().replace(/^(?:\w+)\b/u, (val) => capitalize(val));
 
 export const TITLE_CASE_EXCEPTION_WORDS = [
-  // We follow AP style for simplicity
+  // We roughly follow AP style for simplicity
   // See https://en.wikipedia.org/wiki/Title_case
   'a',
   'an',
@@ -70,39 +70,25 @@ export const toTitleCase = (value: string | undefined): string =>
     .replace(/^(?:\w+)\b/u, (val) => capitalize(val))
     .replace(/\b(?:\w+)$/u, (val) => capitalize(val));
 
-export const isCamelCase = (value: string | undefined): boolean =>
-  value !== undefined &&
-  value !== '' &&
-  Boolean(value.match(/^(?:[a-z])*(?:[A-Z][a-z]+)+$/u));
-
-export const prettyCamelCase = (value: string | undefined): string =>
-  toSentenceCase(value)
-    .replace(/(?:[A-Z])/gu, (val) => ` ${val}`)
-    .trim();
-
-export const prettySimpleCONSTName = (value: string | undefined): string =>
-  toSentenceCase((value ?? '').toLowerCase())
-    .replace(/_(?:\w)/gu, (val) => val.toUpperCase())
-    .replace(/_/gu, ' ')
-    .trim();
-
 export const prettyCONSTName = (value: string | undefined): string => {
   if (!value) {
     return '';
   }
-  if (
-    value.includes('_') ||
-    (value.toUpperCase() === value && value.length > 2)
-  ) {
-    return prettySimpleCONSTName(value);
+  // This handles our constant naming convention, e.g. SOME_VALUE, __PRIVATE_VALUE__, etc.
+  if (value.trim().match(/^[A-Z_]+$/)) {
+    return toTitleCase(value.trim().replace(/_+/gu, ' ').toLowerCase());
   }
-
-  let newValue = value.trim();
-  newValue = newValue.charAt(0).toUpperCase() + newValue.slice(1);
-  return newValue
-    .split(/(?<id>[A-Z][a-z]+|[0-9]+)/)
-    .filter((e) => e)
-    .join(' ');
+  return capitalize(value.trim())
+    .split(/([A-Z][a-z]+|[0-9]+)/)
+    .map((chunk) =>
+      chunk.toUpperCase() === chunk
+        ? chunk
+        : chunk.charAt(0).toUpperCase() + chunk.slice(1).toLowerCase(),
+    )
+    .filter(Boolean)
+    .join(' ')
+    .replace(/_+/gu, ' ')
+    .replace(/\s+/gu, ' ');
 };
 
 export const tryToFormatJSONString = (value: string, tabSize = 2): string => {

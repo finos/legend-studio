@@ -69,10 +69,7 @@ import { useDrag } from 'react-dnd';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { flowResult } from 'mobx';
-import {
-  getPropertyChainName,
-  prettyPropertyName,
-} from '../../stores/QueryBuilderPropertyEditorState.js';
+import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorState.js';
 import {
   type Type,
   type Multiplicity,
@@ -92,7 +89,11 @@ import {
 import { useApplicationStore } from '@finos/legend-application';
 import { getClassPropertyIcon } from '../shared/ElementIconUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
-import { filterByType, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  filterByType,
+  guaranteeNonNullable,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import { QueryBuilderPropertySearchPanel } from './QueryBuilderPropertySearchPanel.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
@@ -226,9 +227,7 @@ const QueryBuilderExplorerPreviewDataModal = observer(
           darkMode={true}
           className="editor-modal query-builder__explorer__preview-data-modal"
         >
-          <ModalHeader
-            title={prettyPropertyName(previewDataState.propertyName)}
-          />
+          <ModalHeader title={prettyCONSTName(previewDataState.propertyName)} />
           <PanelLoadingIndicator
             isLoading={previewDataState.isGeneratingPreviewData}
           />
@@ -577,8 +576,8 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 >
                   {explorerState.humanizePropertyName
                     ? node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-                      ? TYPE_CAST_TOKEN + prettyPropertyName(node.label)
-                      : prettyPropertyName(node.label)
+                      ? TYPE_CAST_TOKEN + prettyCONSTName(node.label)
+                      : prettyCONSTName(node.label)
                     : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
                     ? TYPE_CAST_TOKEN + node.label
                     : node.label}
@@ -942,7 +941,7 @@ export const QueryBuilderExplorerPanel = observer(
           <DragPreviewLayer
             labelGetter={(item: QueryBuilderExplorerTreeDragSource): string =>
               explorerState.humanizePropertyName
-                ? prettyPropertyName(item.node.label)
+                ? prettyCONSTName(item.node.label)
                 : item.node.label
             }
             types={Object.values(QUERY_BUILDER_EXPLORER_TREE_DND_TYPE)}

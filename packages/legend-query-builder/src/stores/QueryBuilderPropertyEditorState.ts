@@ -21,8 +21,6 @@ import {
   guaranteeType,
   type Hashable,
   hashArray,
-  isCamelCase,
-  prettyCamelCase,
   prettyCONSTName,
 } from '@finos/legend-shared';
 import {
@@ -63,15 +61,12 @@ import {
 } from './shared/ValueSpecificationModifierHelper.js';
 import { generateMilestonedPropertyParameterValue } from './milestoning/QueryBuilderMilestoningHelper.js';
 
-export const prettyPropertyName = (value: string): string =>
-  isCamelCase(value) ? prettyCamelCase(value) : prettyCONSTName(value);
-
 export const getPropertyChainName = (
   propertyExpression: AbstractPropertyExpression,
   humanizePropertyName: boolean,
 ): string => {
   const propertyNameDecorator = humanizePropertyName
-    ? prettyPropertyName
+    ? prettyCONSTName
     : (val: string): string => val;
   const chunks = [propertyNameDecorator(propertyExpression.func.value.name)];
   let currentExpression: ValueSpecification | undefined = propertyExpression;
