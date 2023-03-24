@@ -35,6 +35,10 @@
   position: relative;
   height: 100%;
 
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-light-grey-400);
+  }
+
   &__header {
     background: var(--color-light-grey-200);
     padding-left: 0;
