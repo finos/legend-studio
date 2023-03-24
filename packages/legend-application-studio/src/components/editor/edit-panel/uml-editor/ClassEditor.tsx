@@ -1748,7 +1748,7 @@ export const ClassFormEditor = observer(
                 data-testid={
                   LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER
                 }
-                className="panel__header uml-element-editor__tabs__header"
+                className="panel__header uml-element-editor__tabs__header "
               >
                 <div className="uml-element-editor__tabs">
                   {tabs.map((tab) => (

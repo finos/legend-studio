@@ -20,6 +20,10 @@
   height: 100%;
   width: 100%;
 
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-light-grey-400);
+  }
+
   .panel {
     height: 100%;
 
