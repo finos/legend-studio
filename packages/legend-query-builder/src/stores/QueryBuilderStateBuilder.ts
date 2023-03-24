@@ -70,7 +70,6 @@ import { processTDS_OLAPGroupByExpression } from './fetch-structure/tds/window/Q
 import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkStateBuilder.js';
 import { QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
 import { checkIfEquivalent } from './milestoning/QueryBuilderMilestoningHelper.js';
-import { QueryBuilderParametersState } from './QueryBuilderParametersState.js';
 
 const processGetAllExpression = (
   expression: SimpleFunctionExpression,
@@ -608,28 +607,31 @@ export class QueryBuilderValueSpecificationProcessor
 export const processParameters = (
   parameters: VariableExpression[],
   queryBuilderState: QueryBuilderState,
+  preservedParameters?: Map<VariableExpression, ValueSpecification | undefined>,
 ): void => {
-  const queryParameterState = new QueryBuilderParametersState(
-    queryBuilderState,
-  );
-  // Here we won't process the parameters which are present in the previous state
+  const queryParameterState = queryBuilderState.parametersState;
+  // Here we won't mock the values for parameters which are present in the previous state
   // because we don't want to lose the parameter value
   parameters.forEach((parameter) => {
-    const oldParamterState =
-      queryBuilderState.parametersState.parameterStates.find((ps) =>
-        checkIfEquivalent(ps.parameter, parameter),
-      );
-    if (oldParamterState) {
-      queryParameterState.addParameter(oldParamterState);
-    } else {
-      const parameterState = new LambdaParameterState(
-        parameter,
-        queryBuilderState.observableContext,
-        queryBuilderState.graphManagerState.graph,
-      );
-      parameterState.mockParameterValue();
-      queryParameterState.addParameter(parameterState);
+    let oldParamterValue: ValueSpecification | undefined;
+    if (preservedParameters) {
+      Array.from(preservedParameters.entries()).forEach(([key, value]) => {
+        if (checkIfEquivalent(key, parameter)) {
+          oldParamterValue = value;
+        }
+      });
     }
+    const parameterState = new LambdaParameterState(
+      parameter,
+      queryBuilderState.observableContext,
+      queryBuilderState.graphManagerState.graph,
+    );
+    if (oldParamterValue) {
+      parameterState.setValue(oldParamterValue);
+    } else {
+      parameterState.mockParameterValue();
+    }
+    queryParameterState.addParameter(parameterState);
   });
   queryBuilderState.parametersState = queryParameterState;
 };
@@ -637,11 +639,13 @@ export const processParameters = (
 export const processQueryLambdaFunction = (
   lambdaFunction: LambdaFunction,
   queryBuilderState: QueryBuilderState,
+  preservedParameters?: Map<VariableExpression, ValueSpecification | undefined>,
 ): void => {
   if (lambdaFunction.functionType.parameters.length) {
     processParameters(
       lambdaFunction.functionType.parameters,
       queryBuilderState,
+      preservedParameters,
     );
   }
   lambdaFunction.expressionSequence.map((expression) =>
