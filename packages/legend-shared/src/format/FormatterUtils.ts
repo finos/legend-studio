@@ -100,7 +100,7 @@ export const prettyCONSTName = (value: string | undefined): string => {
   let newValue = value.trim();
   newValue = newValue.charAt(0).toUpperCase() + newValue.slice(1);
   return newValue
-    .split(/(?<id>[A-Z][a-z]+|[0-9])/)
+    .split(/(?<id>[A-Z][a-z]+|[0-9]+)/)
     .filter((e) => e)
     .join(' ');
 };
