@@ -641,13 +641,7 @@ export const processQueryLambdaFunction = (
   queryBuilderState: QueryBuilderState,
   preservedParameters?: Map<VariableExpression, ValueSpecification | undefined>,
 ): void => {
-  if (lambdaFunction.functionType.parameters.length) {
-    processParameters(
-      lambdaFunction.functionType.parameters,
-      queryBuilderState,
-      preservedParameters,
-    );
-  }
+  processParameters(lambdaFunction.functionType.parameters, queryBuilderState);
   lambdaFunction.expressionSequence.map((expression) =>
     QueryBuilderValueSpecificationProcessor.process(
       expression,
