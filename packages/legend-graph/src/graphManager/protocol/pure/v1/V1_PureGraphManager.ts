@@ -2719,19 +2719,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             return undefined;
           } catch (error) {
             assertErrorThrown(error);
-            let result = new BulkRegistrationResultFail(error.message);
-
+            let errorMessage = error.message;
             if (graphData instanceof V1_PureModelContextData) {
               const servicePath = getNullableFirstElement(
                 graphData.elements.filter(filterByType(V1_Service)),
               )?.path;
-
-              result = new BulkRegistrationResultFail(
-                `${servicePath} ${error.message}`,
-              );
+              errorMessage = `${servicePath} ${error.message}`;
             }
-
-            return result;
+            return new BulkRegistrationResultFail(errorMessage);
           }
         }),
       )

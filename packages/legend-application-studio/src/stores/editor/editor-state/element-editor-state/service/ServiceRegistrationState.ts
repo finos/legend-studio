@@ -85,22 +85,19 @@ interface ServiceVersionOption {
   value: Version | string;
 }
 
-export class ServiceRegistrationState {
+export class ServiceConfigState {
   readonly editorStore: EditorStore;
-  readonly service: Service | undefined;
   readonly registrationOptions: ServiceRegistrationEnvironmentConfig[] = [];
   readonly registrationState = ActionState.create();
 
   serviceEnv?: string | undefined;
   serviceExecutionMode?: ServiceExecutionMode | undefined;
   projectVersion?: Version | string | undefined;
-  activatePostRegistration = true;
   enableModesWithVersioning: boolean;
   TEMPORARY__useStoreModel = false;
 
   constructor(
     editorStore: EditorStore,
-    service: Service | undefined,
     registrationOptions: ServiceRegistrationEnvironmentConfig[],
     enableModesWithVersioning: boolean,
   ) {
@@ -108,7 +105,6 @@ export class ServiceRegistrationState {
       serviceEnv: observable,
       serviceExecutionMode: observable,
       projectVersion: observable,
-      activatePostRegistration: observable,
       enableModesWithVersioning: observable,
       TEMPORARY__useStoreModel: observable,
       executionModes: computed,
@@ -117,21 +113,18 @@ export class ServiceRegistrationState {
       setServiceEnv: action,
       setServiceExecutionMode: action,
       setProjectVersion: action,
-      setActivatePostRegistration: action,
       setUseStoreModelWithFullInteractive: action,
       initialize: action,
       updateVersion: action,
       updateType: action,
       updateEnv: action,
-      registerService: flow,
     });
 
     this.editorStore = editorStore;
-    this.service = service;
     this.registrationOptions = registrationOptions;
     this.enableModesWithVersioning = enableModesWithVersioning;
-    this.initialize();
     this.registrationState.setMessageFormatter(prettyCONSTName);
+    this.initialize();
   }
 
   get options(): ServiceRegistrationEnvironmentConfig[] {
@@ -195,10 +188,6 @@ export class ServiceRegistrationState {
     this.projectVersion = val;
   }
 
-  setActivatePostRegistration(val: boolean): void {
-    this.activatePostRegistration = val;
-  }
-
   setUseStoreModelWithFullInteractive(val: boolean): void {
     this.TEMPORARY__useStoreModel = val;
   }
@@ -228,6 +217,30 @@ export class ServiceRegistrationState {
     this.setServiceEnv(val);
     this.setServiceExecutionMode(this.executionModes[0]);
   }
+}
+
+export class ServiceRegistrationState extends ServiceConfigState {
+  readonly service: Service;
+  activatePostRegistration = true;
+
+  constructor(
+    editorStore: EditorStore,
+    service: Service,
+    registrationOptions: ServiceRegistrationEnvironmentConfig[],
+    enableModesWithVersioning: boolean,
+  ) {
+    super(editorStore, registrationOptions, enableModesWithVersioning);
+    makeObservable(this, {
+      activatePostRegistration: observable,
+      setActivatePostRegistration: action,
+      registerService: flow,
+    });
+
+    this.service = service;
+  }
+  setActivatePostRegistration(val: boolean): void {
+    this.activatePostRegistration = val;
+  }
 
   *registerService(): GeneratorFn<void> {
     try {
@@ -247,7 +260,7 @@ export class ServiceRegistrationState {
       this.registrationState.setMessage(`Registering service...`);
       const serviceRegistrationResult =
         (yield this.editorStore.graphManagerState.graphManager.registerService(
-          guaranteeNonNullable(this.service),
+          this.service,
           this.editorStore.graphManagerState.graph,
           projectConfig.groupId,
           projectConfig.artifactId,
@@ -310,12 +323,11 @@ export class ServiceRegistrationState {
   }
 
   validateServiceForRegistration(): void {
-    guaranteeNonNullable(this.service).owners.forEach((owner) =>
+    this.service.owners.forEach((owner) =>
       assertNonEmptyString(owner, `Service can't have an empty owner name`),
     );
     assertTrue(
-      guaranteeNonNullable(this.service).owners.length >=
-        MINIMUM_SERVICE_OWNERS,
+      this.service.owners.length >= MINIMUM_SERVICE_OWNERS,
       `Service needs to have at least 2 owners in order to be registered`,
     );
     guaranteeNonNullable(
@@ -343,7 +355,7 @@ export class ServiceRegistrationState {
       Multiplicity.ZERO_ONE,
     ];
     const invalidParams = buildLambdaVariableExpressions(
-      (guaranteeNonNullable(this.service).execution as PureExecution).func,
+      (this.service.execution as PureExecution).func,
       this.editorStore.graphManagerState,
     )
       .filter(filterByType(VariableExpression))
@@ -365,22 +377,5 @@ export class ServiceRegistrationState {
         (m) => ` [${generateMultiplicityString(m.lowerBound, m.upperBound)}]`,
       )}.`,
     );
-  }
-
-  validateBulkServiceForRegistration(
-    editorStore: EditorStore,
-    services: Service[],
-    registrationOptions: ServiceRegistrationEnvironmentConfig[],
-    enableModesWithVersioning: boolean,
-  ): void {
-    services.forEach((service) => {
-      const serviceRegState = new ServiceRegistrationState(
-        editorStore,
-        service,
-        registrationOptions,
-        enableModesWithVersioning,
-      );
-      serviceRegState.validateServiceForRegistration();
-    });
   }
 }

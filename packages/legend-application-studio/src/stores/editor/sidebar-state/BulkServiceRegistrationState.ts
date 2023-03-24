@@ -16,7 +16,10 @@
 import { action, makeObservable, observable, flow } from 'mobx';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import type { EditorStore } from '../EditorStore.js';
-import type { BulkServiceRegistrationResult } from '@finos/legend-graph';
+import type {
+  BulkServiceRegistrationResult,
+  Service,
+} from '@finos/legend-graph';
 import {
   type GeneratorFn,
   guaranteeNonNullable,
@@ -24,12 +27,16 @@ import {
   LogEvent,
 } from '@finos/legend-shared';
 import { Version } from '@finos/legend-server-sdlc';
-import { ServiceRegistrationState } from '../editor-state/element-editor-state/service/ServiceRegistrationState.js';
+import {
+  ServiceConfigState,
+  ServiceRegistrationState,
+} from '../editor-state/element-editor-state/service/ServiceRegistrationState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../application/LegendStudioEvent.js';
+import type { ServiceRegistrationEnvironmentConfig } from '../../../application/LegendStudioApplicationConfig.js';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 
-export class BulkServiceRegistrationState extends ServiceRegistrationState {
+export class BulkServiceRegistrationState extends ServiceConfigState {
   sdlcState: EditorSDLCState;
   registrationResult: BulkServiceRegistrationResult[] | undefined;
   showSuccessModel = false;
@@ -37,7 +44,6 @@ export class BulkServiceRegistrationState extends ServiceRegistrationState {
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     super(
       editorStore,
-      undefined,
       editorStore.applicationStore.config.options
         .TEMPORARY__serviceRegistrationConfig,
       editorStore.sdlcServerClient.featuresConfigHasBeenFetched &&
@@ -104,5 +110,22 @@ export class BulkServiceRegistrationState extends ServiceRegistrationState {
       this.registrationState.reset();
       this.registrationState.setMessage(undefined);
     }
+  }
+
+  validateBulkServiceForRegistration(
+    editorStore: EditorStore,
+    services: Service[],
+    registrationOptions: ServiceRegistrationEnvironmentConfig[],
+    enableModesWithVersioning: boolean,
+  ): void {
+    services.forEach((service) => {
+      const serviceRegState = new ServiceRegistrationState(
+        editorStore,
+        service,
+        registrationOptions,
+        enableModesWithVersioning,
+      );
+      serviceRegState.validateServiceForRegistration();
+    });
   }
 }
