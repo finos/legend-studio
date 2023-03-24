@@ -149,3 +149,19 @@ export class V1_MiddleTierUsernamePasswordAuthenticationStrategy
     ]);
   }
 }
+
+export class V1_TrinoDelegatedKerberosAuthenticationStrategy
+  extends V1_AuthenticationStrategy
+  implements Hashable
+{
+  kerberosRemoteServiceName!: string;
+  kerberosUseCanonicalHostname!: boolean;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.TRINO_DELEGATED_KERBEROS_AUTHENTICATION_STRATEGY,
+      this.kerberosRemoteServiceName,
+      this.kerberosUseCanonicalHostname.toString(),
+    ]);
+  }
+}

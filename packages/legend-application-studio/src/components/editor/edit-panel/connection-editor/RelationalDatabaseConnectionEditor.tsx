@@ -71,6 +71,7 @@ import {
   UsernamePasswordAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
   MiddleTierUsernamePasswordAuthenticationStrategy,
+  TrinoDelegatedKerberosAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
@@ -81,6 +82,7 @@ import {
   PackageableElementExplicitReference,
   MapperPostProcessor,
   SpannerDatasourceSpecification,
+  TrinoDatasourceSpecification,
 } from '@finos/legend-graph';
 import type { LegendStudioApplicationPlugin } from '../../../../stores/LegendStudioApplicationPlugin.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
@@ -141,6 +143,16 @@ import {
   staticDatasourceSpecification_setDatabaseName,
   staticDatasourceSpecification_setHost,
   staticDatasourceSpecification_setPort,
+  trinoDatasourceSpecification_setHost,
+  trinoDatasourceSpecification_setPort,
+  trinoDatasourceSpecification_setCatalog,
+  trinoDatasourceSpecification_setSchema,
+  trinoDatasourceSpecification_setClientTags,
+  trinoDatasourceSpecification_setSsl,
+  trinoDatasourceSpecification_setTrustStorePathVaultReference,
+  trinoDatasourceSpecification_setTrustStorePasswordVaultReference,
+  trinoDelegatedKerberosAuthenticationStrategy_setKerberosRemoteServiceName,
+  trinoDelegatedKerberosAuthenticationStrategy_setKerberosUseCanonicalHostname,
   usernamePasswordAuthenticationStrategy_setBaseVaultReference,
   usernamePasswordAuthenticationStrategy_setPasswordVaultReference,
   usernamePasswordAuthenticationStrategy_setUserNameVaultReference,
@@ -366,6 +378,98 @@ const DatabricksDatasourceSpecificationEditor = observer(
             databricksDatasourceSpecification_setHttpPath(
               sourceSpec,
               value ?? '',
+            )
+          }
+        />
+      </>
+    );
+  },
+);
+
+const TrinoDatasourceSpecificationEditor = observer(
+  (props: {
+    sourceSpec: TrinoDatasourceSpecification;
+    isReadOnly: boolean;
+  }) => {
+    const { sourceSpec, isReadOnly } = props;
+    const changePort: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      const val = event.target.value;
+      trinoDatasourceSpecification_setPort(sourceSpec, parseInt(val, 10));
+    };
+    return (
+      <>
+        <PanelFormTextField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.host}
+          name="host"
+          update={(value: string | undefined): void =>
+            trinoDatasourceSpecification_setHost(sourceSpec, value ?? '')
+          }
+        />
+        <div className="panel__content__form__section">
+          <div className="panel__content__form__section__header__label">
+            port
+          </div>
+          <input
+            className="panel__content__form__section__input panel__content__form__section__number-input"
+            spellCheck={false}
+            type="number"
+            disabled={isReadOnly}
+            value={sourceSpec.port}
+            onChange={changePort}
+          />
+        </div>
+        <PanelFormTextField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.catalog}
+          name="catalog"
+          update={(value: string | undefined): void =>
+            trinoDatasourceSpecification_setCatalog(sourceSpec, value)
+          }
+        />
+        <PanelFormTextField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.schema}
+          name="schema"
+          update={(value: string | undefined): void =>
+            trinoDatasourceSpecification_setSchema(sourceSpec, value)
+          }
+        />
+        <PanelFormTextField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.clientTags}
+          name="clientTags"
+          update={(value: string | undefined): void =>
+            trinoDatasourceSpecification_setClientTags(sourceSpec, value)
+          }
+        />
+        <PanelFormBooleanField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.sslSpecification.ssl}
+          name="SSL"
+          update={(value?: boolean): void =>
+            trinoDatasourceSpecification_setSsl(sourceSpec, Boolean(value))
+          }
+        />
+        <PanelFormTextField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.sslSpecification.trustStorePathVaultReference}
+          name="TrustStorePathVaultReference"
+          update={(value: string | undefined): void =>
+            trinoDatasourceSpecification_setTrustStorePathVaultReference(
+              sourceSpec,
+              value,
+            )
+          }
+        />
+        <PanelFormTextField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.sslSpecification.trustStorePasswordVaultReference}
+          name="TrustStorePasswordVaultReference"
+          update={(value: string | undefined): void =>
+            trinoDatasourceSpecification_setTrustStorePasswordVaultReference(
+              sourceSpec,
+              value,
             )
           }
         />
@@ -881,6 +985,43 @@ const MiddleTierUsernamePasswordAuthenticationStrategyEditor = observer(
   },
 );
 
+const TrinoDelegatedKerberosAuthenticationStrategyEditor = observer(
+  (props: {
+    authSpec: TrinoDelegatedKerberosAuthenticationStrategy;
+    isReadOnly: boolean;
+  }) => {
+    const { authSpec, isReadOnly } = props;
+    return (
+      <>
+        <PanelFormTextField
+          isReadOnly={isReadOnly}
+          value={authSpec.kerberosRemoteServiceName}
+          name="Kerberos Remote Service Name"
+          prompt="Specifies the Kerberos Remote Service Name"
+          update={(value: string | undefined): void =>
+            trinoDelegatedKerberosAuthenticationStrategy_setKerberosRemoteServiceName(
+              authSpec,
+              value ?? '',
+            )
+          }
+        />
+        <PanelFormBooleanField
+          isReadOnly={isReadOnly}
+          value={authSpec.kerberosUseCanonicalHostname}
+          name="kerberosUseCanonicalHostname"
+          prompt="Specifies KerberosUseCanonicalHostname"
+          update={(value?: boolean): void =>
+            trinoDelegatedKerberosAuthenticationStrategy_setKerberosUseCanonicalHostname(
+              authSpec,
+              Boolean(value),
+            )
+          }
+        />
+      </>
+    );
+  },
+);
+
 const GCPWorkloadIdentityFederationAuthenticationStrategyEditor = observer(
   (props: {
     authSpec: GCPWorkloadIdentityFederationAuthenticationStrategy;
@@ -1307,6 +1448,13 @@ const renderDatasourceSpecificationEditor = (
         isReadOnly={isReadOnly}
       />
     );
+  } else if (sourceSpec instanceof TrinoDatasourceSpecification) {
+    return (
+      <TrinoDatasourceSpecificationEditor
+        sourceSpec={sourceSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
   } else {
     const extraDatasourceSpecificationEditorRenderers = plugins.flatMap(
       (plugin) =>
@@ -1380,6 +1528,13 @@ const renderAuthenticationStrategyEditor = (
   ) {
     return (
       <GCPWorkloadIdentityFederationAuthenticationStrategyEditor
+        authSpec={authSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
+  } else if (authSpec instanceof TrinoDelegatedKerberosAuthenticationStrategy) {
+    return (
+      <TrinoDelegatedKerberosAuthenticationStrategyEditor
         authSpec={authSpec}
         isReadOnly={isReadOnly}
       />

@@ -43,6 +43,7 @@ import {
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
   MiddleTierUsernamePasswordAuthenticationStrategy,
+  TrinoDelegatedKerberosAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   DatabricksDatasourceSpecification,
@@ -51,6 +52,8 @@ import {
   StaticDatasourceSpecification,
   RedshiftDatasourceSpecification,
   SpannerDatasourceSpecification,
+  TrinoDatasourceSpecification,
+  TrinoSslSpecification,
   createValidationError,
   isStubbed_PackageableElement,
   type PostProcessor,
@@ -93,6 +96,7 @@ export enum CORE_DATASOURCE_SPEC_TYPE {
   REDSHIFT = 'REDSHIFT',
   BIGQUERY = 'BIGQUERY',
   SPANNER = 'SPANNER',
+  TRINO = 'TRINO',
 }
 
 export enum POST_PROCESSOR_TYPE {
@@ -109,6 +113,7 @@ export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   USERNAME_PASSWORD = 'USERNAME_PASSWORD',
   GCP_WORKLOAD_IDENTITY_FEDERATION = 'GCP_WORKLOAD_IDENTITY_FEDERATION',
   MIDDLE_TIER_USERNAME_PASSWORD = 'MIDDLE_TIER_USERNAME_PASSWORD',
+  TRINO_DELEGATED_KERBEROS = 'TRINO_DELEGATED_KERBEROS',
 }
 
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
@@ -199,6 +204,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_DATASOURCE_SPEC_TYPE.REDSHIFT;
     } else if (spec instanceof SpannerDatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.SPANNER;
+    } else if (spec instanceof TrinoDatasourceSpecification) {
+      return CORE_DATASOURCE_SPEC_TYPE.TRINO;
     }
     const extraDatasourceSpecificationClassifiers =
       this.editorStore.pluginManager
@@ -265,6 +272,14 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         dataSpec = new SpannerDatasourceSpecification('', '', '', '', '');
         break;
       }
+      case CORE_DATASOURCE_SPEC_TYPE.TRINO: {
+        dataSpec = new TrinoDatasourceSpecification(
+          '',
+          8090,
+          new TrinoSslSpecification(true),
+        );
+        break;
+      }
       default: {
         const extraDatasourceSpecificationCreators =
           this.editorStore.pluginManager
@@ -321,6 +336,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       auth instanceof MiddleTierUsernamePasswordAuthenticationStrategy
     ) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.MIDDLE_TIER_USERNAME_PASSWORD;
+    } else if (auth instanceof TrinoDelegatedKerberosAuthenticationStrategy) {
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.TRINO_DELEGATED_KERBEROS;
     }
 
     const extraAuthenticationStrategyClassifiers =
@@ -387,6 +404,13 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.MIDDLE_TIER_USERNAME_PASSWORD: {
         authStrategy = new MiddleTierUsernamePasswordAuthenticationStrategy('');
+        break;
+      }
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.TRINO_DELEGATED_KERBEROS: {
+        authStrategy = new TrinoDelegatedKerberosAuthenticationStrategy(
+          'HTTP',
+          false,
+        );
         break;
       }
       default: {

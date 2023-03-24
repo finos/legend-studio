@@ -26,9 +26,11 @@ import {
   UsernamePasswordAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
   MiddleTierUsernamePasswordAuthenticationStrategy,
+  TrinoDelegatedKerberosAuthenticationStrategy,
 } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
 import {
   type DatasourceSpecification,
+  type TrinoSslSpecification,
   BigQueryDatasourceSpecification,
   DatabricksDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
@@ -37,6 +39,7 @@ import {
   SnowflakeDatasourceSpecification,
   StaticDatasourceSpecification,
   SpannerDatasourceSpecification,
+  TrinoDatasourceSpecification,
 } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 import {
   type Mapper,
@@ -841,6 +844,32 @@ export const observe_SpannerDatasourceSpecification = skipObserved(
     }),
 );
 
+export const observe_TrinoSslSpecification = skipObserved(
+  (metamodel: TrinoSslSpecification): TrinoSslSpecification =>
+    makeObservable(metamodel, {
+      ssl: observable,
+      trustStorePathVaultReference: observable,
+      trustStorePasswordVaultReference: observable,
+      hashCode: computed,
+    }),
+);
+
+export const observe_TrinoDatasourceSpecification = skipObserved(
+  (metamodel: TrinoDatasourceSpecification): TrinoDatasourceSpecification => {
+    makeObservable(metamodel, {
+      host: observable,
+      port: observable,
+      catalog: observable,
+      schema: observable,
+      clientTags: observable,
+      hashCode: computed,
+    });
+    observe_TrinoSslSpecification(metamodel.sslSpecification);
+
+    return metamodel;
+  },
+);
+
 export const observe_DatasourceSpecification = (
   metamodel: DatasourceSpecification,
   context: ObserverContext,
@@ -861,6 +890,8 @@ export const observe_DatasourceSpecification = (
     return observe_BigQueryDatasourceSpecification(metamodel);
   } else if (metamodel instanceof SpannerDatasourceSpecification) {
     return observe_SpannerDatasourceSpecification(metamodel);
+  } else if (metamodel instanceof TrinoDatasourceSpecification) {
+    return observe_TrinoDatasourceSpecification(metamodel);
   }
   const extraObservers = context.plugins.flatMap(
     (plugin) =>
@@ -970,6 +1001,18 @@ export const observe_MiddleTierUsernamePasswordAuthenticationStrategy =
       }),
   );
 
+export const observe_TrinoDelegatedKerberosAuthenticationStrategy =
+  skipObserved(
+    (
+      metamodel: TrinoDelegatedKerberosAuthenticationStrategy,
+    ): TrinoDelegatedKerberosAuthenticationStrategy =>
+      makeObservable(metamodel, {
+        hashCode: computed,
+        kerberosRemoteServiceName: observable,
+        kerberosUseCanonicalHostname: observable,
+      }),
+  );
+
 export const observe_AuthenticationStrategy = (
   metamodel: AuthenticationStrategy,
   context: ObserverContext,
@@ -1002,6 +1045,10 @@ export const observe_AuthenticationStrategy = (
     metamodel instanceof MiddleTierUsernamePasswordAuthenticationStrategy
   ) {
     return observe_MiddleTierUsernamePasswordAuthenticationStrategy(metamodel);
+  } else if (
+    metamodel instanceof TrinoDelegatedKerberosAuthenticationStrategy
+  ) {
+    return observe_TrinoDelegatedKerberosAuthenticationStrategy(metamodel);
   }
   const extraObservers = context.plugins.flatMap(
     (plugin) =>

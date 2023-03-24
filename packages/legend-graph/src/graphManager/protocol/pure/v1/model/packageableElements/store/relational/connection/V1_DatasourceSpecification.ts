@@ -194,3 +194,42 @@ export class V1_LocalH2DataSourceSpecification
     ]);
   }
 }
+
+export class V1_TrinoSslSpecification implements Hashable {
+  ssl!: boolean;
+  trustStorePathVaultReference?: string | undefined;
+  trustStorePasswordVaultReference?: string | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.TRINO_SSL_SPECIFICATION,
+      this.ssl.toString(),
+      this.trustStorePathVaultReference ?? '',
+      this.trustStorePasswordVaultReference ?? '',
+    ]);
+  }
+}
+
+export class V1_TrinoDatasourceSpecification
+  extends V1_DatasourceSpecification
+  implements Hashable
+{
+  host!: string;
+  port!: number;
+  sslSpecification!: V1_TrinoSslSpecification;
+  catalog?: string | undefined;
+  schema?: string | undefined;
+  clientTags?: string | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.TRINO_DATASOURCE_SPECIFICATION,
+      this.host,
+      this.port.toString(),
+      this.sslSpecification,
+      this.catalog ?? '',
+      this.schema ?? '',
+      this.clientTags ?? '',
+    ]);
+  }
+}

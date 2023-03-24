@@ -39,6 +39,7 @@ import {
   UsernamePasswordAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
   MiddleTierUsernamePasswordAuthenticationStrategy,
+  TrinoDelegatedKerberosAuthenticationStrategy,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
 import {
   type DatasourceSpecification,
@@ -50,6 +51,7 @@ import {
   RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
   SpannerDatasourceSpecification,
+  TrinoDatasourceSpecification,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 import type { ModelChainConnection } from '../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/ModelChainConnection.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
@@ -64,6 +66,8 @@ import {
   V1_StaticDatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
   V1_SpannerDatasourceSpecification,
+  V1_TrinoDatasourceSpecification,
+  V1_TrinoSslSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
@@ -76,6 +80,7 @@ import {
   V1_OAuthAuthenticationStrategy,
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
   V1_MiddleTierUsernamePasswordAuthenticationStrategy,
+  V1_TrinoDelegatedKerberosAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection.js';
 import {
@@ -178,6 +183,25 @@ const transformSpannerDatasourceSpecification = (
   return source;
 };
 
+const transformTrinoDatasourceSpecification = (
+  metamodel: TrinoDatasourceSpecification,
+): V1_TrinoDatasourceSpecification => {
+  const source = new V1_TrinoDatasourceSpecification();
+  source.host = metamodel.host;
+  source.port = metamodel.port;
+  source.catalog = metamodel.catalog;
+  source.schema = metamodel.schema;
+  source.clientTags = metamodel.clientTags;
+  const sslSpecification = new V1_TrinoSslSpecification();
+  sslSpecification.ssl = metamodel.sslSpecification.ssl;
+  sslSpecification.trustStorePathVaultReference =
+    metamodel.sslSpecification.trustStorePathVaultReference;
+  sslSpecification.trustStorePasswordVaultReference =
+    metamodel.sslSpecification.trustStorePasswordVaultReference;
+  source.sslSpecification = sslSpecification;
+  return source;
+};
+
 const transformDatasourceSpecification = (
   metamodel: DatasourceSpecification,
   context: V1_GraphTransformerContext,
@@ -201,6 +225,8 @@ const transformDatasourceSpecification = (
     return protocol;
   } else if (metamodel instanceof RedshiftDatasourceSpecification) {
     return transformRedshiftDatasourceSpecification(metamodel);
+  } else if (metamodel instanceof TrinoDatasourceSpecification) {
+    return transformTrinoDatasourceSpecification(metamodel);
   }
   const extraConnectionDatasourceSpecificationTransformers =
     context.plugins.flatMap(
@@ -276,6 +302,13 @@ const transformAuthenticationStrategy = (
   ) {
     const auth = new V1_MiddleTierUsernamePasswordAuthenticationStrategy();
     auth.vaultReference = metamodel.vaultReference;
+    return auth;
+  } else if (
+    metamodel instanceof TrinoDelegatedKerberosAuthenticationStrategy
+  ) {
+    const auth = new V1_TrinoDelegatedKerberosAuthenticationStrategy();
+    auth.kerberosRemoteServiceName = metamodel.kerberosRemoteServiceName;
+    auth.kerberosUseCanonicalHostname = metamodel.kerberosUseCanonicalHostname;
     return auth;
   }
   const extraConnectionAuthenticationStrategyTransformers =

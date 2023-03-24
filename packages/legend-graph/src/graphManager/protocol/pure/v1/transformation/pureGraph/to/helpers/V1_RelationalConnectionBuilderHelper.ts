@@ -30,6 +30,8 @@ import {
   RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
   SpannerDatasourceSpecification,
+  TrinoDatasourceSpecification,
+  TrinoSslSpecification,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 import {
   type AuthenticationStrategy,
@@ -42,6 +44,7 @@ import {
   DelegatedKerberosAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
   MiddleTierUsernamePasswordAuthenticationStrategy,
+  TrinoDelegatedKerberosAuthenticationStrategy,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import {
@@ -54,6 +57,7 @@ import {
   V1_RedshiftDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
   V1_SpannerDatasourceSpecification,
+  V1_TrinoDatasourceSpecification,
 } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
@@ -66,6 +70,7 @@ import {
   V1_UsernamePasswordAuthenticationStrategy,
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
   V1_MiddleTierUsernamePasswordAuthenticationStrategy,
+  V1_TrinoDelegatedKerberosAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 
@@ -239,6 +244,35 @@ export const V1_buildDatasourceSpecification = (
       protocol.proxyPort,
     );
     return spannerSpec;
+  } else if (protocol instanceof V1_TrinoDatasourceSpecification) {
+    assertNonEmptyString(
+      protocol.host,
+      `Trino datasource specification 'host' field is missing or empty`,
+    );
+    assertNonNullable(
+      protocol.port,
+      `Trino datasource specification 'port' field is missing or empty`,
+    );
+    assertNonNullable(
+      protocol.sslSpecification.ssl,
+      `Trino datasource specification 'ssl' field is missing or empty`,
+    );
+    const sslSpecification = new TrinoSslSpecification(
+      protocol.sslSpecification.ssl,
+    );
+    sslSpecification.trustStorePathVaultReference =
+      protocol.sslSpecification.trustStorePathVaultReference;
+    sslSpecification.trustStorePasswordVaultReference =
+      protocol.sslSpecification.trustStorePasswordVaultReference;
+    const trinoSpec = new TrinoDatasourceSpecification(
+      protocol.host,
+      protocol.port,
+      sslSpecification,
+    );
+    trinoSpec.catalog = protocol.catalog;
+    trinoSpec.schema = protocol.schema;
+    trinoSpec.clientTags = protocol.clientTags;
+    return trinoSpec;
   }
   const extraConnectionDatasourceSpecificationBuilders =
     context.extensions.plugins.flatMap(
@@ -344,6 +378,18 @@ export const V1_buildAuthenticationStrategy = (
 
     return new MiddleTierUsernamePasswordAuthenticationStrategy(
       protocol.vaultReference,
+    );
+  } else if (
+    protocol instanceof V1_TrinoDelegatedKerberosAuthenticationStrategy
+  ) {
+    assertNonEmptyString(
+      protocol.kerberosRemoteServiceName,
+      `Trino delegated kerberos authentication strategy 'kerberosRemoteServiceName' field is missing or empty`,
+    );
+
+    return new TrinoDelegatedKerberosAuthenticationStrategy(
+      protocol.kerberosRemoteServiceName,
+      protocol.kerberosUseCanonicalHostname,
     );
   }
 

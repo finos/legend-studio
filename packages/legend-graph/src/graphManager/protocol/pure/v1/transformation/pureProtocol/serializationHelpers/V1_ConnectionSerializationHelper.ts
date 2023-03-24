@@ -28,6 +28,7 @@ import {
 import {
   type PlainObject,
   usingConstantValueSchema,
+  usingModelSchema,
   IllegalStateError,
   UnsupportedOperationError,
   customEquivalentList,
@@ -52,6 +53,8 @@ import {
   V1_EmbeddedH2DatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
   V1_SpannerDatasourceSpecification,
+  V1_TrinoDatasourceSpecification,
+  V1_TrinoSslSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
@@ -64,6 +67,7 @@ import {
   V1_UsernamePasswordAuthenticationStrategy,
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
   V1_MiddleTierUsernamePasswordAuthenticationStrategy,
+  V1_TrinoDelegatedKerberosAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
@@ -163,6 +167,7 @@ enum V1_DatasourceSpecificationType {
   REDSHIFT = 'redshift',
   BIGQUERY = 'bigQuery',
   SPANNER = 'spanner',
+  TRINO = 'Trino',
 }
 
 const staticDatasourceSpecificationModelSchema = createModelSchema(
@@ -260,6 +265,28 @@ const spannerDatasourceSpecificationModelSchema = createModelSchema(
   },
 );
 
+const trinoSslSpecificationModelSchema = createModelSchema(
+  V1_TrinoSslSpecification,
+  {
+    ssl: primitive(),
+    trustStorePathVaultReference: optional(primitive()),
+    trustStorePasswordVaultReference: optional(primitive()),
+  },
+);
+
+const trinoDatasourceSpecificationModelSchema = createModelSchema(
+  V1_TrinoDatasourceSpecification,
+  {
+    _type: usingConstantValueSchema(V1_DatasourceSpecificationType.TRINO),
+    host: primitive(),
+    port: primitive(),
+    catalog: optional(primitive()),
+    schema: optional(primitive()),
+    clientTags: optional(primitive()),
+    sslSpecification: usingModelSchema(trinoSslSpecificationModelSchema),
+  },
+);
+
 export const V1_serializeDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
   plugins: PureProtocolProcessorPlugin[],
@@ -280,6 +307,8 @@ export const V1_serializeDatasourceSpecification = (
     return serialize(redshiftDatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_SpannerDatasourceSpecification) {
     return serialize(spannerDatasourceSpecificationModelSchema, protocol);
+  } else if (protocol instanceof V1_TrinoDatasourceSpecification) {
+    return serialize(trinoDatasourceSpecificationModelSchema, protocol);
   }
   const extraConnectionDatasourceSpecificationProtocolSerializers =
     plugins.flatMap(
@@ -322,6 +351,8 @@ export const V1_deserializeDatasourceSpecification = (
       return deserialize(redshiftDatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.SPANNER:
       return deserialize(spannerDatasourceSpecificationModelSchema, json);
+    case V1_DatasourceSpecificationType.TRINO:
+      return deserialize(trinoDatasourceSpecificationModelSchema, json);
     default: {
       const extraConnectionDatasourceSpecificationProtocolDeserializers =
         plugins.flatMap(
@@ -356,6 +387,7 @@ enum V1_AuthenticationStrategyType {
   USERNAME_PASSWORD = 'userNamePassword',
   GCP_WORKLOAD_IDENTITY_FEDERATION = 'gcpWorkloadIdentityFederation',
   MIDDLE_TIER_USERNAME_PASSWORD = 'middleTierUserNamePassword',
+  TRINO_DELEGATED_KERBEROS = 'TrinoDelegatedKerberosAuth',
 }
 
 const V1_delegatedKerberosAuthenticationStrategyModelSchema = createModelSchema(
@@ -429,6 +461,15 @@ const V1_UsernamePasswordAuthenticationStrategyModelSchema = createModelSchema(
   },
 );
 
+const V1_TrinoDelegatedKerberosAuthenticationStrategyModelSchema =
+  createModelSchema(V1_TrinoDelegatedKerberosAuthenticationStrategy, {
+    _type: usingConstantValueSchema(
+      V1_AuthenticationStrategyType.TRINO_DELEGATED_KERBEROS,
+    ),
+    kerberosRemoteServiceName: primitive(),
+    kerberosUseCanonicalHostname: optional(primitive()),
+  });
+
 const V1_oAuthAuthenticationStrategyModelSchema = createModelSchema(
   V1_OAuthAuthenticationStrategy,
   {
@@ -483,6 +524,13 @@ export const V1_serializeAuthenticationStrategy = (
   ) {
     return serialize(
       V1_MiddleTierUsernamePasswordAuthenticationStrategyModelSchema,
+      protocol,
+    );
+  } else if (
+    protocol instanceof V1_TrinoDelegatedKerberosAuthenticationStrategy
+  ) {
+    return serialize(
+      V1_TrinoDelegatedKerberosAuthenticationStrategyModelSchema,
       protocol,
     );
   }
@@ -547,6 +595,8 @@ export const V1_deserializeAuthenticationStrategy = (
         V1_MiddleTierUsernamePasswordAuthenticationStrategyModelSchema,
         json,
       );
+    case V1_AuthenticationStrategyType.TRINO_DELEGATED_KERBEROS:
+      return deserialize(V1_TrinoDelegatedKerberosAuthenticationStrategy, json);
     default: {
       const extraConnectionAuthenticationStrategyProtocolDeserializers =
         plugins.flatMap(

@@ -1,0 +1,31 @@
+###Relational
+Database store::db
+(
+)
+
+
+###Connection
+RelationalDatabaseConnection connection::relational::MyTrino
+{
+  store: store::db;
+  type: Trino;
+  specification: Trino
+  {
+    host: 'host';
+    port: 1234;
+    catalog: 'tpch';
+    schema: 'tiny';
+    clientTags: 'cg::vega';
+    sslSpecification:
+    {
+      ssl: false;
+      trustStorePathVaultReference: 'abc12cde';
+      trustStorePasswordVaultReference: 'abc12cde';
+    };
+  };
+  auth: TrinoDelegatedKerberos
+  {
+    kerberosUseCanonicalHostname: false;
+    kerberosRemoteServiceName: 'HTTP';
+  };
+}
