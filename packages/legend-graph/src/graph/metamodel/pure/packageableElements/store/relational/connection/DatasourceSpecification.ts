@@ -300,7 +300,7 @@ export class TrinoDatasourceSpecification
   implements Hashable
 {
   host: string;
-  port: number | undefined;
+  port: number;
   sslSpecification: TrinoSslSpecification;
   catalog?: string | undefined;
   schema?: string | undefined;
@@ -308,7 +308,7 @@ export class TrinoDatasourceSpecification
 
   constructor(
     host: string,
-    port: number | undefined,
+    port: number,
     sslSpecification: TrinoSslSpecification,
   ) {
     super();
@@ -321,7 +321,7 @@ export class TrinoDatasourceSpecification
     return hashArray([
       CORE_HASH_STRUCTURE.TRINO_DATASOURCE_SPECIFICATION,
       this.host,
-      this.port ?? '',
+      this.port.toString(),
       this.sslSpecification,
       this.catalog ?? '',
       this.schema ?? '',

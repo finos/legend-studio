@@ -275,7 +275,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       case CORE_DATASOURCE_SPEC_TYPE.TRINO: {
         dataSpec = new TrinoDatasourceSpecification(
           '',
-          undefined,
+          NaN,
           new TrinoSslSpecification(true),
         );
         break;

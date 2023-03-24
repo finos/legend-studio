@@ -215,7 +215,7 @@ export class V1_TrinoDatasourceSpecification
   implements Hashable
 {
   host!: string;
-  port!: number | undefined;
+  port!: number;
   sslSpecification!: V1_TrinoSslSpecification;
   catalog?: string | undefined;
   schema?: string | undefined;
@@ -225,7 +225,7 @@ export class V1_TrinoDatasourceSpecification
     return hashArray([
       CORE_HASH_STRUCTURE.TRINO_DATASOURCE_SPECIFICATION,
       this.host,
-      this.port ?? '',
+      this.port.toString(),
       this.sslSpecification,
       this.catalog ?? '',
       this.schema ?? '',
