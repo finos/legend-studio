@@ -69,7 +69,7 @@ export {
   TagReference,
   TagExplicitReference,
 } from './graph/metamodel/pure/packageableElements/domain/TagReference.js';
-
+export * from './graph/metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 
 // metamodels

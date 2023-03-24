@@ -50,6 +50,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     | 'generationSpecificationsIndex'
     | 'fileGenerationsIndex'
     | 'dataElementsIndex'
+    | 'executionEnvironmentIndex'
   >(metamodel, {
     elementSectionIndex: observable,
     extensions: observable,
@@ -67,6 +68,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     generationSpecificationsIndex: observable,
     fileGenerationsIndex: observable,
     dataElementsIndex: observable,
+    executionEnvironmentIndex: observable,
 
     ownSectionIndices: computed,
     ownProfiles: computed,
@@ -86,6 +88,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     ownFileGenerations: computed,
     ownGenerationSpecifications: computed,
     ownDataElements: computed,
+    ownExecutionEnvironments: computed,
 
     allOwnElements: computed,
   });
@@ -120,6 +123,7 @@ export const observe_DependencyManager = skipObserved(
       generationSpecifications: computed,
       fileGenerations: computed,
       dataElements: computed,
+      executionEnvironments: computed,
 
       allOwnElements: computed,
     }),
@@ -166,6 +170,7 @@ export const observe_Graph = (metamodel: PureModel): PureModel => {
     generationSpecifications: computed,
     fileGenerations: computed,
     dataElements: computed,
+    executionEnvironments: computed,
 
     allElements: computed,
     allOwnTestables: computed,

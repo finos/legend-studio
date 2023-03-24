@@ -40,6 +40,7 @@ import {
 } from '@finos/legend-storage';
 import type { Database } from '../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import type { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
+import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 
 class DependencyModel extends BasicModel {
   constructor(
@@ -183,6 +184,11 @@ export class DependencyManager {
     this,
     (dep: BasicModel, path: string) => dep.getOwnNullableDataElement(path),
   );
+  getOwnExecutionEnvironment = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) =>
+      dep.getOwnNullableExecutionEnviornment(path),
+  );
   getOwnNullableExtensionElement<T extends PackageableElement>(
     path: string,
     extensionElementClass: Clazz<T>,
@@ -250,6 +256,10 @@ export class DependencyManager {
   }
   get fileGenerations(): FileGenerationSpecification[] {
     return this.dependencyGraphs.flatMap((dep) => dep.ownFileGenerations);
+  }
+
+  get executionEnvironments(): ExecutionEnvironmentInstance[] {
+    return this.dependencyGraphs.flatMap((dep) => dep.ownExecutionEnvironments);
   }
 
   getExtensionElements<T extends PackageableElement>(

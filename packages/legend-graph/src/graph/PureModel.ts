@@ -58,6 +58,7 @@ import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import type { SectionIndex } from '../graph/metamodel/pure/packageableElements/section/SectionIndex.js';
 import type { PropertyOwner } from './metamodel/pure/packageableElements/domain/AbstractProperty.js';
+import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -312,6 +313,16 @@ export class PureModel extends BasicModel {
       ...this.generationModel.ownDataElements,
     ];
   }
+  get executionEnvironments(): ExecutionEnvironmentInstance[] {
+    return [
+      ...this.coreModel.ownExecutionEnvironments,
+      ...this.systemModel.ownExecutionEnvironments,
+      ...this.dependencyManager.executionEnvironments,
+      ...this.ownExecutionEnvironments,
+      ...this.generationModel.ownExecutionEnvironments,
+    ];
+  }
+
   get generationSpecifications(): GenerationSpecification[] {
     return [
       ...this.coreModel.ownGenerationSpecifications,

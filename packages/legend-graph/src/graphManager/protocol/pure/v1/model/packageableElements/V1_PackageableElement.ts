@@ -33,6 +33,7 @@ import type { V1_Measure } from './domain/V1_Measure.js';
 import type { V1_SectionIndex } from './section/V1_SectionIndex.js';
 import type { V1_DataElement } from './data/V1_DataElement.js';
 import { ELEMENT_PATH_DELIMITER } from '../../../../../../graph/MetaModelConst.js';
+import type { V1_ExecutionEnvironmentInstance } from './service/V1_ExecutionEnvironmentInstance.js';
 
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;
@@ -53,6 +54,9 @@ export interface V1_PackageableElementVisitor<T> {
   visit_GenerationSpecification(element: V1_GenerationSpecification): T;
   visit_FileGeneration(element: V1_FileGenerationSpecification): T;
   visit_DataElement(element: V1_DataElement): T;
+  visit_ExecutionEnvironmentInstance(
+    element: V1_ExecutionEnvironmentInstance,
+  ): T;
 }
 
 export abstract class V1_PackageableElement implements Hashable {

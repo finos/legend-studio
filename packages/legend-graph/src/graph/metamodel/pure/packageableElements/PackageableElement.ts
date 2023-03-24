@@ -41,6 +41,7 @@ import type { Measure } from './domain/Measure.js';
 import type { SectionIndex } from './section/SectionIndex.js';
 import type { DataElement } from './data/DataElement.js';
 import { AnnotatedElement } from './domain/AnnotatedElement.js';
+import type { ExecutionEnvironmentInstance } from './service/ExecutionEnvironmentInstance.js';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
@@ -63,6 +64,7 @@ export interface PackageableElementVisitor<T> {
   visit_FileGenerationSpecification(element: FileGenerationSpecification): T;
   visit_GenerationSpecification(element: GenerationSpecification): T;
   visit_DataElement(element: DataElement): T;
+  visit_ExecutionEnvironmentInstance(element: ExecutionEnvironmentInstance): T;
 }
 
 class ModelElement extends AnnotatedElement {

@@ -89,6 +89,7 @@ import {
   type CompilationWarning,
   type PureModel,
   createGraphBuilderReport,
+  ExecutionEnvironmentInstance,
 } from '@finos/legend-graph';
 import {
   LegendApplicationTelemetryHelper,
@@ -819,6 +820,8 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.SECTION_INDEX;
     } else if (element instanceof DataElement) {
       return PACKAGEABLE_ELEMENT_TYPE.DATA;
+    } else if (element instanceof ExecutionEnvironmentInstance) {
+      return PACKAGEABLE_ELEMENT_TYPE.EXECUTION_ENVIRONMENT;
     }
     const extraElementTypeLabelGetters = this.editorStore.pluginManager
       .getApplicationPlugins()

@@ -117,6 +117,7 @@ export enum CORE_PURE_PATH {
   SERVICE = 'meta::legend::service::metamodel::Service',
   CONNECTION = 'meta::pure::runtime::PackageableConnection',
   RUNTIME = 'meta::pure::runtime::PackageableRuntime',
+  EXECUTION_ENVIRONMENT = 'meta::legend::service::metamodel::ExecutionEnvironmentInstance',
   FILE_GENERATION = 'meta::pure::generation::metamodel::GenerationConfiguration',
   GENERATION_SPECIFICATION = 'meta::pure::generation::metamodel::GenerationSpecification',
   SECTION_INDEX = 'meta::pure::metamodel::section::SectionIndex',

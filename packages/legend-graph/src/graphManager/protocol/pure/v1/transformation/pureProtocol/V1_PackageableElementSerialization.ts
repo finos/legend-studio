@@ -100,6 +100,11 @@ import {
   V1_dataElementModelSchema,
   V1_DATA_ELEMENT_PROTOCOL_TYPE,
 } from './serializationHelpers/V1_DataElementSerializationHelper.js';
+import {
+  V1_executionEnvModelSchema,
+  V1_EXECUTION_ENVIRONMENT_ELEMENT_PROTOCOL_TYPE,
+} from './serializationHelpers/V1_ExecutionEnvironmentSerializationHelper.js';
+import type { V1_ExecutionEnvironmentInstance } from '../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
 
 class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
@@ -172,6 +177,12 @@ class V1_PackageableElementSerializer
 
   visit_Service(element: V1_Service): PlainObject<V1_PackageableElement> {
     return serialize(V1_serviceModelSchema(this.plugins), element);
+  }
+
+  visit_ExecutionEnvironmentInstance(
+    element: V1_ExecutionEnvironmentInstance,
+  ): PlainObject<V1_ExecutionEnvironmentInstance> {
+    return serialize(V1_executionEnvModelSchema, element);
   }
 
   visit_PackageableRuntime(
@@ -268,6 +279,8 @@ export const V1_deserializePackageableElement = (
         return deserialize(V1_mappingModelSchema(plugins), json);
       case V1_SERVICE_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_serviceModelSchema(plugins), json);
+      case V1_EXECUTION_ENVIRONMENT_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_executionEnvModelSchema, json);
       case V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_packageableConnectionModelSchema(plugins), json);
       case V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE:

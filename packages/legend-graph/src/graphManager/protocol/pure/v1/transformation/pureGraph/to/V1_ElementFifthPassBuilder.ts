@@ -44,6 +44,7 @@ import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Me
 import { V1_buildDatabaseSchemaViewsSecondPass } from './helpers/V1_DatabaseBuilderHelper.js';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex.js';
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
+import type { V1_ExecutionEnvironmentInstance } from '../../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
 
 export class V1_ElementFifthPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -137,6 +138,12 @@ export class V1_ElementFifthPassBuilder
   }
 
   visit_DataElement(element: V1_DataElement): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_ExecutionEnvironmentInstance(
+    element: V1_ExecutionEnvironmentInstance,
+  ): void {
     throw new UnsupportedOperationError();
   }
 }
