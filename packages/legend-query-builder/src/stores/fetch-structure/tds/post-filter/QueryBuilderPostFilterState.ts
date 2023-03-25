@@ -410,7 +410,7 @@ export class PostFilterConditionState implements Hashable {
     this.value = val
       ? observe_ValueSpecification(
           val,
-          this.postFilterState.tdsState.queryBuilderState.observableContext,
+          this.postFilterState.tdsState.queryBuilderState.observerContext,
         )
       : undefined;
   }

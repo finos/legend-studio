@@ -104,11 +104,13 @@ const MilestoningParameterEditor = observer(
             new GenericType(PrimitiveType.STRICTDATE),
           ),
         ),
-        queryBuilderState.observableContext,
+        queryBuilderState.observerContext,
       );
-      instanceValue_setValues(parameter, [
-        generateDefaultValueForPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
-      ]);
+      instanceValue_setValues(
+        parameter,
+        [generateDefaultValueForPrimitiveType(PRIMITIVE_TYPE.STRICTDATE)],
+        queryBuilderState.observerContext,
+      );
       if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
         queryBuilderState.milestoningState.setBusinessDate(parameter);
       } else {
@@ -126,7 +128,7 @@ const MilestoningParameterEditor = observer(
           <BasicValueSpecificationEditor
             valueSpecification={milestoningParameter}
             graph={queryBuilderState.graphManagerState.graph}
-            obseverContext={queryBuilderState.observableContext}
+            obseverContext={queryBuilderState.observerContext}
             setValueSpecification={(val: ValueSpecification): void =>
               stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL
                 ? queryBuilderState.milestoningState.setBusinessDate(val)

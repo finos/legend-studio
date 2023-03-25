@@ -95,6 +95,8 @@ export class QueryBuilderPostFilterOperator_GreaterThan
             .graphManagerState.graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .observerContext,
         );
       }
       case PRIMITIVE_TYPE.DATE: {
@@ -103,6 +105,8 @@ export class QueryBuilderPostFilterOperator_GreaterThan
             .graphManagerState.graph,
           PRIMITIVE_TYPE.STRICTDATE,
           generateDefaultValueForPrimitiveType(propertyType.path),
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .observerContext,
         );
       }
       default:

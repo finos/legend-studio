@@ -76,6 +76,8 @@ export class QueryBuilderPostFilterOperator_StartWith
             .graphManagerState.graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .observerContext,
         );
       }
       default:

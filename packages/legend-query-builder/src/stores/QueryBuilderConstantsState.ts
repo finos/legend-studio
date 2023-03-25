@@ -57,11 +57,11 @@ export class QueryBuilderConstantExpressionState implements Hashable {
     this.queryBuilderState = queryBuilderState;
     this.value = observe_ValueSpecification(
       value,
-      this.queryBuilderState.observableContext,
+      this.queryBuilderState.observerContext,
     );
     observe_ValueSpecification(
       variable,
-      this.queryBuilderState.observableContext,
+      this.queryBuilderState.observerContext,
     );
     this.variable = variable;
   }
@@ -73,6 +73,7 @@ export class QueryBuilderConstantExpressionState implements Hashable {
         const valSpec = buildDefaultInstanceValue(
           this.queryBuilderState.graphManagerState.graph,
           type,
+          this.queryBuilderState.observerContext,
         );
         this.setValueSpec(valSpec);
       } catch (error) {
@@ -92,7 +93,7 @@ export class QueryBuilderConstantExpressionState implements Hashable {
     }
     this.value = observe_ValueSpecification(
       value,
-      this.queryBuilderState.observableContext,
+      this.queryBuilderState.observerContext,
     );
     const valueSpecType = value.genericType?.value.rawType;
     if (

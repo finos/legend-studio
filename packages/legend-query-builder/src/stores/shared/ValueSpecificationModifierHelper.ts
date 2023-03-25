@@ -17,7 +17,7 @@
 import {
   type Multiplicity,
   type FunctionExpression,
-  type ValueSpecification,
+  ValueSpecification,
   type ObserverContext,
   type VariableExpression,
   type InstanceValue,
@@ -35,6 +35,7 @@ import {
   observe_GenericTypeReference,
   observe_PackageableElementReference,
   observe_VariableExpression,
+  observe_GraphFetchTree,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -64,11 +65,11 @@ export const simpleFunctionExpression_setFunc = action(
 export const functionExpression_setParametersValues = action(
   (
     target: FunctionExpression,
-    val: ValueSpecification[],
+    values: ValueSpecification[],
     context: ObserverContext,
   ): void => {
-    target.parametersValues = val.map((v) =>
-      observe_ValueSpecification(v, context),
+    target.parametersValues = values.map((val) =>
+      observe_ValueSpecification(val, context),
     );
   },
 );
@@ -109,32 +110,53 @@ export const variableExpression_setName = action(
 export const collectionInstanceValue_setValues = action(
   (
     target: CollectionInstanceValue,
-    val: ValueSpecification[],
-    observableContext: ObserverContext,
+    values: ValueSpecification[],
+    observerContext: ObserverContext,
   ) => {
-    target.values = val.map((v) =>
-      observe_ValueSpecification(v, observableContext),
+    target.values = values.map((val) =>
+      observe_ValueSpecification(val, observerContext),
     );
   },
 );
 
 export const instanceValue_setValue = action(
-  (target: InstanceValue, val: unknown, idx: number) => {
-    target.values[idx] = val;
+  (
+    target: InstanceValue,
+    val: unknown,
+    idx: number,
+    observerContext: ObserverContext,
+  ) => {
+    target.values[idx] =
+      val instanceof ValueSpecification
+        ? observe_ValueSpecification(val, observerContext)
+        : val;
   },
 );
 
 export const instanceValue_setValues = action(
-  (target: InstanceValue, val: unknown[]) => {
-    // TODO?: do we have to observe the values here?
-    // we might need to do so when we refactor collection value
-    target.values = val;
+  (
+    target: InstanceValue,
+    values: unknown[],
+    observerContext: ObserverContext,
+  ) => {
+    target.values = values.map((val) =>
+      val instanceof ValueSpecification
+        ? observe_ValueSpecification(val, observerContext)
+        : val,
+    );
   },
 );
 
 export const graphFetchTree_addSubTree = action(
-  (target: GraphFetchTree, val: GraphFetchTree): void => {
-    addUniqueEntry(target.subTrees, val);
+  (
+    target: GraphFetchTree,
+    val: GraphFetchTree,
+    observerContext: ObserverContext,
+  ): void => {
+    addUniqueEntry(
+      target.subTrees,
+      observe_GraphFetchTree(val, observerContext),
+    );
   },
 );
 
@@ -148,10 +170,10 @@ export const lambdaFunction_setExpressionSequence = action(
   (
     target: LambdaFunction,
     val: ValueSpecification[],
-    observableContext: ObserverContext,
+    observerContext: ObserverContext,
   ) => {
     target.expressionSequence = val.map((v) =>
-      observe_ValueSpecification(v, observableContext),
+      observe_ValueSpecification(v, observerContext),
     );
   },
 );
@@ -161,11 +183,11 @@ export const lambdaFunction_setExpression = action(
     target: LambdaFunction,
     val: ValueSpecification,
     idx: number,
-    observableContext: ObserverContext,
+    observerContext: ObserverContext,
   ) => {
     target.expressionSequence[idx] = observe_ValueSpecification(
       val,
-      observableContext,
+      observerContext,
     );
   },
 );

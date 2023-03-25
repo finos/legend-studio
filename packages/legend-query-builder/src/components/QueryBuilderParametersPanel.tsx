@@ -249,7 +249,7 @@ export const QueryBuilderParametersPanel = observer(
               new GenericType(PrimitiveType.STRING),
             ),
           ),
-          queryBuilderState.observableContext,
+          queryBuilderState.observerContext,
           queryBuilderState.graphManagerState.graph,
         );
         queryParameterState.setSelectedParameter(parmaterState);
@@ -329,7 +329,7 @@ export const QueryBuilderParametersPanel = observer(
         {queryParameterState.parameterValuesEditorState.showModal && (
           <LambdaParameterValuesEditor
             graph={queryBuilderState.graphManagerState.graph}
-            observerContext={queryBuilderState.observableContext}
+            observerContext={queryBuilderState.observerContext}
             lambdaParametersState={queryParameterState}
           />
         )}

@@ -155,6 +155,7 @@ const QueryBuilderGridResultContextMenu = observer(
               )
             : event?.value,
           0,
+          tdsState.queryBuilderState.observerContext,
         );
       }
     };
@@ -230,10 +231,11 @@ const QueryBuilderGridResultContextMenu = observer(
           conditionState.changeOperator(
             isFilterBy ? postFilterInOperator : postFilterNotInOperator,
           );
-          instanceValue_setValues(conditionState.value as InstanceValue, [
-            currentValueSpecificaton,
-            newValueSpecification,
-          ]);
+          instanceValue_setValues(
+            conditionState.value as InstanceValue,
+            [currentValueSpecificaton, newValueSpecification],
+            tdsState.queryBuilderState.observerContext,
+          );
         }
       } else {
         const doesValueAlreadyExist =
@@ -252,10 +254,14 @@ const QueryBuilderGridResultContextMenu = observer(
             isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator
           ).getDefaultFilterConditionValue(conditionState);
           updateFilterConditionValue(newValueSpecification as InstanceValue);
-          instanceValue_setValues(conditionState.value as InstanceValue, [
-            ...(conditionState.value as InstanceValue).values,
-            newValueSpecification,
-          ]);
+          instanceValue_setValues(
+            conditionState.value as InstanceValue,
+            [
+              ...(conditionState.value as InstanceValue).values,
+              newValueSpecification,
+            ],
+            tdsState.queryBuilderState.observerContext,
+          );
         }
       }
     };

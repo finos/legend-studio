@@ -73,10 +73,7 @@ export class QueryBuilderWatermarkState implements Hashable {
 
   setValue(val: ValueSpecification | undefined): void {
     this.value = val
-      ? observe_ValueSpecification(
-          val,
-          this.queryBuilderState.observableContext,
-        )
+      ? observe_ValueSpecification(val, this.queryBuilderState.observerContext)
       : undefined;
   }
 
