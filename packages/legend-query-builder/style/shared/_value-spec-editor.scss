@@ -209,6 +209,41 @@
     margin-bottom: 0;
   }
 
+  &__number {
+    &__input-container {
+      display: flex;
+      width: 100%;
+      height: 2.8rem;
+      position: relative;
+    }
+
+    &__input {
+      padding-right: 2.8rem;
+    }
+
+    &__actions {
+      position: absolute;
+      right: 0;
+    }
+
+    &__action {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 2.8rem;
+      width: 2.8rem;
+
+      svg {
+        font-size: 1.8rem;
+        color: var(--color-light-grey-400);
+      }
+
+      &:hover svg {
+        color: var(--color-light-grey-200);
+      }
+    }
+  }
+
   &__toggler__btn {
     @include flexVCenter;
 

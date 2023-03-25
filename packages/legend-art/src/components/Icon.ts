@@ -179,6 +179,7 @@ export const SettingsEthernetIcon = MD.MdSettingsEthernet;
 export const LinkIcon = MD.MdLink;
 export const WindowIcon = MD.MdWindow;
 export const ReviewIcon = MD.MdReviews;
+export const CalculateIcon = MD.MdCalculate;
 
 const VSC = ReactIcons.VSC;
 export const ErrorIcon = VSC.VscError;

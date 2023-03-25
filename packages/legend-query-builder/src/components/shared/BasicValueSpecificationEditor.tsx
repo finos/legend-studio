@@ -32,6 +32,7 @@ import {
   FilledWindowMaximizeIcon,
   BasePopover,
   PanelFormSection,
+  CalculateIcon,
 } from '@finos/legend-art';
 import {
   type Enum,
@@ -64,6 +65,7 @@ import {
   returnUndefOnError,
   uniq,
   parseCSVString,
+  assertIsNumber,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -76,6 +78,7 @@ import {
 import { CustomDatePicker } from './CustomDatePicker.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graphManager/QueryBuilderSupportedFunctions.js';
 import { simplifyValueExpression } from '../../stores/QueryBuilderValueSpecificationHelper.js';
+import { evaluate } from 'mathjs';
 
 type TypeCheckOption = {
   expectedType: Type;
@@ -379,14 +382,40 @@ const NumberPrimitiveInstanceValueEditor = observer(
     const [value, setValue] = useState(
       (valueSpecification.values[0] as number).toString(),
     );
-    const numericValue = isInteger ? parseInt(value, 10) : parseFloat(value);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const numericValue = isInteger
+      ? Number.parseInt(Number(value).toString(), 10)
+      : Number(value);
+
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       setValue(event.target.value);
     };
 
-    const onBlur = (): void => {
+    // Support expression evaluation
+    const calculateExpression = (): void => {
       if (isNaN(numericValue)) {
-        setValue((valueSpecification.values[0] as number).toString());
+        try {
+          const calculatedValue = evaluate(value);
+          assertIsNumber(calculatedValue);
+          setValue(
+            isInteger
+              ? Number.parseInt(calculatedValue.toString(), 10).toString()
+              : Number(calculatedValue).toString(),
+          );
+        } catch {
+          setValue((valueSpecification.values[0] as number).toString());
+        }
+      } else {
+        setValue(numericValue.toString());
+      }
+    };
+
+    const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+      if (event.code === 'Enter') {
+        calculateExpression();
+        inputRef.current?.focus();
+      } else if (event.code === 'Escape') {
+        inputRef.current?.select();
       }
     };
 
@@ -416,14 +445,28 @@ const NumberPrimitiveInstanceValueEditor = observer(
 
     return (
       <div className={clsx('value-spec-editor', className)}>
-        <input
-          className="panel__content__form__section__input value-spec-editor__input"
-          spellCheck={false}
-          type="number"
-          value={value}
-          onChange={changeValue}
-          onBlur={onBlur}
-        />
+        <div className="value-spec-editor__number__input-container">
+          <input
+            ref={inputRef}
+            className="panel__content__form__section__input value-spec-editor__input value-spec-editor__number__input"
+            spellCheck={false}
+            type="text" // NOTE: we leave this as text so that we can support expression evaluation
+            inputMode="numeric"
+            value={value}
+            onChange={changeValue}
+            onBlur={calculateExpression}
+            onKeyDown={onKeyDown}
+          />
+          <div className="value-spec-editor__number__actions">
+            <button
+              className="value-spec-editor__number__action"
+              title="Evaluate Expression (Enter)"
+              onClick={calculateExpression}
+            >
+              <CalculateIcon />
+            </button>
+          </div>
+        </div>
         <button
           className="value-spec-editor__reset-btn"
           title="Reset"
