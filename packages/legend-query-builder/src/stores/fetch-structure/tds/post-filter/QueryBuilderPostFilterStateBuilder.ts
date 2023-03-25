@@ -22,7 +22,7 @@ import {
   matchFunctionName,
   VariableExpression,
   FunctionExpression,
-  SimpleFunctionExpression,
+  type SimpleFunctionExpression,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -49,6 +49,7 @@ import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graphManager/Quer
 import type { QueryBuilderState } from '../../../QueryBuilderState.js';
 import { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import { toGroupOperation } from '../../../QueryBuilderGroupOperationHelper.js';
+import { simplifyValueExpression } from '../../../QueryBuilderValueSpecificationHelper.js';
 
 const findProjectionColumnState = (
   propertyExpression: AbstractPropertyExpression,
@@ -150,11 +151,17 @@ export const buildPostFilterConditionState = (
 
     // get operation value specification
     const value = expression.parametersValues[1];
+
     // create state
     postConditionState = new PostFilterConditionState(
       postFilterState,
       columnState,
-      value,
+      value
+        ? simplifyValueExpression(
+            value,
+            postFilterState.tdsState.queryBuilderState.observerContext,
+          )
+        : undefined,
       operator,
     );
 

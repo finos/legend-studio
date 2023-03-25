@@ -491,6 +491,9 @@ export const getOwnProperty = (
  * See https://en.wikipedia.org/wiki/Covariance_and_contravariance_of_vectors
  */
 export const isSubType = (type1: Type, type2: Type): boolean => {
+  if (type1 === type2) {
+    return true;
+  }
   if (type1 instanceof Unit) {
     return type1.measure === type2;
   } else if (type1 instanceof Measure) {
@@ -532,6 +535,9 @@ export const isSubType = (type1: Type, type2: Type): boolean => {
  * See https://en.wikipedia.org/wiki/Covariance_and_contravariance_of_vectors
  */
 export const isSuperType = (type1: Type, type2: Type): boolean => {
+  if (type1 === type2) {
+    return true;
+  }
   if (type1 instanceof Unit) {
     return false;
   } else if (type1 instanceof Measure) {

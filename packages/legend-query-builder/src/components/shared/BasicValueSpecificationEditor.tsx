@@ -53,6 +53,8 @@ import {
   getEnumValue,
   getMultiplicityDescription,
   type ObserverContext,
+  matchFunctionName,
+  isSubType,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
@@ -72,6 +74,8 @@ import {
   instanceValue_setValues,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
 import { CustomDatePicker } from './CustomDatePicker.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graphManager/QueryBuilderSupportedFunctions.js';
+import { simplifyValueExpression } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 
 type TypeCheckOption = {
   expectedType: Type;
@@ -391,9 +395,6 @@ const NumberPrimitiveInstanceValueEditor = observer(
     }, [valueSpecification]);
 
     useEffect(() => {
-      // const processedValue = ['-', '', '.'].includes(value) ? '0' : value;
-      // let numericValue = isInteger ? parseInt(value, 10) : parseFloat(value);
-      // numericValue = isNaN(numericValue) ? 0 : numericValue;
       if (
         !isNaN(numericValue) &&
         numericValue !== valueSpecification.values[0]
@@ -942,26 +943,55 @@ export const BasicValueSpecificationEditor: React.FC<{
         resetValue={resetValue}
       />
     );
-  } else if (
-    valueSpecification instanceof SimpleFunctionExpression &&
-    [
-      PRIMITIVE_TYPE.DATE.toString(),
-      PRIMITIVE_TYPE.STRICTDATE.toString(),
-      PRIMITIVE_TYPE.DATETIME.toString(),
-      PRIMITIVE_TYPE.LATESTDATE.toString(),
-    ].includes(typeCheckOption.expectedType.path)
-  ) {
-    return (
-      <DateInstanceValueEditor
-        valueSpecification={valueSpecification}
-        graph={graph}
-        obseverContext={obseverContext}
-        typeCheckOption={typeCheckOption}
-        className={className}
-        setValueSpecification={setValueSpecification}
-        resetValue={resetValue}
-      />
-    );
+  } else if (valueSpecification instanceof SimpleFunctionExpression) {
+    if (isSubType(typeCheckOption.expectedType, PrimitiveType.DATE)) {
+      return (
+        <DateInstanceValueEditor
+          valueSpecification={valueSpecification}
+          graph={graph}
+          obseverContext={obseverContext}
+          typeCheckOption={typeCheckOption}
+          className={className}
+          setValueSpecification={setValueSpecification}
+          resetValue={resetValue}
+        />
+      );
+    } else if (
+      // TODO: think of other ways we could make use of this code path where we can simplify
+      // an expression value to simple value, not just handling minus() function only
+      isSubType(typeCheckOption.expectedType, PrimitiveType.NUMBER) &&
+      matchFunctionName(
+        valueSpecification.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
+      )
+    ) {
+      const simplifiedValue = simplifyValueExpression(
+        valueSpecification,
+        obseverContext,
+      );
+      if (
+        simplifiedValue instanceof PrimitiveInstanceValue &&
+        isSubType(
+          simplifiedValue.genericType.value.rawType,
+          PrimitiveType.NUMBER,
+        )
+      ) {
+        return (
+          <NumberPrimitiveInstanceValueEditor
+            valueSpecification={simplifiedValue}
+            isInteger={
+              simplifiedValue.genericType.value.rawType ===
+              PrimitiveType.INTEGER
+            }
+            setValueSpecification={setValueSpecification}
+            className={className}
+            resetValue={resetValue}
+            obseverContext={obseverContext}
+          />
+        );
+      }
+    }
   }
+
   return <UnsupportedValueSpecificationEditor />;
 };
