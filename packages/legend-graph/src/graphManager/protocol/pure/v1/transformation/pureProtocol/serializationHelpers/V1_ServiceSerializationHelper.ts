@@ -179,7 +179,9 @@ export const V1_serviceTestSuiteModelSchema = (
     ),
   });
 
-const V1_deserializeRuntime = (json: PlainObject<V1_Runtime>): V1_Runtime => {
+export const V1_deserializeRuntime = (
+  json: PlainObject<V1_Runtime>,
+): V1_Runtime => {
   switch (json._type) {
     case V1_RuntimeType.RUNTIME_POINTER:
       return deserialize(V1_runtimePointerModelSchema, json);

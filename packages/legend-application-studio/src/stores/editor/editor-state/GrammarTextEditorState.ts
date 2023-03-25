@@ -42,6 +42,7 @@ import {
   ModelChainConnection,
   PURE_ELEMENT_NAME,
   PURE_CONNECTION_NAME,
+  ExecutionEnvironmentInstance,
 } from '@finos/legend-graph';
 import type { TextEditorPosition } from '@finos/legend-art';
 import { generatePackageableElementTreeNodeDataLabel } from '../shared/PackageTreeUtils.js';
@@ -171,6 +172,8 @@ export class GrammarTextEditorState {
       typeLabel = PURE_ELEMENT_NAME.RUNTIME;
     } else if (element instanceof DataElement) {
       typeLabel = PURE_ELEMENT_NAME.DATA_ELEMENT;
+    } else if (element instanceof ExecutionEnvironmentInstance) {
+      typeLabel = PURE_ELEMENT_NAME.EXECUTION_ENVIRONMENT;
     } else {
       const extraPureGrammarElementLabelers = this.editorStore.pluginManager
         .getPureGraphManagerPlugins()

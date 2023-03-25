@@ -279,6 +279,7 @@ import {
 import { MultiExecutionServiceTestResult } from '../../../../graph/metamodel/pure/packageableElements/service/MultiExecutionServiceTestResult.js';
 import type { ParameterValue } from '../../../../graph/metamodel/pure/packageableElements/service/ParameterValue.js';
 import type { Service } from '../../../../graph/metamodel/pure/packageableElements/service/Service.js';
+import { V1_ExecutionEnvironmentInstance } from './model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -304,6 +305,8 @@ class V1_PureModelContextDataIndex {
   generationSpecifications: V1_GenerationSpecification[] = [];
 
   dataElements: V1_DataElement[] = [];
+
+  executionEnvironments: V1_ExecutionEnvironmentInstance[] = [];
 
   otherElementsByBuilder: Map<
     V1_ElementBuilder<V1_PackageableElement>,
@@ -369,6 +372,8 @@ export const V1_indexPureModelContextData = (
       index.generationSpecifications.push(el);
     } else if (el instanceof V1_DataElement) {
       index.dataElements.push(el);
+    } else if (el instanceof V1_ExecutionEnvironmentInstance) {
+      index.executionEnvironments.push(el);
     } else {
       const clazz = getClass<V1_PackageableElement>(el);
       if (otherElementsByClass.has(clazz)) {
@@ -985,7 +990,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
 
     // build services
-    graphBuilderState.setMessage(`Building services...`);
+    graphBuilderState.setMessage(
+      `Building services and execution environments...`,
+    );
     await this.buildServices(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_SERVICES__SUCCESS);
 
@@ -1372,6 +1379,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.services.map((element) =>
+          this.visitWithGraphBuilderErrorHandling(
+            element,
+            new V1_ElementSecondPassBuilder(
+              this.getBuilderContext(graph, input.model, element, options),
+            ),
+          ),
+        ),
+      ),
+    );
+    await Promise.all(
+      inputs.flatMap((input) =>
+        input.data.executionEnvironments.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ElementSecondPassBuilder(
@@ -3212,6 +3231,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.FLAT_DATA;
     } else if (protocol instanceof V1_Database) {
       return CORE_PURE_PATH.DATABASE;
+    } else if (protocol instanceof V1_ExecutionEnvironmentInstance) {
+      return CORE_PURE_PATH.EXECUTION_ENVIRONMENT;
     } else if (protocol instanceof V1_Service) {
       return CORE_PURE_PATH.SERVICE;
     } else if (protocol instanceof V1_FileGenerationSpecification) {

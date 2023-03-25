@@ -66,6 +66,8 @@ import { DataElement } from '../../../../../../../graph/metamodel/pure/packageab
 import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
 import { Multiplicity } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import { PrimitiveType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import type { V1_ExecutionEnvironmentInstance } from '../../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
+import { ExecutionEnvironmentInstance } from '../../../../../../../graph/metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -487,5 +489,31 @@ export class V1_ElementFirstPassBuilder
     );
     this.context.currentSubGraph.setOwnDataElement(path, dataElement);
     return dataElement;
+  }
+
+  visit_ExecutionEnvironmentInstance(
+    element: V1_ExecutionEnvironmentInstance,
+  ): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      `Execution Environment 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Execution Environment 'name' field is missing or empty`,
+    );
+    const exEnvir = new ExecutionEnvironmentInstance(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
+      exEnvir,
+    );
+    this.context.currentSubGraph.setOwnExecutionEnvironment(path, exEnvir);
+    return exEnvir;
   }
 }

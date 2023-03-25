@@ -1,0 +1,15 @@
+###Pure
+Class my::Person
+{
+  givenNames: String[*];
+}
+
+
+###Mapping
+Mapping my::map
+(
+  *my::Person: Pure
+  {
+    givenNames: 'name'
+  }
+)

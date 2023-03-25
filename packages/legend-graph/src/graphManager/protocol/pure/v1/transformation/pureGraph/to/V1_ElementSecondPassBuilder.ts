@@ -87,6 +87,8 @@ import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
 import { getFunctionName } from '../../../../../../../graph/helpers/DomainHelper.js';
 import { GraphBuilderError } from '../../../../../../GraphManagerUtils.js';
 import { PostValidation } from '../../../../../../../graph/metamodel/pure/packageableElements/service/PostValidation.js';
+import type { V1_ExecutionEnvironmentInstance } from '../../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
+import { V1_buildExecutionParameters } from './V1_ExecutionEnvironmentBuilderHelper.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -422,5 +424,16 @@ export class V1_ElementSecondPassBuilder
       );
     }
     dataElement.data = V1_buildEmbeddedData(element.data, this.context);
+  }
+
+  visit_ExecutionEnvironmentInstance(
+    element: V1_ExecutionEnvironmentInstance,
+  ): void {
+    const execEnv = this.context.currentSubGraph.getOwnExecutionEnvironment(
+      V1_buildFullPath(element.package, element.name),
+    );
+    execEnv.executionParameters = element.executionParameters.map((e) =>
+      V1_buildExecutionParameters(e, this.context),
+    );
   }
 }
