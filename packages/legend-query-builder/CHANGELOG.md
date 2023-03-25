@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 1.0.3
+
+### Patch Changes
+
+- [#1968](https://github.com/finos/legend-studio/pull/1968) [`eca4beca2`](https://github.com/finos/legend-studio/commit/eca4beca2519db2266ffabfe7fbb7f1f6a2ca863) ([@xannem](https://github.com/xannem)) - Add tests for expected behavior for entry of negative numbers
+
+- [#1984](https://github.com/finos/legend-studio/pull/1984) [`c9bcf3d44`](https://github.com/finos/legend-studio/commit/c9bcf3d44c2a36f1564aa9ad331d70a2f6fd6a3b) ([@gayathrir11](https://github.com/gayathrir11)) - Save query execution results when you switch to text mode and back in query builder.
+
+- [#1968](https://github.com/finos/legend-studio/pull/1968) [`eca4beca2`](https://github.com/finos/legend-studio/commit/eca4beca2519db2266ffabfe7fbb7f1f6a2ca863) ([@xannem](https://github.com/xannem)) - Make entry of negative numbers in inputs easier for user.
+
 ## 1.0.2
 
 ### Patch Changes

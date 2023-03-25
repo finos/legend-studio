@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 24.1.0
+
+### Minor Changes
+
+- [#1996](https://github.com/finos/legend-studio/pull/1996) [`8e16d6f0b`](https://github.com/finos/legend-studio/commit/8e16d6f0b13a5ec8763a821a54eb903d8894a89e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add text support for `ExecutionEnvironment`.
+
+### Patch Changes
+
+- [#1992](https://github.com/finos/legend-studio/pull/1992) [`247dd6c1f`](https://github.com/finos/legend-studio/commit/247dd6c1f8c778fe5d5e30e795b1801762979469) ([@jinanisha](https://github.com/jinanisha)) - Add support for Trino connector
+
 ## 24.0.1
 
 ## 24.0.0
