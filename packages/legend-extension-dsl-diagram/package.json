@@ -50,7 +50,7 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "@types/react": "18.0.29",
-    "mobx": "6.8.0",
+    "mobx": "6.9.0",
     "mobx-react-lite": "3.4.3",
     "react": "18.2.0",
     "react-dnd": "16.0.1",
