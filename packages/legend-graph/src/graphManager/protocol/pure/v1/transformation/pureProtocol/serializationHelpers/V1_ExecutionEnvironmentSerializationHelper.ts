@@ -34,8 +34,10 @@ import {
   V1_SingleExecutionParameters,
   type V1_ExecutionParameters,
 } from '../../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
-import { V1_serializeRuntime } from './V1_RuntimeSerializationHelper.js';
-import { V1_deserializeRuntime } from './V1_ServiceSerializationHelper.js';
+import {
+  V1_deserializeRuntime,
+  V1_serializeRuntime,
+} from './V1_RuntimeSerializationHelper.js';
 
 export const V1_EXECUTION_ENVIRONMENT_ELEMENT_PROTOCOL_TYPE =
   'executionEnvironmentInstance';

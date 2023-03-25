@@ -46,7 +46,7 @@ import {
   GenericType,
   PropertyExplicitReference,
   PrimitiveType,
-  ObserverContext,
+  type ObserverContext,
 } from '@finos/legend-graph';
 import {
   createNullishValue,

@@ -16,7 +16,7 @@
 
 import {
   V1_PureModelContextData,
-  V1_ResultType,
+  type V1_ResultType,
   V1_deserializeResultType,
 } from '@finos/legend-graph';
 import {

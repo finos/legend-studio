@@ -78,17 +78,20 @@ export const prettyCONSTName = (value: string | undefined): string => {
   if (value.trim().match(/^[A-Z_]+$/)) {
     return toTitleCase(value.trim().replace(/_+/gu, ' ').toLowerCase());
   }
-  return capitalize(value.trim())
-    .split(/([A-Z][a-z]+|[0-9]+)/)
-    .map((chunk) =>
-      chunk.toUpperCase() === chunk
-        ? chunk
-        : chunk.charAt(0).toUpperCase() + chunk.slice(1).toLowerCase(),
-    )
-    .filter(Boolean)
-    .join(' ')
-    .replace(/_+/gu, ' ')
-    .replace(/\s+/gu, ' ');
+  return (
+    capitalize(value.trim())
+      // NOTE: here we must use capturing group as we also need to capture the breakpoint/separator as chunks
+      .split(/(?<chunk>[A-Z][a-z]+|[0-9]+)/)
+      .map((chunk) =>
+        chunk.toUpperCase() === chunk
+          ? chunk
+          : chunk.charAt(0).toUpperCase() + chunk.slice(1).toLowerCase(),
+      )
+      .filter(Boolean)
+      .join(' ')
+      .replace(/_+/gu, ' ')
+      .replace(/\s+/gu, ' ')
+  );
 };
 
 export const tryToFormatJSONString = (value: string, tabSize = 2): string => {

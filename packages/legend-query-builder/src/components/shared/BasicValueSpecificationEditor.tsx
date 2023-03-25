@@ -406,15 +406,19 @@ const NumberPrimitiveInstanceValueEditor = observer(
         );
         setValueSpecification(valueSpecification);
       }
-    }, [numericValue, valueSpecification, setValueSpecification]);
+    }, [
+      numericValue,
+      valueSpecification,
+      setValueSpecification,
+      obseverContext,
+    ]);
 
     return (
       <div className={clsx('value-spec-editor', className)}>
         <input
           className="panel__content__form__section__input value-spec-editor__input"
           spellCheck={false}
-          type="text"
-          inputMode="numeric"
+          type="number"
           value={value}
           onChange={changeValue}
           onBlur={onBlur}

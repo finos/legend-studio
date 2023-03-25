@@ -295,10 +295,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     );
   }
 
-  resetQueryResult(preserveResult?: boolean): void {
+  resetQueryResult(options?: { preserveResult?: boolean | undefined }): void {
     const resultState = new QueryBuilderResultState(this);
     resultState.setPreviewLimit(this.resultState.previewLimit);
-    if (preserveResult) {
+    if (options?.preserveResult) {
       resultState.setExecutionResult(this.resultState.executionResult);
       resultState.setExecutionDuration(this.resultState.executionDuration);
       resultState.latestRunHashCode = this.resultState.latestRunHashCode;
@@ -408,7 +408,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
           previousStateParameterValues.set(ps.parameter, ps.value);
         });
       }
-      this.resetQueryResult(options?.preserveResult);
+      this.resetQueryResult({ preserveResult: options?.preserveResult });
       this.resetQueryContent();
 
       if (!isStubbed_RawLambda(query)) {

@@ -23,7 +23,6 @@ import {
   VariableExpression,
   FunctionExpression,
   SimpleFunctionExpression,
-  MINUS_STRING,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -179,23 +178,23 @@ const processPostFilterTree = (
   postFilterState: QueryBuilderPostFilterState,
   parentPostFilterNodeId: string | undefined,
 ): void => {
-  // NOTE: This checks if the expression is a simple function expression of Minus
-  // since negative numbers are returned as a SimpleFunctionExpression of minus(number)
-  // rather than a PrimitiveInstanceValue of -number, so here
-  // we replace the parameter value of the expression directly with a PrimitiveInstanceValue
-  if (
-    expression.parametersValues[1] instanceof SimpleFunctionExpression &&
-    expression.parametersValues[1].functionName === MINUS_STRING &&
-    expression.parametersValues[1].parametersValues[0] instanceof
-      PrimitiveInstanceValue
-  ) {
-    expression.parametersValues[1].parametersValues[0].values[0] =
-      parseFloat(
-        expression.parametersValues[1].parametersValues[0].values[0] as string,
-      ) * -1;
-    expression.parametersValues[1] =
-      expression.parametersValues[1].parametersValues[0];
-  }
+  // // NOTE: This checks if the expression is a simple function expression of Minus
+  // // since negative numbers are returned as a SimpleFunctionExpression of minus(number)
+  // // rather than a PrimitiveInstanceValue of -number, so here
+  // // we replace the parameter value of the expression directly with a PrimitiveInstanceValue
+  // if (
+  //   expression.parametersValues[1] instanceof SimpleFunctionExpression &&
+  //   expression.parametersValues[1].functionName === MINUS_STRING &&
+  //   expression.parametersValues[1].parametersValues[0] instanceof
+  //     PrimitiveInstanceValue
+  // ) {
+  //   expression.parametersValues[1].parametersValues[0].values[0] =
+  //     parseFloat(
+  //       expression.parametersValues[1].parametersValues[0].values[0] as string,
+  //     ) * -1;
+  //   expression.parametersValues[1] =
+  //     expression.parametersValues[1].parametersValues[0];
+  // }
 
   const parentNode = parentPostFilterNodeId
     ? postFilterState.getNode(parentPostFilterNodeId)

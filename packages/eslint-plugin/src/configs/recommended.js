@@ -120,13 +120,19 @@ const ES_RULES = {
 };
 
 const IMPORT_RULES = {
+  // Turn off rules as per recommendation of typescript-eslint
+  // See https://typescript-eslint.io/linting/troubleshooting/performance-troubleshooting
   'import/no-unresolved': OFF,
   'import/named': OFF,
   'import/namespace': OFF,
   'import/default': OFF,
   'import/export': OFF,
-  // Enforce ESM-styled imports
-  'import/extensions': [ERROR, 'always', { ignorePackages: true }],
+  'import/no-named-as-default': OFF,
+  'import/no-named-as-default-member': OFF,
+  'import/no-deprecated': OFF,
+  'import/no-unused-modules': OFF,
+  'import/no-cycle': OFF,
+  'import/extensions': OFF, // we don't need this since TS already covered this check
   'import/newline-after-import': [WARN, { count: 1 }],
   'import/no-default-export': WARN,
 };
@@ -159,16 +165,6 @@ const TYPESCRIPT_RULES = {
   // See https://github.com/eslint/eslint/issues/10930
   // See https://github.com/typescript-eslint/typescript-eslint/issues/372
   // See https://github.com/typescript-eslint/typescript-eslint/issues/1161
-  //
-  // However, if we need to enable this rule for some reason, the following option is the best
-  // [OFF,2,
-  //   {
-  //     SwitchCase: 1,
-  //     FunctionDeclaration: { parameters: 'first' },
-  //     FunctionExpression: { parameters: 'first' },
-  //     ignoredNodes: ['JSXAttribute', 'JSXSpreadAttribute'],
-  //   },
-  // ]
   '@typescript-eslint/indent': OFF,
 };
 
