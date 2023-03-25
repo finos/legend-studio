@@ -362,13 +362,82 @@ const NumberPrimitiveInstanceValueEditor = observer(
       resetValue,
       setValueSpecification,
     } = props;
+
+    const DECIMAL_POINT = '.';
+    const NEGATIVE_SIGN = '-';
+
+    // NOTE: Although we want to allow the user to type
+    // '-' and '.' for negative and decimal numbers respectively,
+    // we want to check for when user leaves the input to not
+    // leave the number value at an invalid state (i.e. if
+    // user just left '-' without an actual number)
+    const onBlur = (): void => {
+      if (valueSpecification.values[0] === NEGATIVE_SIGN) {
+        instanceValue_setValue(valueSpecification, 0, 0);
+      }
+      const numberInputValue = valueSpecification.values[0] as string;
+      if (
+        numberInputValue.length > 0 &&
+        numberInputValue.at(-1) === DECIMAL_POINT
+      ) {
+        instanceValue_setValue(
+          valueSpecification,
+          parseInt(
+            numberInputValue.substring(0, numberInputValue.length - 1),
+            10,
+          ),
+          0,
+        );
+      }
+      const val = isInteger
+        ? parseInt(numberInputValue, 10)
+        : parseFloat(numberInputValue);
+      instanceValue_setValue(valueSpecification, val, 0);
+      setValueSpecification(valueSpecification);
+    };
+
     const value = valueSpecification.values[0] as number;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      const valueIsDecimalPoint =
+        (event.nativeEvent as InputEvent).data === DECIMAL_POINT;
+
+      const valueIsNegativeSymbol =
+        (event.nativeEvent as InputEvent).data === NEGATIVE_SIGN;
+
+      if (
+        !isInteger &&
+        valueIsDecimalPoint &&
+        value.toString().length > 0 &&
+        !value.toString().includes(DECIMAL_POINT)
+      ) {
+        instanceValue_setValue(
+          valueSpecification,
+          valueSpecification.values[0] + DECIMAL_POINT,
+          0,
+        );
+        return;
+      }
+      if (
+        value.toString().includes(DECIMAL_POINT) &&
+        (event.nativeEvent as InputEvent).data === '0'
+      ) {
+        instanceValue_setValue(
+          valueSpecification,
+          `${valueSpecification.values[0]}0`,
+          0,
+        );
+        setValueSpecification(valueSpecification);
+        return;
+      }
+
       let inputVal = isInteger
         ? parseInt(event.target.value, 10)
         : parseFloat(event.target.value);
       inputVal = isNaN(inputVal) ? 0 : inputVal;
-      instanceValue_setValue(valueSpecification, inputVal, 0);
+
+      valueIsNegativeSymbol
+        ? instanceValue_setValue(valueSpecification, NEGATIVE_SIGN, 0)
+        : instanceValue_setValue(valueSpecification, inputVal, 0);
       setValueSpecification(valueSpecification);
     };
 
@@ -377,8 +446,9 @@ const NumberPrimitiveInstanceValueEditor = observer(
         <input
           className="panel__content__form__section__input value-spec-editor__input"
           spellCheck={false}
-          type="number"
+          type="text"
           value={value}
+          onBlur={onBlur}
           onChange={changeValue}
         />
         <button

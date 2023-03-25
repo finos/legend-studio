@@ -74,6 +74,189 @@ export const TEST_DATA__lambda_simpleSingleConditionFilter = {
   parameters: [],
 };
 
+export const TEST_DATA_lambda_negativeIntegerFilter = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'domain::COVIDData',
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'and',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'or',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'equal',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          property: 'cases',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                        },
+                        {
+                          _type: 'float',
+                          value: -99,
+                        },
+                      ],
+                    },
+                    {
+                      _type: 'func',
+                      function: 'equal',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          property: 'fips',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                        },
+                        {
+                          _type: 'string',
+                          value: 'def',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  _type: 'func',
+                  function: 'or',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'and',
+                      parameters: [
+                        {
+                          _type: 'func',
+                          function: 'equal',
+                          parameters: [
+                            {
+                              _type: 'property',
+                              property: 'cases',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                            },
+                            {
+                              _type: 'float',
+                              value: 0,
+                            },
+                          ],
+                        },
+                        {
+                          _type: 'func',
+                          function: 'equal',
+                          parameters: [
+                            {
+                              _type: 'property',
+                              property: 'fips',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                            },
+                            {
+                              _type: 'string',
+                              value: 'abc',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                    {
+                      _type: 'func',
+                      function: 'not',
+                      parameters: [
+                        {
+                          _type: 'func',
+                          function: 'in',
+                          parameters: [
+                            {
+                              _type: 'property',
+                              property: 'state',
+                              parameters: [
+                                {
+                                  _type: 'property',
+                                  property: 'demographics',
+                                  parameters: [
+                                    {
+                                      _type: 'var',
+                                      name: 'x',
+                                    },
+                                  ],
+                                },
+                              ],
+                            },
+                            {
+                              _type: 'collection',
+                              values: [
+                                {
+                                  _type: 'string',
+                                  value: 'NY',
+                                },
+                                {
+                                  _type: 'string',
+                                  value: 'NJ',
+                                },
+                              ],
+                              multiplicity: {
+                                lowerBound: 2,
+                                upperBound: 2,
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'x',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__lambda_notOperatorFilter = {
   _type: 'lambda',
   body: [
