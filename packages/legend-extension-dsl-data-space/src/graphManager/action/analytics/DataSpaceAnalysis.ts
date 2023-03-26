@@ -19,18 +19,20 @@ import type {
   Mapping,
   PackageableRuntime,
   PureModel,
+  ResultType,
 } from '@finos/legend-graph';
 import { uuid } from '@finos/legend-shared';
 import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import {
-  HACKY__SHOWCASE1,
   type HACKY__DataSpaceUsageShowcase,
+  HACKY__SHOWCASE1,
   HACKY__SHOWCASE2,
   HACKY__SHOWCASE3,
 } from './HACKY__DataSpaceUsageShowcase.js';
 
 export class DataSpaceExecutionContextAnalysisResult {
   name!: string;
+  title?: string | undefined;
   description?: string | undefined;
   mapping!: Mapping;
   defaultRuntime!: PackageableRuntime;
@@ -69,25 +71,69 @@ export class DataSpaceDocumentationEntry {
   }
 }
 
+export class DataSpaceDiagramAnalysisResult {
+  title!: string;
+  description?: string | undefined;
+  diagram!: string;
+}
+
+export abstract class DataSpaceExecutableInfo {
+  query!: string;
+}
+
+export class DataSpaceServiceExecutableInfo extends DataSpaceExecutableInfo {
+  pattern!: string;
+  mapping?: string | undefined;
+  runtime?: string | undefined;
+}
+
+export abstract class DataSpaceExecutableResult {}
+
+export class DataSpaceExecutableTDSResultColumn {
+  name!: string;
+  type?: string | undefined;
+  relationalType?: string | undefined;
+  documentation?: string | undefined;
+}
+
+export class DataSpaceExecutableTDSResult extends DataSpaceExecutableResult {
+  columns: DataSpaceExecutableTDSResultColumn[] = [];
+}
+
+export class DataSpaceExecutableAnalysisResult {
+  title!: string;
+  description?: string | undefined;
+  executable!: string;
+  info?: DataSpaceExecutableInfo | undefined;
+  result!: DataSpaceExecutableResult;
+}
+
 export class DataSpaceAnalysisResult {
   name!: string;
   package!: string;
   path!: string;
+
   taggedValues: DataSpaceTaggedValueInfo[] = [];
   stereotypes: DataSpaceStereotypeInfo[] = [];
+
   title?: string | undefined;
   description?: string | undefined;
-  supportInfo?: DataSpaceSupportInfo | undefined;
 
   graph!: PureModel;
 
   executionContextsIndex!: Map<string, DataSpaceExecutionContextAnalysisResult>;
   defaultExecutionContext!: DataSpaceExecutionContextAnalysisResult;
 
-  featuredDiagrams: Diagram[] = [];
-
   elementDocs: DataSpaceDocumentationEntry[] = [];
 
+  featuredDiagrams: Diagram[] = [];
+  diagrams: DataSpaceDiagramAnalysisResult[] = [];
+
+  executables: DataSpaceExecutableAnalysisResult[] = [];
+
+  supportInfo?: DataSpaceSupportInfo | undefined;
+
+  // TO BE DELETED
   HACKY__usageShowcases: HACKY__DataSpaceUsageShowcase[] = [
     HACKY__SHOWCASE1,
     HACKY__SHOWCASE2,

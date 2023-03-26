@@ -41,13 +41,19 @@ import {
   LogEvent,
   uniq,
   type PlainObject,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { DataSpaceSupportEmail } from '../../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { V1_DataSpaceSupportEmail } from '../../../../graphManager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import {
   DataSpaceAnalysisResult,
+  DataSpaceDiagramAnalysisResult,
   DataSpaceDocumentationEntry,
+  DataSpaceExecutableAnalysisResult,
+  DataSpaceExecutableTDSResultColumn,
+  DataSpaceExecutableTDSResult,
   DataSpaceExecutionContextAnalysisResult,
+  DataSpaceServiceExecutableInfo,
   DataSpaceStereotypeInfo,
   DataSpaceTaggedValueInfo,
 } from '../../../action/analytics/DataSpaceAnalysis.js';
@@ -57,6 +63,8 @@ import {
   V1_DataSpaceAssociationDocumentationEntry,
   V1_DataSpaceClassDocumentationEntry,
   V1_DataSpaceEnumerationDocumentationEntry,
+  V1_DataSpaceExecutableTDSResult,
+  V1_DataSpaceServiceExecutableInfo,
 } from './engine/analytics/V1_DataSpaceAnalysis.js';
 
 const ANALYZE_DATA_SPACE_TRACE = 'analyze data space';
@@ -269,6 +277,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       const contextAnalysisResult =
         new DataSpaceExecutionContextAnalysisResult();
       contextAnalysisResult.name = context.name;
+      contextAnalysisResult.title = context.title;
       contextAnalysisResult.description = context.description;
       contextAnalysisResult.mapping = graph.getMapping(context.mapping);
       contextAnalysisResult.defaultRuntime = graph.getRuntime(
@@ -284,11 +293,6 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     });
     result.defaultExecutionContext = guaranteeNonNullable(
       result.executionContextsIndex.get(analysisResult.defaultExecutionContext),
-    );
-
-    // featured diagrams
-    result.featuredDiagrams = analysisResult.featuredDiagrams.map((path) =>
-      getDiagram(path, graph),
     );
 
     // elements documentation
@@ -347,6 +351,55 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       }
       return entries;
     });
+
+    // featured diagrams
+    result.featuredDiagrams = analysisResult.featuredDiagrams.map((path) =>
+      getDiagram(path, graph),
+    );
+    result.diagrams = analysisResult.diagrams.map((diagramProtocol) => {
+      const diagram = new DataSpaceDiagramAnalysisResult();
+      diagram.title = diagramProtocol.title;
+      diagram.description = diagramProtocol.description;
+      diagram.diagram = diagramProtocol.diagram;
+      return diagram;
+    });
+
+    // executables
+    result.executables = analysisResult.executables.map(
+      (executableProtocol) => {
+        const executable = new DataSpaceExecutableAnalysisResult();
+        executable.title = executableProtocol.title;
+        executable.description = executableProtocol.description;
+        executable.executable = executableProtocol.executable;
+        if (
+          executableProtocol.info instanceof V1_DataSpaceServiceExecutableInfo
+        ) {
+          const serviceExecutableInfo = new DataSpaceServiceExecutableInfo();
+          serviceExecutableInfo.query = executableProtocol.info.query;
+          serviceExecutableInfo.pattern = executableProtocol.info.pattern;
+          serviceExecutableInfo.mapping = executableProtocol.info.mapping;
+          serviceExecutableInfo.runtime = executableProtocol.info.runtime;
+          executable.info = serviceExecutableInfo;
+        }
+        if (
+          executableProtocol.result instanceof V1_DataSpaceExecutableTDSResult
+        ) {
+          const result = new DataSpaceExecutableTDSResult();
+          result.columns = executableProtocol.result.columns.map(
+            (tdsColumn) => {
+              const column = new DataSpaceExecutableTDSResultColumn();
+              column.name = tdsColumn.name;
+              column.type = tdsColumn.type;
+              column.relationalType = tdsColumn.relationalType;
+              column.documentation = tdsColumn.documentation;
+              return column;
+            },
+          );
+          executable.result = result;
+        }
+        return executable;
+      },
+    );
 
     return result;
   }

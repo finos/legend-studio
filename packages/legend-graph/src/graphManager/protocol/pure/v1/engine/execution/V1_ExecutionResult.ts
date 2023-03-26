@@ -48,14 +48,20 @@ export class V1_JsonExecutionResult extends V1_ExecutionResult {
   );
 }
 
-export class V1_TDSColumn {
+/**
+ * TODO?: maybe we converge to use V1_TDSColumn
+ *
+ * Since here, we're building out the result builder config, we don't need
+ * to fully resolve all the references, hence we have this simplified version of V1_TDSColumn
+ */
+export class V1_INTERNAL__TDSColumn {
   name!: string;
   doc?: string | undefined;
   type?: string | undefined;
   relationalType?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_TDSColumn, {
+    createModelSchema(V1_INTERNAL__TDSColumn, {
       name: primitive(),
       doc: optional(primitive()),
       type: optional(primitive()),
@@ -65,12 +71,14 @@ export class V1_TDSColumn {
 }
 
 export class V1_TDSBuilder extends V1_ResultBuilder {
-  columns: V1_TDSColumn[] = [];
+  columns: V1_INTERNAL__TDSColumn[] = [];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_TDSBuilder, {
       _type: primitive(),
-      columns: list(usingModelSchema(V1_TDSColumn.serialization.schema)),
+      columns: list(
+        usingModelSchema(V1_INTERNAL__TDSColumn.serialization.schema),
+      ),
     }),
   );
 }

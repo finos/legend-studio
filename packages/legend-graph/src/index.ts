@@ -120,8 +120,6 @@ export { V1_ExternalFormatModelGenerationInput } from './graphManager/protocol/p
 export { V1_ExecuteInput } from './graphManager/protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
 export { V1_buildExecutionResult } from './graphManager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';
 export { V1_serializeExecutionResult } from './graphManager/protocol/pure/v1/engine/execution/V1_ExecutionResult.js';
-export { V1_ResultType } from './graphManager/protocol/pure/v1/model/executionPlan/results/V1_ResultType.js';
-export { V1_deserializeResultType } from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelper.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 

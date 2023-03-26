@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-import {
-  V1_PureModelContextData,
-  type V1_ResultType,
-  V1_deserializeResultType,
-} from '@finos/legend-graph';
+import { V1_PureModelContextData } from '@finos/legend-graph';
 import {
   SerializationFactory,
   optionalCustom,
   type PlainObject,
   UnsupportedOperationError,
   customListWithSchema,
+  usingConstantValueSchema,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
   custom,
+  deserialize,
   list,
   object,
   optional,
@@ -66,6 +64,7 @@ class V1_DataSpaceStereotypeInfo {
 
 class V1_DataSpaceExecutionContextAnalysisResult {
   name!: string;
+  title?: string | undefined;
   description?: string | undefined;
   mapping!: string;
   defaultRuntime!: string;
@@ -78,6 +77,7 @@ class V1_DataSpaceExecutionContextAnalysisResult {
       mapping: primitive(),
       defaultRuntime: primitive(),
       compatibleRuntimes: list(primitive()),
+      title: optional(primitive()),
     }),
   );
 }
@@ -177,17 +177,124 @@ function V1_deserializeModelDocumentationEntry(
   }
 }
 
+export class V1_DataSpaceDiagramAnalysisResult {
+  title!: string;
+  description?: string | undefined;
+  diagram!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataSpaceDiagramAnalysisResult, {
+      description: optional(primitive()),
+      diagram: primitive(),
+      title: primitive(),
+    }),
+  );
+}
+
+export abstract class V1_DataSpaceExecutableInfo {
+  query!: string;
+}
+
+const V1_DATA_SPACE_SERVICE_EXECUTABLE_INFO_TYPE = 'service';
+
+export class V1_DataSpaceServiceExecutableInfo extends V1_DataSpaceExecutableInfo {
+  pattern!: string;
+  mapping?: string | undefined;
+  runtime?: string | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataSpaceServiceExecutableInfo, {
+      _type: usingConstantValueSchema(
+        V1_DATA_SPACE_SERVICE_EXECUTABLE_INFO_TYPE,
+      ),
+      mapping: optional(primitive()),
+      pattern: primitive(),
+      query: primitive(),
+      runtime: optional(primitive()),
+    }),
+  );
+}
+
+const V1_deserializeDataSpaceExecutableInfo = (
+  json: PlainObject<V1_DataSpaceExecutableInfo>,
+): V1_DataSpaceExecutableInfo => {
+  switch (json._type) {
+    case V1_DATA_SPACE_SERVICE_EXECUTABLE_INFO_TYPE:
+      return deserialize(
+        V1_DataSpaceServiceExecutableInfo.serialization.schema,
+        json,
+      );
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize data space executable info of type '${json._type}'`,
+      );
+  }
+};
+
+export abstract class V1_DataSpaceExecutableResult {}
+
+const V1_DATA_SPACE_EXECUTABLE_TDS_RESULT_TYPE = 'tds';
+
+export class V1_DataSpaceExecutableTDSResultColumn {
+  name!: string;
+  documentation?: string | undefined;
+  type?: string | undefined;
+  relationalType?: string | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataSpaceExecutableTDSResultColumn, {
+      documentation: optional(primitive()),
+      name: primitive(),
+      relationalType: optional(primitive()),
+      type: optional(primitive()),
+    }),
+  );
+}
+
+export class V1_DataSpaceExecutableTDSResult extends V1_DataSpaceExecutableResult {
+  columns: V1_DataSpaceExecutableTDSResultColumn[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataSpaceExecutableTDSResult, {
+      _type: usingConstantValueSchema(
+        V1_DATA_SPACE_SERVICE_EXECUTABLE_INFO_TYPE,
+      ),
+      columns: list(
+        object(V1_DataSpaceExecutableTDSResultColumn.serialization.schema),
+      ),
+    }),
+  );
+}
+
+const V1_deserializeDataSpaceExecutableResult = (
+  json: PlainObject<V1_DataSpaceExecutableResult>,
+): V1_DataSpaceExecutableResult => {
+  switch (json._type) {
+    case V1_DATA_SPACE_EXECUTABLE_TDS_RESULT_TYPE:
+      return deserialize(
+        V1_DataSpaceExecutableTDSResult.serialization.schema,
+        json,
+      );
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize data space executable result of type '${json._type}'`,
+      );
+  }
+};
+
 export class V1_DataSpaceExecutableAnalysisResult {
   title!: string;
   description?: string | undefined;
   executable!: string;
-  resultType!: V1_ResultType;
+  info?: V1_DataSpaceExecutableInfo | undefined;
+  result!: V1_DataSpaceExecutableResult;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_DataSpaceBasicDocumentationEntry, {
+    createModelSchema(V1_DataSpaceExecutableAnalysisResult, {
       executable: primitive(),
       description: optional(primitive()),
-      resultType: custom(() => SKIP, V1_deserializeResultType),
+      info: optionalCustom(() => SKIP, V1_deserializeDataSpaceExecutableInfo),
+      resultType: custom(() => SKIP, V1_deserializeDataSpaceExecutableResult),
       title: primitive(),
     }),
   );
@@ -216,6 +323,7 @@ export class V1_DataSpaceAnalysisResult {
   elementDocs: V1_DataSpaceModelDocumentationEntry[] = [];
 
   executables: V1_DataSpaceExecutableAnalysisResult[] = [];
+  diagrams: V1_DataSpaceDiagramAnalysisResult[] = [];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_DataSpaceAnalysisResult, {
@@ -228,6 +336,7 @@ export class V1_DataSpaceAnalysisResult {
 
       title: optional(primitive()),
       description: optional(primitive()),
+
       supportInfo: optionalCustom(
         () => SKIP,
         (val) => V1_deserializeSupportInfo(val),
@@ -240,13 +349,15 @@ export class V1_DataSpaceAnalysisResult {
       ),
       defaultExecutionContext: primitive(),
 
-      featuredDiagrams: list(primitive()),
-
       elements: list(primitive()),
       elementDocs: list(
         custom(() => SKIP, V1_deserializeModelDocumentationEntry),
       ),
 
+      featuredDiagrams: list(primitive()),
+      diagrams: customListWithSchema(
+        V1_DataSpaceExecutableAnalysisResult.serialization.schema,
+      ),
       executables: customListWithSchema(
         V1_DataSpaceExecutableAnalysisResult.serialization.schema,
       ),
