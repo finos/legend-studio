@@ -22,6 +22,7 @@ import {
   getByTitle,
   getByText,
   act,
+  getByDisplayValue,
 } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
@@ -47,9 +48,11 @@ import {
   integrationTest,
   guaranteeNonNullable,
   guaranteeType,
+  getNullableFirstElement,
 } from '@finos/legend-shared';
 import {
   AbstractPropertyExpression,
+  PrimitiveInstanceValue,
   create_RawLambda,
   getClassProperty,
   stub_RawLambda,
@@ -64,6 +67,7 @@ import { COLUMN_SORT_TYPE } from '../../stores/fetch-structure/tds/QueryResultSe
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
+import { QueryBuilderFilterTreeConditionNodeData } from '../../stores/filter/QueryBuilderFilterState.js';
 
 test(
   integrationTest(
@@ -318,104 +322,6 @@ test(
     expect(queryBuilderState.filterState.nodes.size).toBe(1);
     expect(tdsState.projectionColumns.length).toBe(0);
 
-    // filter with expected integer behavior
-    await act(async () => {
-      queryBuilderState.resetQueryResult();
-      queryBuilderState.resetQueryContent();
-    });
-    await waitFor(() => renderResult.getByText('Add a filter condition'));
-    await act(async () => {
-      queryBuilderState.initializeWithQuery(
-        create_RawLambda(
-          TEST_DATA__getAllWithOneIntegerConditionFilter.parameters,
-          TEST_DATA__getAllWithOneIntegerConditionFilter.body,
-        ),
-      );
-    });
-    tdsState = guaranteeType(
-      queryBuilderState.fetchStructureState.implementation,
-      QueryBuilderTDSState,
-    );
-
-    await waitFor(() => getByText(filterPanel, 'Age'));
-    await waitFor(() => getByText(filterPanel, 'is'));
-
-    const ageInputWithNegativeNumber = renderResult.getByDisplayValue('0');
-    fireEvent.change(ageInputWithNegativeNumber, { target: { value: '-1' } });
-    fireEvent.click(getByText(filterPanel, 'Age'));
-    expect(
-      await waitFor(() => renderResult.getByDisplayValue('-1')),
-    ).not.toBeNull();
-
-    const ageInputWithHangingDecimalPoint =
-      renderResult.getByDisplayValue('-1');
-    fireEvent.change(ageInputWithHangingDecimalPoint, {
-      target: { value: '-1.' },
-    });
-    fireEvent.click(getByText(filterPanel, 'Age'));
-    expect(
-      await waitFor(() => renderResult.getByDisplayValue('-1')),
-    ).not.toBeNull();
-
-    const ageInputWithNegativeSymbol = renderResult.getByDisplayValue('-1');
-    fireEvent.change(ageInputWithNegativeSymbol, {
-      target: { value: '-' },
-    });
-    fireEvent.click(getByText(filterPanel, 'Age'));
-
-    expect(
-      await waitFor(() => renderResult.getByDisplayValue('0')),
-    ).not.toBeNull();
-
-    // filter with expected float behavior
-    await act(async () => {
-      queryBuilderState.resetQueryResult();
-      queryBuilderState.resetQueryContent();
-    });
-    await waitFor(() => renderResult.getByText('Add a filter condition'));
-    await act(async () => {
-      queryBuilderState.initializeWithQuery(
-        create_RawLambda(
-          TEST_DATA_getAllWithOneFloatConditionFilter.parameters,
-          TEST_DATA_getAllWithOneFloatConditionFilter.body,
-        ),
-      );
-    });
-    tdsState = guaranteeType(
-      queryBuilderState.fetchStructureState.implementation,
-      QueryBuilderTDSState,
-    );
-
-    await waitFor(() => getByText(filterPanel, 'Firm/Average Employees Age'));
-    await waitFor(() => getByText(filterPanel, 'is'));
-
-    const ageInputWithNegativeDecimal = renderResult.getByDisplayValue('0');
-    fireEvent.change(ageInputWithNegativeDecimal, {
-      target: { value: '-1.1' },
-    });
-    fireEvent.click(getByText(filterPanel, 'Firm/Average Employees Age'));
-    expect(
-      await waitFor(() => renderResult.getByDisplayValue('-1.1')),
-    ).not.toBeNull();
-
-    const ageInputWithHangingDecimal = renderResult.getByDisplayValue('-1.1');
-    fireEvent.change(ageInputWithHangingDecimal, {
-      target: { value: '-1.' },
-    });
-    fireEvent.click(getByText(filterPanel, 'Firm/Average Employees Age'));
-    expect(
-      await waitFor(() => renderResult.getByDisplayValue('-1')),
-    ).not.toBeNull();
-
-    const ageInputWithSingleDecimal = renderResult.getByDisplayValue('-1');
-    fireEvent.change(ageInputWithSingleDecimal, {
-      target: { value: '.' },
-    });
-    fireEvent.click(getByText(filterPanel, 'Firm/Average Employees Age'));
-    expect(
-      await waitFor(() => renderResult.getByDisplayValue('0')),
-    ).not.toBeNull();
-
     // filter with group condition
     await act(async () => {
       queryBuilderState.resetQueryResult();
@@ -645,5 +551,108 @@ test(
     );
     const firmGraphFetchTreeNode = firmGraphFetchTree.tree;
     expect(firmGraphFetchTreeNode.class.value).toBe(_firmClass);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder filter supports special numeric values (integer)',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    await waitFor(() => renderResult.getByText('Add a filter condition'));
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__getAllWithOneIntegerConditionFilter.parameters,
+          TEST_DATA__getAllWithOneIntegerConditionFilter.body,
+        ),
+      );
+    });
+
+    const filterConditionValue = guaranteeType(
+      guaranteeType(
+        getNullableFirstElement(
+          Array.from(queryBuilderState.filterState.nodes.values()),
+        ),
+        QueryBuilderFilterTreeConditionNodeData,
+      ).condition.value,
+      PrimitiveInstanceValue,
+    );
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
+    );
+    await waitFor(() => getByText(filterPanel, 'Age'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+
+    const inputEl = getByDisplayValue(filterPanel, '0');
+
+    // valid input should be recorded and saved to state
+    // await act(() => fireEvent.change(inputEl, { target: { value: '1000' } }));
+    fireEvent.change(inputEl, { target: { value: '1000' } });
+    expect(filterConditionValue.values[0]).toEqual(1000);
+    await waitFor(() => getByDisplayValue(filterPanel, '1000'));
+
+    // bad input should be reset to initial value on blur
+    fireEvent.change(inputEl, { target: { value: '1asd' } });
+    fireEvent.blur(inputEl);
+    expect(filterConditionValue.values[0]).toEqual(1000);
+    await waitFor(() => getByDisplayValue(filterPanel, '1000'));
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder filter supports special numeric values (float)',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    await waitFor(() => renderResult.getByText('Add a filter condition'));
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA_getAllWithOneFloatConditionFilter.parameters,
+          TEST_DATA_getAllWithOneFloatConditionFilter.body,
+        ),
+      );
+    });
+
+    const filterConditionValue = guaranteeType(
+      guaranteeType(
+        getNullableFirstElement(
+          Array.from(queryBuilderState.filterState.nodes.values()),
+        ),
+        QueryBuilderFilterTreeConditionNodeData,
+      ).condition.value,
+      PrimitiveInstanceValue,
+    );
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
+    );
+    await waitFor(() => getByText(filterPanel, 'Firm/Average Employees Age'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+
+    const inputEl = getByDisplayValue(filterPanel, '0');
+
+    // valid input should be recorded and saved to state
+    fireEvent.change(inputEl, { target: { value: '-.1' } });
+    expect(filterConditionValue.values[0]).toEqual(-0.1);
+    await waitFor(() => getByDisplayValue(filterPanel, '-.1'));
   },
 );

@@ -65,7 +65,7 @@ import {
   returnUndefOnError,
   uniq,
   parseCSVString,
-  assertIsNumber,
+  guaranteeIsNumber,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -395,8 +395,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
     const calculateExpression = (): void => {
       if (isNaN(numericValue)) {
         try {
-          const calculatedValue = evaluate(value);
-          assertIsNumber(calculatedValue);
+          const calculatedValue = guaranteeIsNumber(evaluate(value));
           setValue(
             isInteger
               ? Number.parseInt(calculatedValue.toString(), 10).toString()

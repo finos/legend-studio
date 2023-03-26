@@ -33,7 +33,7 @@ import {
   INTERNAL__PropagatedValue,
   SimpleFunctionExpression,
   SUPPORTED_FUNCTIONS,
-  ObserverContext,
+  type ObserverContext,
 } from '@finos/legend-graph';
 import { Randomizer, UnsupportedOperationError } from '@finos/legend-shared';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationHelper.js';
