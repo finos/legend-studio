@@ -62,7 +62,6 @@ export class DataSpacePreviewStore {
     });
 
     this.applicationStore = applicationStore;
-    this.applicationStore.assistantService.setIsHidden(true);
 
     this.depotServerClient = depotServerClient;
     this.graphManagerState = new BasicGraphManagerState(
@@ -77,6 +76,8 @@ export class DataSpacePreviewStore {
   }
 
   *initialize(): GeneratorFn<void> {
+    this.applicationStore.assistantService.setIsHidden(true);
+
     this.loadDataSpaceState.inProgress();
     this.loadDataSpaceState.setMessage(`Initializing...`);
 

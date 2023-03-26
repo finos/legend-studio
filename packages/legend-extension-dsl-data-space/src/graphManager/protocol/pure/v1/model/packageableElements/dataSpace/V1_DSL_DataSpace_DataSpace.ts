@@ -25,6 +25,8 @@ import {
 } from '@finos/legend-graph';
 
 export abstract class V1_DataSpaceSupportInfo implements Hashable {
+  documentationUrl?: string | undefined;
+
   abstract get hashCode(): string;
 }
 
@@ -37,13 +39,36 @@ export class V1_DataSpaceSupportEmail
   get hashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_SUPPORT_EMAIL,
+      this.documentationUrl ?? '',
       this.address,
+    ]);
+  }
+}
+
+export class V1_DataSpaceSupportCombinedInfo
+  extends V1_DataSpaceSupportInfo
+  implements Hashable
+{
+  emails?: string[] | undefined;
+  website?: string | undefined;
+  faqUrl?: string | undefined;
+  supportUrl?: string | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_SUPPORT_COMBINED_INFO,
+      this.documentationUrl ?? '',
+      hashArray(this.emails ?? []),
+      this.website ?? '',
+      this.faqUrl ?? '',
+      this.supportUrl ?? '',
     ]);
   }
 }
 
 export class V1_DataSpaceExecutionContext implements Hashable {
   name!: string;
+  title?: string | undefined;
   description?: string | undefined;
   mapping!: V1_PackageableElementPointer;
   defaultRuntime!: V1_PackageableElementPointer;
@@ -52,6 +77,7 @@ export class V1_DataSpaceExecutionContext implements Hashable {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTION_CONTEXT,
       this.name,
+      this.title ?? '',
       this.description ?? '',
       this.mapping.path,
       this.defaultRuntime.path,
@@ -62,14 +88,29 @@ export class V1_DataSpaceExecutionContext implements Hashable {
 export class V1_DataSpaceExecutable implements Hashable {
   title!: string;
   description?: string | undefined;
-  executable!: string;
+  executable!: V1_PackageableElementPointer;
 
   get hashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTABLE,
       this.title,
       this.description ?? '',
-      this.executable,
+      this.executable.path,
+    ]);
+  }
+}
+
+export class V1_DataSpaceDiagram implements Hashable {
+  title!: string;
+  description?: string | undefined;
+  diagram!: V1_PackageableElementPointer;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_DIAGRAM,
+      this.title,
+      this.description ?? '',
+      this.diagram.path,
     ]);
   }
 }
@@ -84,6 +125,7 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
   featuredDiagrams?: V1_PackageableElementPointer[] | undefined;
   elements?: V1_PackageableElementPointer[] | undefined;
   executables?: V1_DataSpaceExecutable[] | undefined;
+  diagrams?: V1_DataSpaceDiagram[] | undefined;
   supportInfo?: V1_DataSpaceSupportInfo | undefined;
 
   override get hashCode(): string {
@@ -98,6 +140,7 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
       hashArray((this.featuredDiagrams ?? []).map((pointer) => pointer.path)),
       hashArray((this.elements ?? []).map((pointer) => pointer.path)),
       hashArray(this.executables ?? []),
+      hashArray(this.diagrams ?? []),
       this.supportInfo ?? '',
     ]);
   }

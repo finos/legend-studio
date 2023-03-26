@@ -34,7 +34,7 @@ export const V1_packageableElementPointerDeserializerSchema = createModelSchema(
   V1_PackageableElementPointer,
   {
     path: primitive(),
-    type: primitive(),
+    type: optional(primitive()),
   },
 );
 

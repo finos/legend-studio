@@ -29,6 +29,8 @@ import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSL_DataSpace_HashUtil
 import type { Diagram } from '@finos/legend-extension-dsl-diagram';
 
 export abstract class DataSpaceSupportInfo implements Hashable {
+  documentationUrl?: string | undefined;
+
   abstract get hashCode(): string;
 }
 
@@ -41,13 +43,36 @@ export class DataSpaceSupportEmail
   get hashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_SUPPORT_EMAIL,
+      this.documentationUrl ?? '',
       this.address,
+    ]);
+  }
+}
+
+export class DataSpaceSupportCombinedInfo
+  extends DataSpaceSupportInfo
+  implements Hashable
+{
+  emails?: string[] | undefined;
+  website?: string | undefined;
+  faqUrl?: string | undefined;
+  supportUrl?: string | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_SUPPORT_COMBINED_INFO,
+      this.documentationUrl ?? '',
+      hashArray(this.emails ?? []),
+      this.website ?? '',
+      this.faqUrl ?? '',
+      this.supportUrl ?? '',
     ]);
   }
 }
 
 export class DataSpaceExecutionContext implements Hashable {
   name!: string;
+  title?: string | undefined;
   description?: string | undefined;
   mapping!: PackageableElementReference<Mapping>;
   defaultRuntime!: PackageableElementReference<PackageableRuntime>;
@@ -56,6 +81,7 @@ export class DataSpaceExecutionContext implements Hashable {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTION_CONTEXT,
       this.name,
+      this.title ?? '',
       this.description ?? '',
       this.mapping.valueForSerialization ?? '',
       this.defaultRuntime.valueForSerialization ?? '',
@@ -66,14 +92,29 @@ export class DataSpaceExecutionContext implements Hashable {
 export class DataSpaceExecutable implements Hashable {
   title!: string;
   description?: string | undefined;
-  executable!: string;
+  executable!: PackageableElementReference<PackageableElement>;
 
   get hashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTABLE,
       this.title,
       this.description ?? '',
-      this.executable,
+      this.executable.valueForSerialization ?? '',
+    ]);
+  }
+}
+
+export class DataSpaceDiagram implements Hashable {
+  title!: string;
+  description?: string | undefined;
+  diagram!: PackageableElementReference<Diagram>;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_DIAGRAM,
+      this.title,
+      this.description ?? '',
+      this.diagram.valueForSerialization ?? '',
     ]);
   }
 }
@@ -88,6 +129,7 @@ export class DataSpace extends PackageableElement implements Hashable {
   featuredDiagrams?: PackageableElementReference<Diagram>[] | undefined;
   elements?: PackageableElementReference<DataSpaceElement>[] | undefined;
   executables?: DataSpaceExecutable[] | undefined;
+  diagrams?: DataSpaceDiagram[] | undefined;
   supportInfo?: DataSpaceSupportInfo | undefined;
 
   protected override get _elementHashCode(): string {
@@ -112,6 +154,7 @@ export class DataSpace extends PackageableElement implements Hashable {
         ),
       ),
       hashArray(this.executables ?? []),
+      hashArray(this.diagrams ?? []),
       this.supportInfo ?? '',
     ]);
   }

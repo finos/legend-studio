@@ -321,7 +321,10 @@ export const hashRawLambda = (
     body ? hashObjectWithoutSourceInformation(body) : '',
   ]);
 
-export const hashElementPointer = (pointerType: string, path: string): string =>
-  [CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT_POINTER, pointerType, path]
+export const hashElementPointer = (
+  pointerType: string | undefined,
+  path: string,
+): string =>
+  [CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT_POINTER, pointerType ?? '', path]
     .map(hashValue)
     .join(',');

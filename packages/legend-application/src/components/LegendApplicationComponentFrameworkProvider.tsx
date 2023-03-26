@@ -174,6 +174,7 @@ export const LegendApplicationComponentFrameworkProvider = observer(
         <BlockingAlert />
         <ActionAlert />
         <NotificationManager />
+        <VirtualAssistant />
         {applicationStore.layoutService.showBackdrop && (
           // We use <Portal> here to insert backdrop into different parts of the app
           // as backdrop relies heavily on z-index mechanism so its location in the DOM
@@ -209,7 +210,6 @@ export const LegendApplicationComponentFrameworkProvider = observer(
             <BackdropContainer
               elementId={APPLICATION_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER}
             />
-            <VirtualAssistant />
             {children}
           </div>
         </DndProvider>
