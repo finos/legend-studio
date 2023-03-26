@@ -108,8 +108,7 @@ const DataSpaceDiagramCanvas = observer(
       const renderer = new DiagramRenderer(diagramCanvasRef.current, diagram);
       dataSpaceViewerState.setRenderer(renderer);
       dataSpaceViewerState.setupRenderer();
-      renderer.render();
-      renderer.autoRecenter();
+      renderer.render({ initial: true });
     }, [diagramCanvasRef, dataSpaceViewerState, diagram]);
 
     useEffect(() => {

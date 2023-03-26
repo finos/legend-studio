@@ -1194,9 +1194,17 @@ const DiagramEditorDiagramCanvas = observer(
       );
       diagramEditorState.setRenderer(renderer);
       diagramEditorState.setupRenderer();
-      renderer.render();
-      renderer.autoRecenter();
+      renderer.render({ initial: true });
     }, [diagramCanvasRef, diagramEditorState]);
+
+    useEffect(() => {
+      // since after the diagram render is initialized, we start
+      // showing the toolbar and the header, which causes the auto-zoom fit
+      // to be off, we need to call this method again
+      if (diagramEditorState.isDiagramRendererInitialized) {
+        diagramEditorState.renderer.render({ initial: true });
+      }
+    }, [diagramEditorState, diagramEditorState.isDiagramRendererInitialized]);
 
     useEffect(() => {
       if (diagramEditorState.isDiagramRendererInitialized) {
