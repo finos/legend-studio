@@ -56,7 +56,7 @@ export type V1_FunctionExpressionBuilder = (
   openVariables: string[],
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
-) => [SimpleFunctionExpression, ValueSpecification[]] | undefined;
+) => SimpleFunctionExpression | undefined;
 
 export type V1_ExecutionInputCollector = (
   graph: PureModel,

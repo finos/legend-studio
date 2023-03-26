@@ -201,8 +201,8 @@ export const V1_buildGetAllFunctionExpression = (
   openVariables: string[],
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] => {
-  const [expression, processedParams] = V1_buildGenericFunctionExpression(
+): SimpleFunctionExpression => {
+  const expression = V1_buildGenericFunctionExpression(
     functionName,
     parameters,
     openVariables,
@@ -218,7 +218,8 @@ export const V1_buildGetAllFunctionExpression = (
   );
   expression.genericType = precedingExpression.genericType;
   expression.multiplicity = precedingExpression.multiplicity;
-  return [expression, processedParams];
+
+  return expression;
 };
 
 export const V1_buildExistsFunctionExpression = (
@@ -227,7 +228,7 @@ export const V1_buildExistsFunctionExpression = (
   openVariables: string[],
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] => {
+): SimpleFunctionExpression => {
   assertTrue(
     parameters.length === 2,
     `Can't build exists() expression: exists() expects 1 argument`,
@@ -262,22 +263,21 @@ export const V1_buildExistsFunctionExpression = (
       }
     });
   }
-  const processedParameters = [
-    precedingExpression,
-    (parameters[1] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
+
+  return V1_buildBaseSimpleFunctionExpression(
+    [
+      precedingExpression,
+      (parameters[1] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationBuilder(
+          compileContext,
+          processingContext,
+          openVariables,
+        ),
       ),
-    ),
-  ];
-  const expression = V1_buildBaseSimpleFunctionExpression(
-    processedParameters,
+    ],
     functionName,
     compileContext,
   );
-  return [expression, processedParameters];
 };
 
 export const V1_buildFilterFunctionExpression = (
@@ -286,7 +286,7 @@ export const V1_buildFilterFunctionExpression = (
   openVariables: string[],
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] => {
+): SimpleFunctionExpression => {
   assertTrue(
     parameters.length === 2,
     `Can't build filter() expression: filter() expects 1 argument`,
@@ -318,19 +318,18 @@ export const V1_buildFilterFunctionExpression = (
       });
     }
   }
-  const processedParams = [
-    precedingExpression,
-    (parameters[1] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
-    ),
-  ];
 
   const expression = V1_buildBaseSimpleFunctionExpression(
-    processedParams,
+    [
+      precedingExpression,
+      (parameters[1] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationBuilder(
+          compileContext,
+          processingContext,
+          openVariables,
+        ),
+      ),
+    ],
     functionName,
     compileContext,
   );
@@ -338,7 +337,8 @@ export const V1_buildFilterFunctionExpression = (
   // return type of filter() is the same as that of the function precedes it
   expression.genericType = precedingExpression.genericType;
   expression.multiplicity = precedingExpression.multiplicity;
-  return [expression, processedParams];
+
+  return expression;
 };
 
 export const V1_buildProjectFunctionExpression = (
@@ -347,7 +347,7 @@ export const V1_buildProjectFunctionExpression = (
   openVariables: string[],
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] => {
+): SimpleFunctionExpression => {
   assertTrue(
     parameters.length === 3,
     `Can't build project() expression: project() expects 2 arguments`,
@@ -417,26 +417,26 @@ export const V1_buildProjectFunctionExpression = (
     }
   });
 
-  const processedParams = [
-    precedingExperession,
-    processedColumnExpressions,
-    (parameters[2] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
-    ),
-  ];
   const expression = V1_buildBaseSimpleFunctionExpression(
-    processedParams,
+    [
+      precedingExperession,
+      processedColumnExpressions,
+      (parameters[2] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationBuilder(
+          compileContext,
+          processingContext,
+          openVariables,
+        ),
+      ),
+    ],
     functionName,
     compileContext,
   );
   expression.genericType = GenericTypeExplicitReference.create(
     new GenericType(compileContext.resolveType(CORE_PURE_PATH.TDS_ROW).value),
   );
-  return [expression, processedParams];
+
+  return expression;
 };
 
 export const V1_buildGroupByFunctionExpression = (
@@ -445,7 +445,7 @@ export const V1_buildGroupByFunctionExpression = (
   openVariables: string[],
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] => {
+): SimpleFunctionExpression => {
   let topLevelLambdaParameters: V1_Variable[] = [];
   assertTrue(
     parameters.length === 4,
@@ -557,27 +557,27 @@ export const V1_buildGroupByFunctionExpression = (
       ),
   );
 
-  const processedParams = [
-    precedingExperession,
-    processedColumnExpressions,
-    processedAggregationExpressions,
-    (parameters[3] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
-    ),
-  ];
   const expression = V1_buildBaseSimpleFunctionExpression(
-    processedParams,
+    [
+      precedingExperession,
+      processedColumnExpressions,
+      processedAggregationExpressions,
+      (parameters[3] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationBuilder(
+          compileContext,
+          processingContext,
+          openVariables,
+        ),
+      ),
+    ],
     functionName,
     compileContext,
   );
   expression.genericType = GenericTypeExplicitReference.create(
     new GenericType(compileContext.resolveType(CORE_PURE_PATH.TDS_ROW).value),
   );
-  return [expression, processedParams];
+
+  return expression;
 };
 
 export const V1_buildWatermarkFunctionExpression = (
@@ -586,7 +586,7 @@ export const V1_buildWatermarkFunctionExpression = (
   openVariables: string[],
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] | undefined => {
+): SimpleFunctionExpression | undefined => {
   assertTrue(
     parameters.length === 2,
     `Can't build forWatermark() expression: forWatermark() expects 1 argument`,
@@ -622,8 +622,7 @@ export const V1_buildWatermarkFunctionExpression = (
     });
   }
 
-  const processedParams = [
-    precedingExpression,
+  const watermarkValueParam = guaranteeNonNullable(
     (parameters[1] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
       new V1_ValueSpecificationBuilder(
         compileContext,
@@ -631,9 +630,7 @@ export const V1_buildWatermarkFunctionExpression = (
         openVariables,
       ),
     ),
-  ];
-
-  const watermarkValueParam = guaranteeNonNullable(processedParams[1]);
+  );
   const watermarkValueParamType =
     watermarkValueParam.genericType?.value.rawType;
   assertTrue(
@@ -642,14 +639,15 @@ export const V1_buildWatermarkFunctionExpression = (
   );
 
   const expression = V1_buildBaseSimpleFunctionExpression(
-    processedParams,
+    [precedingExpression, watermarkValueParam],
     functionName,
     compileContext,
   );
 
   expression.genericType = precedingExpression.genericType;
   expression.multiplicity = precedingExpression.multiplicity;
-  return [expression, processedParams];
+
+  return expression;
 };
 
 export const V1_buildOLAPGroupByFunctionExpression = (
@@ -658,7 +656,7 @@ export const V1_buildOLAPGroupByFunctionExpression = (
   openVariables: string[],
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] | undefined => {
+): SimpleFunctionExpression | undefined => {
   const processedParams: ValueSpecification[] = [];
   assertTrue(
     parameters.length === 5 || parameters.length === 4,
@@ -778,7 +776,8 @@ export const V1_buildOLAPGroupByFunctionExpression = (
   expression.genericType = GenericTypeExplicitReference.create(
     new GenericType(compileContext.resolveType(CORE_PURE_PATH.TDS_ROW).value),
   );
-  return [expression, processedParams];
+
+  return expression;
 };
 
 export const V1_buildSubTypePropertyExpressionTypeInference = (
