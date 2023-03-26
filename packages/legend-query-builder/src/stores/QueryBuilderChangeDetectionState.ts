@@ -91,17 +91,19 @@ export class QueryBuilderDiffViewState {
 }
 
 export class QueryBuilderChangeDetectionState {
-  querybuilderState: QueryBuilderState;
-  initState = ActionState.create();
+  readonly querybuilderState: QueryBuilderState;
+
+  readonly initState = ActionState.create();
+
+  querySnapshot?: RawLambda | undefined;
+  hashCodeSnapshot?: string | undefined;
   diffViewState?: QueryBuilderDiffViewState | undefined;
-  initialQuery?: RawLambda | undefined;
-  initialHashCode?: string | undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
       diffViewState: observable,
-      initialHashCode: observable,
-      initialQuery: observable,
+      querySnapshot: observable,
+      hashCodeSnapshot: observable,
       hasChanged: computed,
       initialize: action,
       showDiffViewPanel: action,
@@ -113,12 +115,12 @@ export class QueryBuilderChangeDetectionState {
 
   showDiffViewPanel(): void {
     assertNonNullable(
-      this.initialQuery,
+      this.querySnapshot,
       `Can't show changes: change detection is not properly initialized`,
     );
     this.diffViewState = new QueryBuilderDiffViewState(
       this,
-      this.initialQuery,
+      this.querySnapshot,
       this.querybuilderState.buildQuery(),
     );
   }
@@ -131,13 +133,13 @@ export class QueryBuilderChangeDetectionState {
     if (!this.initState.hasCompleted) {
       return false;
     }
-    return this.querybuilderState.hashCode !== this.initialHashCode;
+    return this.querybuilderState.hashCode !== this.hashCodeSnapshot;
   }
 
   initialize(initialQuery: RawLambda): void {
     this.initState.inProgress();
-    this.initialHashCode = this.querybuilderState.hashCode;
-    this.initialQuery = initialQuery;
+    this.hashCodeSnapshot = this.querybuilderState.hashCode;
+    this.querySnapshot = initialQuery;
     this.initState.complete();
   }
 

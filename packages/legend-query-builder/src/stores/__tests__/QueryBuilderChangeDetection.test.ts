@@ -90,7 +90,7 @@ test(integrationTest('Test change detection'), () => {
     ).setColumnName('Legal Name');
     await waitFor(() => getByText(projectionCols, 'Legal Name'));
     expect(queryBuilderState.hashCode).toBe(
-      queryBuilderState.changeDetectionState.initialHashCode,
+      queryBuilderState.changeDetectionState.hashCodeSnapshot,
     );
   };
 });
