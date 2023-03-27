@@ -578,7 +578,7 @@ const DataSpaceSupportInfoViewerInner = observer(
       );
     }
     return (
-      <BlankPanelContent>Can&apos;t display support info</BlankPanelContent>
+      <BlankPanelContent>{`Can't display support info`}</BlankPanelContent>
     );
   },
 );

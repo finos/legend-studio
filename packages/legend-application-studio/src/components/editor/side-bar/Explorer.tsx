@@ -1299,9 +1299,7 @@ export const Explorer = observer(() => {
                 ) && (
                   <div className="explorer__content--empty">
                     <div className="explorer__content--empty__text">
-                      Can&apos;t build graph as workspace contains merge
-                      conflicts, please resolve them before trying to build the
-                      graph again
+                      {`Can't build graph as workspace contains merge conflicts, please resolve them before trying to build the graph again`}
                     </div>
                     <button
                       className="btn--dark btn--conflict btn--important explorer__content--empty__btn"

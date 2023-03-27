@@ -34,7 +34,6 @@ import {
   type ExplorerContextMenuItemRendererConfiguration,
   type EditorExtensionStateCreator,
   type EditorExtensionComponentRendererConfiguration,
-  type LegendStudioApplicationPageEntry,
 } from '@finos/legend-application-studio';
 import {
   PackageableElementExplicitReference,
@@ -62,8 +61,6 @@ import {
   DataSpacePreviewDialog,
   DataSpacePreviewAction,
 } from './DataSpacePreviewAction.js';
-import { DATA_SPACE_STUDIO_ROUTE_PATTERN } from '../../application/studio/DSL_DataSpace_LegendStudioNavigation.js';
-import { DataSpacePreview } from './DataSpacePreview.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -75,18 +72,6 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
 {
   constructor() {
     super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
-  }
-
-  override getExtraApplicationPageEntries(): LegendStudioApplicationPageEntry[] {
-    return [
-      // data space preview
-      {
-        key: 'data-space-preview',
-        urlPatterns: [DATA_SPACE_STUDIO_ROUTE_PATTERN.PREVIEW],
-        renderer: DataSpacePreview,
-        bypassSDLC: true,
-      },
-    ];
   }
 
   override getExtraRequiredDocumentationKeys(): string[] {

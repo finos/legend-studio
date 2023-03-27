@@ -52,12 +52,12 @@ export const LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN = Object.freeze({
   PREVIEW_BY_GAV_ENTITY: `/view/archive/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.GAV}/entity/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.ENTITY_PATH}/preview`,
 });
 
-export type ReviewPathParams = {
+export type WorkspaceReviewPathParams = {
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.PROJECT_ID]: string;
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.REVIEW_ID]: string;
 };
 
-export type ViewerPathParams = {
+export type ProjectViewerPathParams = {
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.GAV]?: string;
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.PROJECT_ID]?: string;
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.VERSION_ID]?: string;
@@ -72,10 +72,15 @@ export type WorkspaceEditorPathParams = {
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.ENTITY_PATH]?: string;
 };
 
-export type SetupPathParams = {
+export type WorkspaceSetupPathParams = {
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.PROJECT_ID]?: string;
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.WORKSPACE_ID]?: string;
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.GROUP_WORKSPACE_ID]?: string;
+};
+
+export type ElementPreviewPathParams = {
+  [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.GAV]: string;
+  [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.ENTITY_PATH]: string;
 };
 
 const generateGroupWorkspaceSetupRoute = (
@@ -182,24 +187,6 @@ export const generateViewEntityRoute = (
     entityPath,
   });
 
-export const generateViewProjectByGAVRoute = (
-  groupId: string,
-  artifactId: string,
-  versionId: string | undefined,
-  entityPath?: string | undefined,
-): string =>
-  !entityPath
-    ? generatePath(LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV, {
-        gav: generateGAVCoordinates(groupId, artifactId, versionId),
-      })
-    : generatePath(
-        LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
-        {
-          gav: generateGAVCoordinates(groupId, artifactId, versionId),
-          entityPath,
-        },
-      );
-
 export const generateViewVersionRoute = (
   projectId: string,
   versionId: string,
@@ -231,3 +218,35 @@ export const generateViewRevisionRoute = (
         revisionId,
         entityPath,
       });
+
+export const generateViewProjectByGAVRoute = (
+  groupId: string,
+  artifactId: string,
+  versionId: string | undefined,
+  entityPath?: string | undefined,
+): string =>
+  !entityPath
+    ? generatePath(LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV, {
+        gav: generateGAVCoordinates(groupId, artifactId, versionId),
+      })
+    : generatePath(
+        LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+        {
+          gav: generateGAVCoordinates(groupId, artifactId, versionId),
+          entityPath,
+        },
+      );
+
+export const generateElementPreviewRoute = (
+  groupId: string,
+  artifactId: string,
+  versionId: string | undefined,
+  entityPath: string,
+): string =>
+  generatePath(
+    LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.PREVIEW_BY_GAV_ENTITY,
+    {
+      gav: generateGAVCoordinates(groupId, artifactId, versionId),
+      entityPath,
+    },
+  );

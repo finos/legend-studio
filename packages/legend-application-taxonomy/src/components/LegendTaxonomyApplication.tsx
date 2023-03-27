@@ -28,7 +28,7 @@ import {
 } from '@finos/legend-application';
 import type { LegendTaxonomyApplicationConfig } from '../application/LegendTaxonomyApplicationConfig.js';
 import { TaxonomyExplorer } from './TaxonomyExplorer.js';
-import { StandaloneDataSpaceViewer } from './StandaloneDataSpaceViewer.js';
+import { DataSpacePreview } from './data-space-preview/DataSpacePreview.js';
 import {
   LegendTaxonomyBaseStoreProvider,
   useLegendTaxonomyApplicationStore,
@@ -71,8 +71,8 @@ export const LegendTaxonomyApplicationRoot = observer(() => {
         />
         <Route
           exact={true}
-          path={LEGEND_TAXONOMY_ROUTE_PATTERN.STANDALONE_DATA_SPACE_VIEWER}
-          component={StandaloneDataSpaceViewer}
+          path={LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_DATA_SPACE}
+          component={DataSpacePreview}
         />
         <Redirect
           to={generateExploreTaxonomyTreeRoute(

@@ -38,7 +38,7 @@ import {
   AssistantIcon,
 } from '@finos/legend-art';
 import {
-  type ReviewPathParams,
+  type WorkspaceReviewPathParams,
   generateSetupRoute,
 } from '../../application/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
@@ -194,7 +194,7 @@ const WorkspaceReviewExplorer = observer(() => {
 export const WorkspaceReview = withEditorStore(
   withWorkspaceReviewStore(
     observer(() => {
-      const params = useParams<ReviewPathParams>();
+      const params = useParams<WorkspaceReviewPathParams>();
       const projectId = params.projectId;
       const reviewId = params.reviewId;
       const reviewStore = useWorkspaceReviewStore();

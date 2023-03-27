@@ -28,7 +28,7 @@ import {
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
 import {
-  type SetupPathParams,
+  type WorkspaceSetupPathParams,
   generateEditorRoute,
   LEGEND_STUDIO_ROUTE_PATTERN_TOKEN,
 } from '../../application/LegendStudioNavigation.js';
@@ -94,7 +94,7 @@ const withWorkspaceSetupStore = (WrappedComponent: React.FC): React.FC =>
 
 export const WorkspaceSetup = withWorkspaceSetupStore(
   observer(() => {
-    const params = useParams<SetupPathParams>();
+    const params = useParams<WorkspaceSetupPathParams>();
     const projectId = params[LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.PROJECT_ID];
     const workspaceId = params[LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.WORKSPACE_ID];
     const groupWorkspaceId =

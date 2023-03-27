@@ -78,8 +78,6 @@ export class DataSpaceViewerState {
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
 
-  HACKY__previewExperimentalFeatures = false;
-
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: BasicGraphManagerState,
@@ -100,9 +98,6 @@ export class DataSpaceViewerState {
         entityPath: string | undefined,
       ) => Promise<void>;
       onDiagramClassDoubleClick: (classView: ClassView) => void;
-    },
-    options?: {
-      HACKY__previewExperimentalFeatures?: boolean | undefined;
     },
   ) {
     makeObservable(this, {
@@ -134,9 +129,6 @@ export class DataSpaceViewerState {
     this.viewProject = actions.viewProject;
     this.viewSDLCProject = actions.viewSDLCProject;
     this.onDiagramClassDoubleClick = actions.onDiagramClassDoubleClick;
-    this.HACKY__previewExperimentalFeatures = Boolean(
-      options?.HACKY__previewExperimentalFeatures,
-    );
   }
 
   get renderer(): DiagramRenderer {

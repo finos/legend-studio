@@ -16,58 +16,9 @@
 
 @use 'mixins' as *;
 
-.standalone-data-space-viewer {
-  &__header {
-    background: var(--color-dark-grey-80);
-    height: 3.4rem !important;
-    border-radius: 0 0.2rem 0 0;
-  }
-
-  &__header__actions {
-    @include flexVCenter;
-
-    margin-right: 0.3rem;
-  }
-
-  &__header__action {
-    height: 2.8rem;
-    width: 2.8rem;
-  }
-
-  &__header__action + &__header__action {
-    margin-left: 0.3rem;
-  }
-
-  &__content {
-    background: var(--color-dark-grey-80);
-  }
-
-  &__content__placeholder {
-    height: calc(100% - 3.8rem);
-    width: 100%;
-
-    &--failed {
-      @include flexVCenter;
-
-      height: 2.8rem;
-
-      &__icon {
-        @include flexCenter;
-
-        height: 100%;
-      }
-
-      &__text {
-        margin-left: 0.5rem;
-        color: var(--color-dark-grey-300);
-        font-weight: 700;
-        cursor: default;
-        user-select: none;
-        text-align: center;
-        line-height: 2.8rem;
-      }
-    }
-  }
+.data-space-preview {
+  height: 100%;
+  width: 100%;
 
   &__failure {
     @include flexVCenter;

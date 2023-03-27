@@ -150,13 +150,6 @@ export const LegendStudioApplicationRoot = observer(() => {
               ]}
               component={ProjectViewer}
             />
-            {/* <Route
-              exact={true}
-              path={[
-                LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.PREVIEW_BY_GAV_ENTITY,
-              ]}
-              component={ElementPreview}
-            /> */}
             {SDLCBypassedPageEntries.map((entry) => (
               <Route
                 key={entry.key}
