@@ -52,7 +52,7 @@ const DataSpacePreviewStoreProvider: React.FC<{
 export const withDataSpacePreviewStore = (
   WrappedComponent: React.FC,
 ): React.FC =>
-  function WithStandaloneDataSpaceViewerStore() {
+  function WithDataSpacePreviewStore() {
     return (
       <DataSpacePreviewStoreProvider>
         <WrappedComponent />
@@ -71,8 +71,6 @@ export const DataSpacePreview = withDataSpacePreviewStore(
     const params = useParams<DataSpacePreviewPathParams>();
     const applicationStore = useApplicationStore();
     const previewStore = useDataSpacePreviewStore();
-
-    // const queryDataSpace = (): void => viewerStore.queryDataSpace(undefined);
 
     useEffect(() => {
       flowResult(previewStore.initialize(params)).catch(

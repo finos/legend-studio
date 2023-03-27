@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { TAB_SIZE } from '@finos/legend-application';
+import {
+  LEGEND_APPLICATION_COLOR_THEME,
+  TAB_SIZE,
+} from '@finos/legend-application';
 import {
   type DataSpaceAnalysisResult,
   DataSpaceViewerState,
@@ -76,6 +79,12 @@ export class DataSpacePreviewStore {
   }
 
   *initialize(params: DataSpacePreviewPathParams): GeneratorFn<void> {
+    // set up the application
+    this.applicationStore.assistantService.setIsHidden(true);
+    this.applicationStore.layoutService.setColorTheme(
+      LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
+    );
+
     this.initState.inProgress();
     this.initState.setMessage(`Initializing...`);
 
