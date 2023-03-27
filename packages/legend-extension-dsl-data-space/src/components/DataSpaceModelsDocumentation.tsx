@@ -20,7 +20,7 @@ import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { AgGridReact } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 
-export const DataSpaceDocumentation = observer(
+export const DataSpaceModelsDocumentation = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     const documentationEntries =
@@ -31,7 +31,7 @@ export const DataSpaceDocumentation = observer(
     }
 
     return (
-      <div className="data-space__viewer__main-panel__content data-space__viewer__overview">
+      <div className="data-space__viewer__panel__content data-space__viewer__overview">
         <AgGridReact
           rowData={documentationEntries}
           gridOptions={{

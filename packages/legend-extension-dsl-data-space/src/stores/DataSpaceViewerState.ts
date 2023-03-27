@@ -37,7 +37,7 @@ import type {
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   DESCRIPTION = 'DESCRIPTION',
-  DIAGRAMS = 'DIAGRAMS',
+  DIAGRAM_VIEWER = 'DIAGRAM_VIEWER',
   MODELS_DOCUMENTATION = 'MODELS_DOCUMENTATION',
   QUICK_START = 'QUICK_START',
   EXECUTION_CONTEXT = 'EXECUTION_CONTEXT',
@@ -78,6 +78,8 @@ export class DataSpaceViewerState {
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
 
+  isExpandedModeEnabled = false;
+
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: BasicGraphManagerState,
@@ -106,12 +108,14 @@ export class DataSpaceViewerState {
       currentActivity: observable,
       currentExecutionContext: observable,
       currentRuntime: observable,
+      isExpandedModeEnabled: observable,
       renderer: computed,
       setRenderer: action,
       setCurrentDiagram: action,
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
       setCurrentRuntime: action,
+      enableExpandedMode: action,
     });
 
     this.applicationStore = applicationStore;
@@ -193,5 +197,9 @@ export class DataSpaceViewerState {
     this.renderer.setEnableLayoutAutoAdjustment(true);
     this.renderer.onClassViewDoubleClick = (classView: ClassView): void =>
       this.onDiagramClassDoubleClick(classView);
+  }
+
+  enableExpandedMode(val: boolean): void {
+    this.isExpandedModeEnabled = val;
   }
 }

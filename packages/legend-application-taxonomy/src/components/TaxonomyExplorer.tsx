@@ -233,21 +233,18 @@ const TaxonomyExplorerSplashScreen: React.FC = () => {
   }, [width, height]);
 
   return (
-    <div ref={ref} className="taxonomy-explorer__main-panel__splash-screen">
+    <div ref={ref} className="taxonomy-explorer__panel__splash-screen">
       <div
-        className={clsx(
-          'taxonomy-explorer__main-panel__splash-screen__content',
-          {
-            'taxonomy-explorer__main-panel__splash-screen__content--hidden':
-              !showCommandList,
-          },
-        )}
+        className={clsx('taxonomy-explorer__panel__splash-screen__content', {
+          'taxonomy-explorer__panel__splash-screen__content--hidden':
+            !showCommandList,
+        })}
       >
-        <div className="taxonomy-explorer__main-panel__splash-screen__content__item">
-          <div className="taxonomy-explorer__main-panel__splash-screen__content__item__label">
+        <div className="taxonomy-explorer__panel__splash-screen__content__item">
+          <div className="taxonomy-explorer__panel__splash-screen__content__item__label">
             Open or Search for a Taxonomy
           </div>
-          <div className="taxonomy-explorer__main-panel__splash-screen__content__item__hot-keys">
+          <div className="taxonomy-explorer__panel__splash-screen__content__item__hot-keys">
             <div className="hotkey__key">Ctrl</div>
             <div className="hotkey__plus">
               <PlusIcon />
@@ -281,30 +278,30 @@ const TaxonomyExplorerMainPanel = observer(
     };
 
     return (
-      <div className="panel taxonomy-explorer__main-panel">
-        <div className="panel__header taxonomy-explorer__main-panel__header">
-          <div className="taxonomy-explorer__main-panel__header__tabs">
+      <div className="panel taxonomy-explorer__panel">
+        <div className="panel__header taxonomy-explorer__panel__header">
+          <div className="taxonomy-explorer__panel__header__tabs">
             <div
-              className="taxonomy-explorer__main-panel__header__tab taxonomy-explorer__main-panel__header__tab--active"
+              className="taxonomy-explorer__panel__header__tab taxonomy-explorer__panel__header__tab--active"
               onMouseUp={closeTabOnMiddleClick}
             >
               <div
-                className="taxonomy-explorer__main-panel__header__tab__content"
+                className="taxonomy-explorer__panel__header__tab__content"
                 title={`Taxonomy Node ${taxonomyViewerState.taxonomyNode.taxonomyPath}`}
               >
                 <button
-                  className="taxonomy-explorer__main-panel__header__tab__label"
+                  className="taxonomy-explorer__panel__header__tab__label"
                   tabIndex={-1}
                 >
-                  <div className="taxonomy-explorer__main-panel__header__tab__label__path">
+                  <div className="taxonomy-explorer__panel__header__tab__label__path">
                     {leadingPath}
                   </div>
-                  <div className="taxonomy-explorer__main-panel__header__tab__label__name">
+                  <div className="taxonomy-explorer__panel__header__tab__label__name">
                     {taxonomyViewerState.taxonomyNode.label}
                   </div>
                 </button>
                 <button
-                  className="taxonomy-explorer__main-panel__header__tab__close-btn"
+                  className="taxonomy-explorer__panel__header__tab__close-btn"
                   onClick={closeTab}
                   tabIndex={-1}
                   title="Close"
@@ -315,7 +312,7 @@ const TaxonomyExplorerMainPanel = observer(
             </div>
           </div>
         </div>
-        <div className="panel__content taxonomy-explorer__main-panel__content">
+        <div className="panel__content taxonomy-explorer__panel__content">
           <TaxonomyNodeViewer taxonomyNodeViewerState={taxonomyViewerState} />
         </div>
       </div>

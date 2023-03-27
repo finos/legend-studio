@@ -17,12 +17,18 @@
 @use 'mixins' as *;
 
 .data-space__viewer {
-  display: flex;
-  flex-direction: column;
+  @include flexHCenter;
+
   height: 100%;
   width: 100%;
+  position: relative;
   background: var(--color-dark-grey-80);
   color: var(--color-light-grey-200);
+
+  &__frame {
+    width: 140rem;
+    padding: 4rem;
+  }
 
   &__header {
     @include flexCenter;
@@ -71,31 +77,39 @@
     }
   }
 
-  &__content {
-    @include flexCenter;
-
-    height: calc(100% - 7rem);
-    padding: 0 2rem 2rem;
-  }
-
-  &__body {
-    @include flexCenter;
-
-    width: 100%;
-    height: 100%;
-  }
-
   &__activity-bar {
     width: 5rem;
-    background: var(--color-dark-grey-100);
-    height: 100%;
+    position: fixed;
+    left: 2rem;
+    top: 4rem;
     overflow-x: hidden;
     overflow-y: hidden;
+    border-radius: 0.2rem;
+    background: var(--color-dark-grey-100);
+
+    &__menu {
+      height: 3.4rem;
+      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    }
+
+    &__menu-item {
+      @include flexCenter;
+
+      height: 3.4rem;
+      width: 100%;
+      color: var(--color-dark-grey-400);
+
+      svg {
+        font-size: 2.4rem;
+      }
+    }
 
     &__items {
       height: 100%;
       overflow-y: auto;
       overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     &__item {
@@ -108,7 +122,7 @@
     }
 
     &__item svg {
-      font-size: 2rem;
+      font-size: 2.2rem;
     }
 
     &__item:hover {
@@ -119,12 +133,73 @@
     &__item--active {
       color: var(--color-light-grey-250);
     }
+
+    &__divider {
+      @include flexConstantDimension;
+
+      border-radius: 0.1rem;
+      height: 0.1rem;
+      background: var(--color-dark-grey-300);
+      margin: 0.5rem;
+    }
+
+    &__item &__icon {
+      &--home {
+        font-size: 2.8rem;
+      }
+
+      &--launch {
+        font-size: 2.8rem;
+      }
+
+      &--access {
+        font-size: 2.8rem;
+      }
+
+      &--dataset {
+        font-size: 2.8rem;
+      }
+
+      &--availability {
+        font-size: 3rem;
+      }
+
+      &--cost {
+        font-size: 3rem;
+      }
+
+      &--governance {
+        font-size: 2.8rem;
+      }
+
+      &--info {
+        font-size: 2.4rem;
+      }
+
+      &--support {
+        font-size: 2.4rem;
+      }
+    }
   }
 
-  &__main-panel {
+  &__content {
+    @include flexCenter;
+
     height: 100%;
-    width: calc(100% - 5rem);
-    border: 0.1rem solid var(--color-dark-grey-100);
+    padding: 4rem;
+    box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
+  }
+
+  &__body {
+    @include flexCenter;
+
+    width: 100%;
+    height: 100%;
+  }
+
+  &__panel {
+    height: 100%;
+    width: 100%;
     overflow: auto;
 
     &__content {
@@ -132,376 +207,12 @@
       width: 100%;
     }
   }
+}
 
-  &__overview {
-    height: 100%;
-    width: 100%;
-    padding: 0.25rem;
+.data-space__viewer__support {
+  padding: 2rem;
 
-    &__description {
-      @include flexCenter;
-
-      height: 100%;
-      width: 100%;
-      padding: 0.25rem;
-
-      &__content {
-        overflow: auto;
-        height: 100%;
-        width: 100%;
-        border: 0.1rem solid var(--color-blue-300);
-        border-radius: 0.2rem;
-      }
-
-      &__content__markdown-content {
-        color: var(--color-light-grey-200);
-      }
-
-      &--empty {
-        @include flexCenter;
-
-        height: 100%;
-        width: 100%;
-        font-weight: 500;
-        color: var(--color-dark-grey-300);
-        border-radius: 0.2rem;
-        border: 0.2rem dashed var(--color-dark-grey-280);
-      }
-    }
-
-    &__diagrams__carousel {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      width: 100%;
-      padding: 0.25rem;
-
-      .diagram-canvas {
-        border-radius: 0.2rem;
-      }
-
-      &__frame {
-        height: 100%;
-        width: 100%;
-        position: relative;
-
-        &__display {
-          height: 100%;
-          width: 100%;
-        }
-
-        &__navigator {
-          @include flexCenter;
-
-          height: 100%;
-          width: 3rem;
-          background: transparent;
-          position: absolute;
-          top: 0;
-
-          &--back {
-            left: 0;
-          }
-
-          &--next {
-            right: 0;
-          }
-
-          svg {
-            font-size: 2rem;
-            color: transparent;
-          }
-
-          &:hover {
-            background: var(--color-dark-shade-50);
-            cursor: pointer;
-
-            svg {
-              color: var(--color-dark-shade-800);
-            }
-          }
-
-          &[disabled] {
-            cursor: not-allowed;
-
-            svg {
-              color: transparent;
-            }
-
-            &:hover svg {
-              color: var(--color-dark-shade-200);
-            }
-          }
-        }
-
-        &__indicators {
-          @include flexCenter;
-
-          height: 2.4rem;
-          width: 100%;
-          position: absolute;
-          bottom: 0;
-          background: transparent;
-          color: var(--color-light-grey-400);
-          padding: 0 0.5rem;
-          user-select: none;
-          cursor: default;
-        }
-
-        &__indicators__notch {
-          @include flexCenter;
-
-          height: 100%;
-          background: var(--color-dark-shade-50);
-          padding: 0 3rem;
-          border-radius: 1rem 1rem 0 0;
-        }
-
-        &__indicator {
-          margin: 0 0.5rem;
-
-          svg {
-            font-size: 1.2rem;
-            color: var(--color-dark-shade-50);
-          }
-        }
-
-        &__indicator--active svg {
-          color: var(--color-blue-150);
-        }
-      }
-
-      &__content {
-        height: calc(100% - 5.4rem);
-        width: 100%;
-      }
-
-      &__dropdown {
-        width: 100%;
-
-        &__container {
-          padding: 0.3rem;
-        }
-      }
-    }
-  }
-
-  &__execution {
-    padding: 2rem;
-
-    &__context-icon {
-      color: var(--color-light-grey-200);
-    }
-
-    &__entry {
-      @include flexVCenter;
-
-      height: 3.4rem;
-      width: 100%;
-
-      &__icon {
-        @include flexCenter;
-
-        height: 3.4rem;
-        width: 3.4rem;
-        border-radius: 0.2rem 0 0 0.2rem;
-        background: var(--color-dark-grey-100);
-
-        svg {
-          font-size: 1.6rem;
-        }
-      }
-
-      &__content {
-        @include flexVCenter;
-
-        height: 3.4rem;
-        width: calc(100% - 3.4rem);
-        border-radius: 0 0.2rem 0.2rem 0;
-        border: 0.1rem solid var(--color-dark-grey-100);
-        color: var(--color-light-grey-400);
-        padding: 0 1rem;
-        background: var(--color-dark-grey-100);
-        border-left: 0.1rem solid var(--color-dark-grey-50);
-        user-select: none;
-
-        &__dropdown {
-          width: 100%;
-
-          &__container {
-            padding: 0.3rem;
-          }
-
-          &__option {
-            @include flexVCenter;
-          }
-
-          &__option__tag {
-            @include flexVCenter;
-
-            background: var(--color-blue-200);
-            height: 1.8rem;
-            padding: 0 0.5rem;
-            margin-left: 0.5rem;
-            border-radius: 0.2rem;
-            font-size: 1.2rem;
-            color: var(--color-light-grey-100);
-          }
-        }
-
-        &__text {
-          font-family: 'Roboto Mono', monospace;
-        }
-      }
-    }
-
-    &__description {
-      margin-top: 0.5rem;
-      margin-bottom: 0.5rem;
-      cursor: default;
-      user-select: none;
-      padding: 1rem;
-      height: 5rem;
-      width: 100%;
-      background: var(--color-dark-grey-100);
-      overflow: auto;
-      line-height: 1.6rem;
-      color: var(--color-dark-grey-500);
-      font-family: Roboto, sans-serif;
-      font-size: 1.2rem;
-
-      &--empty {
-        @include flexCenter;
-
-        font-weight: 500;
-        color: var(--color-dark-grey-300);
-      }
-    }
-
-    &__mapping {
-      margin-bottom: 0.5rem;
-    }
-  }
-
-  &__info {
-    padding: 2rem;
-
-    &__project-info__label {
-      @include ellipsisTextOverflow;
-
-      height: 100%;
-      width: 15rem;
-      border-radius: 0.2rem 0 0 0.2rem;
-      padding: 0 1rem;
-      line-height: 2.8rem;
-      background: var(--color-blue-100);
-      color: var(--color-dark-grey-100);
-      font-weight: 500;
-    }
-
-    &__project-info__value {
-      @include ellipsisTextOverflow;
-
-      height: 100%;
-      width: calc(100% - 17.8rem);
-      padding: 0 1rem;
-      background: var(--color-dark-grey-100);
-      font-weight: 500;
-      color: var(--color-blue-50);
-      font-family: 'Roboto Mono', monospace;
-    }
-
-    &__project-info__link {
-      @include flexCenter;
-
-      height: 100%;
-      width: 2.8rem;
-      background: var(--color-dark-grey-100);
-      color: var(--color-light-shade-100);
-      border-radius: 0 0.2rem 0.2rem 0;
-      border-left: 0.1rem solid var(--color-dark-shade-250);
-
-      svg {
-        font-size: 1.2rem;
-      }
-    }
-
-    &__section {
-      cursor: default;
-      margin: 0.5rem 0 3rem;
-    }
-
-    &__section__title {
-      @include flexVCenter;
-
-      font-weight: 500;
-      color: var(--color-dark-grey-500);
-      margin-bottom: 1rem;
-      line-height: 2rem;
-      cursor: default;
-    }
-
-    &__section__entry {
-      @include flexVCenter;
-
-      height: 2.8rem;
-      margin: 0.5rem 0;
-      width: 100%;
-    }
-
-    &__tagged-value__tag {
-      @include ellipsisTextOverflow;
-
-      height: 100%;
-      width: 15rem;
-      border-radius: 0.2rem 0 0 0.2rem;
-      padding: 0 1rem;
-      line-height: 2.8rem;
-      background: var(--color-purple-400);
-      color: var(--color-light-grey-400);
-      font-weight: 500;
-    }
-
-    &__tagged-value__value {
-      @include ellipsisTextOverflow;
-
-      height: 100%;
-      width: calc(100% - 15rem);
-      border-radius: 0 0.2rem 0.2rem 0;
-      padding: 0 1rem;
-      line-height: 2.8rem;
-      background: var(--color-dark-grey-100);
-      color: var(--color-light-grey-400);
-    }
-
-    &__steoreotype {
-      @include flexVCenter;
-
-      height: 100%;
-      border-radius: 0.2rem;
-      padding: 0 1rem;
-      line-height: 2.8rem;
-      background: var(--color-purple-400);
-      color: var(--color-light-grey-400);
-      font-weight: 500;
-    }
-
-    &__section__placeholder {
-      @include flexCenter;
-
-      height: 4rem;
-      width: 100%;
-      color: var(--color-dark-grey-300);
-      font-weight: 500;
-      border: 0.2rem dashed var(--color-dark-grey-200);
-    }
-  }
-
-  &__support-info {
-    padding: 2rem;
-  }
-
-  &__support-email {
+  &__email {
     &__entry {
       @include flexVCenter;
 
@@ -538,99 +249,455 @@
       }
     }
   }
+}
 
-  &__usages {
-    padding: 1rem 0;
+.data-space__viewer__description {
+  @include flexCenter;
+
+  height: 100%;
+  width: 100%;
+  padding: 0.25rem;
+
+  &__content {
+    overflow: auto;
+    height: 100%;
+    width: 100%;
+    border: 0.1rem solid var(--color-blue-300);
+    border-radius: 0.2rem;
   }
 
-  &__usage {
-    padding: 2rem;
+  &__content__markdown-content {
+    color: var(--color-light-grey-200);
+  }
 
-    & + & {
-      border-top: 1rem solid var(--color-dark-grey-100);
+  &--empty {
+    @include flexCenter;
+
+    height: 100%;
+    width: 100%;
+    font-weight: 500;
+    color: var(--color-dark-grey-300);
+    border-radius: 0.2rem;
+    border: 0.2rem dashed var(--color-dark-grey-280);
+  }
+}
+
+.data-space__viewer__execution-context {
+  &__context-icon {
+    color: var(--color-light-grey-200);
+  }
+
+  &__entry {
+    @include flexVCenter;
+
+    height: 3.4rem;
+    width: 100%;
+
+    &__icon {
+      @include flexCenter;
+
+      height: 3.4rem;
+      width: 3.4rem;
+      border-radius: 0.2rem 0 0 0.2rem;
+      background: var(--color-dark-grey-100);
+
+      svg {
+        font-size: 1.6rem;
+      }
     }
 
-    &__title {
-      font-size: 2.4rem;
-      font-weight: 900;
-    }
-
-    &__description__markdown-content {
-      padding: 0;
-      margin: 2rem 0;
-    }
-
-    &__query {
-      height: 20rem;
-    }
-
-    &__block {
-      min-height: 20rem;
-    }
-
-    &__block + &__block {
-      margin-top: 1rem;
-    }
-
-    &__block--collapsed {
-      height: 2.8rem;
-      min-height: 2.8rem;
-    }
-
-    &__block__header {
+    &__content {
       @include flexVCenter;
 
-      background: var(--color-blue-150);
-      color: var(--color-light-grey-0);
-      height: 2.8rem;
+      height: 3.4rem;
+      width: calc(100% - 3.4rem);
+      border-radius: 0 0.2rem 0.2rem 0;
+      border: 0.1rem solid var(--color-dark-grey-100);
+      color: var(--color-light-grey-400);
+      padding: 0 1rem;
+      background: var(--color-dark-grey-100);
+      border-left: 0.1rem solid var(--color-dark-grey-50);
+      user-select: none;
+
+      &__dropdown {
+        width: 100%;
+
+        &__container {
+          padding: 0.3rem;
+        }
+
+        &__option {
+          @include flexVCenter;
+        }
+
+        &__option__tag {
+          @include flexVCenter;
+
+          background: var(--color-blue-200);
+          height: 1.8rem;
+          padding: 0 0.5rem;
+          margin-left: 0.5rem;
+          border-radius: 0.2rem;
+          font-size: 1.2rem;
+          color: var(--color-light-grey-100);
+        }
+      }
+
+      &__text {
+        font-family: 'Roboto Mono', monospace;
+      }
+    }
+  }
+
+  &__description {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    cursor: default;
+    user-select: none;
+    padding: 1rem;
+    height: 5rem;
+    width: 100%;
+    background: var(--color-dark-grey-100);
+    overflow: auto;
+    line-height: 1.6rem;
+    color: var(--color-dark-grey-500);
+    font-family: Roboto, sans-serif;
+    font-size: 1.2rem;
+
+    &--empty {
+      @include flexCenter;
+
+      font-weight: 500;
+      color: var(--color-dark-grey-300);
+    }
+  }
+
+  &__mapping {
+    margin-bottom: 0.5rem;
+  }
+}
+
+.data-space__viewer__info {
+  padding: 2rem;
+
+  &__project-info__label {
+    @include ellipsisTextOverflow;
+
+    height: 100%;
+    width: 15rem;
+    border-radius: 0.2rem 0 0 0.2rem;
+    padding: 0 1rem;
+    line-height: 2.8rem;
+    background: var(--color-blue-100);
+    color: var(--color-dark-grey-100);
+    font-weight: 500;
+  }
+
+  &__project-info__value {
+    @include ellipsisTextOverflow;
+
+    height: 100%;
+    width: calc(100% - 17.8rem);
+    padding: 0 1rem;
+    background: var(--color-dark-grey-100);
+    font-weight: 500;
+    color: var(--color-blue-50);
+    font-family: 'Roboto Mono', monospace;
+  }
+
+  &__project-info__link {
+    @include flexCenter;
+
+    height: 100%;
+    width: 2.8rem;
+    background: var(--color-dark-grey-100);
+    color: var(--color-light-shade-100);
+    border-radius: 0 0.2rem 0.2rem 0;
+    border-left: 0.1rem solid var(--color-dark-shade-250);
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__section {
+    cursor: default;
+    margin: 0.5rem 0 3rem;
+  }
+
+  &__section__title {
+    @include flexVCenter;
+
+    font-weight: 500;
+    color: var(--color-dark-grey-500);
+    margin-bottom: 1rem;
+    line-height: 2rem;
+    cursor: default;
+  }
+
+  &__section__entry {
+    @include flexVCenter;
+
+    height: 2.8rem;
+    margin: 0.5rem 0;
+    width: 100%;
+  }
+
+  &__tagged-value__tag {
+    @include ellipsisTextOverflow;
+
+    height: 100%;
+    width: 15rem;
+    border-radius: 0.2rem 0 0 0.2rem;
+    padding: 0 1rem;
+    line-height: 2.8rem;
+    background: var(--color-purple-400);
+    color: var(--color-light-grey-400);
+    font-weight: 500;
+  }
+
+  &__tagged-value__value {
+    @include ellipsisTextOverflow;
+
+    height: 100%;
+    width: calc(100% - 15rem);
+    border-radius: 0 0.2rem 0.2rem 0;
+    padding: 0 1rem;
+    line-height: 2.8rem;
+    background: var(--color-dark-grey-100);
+    color: var(--color-light-grey-400);
+  }
+
+  &__steoreotype {
+    @include flexVCenter;
+
+    height: 100%;
+    border-radius: 0.2rem;
+    padding: 0 1rem;
+    line-height: 2.8rem;
+    background: var(--color-purple-400);
+    color: var(--color-light-grey-400);
+    font-weight: 500;
+  }
+
+  &__section__placeholder {
+    @include flexCenter;
+
+    height: 4rem;
+    width: 100%;
+    color: var(--color-dark-grey-300);
+    font-weight: 500;
+    border: 0.2rem dashed var(--color-dark-grey-200);
+  }
+}
+
+// &__usages {
+//   padding: 1rem 0;
+// }
+
+// &__usage {
+//   padding: 2rem;
+
+//   & + & {
+//     border-top: 1rem solid var(--color-dark-grey-100);
+//   }
+
+//   &__title {
+//     font-size: 2.4rem;
+//     font-weight: 900;
+//   }
+
+//   &__description__markdown-content {
+//     padding: 0;
+//     margin: 2rem 0;
+//   }
+
+//   &__query {
+//     height: 20rem;
+//   }
+
+//   &__block {
+//     min-height: 20rem;
+//   }
+
+//   &__block + &__block {
+//     margin-top: 1rem;
+//   }
+
+//   &__block--collapsed {
+//     height: 2.8rem;
+//     min-height: 2.8rem;
+//   }
+
+//   &__block__header {
+//     @include flexVCenter;
+
+//     background: var(--color-blue-150);
+//     color: var(--color-light-grey-0);
+//     height: 2.8rem;
+//     width: 100%;
+//     border-radius: 0.2rem;
+
+//     &__toggler {
+//       @include flexCenter;
+
+//       width: 2.8rem;
+
+//       svg {
+//         font-size: 1.6rem;
+//       }
+//     }
+
+//     &__title {
+//       @include flexVCenter;
+
+//       font-family: 'Roboto Mono', monospace;
+//       font-weight: 700;
+//       width: 100%;
+//       justify-content: flex-start;
+//     }
+
+//     &__actions {
+//       @include flexVCenter;
+
+//       height: 2.8rem;
+//     }
+
+//     &__action {
+//       @include flexCenter;
+//       @include flexConstantDimension;
+
+//       height: 2.8rem;
+//       width: 2.8rem;
+//       color: var(--color-light-grey-0);
+
+//       &:hover {
+//         background: var(--color-dark-shade-100);
+//       }
+//     }
+//   }
+
+//   &__block__content {
+//     height: calc(100% - 2.8rem);
+//   }
+
+//   &__block__content__table {
+//     width: 100%;
+//   }
+// }
+
+.data-space__viewer__diagram-viewer__carousel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 0.25rem;
+
+  .diagram-canvas {
+    border-radius: 0.2rem;
+  }
+
+  &__frame {
+    height: 100%;
+    width: 100%;
+    position: relative;
+
+    &__display {
+      height: 100%;
       width: 100%;
-      border-radius: 0.2rem;
+    }
 
-      &__toggler {
-        @include flexCenter;
+    &__navigator {
+      @include flexCenter;
 
-        width: 2.8rem;
+      height: 100%;
+      width: 3rem;
+      background: transparent;
+      position: absolute;
+      top: 0;
+
+      &--back {
+        left: 0;
+      }
+
+      &--next {
+        right: 0;
+      }
+
+      svg {
+        font-size: 2rem;
+        color: transparent;
+      }
+
+      &:hover {
+        background: var(--color-dark-shade-50);
+        cursor: pointer;
 
         svg {
-          font-size: 1.6rem;
+          color: var(--color-dark-shade-800);
         }
       }
 
-      &__title {
-        @include flexVCenter;
+      &[disabled] {
+        cursor: not-allowed;
 
-        font-family: 'Roboto Mono', monospace;
-        font-weight: 700;
-        width: 100%;
-        justify-content: flex-start;
-      }
+        svg {
+          color: transparent;
+        }
 
-      &__actions {
-        @include flexVCenter;
-
-        height: 2.8rem;
-      }
-
-      &__action {
-        @include flexCenter;
-        @include flexConstantDimension;
-
-        height: 2.8rem;
-        width: 2.8rem;
-        color: var(--color-light-grey-0);
-
-        &:hover {
-          background: var(--color-dark-shade-100);
+        &:hover svg {
+          color: var(--color-dark-shade-200);
         }
       }
     }
 
-    &__block__content {
-      height: calc(100% - 2.8rem);
-    }
+    &__indicators {
+      @include flexCenter;
 
-    &__block__content__table {
+      height: 2.4rem;
       width: 100%;
+      position: absolute;
+      bottom: 0;
+      background: transparent;
+      color: var(--color-light-grey-400);
+      padding: 0 0.5rem;
+      user-select: none;
+      cursor: default;
+    }
+
+    &__indicators__notch {
+      @include flexCenter;
+
+      height: 100%;
+      background: var(--color-dark-shade-50);
+      padding: 0 3rem;
+      border-radius: 1rem 1rem 0 0;
+    }
+
+    &__indicator {
+      margin: 0 0.5rem;
+
+      svg {
+        font-size: 1.2rem;
+        color: var(--color-dark-shade-50);
+      }
+    }
+
+    &__indicator--active svg {
+      color: var(--color-blue-150);
+    }
+  }
+
+  &__content {
+    height: calc(100% - 5.4rem);
+    width: 100%;
+  }
+
+  &__dropdown {
+    width: 100%;
+
+    &__container {
+      padding: 0.3rem;
     }
   }
 }

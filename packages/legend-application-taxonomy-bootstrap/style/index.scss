@@ -17,3 +17,95 @@
 @import url('@finos/legend-art/lib/index.css');
 @import url('@finos/legend-application/lib/index.css');
 @import url('@finos/legend-application-taxonomy/lib/index.css');
+
+// NOTE: the following styles are temporary so we can have a poor-man version of
+// theming for Legend Taxonomy. The reason why we put the code here is that this is
+// where we essentially do all the overriding for everything from every extensions.
+// In other words, this is the only place where we can exhaustively and correctly
+// override native dark theme with light them colors.
+
+// This theme is adapted from GS UI Toolkit Color Pallette
+// See https://design.gs.com/foundation/color-system
+// See https://design.gs.com/foundation/color-system/all-hues-and-values
+:root {
+  --color-hclight-white: #fff;
+  --color-hclight-black: #000;
+  --color-hclight-grey-10: #f2f5f7;
+  --color-hclight-grey-15: #e1e7ea;
+  --color-hclight-grey-20: #dce3e8;
+  --color-hclight-grey-30: #c1ccd6;
+  --color-hclight-grey-40: #9fb1bd;
+  --color-hclight-grey-60: #5b7282;
+  --color-hclight-grey-70: #3e5463;
+  --color-hclight-grey-80: #2a3f4d;
+  --color-hclight-grey-90: #1c2b36;
+  --color-hclight-ultramarine-90: #23254d;
+  --color-hclight-aqua-90: #0c2b45;
+  --color-hclight-blue-70: #0d4ea6;
+  --color-hclight-green-60: #077d55;
+  --color-hclight-lime-50: #52a31d;
+  --color-hclight-yellow-30: #f5c518;
+  --color-hclight-orange-50: #e86427;
+  --color-hclight-red-60: #d91f11;
+}
+
+.theme__hc-light {
+  // ---------------------------- Menu -------------------------------
+
+  .menu {
+    background: var(--color-hclight-grey-10);
+    border-color: transparent;
+  }
+
+  .menu__item {
+    color: var(--color-hclight-grey-90);
+
+    &:hover {
+      background: var(--color-hclight-grey-15);
+    }
+  }
+
+  .menu__item[disabled] {
+    color: var(--color-hclight-grey-60);
+  }
+
+  // ---------------------------- Data Space Viewer -------------------------------
+
+  .data-space__viewer {
+    background: var(--color-hclight-white);
+    color: var(--color-hclight-grey-90);
+
+    &__frame {
+      background: var(--color-hclight-grey-10);
+    }
+
+    &__activity-bar {
+      background: var(--color-hclight-grey-20);
+
+      &__menu {
+        border-color: var(--color-hclight-grey-30);
+      }
+
+      &__menu-item {
+        color: var(--color-hclight-aqua-90);
+      }
+
+      &__item {
+        color: var(--color-hclight-grey-40);
+      }
+
+      &__item:hover,
+      &__item--active {
+        color: var(--color-hclight-aqua-90);
+      }
+
+      &__divider {
+        background: var(--color-hclight-grey-30);
+      }
+    }
+
+    &__content {
+      background: var(--color-hclight-white);
+    }
+  }
+}
