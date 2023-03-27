@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { BlankPanelContent } from '@finos/legend-art';
+import { BlankPanelContent, clsx } from '@finos/legend-art';
 import {
   type DataSpaceViewerState,
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
@@ -26,17 +26,12 @@ import { DataSpaceSupportPanel } from './DataSpaceSupportPanel.js';
 import { DataSpaceWiki } from './DataSpaceWiki.js';
 import { DataSpaceViewerActivityBar } from './DataSpaceViewerActivityBar.js';
 
-export const DataSpaceViewer = observer(
-  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
-    const { dataSpaceViewerState } = props;
+const DataSpaceTitle = observer(
+  (props: { dataSpaceViewerState: DataSpaceViewerState }) =>
+    // const { dataSpaceViewerState } = props;
 
-    return (
-      <div className="data-space__viewer">
-        <DataSpaceViewerActivityBar
-          dataSpaceViewerState={dataSpaceViewerState}
-        />
-        <div className="data-space__viewer__frame">
-          {/* <div className="data-space__viewer__header">
+    null,
+  /* <div className="data-space__viewer__header">
             <div className="data-space__viewer__title">
               <button
                 className="data-space__viewer__title__btn"
@@ -61,63 +56,80 @@ export const DataSpaceViewer = observer(
                 </div>
               </button>
             </div>
-          </div> */}
-          <div className="data-space__viewer__content">
-            <div className="data-space__viewer__body">
-              <div className="data-space__viewer__panel">
-                {[
-                  DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION,
-                  DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
-                  DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION,
-                  DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START,
-                  DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
-                ].includes(dataSpaceViewerState.currentActivity) && (
-                  <DataSpaceWiki dataSpaceViewerState={dataSpaceViewerState} />
-                )}
+          </div> */
+);
 
-                {dataSpaceViewerState.currentActivity ===
-                  DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION_CONTEXT && (
-                  <DataSpaceExecutionContextViewer
-                    dataSpaceViewerState={dataSpaceViewerState}
-                  />
-                )}
-                {dataSpaceViewerState.currentActivity ===
-                  DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_STORES && (
-                  <BlankPanelContent>
-                    View all data stores (Work in Progress)
-                  </BlankPanelContent>
-                )}
-                {dataSpaceViewerState.currentActivity ===
-                  DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_AVAILABILITY && (
-                  <BlankPanelContent>
-                    View data availability (Work in Progress)
-                  </BlankPanelContent>
-                )}
-                {dataSpaceViewerState.currentActivity ===
-                  DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_COST && (
-                  <BlankPanelContent>
-                    View data cost (Work in Progress)
-                  </BlankPanelContent>
-                )}
-                {dataSpaceViewerState.currentActivity ===
-                  DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_GOVERNANCE && (
-                  <BlankPanelContent>
-                    View data ownership and governance (Work in Progress)
-                  </BlankPanelContent>
-                )}
-                {dataSpaceViewerState.currentActivity ===
-                  DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO && (
-                  <DataSpaceInfoPanel
-                    dataSpaceViewerState={dataSpaceViewerState}
-                  />
-                )}
-                {dataSpaceViewerState.currentActivity ===
-                  DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT && (
-                  <DataSpaceSupportPanel
-                    dataSpaceViewerState={dataSpaceViewerState}
-                  />
-                )}
-              </div>
+const DataSpacePlaceholderPanel: React.FC<{ message: string }> = (props) => {
+  const { message } = props;
+
+  return (
+    <div className="data-space__viewer__panel">
+      <BlankPanelContent>{message}</BlankPanelContent>
+    </div>
+  );
+};
+
+export const DataSpaceViewer = observer(
+  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
+    const { dataSpaceViewerState } = props;
+    const isShowingWiki = [
+      DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION,
+      DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
+      DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION,
+      DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START,
+      DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
+    ].includes(dataSpaceViewerState.currentActivity);
+
+    return (
+      <div className="data-space__viewer">
+        <DataSpaceViewerActivityBar
+          dataSpaceViewerState={dataSpaceViewerState}
+        />
+        <div className="data-space__viewer__body">
+          <div
+            className={clsx('data-space__viewer__frame', {
+              'data-space__viewer__frame--boundless': isShowingWiki,
+            })}
+          >
+            <DataSpaceTitle dataSpaceViewerState={dataSpaceViewerState} />
+            <div className="data-space__viewer__content">
+              {isShowingWiki && (
+                <DataSpaceWiki dataSpaceViewerState={dataSpaceViewerState} />
+              )}
+              {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION_CONTEXT && (
+                <DataSpaceExecutionContextViewer
+                  dataSpaceViewerState={dataSpaceViewerState}
+                />
+              )}
+              {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_STORES && (
+                <DataSpacePlaceholderPanel message="View all data stores (Work in Progress)" />
+              )}
+              {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_AVAILABILITY && (
+                <DataSpacePlaceholderPanel message="View data availability (Work in Progress)" />
+              )}
+              {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_COST && (
+                <DataSpacePlaceholderPanel message="View data cost (Work in Progress)" />
+              )}
+              {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_GOVERNANCE && (
+                <DataSpacePlaceholderPanel message="View data ownership and governance (Work in Progress)" />
+              )}
+              {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO && (
+                <DataSpaceInfoPanel
+                  dataSpaceViewerState={dataSpaceViewerState}
+                />
+              )}
+              {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT && (
+                <DataSpaceSupportPanel
+                  dataSpaceViewerState={dataSpaceViewerState}
+                />
+              )}
             </div>
           </div>
         </div>

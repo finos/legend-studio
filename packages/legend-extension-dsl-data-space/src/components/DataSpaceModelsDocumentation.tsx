@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { BlankPanelContent } from '@finos/legend-art';
+import { BlankPanelContent, SearchIcon } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { AgGridReact } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
@@ -31,42 +31,61 @@ export const DataSpaceModelsDocumentation = observer(
     }
 
     return (
-      <div className="data-space__viewer__panel__content data-space__viewer__overview">
-        <AgGridReact
-          rowData={documentationEntries}
-          gridOptions={{
-            suppressScrollOnNewData: true,
-            getRowId: (rowData) => rowData.data.uuid,
-          }}
-          modules={[ClientSideRowModelModule]}
-          suppressFieldDotNotation={true}
-          columnDefs={[
-            {
-              minWidth: 50,
-              sortable: true,
-              resizable: true,
-              field: 'elementPath',
-              headerName: 'Model',
-              flex: 1,
-            },
-            {
-              minWidth: 50,
-              sortable: false,
-              resizable: true,
-              field: 'subElementText',
-              headerName: '',
-              flex: 1,
-            },
-            {
-              minWidth: 50,
-              sortable: false,
-              resizable: true,
-              field: 'doc',
-              headerName: 'Documentation',
-              flex: 1,
-            },
-          ]}
-        />
+      <div className="data-space__viewer__wiki__section">
+        <div className="data-space__viewer__wiki__section__header">
+          Models Documentation
+        </div>
+        <div className="data-space__viewer__wiki__section__content">
+          <div className="data-space__viewer__models-documentation">
+            <div className="data-space__viewer__models-documentation__search">
+              <div className="data-space__viewer__models-documentation__search__input-group">
+                <input className="data-space__viewer__models-documentation__search__input-group__input" />
+                <div className="data-space__viewer__models-documentation__search-box__input-group__icon">
+                  <SearchIcon />
+                </div>
+              </div>
+            </div>
+            <div className="data-space__viewer__models-documentation__grid ag-theme-balham-dark">
+              <AgGridReact
+                rowData={documentationEntries}
+                gridOptions={{
+                  suppressScrollOnNewData: true,
+                  getRowId: (rowData) => rowData.data.uuid,
+                }}
+                modules={[ClientSideRowModelModule]}
+                suppressFieldDotNotation={true}
+                columnDefs={[
+                  {
+                    minWidth: 50,
+                    sortable: true,
+                    resizable: true,
+                    field: 'elementPath',
+                    headerName: 'Model',
+                    flex: 1,
+                  },
+                  {
+                    minWidth: 50,
+                    sortable: false,
+                    resizable: true,
+                    field: 'subElementText',
+                    headerName: '',
+                    flex: 1,
+                  },
+                  {
+                    minWidth: 50,
+                    sortable: false,
+                    resizable: true,
+                    field: 'doc',
+                    headerName: 'Documentation',
+                    flex: 1,
+                    wrapText: true,
+                    autoHeight: true,
+                  },
+                ]}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     );
   },

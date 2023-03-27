@@ -597,7 +597,7 @@ export const ServiceExecutionQueryEditor = observer(
           />
           <div
             className="service-execution-query-editor__content"
-            title={'double click to edit query in query builder'}
+            title="Double click to edit in query builder"
             onDoubleClick={(event) => {
               event.preventDefault();
               event.stopPropagation();

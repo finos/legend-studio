@@ -18,7 +18,6 @@ import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   type ClassView,
   type DiagramRenderer,
-  type Diagram,
   DIAGRAM_INTERACTION_MODE,
 } from '@finos/legend-extension-dsl-diagram';
 import type {
@@ -32,6 +31,7 @@ import {
 import { action, computed, makeObservable, observable } from 'mobx';
 import type {
   DataSpaceAnalysisResult,
+  DataSpaceDiagramAnalysisResult,
   DataSpaceExecutionContextAnalysisResult,
 } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 
@@ -73,7 +73,7 @@ export class DataSpaceViewerState {
   readonly onDiagramClassDoubleClick: (classView: ClassView) => void;
 
   _renderer?: DiagramRenderer | undefined;
-  currentDiagram?: Diagram | undefined;
+  currentDiagram?: DataSpaceDiagramAnalysisResult | undefined;
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
@@ -128,7 +128,7 @@ export class DataSpaceViewerState {
       dataSpaceAnalysisResult.defaultExecutionContext;
     this.currentRuntime = this.currentExecutionContext.defaultRuntime;
     this.currentDiagram = getNullableFirstElement(
-      this.dataSpaceAnalysisResult.featuredDiagrams,
+      this.dataSpaceAnalysisResult.diagrams,
     );
     this.viewProject = actions.viewProject;
     this.viewSDLCProject = actions.viewSDLCProject;
@@ -173,7 +173,7 @@ export class DataSpaceViewerState {
     this._renderer = val;
   }
 
-  setCurrentDiagram(val: Diagram): void {
+  setCurrentDiagram(val: DataSpaceDiagramAnalysisResult): void {
     this.currentDiagram = val;
   }
 

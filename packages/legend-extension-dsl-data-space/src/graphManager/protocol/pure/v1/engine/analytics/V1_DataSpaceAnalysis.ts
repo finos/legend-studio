@@ -356,7 +356,7 @@ export class V1_DataSpaceAnalysisResult {
 
       featuredDiagrams: list(primitive()),
       diagrams: customListWithSchema(
-        V1_DataSpaceExecutableAnalysisResult.serialization.schema,
+        V1_DataSpaceDiagramAnalysisResult.serialization.schema,
       ),
       executables: customListWithSchema(
         V1_DataSpaceExecutableAnalysisResult.serialization.schema,

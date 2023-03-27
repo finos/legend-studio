@@ -26,22 +26,34 @@ const DataSpaceDescription = observer(
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
 
     return (
-      <div className="data-space__viewer__panel__content data-space__viewer__description">
-        {analysisResult.description !== undefined && (
-          <div className="data-space__viewer__description__content">
-            <MarkdownTextViewer
-              className="data-space__viewer__description__content__markdown-content"
-              value={{
-                value: analysisResult.description,
-              }}
-            />
+      <div className="data-space__viewer__wiki__section">
+        <div className="data-space__viewer__wiki__section__header">
+          Description
+        </div>
+        <div className="data-space__viewer__wiki__section__content">
+          <div className="data-space__viewer__description">
+            {analysisResult.description !== undefined && (
+              <div className="data-space__viewer__description__content">
+                <MarkdownTextViewer
+                  className="data-space__viewer__description__content__markdown-content"
+                  value={{
+                    value: analysisResult.description,
+                  }}
+                  components={{
+                    h1: 'h2',
+                    h2: 'h3',
+                    h3: 'h4',
+                  }}
+                />
+              </div>
+            )}
+            {analysisResult.description === undefined && (
+              <div className="data-space__viewer__description--empty">
+                No description
+              </div>
+            )}
           </div>
-        )}
-        {analysisResult.description === undefined && (
-          <div className="data-space__viewer__description--empty">
-            No description
-          </div>
-        )}
+        </div>
       </div>
     );
   },
@@ -52,7 +64,7 @@ export const DataSpaceWiki = observer(
     const { dataSpaceViewerState } = props;
 
     return (
-      <div className="data-space__viewer__panel__content data-space__viewer__description">
+      <div className="data-space__viewer__wiki">
         <DataSpaceDescription dataSpaceViewerState={dataSpaceViewerState} />
         <DataSpaceDiagramViewer dataSpaceViewerState={dataSpaceViewerState} />
         <DataSpaceModelsDocumentation

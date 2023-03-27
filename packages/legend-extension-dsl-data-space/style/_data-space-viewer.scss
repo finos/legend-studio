@@ -17,236 +17,224 @@
 @use 'mixins' as *;
 
 .data-space__viewer {
-  @include flexHCenter;
-
   height: 100%;
   width: 100%;
   position: relative;
   background: var(--color-dark-grey-80);
   color: var(--color-light-grey-200);
 
-  &__frame {
-    width: 140rem;
-    padding: 4rem;
-  }
-
-  &__header {
-    @include flexCenter;
-
-    flex-direction: column;
-    padding: 2rem;
-    height: 7rem;
-  }
-
-  &__title {
-    @include flexVCenter;
-
-    &__btn {
-      @include flexCenter;
-
-      height: 3.4rem;
-      max-width: 100%;
-      background: var(--color-blue-150);
-    }
-
-    &__label {
-      @include ellipsisTextOverflow;
-
-      height: 100%;
-      width: calc(100% - 3.4rem);
-      font-family: 'Roboto Mono', monospace;
-      font-size: 1.6rem;
-      padding: 0 1rem;
-      user-select: none;
-      color: var(--color-light-grey-0);
-      line-height: 3.4rem;
-      text-align: left;
-    }
-
-    &__link {
-      @include flexCenter;
-
-      height: 3.4rem;
-      width: 3.4rem;
-      border-left: 0.1rem solid var(--color-dark-shade-230);
-
-      svg {
-        font-size: 1.6rem;
-        color: var(--color-light-grey-0);
-      }
-    }
-  }
-
-  &__activity-bar {
-    width: 5rem;
-    position: fixed;
-    left: 2rem;
-    top: 4rem;
-    overflow-x: hidden;
-    overflow-y: hidden;
-    border-radius: 0.2rem;
-    background: var(--color-dark-grey-100);
-
-    &__menu {
-      height: 3.4rem;
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
-    }
-
-    &__menu-item {
-      @include flexCenter;
-
-      height: 3.4rem;
-      width: 100%;
-      color: var(--color-dark-grey-400);
-
-      svg {
-        font-size: 2.4rem;
-      }
-    }
-
-    &__items {
-      height: 100%;
-      overflow-y: auto;
-      overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    &__item {
-      @include flexCenter;
-
-      height: 5rem;
-      width: 5rem;
-      color: var(--color-dark-grey-400);
-      cursor: pointer;
-    }
-
-    &__item svg {
-      font-size: 2.2rem;
-    }
-
-    &__item:hover {
-      color: var(--color-light-grey-250);
-      cursor: pointer;
-    }
-
-    &__item--active {
-      color: var(--color-light-grey-250);
-    }
-
-    &__divider {
-      @include flexConstantDimension;
-
-      border-radius: 0.1rem;
-      height: 0.1rem;
-      background: var(--color-dark-grey-300);
-      margin: 0.5rem;
-    }
-
-    &__item &__icon {
-      &--home {
-        font-size: 2.8rem;
-      }
-
-      &--launch {
-        font-size: 2.8rem;
-      }
-
-      &--access {
-        font-size: 2.8rem;
-      }
-
-      &--dataset {
-        font-size: 2.8rem;
-      }
-
-      &--availability {
-        font-size: 3rem;
-      }
-
-      &--cost {
-        font-size: 3rem;
-      }
-
-      &--governance {
-        font-size: 2.8rem;
-      }
-
-      &--info {
-        font-size: 2.4rem;
-      }
-
-      &--support {
-        font-size: 2.4rem;
-      }
-    }
-  }
-
-  &__content {
-    @include flexCenter;
-
-    height: 100%;
-    padding: 4rem;
-    box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
-  }
+  // * {
+  // }
+  font-family: Roboto, sans-serif;
 
   &__body {
-    @include flexCenter;
-
-    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
     height: 100%;
+    width: 100%;
+    overflow: auto;
+  }
+
+  &__frame {
+    display: flex;
+    width: 140rem;
+    height: 100%;
+    padding: 4rem;
+  }
+
+  &__frame--boundless {
+    height: initial;
+  }
+
+  // &__header {
+  //   @include flexCenter;
+
+  //   flex-direction: column;
+  //   padding: 2rem;
+  //   height: 7rem;
+  // }
+
+  // &__title {
+  //   @include flexVCenter;
+
+  //   &__btn {
+  //     @include flexCenter;
+
+  //     height: 3.4rem;
+  //     max-width: 100%;
+  //     background: var(--color-blue-150);
+  //   }
+
+  //   &__label {
+  //     @include ellipsisTextOverflow;
+
+  //     height: 100%;
+  //     width: calc(100% - 3.4rem);
+  //     font-family: 'Roboto Mono', monospace;
+  //     font-size: 1.6rem;
+  //     padding: 0 1rem;
+  //     user-select: none;
+  //     color: var(--color-light-grey-0);
+  //     line-height: 3.4rem;
+  //     text-align: left;
+  //   }
+
+  //   // &__link {
+  //   //   @include flexCenter;
+
+  //   //   height: 3.4rem;
+  //   //   width: 3.4rem;
+  //   //   border-left: 0.1rem solid var(--color-dark-shade-230);
+
+  //   //   svg {
+  //   //     font-size: 1.6rem;
+  //   //     color: var(--color-light-grey-0);
+  //   //   }
+  //   // }
+  // }
+
+  &__content {
+    display: flex;
+    width: 100%;
+    padding: 4rem;
+    box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
   }
 
   &__panel {
     height: 100%;
     width: 100%;
     overflow: auto;
+  }
+}
 
-    &__content {
-      height: 100%;
-      width: 100%;
+.data-space__viewer__activity-bar {
+  width: 5rem;
+  position: absolute;
+  left: 2rem;
+  top: 4rem;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  border-radius: 0.2rem;
+  background: var(--color-dark-grey-100);
+
+  &__menu {
+    height: 3.4rem;
+    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+  }
+
+  &__menu-item {
+    @include flexCenter;
+
+    height: 3.4rem;
+    width: 100%;
+    color: var(--color-dark-grey-400);
+
+    svg {
+      font-size: 2.4rem;
+    }
+  }
+
+  &__items {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__item {
+    @include flexCenter;
+
+    height: 5rem;
+    width: 5rem;
+    color: var(--color-dark-grey-400);
+    cursor: pointer;
+  }
+
+  &__item svg {
+    font-size: 2.2rem;
+  }
+
+  &__item:hover {
+    color: var(--color-light-grey-250);
+    cursor: pointer;
+  }
+
+  &__item--active {
+    color: var(--color-light-grey-250);
+  }
+
+  &__divider {
+    @include flexConstantDimension;
+
+    border-radius: 0.1rem;
+    height: 0.1rem;
+    background: var(--color-dark-grey-300);
+    margin: 0.5rem;
+  }
+
+  &__item &__icon {
+    &--home {
+      font-size: 2.8rem;
+    }
+
+    &--launch {
+      font-size: 2.8rem;
+    }
+
+    &--access {
+      font-size: 2.8rem;
+    }
+
+    &--dataset {
+      font-size: 2.8rem;
+    }
+
+    &--availability {
+      font-size: 3rem;
+    }
+
+    &--cost {
+      font-size: 3rem;
+    }
+
+    &--governance {
+      font-size: 2.8rem;
+    }
+
+    &--info {
+      font-size: 2.4rem;
+    }
+
+    &--support {
+      font-size: 2.4rem;
     }
   }
 }
 
-.data-space__viewer__support {
-  padding: 2rem;
+.data-space__viewer__wiki {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 
-  &__email {
-    &__entry {
-      @include flexVCenter;
+  &__section {
+    display: flex;
+    flex-direction: column;
 
-      height: 3.4rem;
-      width: 100%;
+    &__header {
+      height: 3rem;
+      font-size: 2.4rem;
+      color: var(--color-hclight-blue-60);
+      text-transform: uppercase;
+      font-weight: 500;
+      border-bottom: 0.2rem solid var(--color-hclight-blue-60);
+      margin-bottom: 2rem;
+      margin-top: 3rem;
+    }
 
-      &__icon {
-        @include flexCenter;
-
-        height: 3.4rem;
-        width: 3.4rem;
-        border-radius: 0.2rem 0 0 0.2rem;
-        background: var(--color-dark-grey-100);
-
-        svg {
-          font-size: 1.6rem;
-          color: var(--color-light-grey-200);
-        }
-      }
-
-      &__content {
-        @include flexVCenter;
-
-        height: 3.4rem;
-        width: calc(100% - 3.4rem);
-        border-radius: 0 0.2rem 0.2rem 0;
-        border: 0.1rem solid var(--color-dark-grey-100);
-        color: var(--color-light-grey-400);
-        padding: 0 1rem;
-        font-family: 'Roboto Mono', monospace;
-        background: var(--color-dark-grey-100);
-        border-left: 0.1rem solid var(--color-dark-grey-50);
-        user-select: none;
-      }
+    &__content {
+      margin-bottom: 3rem;
     }
   }
 }
@@ -256,14 +244,10 @@
 
   height: 100%;
   width: 100%;
-  padding: 0.25rem;
 
   &__content {
-    overflow: auto;
-    height: 100%;
     width: 100%;
     border: 0.1rem solid var(--color-blue-300);
-    border-radius: 0.2rem;
   }
 
   &__content__markdown-content {
@@ -281,6 +265,278 @@
     border: 0.2rem dashed var(--color-dark-grey-280);
   }
 }
+
+.data-space__viewer__diagram-viewer {
+  height: 70rem;
+
+  &__carousel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+
+    .diagram-canvas {
+      border-radius: 0.2rem;
+    }
+
+    &__frame {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      position: relative;
+
+      &__display {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        position: relative;
+      }
+
+      &__navigator {
+        @include flexCenter;
+
+        height: 100%;
+        width: 5rem;
+        background: transparent;
+        position: absolute;
+        top: 0;
+
+        &--back {
+          left: 0;
+
+          &:hover {
+            background-image: linear-gradient(
+              90deg,
+              var(--color-dark-shade-50),
+              transparent
+            );
+          }
+        }
+
+        &--next {
+          right: 0;
+
+          &:hover {
+            background-image: linear-gradient(
+              270deg,
+              var(--color-dark-shade-50),
+              transparent
+            );
+          }
+        }
+
+        svg {
+          color: var(--color-dark-shade-800);
+          font-size: 2.6rem;
+        }
+
+        &:hover {
+          cursor: pointer;
+
+          svg {
+            color: var(--color-dark-shade-800);
+          }
+        }
+
+        &[disabled] {
+          cursor: not-allowed;
+
+          &:hover {
+            background: transparent;
+          }
+
+          svg,
+          &:hover svg {
+            color: var(--color-dark-shade-200);
+          }
+        }
+      }
+
+      &__indicators {
+        @include flexCenter;
+
+        height: 3rem;
+        width: 100%;
+        position: absolute;
+        bottom: 0;
+        background: transparent;
+        color: var(--color-light-grey-400);
+        padding: 0 0.5rem;
+        user-select: none;
+        cursor: default;
+      }
+
+      &__indicators__notch {
+        @include flexCenter;
+
+        height: 100%;
+        background: var(--color-dark-shade-0);
+        padding: 0 3rem;
+        border-radius: 1rem 1rem 0 0;
+      }
+
+      &__indicator {
+        margin: 0 0.5rem;
+
+        svg {
+          font-size: 1.2rem;
+          color: var(--color-dark-shade-50);
+        }
+      }
+
+      &__indicator--active svg {
+        color: var(--color-blue-150);
+      }
+    }
+
+    &__content {
+      height: calc(100% - 5.4rem);
+      width: 100%;
+    }
+
+    &__dropdown {
+      width: 100%;
+
+      &__container {
+        padding: 0.3rem;
+      }
+    }
+  }
+}
+
+.data-space__viewer__models-documentation {
+  height: 70rem;
+
+  &__search {
+    @include flexVCenter;
+
+    height: 3.8rem;
+    justify-content: flex-end;
+
+    &__input-group {
+      @include flexVCenter;
+
+      position: relative;
+      width: 15rem;
+
+      // &__input {
+      // }
+
+      // &__icon {
+      // }
+    }
+  }
+
+  &__grid {
+    height: calc(100% - 3.8rem);
+    width: 100%;
+
+    --ag-font-family: 'Roboto';
+
+    .ag-header-cell-text {
+      font-weight: 700;
+    }
+
+    .ag-cell-value {
+      word-break: break-word;
+    }
+  }
+}
+
+// &__usages {
+//   padding: 1rem 0;
+// }
+
+// &__usage {
+//   padding: 2rem;
+
+//   & + & {
+//     border-top: 1rem solid var(--color-dark-grey-100);
+//   }
+
+//   &__title {
+//     font-size: 2.4rem;
+//     font-weight: 900;
+//   }
+
+//   &__description__markdown-content {
+//     padding: 0;
+//     margin: 2rem 0;
+//   }
+
+//   &__query {
+//     height: 20rem;
+//   }
+
+//   &__block {
+//     min-height: 20rem;
+//   }
+
+//   &__block + &__block {
+//     margin-top: 1rem;
+//   }
+
+//   &__block--collapsed {
+//     height: 2.8rem;
+//     min-height: 2.8rem;
+//   }
+
+//   &__block__header {
+//     @include flexVCenter;
+
+//     background: var(--color-blue-150);
+//     color: var(--color-light-grey-0);
+//     height: 2.8rem;
+//     width: 100%;
+//     border-radius: 0.2rem;
+
+//     &__toggler {
+//       @include flexCenter;
+
+//       width: 2.8rem;
+
+//       svg {
+//         font-size: 1.6rem;
+//       }
+//     }
+
+//     &__title {
+//       @include flexVCenter;
+
+//       font-family: 'Roboto Mono', monospace;
+//       font-weight: 700;
+//       width: 100%;
+//       justify-content: flex-start;
+//     }
+
+//     &__actions {
+//       @include flexVCenter;
+
+//       height: 2.8rem;
+//     }
+
+//     &__action {
+//       @include flexCenter;
+//       @include flexConstantDimension;
+
+//       height: 2.8rem;
+//       width: 2.8rem;
+//       color: var(--color-light-grey-0);
+
+//       &:hover {
+//         background: var(--color-dark-shade-100);
+//       }
+//     }
+//   }
+
+//   &__block__content {
+//     height: calc(100% - 2.8rem);
+//   }
+
+//   &__block__content__table {
+//     width: 100%;
+//   }
+// }
 
 .data-space__viewer__execution-context {
   &__context-icon {
@@ -491,213 +747,44 @@
   }
 }
 
-// &__usages {
-//   padding: 1rem 0;
-// }
+.data-space__viewer__support {
+  padding: 2rem;
 
-// &__usage {
-//   padding: 2rem;
+  &__email {
+    &__entry {
+      @include flexVCenter;
 
-//   & + & {
-//     border-top: 1rem solid var(--color-dark-grey-100);
-//   }
-
-//   &__title {
-//     font-size: 2.4rem;
-//     font-weight: 900;
-//   }
-
-//   &__description__markdown-content {
-//     padding: 0;
-//     margin: 2rem 0;
-//   }
-
-//   &__query {
-//     height: 20rem;
-//   }
-
-//   &__block {
-//     min-height: 20rem;
-//   }
-
-//   &__block + &__block {
-//     margin-top: 1rem;
-//   }
-
-//   &__block--collapsed {
-//     height: 2.8rem;
-//     min-height: 2.8rem;
-//   }
-
-//   &__block__header {
-//     @include flexVCenter;
-
-//     background: var(--color-blue-150);
-//     color: var(--color-light-grey-0);
-//     height: 2.8rem;
-//     width: 100%;
-//     border-radius: 0.2rem;
-
-//     &__toggler {
-//       @include flexCenter;
-
-//       width: 2.8rem;
-
-//       svg {
-//         font-size: 1.6rem;
-//       }
-//     }
-
-//     &__title {
-//       @include flexVCenter;
-
-//       font-family: 'Roboto Mono', monospace;
-//       font-weight: 700;
-//       width: 100%;
-//       justify-content: flex-start;
-//     }
-
-//     &__actions {
-//       @include flexVCenter;
-
-//       height: 2.8rem;
-//     }
-
-//     &__action {
-//       @include flexCenter;
-//       @include flexConstantDimension;
-
-//       height: 2.8rem;
-//       width: 2.8rem;
-//       color: var(--color-light-grey-0);
-
-//       &:hover {
-//         background: var(--color-dark-shade-100);
-//       }
-//     }
-//   }
-
-//   &__block__content {
-//     height: calc(100% - 2.8rem);
-//   }
-
-//   &__block__content__table {
-//     width: 100%;
-//   }
-// }
-
-.data-space__viewer__diagram-viewer__carousel {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-  padding: 0.25rem;
-
-  .diagram-canvas {
-    border-radius: 0.2rem;
-  }
-
-  &__frame {
-    height: 100%;
-    width: 100%;
-    position: relative;
-
-    &__display {
-      height: 100%;
+      height: 3.4rem;
       width: 100%;
-    }
 
-    &__navigator {
-      @include flexCenter;
+      &__icon {
+        @include flexCenter;
 
-      height: 100%;
-      width: 3rem;
-      background: transparent;
-      position: absolute;
-      top: 0;
-
-      &--back {
-        left: 0;
-      }
-
-      &--next {
-        right: 0;
-      }
-
-      svg {
-        font-size: 2rem;
-        color: transparent;
-      }
-
-      &:hover {
-        background: var(--color-dark-shade-50);
-        cursor: pointer;
+        height: 3.4rem;
+        width: 3.4rem;
+        border-radius: 0.2rem 0 0 0.2rem;
+        background: var(--color-dark-grey-100);
 
         svg {
-          color: var(--color-dark-shade-800);
+          font-size: 1.6rem;
+          color: var(--color-light-grey-200);
         }
       }
 
-      &[disabled] {
-        cursor: not-allowed;
+      &__content {
+        @include flexVCenter;
 
-        svg {
-          color: transparent;
-        }
-
-        &:hover svg {
-          color: var(--color-dark-shade-200);
-        }
+        height: 3.4rem;
+        width: calc(100% - 3.4rem);
+        border-radius: 0 0.2rem 0.2rem 0;
+        border: 0.1rem solid var(--color-dark-grey-100);
+        color: var(--color-light-grey-400);
+        padding: 0 1rem;
+        font-family: 'Roboto Mono', monospace;
+        background: var(--color-dark-grey-100);
+        border-left: 0.1rem solid var(--color-dark-grey-50);
+        user-select: none;
       }
-    }
-
-    &__indicators {
-      @include flexCenter;
-
-      height: 2.4rem;
-      width: 100%;
-      position: absolute;
-      bottom: 0;
-      background: transparent;
-      color: var(--color-light-grey-400);
-      padding: 0 0.5rem;
-      user-select: none;
-      cursor: default;
-    }
-
-    &__indicators__notch {
-      @include flexCenter;
-
-      height: 100%;
-      background: var(--color-dark-shade-50);
-      padding: 0 3rem;
-      border-radius: 1rem 1rem 0 0;
-    }
-
-    &__indicator {
-      margin: 0 0.5rem;
-
-      svg {
-        font-size: 1.2rem;
-        color: var(--color-dark-shade-50);
-      }
-    }
-
-    &__indicator--active svg {
-      color: var(--color-blue-150);
-    }
-  }
-
-  &__content {
-    height: calc(100% - 5.4rem);
-    width: 100%;
-  }
-
-  &__dropdown {
-    width: 100%;
-
-    &__container {
-      padding: 0.3rem;
     }
   }
 }

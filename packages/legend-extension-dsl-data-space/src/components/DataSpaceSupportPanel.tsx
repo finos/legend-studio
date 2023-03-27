@@ -70,8 +70,10 @@ export const DataSpaceSupportPanel = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     return (
-      <div className="data-space__viewer__panel__content data-space__viewer__support-info">
-        <DataSpaceSupport dataSpaceViewerState={dataSpaceViewerState} />
+      <div className="data-space__viewer__panel">
+        <div className="data-space__viewer__support-info">
+          <DataSpaceSupport dataSpaceViewerState={dataSpaceViewerState} />
+        </div>
       </div>
     );
   },

@@ -244,6 +244,8 @@ export const AlignEndIcon = BS.BsAlignEnd;
 export const DistributeHorizontalIcon = BS.BsDistributeHorizontal;
 export const DistributeVerticalIcon = BS.BsDistributeVertical;
 export const DataAccessIcon = BS.BsDatabaseFillCheck;
+export const ThinChevronRightIcon = BS.BsChevronRight;
+export const ThinChevronLeftIcon = BS.BsChevronLeft;
 
 const BI = ReactIcons.BI;
 export const ShapeTriangleIcon = BI.BiShapeTriangle;

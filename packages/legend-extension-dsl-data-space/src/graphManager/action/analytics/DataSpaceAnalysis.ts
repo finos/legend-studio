@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { Diagram } from '@finos/legend-extension-dsl-diagram';
 import type {
   Mapping,
   PackageableRuntime,
@@ -22,6 +21,7 @@ import type {
 } from '@finos/legend-graph';
 import { uuid } from '@finos/legend-shared';
 import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import type { Diagram } from '@finos/legend-extension-dsl-diagram';
 
 export class DataSpaceExecutionContextAnalysisResult {
   name!: string;
@@ -67,7 +67,7 @@ export class DataSpaceDocumentationEntry {
 export class DataSpaceDiagramAnalysisResult {
   title!: string;
   description?: string | undefined;
-  diagram!: string;
+  diagram!: Diagram;
 }
 
 export abstract class DataSpaceExecutableInfo {
@@ -119,7 +119,6 @@ export class DataSpaceAnalysisResult {
 
   elementDocs: DataSpaceDocumentationEntry[] = [];
 
-  featuredDiagrams: Diagram[] = [];
   diagrams: DataSpaceDiagramAnalysisResult[] = [];
 
   executables: DataSpaceExecutableAnalysisResult[] = [];

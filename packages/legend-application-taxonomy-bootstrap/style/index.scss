@@ -41,7 +41,11 @@
   --color-hclight-grey-90: #1c2b36;
   --color-hclight-ultramarine-90: #23254d;
   --color-hclight-aqua-90: #0c2b45;
+  --color-hclight-blue-90: #11294d;
+  --color-hclight-blue-80: #103a75;
   --color-hclight-blue-70: #0d4ea6;
+  --color-hclight-blue-60: #186ade;
+  --color-hclight-blue-50: #3d8df5;
   --color-hclight-green-60: #077d55;
   --color-hclight-lime-50: #52a31d;
   --color-hclight-yellow-30: #f5c518;
@@ -50,6 +54,27 @@
 }
 
 .theme__hc-light {
+  // ---------------------------- Scrollbar -------------------------------
+
+  ::-webkit-scrollbar {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    height: 5rem;
+    background: var(--color-hclight-grey-15);
+    outline-offset: -0.2rem;
+    border-radius: 0.4rem;
+    outline-color: var(--color-hclight-grey-10);
+    border-color: var(--color-hclight-grey-10);
+  }
+
+  ::-webkit-scrollbar-track-piece {
+    background: var(--color-hclight-grey-10);
+    border-radius: 0;
+  }
+
   // ---------------------------- Menu -------------------------------
 
   .menu {
@@ -106,6 +131,53 @@
 
     &__content {
       background: var(--color-hclight-white);
+    }
+  }
+
+  .data-space__viewer__description {
+    &__content {
+      border: none;
+    }
+
+    .markdown-content {
+      background: var(--color-hclight-white);
+      padding: 2rem 0;
+      color: var(--color-hclight-grey-90);
+
+      a {
+        color: var(--color-hclight-blue-50);
+      }
+
+      pre {
+        background: var(--color-hclight-grey-90);
+      }
+
+      pre code {
+        color: var(--color-hclight-white);
+      }
+    }
+  }
+
+  .data-space__viewer__diagram-viewer {
+    &__carousel__frame__indicator--active svg {
+      color: var(--color-hclight-blue-60);
+    }
+  }
+
+  .data-space__viewer__models-documentation {
+    &__grid {
+      // Customize ag-grid theme
+      // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
+      --ag-border-color: var(--color-hclight-grey-30);
+      --ag-background-color: var(--color-hclight-white);
+      --ag-foreground-color: var(--color-hclight-grey-90);
+      --ag-header-background-color: var(--color-hclight-grey-10);
+      --ag-header-foreground-color: var(--color-hclight-grey-90);
+      --ag-balham-active-color: transparent;
+      --ag-odd-row-background-color: var(--color-hclight-white);
+      --ag-even-row-background-color: var(--color-hclight-white);
+      --ag-row-hover-color: var(--color-hclight-grey-10);
+      --ag-row-border-color: var(--color-hclight-grey-30);
     }
   }
 }

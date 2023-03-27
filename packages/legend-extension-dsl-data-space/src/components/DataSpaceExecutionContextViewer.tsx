@@ -113,56 +113,58 @@ export const DataSpaceExecutionContextViewer = observer(
     );
 
     return (
-      <div className="data-space__viewer__panel__content data-space__viewer__execution-context">
-        <div className="data-space__viewer__execution-context__entry">
-          <div className="data-space__viewer__execution-context__entry__icon">
-            <CogIcon className="data-space__viewer__execution-context__context-icon" />
+      <div className="data-space__viewer__panel">
+        <div className="data-space__viewer__execution-context">
+          <div className="data-space__viewer__execution-context__entry">
+            <div className="data-space__viewer__execution-context__entry__icon">
+              <CogIcon className="data-space__viewer__execution-context__context-icon" />
+            </div>
+            <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__dropdown__container">
+              <CustomSelectorInput
+                className="data-space__viewer__execution-context__entry__content__dropdown"
+                options={executionContextOptions}
+                onChange={onExecutionContextOptionChange}
+                value={selectedExecutionContextOption}
+                darkMode={true}
+                formatOptionLabel={formatExecutionContextOptionLabel}
+              />
+            </div>
           </div>
-          <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__dropdown__container">
-            <CustomSelectorInput
-              className="data-space__viewer__execution-context__entry__content__dropdown"
-              options={executionContextOptions}
-              onChange={onExecutionContextOptionChange}
-              value={selectedExecutionContextOption}
-              darkMode={true}
-              formatOptionLabel={formatExecutionContextOptionLabel}
-            />
+          <div
+            className={clsx(
+              'data-space__viewer__execution-context__description',
+              {
+                'data-space__viewer__execution-context__description--empty':
+                  !dataSpaceViewerState.currentExecutionContext.description,
+              },
+            )}
+          >
+            {dataSpaceViewerState.currentExecutionContext.description
+              ? dataSpaceViewerState.currentExecutionContext.description
+              : 'No description'}
           </div>
-        </div>
-        <div
-          className={clsx(
-            'data-space__viewer__execution-context__description',
-            {
-              'data-space__viewer__execution-context__description--empty':
-                !dataSpaceViewerState.currentExecutionContext.description,
-            },
-          )}
-        >
-          {dataSpaceViewerState.currentExecutionContext.description
-            ? dataSpaceViewerState.currentExecutionContext.description
-            : 'No description'}
-        </div>
-        <div className="data-space__viewer__execution-context__entry data-space__viewer__execution-context__mapping">
-          <div className="data-space__viewer__execution-context__entry__icon">
-            <PURE_MappingIcon />
+          <div className="data-space__viewer__execution-context__entry data-space__viewer__execution-context__mapping">
+            <div className="data-space__viewer__execution-context__entry__icon">
+              <PURE_MappingIcon />
+            </div>
+            <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__text">
+              {dataSpaceViewerState.currentExecutionContext.mapping.path}
+            </div>
           </div>
-          <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__text">
-            {dataSpaceViewerState.currentExecutionContext.mapping.path}
-          </div>
-        </div>
-        <div className="data-space__viewer__execution-context__entry">
-          <div className="data-space__viewer__execution-context__entry__icon">
-            <PURE_RuntimeIcon />
-          </div>
-          <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__dropdown__container">
-            <CustomSelectorInput
-              className="data-space__viewer__execution-context__entry__content__dropdown"
-              options={runtimeOptions}
-              onChange={onRuntimeOptionChange}
-              value={selectedRuntimeOption}
-              darkMode={true}
-              formatOptionLabel={formatRuntimeOptionLabel}
-            />
+          <div className="data-space__viewer__execution-context__entry">
+            <div className="data-space__viewer__execution-context__entry__icon">
+              <PURE_RuntimeIcon />
+            </div>
+            <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__dropdown__container">
+              <CustomSelectorInput
+                className="data-space__viewer__execution-context__entry__content__dropdown"
+                options={runtimeOptions}
+                onChange={onRuntimeOptionChange}
+                value={selectedRuntimeOption}
+                darkMode={true}
+                formatOptionLabel={formatRuntimeOptionLabel}
+              />
+            </div>
           </div>
         </div>
       </div>

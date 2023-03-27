@@ -302,7 +302,7 @@ const MappingTestQueryEditor = observer(
           <PanelContent>
             <div
               className="mapping-test-editor__query-panel__query"
-              title={'double click to edit query in query builder'}
+              title="Double click to edit in query builder"
               onDoubleClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { getDiagram } from '@finos/legend-extension-dsl-diagram';
 import {
   PureModel,
   V1_PureGraphManager,
@@ -65,6 +64,7 @@ import {
   V1_DataSpaceExecutableTDSResult,
   V1_DataSpaceServiceExecutableInfo,
 } from './engine/analytics/V1_DataSpaceAnalysis.js';
+import { getDiagram } from '@finos/legend-extension-dsl-diagram';
 
 const ANALYZE_DATA_SPACE_TRACE = 'analyze data space';
 
@@ -344,16 +344,22 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     });
 
     // featured diagrams
-    result.featuredDiagrams = analysisResult.featuredDiagrams.map((path) =>
-      getDiagram(path, graph),
-    );
-    result.diagrams = analysisResult.diagrams.map((diagramProtocol) => {
-      const diagram = new DataSpaceDiagramAnalysisResult();
-      diagram.title = diagramProtocol.title;
-      diagram.description = diagramProtocol.description;
-      diagram.diagram = diagramProtocol.diagram;
-      return diagram;
-    });
+    result.diagrams = analysisResult.featuredDiagrams
+      .map((path) => {
+        const diagram = new DataSpaceDiagramAnalysisResult();
+        diagram.title = path;
+        diagram.diagram = getDiagram(path, graph);
+        return diagram;
+      })
+      .concat(
+        analysisResult.diagrams.map((diagramProtocol) => {
+          const diagram = new DataSpaceDiagramAnalysisResult();
+          diagram.title = diagramProtocol.title;
+          diagram.description = diagramProtocol.description;
+          diagram.diagram = getDiagram(diagramProtocol.diagram, graph);
+          return diagram;
+        }),
+      );
 
     // executables
     result.executables = analysisResult.executables.map(

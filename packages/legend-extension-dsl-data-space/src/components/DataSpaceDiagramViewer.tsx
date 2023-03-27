@@ -16,9 +16,9 @@
 
 import {
   BlankPanelContent,
-  ChevronLeftIcon,
-  ChevronRightIcon,
   CircleIcon,
+  ThinChevronLeftIcon,
+  ThinChevronRightIcon,
   clsx,
   useResizeDetector,
 } from '@finos/legend-art';
@@ -90,89 +90,98 @@ export const DataSpaceDiagramViewer = observer(
       if (!dataSpaceViewerState.currentDiagram) {
         return;
       }
-      const idx = analysisResult.featuredDiagrams.indexOf(
+      const idx = analysisResult.diagrams.indexOf(
         dataSpaceViewerState.currentDiagram,
       );
       if (idx === 0 || idx === -1) {
         return;
       }
       dataSpaceViewerState.setCurrentDiagram(
-        guaranteeNonNullable(analysisResult.featuredDiagrams[idx - 1]),
+        guaranteeNonNullable(analysisResult.diagrams[idx - 1]),
       );
     };
     const showNextDiagram = (): void => {
       if (!dataSpaceViewerState.currentDiagram) {
         return;
       }
-      const idx = analysisResult.featuredDiagrams.indexOf(
+      const idx = analysisResult.diagrams.indexOf(
         dataSpaceViewerState.currentDiagram,
       );
-      if (idx === analysisResult.featuredDiagrams.length - 1 || idx === -1) {
+      if (idx === analysisResult.diagrams.length - 1 || idx === -1) {
         return;
       }
       dataSpaceViewerState.setCurrentDiagram(
-        guaranteeNonNullable(analysisResult.featuredDiagrams[idx + 1]),
+        guaranteeNonNullable(analysisResult.diagrams[idx + 1]),
       );
     };
 
-    if (analysisResult.featuredDiagrams.length === 0) {
+    if (analysisResult.diagrams.length === 0) {
       return <BlankPanelContent>No diagrams available</BlankPanelContent>;
     }
     return (
-      <div className="data-space__viewer__diagram-viewer__carousel">
-        <div className="data-space__viewer__diagram-viewer__carousel__frame">
-          <div className="data-space__viewer__diagram-viewer__carousel__frame__display">
-            {dataSpaceViewerState.currentDiagram && (
-              <DataSpaceDiagramCanvas
-                dataSpaceViewerState={dataSpaceViewerState}
-                diagram={dataSpaceViewerState.currentDiagram}
-                ref={diagramCanvasRef}
-              />
-            )}
-          </div>
-          <button
-            className="data-space__viewer__diagram-viewer__carousel__frame__navigator data-space__viewer__diagram-viewer__carousel__frame__navigator--back"
-            tabIndex={-1}
-            title="Previous"
-            disabled={
-              getNullableFirstElement(analysisResult.featuredDiagrams) ===
-              dataSpaceViewerState.currentDiagram
-            }
-            onClick={showPreviousDiagram}
-          >
-            <ChevronLeftIcon />
-          </button>
-          <button
-            className="data-space__viewer__diagram-viewer__carousel__frame__navigator data-space__viewer__diagram-viewer__carousel__frame__navigator--next"
-            tabIndex={-1}
-            title="Previous"
-            disabled={
-              getNullableLastElement(analysisResult.featuredDiagrams) ===
-              dataSpaceViewerState.currentDiagram
-            }
-            onClick={showNextDiagram}
-          >
-            <ChevronRightIcon />
-          </button>
-          <div className="data-space__viewer__diagram-viewer__carousel__frame__indicators">
-            <div className="data-space__viewer__diagram-viewer__carousel__frame__indicators__notch">
-              {analysisResult.featuredDiagrams.map((diagram) => (
-                <button
-                  key={diagram.path}
-                  className={clsx(
-                    'data-space__viewer__diagram-viewer__carousel__frame__indicator',
-                    {
-                      'data-space__viewer__diagram-viewer__carousel__frame__indicator--active':
-                        dataSpaceViewerState.currentDiagram === diagram,
-                    },
+      <div className="data-space__viewer__wiki__section">
+        <div className="data-space__viewer__wiki__section__header">
+          Diagrams
+        </div>
+        <div className="data-space__viewer__wiki__section__content">
+          <div className="data-space__viewer__diagram-viewer">
+            <div className="data-space__viewer__diagram-viewer__carousel">
+              <div className="data-space__viewer__diagram-viewer__carousel__frame">
+                <div className="data-space__viewer__diagram-viewer__carousel__frame__display">
+                  {dataSpaceViewerState.currentDiagram && (
+                    <DataSpaceDiagramCanvas
+                      dataSpaceViewerState={dataSpaceViewerState}
+                      diagram={dataSpaceViewerState.currentDiagram.diagram}
+                      ref={diagramCanvasRef}
+                    />
                   )}
-                  onClick={() =>
-                    dataSpaceViewerState.setCurrentDiagram(diagram)
+                </div>
+                <button
+                  className="data-space__viewer__diagram-viewer__carousel__frame__navigator data-space__viewer__diagram-viewer__carousel__frame__navigator--back"
+                  tabIndex={-1}
+                  title="Previous"
+                  disabled={
+                    getNullableFirstElement(analysisResult.diagrams) ===
+                    dataSpaceViewerState.currentDiagram
                   }
+                  onClick={showPreviousDiagram}
                 >
-                  <CircleIcon />
+                  <ThinChevronLeftIcon />
                 </button>
-              ))}
+                <button
+                  className="data-space__viewer__diagram-viewer__carousel__frame__navigator data-space__viewer__diagram-viewer__carousel__frame__navigator--next"
+                  tabIndex={-1}
+                  title="Next"
+                  disabled={
+                    getNullableLastElement(analysisResult.diagrams) ===
+                    dataSpaceViewerState.currentDiagram
+                  }
+                  onClick={showNextDiagram}
+                >
+                  <ThinChevronRightIcon />
+                </button>
+                <div className="data-space__viewer__diagram-viewer__carousel__frame__indicators">
+                  <div className="data-space__viewer__diagram-viewer__carousel__frame__indicators__notch">
+                    {analysisResult.diagrams.map((diagram) => (
+                      <button
+                        key={diagram.diagram.path}
+                        className={clsx(
+                          'data-space__viewer__diagram-viewer__carousel__frame__indicator',
+                          {
+                            'data-space__viewer__diagram-viewer__carousel__frame__indicator--active':
+                              dataSpaceViewerState.currentDiagram === diagram,
+                          },
+                        )}
+                        onClick={() =>
+                          dataSpaceViewerState.setCurrentDiagram(diagram)
+                        }
+                      >
+                        <CircleIcon />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

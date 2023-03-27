@@ -22,10 +22,12 @@ import { clsx } from 'clsx';
 export const MarkdownTextViewer: React.FC<{
   value: MarkdownText;
   className?: string | undefined;
+  components?: Record<string, unknown> | undefined;
 }> = (props) => (
   <ReactMarkdown
     className={clsx('markdown-content', props.className)}
     remarkPlugins={[remarkGFM]}
+    components={props.components ?? {}}
   >
     {props.value.value}
   </ReactMarkdown>
