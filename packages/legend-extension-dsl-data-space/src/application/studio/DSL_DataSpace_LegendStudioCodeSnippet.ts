@@ -20,6 +20,7 @@ export const SIMPLE_DATA_SPACE_SNIPPET = `DataSpace \${1:model::NewDataSpace}
   [
     {
       name: '\${5:Some Context}';
+      title: 'New Execution Context';
       description: 'some information about the execution context';
       mapping: \${6:model::SomeMapping};
       defaultRuntime: \${7:model::SomeRuntime};
@@ -27,13 +28,25 @@ export const SIMPLE_DATA_SPACE_SNIPPET = `DataSpace \${1:model::NewDataSpace}
   ];
   defaultExecutionContext: '\${5:Some Context}';
   // description: 'description of the data models';
-  // featuredDiagrams:
+  // diagrams:
   // [
-  //   model::SomeDiagram
+  //   {
+  //     title: 'Some Diagram';
+  //     description: 'some diagram';
+  //     diagram: model::SomeDiagram;
+  //   }
   // ];
   // elements:
   // [
   //   model::SomeClass,
+  // ];
+  // executables:
+  // [
+  //   {
+  //     title: 'Some Executable';
+  //     description: 'some executable';
+  //     executable: model::SomeExecutable;
+  //   }
   // ];
   // supportInfo: Email {
   //   address: 'someEmail@test.org';

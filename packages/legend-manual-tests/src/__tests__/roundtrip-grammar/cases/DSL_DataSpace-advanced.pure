@@ -68,7 +68,7 @@ DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} mod
   [
     {
       title: 'Diag 1';
-      description: 'some information about the context';
+      description: 'some information about the diagram';
       diagram: model::DummyDiagram;
     },
     {
@@ -80,6 +80,18 @@ DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} mod
   [
     model::DummyClass,
     model::DummyClass
+  ];
+  executables:
+  [
+    {
+      title: 'Exec 1';
+      description: 'some information about the executable';
+      executable: model::MyService;
+    },
+    {
+      title: 'Exec 2';
+      executable: model::MyService;
+    }
   ];
   supportInfo: Combined {
     documentationUrl: 'https://example.org';
