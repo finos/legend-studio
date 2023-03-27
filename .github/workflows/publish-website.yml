@@ -36,7 +36,7 @@ jobs:
           NODE_OPTIONS: '--max_old_space_size=4096'
         run: yarn build:ts && yarn build:website
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1.0.7
+        uses: actions/upload-pages-artifact@v1.0.8
         with:
           path: ./build/docs
   deploy-documentation-website:
