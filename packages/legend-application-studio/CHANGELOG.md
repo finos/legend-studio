@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 23.0.3
+
+### Patch Changes
+
+- [#1992](https://github.com/finos/legend-studio/pull/1992) [`247dd6c1f`](https://github.com/finos/legend-studio/commit/247dd6c1f8c778fe5d5e30e795b1801762979469) ([@jinanisha](https://github.com/jinanisha)) - Add support for Trino connector
+
 ## 23.0.2
 
 ## 23.0.1

@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 8.0.2
+
+### Patch Changes
+
+- [#2036](https://github.com/finos/legend-studio/pull/2036) [`06248e48f`](https://github.com/finos/legend-studio/commit/06248e48f346b074b5fdf9795d5bd903a2c82070) ([@xannem](https://github.com/xannem)) - Prettify const names with acronyms
+
 ## 8.0.1
 
 ## 8.0.0
