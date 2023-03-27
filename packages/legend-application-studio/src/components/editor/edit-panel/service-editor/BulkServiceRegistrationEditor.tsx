@@ -33,8 +33,8 @@ import {
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import {
-  BulkRegistrationResultFail,
-  BulkRegistrationResultSuccess,
+  ServiceRegistrationFail,
+  ServiceRegistrationSuccess,
   ServiceExecutionMode,
 } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
@@ -180,7 +180,7 @@ export const BulkServiceRegistrationEditor = observer(() => {
                   <div className="bulk-service-registration__service__result__header">
                     Successful Services
                     {editorStore.bulkServiceRegistrationState.registrationResult
-                      ?.filter(filterByType(BulkRegistrationResultSuccess))
+                      ?.filter(filterByType(ServiceRegistrationSuccess))
                       .map((service) => (
                         <div
                           className="bulk-service-registration__service__link__label"
@@ -204,13 +204,13 @@ export const BulkServiceRegistrationEditor = observer(() => {
                     </div>
                     <div>
                       {editorStore.bulkServiceRegistrationState.registrationResult
-                        ?.filter(filterByType(BulkRegistrationResultFail))
+                        ?.filter(filterByType(ServiceRegistrationFail))
                         .map((service) => (
                           <div
                             key={service.errorMessage}
                             className="bulk-service-registration__service__link__label"
                           >
-                            {service.errorMessage}
+                            {`${service.service?.path} ${service.errorMessage}`}
                           </div>
                         ))}
                     </div>

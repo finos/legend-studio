@@ -35,7 +35,6 @@ import { LEGEND_STUDIO_APP_EVENT } from '../../../../../application/LegendStudio
 import { Version } from '@finos/legend-server-sdlc';
 import {
   type Service,
-  type ServiceRegistrationResult,
   type PureExecution,
   ServiceExecutionMode,
   buildLambdaVariableExpressions,
@@ -43,6 +42,7 @@ import {
   generateMultiplicityString,
   areMultiplicitiesEqual,
   Multiplicity,
+  type ServiceRegistrationSuccess,
 } from '@finos/legend-graph';
 import { ServiceRegistrationEnvironmentConfig } from '../../../../../application/LegendStudioApplicationConfig.js';
 import {
@@ -270,7 +270,7 @@ export class ServiceRegistrationState extends ServiceConfigState {
           {
             TEMPORARY__useStoreModel: this.TEMPORARY__useStoreModel,
           },
-        )) as ServiceRegistrationResult;
+        )) as ServiceRegistrationSuccess;
       if (this.activatePostRegistration) {
         this.registrationState.setMessage(`Activating service...`);
         yield this.editorStore.graphManagerState.graphManager.activateService(

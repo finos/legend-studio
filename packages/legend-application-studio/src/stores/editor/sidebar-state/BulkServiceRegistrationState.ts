@@ -16,10 +16,7 @@
 import { action, makeObservable, observable, flow } from 'mobx';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import type { EditorStore } from '../EditorStore.js';
-import type {
-  BulkServiceRegistrationResult,
-  Service,
-} from '@finos/legend-graph';
+import type { ServiceRegistrationResult, Service } from '@finos/legend-graph';
 import {
   type GeneratorFn,
   guaranteeNonNullable,
@@ -38,7 +35,7 @@ export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 
 export class BulkServiceRegistrationState extends ServiceConfigState {
   sdlcState: EditorSDLCState;
-  registrationResult: BulkServiceRegistrationResult[] | undefined;
+  registrationResult: ServiceRegistrationResult[] | undefined;
   showSuccessModel = false;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
@@ -96,7 +93,7 @@ export class BulkServiceRegistrationState extends ServiceConfigState {
           {
             TEMPORARY__useStoreModel: this.TEMPORARY__useStoreModel,
           },
-        )) as BulkServiceRegistrationResult[];
+        )) as ServiceRegistrationResult[];
 
       this.showSuccessModel = true;
     } catch (error) {

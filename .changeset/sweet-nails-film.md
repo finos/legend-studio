@@ -2,4 +2,4 @@
 '@finos/legend-application-studio': minor
 ---
 
-enhance bulk registration
+Enhance servie bulk registration modal

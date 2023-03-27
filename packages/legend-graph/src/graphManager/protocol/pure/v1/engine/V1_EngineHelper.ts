@@ -31,7 +31,10 @@ import { PackageableElementExplicitReference } from '../../../../../graph/metamo
 import { DEPRECATED__ServiceTestResult } from '../../../../../graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 import type { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult.js';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
-import { ServiceRegistrationResult } from '../../../../../graphManager/action/service/ServiceRegistrationResult.js';
+import {
+  type ServiceRegistrationResult,
+  ServiceRegistrationSuccess,
+} from '../../../../../graphManager/action/service/ServiceRegistrationResult.js';
 import { GenerationOutput } from '../../../../../graphManager/action/generation/GenerationOutput.js';
 import type { V1_GenerationOutput } from './generation/V1_GenerationOutput.js';
 import {
@@ -272,7 +275,7 @@ export const V1_buildServiceRegistrationResult = (
     protocol.serviceInstanceId,
     `Service registration 'serviceInstanceId' field is missing`,
   );
-  return new ServiceRegistrationResult(
+  return new ServiceRegistrationSuccess(
     protocol.serverURL,
     protocol.pattern,
     protocol.serviceInstanceId,

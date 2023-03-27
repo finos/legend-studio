@@ -205,9 +205,8 @@ export { GenerationOutput } from './graphManager/action/generation/GenerationOut
 export { ServiceExecutionMode } from './graphManager/action/service/ServiceExecutionMode.js';
 export {
   ServiceRegistrationResult,
-  BulkServiceRegistrationResult,
-  BulkRegistrationResultFail,
-  BulkRegistrationResultSuccess,
+  ServiceRegistrationFail,
+  ServiceRegistrationSuccess,
 } from './graphManager/action/service/ServiceRegistrationResult.js';
 export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graphManager/action/SourceInformation.js';

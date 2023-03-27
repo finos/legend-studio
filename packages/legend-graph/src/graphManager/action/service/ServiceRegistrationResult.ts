@@ -17,22 +17,10 @@
 import type { Service } from '../../../graph/metamodel/pure/packageableElements/service/Service.js';
 
 export class ServiceRegistrationResult {
-  serverURL: string;
-  pattern: string;
-  serviceInstanceId: string;
-
-  constructor(serverURL: string, pattern: string, serviceInstanceId: string) {
-    this.serverURL = serverURL;
-    this.pattern = pattern;
-    this.serviceInstanceId = serviceInstanceId;
-  }
-}
-
-export class BulkServiceRegistrationResult {
   service: Service | undefined;
 }
 
-export class BulkRegistrationResultSuccess extends BulkServiceRegistrationResult {
+export class ServiceRegistrationSuccess extends ServiceRegistrationResult {
   serverURL: string;
   pattern: string;
   serviceInstanceId: string;
@@ -44,7 +32,7 @@ export class BulkRegistrationResultSuccess extends BulkServiceRegistrationResult
     this.serviceInstanceId = serviceInstanceId;
   }
 }
-export class BulkRegistrationResultFail extends BulkServiceRegistrationResult {
+export class ServiceRegistrationFail extends ServiceRegistrationResult {
   errorMessage: string;
 
   constructor(errorMessage: string) {

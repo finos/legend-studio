@@ -70,9 +70,8 @@ import type {
 } from '../../../../graphManager/action/generation/GenerationConfigurationDescription.js';
 import {
   type ServiceRegistrationResult,
-  type BulkServiceRegistrationResult,
-  BulkRegistrationResultSuccess,
-  BulkRegistrationResultFail,
+  ServiceRegistrationSuccess,
+  ServiceRegistrationFail,
 } from '../../../../graphManager/action/service/ServiceRegistrationResult.js';
 import type { ExecutionResult } from '../../../../graphManager/action/execution/ExecutionResult.js';
 import type { GenerationOutput } from '../../../../graphManager/action/generation/GenerationOutput.js';
@@ -114,6 +113,7 @@ import { V1_RawBaseExecutionContext } from './model/rawValueSpecification/V1_Raw
 import {
   type V1_GraphBuilderContext,
   V1_GraphBuilderContextBuilder,
+  V1_buildFullPath,
 } from './transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import { V1_PureModelContextPointer } from './model/context/V1_PureModelContextPointer.js';
 import { V1_Engine } from './engine/V1_Engine.js';
@@ -2612,7 +2612,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     server: string,
     executionMode: ServiceExecutionMode,
     options?: ServiceRegistrationOptions,
-  ): Promise<BulkServiceRegistrationResult[]> {
+  ): Promise<ServiceRegistrationResult[]> {
     const serverServiceInfo = await this.engine.getServerServiceInfo();
     const input: V1_PureModelContext[] = [];
 
@@ -2710,7 +2710,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               Boolean(options?.TEMPORARY__useStoreModel),
             );
             if (result.status === 'success') {
-              return new BulkRegistrationResultSuccess(
+              return new ServiceRegistrationSuccess(
                 result.serverURL,
                 result.pattern,
                 result.serviceInstanceId,
@@ -2719,14 +2719,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             return undefined;
           } catch (error) {
             assertErrorThrown(error);
-            let errorMessage = error.message;
+            const result = new ServiceRegistrationFail(error.message);
             if (graphData instanceof V1_PureModelContextData) {
               const servicePath = getNullableFirstElement(
                 graphData.elements.filter(filterByType(V1_Service)),
               )?.path;
-              errorMessage = `${servicePath} ${error.message}`;
+              const serviceName = getNullableFirstElement(
+                graphData.elements.filter(filterByType(V1_Service)),
+              )?.name;
+              const service = graph.getOwnService(
+                V1_buildFullPath(servicePath, serviceName),
+              );
+              result.service = service;
             }
-            return new BulkRegistrationResultFail(errorMessage);
+            return result;
           }
         }),
       )
