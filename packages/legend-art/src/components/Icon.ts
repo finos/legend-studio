@@ -180,6 +180,8 @@ export const LinkIcon = MD.MdLink;
 export const WindowIcon = MD.MdWindow;
 export const ReviewIcon = MD.MdReviews;
 export const CalculateIcon = MD.MdCalculate;
+export const LaunchIcon = MD.MdRocketLaunch;
+export const DatasetIcon = MD.MdOutlineDataset;
 
 const VSC = ReactIcons.VSC;
 export const ErrorIcon = VSC.VscError;
@@ -224,6 +226,7 @@ export const FileTrayIcon = IO.IoFileTrayFullOutline;
 export const MenuIcon = IO.IoMenuOutline;
 export const BeakerIcon = IO.IoBeaker;
 export const FlaskIcon = IO.IoFlaskSharp;
+export const AvailabilityIcon = IO.IoSyncCircleSharp;
 
 const BS = ReactIcons.BS;
 export const DisplayIcon = BS.BsDisplayFill;
@@ -240,6 +243,7 @@ export const AlignCenterIcon = BS.BsAlignCenter;
 export const AlignEndIcon = BS.BsAlignEnd;
 export const DistributeHorizontalIcon = BS.BsDistributeHorizontal;
 export const DistributeVerticalIcon = BS.BsDistributeVertical;
+export const DataAccessIcon = BS.BsDatabaseFillCheck;
 
 const BI = ReactIcons.BI;
 export const ShapeTriangleIcon = BI.BiShapeTriangle;
@@ -264,6 +268,8 @@ const RI = ReactIcons.RI;
 export const ShapeLineIcon = RI.RiShapeLine;
 export const TestTubeIcon = RI.RiTestTubeFill;
 export const DroidIcon = RI.RiRobotFill;
+export const GovernanceIcon = RI.RiGovernmentFill;
+export const CostCircleIcon = RI.RiMoneyDollarCircleFill;
 
 const TB = ReactIcons.TB;
 export const ArrowsJoinIcon = TB.TbArrowsJoin2;
@@ -273,3 +279,4 @@ export const RepoIcon = TB.TbBook;
 
 const HI = ReactIcons.HI;
 export const CodeIcon = HI.HiCode;
+export const HomeIcon = HI.HiHome;

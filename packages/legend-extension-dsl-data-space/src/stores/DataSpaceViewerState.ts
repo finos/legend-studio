@@ -36,14 +36,18 @@ import type {
 } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
-  OVERVIEW = 'OVERVIEW',
-  DOCUMENTATION = 'DOCUMENTATION',
-  USAGE_SHOWCASE = 'USAGE SHOWCASE',
-  EXECUTION = 'EXECUTION',
-  ENTITLEMENT = 'ENTITLEMENT',
-  TEST_DATA = 'TEST_DATA',
-  TEST_COVERAGE = 'TEST_COVERAGE',
-  INFO = 'INFO',
+  DESCRIPTION = 'DESCRIPTION',
+  DIAGRAMS = 'DIAGRAMS',
+  MODELS_DOCUMENTATION = 'MODELS_DOCUMENTATION',
+  QUICK_START = 'QUICK_START',
+  EXECUTION_CONTEXT = 'EXECUTION_CONTEXT',
+  DATA_ACCESS = 'DATA_ACCESS',
+
+  DATA_STORES = 'DATA_STORES', // TODO: with test-data, also let user call TDS query on top of these
+  DATA_AVAILABILITY = 'DATA_AVAILABILITY',
+  DATA_COST = 'DATA_COST',
+  DATA_GOVERNANCE = 'DATA_GOVERNANCE',
+  INFO = 'INFO', // TODO: test coverage? (or maybe this should be done in elements/diagrams/data-quality section)
   SUPPORT = 'SUPPORT',
 }
 
@@ -70,7 +74,7 @@ export class DataSpaceViewerState {
 
   _renderer?: DiagramRenderer | undefined;
   currentDiagram?: Diagram | undefined;
-  currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.OVERVIEW;
+  currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
 

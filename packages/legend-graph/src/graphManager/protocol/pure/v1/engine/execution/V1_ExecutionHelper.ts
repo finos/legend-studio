@@ -32,12 +32,12 @@ import {
 import {
   type V1_ExecutionResult,
   type V1_TDSBuilder,
+  type V1_INTERNAL__TDSColumn,
   V1_ClassExecutionResult,
   V1_JsonExecutionResult,
   V1_INTERNAL__UnknownExecutionResult,
   V1_TDSExecutionResult,
   V1_RawExecutionResult,
-  V1_INTERNAL__TDSColumn,
 } from './V1_ExecutionResult.js';
 
 const buildJSONExecutionResult = (

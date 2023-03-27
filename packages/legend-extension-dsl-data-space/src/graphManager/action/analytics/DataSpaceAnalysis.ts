@@ -19,16 +19,9 @@ import type {
   Mapping,
   PackageableRuntime,
   PureModel,
-  ResultType,
 } from '@finos/legend-graph';
 import { uuid } from '@finos/legend-shared';
 import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
-import {
-  type HACKY__DataSpaceUsageShowcase,
-  HACKY__SHOWCASE1,
-  HACKY__SHOWCASE2,
-  HACKY__SHOWCASE3,
-} from './HACKY__DataSpaceUsageShowcase.js';
 
 export class DataSpaceExecutionContextAnalysisResult {
   name!: string;
@@ -132,11 +125,4 @@ export class DataSpaceAnalysisResult {
   executables: DataSpaceExecutableAnalysisResult[] = [];
 
   supportInfo?: DataSpaceSupportInfo | undefined;
-
-  // TO BE DELETED
-  HACKY__usageShowcases: HACKY__DataSpaceUsageShowcase[] = [
-    HACKY__SHOWCASE1,
-    HACKY__SHOWCASE2,
-    HACKY__SHOWCASE3,
-  ];
 }

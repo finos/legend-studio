@@ -41,7 +41,6 @@ import {
   LogEvent,
   uniq,
   type PlainObject,
-  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { DataSpaceSupportEmail } from '../../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { V1_DataSpaceSupportEmail } from '../../../../graphManager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
@@ -315,15 +314,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
             ),
           );
         });
-        docEntry.inheritedProperties.forEach((property) => {
-          entries.push(
-            new DataSpaceDocumentationEntry(
-              docEntry.path,
-              property.name,
-              property.docs.join('\n'),
-            ),
-          );
-        });
+        // NOTE: we don't want to list inherited properties
       } else if (
         docEntry instanceof V1_DataSpaceEnumerationDocumentationEntry
       ) {
@@ -384,8 +375,8 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         if (
           executableProtocol.result instanceof V1_DataSpaceExecutableTDSResult
         ) {
-          const result = new DataSpaceExecutableTDSResult();
-          result.columns = executableProtocol.result.columns.map(
+          const tdsResult = new DataSpaceExecutableTDSResult();
+          tdsResult.columns = executableProtocol.result.columns.map(
             (tdsColumn) => {
               const column = new DataSpaceExecutableTDSResultColumn();
               column.name = tdsColumn.name;
@@ -395,7 +386,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
               return column;
             },
           );
-          executable.result = result;
+          executable.result = tdsResult;
         }
         return executable;
       },

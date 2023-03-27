@@ -72,12 +72,11 @@ import {
   Class,
   Enumeration,
   Association,
-  PackageableElementReference,
+  type PackageableElementReference,
 } from '@finos/legend-graph';
 import {
   V1_DSL_Diagram_PackageableElementPointerType,
   V1_resolveDiagram,
-  getDiagram,
 } from '@finos/legend-extension-dsl-diagram';
 
 export const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
@@ -212,8 +211,6 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
                 return diagram;
               },
             );
-          }
-          if (elementProtocol.diagrams) {
           }
           if (elementProtocol.supportInfo) {
             if (
