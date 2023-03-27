@@ -1,0 +1,129 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.bulk-service-registration {
+  &__service__editor {
+    height: calc(800px - 4rem);
+    width: calc(800px - 2rem);
+    border: none !important;
+  }
+
+  &__panel__content__form {
+    @include flexCenter;
+  }
+
+  &__service__response {
+    height: calc(400px - 4rem);
+    width: calc(800px - 4rem);
+    border: none !important;
+    overflow: auto;
+  }
+
+  &__service__result__header {
+    text-align: center;
+    font-weight: bold;
+    padding: 1%;
+    page-break-after: always;
+  }
+
+  &__service__link__label {
+    padding: 1.5%;
+    page-break-after: always;
+
+    &__service__link {
+      text-decoration: none;
+      color: var(--color-dark-shade-500);
+
+      &:hover {
+        color: var(--color-yellow-200);
+      }
+    }
+  }
+
+  &__service__container {
+    height: 2.2rem;
+    @include flexVCenter;
+
+    cursor: pointer;
+  }
+
+  &__play-btn svg {
+    font-size: 1.7rem;
+  }
+
+  &__header__title {
+    width: calc(100% - 3.4rem);
+  }
+
+  &--expanded {
+    height: 100vh !important;
+    width: 100vw !important;
+  }
+
+  &__header {
+    @include flexVCenter;
+
+    height: 3.8rem;
+    background: var(--color-yellow-200);
+    justify-content: flex-end;
+  }
+
+  &__header__actions {
+    @include flexVCenter;
+
+    height: 100%;
+  }
+
+  &__header__action {
+    @include flexCenter;
+
+    height: 100%;
+    width: 3.8rem;
+
+    svg {
+      font-size: 1.6rem;
+      color: var(--color-dark-shade-300);
+    }
+
+    &:hover svg {
+      color: var(--color-dark-shade-800);
+    }
+  }
+
+  &__explorer {
+    &__service__container:hover {
+      background: var(--color-dark-blue-shade-100);
+    }
+
+    &__service__result__icon__type {
+      width: 2rem;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+
+      @include flexHCenter;
+    }
+  }
+
+  &__item__link__content {
+    @include ellipsisTextOverflow;
+  }
+
+  &__item__link__content__id {
+    color: var(--color-light-grey-400);
+  }
+}

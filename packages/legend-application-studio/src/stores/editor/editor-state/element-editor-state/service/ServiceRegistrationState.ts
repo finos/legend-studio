@@ -35,7 +35,6 @@ import { LEGEND_STUDIO_APP_EVENT } from '../../../../../application/LegendStudio
 import { Version } from '@finos/legend-server-sdlc';
 import {
   type Service,
-  type ServiceRegistrationResult,
   type PureExecution,
   ServiceExecutionMode,
   buildLambdaVariableExpressions,
@@ -43,6 +42,7 @@ import {
   generateMultiplicityString,
   areMultiplicitiesEqual,
   Multiplicity,
+  type ServiceRegistrationSuccess,
 } from '@finos/legend-graph';
 import { ServiceRegistrationEnvironmentConfig } from '../../../../../application/LegendStudioApplicationConfig.js';
 import {
@@ -85,22 +85,19 @@ interface ServiceVersionOption {
   value: Version | string;
 }
 
-export class ServiceRegistrationState {
+export class ServiceConfigState {
   readonly editorStore: EditorStore;
-  readonly service: Service;
   readonly registrationOptions: ServiceRegistrationEnvironmentConfig[] = [];
   readonly registrationState = ActionState.create();
 
   serviceEnv?: string | undefined;
   serviceExecutionMode?: ServiceExecutionMode | undefined;
   projectVersion?: Version | string | undefined;
-  activatePostRegistration = true;
   enableModesWithVersioning: boolean;
   TEMPORARY__useStoreModel = false;
 
   constructor(
     editorStore: EditorStore,
-    service: Service,
     registrationOptions: ServiceRegistrationEnvironmentConfig[],
     enableModesWithVersioning: boolean,
   ) {
@@ -108,7 +105,6 @@ export class ServiceRegistrationState {
       serviceEnv: observable,
       serviceExecutionMode: observable,
       projectVersion: observable,
-      activatePostRegistration: observable,
       enableModesWithVersioning: observable,
       TEMPORARY__useStoreModel: observable,
       executionModes: computed,
@@ -117,21 +113,18 @@ export class ServiceRegistrationState {
       setServiceEnv: action,
       setServiceExecutionMode: action,
       setProjectVersion: action,
-      setActivatePostRegistration: action,
       setUseStoreModelWithFullInteractive: action,
       initialize: action,
       updateVersion: action,
       updateType: action,
       updateEnv: action,
-      registerService: flow,
     });
 
     this.editorStore = editorStore;
-    this.service = service;
     this.registrationOptions = registrationOptions;
     this.enableModesWithVersioning = enableModesWithVersioning;
-    this.initialize();
     this.registrationState.setMessageFormatter(prettyCONSTName);
+    this.initialize();
   }
 
   get options(): ServiceRegistrationEnvironmentConfig[] {
@@ -195,10 +188,6 @@ export class ServiceRegistrationState {
     this.projectVersion = val;
   }
 
-  setActivatePostRegistration(val: boolean): void {
-    this.activatePostRegistration = val;
-  }
-
   setUseStoreModelWithFullInteractive(val: boolean): void {
     this.TEMPORARY__useStoreModel = val;
   }
@@ -227,6 +216,30 @@ export class ServiceRegistrationState {
   updateEnv(val: string | undefined): void {
     this.setServiceEnv(val);
     this.setServiceExecutionMode(this.executionModes[0]);
+  }
+}
+
+export class ServiceRegistrationState extends ServiceConfigState {
+  readonly service: Service;
+  activatePostRegistration = true;
+
+  constructor(
+    editorStore: EditorStore,
+    service: Service,
+    registrationOptions: ServiceRegistrationEnvironmentConfig[],
+    enableModesWithVersioning: boolean,
+  ) {
+    super(editorStore, registrationOptions, enableModesWithVersioning);
+    makeObservable(this, {
+      activatePostRegistration: observable,
+      setActivatePostRegistration: action,
+      registerService: flow,
+    });
+
+    this.service = service;
+  }
+  setActivatePostRegistration(val: boolean): void {
+    this.activatePostRegistration = val;
   }
 
   *registerService(): GeneratorFn<void> {
@@ -257,7 +270,7 @@ export class ServiceRegistrationState {
           {
             TEMPORARY__useStoreModel: this.TEMPORARY__useStoreModel,
           },
-        )) as ServiceRegistrationResult;
+        )) as ServiceRegistrationSuccess;
       if (this.activatePostRegistration) {
         this.registrationState.setMessage(`Activating service...`);
         yield this.editorStore.graphManagerState.graphManager.activateService(

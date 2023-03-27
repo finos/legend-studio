@@ -14,14 +14,29 @@
  * limitations under the License.
  */
 
+import type { Service } from '../../../graph/metamodel/pure/packageableElements/service/Service.js';
+
 export class ServiceRegistrationResult {
+  service: Service | undefined;
+}
+
+export class ServiceRegistrationSuccess extends ServiceRegistrationResult {
   serverURL: string;
   pattern: string;
   serviceInstanceId: string;
 
   constructor(serverURL: string, pattern: string, serviceInstanceId: string) {
+    super();
     this.serverURL = serverURL;
     this.pattern = pattern;
     this.serviceInstanceId = serviceInstanceId;
+  }
+}
+export class ServiceRegistrationFail extends ServiceRegistrationResult {
+  errorMessage: string;
+
+  constructor(errorMessage: string) {
+    super();
+    this.errorMessage = errorMessage;
   }
 }

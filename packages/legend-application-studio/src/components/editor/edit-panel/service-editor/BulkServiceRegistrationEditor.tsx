@@ -26,96 +26,119 @@ import {
   ModalBody,
   TimesIcon,
 } from '@finos/legend-art';
-import { prettyCONSTName } from '@finos/legend-shared';
+import {
+  filterByType,
+  guaranteeNonNullable,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
-import { ServiceExecutionMode } from '@finos/legend-graph';
+import {
+  ServiceRegistrationFail,
+  ServiceRegistrationSuccess,
+  ServiceExecutionMode,
+} from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { Version } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
+import { generateServiceManagementUrl } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceRegistrationState.js';
 
 export const BulkServiceRegistrationEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const serviceState = editorStore.bulkServiceRegistrationState;
-  const registrationState = serviceState.serviceConfigState;
+  const bulkServiceRegistrationState = editorStore.bulkServiceRegistrationState;
   // env & execution server
-  const envOptions = registrationState.options.map((info) => ({
-    label: info.env.toUpperCase(),
-    value: info.env,
-  }));
-  const selectedEnvOption = registrationState.serviceEnv
+  const envOptions = bulkServiceRegistrationState.options
+    .filter((info) => info.env !== 'prod')
+    .map((info) => ({
+      label: info.env.toUpperCase(),
+      value: info.env,
+    }));
+  const selectedEnvOption = bulkServiceRegistrationState.serviceEnv
     ? {
-        label: registrationState.serviceEnv.toUpperCase(),
-        value: registrationState.serviceEnv,
+        label: bulkServiceRegistrationState.serviceEnv.toUpperCase(),
+        value: bulkServiceRegistrationState.serviceEnv,
       }
     : null;
   const onServerEnvChange = (
     val: { label: string; value: string } | null,
   ): void => {
-    registrationState.updateEnv(val?.value);
+    bulkServiceRegistrationState.updateEnv(val?.value);
   };
 
   // execution mode
-  const serviceTypesOptions = registrationState.executionModes.map((mode) => ({
-    label: prettyCONSTName(mode),
-    value: mode,
-  }));
-  const selectedServiceType = registrationState.serviceExecutionMode
+  const serviceTypesOptions = bulkServiceRegistrationState.executionModes
+    .filter((mode) => mode !== ServiceExecutionMode.PROD)
+    .map((mode) => ({
+      label: prettyCONSTName(mode),
+      value: mode,
+    }));
+  const selectedServiceType = bulkServiceRegistrationState.serviceExecutionMode
     ? {
-        label: prettyCONSTName(registrationState.serviceExecutionMode),
-        value: registrationState.serviceExecutionMode,
+        label: prettyCONSTName(
+          bulkServiceRegistrationState.serviceExecutionMode,
+        ),
+        value: bulkServiceRegistrationState.serviceExecutionMode,
       }
     : null;
   const onServiceTypeSelectionChange = (
     val: { label: ServiceExecutionMode; value: ServiceExecutionMode } | null,
   ): void => {
-    registrationState.updateType(val?.value);
+    bulkServiceRegistrationState.updateType(val?.value);
   };
 
   // version
-  const selectedVersion = registrationState.projectVersion
+  const selectedVersion = bulkServiceRegistrationState.projectVersion
     ? {
         label:
-          registrationState.projectVersion instanceof Version
-            ? registrationState.projectVersion.id.id
-            : registrationState.projectVersion,
-        value: registrationState.projectVersion,
+          bulkServiceRegistrationState.projectVersion instanceof Version
+            ? bulkServiceRegistrationState.projectVersion.id.id
+            : bulkServiceRegistrationState.projectVersion,
+        value: bulkServiceRegistrationState.projectVersion,
       }
     : null;
   const onVersionSelectionChange = (
     val: { label: string; value: Version | string } | null,
   ): void => {
-    registrationState.setProjectVersion(val?.value);
+    bulkServiceRegistrationState.setProjectVersion(val?.value);
   };
   const versionPlaceholder =
-    registrationState.versionOptions === undefined
+    bulkServiceRegistrationState.versionOptions === undefined
       ? `Only valid for ${prettyCONSTName(
           ServiceExecutionMode.SEMI_INTERACTIVE,
         )} and ${prettyCONSTName(ServiceExecutionMode.PROD)} service types`
-      : !registrationState.versionOptions.length
+      : !bulkServiceRegistrationState.versionOptions.length
       ? 'Project has no versions'
       : undefined;
 
   // store model for full interactive
   const toggleUseStoreModel = (): void => {
-    registrationState.setUseStoreModelWithFullInteractive(
-      !registrationState.TEMPORARY__useStoreModel,
+    bulkServiceRegistrationState.setUseStoreModelWithFullInteractive(
+      !bulkServiceRegistrationState.TEMPORARY__useStoreModel,
     );
   };
+
+  const config = guaranteeNonNullable(
+    bulkServiceRegistrationState.options.find(
+      (info) => info.env === bulkServiceRegistrationState.serviceEnv,
+    ),
+  );
 
   // actions
   const registerService = (): void => {
     if (selectedEnvOption && selectedServiceType) {
-      flowResult(serviceState.registerServices()).catch(
+      flowResult(bulkServiceRegistrationState.registerServices()).catch(
         applicationStore.alertUnhandledError,
       );
     }
   };
+  const closeModal = (): void => {
+    editorStore.bulkServiceRegistrationState.setSuccessModal(false);
+  };
   const disableRegistration =
     !selectedEnvOption ||
     !selectedServiceType ||
-    registrationState.registrationState.isInProgress;
+    bulkServiceRegistrationState.registrationState.isInProgress;
 
   return (
     <div
@@ -140,51 +163,57 @@ export const BulkServiceRegistrationEditor = observer(() => {
             <Dialog
               open={editorStore.bulkServiceRegistrationState.showSuccessModel}
             >
-              <Modal darkMode={true} className="blocking-alert__summary-text">
-                <div>
+              <Modal
+                darkMode={true}
+                className="editor-modal bulk-service-registration__service__response"
+              >
+                <div className="bulk-service-registration__header">
                   <button
-                    className="query-builder__dialog__header__action"
+                    className="bulk-service-registration__header__action"
                     tabIndex={-1}
-                    onClick={() => {
-                      editorStore.bulkServiceRegistrationState.setSuccessModal(
-                        false,
-                      );
-                    }}
+                    onClick={closeModal}
                   >
                     <TimesIcon />
                   </button>
                 </div>
                 <ModalBody>
-                  <div>
-                    Successful Services:
-                    {editorStore.bulkServiceRegistrationState.serviceConfigState.registrationResult?.successfulServices.map(
-                      (service) => (
-                        <div key={service}>
+                  <div className="bulk-service-registration__service__result__header">
+                    Successful Services
+                    {editorStore.bulkServiceRegistrationState.registrationResult
+                      ?.filter(filterByType(ServiceRegistrationSuccess))
+                      .map((service) => (
+                        <div
+                          className="bulk-service-registration__service__link__label"
+                          key={service.pattern}
+                        >
                           <a
-                            href={editorStore.bulkServiceRegistrationState.serviceConfigState.registrationResult?.serviceLinks.at(
-                              editorStore.bulkServiceRegistrationState.serviceConfigState.registrationResult.successfulServices.indexOf(
-                                service,
-                              ),
+                            className="bulk-service-registration__service__link__label__service__link"
+                            href={generateServiceManagementUrl(
+                              config.managementUrl,
+                              service.pattern,
                             )}
                           >
-                            {service}
+                            {service.pattern}
                           </a>
                         </div>
-                      ),
-                    )}
+                      ))}
                   </div>
-                  <>
-                    {editorStore.bulkServiceRegistrationState.serviceConfigState.registrationResult?.successfulServices.forEach(
-                      (element) => {
-                        <div>{element}</div>;
-                      },
-                    )}
-                  </>
                   <div>
-                    Failed Services:{' '}
-                    {editorStore.bulkServiceRegistrationState.serviceConfigState.registrationResult?.failedServices.join(
-                      '\n',
-                    )}
+                    <div className="bulk-service-registration__service__result__header">
+                      Failed Services
+                    </div>
+                    <div>
+                      {editorStore.bulkServiceRegistrationState.registrationResult
+                        ?.filter(filterByType(ServiceRegistrationFail))
+                        .map((service) => (
+                          <div
+                            key={service.errorMessage}
+                            className="bulk-service-registration__service__link__label"
+                          >
+                            {`${service.service?.path} ${service.errorMessage}`}
+                          </div>
+                        ))}
+                    </div>
                   </div>
                 </ModalBody>
               </Modal>
@@ -193,12 +222,12 @@ export const BulkServiceRegistrationEditor = observer(() => {
         </div>
       </div>
       <PanelLoadingIndicator
-        isLoading={registrationState.registrationState.isInProgress}
+        isLoading={bulkServiceRegistrationState.registrationState.isInProgress}
       />
       <div className="panel__content__form">
-        {registrationState.registrationState.message && (
+        {bulkServiceRegistrationState.registrationState.message && (
           <div className="service-registration-editor__progress-msg">
-            {`${registrationState.registrationState.message}...`}
+            {`${bulkServiceRegistrationState.registrationState.message}...`}
           </div>
         )}
         <div className="panel__content__form__section">
@@ -230,7 +259,7 @@ export const BulkServiceRegistrationEditor = observer(() => {
             darkMode={true}
           />
         </div>
-        {registrationState.serviceExecutionMode ===
+        {bulkServiceRegistrationState.serviceExecutionMode ===
           ServiceExecutionMode.FULL_INTERACTIVE && (
           <div className="panel__content__form__section">
             <div className="panel__content__form__section__header__label">
@@ -243,11 +272,11 @@ export const BulkServiceRegistrationEditor = observer(() => {
               <button
                 className={clsx('panel__content__form__section__toggler__btn', {
                   'panel__content__form__section__toggler__btn--toggled':
-                    registrationState.TEMPORARY__useStoreModel,
+                    bulkServiceRegistrationState.TEMPORARY__useStoreModel,
                 })}
                 tabIndex={-1}
               >
-                {registrationState.TEMPORARY__useStoreModel ? (
+                {bulkServiceRegistrationState.TEMPORARY__useStoreModel ? (
                   <CheckSquareIcon />
                 ) : (
                   <SquareIcon />
@@ -268,11 +297,11 @@ export const BulkServiceRegistrationEditor = observer(() => {
             relevant for semi-interactive and production services.
           </div>
           <CustomSelectorInput
-            options={registrationState.versionOptions ?? []}
+            options={bulkServiceRegistrationState.versionOptions ?? []}
             onChange={onVersionSelectionChange}
             value={selectedVersion}
             darkMode={true}
-            disabled={registrationState.versionOptions === undefined}
+            disabled={bulkServiceRegistrationState.versionOptions === undefined}
             placeholder={versionPlaceholder}
             isLoading={editorStore.sdlcState.isFetchingProjectVersions}
           />

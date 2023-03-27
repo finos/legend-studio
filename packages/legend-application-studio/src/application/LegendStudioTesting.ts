@@ -31,6 +31,7 @@ export enum LEGEND_STUDIO_TEST_ID {
   EXPLORER_CONTEXT_MENU = 'explorer__context-menu',
 
   GLOBAL_TEST_RUNNER = 'test-runner',
+  BULK_REGISTRATION = 'bulk-service-registration',
 
   STATUS_BAR = 'status-bar',
   EDITOR__STATUS_BAR__RIGHT = 'editor__status-bar__right',

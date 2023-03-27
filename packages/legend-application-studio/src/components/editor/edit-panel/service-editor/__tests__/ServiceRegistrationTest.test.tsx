@@ -46,7 +46,7 @@ import { flowResult } from 'mobx';
 import type { Project, Version, Workspace } from '@finos/legend-server-sdlc';
 import {
   ServiceExecutionMode,
-  ServiceRegistrationResult,
+  ServiceRegistrationSuccess,
 } from '@finos/legend-graph';
 import { TEST__getLegendStudioApplicationConfig } from '../../../../../stores/editor/EditorStoreTestUtils.js';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
@@ -155,7 +155,7 @@ test(
     await act(async () => {
       await flowResult(MOCK__editorStore.sdlcState.fetchProjectVersions());
     });
-    const result = new ServiceRegistrationResult(
+    const result = new ServiceRegistrationSuccess(
       'https://legend.org/exec',
       '/myservice',
       'id1',
@@ -256,7 +256,7 @@ test(
       TEST_DATA__DefaultSDLCInfo.project,
       TEST_DATA__DefaultSDLCInfo.workspace,
     );
-    const result = new ServiceRegistrationResult(
+    const result = new ServiceRegistrationSuccess(
       'https://legend.org/exec',
       '/myservice',
       'id1',

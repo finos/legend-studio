@@ -79,7 +79,6 @@ import type {
 } from './action/compilation/CompilationResult.js';
 import type { ParameterValue } from '../DSL_Service_Exports.js';
 import type { ModelUnit } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
-import type { BulkServiceRegistrationResult } from './action/service/BulkServiceRegistrationResult.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -462,7 +461,7 @@ export abstract class AbstractPureGraphManager {
     server: string,
     executionMode: ServiceExecutionMode,
     options?: ServiceRegistrationOptions,
-  ): Promise<BulkServiceRegistrationResult[]>;
+  ): Promise<ServiceRegistrationResult[]>;
   abstract activateService(
     serviceUrl: string,
     serviceId: string,

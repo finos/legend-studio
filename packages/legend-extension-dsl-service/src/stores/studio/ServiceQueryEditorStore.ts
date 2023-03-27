@@ -29,9 +29,9 @@ import {
 } from '@finos/legend-application-studio';
 import {
   type Service,
-  type ServiceRegistrationResult,
   PureExecution,
   ServiceExecutionMode,
+  type ServiceRegistrationSuccess,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderState,
@@ -360,7 +360,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
             {
               TEMPORARY__semiInteractiveOverridePattern: overridePattern,
             },
-          )) as ServiceRegistrationResult;
+          )) as ServiceRegistrationSuccess;
 
         this.registerServiceState.setMessage(`Activating service...`);
         yield this.graphManagerState.graphManager.activateService(

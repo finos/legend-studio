@@ -26,8 +26,6 @@ import {
   Dialog,
   Modal,
   TimesIcon,
-  EmptyWindowRestoreIcon,
-  WindowMaximizeIcon,
 } from '@finos/legend-art';
 import type { BulkServiceRegistrationState } from '../../../stores/editor/sidebar-state/BulkServiceRegistrationState.js';
 import { BulkServiceRegistrationEditor } from '../edit-panel/service-editor/BulkServiceRegistrationEditor.js';
@@ -37,25 +35,22 @@ export const RegisterService = observer(
   (props: { bulkServiceRegistrationState: BulkServiceRegistrationState }) => {
     const editorStore = useEditorStore();
     const services = editorStore.graphManagerState.graph.ownServices;
-    const [open, setOpen] = useState(false);
+    const [showRegistrationModel, setShowRegistrationModel] = useState(false);
 
-    const [isMaximized, setIsMaximized] = useState(false);
-    const toggleMaximize = (): void => setIsMaximized(!isMaximized);
-
-    const renderTestables = (): React.ReactNode => (
+    const serviceItems = (): React.ReactNode => (
       <>
         {services.map((service) => (
           <ContextMenu key={service._UUID}>
             <div
               className={clsx(
-                'tree-view__node__container global-test-runner__explorer__testable-tree__node__container',
+                'bulk-service-registration__service__container bulk-service-registration__explorer__service__container',
               )}
             >
-              <div className="global-test-runner__explorer__testable-tree__node__result__icon__type">
+              <div className="bulk-service-registration__explorer__service__result__icon__type">
                 <PURE_ServiceIcon />
               </div>
-              <div className="global-test-runner__item__link__content">
-                <span className="global-test-runner__item__link__content__id">
+              <div className="bulk-service-registration__item__link__content">
+                <span className="bulk-service-registration__item__link__content__id">
                   {service.name}
                 </span>
               </div>
@@ -67,53 +62,44 @@ export const RegisterService = observer(
 
     return (
       <div
-        data-testid={LEGEND_STUDIO_TEST_ID.GLOBAL_TEST_RUNNER}
-        className="panel global-test-runner"
+        data-testid={LEGEND_STUDIO_TEST_ID.BULK_REGISTRATION}
+        className="panel bulk-service-registration"
       >
         <div className="panel__header side-bar__header">
-          <div className="panel__header__title global-test-runner__header__title">
+          <div className="panel__header__title bulk-service-registration__header__title">
             <div className="panel__header__title__content side-bar__header__title__content">
               REGISTER SERVICES
             </div>
           </div>
           <div className="panel__header__actions side-bar__header__actions"></div>
           <button
-            className="panel__header__action side-bar__header__action global-test-runner__refresh-btn"
-            onClick={() => setOpen(true)}
+            className="panel__header__action side-bar__header__action bulk-service-registration__play-btn"
+            onClick={() => setShowRegistrationModel(true)}
             tabIndex={-1}
             title="Register All Services"
           >
             <PlayIcon />
           </button>
-          <Dialog onClose={noop} open={open}>
+          <Dialog onClose={noop} open={showRegistrationModel}>
             <Modal
               darkMode={true}
-              className={clsx('editor-modal query-builder__dialog', {
-                'query-builder__dialog--expanded': isMaximized,
-              })}
+              className={clsx(
+                'editor-modal bulk-service-registration__service__editor',
+              )}
             >
-              <div className="query-builder__dialog__header">
-                <div className="query-builder__dialog__header__actions"></div>
+              <div className="bulk-service-registration__header">
+                <div className="bulk-service-registration__header__actions"></div>
                 <button
-                  className="query-builder__dialog__header__action"
+                  className="bulk-service-registration__header__action"
                   tabIndex={-1}
-                  onClick={toggleMaximize}
-                >
-                  {isMaximized ? (
-                    <EmptyWindowRestoreIcon />
-                  ) : (
-                    <WindowMaximizeIcon />
-                  )}
-                </button>
-                <button
-                  className="query-builder__dialog__header__action"
-                  tabIndex={-1}
-                  onClick={() => setOpen(false)}
+                  onClick={() => setShowRegistrationModel(false)}
                 >
                   <TimesIcon />
                 </button>
               </div>
-              <BulkServiceRegistrationEditor />;
+              <div className="bulk-service-registration__panel__content__form">
+                <BulkServiceRegistrationEditor />
+              </div>
             </Modal>
           </Dialog>
         </div>
@@ -128,9 +114,11 @@ export const RegisterService = observer(
                 data-testid={
                   LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
                 }
-              ></div>
+              >
+                {services.length}
+              </div>
             </div>
-            <PanelContent>{renderTestables()}</PanelContent>
+            <PanelContent>{serviceItems()}</PanelContent>
           </div>
         </div>
       </div>
