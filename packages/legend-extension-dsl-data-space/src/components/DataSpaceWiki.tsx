@@ -14,50 +14,13 @@
  * limitations under the License.
  */
 
-import { MarkdownTextViewer } from '@finos/legend-art';
 import type { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
 import { DataSpaceDiagramViewer } from './DataSpaceDiagramViewer.js';
 import { DataSpaceModelsDocumentation } from './DataSpaceModelsDocumentation.js';
-
-const DataSpaceDescription = observer(
-  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
-    const { dataSpaceViewerState } = props;
-    const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
-
-    return (
-      <div className="data-space__viewer__wiki__section">
-        <div className="data-space__viewer__wiki__section__header">
-          Description
-        </div>
-        <div className="data-space__viewer__wiki__section__content">
-          <div className="data-space__viewer__description">
-            {analysisResult.description !== undefined && (
-              <div className="data-space__viewer__description__content">
-                <MarkdownTextViewer
-                  className="data-space__viewer__description__content__markdown-content"
-                  value={{
-                    value: analysisResult.description,
-                  }}
-                  components={{
-                    h1: 'h2',
-                    h2: 'h3',
-                    h3: 'h4',
-                  }}
-                />
-              </div>
-            )}
-            {analysisResult.description === undefined && (
-              <div className="data-space__viewer__description--empty">
-                No description
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  },
-);
+import { DataSpaceQuickStart } from './DataSpaceQuickStart.js';
+import { DataSpaceDataAccess } from './DataSpaceDataAccess.js';
+import { DataSpaceDescription } from './DataSpaceDescription.js';
 
 export const DataSpaceWiki = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -70,6 +33,8 @@ export const DataSpaceWiki = observer(
         <DataSpaceModelsDocumentation
           dataSpaceViewerState={dataSpaceViewerState}
         />
+        <DataSpaceQuickStart dataSpaceViewerState={dataSpaceViewerState} />
+        <DataSpaceDataAccess dataSpaceViewerState={dataSpaceViewerState} />
       </div>
     );
   },

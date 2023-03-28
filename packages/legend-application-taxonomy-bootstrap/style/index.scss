@@ -94,6 +94,25 @@
     color: var(--color-hclight-grey-60);
   }
 
+  // ---------------------------- Input -------------------------------
+
+  .input {
+    border-color: var(--color-hclight-grey-30);
+
+    &:hover {
+      border-color: var(--color-hclight-blue-50);
+    }
+
+    &:focus {
+      border-color: var(--color-hclight-blue-50);
+    }
+
+    &[disabled] {
+      border-color: var(--color-hclight-grey-30);
+      background: var(--color-hclight-grey-10);
+    }
+  }
+
   // ---------------------------- Data Space Viewer -------------------------------
 
   .data-space__viewer {
@@ -134,6 +153,13 @@
     }
   }
 
+  .data-space__viewer__wiki {
+    &__placeholder {
+      color: var(--color-hclight-grey-40);
+      background: var(--color-hclight-grey-10);
+    }
+  }
+
   .data-space__viewer__description {
     &__content {
       border: none;
@@ -141,7 +167,6 @@
 
     .markdown-content {
       background: var(--color-hclight-white);
-      padding: 2rem 0;
       color: var(--color-hclight-grey-90);
 
       a {
@@ -178,6 +203,93 @@
       --ag-even-row-background-color: var(--color-hclight-white);
       --ag-row-hover-color: var(--color-hclight-grey-10);
       --ag-row-border-color: var(--color-hclight-grey-30);
+    }
+
+    &__search__input-group__icon svg {
+      color: var(--color-hclight-grey-80);
+    }
+  }
+
+  .data-space__viewer__execution-context {
+    &__entry {
+      &__icon {
+        background: var(--color-hclight-grey-10);
+      }
+
+      &__content {
+        border-color: var(--color-hclight-grey-10);
+        color: var(--color-hclight-grey-70);
+        background: var(--color-hclight-grey-10);
+        border-left-color: var(--color-hclight-grey-30);
+
+        &__dropdown__option__tag {
+          background: var(--color-hclight-blue-70);
+          color: var(--color-hclight-white);
+        }
+      }
+    }
+  }
+
+  .data-space__viewer__info {
+    &__project-info__label {
+      background: var(--color-hclight-blue-50);
+      color: var(--color-hclight-white);
+    }
+
+    &__project-info__value {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__project-info__link {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-60);
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__section__title {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__tagged-value__tag {
+      background: var(--color-hclight-orange-50);
+      color: var(--color-hclight-white);
+    }
+
+    &__tagged-value__value {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__steoreotype {
+      background: var(--color-hclight-orange-50);
+      color: var(--color-hclight-white);
+    }
+
+    &__section__placeholder {
+      color: var(--color-hclight-grey-30);
+      border-color: var(--color-hclight-grey-30);
+    }
+  }
+
+  .data-space__viewer__support {
+    &__email {
+      &__entry {
+        &__icon {
+          background: var(--color-hclight-grey-10);
+
+          svg {
+            color: var(--color-hclight-grey-70);
+          }
+        }
+
+        &__content {
+          border-color: transparent;
+          color: var(--color-hclight-grey-70);
+          background: var(--color-hclight-grey-10);
+          border-left-color: var(--color-hclight-grey-30);
+        }
+      }
     }
   }
 }

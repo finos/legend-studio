@@ -20,17 +20,17 @@ import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { AgGridReact } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 
-export const DataSpaceQuickStart = observer(
+export const DataSpaceDataAccess = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
 
     return (
       <div className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
-          Quick Start
+          Data Access
         </div>
         <div className="data-space__viewer__wiki__section__content">
-          <div className="data-space__viewer__quickstart"></div>
+          <div className="data-space__viewer__data-access"></div>
         </div>
       </div>
     );

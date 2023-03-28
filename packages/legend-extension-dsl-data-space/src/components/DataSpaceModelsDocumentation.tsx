@@ -39,8 +39,8 @@ export const DataSpaceModelsDocumentation = observer(
           <div className="data-space__viewer__models-documentation">
             <div className="data-space__viewer__models-documentation__search">
               <div className="data-space__viewer__models-documentation__search__input-group">
-                <input className="data-space__viewer__models-documentation__search__input-group__input" />
-                <div className="data-space__viewer__models-documentation__search-box__input-group__icon">
+                <input className="data-space__viewer__models-documentation__search__input-group__input input" />
+                <div className="data-space__viewer__models-documentation__search__input-group__icon">
                   <SearchIcon />
                 </div>
               </div>
