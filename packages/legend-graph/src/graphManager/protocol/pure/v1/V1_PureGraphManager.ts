@@ -2745,14 +2745,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               error.message,
             );
             if (graphData instanceof V1_PureModelContextData) {
-              const servicePath = getNullableFirstElement(
+              const servicePackage = getNullableFirstElement(
                 graphData.elements.filter(filterByType(V1_Service)),
-              )?.path;
+              )?.package;
               const serviceName = getNullableFirstElement(
                 graphData.elements.filter(filterByType(V1_Service)),
               )?.name;
               const service = graph.getOwnService(
-                V1_buildFullPath(servicePath, serviceName),
+                V1_buildFullPath(servicePackage, serviceName),
               );
               result.service = service;
             }
