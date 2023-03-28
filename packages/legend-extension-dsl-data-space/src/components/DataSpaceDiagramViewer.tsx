@@ -15,6 +15,7 @@
  */
 
 import {
+  AnchorLinkIcon,
   CircleIcon,
   ThinChevronLeftIcon,
   ThinChevronRightIcon,
@@ -118,7 +119,12 @@ export const DataSpaceDiagramViewer = observer(
     return (
       <div className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
-          Diagrams
+          <div className="data-space__viewer__wiki__section__header__label">
+            Diagrams
+            <div className="data-space__viewer__wiki__section__header__anchor">
+              <AnchorLinkIcon />
+            </div>
+          </div>
         </div>
         <div className="data-space__viewer__wiki__section__content">
           {analysisResult.diagrams.length > 0 && (

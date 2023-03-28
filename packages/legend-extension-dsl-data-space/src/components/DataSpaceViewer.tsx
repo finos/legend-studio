@@ -41,7 +41,12 @@ const DataSpaceHeader = observer(
           'data-space__viewer__header--floating': showFullHeader,
         })}
       >
-        <div className="data-space__viewer__header__content">
+        <div
+          className={clsx('data-space__viewer__header__content', {
+            'data-space__viewer__header__content--expanded':
+              dataSpaceViewerState.isExpandedModeEnabled,
+          })}
+        >
           <div
             className="data-space__viewer__header__title"
             title={`${analysisResult.title ?? analysisResult.name} - ${
@@ -106,10 +111,11 @@ export const DataSpaceViewer = observer(
             dataSpaceViewerState={dataSpaceViewerState}
             showFullHeader={showFullHeader}
           />
-          <div className="data-space__viewer"></div>
           <div
             className={clsx('data-space__viewer__frame', {
               'data-space__viewer__frame--boundless': isShowingWiki,
+              'data-space__viewer__frame--expanded':
+                dataSpaceViewerState.isExpandedModeEnabled,
             })}
           >
             <div className="data-space__viewer__content">

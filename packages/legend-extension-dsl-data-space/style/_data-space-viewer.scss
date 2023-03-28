@@ -41,8 +41,12 @@
     }
 
     &__content {
-      width: 140rem;
+      width: min(140rem, 80vw);
       position: relative;
+    }
+
+    &__content--expanded {
+      width: 80vw;
     }
 
     &__title {
@@ -82,10 +86,14 @@
 
   &__frame {
     display: flex;
-    width: 140rem;
+    width: min(140rem, 80vw);
     height: 100%;
     padding: 4rem;
     position: relative;
+  }
+
+  &__frame--expanded {
+    width: 80vw;
   }
 
   &__frame--boundless {
@@ -104,6 +112,31 @@
     width: 100%;
     overflow: auto;
     padding: 2rem 0;
+  }
+
+  &__grid {
+    --ag-font-family: 'Roboto';
+
+    // Customize ag-grid theme
+    // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
+    --ag-border-color: var(--color-dark-grey-200);
+    --ag-background-color: var(--color-dark-grey-50);
+    --ag-foreground-color: var(--color-light-grey-200);
+    --ag-header-background-color: var(--color-dark-grey-100);
+    --ag-header-foreground-color: var(--color-light-grey-50);
+    --ag-balham-active-color: var(--color-blue-200);
+    --ag-odd-row-background-color: var(--color-dark-grey-50);
+    --ag-even-row-background-color: var(--color-dark-grey-50);
+    --ag-row-hover-color: var(--color-dark-blue-shade-100);
+    --ag-row-border-color: var(--color-dark-grey-200);
+
+    .ag-header-cell-text {
+      font-weight: 700;
+    }
+
+    .ag-cell-value {
+      word-break: break-word;
+    }
   }
 }
 
@@ -218,19 +251,45 @@
   width: 100%;
 
   &__section {
-    display: flex;
     flex-direction: column;
 
     &__header {
+      @include flexVCenter;
+
+      justify-content: space-between;
       height: 3rem;
-      font-size: 2.4rem;
-      color: var(--color-blue-100);
-      text-transform: uppercase;
-      font-weight: 500;
       border-bottom: 0.2rem solid var(--color-blue-100);
       margin-bottom: 2rem;
       margin-top: 4rem;
       user-select: none;
+      color: var(--color-blue-100);
+
+      &__label {
+        @include flexVCenter;
+
+        font-size: 2.4rem;
+        text-transform: uppercase;
+        font-weight: 500;
+      }
+
+      &__anchor {
+        @include flexVCenter;
+
+        margin-left: 0.5rem;
+        cursor: pointer;
+
+        svg {
+          color: var(--color-dark-grey-300);
+        }
+
+        &:hover svg {
+          color: var(--color-dark-grey-400);
+        }
+      }
+
+      &__documentation {
+        color: var(--color-blue-100);
+      }
     }
 
     &__content {
@@ -251,6 +310,11 @@
   }
 }
 
+.data-space__viewer__markdown-text-viewer {
+  color: var(--color-light-grey-200);
+  padding: 0;
+}
+
 .data-space__viewer__description {
   @include flexCenter;
 
@@ -259,11 +323,6 @@
 
   &__content {
     width: 100%;
-  }
-
-  &__content__markdown-content {
-    color: var(--color-light-grey-200);
-    padding: 0;
   }
 }
 
@@ -418,7 +477,7 @@
       @include flexVCenter;
 
       position: relative;
-      width: 40rem;
+      width: 20rem;
 
       &__input {
         width: 100%;
@@ -439,126 +498,191 @@
   &__grid {
     height: calc(100% - 3.8rem);
     width: 100%;
-
-    --ag-font-family: 'Roboto';
-
-    // Customize ag-grid theme
-    // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
-    --ag-border-color: var(--color-dark-grey-200);
-    --ag-background-color: var(--color-dark-grey-50);
-    --ag-foreground-color: var(--color-light-grey-200);
-    --ag-header-background-color: var(--color-dark-grey-100);
-    --ag-header-foreground-color: var(--color-light-grey-50);
-    --ag-balham-active-color: var(--color-blue-200);
-    --ag-odd-row-background-color: var(--color-dark-grey-50);
-    --ag-even-row-background-color: var(--color-dark-grey-50);
-    --ag-row-hover-color: var(--color-dark-blue-shade-100);
-    --ag-row-border-color: var(--color-dark-grey-200);
-
-    .ag-header-cell-text {
-      font-weight: 700;
-    }
-
-    .ag-cell-value {
-      word-break: break-word;
-    }
   }
 }
 
-// &__usages {
-//   padding: 1rem 0;
-// }
+.data-space__viewer__quickstart {
+  &__item {
+    margin: 3rem 0;
+  }
 
-// &__usage {
-//   padding: 2rem;
+  &__item__header {
+    @include flexVCenter;
 
-//   & + & {
-//     border-top: 1rem solid var(--color-dark-grey-100);
-//   }
+    height: 3rem;
+    margin-bottom: 1rem;
+  }
 
-//   &__title {
-//     font-size: 2.4rem;
-//     font-weight: 900;
-//   }
+  &__item__header__title {
+    color: var(--color-light-grey-400);
+    font-size: 2rem;
+    font-weight: 500;
+    user-select: none;
+  }
 
-//   &__description__markdown-content {
-//     padding: 0;
-//     margin: 2rem 0;
-//   }
+  &__item__header__type {
+    @include flexVCenter;
 
-//   &__query {
-//     height: 20rem;
-//   }
+    height: 2rem;
+    padding: 0 0.5rem;
+    border-radius: 0.5rem;
+    background: var(--color-dark-grey-300);
+    color: var(--color-light-grey-150);
+    user-select: none;
+    margin-left: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 500;
 
-//   &__block {
-//     min-height: 20rem;
-//   }
+    &--tds {
+      background: var(--color-magenta-100);
+    }
+  }
 
-//   &__block + &__block {
-//     margin-top: 1rem;
-//   }
+  &__item__header__anchor {
+    @include flexVCenter;
 
-//   &__block--collapsed {
-//     height: 2.8rem;
-//     min-height: 2.8rem;
-//   }
+    margin-left: 0.5rem;
+    cursor: pointer;
 
-//   &__block__header {
-//     @include flexVCenter;
+    svg {
+      color: var(--color-dark-grey-300);
+    }
 
-//     background: var(--color-blue-150);
-//     color: var(--color-light-grey-0);
-//     height: 2.8rem;
-//     width: 100%;
-//     border-radius: 0.2rem;
+    &:hover svg {
+      color: var(--color-dark-grey-400);
+    }
+  }
 
-//     &__toggler {
-//       @include flexCenter;
+  &__item__description {
+    margin-bottom: 1rem;
+  }
 
-//       width: 2.8rem;
+  &__item__content {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1rem;
 
-//       svg {
-//         font-size: 1.6rem;
-//       }
-//     }
+    &__tab__header {
+      @include flexVCenter;
 
-//     &__title {
-//       @include flexVCenter;
+      justify-content: space-between;
+      height: 3.4rem;
+      padding-bottom: 1rem;
+      border-bottom: 0.1rem solid var(--color-dark-grey-280);
+    }
 
-//       font-family: 'Roboto Mono', monospace;
-//       font-weight: 700;
-//       width: 100%;
-//       justify-content: flex-start;
-//     }
+    &__tabs {
+      @include flexVCenter;
+    }
 
-//     &__actions {
-//       @include flexVCenter;
+    &__tab {
+      @include flexVCenter;
 
-//       height: 2.8rem;
-//     }
+      padding: 0 1rem;
+      color: var(--color-dark-grey-300);
+    }
 
-//     &__action {
-//       @include flexCenter;
-//       @include flexConstantDimension;
+    &__tab__icon {
+      &--query {
+        font-size: 1.6rem;
+      }
+    }
 
-//       height: 2.8rem;
-//       width: 2.8rem;
-//       color: var(--color-light-grey-0);
+    &__tab__icon + &__tab__label {
+      margin-left: 0.5rem;
+    }
 
-//       &:hover {
-//         background: var(--color-dark-shade-100);
-//       }
-//     }
-//   }
+    &__tab:hover &__tab__label {
+      color: var(--color-dark-grey-400);
+    }
 
-//   &__block__content {
-//     height: calc(100% - 2.8rem);
-//   }
+    &__tab:hover &__tab__icon {
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+    }
 
-//   &__block__content__table {
-//     width: 100%;
-//   }
-// }
+    &__tab--active:hover &__tab__label,
+    &__tab--active &__tab__label {
+      color: var(--color-blue-200);
+      font-weight: 500;
+    }
+
+    &__tab--active:hover &__tab__icon,
+    &__tab--active &__tab__icon {
+      svg {
+        color: var(--color-blue-200);
+      }
+    }
+
+    &__tab__content {
+      margin-top: 1rem;
+      height: 40rem;
+    }
+  }
+
+  &__tds__column-specs {
+    height: 100%;
+  }
+
+  &__tds__query {
+    @include flexCenter;
+
+    height: 100%;
+    border: 0.1rem solid var(--color-dark-grey-200);
+
+    &__actions {
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__action {
+      @include flexCenter;
+
+      height: 2.8rem;
+      width: 25rem;
+      border-radius: 0.2rem;
+
+      & + & {
+        margin-top: 0.5rem;
+      }
+    }
+  }
+
+  &__tds__query-text {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    &__content {
+      height: calc(100% - 3.8rem);
+      border: 0.1rem solid var(--color-dark-grey-200);
+      position: relative;
+    }
+
+    &__actions {
+      @include flexVCenter;
+
+      justify-content: flex-end;
+      height: 3.8rem;
+    }
+
+    &__action {
+      @include flexCenter;
+
+      height: 2.8rem;
+      width: 2.8rem;
+
+      svg {
+        color: var(--color-dark-grey-500);
+      }
+
+      &:hover svg {
+        color: var(--color-light-grey-400);
+      }
+    }
+  }
+}
 
 .data-space__viewer__execution-context {
   &__context-icon {

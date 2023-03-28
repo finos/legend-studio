@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import { MarkdownTextViewer } from '@finos/legend-art';
+import { AnchorLinkIcon } from '@finos/legend-art';
 import type { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
+import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
 
 export const DataSpaceDescription = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -27,22 +28,19 @@ export const DataSpaceDescription = observer(
     return (
       <div className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
-          Description
+          <div className="data-space__viewer__wiki__section__header__label">
+            Description
+            <div className="data-space__viewer__wiki__section__header__anchor">
+              <AnchorLinkIcon />
+            </div>
+          </div>
         </div>
         <div className="data-space__viewer__wiki__section__content">
           {analysisResult.description !== undefined && (
             <div className="data-space__viewer__description">
               <div className="data-space__viewer__description__content">
-                <MarkdownTextViewer
-                  className="data-space__viewer__description__content__markdown-content"
-                  value={{
-                    value: analysisResult.description,
-                  }}
-                  components={{
-                    h1: 'h2',
-                    h2: 'h3',
-                    h3: 'h4',
-                  }}
+                <DataSpaceMarkdownTextViewer
+                  value={analysisResult.description}
                 />
               </div>
             </div>

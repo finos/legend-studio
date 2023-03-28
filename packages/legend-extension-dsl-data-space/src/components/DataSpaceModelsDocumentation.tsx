@@ -15,10 +15,11 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { BlankPanelContent, SearchIcon } from '@finos/legend-art';
+import { AnchorLinkIcon, SearchIcon } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { AgGridReact } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 
 export const DataSpaceModelsDocumentation = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -26,65 +27,71 @@ export const DataSpaceModelsDocumentation = observer(
     const documentationEntries =
       dataSpaceViewerState.dataSpaceAnalysisResult.elementDocs;
 
-    if (documentationEntries.length === 0) {
-      return <BlankPanelContent>No documentation available</BlankPanelContent>;
-    }
-
     return (
       <div className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
-          Models Documentation
-        </div>
-        <div className="data-space__viewer__wiki__section__content">
-          <div className="data-space__viewer__models-documentation">
-            <div className="data-space__viewer__models-documentation__search">
-              <div className="data-space__viewer__models-documentation__search__input-group">
-                <input className="data-space__viewer__models-documentation__search__input-group__input input" />
-                <div className="data-space__viewer__models-documentation__search__input-group__icon">
-                  <SearchIcon />
-                </div>
-              </div>
-            </div>
-            <div className="data-space__viewer__models-documentation__grid ag-theme-balham-dark">
-              <AgGridReact
-                rowData={documentationEntries}
-                gridOptions={{
-                  suppressScrollOnNewData: true,
-                  getRowId: (rowData) => rowData.data.uuid,
-                }}
-                modules={[ClientSideRowModelModule]}
-                suppressFieldDotNotation={true}
-                columnDefs={[
-                  {
-                    minWidth: 50,
-                    sortable: true,
-                    resizable: true,
-                    field: 'elementPath',
-                    headerName: 'Model',
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    sortable: false,
-                    resizable: true,
-                    field: 'subElementText',
-                    headerName: '',
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    sortable: false,
-                    resizable: true,
-                    field: 'doc',
-                    headerName: 'Documentation',
-                    flex: 1,
-                    wrapText: true,
-                    autoHeight: true,
-                  },
-                ]}
-              />
+          <div className="data-space__viewer__wiki__section__header__label">
+            Models Documentation
+            <div className="data-space__viewer__wiki__section__header__anchor">
+              <AnchorLinkIcon />
             </div>
           </div>
+        </div>
+        <div className="data-space__viewer__wiki__section__content">
+          {documentationEntries.length > 0 && (
+            <div className="data-space__viewer__models-documentation">
+              <div className="data-space__viewer__models-documentation__search">
+                <div className="data-space__viewer__models-documentation__search__input-group">
+                  <input className="data-space__viewer__models-documentation__search__input-group__input input" />
+                  <div className="data-space__viewer__models-documentation__search__input-group__icon">
+                    <SearchIcon />
+                  </div>
+                </div>
+              </div>
+              <div className="data-space__viewer__models-documentation__grid data-space__viewer__grid ag-theme-balham-dark">
+                <AgGridReact
+                  rowData={documentationEntries}
+                  gridOptions={{
+                    suppressScrollOnNewData: true,
+                    getRowId: (rowData) => rowData.data.uuid,
+                  }}
+                  modules={[ClientSideRowModelModule]}
+                  suppressFieldDotNotation={true}
+                  columnDefs={[
+                    {
+                      minWidth: 50,
+                      sortable: true,
+                      resizable: true,
+                      field: 'elementPath',
+                      headerName: 'Model',
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 50,
+                      sortable: false,
+                      resizable: true,
+                      field: 'subElementText',
+                      headerName: '',
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 50,
+                      sortable: false,
+                      resizable: true,
+                      field: 'doc',
+                      headerName: 'Documentation',
+                      flex: 1,
+                      wrapText: true,
+                      autoHeight: true,
+                    },
+                  ]}
+                />
+              </div>
+            </div>
+          )}
+          {documentationEntries.length === 0 && (
+            <DataSpaceWikiPlaceholder message="No documentation provided" />
+          )}
         </div>
       </div>
     );

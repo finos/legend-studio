@@ -56,6 +56,7 @@ export class QueryBuilder_LegendApplicationPlugin extends LegendApplicationPlugi
     );
   }
 
+  // TODO: rework and move this to query builder plugin (to be created) or `QueryBuilder_LegendApplicationPlugin_Extension`
   getCheckEntitlementsEditorRender(): CheckEntitlementEditorRender | undefined {
     return undefined;
   }

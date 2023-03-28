@@ -17,10 +17,8 @@
 export * from './DSL_DataSpace_Extension.js';
 export { DSL_DataSpace_LegendStudioApplicationPlugin } from './components/studio/DSL_DataSpace_LegendStudioApplicationPlugin.js';
 export { DSL_DataSpace_LegendQueryApplicationPlugin } from './components/query/DSL_DataSpace_LegendQueryApplicationPlugin.js';
-export {
-  type CheckEntitlementEditorRender,
-  DSL_DataSpace_LegendApplicationPlugin,
-} from './components/DSL_DataSpace_LegendApplicationPlugin.js';
+export { DSL_DataSpace_LegendApplicationPlugin } from './components/DSL_DataSpace_LegendApplicationPlugin.js';
+export * from './stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 export { DataSpaceViewer } from './components/DataSpaceViewer.js';
 
 export {

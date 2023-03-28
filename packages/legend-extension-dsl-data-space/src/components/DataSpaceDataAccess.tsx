@@ -15,22 +15,50 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { BlankPanelContent, SearchIcon } from '@finos/legend-art';
+import { AnchorLinkIcon, QuestionCircleIcon } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
-import { AgGridReact } from '@ag-grid-community/react';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+import { useApplicationStore } from '@finos/legend-application';
+import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 
 export const DataSpaceDataAccess = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+    const applicationStore = useApplicationStore();
+    const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
+    const documentationUrl = analysisResult.supportInfo?.documentationUrl;
+
+    const seeDocumentation = (): void => {
+      if (documentationUrl) {
+        applicationStore.navigationService.navigator.visitAddress(
+          documentationUrl,
+        );
+      }
+    };
 
     return (
       <div className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
-          Data Access
+          <div className="data-space__viewer__wiki__section__header__label">
+            Data Access
+            <div className="data-space__viewer__wiki__section__header__anchor">
+              <AnchorLinkIcon />
+            </div>
+          </div>
+          {Boolean(documentationUrl) && (
+            <button
+              className="data-space__viewer__wiki__section__header__documentation"
+              tabIndex={-1}
+              onClick={seeDocumentation}
+              title="See Documentation"
+            >
+              <QuestionCircleIcon />
+            </button>
+          )}
         </div>
         <div className="data-space__viewer__wiki__section__content">
-          <div className="data-space__viewer__data-access"></div>
+          <div className="data-space__viewer__data-access">
+            <DataSpaceWikiPlaceholder message="View Data Access (Work in Progress)" />
+          </div>
         </div>
       </div>
     );
