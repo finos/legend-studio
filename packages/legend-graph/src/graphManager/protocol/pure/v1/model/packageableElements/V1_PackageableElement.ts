@@ -84,10 +84,10 @@ export abstract class V1_PackageableElement implements Hashable {
 }
 
 export class V1_PackageableElementPointer implements Hashable {
-  type!: string;
+  type?: string | undefined;
   path!: string;
 
-  constructor(type: string, path: string) {
+  constructor(type: string | undefined, path: string) {
     this.type = type;
     this.path = path;
   }
@@ -95,7 +95,7 @@ export class V1_PackageableElementPointer implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT_POINTER,
-      this.type,
+      this.type ?? '',
       this.path,
     ]);
   }

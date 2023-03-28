@@ -44,13 +44,7 @@ import {
 import { V1_Service } from '../../../model/packageableElements/service/V1_Service.js';
 import { V1_rawLambdaModelSchema } from './V1_RawValueSpecificationSerializationHelper.js';
 import {
-  type V1_Runtime,
-  V1_EngineRuntime,
-  V1_LegacyRuntime,
-} from '../../../model/packageableElements/runtime/V1_Runtime.js';
-import {
-  V1_runtimePointerModelSchema,
-  V1_RuntimeType,
+  V1_deserializeRuntime,
   V1_serializeRuntime,
 } from './V1_RuntimeSerializationHelper.js';
 import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest.js';
@@ -179,24 +173,6 @@ export const V1_serviceTestSuiteModelSchema = (
     ),
   });
 
-export const V1_deserializeRuntime = (
-  json: PlainObject<V1_Runtime>,
-): V1_Runtime => {
-  switch (json._type) {
-    case V1_RuntimeType.RUNTIME_POINTER:
-      return deserialize(V1_runtimePointerModelSchema, json);
-    case V1_RuntimeType.ENGINE_RUNTIME:
-      return deserialize(V1_EngineRuntime, json);
-    case V1_RuntimeType.LEGACY_RUNTIME:
-    case undefined:
-      return deserialize(V1_LegacyRuntime, json);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't deeserialize runtime value of type '${json._type}'`,
-      );
-  }
-};
-
 const pureSingleExecutionModelSchema = createModelSchema(
   V1_PureSingleExecution,
   {
@@ -205,10 +181,7 @@ const pureSingleExecutionModelSchema = createModelSchema(
     ),
     func: usingModelSchema(V1_rawLambdaModelSchema),
     mapping: optional(primitive()),
-    runtime: optionalCustom(
-      (val) => V1_serializeRuntime(val),
-      (val) => V1_deserializeRuntime(val),
-    ),
+    runtime: optionalCustom(V1_serializeRuntime, V1_deserializeRuntime),
   },
 );
 
@@ -217,10 +190,7 @@ const keyedExecutionParamaterModelSchema = createModelSchema(
   {
     key: primitive(),
     mapping: primitive(),
-    runtime: custom(
-      (val) => V1_serializeRuntime(val),
-      (val) => V1_deserializeRuntime(val),
-    ),
+    runtime: optionalCustom(V1_serializeRuntime, V1_deserializeRuntime),
   },
 );
 

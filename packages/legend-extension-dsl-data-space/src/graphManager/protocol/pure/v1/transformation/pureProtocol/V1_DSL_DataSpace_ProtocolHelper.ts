@@ -43,10 +43,14 @@ import {
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
   V1_DataSpaceSupportEmail,
+  V1_DataSpaceSupportCombinedInfo,
+  V1_DataSpaceExecutable,
+  V1_DataSpaceDiagram,
 } from '../../model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 
 export const V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE = 'dataSpace';
-export const V1_DATA_SPACE_SUPPORT_EMAIL_TYPE = 'email';
+const V1_DATA_SPACE_SUPPORT_EMAIL_TYPE = 'email';
+const V1_DATA_SPACE_SUPPORT_COMBINED_INFO_TYPE = 'combined';
 
 const V1_dataSpaceExecutionContextModelSchema = createModelSchema(
   V1_DataSpaceExecutionContext,
@@ -57,13 +61,30 @@ const V1_dataSpaceExecutionContextModelSchema = createModelSchema(
     description: optional(primitive()),
     mapping: usingModelSchema(V1_packageableElementPointerDeserializerSchema),
     name: primitive(),
+    title: optional(primitive()),
   },
 );
 
-const V1_dataSpaceSupportEmail = createModelSchema(V1_DataSpaceSupportEmail, {
-  _type: usingConstantValueSchema(V1_DATA_SPACE_SUPPORT_EMAIL_TYPE),
-  address: primitive(),
-});
+const V1_dataSpaceSupportEmailModelSchema = createModelSchema(
+  V1_DataSpaceSupportEmail,
+  {
+    _type: usingConstantValueSchema(V1_DATA_SPACE_SUPPORT_EMAIL_TYPE),
+    address: primitive(),
+    documentationUrl: optional(primitive()),
+  },
+);
+
+const V1_dataSpaceSupportCombinedInfoModelSchema = createModelSchema(
+  V1_DataSpaceSupportCombinedInfo,
+  {
+    _type: usingConstantValueSchema(V1_DATA_SPACE_SUPPORT_COMBINED_INFO_TYPE),
+    emails: optional(list(primitive())),
+    faqUrl: optional(primitive()),
+    documentationUrl: optional(primitive()),
+    supportUrl: optional(primitive()),
+    website: optional(primitive()),
+  },
+);
 
 const V1_serializeSupportInfo = (
   protocol: V1_DataSpaceSupportInfo | undefined,
@@ -72,7 +93,9 @@ const V1_serializeSupportInfo = (
     return SKIP;
   }
   if (protocol instanceof V1_DataSpaceSupportEmail) {
-    return serialize(V1_dataSpaceSupportEmail, protocol);
+    return serialize(V1_dataSpaceSupportEmailModelSchema, protocol);
+  } else if (protocol instanceof V1_DataSpaceSupportCombinedInfo) {
+    return serialize(V1_dataSpaceSupportCombinedInfoModelSchema, protocol);
   }
   throw new UnsupportedOperationError(`Can't serialize support info`, protocol);
 };
@@ -85,7 +108,9 @@ export const V1_deserializeSupportInfo = (
   }
   switch (json._type) {
     case V1_DATA_SPACE_SUPPORT_EMAIL_TYPE:
-      return deserialize(V1_dataSpaceSupportEmail, json);
+      return deserialize(V1_dataSpaceSupportEmailModelSchema, json);
+    case V1_DATA_SPACE_SUPPORT_COMBINED_INFO_TYPE:
+      return deserialize(V1_dataSpaceSupportCombinedInfoModelSchema, json);
     default: {
       throw new UnsupportedOperationError(
         `Can't deserialize support info of type '${json._type}'`,
@@ -94,13 +119,32 @@ export const V1_deserializeSupportInfo = (
   }
 };
 
+const V1_dataSpaceExecutableModelSchema = createModelSchema(
+  V1_DataSpaceExecutable,
+  {
+    description: optional(primitive()),
+    executable: usingModelSchema(
+      V1_packageableElementPointerDeserializerSchema,
+    ),
+    title: primitive(),
+  },
+);
+
+const V1_dataSpaceDiagramModelSchema = createModelSchema(V1_DataSpaceDiagram, {
+  description: optional(primitive()),
+  diagram: usingModelSchema(V1_packageableElementPointerDeserializerSchema),
+  title: primitive(),
+});
+
 export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
   _type: usingConstantValueSchema(V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE),
   defaultExecutionContext: primitive(),
   description: optional(primitive()),
+  diagrams: list(object(V1_dataSpaceDiagramModelSchema)),
   elements: optionalCustomListWithSchema(
     V1_packageableElementPointerDeserializerSchema,
   ),
+  executables: list(object(V1_dataSpaceExecutableModelSchema)),
   executionContexts: list(object(V1_dataSpaceExecutionContextModelSchema)),
   featuredDiagrams: optionalCustomListWithSchema(
     V1_packageableElementPointerDeserializerSchema,

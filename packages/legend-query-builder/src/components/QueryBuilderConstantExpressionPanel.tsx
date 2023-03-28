@@ -100,6 +100,7 @@ const QueryBuilderConstantExpressionEditor = observer(
       const valSpec = buildDefaultInstanceValue(
         queryBuilderState.graphManagerState.graph,
         variableType,
+        queryBuilderState.observerContext,
       );
       constantState.setValueSpec(valSpec);
     };
@@ -167,7 +168,7 @@ const QueryBuilderConstantExpressionEditor = observer(
                     constantState.setValueSpec(val);
                   }}
                   graph={queryBuilderState.graphManagerState.graph}
-                  obseverContext={queryBuilderState.observableContext}
+                  obseverContext={queryBuilderState.observerContext}
                   typeCheckOption={{
                     expectedType: variableType,
                     match: variableType === PrimitiveType.DATETIME,
@@ -209,6 +210,7 @@ export const QueryBuilderConstantExpressionPanel = observer(
         const defaultVal = buildDefaultInstanceValue(
           graph,
           PrimitiveType.STRING,
+          queryBuilderState.observerContext,
         );
         const constantName = generateEnumerableNameFromToken(
           varNames,

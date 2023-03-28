@@ -258,16 +258,20 @@ const buildPureDateFunctionExpression = (
         new GenericType(graph.getType(DAY_OF_WEEK)),
       ),
     );
-    instanceValue_setValues(dayOfWeekEnumIntanceValue, [
-      ...dayOfWeekEnumIntanceValue.values,
-      EnumValueExplicitReference.create(
-        guaranteeNonNullable(
-          graph
-            .getEnumeration(DAY_OF_WEEK)
-            .values.filter((e) => e.name === datePickerOption.day)[0],
+    instanceValue_setValues(
+      dayOfWeekEnumIntanceValue,
+      [
+        ...dayOfWeekEnumIntanceValue.values,
+        EnumValueExplicitReference.create(
+          guaranteeNonNullable(
+            graph
+              .getEnumeration(DAY_OF_WEEK)
+              .values.filter((e) => e.name === datePickerOption.day)[0],
+          ),
         ),
-      ),
-    ]);
+      ],
+      observerContext,
+    );
     functionExpression_addParameterValue(
       previousFridaySFE,
       dayOfWeekEnumIntanceValue,
@@ -454,6 +458,7 @@ const buildPureAdjustDateFunction = (
         graph,
         PRIMITIVE_TYPE.INTEGER,
         customDateOption.duration,
+        observerContext,
       ),
       observerContext,
     );
@@ -463,14 +468,14 @@ const buildPureAdjustDateFunction = (
       observerContext,
     );
   } else {
-    const adjustmentInstanceValue = buildPrimitiveInstanceValue(
-      graph,
-      PRIMITIVE_TYPE.INTEGER,
-      customDateOption.duration,
-    );
     functionExpression_addParameterValue(
       dateAdjustSimpleFunctionExpression,
-      adjustmentInstanceValue,
+      buildPrimitiveInstanceValue(
+        graph,
+        PRIMITIVE_TYPE.INTEGER,
+        customDateOption.duration,
+        observerContext,
+      ),
       observerContext,
     );
   }
@@ -479,17 +484,21 @@ const buildPureAdjustDateFunction = (
       new GenericType(graph.getType(DURATION_UNIT)),
     ),
   );
-  instanceValue_setValues(durationUnitEnumIntanceValue, [
-    ...durationUnitEnumIntanceValue.values,
-    EnumValueExplicitReference.create(
-      guaranteeNonNullable(
-        buildPureDurationEnumValue(
-          guaranteeNonNullable(customDateOption.unit),
-          graph,
+  instanceValue_setValues(
+    durationUnitEnumIntanceValue,
+    [
+      ...durationUnitEnumIntanceValue.values,
+      EnumValueExplicitReference.create(
+        guaranteeNonNullable(
+          buildPureDurationEnumValue(
+            guaranteeNonNullable(customDateOption.unit),
+            graph,
+          ),
         ),
       ),
-    ),
-  ]);
+    ],
+    observerContext,
+  );
   functionExpression_addParameterValue(
     dateAdjustSimpleFunctionExpression,
     durationUnitEnumIntanceValue,
@@ -699,12 +708,14 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
   graph: PureModel;
   setValueSpecification: (val: ValueSpecification) => void;
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
+  observerContext: ObserverContext;
 }> = (props) => {
   const {
     valueSpecification,
     graph,
     setValueSpecification,
     setDatePickerOption,
+    observerContext,
   } = props;
   const inputRef = useRef<HTMLInputElement>(null);
   const absoluteDateValue =
@@ -720,10 +731,16 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
           graph,
           PRIMITIVE_TYPE.STRICTDATE,
           event.target.value,
+          observerContext,
         ),
       );
     } else if (valueSpecification instanceof InstanceValue) {
-      instanceValue_setValue(valueSpecification, event.target.value, 0);
+      instanceValue_setValue(
+        valueSpecification,
+        event.target.value,
+        0,
+        observerContext,
+      );
       if (
         valueSpecification.genericType.value.rawType.path !==
         PRIMITIVE_TYPE.STRICTDATE
@@ -768,12 +785,14 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
   graph: PureModel;
   setValueSpecification: (val: ValueSpecification) => void;
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
+  observerContext: ObserverContext;
 }> = (props) => {
   const {
     valueSpecification,
     graph,
     setValueSpecification,
     setDatePickerOption,
+    observerContext,
   } = props;
   const inputRef = useRef<HTMLInputElement>(null);
   const absoluteTimeValue =
@@ -789,10 +808,16 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
           graph,
           PRIMITIVE_TYPE.DATETIME,
           event.target.value,
+          observerContext,
         ),
       );
     } else {
-      instanceValue_setValue(valueSpecification, event.target.value, 0);
+      instanceValue_setValue(
+        valueSpecification,
+        event.target.value,
+        0,
+        observerContext,
+      );
       if (
         valueSpecification.genericType.value.rawType.path !==
         PRIMITIVE_TYPE.DATETIME
@@ -1213,6 +1238,7 @@ export const CustomDatePicker: React.FC<{
           graph,
           PRIMITIVE_TYPE.LATESTDATE,
           event.target.value,
+          observerContext,
         ),
       );
     } else if (
@@ -1255,6 +1281,7 @@ export const CustomDatePicker: React.FC<{
             valueSpecification={valueSpecification}
             setValueSpecification={setValueSpecification}
             setDatePickerOption={setDatePickerOption}
+            observerContext={observerContext}
           />
         );
       case CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME:
@@ -1264,6 +1291,7 @@ export const CustomDatePicker: React.FC<{
             valueSpecification={valueSpecification}
             setValueSpecification={setValueSpecification}
             setDatePickerOption={setDatePickerOption}
+            observerContext={observerContext}
           />
         );
       case CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE:

@@ -26,7 +26,7 @@ import {
   StopWatch,
 } from '@finos/legend-shared';
 import {
-  type ViewerPathParams,
+  type ProjectViewerPathParams,
   generateViewProjectByGAVRoute,
   generateViewVersionRoute,
   generateViewRevisionRoute,
@@ -124,7 +124,7 @@ export class ProjectViewerStore {
    *  2. if the elemnt is not found
    * in either case, the most suitable behavior at the moment is to internalize/swallow up the entity path param
    */
-  internalizeEntityPath(params: ViewerPathParams): void {
+  internalizeEntityPath(params: ProjectViewerPathParams): void {
     const { gav, projectId, revisionId, versionId, entityPath } = params;
     if (entityPath) {
       this.initialEntityPath = entityPath;
@@ -497,7 +497,7 @@ export class ProjectViewerStore {
     }
   }
 
-  *initialize(params: ViewerPathParams): GeneratorFn<void> {
+  *initialize(params: ProjectViewerPathParams): GeneratorFn<void> {
     if (!this.editorStore.initState.isInInitialState) {
       return;
     }

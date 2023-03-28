@@ -29,6 +29,25 @@ Diagram model::DummyDiagram
 }
 
 
+###Service
+Service model::MyService
+{
+  pattern: '/somePattern';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |'';
+    mapping: model::DummyMapping;
+    runtime: model::DummyRuntime;
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+
 ###DataSpace
 DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace
 {
@@ -36,6 +55,7 @@ DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} mod
   [
     {
       name: 'Context 1';
+      title: 'Context 1 Title';
       description: 'some information about the context';
       mapping: model::DummyMapping;
       defaultRuntime: model::DummyRuntime;
@@ -44,16 +64,44 @@ DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} mod
   defaultExecutionContext: 'Context 1';
   title: 'Untitled';
   description: 'some description';
-  featuredDiagrams:
+  diagrams:
   [
-    model::DummyDiagram
+    {
+      title: 'Diag 1';
+      description: 'some information about the diagram';
+      diagram: model::DummyDiagram;
+    },
+    {
+      title: 'Diag 2';
+      diagram: model::DummyDiagram;
+    }
   ];
   elements:
   [
     model::DummyClass,
     model::DummyClass
   ];
-  supportInfo: Email {
-    address: 'someEmail@test.org';
+  executables:
+  [
+    {
+      title: 'Exec 1';
+      description: 'some information about the executable';
+      executable: model::MyService;
+    },
+    {
+      title: 'Exec 2';
+      executable: model::MyService;
+    }
+  ];
+  supportInfo: Combined {
+    documentationUrl: 'https://example.org';
+    website: 'https://example.org/website';
+    faqUrl: 'https://example.org/faq';
+    supportUrl: 'https://example.org/support';
+    emails:
+    [
+      'someEmail@test.org',
+      'someEmail2@test.org'
+    ];
   };
 }

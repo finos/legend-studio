@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { TAB_SIZE } from '@finos/legend-application';
+import {
+  LEGEND_APPLICATION_COLOR_THEME,
+  TAB_SIZE,
+} from '@finos/legend-application';
 import {
   type DataSpaceAnalysisResult,
   DataSpaceViewerState,
@@ -36,24 +39,25 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { makeObservable, flow, observable, flowResult } from 'mobx';
-import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
-import type { LegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStore.js';
+import type { LegendTaxonomyPluginManager } from '../../application/LegendTaxonomyPluginManager.js';
+import type { LegendTaxonomyApplicationStore } from '../LegendTaxonomyBaseStore.js';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
-  type LegendTaxonomyStandaloneDataSpaceViewerPathParams,
-} from '../application/LegendTaxonomyNavigation.js';
+  type DataSpacePreviewPathParams,
+} from '../../application/LegendTaxonomyNavigation.js';
 import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
-} from './LegendTaxonomyDataSpaceViewerHelper.js';
+} from '../LegendTaxonomyDataSpaceViewerHelper.js';
 
-export class StandaloneDataSpaceViewerStore {
+export class DataSpacePreviewStore {
   readonly applicationStore: LegendTaxonomyApplicationStore;
   readonly depotServerClient: DepotServerClient;
   readonly graphManagerState: BasicGraphManagerState;
   readonly pluginManager: LegendTaxonomyPluginManager;
 
   readonly initState = ActionState.create();
+
   viewerState?: DataSpaceViewerState | undefined;
 
   constructor(
@@ -74,15 +78,21 @@ export class StandaloneDataSpaceViewerStore {
     this.pluginManager = applicationStore.pluginManager;
   }
 
-  *initialize(
-    params: LegendTaxonomyStandaloneDataSpaceViewerPathParams,
-  ): GeneratorFn<void> {
+  *initialize(params: DataSpacePreviewPathParams): GeneratorFn<void> {
+    // set up the application
+    this.applicationStore.assistantService.setIsHidden(true);
+    this.applicationStore.layoutService.setColorTheme(
+      LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
+    );
+
     this.initState.inProgress();
     this.initState.setMessage(`Initializing...`);
+
     try {
       const { gav, dataSpacePath } = params;
       const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
 
+      // initialize
       yield this.graphManagerState.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
@@ -105,6 +115,7 @@ export class StandaloneDataSpaceViewerStore {
           this.depotServerClient.getProject(groupId, artifactId),
         )) as PlainObject<ProjectData>,
       );
+
       // analyze data space
       const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
         this.graphManagerState.graphManager,

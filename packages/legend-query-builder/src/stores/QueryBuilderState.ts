@@ -86,7 +86,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   readonly changeDetectionState: QueryBuilderChangeDetectionState;
   readonly queryCompileState = ActionState.create();
-  readonly observableContext: ObserverContext;
+  readonly observerContext: ObserverContext;
 
   explorerState: QueryBuilderExplorerState;
   functionsExplorerState: QueryFunctionsExplorerState;
@@ -183,7 +183,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.resultState = new QueryBuilderResultState(this);
     this.textEditorState = new QueryBuilderTextEditorState(this);
     this.unsupportedQueryState = new QueryBuilderUnsupportedQueryState(this);
-    this.observableContext = new ObserverContext(
+    this.observerContext = new ObserverContext(
       this.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
     );
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
@@ -295,10 +295,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     );
   }
 
-  resetQueryResult(preserveResult?: boolean): void {
+  resetQueryResult(options?: { preserveResult?: boolean | undefined }): void {
     const resultState = new QueryBuilderResultState(this);
     resultState.setPreviewLimit(this.resultState.previewLimit);
-    if (preserveResult) {
+    if (options?.preserveResult) {
       resultState.setExecutionResult(this.resultState.executionResult);
       resultState.setExecutionDuration(this.resultState.executionDuration);
       resultState.latestRunHashCode = this.resultState.latestRunHashCode;
@@ -408,7 +408,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
           previousStateParameterValues.set(ps.parameter, ps.value);
         });
       }
-      this.resetQueryResult(options?.preserveResult);
+      this.resetQueryResult({ preserveResult: options?.preserveResult });
       this.resetQueryContent();
 
       if (!isStubbed_RawLambda(query)) {
@@ -419,7 +419,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
             ),
             this.graphManagerState.graph,
           ),
-          this.observableContext,
+          this.observerContext,
         );
         const compiledValueSpecification = guaranteeType(
           valueSpec,
@@ -446,9 +446,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
         query,
         this.graphManagerState,
       )
-        .map((param) =>
-          observe_ValueSpecification(param, this.observableContext),
-        )
+        .map((param) => observe_ValueSpecification(param, this.observerContext))
         .filter(filterByType(VariableExpression));
       processParameters(parameters, this);
     }

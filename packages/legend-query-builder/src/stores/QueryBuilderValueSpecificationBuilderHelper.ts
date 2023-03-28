@@ -114,7 +114,7 @@ export const buildPropertyExpressionChain = (
           functionExpression_setParametersValues(
             currentExpression,
             [guaranteeNonNullable(currentExpression.parametersValues[0])],
-            queryBuilderState.observableContext,
+            queryBuilderState.observerContext,
           );
         }
       } else {

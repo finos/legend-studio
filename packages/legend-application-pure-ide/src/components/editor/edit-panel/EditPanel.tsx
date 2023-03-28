@@ -57,7 +57,7 @@ export const EditPanelSplashScreen: React.FC = () => {
       >
         <div className="edit-panel__splash-screen__content__item">
           <div className="edit-panel__splash-screen__content__item__label">
-            Execute the &apos;go&apos; function
+            {`Run the go() function`}
           </div>
           <div className="edit-panel__splash-screen__content__item__hot-keys">
             <div className="hotkey__key">F9</div>

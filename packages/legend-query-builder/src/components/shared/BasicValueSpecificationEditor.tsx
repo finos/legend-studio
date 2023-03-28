@@ -32,6 +32,7 @@ import {
   FilledWindowMaximizeIcon,
   BasePopover,
   PanelFormSection,
+  CalculateIcon,
 } from '@finos/legend-art';
 import {
   type Enum,
@@ -53,6 +54,8 @@ import {
   getEnumValue,
   getMultiplicityDescription,
   type ObserverContext,
+  matchFunctionName,
+  isSubType,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
@@ -62,6 +65,7 @@ import {
   returnUndefOnError,
   uniq,
   parseCSVString,
+  guaranteeIsNumber,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -72,6 +76,9 @@ import {
   instanceValue_setValues,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
 import { CustomDatePicker } from './CustomDatePicker.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graphManager/QueryBuilderSupportedFunctions.js';
+import { simplifyValueExpression } from '../../stores/QueryBuilderValueSpecificationHelper.js';
+import { evaluate } from 'mathjs';
 
 type TypeCheckOption = {
   expectedType: Type;
@@ -210,6 +217,7 @@ const StringPrimitiveInstanceValueEditor = observer(
           cleanUpReloadValues?: () => void;
         }
       | undefined;
+    obseverContext: ObserverContext;
   }) => {
     const {
       valueSpecification,
@@ -217,12 +225,13 @@ const StringPrimitiveInstanceValueEditor = observer(
       resetValue,
       setValueSpecification,
       selectorConfig,
+      obseverContext,
     } = props;
     const useSelector = Boolean(selectorConfig);
     const applicationStore = useApplicationStore();
     const value = valueSpecification.values[0] as string;
     const updateValueSpec = (val: string): void => {
-      instanceValue_setValue(valueSpecification, val, 0);
+      instanceValue_setValue(valueSpecification, val, 0, obseverContext);
       setValueSpecification(valueSpecification);
     };
     const changeInputValue: React.ChangeEventHandler<HTMLInputElement> = (
@@ -316,12 +325,18 @@ const BooleanPrimitiveInstanceValueEditor = observer(
     className?: string | undefined;
     resetValue: () => void;
     setValueSpecification: (val: ValueSpecification) => void;
+    obseverContext: ObserverContext;
   }) => {
-    const { valueSpecification, className, resetValue, setValueSpecification } =
-      props;
+    const {
+      valueSpecification,
+      className,
+      resetValue,
+      setValueSpecification,
+      obseverContext,
+    } = props;
     const value = valueSpecification.values[0] as boolean;
     const toggleValue = (): void => {
-      instanceValue_setValue(valueSpecification, !value, 0);
+      instanceValue_setValue(valueSpecification, !value, 0, obseverContext);
       setValueSpecification(valueSpecification);
     };
 
@@ -354,6 +369,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
     className?: string | undefined;
     resetValue: () => void;
     setValueSpecification: (val: ValueSpecification) => void;
+    obseverContext: ObserverContext;
   }) => {
     const {
       valueSpecification,
@@ -361,96 +377,95 @@ const NumberPrimitiveInstanceValueEditor = observer(
       className,
       resetValue,
       setValueSpecification,
+      obseverContext,
     } = props;
+    const [value, setValue] = useState(
+      (valueSpecification.values[0] as number).toString(),
+    );
+    const inputRef = useRef<HTMLInputElement>(null);
+    const numericValue = isInteger
+      ? Number.parseInt(Number(value).toString(), 10)
+      : Number(value);
 
-    const DECIMAL_POINT = '.';
-    const NEGATIVE_SIGN = '-';
-
-    // NOTE: Although we want to allow the user to type
-    // '-' and '.' for negative and decimal numbers respectively,
-    // we want to check for when user leaves the input to not
-    // leave the number value at an invalid state (i.e. if
-    // user just left '-' without an actual number)
-    const onBlur = (): void => {
-      if (valueSpecification.values[0] === NEGATIVE_SIGN) {
-        instanceValue_setValue(valueSpecification, 0, 0);
-      }
-      const numberInputValue = valueSpecification.values[0] as string;
-      if (
-        numberInputValue.length > 0 &&
-        numberInputValue.at(-1) === DECIMAL_POINT
-      ) {
-        instanceValue_setValue(
-          valueSpecification,
-          parseInt(
-            numberInputValue.substring(0, numberInputValue.length - 1),
-            10,
-          ),
-          0,
-        );
-      }
-      const val = isInteger
-        ? parseInt(numberInputValue, 10)
-        : parseFloat(numberInputValue);
-      instanceValue_setValue(valueSpecification, val, 0);
-      setValueSpecification(valueSpecification);
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      setValue(event.target.value);
     };
 
-    const value = valueSpecification.values[0] as number;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      const valueIsDecimalPoint =
-        (event.nativeEvent as InputEvent).data === DECIMAL_POINT;
-
-      const valueIsNegativeSymbol =
-        (event.nativeEvent as InputEvent).data === NEGATIVE_SIGN;
-
-      if (
-        !isInteger &&
-        valueIsDecimalPoint &&
-        value.toString().length > 0 &&
-        !value.toString().includes(DECIMAL_POINT)
-      ) {
-        instanceValue_setValue(
-          valueSpecification,
-          valueSpecification.values[0] + DECIMAL_POINT,
-          0,
-        );
-        return;
+    // Support expression evaluation
+    const calculateExpression = (): void => {
+      if (isNaN(numericValue)) {
+        try {
+          const calculatedValue = guaranteeIsNumber(evaluate(value));
+          setValue(
+            isInteger
+              ? Number.parseInt(calculatedValue.toString(), 10).toString()
+              : Number(calculatedValue).toString(),
+          );
+        } catch {
+          setValue((valueSpecification.values[0] as number).toString());
+        }
+      } else {
+        setValue(numericValue.toString());
       }
+    };
+
+    const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+      if (event.code === 'Enter') {
+        calculateExpression();
+        inputRef.current?.focus();
+      } else if (event.code === 'Escape') {
+        inputRef.current?.select();
+      }
+    };
+
+    useEffect(() => {
+      setValue((valueSpecification.values[0] as number).toString());
+    }, [valueSpecification]);
+
+    useEffect(() => {
       if (
-        value.toString().includes(DECIMAL_POINT) &&
-        (event.nativeEvent as InputEvent).data === '0'
+        !isNaN(numericValue) &&
+        numericValue !== valueSpecification.values[0]
       ) {
         instanceValue_setValue(
           valueSpecification,
-          `${valueSpecification.values[0]}0`,
+          numericValue,
           0,
+          obseverContext,
         );
         setValueSpecification(valueSpecification);
-        return;
       }
-
-      let inputVal = isInteger
-        ? parseInt(event.target.value, 10)
-        : parseFloat(event.target.value);
-      inputVal = isNaN(inputVal) ? 0 : inputVal;
-
-      valueIsNegativeSymbol
-        ? instanceValue_setValue(valueSpecification, NEGATIVE_SIGN, 0)
-        : instanceValue_setValue(valueSpecification, inputVal, 0);
-      setValueSpecification(valueSpecification);
-    };
+    }, [
+      numericValue,
+      valueSpecification,
+      setValueSpecification,
+      obseverContext,
+    ]);
 
     return (
       <div className={clsx('value-spec-editor', className)}>
-        <input
-          className="panel__content__form__section__input value-spec-editor__input"
-          spellCheck={false}
-          type="text"
-          value={value}
-          onBlur={onBlur}
-          onChange={changeValue}
-        />
+        <div className="value-spec-editor__number__input-container">
+          <input
+            ref={inputRef}
+            className="panel__content__form__section__input value-spec-editor__input value-spec-editor__number__input"
+            spellCheck={false}
+            type="text" // NOTE: we leave this as text so that we can support expression evaluation
+            inputMode="numeric"
+            value={value}
+            onChange={changeValue}
+            onBlur={calculateExpression}
+            onKeyDown={onKeyDown}
+          />
+          <div className="value-spec-editor__number__actions">
+            <button
+              className="value-spec-editor__number__action"
+              title="Evaluate Expression (Enter)"
+              onClick={calculateExpression}
+            >
+              <CalculateIcon />
+            </button>
+          </div>
+        </div>
         <button
           className="value-spec-editor__reset-btn"
           title="Reset"
@@ -469,9 +484,15 @@ const EnumValueInstanceValueEditor = observer(
     className?: string | undefined;
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
+    obseverContext: ObserverContext;
   }) => {
-    const { valueSpecification, className, resetValue, setValueSpecification } =
-      props;
+    const {
+      valueSpecification,
+      className,
+      resetValue,
+      setValueSpecification,
+      obseverContext,
+    } = props;
     const enumValueRef = guaranteeNonNullable(valueSpecification.values[0]);
     const enumValue = enumValueRef.value;
     const options = enumValue._OWNER.values.map((value) => ({
@@ -483,6 +504,7 @@ const EnumValueInstanceValueEditor = observer(
         valueSpecification,
         EnumValueExplicitReference.create(val.value),
         0,
+        obseverContext,
       );
       setValueSpecification(valueSpecification);
     };
@@ -536,9 +558,10 @@ const setCollectionValue = (
   valueSpecification: CollectionInstanceValue,
   expectedType: Type,
   value: string,
+  obseverContext: ObserverContext,
 ): void => {
   if (value.trim().length === 0) {
-    instanceValue_setValues(valueSpecification, []);
+    instanceValue_setValues(valueSpecification, [], obseverContext);
     return;
   }
   let result: unknown[] = [];
@@ -559,7 +582,11 @@ const setCollectionValue = (
                 new GenericType(expectedType),
               ),
             );
-            instanceValue_setValues(primitiveInstanceValue, [item.toString()]);
+            instanceValue_setValues(
+              primitiveInstanceValue,
+              [item.toString()],
+              obseverContext,
+            );
             return primitiveInstanceValue;
           })
           .filter(isNonNullable);
@@ -580,7 +607,11 @@ const setCollectionValue = (
                 new GenericType(expectedType),
               ),
             );
-            instanceValue_setValues(primitiveInstanceValue, [item]);
+            instanceValue_setValues(
+              primitiveInstanceValue,
+              [item],
+              obseverContext,
+            );
             return primitiveInstanceValue;
           })
           .filter(isNonNullable);
@@ -602,14 +633,16 @@ const setCollectionValue = (
         const enumValueInstanceValue = new EnumValueInstanceValue(
           GenericTypeExplicitReference.create(new GenericType(expectedType)),
         );
-        instanceValue_setValues(enumValueInstanceValue, [
-          EnumValueExplicitReference.create(_enum),
-        ]);
+        instanceValue_setValues(
+          enumValueInstanceValue,
+          [EnumValueExplicitReference.create(_enum)],
+          obseverContext,
+        );
         return enumValueInstanceValue;
       })
       .filter(isNonNullable);
   }
-  instanceValue_setValues(valueSpecification, result);
+  instanceValue_setValues(valueSpecification, result, obseverContext);
 };
 
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
@@ -622,6 +655,7 @@ const CollectionValueInstanceValueEditor = observer(
     className?: string | undefined;
     resetValue: () => void;
     setValueSpecification: (val: ValueSpecification) => void;
+    obseverContext: ObserverContext;
   }) => {
     const {
       valueSpecification,
@@ -629,6 +663,7 @@ const CollectionValueInstanceValueEditor = observer(
       className,
       resetValue,
       setValueSpecification,
+      obseverContext,
     } = props;
     const inputRef = useRef<HTMLInputElement>(null);
     const [text, setText] = useState(stringifyValue(valueSpecification.values));
@@ -653,7 +688,12 @@ const CollectionValueInstanceValueEditor = observer(
     const saveEdit = (): void => {
       setEditable(false);
       setShowAdvancedEditorPopover(false);
-      setCollectionValue(valueSpecification, expectedType, text);
+      setCollectionValue(
+        valueSpecification,
+        expectedType,
+        text,
+        obseverContext,
+      );
       setText(stringifyValue(valueSpecification.values));
       setValueSpecification(valueSpecification);
     };
@@ -849,6 +889,7 @@ export const BasicValueSpecificationEditor: React.FC<{
             className={className}
             resetValue={resetValue}
             selectorConfig={selectorConfig}
+            obseverContext={obseverContext}
           />
         );
       case PRIMITIVE_TYPE.BOOLEAN:
@@ -858,6 +899,7 @@ export const BasicValueSpecificationEditor: React.FC<{
             setValueSpecification={setValueSpecification}
             className={className}
             resetValue={resetValue}
+            obseverContext={obseverContext}
           />
         );
       case PRIMITIVE_TYPE.NUMBER:
@@ -872,6 +914,7 @@ export const BasicValueSpecificationEditor: React.FC<{
             setValueSpecification={setValueSpecification}
             className={className}
             resetValue={resetValue}
+            obseverContext={obseverContext}
           />
         );
       case PRIMITIVE_TYPE.DATE:
@@ -899,6 +942,7 @@ export const BasicValueSpecificationEditor: React.FC<{
         className={className}
         resetValue={resetValue}
         setValueSpecification={setValueSpecification}
+        obseverContext={obseverContext}
       />
     );
   } else if (
@@ -916,6 +960,7 @@ export const BasicValueSpecificationEditor: React.FC<{
         className={className}
         resetValue={resetValue}
         setValueSpecification={setValueSpecification}
+        obseverContext={obseverContext}
       />
     );
   }
@@ -940,26 +985,55 @@ export const BasicValueSpecificationEditor: React.FC<{
         resetValue={resetValue}
       />
     );
-  } else if (
-    valueSpecification instanceof SimpleFunctionExpression &&
-    [
-      PRIMITIVE_TYPE.DATE.toString(),
-      PRIMITIVE_TYPE.STRICTDATE.toString(),
-      PRIMITIVE_TYPE.DATETIME.toString(),
-      PRIMITIVE_TYPE.LATESTDATE.toString(),
-    ].includes(typeCheckOption.expectedType.path)
-  ) {
-    return (
-      <DateInstanceValueEditor
-        valueSpecification={valueSpecification}
-        graph={graph}
-        obseverContext={obseverContext}
-        typeCheckOption={typeCheckOption}
-        className={className}
-        setValueSpecification={setValueSpecification}
-        resetValue={resetValue}
-      />
-    );
+  } else if (valueSpecification instanceof SimpleFunctionExpression) {
+    if (isSubType(typeCheckOption.expectedType, PrimitiveType.DATE)) {
+      return (
+        <DateInstanceValueEditor
+          valueSpecification={valueSpecification}
+          graph={graph}
+          obseverContext={obseverContext}
+          typeCheckOption={typeCheckOption}
+          className={className}
+          setValueSpecification={setValueSpecification}
+          resetValue={resetValue}
+        />
+      );
+    } else if (
+      // TODO: think of other ways we could make use of this code path where we can simplify
+      // an expression value to simple value, not just handling minus() function only
+      isSubType(typeCheckOption.expectedType, PrimitiveType.NUMBER) &&
+      matchFunctionName(
+        valueSpecification.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
+      )
+    ) {
+      const simplifiedValue = simplifyValueExpression(
+        valueSpecification,
+        obseverContext,
+      );
+      if (
+        simplifiedValue instanceof PrimitiveInstanceValue &&
+        isSubType(
+          simplifiedValue.genericType.value.rawType,
+          PrimitiveType.NUMBER,
+        )
+      ) {
+        return (
+          <NumberPrimitiveInstanceValueEditor
+            valueSpecification={simplifiedValue}
+            isInteger={
+              simplifiedValue.genericType.value.rawType ===
+              PrimitiveType.INTEGER
+            }
+            setValueSpecification={setValueSpecification}
+            className={className}
+            resetValue={resetValue}
+            obseverContext={obseverContext}
+          />
+        );
+      }
+    }
   }
+
   return <UnsupportedValueSpecificationEditor />;
 };

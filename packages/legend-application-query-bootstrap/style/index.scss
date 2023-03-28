@@ -28,21 +28,21 @@
 // override native dark theme with light them colors.
 
 :root {
-  --color-legacy-light-grey-100: #edf0f1;
-  --color-legacy-light-grey-200: #dce2e4;
-  --color-legacy-light-grey-300: #b5bec4;
-  --color-legacy-dark-grey-200: #29323a;
-  --color-legacy-dark-grey-400: #4e5364;
-  --color-legacy-light-blue-50: #def3ff;
-  --color-legacy-light-blue-100: #7399c6;
-  --color-legacy-light-blue-200: #6a8db6;
-  --color-legacy-light-blue-250: #687b93;
-  --color-legacy-light-blue-300: #4d6f9c;
-  --color-legacy-light-blue-350: #475b72;
-  --color-legacy-light-blue-400: #1b4c8c;
-  --color-legacy-light-blue-600: #2d3d51;
-  --color-legacy-green-100: #5cb65c;
-  --color-legacy-orange-100: #f68f1e;
+  --color-legacylight-light-grey-100: #edf0f1;
+  --color-legacylight-light-grey-200: #dce2e4;
+  --color-legacylight-light-grey-300: #b5bec4;
+  --color-legacylight-dark-grey-200: #29323a;
+  --color-legacylight-dark-grey-400: #4e5364;
+  --color-legacylight-light-blue-50: #def3ff;
+  --color-legacylight-light-blue-100: #7399c6;
+  --color-legacylight-light-blue-200: #6a8db6;
+  --color-legacylight-light-blue-250: #687b93;
+  --color-legacylight-light-blue-300: #4d6f9c;
+  --color-legacylight-light-blue-350: #475b72;
+  --color-legacylight-light-blue-400: #1b4c8c;
+  --color-legacylight-light-blue-600: #2d3d51;
+  --color-legacylight-green-100: #5cb65c;
+  --color-legacylight-orange-100: #f68f1e;
 }
 
 .theme__legacy-light {
@@ -50,7 +50,7 @@
 
   input {
     background: var(--color-white);
-    color: var(--color-legacy-dark-grey-200);
+    color: var(--color-legacylight-dark-grey-200);
     border-color: var(--color-light-grey-250);
 
     &:focus {
@@ -66,10 +66,10 @@
   }
 
   .menu__item {
-    color: var(--color-legacy-dark-grey-200);
+    color: var(--color-legacylight-dark-grey-200);
 
     &:hover {
-      background: var(--color-legacy-light-grey-100);
+      background: var(--color-legacylight-light-grey-100);
     }
   }
 
@@ -81,13 +81,13 @@
 
   .btn--dark,
   .btn--dark:hover {
-    background: var(--color-legacy-light-blue-100);
+    background: var(--color-legacylight-light-blue-100);
     color: var(--color-white);
   }
 
   .btn--dark.btn--caution,
   .btn--dark.btn--caution:hover {
-    background: var(--color-legacy-orange-100);
+    background: var(--color-legacylight-orange-100);
     color: var(--color-white);
   }
 
@@ -104,14 +104,14 @@
 
   .btn--medium,
   .btn--medium:hover {
-    background: var(--color-legacy-light-grey-300);
+    background: var(--color-legacylight-light-grey-300);
     color: var(--color-white);
   }
 
   // ---------------------------- Table -------------------------------
 
   .query-builder__explorer__preview-data-modal__body .table {
-    color: var(--color-legacy-dark-grey-200);
+    color: var(--color-legacylight-dark-grey-200);
   }
 
   .table {
@@ -132,33 +132,33 @@
   }
 
   .panel__content__form__section__header__label {
-    color: var(--color-legacy-dark-grey-400);
+    color: var(--color-legacylight-dark-grey-400);
   }
 
   .panel__content__form__section__toggler__prompt,
   .panel__content__form__section__header__prompt {
-    color: var(--color-legacy-dark-grey-200);
+    color: var(--color-legacylight-dark-grey-200);
   }
 
   .query-builder__variables__variable__name__input,
   .panel__content__form__section__input {
     background: var(--color-white);
-    color: var(--color-legacy-dark-grey-200);
-    border: 0.1rem solid var(--color-legacy-dark-grey-400);
+    color: var(--color-legacylight-dark-grey-200);
+    border: 0.1rem solid var(--color-legacylight-dark-grey-400);
 
     &:focus {
-      border-color: var(--color-legacy-light-blue-100);
+      border-color: var(--color-legacylight-light-blue-100);
     }
   }
 
   .query-builder__variables__variable__label {
-    color: var(--color-legacy-dark-grey-200);
+    color: var(--color-legacylight-dark-grey-200);
   }
 
   .query-builder__variables__variable:hover
     .query-builder__variables__variable__action
     svg {
-    color: var(--color-legacy-light-blue-100);
+    color: var(--color-legacylight-light-blue-100);
   }
 
   .panel__content__form__section__list__item:hover {
@@ -170,7 +170,7 @@
   }
 
   .panel__content__form__section__toggler__btn--toggled svg {
-    color: var(--color-legacy-light-blue-100);
+    color: var(--color-legacylight-light-blue-100);
   }
 
   // ---------------------------- Modal -------------------------------
@@ -181,27 +181,27 @@
 
   .modal.modal--dark {
     background: var(--color-white);
-    color: var(--color-legacy-dark-grey-200);
+    color: var(--color-legacylight-dark-grey-200);
     border: none;
   }
 
   .modal__header {
-    color: var(--color-legacy-dark-grey-200);
-    background: var(--color-legacy-light-grey-100);
+    color: var(--color-legacylight-dark-grey-200);
+    background: var(--color-legacylight-light-grey-100);
   }
 
   .modal__footer {
     border: none;
-    background: var(--color-legacy-light-grey-100);
+    background: var(--color-legacylight-light-grey-100);
   }
 
   .blocking-alert__summary-text,
   .blocking-alert__prompt-text {
-    color: var(--color-legacy-dark-grey-400);
+    color: var(--color-legacylight-dark-grey-400);
   }
 
   .modal__footer__close-btn {
-    background: var(--color-legacy-light-blue-100);
+    background: var(--color-legacylight-light-blue-100);
   }
 
   .text-editor__container {
@@ -211,7 +211,7 @@
   // ---------------------------- Basic Value Specification Editor  -------------------------------
 
   .value-spec-editor__reset-btn {
-    background: var(--color-legacy-light-grey-100);
+    background: var(--color-legacylight-light-grey-100);
     border-color: var(--color-light-grey-300);
     border-left: none;
 
@@ -223,12 +223,12 @@
   .value-spec-editor__date-picker__trigger {
     background: var(--color-white);
     border-color: var(--color-light-grey-300);
-    color: var(--color-legacy-dark-grey-200);
+    color: var(--color-legacylight-dark-grey-200);
   }
 
   .lambda-parameter-values__value__label,
   .value-spec-editor__list-editor__textarea__description {
-    color: var(--color-legacy-dark-grey-200);
+    color: var(--color-legacylight-dark-grey-200);
   }
 
   // ---------------------------- Derived Property Editor -------------------------------
@@ -270,36 +270,36 @@
     &__filter-section {
       &__section__toggler__btn {
         svg {
-          color: var(--color-legacy-light-blue-100);
+          color: var(--color-legacylight-light-blue-100);
         }
       }
 
       &__section__toggler__prompt {
-        color: var(--color-legacy-dark-grey-200);
+        color: var(--color-legacylight-dark-grey-200);
       }
     }
 
     &__search-section {
-      border-color: var(--color-legacy-light-grey-200);
+      border-color: var(--color-legacylight-light-grey-200);
 
       &__input {
-        border-color: var(--color-legacy-light-grey-200);
+        border-color: var(--color-legacylight-light-grey-200);
       }
     }
 
     &__body {
       .table {
-        color: var(--color-legacy-dark-grey-200);
+        color: var(--color-legacylight-dark-grey-200);
       }
 
       &__table__row:hover {
-        color: var(--color-legacy-light-blue-100);
-        background: var(--color-legacy-light-grey-200);
+        color: var(--color-legacylight-light-blue-100);
+        background: var(--color-legacylight-light-grey-200);
       }
 
       &__table__row--selected:hover,
       &__table__row--selected {
-        background: var(--color-legacy-light-grey-200);
+        background: var(--color-legacylight-light-grey-200);
       }
     }
   }
@@ -308,24 +308,24 @@
 
   .query-builder-property-search-panel {
     &__header {
-      border-color: var(--color-legacy-light-grey-200);
+      border-color: var(--color-legacylight-light-grey-200);
     }
 
     &__form__section__header__label,
     &__form__section__toggler__prompt {
-      color: var(--color-legacy-dark-grey-200);
+      color: var(--color-legacylight-dark-grey-200);
     }
 
     &__form__section__toggler__btn--toggled svg {
-      color: var(--color-legacy-light-blue-100);
+      color: var(--color-legacylight-light-blue-100);
     }
 
     .resizable-panel__splitter-line {
-      background: var(--color-legacy-light-grey-200) !important;
+      background: var(--color-legacylight-light-grey-200) !important;
     }
 
     &__node__label--with-action {
-      color: var(--color-legacy-dark-grey-200);
+      color: var(--color-legacylight-dark-grey-200);
     }
 
     &__node__container:hover svg {
@@ -335,10 +335,10 @@
     &__input {
       background: var(--color-white);
       border-color: var(--color-light-grey-200);
-      color: var(--color-legacy-dark-grey-200);
+      color: var(--color-legacylight-dark-grey-200);
 
       &:focus {
-        border-color: var(--color-legacy-light-blue-100);
+        border-color: var(--color-legacylight-light-blue-100);
       }
     }
 
@@ -347,7 +347,7 @@
     }
 
     &__input__search__count {
-      background: var(--color-legacy-light-blue-100);
+      background: var(--color-legacylight-light-blue-100);
       color: var(--color-white);
     }
   }
@@ -360,7 +360,7 @@
     }
 
     &__actions {
-      border-color: var(--color-legacy-light-grey-300);
+      border-color: var(--color-legacylight-light-grey-300);
 
       .btn {
         height: 3.6rem;
@@ -375,7 +375,7 @@
     }
 
     &__mode--selected {
-      background: var(--color-legacy-light-blue-200);
+      background: var(--color-legacylight-light-blue-200);
       color: var(--color-light-grey-100);
     }
   }
@@ -386,20 +386,20 @@
     background: var(--color-white);
 
     &__header__label {
-      color: var(--color-legacy-dark-grey-400);
-      background: var(--color-legacy-light-grey-100);
+      color: var(--color-legacylight-dark-grey-400);
+      background: var(--color-legacylight-light-grey-100);
     }
 
     &__header__hint {
-      color: var(--color-legacy-dark-grey-400);
+      color: var(--color-legacylight-dark-grey-400);
     }
 
     .mui-radio-group__group__item__label {
-      color: var(--color-legacy-dark-grey-200);
+      color: var(--color-legacylight-dark-grey-200);
     }
 
     .Mui-checked {
-      color: var(--color-legacy-light-blue-200);
+      color: var(--color-legacylight-light-blue-200);
     }
   }
 
@@ -413,7 +413,7 @@
   // ---------------------------- Query Builder -------------------------------
 
   .query-editor {
-    color: var(--color-legacy-dark-grey-200);
+    color: var(--color-legacylight-dark-grey-200);
     background: var(--color-white);
 
     ::-webkit-scrollbar {
@@ -423,15 +423,15 @@
 
     ::-webkit-scrollbar-thumb {
       height: 5rem;
-      background: var(--color-legacy-light-grey-300);
+      background: var(--color-legacylight-light-grey-300);
       outline-offset: -0.2rem;
       border-radius: 0.4rem;
-      outline-color: var(--color-legacy-light-grey-100);
-      border-color: var(--color-legacy-light-grey-100);
+      outline-color: var(--color-legacylight-light-grey-100);
+      border-color: var(--color-legacylight-light-grey-100);
     }
 
     ::-webkit-scrollbar-track-piece {
-      background: var(--color-legacy-light-grey-100);
+      background: var(--color-legacylight-light-grey-100);
       border-radius: 0;
     }
 
@@ -453,8 +453,8 @@
     // ------------------------------------ App ---------------------------------------
 
     .query-editor__header {
-      background: var(--color-legacy-light-blue-350);
-      border-color: var(--color-legacy-light-blue-600);
+      background: var(--color-legacylight-light-blue-350);
+      border-color: var(--color-legacylight-light-blue-600);
 
       &__label {
         background: var(--color-dark-shade-100);
@@ -467,7 +467,7 @@
     }
 
     .query-editor__header__menu {
-      border-color: var(--color-legacy-light-blue-600);
+      border-color: var(--color-legacylight-light-blue-600);
     }
 
     .query-editor__header__menu-item {
@@ -476,7 +476,7 @@
 
     .query-editor__header__action__view-project .btn--dark,
     .query-editor__header__action.btn--dark {
-      background: var(--color-legacy-light-blue-250);
+      background: var(--color-legacylight-light-blue-250);
       color: var(--color-white);
 
       svg {
@@ -485,7 +485,7 @@
     }
 
     .query-editor__header__action__icon {
-      background: var(--color-legacy-light-blue-250);
+      background: var(--color-legacylight-light-blue-250);
       color: var(--color-white);
     }
 
@@ -495,45 +495,45 @@
     }
 
     .query-builder__main {
-      border-color: var(--color-legacy-light-grey-300);
-      background: var(--color-legacy-light-grey-200);
+      border-color: var(--color-legacylight-light-grey-300);
+      background: var(--color-legacylight-light-grey-200);
     }
 
     .query-builder__status-bar {
-      background: var(--color-legacy-light-blue-350);
+      background: var(--color-legacylight-light-blue-350);
     }
 
     .query-builder__sub-header__custom-action {
-      background: var(--color-legacy-light-grey-100);
+      background: var(--color-legacylight-light-grey-100);
       border-color: var(--color-light-grey-300);
     }
 
     .query-builder__sub-header__custom-action__label {
-      color: var(--color-legacy-dark-grey-400);
+      color: var(--color-legacylight-dark-grey-400);
     }
 
     // ------------------------------------ Panel ---------------------------------------
 
     .query-builder .panel__header,
     .query-builder .panel__header--dark {
-      color: var(--color-legacy-dark-grey-200);
-      background: var(--color-legacy-light-grey-100);
-      border-color: var(--color-legacy-light-grey-300);
+      color: var(--color-legacylight-dark-grey-200);
+      background: var(--color-legacylight-light-grey-100);
+      border-color: var(--color-legacylight-light-grey-300);
     }
 
     .query-builder .panel__content {
       background: var(--color-white);
-      border-color: var(--color-legacy-light-grey-300);
+      border-color: var(--color-legacylight-light-grey-300);
       border-top: none;
     }
 
     .query-builder .panel__header__action {
       svg {
-        color: var(--color-legacy-light-blue-100);
+        color: var(--color-legacylight-light-blue-100);
       }
 
       &:hover svg {
-        color: var(--color-legacy-light-blue-400);
+        color: var(--color-legacylight-light-blue-400);
       }
 
       &[disabled] {
@@ -561,7 +561,7 @@
     // ------------------------------------ Setup Panel ---------------------------------------
 
     .query-builder__setup__content.panel__content {
-      background: var(--color-legacy-light-grey-100);
+      background: var(--color-legacylight-light-grey-100);
     }
 
     .query-builder__setup__milestoning {
@@ -571,8 +571,8 @@
     }
 
     .query-builder__setup__config-group__item__label {
-      background: var(--color-legacy-light-grey-100);
-      border-color: var(--color-legacy-light-grey-300);
+      background: var(--color-legacylight-light-grey-100);
+      border-color: var(--color-legacylight-light-grey-300);
     }
 
     .query-builder__setup__runtime-option--custom__label {
@@ -581,7 +581,7 @@
     }
 
     .query-builder__setup__config-group__header {
-      background: var(--color-legacy-light-blue-350);
+      background: var(--color-legacylight-light-blue-350);
     }
 
     .query-builder__setup__config-group__header__title {
@@ -589,7 +589,7 @@
     }
 
     .query-builder__setup__config-group__content {
-      border-color: var(--color-legacy-light-blue-350);
+      border-color: var(--color-legacylight-light-blue-350);
     }
 
     .query-builder__setup__config-group--class {
@@ -609,26 +609,26 @@
     }
 
     .query-builder-explorer-tree__node__label {
-      color: var(--color-legacy-dark-grey-200);
+      color: var(--color-legacylight-dark-grey-200);
     }
 
     .query-builder-explorer-tree__node__container:hover
       .query-builder-explorer-tree__node__action
       svg {
-      color: var(--color-legacy-light-blue-100);
+      color: var(--color-legacylight-light-blue-100);
     }
 
     .query-builder-explorer-tree__expand-icon svg {
-      color: var(--color-legacy-dark-grey-200);
+      color: var(--color-legacylight-dark-grey-200);
     }
 
     .query-builder-explorer-tree__node__container--unmapped {
       .query-builder-explorer-tree__node__label {
-        color: var(--color-legacy-light-grey-300);
+        color: var(--color-legacylight-light-grey-300);
       }
 
       .query-builder-explorer-tree__type-icon svg {
-        color: var(--color-legacy-light-grey-300);
+        color: var(--color-legacylight-light-grey-300);
       }
     }
 
@@ -638,18 +638,18 @@
       .query-builder-explorer-tree__node__label__derived-property,
     .query-builder-explorer-tree__node__container--highlighted
       .query-builder-explorer-tree__node__label__multiple {
-      color: var(--color-legacy-orange-100);
+      color: var(--color-legacylight-orange-100);
     }
 
     // ------------------------------------ Function Explorer Panel ---------------------------------------
 
     .query-builder__functions-explorer__tree__type-icon svg {
-      color: var(--color-legacy-light-blue-300);
+      color: var(--color-legacylight-light-blue-300);
     }
 
     .query-builder__functions-explorer__tree__node__label--with-action,
     .query-builder__functions-explorer__function__label {
-      color: var(--color-legacy-dark-grey-200);
+      color: var(--color-legacylight-dark-grey-200);
     }
 
     .query-builder__functions-explorer__tree__node__container:hover
@@ -657,14 +657,14 @@
     .query-builder__functions-explorer__function:hover
       .query-builder__functions-explorer__function__node__info {
       svg {
-        color: var(--color-legacy-light-blue-100);
+        color: var(--color-legacylight-light-blue-100);
       }
     }
 
     // ------------------------------------ Parameters Panel ---------------------------------------
 
     .query-builder__variables__variable__label {
-      color: var(--color-legacy-dark-grey-200);
+      color: var(--color-legacylight-dark-grey-200);
     }
 
     .query-builder__variables__variable__type__label {
@@ -680,7 +680,7 @@
     .query-builder__variables__variable:hover
       .query-builder__variables__variable__action
       svg {
-      color: var(--color-legacy-light-blue-100);
+      color: var(--color-legacylight-light-blue-100);
     }
 
     // ------------------------------------ Fetch Structure Panel ---------------------------------------
@@ -691,19 +691,19 @@
     }
 
     .query-builder__fetch__structure__mode--selected {
-      background: var(--color-legacy-light-blue-200);
+      background: var(--color-legacylight-light-blue-200);
       color: var(--color-light-grey-100);
     }
 
     // ------------------------------------ Projection Panel ---------------------------------------
 
     .query-builder__projection__options__sort__sortby {
-      background: var(--color-legacy-light-blue-200);
+      background: var(--color-legacylight-light-blue-200);
     }
 
     .query-builder__projection__toolbar {
-      background: var(--color-legacy-light-grey-100);
-      border-color: var(--color-legacy-light-grey-100);
+      background: var(--color-legacylight-light-grey-100);
+      border-color: var(--color-legacylight-light-grey-100);
     }
 
     .query-builder__projection__column__action .query-builder__icon,
@@ -715,7 +715,7 @@
     }
 
     .query-builder__projection__column__aggregate__operator__label {
-      background: var(--color-legacy-light-blue-100);
+      background: var(--color-legacylight-light-blue-100);
     }
 
     .query-builder__projection__column__aggregate__operator__badge,
@@ -736,17 +736,17 @@
 
     .query-builder__projection__column__aggregate__operator__badge--activated,
     .query-builder__olap__column__sortby__operator__badge--activated {
-      background: var(--color-legacy-light-blue-200);
+      background: var(--color-legacylight-light-blue-200);
 
       svg {
-        color: var(--color-legacy-light-grey-100);
+        color: var(--color-legacylight-light-grey-100);
       }
     }
 
     // ------------------------------------ Graph Fetch Panel ---------------------------------------
 
     .query-builder-graph-fetch-tree__node__label {
-      color: var(--color-legacy-dark-grey-200);
+      color: var(--color-legacylight-dark-grey-200);
     }
 
     .query-builder-graph-fetch-tree__node__type__label {
@@ -756,8 +756,8 @@
     }
 
     .query-builder-graph-fetch-tree__toolbar {
-      background: var(--color-legacy-light-grey-100);
-      border-color: var(--color-legacy-light-grey-100);
+      background: var(--color-legacylight-light-grey-100);
+      border-color: var(--color-legacylight-light-grey-100);
 
       .panel__content__form__section__toggler__prompt {
         color: var(--color-dark-grey-400);
@@ -771,14 +771,14 @@
     }
 
     .query-builder-graph-fetch-tree__expand-icon svg {
-      color: var(--color-legacy-dark-grey-200);
+      color: var(--color-legacylight-dark-grey-200);
     }
 
     // ------------------------------------ Filter Panel ---------------------------------------
 
     .query-builder-filter-tree__node__container--selected,
     .query-builder-filter-tree__node__container--selected:hover {
-      background: var(--color-legacy-light-blue-50);
+      background: var(--color-legacylight-light-blue-50);
     }
 
     .query-builder-filter-tree__node__action {
@@ -815,7 +815,7 @@
     }
 
     .query-builder-filter-tree__expand-icon svg {
-      color: var(--color-legacy-dark-grey-200);
+      color: var(--color-legacylight-dark-grey-200);
     }
 
     // ------------------------------------ Post-filter Panel ---------------------------------------
@@ -841,7 +841,7 @@
 
     .query-builder-post-filter-tree__node__container--selected,
     .query-builder-post-filter-tree__node__container--selected:hover {
-      background: var(--color-legacy-light-blue-50);
+      background: var(--color-legacylight-light-blue-50);
     }
 
     .query-builder-post-filter-tree__node__action {
@@ -878,7 +878,7 @@
     }
 
     .query-builder-post-filter-tree__expand-icon svg {
-      color: var(--color-legacy-dark-grey-200);
+      color: var(--color-legacylight-dark-grey-200);
     }
 
     // ------------------------------------ OLAP Panel ---------------------------------------
@@ -895,11 +895,11 @@
 
     .query-builder__olap__column__window__operator__badge,
     .query-builder__olap__column__operation__operator__badge {
-      background: var(--color-legacy-light-blue-200);
+      background: var(--color-legacylight-light-blue-200);
       color: var(--color-light-grey-100);
 
       svg {
-        color: var(--color-legacy-light-grey-100);
+        color: var(--color-legacylight-light-grey-100);
       }
     }
 
@@ -911,7 +911,7 @@
 
     .query-builder__result__stale-status__icon,
     .query-builder__result__stale-status__label {
-      color: var(--color-legacy-orange-100);
+      color: var(--color-legacylight-orange-100);
     }
 
     .query-builder__result__limit__input:not(:focus) {
@@ -919,11 +919,11 @@
     }
 
     .query-builder__result__limit__label {
-      background: var(--color-legacy-light-grey-100);
+      background: var(--color-legacylight-light-grey-100);
     }
 
     .query-builder__result__execute-btn__label {
-      background: var(--color-legacy-green-100);
+      background: var(--color-legacylight-green-100);
       color: var(--color-white);
 
       &:hover .query-builder__result__execute-btn__label__title,
@@ -935,7 +935,7 @@
     }
 
     .query-builder__result__execute-btn__dropdown-btn {
-      background: var(--color-legacy-green-100);
+      background: var(--color-legacylight-green-100);
       border-color: var(--color-dark-shade-50);
 
       :hover svg,
@@ -960,7 +960,7 @@
       .query-builder__result__execute-btn__dropdown-btn,
     .query-builder__result__execute-btn[disabled]
       .query-builder__result__execute-btn__dropdown-btn {
-      background: var(--color-legacy-light-grey-200);
+      background: var(--color-legacylight-light-grey-200);
       border-color: var(--color-dark-shade-50);
 
       svg {
@@ -969,7 +969,7 @@
     }
 
     .query-builder__result__stop-btn__label.btn--caution {
-      background: var(--color-legacy-orange-100);
+      background: var(--color-legacylight-orange-100);
       color: var(--color-white);
 
       &:hover .query-builder__result__stop-btn__label__title,
@@ -981,7 +981,7 @@
     }
 
     .query-builder__result__stop-btn__dropdown-btn {
-      background: var(--color-legacy-green-100);
+      background: var(--color-legacylight-green-100);
       border-color: var(--color-dark-shade-50);
 
       :hover svg,
@@ -995,16 +995,16 @@
     }
 
     .query-builder__result__export__dropdown__label {
-      background: var(--color-legacy-light-blue-100);
+      background: var(--color-legacylight-light-blue-100);
       color: var(--color-white);
     }
 
     .query-builder__result__export__dropdown__trigger {
-      background: var(--color-legacy-light-blue-100);
+      background: var(--color-legacylight-light-blue-100);
       color: var(--color-white);
 
       svg {
-        color: var(--color-legacy-light-blue-300);
+        color: var(--color-legacylight-light-blue-300);
       }
     }
 
@@ -1013,14 +1013,14 @@
       // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
       --ag-border-color: transparent;
       --ag-background-color: var(--color-white);
-      --ag-foreground-color: var(--color-legacy-dark-grey-200);
-      --ag-header-background-color: var(--color-legacy-light-grey-200);
-      --ag-header-foreground-color: var(--color-legacy-dark-grey-200);
-      --ag-balham-active-color: var(--color-legacy-light-blue-100);
+      --ag-foreground-color: var(--color-legacylight-dark-grey-200);
+      --ag-header-background-color: var(--color-legacylight-light-grey-200);
+      --ag-header-foreground-color: var(--color-legacylight-dark-grey-200);
+      --ag-balham-active-color: var(--color-legacylight-light-blue-100);
       --ag-odd-row-background-color: var(--color-white);
       --ag-even-row-background-color: var(--color-white);
       --ag-row-hover-color: var(--color-light-grey-50);
-      --ag-row-border-color: var(--color-legacy-light-grey-200);
+      --ag-row-border-color: var(--color-legacylight-light-grey-200);
     }
 
     // ------------------------------------ Other / Modal ---------------------------------------
@@ -1072,7 +1072,7 @@
     }
 
     .query-builder__lambda-editor {
-      border-color: var(--color-legacy-light-blue-100);
+      border-color: var(--color-legacylight-light-blue-100);
       background: var(--color-white);
 
       .monaco-editor {
@@ -1084,8 +1084,8 @@
     }
 
     .lambda-editor__editor__expand-btn {
-      background: var(--color-legacy-light-blue-100);
-      border-color: var(--color-legacy-light-blue-300);
+      background: var(--color-legacylight-light-blue-100);
+      border-color: var(--color-legacylight-light-blue-300);
 
       svg {
         color: var(--color-light-grey-50);
@@ -1093,7 +1093,7 @@
     }
 
     .lambda-editor__action {
-      background: var(--color-legacy-light-blue-100);
+      background: var(--color-legacylight-light-blue-100);
       border-color: transparent;
 
       svg {

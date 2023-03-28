@@ -17,3 +17,167 @@
 @import url('@finos/legend-art/lib/index.css');
 @import url('@finos/legend-application/lib/index.css');
 @import url('@finos/legend-application-taxonomy/lib/index.css');
+
+// NOTE: the following styles are temporary so we can have a poor-man version of
+// theming for Legend Taxonomy. The reason why we put the code here is that this is
+// where we essentially do all the overriding for everything from every extensions.
+// In other words, this is the only place where we can exhaustively and correctly
+// override native dark theme with light them colors.
+
+// This theme is adapted from GS UI Toolkit Color Pallette
+// See https://design.gs.com/foundation/color-system
+// See https://design.gs.com/foundation/color-system/all-hues-and-values
+:root {
+  --color-hclight-white: #fff;
+  --color-hclight-black: #000;
+  --color-hclight-grey-10: #f2f5f7;
+  --color-hclight-grey-15: #e1e7ea;
+  --color-hclight-grey-20: #dce3e8;
+  --color-hclight-grey-30: #c1ccd6;
+  --color-hclight-grey-40: #9fb1bd;
+  --color-hclight-grey-60: #5b7282;
+  --color-hclight-grey-70: #3e5463;
+  --color-hclight-grey-80: #2a3f4d;
+  --color-hclight-grey-90: #1c2b36;
+  --color-hclight-ultramarine-90: #23254d;
+  --color-hclight-aqua-90: #0c2b45;
+  --color-hclight-blue-90: #11294d;
+  --color-hclight-blue-80: #103a75;
+  --color-hclight-blue-70: #0d4ea6;
+  --color-hclight-blue-60: #186ade;
+  --color-hclight-blue-50: #3d8df5;
+  --color-hclight-green-60: #077d55;
+  --color-hclight-lime-50: #52a31d;
+  --color-hclight-yellow-30: #f5c518;
+  --color-hclight-orange-50: #e86427;
+  --color-hclight-red-60: #d91f11;
+}
+
+.theme__hc-light {
+  // ---------------------------- Scrollbar -------------------------------
+
+  ::-webkit-scrollbar {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    height: 5rem;
+    background: var(--color-hclight-grey-15);
+    outline-offset: -0.2rem;
+    border-radius: 0.4rem;
+    outline-color: var(--color-hclight-grey-10);
+    border-color: var(--color-hclight-grey-10);
+  }
+
+  ::-webkit-scrollbar-track-piece {
+    background: var(--color-hclight-grey-10);
+    border-radius: 0;
+  }
+
+  // ---------------------------- Menu -------------------------------
+
+  .menu {
+    background: var(--color-hclight-grey-10);
+    border-color: transparent;
+  }
+
+  .menu__item {
+    color: var(--color-hclight-grey-90);
+
+    &:hover {
+      background: var(--color-hclight-grey-15);
+    }
+  }
+
+  .menu__item[disabled] {
+    color: var(--color-hclight-grey-60);
+  }
+
+  // ---------------------------- Data Space Viewer -------------------------------
+
+  .data-space__viewer {
+    background: var(--color-hclight-white);
+    color: var(--color-hclight-grey-90);
+
+    &__frame {
+      background: var(--color-hclight-grey-10);
+    }
+
+    &__activity-bar {
+      background: var(--color-hclight-grey-20);
+
+      &__menu {
+        border-color: var(--color-hclight-grey-30);
+      }
+
+      &__menu-item {
+        color: var(--color-hclight-aqua-90);
+      }
+
+      &__item {
+        color: var(--color-hclight-grey-40);
+      }
+
+      &__item:hover,
+      &__item--active {
+        color: var(--color-hclight-aqua-90);
+      }
+
+      &__divider {
+        background: var(--color-hclight-grey-30);
+      }
+    }
+
+    &__content {
+      background: var(--color-hclight-white);
+    }
+  }
+
+  .data-space__viewer__description {
+    &__content {
+      border: none;
+    }
+
+    .markdown-content {
+      background: var(--color-hclight-white);
+      padding: 2rem 0;
+      color: var(--color-hclight-grey-90);
+
+      a {
+        color: var(--color-hclight-blue-50);
+      }
+
+      pre {
+        background: var(--color-hclight-grey-90);
+      }
+
+      pre code {
+        color: var(--color-hclight-white);
+      }
+    }
+  }
+
+  .data-space__viewer__diagram-viewer {
+    &__carousel__frame__indicator--active svg {
+      color: var(--color-hclight-blue-60);
+    }
+  }
+
+  .data-space__viewer__models-documentation {
+    &__grid {
+      // Customize ag-grid theme
+      // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
+      --ag-border-color: var(--color-hclight-grey-30);
+      --ag-background-color: var(--color-hclight-white);
+      --ag-foreground-color: var(--color-hclight-grey-90);
+      --ag-header-background-color: var(--color-hclight-grey-10);
+      --ag-header-foreground-color: var(--color-hclight-grey-90);
+      --ag-balham-active-color: transparent;
+      --ag-odd-row-background-color: var(--color-hclight-white);
+      --ag-even-row-background-color: var(--color-hclight-white);
+      --ag-row-hover-color: var(--color-hclight-grey-10);
+      --ag-row-border-color: var(--color-hclight-grey-30);
+    }
+  }
+}

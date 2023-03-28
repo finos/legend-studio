@@ -155,6 +155,7 @@ const QueryBuilderGridResultContextMenu = observer(
               )
             : event?.value,
           0,
+          tdsState.queryBuilderState.observerContext,
         );
       }
     };
@@ -230,10 +231,11 @@ const QueryBuilderGridResultContextMenu = observer(
           conditionState.changeOperator(
             isFilterBy ? postFilterInOperator : postFilterNotInOperator,
           );
-          instanceValue_setValues(conditionState.value as InstanceValue, [
-            currentValueSpecificaton,
-            newValueSpecification,
-          ]);
+          instanceValue_setValues(
+            conditionState.value as InstanceValue,
+            [currentValueSpecificaton, newValueSpecification],
+            tdsState.queryBuilderState.observerContext,
+          );
         }
       } else {
         const doesValueAlreadyExist =
@@ -252,10 +254,14 @@ const QueryBuilderGridResultContextMenu = observer(
             isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator
           ).getDefaultFilterConditionValue(conditionState);
           updateFilterConditionValue(newValueSpecification as InstanceValue);
-          instanceValue_setValues(conditionState.value as InstanceValue, [
-            ...(conditionState.value as InstanceValue).values,
-            newValueSpecification,
-          ]);
+          instanceValue_setValues(
+            conditionState.value as InstanceValue,
+            [
+              ...(conditionState.value as InstanceValue).values,
+              newValueSpecification,
+            ],
+            tdsState.queryBuilderState.observerContext,
+          );
         }
       }
     };
@@ -326,18 +332,16 @@ const QueryBuilderGridResult = observer(
     const [cellDoubleClickedEvent, setCellDoubleClickedEvent] =
       useState<CellMouseOverEvent | null>(null);
     const columns = executionResult.result.columns;
-    let rowNumber = 1;
-    const rowData = executionResult.result.rows.map((_row) => {
+    const rowData = executionResult.result.rows.map((_row, rowIdx) => {
       const row: PlainObject = {};
       const cols = executionResult.result.columns;
-      _row.values.forEach((value, idx) => {
+      _row.values.forEach((value, colIdx) => {
         // `ag-grid` shows `false` value as empty string so we have
         // call `.toString()` to avoid this behavior.
         // See https://github.com/finos/legend-studio/issues/1008
-        row[cols[idx] as string] = isBoolean(value) ? String(value) : value;
-        row.rowNumber = rowNumber;
+        row[cols[colIdx] as string] = isBoolean(value) ? String(value) : value;
       });
-      rowNumber += 1;
+      row.rowNumber = rowIdx;
       return row;
     });
 

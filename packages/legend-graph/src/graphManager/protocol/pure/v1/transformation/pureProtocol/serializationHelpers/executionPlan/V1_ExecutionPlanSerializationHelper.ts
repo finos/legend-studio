@@ -77,7 +77,7 @@ const TDSResultTypeModelSchema = createModelSchema(V1_TDSResultType, {
   tdsColumns: list(usingModelSchema(TDSColumnModelSchema)),
 });
 
-const V1_serializeExecutionResultType = (
+const V1_serializeResultType = (
   protocol: V1_ResultType,
 ): PlainObject<V1_ResultType> => {
   if (protocol instanceof V1_DataTypeResultType) {
@@ -91,7 +91,7 @@ const V1_serializeExecutionResultType = (
   );
 };
 
-const V1_deserializeExecutionResultType = (
+const V1_deserializeResultType = (
   json: PlainObject<V1_ResultType>,
 ): V1_ResultType => {
   switch (json._type) {
@@ -120,16 +120,10 @@ const relationalTDSInstantationExecutionNodeModelSchema = createModelSchema(
       V1_ExecutionNodeType.RELATIONAL_TDS_INSTANTIATION,
     ),
     executionNodes: list(
-      custom(
-        (val) => V1_serializeExecutionNode(val),
-        (val) => V1_deserializeExecutionNode(val),
-      ),
+      custom(V1_serializeExecutionNode, V1_deserializeExecutionNode),
     ),
     resultSizeRange: usingModelSchema(V1_multiplicitySchema),
-    resultType: custom(
-      (val) => V1_serializeExecutionResultType(val),
-      (val) => V1_deserializeExecutionResultType(val),
-    ),
+    resultType: custom(V1_serializeResultType, V1_deserializeResultType),
   },
 );
 
@@ -141,8 +135,8 @@ const SQLResultColumnModelSchema = createModelSchema(V1_SQLResultColumn, {
 const SQLExecutionNodeModelSchema = createModelSchema(V1_SQLExecutionNode, {
   _type: usingConstantValueSchema(V1_ExecutionNodeType.SQL),
   connection: custom(
-    (val) => V1_serializeDatabaseConnectionValue(val),
-    (val) => V1_deserializeDatabaseConnectionValue(val),
+    V1_serializeDatabaseConnectionValue,
+    V1_deserializeDatabaseConnectionValue,
   ),
   executionNodes: customList(
     V1_serializeExecutionNode,
@@ -152,10 +146,7 @@ const SQLExecutionNodeModelSchema = createModelSchema(V1_SQLExecutionNode, {
   onConnectionCloseRollbackQuery: optional(primitive()),
   resultColumns: list(usingModelSchema(SQLResultColumnModelSchema)),
   resultSizeRange: usingModelSchema(V1_multiplicitySchema),
-  resultType: custom(
-    (val) => V1_serializeExecutionResultType(val),
-    (val) => V1_deserializeExecutionResultType(val),
-  ),
+  resultType: custom(V1_serializeResultType, V1_deserializeResultType),
   sqlQuery: primitive(),
 });
 
@@ -209,8 +200,8 @@ const SimpleExecutionPlanModelSchema = createModelSchema(
     authDependent: primitive(),
     kerberos: optional(primitive()),
     rootExecutionNode: custom(
-      (val) => V1_serializeExecutionNode(val),
-      (val) => V1_deserializeExecutionNode(val),
+      V1_serializeExecutionNode,
+      V1_deserializeExecutionNode,
     ),
     serializer: usingModelSchema(V1_Protocol.serialization.schema),
     templateFunctions: list(primitive()),

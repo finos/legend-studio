@@ -21,8 +21,6 @@ import {
   guaranteeType,
   type Hashable,
   hashArray,
-  isCamelCase,
-  prettyCamelCase,
   prettyCONSTName,
 } from '@finos/legend-shared';
 import {
@@ -48,6 +46,7 @@ import {
   GenericType,
   PropertyExplicitReference,
   PrimitiveType,
+  type ObserverContext,
 } from '@finos/legend-graph';
 import {
   createNullishValue,
@@ -63,15 +62,12 @@ import {
 } from './shared/ValueSpecificationModifierHelper.js';
 import { generateMilestonedPropertyParameterValue } from './milestoning/QueryBuilderMilestoningHelper.js';
 
-export const prettyPropertyName = (value: string): string =>
-  isCamelCase(value) ? prettyCamelCase(value) : prettyCONSTName(value);
-
 export const getPropertyChainName = (
   propertyExpression: AbstractPropertyExpression,
   humanizePropertyName: boolean,
 ): string => {
   const propertyNameDecorator = humanizePropertyName
-    ? prettyPropertyName
+    ? prettyCONSTName
     : (val: string): string => val;
   const chunks = [propertyNameDecorator(propertyExpression.func.value.name)];
   let currentExpression: ValueSpecification | undefined = propertyExpression;
@@ -146,6 +142,7 @@ export const getPropertyPath = (
 export const generateValueSpecificationForParameter = (
   parameter: VariableExpression,
   graph: PureModel,
+  observerContext: ObserverContext,
 ): ValueSpecification => {
   if (parameter.genericType) {
     const type = parameter.genericType.value.rawType;
@@ -161,9 +158,11 @@ export const generateValueSpecificationForParameter = (
         ),
       );
       if (type !== PrimitiveType.LATESTDATE) {
-        instanceValue_setValues(primitiveInstanceValue, [
-          generateDefaultValueForPrimitiveType(type.name as PRIMITIVE_TYPE),
-        ]);
+        instanceValue_setValues(
+          primitiveInstanceValue,
+          [generateDefaultValueForPrimitiveType(type.name as PRIMITIVE_TYPE)],
+          observerContext,
+        );
       }
       return primitiveInstanceValue;
     } else if (type instanceof Enumeration) {
@@ -174,7 +173,11 @@ export const generateValueSpecificationForParameter = (
         const enumValueRef = EnumValueExplicitReference.create(
           type.values[0] as Enum,
         );
-        instanceValue_setValues(enumValueInstanceValue, [enumValueRef]);
+        instanceValue_setValues(
+          enumValueInstanceValue,
+          [enumValueRef],
+          observerContext,
+        );
       }
       return enumValueInstanceValue;
     }
@@ -213,6 +216,7 @@ const fillDerivedPropertyParameterValues = (
           parameter,
           derivedPropertyExpressionState.queryBuilderState.graphManagerState
             .graph,
+          derivedPropertyExpressionState.queryBuilderState.observerContext,
         ),
     );
   });
@@ -224,7 +228,7 @@ const fillDerivedPropertyParameterValues = (
       ),
       ...parameterValues,
     ],
-    derivedPropertyExpressionState.queryBuilderState.observableContext,
+    derivedPropertyExpressionState.queryBuilderState.observerContext,
   );
 };
 
@@ -246,7 +250,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
     this.title = getPropertyChainName(propertyExpression, true);
     this.propertyExpression = observe_AbstractPropertyExpression(
       propertyExpression,
-      queryBuilderState.observableContext,
+      queryBuilderState.observerContext,
     );
     this.queryBuilderState = queryBuilderState;
     this.derivedProperty = guaranteeType(
@@ -341,7 +345,7 @@ export class QueryBuilderPropertyExpressionState implements Hashable {
     this.queryBuilderState = queryBuilderState;
     this.propertyExpression = observe_AbstractPropertyExpression(
       propertyExpression,
-      queryBuilderState.observableContext,
+      queryBuilderState.observerContext,
     );
     this.path = getPropertyPath(propertyExpression);
     this.title = getPropertyChainName(propertyExpression, true);

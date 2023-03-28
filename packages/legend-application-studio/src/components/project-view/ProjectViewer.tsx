@@ -44,7 +44,7 @@ import {
   withProjectViewerStore,
 } from './ProjectViewerStoreProvider.js';
 import {
-  type ViewerPathParams,
+  type ProjectViewerPathParams,
   generateSetupRoute,
 } from '../../application/LegendStudioNavigation.js';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
@@ -72,7 +72,7 @@ import {
 import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
 
 const ProjectViewerStatusBar = observer(() => {
-  const params = useParams<ViewerPathParams>();
+  const params = useParams<ProjectViewerPathParams>();
   const viewerStore = useProjectViewerStore();
   const editorStore = useEditorStore();
   const applicationStore = useLegendStudioApplicationStore();
@@ -262,7 +262,7 @@ const ProjectViewerActivityBar = observer(() => {
 export const ProjectViewer = withEditorStore(
   withProjectViewerStore(
     observer(() => {
-      const params = useParams<ViewerPathParams>();
+      const params = useParams<ProjectViewerPathParams>();
       const viewerStore = useProjectViewerStore();
       const editorStore = useEditorStore();
       const applicationStore = useApplicationStore();

@@ -38,7 +38,11 @@ import {
   getAllClassProperties,
   getAllOwnClassProperties,
 } from '@finos/legend-graph';
-import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  debounce,
+  guaranteeNonNullable,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { useDrag } from 'react-dnd';
 import { QUERY_BUILDER_PROPERTY_SEARCH_TYPE } from '../../stores/QueryBuilderConfig.js';
@@ -50,7 +54,6 @@ import {
   getQueryBuilderPropertyNodeData,
   type QueryBuilderExplorerState,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
-import { prettyPropertyName } from '../../stores/QueryBuilderPropertyEditorState.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import {
   QueryBuilderSubclassInfoTooltip,
@@ -62,7 +65,7 @@ import { TextSearchAdvancedConfigMenu } from '@finos/legend-application';
 
 const prettyPropertyNameFromNodeId = (name: string): string => {
   let propNameArray = name.split('.');
-  propNameArray = propNameArray.map((p) => prettyPropertyName(p));
+  propNameArray = propNameArray.map(prettyCONSTName);
   let propName = '';
   propNameArray.forEach((p) => {
     propName = `${propName + p}/`;
@@ -76,7 +79,7 @@ const prettyPropertyNameForSubType = (name: string): string => {
   propNameArray = propNameArray
     .map((p) => p.replace(/.*::/, ''))
     .filter((p) => p !== '')
-    .map((p) => prettyPropertyName(p));
+    .map((p) => prettyCONSTName(p));
   let propName = '';
   propNameArray.slice(0, -1).forEach((p) => {
     propName = `${propName}(@${p})/`;
@@ -84,7 +87,7 @@ const prettyPropertyNameForSubType = (name: string): string => {
   propNameArray = guaranteeNonNullable(
     propNameArray[propNameArray.length - 1],
   ).split('.');
-  propNameArray = propNameArray.map((p) => prettyPropertyName(p));
+  propNameArray = propNameArray.map((p) => prettyCONSTName(p));
   propName = `${propName}(@${propNameArray[0]})/`;
   propNameArray.slice(1).forEach((p) => {
     propName = `${propName + p}/`;
@@ -98,7 +101,7 @@ const prettyPropertyNameForSubTypeClass = (name: string): string => {
   propNameArray = propNameArray
     .map((p) => p.replace(/.*::/, ''))
     .filter((p) => p !== '')
-    .map((p) => prettyPropertyName(p));
+    .map((p) => prettyCONSTName(p));
   let propName = '';
   propNameArray.forEach((p) => {
     propName = `${propName}@${p}`;

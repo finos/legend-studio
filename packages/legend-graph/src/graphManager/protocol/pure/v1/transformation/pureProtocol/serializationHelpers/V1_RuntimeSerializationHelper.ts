@@ -109,7 +109,26 @@ export const V1_serializeRuntime = (
   } else if (protocol instanceof V1_RuntimePointer) {
     return serialize(V1_runtimePointerModelSchema, protocol);
   }
+  // NOTE: we don't want to serialize legacy runtime as we no longer want to circulate it any further
   throw new UnsupportedOperationError(`Can't serialize runtime`, protocol);
+};
+
+export const V1_deserializeRuntime = (
+  json: PlainObject<V1_Runtime>,
+): V1_Runtime => {
+  switch (json._type) {
+    case V1_RuntimeType.RUNTIME_POINTER:
+      return deserialize(V1_runtimePointerModelSchema, json);
+    case V1_RuntimeType.ENGINE_RUNTIME:
+      return deserialize(V1_EngineRuntime, json);
+    case V1_RuntimeType.LEGACY_RUNTIME:
+    case undefined:
+      return deserialize(V1_LegacyRuntime, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deeserialize runtime of type '${json._type}'`,
+      );
+  }
 };
 
 export const V1_packageableRuntimeModelSchema = createModelSchema(

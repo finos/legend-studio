@@ -35,7 +35,10 @@ import {
   type QueryBuilderFilterState,
 } from '../QueryBuilderFilterState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
-import { buildGenericLambdaFunctionInstanceValue } from '../../QueryBuilderValueSpecificationHelper.js';
+import {
+  buildGenericLambdaFunctionInstanceValue,
+  simplifyValueExpression,
+} from '../../QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderFilterOperator } from '../QueryBuilderFilterOperator.js';
 import { buildPropertyExpressionChain } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
 
@@ -488,9 +491,19 @@ export const buildFilterConditionState = (
       )}() expression: property is not compatible with operator`,
     );
     filterConditionState.setOperator(operator);
-    filterConditionState.setValue(
-      hasNoValue ? undefined : mainExpressionWithOperator.parametersValues[1],
-    );
+
+    // value
+    const value = mainExpressionWithOperator.parametersValues[1];
+    if (hasNoValue || !value) {
+      filterConditionState.setValue(undefined);
+    } else {
+      filterConditionState.setValue(
+        simplifyValueExpression(
+          value,
+          filterConditionState.filterState.queryBuilderState.observerContext,
+        ),
+      );
+    }
     if (!operator.isCompatibleWithFilterConditionValue(filterConditionState)) {
       filterConditionState.setValue(
         operator.getDefaultFilterConditionValue(filterConditionState),

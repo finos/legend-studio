@@ -24,6 +24,7 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   OR = 'meta::pure::functions::boolean::or',
   TAKE = 'meta::pure::functions::collection::take',
   SUBTYPE = 'meta::pure::functions::lang::subType',
+  MINUS = 'meta::pure::functions::math::minus',
 
   // graph-fetch
   GRAPH_FETCH = 'meta::pure::graphFetch::execution::graphFetch',
@@ -53,6 +54,7 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   LESS_THAN = 'meta::pure::functions::lang::tests::lessThan',
   LESS_THAN_EQUAL = 'meta::pure::functions::lang::tests::lessThanEqual',
   STARTS_WITH = 'meta::pure::functions::string::startsWith',
+
   // aggregation
   AVERAGE = 'meta::pure::functions::math::average',
   COUNT = 'meta::pure::functions::collection::count',
@@ -66,8 +68,10 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   STD_DEV_SAMPLE = 'meta::pure::functions::math::stdDevSample',
   SUM = 'meta::pure::functions::math::sum',
   UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
+
   // watermark
   WATERMARK = 'meta::datalake::functions::forWatermark',
+
   // OLAP
   OLAP_GROUPBY = 'meta::pure::tds::olapGroupBy',
   OLAP_RANK = 'meta::pure::functions::math::olap::rank',

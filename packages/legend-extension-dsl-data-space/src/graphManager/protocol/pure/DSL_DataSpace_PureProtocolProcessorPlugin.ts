@@ -18,7 +18,10 @@ import packageJson from '../../../../package.json';
 import V1_SYSTEM_MODELS from './v1/V1_DSL_DataSpace_SystemModels.json';
 import {
   V1_DataSpace,
+  V1_DataSpaceDiagram,
+  V1_DataSpaceExecutable,
   V1_DataSpaceExecutionContext,
+  V1_DataSpaceSupportCombinedInfo,
   V1_DataSpaceSupportEmail,
 } from './v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import {
@@ -37,8 +40,12 @@ import {
 import { getOwnDataSpace } from '../../DSL_DataSpace_GraphManagerHelper.js';
 import {
   DataSpace,
+  DataSpaceExecutable,
   DataSpaceExecutionContext,
+  DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
+  type DataSpaceElement,
+  DataSpaceDiagram,
 } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import {
   type PackageableElement,
@@ -65,10 +72,11 @@ import {
   Class,
   Enumeration,
   Association,
+  type PackageableElementReference,
 } from '@finos/legend-graph';
 import {
   V1_DSL_Diagram_PackageableElementPointerType,
-  getDiagram,
+  V1_resolveDiagram,
 } from '@finos/legend-extension-dsl-diagram';
 
 export const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
@@ -129,6 +137,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
               contextProtocol.name,
               `Data space execution context 'name' field is missing or empty`,
             );
+            execContext.title = contextProtocol.title;
             execContext.description = contextProtocol.description;
             execContext.mapping = PackageableElementExplicitReference.create(
               context.graph.getMapping(contextProtocol.mapping.path),
@@ -154,37 +163,79 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
           element.description = elementProtocol.description;
           if (elementProtocol.featuredDiagrams) {
             element.featuredDiagrams = elementProtocol.featuredDiagrams.map(
-              (pointer) =>
-                PackageableElementExplicitReference.create(
-                  getDiagram(pointer.path, context.graph),
-                ),
+              (pointer) => V1_resolveDiagram(pointer.path, context),
             );
           }
           if (elementProtocol.elements) {
             element.elements = elementProtocol.elements.map((pointer) => {
-              const el = context.graph.getElement(pointer.path);
+              const elementReference = context.resolveElement(
+                pointer.path,
+                false,
+              );
               if (
-                el instanceof Class ||
-                el instanceof Enumeration ||
-                el instanceof Association
+                elementReference.value instanceof Class ||
+                elementReference.value instanceof Enumeration ||
+                elementReference.value instanceof Association
               ) {
-                return PackageableElementExplicitReference.create(el);
+                return elementReference as unknown as PackageableElementReference<DataSpaceElement>;
               }
               throw new UnsupportedOperationError(
                 `Can't find data space element (only allow class, enumartion, association) '${pointer.path}'`,
               );
             });
           }
+          if (elementProtocol.executables) {
+            element.executables = elementProtocol.executables.map(
+              (executableProtocol) => {
+                const executable = new DataSpaceExecutable();
+                executable.title = executableProtocol.title;
+                executable.description = executableProtocol.description;
+                executable.executable = context.resolveElement(
+                  executableProtocol.executable.path,
+                  false,
+                );
+                return executable;
+              },
+            );
+          }
+          if (elementProtocol.diagrams) {
+            element.diagrams = elementProtocol.diagrams.map(
+              (diagramProtocol) => {
+                const diagram = new DataSpaceDiagram();
+                diagram.title = diagramProtocol.title;
+                diagram.description = diagramProtocol.description;
+                diagram.diagram = V1_resolveDiagram(
+                  diagramProtocol.diagram.path,
+                  context,
+                );
+                return diagram;
+              },
+            );
+          }
           if (elementProtocol.supportInfo) {
             if (
               elementProtocol.supportInfo instanceof V1_DataSpaceSupportEmail
             ) {
               const supportEmail = new DataSpaceSupportEmail();
+              supportEmail.documentationUrl =
+                elementProtocol.supportInfo.documentationUrl;
               supportEmail.address = guaranteeNonEmptyString(
                 elementProtocol.supportInfo.address,
                 `Data space support email 'address' field is missing or empty`,
               );
               element.supportInfo = supportEmail;
+            } else if (
+              elementProtocol.supportInfo instanceof
+              V1_DataSpaceSupportCombinedInfo
+            ) {
+              const combinedInfo = new DataSpaceSupportCombinedInfo();
+              combinedInfo.documentationUrl =
+                elementProtocol.supportInfo.documentationUrl;
+              combinedInfo.emails = elementProtocol.supportInfo.emails;
+              combinedInfo.website = elementProtocol.supportInfo.website;
+              combinedInfo.faqUrl = elementProtocol.supportInfo.faqUrl;
+              combinedInfo.supportUrl = elementProtocol.supportInfo.supportUrl;
+              element.supportInfo = combinedInfo;
             } else {
               throw new UnsupportedOperationError(
                 `Can't build data space support info`,
@@ -259,6 +310,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
             (execContext) => {
               const contextProtocol = new V1_DataSpaceExecutionContext();
               contextProtocol.name = execContext.name;
+              contextProtocol.title = execContext.title;
               contextProtocol.description = execContext.description;
               contextProtocol.mapping = new V1_PackageableElementPointer(
                 PackageableElementPointerType.MAPPING,
@@ -276,24 +328,57 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
           protocol.title = metamodel.title;
           protocol.description = metamodel.description;
           protocol.featuredDiagrams = metamodel.featuredDiagrams?.map(
-            (diagramPath) =>
+            (diagramReference) =>
               new V1_PackageableElementPointer(
                 V1_DSL_Diagram_PackageableElementPointerType,
-                diagramPath.valueForSerialization ?? '',
+                diagramReference.valueForSerialization ?? '',
               ),
           );
           protocol.elements = metamodel.elements?.map(
-            (elPath) =>
+            (elementReference) =>
               new V1_PackageableElementPointer(
                 PackageableElementPointerType.CLASS,
-                elPath.valueForSerialization ?? '',
+                elementReference.valueForSerialization ?? '',
               ),
           );
+          protocol.executables = metamodel.executables?.map((executable) => {
+            const executableProtocol = new V1_DataSpaceExecutable();
+            executableProtocol.title = executable.title;
+            executableProtocol.description = executable.description;
+            executableProtocol.executable = new V1_PackageableElementPointer(
+              undefined,
+              executable.executable.valueForSerialization ?? '',
+            );
+            return executableProtocol;
+          });
+          protocol.diagrams = metamodel.diagrams?.map((diagram) => {
+            const diagramProtocol = new V1_DataSpaceDiagram();
+            diagramProtocol.title = diagram.title;
+            diagramProtocol.description = diagram.description;
+            diagramProtocol.diagram = new V1_PackageableElementPointer(
+              undefined,
+              diagram.diagram.valueForSerialization ?? '',
+            );
+            return diagramProtocol;
+          });
           if (metamodel.supportInfo) {
             if (metamodel.supportInfo instanceof DataSpaceSupportEmail) {
               const supportEmail = new V1_DataSpaceSupportEmail();
+              supportEmail.documentationUrl =
+                metamodel.supportInfo.documentationUrl;
               supportEmail.address = metamodel.supportInfo.address;
               protocol.supportInfo = supportEmail;
+            } else if (
+              metamodel.supportInfo instanceof DataSpaceSupportCombinedInfo
+            ) {
+              const combinedInfo = new V1_DataSpaceSupportCombinedInfo();
+              combinedInfo.documentationUrl =
+                metamodel.supportInfo.documentationUrl;
+              combinedInfo.emails = metamodel.supportInfo.emails;
+              combinedInfo.website = metamodel.supportInfo.website;
+              combinedInfo.faqUrl = metamodel.supportInfo.faqUrl;
+              combinedInfo.supportUrl = metamodel.supportInfo.supportUrl;
+              protocol.supportInfo = combinedInfo;
             } else {
               throw new UnsupportedOperationError(
                 `Can't transform data space support info`,

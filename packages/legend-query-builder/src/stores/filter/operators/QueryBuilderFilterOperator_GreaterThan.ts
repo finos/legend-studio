@@ -101,6 +101,7 @@ export class QueryBuilderFilterOperator_GreaterThan
             .graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
+          filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }
       case PRIMITIVE_TYPE.DATE: {
@@ -109,6 +110,7 @@ export class QueryBuilderFilterOperator_GreaterThan
             .graph,
           PRIMITIVE_TYPE.STRICTDATE,
           generateDefaultValueForPrimitiveType(propertyType.path),
+          filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }
       default:

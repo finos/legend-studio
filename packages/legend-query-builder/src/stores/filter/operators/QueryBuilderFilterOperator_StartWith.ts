@@ -84,6 +84,7 @@ export class QueryBuilderFilterOperator_StartWith
             .graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
+          filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }
       default:

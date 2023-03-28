@@ -607,27 +607,25 @@ export class QueryBuilderValueSpecificationProcessor
 export const processParameters = (
   parameters: VariableExpression[],
   queryBuilderState: QueryBuilderState,
-  preservedParameters?: Map<VariableExpression, ValueSpecification | undefined>,
+  parameterValues?: Map<VariableExpression, ValueSpecification | undefined>,
 ): void => {
   const queryParameterState = queryBuilderState.parametersState;
-  // Here we won't mock the values for parameters which are present in the previous state
-  // because we don't want to lose the parameter value
   parameters.forEach((parameter) => {
-    let oldParamterValue: ValueSpecification | undefined;
-    if (preservedParameters) {
-      Array.from(preservedParameters.entries()).forEach(([key, value]) => {
+    let matchingParameterValue: ValueSpecification | undefined;
+    if (parameterValues) {
+      Array.from(parameterValues.entries()).forEach(([key, value]) => {
         if (checkIfEquivalent(key, parameter)) {
-          oldParamterValue = value;
+          matchingParameterValue = value;
         }
       });
     }
     const parameterState = new LambdaParameterState(
       parameter,
-      queryBuilderState.observableContext,
+      queryBuilderState.observerContext,
       queryBuilderState.graphManagerState.graph,
     );
-    if (oldParamterValue) {
-      parameterState.setValue(oldParamterValue);
+    if (matchingParameterValue) {
+      parameterState.setValue(matchingParameterValue);
     } else {
       parameterState.mockParameterValue();
     }
@@ -639,13 +637,13 @@ export const processParameters = (
 export const processQueryLambdaFunction = (
   lambdaFunction: LambdaFunction,
   queryBuilderState: QueryBuilderState,
-  preservedParameters?: Map<VariableExpression, ValueSpecification | undefined>,
+  parameterValues?: Map<VariableExpression, ValueSpecification | undefined>,
 ): void => {
   if (lambdaFunction.functionType.parameters.length) {
     processParameters(
       lambdaFunction.functionType.parameters,
       queryBuilderState,
-      preservedParameters,
+      parameterValues,
     );
   }
   lambdaFunction.expressionSequence.map((expression) =>

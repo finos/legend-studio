@@ -33,6 +33,7 @@ import {
   INTERNAL__PropagatedValue,
   SimpleFunctionExpression,
   SUPPORTED_FUNCTIONS,
+  type ObserverContext,
 } from '@finos/legend-graph';
 import { Randomizer, UnsupportedOperationError } from '@finos/legend-shared';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationHelper.js';
@@ -58,6 +59,7 @@ export const createSupportedFunctionExpression = (
 const createMockPrimitiveValueSpecification = (
   primitiveType: PrimitiveType,
   propertyName: string,
+  observerContext: ObserverContext,
 ): ValueSpecification => {
   const primitiveTypeName = primitiveType.name;
   if (
@@ -97,7 +99,7 @@ const createMockPrimitiveValueSpecification = (
     default:
       value = `${propertyName} ${randomizer.getRandomWholeNumber(100)}`;
   }
-  instanceValue_setValues(primitiveInstanceValue, [value]);
+  instanceValue_setValues(primitiveInstanceValue, [value], observerContext);
   return primitiveInstanceValue;
 };
 
@@ -110,19 +112,21 @@ export const buildPrimitiveInstanceValue = (
   graph: PureModel,
   type: PRIMITIVE_TYPE,
   value: unknown,
+  observerContext: ObserverContext,
 ): PrimitiveInstanceValue => {
   const instance = new PrimitiveInstanceValue(
     GenericTypeExplicitReference.create(
       new GenericType(graph.getPrimitiveType(type)),
     ),
   );
-  instanceValue_setValues(instance, [value]);
+  instanceValue_setValues(instance, [value], observerContext);
   return instance;
 };
 
 export const buildDefaultInstanceValue = (
   graph: PureModel,
   type: Type,
+  observerContext: ObserverContext,
 ): ValueSpecification => {
   const path = type.path;
   switch (path) {
@@ -139,6 +143,7 @@ export const buildDefaultInstanceValue = (
         graph,
         path,
         generateDefaultValueForPrimitiveType(path),
+        observerContext,
       );
     }
     case PRIMITIVE_TYPE.DATE: {
@@ -146,6 +151,7 @@ export const buildDefaultInstanceValue = (
         graph,
         PRIMITIVE_TYPE.STRICTDATE,
         generateDefaultValueForPrimitiveType(path),
+        observerContext,
       );
     }
     default:
@@ -154,9 +160,11 @@ export const buildDefaultInstanceValue = (
           const enumValueInstanceValue = new EnumValueInstanceValue(
             GenericTypeExplicitReference.create(new GenericType(type)),
           );
-          instanceValue_setValues(enumValueInstanceValue, [
-            EnumValueExplicitReference.create(type.values[0] as Enum),
-          ]);
+          instanceValue_setValues(
+            enumValueInstanceValue,
+            [EnumValueExplicitReference.create(type.values[0] as Enum)],
+            observerContext,
+          );
           return enumValueInstanceValue;
         }
         throw new UnsupportedOperationError(
@@ -172,6 +180,7 @@ export const buildDefaultInstanceValue = (
 export const generateVariableExpressionMockValue = (
   parameter: VariableExpression,
   graph: PureModel,
+  observerContext: ObserverContext,
 ): ValueSpecification | undefined => {
   const varType = parameter.genericType?.value.rawType;
   const multiplicity = parameter.multiplicity;
@@ -182,16 +191,22 @@ export const generateVariableExpressionMockValue = (
     );
   }
   if (varType instanceof PrimitiveType) {
-    return createMockPrimitiveValueSpecification(varType, VAR_DEFAULT_NAME);
+    return createMockPrimitiveValueSpecification(
+      varType,
+      VAR_DEFAULT_NAME,
+      observerContext,
+    );
   } else if (varType instanceof Enumeration) {
     const enumValueInstance = new EnumValueInstanceValue(
       GenericTypeExplicitReference.create(new GenericType(varType)),
     );
     const mock = createMockEnumerationProperty(varType);
     if (mock !== '') {
-      instanceValue_setValues(enumValueInstance, [
-        EnumValueExplicitReference.create(getEnumValue(varType, mock)),
-      ]);
+      instanceValue_setValues(
+        enumValueInstance,
+        [EnumValueExplicitReference.create(getEnumValue(varType, mock))],
+        observerContext,
+      );
     }
     return enumValueInstance;
   }

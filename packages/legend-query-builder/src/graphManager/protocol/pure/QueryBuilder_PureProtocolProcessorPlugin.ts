@@ -57,7 +57,7 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
         openVariables: string[],
         compileContext: V1_GraphBuilderContext,
         processingContext: V1_ProcessingContext,
-      ): [SimpleFunctionExpression, ValueSpecification[]] | undefined => {
+      ): SimpleFunctionExpression | undefined => {
         if (
           matchFunctionName(
             functionName,

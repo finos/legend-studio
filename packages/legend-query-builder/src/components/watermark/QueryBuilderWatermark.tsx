@@ -106,9 +106,7 @@ const WatermarkValueEditor = observer(
                 watermarkState.setValue(val);
               }}
               graph={graph}
-              obseverContext={
-                watermarkState.queryBuilderState.observableContext
-              }
+              obseverContext={watermarkState.queryBuilderState.observerContext}
               typeCheckOption={{
                 expectedType: PrimitiveType.STRING,
               }}

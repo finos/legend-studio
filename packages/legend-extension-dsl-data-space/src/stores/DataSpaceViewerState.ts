@@ -18,7 +18,6 @@ import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   type ClassView,
   type DiagramRenderer,
-  type Diagram,
   DIAGRAM_INTERACTION_MODE,
 } from '@finos/legend-extension-dsl-diagram';
 import type {
@@ -32,18 +31,23 @@ import {
 import { action, computed, makeObservable, observable } from 'mobx';
 import type {
   DataSpaceAnalysisResult,
+  DataSpaceDiagramAnalysisResult,
   DataSpaceExecutionContextAnalysisResult,
 } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
-  OVERVIEW = 'OVERVIEW',
-  DOCUMENTATION = 'DOCUMENTATION',
-  USAGE_SHOWCASE = 'USAGE SHOWCASE',
-  EXECUTION = 'EXECUTION',
-  ENTITLEMENT = 'ENTITLEMENT',
-  TEST_DATA = 'TEST_DATA',
-  TEST_COVERAGE = 'TEST_COVERAGE',
-  INFO = 'INFO',
+  DESCRIPTION = 'DESCRIPTION',
+  DIAGRAM_VIEWER = 'DIAGRAM_VIEWER',
+  MODELS_DOCUMENTATION = 'MODELS_DOCUMENTATION',
+  QUICK_START = 'QUICK_START',
+  EXECUTION_CONTEXT = 'EXECUTION_CONTEXT',
+  DATA_ACCESS = 'DATA_ACCESS',
+
+  DATA_STORES = 'DATA_STORES', // TODO: with test-data, also let user call TDS query on top of these
+  DATA_AVAILABILITY = 'DATA_AVAILABILITY',
+  DATA_COST = 'DATA_COST',
+  DATA_GOVERNANCE = 'DATA_GOVERNANCE',
+  INFO = 'INFO', // TODO: test coverage? (or maybe this should be done in elements/diagrams/data-quality section)
   SUPPORT = 'SUPPORT',
 }
 
@@ -69,12 +73,12 @@ export class DataSpaceViewerState {
   readonly onDiagramClassDoubleClick: (classView: ClassView) => void;
 
   _renderer?: DiagramRenderer | undefined;
-  currentDiagram?: Diagram | undefined;
-  currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.OVERVIEW;
+  currentDiagram?: DataSpaceDiagramAnalysisResult | undefined;
+  currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
 
-  HACKY__previewExperimentalFeatures = false;
+  isExpandedModeEnabled = false;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -97,9 +101,6 @@ export class DataSpaceViewerState {
       ) => Promise<void>;
       onDiagramClassDoubleClick: (classView: ClassView) => void;
     },
-    options?: {
-      HACKY__previewExperimentalFeatures?: boolean | undefined;
-    },
   ) {
     makeObservable(this, {
       _renderer: observable,
@@ -107,12 +108,14 @@ export class DataSpaceViewerState {
       currentActivity: observable,
       currentExecutionContext: observable,
       currentRuntime: observable,
+      isExpandedModeEnabled: observable,
       renderer: computed,
       setRenderer: action,
       setCurrentDiagram: action,
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
       setCurrentRuntime: action,
+      enableExpandedMode: action,
     });
 
     this.applicationStore = applicationStore;
@@ -125,14 +128,11 @@ export class DataSpaceViewerState {
       dataSpaceAnalysisResult.defaultExecutionContext;
     this.currentRuntime = this.currentExecutionContext.defaultRuntime;
     this.currentDiagram = getNullableFirstElement(
-      this.dataSpaceAnalysisResult.featuredDiagrams,
+      this.dataSpaceAnalysisResult.diagrams,
     );
     this.viewProject = actions.viewProject;
     this.viewSDLCProject = actions.viewSDLCProject;
     this.onDiagramClassDoubleClick = actions.onDiagramClassDoubleClick;
-    this.HACKY__previewExperimentalFeatures = Boolean(
-      options?.HACKY__previewExperimentalFeatures,
-    );
   }
 
   get renderer(): DiagramRenderer {
@@ -173,7 +173,7 @@ export class DataSpaceViewerState {
     this._renderer = val;
   }
 
-  setCurrentDiagram(val: Diagram): void {
+  setCurrentDiagram(val: DataSpaceDiagramAnalysisResult): void {
     this.currentDiagram = val;
   }
 
@@ -197,5 +197,9 @@ export class DataSpaceViewerState {
     this.renderer.setEnableLayoutAutoAdjustment(true);
     this.renderer.onClassViewDoubleClick = (classView: ClassView): void =>
       this.onDiagramClassDoubleClick(classView);
+  }
+
+  enableExpandedMode(val: boolean): void {
+    this.isExpandedModeEnabled = val;
   }
 }

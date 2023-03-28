@@ -103,6 +103,7 @@ export class ServiceTestParameterState {
 export class ServiceValueSpecificationTestParameterState extends ServiceTestParameterState {
   valueSpec: ValueSpecification;
   varExpression: VariableExpression;
+
   constructor(
     parameterValue: ParameterValue,
     editorStore: EditorStore,
@@ -147,6 +148,7 @@ export class ServiceValueSpecificationTestParameterState extends ServiceTestPara
     const mockValue = generateVariableExpressionMockValue(
       this.varExpression,
       this.editorStore.graphManagerState.graph,
+      this.editorStore.changeDetectionState.observerContext,
     );
     if (mockValue) {
       this.updateValueSpecification(mockValue);
@@ -157,6 +159,7 @@ export class ServiceValueSpecificationTestParameterState extends ServiceTestPara
 export class ServiceTestSetupState {
   readonly editorStore: EditorStore;
   readonly testState: ServiceTestState;
+
   parameterValueStates: ServiceTestParameterState[] = [];
   newParameterValueName = '';
   showNewParameterModal = false;
@@ -294,6 +297,7 @@ export class ServiceTestSetupState {
         generateVariableExpressionMockValue(
           expression,
           this.editorStore.graphManagerState.graph,
+          this.editorStore.changeDetectionState.observerContext,
         ),
       );
       const paramValue = new ParameterValue();
@@ -380,6 +384,7 @@ export class ServiceTestSetupState {
           const mockValue = generateVariableExpressionMockValue(
             varExpression,
             this.editorStore.graphManagerState.graph,
+            this.editorStore.changeDetectionState.observerContext,
           );
           if (mockValue) {
             const paramValue = new ParameterValue();

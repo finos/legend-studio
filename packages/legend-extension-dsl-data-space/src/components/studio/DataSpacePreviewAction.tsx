@@ -113,7 +113,7 @@ export const DataSpacePreviewDialog = observer(() => {
                       <TimesCircleIcon />
                     </div>
                     <div className="data-space-preview__dialog__content--failed__text">
-                      Can&apos;t load data space
+                      {`Can't load data space`}
                     </div>
                   </div>
                 </BlankPanelContent>

@@ -167,7 +167,7 @@ export class FilterConditionState implements Hashable {
     // observe the property expression
     observe_ValueSpecification(
       propertyExpression,
-      this.filterState.queryBuilderState.observableContext,
+      this.filterState.queryBuilderState.observerContext,
     );
 
     this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
@@ -204,7 +204,7 @@ export class FilterConditionState implements Hashable {
     this.value = val
       ? observe_ValueSpecification(
           val,
-          this.filterState.queryBuilderState.observableContext,
+          this.filterState.queryBuilderState.observerContext,
         )
       : undefined;
   }

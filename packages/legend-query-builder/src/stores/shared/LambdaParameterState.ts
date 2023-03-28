@@ -201,13 +201,13 @@ export class LambdaParameterState implements Hashable {
   readonly uuid = uuid();
   readonly parameter: VariableExpression;
   readonly graph: PureModel;
-  readonly observableContext: ObserverContext;
+  readonly observerContext: ObserverContext;
 
   value: ValueSpecification | undefined;
 
   constructor(
     variableExpression: VariableExpression,
-    observableContext: ObserverContext,
+    observerContext: ObserverContext,
     graph: PureModel,
   ) {
     makeObservable(this, {
@@ -217,7 +217,7 @@ export class LambdaParameterState implements Hashable {
       hashCode: computed,
     });
 
-    this.observableContext = observableContext;
+    this.observerContext = observerContext;
     this.parameter = observe_VariableExpression(variableExpression);
     this.graph = graph;
   }
@@ -231,7 +231,11 @@ export class LambdaParameterState implements Hashable {
 
   mockParameterValue(): void {
     this.setValue(
-      generateVariableExpressionMockValue(this.parameter, this.graph),
+      generateVariableExpressionMockValue(
+        this.parameter,
+        this.graph,
+        this.observerContext,
+      ),
     );
   }
 
@@ -242,7 +246,7 @@ export class LambdaParameterState implements Hashable {
       );
     }
     this.value = value
-      ? observe_ValueSpecification(value, this.observableContext)
+      ? observe_ValueSpecification(value, this.observerContext)
       : undefined;
   }
 

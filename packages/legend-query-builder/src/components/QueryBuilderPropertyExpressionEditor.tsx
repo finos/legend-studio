@@ -88,7 +88,7 @@ const DerivedPropertyParameterValueEditor = observer(
           derivedPropertyExpressionState.propertyExpression,
           item.variable,
           idx + 1,
-          derivedPropertyExpressionState.queryBuilderState.observableContext,
+          derivedPropertyExpressionState.queryBuilderState.observerContext,
         );
       },
       [derivedPropertyExpressionState, idx],
@@ -156,7 +156,7 @@ const DerivedPropertyParameterValueEditor = observer(
             guaranteeType(nextExpression, AbstractPropertyExpression),
             guaranteeNonNullable(newParameterValue),
             index + 1,
-            queryBuilderState.observableContext,
+            queryBuilderState.observerContext,
           );
         }
       });
@@ -201,9 +201,10 @@ const DerivedPropertyParameterValueEditor = observer(
             variable,
             derivedPropertyExpressionState.queryBuilderState.graphManagerState
               .graph,
+            derivedPropertyExpressionState.queryBuilderState.observerContext,
           ),
         idx + 1,
-        derivedPropertyExpressionState.queryBuilderState.observableContext,
+        derivedPropertyExpressionState.queryBuilderState.observerContext,
       );
       const derivedPropertyExpressionStates =
         derivedPropertyExpressionState.propertyExpressionState
@@ -244,13 +245,12 @@ const DerivedPropertyParameterValueEditor = observer(
                   val,
                   idx + 1,
                   derivedPropertyExpressionState.queryBuilderState
-                    .observableContext,
+                    .observerContext,
                 );
               }}
               graph={graph}
               obseverContext={
-                derivedPropertyExpressionState.queryBuilderState
-                  .observableContext
+                derivedPropertyExpressionState.queryBuilderState.observerContext
               }
               typeCheckOption={{
                 expectedType: parameterType,

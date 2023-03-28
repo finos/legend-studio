@@ -34,7 +34,7 @@ import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import {
-  generateStandaloneDataSpaceViewerRoute,
+  generateDataSpaceViewerRoute,
   generateExploreTaxonomyTreeNodeDataSpaceRoute,
 } from '../application/LegendTaxonomyNavigation.js';
 import {
@@ -209,7 +209,7 @@ const TaxonomyNodeDataSpaceViewer = observer(
     const viewDataSpace = (): void =>
       applicationStore.navigationService.navigator.visitAddress(
         applicationStore.navigationService.navigator.generateAddress(
-          generateStandaloneDataSpaceViewerRoute(
+          generateDataSpaceViewerRoute(
             generateGAVCoordinates(
               dataSpaceViewerState.groupId,
               dataSpaceViewerState.artifactId,

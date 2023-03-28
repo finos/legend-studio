@@ -117,6 +117,8 @@ export class QueryBuilderPostFilterOperator_Equal
             .graphManagerState.graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .observerContext,
         );
       }
       case PRIMITIVE_TYPE.DATE: {
@@ -125,6 +127,8 @@ export class QueryBuilderPostFilterOperator_Equal
             .graphManagerState.graph,
           PRIMITIVE_TYPE.STRICTDATE,
           generateDefaultValueForPrimitiveType(propertyType.path),
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .observerContext,
         );
       }
       default:
@@ -135,9 +139,16 @@ export class QueryBuilderPostFilterOperator_Equal
                 new GenericType(propertyType),
               ),
             );
-            instanceValue_setValues(enumValueInstanceValue, [
-              EnumValueExplicitReference.create(propertyType.values[0] as Enum),
-            ]);
+            instanceValue_setValues(
+              enumValueInstanceValue,
+              [
+                EnumValueExplicitReference.create(
+                  propertyType.values[0] as Enum,
+                ),
+              ],
+              postFilterConditionState.postFilterState.tdsState
+                .queryBuilderState.observerContext,
+            );
             return enumValueInstanceValue;
           }
           throw new UnsupportedOperationError(

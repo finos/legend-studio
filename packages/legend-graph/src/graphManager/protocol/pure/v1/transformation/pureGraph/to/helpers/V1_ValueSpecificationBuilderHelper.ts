@@ -215,7 +215,8 @@ export class V1_ValueSpecificationBuilder
       this.processingContext,
     );
     this.processingContext.pop();
-    return func[0];
+
+    return func;
   }
 
   visit_AppliedProperty(
@@ -553,25 +554,20 @@ export const V1_buildGenericFunctionExpression = (
   openVariables: string[],
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] => {
-  const processedParams = parameters.map((parameter) =>
-    parameter.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
+): SimpleFunctionExpression =>
+  V1_buildBaseSimpleFunctionExpression(
+    parameters.map((parameter) =>
+      parameter.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationBuilder(
+          compileContext,
+          processingContext,
+          openVariables,
+        ),
       ),
     ),
+    functionName,
+    compileContext,
   );
-  return [
-    V1_buildBaseSimpleFunctionExpression(
-      processedParams,
-      functionName,
-      compileContext,
-    ),
-    processedParams,
-  ];
-};
 /**
  * This is fairly similar to how engine does function matching in a way.
  * Notice that Studio core should not attempt to do any function inferencing/matching
@@ -586,7 +582,7 @@ export function V1_buildFunctionExpression(
   openVariables: string[],
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] {
+): SimpleFunctionExpression {
   if (
     matchFunctionName(functionName, [
       SUPPORTED_FUNCTIONS.TODAY,
@@ -600,7 +596,7 @@ export function V1_buildFunctionExpression(
       compileContext,
       processingContext,
     );
-    expression[0].genericType = GenericTypeExplicitReference.create(
+    expression.genericType = GenericTypeExplicitReference.create(
       new GenericType(PrimitiveType.STRICTDATE),
     );
     return expression;
@@ -612,7 +608,7 @@ export function V1_buildFunctionExpression(
       compileContext,
       processingContext,
     );
-    expression[0].genericType = GenericTypeExplicitReference.create(
+    expression.genericType = GenericTypeExplicitReference.create(
       new GenericType(PrimitiveType.DATETIME),
     );
     return expression;
@@ -632,7 +628,7 @@ export function V1_buildFunctionExpression(
       compileContext,
       processingContext,
     );
-    expression[0].genericType = GenericTypeExplicitReference.create(
+    expression.genericType = GenericTypeExplicitReference.create(
       new GenericType(PrimitiveType.DATE),
     );
     return expression;

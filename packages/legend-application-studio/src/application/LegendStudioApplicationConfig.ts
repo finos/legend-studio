@@ -60,11 +60,6 @@ class LegendStudioApplicationCoreOptions {
   projectCreationGroupIdSuggestion = 'org.finos.legend.*';
 
   /**
-   * TO BE REMOVED post DEMO
-   */
-  HACKY__previewExperimentalFeatures = false;
-
-  /**
    * Indicates if we should keep section index and do not rewrite/flatten the paths shortened by section
    * imports.
    *
@@ -88,7 +83,6 @@ class LegendStudioApplicationCoreOptions {
     createModelSchema(LegendStudioApplicationCoreOptions, {
       enableGraphBuilderStrictMode: optional(primitive()),
       projectCreationGroupIdSuggestion: optional(primitive()),
-      HACKY__previewExperimentalFeatures: optional(primitive()),
       TEMPORARY__preserveSectionIndex: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),

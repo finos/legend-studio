@@ -253,6 +253,9 @@ export class QueryExportState {
           },
         );
 
+        this.queryBuilderState.changeDetectionState.initialize(this.lambda);
+        // turn off change detection at this point
+        // TODO: to make performance better, refrain from refreshing like this
         this.editorStore.applicationStore.navigationService.navigator.goToLocation(
           generateExistingQueryEditorRoute(newQuery.id),
         );
@@ -297,7 +300,8 @@ export class QueryExportState {
 
 export class QueryLoaderState {
   readonly editorStore: QueryEditorStore;
-  loadQueriesState = ActionState.create();
+
+  readonly loadQueriesState = ActionState.create();
   queries: LightQuery[] = [];
   isQueryLoaderOpen = false;
   showCurrentUserQueriesOnly = false;

@@ -41,7 +41,7 @@ export abstract class ExecutionResult {
   activities: object | undefined;
 }
 
-// Model
+// ------------------------------------------ Model -----------------------------------------------
 export class JsonBuilder {
   _type = BuilderType.JSON_BUILDER;
 }
@@ -59,8 +59,15 @@ export class RawExecutionResult extends ExecutionResult {
   }
 }
 
-// TDS
-export class TDSColumn {
+// ------------------------------------------ TDS -----------------------------------------------
+
+/**
+ * TODO?: maybe we converge to use TDSColumn
+ *
+ * Since here, we're building out the result builder config, we don't need
+ * to fully resolve all the references, hence we have this simplified version of TDSColumn
+ */
+export class INTERNAL__TDSColumn {
   name!: string;
   type?: string | undefined;
   relationalType?: string | undefined;
@@ -68,7 +75,7 @@ export class TDSColumn {
 }
 
 export class TDSBuilder extends ResultBuilder {
-  columns: TDSColumn[] = [];
+  columns: INTERNAL__TDSColumn[] = [];
 
   constructor() {
     super(BuilderType.TDS_BUILDER);

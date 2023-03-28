@@ -239,7 +239,7 @@ export const DataSpaceAdvancedSearchModal = observer(
                           <TimesCircleIcon />
                         </div>
                         <div className="data-space-advanced-search__dialog__view--failed__text">
-                          Can&apos;t load data space
+                          {`Can't load data space`}
                         </div>
                       </div>
                     </BlankPanelContent>

@@ -526,11 +526,29 @@ export class DiagramRenderer {
     this.zoom = val;
   }
 
-  render(): void {
+  render(options?: { initial?: boolean | undefined }): void {
     this.diagram.classViews.forEach((classView) =>
       this.ensureClassViewMeetMinDimensions(classView),
     );
     this.refresh();
+
+    if (options?.initial) {
+      this.autoRecenter();
+
+      // only zoom to fit if needed
+      if (
+        this.canvas.width <
+          this.virtualScreen.rectangle.width +
+            this.screenPadding * 2 +
+            FIT_ZOOM_PADDING * 2 ||
+        this.canvas.height <
+          this.virtualScreen.rectangle.height +
+            this.screenPadding * 2 +
+            FIT_ZOOM_PADDING * 2
+      ) {
+        this.zoomToFit();
+      }
+    }
   }
 
   refresh(): void {
@@ -2482,6 +2500,152 @@ export class DiagramRenderer {
     }
   }
 
+  getSuperTypeLevels(
+    classViews: ClassView[],
+    diagram: Diagram,
+    currentDepth: number,
+    recurseMaxDepth: number,
+  ): ClassView[][] {
+    if (classViews.length) {
+      const res = uniqBy(
+        classViews.flatMap((classView) =>
+          classView.class.value.generalizations.map(
+            (generation) =>
+              new ClassView(
+                diagram,
+                uuid(),
+                PackageableElementExplicitReference.create(
+                  getRawGenericType(generation.value, Class),
+                ),
+              ),
+          ),
+        ),
+        (a: ClassView) => a.class.value,
+      );
+      res.forEach((classView) =>
+        this.ensureClassViewMeetMinDimensions(classView),
+      );
+      if (recurseMaxDepth === -1 || currentDepth < recurseMaxDepth) {
+        const rec = this.getSuperTypeLevels(
+          res,
+          diagram,
+          currentDepth + 1,
+          recurseMaxDepth,
+        );
+        rec.push(classViews);
+        return rec;
+      } else {
+        return [classViews];
+      }
+    }
+    return [];
+  }
+
+  layoutTaxonomy(
+    classViewLevels: ClassView[][],
+    diagram: Diagram,
+    positionInitialClass: boolean,
+    superType: boolean,
+  ): [ClassView[], GeneralizationView[]] {
+    // Offsets
+    const spaceY = 30;
+    const spaceX = 10;
+
+    classViewLevels.reverse();
+
+    const classViews = classViewLevels.flatMap((levels, currentLevelIndex) => {
+      // Get the bounding box of the precedent level
+      let precedentTotalWidth = 0;
+      let precedentTotalHeight = 0;
+      let precedentX = 0;
+      let precedentY = 0;
+      if (currentLevelIndex > 0) {
+        const precedent = classViewLevels[currentLevelIndex - 1] as ClassView[];
+        if (precedent.length) {
+          const precedentByX = [...precedent].sort(
+            (a, b) => a.position.x - b.position.x,
+          );
+          precedentX = (precedentByX[0] as ClassView).position.x;
+          precedentTotalWidth =
+            (precedentByX[precedentByX.length - 1] as ClassView).position.x +
+            (precedentByX[precedentByX.length - 1] as ClassView).rectangle
+              .width -
+            (precedentByX[0] as ClassView).position.x;
+
+          const precedentByY = [...precedent].sort(
+            (a, b) => a.position.y - b.position.y,
+          );
+          precedentY = (precedentByY[0] as ClassView).position.y;
+          precedentTotalHeight =
+            (precedentByY[precedentByY.length - 1] as ClassView).position.y +
+            (precedentByY[precedentByY.length - 1] as ClassView).rectangle
+              .height -
+            (precedentByY[0] as ClassView).position.y;
+        }
+      }
+
+      // Get the bounding box of current Level
+      const maxHeight = Math.max(
+        ...levels.map((classView) => classView.rectangle.height),
+      );
+
+      const totalWidth = levels
+        .map((classView) => classView.rectangle.width)
+        .reduce((a, b) => a + b + spaceX);
+
+      // Get the starting position
+      const startX = precedentX + precedentTotalWidth / 2 - totalWidth / 2;
+      const currentLevelY = superType
+        ? precedentY - maxHeight - spaceY
+        : precedentY + precedentTotalHeight + spaceY;
+
+      // Set layout of current level
+      if (positionInitialClass || currentLevelIndex > 0) {
+        positionedRectangle_setPosition(
+          levels[0] as ClassView,
+          new Point(startX, currentLevelY),
+        );
+        levels.forEach((view, idx) => {
+          if (idx > 0) {
+            const precedent = levels[idx - 1] as ClassView;
+            positionedRectangle_setPosition(
+              view,
+              new Point(
+                precedent.position.x + precedent.rectangle.width + spaceX,
+                currentLevelY,
+              ),
+            );
+          }
+        });
+      }
+      return levels;
+    });
+
+    const generalizationViews = (
+      superType ? classViewLevels : classViewLevels.slice().reverse()
+    )
+      .slice(0, classViewLevels.length - 1)
+      .flatMap((level, idx) =>
+        level.flatMap((fromClassView) =>
+          (classViewLevels[idx + 1] as ClassView[]).flatMap((toClassView) => {
+            if (
+              fromClassView.class.value.generalizations
+                .map((g) => g.value.rawType)
+                .includes(toClassView.class.value)
+            ) {
+              return new GeneralizationView(
+                diagram,
+                fromClassView,
+                toClassView,
+              );
+            }
+            return [];
+          }),
+        ),
+      );
+    return [classViews, generalizationViews];
+  }
+
   // --------------------------------- Event handler --------------------------
 
   keydown(e: KeyboardEvent): void {
@@ -3492,157 +3656,5 @@ export class DiagramRenderer {
         }
       }
     }
-  }
-
-  //---------------------
-  // Inheritance helpers
-  //---------------------
-
-  getSuperTypeLevels(
-    classViews: ClassView[],
-    diagram: Diagram,
-    currentDepth: number,
-    recurseMaxDepth: number,
-  ): ClassView[][] {
-    if (classViews.length) {
-      const res = uniqBy(
-        classViews.flatMap((classView) =>
-          classView.class.value.generalizations.map(
-            (generation) =>
-              new ClassView(
-                diagram,
-                uuid(),
-                PackageableElementExplicitReference.create(
-                  getRawGenericType(generation.value, Class),
-                ),
-              ),
-          ),
-        ),
-        (a: ClassView) => a.class.value,
-      );
-      res.forEach((classView) =>
-        this.ensureClassViewMeetMinDimensions(classView),
-      );
-      if (recurseMaxDepth === -1 || currentDepth < recurseMaxDepth) {
-        const rec = this.getSuperTypeLevels(
-          res,
-          diagram,
-          currentDepth + 1,
-          recurseMaxDepth,
-        );
-        rec.push(classViews);
-        return rec;
-      } else {
-        return [classViews];
-      }
-    }
-    return [];
-  }
-
-  // --------------------------------------- Extension -----------------------------------
-
-  layoutTaxonomy(
-    classViewLevels: ClassView[][],
-    diagram: Diagram,
-    positionInitialClass: boolean,
-    superType: boolean,
-  ): [ClassView[], GeneralizationView[]] {
-    // Offsets
-    const spaceY = 30;
-    const spaceX = 10;
-
-    classViewLevels.reverse();
-
-    const classViews = classViewLevels.flatMap((levels, currentLevelIndex) => {
-      // Get the bounding box of the precedent level
-      let precedentTotalWidth = 0;
-      let precedentTotalHeight = 0;
-      let precedentX = 0;
-      let precedentY = 0;
-      if (currentLevelIndex > 0) {
-        const precedent = classViewLevels[currentLevelIndex - 1] as ClassView[];
-        if (precedent.length) {
-          const precedentByX = [...precedent].sort(
-            (a, b) => a.position.x - b.position.x,
-          );
-          precedentX = (precedentByX[0] as ClassView).position.x;
-          precedentTotalWidth =
-            (precedentByX[precedentByX.length - 1] as ClassView).position.x +
-            (precedentByX[precedentByX.length - 1] as ClassView).rectangle
-              .width -
-            (precedentByX[0] as ClassView).position.x;
-
-          const precedentByY = [...precedent].sort(
-            (a, b) => a.position.y - b.position.y,
-          );
-          precedentY = (precedentByY[0] as ClassView).position.y;
-          precedentTotalHeight =
-            (precedentByY[precedentByY.length - 1] as ClassView).position.y +
-            (precedentByY[precedentByY.length - 1] as ClassView).rectangle
-              .height -
-            (precedentByY[0] as ClassView).position.y;
-        }
-      }
-
-      // Get the bounding box of current Level
-      const maxHeight = Math.max(
-        ...levels.map((classView) => classView.rectangle.height),
-      );
-
-      const totalWidth = levels
-        .map((classView) => classView.rectangle.width)
-        .reduce((a, b) => a + b + spaceX);
-
-      // Get the starting position
-      const startX = precedentX + precedentTotalWidth / 2 - totalWidth / 2;
-      const currentLevelY = superType
-        ? precedentY - maxHeight - spaceY
-        : precedentY + precedentTotalHeight + spaceY;
-
-      // Set layout of current level
-      if (positionInitialClass || currentLevelIndex > 0) {
-        positionedRectangle_setPosition(
-          levels[0] as ClassView,
-          new Point(startX, currentLevelY),
-        );
-        levels.forEach((view, idx) => {
-          if (idx > 0) {
-            const precedent = levels[idx - 1] as ClassView;
-            positionedRectangle_setPosition(
-              view,
-              new Point(
-                precedent.position.x + precedent.rectangle.width + spaceX,
-                currentLevelY,
-              ),
-            );
-          }
-        });
-      }
-      return levels;
-    });
-
-    const generalizationViews = (
-      superType ? classViewLevels : classViewLevels.slice().reverse()
-    )
-      .slice(0, classViewLevels.length - 1)
-      .flatMap((level, idx) =>
-        level.flatMap((fromClassView) =>
-          (classViewLevels[idx + 1] as ClassView[]).flatMap((toClassView) => {
-            if (
-              fromClassView.class.value.generalizations
-                .map((g) => g.value.rawType)
-                .includes(toClassView.class.value)
-            ) {
-              return new GeneralizationView(
-                diagram,
-                fromClassView,
-                toClassView,
-              );
-            }
-            return [];
-          }),
-        ),
-      );
-    return [classViews, generalizationViews];
   }
 }

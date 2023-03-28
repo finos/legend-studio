@@ -26,12 +26,13 @@ import {
   JsonExecutionResult,
   TDSExecutionResult,
   TDSBuilder,
-  TDSColumn,
+  INTERNAL__TDSColumn,
   RawExecutionResult,
 } from '../../../../../../graphManager/action/execution/ExecutionResult.js';
 import {
   type V1_ExecutionResult,
   type V1_TDSBuilder,
+  type V1_INTERNAL__TDSColumn,
   V1_ClassExecutionResult,
   V1_JsonExecutionResult,
   V1_INTERNAL__UnknownExecutionResult,
@@ -50,19 +51,23 @@ const buildJSONExecutionResult = (
   return metamodel;
 };
 
+const INTERNAL__buildTDSColumn = (
+  protocol: V1_INTERNAL__TDSColumn,
+): INTERNAL__TDSColumn => {
+  const metamodel = new INTERNAL__TDSColumn();
+  metamodel.name = guaranteeNonNullable(
+    protocol.name,
+    `TDS column 'name' field is missing`,
+  );
+  metamodel.type = protocol.type;
+  metamodel.doc = protocol.doc;
+  metamodel.relationalType = protocol.relationalType;
+  return metamodel;
+};
+
 const buildTDSBuilder = (protocol: V1_TDSBuilder): TDSBuilder => {
   const builder = new TDSBuilder();
-  builder.columns = protocol.columns.map((_column) => {
-    const column = new TDSColumn();
-    column.name = guaranteeNonNullable(
-      _column.name,
-      `TDS column 'name' field is missing`,
-    );
-    column.type = _column.type;
-    column.doc = _column.doc;
-    column.relationalType = _column.relationalType;
-    return column;
-  });
+  builder.columns = protocol.columns.map(INTERNAL__buildTDSColumn);
   return builder;
 };
 

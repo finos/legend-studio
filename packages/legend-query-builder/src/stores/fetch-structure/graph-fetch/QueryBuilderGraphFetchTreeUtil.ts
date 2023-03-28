@@ -298,10 +298,18 @@ export const addQueryBuilderPropertyNode = (
     treeData.nodes.set(childNode.id, childNode);
     if (parentNode) {
       addUniqueEntry(parentNode.childrenIds, childNode.id);
-      graphFetchTree_addSubTree(parentNode.tree, childNode.tree);
+      graphFetchTree_addSubTree(
+        parentNode.tree,
+        childNode.tree,
+        queryBuilderState.observerContext,
+      );
     } else {
       addUniqueEntry(treeData.rootIds, childNode.id);
-      graphFetchTree_addSubTree(treeData.tree, childNode.tree);
+      graphFetchTree_addSubTree(
+        treeData.tree,
+        childNode.tree,
+        queryBuilderState.observerContext,
+      );
     }
   }
 };

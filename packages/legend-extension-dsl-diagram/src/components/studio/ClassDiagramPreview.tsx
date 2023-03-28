@@ -60,16 +60,14 @@ export const ClassDiagramPreview = observer((props: { _class: Class }) => {
         setDiagramRenderer(newRender);
         currentRenderer = newRender;
       }
-      currentRenderer.render();
-      currentRenderer.autoRecenter();
+      currentRenderer.render({ initial: true });
     }
   }, [diagramRenderer, _class]);
 
   useEffect(() => {
     if (diagramRenderer) {
       diagramRenderer.loadClass(_class);
-      diagramRenderer.render();
-      diagramRenderer.autoRecenter();
+      diagramRenderer.render({ initial: true });
     }
   }, [_class, classHash, diagramRenderer]);
 

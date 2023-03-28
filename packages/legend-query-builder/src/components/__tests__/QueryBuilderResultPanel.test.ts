@@ -31,8 +31,8 @@ import {
   TEST_DATA__result,
   TEST_DATA__ResultState_entities,
   TEST_DATA__simpleProjectionQuery,
-} from './TEST_DATA__QueryBuilder_ResultStateTest.js';
-import { TEST__setUpQueryBuilder } from '../../components/QueryBuilderComponentTestUtils.js';
+} from '../../stores/__tests__/TEST_DATA__QueryBuilder_ResultStateTest.js';
+import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
 import {
   MockedMonacoEditorInstance,
@@ -135,11 +135,17 @@ describe(integrationTest('Query builder result state'), () => {
       const mockValue = new Map<string, string>();
       mockValue.set('query-builder', 'test');
       MOCK__lambdaToPureCode.mockResolvedValue(mockValue);
-      fireEvent.click(renderResult.getByTitle('View Query in Pure'));
+
+      await act(async () => {
+        fireEvent.click(renderResult.getByTitle('View Query in Pure'));
+      });
       const lambdaEditor = await waitFor(() =>
         renderResult.getByRole('dialog'),
       );
-      fireEvent.click(getByText(lambdaEditor, 'Close'));
+
+      await act(async () => {
+        fireEvent.click(getByText(lambdaEditor, 'Close'));
+      });
       expect(queryBuilderState.resultState.executionResult).toEqual(
         executionResult,
       );
