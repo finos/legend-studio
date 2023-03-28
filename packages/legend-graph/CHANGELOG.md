@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 25.0.0
+
+### Major Changes
+
+- [#2043](https://github.com/finos/legend-studio/pull/2043) [`5d5b8c55d`](https://github.com/finos/legend-studio/commit/5d5b8c55dbda79585df893ce6b0adcebf23ffdb7) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `V1_getExtraFunctionExpressionBuilders()` now returns just a `SimpleFunctionExpression`.
+
 ## 24.1.0
 
 ### Minor Changes

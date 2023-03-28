@@ -1,5 +1,7 @@
 # @finos/legend-application-pure-ide-deployment
 
+## 9.8.0
+
 ## 9.7.0
 
 ## 9.6.0
