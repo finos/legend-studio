@@ -276,14 +276,10 @@ export class V1_PropertyMappingBuilder
           );
       } else {
         // NOTE: if no there is one non-root class mapping, auto-nominate that as the target set implementation
-        const setImplementation = getClassMappingsByClass(
+        targetSetImplementation = getClassMappingsByClass(
           topParent._PARENT,
           guaranteeType(propertyType, Class),
         )[0];
-        targetSetImplementation = guaranteeNonNullable(
-          setImplementation,
-          `Can't find any class mapping for class '${propertyType.path}' in mapping '${topParent._PARENT.path}'`,
-        );
       }
     }
     const sourceSetImplementation = protocol.source
