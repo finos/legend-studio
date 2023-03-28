@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 23.1.0
+
+### Minor Changes
+
+- [#2032](https://github.com/finos/legend-studio/pull/2032) [`08afbd705`](https://github.com/finos/legend-studio/commit/08afbd705fee75b20ba52bdc62a7e1a32fdb85d2) ([@janeenyamak1](https://github.com/janeenyamak1)) - Enhance servie bulk registration modal
+
 ## 23.0.3
 
 ### Patch Changes
