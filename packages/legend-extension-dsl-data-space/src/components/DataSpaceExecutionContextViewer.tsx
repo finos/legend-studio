@@ -16,15 +16,15 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  clsx,
   CustomSelectorInput,
   PURE_MappingIcon,
   PURE_RuntimeIcon,
-  CogIcon,
+  PlayIcon,
 } from '@finos/legend-art';
 import { type PackageableRuntime } from '@finos/legend-graph';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import type { DataSpaceExecutionContextAnalysisResult } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
+import { useApplicationStore } from '@finos/legend-application';
 
 type ExecutionContextOption = {
   label: string;
@@ -49,6 +49,7 @@ const buildRuntimeOption = (value: PackageableRuntime): RuntimeOption => ({
 export const DataSpaceExecutionContextViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+    const applicationStore = useApplicationStore();
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
     const executionContexts = Array.from(
       dataSpaceViewerState.dataSpaceAnalysisResult.executionContextsIndex.values(),
@@ -117,7 +118,7 @@ export const DataSpaceExecutionContextViewer = observer(
         <div className="data-space__viewer__execution-context">
           <div className="data-space__viewer__execution-context__entry">
             <div className="data-space__viewer__execution-context__entry__icon">
-              <CogIcon className="data-space__viewer__execution-context__context-icon" />
+              <PlayIcon className="data-space__viewer__execution-context__context-icon" />
             </div>
             <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__dropdown__container">
               <CustomSelectorInput
@@ -125,23 +126,13 @@ export const DataSpaceExecutionContextViewer = observer(
                 options={executionContextOptions}
                 onChange={onExecutionContextOptionChange}
                 value={selectedExecutionContextOption}
-                darkMode={true}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
                 formatOptionLabel={formatExecutionContextOptionLabel}
               />
             </div>
-          </div>
-          <div
-            className={clsx(
-              'data-space__viewer__execution-context__description',
-              {
-                'data-space__viewer__execution-context__description--empty':
-                  !dataSpaceViewerState.currentExecutionContext.description,
-              },
-            )}
-          >
-            {dataSpaceViewerState.currentExecutionContext.description
-              ? dataSpaceViewerState.currentExecutionContext.description
-              : 'No description'}
           </div>
           <div className="data-space__viewer__execution-context__entry data-space__viewer__execution-context__mapping">
             <div className="data-space__viewer__execution-context__entry__icon">
@@ -161,7 +152,10 @@ export const DataSpaceExecutionContextViewer = observer(
                 options={runtimeOptions}
                 onChange={onRuntimeOptionChange}
                 value={selectedRuntimeOption}
-                darkMode={true}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
                 formatOptionLabel={formatRuntimeOptionLabel}
               />
             </div>

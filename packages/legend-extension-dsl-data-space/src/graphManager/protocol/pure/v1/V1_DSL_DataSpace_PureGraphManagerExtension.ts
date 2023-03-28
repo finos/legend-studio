@@ -41,8 +41,14 @@ import {
   uniq,
   type PlainObject,
 } from '@finos/legend-shared';
-import { DataSpaceSupportEmail } from '../../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
-import { V1_DataSpaceSupportEmail } from '../../../../graphManager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
+import {
+  DataSpaceSupportCombinedInfo,
+  DataSpaceSupportEmail,
+} from '../../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import {
+  V1_DataSpaceSupportCombinedInfo,
+  V1_DataSpaceSupportEmail,
+} from '../../../../graphManager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import {
   DataSpaceAnalysisResult,
   DataSpaceDiagramAnalysisResult,
@@ -160,11 +166,24 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     if (analysisResult.supportInfo) {
       if (analysisResult.supportInfo instanceof V1_DataSpaceSupportEmail) {
         const supportEmail = new DataSpaceSupportEmail();
+        supportEmail.documentationUrl =
+          analysisResult.supportInfo.documentationUrl;
         supportEmail.address = guaranteeNonEmptyString(
           analysisResult.supportInfo.address,
           `Data space support email 'address' field is missing or empty`,
         );
         result.supportInfo = supportEmail;
+      } else if (
+        analysisResult.supportInfo instanceof V1_DataSpaceSupportCombinedInfo
+      ) {
+        const combinedInfo = new DataSpaceSupportCombinedInfo();
+        combinedInfo.documentationUrl =
+          analysisResult.supportInfo.documentationUrl;
+        combinedInfo.website = analysisResult.supportInfo.website;
+        combinedInfo.faqUrl = analysisResult.supportInfo.faqUrl;
+        combinedInfo.supportUrl = analysisResult.supportInfo.supportUrl;
+        combinedInfo.emails = analysisResult.supportInfo.emails;
+        result.supportInfo = combinedInfo;
       }
       // NOTE: we will relax the check and not throw here for unknown support info type
     }

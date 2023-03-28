@@ -14,22 +14,8 @@
  * limitations under the License.
  */
 
-import {
-  LegendApplicationPlugin,
-  type LegendApplicationPluginManager,
-} from '@finos/legend-application';
-import packageJson from '../../package.json';
-
-export class DSL_DataSpace_LegendApplicationPlugin extends LegendApplicationPlugin {
-  static NAME = packageJson.extensions.applicationPlugin;
-
-  constructor() {
-    super(DSL_DataSpace_LegendApplicationPlugin.NAME, packageJson.version);
-  }
-
-  install(
-    pluginManager: LegendApplicationPluginManager<LegendApplicationPlugin>,
-  ): void {
-    pluginManager.registerApplicationPlugin(this);
-  }
-}
+export const DataSpaceWikiPlaceholder: React.FC<{ message: string }> = (
+  props,
+) => (
+  <div className="data-space__viewer__wiki__placeholder">{props.message}</div>
+);

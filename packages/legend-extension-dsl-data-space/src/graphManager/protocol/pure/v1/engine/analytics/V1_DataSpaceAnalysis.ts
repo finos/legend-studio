@@ -294,7 +294,7 @@ export class V1_DataSpaceExecutableAnalysisResult {
       executable: primitive(),
       description: optional(primitive()),
       info: optionalCustom(() => SKIP, V1_deserializeDataSpaceExecutableInfo),
-      resultType: custom(() => SKIP, V1_deserializeDataSpaceExecutableResult),
+      result: custom(() => SKIP, V1_deserializeDataSpaceExecutableResult),
       title: primitive(),
     }),
   );

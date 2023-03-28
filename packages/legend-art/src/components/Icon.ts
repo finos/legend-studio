@@ -182,6 +182,8 @@ export const ReviewIcon = MD.MdReviews;
 export const CalculateIcon = MD.MdCalculate;
 export const LaunchIcon = MD.MdRocketLaunch;
 export const DatasetIcon = MD.MdOutlineDataset;
+export const VerifiedIcon = MD.MdVerified;
+export const QueryIcon = MD.MdQueryStats;
 
 const VSC = ReactIcons.VSC;
 export const ErrorIcon = VSC.VscError;
@@ -265,6 +267,7 @@ export const TriangleIcon = FI.FiTriangle;
 export const ZoomInIcon = FI.FiZoomIn;
 export const ZoomOutIcon = FI.FiZoomOut;
 export const TruncatedGitMergeIcon = FI.FiGitMerge; // to be reviewed/combined
+export const AnchorLinkIcon = FI.FiLink;
 
 const RI = ReactIcons.RI;
 export const ShapeLineIcon = RI.RiShapeLine;

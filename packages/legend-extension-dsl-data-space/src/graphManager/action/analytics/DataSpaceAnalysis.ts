@@ -83,10 +83,16 @@ export class DataSpaceServiceExecutableInfo extends DataSpaceExecutableInfo {
 export abstract class DataSpaceExecutableResult {}
 
 export class DataSpaceExecutableTDSResultColumn {
+  readonly uuid = uuid();
+
   name!: string;
   type?: string | undefined;
   relationalType?: string | undefined;
   documentation?: string | undefined;
+
+  // TODO: we need to think of how we want to support sample values, should we rely on the type here
+  // or should we rely on actual execution result on test data?
+  sampleValues = '';
 }
 
 export class DataSpaceExecutableTDSResult extends DataSpaceExecutableResult {
@@ -94,6 +100,8 @@ export class DataSpaceExecutableTDSResult extends DataSpaceExecutableResult {
 }
 
 export class DataSpaceExecutableAnalysisResult {
+  readonly uuid = uuid();
+
   title!: string;
   description?: string | undefined;
   executable!: string;

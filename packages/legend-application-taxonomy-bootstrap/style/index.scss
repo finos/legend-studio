@@ -51,6 +51,7 @@
   --color-hclight-yellow-30: #f5c518;
   --color-hclight-orange-50: #e86427;
   --color-hclight-red-60: #d91f11;
+  --color-hclight-pink-60: #cc1d92;
 }
 
 .theme__hc-light {
@@ -75,6 +76,26 @@
     border-radius: 0;
   }
 
+  // ---------------------------- Button -------------------------------
+
+  .btn--dark {
+    background: var(--color-hclight-blue-60);
+    color: var(--color-hclight-white);
+
+    &:hover {
+      background: var(--color-hclight-blue-50);
+    }
+
+    &[disabled] {
+      background: var(--color-hclight-grey-20);
+      color: var(--color-hclight-grey-30);
+    }
+
+    &:focus {
+      outline: 0.1rem solid var(--color-hclight-blue-60);
+    }
+  }
+
   // ---------------------------- Menu -------------------------------
 
   .menu {
@@ -94,11 +115,46 @@
     color: var(--color-hclight-grey-60);
   }
 
+  // ---------------------------- Input -------------------------------
+
+  .input {
+    border-color: var(--color-hclight-grey-30);
+
+    &:hover {
+      border-color: var(--color-hclight-blue-50);
+    }
+
+    &:focus {
+      border-color: var(--color-hclight-blue-50);
+    }
+
+    &[disabled] {
+      border-color: var(--color-hclight-grey-30);
+      background: var(--color-hclight-grey-10);
+    }
+  }
+
   // ---------------------------- Data Space Viewer -------------------------------
 
   .data-space__viewer {
     background: var(--color-hclight-white);
     color: var(--color-hclight-grey-90);
+
+    &__header--floating {
+      background: var(--color-hclight-white);
+    }
+
+    &__header__title {
+      background: var(--color-hclight-blue-60);
+    }
+
+    &__header__title__label {
+      color: var(--color-hclight-white);
+    }
+
+    &__header__title__verified-badge {
+      color: var(--color-hclight-white);
+    }
 
     &__frame {
       background: var(--color-hclight-grey-10);
@@ -132,39 +188,7 @@
     &__content {
       background: var(--color-hclight-white);
     }
-  }
 
-  .data-space__viewer__description {
-    &__content {
-      border: none;
-    }
-
-    .markdown-content {
-      background: var(--color-hclight-white);
-      padding: 2rem 0;
-      color: var(--color-hclight-grey-90);
-
-      a {
-        color: var(--color-hclight-blue-50);
-      }
-
-      pre {
-        background: var(--color-hclight-grey-90);
-      }
-
-      pre code {
-        color: var(--color-hclight-white);
-      }
-    }
-  }
-
-  .data-space__viewer__diagram-viewer {
-    &__carousel__frame__indicator--active svg {
-      color: var(--color-hclight-blue-60);
-    }
-  }
-
-  .data-space__viewer__models-documentation {
     &__grid {
       // Customize ag-grid theme
       // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
@@ -178,6 +202,229 @@
       --ag-even-row-background-color: var(--color-hclight-white);
       --ag-row-hover-color: var(--color-hclight-grey-10);
       --ag-row-border-color: var(--color-hclight-grey-30);
+    }
+  }
+
+  .data-space__viewer__wiki {
+    &__placeholder {
+      color: var(--color-hclight-grey-40);
+      background: var(--color-hclight-grey-10);
+    }
+
+    &__section__header {
+      color: var(--color-hclight-blue-60);
+      border-bottom-color: var(--color-hclight-blue-60);
+    }
+
+    &__section__header__anchor {
+      color: var(--color-hclight-blue-60);
+      border-bottom-color: var(--color-hclight-blue-60);
+
+      svg {
+        color: var(--color-hclight-grey-30);
+      }
+
+      &:hover svg {
+        color: var(--color-hclight-grey-60);
+      }
+    }
+
+    &__section__header__documentation {
+      color: var(--color-hclight-blue-60);
+    }
+  }
+
+  .data-space__viewer__markdown-text-viewer.markdown-content {
+    background: var(--color-hclight-white);
+    color: var(--color-hclight-grey-90);
+
+    a {
+      color: var(--color-hclight-blue-50);
+    }
+
+    pre {
+      background: var(--color-hclight-grey-90);
+    }
+
+    pre code {
+      color: var(--color-hclight-white);
+    }
+  }
+
+  .data-space__viewer__diagram-viewer {
+    &__carousel__frame__indicator--active svg {
+      color: var(--color-hclight-blue-60);
+    }
+  }
+
+  .data-space__viewer__models-documentation {
+    &__search__input-group__icon svg {
+      color: var(--color-hclight-grey-80);
+    }
+  }
+
+  .data-space__viewer__execution-context {
+    &__entry {
+      &__icon {
+        background: var(--color-hclight-grey-10);
+      }
+
+      &__content {
+        border-color: var(--color-hclight-grey-10);
+        color: var(--color-hclight-grey-70);
+        background: var(--color-hclight-grey-10);
+        border-left-color: var(--color-hclight-grey-30);
+
+        &__dropdown__option__tag {
+          background: var(--color-hclight-blue-70);
+          color: var(--color-hclight-white);
+        }
+      }
+    }
+  }
+
+  .data-space__viewer__quickstart {
+    &__item__header__title {
+      color: var(--color-hclight-aqua-90);
+    }
+
+    &__item__header__type {
+      background: var(--color-hclight-blue-50);
+      color: var(--color-hclight-white);
+
+      &--tds {
+        background: var(--color-hclight-pink-60);
+      }
+    }
+
+    &__item__header__anchor {
+      color: var(--color-hclight-blue-60);
+
+      svg {
+        color: var(--color-hclight-grey-30);
+      }
+
+      &:hover svg {
+        color: var(--color-hclight-grey-60);
+      }
+    }
+
+    &__item__content {
+      &__tab__header {
+        border-bottom-color: var(--color-hclight-grey-30);
+      }
+
+      &__tab {
+        color: var(--color-hclight-grey-40);
+      }
+
+      &__tab:hover .data-space__viewer__quickstart__item__content__tab__label {
+        color: var(--color-hclight-grey-60);
+      }
+
+      &__tab:hover .data-space__viewer__quickstart__item__content__tab__icon {
+        svg {
+          color: var(--color-hclight-grey-60);
+        }
+      }
+
+      &__tab--active:hover
+        .data-space__viewer__quickstart__item__content__tab__label,
+      &__tab--active
+        .data-space__viewer__quickstart__item__content__tab__label {
+        color: var(--color-hclight-blue-60);
+      }
+
+      &__tab--active:hover
+        .data-space__viewer__quickstart__item__content__tab__icon,
+      &__tab--active .data-space__viewer__quickstart__item__content__tab__icon {
+        svg {
+          color: var(--color-hclight-blue-60);
+        }
+      }
+    }
+
+    &__tds__query {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__tds__query-text {
+      &__content {
+        border-color: var(--color-hclight-grey-30);
+      }
+
+      &__action {
+        svg {
+          color: var(--color-hclight-grey-60);
+        }
+
+        &:hover svg {
+          color: var(--color-hclight-grey-80);
+        }
+      }
+    }
+  }
+
+  .data-space__viewer__info {
+    &__project-info__label {
+      background: var(--color-hclight-blue-50);
+      color: var(--color-hclight-white);
+    }
+
+    &__project-info__value {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__project-info__link {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-60);
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__section__title {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__tagged-value__tag {
+      background: var(--color-hclight-orange-50);
+      color: var(--color-hclight-white);
+    }
+
+    &__tagged-value__value {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__steoreotype {
+      background: var(--color-hclight-orange-50);
+      color: var(--color-hclight-white);
+    }
+
+    &__section__placeholder {
+      color: var(--color-hclight-grey-30);
+      border-color: var(--color-hclight-grey-30);
+    }
+  }
+
+  .data-space__viewer__support {
+    &__email {
+      &__entry {
+        &__icon {
+          background: var(--color-hclight-grey-10);
+
+          svg {
+            color: var(--color-hclight-grey-70);
+          }
+        }
+
+        &__content {
+          border-color: transparent;
+          color: var(--color-hclight-grey-70);
+          background: var(--color-hclight-grey-10);
+          border-left-color: var(--color-hclight-grey-30);
+        }
+      }
     }
   }
 }

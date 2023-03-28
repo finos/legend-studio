@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
-import {
-  LegendApplicationPlugin,
-  type LegendApplicationPluginManager,
-} from '@finos/legend-application';
-import packageJson from '../../package.json';
+import { MarkdownTextViewer } from '@finos/legend-art';
 
-export class DSL_DataSpace_LegendApplicationPlugin extends LegendApplicationPlugin {
-  static NAME = packageJson.extensions.applicationPlugin;
-
-  constructor() {
-    super(DSL_DataSpace_LegendApplicationPlugin.NAME, packageJson.version);
-  }
-
-  install(
-    pluginManager: LegendApplicationPluginManager<LegendApplicationPlugin>,
-  ): void {
-    pluginManager.registerApplicationPlugin(this);
-  }
-}
+export const DataSpaceMarkdownTextViewer: React.FC<{ value: string }> = (
+  props,
+) => (
+  <MarkdownTextViewer
+    className="data-space__viewer__markdown-text-viewer"
+    value={{
+      value: props.value,
+    }}
+    components={{
+      h1: 'h2',
+      h2: 'h3',
+      h3: 'h4',
+    }}
+  />
+);

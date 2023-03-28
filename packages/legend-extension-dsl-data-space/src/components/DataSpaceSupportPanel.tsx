@@ -27,14 +27,14 @@ const DataSpaceSupportEmailViewer = observer(
     const { dataSpaceSupportEmail } = props;
 
     return (
-      <div className="data-space__viewer__support-email">
-        <div className="data-space__viewer__support-email__entry">
-          <div className="data-space__viewer__support-email__entry__icon">
+      <div className="data-space__viewer__support__email">
+        <div className="data-space__viewer__support__email__entry">
+          <div className="data-space__viewer__support__email__entry__icon">
             <EnvelopIcon />
           </div>
           <a
             href={`mailto:${dataSpaceSupportEmail.address}`}
-            className="data-space__viewer__support-email__entry__content"
+            className="data-space__viewer__support__email__entry__content"
           >
             {dataSpaceSupportEmail.address}
           </a>

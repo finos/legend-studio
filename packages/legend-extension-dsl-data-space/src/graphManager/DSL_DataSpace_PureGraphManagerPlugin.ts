@@ -29,10 +29,19 @@ import { DSL_DataSpace_buildGraphManagerExtension } from './protocol/pure/DSL_Da
 
 export const PURE_GRAMMAR_DATA_SPACE_PARSER_NAME = 'DataSpace';
 export const PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL = 'DataSpace';
+export const PURE_ENTERPRISE_PROFILE_PATH = 'meta::pure::profiles::enterprise';
+export const PURE_ENTERPRISE_PROFILE_TAXONOMY_NODE_STEREOTYPE = 'taxonomyNodes';
+export const PURE_DATA_SPACE_INFO_PROFILE_PATH =
+  'meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo';
+export const PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE = 'Verified';
 
 export class DSL_DataSpace_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
+  }
+
+  override getExtraExposedSystemElementPath(): string[] {
+    return [PURE_ENTERPRISE_PROFILE_PATH, PURE_DATA_SPACE_INFO_PROFILE_PATH];
   }
 
   override getExtraPureGraphManagerExtensionBuilders(): PureGraphManagerExtensionBuilder[] {
