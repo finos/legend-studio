@@ -18,7 +18,10 @@ import type {
   ExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
 } from './action/execution/ExecutionResult.js';
-import type { ServiceRegistrationResult } from './action/service/ServiceRegistrationResult.js';
+import type {
+  ServiceRegistrationResult,
+  ServiceRegistrationSuccess,
+} from './action/service/ServiceRegistrationResult.js';
 import type { Service } from '../graph/metamodel/pure/packageableElements/service/Service.js';
 import type { FileGenerationSpecification } from '../graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
 import type { GenerationOutput } from './action/generation/GenerationOutput.js';
@@ -451,7 +454,7 @@ export abstract class AbstractPureGraphManager {
     server: string,
     executionMode: ServiceExecutionMode,
     options?: ServiceRegistrationOptions,
-  ): Promise<ServiceRegistrationResult>;
+  ): Promise<ServiceRegistrationSuccess>;
   abstract bulkServiceRegistration(
     service: Service[],
     graph: PureModel,

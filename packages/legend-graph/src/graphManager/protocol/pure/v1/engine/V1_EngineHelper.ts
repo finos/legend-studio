@@ -31,10 +31,7 @@ import { PackageableElementExplicitReference } from '../../../../../graph/metamo
 import { DEPRECATED__ServiceTestResult } from '../../../../../graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 import type { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult.js';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
-import {
-  type ServiceRegistrationResult,
-  ServiceRegistrationSuccess,
-} from '../../../../../graphManager/action/service/ServiceRegistrationResult.js';
+import { ServiceRegistrationSuccess } from '../../../../../graphManager/action/service/ServiceRegistrationResult.js';
 import { GenerationOutput } from '../../../../../graphManager/action/generation/GenerationOutput.js';
 import type { V1_GenerationOutput } from './generation/V1_GenerationOutput.js';
 import {
@@ -68,6 +65,7 @@ import { V1_TagPtr } from '../model/packageableElements/domain/V1_TagPtr.js';
 import { V1_StereotypePtr } from '../model/packageableElements/domain/V1_StereotypePtr.js';
 import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
 import { ExternalFormatDescription } from '../../../../../graphManager/action/externalFormat/ExternalFormatDescription.js';
+import type { Service } from '../../../../../graph/metamodel/pure/packageableElements/service/Service.js';
 
 export const V1_buildLightQuery = (
   protocol: V1_LightQuery,
@@ -260,9 +258,10 @@ export const V1_buildLegacyServiceTestResult = (
   return metamodel;
 };
 
-export const V1_buildServiceRegistrationResult = (
+export const V1_buildServiceRegistrationSuccess = (
+  service: Service,
   protocol: V1_ServiceRegistrationResult,
-): ServiceRegistrationResult => {
+): ServiceRegistrationSuccess => {
   guaranteeNonNullable(
     protocol.serverURL,
     `Service registration result 'serverUrl' field is missing`,
@@ -276,6 +275,7 @@ export const V1_buildServiceRegistrationResult = (
     `Service registration 'serviceInstanceId' field is missing`,
   );
   return new ServiceRegistrationSuccess(
+    service,
     protocol.serverURL,
     protocol.pattern,
     protocol.serviceInstanceId,

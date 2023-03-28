@@ -156,6 +156,7 @@ test(
       await flowResult(MOCK__editorStore.sdlcState.fetchProjectVersions());
     });
     const result = new ServiceRegistrationSuccess(
+      undefined,
       'https://legend.org/exec',
       '/myservice',
       'id1',
@@ -257,6 +258,7 @@ test(
       TEST_DATA__DefaultSDLCInfo.workspace,
     );
     const result = new ServiceRegistrationSuccess(
+      undefined,
       'https://legend.org/exec',
       '/myservice',
       'id1',

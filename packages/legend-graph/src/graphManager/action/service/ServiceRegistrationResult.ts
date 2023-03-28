@@ -18,6 +18,10 @@ import type { Service } from '../../../graph/metamodel/pure/packageableElements/
 
 export class ServiceRegistrationResult {
   service: Service | undefined;
+
+  constructor(service: Service | undefined) {
+    this.service = service;
+  }
 }
 
 export class ServiceRegistrationSuccess extends ServiceRegistrationResult {
@@ -25,8 +29,13 @@ export class ServiceRegistrationSuccess extends ServiceRegistrationResult {
   pattern: string;
   serviceInstanceId: string;
 
-  constructor(serverURL: string, pattern: string, serviceInstanceId: string) {
-    super();
+  constructor(
+    service: Service | undefined,
+    serverURL: string,
+    pattern: string,
+    serviceInstanceId: string,
+  ) {
+    super(service);
     this.serverURL = serverURL;
     this.pattern = pattern;
     this.serviceInstanceId = serviceInstanceId;
@@ -35,8 +44,8 @@ export class ServiceRegistrationSuccess extends ServiceRegistrationResult {
 export class ServiceRegistrationFail extends ServiceRegistrationResult {
   errorMessage: string;
 
-  constructor(errorMessage: string) {
-    super();
+  constructor(service: Service | undefined, errorMessage: string) {
+    super(service);
     this.errorMessage = errorMessage;
   }
 }
