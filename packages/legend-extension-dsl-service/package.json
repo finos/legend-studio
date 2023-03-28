@@ -53,9 +53,9 @@
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
-    "@types/react": "18.0.29",
+    "@types/react": "18.0.30",
     "mobx": "6.9.0",
-    "mobx-react-lite": "3.4.3",
+    "mobx-react-lite": "4.0.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "serializr": "3.0.2"
