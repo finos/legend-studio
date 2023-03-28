@@ -24,9 +24,6 @@
       "path": "../legend-extension-format-graphql/tsconfig.build.json"
     },
     {
-      "path": "../legend-extension-format-morphir/tsconfig.build.json"
-    },
-    {
       "path": "../legend-extension-store-service-store/tsconfig.build.json"
     }
   ]
