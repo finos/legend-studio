@@ -49,7 +49,6 @@ import {
 import {
   RuntimePointer,
   ServiceExecutionMode,
-  type ServiceRegistrationSuccess,
   validate_ServicePattern,
 } from '@finos/legend-graph';
 import type { ExistingQueryEditorStore } from '@finos/legend-application-query';
@@ -143,7 +142,7 @@ const ServiceRegisterModal = observer(
             editorStore.graphManagerState,
           );
           const serviceRegistrationResult =
-            (await editorStore.graphManagerState.graphManager.registerService(
+            await editorStore.graphManagerState.graphManager.registerService(
               service,
               editorStore.graphManagerState.graph,
               editorStore.query.groupId,
@@ -151,7 +150,7 @@ const ServiceRegisterModal = observer(
               resolveVersion(editorStore.query.versionId),
               guaranteeNonNullable(serverConfig?.executionUrl),
               ServiceExecutionMode.SEMI_INTERACTIVE,
-            )) as ServiceRegistrationSuccess;
+            );
           if (activateService) {
             registrationState.setMessage(`Activating service...`);
             await editorStore.graphManagerState.graphManager.activateService(

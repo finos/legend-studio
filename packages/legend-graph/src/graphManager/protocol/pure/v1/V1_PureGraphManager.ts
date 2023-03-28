@@ -197,7 +197,7 @@ import type {
 } from '../../../../graphManager/action/query/Query.js';
 import {
   V1_buildQuery,
-  V1_buildServiceRegistrationResult,
+  V1_buildServiceRegistrationSuccess,
   V1_transformQuery,
   V1_buildGenerationOutput,
   V1_buildLightQuery,
@@ -2530,7 +2530,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     server: string,
     executionMode: ServiceExecutionMode,
     options?: ServiceRegistrationOptions,
-  ): Promise<ServiceRegistrationResult> {
+  ): Promise<ServiceRegistrationSuccess> {
     const serverServiceInfo = await this.engine.getServerServiceInfo();
     // input
     let input: V1_PureModelContext;
@@ -2612,7 +2612,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         );
       }
     }
-    return V1_buildServiceRegistrationResult(
+    return V1_buildServiceRegistrationSuccess(
+      service,
       await this.engine.registerService(
         input,
         server,
@@ -2730,6 +2731,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             );
             if (result.status === 'success') {
               return new ServiceRegistrationSuccess(
+                undefined,
                 result.serverURL,
                 result.pattern,
                 result.serviceInstanceId,
@@ -2738,7 +2740,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             return undefined;
           } catch (error) {
             assertErrorThrown(error);
-            const result = new ServiceRegistrationFail(error.message);
+            const result = new ServiceRegistrationFail(
+              undefined,
+              error.message,
+            );
             if (graphData instanceof V1_PureModelContextData) {
               const servicePath = getNullableFirstElement(
                 graphData.elements.filter(filterByType(V1_Service)),
