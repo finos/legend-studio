@@ -182,6 +182,7 @@ export const ReviewIcon = MD.MdReviews;
 export const CalculateIcon = MD.MdCalculate;
 export const LaunchIcon = MD.MdRocketLaunch;
 export const DatasetIcon = MD.MdOutlineDataset;
+export const VerifiedIcon = MD.MdVerified;
 
 const VSC = ReactIcons.VSC;
 export const ErrorIcon = VSC.VscError;

@@ -34,6 +34,10 @@ import type {
   DataSpaceDiagramAnalysisResult,
   DataSpaceExecutionContextAnalysisResult,
 } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
+import {
+  PURE_DATA_SPACE_INFO_PROFILE_PATH,
+  PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE,
+} from '../graphManager/DSL_DataSpace_PureGraphManagerPlugin.js';
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   DESCRIPTION = 'DESCRIPTION',
@@ -109,6 +113,7 @@ export class DataSpaceViewerState {
       currentExecutionContext: observable,
       currentRuntime: observable,
       isExpandedModeEnabled: observable,
+      isVerified: computed,
       renderer: computed,
       setRenderer: action,
       setCurrentDiagram: action,
@@ -167,6 +172,16 @@ export class DataSpaceViewerState {
       default:
         return '';
     }
+  }
+
+  get isVerified(): boolean {
+    return Boolean(
+      this.dataSpaceAnalysisResult.stereotypes.find(
+        (stereotype) =>
+          stereotype.profile === PURE_DATA_SPACE_INFO_PROFILE_PATH &&
+          stereotype.value === PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE,
+      ),
+    );
   }
 
   setRenderer(val: DiagramRenderer): void {

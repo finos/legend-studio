@@ -24,13 +24,60 @@
   color: var(--color-light-grey-200);
   font-family: Roboto, sans-serif;
 
+  &__header {
+    @include flexHCenter;
+
+    position: absolute;
+    top: 0;
+    height: 9rem;
+    width: 100%;
+    z-index: 1;
+    background: transparent;
+    transition: all 0.5s ease;
+
+    &--floating {
+      background: var(--color-dark-grey-85);
+      box-shadow: var(--color-dark-shade-280) 0 0 0.5rem 0;
+    }
+
+    &__content {
+      width: 140rem;
+      position: relative;
+    }
+
+    &__title {
+      @include flexCenter;
+
+      position: absolute;
+      left: 8rem;
+      top: 2rem;
+      height: 5rem;
+      border-radius: 0.5rem;
+      padding: 0 3rem;
+      user-select: none;
+      background: var(--color-blue-200);
+
+      &__label {
+        font-size: 2.4rem;
+        font-weight: 500;
+        color: var(--color-light-grey-0);
+      }
+
+      &__verified-badge {
+        margin-left: 1rem;
+        font-size: 3rem;
+        color: var(--color-light-grey-0);
+      }
+    }
+  }
+
   &__body {
     display: flex;
     align-items: center;
     flex-direction: column;
     height: 100%;
     width: 100%;
-    overflow: auto;
+    overflow: overlay;
   }
 
   &__frame {
@@ -38,58 +85,12 @@
     width: 140rem;
     height: 100%;
     padding: 4rem;
+    position: relative;
   }
 
   &__frame--boundless {
     height: initial;
   }
-
-  // &__header {
-  //   @include flexCenter;
-
-  //   flex-direction: column;
-  //   padding: 2rem;
-  //   height: 7rem;
-  // }
-
-  // &__title {
-  //   @include flexVCenter;
-
-  //   &__btn {
-  //     @include flexCenter;
-
-  //     height: 3.4rem;
-  //     max-width: 100%;
-  //     background: var(--color-blue-150);
-  //   }
-
-  //   &__label {
-  //     @include ellipsisTextOverflow;
-
-  //     height: 100%;
-  //     width: calc(100% - 3.4rem);
-  //     font-family: 'Roboto Mono', monospace;
-  //     font-size: 1.6rem;
-  //     padding: 0 1rem;
-  //     user-select: none;
-  //     color: var(--color-light-grey-0);
-  //     line-height: 3.4rem;
-  //     text-align: left;
-  //   }
-
-  //   // &__link {
-  //   //   @include flexCenter;
-
-  //   //   height: 3.4rem;
-  //   //   width: 3.4rem;
-  //   //   border-left: 0.1rem solid var(--color-dark-shade-230);
-
-  //   //   svg {
-  //   //     font-size: 1.6rem;
-  //   //     color: var(--color-light-grey-0);
-  //   //   }
-  //   // }
-  // }
 
   &__content {
     display: flex;
@@ -102,6 +103,7 @@
     height: 100%;
     width: 100%;
     overflow: auto;
+    padding: 2rem 0;
   }
 }
 
@@ -109,7 +111,7 @@
   width: 5rem;
   position: absolute;
   left: 2rem;
-  top: 4rem;
+  top: 11rem;
   overflow-x: hidden;
   overflow-y: hidden;
   border-radius: 0.2rem;
@@ -222,12 +224,13 @@
     &__header {
       height: 3rem;
       font-size: 2.4rem;
-      color: var(--color-hclight-blue-60);
+      color: var(--color-blue-100);
       text-transform: uppercase;
       font-weight: 500;
-      border-bottom: 0.2rem solid var(--color-hclight-blue-60);
+      border-bottom: 0.2rem solid var(--color-blue-100);
       margin-bottom: 2rem;
-      margin-top: 3rem;
+      margin-top: 4rem;
+      user-select: none;
     }
 
     &__content {
@@ -256,7 +259,6 @@
 
   &__content {
     width: 100%;
-    border: 0.1rem solid var(--color-blue-300);
   }
 
   &__content__markdown-content {
@@ -440,6 +442,19 @@
 
     --ag-font-family: 'Roboto';
 
+    // Customize ag-grid theme
+    // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
+    --ag-border-color: var(--color-dark-grey-200);
+    --ag-background-color: var(--color-dark-grey-50);
+    --ag-foreground-color: var(--color-light-grey-200);
+    --ag-header-background-color: var(--color-dark-grey-100);
+    --ag-header-foreground-color: var(--color-light-grey-50);
+    --ag-balham-active-color: var(--color-blue-200);
+    --ag-odd-row-background-color: var(--color-dark-grey-50);
+    --ag-even-row-background-color: var(--color-dark-grey-50);
+    --ag-row-hover-color: var(--color-dark-blue-shade-100);
+    --ag-row-border-color: var(--color-dark-grey-200);
+
     .ag-header-cell-text {
       font-weight: 700;
     }
@@ -618,8 +633,6 @@
 }
 
 .data-space__viewer__info {
-  padding: 2rem;
-
   &__project-info__label {
     @include ellipsisTextOverflow;
 
@@ -732,8 +745,6 @@
 }
 
 .data-space__viewer__support {
-  padding: 2rem;
-
   &__email {
     &__entry {
       @include flexVCenter;

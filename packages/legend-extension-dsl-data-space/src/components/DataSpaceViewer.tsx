@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { BlankPanelContent, clsx } from '@finos/legend-art';
+import { BlankPanelContent, VerifiedIcon, clsx } from '@finos/legend-art';
 import {
   type DataSpaceViewerState,
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
@@ -25,38 +25,43 @@ import { DataSpaceInfoPanel } from './DataSpaceInfoPanel.js';
 import { DataSpaceSupportPanel } from './DataSpaceSupportPanel.js';
 import { DataSpaceWiki } from './DataSpaceWiki.js';
 import { DataSpaceViewerActivityBar } from './DataSpaceViewerActivityBar.js';
+import { useRef, useState } from 'react';
 
-const DataSpaceTitle = observer(
-  (props: { dataSpaceViewerState: DataSpaceViewerState }) =>
-    // const { dataSpaceViewerState } = props;
+const DataSpaceHeader = observer(
+  (props: {
+    dataSpaceViewerState: DataSpaceViewerState;
+    showFullHeader: boolean;
+  }) => {
+    const { dataSpaceViewerState, showFullHeader } = props;
+    const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
 
-    null,
-  /* <div className="data-space__viewer__header">
-            <div className="data-space__viewer__title">
-              <button
-                className="data-space__viewer__title__btn"
-                tabIndex={-1}
-                title={`View Project (${generateGAVCoordinates(
-                  dataSpaceViewerState.groupId,
-                  dataSpaceViewerState.artifactId,
-                  dataSpaceViewerState.versionId,
-                )})`}
-                onClick={viewProject}
-              >
-                <div
-                  className="data-space__viewer__title__label"
-                  title={`${analysisResult.title ?? analysisResult.name} - ${
-                    analysisResult.path
-                  }`}
-                >
-                  {analysisResult.title ?? analysisResult.name}
-                </div>
-                <div className="data-space__viewer__title__link">
-                  <ExternalLinkSquareIcon />
-                </div>
-              </button>
+    return (
+      <div
+        className={clsx('data-space__viewer__header', {
+          'data-space__viewer__header--floating': showFullHeader,
+        })}
+      >
+        <div className="data-space__viewer__header__content">
+          <div
+            className="data-space__viewer__header__title"
+            title={`${analysisResult.title ?? analysisResult.name} - ${
+              analysisResult.path
+            }`}
+          >
+            <div className="data-space__viewer__header__title__label">
+              {analysisResult.title ?? analysisResult.name}
             </div>
-          </div> */
+            {dataSpaceViewerState.isVerified && (
+              <VerifiedIcon
+                className="data-space__viewer__header__title__verified-badge"
+                title="Verified Data Space"
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  },
 );
 
 const DataSpacePlaceholderPanel: React.FC<{ message: string }> = (props) => {
@@ -72,6 +77,13 @@ const DataSpacePlaceholderPanel: React.FC<{ message: string }> = (props) => {
 export const DataSpaceViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+    const bodyElement = useRef<HTMLDivElement>(null);
+    const [showFullHeader, setShowFullHeader] = useState(false);
+
+    const onScroll: React.UIEventHandler<HTMLDivElement> = (event) => {
+      setShowFullHeader(event.currentTarget.scrollTop > 0);
+    };
+
     const isShowingWiki = [
       DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION,
       DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
@@ -85,13 +97,21 @@ export const DataSpaceViewer = observer(
         <DataSpaceViewerActivityBar
           dataSpaceViewerState={dataSpaceViewerState}
         />
-        <div className="data-space__viewer__body">
+        <div
+          ref={bodyElement}
+          className="data-space__viewer__body"
+          onScroll={onScroll}
+        >
+          <DataSpaceHeader
+            dataSpaceViewerState={dataSpaceViewerState}
+            showFullHeader={showFullHeader}
+          />
+          <div className="data-space__viewer"></div>
           <div
             className={clsx('data-space__viewer__frame', {
               'data-space__viewer__frame--boundless': isShowingWiki,
             })}
           >
-            <DataSpaceTitle dataSpaceViewerState={dataSpaceViewerState} />
             <div className="data-space__viewer__content">
               {isShowingWiki && (
                 <DataSpaceWiki dataSpaceViewerState={dataSpaceViewerState} />
