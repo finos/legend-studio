@@ -23,7 +23,7 @@ import {
   uniq,
   type Hashable,
 } from '@finos/legend-shared';
-import { action, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../../QueryBuilderConfig.js';
 import type { QueryBuilderProjectionColumnDragSource } from '../projection/QueryBuilderProjectionColumnState.js';
@@ -333,6 +333,7 @@ export class QueryBuilderWindowState implements Hashable {
     makeObservable(this, {
       windowColumns: observable,
       editColumn: observable,
+      validationIssues: computed,
       addWindowColumn: action,
       removeColumn: action,
       moveColumn: action,
@@ -344,6 +345,18 @@ export class QueryBuilderWindowState implements Hashable {
 
   get isEmpty(): boolean {
     return !this.windowColumns.length;
+  }
+
+  get validationIssues(): string[] | undefined {
+    const hasDuplicatedWindowColumns = this.windowColumns.some(
+      (column) =>
+        this.windowColumns.filter((c) => c.columnName === column.columnName)
+          .length > 1,
+    );
+    if (hasDuplicatedWindowColumns) {
+      return ['Query has duplicated window columns'];
+    }
+    return undefined;
   }
 
   get referencedTDSColumns(): QueryBuilderTDSColumnState[] {

@@ -478,7 +478,7 @@ export const QueryBuilder = observer(
                             ) : null}
                           </MenuContentItemIcon>
                           <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Show Window Funcs
+                            Show Window Func(s)
                           </MenuContentItemLabel>
                         </MenuContentItem>
                         <MenuContentItem

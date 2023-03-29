@@ -23,6 +23,7 @@ import {
   getByText,
   act,
   getByDisplayValue,
+  getAllByTitle,
 } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
@@ -654,5 +655,65 @@ test(
     fireEvent.change(inputEl, { target: { value: '-.1' } });
     expect(filterConditionValue.values[0]).toEqual(-0.1);
     await waitFor(() => getByDisplayValue(filterPanel, '-.1'));
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder window function shows validation error if existing duplicate column name',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show window-funcs' panel so we will directly force
+      // the panel to show for now
+      const tdsState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      tdsState.setShowWindowFuncPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+      ),
+    );
+    const windowPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+    );
+    fireEvent.click(getByTitle(windowPanel, 'Create Window Function Column'));
+
+    await waitFor(() => renderResult.getByText('Create'));
+
+    fireEvent.click(renderResult.getByText('Create'));
+
+    fireEvent.click(getByTitle(windowPanel, 'Create Window Function Column'));
+
+    await waitFor(() => renderResult.getByText('Create'));
+
+    fireEvent.click(renderResult.getByText('Create'));
+
+    await waitFor(() => renderResult.getByText('Run Query'));
+
+    expect(getAllByTitle(windowPanel, 'Duplicated column')).not.toBeNull();
+
+    expect(
+      (
+        queryBuilderState.fetchStructureState
+          .implementation as QueryBuilderTDSState
+      ).windowState.validationIssues?.length === 1,
+    );
   },
 );
