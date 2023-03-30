@@ -115,20 +115,24 @@
   }
 
   &__grid {
-    --ag-font-family: 'Roboto';
+    // NOTE: we need to ensure the specificity here in case a later imported ag-theme-balham-dark
+    // might override our theme customization here
+    &.ag-theme-balham-dark {
+      --ag-font-family: 'Roboto';
 
-    // Customize ag-grid theme
-    // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
-    --ag-border-color: var(--color-dark-grey-200);
-    --ag-background-color: var(--color-dark-grey-50);
-    --ag-foreground-color: var(--color-light-grey-200);
-    --ag-header-background-color: var(--color-dark-grey-100);
-    --ag-header-foreground-color: var(--color-light-grey-50);
-    --ag-balham-active-color: var(--color-blue-200);
-    --ag-odd-row-background-color: var(--color-dark-grey-50);
-    --ag-even-row-background-color: var(--color-dark-grey-50);
-    --ag-row-hover-color: var(--color-dark-blue-shade-100);
-    --ag-row-border-color: var(--color-dark-grey-200);
+      // Customize ag-grid theme
+      // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
+      --ag-border-color: var(--color-dark-grey-200);
+      --ag-background-color: var(--color-dark-grey-50);
+      --ag-foreground-color: var(--color-light-grey-200);
+      --ag-header-background-color: var(--color-dark-grey-100);
+      --ag-header-foreground-color: var(--color-light-grey-50);
+      --ag-balham-active-color: var(--color-blue-200);
+      --ag-odd-row-background-color: var(--color-dark-grey-50);
+      --ag-even-row-background-color: var(--color-dark-grey-50);
+      --ag-row-hover-color: var(--color-dark-blue-shade-100);
+      --ag-row-border-color: var(--color-dark-grey-200);
+    }
 
     .ag-header-cell-text {
       font-weight: 700;
