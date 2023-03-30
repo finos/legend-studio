@@ -54,7 +54,7 @@ export class ServiceEditorState extends ElementEditorState {
   executionState: ServiceExecutionState;
   registrationState: ServiceRegistrationState;
   testableState: ServiceTestableState;
-  selectedTab = SERVICE_TAB.GENERAL;
+  selectedTab = SERVICE_TAB.EXECUTION;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
