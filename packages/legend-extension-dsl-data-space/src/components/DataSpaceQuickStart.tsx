@@ -80,7 +80,7 @@ const DataSpaceExecutableTDSResultView = observer(
           <div className="data-space__viewer__quickstart__item__header__title">
             {executableAnalysisResult.title}
           </div>
-          <div className="data-space__viewer__quickstart__item__header__type data-space__viewer__quickstart__item__header__type--tds">
+          <div className="data-space__viewer__quickstart__item__header__type">
             TDS
           </div>
           <div className="data-space__viewer__quickstart__item__header__anchor">

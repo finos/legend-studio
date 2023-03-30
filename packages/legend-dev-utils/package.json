@@ -4,8 +4,6 @@
   "description": "Legend Studio development utilities, helpers, and scripts",
   "keywords": [
     "legend",
-    "legend-studio",
-    "studio",
     "dev-utils"
   ],
   "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-dev-utils",
