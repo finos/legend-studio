@@ -1957,27 +1957,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/eslintrc@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "@eslint/eslintrc@npm:2.0.1"
+"@eslint/eslintrc@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "@eslint/eslintrc@npm:2.0.2"
   dependencies:
     ajv: ^6.12.4
     debug: ^4.3.2
-    espree: ^9.5.0
+    espree: ^9.5.1
     globals: ^13.19.0
     ignore: ^5.2.0
     import-fresh: ^3.2.1
     js-yaml: ^4.1.0
     minimatch: ^3.1.2
     strip-json-comments: ^3.1.1
-  checksum: 56b9192a687a450db53a7b883daf9f0f447c43b3510189cf88808a7a2467c2a302a42a50f184cc6d5a9faf3d1df890a2ef0fd0d60b751f32a3e9dfea717c6b48
+  checksum: cfcf5e12c7b2c4476482e7f12434e76eae16fcd163ee627309adb10b761e5caa4a4e52ed7be464423320ff3d11eca5b50de5bf8be3e25834222470835dd5c801
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:8.36.0":
-  version: 8.36.0
-  resolution: "@eslint/js@npm:8.36.0"
-  checksum: b7d6b84b823c8c7784be390741196617565527b1f7c0977fde9455bfb57fd88f81c074a03dd878757d2c33fa29f24291e9ecbc1425710f067917324b55e1bf3a
+"@eslint/js@npm:8.37.0":
+  version: 8.37.0
+  resolution: "@eslint/js@npm:8.37.0"
+  checksum: 7a07fb085c94ce1538949012c292fd3a6cd734f149bc03af6157dfbd8a7477678899ef57b4a27e15b36470a997389ad79a0533d5880c71e67720ae1a7de7c62d
   languageName: node
   linkType: hard
 
@@ -2035,7 +2035,7 @@ __metadata:
     "@babel/preset-typescript": 7.21.0
     "@babel/runtime": 7.21.0
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     react-refresh: 0.14.0
     rimraf: 4.4.1
     typescript: 5.0.2
@@ -2075,11 +2075,11 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     copy-webpack-plugin: 11.0.0
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     npm-run-all: 4.1.5
     rimraf: 4.4.1
     typescript: 5.0.2
-    webpack: 5.76.3
+    webpack: 5.77.0
     webpack-bundle-analyzer: 4.8.0
     webpack-cli: 5.0.1
     webpack-dev-server: 4.13.1
@@ -2097,13 +2097,13 @@ __metadata:
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     "@types/react-dom": 18.0.11
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     monaco-editor: 0.36.1
     npm-run-all: 4.1.5
     react: 18.2.0
@@ -2137,9 +2137,9 @@ __metadata:
     "@finos/legend-extension-store-service-store": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.4.1
@@ -2156,11 +2156,11 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     copy-webpack-plugin: 11.0.0
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     npm-run-all: 4.1.5
     rimraf: 4.4.1
     typescript: 5.0.2
-    webpack: 5.76.3
+    webpack: 5.77.0
     webpack-bundle-analyzer: 4.8.0
     webpack-cli: 5.0.1
     webpack-dev-server: 4.13.1
@@ -2181,13 +2181,13 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
     "@testing-library/react": 14.0.0
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     "@types/react-dom": 18.0.11
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
@@ -2219,9 +2219,9 @@ __metadata:
     "@finos/legend-extension-store-service-store": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.4.1
@@ -2238,11 +2238,11 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     copy-webpack-plugin: 11.0.0
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     npm-run-all: 4.1.5
     rimraf: 4.4.1
     typescript: 5.0.2
-    webpack: 5.76.3
+    webpack: 5.77.0
     webpack-bundle-analyzer: 4.8.0
     webpack-cli: 5.0.1
     webpack-dev-server: 4.13.1
@@ -2264,14 +2264,14 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
     "@testing-library/react": 14.0.0
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     "@types/react-dom": 18.0.11
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     fast-xml-parser: 4.1.3
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     mobx-utils: 6.0.6
     monaco-editor: 0.36.1
     node-diff3: 3.1.2
@@ -2301,9 +2301,9 @@ __metadata:
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.4.1
@@ -2320,11 +2320,11 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     copy-webpack-plugin: 11.0.0
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     npm-run-all: 4.1.5
     rimraf: 4.4.1
     typescript: 5.0.2
-    webpack: 5.76.3
+    webpack: 5.77.0
     webpack-bundle-analyzer: 4.8.0
     webpack-cli: 5.0.1
     webpack-dev-server: 4.13.1
@@ -2344,13 +2344,13 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     "@types/react-dom": 18.0.11
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
@@ -2373,15 +2373,15 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.5.0
     "@types/css-font-loading-module": 0.0.8
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     "@types/react-dom": 18.0.11
     "@types/react-router-dom": 5.3.3
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     history: 5.3.0
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     monaco-editor: 0.36.1
     npm-run-all: 4.1.5
     react: 18.2.0
@@ -2420,17 +2420,17 @@ __metadata:
     "@fontsource/roboto-condensed": 4.5.9
     "@fontsource/roboto-mono": 4.5.10
     "@jest/globals": 29.5.0
-    "@mui/material": 5.11.14
-    "@types/react": 18.0.30
+    "@mui/material": 5.11.15
+    "@types/react": 18.0.31
     "@types/react-select": 4.0.18
     "@types/react-window": 1.8.5
     clsx: 1.2.1
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     fuse.js: 6.6.2
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     monaco-editor: 0.36.1
     npm-run-all: 4.1.5
     react: 18.2.0
@@ -2478,7 +2478,7 @@ __metadata:
     cross-env: 7.0.3
     css-loader: 6.7.3
     cssnano: 6.0.0
-    eslint: 8.36.0
+    eslint: 8.37.0
     html-webpack-plugin: 5.5.0
     isbinaryfile: 5.0.0
     jest: 29.5.0
@@ -2499,7 +2499,7 @@ __metadata:
     sass: 1.60.0
     sass-loader: 13.2.2
     typescript: 5.0.2
-    webpack: 5.76.3
+    webpack: 5.77.0
   languageName: unknown
   linkType: soft
 
@@ -2523,12 +2523,12 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
@@ -2554,12 +2554,12 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
     "@testing-library/react": 14.0.0
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dnd: 16.0.1
@@ -2585,9 +2585,9 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
     npm-run-all: 4.1.5
@@ -2613,9 +2613,9 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
     npm-run-all: 4.1.5
@@ -2645,12 +2645,12 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
@@ -2675,12 +2675,12 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.4.1
@@ -2701,7 +2701,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.5.0
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     npm-run-all: 4.1.5
     rimraf: 4.4.1
@@ -2719,7 +2719,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.5.0
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     npm-run-all: 4.1.5
     rimraf: 4.4.1
@@ -2739,12 +2739,12 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.4.1
@@ -2768,12 +2768,12 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.4.1
@@ -2797,12 +2797,12 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.4.1
@@ -2823,7 +2823,7 @@ __metadata:
     "@jest/globals": 29.5.0
     "@types/zipkin-javascript-opentracing": 1.6.0
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     npm-run-all: 4.1.5
     opentracing: 0.14.7
@@ -2842,7 +2842,7 @@ __metadata:
     "@fastify/cors": 8.2.1
     "@finos/legend-dev-utils": "workspace:*"
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     fastify: 4.15.0
     nodemon: 2.0.22
     npm-run-all: 4.1.5
@@ -2860,7 +2860,7 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
     npm-run-all: 4.1.5
@@ -2900,7 +2900,7 @@ __metadata:
     "@testing-library/react": 14.0.0
     axios: 1.3.4
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     npm-run-all: 4.1.5
     react: 18.2.0
@@ -2928,14 +2928,14 @@ __metadata:
     "@jest/globals": 29.5.0
     "@testing-library/react": 14.0.0
     "@types/papaparse": 5.3.7
-    "@types/react": 18.0.30
+    "@types/react": 18.0.31
     "@types/react-dom": 18.0.11
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mathjs: 11.7.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     monaco-editor: 0.36.1
     npm-run-all: 4.1.5
     papaparse: 5.4.1
@@ -2960,10 +2960,10 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.4.1
@@ -2981,10 +2981,10 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     mobx: 6.9.0
-    mobx-react-lite: 4.0.2
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 4.4.1
@@ -3008,7 +3008,7 @@ __metadata:
     "@types/uuid": 9.0.1
     cross-env: 7.0.3
     date-fns: 2.29.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     hash.js: 1.1.7
     http-status-codes: 2.2.0
     jest: 29.5.0
@@ -3038,7 +3038,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.5.0
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     jest: 29.5.0
     lodash: 4.17.21
     npm-run-all: 4.1.5
@@ -3052,7 +3052,7 @@ __metadata:
   resolution: "@finos/stylelint-config-legend-studio@workspace:packages/stylelint-config"
   dependencies:
     cross-env: 7.0.3
-    eslint: 8.36.0
+    eslint: 8.37.0
     postcss: 8.4.21
     postcss-scss: 4.0.6
     rimraf: 4.4.1
@@ -3475,15 +3475,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/base@npm:5.0.0-alpha.122":
-  version: 5.0.0-alpha.122
-  resolution: "@mui/base@npm:5.0.0-alpha.122"
+"@mui/base@npm:5.0.0-alpha.123":
+  version: 5.0.0-alpha.123
+  resolution: "@mui/base@npm:5.0.0-alpha.123"
   dependencies:
     "@babel/runtime": ^7.21.0
     "@emotion/is-prop-valid": ^1.2.0
     "@mui/types": ^7.2.3
     "@mui/utils": ^5.11.13
-    "@popperjs/core": ^2.11.6
+    "@popperjs/core": ^2.11.7
     clsx: ^1.2.1
     prop-types: ^15.8.1
     react-is: ^18.2.0
@@ -3494,25 +3494,25 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 6d229f6f736074a41e0cf787cc5ef98eba23a52044d7edf22fcc42f03250275fd1b4bb4a7ab47fc1f1aec06bf777bde5474229cc381e515eefee8876f2d8cd5c
+  checksum: a17c266d0a922903e43c08cce8f42d1a35716b5d1574393c90ac89290029f6c08ef7261ba7af3609917a32fce1a1c0efdab06320df4d1ab351fd987e429f6dfd
   languageName: node
   linkType: hard
 
-"@mui/core-downloads-tracker@npm:^5.11.14":
-  version: 5.11.14
-  resolution: "@mui/core-downloads-tracker@npm:5.11.14"
-  checksum: 8b1b42e125b15136ee82d2cb48354202b87beb8e20defcf3a8b758b033732444d09446d85a28c23b0dcaa8b5d067bc20bdd654c9adf551d826b142b4b09d7dd7
+"@mui/core-downloads-tracker@npm:^5.11.15":
+  version: 5.11.15
+  resolution: "@mui/core-downloads-tracker@npm:5.11.15"
+  checksum: 8dc377b415ac1c18ec11a55fe916aeb0317e4c454759e3c3c0d3bdeaef75236486f17cb9ef3ae01eaee5f51e2cc7ada6a7e7ca452a64ddbbb8638c32e2615938
   languageName: node
   linkType: hard
 
-"@mui/material@npm:5.11.14":
-  version: 5.11.14
-  resolution: "@mui/material@npm:5.11.14"
+"@mui/material@npm:5.11.15":
+  version: 5.11.15
+  resolution: "@mui/material@npm:5.11.15"
   dependencies:
     "@babel/runtime": ^7.21.0
-    "@mui/base": 5.0.0-alpha.122
-    "@mui/core-downloads-tracker": ^5.11.14
-    "@mui/system": ^5.11.14
+    "@mui/base": 5.0.0-alpha.123
+    "@mui/core-downloads-tracker": ^5.11.15
+    "@mui/system": ^5.11.15
     "@mui/types": ^7.2.3
     "@mui/utils": ^5.11.13
     "@types/react-transition-group": ^4.4.5
@@ -3534,7 +3534,7 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: 48fdd56ee55da6d551b8b716b8a080afe2276a62e0441efdd58be3b10ab1204d196a8ecc5f35ac23b8e9c7f5d6884ce37966cdcf8846771fe8ccc5ca626a8e1e
+  checksum: 53726a8aa2ab541c967eda43fe0094486e2f2ac743c39f09a5326aeffdba0be414187f216346c45135751b63a28a9871f4e68f4d6ab89b5b1d86e468f869d328
   languageName: node
   linkType: hard
 
@@ -3576,9 +3576,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/system@npm:^5.11.14":
-  version: 5.11.14
-  resolution: "@mui/system@npm:5.11.14"
+"@mui/system@npm:^5.11.15":
+  version: 5.11.15
+  resolution: "@mui/system@npm:5.11.15"
   dependencies:
     "@babel/runtime": ^7.21.0
     "@mui/private-theming": ^5.11.13
@@ -3600,7 +3600,7 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: a9df588ee7358438244ba5115f1f3bfe548b4c9077280204b6f6d4b98f20fd93f76bc36bf1430848b64e5c3a495ecb0e5000379932faa3dfb92360a34262f301
+  checksum: c8b8ffcf48b204f8e0ff6cc2ef5a35b6a3ef3517c9626dbb2fda073b81992c93750167440737459b82ff1ac2bf6d4e9eb9ce3b39887bdc4dbded5bc8266032ac
   languageName: node
   linkType: hard
 
@@ -3843,7 +3843,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@popperjs/core@npm:^2.11.6":
+"@popperjs/core@npm:^2.11.7":
   version: 2.11.7
   resolution: "@popperjs/core@npm:2.11.7"
   checksum: 5b6553747899683452a1d28898c1b39173a4efd780e74360bfcda8eb42f1c5e819602769c81a10920fc68c881d07fb40429604517d499567eac079cfa6470f19
@@ -4262,10 +4262,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:18.15.10":
+"@types/node@npm:*":
   version: 18.15.10
   resolution: "@types/node@npm:18.15.10"
   checksum: 9aeae0b683eda82892def5315812bdee3f1a28c4898b7e70f8e2514564538b16c4dccbe8339c1266f8fc1d707a48f152689264a854f5ebc2eba5011e793612d9
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:18.15.11":
+  version: 18.15.11
+  resolution: "@types/node@npm:18.15.11"
+  checksum: 977b4ad04708897ff0eb049ecf82246d210939c82461922d20f7d2dcfd81bbc661582ba3af28869210f7e8b1934529dcd46bff7d448551400f9d48b9d3bddec3
   languageName: node
   linkType: hard
 
@@ -4410,7 +4417,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:18.0.30":
+"@types/react@npm:*":
   version: 18.0.30
   resolution: "@types/react@npm:18.0.30"
   dependencies:
@@ -4418,6 +4425,17 @@ __metadata:
     "@types/scheduler": "*"
     csstype: ^3.0.2
   checksum: 3ca13fd10a1ee92826e37cd8c2fe563bff65d4bdb3ff53f632bc46c8fba2e94e24247b4b77ce957677a54e592299782e1235f7a3dfcfea327cb3213ddc98e968
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:18.0.31":
+  version: 18.0.31
+  resolution: "@types/react@npm:18.0.31"
+  dependencies:
+    "@types/prop-types": "*"
+    "@types/scheduler": "*"
+    csstype: ^3.0.2
+  checksum: 6befbd5587e266905b50fd6bbd7c1cacd557bddf99e6a9862ca2f1d06df3dca71b9d485a37d010479730f021aab93b852d417c714de5efc2f41be0ff4c09b4db
   languageName: node
   linkType: hard
 
@@ -7537,21 +7555,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-visitor-keys@npm:^3.3.0":
+"eslint-visitor-keys@npm:^3.3.0, eslint-visitor-keys@npm:^3.4.0":
   version: 3.4.0
   resolution: "eslint-visitor-keys@npm:3.4.0"
   checksum: 33159169462d3989321a1ec1e9aaaf6a24cc403d5d347e9886d1b5bfe18ffa1be73bdc6203143a28a606b142b1af49787f33cff0d6d0813eb5f2e8d2e1a6043c
   languageName: node
   linkType: hard
 
-"eslint@npm:8.36.0":
-  version: 8.36.0
-  resolution: "eslint@npm:8.36.0"
+"eslint@npm:8.37.0":
+  version: 8.37.0
+  resolution: "eslint@npm:8.37.0"
   dependencies:
     "@eslint-community/eslint-utils": ^4.2.0
     "@eslint-community/regexpp": ^4.4.0
-    "@eslint/eslintrc": ^2.0.1
-    "@eslint/js": 8.36.0
+    "@eslint/eslintrc": ^2.0.2
+    "@eslint/js": 8.37.0
     "@humanwhocodes/config-array": ^0.11.8
     "@humanwhocodes/module-importer": ^1.0.1
     "@nodelib/fs.walk": ^1.2.8
@@ -7562,8 +7580,8 @@ __metadata:
     doctrine: ^3.0.0
     escape-string-regexp: ^4.0.0
     eslint-scope: ^7.1.1
-    eslint-visitor-keys: ^3.3.0
-    espree: ^9.5.0
+    eslint-visitor-keys: ^3.4.0
+    espree: ^9.5.1
     esquery: ^1.4.2
     esutils: ^2.0.2
     fast-deep-equal: ^3.1.3
@@ -7590,18 +7608,18 @@ __metadata:
     text-table: ^0.2.0
   bin:
     eslint: bin/eslint.js
-  checksum: e9a961fc3b3de5cff5a1cb2c92eeffaa7e155a715489e30b3e1e76f186bd1255e0481e09564f2094733c0b1dbd3453499fb72ae7c043c83156e11e6d965b2304
+  checksum: 80f3d5cdce2d671f4794e392d234a78d039c347673defb0596268bd481e8f30a53d93c01ff4f66a546c87d97ab4122c0e9cafe1371f87cb03cee6b7d5aa97595
   languageName: node
   linkType: hard
 
-"espree@npm:^9.5.0":
-  version: 9.5.0
-  resolution: "espree@npm:9.5.0"
+"espree@npm:^9.5.1":
+  version: 9.5.1
+  resolution: "espree@npm:9.5.1"
   dependencies:
     acorn: ^8.8.0
     acorn-jsx: ^5.3.2
-    eslint-visitor-keys: ^3.3.0
-  checksum: a7f110aefb6407e0d3237aa635ab3cea87106ae63748dd23c67031afccc640d04c4209fca2daf16e2233c82efb505faead0fb84097478fd9cc6e8f8dd80bf99d
+    eslint-visitor-keys: ^3.4.0
+  checksum: cdf6e43540433d917c4f2ee087c6e987b2063baa85a1d9cdaf51533d78275ebd5910c42154e7baf8e3e89804b386da0a2f7fad2264d8f04420e7506bf87b3b88
   languageName: node
   linkType: hard
 
@@ -10366,11 +10384,11 @@ __metadata:
     "@finos/eslint-plugin-legend-studio": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
-    "@types/node": 18.15.10
+    "@types/node": 18.15.11
     chalk: 5.2.0
     cross-env: 7.0.3
     envinfo: 7.8.1
-    eslint: 8.36.0
+    eslint: 8.37.0
     fs-extra: 11.1.1
     husky: 8.0.3
     inquirer: 9.1.5
@@ -11641,20 +11659,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mobx-react-lite@npm:4.0.2":
-  version: 4.0.2
-  resolution: "mobx-react-lite@npm:4.0.2"
-  dependencies:
-    use-sync-external-store: ^1.2.0
+"mobx-react-lite@npm:3.4.3":
+  version: 3.4.3
+  resolution: "mobx-react-lite@npm:3.4.3"
   peerDependencies:
-    mobx: ^6.9.0
+    mobx: ^6.1.0
     react: ^16.8.0 || ^17 || ^18
   peerDependenciesMeta:
     react-dom:
       optional: true
     react-native:
       optional: true
-  checksum: 2b7cdc0f88916c9d6460cd205fbe2629799ca4966969beb9b3bbd6120eafa40e220cb0fef529a3a6732c328516aa8a6131b103f3a6e3a61f7228d04990ed0b55
+  checksum: 60a2580eb9a0b9988fc76959d7299f018733dc33cacaa73c45500953006d4d45e738d9ae39ccfc767ac19a75656dbc028d833282c848fbc67d8d18a2bcb5c262
   languageName: node
   linkType: hard
 
@@ -15943,15 +15959,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-sync-external-store@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "use-sync-external-store@npm:1.2.0"
-  peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: 5c639e0f8da3521d605f59ce5be9e094ca772bd44a4ce7322b055a6f58eeed8dda3c94cabd90c7a41fb6fa852210092008afe48f7038792fd47501f33299116a
-  languageName: node
-  linkType: hard
-
 "util-deprecate@npm:^1.0.1, util-deprecate@npm:^1.0.2, util-deprecate@npm:~1.0.1":
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
@@ -16274,9 +16281,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.76.3":
-  version: 5.76.3
-  resolution: "webpack@npm:5.76.3"
+"webpack@npm:5.77.0":
+  version: 5.77.0
+  resolution: "webpack@npm:5.77.0"
   dependencies:
     "@types/eslint-scope": ^3.7.3
     "@types/estree": ^0.0.51
@@ -16307,7 +16314,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 363f536b56971d056e34ab4cffa4cbc630b220e51be1a8c3adea87d9f0b51c49cfc7c3720d6614a1fd2c8c63f1ab3100db916fe8367c8bb9299327ff8c3f856d
+  checksum: 21341bb72cbbf61dfb3af91eabe9290a6c05139f268eff3c419e5339deb6c79f2f36de55d9abf017d3ccbad290a535c02325001b2816acc393f3c022e67ac17c
   languageName: node
   linkType: hard
 
