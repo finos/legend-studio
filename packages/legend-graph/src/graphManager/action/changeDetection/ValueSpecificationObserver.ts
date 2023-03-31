@@ -56,6 +56,10 @@ import {
   observe_GenericTypeReference,
   observe_PropertyReference,
 } from './DomainObserverHelper.js';
+import type {
+  KeyExpression,
+  KeyExpressionInstanceValue,
+} from '../../../graph/metamodel/pure/valueSpecification/KeyExpressionInstanceValue.js';
 
 const observe_Abstract_ValueSpecification = (
   metamodel: ValueSpecification,
@@ -136,6 +140,10 @@ export const observe_EnumValueInstanceValue = skipObservedWithContext(
 
 export const observe_CollectionInstanceValue = skipObservedWithContext(
   _observe_CollectionInstanceValue,
+);
+
+export const observe_KeyExpressionInstanceValue = skipObservedWithContext(
+  _observe_KeyExpressionInstanceValue,
 );
 
 export const observe_GraphFetchTree = skipObservedWithContext(
@@ -231,6 +239,11 @@ class ValueSpecificationObserver implements ValueSpecificationVisitor<void> {
 
   constructor(observerContext: ObserverContext) {
     this.observerContext = observerContext;
+  }
+  visit_KeyExpressionInstanceValue(
+    valueSpeciciation: KeyExpressionInstanceValue,
+  ): void {
+    observe_KeyExpressionInstanceValue(valueSpeciciation, this.observerContext);
   }
 
   visit_INTERNAL__UnknownValueSpecification(
@@ -328,6 +341,39 @@ function _observe_CollectionInstanceValue(
     hashCode: override,
   });
 
+  return metamodel;
+}
+
+function observe_KeyExpressionValue(
+  metamodel: KeyExpression,
+  context: ObserverContext,
+): KeyExpression {
+  makeObservable(metamodel, {
+    hashCode: computed,
+    add: observable,
+    key: observable,
+    expression: observable,
+  });
+  metamodel.expression.accept_ValueSpecificationVisitor(
+    new ValueSpecificationObserver(context),
+  );
+  metamodel.key.accept_ValueSpecificationVisitor(
+    new ValueSpecificationObserver(context),
+  );
+  return metamodel;
+}
+
+function _observe_KeyExpressionInstanceValue(
+  metamodel: KeyExpressionInstanceValue,
+  context: ObserverContext,
+): KeyExpressionInstanceValue {
+  observe_Abstract_ValueSpecification(metamodel);
+  makeObservable(metamodel, {
+    hashCode: override,
+    values: observable,
+  });
+
+  metamodel.values.forEach((keyE) => observe_KeyExpressionValue(keyE, context));
   return metamodel;
 }
 

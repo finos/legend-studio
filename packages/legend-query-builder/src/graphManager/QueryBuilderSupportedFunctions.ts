@@ -30,6 +30,7 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   GRAPH_FETCH = 'meta::pure::graphFetch::execution::graphFetch',
   GRAPH_FETCH_CHECKED = 'meta::pure::graphFetch::execution::graphFetchChecked',
   SERIALIZE = 'meta::pure::graphFetch::execution::serialize',
+  EXTERNALIZE = 'meta::external::shared::format::functions::externalize',
 
   // TDS
   TDS_FILTER = 'meta::pure::tds::filter',

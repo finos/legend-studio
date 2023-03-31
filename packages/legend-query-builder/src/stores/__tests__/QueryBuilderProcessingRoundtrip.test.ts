@@ -38,13 +38,16 @@ import {
   TEST_DATA__personWithSubType,
   TEST_DATA_dateCompabilityForFilterAndPostFilter,
 } from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip.js';
+import TEST_DATA__BindingM2MModel from './TEST_DATA__QueryBuilder_Model_BindingM2M.json';
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
+import TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M from './TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M.json';
 import {
   simpleDerivationProjection,
   groupByWithDerivationProjection,
   groupByWithDerivationAndAggregation,
 } from './TEST_DATA__QueryBuilder_ProcessingRoundtrip_TestDerivation.js';
 import {
+  Core_GraphManagerPreset,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
@@ -57,9 +60,19 @@ import {
   TEST_DATA__OlapGroupBy_entities,
   TEST_DATA__lambda_olapGroupBy_SimpleStringRankFunc,
 } from './TEST_DATA__QueryBuilder__OLAPGroupBy.js';
+import {
+  TEST_DATA__lambda_Externalize_externalize_graphFetch,
+  TEST_DATA__lambda_Externalize_externalize_graphFetchChecked,
+} from './TEST_DATA__QueryBuilder_Externalize.js';
+import { TEST_DATA__graphFetchWithSerializationConfig } from './TEST_DATA__QueryBuilder_GraphFetch.js';
 
 const pluginManager = TEST__LegendApplicationPluginManager.create();
-pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
+pluginManager
+  .usePresets([
+    new Core_GraphManagerPreset(),
+    new QueryBuilder_GraphManagerPreset(),
+  ])
+  .install();
 
 type RoundtripTestCase = [
   string,
@@ -87,6 +100,14 @@ const postFilterCtx = {
 
 const olapGroupbyCtx = {
   entities: TEST_DATA__OlapGroupBy_entities,
+};
+
+const bindingM2MCtx = {
+  entities: TEST_DATA__BindingM2MModel,
+};
+
+const identitfyM2MCtx = {
+  entities: TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M,
 };
 
 const cases: RoundtripTestCase[] = [
@@ -152,6 +173,11 @@ const cases: RoundtripTestCase[] = [
     TEST_DATA__graphFetchWithDerivedPropertyWithParameter,
   ],
   [
+    'Graph Fetch with serialization config',
+    identitfyM2MCtx,
+    TEST_DATA__graphFetchWithSerializationConfig,
+  ],
+  [
     'Simple project() and filter() with parameter',
     relationalCtx,
     TEST_DATA__personWithParameter,
@@ -180,6 +206,17 @@ const cases: RoundtripTestCase[] = [
     'OlapGroupBy with simple string with rank operation and post filter()',
     olapGroupbyCtx,
     TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter,
+  ],
+  // externalize
+  [
+    'Simple externalize() on graphfetch()',
+    bindingM2MCtx,
+    TEST_DATA__lambda_Externalize_externalize_graphFetch,
+  ],
+  [
+    'Simple externalize() on graphfetchChecked()',
+    bindingM2MCtx,
+    TEST_DATA__lambda_Externalize_externalize_graphFetchChecked,
   ],
 ];
 

@@ -180,6 +180,7 @@ export enum SUPPORTED_FUNCTIONS {
   ADJUST = 'meta::pure::functions::date::adjust',
   // variables
   LET = 'meta::pure::functions::lang::letFunction',
+  NEW = 'meta::pure::functions::meta::new',
 }
 
 // Date formats
@@ -187,3 +188,7 @@ export const DATE_TIME_FORMAT_WITH_MILLISECONDS =
   "yyyy-MM-dd'T'HH:mm:ss.SSSxxxx";
 export const DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssxxxx";
 export const DATE_FORMAT = 'yyyy-MM-dd';
+
+// Serialization
+export const PURE_SERIALIZE_CONFIG_CLASS =
+  'meta::pure::graphFetch::execution::AlloySerializationConfig';

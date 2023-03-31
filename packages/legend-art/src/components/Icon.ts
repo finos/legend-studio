@@ -203,6 +203,7 @@ export const ReferencesIcon = VSC.VscReferences;
 export const WandIcon = VSC.VscWand;
 export const CollapseTreeIcon = VSC.VscCollapseAll;
 export const ExpandTreeIcon = VSC.VscExpandAll;
+export const SerializeIcon = VSC.VscJson;
 
 const GO = ReactIcons.GO;
 export const ChevronDownIcon = GO.GoChevronDown;

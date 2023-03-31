@@ -71,6 +71,7 @@ import { V1_RootGraphFetchTree } from '../../../model/valueSpecification/raw/cla
 import type { V1_GraphFetchTree } from '../../../model/valueSpecification/raw/classInstance/graph/V1_GraphFetchTree.js';
 import { V1_Collection } from '../../../model/valueSpecification/raw/V1_Collection.js';
 import { V1_PackageableElementPtr } from '../../../model/valueSpecification/raw/V1_PackageableElementPtr.js';
+import { V1_KeyExpression } from '../../../model/valueSpecification/raw/V1_KeyExpression.js';
 import { PackageableElementReference } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { Unit } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Measure.js';
 import { Class } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
@@ -81,6 +82,7 @@ import type { INTERNAL__PropagatedValue } from '../../../../../../../graph/metam
 import { V1_GenericTypeInstance } from '../../../model/valueSpecification/raw/V1_GenericTypeInstance.js';
 import { V1_ClassInstance } from '../../../model/valueSpecification/raw/V1_ClassInstance.js';
 import { V1_ClassInstanceType } from '../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
+import type { KeyExpressionInstanceValue } from '../../../../../../../graph/metamodel/pure/valueSpecification/KeyExpressionInstanceValue.js';
 
 class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
@@ -284,6 +286,7 @@ class V1_ValueSpecificationTransformer
       }
       case PRIMITIVE_TYPE.BOOLEAN: {
         const cBoolean = new V1_CBoolean();
+
         cBoolean.value = guaranteeIsBoolean(valueSpecification.values[0]);
         return cBoolean;
       }
@@ -312,6 +315,34 @@ class V1_ValueSpecificationTransformer
           `Can't transform primtive instance value of type '${type.name}'`,
         );
     }
+  }
+
+  visit_KeyExpressionInstanceValue(
+    valueSpeciciation: KeyExpressionInstanceValue,
+  ): V1_ValueSpecification {
+    const protocol = new V1_KeyExpression();
+    const value = guaranteeNonNullable(
+      valueSpeciciation.values[0],
+      'Key Expression value expected in Key Expression Instance Value',
+    );
+    protocol.add = value.add;
+    protocol.key = value.key.accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationTransformer(
+        this.inScope,
+        this.open,
+        this.isParameter,
+        this.useAppliedFunction,
+      ),
+    );
+    protocol.expression = value.expression.accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationTransformer(
+        this.inScope,
+        this.open,
+        this.isParameter,
+        this.useAppliedFunction,
+      ),
+    );
+    return protocol;
   }
 
   visit_LambdaFunctionInstanceValue(

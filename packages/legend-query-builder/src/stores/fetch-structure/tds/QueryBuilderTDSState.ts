@@ -135,6 +135,7 @@ export class QueryBuilderTDSState
       addColumn: action,
       moveColumn: action,
       replaceColumn: action,
+      initialize: action,
       setShowPostFilterPanel: action,
       setShowWindowFuncPanel: action,
       convertDerivationProjectionObjects: flow,
@@ -292,6 +293,12 @@ export class QueryBuilderTDSState
     return (
       this.tdsColumns.filter((c) => c.columnName === col.columnName).length > 1
     );
+  }
+
+  override initialize(): void {
+    this.queryBuilderState.filterState.setShowPanel(true);
+    this.setShowPostFilterPanel(false);
+    this.setShowWindowFuncPanel(false);
   }
 
   isColumnInUse(tdsCol: QueryBuilderTDSColumnState): boolean {
