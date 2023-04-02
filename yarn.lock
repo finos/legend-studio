@@ -2132,6 +2132,7 @@ __metadata:
     "@finos/legend-extension-dsl-persistence": "workspace:*"
     "@finos/legend-extension-dsl-service": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
+    "@finos/legend-extension-format-avro": "workspace:*"
     "@finos/legend-extension-format-graphql": "workspace:*"
     "@finos/legend-extension-format-json-schema": "workspace:*"
     "@finos/legend-extension-store-service-store": "workspace:*"
@@ -2214,6 +2215,7 @@ __metadata:
     "@finos/legend-extension-dsl-persistence": "workspace:*"
     "@finos/legend-extension-dsl-service": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
+    "@finos/legend-extension-format-avro": "workspace:*"
     "@finos/legend-extension-format-graphql": "workspace:*"
     "@finos/legend-extension-format-json-schema": "workspace:*"
     "@finos/legend-extension-store-service-store": "workspace:*"
@@ -2689,6 +2691,24 @@ __metadata:
     typescript: 5.0.2
   peerDependencies:
     react: ^18.0.0
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-extension-format-avro@workspace:*, @finos/legend-extension-format-avro@workspace:packages/legend-extension-format-avro":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-extension-format-avro@workspace:packages/legend-extension-format-avro"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 29.5.0
+    cross-env: 7.0.3
+    eslint: 8.37.0
+    jest: 29.5.0
+    npm-run-all: 4.1.5
+    rimraf: 4.4.1
+    sass: 1.60.0
+    typescript: 5.0.2
   languageName: unknown
   linkType: soft
 

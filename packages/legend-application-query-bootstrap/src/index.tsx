@@ -28,11 +28,12 @@ import {
 import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
 import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
 import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store';
-import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-format-json-schema';
 import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
 import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery';
 import { DSL_Service_LegendQueryApplicationPlugin } from '@finos/legend-extension-dsl-service';
+import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-format-json-schema';
 import { FMT_GraphQL_GraphManagerPreset } from '@finos/legend-extension-format-graphql';
+import { FMT_Avro_GraphManagerPreset } from '@finos/legend-extension-format-avro';
 
 export class LegendQueryWebApplication {
   static getPresetCollection(): AbstractPreset[] {
@@ -43,9 +44,10 @@ export class LegendQueryWebApplication {
       new DSL_DataSpace_GraphManagerPreset(),
       new DSL_Persistence_GraphManagerPreset(),
       new DSL_Mastery_GraphManagerPreset(),
-      new FMT_JSONSchema_GraphManagerPreset(),
       new STO_ServiceStore_GraphManagerPreset(),
+      new FMT_JSONSchema_GraphManagerPreset(),
       new FMT_GraphQL_GraphManagerPreset(),
+      new FMT_Avro_GraphManagerPreset(),
     ];
   }
 

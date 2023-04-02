@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {
+      "stereotypes": ["ignore"],
+      "package": "meta::avro::generation",
+      "_type": "profile",
+      "name": "Avro",
+      "tags": ["default", "type"]
+    }
+  ]
+}
