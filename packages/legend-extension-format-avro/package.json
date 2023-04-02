@@ -1,12 +1,12 @@
 {
   "name": "@finos/legend-extension-format-avro",
-  "version": "0.0.10",
-  "description": "Legend extension for GraphQL",
+  "version": "0.0.0",
+  "description": "Legend extension for Avro",
   "keywords": [
     "legend",
     "legend-extension",
     "format-avro",
-    "graphql"
+    "avro"
   ],
   "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-format-avro",
   "bugs": {
