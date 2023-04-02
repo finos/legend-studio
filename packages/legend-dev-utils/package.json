@@ -49,7 +49,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@babel/core": "7.21.3",
+    "@babel/core": "7.21.4",
     "@changesets/assemble-release-plan": "5.2.3",
     "@changesets/changelog-github": "0.4.8",
     "@changesets/config": "2.3.0",
@@ -88,7 +88,7 @@
     "resolve": "1.22.1",
     "sass": "1.60.0",
     "sass-loader": "13.2.2",
-    "typescript": "5.0.2",
+    "typescript": "5.0.3",
     "webpack": "5.77.0"
   },
   "devDependencies": {
