@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 26.0.0
+
+### Major Changes
+
+- [#2063](https://github.com/finos/legend-studio/pull/2063) [`7bd0dc79d`](https://github.com/finos/legend-studio/commit/7bd0dc79d5e803c0eb677b884f2f1ac48fb32b77) ([@akphi](https://github.com/akphi)) - Renamed `V1_packageableElementPointerDeserializerSchema` to `V1_packageableElementPointerModelSchema` and `V1_multiplicitySchema` to `V1_multiplicityModelSchema`.
+
+### Minor Changes
+
+- [#2062](https://github.com/finos/legend-studio/pull/2062) [`9543da9e5`](https://github.com/finos/legend-studio/commit/9543da9e5bb86e48f99d277243e6423173494ac7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add graph support for ValueSpecification of type `KeyExpression`.
+
 ## 25.0.1
 
 ## 25.0.0

@@ -1,5 +1,11 @@
 # @finos/legend-application-taxonomy
 
+## 7.0.8
+
+### Patch Changes
+
+- [#2063](https://github.com/finos/legend-studio/pull/2063) [`7bd0dc79d`](https://github.com/finos/legend-studio/commit/7bd0dc79d5e803c0eb677b884f2f1ac48fb32b77) ([@akphi](https://github.com/akphi)) - Support relative URLs in application configuration.
+
 ## 7.0.7
 
 ## 7.0.6
