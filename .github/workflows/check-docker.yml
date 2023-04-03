@@ -75,12 +75,13 @@ jobs:
           image-ref: ${{ matrix.image }}:${{ github.sha }}
           format: table
           exit-code: 1
-          # Ignore unpatched/unfixed vulnerabilities/CVEs
+          # Ignore vulnerabilities/CVEs declared as unpatched/unfixed
           ignore-unfixed: true
           severity: CRITICAL
           # Since we use finos/legend-shared-server static server
           # We might better off ignore CVEs coming from static server code, as they should be flagged
-          # on the static server codebase instead using `--vuln-type os`
+          # on the static server codebase instead, but we should potentially revisit this decision
+          vuln-type: os
           # Manually increase timeout as the default 2-minute is not enough
           # See https://github.com/aquasecurity/trivy/issues/802
           timeout: 10m
