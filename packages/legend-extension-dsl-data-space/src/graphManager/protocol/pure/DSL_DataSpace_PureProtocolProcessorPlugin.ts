@@ -19,6 +19,7 @@ import V1_SYSTEM_MODELS from './v1/V1_DSL_DataSpace_SystemModels.json';
 import {
   V1_DataSpace,
   V1_DataSpaceDiagram,
+  V1_DataSpaceElementPointer,
   V1_DataSpaceExecutable,
   V1_DataSpaceExecutionContext,
   V1_DataSpaceSupportCombinedInfo,
@@ -32,10 +33,11 @@ import {
   isNonNullable,
   assertType,
 } from '@finos/legend-shared';
-import { deserialize, serialize } from 'serializr';
+import { deserialize } from 'serializr';
 import {
-  V1_dataSpaceModelSchema,
   V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE,
+  V1_deserializeDataSpace,
+  V1_serializeDataSpace,
 } from './v1/transformation/pureProtocol/V1_DSL_DataSpace_ProtocolHelper.js';
 import { getOwnDataSpace } from '../../DSL_DataSpace_GraphManagerHelper.js';
 import {
@@ -46,6 +48,7 @@ import {
   DataSpaceSupportEmail,
   type DataSpaceElement,
   DataSpaceDiagram,
+  DataSpaceElementPointer,
 } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import {
   type PackageableElement,
@@ -73,11 +76,9 @@ import {
   Enumeration,
   Association,
   type PackageableElementReference,
+  Package,
 } from '@finos/legend-graph';
-import {
-  V1_DSL_Diagram_PackageableElementPointerType,
-  V1_resolveDiagram,
-} from '@finos/legend-extension-dsl-diagram';
+import { V1_resolveDiagram } from '@finos/legend-extension-dsl-diagram';
 
 export const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::metamodel::dataSpace::DataSpace';
@@ -161,26 +162,26 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
           );
           element.title = elementProtocol.title;
           element.description = elementProtocol.description;
-          if (elementProtocol.featuredDiagrams) {
-            element.featuredDiagrams = elementProtocol.featuredDiagrams.map(
-              (pointer) => V1_resolveDiagram(pointer.path, context),
-            );
-          }
           if (elementProtocol.elements) {
             element.elements = elementProtocol.elements.map((pointer) => {
               const elementReference = context.resolveElement(
                 pointer.path,
-                false,
+                true,
               );
               if (
+                elementReference.value instanceof Package ||
                 elementReference.value instanceof Class ||
                 elementReference.value instanceof Enumeration ||
                 elementReference.value instanceof Association
               ) {
-                return elementReference as unknown as PackageableElementReference<DataSpaceElement>;
+                const elementPointer = new DataSpaceElementPointer();
+                elementPointer.element =
+                  elementReference as unknown as PackageableElementReference<DataSpaceElement>;
+                elementPointer.exclude = pointer.exclude;
+                return elementPointer;
               }
               throw new UnsupportedOperationError(
-                `Can't find data space element (only allow class, enumartion, association) '${pointer.path}'`,
+                `Can't find data space element (only allow packages, classes, enumerations, and associations) '${pointer.path}'`,
               );
             });
           }
@@ -270,7 +271,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
         plugins: PureProtocolProcessorPlugin[],
       ): PlainObject<V1_PackageableElement> | undefined => {
         if (elementProtocol instanceof V1_DataSpace) {
-          return serialize(V1_dataSpaceModelSchema, elementProtocol);
+          return V1_serializeDataSpace(elementProtocol);
         }
         return undefined;
       },
@@ -284,7 +285,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
         plugins: PureProtocolProcessorPlugin[],
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE) {
-          return deserialize(V1_dataSpaceModelSchema, json);
+          return V1_deserializeDataSpace(json);
         }
         return undefined;
       },
@@ -327,20 +328,12 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
             metamodel.defaultExecutionContext.name;
           protocol.title = metamodel.title;
           protocol.description = metamodel.description;
-          protocol.featuredDiagrams = metamodel.featuredDiagrams?.map(
-            (diagramReference) =>
-              new V1_PackageableElementPointer(
-                V1_DSL_Diagram_PackageableElementPointerType,
-                diagramReference.valueForSerialization ?? '',
-              ),
-          );
-          protocol.elements = metamodel.elements?.map(
-            (elementReference) =>
-              new V1_PackageableElementPointer(
-                PackageableElementPointerType.CLASS,
-                elementReference.valueForSerialization ?? '',
-              ),
-          );
+          protocol.elements = metamodel.elements?.map((pointer) => {
+            const elementPointer = new V1_DataSpaceElementPointer();
+            elementPointer.exclude = pointer.exclude;
+            elementPointer.path = pointer.element.valueForSerialization ?? '';
+            return elementPointer;
+          });
           protocol.executables = metamodel.executables?.map((executable) => {
             const executableProtocol = new V1_DataSpaceExecutable();
             executableProtocol.title = executable.title;

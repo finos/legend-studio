@@ -43,7 +43,7 @@ import { V1_PureModelContextComposite } from '../../model/context/V1_PureModelCo
 import { V1_Protocol } from '../../model/V1_Protocol.js';
 import { V1_LegendSDLC } from '../../model/context/V1_SDLC.js';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
-import { V1_packageableElementPointerDeserializerSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
+import { V1_packageableElementPointerModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin.js';
 import type { Entity } from '@finos/legend-storage';
 import { GraphDataDeserializationError } from '../../../../../../graphManager/GraphManagerUtils.js';
@@ -129,7 +129,7 @@ const legendSDLCSerializationModelSchema = createModelSchema(V1_LegendSDLC, {
   groupId: primitive(),
   artifactId: primitive(),
   packageableElementPointers: list(
-    usingModelSchema(V1_packageableElementPointerDeserializerSchema),
+    usingModelSchema(V1_packageableElementPointerModelSchema),
   ),
 });
 

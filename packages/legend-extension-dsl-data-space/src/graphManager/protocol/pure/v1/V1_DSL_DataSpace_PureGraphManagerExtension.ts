@@ -135,7 +135,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       );
     }
     return this.buildDataSpaceAnalytics(
-      V1_DataSpaceAnalysisResult.serialization.fromJson(analysisResult),
+      V1_DataSpaceAnalysisResult.deserialize(analysisResult),
     );
   }
 
@@ -362,23 +362,14 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       return entries;
     });
 
-    // featured diagrams
-    result.diagrams = analysisResult.featuredDiagrams
-      .map((path) => {
-        const diagram = new DataSpaceDiagramAnalysisResult();
-        diagram.title = path;
-        diagram.diagram = getDiagram(path, graph);
-        return diagram;
-      })
-      .concat(
-        analysisResult.diagrams.map((diagramProtocol) => {
-          const diagram = new DataSpaceDiagramAnalysisResult();
-          diagram.title = diagramProtocol.title;
-          diagram.description = diagramProtocol.description;
-          diagram.diagram = getDiagram(diagramProtocol.diagram, graph);
-          return diagram;
-        }),
-      );
+    // diagrams
+    result.diagrams = analysisResult.diagrams.map((diagramProtocol) => {
+      const diagram = new DataSpaceDiagramAnalysisResult();
+      diagram.title = diagramProtocol.title;
+      diagram.description = diagramProtocol.description;
+      diagram.diagram = getDiagram(diagramProtocol.diagram, graph);
+      return diagram;
+    });
 
     // executables
     result.executables = analysisResult.executables.map(

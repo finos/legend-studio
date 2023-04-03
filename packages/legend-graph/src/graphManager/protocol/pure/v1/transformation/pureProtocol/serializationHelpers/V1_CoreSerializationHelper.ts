@@ -30,7 +30,7 @@ export const V1_sourceInformationSerialization = new SerializationFactory(
   }),
 );
 
-export const V1_packageableElementPointerDeserializerSchema = createModelSchema(
+export const V1_packageableElementPointerModelSchema = createModelSchema(
   V1_PackageableElementPointer,
   {
     path: primitive(),
@@ -38,7 +38,7 @@ export const V1_packageableElementPointerDeserializerSchema = createModelSchema(
   },
 );
 
-export const V1_multiplicitySchema = createModelSchema(V1_Multiplicity, {
+export const V1_multiplicityModelSchema = createModelSchema(V1_Multiplicity, {
   lowerBound: primitive(),
   upperBound: optional(primitive()),
 });

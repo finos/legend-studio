@@ -24,6 +24,68 @@ import {
   type V1_TaggedValue,
 } from '@finos/legend-graph';
 
+export class V1_DataSpaceExecutionContext implements Hashable {
+  name!: string;
+  title?: string | undefined;
+  description?: string | undefined;
+  mapping!: V1_PackageableElementPointer;
+  defaultRuntime!: V1_PackageableElementPointer;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTION_CONTEXT,
+      this.name,
+      this.title ?? '',
+      this.description ?? '',
+      this.mapping.path,
+      this.defaultRuntime.path,
+    ]);
+  }
+}
+
+export class V1_DataSpaceElementPointer implements Hashable {
+  path!: string;
+  exclude?: boolean | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_ELEMENT_POINTER,
+      this.path,
+      this.exclude ?? '',
+    ]);
+  }
+}
+
+export class V1_DataSpaceExecutable implements Hashable {
+  title!: string;
+  description?: string | undefined;
+  executable!: V1_PackageableElementPointer;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTABLE,
+      this.title,
+      this.description ?? '',
+      this.executable.path,
+    ]);
+  }
+}
+
+export class V1_DataSpaceDiagram implements Hashable {
+  title!: string;
+  description?: string | undefined;
+  diagram!: V1_PackageableElementPointer;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_DIAGRAM,
+      this.title,
+      this.description ?? '',
+      this.diagram.path,
+    ]);
+  }
+}
+
 export abstract class V1_DataSpaceSupportInfo implements Hashable {
   documentationUrl?: string | undefined;
 
@@ -66,55 +128,6 @@ export class V1_DataSpaceSupportCombinedInfo
   }
 }
 
-export class V1_DataSpaceExecutionContext implements Hashable {
-  name!: string;
-  title?: string | undefined;
-  description?: string | undefined;
-  mapping!: V1_PackageableElementPointer;
-  defaultRuntime!: V1_PackageableElementPointer;
-
-  get hashCode(): string {
-    return hashArray([
-      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTION_CONTEXT,
-      this.name,
-      this.title ?? '',
-      this.description ?? '',
-      this.mapping.path,
-      this.defaultRuntime.path,
-    ]);
-  }
-}
-
-export class V1_DataSpaceExecutable implements Hashable {
-  title!: string;
-  description?: string | undefined;
-  executable!: V1_PackageableElementPointer;
-
-  get hashCode(): string {
-    return hashArray([
-      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTABLE,
-      this.title,
-      this.description ?? '',
-      this.executable.path,
-    ]);
-  }
-}
-
-export class V1_DataSpaceDiagram implements Hashable {
-  title!: string;
-  description?: string | undefined;
-  diagram!: V1_PackageableElementPointer;
-
-  get hashCode(): string {
-    return hashArray([
-      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_DIAGRAM,
-      this.title,
-      this.description ?? '',
-      this.diagram.path,
-    ]);
-  }
-}
-
 export class V1_DataSpace extends V1_PackageableElement implements Hashable {
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
@@ -122,8 +135,7 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
   description?: string | undefined;
   executionContexts!: V1_DataSpaceExecutionContext[];
   defaultExecutionContext!: string;
-  featuredDiagrams?: V1_PackageableElementPointer[] | undefined;
-  elements?: V1_PackageableElementPointer[] | undefined;
+  elements?: V1_DataSpaceElementPointer[] | undefined;
   executables?: V1_DataSpaceExecutable[] | undefined;
   diagrams?: V1_DataSpaceDiagram[] | undefined;
   supportInfo?: V1_DataSpaceSupportInfo | undefined;
@@ -137,8 +149,7 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
       this.description ?? '',
       hashArray(this.executionContexts),
       this.defaultExecutionContext,
-      hashArray((this.featuredDiagrams ?? []).map((pointer) => pointer.path)),
-      hashArray((this.elements ?? []).map((pointer) => pointer.path)),
+      hashArray(this.elements ?? []),
       hashArray(this.executables ?? []),
       hashArray(this.diagrams ?? []),
       this.supportInfo ?? '',

@@ -36,7 +36,7 @@ import type {
   V1_RawValueSpecificationVisitor,
 } from '../../../model/rawValueSpecification/V1_RawValueSpecification.js';
 import { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable.js';
-import { V1_multiplicitySchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
+import { V1_multiplicityModelSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { V1_RawBaseExecutionContext } from '../../../model/rawValueSpecification/V1_RawExecutionContext.js';
 import { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue.js';
 import { PRIMITIVE_TYPE } from '../../../../../../../graph/MetaModelConst.js';
@@ -80,7 +80,7 @@ export const V1_rawLambdaModelSchema = createModelSchema(V1_RawLambda, {
 export const V1_rawVariableModelSchema = createModelSchema(V1_RawVariable, {
   _type: usingConstantValueSchema(V1_RawValueSpecificationType.VARIABLE),
   class: primitive(),
-  multiplicity: usingModelSchema(V1_multiplicitySchema),
+  multiplicity: usingModelSchema(V1_multiplicityModelSchema),
   name: primitive(),
 });
 

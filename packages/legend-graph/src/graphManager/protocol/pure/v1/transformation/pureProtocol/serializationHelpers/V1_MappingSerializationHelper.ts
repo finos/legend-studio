@@ -50,8 +50,8 @@ import type { V1_InputData } from '../../../model/packageableElements/mapping/V1
 import { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping.js';
 import { V1_DEPRECATED__MappingTest } from '../../../model/packageableElements/mapping/V1_DEPRECATED__MappingTest.js';
 import {
-  V1_multiplicitySchema,
-  V1_packageableElementPointerDeserializerSchema,
+  V1_multiplicityModelSchema,
+  V1_packageableElementPointerModelSchema,
 } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { V1_propertyPointerModelSchema } from './V1_DomainSerializationHelper.js';
 import { V1_FlatDataInputData } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataInputData.js';
@@ -153,7 +153,7 @@ enum V1_PropertyMappingType {
 const V1_localMappingPropertyInfoModelSchema = createModelSchema(
   V1_LocalMappingPropertyInfo,
   {
-    multiplicity: usingModelSchema(V1_multiplicitySchema),
+    multiplicity: usingModelSchema(V1_multiplicityModelSchema),
     type: primitive(),
   },
 );
@@ -744,9 +744,7 @@ const V1_objectInputData = createModelSchema(V1_ObjectInputData, {
 const V1_flatDataInputData = createModelSchema(V1_FlatDataInputData, {
   _type: usingConstantValueSchema(V1_InputDataType.FLAT_DATA),
   data: primitive(),
-  sourceFlatData: usingModelSchema(
-    V1_packageableElementPointerDeserializerSchema,
-  ),
+  sourceFlatData: usingModelSchema(V1_packageableElementPointerModelSchema),
 });
 
 const V1_relationalInputData = createModelSchema(V1_RelationalInputData, {
