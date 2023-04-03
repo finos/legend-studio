@@ -2099,7 +2099,7 @@ __metadata:
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     "@types/react-dom": 18.0.11
     cross-env: 7.0.3
     eslint: 8.37.0
@@ -2139,7 +2139,7 @@ __metadata:
     "@finos/legend-extension-store-service-store": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     cross-env: 7.0.3
     eslint: 8.37.0
     npm-run-all: 4.1.5
@@ -2183,7 +2183,7 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
     "@testing-library/react": 14.0.0
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     "@types/react-dom": 18.0.11
     cross-env: 7.0.3
     eslint: 8.37.0
@@ -2221,7 +2221,7 @@ __metadata:
     "@finos/legend-extension-store-service-store": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     cross-env: 7.0.3
     eslint: 8.37.0
     npm-run-all: 4.1.5
@@ -2266,7 +2266,7 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
     "@testing-library/react": 14.0.0
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     "@types/react-dom": 18.0.11
     cross-env: 7.0.3
     eslint: 8.37.0
@@ -2303,7 +2303,7 @@ __metadata:
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     cross-env: 7.0.3
     eslint: 8.37.0
     npm-run-all: 4.1.5
@@ -2346,7 +2346,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     "@types/react-dom": 18.0.11
     cross-env: 7.0.3
     eslint: 8.37.0
@@ -2375,7 +2375,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.5.0
     "@types/css-font-loading-module": 0.0.8
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     "@types/react-dom": 18.0.11
     "@types/react-router-dom": 5.3.3
     cross-env: 7.0.3
@@ -2423,7 +2423,7 @@ __metadata:
     "@fontsource/roboto-mono": 4.5.10
     "@jest/globals": 29.5.0
     "@mui/material": 5.11.15
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     "@types/react-select": 4.0.18
     "@types/react-window": 1.8.5
     clsx: 1.2.1
@@ -2494,7 +2494,7 @@ __metadata:
     monaco-editor: 0.36.1
     monaco-editor-webpack-plugin: 7.0.1
     postcss: 8.4.21
-    postcss-loader: 7.1.0
+    postcss-loader: 7.2.3
     react-refresh: 0.14.0
     resolve: 1.22.1
     rimraf: 4.4.1
@@ -2525,7 +2525,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     cross-env: 7.0.3
     eslint: 8.37.0
     jest: 29.5.0
@@ -2556,7 +2556,7 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
     "@testing-library/react": 14.0.0
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     cross-env: 7.0.3
     eslint: 8.37.0
     jest: 29.5.0
@@ -2587,7 +2587,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     cross-env: 7.0.3
     eslint: 8.37.0
     jest: 29.5.0
@@ -2615,7 +2615,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     cross-env: 7.0.3
     eslint: 8.37.0
     jest: 29.5.0
@@ -2647,7 +2647,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     cross-env: 7.0.3
     eslint: 8.37.0
     jest: 29.5.0
@@ -2677,7 +2677,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     cross-env: 7.0.3
     eslint: 8.37.0
     jest: 29.5.0
@@ -2741,7 +2741,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     cross-env: 7.0.3
     eslint: 8.37.0
     jest: 29.5.0
@@ -2770,7 +2770,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     cross-env: 7.0.3
     eslint: 8.37.0
     jest: 29.5.0
@@ -2799,7 +2799,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     cross-env: 7.0.3
     eslint: 8.37.0
     jest: 29.5.0
@@ -2930,7 +2930,7 @@ __metadata:
     "@jest/globals": 29.5.0
     "@testing-library/react": 14.0.0
     "@types/papaparse": 5.3.7
-    "@types/react": 18.0.32
+    "@types/react": 18.0.33
     "@types/react-dom": 18.0.11
     cross-env: 7.0.3
     eslint: 8.37.0
@@ -4412,7 +4412,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:18.0.32":
+"@types/react@npm:*":
   version: 18.0.32
   resolution: "@types/react@npm:18.0.32"
   dependencies:
@@ -4420,6 +4420,17 @@ __metadata:
     "@types/scheduler": "*"
     csstype: ^3.0.2
   checksum: c8dbce83c455e520e75f3649988f46100e3a3c0bf7241281ea5bd9067a0368290f0d7c6102e12e6ec9d649134b29a3ef4c421f376ec5aa06ed78cbdd8c144b4c
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:18.0.33":
+  version: 18.0.33
+  resolution: "@types/react@npm:18.0.33"
+  dependencies:
+    "@types/prop-types": "*"
+    "@types/scheduler": "*"
+    csstype: ^3.0.2
+  checksum: 4fbd2b2b6a26378bdfde121081a6406ec2d39e4ba87ea5f6897ab7bb2198713165e6fd703ad4ed7ba1d4f23ef54a4c9f108f3105c7ed8e136411ee6bdebc5669
   languageName: node
   linkType: hard
 
@@ -6308,6 +6319,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cosmiconfig-typescript-loader@npm:^4.3.0":
+  version: 4.3.0
+  resolution: "cosmiconfig-typescript-loader@npm:4.3.0"
+  peerDependencies:
+    "@types/node": "*"
+    cosmiconfig: ">=7"
+    ts-node: ">=10"
+    typescript: ">=3"
+  checksum: ea61dfd8e112cf2bb18df0ef89280bd3ae3dd5b997b4a9fc22bbabdc02513aadfbc6d4e15e922b6a9a5d987e9dad42286fa38caf77a9b8dcdbe7d4ce1c9db4fb
+  languageName: node
+  linkType: hard
+
 "cosmiconfig@npm:^7.0.0":
   version: 7.1.0
   resolution: "cosmiconfig@npm:7.1.0"
@@ -6321,7 +6344,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cosmiconfig@npm:^8.0.0, cosmiconfig@npm:^8.1.3":
+"cosmiconfig@npm:^8.1.3":
   version: 8.1.3
   resolution: "cosmiconfig@npm:8.1.3"
   dependencies:
@@ -12742,17 +12765,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-loader@npm:7.1.0":
-  version: 7.1.0
-  resolution: "postcss-loader@npm:7.1.0"
+"postcss-loader@npm:7.2.3":
+  version: 7.2.3
+  resolution: "postcss-loader@npm:7.2.3"
   dependencies:
-    cosmiconfig: ^8.0.0
+    cosmiconfig: ^8.1.3
+    cosmiconfig-typescript-loader: ^4.3.0
     klona: ^2.0.6
     semver: ^7.3.8
   peerDependencies:
     postcss: ^7.0.0 || ^8.0.1
+    ts-node: ">=10"
+    typescript: ">=4"
     webpack: ^5.0.0
-  checksum: 44e4018a8f2f81150f501a5ca56e59571d81c965b5a8581f5dbae5e55a113b79bde33c3de0d4397cbf36a3be0c24b7e7e37f0154b6e63df16185edd086d4e352
+  peerDependenciesMeta:
+    ts-node:
+      optional: true
+    typescript:
+      optional: true
+  checksum: 75bda217cd9f5006c179899ea4d105ebd6416d586f06683203029c08e0affe3b18c1ba7720bee7b0c7f35123fcd908cdb3a7f7b8511295acc849f067a12dc4da
   languageName: node
   linkType: hard
 
