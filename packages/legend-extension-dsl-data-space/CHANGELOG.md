@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 9.2.0
+
+### Minor Changes
+
+- [#2063](https://github.com/finos/legend-studio/pull/2063) [`7bd0dc79d`](https://github.com/finos/legend-studio/commit/7bd0dc79d5e803c0eb677b884f2f1ac48fb32b77) ([@akphi](https://github.com/akphi)) - Prefer `diagrams` over `featuredDiagrams` syntax, the latter (if present) will automatically be converted to the former. Support element includes/excludes.
+
 ## 9.1.7
 
 ## 9.1.6

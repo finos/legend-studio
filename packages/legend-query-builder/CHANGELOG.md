@@ -1,5 +1,24 @@
 # @finos/legend-query-builder
 
+## 2.0.0
+
+### Major Changes
+
+- [#2063](https://github.com/finos/legend-studio/pull/2063) [`7bd0dc79d`](https://github.com/finos/legend-studio/commit/7bd0dc79d5e803c0eb677b884f2f1ac48fb32b77) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed query builder events:
+
+  - `editor.execution.run-query.launch` -> `query-builder.run-query.launch`
+  - `editor.execution.generate-plan.launch` -> `query-builder.generate-plan.launch`
+  - `editor.execution.debug-plan.launch` -> `query-builder.debug-plan.launch`
+  - `editor.execution.run-query.success` -> `query-builder.run-query.success`
+  - `editor.execution.generate-plan.success` -> `query-builder.generate-plan.success`
+  - `editor.execution.debug-plan.success` -> `query-builder.debug-plan.success`
+  - `graph-manager.execution.build-plan.success` -> `query-builder.build-plan.success`
+
+### Minor Changes
+
+- [#2062](https://github.com/finos/legend-studio/pull/2062) [`9543da9e5`](https://github.com/finos/legend-studio/commit/9543da9e5bb86e48f99d277243e6423173494ac7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for editing pure serialization config of type `AlloySerializationConfig`.
+  Add processing support for graph fetch with `externalize()` serialization.
+
 ## 1.0.6
 
 ## 1.0.5
