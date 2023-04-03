@@ -79,7 +79,7 @@ if (targetBranch === undefined) {
     });
 }
 
-if (!useOrigin) {
+if (!useOrigin && generateForBranch) {
   const currentBranch = execSync(`git branch --show-current`, {
     encoding: 'utf-8',
   }).trim();
