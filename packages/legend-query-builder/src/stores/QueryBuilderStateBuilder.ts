@@ -32,6 +32,7 @@ import {
   type InstanceValue,
   type INTERNAL__UnknownValueSpecification,
   type LambdaFunction,
+  type KeyExpressionInstanceValue,
   matchFunctionName,
   Class,
   type CollectionInstanceValue,
@@ -53,6 +54,7 @@ import {
 } from './fetch-structure/tds/aggregation/QueryBuilderAggregationStateBuilder.js';
 import {
   processGraphFetchExpression,
+  processGraphFetchExternalizeExpression,
   processGraphFetchSerializeExpression,
 } from './fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeStateBuilder.js';
 import {
@@ -504,6 +506,18 @@ export class QueryBuilderValueSpecificationProcessor
       );
       return;
     } else if (
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXTERNALIZE,
+      )
+    ) {
+      processGraphFetchExternalizeExpression(
+        valueSpecification,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
+      return;
+    } else if (
       matchFunctionName(functionName, [
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
@@ -560,6 +574,12 @@ export class QueryBuilderValueSpecificationProcessor
   }
 
   visit_InstanceValue(valueSpecification: InstanceValue): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_KeyExpressionInstanceValue(
+    valueSpecification: KeyExpressionInstanceValue,
+  ): void {
     throw new UnsupportedOperationError();
   }
 

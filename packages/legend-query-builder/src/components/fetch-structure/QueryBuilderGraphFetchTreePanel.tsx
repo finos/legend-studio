@@ -29,6 +29,18 @@ import {
   SquareIcon,
   InfoCircleIcon,
   PanelDropZone,
+  BlankPanelContent,
+  Dialog,
+  ModalHeader,
+  Modal,
+  ModalBody,
+  Panel,
+  PanelForm,
+  PanelFormTextField,
+  PanelFormBooleanField,
+  ModalFooterButton,
+  ModalFooter,
+  SerializeIcon,
 } from '@finos/legend-art';
 import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
 import { isNonNullable } from '@finos/legend-shared';
@@ -42,8 +54,13 @@ import {
   type QueryBuilderExplorerTreeDragSource,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
-import type { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
+import {
+  GraphFetchPureSerializationState,
+  PureSerializationConfig,
+  type QueryBuilderGraphFetchTreeState,
+} from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { getClassPropertyIcon } from '../shared/ElementIconUtils.js';
+import { QueryBuilderTextEditorMode } from '../../stores/QueryBuilderTextEditorState.js';
 
 const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -134,14 +151,157 @@ const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
   );
 };
 
+const PureSerializationConfigModal = observer(
+  (props: {
+    pureSerializationState: GraphFetchPureSerializationState;
+    graphFetchState: QueryBuilderGraphFetchTreeState;
+    config: PureSerializationConfig;
+  }) => {
+    const { pureSerializationState, graphFetchState, config } = props;
+    const applicationStore = graphFetchState.queryBuilderState.applicationStore;
+    const toAdd = !pureSerializationState.config;
+    const handleAction = (): void => {
+      if (toAdd) {
+        pureSerializationState.setConfig(config);
+      }
+      pureSerializationState.setConfigModal(false);
+    };
+    const removeConfig = (): void => {
+      pureSerializationState.setConfig(undefined);
+      pureSerializationState.setConfigModal(false);
+      graphFetchState.queryBuilderState.applicationStore.notificationService.notifySuccess(
+        'Serialization config removed',
+      );
+    };
+    const close = (): void => pureSerializationState.setConfigModal(false);
+    return (
+      <Dialog
+        open={pureSerializationState.configModal}
+        onClose={close}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="query-builder-graph-fetch-config"
+        >
+          <ModalHeader
+            title={`${
+              toAdd ? 'Add Serialization Config' : 'Edit Serialization Config'
+            }`}
+          />
+          <ModalBody className="query-builder-graph-fetch-config__content">
+            <Panel>
+              <PanelForm>
+                <PanelFormTextField
+                  name="Type Key Name"
+                  value={config.typeKeyName}
+                  isReadOnly={false}
+                  update={(value: string | undefined): void =>
+                    config.setTypeName(value ?? '')
+                  }
+                  errorMessage={
+                    config.typeKeyName === ''
+                      ? `Type key name can't be empty`
+                      : undefined
+                  }
+                />
+                <PanelFormBooleanField
+                  name="Include Type"
+                  value={config.includeType}
+                  isReadOnly={false}
+                  update={(value: boolean | undefined): void =>
+                    config.setIncludeType(Boolean(value))
+                  }
+                />
+
+                <PanelFormBooleanField
+                  name="Include Enum Type"
+                  value={config.includeEnumType}
+                  isReadOnly={false}
+                  update={(value: boolean | undefined): void =>
+                    config.setInclueEnumType(Boolean(value))
+                  }
+                />
+
+                <PanelFormBooleanField
+                  name="Remove Properties With Null Values"
+                  value={config.removePropertiesWithNullValues}
+                  isReadOnly={false}
+                  update={(value: boolean | undefined): void =>
+                    config.setRemovePropertiesWithNullValues(Boolean(value))
+                  }
+                />
+
+                <PanelFormBooleanField
+                  name="Remove properties with empty sets"
+                  value={config.removePropertiesWithEmptySets}
+                  isReadOnly={false}
+                  update={(value: boolean | undefined): void =>
+                    config.setRemovePropertiesWithEmptySets(Boolean(value))
+                  }
+                />
+
+                <PanelFormBooleanField
+                  name="Use Fully Qualified Type Path"
+                  value={config.fullyQualifiedTypePath}
+                  isReadOnly={false}
+                  update={(value: boolean | undefined): void =>
+                    config.setFullyQualifiedTypePath(Boolean(value))
+                  }
+                />
+                <PanelFormBooleanField
+                  name="Include Object Reference"
+                  value={config.includeObjectReference}
+                  isReadOnly={false}
+                  update={(value: boolean | undefined): void =>
+                    config.setIncludeObjectReference(Boolean(value))
+                  }
+                />
+              </PanelForm>
+            </Panel>
+          </ModalBody>
+          <ModalFooter>
+            {!toAdd && (
+              <ModalFooterButton
+                className="btn--caution"
+                text="Remove Config"
+                onClick={removeConfig}
+              />
+            )}
+            <button
+              className="btn modal__footer__close-btn btn--dark"
+              onClick={handleAction}
+            >
+              {toAdd ? 'Add Config' : 'Close'}
+            </button>
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 export const QueryBuilderGraphFetchTreeExplorer = observer(
   (props: {
     graphFetchState: QueryBuilderGraphFetchTreeState;
+    pureSerializationState: GraphFetchPureSerializationState;
     treeData: QueryBuilderGraphFetchTreeData;
     updateTreeData: (data: QueryBuilderGraphFetchTreeData) => void;
     isReadOnly: boolean;
   }) => {
-    const { graphFetchState, treeData, updateTreeData, isReadOnly } = props;
+    const {
+      graphFetchState,
+      pureSerializationState,
+      treeData,
+      updateTreeData,
+      isReadOnly,
+    } = props;
 
     const onNodeSelect = (node: QueryBuilderGraphFetchTreeNodeData): void => {
       if (node.childrenIds.length) {
@@ -165,9 +325,30 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
     const toggleChecked = (): void =>
       graphFetchState.setChecked(!graphFetchState.isChecked);
 
+    const openConfigModal = (): void => {
+      pureSerializationState.setConfigModal(true);
+    };
+
     return (
       <div className="query-builder-graph-fetch-tree">
         <div className="query-builder-graph-fetch-tree__toolbar">
+          <div className="query-builder-graph-fetch-tree__actions">
+            <button
+              className="query-builder-graph-fetch-tree__actions__action-btn__label"
+              onClick={openConfigModal}
+              title={`${
+                pureSerializationState.config
+                  ? 'Edit pure serialization config'
+                  : 'Add pure serialization config'
+              }`}
+              tabIndex={-1}
+            >
+              <SerializeIcon className="query-builder-graph-fetch-tree__actions__action-btn__label__icon" />
+              <div className="query-builder-graph-fetch-tree__actions__action-btn__label__title">
+                {pureSerializationState.config ? 'Edit Config' : 'Add Config'}
+              </div>
+            </button>
+          </div>
           <div
             className={clsx('panel__content__form__section__toggler')}
             onClick={toggleChecked}
@@ -189,6 +370,15 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
           </div>
         </div>
         <div className="query-builder-graph-fetch-tree__container">
+          {pureSerializationState.configModal && (
+            <PureSerializationConfigModal
+              pureSerializationState={pureSerializationState}
+              graphFetchState={graphFetchState}
+              config={
+                pureSerializationState.config ?? new PureSerializationConfig()
+              }
+            />
+          )}
           <TreeView
             components={{
               TreeNodeContainer: QueryBuilderGraphFetchTreeNodeContainer,
@@ -207,9 +397,13 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
   },
 );
 
-export const QueryBuilderGraphFetchTreePanel = observer(
-  (props: { graphFetchTreeState: QueryBuilderGraphFetchTreeState }) => {
-    const { graphFetchTreeState } = props;
+const QueryBuilderGraphFetchTreePanel = observer(
+  (props: {
+    graphFetchTreeState: QueryBuilderGraphFetchTreeState;
+
+    pureSerializationState: GraphFetchPureSerializationState;
+  }) => {
+    const { graphFetchTreeState, pureSerializationState } = props;
     const treeData = graphFetchTreeState.treeData;
 
     // Deep/Graph Fetch Tree
@@ -264,12 +458,53 @@ export const QueryBuilderGraphFetchTreePanel = observer(
           {treeData && !isGraphFetchTreeDataEmpty(treeData) && (
             <QueryBuilderGraphFetchTreeExplorer
               graphFetchState={graphFetchTreeState}
+              pureSerializationState={pureSerializationState}
               treeData={treeData}
               isReadOnly={false}
               updateTreeData={updateTreeData}
             />
           )}
         </PanelDropZone>
+      </div>
+    );
+  },
+);
+
+export const QueryBuilderGraphFetchPanel = observer(
+  (props: { graphFetchTreeState: QueryBuilderGraphFetchTreeState }) => {
+    const { graphFetchTreeState } = props;
+    const serializationState = graphFetchTreeState.serializationState;
+    const handleTextModeClick = (): void =>
+      graphFetchTreeState.queryBuilderState.textEditorState.openModal(
+        QueryBuilderTextEditorMode.TEXT,
+      );
+    if (serializationState instanceof GraphFetchPureSerializationState) {
+      return (
+        <QueryBuilderGraphFetchTreePanel
+          graphFetchTreeState={graphFetchTreeState}
+          pureSerializationState={serializationState}
+        />
+      );
+    }
+    return (
+      <div
+        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_GRAPH_FETCH}
+        className="panel__content"
+      >
+        <BlankPanelContent>
+          <div className="unsupported-element-editor__main">
+            <div className="unsupported-element-editor__summary">
+              Unsupported Graph Fetch Serialization Type
+            </div>
+
+            <button
+              className="btn--dark unsupported-element-editor__to-text-mode__btn"
+              onClick={handleTextModeClick}
+            >
+              Edit in text mode
+            </button>
+          </div>
+        </BlankPanelContent>
       </div>
     );
   },

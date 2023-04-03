@@ -78,6 +78,10 @@ export { RawVariableExpression } from './graph/metamodel/pure/rawValueSpecificat
 export { INTERNAL__UnknownValueSpecification } from './graph/metamodel/pure/valueSpecification/INTERNAL__UnknownValueSpecification.js';
 export { VariableExpression } from './graph/metamodel/pure/valueSpecification/VariableExpression.js';
 export {
+  KeyExpression,
+  KeyExpressionInstanceValue,
+} from './graph/metamodel/pure/valueSpecification/KeyExpressionInstanceValue.js';
+export {
   AbstractPropertyExpression,
   SimpleFunctionExpression,
   FunctionExpression,
@@ -169,6 +173,7 @@ export * from './graph/PureGraphPlugin.js';
 
 export { type GraphManagerPluginManager } from './graphManager/GraphManagerPluginManager.js';
 export { Core_GraphManagerPreset } from './Core_GraphManagerPreset.js';
+export { DSL_ExternalFormat_PureGraphPlugin } from './graph/extensions/DSL_ExternalFormat_PureGraphPlugin.js';
 export { Core_PureGraphManagerPlugin } from './graphManager/extensions/Core_PureGraphManagerPlugin.js';
 export {
   BasicGraphManagerState,
@@ -211,6 +216,7 @@ export {
 export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graphManager/action/SourceInformation.js';
 export * from './graphManager/protocol/pure/PureProtocolProcessorPlugin.js';
+export * from './graphManager/protocol/pure/extensions/DSL_ExternalFormat_PureProtocolProcessorPlugin.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
 

@@ -96,6 +96,10 @@ import type { V1_GenericTypeInstance } from '../../../../model/valueSpecificatio
 import { V1_ClassInstanceType } from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 import { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import { PrimitiveType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import {
+  KeyExpression,
+  KeyExpressionInstanceValue,
+} from '../../../../../../../../graph/metamodel/pure/valueSpecification/KeyExpressionInstanceValue.js';
 
 const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
@@ -172,8 +176,35 @@ export class V1_ValueSpecificationBuilder
   visit_KeyExpression(
     valueSpecification: V1_KeyExpression,
   ): ValueSpecification {
-    // TODO
-    throw new UnsupportedOperationError();
+    const keyExpInstanceVal = new KeyExpressionInstanceValue();
+    const processedExpression =
+      valueSpecification.expression.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationBuilder(
+          this.context,
+          this.processingContext,
+          this.openVariables,
+        ),
+      );
+    const processedKey =
+      valueSpecification.key.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationBuilder(
+          this.context,
+          this.processingContext,
+          this.openVariables,
+        ),
+      );
+    const key = guaranteeType(
+      processedKey,
+      PrimitiveInstanceValue,
+      `Can't process key expression: key value must be a primitive instance value`,
+    );
+    const keyExpression = new KeyExpression(
+      key,
+      processedExpression,
+      valueSpecification.add,
+    );
+    keyExpInstanceVal.values = [keyExpression];
+    return keyExpInstanceVal;
   }
 
   visit_AppliedFunction(
@@ -236,7 +267,10 @@ export class V1_ValueSpecificationBuilder
   ): ValueSpecification {
     const instanceValue = new InstanceValue(
       Multiplicity.ONE,
-      this.context.resolveGenericType(valueSpecification.fullPath),
+      // generic type not required since packageable element not required to be a type
+      returnUndefOnError(() =>
+        this.context.resolveGenericType(valueSpecification.fullPath),
+      ),
     );
     instanceValue.values = [
       this.context.resolveElement(valueSpecification.fullPath, false),

@@ -59,20 +59,21 @@ export class QueryBuilderFetchStructureState {
           this.queryBuilderState,
           this,
         );
-        return;
+        break;
       }
       case FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH: {
         this.implementation = new QueryBuilderGraphFetchTreeState(
           this.queryBuilderState,
           this,
         );
-        return;
+        break;
       }
       default:
         throw new UnsupportedOperationError(
           `Can't change fetch-structure implementation to unsupported type: '${type}'`,
         );
     }
+    this.implementation.initialize();
   }
 
   fetchProperty(node: QueryBuilderExplorerTreeNodeData): void {

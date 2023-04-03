@@ -64,7 +64,7 @@ const cases: TestCase[] = [
     'Graph element resolution issue',
     relationalCtx,
     TEST_DATA__errorInGraphLambda,
-    `Can't find type 'model::pure::tests::model::simple::NotFound'`,
+    `Can't find element 'model::pure::tests::model::simple::NotFound'`,
   ],
   [
     'Unsupported function',

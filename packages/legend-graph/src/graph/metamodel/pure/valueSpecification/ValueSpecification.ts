@@ -33,6 +33,7 @@ import type { INTERNAL__UnknownValueSpecification } from './INTERNAL__UnknownVal
 import type { VariableExpression } from './VariableExpression.js';
 import type { INTERNAL__PropagatedValue } from './INTERNAL__PropagatedValue.js';
 import type { Hashable } from '@finos/legend-shared';
+import type { KeyExpressionInstanceValue } from './KeyExpressionInstanceValue.js';
 
 export interface ValueSpecificationVisitor<T> {
   visit_INTERNAL__UnknownValueSpecification(
@@ -52,6 +53,7 @@ export interface ValueSpecificationVisitor<T> {
   ): T;
 
   visit_InstanceValue(valueSpecification: InstanceValue): T;
+
   visit_CollectionInstanceValue(valueSpecification: CollectionInstanceValue): T;
   visit_EnumValueInstanceValue(valueSpecification: EnumValueInstanceValue): T;
   visit_PrimitiveInstanceValue(valueSpecification: PrimitiveInstanceValue): T;
@@ -60,6 +62,9 @@ export interface ValueSpecificationVisitor<T> {
   ): T;
   visit_GraphFetchTreeInstanceValue(
     valueSpecification: GraphFetchTreeInstanceValue,
+  ): T;
+  visit_KeyExpressionInstanceValue(
+    valueSpeciciation: KeyExpressionInstanceValue,
   ): T;
 }
 

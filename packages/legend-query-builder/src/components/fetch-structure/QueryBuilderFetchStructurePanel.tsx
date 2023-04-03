@@ -24,7 +24,7 @@ import {
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { QueryBuilderTDSPanel } from './QueryBuilderTDSPanel.js';
-import { QueryBuilderGraphFetchTreePanel } from './QueryBuilderGraphFetchTreePanel.js';
+import { QueryBuilderGraphFetchPanel } from './QueryBuilderGraphFetchTreePanel.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
@@ -42,7 +42,7 @@ const QueryBuilderFetchStructureEditor = observer(
       fetchStructureImplementation instanceof QueryBuilderGraphFetchTreeState
     ) {
       return (
-        <QueryBuilderGraphFetchTreePanel
+        <QueryBuilderGraphFetchPanel
           graphFetchTreeState={fetchStructureImplementation}
         />
       );

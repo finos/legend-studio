@@ -2442,6 +2442,69 @@
       "_type": "class",
       "name": "DataType",
       "package": "meta::pure::metamodel::type"
+    },
+    {
+      "_type": "class",
+      "name": "AlloySerializationConfig",
+      "package": "meta::pure::graphFetch::execution",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "typeKeyName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "includeType",
+          "type": "Boolean"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "includeEnumType",
+          "type": "Boolean"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "removePropertiesWithNullValues",
+          "type": "Boolean"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "removePropertiesWithEmptySets",
+          "type": "Boolean"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "fullyQualifiedTypePath",
+          "type": "Boolean"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "includeObjectReference",
+          "type": "Boolean"
+        }
+      ]
     }
   ]
 }

@@ -15,20 +15,37 @@
  */
 
 import {
+  type ValueSpecification,
+  type LambdaFunction,
+  type PureModel,
   extractElementNameFromPath,
   GenericType,
   GenericTypeExplicitReference,
   matchFunctionName,
   PrimitiveInstanceValue,
   SimpleFunctionExpression,
-  type ValueSpecification,
-  type LambdaFunction,
   GraphFetchTreeInstanceValue,
   PrimitiveType,
+  InstanceValue,
+  Multiplicity,
+  PackageableElementExplicitReference,
+  SUPPORTED_FUNCTIONS,
+  PURE_SERIALIZE_CONFIG_CLASS,
+  CollectionInstanceValue,
+  KeyExpressionInstanceValue,
+  KeyExpression,
 } from '@finos/legend-graph';
-import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import {
+  UnsupportedOperationError,
+  guaranteeNonNullable,
+  guaranteeType,
+} from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
-import type { QueryBuilderGraphFetchTreeState } from './QueryBuilderGraphFetchTreeState.js';
+import {
+  GraphFetchExternalFormatSerializationState,
+  GraphFetchPureSerializationState,
+  type QueryBuilderGraphFetchTreeState,
+} from './QueryBuilderGraphFetchTreeState.js';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil.js';
 
 const appendTakeLimit = (
@@ -79,6 +96,67 @@ const appendTakeLimit = (
   return lambda;
 };
 
+export const buildPureSerializationConfig = (
+  config: Record<PropertyKey, boolean>,
+  graph: PureModel,
+): SimpleFunctionExpression => {
+  const configClass = graph.getClass(PURE_SERIALIZE_CONFIG_CLASS);
+  const newFunction = new SimpleFunctionExpression(
+    extractElementNameFromPath(SUPPORTED_FUNCTIONS.NEW),
+  );
+  // build instance
+  const instance = new InstanceValue(Multiplicity.ONE, undefined);
+  instance.values[0] = PackageableElementExplicitReference.create(configClass);
+  // build values
+  const primitiveInstance = new PrimitiveInstanceValue(
+    GenericTypeExplicitReference.create(new GenericType(PrimitiveType.STRING)),
+  );
+  primitiveInstance.values = [''];
+  const pureConfigCollection = new CollectionInstanceValue(
+    Multiplicity.ONE,
+    undefined,
+  );
+  configClass.properties.forEach((classProperty) => {
+    const property = Object.getOwnPropertyNames(config).find(
+      (p) => p === classProperty.name,
+    );
+    if (property) {
+      const keyExpressionInstance = new KeyExpressionInstanceValue();
+      // key expression
+      const keyInstance = new PrimitiveInstanceValue(
+        GenericTypeExplicitReference.create(
+          new GenericType(PrimitiveType.STRING),
+        ),
+      );
+      keyInstance.values = [property];
+      // primitive
+      const keyPrimitiveInstance = new PrimitiveInstanceValue(
+        GenericTypeExplicitReference.create(
+          new GenericType(classProperty.genericType.value.rawType),
+        ),
+      );
+      keyPrimitiveInstance.values = [config[property]];
+      const keyExpression = new KeyExpression(
+        keyInstance,
+        keyPrimitiveInstance,
+        false,
+      );
+      keyExpressionInstance.values = [keyExpression];
+      pureConfigCollection.values.push(keyExpressionInstance);
+    }
+  });
+  pureConfigCollection.multiplicity = new Multiplicity(
+    pureConfigCollection.values.length,
+    pureConfigCollection.values.length,
+  );
+  newFunction.parametersValues = [
+    instance,
+    primitiveInstance,
+    pureConfigCollection,
+  ];
+  return newFunction;
+};
+
 export const appendGraphFetch = (
   graphFetchTreeState: QueryBuilderGraphFetchTreeState,
   lambdaFunction: LambdaFunction,
@@ -97,30 +175,94 @@ export const appendGraphFetch = (
     `Can't build graph-fetch tree expression: preceding expression is not defined`,
   );
 
-  // build graph-fetch tree
-  if (
-    graphFetchTreeState.treeData &&
-    !isGraphFetchTreeDataEmpty(graphFetchTreeState.treeData)
+  const seriaizationState = graphFetchTreeState.serializationState;
+  if (seriaizationState instanceof GraphFetchPureSerializationState) {
+    // build graph-fetch tree
+    if (
+      graphFetchTreeState.treeData &&
+      !isGraphFetchTreeDataEmpty(graphFetchTreeState.treeData)
+    ) {
+      const graphFetchInstance = new GraphFetchTreeInstanceValue();
+      graphFetchInstance.values = [graphFetchTreeState.treeData.tree];
+      const serializeFunction = new SimpleFunctionExpression(
+        extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE),
+      );
+      const graphFetchFunc = new SimpleFunctionExpression(
+        graphFetchTreeState.isChecked
+          ? extractElementNameFromPath(
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+            )
+          : extractElementNameFromPath(
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
+            ),
+      );
+      graphFetchFunc.parametersValues = [
+        precedingExpression,
+        graphFetchInstance,
+      ];
+      serializeFunction.parametersValues = [graphFetchFunc, graphFetchInstance];
+      if (seriaizationState.config) {
+        const configFunction = buildPureSerializationConfig(
+          seriaizationState.config as unknown as Record<PropertyKey, boolean>,
+          graphFetchTreeState.queryBuilderState.graphManagerState.graph,
+        );
+        serializeFunction.parametersValues.push(configFunction);
+      }
+      lambdaFunction.expressionSequence[0] = serializeFunction;
+    }
+  } else if (
+    seriaizationState instanceof GraphFetchExternalFormatSerializationState
   ) {
-    const graphFetchInstance = new GraphFetchTreeInstanceValue();
-    graphFetchInstance.values = [graphFetchTreeState.treeData.tree];
-    const serializeFunction = new SimpleFunctionExpression(
-      extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE),
+    const externalizeFunction = new SimpleFunctionExpression(
+      extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXTERNALIZE),
     );
-    const graphFetchFunc = new SimpleFunctionExpression(
-      graphFetchTreeState.isChecked
-        ? extractElementNameFromPath(
-            QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
-          )
-        : extractElementNameFromPath(
-            QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
-          ),
+    const mainGraphTree = graphFetchTreeState.treeData;
+    const externalizeTree = seriaizationState.treeData;
+    if (
+      mainGraphTree &&
+      externalizeTree &&
+      !isGraphFetchTreeDataEmpty(mainGraphTree) &&
+      !isGraphFetchTreeDataEmpty(externalizeTree)
+    ) {
+      // 0th param
+      const graphFetchInstance = new GraphFetchTreeInstanceValue();
+      graphFetchInstance.values = [mainGraphTree.tree];
+      const graphFetchFunc = new SimpleFunctionExpression(
+        graphFetchTreeState.isChecked
+          ? extractElementNameFromPath(
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+            )
+          : extractElementNameFromPath(
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
+            ),
+      );
+      graphFetchFunc.parametersValues = [
+        precedingExpression,
+        graphFetchInstance,
+      ];
+      // 1st param
+      const bindingInstance = new InstanceValue(Multiplicity.ONE, undefined);
+      bindingInstance.values = [
+        PackageableElementExplicitReference.create(
+          seriaizationState.targetBinding,
+        ),
+      ];
+      // 2nd parameter
+      const xtGraphFetchInstance = new GraphFetchTreeInstanceValue();
+      xtGraphFetchInstance.values = [externalizeTree.tree];
+      // build externalize
+      externalizeFunction.parametersValues = [
+        graphFetchFunc,
+        bindingInstance,
+        xtGraphFetchInstance,
+      ];
+      lambdaFunction.expressionSequence[0] = externalizeFunction;
+    }
+  } else {
+    throw new UnsupportedOperationError(
+      `Unsupported serialization state ${seriaizationState.getLabel()}`,
     );
-    graphFetchFunc.parametersValues = [precedingExpression, graphFetchInstance];
-    serializeFunction.parametersValues = [graphFetchFunc, graphFetchInstance];
-    lambdaFunction.expressionSequence[0] = serializeFunction;
   }
-
   // build result set modifier: i.e. preview limit
   if (options?.isBuildingExecutionQuery) {
     appendTakeLimit(lambdaFunction, queryBuilderState.resultState.previewLimit);

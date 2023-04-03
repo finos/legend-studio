@@ -39,6 +39,8 @@ import TEST_DATA__M2MWithInheritance from './TEST_DATA__QueryBuilder_Model_M2MWi
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import TEST_DATA__SimpleM2MModel from './TEST_DATA__QueryBuilder_Model_SimpleM2M.json';
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
+import TEST_DATA__BindingM2MModel from './TEST_DATA__QueryBuilder_Model_BindingM2M.json';
+import TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M from './TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M.json';
 import {
   TEST_DATA__lambda_simpleSingleConditionFilterWithParameter,
   TEST_DATA__lambda_enumerationOperatorFilter,
@@ -65,6 +67,7 @@ import {
 } from './TEST_DATA__QueryBuilder_TestQueriesWithFullPathFunctions.js';
 import type { Entity } from '@finos/legend-storage';
 import {
+  Core_GraphManagerPreset,
   RawLambda,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
@@ -102,6 +105,7 @@ import {
   TEST_DATA__lambda_groupBy_postFilter_OlapGroupBy,
   TEST_DATA__lambda_olapGroupBy_withSortOnOlapColumn,
 } from './TEST_DATA__QueryBuilder__OLAPGroupBy.js';
+import { TEST_DATA__graphFetchWithSerializationConfig } from './TEST_DATA__QueryBuilder_GraphFetch.js';
 import {
   TEST_DATA_lambda_watermark_Constant,
   TEST_DATA_lambda_watermark_filter_Constant,
@@ -113,6 +117,10 @@ import {
   TEST_DATA__lambda_ContantExpression_Simple,
   TEST_DATA__lambda_ContantExpression_SimpleUsedAsVariable,
 } from './TEST_DATA__QueryBuilder_ConstantExpression.js';
+import {
+  TEST_DATA__lambda_Externalize_externalize_graphFetch,
+  TEST_DATA__lambda_Externalize_externalize_graphFetchChecked,
+} from './TEST_DATA__QueryBuilder_Externalize.js';
 
 type RoundtripTestCase = [
   string,
@@ -153,6 +161,14 @@ const forWatermarkCtx = {
 
 const olapGroupbyCtx = {
   entities: TEST_DATA__OlapGroupBy_entities,
+};
+
+const bindingM2MCtx = {
+  entities: TEST_DATA__BindingM2MModel,
+};
+
+const identitfyM2MCtx = {
+  entities: TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M,
 };
 
 const cases: RoundtripTestCase[] = [
@@ -224,6 +240,12 @@ const cases: RoundtripTestCase[] = [
     'Graph-fetch with subtype',
     graphFetchWithSubtypeCtx,
     TEST_DATA__graphFetchWithSubtype,
+    undefined,
+  ],
+  [
+    'Graph Fetch with serialization config',
+    identitfyM2MCtx,
+    TEST_DATA__graphFetchWithSerializationConfig,
     undefined,
   ],
   // filter
@@ -547,6 +569,19 @@ const cases: RoundtripTestCase[] = [
     TEST_DATA__lambda_ContantExpression_MultiConstantVAriables,
     undefined,
   ],
+  // externalize
+  [
+    'Simple externalize() on graphfetch()',
+    bindingM2MCtx,
+    TEST_DATA__lambda_Externalize_externalize_graphFetch,
+    undefined,
+  ],
+  [
+    'Simple externalize() on graphfetchChecked()',
+    bindingM2MCtx,
+    TEST_DATA__lambda_Externalize_externalize_graphFetchChecked,
+    undefined,
+  ],
 ];
 
 describe(
@@ -563,7 +598,10 @@ describe(
         const { entities } = context;
         const pluginManager = TEST__LegendApplicationPluginManager.create();
         pluginManager
-          .usePresets([new QueryBuilder_GraphManagerPreset()])
+          .usePresets([
+            new Core_GraphManagerPreset(),
+            new QueryBuilder_GraphManagerPreset(),
+          ])
           .install();
         const applicationStore = TEST__getTestApplicationStore(
           TEST__getGenericApplicationConfig(),

@@ -1,0 +1,213 @@
+[
+  {
+    "path": "model::Person",
+    "content": {
+      "_type": "class",
+      "name": "Person",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firstName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "lastName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "nickName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "age",
+          "type": "Integer"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::TargetPerson",
+    "content": {
+      "_type": "class",
+      "name": "TargetPerson",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "fullName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "const",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "nickName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "age",
+          "type": "Integer"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::TBinding",
+    "content": {
+      "_type": "binding",
+      "contentType": "application/json",
+      "includedStores": [],
+      "modelUnit": {
+        "packageableElementExcludes": [],
+        "packageableElementIncludes": ["model::TargetPerson"]
+      },
+      "name": "TBinding",
+      "package": "model"
+    },
+    "classifierPath": "meta::external::shared::format::binding::Binding"
+  },
+  {
+    "path": "model::SourceBinding",
+    "content": {
+      "_type": "binding",
+      "contentType": "application/json",
+      "includedStores": [],
+      "modelUnit": {
+        "packageableElementExcludes": [],
+        "packageableElementIncludes": ["model::Person"]
+      },
+      "name": "SourceBinding",
+      "package": "model"
+    },
+    "classifierPath": "meta::external::shared::format::binding::Binding"
+  },
+  {
+    "path": "model::PersonToPersonMapping",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "model::TargetPerson",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "model::TargetPerson",
+                "property": "fullName"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "func",
+                    "function": "plus",
+                    "parameters": [
+                      {
+                        "_type": "collection",
+                        "multiplicity": {
+                          "lowerBound": 3,
+                          "upperBound": 3
+                        },
+                        "values": [
+                          {
+                            "_type": "property",
+                            "property": "firstName",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "src"
+                              }
+                            ]
+                          },
+                          {
+                            "_type": "string",
+                            "value": " "
+                          },
+                          {
+                            "_type": "property",
+                            "property": "lastName",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "src"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "parameters": []
+              }
+            },
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "model::TargetPerson",
+                "property": "const"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "string",
+                    "value": "myConst"
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true,
+          "srcClass": "model::Person"
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "PersonToPersonMapping",
+      "package": "model",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  }
+]
