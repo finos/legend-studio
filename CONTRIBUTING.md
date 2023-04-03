@@ -189,7 +189,11 @@ yarn fix
 Make sure to [create a changeset](#changeset) if you make significant code logic changes.
 
 ```sh
+# create changeset for your uncommited changes
 yarn changeset
+
+# create changeset for your changes on a specific branch
+yarn changeset:branch
 ```
 
 If you make change to the interface, please kindly include the screenshots, screen captures or `GIFs` in the description of the PR to make it easier for us to review this change :pray:

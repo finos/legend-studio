@@ -14,6 +14,7 @@
     "build:ts": "tsc --build tsconfig.build.json",
     "build:website": "rimraf \"build/docs\" && yarn build:doc && node ./scripts/website/prepareSiteContent.js",
     "changeset": "node ./scripts/workflow/generateChangeset.js",
+    "changeset:branch": "node ./scripts/workflow/generateChangeset.js --branch",
     "changeset:cli": "changeset",
     "check:changeset": "node ./scripts/workflow/checkChangesets.js",
     "check:ci": "yarn check:pkg && yarn check:ts && yarn check:format && yarn check:copyright && yarn check:changeset",

@@ -45,6 +45,7 @@ const argv = yargs.default(hideBin(process.argv)).argv;
 
 const DEFAULT_BRANCH_NAME = 'master';
 const useOrigin = argv.useOrigin;
+const generateForBranch = argv.branch;
 const message = argv.m;
 let targetBranch = argv.v
   ? argv.v.toString() === 'latest'
@@ -115,8 +116,17 @@ if (!useOrigin) {
   }
 }
 
+const headRef = execSync(`git rev-parse HEAD`, {
+  encoding: 'utf-8',
+}).trim();
+
 generateChangeset(
   process.cwd(),
   message ? message.trim() : '',
-  useOrigin ? `origin/${targetBranch}` : targetBranch,
+  useOrigin
+    ? `origin/${targetBranch}`
+    : // NOTE: if not generate for branch, we use HEAD as the reference point
+    generateForBranch
+    ? targetBranch
+    : headRef,
 );
