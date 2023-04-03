@@ -15,7 +15,7 @@
  */
 
 import { clsx } from 'clsx';
-import { useEffect } from 'react';
+import { type RefObject, useEffect } from 'react';
 import {
   type ConnectDropTarget,
   type ConnectDragPreview,
@@ -39,11 +39,28 @@ export const PanelDropZone: React.FC<{
   );
 };
 
-export const PanelEntryDragHandle: React.FC = () => (
-  <div className="dnd__entry-drag-handle">
-    <VerticalDragHandleIcon />
-  </div>
-);
+export const PanelEntryDragHandle: React.FC<{
+  dropTargetConnector: RefObject<HTMLDivElement>;
+  isBeingDragged: boolean;
+  isLargeContainer?: boolean;
+  className?: string;
+}> = (props) => {
+  const { isBeingDragged, dropTargetConnector, isLargeContainer, className } =
+    props;
+  return (
+    <div
+      ref={dropTargetConnector}
+      className={clsx('dnd__entry__handle__container', className, {
+        'dnd__entry__handle__container--absolute': isBeingDragged,
+        'dnd__entry__handle__container--large': isLargeContainer,
+      })}
+    >
+      <div className="dnd__entry-drag-handle">
+        <VerticalDragHandleIcon />
+      </div>
+    </div>
+  );
+};
 
 export const PanelEntryDropZonePlaceholder: React.FC<{
   children: React.ReactNode;

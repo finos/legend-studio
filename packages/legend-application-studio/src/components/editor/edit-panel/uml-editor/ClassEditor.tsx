@@ -149,6 +149,8 @@ const PropertyBasicEditor = observer(
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
+
     const { property, _class, editorState, deleteProperty, isReadOnly } = props;
 
     const editorStore = useEditorStore();
@@ -266,7 +268,8 @@ const PropertyBasicEditor = observer(
         }),
         [property],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     // Other
@@ -284,9 +287,14 @@ const PropertyBasicEditor = observer(
 
     return (
       <div ref={ref} className="property-basic-editor__container">
+        {!isIndirectProperty && (
+          <PanelEntryDragHandle
+            isBeingDragged={isBeingDragged}
+            dropTargetConnector={handleRef}
+          />
+        )}
         <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="property-basic-editor">
-            {!isIndirectProperty && <PanelEntryDragHandle />}
             {isIndirectProperty && (
               <div className="property-basic-editor__name property-basic-editor__name--with-lock">
                 <div className="property-basic-editor__name--with-lock__icon">
@@ -479,6 +487,8 @@ const DerivedPropertyBasicEditor = observer(
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
+
     const {
       derivedProperty,
       _class,
@@ -617,7 +627,8 @@ const DerivedPropertyBasicEditor = observer(
         }),
         [derivedProperty],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     // Action
@@ -643,6 +654,13 @@ const DerivedPropertyBasicEditor = observer(
 
     return (
       <div ref={ref} className="derived-property-editor__container">
+        {!isInheritedProperty && (
+          <PanelEntryDragHandle
+            dropTargetConnector={handleRef}
+            isBeingDragged={isBeingDragged}
+            isLargeContainer={true}
+          />
+        )}
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isBeingDragged}
           className="derived-property-editor__dnd__placeholder"
@@ -664,7 +682,6 @@ const DerivedPropertyBasicEditor = observer(
                   </span>
                 </div>
               )}
-              {!isInheritedProperty && <PanelEntryDragHandle />}
               {!isInheritedProperty && (
                 <input
                   disabled={isReadOnly}
@@ -849,6 +866,8 @@ const ConstraintEditor = observer(
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
+
     const { constraint, _class, deleteConstraint, editorState, isReadOnly } =
       props;
     const editorStore = useEditorStore();
@@ -902,7 +921,8 @@ const ConstraintEditor = observer(
         }),
         [constraint],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     // Actions
@@ -923,6 +943,13 @@ const ConstraintEditor = observer(
 
     return (
       <div ref={ref} className="constraint-editor__container">
+        {!isInheritedConstraint && (
+          <PanelEntryDragHandle
+            dropTargetConnector={handleRef}
+            isBeingDragged={isBeingDragged}
+            isLargeContainer={true}
+          />
+        )}
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isBeingDragged}
           className="constraint-editor__dnd__placeholder"
@@ -933,7 +960,6 @@ const ConstraintEditor = observer(
             })}
           >
             <div className="constraint-editor__content">
-              {!isInheritedConstraint && <PanelEntryDragHandle />}
               {isInheritedConstraint && (
                 <div className="constraint-editor__content__name--with-lock">
                   <div className="constraint-editor__content__name--with-lock__icon">
@@ -1008,6 +1034,8 @@ const SuperTypeEditor = observer(
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
+
     const { superType, _class, deleteSuperType, isReadOnly } = props;
     const editorStore = useEditorStore();
     // Type
@@ -1061,7 +1089,8 @@ const SuperTypeEditor = observer(
         }),
         [superType],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     const rawType = superType.value.rawType;
@@ -1079,9 +1108,12 @@ const SuperTypeEditor = observer(
 
     return (
       <div ref={ref} className="super-type-editor__container">
+        <PanelEntryDragHandle
+          dropTargetConnector={handleRef}
+          isBeingDragged={isBeingDragged}
+        />
         <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="super-type-editor">
-            <PanelEntryDragHandle />
             <CustomSelectorInput
               className="super-type-editor__class"
               disabled={isReadOnly}

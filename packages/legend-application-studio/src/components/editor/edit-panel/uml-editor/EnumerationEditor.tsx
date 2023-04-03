@@ -100,6 +100,8 @@ const EnumBasicEditor = observer(
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
+
     const { enumValue, selectValue, deleteValue, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       enum_setName(enumValue, event.target.value);
@@ -148,14 +150,18 @@ const EnumBasicEditor = observer(
         }),
         [enumValue],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
       <div ref={ref} className="enum-basic-editor__container">
+        <PanelEntryDragHandle
+          dropTargetConnector={handleRef}
+          isBeingDragged={isBeingDragged}
+        />
         <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="enum-basic-editor">
-            <PanelEntryDragHandle />
             <InputWithInlineValidation
               className="enum-basic-editor__name input-group__input"
               spellCheck={false}

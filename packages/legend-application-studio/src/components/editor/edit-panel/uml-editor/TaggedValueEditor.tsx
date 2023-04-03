@@ -78,6 +78,8 @@ export const TaggedValueEditor = observer(
     darkTheme?: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
+
     const {
       annotatedElement,
       taggedValue,
@@ -176,17 +178,21 @@ export const TaggedValueEditor = observer(
         }),
         [taggedValue],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
       <div ref={ref} className="tagged-value-editor__container">
+        <PanelEntryDragHandle
+          dropTargetConnector={handleRef}
+          isBeingDragged={isBeingDragged}
+        />
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isBeingDragged}
           className="tagged-value-editor__dnd__placeholder"
         >
           <div className="tagged-value-editor">
-            <PanelEntryDragHandle />
             <div
               className={`tagged-value-editor__profile ${
                 darkTheme ? 'tagged-value-editor-dark-theme' : ''

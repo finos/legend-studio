@@ -74,6 +74,7 @@ export const StereotypeSelector = observer(
     darkTheme?: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
     const {
       annotatedElement,
       stereotype,
@@ -166,14 +167,18 @@ export const StereotypeSelector = observer(
         }),
         [stereotype],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
       <div ref={ref} className="stereotype-selector__container">
+        <PanelEntryDragHandle
+          dropTargetConnector={handleRef}
+          isBeingDragged={isBeingDragged}
+        />
         <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="stereotype-selector">
-            <PanelEntryDragHandle />
             <div
               className={`stereotype-selector__profile ${
                 darkTheme ? 'stereotype-selector-dark-theme' : ''

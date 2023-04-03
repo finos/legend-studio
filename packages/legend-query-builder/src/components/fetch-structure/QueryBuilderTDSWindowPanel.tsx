@@ -29,7 +29,6 @@ import {
   clsx,
   PanelEntryDropZonePlaceholder,
   ContextMenu,
-  VerticalDragHandleIcon,
   TimesIcon,
   useDragPreviewLayer,
   SortIcon,
@@ -43,6 +42,7 @@ import {
   ModalFooter,
   PanelFormSection,
   ModalFooterButton,
+  PanelEntryDragHandle,
 } from '@finos/legend-art';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -669,6 +669,8 @@ const QueryBuilderWindowColumnEditor = observer(
     const operators = windowState.operators;
     // state
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
+
     const [windowAnchor, setWindowAnchor] = useState<HTMLButtonElement | null>(
       null,
     );
@@ -796,7 +798,8 @@ const QueryBuilderWindowColumnEditor = observer(
         [windowColumnState],
       );
     const isBeingDragged = windowColumnState === olapColumnBeingDragged;
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     const handleOpDrop = (val: QueryBuilderTDSColumnState): void => {
@@ -847,6 +850,11 @@ const QueryBuilderWindowColumnEditor = observer(
 
     return (
       <div ref={ref} className="query-builder__olap__column">
+        <PanelEntryDragHandle
+          isBeingDragged={isBeingDragged}
+          className="query-builder__olap__column__drag-handle__container"
+          dropTargetConnector={handleRef}
+        />
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isBeingDragged}
           className="query-builder__dnd__placeholder"
@@ -865,11 +873,6 @@ const QueryBuilderWindowColumnEditor = observer(
             onOpen={onContextMenuOpen}
             onClose={onContextMenuClose}
           >
-            <div className="query-builder__olap__column__drag-handle__container">
-              <div className="query-builder__olap__column__drag-handle">
-                <VerticalDragHandleIcon />
-              </div>
-            </div>
             <div className="query-builder__olap__column__operation">
               <div className="query-builder__olap__column__operation__operator">
                 <div

@@ -77,6 +77,21 @@
   margin: 0;
 }
 
+.dnd__entry__handle__container {
+  float: left;
+  cursor: move;
+
+  &--large {
+    margin-left: 1rem;
+    margin-top: 1rem;
+  }
+
+  &--absolute {
+    position: absolute;
+    opacity: 0;
+  }
+}
+
 .dnd__entry-drag-handle {
   @include flexCenter;
   @include flexConstantDimension;

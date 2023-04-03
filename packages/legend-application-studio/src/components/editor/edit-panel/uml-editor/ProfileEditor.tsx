@@ -70,6 +70,8 @@ const TagBasicEditor = observer(
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
+
     const { tag, _profile, deleteValue, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       tagStereotype_setValue(tag, event.target.value);
@@ -112,14 +114,18 @@ const TagBasicEditor = observer(
       }),
       [tag],
     );
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
       <div ref={ref} className="tag-basic-editor__container">
+        <PanelEntryDragHandle
+          dropTargetConnector={handleRef}
+          isBeingDragged={isBeingDragged}
+        />
         <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="tag-basic-editor">
-            <PanelEntryDragHandle />
             <InputWithInlineValidation
               className="tag-basic-editor__value input-group__input"
               spellCheck={false}
@@ -163,6 +169,8 @@ const StereotypeBasicEditor = observer(
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
+
     const { stereotype, _profile, deleteStereotype, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       tagStereotype_setValue(stereotype, event.target.value);
@@ -208,14 +216,18 @@ const StereotypeBasicEditor = observer(
         }),
         [stereotype],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
       <div ref={ref} className="stereotype-basic-editor__container">
+        <PanelEntryDragHandle
+          dropTargetConnector={handleRef}
+          isBeingDragged={isBeingDragged}
+        />
         <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="stereotype-basic-editor">
-            <PanelEntryDragHandle />
             <InputWithInlineValidation
               className="stereotype-basic-editor__value input-group__input"
               spellCheck={false}

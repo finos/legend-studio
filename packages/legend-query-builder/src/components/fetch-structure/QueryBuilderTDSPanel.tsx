@@ -223,10 +223,8 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
 
 const QueryBuilderProjectionColumnEditor = observer(
   (props: { projectionColumnState: QueryBuilderProjectionColumnState }) => {
+    const handleRef = useRef<HTMLDivElement>(null);
     const ref = useRef<HTMLDivElement>(null);
-
-    const anotherRef = useRef<HTMLDivElement>(null);
-
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
@@ -266,7 +264,6 @@ const QueryBuilderProjectionColumnEditor = observer(
         item: QueryBuilderProjectionColumnDragSource,
         monitor: DropTargetMonitor,
       ): void => {
-        console.log('handing hover ');
         const dragIndex = tdsState.projectionColumns.findIndex(
           (e) => e === item.columnState,
         );
@@ -274,23 +271,10 @@ const QueryBuilderProjectionColumnEditor = observer(
           (e) => e === projectionColumnState,
         );
         if (dragIndex === -1 || hoverIndex === -1 || dragIndex === hoverIndex) {
-          console.log('return');
-
-          if (dragIndex === -1) {
-            console.log('drag index is -1', dragIndex);
-          }
-          if (hoverIndex === -1) {
-            console.log('hover index is -1', hoverIndex);
-          }
-          if (dragIndex === hoverIndex) {
-            console.log('same index', dragIndex, hoverIndex);
-          }
           return;
         }
         // move the item being hovered on when the dragged item position is beyond the its middle point
         const hoverBoundingReact = ref.current?.getBoundingClientRect();
-
-        console.log(hoverBoundingReact);
 
         const distanceThreshold =
           ((hoverBoundingReact?.bottom ?? 0) - (hoverBoundingReact?.top ?? 0)) /
@@ -298,13 +282,9 @@ const QueryBuilderProjectionColumnEditor = observer(
         const dragDistance =
           (monitor.getClientOffset()?.y ?? 0) - (hoverBoundingReact?.top ?? 0);
         if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
-          console.log('return2');
-
           return;
         }
         if (dragIndex > hoverIndex && dragDistance > distanceThreshold) {
-          console.log('return3');
-
           return;
         }
         tdsState.moveColumn(dragIndex, hoverIndex);
@@ -350,14 +330,15 @@ const QueryBuilderProjectionColumnEditor = observer(
     );
     const isBeingDragged =
       projectionColumnState === projectionColumnBeingDragged;
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
 
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div ref={anotherRef} className="query-builder__projection__column">
+      <div ref={ref} className="query-builder__projection__column">
         <div
-          ref={ref}
+          ref={handleRef}
           className="query-builder__projection__column__drag-handle__container"
         >
           <div className="query-builder__projection__column__drag-handle">
@@ -388,11 +369,6 @@ const QueryBuilderProjectionColumnEditor = observer(
             onOpen={onContextMenuOpen}
             onClose={onContextMenuClose}
           >
-            {/* <div className="query-builder__projection__column__drag-handle__container">
-              <div className="query-builder__projection__column__drag-handle">
-                <VerticalDragHandleIcon />
-              </div>
-            </div> */}
             <div className="query-builder__projection__column__name">
               <InputWithInlineValidation
                 className="query-builder__projection__column__name__input input-group__input"

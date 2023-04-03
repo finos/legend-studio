@@ -171,6 +171,8 @@ const ParameterBasicEditor = observer(
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
+
     const { parameter, _func, deleteParameter, isReadOnly } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
@@ -286,11 +288,16 @@ const ParameterBasicEditor = observer(
         }),
         [parameter],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
       <div ref={ref} className="property-basic-editor__container">
+        <PanelEntryDragHandle
+          dropTargetConnector={handleRef}
+          isBeingDragged={isBeingDragged}
+        />
         <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="property-basic-editor">
             {isReadOnly && (
@@ -298,7 +305,6 @@ const ParameterBasicEditor = observer(
                 <LockIcon />
               </div>
             )}
-            <PanelEntryDragHandle />
             <input
               className="property-basic-editor__name"
               disabled={isReadOnly}
