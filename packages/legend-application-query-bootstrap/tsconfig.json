@@ -21,7 +21,6 @@
     { "path": "../legend-extension-dsl-text" },
     { "path": "../legend-extension-store-service-store" },
     { "path": "../legend-extension-format-json-schema" },
-    { "path": "../legend-extension-format-graphql" },
-    { "path": "../legend-extension-format-avro" }
+    { "path": "../legend-extension-format-graphql" }
   ]
 }

@@ -25,9 +25,6 @@
     },
     {
       "path": "../legend-extension-format-graphql/tsconfig.build.json"
-    },
-    {
-      "path": "../legend-extension-format-avro/tsconfig.build.json"
     }
   ]
 }

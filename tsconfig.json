@@ -73,9 +73,6 @@
     {
       "path": "packages/legend-extension-format-graphql"
     },
-    {
-      "path": "packages/legend-extension-format-avro"
-    },
     // fixtures
     {
       "path": "fixtures/legend-mock-server"

@@ -17,7 +17,6 @@
 '@finos/legend-extension-dsl-diagram': patch
 '@finos/legend-extension-dsl-mastery': patch
 '@finos/legend-extension-dsl-service': patch
-'@finos/legend-extension-format-avro': patch
 '@finos/legend-application-pure-ide': patch
 '@finos/legend-application-taxonomy': patch
 '@finos/legend-application-studio': patch
