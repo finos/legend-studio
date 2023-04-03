@@ -33,6 +33,7 @@ import {
   MenuContentItem,
   MenuIcon,
   DropdownMenu,
+  DataReadyIcon,
 } from '@finos/legend-art';
 import {
   type DataSpaceViewerState,
@@ -143,6 +144,13 @@ export const DataSpaceViewerActivityBar = observer(
         title: 'Data Availability',
         icon: (
           <AvailabilityIcon className="data-space__viewer__activity-bar__icon--availability" />
+        ),
+      },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_READINESS,
+        title: 'Data Readiness',
+        icon: (
+          <DataReadyIcon className="data-space__viewer__activity-bar__icon--readiness" />
         ),
       },
       {

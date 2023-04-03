@@ -49,6 +49,7 @@ export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
 
   DATA_STORES = 'DATA_STORES', // TODO: with test-data, also let user call TDS query on top of these
   DATA_AVAILABILITY = 'DATA_AVAILABILITY',
+  DATA_READINESS = 'DATA_READINESS',
   DATA_COST = 'DATA_COST',
   DATA_GOVERNANCE = 'DATA_GOVERNANCE',
   INFO = 'INFO', // TODO: test coverage? (or maybe this should be done in elements/diagrams/data-quality section)

@@ -57,7 +57,7 @@ export abstract class LegendApplicationConfig {
   readonly env: string;
 
   // documentation
-  readonly documentationUrl: string | undefined;
+  readonly documentationUrl?: string | undefined;
   readonly documentationRegistryEntries: DocumentationRegistryEntry[] = [];
   readonly keyedDocumentationEntries: KeyedDocumentationEntry[] = [];
   readonly contextualDocEntries: ContextualDocumentationEntry[] = [];

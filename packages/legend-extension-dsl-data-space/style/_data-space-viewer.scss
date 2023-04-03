@@ -231,6 +231,10 @@
       font-size: 3rem;
     }
 
+    &--readiness {
+      font-size: 2.8rem;
+    }
+
     &--cost {
       font-size: 3rem;
     }
@@ -535,7 +539,7 @@
     user-select: none;
     margin-left: 0.5rem;
     font-size: 1.2rem;
-    font-weight: 500;
+    font-weight: 700;
   }
 
   &__item__header__anchor {
