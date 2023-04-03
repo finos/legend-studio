@@ -15,12 +15,12 @@
  */
 
 export enum QUERY_BUILDER_EVENT {
-  RUN_QUERY__LAUNCH = 'editor.execution.run-query.launch',
-  GENERATE_EXECUTION_PLAN__LAUNCH = 'editor.execution.generate-plan.launch',
-  DEBUG_EXECUTION_PLAN__LAUNCH = 'editor.execution.debug-plan.launch',
+  RUN_QUERY__LAUNCH = 'query-builder.run-query.launch',
+  GENERATE_EXECUTION_PLAN__LAUNCH = 'query-builder.generate-plan.launch',
+  DEBUG_EXECUTION_PLAN__LAUNCH = 'query-builder.debug-plan.launch',
 
-  RUN_QUERY__SUCCESS = 'editor.execution.run-query.success',
-  GENERATE_EXECUTION_PLAN__SUCCESS = 'editor.execution.generate-plan.success',
-  DEBUG_EXECUTION_PLAN__SUCCESS = 'editor.execution.debug-plan.success',
-  BUILD_EXECUTION_PLAN__SUCCESS = 'graph-manager.execution.build-plan.success',
+  RUN_QUERY__SUCCESS = 'query-builder.run-query.success',
+  GENERATE_EXECUTION_PLAN__SUCCESS = 'query-builder.generate-plan.success',
+  DEBUG_EXECUTION_PLAN__SUCCESS = 'query-builder.debug-plan.success',
+  BUILD_EXECUTION_PLAN__SUCCESS = 'query-builder.build-plan.success',
 }
