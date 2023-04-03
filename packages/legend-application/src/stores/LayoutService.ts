@@ -19,7 +19,10 @@ import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 import { LEGEND_APPLICATION_SETTING_KEY } from '../application/LegendApplicationSetting.js';
 import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../application/LegendApplicationEvent.js';
-import { LEGEND_APPLICATION_COLOR_THEME } from '../application/LegendApplicationTheme.js';
+import {
+  DEFAULT_DARK_COLOR_THEME,
+  LEGEND_APPLICATION_COLOR_THEME,
+} from '../application/LegendApplicationTheme.js';
 
 export type ColorTheme = {
   name: string;
@@ -54,6 +57,15 @@ export class LayoutService {
     });
     this.applicationStore = applicationStore;
 
+    // register core color themes
+    // TODO: we might want to cover at least: a dark theme, a light theme, and a high contrast theme (etc.)
+    // as part of core
+    this.colorThemeRegistry.set(
+      LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK,
+      DEFAULT_DARK_COLOR_THEME,
+    );
+
+    // register color themes from extensions
     this.applicationStore.pluginManager
       .getApplicationPlugins()
       .flatMap((plugin) => plugin.getExtraColorThemes?.() ?? [])
