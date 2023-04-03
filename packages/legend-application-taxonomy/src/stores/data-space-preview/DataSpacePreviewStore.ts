@@ -168,7 +168,7 @@ export class DataSpacePreviewStore {
     if (this.viewerState) {
       this.applicationStore.navigationService.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
-          this.applicationStore.config.queryUrl,
+          this.applicationStore.config.queryApplicationUrl,
           this.viewerState.groupId,
           this.viewerState.artifactId,
           this.viewerState.versionId,

@@ -379,9 +379,6 @@ export const ServiceExecutionQueryEditor = observer(
     );
 
     const openQueryInLegendQuery = (): void => {
-      const queryServerUrl = guaranteeNonNullable(
-        applicationStore.config.queryServerUrl,
-      );
       let projectGAV: ProjectGAVCoordinates;
       if (editorStore.editorMode instanceof ProjectViewerEditorMode) {
         const viewerEditorMode = editorStore.editorMode;
@@ -415,7 +412,7 @@ export const ServiceExecutionQueryEditor = observer(
       }
       applicationStore.navigationService.navigator.visitAddress(
         executionState.generateServiceQueryCreatorRoute(
-          queryServerUrl,
+          guaranteeNonNullable(applicationStore.config.queryApplicationUrl),
           projectGAV.groupId,
           projectGAV.artifactId,
           projectGAV.versionId,
@@ -557,7 +554,7 @@ export const ServiceExecutionQueryEditor = observer(
                     <MenuContentItem
                       className="service-editor__execution__advanced-btn__option"
                       onClick={openQueryInLegendQuery}
-                      disabled={!applicationStore.config.queryServerUrl}
+                      disabled={!applicationStore.config.queryApplicationUrl}
                     >
                       Open in Legend Query
                     </MenuContentItem>

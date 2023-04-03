@@ -267,7 +267,7 @@ export const QuerySetupLandingPage = withQuerySetupLandingPageStore(
       );
     const goToStudio = (): void =>
       applicationStore.navigationService.navigator.visitAddress(
-        applicationStore.config.studioUrl,
+        applicationStore.config.studioApplicationUrl,
       );
     const showAllActionGroup = (): void => setupStore.setShowAllGroups(true);
     const toggleAssistant = (): void =>

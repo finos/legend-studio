@@ -18,6 +18,7 @@ import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
   type ExtensionsConfigurationData,
+  URL_SEPARATOR,
 } from '@finos/legend-shared';
 import type { LegendApplicationConfigurationInput } from './LegendApplication.js';
 import {
@@ -104,5 +105,12 @@ export abstract class LegendApplicationConfig {
       input.versionData.commitSHA,
       `Can't collect application version: 'commitSHA' field is missing`,
     );
+  }
+
+  protected static resolveAbsoluteUrl(url: string): string {
+    if (url.trim().startsWith(URL_SEPARATOR)) {
+      return window.location.origin + url;
+    }
+    return url;
   }
 }

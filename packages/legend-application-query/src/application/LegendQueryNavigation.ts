@@ -179,13 +179,13 @@ export type ExistingQueryEditorPathParams = {
  * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
-  studioUrl: string,
+  studioApplicationUrl: string,
   groupId: string,
   artifactId: string,
   versionId: string,
   entityPath: string | undefined,
 ): string =>
-  `${studioUrl}/view/archive/${generateGAVCoordinates(
+  `${studioApplicationUrl}/view/archive/${generateGAVCoordinates(
     groupId,
     artifactId,
     versionId,
@@ -196,11 +196,11 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
   (
-    studioUrl: string,
+    studioApplicationUrl: string,
     projectId: string,
     entityPath: string | undefined,
   ): string =>
-    `${studioUrl}/view/${projectId}${
+    `${studioApplicationUrl}/view/${projectId}${
       entityPath ? `/entity/${entityPath}` : ''
     }`;
 
@@ -209,12 +209,12 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl =
   (
-    studioUrl: string,
+    studioApplicationUrl: string,
     groupId: string,
     artifactId: string,
     servicePath: string,
   ): string =>
-    `${studioUrl}/extensions/update-service-query/${servicePath}@${generateGAVCoordinates(
+    `${studioApplicationUrl}/extensions/update-service-query/${servicePath}@${generateGAVCoordinates(
       groupId,
       artifactId,
       undefined,
@@ -224,12 +224,12 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServic
  * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl =
-  (studioUrl: string, projectId: string): string =>
-    `${studioUrl}/extensions/update-project-service-query/${projectId}`;
+  (studioApplicationUrl: string, projectId: string): string =>
+    `${studioApplicationUrl}/extensions/update-project-service-query/${projectId}`;
 
 /**
  * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl =
-  (studioUrl: string, queryId: string): string =>
-    `${studioUrl}/extensions/productionize-query/${queryId}`;
+  (studioApplicationUrl: string, queryId: string): string =>
+    `${studioApplicationUrl}/extensions/productionize-query/${queryId}`;

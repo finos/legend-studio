@@ -103,7 +103,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         isCreateAction: true,
         action: async (setupStore: QuerySetupLandingPageStore) => {
           setupStore.applicationStore.navigationService.navigator.goToAddress(
-            setupStore.applicationStore.config.taxonomyUrl,
+            setupStore.applicationStore.config.taxonomyApplicationUrl,
           );
         },
         label: 'Create query from taxonomy',

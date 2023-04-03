@@ -56,7 +56,7 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
             if (matchingSDLCEntry) {
               editorStore.applicationStore.navigationService.navigator.goToAddress(
                 buildUrl([
-                  editorStore.applicationStore.config.studioUrl,
+                  editorStore.applicationStore.config.studioApplicationUrl,
                   generateQueryProductionizerRoute(editorStore.query.id),
                 ]),
                 { ignoreBlocking: true },

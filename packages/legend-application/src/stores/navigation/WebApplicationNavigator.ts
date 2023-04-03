@@ -135,6 +135,10 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     this.historyAPI.push(location);
   }
 
+  getCurrentRootAddress(): Address {
+    return this.window.location.origin;
+  }
+
   getCurrentAddress(): Address {
     return this.window.location.href;
   }

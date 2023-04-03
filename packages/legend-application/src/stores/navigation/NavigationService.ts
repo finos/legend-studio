@@ -74,6 +74,7 @@ export interface ApplicationNavigator {
    */
   updateCurrentLocation(location: Location): void;
 
+  getCurrentRootAddress(): Address;
   getCurrentAddress(): Address;
   getCurrentLocation(): Location;
   getAddressParameters<
