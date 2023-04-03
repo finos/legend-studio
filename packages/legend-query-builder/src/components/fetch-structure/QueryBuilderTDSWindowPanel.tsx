@@ -63,6 +63,7 @@ import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/td
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { COLUMN_SORT_TYPE } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
 import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
 
 // helpers
 const createWindowColumnState = (
@@ -190,7 +191,9 @@ const QueryBuilderWindowColumnModalEditor = observer(
     const close = (): void => {
       windowState.setEditColumn(undefined);
     };
-    const isDuplicatedColumnName = createNewWindow
+    const isDuplicatedColumnName = !windowState.windowColumns.includes(
+      windowColumnState,
+    )
       ? windowState.tdsState.tdsColumns
           .map((c) => c.columnName)
           .includes(windowColumnState.columnName)
@@ -1167,10 +1170,7 @@ export const QueryBuilderTDSWindowPanel = observer(
       [applicationStore, handleDrop],
     );
     return (
-      <div
-        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY}
-        className="panel"
-      >
+      <div className="panel">
         <div
           data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY}
           className="panel"
@@ -1178,6 +1178,9 @@ export const QueryBuilderTDSWindowPanel = observer(
           <div className="panel__header">
             <div className="panel__header__title">
               <div className="panel__header__title__label">Window Function</div>
+              <QueryBuilderPanelIssueCountBadge
+                issues={tdsWindowState.validationIssues}
+              />
             </div>
             <div className="panel__header__actions">
               <button

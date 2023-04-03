@@ -481,8 +481,19 @@ export const QueryBuilderResultPanel = observer(
       });
     };
     const queryValidationIssues = queryBuilderState.validationIssues;
+    const queryWindowValidationIssues =
+      queryBuilderState.fetchStructureState.implementation instanceof
+      QueryBuilderTDSState
+        ? queryBuilderState.fetchStructureState.implementation.windowState
+            .validationIssues
+        : undefined;
+    const queryWindowStateIsValid = !queryWindowValidationIssues;
+
+    const isSupportedQueryValid =
+      queryBuilderState.validationIssues && queryWindowStateIsValid;
     const isQueryValid =
-      !queryBuilderState.isQuerySupported || !queryValidationIssues;
+      !queryBuilderState.isQuerySupported || !isSupportedQueryValid;
+
     const runQuery = (): void => {
       resultState.pressedRunQuery.inProgress();
       if (queryParametersState.parameterStates.length) {
@@ -612,6 +623,10 @@ export const QueryBuilderResultPanel = observer(
                   title={
                     queryValidationIssues
                       ? `Query is not valid:\n${queryValidationIssues
+                          .map((issue) => `\u2022 ${issue}`)
+                          .join('\n')}`
+                      : queryWindowValidationIssues
+                      ? `Query is not valid:\n${queryWindowValidationIssues
                           .map((issue) => `\u2022 ${issue}`)
                           .join('\n')}`
                       : undefined
