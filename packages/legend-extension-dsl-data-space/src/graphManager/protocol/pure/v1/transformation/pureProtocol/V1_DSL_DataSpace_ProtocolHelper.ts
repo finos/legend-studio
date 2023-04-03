@@ -28,7 +28,8 @@ import {
 import {
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
-  V1_packageableElementPointerDeserializerSchema,
+  V1_packageableElementPointerModelSchema,
+  V1_PackageableElementPointer,
 } from '@finos/legend-graph';
 import {
   type PlainObject,
@@ -37,6 +38,8 @@ import {
   usingModelSchema,
   optionalCustomListWithSchema,
   customListWithSchema,
+  isString,
+  isNonNullable,
 } from '@finos/legend-shared';
 import {
   type V1_DataSpaceSupportInfo,
@@ -46,6 +49,7 @@ import {
   V1_DataSpaceSupportCombinedInfo,
   V1_DataSpaceExecutable,
   V1_DataSpaceDiagram,
+  V1_DataSpaceElementPointer,
 } from '../../model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 
 export const V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE = 'dataSpace';
@@ -55,11 +59,9 @@ const V1_DATA_SPACE_SUPPORT_COMBINED_INFO_TYPE = 'combined';
 const V1_dataSpaceExecutionContextModelSchema = createModelSchema(
   V1_DataSpaceExecutionContext,
   {
-    defaultRuntime: usingModelSchema(
-      V1_packageableElementPointerDeserializerSchema,
-    ),
+    defaultRuntime: usingModelSchema(V1_packageableElementPointerModelSchema),
     description: optional(primitive()),
-    mapping: usingModelSchema(V1_packageableElementPointerDeserializerSchema),
+    mapping: usingModelSchema(V1_packageableElementPointerModelSchema),
     name: primitive(),
     title: optional(primitive()),
   },
@@ -119,35 +121,39 @@ export const V1_deserializeSupportInfo = (
   }
 };
 
+const V1_dataSpaceElementPointerModelSchema = createModelSchema(
+  V1_DataSpaceElementPointer,
+  {
+    exclude: optional(primitive()),
+    path: primitive(),
+  },
+);
+
 const V1_dataSpaceExecutableModelSchema = createModelSchema(
   V1_DataSpaceExecutable,
   {
     description: optional(primitive()),
-    executable: usingModelSchema(
-      V1_packageableElementPointerDeserializerSchema,
-    ),
+    executable: usingModelSchema(V1_packageableElementPointerModelSchema),
     title: primitive(),
   },
 );
 
 const V1_dataSpaceDiagramModelSchema = createModelSchema(V1_DataSpaceDiagram, {
   description: optional(primitive()),
-  diagram: usingModelSchema(V1_packageableElementPointerDeserializerSchema),
+  diagram: usingModelSchema(V1_packageableElementPointerModelSchema),
   title: primitive(),
 });
 
-export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
+const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
   _type: usingConstantValueSchema(V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE),
   defaultExecutionContext: primitive(),
   description: optional(primitive()),
   diagrams: list(object(V1_dataSpaceDiagramModelSchema)),
-  elements: optionalCustomListWithSchema(
-    V1_packageableElementPointerDeserializerSchema,
-  ),
+  elements: optionalCustomListWithSchema(V1_dataSpaceElementPointerModelSchema),
   executables: list(object(V1_dataSpaceExecutableModelSchema)),
   executionContexts: list(object(V1_dataSpaceExecutionContextModelSchema)),
   featuredDiagrams: optionalCustomListWithSchema(
-    V1_packageableElementPointerDeserializerSchema,
+    V1_packageableElementPointerModelSchema,
   ),
   name: primitive(),
   package: primitive(),
@@ -163,3 +169,42 @@ export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
   }),
   title: optional(primitive()),
 });
+
+export const V1_serializeDataSpace = (
+  protocol: V1_DataSpace,
+): PlainObject<V1_DataSpace> => serialize(V1_dataSpaceModelSchema, protocol);
+
+export const V1_deserializeDataSpace = (
+  json: PlainObject<V1_DataSpace>,
+): V1_DataSpace => {
+  const dataSpace = deserialize(V1_dataSpaceModelSchema, json);
+  /**
+   * Featured diagrams will be transformed to diagrams, so here we nicely
+   * auto-transform it for backward compatibility
+   *
+   * @backwardCompatibility
+   */
+  if (json.featuredDiagrams && Array.isArray(json.featuredDiagrams)) {
+    const diagrams = json.featuredDiagrams
+      .map((featuredDiagram) => {
+        if (isString(featuredDiagram.path)) {
+          const diagram = new V1_DataSpaceDiagram();
+          diagram.title = '';
+          diagram.diagram = new V1_PackageableElementPointer(
+            undefined,
+            featuredDiagram.path,
+          );
+          return diagram;
+        }
+        return undefined;
+      })
+      .filter(isNonNullable);
+    if (diagrams.length) {
+      dataSpace.diagrams =
+        dataSpace.diagrams !== undefined
+          ? dataSpace.diagrams.concat(diagrams)
+          : diagrams;
+    }
+  }
+  return dataSpace;
+};

@@ -62,7 +62,6 @@ export const TEST_DATA__roundtrip = [
       _type: 'dataSpace',
       elements: [
         {
-          type: 'CLASS',
           path: 'model::Person',
         },
       ],

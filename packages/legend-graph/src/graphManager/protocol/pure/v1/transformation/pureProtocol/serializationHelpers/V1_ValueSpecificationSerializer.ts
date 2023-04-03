@@ -63,7 +63,7 @@ import { V1_TDSColumnInformation } from '../../../model/valueSpecification/raw/c
 import { V1_TDSSortInformation } from '../../../model/valueSpecification/raw/classInstance/V1_TDSSortInformation.js';
 import { V1_TDSOlapRank } from '../../../model/valueSpecification/raw/classInstance/V1_TDSOlapRank.js';
 import { V1_TDSOlapAggregation } from '../../../model/valueSpecification/raw/classInstance/V1_TDSOlapAggregation.js';
-import { V1_multiplicitySchema } from './V1_CoreSerializationHelper.js';
+import { V1_multiplicityModelSchema } from './V1_CoreSerializationHelper.js';
 import type {
   V1_ValueSpecification,
   V1_ValueSpecificationVisitor,
@@ -157,7 +157,7 @@ enum V1_ValueSpecificationType {
 const variableModelSchema = createModelSchema(V1_Variable, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.VARIABLE),
   class: optional(primitive()),
-  multiplicity: usingModelSchema(V1_multiplicitySchema),
+  multiplicity: usingModelSchema(V1_multiplicityModelSchema),
   name: primitive(),
 });
 
@@ -270,7 +270,7 @@ const collectionModelSchema = (
 ): ModelSchema<V1_Collection> =>
   createModelSchema(V1_Collection, {
     _type: usingConstantValueSchema(V1_ValueSpecificationType.COLLECTION),
-    multiplicity: usingModelSchema(V1_multiplicitySchema),
+    multiplicity: usingModelSchema(V1_multiplicityModelSchema),
     values: list(
       custom(
         (val) => V1_serializeValueSpecification(val, plugins),
@@ -369,7 +369,7 @@ const classInstanceModelSchema = (
 ): ModelSchema<V1_ClassInstance> =>
   createModelSchema(V1_ClassInstance, {
     _type: usingConstantValueSchema(V1_ValueSpecificationType.CLASS_INSTANCE),
-    multiplicity: usingModelSchema(V1_multiplicitySchema),
+    multiplicity: usingModelSchema(V1_multiplicityModelSchema),
     type: primitive(),
     value: custom(
       (val) => V1_serializeClassInstanceValue(val, plugins),

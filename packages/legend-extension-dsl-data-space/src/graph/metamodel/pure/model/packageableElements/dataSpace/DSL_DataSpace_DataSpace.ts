@@ -24,9 +24,74 @@ import {
   type Class,
   type Enumeration,
   type Association,
+  type Package,
 } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSL_DataSpace_HashUtils.js';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram';
+
+export class DataSpaceExecutionContext implements Hashable {
+  name!: string;
+  title?: string | undefined;
+  description?: string | undefined;
+  mapping!: PackageableElementReference<Mapping>;
+  defaultRuntime!: PackageableElementReference<PackageableRuntime>;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTION_CONTEXT,
+      this.name,
+      this.title ?? '',
+      this.description ?? '',
+      this.mapping.valueForSerialization ?? '',
+      this.defaultRuntime.valueForSerialization ?? '',
+    ]);
+  }
+}
+
+export type DataSpaceElement = Package | Class | Enumeration | Association;
+
+export class DataSpaceElementPointer implements Hashable {
+  element!: PackageableElementReference<DataSpaceElement>;
+  exclude?: boolean | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_ELEMENT_POINTER,
+      this.element.valueForSerialization ?? '',
+      this.exclude ?? '',
+    ]);
+  }
+}
+
+export class DataSpaceExecutable implements Hashable {
+  title!: string;
+  description?: string | undefined;
+  executable!: PackageableElementReference<PackageableElement>;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTABLE,
+      this.title,
+      this.description ?? '',
+      this.executable.valueForSerialization ?? '',
+    ]);
+  }
+}
+
+export class DataSpaceDiagram implements Hashable {
+  title!: string;
+  description?: string | undefined;
+  diagram!: PackageableElementReference<Diagram>;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_DIAGRAM,
+      this.title,
+      this.description ?? '',
+      this.diagram.valueForSerialization ?? '',
+    ]);
+  }
+}
 
 export abstract class DataSpaceSupportInfo implements Hashable {
   documentationUrl?: string | undefined;
@@ -70,64 +135,12 @@ export class DataSpaceSupportCombinedInfo
   }
 }
 
-export class DataSpaceExecutionContext implements Hashable {
-  name!: string;
-  title?: string | undefined;
-  description?: string | undefined;
-  mapping!: PackageableElementReference<Mapping>;
-  defaultRuntime!: PackageableElementReference<PackageableRuntime>;
-
-  get hashCode(): string {
-    return hashArray([
-      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTION_CONTEXT,
-      this.name,
-      this.title ?? '',
-      this.description ?? '',
-      this.mapping.valueForSerialization ?? '',
-      this.defaultRuntime.valueForSerialization ?? '',
-    ]);
-  }
-}
-
-export class DataSpaceExecutable implements Hashable {
-  title!: string;
-  description?: string | undefined;
-  executable!: PackageableElementReference<PackageableElement>;
-
-  get hashCode(): string {
-    return hashArray([
-      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTABLE,
-      this.title,
-      this.description ?? '',
-      this.executable.valueForSerialization ?? '',
-    ]);
-  }
-}
-
-export class DataSpaceDiagram implements Hashable {
-  title!: string;
-  description?: string | undefined;
-  diagram!: PackageableElementReference<Diagram>;
-
-  get hashCode(): string {
-    return hashArray([
-      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_DIAGRAM,
-      this.title,
-      this.description ?? '',
-      this.diagram.valueForSerialization ?? '',
-    ]);
-  }
-}
-
-export type DataSpaceElement = Class | Enumeration | Association;
-
 export class DataSpace extends PackageableElement implements Hashable {
   title?: string | undefined;
   description?: string | undefined;
   executionContexts: DataSpaceExecutionContext[] = [];
   defaultExecutionContext!: DataSpaceExecutionContext;
-  featuredDiagrams?: PackageableElementReference<Diagram>[] | undefined;
-  elements?: PackageableElementReference<DataSpaceElement>[] | undefined;
+  elements?: DataSpaceElementPointer[] | undefined;
   executables?: DataSpaceExecutable[] | undefined;
   diagrams?: DataSpaceDiagram[] | undefined;
   supportInfo?: DataSpaceSupportInfo | undefined;
@@ -143,16 +156,7 @@ export class DataSpace extends PackageableElement implements Hashable {
       this.description ?? '',
       hashArray(this.executionContexts),
       this.defaultExecutionContext.name,
-      hashArray(
-        (this.featuredDiagrams ?? []).map(
-          (diagram) => diagram.valueForSerialization ?? '',
-        ),
-      ),
-      hashArray(
-        (this.elements ?? []).map(
-          (element) => element.valueForSerialization ?? '',
-        ),
-      ),
+      hashArray(this.elements ?? []),
       hashArray(this.executables ?? []),
       hashArray(this.diagrams ?? []),
       this.supportInfo ?? '',

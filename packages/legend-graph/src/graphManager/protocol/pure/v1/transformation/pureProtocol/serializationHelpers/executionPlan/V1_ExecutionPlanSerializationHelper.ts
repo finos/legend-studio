@@ -40,7 +40,7 @@ import { V1_DataTypeResultType } from '../../../../model/executionPlan/results/V
 import { V1_TDSResultType } from '../../../../model/executionPlan/results/V1_TDSResultType.js';
 import { V1_TDSColumn } from '../../../../model/executionPlan/results/V1_TDSColumn.js';
 import type { V1_ResultType } from '../../../../model/executionPlan/results/V1_ResultType.js';
-import { V1_multiplicitySchema } from '../V1_CoreSerializationHelper.js';
+import { V1_multiplicityModelSchema } from '../V1_CoreSerializationHelper.js';
 import { V1_RelationalTDSInstantiationExecutionNode } from '../../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode.js';
 import { V1_SQLExecutionNode } from '../../../../model/executionPlan/nodes/V1_SQLExecutionNode.js';
 import { V1_SQLResultColumn } from '../../../../model/executionPlan/nodes/V1_SQLResultColumn.js';
@@ -122,7 +122,7 @@ const relationalTDSInstantationExecutionNodeModelSchema = createModelSchema(
     executionNodes: list(
       custom(V1_serializeExecutionNode, V1_deserializeExecutionNode),
     ),
-    resultSizeRange: usingModelSchema(V1_multiplicitySchema),
+    resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
     resultType: custom(V1_serializeResultType, V1_deserializeResultType),
   },
 );
@@ -145,7 +145,7 @@ const SQLExecutionNodeModelSchema = createModelSchema(V1_SQLExecutionNode, {
   onConnectionCloseCommitQuery: optional(primitive()),
   onConnectionCloseRollbackQuery: optional(primitive()),
   resultColumns: list(usingModelSchema(SQLResultColumnModelSchema)),
-  resultSizeRange: usingModelSchema(V1_multiplicitySchema),
+  resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
   resultType: custom(V1_serializeResultType, V1_deserializeResultType),
   sqlQuery: primitive(),
 });

@@ -16,15 +16,15 @@
     { "path": "../legend-extension-dsl-persistence/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-mastery/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-service/tsconfig.build.json" },
+    {
+      "path": "../legend-extension-store-service-store/tsconfig.build.json"
+    },
     { "path": "../legend-extension-dsl-text/tsconfig.build.json" },
     {
       "path": "../legend-extension-format-json-schema/tsconfig.build.json"
     },
     {
       "path": "../legend-extension-format-graphql/tsconfig.build.json"
-    },
-    {
-      "path": "../legend-extension-store-service-store/tsconfig.build.json"
     }
   ]
 }

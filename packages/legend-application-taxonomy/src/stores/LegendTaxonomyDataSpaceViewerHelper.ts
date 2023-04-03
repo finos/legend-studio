@@ -35,7 +35,7 @@ export const createViewProjectHandler =
   ): void =>
     applicationStore.navigationService.navigator.visitAddress(
       EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
-        applicationStore.config.studioUrl,
+        applicationStore.config.studioApplicationUrl,
         groupId,
         artifactId,
         versionId,

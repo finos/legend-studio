@@ -5,7 +5,6 @@
   "keywords": [
     "legend",
     "legend-studio",
-    "studio",
     "stylelint",
     "stylelint-config"
   ],
@@ -32,12 +31,12 @@
   "dependencies": {
     "postcss": "8.4.21",
     "postcss-scss": "4.0.6",
-    "stylelint-config-standard": "31.0.0",
+    "stylelint-config-standard": "32.0.0",
     "stylelint-scss": "4.6.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.36.0",
+    "eslint": "8.37.0",
     "rimraf": "4.4.1"
   },
   "peerDependencies": {

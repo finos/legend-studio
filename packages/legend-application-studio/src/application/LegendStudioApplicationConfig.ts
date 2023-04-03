@@ -115,7 +115,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
   readonly depotServerUrl: string;
   readonly sdlcServerUrl: string;
   readonly SDLCServerBaseHeaders?: RequestHeaders | undefined;
-  readonly queryServerUrl: string | undefined;
+  readonly queryApplicationUrl: string | undefined;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendStudioApplicationConfigurationData>,
@@ -127,20 +127,28 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
       input.configData.engine,
       `Can't configure application: 'engine' field is missing`,
     );
-    this.engineServerUrl = guaranteeNonEmptyString(
-      input.configData.engine.url,
-      `Can't configure application: 'engine.url' field is missing or empty`,
+    this.engineServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.engine.url,
+        `Can't configure application: 'engine.url' field is missing or empty`,
+      ),
     );
-    this.engineQueryServerUrl = input.configData.engine.queryUrl;
+    if (input.configData.engine.queryUrl) {
+      this.engineQueryServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.engine.queryUrl,
+      );
+    }
 
     // depot
     assertNonNullable(
       input.configData.depot,
       `Can't configure application: 'depot' field is missing`,
     );
-    this.depotServerUrl = guaranteeNonEmptyString(
-      input.configData.depot.url,
-      `Can't configure application: 'depot.url' field is missing or empty`,
+    this.depotServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.depot.url,
+        `Can't configure application: 'depot.url' field is missing or empty`,
+      ),
     );
 
     // sdlc
@@ -148,15 +156,19 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
       input.configData.sdlc,
       `Can't configure application: 'sdlc' field is missing`,
     );
-    this.sdlcServerUrl = guaranteeNonEmptyString(
-      input.configData.sdlc.url,
-      `Can't configure application: 'sdlc.url' field is missing or empty`,
+    this.sdlcServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.sdlc.url,
+        `Can't configure application: 'sdlc.url' field is missing or empty`,
+      ),
     );
     this.SDLCServerBaseHeaders = input.configData.sdlc.baseHeaders;
 
     // query
     if (input.configData.query?.url) {
-      this.queryServerUrl = input.configData.query.url;
+      this.queryApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.query.url,
+      );
     }
 
     // options

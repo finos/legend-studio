@@ -5,7 +5,6 @@
   "keywords": [
     "legend",
     "legend-studio",
-    "studio",
     "babel",
     "babelpreset",
     "babel-preset"
@@ -32,17 +31,17 @@
   },
   "dependencies": {
     "@babel/helper-plugin-utils": "7.20.2",
-    "@babel/preset-env": "7.20.2",
+    "@babel/preset-env": "7.21.4",
     "@babel/preset-react": "7.18.6",
-    "@babel/preset-typescript": "7.21.0",
+    "@babel/preset-typescript": "7.21.4",
     "@babel/runtime": "7.21.0",
     "react-refresh": "0.14.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.36.0",
+    "eslint": "8.37.0",
     "rimraf": "4.4.1",
-    "typescript": "5.0.2"
+    "typescript": "5.0.3"
   },
   "peerDependencies": {
     "@babel/core": "^7.0.0"

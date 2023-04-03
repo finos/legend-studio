@@ -69,8 +69,8 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
-  readonly queryUrl: string;
-  readonly studioUrl: string;
+  readonly queryApplicationUrl: string;
+  readonly studioApplicationUrl: string;
   readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
     [];
 
@@ -134,9 +134,11 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
       input.configData.engine,
       `Can't configure application: 'engine' field is missing`,
     );
-    this.engineServerUrl = guaranteeNonEmptyString(
-      input.configData.engine.url,
-      `Can't configure application: 'engine.url' field is missing or empty`,
+    this.engineServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.engine.url,
+        `Can't configure application: 'engine.url' field is missing or empty`,
+      ),
     );
     this.engineQueryServerUrl = input.configData.engine.queryUrl;
 
@@ -145,9 +147,11 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
       input.configData.depot,
       `Can't configure application: 'depot' field is missing`,
     );
-    this.depotServerUrl = guaranteeNonEmptyString(
-      input.configData.depot.url,
-      `Can't configure application: 'depot.url' field is missing or empty`,
+    this.depotServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.depot.url,
+        `Can't configure application: 'depot.url' field is missing or empty`,
+      ),
     );
 
     // query
@@ -155,9 +159,11 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
       input.configData.query,
       `Can't configure application: 'query' field is missing`,
     );
-    this.queryUrl = guaranteeNonEmptyString(
-      input.configData.query.url,
-      `Can't configure application: 'query.url' field is missing or empty`,
+    this.queryApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.query.url,
+        `Can't configure application: 'query.url' field is missing or empty`,
+      ),
     );
 
     // studio
@@ -165,9 +171,11 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
       input.configData.studio,
       `Can't configure application: 'studio' field is missing`,
     );
-    this.studioUrl = guaranteeNonEmptyString(
-      input.configData.studio.url,
-      `Can't configure application: 'studio.url' field is missing or empty`,
+    this.studioApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.studio.url,
+        `Can't configure application: 'studio.url' field is missing or empty`,
+      ),
     );
     this.studioInstances = guaranteeNonNullable(
       input.configData.studio.instances,

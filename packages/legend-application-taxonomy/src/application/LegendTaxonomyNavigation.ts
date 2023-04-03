@@ -88,13 +88,13 @@ export const generateDataSpaceViewerRoute = (
  * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
-  studioUrl: string,
+  studioApplicationUrl: string,
   groupId: string,
   artifactId: string,
   versionId: string,
   entityPath: string | undefined,
 ): string =>
-  `${studioUrl}/view/archive/${generateGAVCoordinates(
+  `${studioApplicationUrl}/view/archive/${generateGAVCoordinates(
     groupId,
     artifactId,
     versionId,
@@ -105,11 +105,11 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
   (
-    studioUrl: string,
+    studioApplicationUrl: string,
     projectId: string,
     entityPath: string | undefined,
   ): string =>
-    `${studioUrl}/view/${projectId}${
+    `${studioApplicationUrl}/view/${projectId}${
       entityPath ? `/entity/${entityPath}` : ''
     }`;
 
@@ -118,7 +118,7 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl =
   (
-    queryUrl: string,
+    queryApplicationUrl: string,
     groupId: string,
     artifactId: string,
     versionId: string,
@@ -127,7 +127,7 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl =
     runtimePath: string | undefined,
     classPath: string | undefined,
   ): string =>
-    `${queryUrl}/extensions/dataspace/${generateGAVCoordinates(
+    `${queryApplicationUrl}/extensions/dataspace/${generateGAVCoordinates(
       groupId,
       artifactId,
       versionId,

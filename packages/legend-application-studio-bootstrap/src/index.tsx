@@ -47,8 +47,8 @@ import {
   STO_ServiceStore_GraphManagerPreset,
   STO_ServiceStore_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-store-service-store';
-import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-format-json-schema';
 import { DSL_Service_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-service';
+import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-format-json-schema';
 import { FMT_GraphQL_GraphManagerPreset } from '@finos/legend-extension-format-graphql';
 
 export class LegendStudioWebApplication {

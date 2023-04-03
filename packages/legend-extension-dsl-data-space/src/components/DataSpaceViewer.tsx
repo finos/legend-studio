@@ -137,6 +137,10 @@ export const DataSpaceViewer = observer(
                 <DataSpacePlaceholderPanel message="View data availability (Work in Progress)" />
               )}
               {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_READINESS && (
+                <DataSpacePlaceholderPanel message="View data readiness (Work in Progress)" />
+              )}
+              {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_COST && (
                 <DataSpacePlaceholderPanel message="View data cost (Work in Progress)" />
               )}

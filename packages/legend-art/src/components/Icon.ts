@@ -246,7 +246,8 @@ export const AlignCenterIcon = BS.BsAlignCenter;
 export const AlignEndIcon = BS.BsAlignEnd;
 export const DistributeHorizontalIcon = BS.BsDistributeHorizontal;
 export const DistributeVerticalIcon = BS.BsDistributeVertical;
-export const DataAccessIcon = BS.BsDatabaseFillCheck;
+export const DataAccessIcon = BS.BsDatabaseFillLock;
+export const DataReadyIcon = BS.BsDatabaseFillCheck;
 export const ThinChevronRightIcon = BS.BsChevronRight;
 export const ThinChevronLeftIcon = BS.BsChevronLeft;
 

@@ -30,7 +30,7 @@ import {
   usingConstantValueSchema,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { V1_multiplicitySchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
+import { V1_multiplicityModelSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration.js';
 import { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile.js';
 import {
@@ -141,7 +141,7 @@ export const V1_measureSchema = createModelSchema(V1_Measure, {
 
 export const V1_propertySchema = createModelSchema(V1_Property, {
   aggregation: optional(primitive()),
-  multiplicity: usingModelSchema(V1_multiplicitySchema),
+  multiplicity: usingModelSchema(V1_multiplicityModelSchema),
   name: primitive(),
   stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
@@ -156,7 +156,7 @@ export const V1_derivedPropertySchema = createModelSchema(V1_DerivedProperty, {
   body: raw(),
   name: primitive(),
   parameters: raw(),
-  returnMultiplicity: usingModelSchema(V1_multiplicitySchema),
+  returnMultiplicity: usingModelSchema(V1_multiplicityModelSchema),
   returnType: primitive(),
   stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
@@ -264,7 +264,7 @@ export const V1_functionSchema = createModelSchema(
     parameters: list(usingModelSchema(V1_rawVariableModelSchema)),
     postConstraints: list(primitive()), // NOTE: these are not currently supported and just added to pass roundtrip test
     preConstraints: list(primitive()), // NOTE: these are not currently supported and just added to pass roundtrip test
-    returnMultiplicity: usingModelSchema(V1_multiplicitySchema),
+    returnMultiplicity: usingModelSchema(V1_multiplicityModelSchema),
     returnType: primitive(),
     stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
       INTERNAL__forceReturnEmptyInTest: true,

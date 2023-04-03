@@ -22,6 +22,8 @@ import {
   UnsupportedOperationError,
   customListWithSchema,
   usingConstantValueSchema,
+  isString,
+  isNonNullable,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -317,15 +319,13 @@ export class V1_DataSpaceAnalysisResult {
   executionContexts: V1_DataSpaceExecutionContextAnalysisResult[] = [];
   defaultExecutionContext!: string;
 
-  featuredDiagrams: string[] = [];
-
   elements: string[] = [];
   elementDocs: V1_DataSpaceModelDocumentationEntry[] = [];
 
   executables: V1_DataSpaceExecutableAnalysisResult[] = [];
   diagrams: V1_DataSpaceDiagramAnalysisResult[] = [];
 
-  static readonly serialization = new SerializationFactory(
+  private static readonly serialization = new SerializationFactory(
     createModelSchema(V1_DataSpaceAnalysisResult, {
       name: primitive(),
       package: primitive(),
@@ -363,4 +363,35 @@ export class V1_DataSpaceAnalysisResult {
       ),
     }),
   );
+
+  static deserialize(
+    json: PlainObject<V1_DataSpaceAnalysisResult>,
+  ): V1_DataSpaceAnalysisResult {
+    const result = deserialize(
+      V1_DataSpaceAnalysisResult.serialization.schema,
+      json,
+    );
+    /**
+     * Featured diagrams will be transformed to diagrams, so here we nicely
+     * auto-transform it for backward compatibility
+     *
+     * @backwardCompatibility
+     */
+    if (json.featuredDiagrams && Array.isArray(json.featuredDiagrams)) {
+      const diagramResults = json.featuredDiagrams
+        .map((featuredDiagram) => {
+          if (isString(featuredDiagram)) {
+            const diagramAnalysisResult =
+              new V1_DataSpaceDiagramAnalysisResult();
+            diagramAnalysisResult.title = '';
+            diagramAnalysisResult.diagram = featuredDiagram;
+            return diagramAnalysisResult;
+          }
+          return undefined;
+        })
+        .filter(isNonNullable);
+      result.diagrams = result.diagrams.concat(diagramResults);
+    }
+    return result;
+  }
 }

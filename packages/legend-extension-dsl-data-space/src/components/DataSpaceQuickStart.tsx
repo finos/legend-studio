@@ -39,6 +39,7 @@ import {
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
 import type { DSL_DataSpace_LegendApplicationPlugin_Extension } from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 import { useState } from 'react';
+import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 
 enum TDS_EXECUTABLE_ACTION_TAB {
   COLUMN_SPECS = 'COLUMN_SPECS',
@@ -80,7 +81,7 @@ const DataSpaceExecutableTDSResultView = observer(
           <div className="data-space__viewer__quickstart__item__header__title">
             {executableAnalysisResult.title}
           </div>
-          <div className="data-space__viewer__quickstart__item__header__type data-space__viewer__quickstart__item__header__type--tds">
+          <div className="data-space__viewer__quickstart__item__header__type">
             TDS
           </div>
           <div className="data-space__viewer__quickstart__item__header__anchor">
@@ -375,6 +376,9 @@ export const DataSpaceQuickStart = observer(
             ))}
           </div>
         </div>
+        {analysisResult.executables.length === 0 && (
+          <DataSpaceWikiPlaceholder message="No quick start provided" />
+        )}
       </div>
     );
   },

@@ -48,38 +48,36 @@ export const LegendTaxonomyApplicationRoot = observer(() => {
     );
   }, [applicationStore, baseStore]);
 
-  if (baseStore.initState.isInProgress) {
-    return (
-      <div className="app">
+  return (
+    <div className="app">
+      {baseStore.initState.isInProgress && (
         <div className="app__page">
           <PanelLoadingIndicator isLoading={true} />
         </div>
-      </div>
-    );
-  }
-  return (
-    <div className="app">
-      <Switch>
-        <Route
-          exact={true}
-          path={[
-            LEGEND_TAXONOMY_ROUTE_PATTERN.EXPLORE_TAXONOMY_TREE,
-            LEGEND_TAXONOMY_ROUTE_PATTERN.EXPLORE_TAXONOMY_TREE_NODE,
-            LEGEND_TAXONOMY_ROUTE_PATTERN.EXPLORE_TAXONOMY_TREE_NODE_DATA_SPACE,
-          ]}
-          component={TaxonomyExplorer}
-        />
-        <Route
-          exact={true}
-          path={LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_DATA_SPACE}
-          component={DataSpacePreview}
-        />
-        <Redirect
-          to={generateExploreTaxonomyTreeRoute(
-            applicationStore.config.defaultTaxonomyTreeOption.key,
-          )}
-        />
-      </Switch>
+      )}
+      {baseStore.initState.hasSucceeded && (
+        <Switch>
+          <Route
+            exact={true}
+            path={[
+              LEGEND_TAXONOMY_ROUTE_PATTERN.EXPLORE_TAXONOMY_TREE,
+              LEGEND_TAXONOMY_ROUTE_PATTERN.EXPLORE_TAXONOMY_TREE_NODE,
+              LEGEND_TAXONOMY_ROUTE_PATTERN.EXPLORE_TAXONOMY_TREE_NODE_DATA_SPACE,
+            ]}
+            component={TaxonomyExplorer}
+          />
+          <Route
+            exact={true}
+            path={LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_DATA_SPACE}
+            component={DataSpacePreview}
+          />
+          <Redirect
+            to={generateExploreTaxonomyTreeRoute(
+              applicationStore.config.defaultTaxonomyTreeOption.key,
+            )}
+          />
+        </Switch>
+      )}
     </div>
   );
 });

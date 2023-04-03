@@ -2,7 +2,15 @@ Class model::DummyClass
 {
 }
 
+Class domain::DummyDomain
+{
+}
+
 Enum model::DummyEnum
+{
+}
+
+Enum model::target::_DummyEnum
 {
 }
 
@@ -78,8 +86,10 @@ DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} mod
   ];
   elements:
   [
-    model::DummyClass,
-    model::DummyClass
+    model,
+    domain::DummyDomain,
+    -model::DummyClass,
+    -model::target
   ];
   executables:
   [

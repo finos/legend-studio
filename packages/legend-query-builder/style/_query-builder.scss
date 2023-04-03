@@ -396,7 +396,7 @@
   &__tds-grid {
     height: 100%;
 
-    // NOTE: we need to ensure the specificity here in case a lter imported ag-theme-balham-dark
+    // NOTE: we need to ensure the specificity here in case a later imported ag-theme-balham-dark
     // might override our theme customization here
     &.ag-theme-balham-dark {
       // Customize ag-grid theme

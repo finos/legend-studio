@@ -134,6 +134,45 @@
     }
   }
 
+  // ---------------------------- Panel -------------------------------
+
+  .panel-loading-indicator {
+    &::before {
+      background: var(--color-hclight-blue-50);
+    }
+  }
+
+  .panel__content__blank__content {
+    color: var(--color-hclight-grey-40);
+  }
+
+  // ---------------------------- Application -------------------------------
+
+  .app {
+    background: var(--color-hclight-white);
+  }
+
+  .notification {
+    &__content {
+      background: var(--color-hclight-white);
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__message__content {
+      &:active {
+        background: var(--color-hclight-grey-10);
+      }
+    }
+  }
+
+  .data-space-preview {
+    &__failure {
+      &__text {
+        color: var(--color-hclight-grey-40);
+      }
+    }
+  }
+
   // ---------------------------- Data Space Viewer -------------------------------
 
   .data-space__viewer {
@@ -291,10 +330,6 @@
     &__item__header__type {
       background: var(--color-hclight-blue-50);
       color: var(--color-hclight-white);
-
-      &--tds {
-        background: var(--color-hclight-pink-60);
-      }
     }
 
     &__item__header__anchor {
