@@ -82,6 +82,11 @@ import type {
 } from './action/compilation/CompilationResult.js';
 import type { ParameterValue } from '../DSL_Service_Exports.js';
 import type { ModelUnit } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
+import type {
+  DatasetEntitlementReport,
+  DatasetSpecification,
+} from './action/analytics/StoreEntitlementAnalysis.js';
+import type { PackageableRuntime } from '../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -503,6 +508,20 @@ export abstract class AbstractPureGraphManager {
     input: RawMappingModelCoverageAnalysisResult,
     mapping: Mapping,
   ): MappingModelCoverageAnalysisResult;
+
+  abstract surveyDatasets(
+    mapping: Mapping,
+    runtime: PackageableRuntime,
+    query: RawLambda | undefined,
+    graph: PureModel,
+  ): Promise<DatasetSpecification[]>;
+
+  abstract checkEntitlements(
+    mapping: Mapping,
+    runtime: PackageableRuntime,
+    query: RawLambda | undefined,
+    graph: PureModel,
+  ): Promise<DatasetEntitlementReport[]>;
 
   // ------------------------------------------- Change detection -------------------------------------------
 

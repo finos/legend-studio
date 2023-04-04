@@ -57,6 +57,11 @@ import type {
   V1_MappingModelCoverageAnalysisResult,
 } from './analytics/V1_MappingModelCoverageAnalysis.js';
 import { ServiceExecutionMode } from '../../../../action/service/ServiceExecutionMode.js';
+import type {
+  V1_DatasetEntitlementReport,
+  V1_DatasetSpecification,
+  V1_StoreEntitlementAnalysisInput,
+} from './analytics/V1_StoreEntitlementAnalysis.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -84,7 +89,9 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
   UPDATE_QUERY = 'update query',
   DELETE_QUERY = 'delete query',
 
-  MODEL_ANALYTICS = 'model analytics',
+  MAPPING_MODEL_COVERAGE_ANALYTICS = 'mapping model coverage analytics',
+  SURVEY_DATASET_ANALYTICS = 'survey dataset analytics',
+  STORE_ENTITLEMENT_ANALYTICS = 'store entitlement analytics',
 }
 
 type GrammarParserBatchInputEntry = {
@@ -510,8 +517,36 @@ export class V1_EngineServerClient extends AbstractServerClient {
     input: PlainObject<V1_MappingModelCoverageAnalysisInput>,
   ): Promise<PlainObject<V1_MappingModelCoverageAnalysisResult>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.MODEL_ANALYTICS),
+      this.getTraceData(
+        CORE_ENGINE_ACTIVITY_TRACE.MAPPING_MODEL_COVERAGE_ANALYTICS,
+      ),
       `${this._pure()}/analytics/mapping/modelCoverage`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
+  surveyDatasets = (
+    input: PlainObject<V1_StoreEntitlementAnalysisInput>,
+  ): Promise<PlainObject<V1_DatasetSpecification>[]> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.SURVEY_DATASET_ANALYTICS),
+      `${this._pure()}/analytics/entitlements/surveyDatasets`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
+  checkEntitlements = (
+    input: PlainObject<V1_StoreEntitlementAnalysisInput>,
+  ): Promise<PlainObject<V1_DatasetEntitlementReport>[]> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.STORE_ENTITLEMENT_ANALYTICS),
+      `${this._pure()}/analytics/entitlements/checkEntitlements`,
       input,
       {},
       undefined,

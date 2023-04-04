@@ -280,6 +280,16 @@ import { MultiExecutionServiceTestResult } from '../../../../graph/metamodel/pur
 import type { ParameterValue } from '../../../../graph/metamodel/pure/packageableElements/service/ParameterValue.js';
 import type { Service } from '../../../../graph/metamodel/pure/packageableElements/service/Service.js';
 import { V1_ExecutionEnvironmentInstance } from './model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
+import {
+  V1_StoreEntitlementAnalysisInput,
+  V1_buildDatasetEntitlementReport,
+  V1_buildDatasetSpecification,
+} from './engine/analytics/V1_StoreEntitlementAnalysis.js';
+import type { PackageableRuntime } from '../../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
+import type {
+  DatasetEntitlementReport,
+  DatasetSpecification,
+} from '../../../action/analytics/StoreEntitlementAnalysis.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2984,6 +2994,80 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input as PlainObject<V1_MappingModelCoverageAnalysisResult>,
       ),
       mapping,
+    );
+  }
+
+  async surveyDatasets(
+    mapping: Mapping,
+    runtime: PackageableRuntime,
+    query: RawLambda | undefined,
+    graph: PureModel,
+  ): Promise<DatasetSpecification[]> {
+    const input = new V1_StoreEntitlementAnalysisInput();
+    input.clientVersion = V1_PureGraphManager.PROD_PROTOCOL_VERSION;
+    input.mapping = mapping.path;
+    input.runtime = runtime.path;
+    input.query = query
+      ? V1_transformRawLambda(
+          query,
+          new V1_GraphTransformerContextBuilder(
+            this.pluginManager.getPureProtocolProcessorPlugins(),
+          ).build(),
+        )
+      : undefined;
+    input.model = graph.origin
+      ? this.buildPureModelSDLCPointer(
+          graph.origin,
+          V1_PureGraphManager.PROD_PROTOCOL_VERSION,
+        )
+      : this.buildMappingModelCoverageAnalysisInputContextData(graph);
+    return (
+      await this.engine.surveyDatasets(
+        input,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      )
+    ).map((dataset) =>
+      V1_buildDatasetSpecification(
+        dataset,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
+    );
+  }
+
+  async checkEntitlements(
+    mapping: Mapping,
+    runtime: PackageableRuntime,
+    query: RawLambda | undefined,
+    graph: PureModel,
+  ): Promise<DatasetEntitlementReport[]> {
+    const input = new V1_StoreEntitlementAnalysisInput();
+    input.clientVersion = V1_PureGraphManager.PROD_PROTOCOL_VERSION;
+    input.mapping = mapping.path;
+    input.runtime = runtime.path;
+    input.query = query
+      ? V1_transformRawLambda(
+          query,
+          new V1_GraphTransformerContextBuilder(
+            this.pluginManager.getPureProtocolProcessorPlugins(),
+          ).build(),
+        )
+      : undefined;
+    input.model = graph.origin
+      ? this.buildPureModelSDLCPointer(
+          graph.origin,
+          V1_PureGraphManager.PROD_PROTOCOL_VERSION,
+        )
+      : this.buildMappingModelCoverageAnalysisInputContextData(graph);
+    return (
+      await this.engine.checkEntitlements(
+        input,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      )
+    ).map((report) =>
+      V1_buildDatasetEntitlementReport(
+        report,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
     );
   }
 

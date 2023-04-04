@@ -102,6 +102,13 @@ import type {
 import { V1_CompilationWarning } from './compilation/V1_CompilationWarning.js';
 import { V1_GenerateSchemaInput } from './externalFormat/V1_GenerateSchemaInput.js';
 import type { GraphManagerOperationReport } from '../../../../GraphManagerStatistics.js';
+import {
+  V1_StoreEntitlementAnalysisInput,
+  type V1_DatasetEntitlementReport,
+  type V1_DatasetSpecification,
+  V1_deserializeDatasetEntitlementReport,
+  V1_deserializeDatasetSpecification,
+} from './analytics/V1_StoreEntitlementAnalysis.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -747,6 +754,28 @@ export class V1_Engine {
         V1_MappingModelCoverageAnalysisInput.serialization.toJson(input),
       ),
     );
+  }
+
+  async surveyDatasets(
+    input: V1_StoreEntitlementAnalysisInput,
+    plugins: PureProtocolProcessorPlugin[],
+  ): Promise<V1_DatasetSpecification[]> {
+    return (
+      await this.engineServerClient.surveyDatasets(
+        V1_StoreEntitlementAnalysisInput.serialization.toJson(input),
+      )
+    ).map((result) => V1_deserializeDatasetSpecification(result, plugins));
+  }
+
+  async checkEntitlements(
+    input: V1_StoreEntitlementAnalysisInput,
+    plugins: PureProtocolProcessorPlugin[],
+  ): Promise<V1_DatasetEntitlementReport[]> {
+    return (
+      await this.engineServerClient.checkEntitlements(
+        V1_StoreEntitlementAnalysisInput.serialization.toJson(input),
+      )
+    ).map((result) => V1_deserializeDatasetEntitlementReport(result, plugins));
   }
 
   // --------------------------------------------- Utilities ---------------------------------------------
