@@ -206,9 +206,7 @@ import {
 import { V1_buildExecutionResult } from './engine/execution/V1_ExecutionHelper.js';
 import {
   type Entity,
-  type GraphDataOrigin,
   type EntitiesWithOrigin,
-  LegendSDLC,
   ENTITY_PATH_DELIMITER,
 } from '@finos/legend-storage';
 import {
@@ -290,6 +288,15 @@ import type {
   DatasetEntitlementReport,
   DatasetSpecification,
 } from '../../../action/analytics/StoreEntitlementAnalysis.js';
+import {
+  LegendSDLC,
+  type GraphDataOrigin,
+} from '../../../../graph/GraphDataOrigin.js';
+import {
+  LiveGraphData,
+  type GraphData,
+  GraphDataWithOrigin,
+} from '../../../GraphData.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2236,24 +2243,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       parameterValues,
     );
 
-  private buildPureModelSDLCPointer(
-    origin: GraphDataOrigin,
-    clientVersion: string | undefined,
-  ): V1_PureModelContextPointer {
-    if (origin instanceof LegendSDLC) {
-      return new V1_PureModelContextPointer(
-        clientVersion
-          ? new V1_Protocol(
-              V1_PureGraphManager.PURE_PROTOCOL_NAME,
-              clientVersion,
-            )
-          : undefined,
-        new V1_LegendSDLC(origin.groupId, origin.artifactId, origin.versionId),
-      );
-    }
-    throw new UnsupportedOperationError('Unsupported graph origin');
-  }
-
   private buildExecutionInput = (
     graph: PureModel,
     mapping: Mapping | undefined,
@@ -3001,7 +2990,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping,
     runtime: PackageableRuntime,
     query: RawLambda | undefined,
-    graph: PureModel,
+    graphData: GraphData,
   ): Promise<DatasetSpecification[]> {
     const input = new V1_StoreEntitlementAnalysisInput();
     input.clientVersion = V1_PureGraphManager.PROD_PROTOCOL_VERSION;
@@ -3015,12 +3004,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           ).build(),
         )
       : undefined;
-    input.model = graph.origin
-      ? this.buildPureModelSDLCPointer(
-          graph.origin,
-          V1_PureGraphManager.PROD_PROTOCOL_VERSION,
-        )
-      : this.buildMappingModelCoverageAnalysisInputContextData(graph);
+
+    if (graphData instanceof LiveGraphData) {
+      input.model = this.buildMappingModelCoverageAnalysisInputContextData(
+        graphData.graph,
+      );
+    } else if (graphData instanceof GraphDataWithOrigin) {
+      input.model = this.buildPureModelSDLCPointer(
+        graphData.origin,
+        V1_PureGraphManager.PROD_PROTOCOL_VERSION,
+      );
+    } else {
+      throw new UnsupportedOperationError(
+        `Can't process unsupported graph data`,
+        graphData,
+      );
+    }
+
     return (
       await this.engine.surveyDatasets(
         input,
@@ -3038,7 +3038,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping,
     runtime: PackageableRuntime,
     query: RawLambda | undefined,
-    graph: PureModel,
+    graphData: GraphData,
   ): Promise<DatasetEntitlementReport[]> {
     const input = new V1_StoreEntitlementAnalysisInput();
     input.clientVersion = V1_PureGraphManager.PROD_PROTOCOL_VERSION;
@@ -3052,12 +3052,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           ).build(),
         )
       : undefined;
-    input.model = graph.origin
-      ? this.buildPureModelSDLCPointer(
-          graph.origin,
-          V1_PureGraphManager.PROD_PROTOCOL_VERSION,
-        )
-      : this.buildMappingModelCoverageAnalysisInputContextData(graph);
+
+    if (graphData instanceof LiveGraphData) {
+      input.model = this.buildMappingModelCoverageAnalysisInputContextData(
+        graphData.graph,
+      );
+    } else if (graphData instanceof GraphDataWithOrigin) {
+      input.model = this.buildPureModelSDLCPointer(
+        graphData.origin,
+        V1_PureGraphManager.PROD_PROTOCOL_VERSION,
+      );
+    } else {
+      throw new UnsupportedOperationError(
+        `Can't process unsupported graph data`,
+        graphData,
+      );
+    }
+
     return (
       await this.engine.checkEntitlements(
         input,
@@ -3124,6 +3135,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   };
 
   // --------------------------------------------- Shared ---------------------------------------------
+
+  private buildPureModelSDLCPointer(
+    origin: GraphDataOrigin,
+    clientVersion: string | undefined,
+  ): V1_PureModelContextPointer {
+    if (origin instanceof LegendSDLC) {
+      return new V1_PureModelContextPointer(
+        clientVersion
+          ? new V1_Protocol(
+              V1_PureGraphManager.PURE_PROTOCOL_NAME,
+              clientVersion,
+            )
+          : undefined,
+        new V1_LegendSDLC(origin.groupId, origin.artifactId, origin.versionId),
+      );
+    }
+    throw new UnsupportedOperationError('Unsupported graph origin');
+  }
 
   /**
    * This method helps indexing the graph from graph and dependencies' entities

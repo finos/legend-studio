@@ -25,6 +25,7 @@ import {
 } from '@finos/legend-extension-dsl-diagram';
 import type {
   BasicGraphManagerState,
+  GraphData,
   PackageableRuntime,
 } from '@finos/legend-graph';
 import {
@@ -41,6 +42,7 @@ import {
   PURE_DATA_SPACE_INFO_PROFILE_PATH,
   PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE,
 } from '../graphManager/DSL_DataSpace_PureGraphManagerPlugin.js';
+import { DataSpaceViewerDataAccessState } from './DataSpaceViewerDataAccessState.js';
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   DESCRIPTION = 'description',
@@ -78,25 +80,16 @@ class DataSpaceLayoutState {
   }
 }
 
-// class DataSpaceViewerPageState {
-//   // when the viewer is mounted
-//   // each page state will have a unique key
-//   // this key will be used to register the element to scroll to
-//   // when the page is rendered, it will register its element to scroll to
-//   // when the page is unmounted, it will unregister its element to scroll to
-//   // wiki has a few different section
-//   // each section when rendered, will register their own element (to scroll to)
-// }
-
 export class DataSpaceViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly graphManagerState: BasicGraphManagerState;
   readonly layoutState: DataSpaceLayoutState;
 
+  readonly dataSpaceAnalysisResult: DataSpaceAnalysisResult;
   readonly groupId: string;
   readonly artifactId: string;
   readonly versionId: string;
-  readonly dataSpaceAnalysisResult: DataSpaceAnalysisResult;
+  readonly retriveGraphData: () => GraphData;
   readonly viewProject: (
     groupId: string,
     artifactId: string,
@@ -113,6 +106,8 @@ export class DataSpaceViewerState {
     | ((zone: NavigationZone | undefined) => void)
     | undefined;
 
+  readonly dataAccessState: DataSpaceViewerDataAccessState;
+
   _renderer?: DiagramRenderer | undefined;
   currentDiagram?: DataSpaceDiagramAnalysisResult | undefined;
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
@@ -127,6 +122,7 @@ export class DataSpaceViewerState {
     versionId: string,
     dataSpaceAnalysisResult: DataSpaceAnalysisResult,
     actions: {
+      retriveGraphData: () => GraphData;
       viewProject: (
         groupId: string,
         artifactId: string,
@@ -149,8 +145,8 @@ export class DataSpaceViewerState {
       currentExecutionContext: observable,
       currentRuntime: observable,
       isVerified: computed,
-      renderer: computed,
-      setRenderer: action,
+      diagramRenderer: computed,
+      setDiagramRenderer: action,
       setCurrentDiagram: action,
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
@@ -171,13 +167,16 @@ export class DataSpaceViewerState {
     this.currentDiagram = getNullableFirstElement(
       this.dataSpaceAnalysisResult.diagrams,
     );
+    this.retriveGraphData = actions.retriveGraphData;
     this.viewProject = actions.viewProject;
     this.viewSDLCProject = actions.viewSDLCProject;
     this.onDiagramClassDoubleClick = actions.onDiagramClassDoubleClick;
     this.onZoneChange = actions.onZoneChange;
+
+    this.dataAccessState = new DataSpaceViewerDataAccessState(this);
   }
 
-  get renderer(): DiagramRenderer {
+  get diagramRenderer(): DiagramRenderer {
     return guaranteeNonNullable(
       this._renderer,
       `Diagram renderer must be initialized (this is likely caused by calling this method at the wrong place)`,
@@ -196,12 +195,12 @@ export class DataSpaceViewerState {
     if (!this.isDiagramRendererInitialized) {
       return '';
     }
-    if (this.renderer.middleClick || this.renderer.rightClick) {
+    if (this.diagramRenderer.middleClick || this.diagramRenderer.rightClick) {
       return 'diagram-editor__cursor--grabbing';
     }
-    switch (this.renderer.interactionMode) {
+    switch (this.diagramRenderer.interactionMode) {
       case DIAGRAM_INTERACTION_MODE.LAYOUT: {
-        if (this.renderer.mouseOverClassView) {
+        if (this.diagramRenderer.mouseOverClassView) {
           return 'diagram-editor__cursor--pointer';
         }
         return '';
@@ -221,7 +220,7 @@ export class DataSpaceViewerState {
     );
   }
 
-  setRenderer(val: DiagramRenderer): void {
+  setDiagramRenderer(val: DiagramRenderer): void {
     this._renderer = val;
   }
 
@@ -244,11 +243,12 @@ export class DataSpaceViewerState {
     this.currentRuntime = val;
   }
 
-  setupRenderer(): void {
-    this.renderer.setIsReadOnly(true);
-    this.renderer.setEnableLayoutAutoAdjustment(true);
-    this.renderer.onClassViewDoubleClick = (classView: ClassView): void =>
-      this.onDiagramClassDoubleClick(classView);
+  setupDiagramRenderer(): void {
+    this.diagramRenderer.setIsReadOnly(true);
+    this.diagramRenderer.setEnableLayoutAutoAdjustment(true);
+    this.diagramRenderer.onClassViewDoubleClick = (
+      classView: ClassView,
+    ): void => this.onDiagramClassDoubleClick(classView);
   }
 
   changeZone(zone: NavigationZone): void {

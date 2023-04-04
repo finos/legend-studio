@@ -31,6 +31,7 @@ import type { DataSpace } from '../../graph/metamodel/pure/model/packageableElem
 import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytics/DataSpaceAnalysis.js';
 import { DSL_DataSpace_getGraphManagerExtension } from '../../graphManager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
+import { LiveGraphData } from '@finos/legend-graph';
 
 export class DataSpacePreviewState extends EditorExtensionState {
   readonly editorStore: EditorStore;
@@ -116,6 +117,8 @@ export class DataSpacePreviewState extends EditorExtensionState {
         versionId,
         analysisResult,
         {
+          retriveGraphData: () =>
+            new LiveGraphData(this.editorStore.graphManagerState.graph),
           viewProject: () => {
             this.editorStore.applicationStore.notificationService.notifyWarning(
               'This feature is not supported in preview mode',

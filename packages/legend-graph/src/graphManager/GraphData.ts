@@ -14,7 +14,25 @@
  * limitations under the License.
  */
 
-export * from './Entity.js';
-export * from './EntityUtils.js';
-export * from './EntitiesWithOrigin.js';
-export * from './DependencyUtils.js';
+import type { GraphDataOrigin } from '../graph/GraphDataOrigin.js';
+import type { PureModel } from '../graph/PureModel.js';
+
+export abstract class GraphData {}
+
+export class LiveGraphData extends GraphData {
+  readonly graph: PureModel;
+
+  constructor(graph: PureModel) {
+    super();
+    this.graph = graph;
+  }
+}
+
+export class GraphDataWithOrigin extends GraphData {
+  readonly origin: GraphDataOrigin;
+
+  constructor(origin: GraphDataOrigin) {
+    super();
+    this.origin = origin;
+  }
+}

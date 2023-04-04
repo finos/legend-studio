@@ -44,6 +44,6 @@ export {
 export { createMemoryHistory } from 'history';
 
 export const useNavigationZone = (): NavigationZone => {
-  const location = useLocation();
+  const location = useLocation() as { hash: string }; // TODO: this is a temporary hack until we upgrade react-router
   return location.hash.substring(NAVIGATION_ZONE_PREFIX.length);
 };

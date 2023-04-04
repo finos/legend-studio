@@ -55,11 +55,7 @@ import {
   type TracerService,
 } from '@finos/legend-shared';
 import type { LightQuery, Query, QueryInfo } from './action/query/Query.js';
-import type {
-  EntitiesWithOrigin,
-  Entity,
-  GraphDataOrigin,
-} from '@finos/legend-storage';
+import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification.js';
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
@@ -87,6 +83,8 @@ import type {
   DatasetSpecification,
 } from './action/analytics/StoreEntitlementAnalysis.js';
 import type { PackageableRuntime } from '../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
+import type { GraphDataOrigin } from '../graph/GraphDataOrigin.js';
+import type { GraphData } from './GraphData.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -513,14 +511,14 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping,
     runtime: PackageableRuntime,
     query: RawLambda | undefined,
-    graph: PureModel,
+    graphData: GraphData,
   ): Promise<DatasetSpecification[]>;
 
   abstract checkEntitlements(
     mapping: Mapping,
     runtime: PackageableRuntime,
     query: RawLambda | undefined,
-    graph: PureModel,
+    graphData: GraphData,
   ): Promise<DatasetEntitlementReport[]>;
 
   // ------------------------------------------- Change detection -------------------------------------------

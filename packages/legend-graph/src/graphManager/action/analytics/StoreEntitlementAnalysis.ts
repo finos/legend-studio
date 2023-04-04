@@ -17,6 +17,10 @@
 export class DatasetSpecification {
   name!: string;
   type!: string;
+
+  get hashCode(): string {
+    return `${this.name}__${this.type}`;
+  }
 }
 
 export abstract class DatasetEntitlementReport {

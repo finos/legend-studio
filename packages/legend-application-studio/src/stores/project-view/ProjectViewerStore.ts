@@ -37,7 +37,6 @@ import {
   type ProjectGAVCoordinates,
   type EntitiesWithOrigin,
   parseGAVCoordinates,
-  LegendSDLC,
 } from '@finos/legend-storage';
 import {
   ProjectConfiguration,
@@ -63,6 +62,7 @@ import {
   GraphDataDeserializationError,
   GraphBuilderError,
   createGraphBuilderReport,
+  LegendSDLC,
 } from '@finos/legend-graph';
 import { GRAPH_EDITOR_MODE } from '../editor/EditorConfig.js';
 

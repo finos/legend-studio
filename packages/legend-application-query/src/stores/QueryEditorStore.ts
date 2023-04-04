@@ -50,6 +50,7 @@ import {
   type Runtime,
   type Service,
   createGraphBuilderReport,
+  LegendSDLC,
 } from '@finos/legend-graph';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
@@ -64,7 +65,6 @@ import {
   type ProjectGAVCoordinates,
   type EntitiesWithOrigin,
   parseProjectIdentifier,
-  LegendSDLC,
 } from '@finos/legend-storage';
 import {
   type DepotServerClient,

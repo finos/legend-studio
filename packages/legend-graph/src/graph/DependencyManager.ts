@@ -33,14 +33,11 @@ import type { FileGenerationSpecification } from '../graph/metamodel/pure/packag
 import type { GenerationSpecification } from '../graph/metamodel/pure/packageableElements/generationSpecification/GenerationSpecification.js';
 import type { Measure } from '../graph/metamodel/pure/packageableElements/domain/Measure.js';
 import type { SectionIndex } from '../graph/metamodel/pure/packageableElements/section/SectionIndex.js';
-import {
-  type EntitiesWithOrigin,
-  type GraphDataOrigin,
-  LegendSDLC,
-} from '@finos/legend-storage';
+import { type EntitiesWithOrigin } from '@finos/legend-storage';
 import type { Database } from '../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import type { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
+import { LegendSDLC, type GraphDataOrigin } from './GraphDataOrigin.js';
 
 class DependencyModel extends BasicModel {
   constructor(

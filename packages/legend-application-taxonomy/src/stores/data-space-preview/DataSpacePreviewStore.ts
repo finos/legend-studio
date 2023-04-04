@@ -26,7 +26,11 @@ import {
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
-import { BasicGraphManagerState } from '@finos/legend-graph';
+import {
+  BasicGraphManagerState,
+  GraphDataWithOrigin,
+  LegendSDLC,
+} from '@finos/legend-graph';
 import { parseGAVCoordinates } from '@finos/legend-storage';
 import {
   type DepotServerClient,
@@ -142,6 +146,10 @@ export class DataSpacePreviewStore {
         versionId,
         analysisResult,
         {
+          retriveGraphData: () =>
+            new GraphDataWithOrigin(
+              new LegendSDLC(groupId, artifactId, versionId),
+            ),
           viewProject: createViewProjectHandler(this.applicationStore),
           viewSDLCProject: createViewSDLCProjectHandler(
             this.applicationStore,
