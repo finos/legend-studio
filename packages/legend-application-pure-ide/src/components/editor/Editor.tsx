@@ -93,10 +93,10 @@ export const Editor = withEditorStore(
         editorStore.initialize(
           false,
           undefined,
-          applicationStore.navigationService.navigator.getAddressParameterValue(
+          applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
             LEGEND_PURE_IDE_ROUTE_PATTERN_TOKEN.MODE,
           ),
-          applicationStore.navigationService.navigator.getAddressParameterValue(
+          applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
             LEGEND_PURE_IDE_ROUTE_PATTERN_TOKEN.FAST_COMPILE,
           ),
         ),

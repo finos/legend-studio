@@ -41,10 +41,7 @@ import {
 import { makeObservable, flow, observable, flowResult } from 'mobx';
 import type { LegendTaxonomyPluginManager } from '../../application/LegendTaxonomyPluginManager.js';
 import type { LegendTaxonomyApplicationStore } from '../LegendTaxonomyBaseStore.js';
-import {
-  EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
-  type DataSpacePreviewPathParams,
-} from '../../application/LegendTaxonomyNavigation.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl } from '../../application/LegendTaxonomyNavigation.js';
 import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
@@ -78,7 +75,7 @@ export class DataSpacePreviewStore {
     this.pluginManager = applicationStore.pluginManager;
   }
 
-  *initialize(params: DataSpacePreviewPathParams): GeneratorFn<void> {
+  *initialize(gav: string, dataSpacePath: string): GeneratorFn<void> {
     // set up the application
     this.applicationStore.assistantService.setIsHidden(true);
     this.applicationStore.layoutService.setColorTheme(
@@ -89,7 +86,6 @@ export class DataSpacePreviewStore {
     this.initState.setMessage(`Initializing...`);
 
     try {
-      const { gav, dataSpacePath } = params;
       const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
 
       // initialize

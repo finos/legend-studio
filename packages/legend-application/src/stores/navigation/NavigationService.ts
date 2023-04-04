@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-export type Location = string;
-export type Address = string;
-export type AddressParameterKey = string;
-export type AddressParameterValue = string | undefined;
+export type NavigationAddress = string;
+export type NavigationLocationParameterValue = string | undefined;
+export type NavigationLocation = string;
+export type NavigationZone = string;
+
+export const NAVIGATION_ZONE_SEPARATOR = '__';
+export const NAVIGATION_ZONE_PREFIX = '#';
 
 /**
  * This is an initial attempt to generalize the application navigation to other platforms
@@ -48,7 +51,7 @@ export interface ApplicationNavigator {
    * after navigation
    */
   goToLocation(
-    location: Location,
+    location: NavigationLocation,
     options?: { ignoreBlocking?: boolean | undefined },
   ): void;
 
@@ -56,33 +59,55 @@ export interface ApplicationNavigator {
    * Visit the specified address
    */
   goToAddress(
-    address: Address,
+    address: NavigationAddress,
     options?: { ignoreBlocking?: boolean | undefined },
   ): void;
 
   /**
    * Visit the specified address in a new window
    */
-  visitAddress(address: Address): void;
+  visitAddress(address: NavigationAddress): void;
+
+  /**
+   * Generate the address from the current base address and the specified location
+   */
+  generateAddress(location: NavigationLocation): NavigationAddress;
 
   /**
    * Update the current location
    *
    * NOTE: any navigation actions: reload, go to address, go to location, etc.
    * explicitly updates the current location, this action will just update the
-   * location without doing any navigation
+   * location without doing any navigation.
+   *
+   * NOTE: we need to reset zone when changing location
    */
-  updateCurrentLocation(location: Location): void;
+  updateCurrentLocation(location: NavigationLocation): void;
 
-  getCurrentRootAddress(): Address;
-  getCurrentAddress(): Address;
-  getCurrentLocation(): Location;
-  getAddressParameters<
-    T extends Record<AddressParameterKey, AddressParameterValue>,
+  /**
+   * Update the current zone
+   *
+   * Changing the address and location might potentially already included changing
+   * the zone, this action will just update the zone.
+   */
+  updateCurrentZone(zone: NavigationZone): void;
+  resetZone(): void;
+
+  /**
+   * Get the current address base
+   */
+  getCurrentBaseAddress(): NavigationAddress;
+  getCurrentAddress(): NavigationAddress;
+
+  getCurrentLocation(): NavigationLocation;
+  getCurrentLocationParameters<
+    T extends Record<string, NavigationLocationParameterValue>,
   >(): T;
-  getAddressParameterValue(key: AddressParameterKey): AddressParameterValue;
+  getCurrentLocationParameterValue(
+    key: string,
+  ): NavigationLocationParameterValue;
 
-  generateAddress(location: Location): Address;
+  getCurrentZone(): NavigationZone;
 
   /**
    * Block all kinds of navigation, including going to another location,

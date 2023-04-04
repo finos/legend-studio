@@ -43,12 +43,11 @@ import {
 const ActivityBarMenu = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+    const layoutState = dataSpaceViewerState.layoutState;
 
     // actions
     const toggleExpandedMode = (): void =>
-      dataSpaceViewerState.enableExpandedMode(
-        !dataSpaceViewerState.isExpandedModeEnabled,
-      );
+      layoutState.enableExpandedMode(!layoutState.isExpandedModeEnabled);
 
     return (
       <>
@@ -63,7 +62,7 @@ const ActivityBarMenu = observer(
             content={
               <MenuContent>
                 <MenuContentItem onClick={toggleExpandedMode}>
-                  {dataSpaceViewerState.isExpandedModeEnabled
+                  {layoutState.isExpandedModeEnabled
                     ? 'Disable Expanded Mode'
                     : 'Enable Expanded Mode'}{' '}
                 </MenuContentItem>
@@ -89,8 +88,10 @@ export const DataSpaceViewerActivityBar = observer(
     const { dataSpaceViewerState } = props;
     const changeActivity =
       (activity: DATA_SPACE_VIEWER_ACTIVITY_MODE): (() => void) =>
-      (): void =>
+      (): void => {
         dataSpaceViewerState.setCurrentActivity(activity);
+        dataSpaceViewerState.onZoneChange(activity);
+      };
 
     const wikiActivities: DataSpaceViewerActivityConfig[] = [
       {

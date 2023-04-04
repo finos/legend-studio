@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { GenericLegendApplicationStore } from '@finos/legend-application';
+import type {
+  GenericLegendApplicationStore,
+  NavigationZone,
+} from '@finos/legend-application';
 import {
   type ClassView,
   type DiagramRenderer,
@@ -40,25 +43,64 @@ import {
 } from '../graphManager/DSL_DataSpace_PureGraphManagerPlugin.js';
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
-  DESCRIPTION = 'DESCRIPTION',
-  DIAGRAM_VIEWER = 'DIAGRAM_VIEWER',
-  MODELS_DOCUMENTATION = 'MODELS_DOCUMENTATION',
-  QUICK_START = 'QUICK_START',
-  EXECUTION_CONTEXT = 'EXECUTION_CONTEXT',
-  DATA_ACCESS = 'DATA_ACCESS',
+  DESCRIPTION = 'description',
+  DIAGRAM_VIEWER = 'diagram_viewer',
+  MODELS_DOCUMENTATION = 'models_documentation',
+  QUICK_START = 'quick_start',
+  EXECUTION_CONTEXT = 'execution_context',
+  DATA_ACCESS = 'data_access',
 
-  DATA_STORES = 'DATA_STORES', // TODO: with test-data, also let user call TDS query on top of these
-  DATA_AVAILABILITY = 'DATA_AVAILABILITY',
-  DATA_READINESS = 'DATA_READINESS',
-  DATA_COST = 'DATA_COST',
-  DATA_GOVERNANCE = 'DATA_GOVERNANCE',
-  INFO = 'INFO', // TODO: test coverage? (or maybe this should be done in elements/diagrams/data-quality section)
-  SUPPORT = 'SUPPORT',
+  DATA_STORES = 'data_stores', // TODO: with test-data, also let user call TDS query on top of these
+  DATA_AVAILABILITY = 'data_availability',
+  DATA_READINESS = 'data_readiness',
+  DATA_COST = 'data_cost',
+  DATA_GOVERNANCE = 'data_governance',
+  INFO = 'info', // TODO: test coverage? (or maybe this should be done in elements/diagrams/data-quality section)
+  SUPPORT = 'support',
 }
+
+class DataSpaceLayoutState {
+  readonly dataSpaceViewerState: DataSpaceViewerState;
+
+  isExpandedModeEnabled = false;
+
+  constructor(dataSpaceViewerState: DataSpaceViewerState) {
+    makeObservable(this, {
+      isExpandedModeEnabled: observable,
+      enableExpandedMode: action,
+    });
+
+    this.dataSpaceViewerState = dataSpaceViewerState;
+  }
+
+  enableExpandedMode(val: boolean): void {
+    this.isExpandedModeEnabled = val;
+  }
+}
+
+// class DataSpaceViewerPageState {
+//   // when the viewer is mounted
+//   // each page state will have a unique key
+//   // this key will be used to register the element to scroll to
+//   // when the page is rendered, it will register its element to scroll to
+//   // when the page is unmounted, it will unregister its element to scroll to
+//   // wiki has a few different section
+//   // each section when rendered, will register their own element (to scroll to)
+// }
 
 export class DataSpaceViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly graphManagerState: BasicGraphManagerState;
+  readonly layoutState: DataSpaceLayoutState;
+
+  // TODO: to be refactored and externalized through constructor
+  readonly onZoneChange = (zone: NavigationZone | undefined): void => {
+    if (zone === undefined) {
+      this.applicationStore.navigationService.navigator.resetZone();
+    } else {
+      this.applicationStore.navigationService.navigator.updateCurrentZone(zone);
+    }
+  };
 
   readonly groupId: string;
   readonly artifactId: string;
@@ -82,8 +124,6 @@ export class DataSpaceViewerState {
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
-
-  isExpandedModeEnabled = false;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -113,7 +153,6 @@ export class DataSpaceViewerState {
       currentActivity: observable,
       currentExecutionContext: observable,
       currentRuntime: observable,
-      isExpandedModeEnabled: observable,
       isVerified: computed,
       renderer: computed,
       setRenderer: action,
@@ -121,11 +160,12 @@ export class DataSpaceViewerState {
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
       setCurrentRuntime: action,
-      enableExpandedMode: action,
     });
 
     this.applicationStore = applicationStore;
     this.graphManagerState = graphManagerState;
+    this.layoutState = new DataSpaceLayoutState(this);
+
     this.dataSpaceAnalysisResult = dataSpaceAnalysisResult;
     this.groupId = groupId;
     this.artifactId = artifactId;
@@ -215,7 +255,63 @@ export class DataSpaceViewerState {
       this.onDiagramClassDoubleClick(classView);
   }
 
-  enableExpandedMode(val: boolean): void {
-    this.isExpandedModeEnabled = val;
+  changeZone(zone: NavigationZone): void {
+    switch (zone) {
+      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION:
+      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER:
+      case DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION:
+      case DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START: {
+        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION);
+        break;
+      }
+      case DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION_CONTEXT: {
+        this.setCurrentActivity(
+          DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION_CONTEXT,
+        );
+        break;
+      }
+      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS: {
+        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS);
+        break;
+      }
+      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_STORES: {
+        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_STORES);
+        break;
+      }
+      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_AVAILABILITY: {
+        this.setCurrentActivity(
+          DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_AVAILABILITY,
+        );
+        break;
+      }
+      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_READINESS: {
+        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_READINESS);
+        break;
+      }
+      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_COST: {
+        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_COST);
+        break;
+      }
+      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_GOVERNANCE: {
+        this.setCurrentActivity(
+          DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_GOVERNANCE,
+        );
+        break;
+      }
+      case DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO: {
+        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO);
+        break;
+      }
+      case DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT: {
+        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT);
+        break;
+      }
+      default: {
+        // unknown
+        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION);
+        this.onZoneChange(undefined);
+        break;
+      }
+    }
   }
 }

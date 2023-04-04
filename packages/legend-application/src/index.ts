@@ -35,7 +35,12 @@ export * from './components/WebApplicationNavigatorProviderTestUtils.js';
 
 export * from './stores/ApplicationStore.js';
 export { WebApplicationNavigator } from './stores/navigation/WebApplicationNavigator.js';
-export { NavigationService } from './stores/navigation/NavigationService.js';
+export {
+  NavigationService,
+  type NavigationAddress,
+  type NavigationLocation,
+  type NavigationZone,
+} from './stores/navigation/NavigationService.js';
 export * from './stores/storage/ApplicationStorage.js';
 export * from './stores/storage/StorageService.js';
 export * from './stores/SettingService.js';

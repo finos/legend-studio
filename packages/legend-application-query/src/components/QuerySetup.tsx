@@ -254,15 +254,15 @@ export const QuerySetupLandingPage = withQuerySetupLandingPageStore(
     const setupStore = useQuerySetupLandingPageStore();
     const applicationStore = useLegendQueryApplicationStore();
     const showAdvancedActions =
-      applicationStore.navigationService.navigator.getAddressParameterValue(
+      applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
         LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ADVANCED_ACTIONS,
       );
     const showAllGroups =
-      applicationStore.navigationService.navigator.getAddressParameterValue(
+      applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
         LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ALL_GROUPS,
       );
     const tagToFocus =
-      applicationStore.navigationService.navigator.getAddressParameterValue(
+      applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
         LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG,
       );
     const goToStudio = (): void =>

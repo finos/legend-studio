@@ -22,12 +22,13 @@ import {
   sanitizeURL,
 } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
-import type {
-  Address,
-  Location,
-  ApplicationNavigator,
-  AddressParameterKey,
-  AddressParameterValue,
+import {
+  type NavigationAddress,
+  type NavigationLocation,
+  type ApplicationNavigator,
+  type NavigationLocationParameterValue,
+  type NavigationZone,
+  NAVIGATION_ZONE_PREFIX,
 } from './NavigationService.js';
 
 export class WebApplicationNavigator implements ApplicationNavigator {
@@ -68,7 +69,7 @@ export class WebApplicationNavigator implements ApplicationNavigator {
   }
 
   goToLocation(
-    location: Location,
+    location: NavigationLocation,
     options?: { ignoreBlocking?: boolean | undefined },
   ): void {
     if (options?.ignoreBlocking) {
@@ -107,7 +108,7 @@ export class WebApplicationNavigator implements ApplicationNavigator {
   }
 
   goToAddress(
-    address: Address,
+    address: NavigationAddress,
     options?: { ignoreBlocking?: boolean | undefined },
   ): void {
     if (options?.ignoreBlocking) {
@@ -127,32 +128,52 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     }
   }
 
-  visitAddress(address: Address): void {
+  visitAddress(address: NavigationAddress): void {
     this.window.open(address, '_blank');
   }
 
-  updateCurrentLocation(location: Location): void {
+  generateAddress(location: NavigationLocation): string {
+    return (
+      this.window.location.origin +
+      this.historyAPI.createHref({ pathname: location })
+    );
+  }
+
+  updateCurrentLocation(location: NavigationLocation): void {
     this.historyAPI.push(location);
   }
 
-  getCurrentRootAddress(): Address {
+  updateCurrentZone(zone: NavigationZone): void {
+    this.window.location.hash = NAVIGATION_ZONE_PREFIX + zone;
+  }
+
+  resetZone(): void {
+    this.updateCurrentLocation(this.getCurrentLocation());
+  }
+
+  getCurrentBaseAddress(options?: {
+    withAppRoot?: boolean | undefined;
+  }): NavigationAddress {
+    if (options?.withAppRoot) {
+      return this.generateAddress('');
+    }
     return this.window.location.origin;
   }
 
-  getCurrentAddress(): Address {
+  getCurrentAddress(): NavigationAddress {
     return this.window.location.href;
   }
 
-  getCurrentLocation(): Location {
+  getCurrentLocation(): NavigationLocation {
     return this.historyAPI.location.pathname;
   }
 
-  getAddressParameters<
-    T extends Record<AddressParameterKey, AddressParameterValue>,
+  getCurrentLocationParameters<
+    T extends Record<string, NavigationLocationParameterValue>,
   >(): T {
-    const result: Record<AddressParameterKey, AddressParameterValue> = {};
+    const result: Record<string, NavigationLocationParameterValue> = {};
     const parameters = getQueryParameters<
-      Record<AddressParameterKey, AddressParameterValue>
+      Record<string, NavigationLocationParameterValue>
     >(sanitizeURL(this.getCurrentAddress()), true);
     Object.keys(parameters).forEach((key) => {
       result[key] = getQueryParameterValue(key, parameters);
@@ -160,15 +181,14 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     return result as T;
   }
 
-  getAddressParameterValue(key: AddressParameterKey): AddressParameterValue {
-    return this.getAddressParameters()[key];
+  getCurrentLocationParameterValue(
+    key: string,
+  ): NavigationLocationParameterValue {
+    return this.getCurrentLocationParameters()[key];
   }
 
-  generateAddress(location: Location): string {
-    return (
-      this.window.location.origin +
-      this.historyAPI.createHref({ pathname: location })
-    );
+  getCurrentZone(): NavigationZone {
+    return this.window.location.hash.substring(NAVIGATION_ZONE_PREFIX.length);
   }
 
   blockNavigation(

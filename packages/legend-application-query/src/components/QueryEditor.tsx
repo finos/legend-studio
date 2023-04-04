@@ -650,7 +650,7 @@ export const ServiceQueryCreator = observer(() => {
   const gav = parameters[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV];
   const servicePath = parameters[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.SERVICE_PATH];
   const executionKey =
-    applicationStore.navigationService.navigator.getAddressParameterValue(
+    applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
       LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY,
     );
 

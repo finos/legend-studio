@@ -82,6 +82,7 @@
     height: 100%;
     width: 100%;
     overflow: overlay;
+    scroll-behavior: smooth;
   }
 
   &__frame {
