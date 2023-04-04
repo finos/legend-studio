@@ -93,15 +93,6 @@ export class DataSpaceViewerState {
   readonly graphManagerState: BasicGraphManagerState;
   readonly layoutState: DataSpaceLayoutState;
 
-  // TODO: to be refactored and externalized through constructor
-  readonly onZoneChange = (zone: NavigationZone | undefined): void => {
-    if (zone === undefined) {
-      this.applicationStore.navigationService.navigator.resetZone();
-    } else {
-      this.applicationStore.navigationService.navigator.updateCurrentZone(zone);
-    }
-  };
-
   readonly groupId: string;
   readonly artifactId: string;
   readonly versionId: string;
@@ -118,6 +109,9 @@ export class DataSpaceViewerState {
     entityPath: string | undefined,
   ) => Promise<void>;
   readonly onDiagramClassDoubleClick: (classView: ClassView) => void;
+  readonly onZoneChange?:
+    | ((zone: NavigationZone | undefined) => void)
+    | undefined;
 
   _renderer?: DiagramRenderer | undefined;
   currentDiagram?: DataSpaceDiagramAnalysisResult | undefined;
@@ -145,6 +139,7 @@ export class DataSpaceViewerState {
         entityPath: string | undefined,
       ) => Promise<void>;
       onDiagramClassDoubleClick: (classView: ClassView) => void;
+      onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {
     makeObservable(this, {
@@ -179,6 +174,7 @@ export class DataSpaceViewerState {
     this.viewProject = actions.viewProject;
     this.viewSDLCProject = actions.viewSDLCProject;
     this.onDiagramClassDoubleClick = actions.onDiagramClassDoubleClick;
+    this.onZoneChange = actions.onZoneChange;
   }
 
   get renderer(): DiagramRenderer {
@@ -309,7 +305,7 @@ export class DataSpaceViewerState {
       default: {
         // unknown
         this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION);
-        this.onZoneChange(undefined);
+        this.onZoneChange?.(undefined);
         break;
       }
     }

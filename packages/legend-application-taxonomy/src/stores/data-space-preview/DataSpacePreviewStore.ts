@@ -17,6 +17,7 @@
 import {
   LEGEND_APPLICATION_COLOR_THEME,
   TAB_SIZE,
+  type NavigationZone,
 } from '@finos/legend-application';
 import {
   type DataSpaceAnalysisResult,
@@ -148,6 +149,15 @@ export class DataSpacePreviewStore {
           ),
           onDiagramClassDoubleClick: (classView: ClassView): void =>
             this.queryDataSpace(classView.class.value.path),
+          onZoneChange: (zone: NavigationZone | undefined): void => {
+            if (zone === undefined) {
+              this.applicationStore.navigationService.navigator.resetZone();
+            } else {
+              this.applicationStore.navigationService.navigator.updateCurrentZone(
+                zone,
+              );
+            }
+          },
         },
       );
       this.initState.pass();
