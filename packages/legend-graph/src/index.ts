@@ -166,11 +166,13 @@ export {
   GenerationModel,
   PureModel,
 } from './graph/PureModel.js';
+export * from './graph/GraphDataOrigin.js';
 export * from './graph/PureGraphExtension.js';
 export * from './graph/PureGraphPlugin.js';
 
 // --------------------------------------------- GRAPH MANAGER --------------------------------------------------
 
+export * from './graphManager/GraphData.js';
 export { type GraphManagerPluginManager } from './graphManager/GraphManagerPluginManager.js';
 export { Core_GraphManagerPreset } from './Core_GraphManagerPreset.js';
 export { DSL_ExternalFormat_PureGraphPlugin } from './graph/extensions/DSL_ExternalFormat_PureGraphPlugin.js';
@@ -455,6 +457,15 @@ export {
   EntityMappedProperty,
   EnumMappedProperty,
 } from './graphManager/action/analytics/MappingModelCoverageAnalysis.js';
+export {
+  DatasetSpecification,
+  DatasetEntitlementReport,
+  DatasetEntitlementAccessGrantedReport,
+  DatasetEntitlementAccessNotGrantedReport,
+  DatasetEntitlementAccessRequestedReport,
+  DatasetEntitlementAccessApprovedReport,
+  DatasetEntitlementUnsupportedReport,
+} from './graphManager/action/analytics/StoreEntitlementAnalysis.js';
 
 // protocols
 export {

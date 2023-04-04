@@ -15,7 +15,12 @@
  */
 
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
-import type { Class, GraphManagerState } from '@finos/legend-graph';
+import {
+  GraphDataWithOrigin,
+  type Class,
+  type GraphManagerState,
+  LegendSDLC,
+} from '@finos/legend-graph';
 import {
   type StoredEntity,
   type DepotServerClient,
@@ -192,6 +197,14 @@ export class DataSpaceAdvancedSearchState {
         dataSpace.versionId,
         analysisResult,
         {
+          retriveGraphData: () =>
+            new GraphDataWithOrigin(
+              new LegendSDLC(
+                dataSpace.groupId,
+                dataSpace.artifactId,
+                dataSpace.versionId,
+              ),
+            ),
           viewProject: this.viewProject,
           viewSDLCProject: this.viewSDLCProject,
           onDiagramClassDoubleClick: (classView: ClassView): void => {

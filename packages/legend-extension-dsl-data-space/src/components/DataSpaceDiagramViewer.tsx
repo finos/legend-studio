@@ -55,14 +55,14 @@ const DataSpaceDiagramCanvas = observer(
 
     useEffect(() => {
       const renderer = new DiagramRenderer(diagramCanvasRef.current, diagram);
-      dataSpaceViewerState.setRenderer(renderer);
-      dataSpaceViewerState.setupRenderer();
+      dataSpaceViewerState.setDiagramRenderer(renderer);
+      dataSpaceViewerState.setupDiagramRenderer();
       renderer.render({ initial: true });
     }, [diagramCanvasRef, dataSpaceViewerState, diagram]);
 
     useEffect(() => {
       if (dataSpaceViewerState.isDiagramRendererInitialized) {
-        dataSpaceViewerState.renderer.refresh();
+        dataSpaceViewerState.diagramRenderer.refresh();
       }
     }, [dataSpaceViewerState, width, height]);
 

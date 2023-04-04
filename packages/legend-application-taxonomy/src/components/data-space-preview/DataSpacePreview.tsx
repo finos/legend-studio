@@ -15,9 +15,16 @@
  */
 
 import { createContext, useContext, useEffect } from 'react';
-import { useApplicationStore, useParams } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  useNavigationZone,
+  useParams,
+} from '@finos/legend-application';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import type { DataSpacePreviewPathParams } from '../../application/LegendTaxonomyNavigation.js';
+import {
+  LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN,
+  type DataSpacePreviewPathParams,
+} from '../../application/LegendTaxonomyNavigation.js';
 import { flowResult } from 'mobx';
 import {
   BlankPanelContent,
@@ -69,14 +76,24 @@ const useDataSpacePreviewStore = (): DataSpacePreviewStore =>
 export const DataSpacePreview = withDataSpacePreviewStore(
   observer(() => {
     const params = useParams<DataSpacePreviewPathParams>();
+    const gav = params[LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN.GAV];
+    const dataSpacePath =
+      params[LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH];
     const applicationStore = useApplicationStore();
     const previewStore = useDataSpacePreviewStore();
+    const navigationZone = useNavigationZone();
 
     useEffect(() => {
-      flowResult(previewStore.initialize(params)).catch(
+      if (previewStore.viewerState) {
+        previewStore.viewerState.changeZone(navigationZone);
+      }
+    }, [previewStore.viewerState, navigationZone]);
+
+    useEffect(() => {
+      flowResult(previewStore.initialize(gav, dataSpacePath)).catch(
         applicationStore.alertUnhandledError,
       );
-    }, [applicationStore, params, previewStore]);
+    }, [applicationStore, gav, dataSpacePath, previewStore]);
 
     return (
       <div className="data-space-preview">

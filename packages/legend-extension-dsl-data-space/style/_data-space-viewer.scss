@@ -38,6 +38,7 @@
     &--floating {
       background: var(--color-dark-grey-85);
       box-shadow: var(--color-dark-shade-280) 0 0 0.5rem 0;
+      z-index: 10;
     }
 
     &__content {
@@ -82,6 +83,7 @@
     height: 100%;
     width: 100%;
     overflow: overlay;
+    scroll-behavior: smooth;
   }
 
   &__frame {
@@ -685,6 +687,17 @@
         color: var(--color-light-grey-400);
       }
     }
+  }
+}
+
+.data-space__viewer__data-access {
+  &__chart {
+    height: 15rem;
+  }
+
+  &__grid {
+    height: 20rem;
+    width: 100%;
   }
 }
 

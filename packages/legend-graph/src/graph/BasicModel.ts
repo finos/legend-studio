@@ -65,8 +65,8 @@ import {
 } from '../graph/helpers/DomainHelper.js';
 import { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
-import type { GraphDataOrigin } from '@finos/legend-storage';
 import { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
+import type { GraphDataOrigin } from './GraphDataOrigin.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,

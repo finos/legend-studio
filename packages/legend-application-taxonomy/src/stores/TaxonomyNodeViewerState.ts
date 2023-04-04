@@ -49,6 +49,7 @@ import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from './LegendTaxonomyDataSpaceViewerHelper.js';
+import { GraphDataWithOrigin, LegendSDLC } from '@finos/legend-graph';
 
 interface TaxonomyNodeDataSpaceOption {
   label: string;
@@ -154,6 +155,14 @@ export class TaxonomyNodeViewerState {
         dataSpaceTaxonomyContext.versionId,
         analysisResult,
         {
+          retriveGraphData: () =>
+            new GraphDataWithOrigin(
+              new LegendSDLC(
+                dataSpaceTaxonomyContext.groupId,
+                dataSpaceTaxonomyContext.artifactId,
+                dataSpaceTaxonomyContext.versionId,
+              ),
+            ),
           viewProject: createViewProjectHandler(
             this.explorerStore.applicationStore,
           ),

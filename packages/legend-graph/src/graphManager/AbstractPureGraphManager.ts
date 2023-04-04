@@ -55,11 +55,7 @@ import {
   type TracerService,
 } from '@finos/legend-shared';
 import type { LightQuery, Query, QueryInfo } from './action/query/Query.js';
-import type {
-  EntitiesWithOrigin,
-  Entity,
-  GraphDataOrigin,
-} from '@finos/legend-storage';
+import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification.js';
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
@@ -82,6 +78,13 @@ import type {
 } from './action/compilation/CompilationResult.js';
 import type { ParameterValue } from '../DSL_Service_Exports.js';
 import type { ModelUnit } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
+import type {
+  DatasetEntitlementReport,
+  DatasetSpecification,
+} from './action/analytics/StoreEntitlementAnalysis.js';
+import type { PackageableRuntime } from '../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
+import type { GraphDataOrigin } from '../graph/GraphDataOrigin.js';
+import type { GraphData } from './GraphData.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -503,6 +506,20 @@ export abstract class AbstractPureGraphManager {
     input: RawMappingModelCoverageAnalysisResult,
     mapping: Mapping,
   ): MappingModelCoverageAnalysisResult;
+
+  abstract surveyDatasets(
+    mapping: Mapping,
+    runtime: PackageableRuntime,
+    query: RawLambda | undefined,
+    graphData: GraphData,
+  ): Promise<DatasetSpecification[]>;
+
+  abstract checkEntitlements(
+    mapping: Mapping,
+    runtime: PackageableRuntime,
+    query: RawLambda | undefined,
+    graphData: GraphData,
+  ): Promise<DatasetEntitlementReport[]>;
 
   // ------------------------------------------- Change detection -------------------------------------------
 

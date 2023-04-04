@@ -44,7 +44,7 @@ const DataSpaceHeader = observer(
         <div
           className={clsx('data-space__viewer__header__content', {
             'data-space__viewer__header__content--expanded':
-              dataSpaceViewerState.isExpandedModeEnabled,
+              dataSpaceViewerState.layoutState.isExpandedModeEnabled,
           })}
         >
           <div
@@ -115,7 +115,7 @@ export const DataSpaceViewer = observer(
             className={clsx('data-space__viewer__frame', {
               'data-space__viewer__frame--boundless': isShowingWiki,
               'data-space__viewer__frame--expanded':
-                dataSpaceViewerState.isExpandedModeEnabled,
+                dataSpaceViewerState.layoutState.isExpandedModeEnabled,
             })}
           >
             <div className="data-space__viewer__content">

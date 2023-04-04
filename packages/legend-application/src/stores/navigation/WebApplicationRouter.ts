@@ -14,6 +14,22 @@
  * limitations under the License.
  */
 
+import {
+  Router,
+  Route,
+  Switch,
+  Redirect,
+  matchPath,
+  generatePath,
+  MemoryRouter,
+  useParams,
+  useLocation,
+} from 'react-router';
+import {
+  NAVIGATION_ZONE_PREFIX,
+  type NavigationZone,
+} from './NavigationService.js';
+
 export { BrowserRouter } from 'react-router-dom';
 export {
   Router,
@@ -24,5 +40,10 @@ export {
   matchPath,
   generatePath,
   MemoryRouter,
-} from 'react-router';
+};
 export { createMemoryHistory } from 'history';
+
+export const useNavigationZone = (): NavigationZone => {
+  const location = useLocation() as { hash: string }; // TODO: this is a temporary hack until we upgrade react-router
+  return location.hash.substring(NAVIGATION_ZONE_PREFIX.length);
+};

@@ -17,6 +17,7 @@
 import {
   LEGEND_APPLICATION_COLOR_THEME,
   TAB_SIZE,
+  type NavigationZone,
 } from '@finos/legend-application';
 import {
   type DataSpaceAnalysisResult,
@@ -25,7 +26,11 @@ import {
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
-import { BasicGraphManagerState } from '@finos/legend-graph';
+import {
+  BasicGraphManagerState,
+  GraphDataWithOrigin,
+  LegendSDLC,
+} from '@finos/legend-graph';
 import { parseGAVCoordinates } from '@finos/legend-storage';
 import {
   type DepotServerClient,
@@ -41,10 +46,7 @@ import {
 import { makeObservable, flow, observable, flowResult } from 'mobx';
 import type { LegendTaxonomyPluginManager } from '../../application/LegendTaxonomyPluginManager.js';
 import type { LegendTaxonomyApplicationStore } from '../LegendTaxonomyBaseStore.js';
-import {
-  EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
-  type DataSpacePreviewPathParams,
-} from '../../application/LegendTaxonomyNavigation.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl } from '../../application/LegendTaxonomyNavigation.js';
 import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
@@ -78,7 +80,7 @@ export class DataSpacePreviewStore {
     this.pluginManager = applicationStore.pluginManager;
   }
 
-  *initialize(params: DataSpacePreviewPathParams): GeneratorFn<void> {
+  *initialize(gav: string, dataSpacePath: string): GeneratorFn<void> {
     // set up the application
     this.applicationStore.assistantService.setIsHidden(true);
     this.applicationStore.layoutService.setColorTheme(
@@ -89,7 +91,6 @@ export class DataSpacePreviewStore {
     this.initState.setMessage(`Initializing...`);
 
     try {
-      const { gav, dataSpacePath } = params;
       const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
 
       // initialize
@@ -145,6 +146,10 @@ export class DataSpacePreviewStore {
         versionId,
         analysisResult,
         {
+          retriveGraphData: () =>
+            new GraphDataWithOrigin(
+              new LegendSDLC(groupId, artifactId, versionId),
+            ),
           viewProject: createViewProjectHandler(this.applicationStore),
           viewSDLCProject: createViewSDLCProjectHandler(
             this.applicationStore,
@@ -152,6 +157,15 @@ export class DataSpacePreviewStore {
           ),
           onDiagramClassDoubleClick: (classView: ClassView): void =>
             this.queryDataSpace(classView.class.value.path),
+          onZoneChange: (zone: NavigationZone | undefined): void => {
+            if (zone === undefined) {
+              this.applicationStore.navigationService.navigator.resetZone();
+            } else {
+              this.applicationStore.navigationService.navigator.updateCurrentZone(
+                zone,
+              );
+            }
+          },
         },
       );
       this.initState.pass();

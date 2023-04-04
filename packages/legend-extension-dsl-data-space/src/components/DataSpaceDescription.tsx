@@ -19,14 +19,20 @@ import type { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
+import { useEffect, useRef } from 'react';
 
 export const DataSpaceDescription = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
+    const sectionRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      // do
+    }, [dataSpaceViewerState]);
 
     return (
-      <div className="data-space__viewer__wiki__section">
+      <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
             Description

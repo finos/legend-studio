@@ -30,6 +30,14 @@ import type { SimpleFunctionExpression } from '../../../graph/metamodel/pure/val
 import type { ValueSpecification } from '../../../graph/metamodel/pure/valueSpecification/ValueSpecification.js';
 import type { GraphManagerPluginManager } from '../../GraphManagerPluginManager.js';
 import type { Type } from '../../../graph/metamodel/pure/packageableElements/domain/Type.js';
+import type {
+  V1_DatasetEntitlementReport,
+  V1_DatasetSpecification,
+} from './v1/engine/analytics/V1_StoreEntitlementAnalysis.js';
+import type {
+  DatasetEntitlementReport,
+  DatasetSpecification,
+} from '../../action/analytics/StoreEntitlementAnalysis.js';
 
 export type V1_ElementProtocolClassifierPathGetter = (
   protocol: V1_PackageableElement,
@@ -100,6 +108,26 @@ export type V1_ClassInstanceValueProtocolDeserializer = (
   type: string,
   plugins: PureProtocolProcessorPlugin[],
 ) => unknown | undefined;
+
+export type V1_DatasetSpecificationDeserializer = (
+  protocol: PlainObject<V1_DatasetSpecification>,
+  plugins: PureProtocolProcessorPlugin[],
+) => V1_DatasetSpecification | undefined;
+
+export type V1_DatasetEntitlementReportDeserializer = (
+  protocol: PlainObject<V1_DatasetEntitlementReport>,
+  plugins: PureProtocolProcessorPlugin[],
+) => V1_DatasetEntitlementReport | undefined;
+
+export type V1_DatasetSpecificationBuilder = (
+  protocol: V1_DatasetSpecification,
+  plugins: PureProtocolProcessorPlugin[],
+) => DatasetSpecification | undefined;
+
+export type V1_DatasetEntitlementReportBuilder = (
+  protocol: V1_DatasetEntitlementReport,
+  plugins: PureProtocolProcessorPlugin[],
+) => DatasetEntitlementReport | undefined;
 
 /**
  * Plugins for protocol processors. Technically, this is a sub-part of `PureGraphManagerPlugin`
@@ -202,4 +230,24 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * Get the list of deserializers for class instance value.
    */
   V1_getExtraClassInstanceValueProtocolSerializers?(): V1_ClassInstanceValueProtocolSerializer[];
+
+  /**
+   * Get the list of serializers for dataset specification.
+   */
+  V1_getExtraDatasetSpecificationProtocolDeserializers?(): V1_DatasetSpecificationDeserializer[];
+
+  /**
+   * Get the list of serializers for dataset entitlement report.
+   */
+  V1_getExtraDatasetEntitlementReportProtocolDeserializers?(): V1_DatasetEntitlementReportDeserializer[];
+
+  /**
+   * Get the list of builders for dataset specification.
+   */
+  V1_getExtraDatasetSpecificationBuilders?(): V1_DatasetSpecificationBuilder[];
+
+  /**
+   * Get the list of builders for dataset entitlement report.
+   */
+  V1_getExtraDatasetEntitlementReportBuilders?(): V1_DatasetEntitlementReportBuilder[];
 }
