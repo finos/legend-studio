@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 2.0.1
+
+### Patch Changes
+
+- [#2056](https://github.com/finos/legend-studio/pull/2056) [`7c73a8385`](https://github.com/finos/legend-studio/commit/7c73a83851416279351444f60d546a00425daf5f) ([@xannem](https://github.com/xannem)) - Validation for query window function duplicate column names
+
 ## 2.0.0
 
 ### Major Changes
