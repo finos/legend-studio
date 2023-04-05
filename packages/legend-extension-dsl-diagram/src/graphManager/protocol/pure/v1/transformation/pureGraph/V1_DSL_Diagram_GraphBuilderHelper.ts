@@ -134,7 +134,14 @@ export const V1_buildPropertyView = (
     targetClassView,
   );
   view.path = propertyView.line.points.map((point) => buildPoint(point));
-  _relationshipView_simplifyPathWithErrorHandling(view, context); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
+  // transform the line because we store only 2 end points that are inside points and we will calculate the offset
+  try {
+    _relationshipView_simplifyPath(view);
+  } catch (error) {
+    // NOTE: this is an optimization to simplify the path, so we should not break graph building if this fails
+    assertErrorThrown(error);
+    context.logService.warn(LogEvent.create(error.message));
+  }
   return view;
 };
 
@@ -161,7 +168,14 @@ export const V1_buildGeneralizationView = (
     targetClassView,
   );
   view.path = generalizationView.line.points.map((point) => buildPoint(point));
-  _relationshipView_simplifyPathWithErrorHandling(view, context); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
+  // transform the line because we store only 2 end points that are inside points and we will calculate the offset
+  try {
+    _relationshipView_simplifyPath(view);
+  } catch (error) {
+    // NOTE: this is an optimization to simplify the path, so we should not break graph building if this fails
+    assertErrorThrown(error);
+    context.logService.warn(LogEvent.create(error.message));
+  }
   return view;
 };
 

@@ -276,3 +276,75 @@ export const TEST_DATA__diagramWithAssociationProperty = [
     classifierPath: 'meta::pure::metamodel::diagram::Diagram',
   },
 ];
+
+export const TEST_DATA__diagramWithOverlappingConnectedClassViews = [
+  {
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'model',
+      properties: [
+        {
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          name: 'firstName',
+          type: 'String',
+        },
+      ],
+    },
+    path: 'model::Person',
+  },
+  {
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Firm',
+      package: 'model',
+      properties: [
+        {
+          multiplicity: { lowerBound: 0 },
+          name: 'employees',
+          type: 'model::Person',
+        },
+      ],
+    },
+    path: 'model::Firm',
+  },
+  {
+    classifierPath: 'meta::pure::metamodel::diagram::Diagram',
+    content: {
+      _type: 'diagram',
+      classViews: [
+        {
+          class: 'model::Firm',
+          id: '59da4d7e-9e7a-4a90-812a-96feeed9d6c8',
+          position: { x: 705, y: 279 },
+          rectangle: { height: 44, width: 134.32373046875 },
+        },
+        {
+          class: 'model::Person',
+          id: '6fbb5b43-ad37-43bd-8c62-05b124df7fca',
+          position: { x: 708, y: 279 },
+          rectangle: { height: 44, width: 124.521484375 },
+        },
+      ],
+      generalizationViews: [],
+      name: 'MyDiagram',
+      package: 'model',
+      propertyViews: [
+        {
+          line: {
+            points: [
+              { x: 770.2607421875, y: 301 },
+              { x: 772.161865234375, y: 301 },
+            ],
+          },
+          property: { class: 'model::Firm', property: 'employees' },
+          sourceView: '59da4d7e-9e7a-4a90-812a-96feeed9d6c8',
+          targetView: '6fbb5b43-ad37-43bd-8c62-05b124df7fca',
+        },
+      ],
+    },
+    path: 'model::MyDiagram',
+  },
+];
