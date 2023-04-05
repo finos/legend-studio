@@ -68,3 +68,105 @@ test(integrationTest('Class diagram preview shows up properly'), async () => {
     renderResult.getByTestId(DSL_DIAGRAM_TEST_ID.CLASS_DIAGRAM_PREVIEW),
   );
 });
+
+const TEST_DATA__dummyModelWithDiagram = [
+  {
+    path: 'model::Person',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      superTypes: [],
+      originalMilestonedProperties: [],
+      properties: [
+        {
+          name: 'firstName',
+          type: 'String',
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          stereotypes: [],
+          taggedValues: [],
+        },
+      ],
+      qualifiedProperties: [],
+      stereotypes: [],
+      taggedValues: [],
+      constraints: [],
+      package: 'model',
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'model::Firm',
+    content: {
+      _type: 'class',
+      name: 'Firm',
+      superTypes: [],
+      originalMilestonedProperties: [],
+      properties: [
+        {
+          name: 'employees',
+          type: 'model::Person',
+          multiplicity: { lowerBound: 0 },
+          stereotypes: [],
+          taggedValues: [],
+        },
+      ],
+      qualifiedProperties: [],
+      stereotypes: [],
+      taggedValues: [],
+      constraints: [],
+      package: 'model',
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'model::MyDiagram',
+    content: {
+      _type: 'diagram',
+      name: 'MyDiagram',
+      classViews: [
+        {
+          rectangle: { width: 134.32373046875, height: 44.0 },
+          position: { x: 705.0, y: 279.0 },
+          id: '59da4d7e-9e7a-4a90-812a-96feeed9d6c8',
+          class: 'model::Firm',
+        },
+        {
+          rectangle: { width: 124.521484375, height: 44.0 },
+          position: { x: 708.0, y: 279.0 },
+          id: '6fbb5b43-ad37-43bd-8c62-05b124df7fca',
+          class: 'model::Person',
+        },
+      ],
+      propertyViews: [
+        {
+          sourceView: '59da4d7e-9e7a-4a90-812a-96feeed9d6c8',
+          targetView: '6fbb5b43-ad37-43bd-8c62-05b124df7fca',
+          line: {
+            points: [
+              { x: 772.161865234375, y: 301.0 },
+              { x: 770.2607421875, y: 301.0 },
+            ],
+          },
+          property: { property: 'employees', class: 'model::Firm' },
+        },
+      ],
+      generalizationViews: [],
+      package: 'model',
+    },
+    classifierPath: 'meta::pure::metamodel::diagram::Diagram',
+  },
+];
+
+test(integrationTest('Diagram editor shows up properly'), async () => {
+  const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+  const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+    MOCK__editorStore,
+    {
+      entities: TEST_DATA__dummyModelWithDiagram,
+    },
+  );
+  await TEST__openElementFromExplorerTree('model::MyDiagram', renderResult);
+  await waitFor(() =>
+    renderResult.getByTestId(DSL_DIAGRAM_TEST_ID.DIAGRAM_EDITOR),
+  );
+});

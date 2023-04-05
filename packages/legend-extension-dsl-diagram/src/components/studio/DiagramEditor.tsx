@@ -117,6 +117,7 @@ import {
   classView_setHideTaggedValues,
 } from '../../stores/studio/DSL_Diagram_GraphModifierHelper.js';
 import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
+import { DSL_DIAGRAM_TEST_ID } from '../../application/studio/DSL_Diagram_LegendStudioTesting.js';
 
 const DiagramEditorContextMenu = observer(
   forwardRef<
@@ -1251,6 +1252,7 @@ const DiagramEditorDiagramCanvas = observer(
           'diagram-canvas diagram-editor__canvas',
           diagramEditorState.diagramCursorClass,
         )}
+        data-testid={DSL_DIAGRAM_TEST_ID.DIAGRAM_EDITOR}
         tabIndex={0}
       />
     );

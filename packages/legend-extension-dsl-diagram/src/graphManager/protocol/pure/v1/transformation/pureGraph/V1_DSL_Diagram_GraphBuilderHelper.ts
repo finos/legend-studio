@@ -20,6 +20,8 @@ import type {
   V1_GraphBuilderContext,
 } from '@finos/legend-graph';
 import {
+  LogEvent,
+  assertErrorThrown,
   assertNonEmptyString,
   assertNonNullable,
   guaranteeNonNullable,
@@ -39,6 +41,7 @@ import {
   getClassView,
   _relationshipView_simplifyPath,
 } from '../../../../../../graph/helpers/DSL_Diagram_Helper.js';
+import type { RelationshipView } from '../../../../../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_RelationshipView.js';
 
 const buildPoint = (point: V1_Point): Point => {
   const x = guaranteeNonNullable(point.x, `Point 'x' coordinate is missing`);
@@ -92,6 +95,19 @@ export const V1_buildClassView = (
   return view;
 };
 
+const _relationshipView_simplifyPathWithErrorHandling = (
+  relationshipView: RelationshipView,
+  context: V1_GraphBuilderContext,
+): void => {
+  try {
+    _relationshipView_simplifyPath(relationshipView);
+  } catch (error) {
+    // since error is to simplify path we won't break graph building but add it to warnings
+    assertErrorThrown(error);
+    context.logService.warn(LogEvent.create(error.message));
+  }
+};
+
 export const V1_buildPropertyView = (
   propertyView: V1_PropertyView,
   context: V1_GraphBuilderContext,
@@ -118,13 +134,14 @@ export const V1_buildPropertyView = (
     targetClassView,
   );
   view.path = propertyView.line.points.map((point) => buildPoint(point));
-  _relationshipView_simplifyPath(view); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
+  _relationshipView_simplifyPathWithErrorHandling(view, context); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
   return view;
 };
 
 export const V1_buildGeneralizationView = (
   generalizationView: V1_GeneralizationView,
   diagram: Diagram,
+  context: V1_GraphBuilderContext,
 ): GeneralizationView => {
   assertNonNullable(
     generalizationView.line,
@@ -144,7 +161,7 @@ export const V1_buildGeneralizationView = (
     targetClassView,
   );
   view.path = generalizationView.line.points.map((point) => buildPoint(point));
-  _relationshipView_simplifyPath(view); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
+  _relationshipView_simplifyPathWithErrorHandling(view, context); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
   return view;
 };
 
