@@ -52,15 +52,18 @@ export class DataSpaceDocumentationEntry {
   readonly elementPath: string;
   readonly subElementText?: string | undefined;
   readonly doc: string;
+  readonly milestoning?: string | undefined;
 
   constructor(
     elementPath: string,
     subElementText: string | undefined,
     documentation: string,
+    milestoning: string | undefined,
   ) {
     this.elementPath = elementPath;
     this.subElementText = subElementText;
     this.doc = documentation;
+    this.milestoning = milestoning;
   }
 }
 

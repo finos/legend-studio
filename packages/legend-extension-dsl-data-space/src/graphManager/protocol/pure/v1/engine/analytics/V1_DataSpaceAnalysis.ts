@@ -74,11 +74,11 @@ class V1_DataSpaceExecutionContextAnalysisResult {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_DataSpaceExecutionContextAnalysisResult, {
-      name: primitive(),
+      compatibleRuntimes: list(primitive()),
+      defaultRuntime: primitive(),
       description: optional(primitive()),
       mapping: primitive(),
-      defaultRuntime: primitive(),
-      compatibleRuntimes: list(primitive()),
+      name: primitive(),
       title: optional(primitive()),
     }),
   );
@@ -90,8 +90,20 @@ export class V1_DataSpaceBasicDocumentationEntry {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_DataSpaceBasicDocumentationEntry, {
-      name: primitive(),
       docs: list(primitive()),
+      name: primitive(),
+    }),
+  );
+}
+
+export class V1_DataSpacePropertyDocumentationEntry extends V1_DataSpaceBasicDocumentationEntry {
+  milestoning?: string;
+
+  static override readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataSpacePropertyDocumentationEntry, {
+      docs: list(primitive()),
+      milestoning: optional(primitive()),
+      name: primitive(),
     }),
   );
 }
@@ -101,24 +113,24 @@ export class V1_DataSpaceModelDocumentationEntry extends V1_DataSpaceBasicDocume
 
   static override readonly serialization = new SerializationFactory(
     createModelSchema(V1_DataSpaceModelDocumentationEntry, {
-      name: primitive(),
       docs: list(primitive()),
+      name: primitive(),
       path: primitive(),
     }),
   );
 }
 
 export class V1_DataSpaceClassDocumentationEntry extends V1_DataSpaceModelDocumentationEntry {
-  inheritedProperties: V1_DataSpaceBasicDocumentationEntry[] = [];
-  properties: V1_DataSpaceBasicDocumentationEntry[] = [];
+  properties: V1_DataSpacePropertyDocumentationEntry[] = [];
+  milestoning?: string;
 
   static override readonly serialization = new SerializationFactory(
     createModelSchema(V1_DataSpaceClassDocumentationEntry, {
-      name: primitive(),
       docs: list(primitive()),
+      milestoning: optional(primitive()),
+      name: primitive(),
       path: primitive(),
-      inheritedProperties: list(object(V1_DataSpaceBasicDocumentationEntry)),
-      properties: list(object(V1_DataSpaceBasicDocumentationEntry)),
+      properties: list(object(V1_DataSpacePropertyDocumentationEntry)),
     }),
   );
 }
@@ -128,23 +140,23 @@ export class V1_DataSpaceEnumerationDocumentationEntry extends V1_DataSpaceModel
 
   static override readonly serialization = new SerializationFactory(
     createModelSchema(V1_DataSpaceEnumerationDocumentationEntry, {
-      name: primitive(),
-      docs: list(primitive()),
       enumValues: list(object(V1_DataSpaceBasicDocumentationEntry)),
+      docs: list(primitive()),
+      name: primitive(),
       path: primitive(),
     }),
   );
 }
 
 export class V1_DataSpaceAssociationDocumentationEntry extends V1_DataSpaceModelDocumentationEntry {
-  properties: V1_DataSpaceBasicDocumentationEntry[] = [];
+  properties: V1_DataSpacePropertyDocumentationEntry[] = [];
 
   static override readonly serialization = new SerializationFactory(
     createModelSchema(V1_DataSpaceAssociationDocumentationEntry, {
-      name: primitive(),
       docs: list(primitive()),
+      name: primitive(),
       path: primitive(),
-      properties: list(object(V1_DataSpaceBasicDocumentationEntry)),
+      properties: list(object(V1_DataSpacePropertyDocumentationEntry)),
     }),
   );
 }
