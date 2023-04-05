@@ -98,7 +98,7 @@ export class DSL_Diagram_PureProtocolProcessorPlugin extends PureProtocolProcess
           );
           element.generalizationViews = elementProtocol.generalizationViews.map(
             (generalizationView) =>
-              V1_buildGeneralizationView(generalizationView, element),
+              V1_buildGeneralizationView(generalizationView, element, context),
           );
         },
       }),

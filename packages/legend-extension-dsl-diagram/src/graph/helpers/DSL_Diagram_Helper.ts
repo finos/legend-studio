@@ -21,7 +21,7 @@ import {
   Class,
   getAllOwnClassProperties,
 } from '@finos/legend-graph';
-import { deleteEntry } from '@finos/legend-shared';
+import { deleteEntry, guaranteeNonNullable } from '@finos/legend-shared';
 import type { ClassView } from '../metamodel/pure/packageableElements/diagram/DSL_Diagram_ClassView.js';
 import type { Diagram } from '../metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
 import { PositionedRectangle } from '../metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_PositionedRectangle.js';
@@ -146,8 +146,16 @@ export const _relationshipView_simplifyPath = (
   // if it does we will update the offset
   if (newPath[0] !== fullPath[0]) {
     const center = relationshipView.from.classView.value.center();
-    relationshipView.from._offsetX = (newPath[0] as Point).x - center.x;
-    relationshipView.from._offsetY = (newPath[0] as Point).y - center.y;
+    relationshipView.from._offsetX =
+      guaranteeNonNullable(
+        newPath[0],
+        'Diagram path expected to have at least 2 points',
+      ).x - center.x;
+    relationshipView.from._offsetY =
+      guaranteeNonNullable(
+        newPath[0],
+        'Diagram path expected to have at least 2 points',
+      ).y - center.y;
   }
 
   if (newPath[newPath.length - 1] !== fullPath[fullPath.length - 1]) {

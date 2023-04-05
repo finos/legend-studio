@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray, type Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable, assertTrue } from '@finos/legend-shared';
 import { RelationshipViewEnd } from './DSL_Diagram_RelationshipViewEnd.js';
 import { Point } from './geometry/DSL_Diagram_Point.js';
 import type { ClassView } from './DSL_Diagram_ClassView.js';
@@ -98,9 +98,7 @@ export class RelationshipView implements Hashable {
     from: ClassView,
     to: ClassView,
   ): Point[] => {
-    if (!path.length) {
-      return [];
-    }
+    assertTrue(Boolean(path.length), 'Path requires at least 1 point');
 
     let start = 0;
     let startPoint = path[start] as Point;
@@ -125,7 +123,9 @@ export class RelationshipView implements Hashable {
     }
 
     // NOTE: slice upper bound is exclusive, hence the +2 instead of +1
-    return path.slice(start - 1, end + 2);
+    const newPath = path.slice(start - 1, end + 2);
+    // In the event we have trimmed all paths, we will return start and end point to ensure the path still contains 2 points
+    return newPath.length < 2 ? [startPoint, endPoint] : newPath;
   };
 
   // TODO: to be simplified out of metamodel

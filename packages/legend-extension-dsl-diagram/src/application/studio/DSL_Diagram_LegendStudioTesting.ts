@@ -16,4 +16,5 @@
 
 export enum DSL_DIAGRAM_TEST_ID {
   CLASS_DIAGRAM_PREVIEW = 'class-diagram-preview',
+  DIAGRAM_EDITOR = 'diagram-editor',
 }

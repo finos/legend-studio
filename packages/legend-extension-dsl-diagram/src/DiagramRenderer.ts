@@ -987,8 +987,14 @@ export class DiagramRenderer {
           const box = this.drawLinePropertyText(
             // NOTE: by the way we compute the full path, it would guarantee
             // to always have at least 2 points
-            fullPath[fullPath.length - 2] as Point,
-            fullPath[fullPath.length - 1] as Point,
+            guaranteeNonNullable(
+              fullPath[fullPath.length - 2],
+              'Diagram path expected to have at least 2 points',
+            ),
+            guaranteeNonNullable(
+              fullPath[fullPath.length - 1],
+              'Diagram path expected to have at least 2 points',
+            ),
             relationshipView.to.classView.value,
             relationshipView.property.value,
             false,
@@ -2068,8 +2074,14 @@ export class DiagramRenderer {
     this.drawLinePropertyText(
       // NOTE: by the way we compute the full path, it would guarantee
       // to always have at least 2 points
-      fullPath[fullPath.length - 2] as Point,
-      fullPath[fullPath.length - 1] as Point,
+      guaranteeNonNullable(
+        fullPath[fullPath.length - 2],
+        'Diagram path expected to have at least 2 points',
+      ),
+      guaranteeNonNullable(
+        fullPath[fullPath.length - 1],
+        'Diagram path expected to have at least 2 points',
+      ),
       propertyView.to.classView.value,
       toProperty,
       false,
@@ -2240,10 +2252,22 @@ export class DiagramRenderer {
     );
     // NOTE: by the way we compute the full path, it would guarantee
     // to always have at least 2 points
-    const startX = (fullPath[fullPath.length - 2] as Point).x;
-    const startY = (fullPath[fullPath.length - 2] as Point).y;
-    const endX = (fullPath[fullPath.length - 1] as Point).x;
-    const endY = (fullPath[fullPath.length - 1] as Point).y;
+    const startX = guaranteeNonNullable(
+      fullPath[fullPath.length - 2],
+      'Diagram path expected to have at least 2 points',
+    ).x;
+    const startY = guaranteeNonNullable(
+      fullPath[fullPath.length - 2],
+      'Diagram path expected to have at least 2 points',
+    ).y;
+    const endX = guaranteeNonNullable(
+      fullPath[fullPath.length - 1],
+      'Diagram path expected to have at least 2 points',
+    ).x;
+    const endY = guaranteeNonNullable(
+      fullPath[fullPath.length - 1],
+      'Diagram path expected to have at least 2 points',
+    ).y;
     let resultX = 0;
     let resultY = 0;
     if (endY > startY) {
@@ -3639,8 +3663,14 @@ export class DiagramRenderer {
         const propertyInfoBox = this.drawLinePropertyText(
           // NOTE: by the way we compute the full path, it would guarantee
           // to always have at least 2 points
-          fullPath[fullPath.length - 2] as Point,
-          fullPath[fullPath.length - 1] as Point,
+          guaranteeNonNullable(
+            fullPath[fullPath.length - 2],
+            'Diagram path expected to have at least 2 points',
+          ),
+          guaranteeNonNullable(
+            fullPath[fullPath.length - 1],
+            'Diagram path expected to have at least 2 points',
+          ),
           propertyHolderView.to.classView.value,
           propertyHolderView.property.value,
           false,
