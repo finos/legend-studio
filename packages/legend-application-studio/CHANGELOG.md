@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 23.1.5
+
+### Patch Changes
+
+- [#1993](https://github.com/finos/legend-studio/pull/1993) [`65dffc460`](https://github.com/finos/legend-studio/commit/65dffc460e64fe89045ea766755bfde3bfff5b91) ([@xannem](https://github.com/xannem)) - Enable drag-and-drop only when the handler is grabbed
+
 ## 23.1.4
 
 ## 23.1.3

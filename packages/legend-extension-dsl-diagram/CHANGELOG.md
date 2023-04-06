@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-diagram
 
+## 7.1.49
+
 ## 7.1.48
 
 ## 7.1.47
