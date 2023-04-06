@@ -929,6 +929,20 @@ export class DiagramRenderer {
     );
   }
 
+  /**
+   * Mouse events' coordinate x,y are relative to the viewport, not the canvas element
+   * so we need to calculate them relative to the canvas element
+   */
+  resolveMouseEventCoordinate(e: MouseEvent): Point {
+    if (e.target instanceof HTMLElement) {
+      const targetEl = getElementPosition(e.target);
+      return new Point(targetEl.x + e.offsetX, targetEl.y + e.offsetY);
+    }
+    // NOTE: this is a fallback, should not happen
+    // since all mouse events shoud target the canvas element
+    return new Point(e.x, e.y);
+  }
+
   eventCoordinateToCanvasCoordinate(point: Point): Point {
     return new Point(
       point.x - this.divPosition.x + this.div.scrollLeft,
@@ -1045,19 +1059,14 @@ export class DiagramRenderer {
     // NOTE: we cap the minimum zoom level to avoid negative zoom
     newZoomLevel = Math.max(newZoomLevel, MIN_ZOOM_LEVEL);
 
-    const canvasZoomCenterPosition = this.canvasCoordinateToModelCoordinate(
-      this.eventCoordinateToCanvasCoordinate(point),
-    );
     const currentZoomLevel = this.zoom;
     this.setZoomLevel(newZoomLevel);
 
     this.screenOffset = new Point(
-      ((canvasZoomCenterPosition.x - this.canvasCenter.x) *
-        (currentZoomLevel - newZoomLevel) +
+      ((point.x - this.canvasCenter.x) * (currentZoomLevel - newZoomLevel) +
         this.screenOffset.x * currentZoomLevel) /
         newZoomLevel,
-      ((canvasZoomCenterPosition.y - this.canvasCenter.y) *
-        (currentZoomLevel - newZoomLevel) +
+      ((point.y - this.canvasCenter.y) * (currentZoomLevel - newZoomLevel) +
         this.screenOffset.y * currentZoomLevel) /
         newZoomLevel,
     );
@@ -1066,7 +1075,7 @@ export class DiagramRenderer {
     this.drawAll();
   }
 
-  zoomPoint(zoomLevel: number, zoomPoint: Point): void {
+  private zoomPoint(zoomLevel: number, zoomPoint: Point): void {
     this.executeZoom(zoomLevel, zoomPoint);
   }
 
@@ -2865,6 +2874,8 @@ export class DiagramRenderer {
   }
 
   mouseup(e: MouseEvent): void {
+    const mouseEventCoordinate = this.resolveMouseEventCoordinate(e);
+
     if (!this.isReadOnly) {
       switch (this.interactionMode) {
         case DIAGRAM_INTERACTION_MODE.LAYOUT: {
@@ -2882,7 +2893,7 @@ export class DiagramRenderer {
         case DIAGRAM_INTERACTION_MODE.ADD_CLASS: {
           const eventPointInModelCoordinate =
             this.canvasCoordinateToModelCoordinate(
-              this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y)),
+              this.eventCoordinateToCanvasCoordinate(mouseEventCoordinate),
             );
           this.onAddClassViewClick(eventPointInModelCoordinate);
           this.changeMode(
@@ -2913,7 +2924,12 @@ export class DiagramRenderer {
               ),
             );
           }
-          this.zoomPoint(nextZoomLevel / 100, new Point(e.x, e.y));
+          this.zoomPoint(
+            nextZoomLevel / 100,
+            this.canvasCoordinateToModelCoordinate(
+              this.eventCoordinateToCanvasCoordinate(mouseEventCoordinate),
+            ),
+          );
           break;
         }
         case DIAGRAM_INTERACTION_MODE.ZOOM_OUT: {
@@ -2935,7 +2951,12 @@ export class DiagramRenderer {
               ),
             );
           }
-          this.zoomPoint(nextZoomLevel / 100, new Point(e.x, e.y));
+          this.zoomPoint(
+            nextZoomLevel / 100,
+            this.canvasCoordinateToModelCoordinate(
+              this.eventCoordinateToCanvasCoordinate(mouseEventCoordinate),
+            ),
+          );
           break;
         }
         case DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP: {
@@ -2946,7 +2967,7 @@ export class DiagramRenderer {
           ) {
             const eventPointInModelCoordinate =
               this.canvasCoordinateToModelCoordinate(
-                this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y)),
+                this.eventCoordinateToCanvasCoordinate(mouseEventCoordinate),
               );
             for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
               const targetClassView = this.diagram.classViews[i] as ClassView;
@@ -3019,6 +3040,8 @@ export class DiagramRenderer {
   }
 
   mousedblclick(e: MouseEvent): void {
+    const mouseEventCoordinate = this.resolveMouseEventCoordinate(e);
+
     if (
       [
         DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
@@ -3031,7 +3054,7 @@ export class DiagramRenderer {
     }
 
     const eventPointInModelCoordinate = this.canvasCoordinateToModelCoordinate(
-      this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y)),
+      this.eventCoordinateToCanvasCoordinate(mouseEventCoordinate),
     );
 
     // Check double click on class property
@@ -3090,6 +3113,8 @@ export class DiagramRenderer {
   }
 
   mousedown(e: MouseEvent): void {
+    const mouseEventCoordinate = this.resolveMouseEventCoordinate(e);
+
     this.setSelectionStart(undefined);
     this.setSelectedClassCorner(undefined);
     this.setSelectedPropertyOrAssociation(undefined);
@@ -3099,9 +3124,8 @@ export class DiagramRenderer {
     this.selectedPoint = undefined;
     this.startClassView = undefined;
 
-    const eventPointInCanvasCoordinate = this.eventCoordinateToCanvasCoordinate(
-      new Point(e.x, e.y),
-    );
+    const eventPointInCanvasCoordinate =
+      this.eventCoordinateToCanvasCoordinate(mouseEventCoordinate);
     const eventPointInModelCoordinate = this.canvasCoordinateToModelCoordinate(
       eventPointInCanvasCoordinate,
     );
@@ -3112,7 +3136,7 @@ export class DiagramRenderer {
 
       switch (this.interactionMode) {
         case DIAGRAM_INTERACTION_MODE.PAN: {
-          this.positionBeforeLastMove = new Point(e.x, e.y);
+          this.positionBeforeLastMove = mouseEventCoordinate;
           return;
         }
         case DIAGRAM_INTERACTION_MODE.LAYOUT: {
@@ -3299,13 +3323,13 @@ export class DiagramRenderer {
     // middle click
     else if (e.button === 1) {
       this.setMiddleClick(true);
-      this.positionBeforeLastMove = new Point(e.x, e.y);
+      this.positionBeforeLastMove = mouseEventCoordinate;
       return;
     }
     // right click
     else if (e.button === 2) {
       this.setRightClick(true);
-      this.positionBeforeLastMove = new Point(e.x, e.y);
+      this.positionBeforeLastMove = mouseEventCoordinate;
       if (this.mouseOverClassView) {
         this.onClassViewRightClick(
           this.mouseOverClassView,
@@ -3320,6 +3344,8 @@ export class DiagramRenderer {
   }
 
   mousewheel(e: WheelEvent): void {
+    const mouseEventCoordinate = this.resolveMouseEventCoordinate(e);
+
     // no scrolling to be done since we want to convert scroll into zoom
     e.preventDefault();
     e.stopImmediatePropagation();
@@ -3330,11 +3356,17 @@ export class DiagramRenderer {
     }
     // scroll down to zoom in and up to zoom out
     const newZoomLevel = this.zoom - (e.deltaY / 120) * 0.05;
-    this.executeZoom(newZoomLevel, new Point(e.x, e.y));
+    this.executeZoom(
+      newZoomLevel,
+      this.canvasCoordinateToModelCoordinate(
+        this.eventCoordinateToCanvasCoordinate(mouseEventCoordinate),
+      ),
+    );
   }
 
   mousemove(e: MouseEvent): void {
-    this.cursorPosition = new Point(e.x, e.y);
+    const mouseEventCoordinate = this.resolveMouseEventCoordinate(e);
+    this.cursorPosition = mouseEventCoordinate;
 
     // Pan/Move
     if (
@@ -3343,15 +3375,17 @@ export class DiagramRenderer {
       (this.leftClick && this.interactionMode === DIAGRAM_INTERACTION_MODE.PAN)
     ) {
       this.screenOffset = new Point(
-        this.screenOffset.x + (e.x - this.positionBeforeLastMove.x) / this.zoom,
-        this.screenOffset.y + (e.y - this.positionBeforeLastMove.y) / this.zoom,
+        this.screenOffset.x +
+          (mouseEventCoordinate.x - this.positionBeforeLastMove.x) / this.zoom,
+        this.screenOffset.y +
+          (mouseEventCoordinate.y - this.positionBeforeLastMove.y) / this.zoom,
       );
-      this.positionBeforeLastMove = new Point(e.x, e.y);
+      this.positionBeforeLastMove = mouseEventCoordinate;
       this.clearScreen();
       this.drawAll();
     } else if (this.leftClick) {
       const eventPointInCanvasCoordinate =
-        this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y));
+        this.eventCoordinateToCanvasCoordinate(mouseEventCoordinate);
       const eventPointInModelCoordinate =
         this.canvasCoordinateToModelCoordinate(eventPointInCanvasCoordinate);
 
@@ -3533,7 +3567,7 @@ export class DiagramRenderer {
       this.drawScreen();
 
       const eventPointInCanvasCoordinate =
-        this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y));
+        this.eventCoordinateToCanvasCoordinate(mouseEventCoordinate);
       const eventPointInModelCoordinate =
         this.canvasCoordinateToModelCoordinate(eventPointInCanvasCoordinate);
 
