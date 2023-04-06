@@ -549,6 +549,10 @@
       text-transform: capitalize;
     }
 
+    .dnd__entry__placeholder {
+      background: var(--color-legacylight-light-grey-100);
+    }
+
     .query-builder__projection__column__drag-handle,
     .query-builder__olap__column__drag-handle {
       background: var(--color-light-grey-180);

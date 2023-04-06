@@ -24,6 +24,12 @@
     background: var(--color-light-grey-400);
   }
 
+  &__dnd__placeholder {
+    height: 100%;
+    border: 0.2rem dashed var(--color-light-grey-300);
+    background: var(--color-light-grey-0);
+  }
+
   .panel {
     height: 100%;
 

@@ -39,24 +39,47 @@ export const PanelDropZone: React.FC<{
   );
 };
 
-export const PanelEntryDragHandle: React.FC<{
+export const PanelDnDEntryDragHandle: React.FC<{
   dropTargetConnector: RefObject<HTMLDivElement>;
   isBeingDragged: boolean;
-  isLargeContainer?: boolean;
   className?: string;
 }> = (props) => {
-  const { isBeingDragged, dropTargetConnector, isLargeContainer, className } =
-    props;
+  const { isBeingDragged, dropTargetConnector, className } = props;
   return (
     <div
       ref={dropTargetConnector}
       className={clsx('dnd__entry__handle__container', className, {
-        'dnd__entry__handle__container--absolute': isBeingDragged,
-        'dnd__entry__handle__container--large': isLargeContainer,
+        'dnd__entry__handle__container--dragging': isBeingDragged,
       })}
     >
       <div className="dnd__entry-drag-handle">
         <VerticalDragHandleIcon />
+      </div>
+    </div>
+  );
+};
+
+export const PanelDnDEntry: React.FC<{
+  children: React.ReactNode;
+  placeholder?: React.ReactNode;
+  showPlaceholder: boolean;
+  className?: string;
+  dndRef: RefObject<HTMLDivElement>;
+}> = (props) => {
+  const { children, dndRef, placeholder, showPlaceholder, className } = props;
+  return (
+    <div ref={dndRef} className={className}>
+      <div className="dnd__entry__container">
+        {showPlaceholder && (
+          <div className="dnd__entry__placeholder">
+            {placeholder ? (
+              <>{placeholder}</>
+            ) : (
+              <div className="dnd__entry__placeholder__content"></div>
+            )}
+          </div>
+        )}
+        <>{children}</>
       </div>
     </div>
   );

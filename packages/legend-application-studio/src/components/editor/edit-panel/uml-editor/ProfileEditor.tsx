@@ -26,12 +26,12 @@ import {
   PlusIcon,
   TimesIcon,
   LockIcon,
-  PanelEntryDragHandle,
-  PanelEntryDropZonePlaceholder,
+  PanelDnDEntryDragHandle,
   DragPreviewLayer,
   useDragPreviewLayer,
   Panel,
   PanelContent,
+  PanelDnDEntry,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -119,38 +119,41 @@ const TagBasicEditor = observer(
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div ref={ref} className="tag-basic-editor__container">
-        <PanelEntryDragHandle
+      <PanelDnDEntry
+        dndRef={ref}
+        className="tag-basic-editor__container"
+        placeholder={<div className="dnd__placeholder--light"></div>}
+        showPlaceholder={isBeingDragged}
+      >
+        <PanelDnDEntryDragHandle
           dropTargetConnector={handleRef}
           isBeingDragged={isBeingDragged}
         />
-        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
-          <div className="tag-basic-editor">
-            <InputWithInlineValidation
-              className="tag-basic-editor__value input-group__input"
-              spellCheck={false}
+        <div className="tag-basic-editor">
+          <InputWithInlineValidation
+            className="tag-basic-editor__value input-group__input"
+            spellCheck={false}
+            disabled={isReadOnly}
+            value={tag.value}
+            onChange={changeValue}
+            placeholder="Tag value"
+            validationErrorMessage={
+              isTagDuplicated(tag) ? 'Duplicated tag' : undefined
+            }
+          />
+          {!isReadOnly && (
+            <button
+              className="uml-element-editor__remove-btn"
               disabled={isReadOnly}
-              value={tag.value}
-              onChange={changeValue}
-              placeholder="Tag value"
-              validationErrorMessage={
-                isTagDuplicated(tag) ? 'Duplicated tag' : undefined
-              }
-            />
-            {!isReadOnly && (
-              <button
-                className="uml-element-editor__remove-btn"
-                disabled={isReadOnly}
-                onClick={deleteValue}
-                tabIndex={-1}
-                title="Remove"
-              >
-                <TimesIcon />
-              </button>
-            )}
-          </div>
-        </PanelEntryDropZonePlaceholder>
-      </div>
+              onClick={deleteValue}
+              tabIndex={-1}
+              title="Remove"
+            >
+              <TimesIcon />
+            </button>
+          )}
+        </div>
+      </PanelDnDEntry>
     );
   },
 );
@@ -221,40 +224,43 @@ const StereotypeBasicEditor = observer(
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div ref={ref} className="stereotype-basic-editor__container">
-        <PanelEntryDragHandle
+      <PanelDnDEntry
+        dndRef={ref}
+        placeholder={<div className="dnd__placeholder--light"></div>}
+        className="stereotype-basic-editor__container"
+        showPlaceholder={isBeingDragged}
+      >
+        <PanelDnDEntryDragHandle
           dropTargetConnector={handleRef}
           isBeingDragged={isBeingDragged}
         />
-        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
-          <div className="stereotype-basic-editor">
-            <InputWithInlineValidation
-              className="stereotype-basic-editor__value input-group__input"
-              spellCheck={false}
+        <div className="stereotype-basic-editor">
+          <InputWithInlineValidation
+            className="stereotype-basic-editor__value input-group__input"
+            spellCheck={false}
+            disabled={isReadOnly}
+            value={stereotype.value}
+            onChange={changeValue}
+            placeholder="Stereotype value"
+            validationErrorMessage={
+              isStereotypeDuplicated(stereotype)
+                ? 'Duplicated stereotype'
+                : undefined
+            }
+          />
+          {!isReadOnly && (
+            <button
+              className="uml-element-editor__remove-btn"
               disabled={isReadOnly}
-              value={stereotype.value}
-              onChange={changeValue}
-              placeholder="Stereotype value"
-              validationErrorMessage={
-                isStereotypeDuplicated(stereotype)
-                  ? 'Duplicated stereotype'
-                  : undefined
-              }
-            />
-            {!isReadOnly && (
-              <button
-                className="uml-element-editor__remove-btn"
-                disabled={isReadOnly}
-                onClick={deleteStereotype}
-                tabIndex={-1}
-                title="Remove"
-              >
-                <TimesIcon />
-              </button>
-            )}
-          </div>
-        </PanelEntryDropZonePlaceholder>
-      </div>
+              onClick={deleteStereotype}
+              tabIndex={-1}
+              title="Remove"
+            >
+              <TimesIcon />
+            </button>
+          )}
+        </div>
+      </PanelDnDEntry>
     );
   },
 );

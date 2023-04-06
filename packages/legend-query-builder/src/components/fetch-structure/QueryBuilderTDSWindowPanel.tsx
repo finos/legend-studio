@@ -42,7 +42,8 @@ import {
   ModalFooter,
   PanelFormSection,
   ModalFooterButton,
-  PanelEntryDragHandle,
+  PanelDnDEntryDragHandle,
+  PanelDnDEntry,
 } from '@finos/legend-art';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -849,273 +850,272 @@ const QueryBuilderWindowColumnEditor = observer(
     );
 
     return (
-      <div ref={ref} className="query-builder__olap__column">
-        <PanelEntryDragHandle
-          isBeingDragged={isBeingDragged}
-          className="query-builder__olap__column__drag-handle__container"
-          dropTargetConnector={handleRef}
-        />
-        <PanelEntryDropZonePlaceholder
-          showPlaceholder={isBeingDragged}
-          className="query-builder__dnd__placeholder"
+      <PanelDnDEntry
+        dndRef={ref}
+        className="query-builder__olap__column"
+        showPlaceholder={isBeingDragged}
+      >
+        <ContextMenu
+          content={
+            <QueryBuilderWindowColumnContextMenu
+              columnState={windowColumnState}
+            />
+          }
+          className={clsx('query-builder__olap__column__context-menu', {
+            'query-builder__olap__column--selected-from-context-menu':
+              isSelectedFromContextMenu,
+          })}
+          menuProps={{ elevation: 7 }}
+          onOpen={onContextMenuOpen}
+          onClose={onContextMenuClose}
         >
-          <ContextMenu
-            content={
-              <QueryBuilderWindowColumnContextMenu
-                columnState={windowColumnState}
-              />
-            }
-            className={clsx('query-builder__olap__column__context-menu', {
-              'query-builder__olap__column--selected-from-context-menu':
-                isSelectedFromContextMenu,
-            })}
-            menuProps={{ elevation: 7 }}
-            onOpen={onContextMenuOpen}
-            onClose={onContextMenuClose}
-          >
-            <div className="query-builder__olap__column__operation">
-              <div className="query-builder__olap__column__operation__operator">
+          <PanelDnDEntryDragHandle
+            isBeingDragged={isBeingDragged}
+            className="query-builder__olap__column__drag-handle__container"
+            dropTargetConnector={handleRef}
+          />
+          <div className="query-builder__olap__column__operation">
+            <div className="query-builder__olap__column__operation__operator">
+              <div
+                className={clsx(
+                  'query-builder__olap__column__operation__operator__label',
+                  {
+                    'query-builder__olap__column__operation__operator__label__agg':
+                      !aggregateColumn,
+                  },
+                )}
+              >
+                {operationState.operator.getLabel()}
+              </div>
+              {aggregateColumn && (
+                <TDSColumnReferenceEditor
+                  tdsColumn={aggregateColumn}
+                  handleChange={handleOpDrop}
+                  selectionEditor={{
+                    options: windowColumnState.possibleReferencedColumns,
+                  }}
+                />
+              )}
+              <DropdownMenu
+                className="query-builder__olap__column__operation__operator__dropdown"
+                disabled={!operators.length}
+                content={
+                  <MenuContent>
+                    {operators.map((op) => (
+                      <MenuContentItem
+                        key={op.uuid}
+                        className="query-builder__olap__column__operation__operator__dropdown__option"
+                        onClick={changeOperator(op)}
+                      >
+                        {op.getLabel()}
+                      </MenuContentItem>
+                    ))}
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                  transformOrigin: { vertical: 'top', horizontal: 'left' },
+                  elevation: 7,
+                }}
+              >
+                <button
+                  className="query-builder__olap__column__operation__operator__badge"
+                  tabIndex={-1}
+                  title="Choose Window Function Operator..."
+                >
+                  <SigmaIcon />
+                </button>
+                <button
+                  className="query-builder__olap__column__operation__operator__dropdown__trigger"
+                  tabIndex={-1}
+                  title="Choose Window Function Operator..."
+                >
+                  <CaretDownIcon />
+                </button>
+              </DropdownMenu>
+            </div>
+          </div>
+          <div className="query-builder__olap__column__window">
+            <button
+              ref={dropOpConnector}
+              title="Click to edit or drag and drop columns"
+              onClick={openWindowPopover}
+              className="query-builder__olap__column__window__content"
+            >
+              <PanelEntryDropZonePlaceholder
+                showPlaceholder={isDragOver}
+                label="Add"
+                className="query-builder__dnd__placeholder"
+              >
+                <div
+                  title={`${windowColumnState.windowColumns.length} columns partitioned`}
+                  className="query-builder__olap__column__window__content__label"
+                >
+                  ({windowColumnState.windowColumns.length})
+                </div>
                 <div
                   className={clsx(
-                    'query-builder__olap__column__operation__operator__label',
+                    'query-builder__olap__column__window__operator__badge',
+                  )}
+                  tabIndex={-1}
+                  title="Edit window columns..."
+                >
+                  <WindowIcon />
+                </div>
+              </PanelEntryDropZonePlaceholder>
+            </button>
+            <BasePopover
+              open={Boolean(windowAnchor)}
+              anchorEl={windowAnchor}
+              onClose={closeWindowPopover}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'center',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+              }}
+            >
+              <div className="query-builder__olap__column__window__popover">
+                <div className="panel__content__form__section__list">
+                  <div className="panel__content__form__section__list__items">
+                    {windowColumnState.windowColumns.map((value, idx) => (
+                      <TDSColumnSelectorEditor
+                        key={value.uuid}
+                        colValue={value}
+                        setColumn={(v: QueryBuilderTDSColumnState) =>
+                          windowColumnState.changeWindow(v, idx)
+                        }
+                        deleteColumn={(v: QueryBuilderTDSColumnState): void =>
+                          windowColumnState.deleteWindow(v)
+                        }
+                        tdsColOptions={windowOptions}
+                      />
+                    ))}
+                  </div>
+                  <div className="panel__content__form__section__list__new-item__add">
+                    <button
+                      className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                      disabled={!addWindowOptions.length}
+                      onClick={addWindowValue}
+                      tabIndex={-1}
+                    >
+                      Add Value
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </BasePopover>
+          </div>
+          <div className="query-builder__olap__column__sortby">
+            <div className="query-builder__olap__column__sortby__operator">
+              {sortByState && (
+                <div className="query-builder__olap__column__sortby__operator__label">
+                  {sortByState.sortType.toLowerCase()}
+                </div>
+              )}
+              {sortByState && (
+                <TDSColumnReferenceEditor
+                  tdsColumn={sortByState.columnState}
+                  handleChange={handleSortDrop}
+                  selectionEditor={{
+                    options: windowColumnState.possibleReferencedColumns,
+                  }}
+                />
+              )}
+              {!sortByState && (
+                <div className="query-builder__olap__column__sortby__none">
+                  (none)
+                </div>
+              )}
+              <DropdownMenu
+                className="query-builder__olap__column__sortby__operator__dropdown"
+                content={
+                  <MenuContent>
+                    <MenuContentItem
+                      key="none"
+                      className="query-builder__olap__column__sortby__operator__dropdown__option"
+                      onClick={changeSortBy(undefined)}
+                    >
+                      (none)
+                    </MenuContentItem>
+
+                    {Object.values(COLUMN_SORT_TYPE).map((op) => (
+                      <MenuContentItem
+                        key={op}
+                        className="query-builder__olap__column__sortby__operator__dropdown__option"
+                        onClick={changeSortBy(op)}
+                      >
+                        {op.toLowerCase()}
+                      </MenuContentItem>
+                    ))}
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                  transformOrigin: { vertical: 'top', horizontal: 'left' },
+                  elevation: 7,
+                }}
+              >
+                <button
+                  className={clsx(
+                    'query-builder__olap__column__sortby__operator__badge',
                     {
-                      'query-builder__olap__column__operation__operator__label__agg':
-                        !aggregateColumn,
+                      'query-builder__olap__column__sortby__operator__badge--activated':
+                        Boolean(sortByState),
                     },
                   )}
+                  tabIndex={-1}
+                  title="Choose Window Function SortBy Operator..."
                 >
-                  {operationState.operator.getLabel()}
-                </div>
-                {aggregateColumn && (
-                  <TDSColumnReferenceEditor
-                    tdsColumn={aggregateColumn}
-                    handleChange={handleOpDrop}
-                    selectionEditor={{
-                      options: windowColumnState.possibleReferencedColumns,
-                    }}
-                  />
-                )}
-                <DropdownMenu
-                  className="query-builder__olap__column__operation__operator__dropdown"
-                  disabled={!operators.length}
-                  content={
-                    <MenuContent>
-                      {operators.map((op) => (
-                        <MenuContentItem
-                          key={op.uuid}
-                          className="query-builder__olap__column__operation__operator__dropdown__option"
-                          onClick={changeOperator(op)}
-                        >
-                          {op.getLabel()}
-                        </MenuContentItem>
-                      ))}
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-                    transformOrigin: { vertical: 'top', horizontal: 'left' },
-                    elevation: 7,
-                  }}
+                  <SortIcon />
+                </button>
+                <button
+                  className="query-builder__olap__column__sortby__operator__dropdown__trigger"
+                  tabIndex={-1}
+                  title="Choose Window Function SortBy Operator..."
                 >
-                  <button
-                    className="query-builder__olap__column__operation__operator__badge"
-                    tabIndex={-1}
-                    title="Choose Window Function Operator..."
-                  >
-                    <SigmaIcon />
-                  </button>
-                  <button
-                    className="query-builder__olap__column__operation__operator__dropdown__trigger"
-                    tabIndex={-1}
-                    title="Choose Window Function Operator..."
-                  >
-                    <CaretDownIcon />
-                  </button>
-                </DropdownMenu>
-              </div>
+                  <CaretDownIcon />
+                </button>
+              </DropdownMenu>
             </div>
-            <div className="query-builder__olap__column__window">
-              <button
-                ref={dropOpConnector}
-                title="Click to edit or drag and drop columns"
-                onClick={openWindowPopover}
-                className="query-builder__olap__column__window__content"
-              >
-                <PanelEntryDropZonePlaceholder
-                  showPlaceholder={isDragOver}
-                  label="Add"
-                  className="query-builder__dnd__placeholder"
-                >
-                  <div
-                    title={`${windowColumnState.windowColumns.length} columns partitioned`}
-                    className="query-builder__olap__column__window__content__label"
-                  >
-                    ({windowColumnState.windowColumns.length})
-                  </div>
-                  <div
-                    className={clsx(
-                      'query-builder__olap__column__window__operator__badge',
-                    )}
-                    tabIndex={-1}
-                    title="Edit window columns..."
-                  >
-                    <WindowIcon />
-                  </div>
-                </PanelEntryDropZonePlaceholder>
-              </button>
-              <BasePopover
-                open={Boolean(windowAnchor)}
-                anchorEl={windowAnchor}
-                onClose={closeWindowPopover}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'center',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'center',
-                }}
-              >
-                <div className="query-builder__olap__column__window__popover">
-                  <div className="panel__content__form__section__list">
-                    <div className="panel__content__form__section__list__items">
-                      {windowColumnState.windowColumns.map((value, idx) => (
-                        <TDSColumnSelectorEditor
-                          key={value.uuid}
-                          colValue={value}
-                          setColumn={(v: QueryBuilderTDSColumnState) =>
-                            windowColumnState.changeWindow(v, idx)
-                          }
-                          deleteColumn={(v: QueryBuilderTDSColumnState): void =>
-                            windowColumnState.deleteWindow(v)
-                          }
-                          tdsColOptions={windowOptions}
-                        />
-                      ))}
-                    </div>
-                    <div className="panel__content__form__section__list__new-item__add">
-                      <button
-                        className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                        disabled={!addWindowOptions.length}
-                        onClick={addWindowValue}
-                        tabIndex={-1}
-                      >
-                        Add Value
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </BasePopover>
-            </div>
-            <div className="query-builder__olap__column__sortby">
-              <div className="query-builder__olap__column__sortby__operator">
-                {sortByState && (
-                  <div className="query-builder__olap__column__sortby__operator__label">
-                    {sortByState.sortType.toLowerCase()}
-                  </div>
-                )}
-                {sortByState && (
-                  <TDSColumnReferenceEditor
-                    tdsColumn={sortByState.columnState}
-                    handleChange={handleSortDrop}
-                    selectionEditor={{
-                      options: windowColumnState.possibleReferencedColumns,
-                    }}
-                  />
-                )}
-                {!sortByState && (
-                  <div className="query-builder__olap__column__sortby__none">
-                    (none)
-                  </div>
-                )}
-                <DropdownMenu
-                  className="query-builder__olap__column__sortby__operator__dropdown"
-                  content={
-                    <MenuContent>
-                      <MenuContentItem
-                        key="none"
-                        className="query-builder__olap__column__sortby__operator__dropdown__option"
-                        onClick={changeSortBy(undefined)}
-                      >
-                        (none)
-                      </MenuContentItem>
-
-                      {Object.values(COLUMN_SORT_TYPE).map((op) => (
-                        <MenuContentItem
-                          key={op}
-                          className="query-builder__olap__column__sortby__operator__dropdown__option"
-                          onClick={changeSortBy(op)}
-                        >
-                          {op.toLowerCase()}
-                        </MenuContentItem>
-                      ))}
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-                    transformOrigin: { vertical: 'top', horizontal: 'left' },
-                    elevation: 7,
-                  }}
-                >
-                  <button
-                    className={clsx(
-                      'query-builder__olap__column__sortby__operator__badge',
-                      {
-                        'query-builder__olap__column__sortby__operator__badge--activated':
-                          Boolean(sortByState),
-                      },
-                    )}
-                    tabIndex={-1}
-                    title="Choose Window Function SortBy Operator..."
-                  >
-                    <SortIcon />
-                  </button>
-                  <button
-                    className="query-builder__olap__column__sortby__operator__dropdown__trigger"
-                    tabIndex={-1}
-                    title="Choose Window Function SortBy Operator..."
-                  >
-                    <CaretDownIcon />
-                  </button>
-                </DropdownMenu>
-              </div>
-            </div>
-            <div className="query-builder__olap__column__name">
-              <InputWithInlineValidation
-                className="query-builder__olap__column__name__input input-group__input"
-                spellCheck={false}
-                value={windowColumnState.columnName}
-                onChange={changeColumnName}
-                validationErrorMessage={
-                  isDuplicatedColumnName ? 'Duplicated column' : undefined
-                }
-              />
-            </div>
-            <div className="query-builder__olap__column__actions">
-              <button
-                className="query-builder__olap__column__action"
-                tabIndex={-1}
-                onClick={editoColumn}
-              >
-                <EditIcon />
-              </button>
-              <button
-                className="query-builder__olap__column__action"
-                tabIndex={-1}
-                onClick={removeColumn}
-                disabled={isRemovalDisabled}
-                title={
-                  isRemovalDisabled
-                    ? "This column is used in the post filter and can't be removed"
-                    : 'Remove'
-                }
-              >
-                <TimesIcon />
-              </button>
-            </div>
-          </ContextMenu>
-        </PanelEntryDropZonePlaceholder>
-      </div>
+          </div>
+          <div className="query-builder__olap__column__name">
+            <InputWithInlineValidation
+              className="query-builder__olap__column__name__input input-group__input"
+              spellCheck={false}
+              value={windowColumnState.columnName}
+              onChange={changeColumnName}
+              validationErrorMessage={
+                isDuplicatedColumnName ? 'Duplicated column' : undefined
+              }
+            />
+          </div>
+          <div className="query-builder__olap__column__actions">
+            <button
+              className="query-builder__olap__column__action"
+              tabIndex={-1}
+              onClick={editoColumn}
+            >
+              <EditIcon />
+            </button>
+            <button
+              className="query-builder__olap__column__action"
+              tabIndex={-1}
+              onClick={removeColumn}
+              disabled={isRemovalDisabled}
+              title={
+                isRemovalDisabled
+                  ? "This column is used in the post filter and can't be removed"
+                  : 'Remove'
+              }
+            >
+              <TimesIcon />
+            </button>
+          </div>
+        </ContextMenu>
+      </PanelDnDEntry>
     );
   },
 );
