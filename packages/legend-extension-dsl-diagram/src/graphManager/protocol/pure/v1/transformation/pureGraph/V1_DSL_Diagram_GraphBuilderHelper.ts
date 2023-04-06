@@ -41,7 +41,6 @@ import {
   getClassView,
   _relationshipView_simplifyPath,
 } from '../../../../../../graph/helpers/DSL_Diagram_Helper.js';
-import type { RelationshipView } from '../../../../../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_RelationshipView.js';
 
 const buildPoint = (point: V1_Point): Point => {
   const x = guaranteeNonNullable(point.x, `Point 'x' coordinate is missing`);
@@ -93,19 +92,6 @@ export const V1_buildClassView = (
   view.rectangle = buildRectangle(classView.rectangle);
   view.position = buildPoint(classView.position);
   return view;
-};
-
-const _relationshipView_simplifyPathWithErrorHandling = (
-  relationshipView: RelationshipView,
-  context: V1_GraphBuilderContext,
-): void => {
-  try {
-    _relationshipView_simplifyPath(relationshipView);
-  } catch (error) {
-    // since error is to simplify path we won't break graph building but add it to warnings
-    assertErrorThrown(error);
-    context.logService.warn(LogEvent.create(error.message));
-  }
 };
 
 export const V1_buildPropertyView = (
