@@ -661,9 +661,7 @@ const DerivedPropertyBasicEditor = observer(
       <>
         <PanelDnDEntry
           ref={ref}
-          placeholder={
-            <div className="uml-element-editor__dnd__placeholder"></div>
-          }
+          placeholder={<div className="uml-element-editor__dnd__placeholder" />}
           className="derived-property-editor__container"
           showPlaceholder={isBeingDragged}
         >
@@ -952,9 +950,7 @@ const ConstraintEditor = observer(
     return (
       <PanelDnDEntry
         ref={ref}
-        placeholder={
-          <div className="uml-element-editor__dnd__placeholder"></div>
-        }
+        placeholder={<div className="uml-element-editor__dnd__placeholder" />}
         className="constraint-editor__container"
         showPlaceholder={isBeingDragged}
       >
@@ -1118,9 +1114,7 @@ const SuperTypeEditor = observer(
     return (
       <PanelDnDEntry
         ref={ref}
-        placeholder={
-          <div className="uml-element-editor__dnd__placeholder"></div>
-        }
+        placeholder={<div className="uml-element-editor__dnd__placeholder" />}
         className="super-type-editor__container"
         showPlaceholder={isBeingDragged}
       >
