@@ -24,18 +24,18 @@ import {
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
-  VerticalDragHandleIcon,
   ContextMenu,
   InputWithInlineValidation,
   SigmaIcon,
   PanelDropZone,
   DragPreviewLayer,
-  PanelEntryDropZonePlaceholder,
   useDragPreviewLayer,
   OptionsIcon,
   PlusIcon,
   PanelContent,
   TrashIcon,
+  PanelDnDEntry,
+  PanelDnDEntryDragHandle,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -223,8 +223,8 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
 
 const QueryBuilderProjectionColumnEditor = observer(
   (props: { projectionColumnState: QueryBuilderProjectionColumnState }) => {
+    const handleRef = useRef<HTMLDivElement>(null);
     const ref = useRef<HTMLDivElement>(null);
-
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
@@ -275,6 +275,7 @@ const QueryBuilderProjectionColumnEditor = observer(
         }
         // move the item being hovered on when the dragged item position is beyond the its middle point
         const hoverBoundingReact = ref.current?.getBoundingClientRect();
+
         const distanceThreshold =
           ((hoverBoundingReact?.bottom ?? 0) - (hoverBoundingReact?.top ?? 0)) /
           2;
@@ -329,141 +330,142 @@ const QueryBuilderProjectionColumnEditor = observer(
     );
     const isBeingDragged =
       projectionColumnState === projectionColumnBeingDragged;
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
+
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div ref={ref} className="query-builder__projection__column">
-        <PanelEntryDropZonePlaceholder
-          showPlaceholder={isBeingDragged}
-          className="query-builder__dnd__placeholder"
+      <PanelDnDEntry
+        ref={ref}
+        showPlaceholder={isBeingDragged}
+        className="query-builder__projection__column"
+      >
+        <ContextMenu
+          content={
+            <QueryBuilderProjectionColumnContextMenu
+              projectionColumnState={projectionColumnState}
+            />
+          }
+          disabled={
+            !(
+              projectionColumnState instanceof
+              QueryBuilderSimpleProjectionColumnState
+            )
+          }
+          className={clsx('query-builder__projection__column__context-menu', {
+            'query-builder__projection__column--selected-from-context-menu':
+              isSelectedFromContextMenu,
+          })}
+          menuProps={{ elevation: 7 }}
+          onOpen={onContextMenuOpen}
+          onClose={onContextMenuClose}
         >
-          <ContextMenu
-            content={
-              <QueryBuilderProjectionColumnContextMenu
+          <PanelDnDEntryDragHandle
+            isBeingDragged={isBeingDragged}
+            dropTargetConnector={handleRef}
+            className="query-builder__projection__column__drag-handle__container"
+          />
+          <div className="query-builder__projection__column__name">
+            <InputWithInlineValidation
+              className="query-builder__projection__column__name__input input-group__input"
+              spellCheck={false}
+              value={projectionColumnState.columnName}
+              onChange={changeColumnName}
+              validationErrorMessage={
+                isDuplicatedColumnName ? 'Duplicated column' : undefined
+              }
+            />
+          </div>
+          <div className="query-builder__projection__column__value">
+            {projectionColumnState instanceof
+              QueryBuilderSimpleProjectionColumnState && (
+              <QueryBuilderSimpleProjectionColumnEditor
                 projectionColumnState={projectionColumnState}
               />
-            }
-            disabled={
-              !(
-                projectionColumnState instanceof
-                QueryBuilderSimpleProjectionColumnState
-              )
-            }
-            className={clsx('query-builder__projection__column__context-menu', {
-              'query-builder__projection__column--selected-from-context-menu':
-                isSelectedFromContextMenu,
-            })}
-            menuProps={{ elevation: 7 }}
-            onOpen={onContextMenuOpen}
-            onClose={onContextMenuClose}
-          >
-            <div className="query-builder__projection__column__drag-handle__container">
-              <div className="query-builder__projection__column__drag-handle">
-                <VerticalDragHandleIcon />
-              </div>
-            </div>
-            <div className="query-builder__projection__column__name">
-              <InputWithInlineValidation
-                className="query-builder__projection__column__name__input input-group__input"
-                spellCheck={false}
-                value={projectionColumnState.columnName}
-                onChange={changeColumnName}
-                validationErrorMessage={
-                  isDuplicatedColumnName ? 'Duplicated column' : undefined
-                }
+            )}
+            {projectionColumnState instanceof
+              QueryBuilderDerivationProjectionColumnState && (
+              <QueryBuilderDerivationProjectionColumnEditor
+                projectionColumnState={projectionColumnState}
               />
-            </div>
-            <div className="query-builder__projection__column__value">
-              {projectionColumnState instanceof
-                QueryBuilderSimpleProjectionColumnState && (
-                <QueryBuilderSimpleProjectionColumnEditor
-                  projectionColumnState={projectionColumnState}
-                />
+            )}
+          </div>
+          <div className="query-builder__projection__column__aggregate">
+            <div className="query-builder__projection__column__aggregate__operator">
+              {aggregateColumnState && (
+                <div className="query-builder__projection__column__aggregate__operator__label">
+                  {aggregateColumnState.operator.getLabel(
+                    projectionColumnState,
+                  )}
+                </div>
               )}
-              {projectionColumnState instanceof
-                QueryBuilderDerivationProjectionColumnState && (
-                <QueryBuilderDerivationProjectionColumnEditor
-                  projectionColumnState={projectionColumnState}
-                />
-              )}
-            </div>
-            <div className="query-builder__projection__column__aggregate">
-              <div className="query-builder__projection__column__aggregate__operator">
-                {aggregateColumnState && (
-                  <div className="query-builder__projection__column__aggregate__operator__label">
-                    {aggregateColumnState.operator.getLabel(
-                      projectionColumnState,
+              <DropdownMenu
+                className="query-builder__projection__column__aggregate__operator__dropdown"
+                title="Choose Aggregate Operator..."
+                disabled={!aggreateOperators.length}
+                content={
+                  <MenuContent>
+                    {aggregateColumnState && (
+                      <MenuContentItem
+                        className="query-builder__projection__column__aggregate__operator__dropdown__option"
+                        onClick={changeOperator(undefined)}
+                      >
+                        (none)
+                      </MenuContentItem>
                     )}
-                  </div>
-                )}
-                <DropdownMenu
-                  className="query-builder__projection__column__aggregate__operator__dropdown"
-                  title="Choose Aggregate Operator..."
-                  disabled={!aggreateOperators.length}
-                  content={
-                    <MenuContent>
-                      {aggregateColumnState && (
-                        <MenuContentItem
-                          className="query-builder__projection__column__aggregate__operator__dropdown__option"
-                          onClick={changeOperator(undefined)}
-                        >
-                          (none)
-                        </MenuContentItem>
-                      )}
-                      {aggreateOperators.map((op) => (
-                        <MenuContentItem
-                          key={op.uuid}
-                          className="query-builder__projection__column__aggregate__operator__dropdown__option"
-                          onClick={changeOperator(op)}
-                        >
-                          {op.getLabel(projectionColumnState)}
-                        </MenuContentItem>
-                      ))}
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-                    transformOrigin: { vertical: 'top', horizontal: 'left' },
-                    elevation: 7,
-                  }}
-                >
-                  <div
-                    className={clsx(
-                      'query-builder__projection__column__aggregate__operator__badge',
-                      {
-                        'query-builder__projection__column__aggregate__operator__badge--activated':
-                          Boolean(aggregateColumnState),
-                      },
-                    )}
-                  >
-                    <SigmaIcon />
-                  </div>
-                  <div className="query-builder__projection__column__aggregate__operator__dropdown__trigger">
-                    <CaretDownIcon />
-                  </div>
-                </DropdownMenu>
-              </div>
-            </div>
-            <div className="query-builder__projection__column__actions">
-              <button
-                className="query-builder__projection__column__action"
-                tabIndex={-1}
-                onClick={removeColumn}
-                disabled={isRemovalDisabled}
-                title={
-                  isRemovalDisabled
-                    ? // TODO: We may want to provide a list of all places where column is in use
-                      "This column is used and can't be removed"
-                    : 'Remove'
+                    {aggreateOperators.map((op) => (
+                      <MenuContentItem
+                        key={op.uuid}
+                        className="query-builder__projection__column__aggregate__operator__dropdown__option"
+                        onClick={changeOperator(op)}
+                      >
+                        {op.getLabel(projectionColumnState)}
+                      </MenuContentItem>
+                    ))}
+                  </MenuContent>
                 }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                  transformOrigin: { vertical: 'top', horizontal: 'left' },
+                  elevation: 7,
+                }}
               >
-                <TimesIcon />
-              </button>
+                <div
+                  className={clsx(
+                    'query-builder__projection__column__aggregate__operator__badge',
+                    {
+                      'query-builder__projection__column__aggregate__operator__badge--activated':
+                        Boolean(aggregateColumnState),
+                    },
+                  )}
+                >
+                  <SigmaIcon />
+                </div>
+                <div className="query-builder__projection__column__aggregate__operator__dropdown__trigger">
+                  <CaretDownIcon />
+                </div>
+              </DropdownMenu>
             </div>
-          </ContextMenu>
-        </PanelEntryDropZonePlaceholder>
-      </div>
+          </div>
+          <div className="query-builder__projection__column__actions">
+            <button
+              className="query-builder__projection__column__action"
+              tabIndex={-1}
+              onClick={removeColumn}
+              disabled={isRemovalDisabled}
+              title={
+                isRemovalDisabled
+                  ? // TODO: We may want to provide a list of all places where column is in use
+                    "This column is used and can't be removed"
+                  : 'Remove'
+              }
+            >
+              <TimesIcon />
+            </button>
+          </div>
+        </ContextMenu>
+      </PanelDnDEntry>
     );
   },
 );

@@ -39,12 +39,12 @@ import {
   PlusIcon,
   TimesIcon,
   ArrowCircleRightIcon,
-  PanelEntryDragHandle,
-  PanelEntryDropZonePlaceholder,
+  PanelDnDEntryDragHandle,
   DragPreviewLayer,
   useDragPreviewLayer,
   Panel,
   PanelContent,
+  PanelDnDEntry,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
 import {
@@ -171,6 +171,8 @@ const ParameterBasicEditor = observer(
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
+
     const { parameter, _func, deleteParameter, isReadOnly } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
@@ -286,141 +288,146 @@ const ParameterBasicEditor = observer(
         }),
         [parameter],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div ref={ref} className="property-basic-editor__container">
-        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
-          <div className="property-basic-editor">
-            {isReadOnly && (
-              <div className="property-basic-editor__lock">
-                <LockIcon />
-              </div>
-            )}
-            <PanelEntryDragHandle />
-            <input
-              className="property-basic-editor__name"
-              disabled={isReadOnly}
-              value={parameter.name}
-              spellCheck={false}
-              onChange={changeValue}
-              placeholder="Parameter name"
-            />
-            {!isReadOnly && isEditingType && (
-              <CustomSelectorInput
-                className="property-basic-editor__type"
-                options={typeOptions}
-                onChange={changeType}
-                value={selectedType}
-                placeholder="Choose a type..."
-                filterOption={filterOption}
-              />
-            )}
-            {!isReadOnly && !isEditingType && (
-              <div
-                className={clsx(
-                  'property-basic-editor__type',
-                  'property-basic-editor__type--show-click-hint',
-                  `background--${typeName.toLowerCase()}`,
-                  {
-                    'property-basic-editor__type--has-visit-btn':
-                      typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE,
-                  },
-                )}
-              >
-                {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
-                  <div className="property-basic-editor__type__abbr">
-                    {getElementIcon(editorStore, paramType)}
-                  </div>
-                )}
-                <div className="property-basic-editor__type__label">
-                  {paramType.name}
-                </div>
-                <div
-                  className="property-basic-editor__type__label property-basic-editor__type__label--hover"
-                  onClick={(): void => setIsEditingType(true)}
-                >
-                  Click to edit
-                </div>
-                {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
-                  <button
-                    data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
-                    className="property-basic-editor__type__visit-btn"
-                    onClick={openElement}
-                    tabIndex={-1}
-                    title="Visit element"
-                  >
-                    <ArrowCircleRightIcon />
-                  </button>
-                )}
-              </div>
-            )}
-            {isReadOnly && (
-              <div
-                className={clsx(
-                  'property-basic-editor__type',
-                  `background--${typeName.toLowerCase()}`,
-                  {
-                    'property-basic-editor__type--has-visit-btn':
-                      typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE,
-                  },
-                )}
-              >
-                {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
-                  <div className="property-basic-editor__type__abbr">
-                    {getElementIcon(editorStore, paramType)}
-                  </div>
-                )}
-                <div className="property-basic-editor__type__label">
-                  {paramType.name}
-                </div>
-                {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
-                  <button
-                    data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
-                    className="property-basic-editor__type__visit-btn"
-                    onClick={openElement}
-                    tabIndex={-1}
-                    title="Visit element"
-                  >
-                    <ArrowCircleRightIcon />
-                  </button>
-                )}
-              </div>
-            )}
-            <div className="property-basic-editor__multiplicity">
-              <input
-                className="property-basic-editor__multiplicity-bound"
-                disabled={isReadOnly}
-                spellCheck={false}
-                value={lowerBound}
-                onChange={changeLowerBound}
-              />
-              <div className="property-basic-editor__multiplicity__range">
-                ..
-              </div>
-              <input
-                className="property-basic-editor__multiplicity-bound"
-                disabled={isReadOnly}
-                spellCheck={false}
-                value={upperBound}
-                onChange={changeUpperBound}
-              />
+      <PanelDnDEntry
+        ref={ref}
+        placeholder={<div className="dnd__placeholder--light"></div>}
+        className="property-basic-editor__container"
+        showPlaceholder={isBeingDragged}
+      >
+        <PanelDnDEntryDragHandle
+          dropTargetConnector={handleRef}
+          isBeingDragged={isBeingDragged}
+        />
+        <div className="property-basic-editor">
+          {isReadOnly && (
+            <div className="property-basic-editor__lock">
+              <LockIcon />
             </div>
-            {!isReadOnly && (
-              <button
-                className="uml-element-editor__remove-btn"
-                disabled={isReadOnly}
-                onClick={deleteParameter}
-                tabIndex={-1}
-                title="Remove"
+          )}
+          <input
+            className="property-basic-editor__name"
+            disabled={isReadOnly}
+            value={parameter.name}
+            spellCheck={false}
+            onChange={changeValue}
+            placeholder="Parameter name"
+          />
+          {!isReadOnly && isEditingType && (
+            <CustomSelectorInput
+              className="property-basic-editor__type"
+              options={typeOptions}
+              onChange={changeType}
+              value={selectedType}
+              placeholder="Choose a type..."
+              filterOption={filterOption}
+            />
+          )}
+          {!isReadOnly && !isEditingType && (
+            <div
+              className={clsx(
+                'property-basic-editor__type',
+                'property-basic-editor__type--show-click-hint',
+                `background--${typeName.toLowerCase()}`,
+                {
+                  'property-basic-editor__type--has-visit-btn':
+                    typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE,
+                },
+              )}
+            >
+              {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
+                <div className="property-basic-editor__type__abbr">
+                  {getElementIcon(editorStore, paramType)}
+                </div>
+              )}
+              <div className="property-basic-editor__type__label">
+                {paramType.name}
+              </div>
+              <div
+                className="property-basic-editor__type__label property-basic-editor__type__label--hover"
+                onClick={(): void => setIsEditingType(true)}
               >
-                <TimesIcon />
-              </button>
-            )}
+                Click to edit
+              </div>
+              {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
+                <button
+                  data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
+                  className="property-basic-editor__type__visit-btn"
+                  onClick={openElement}
+                  tabIndex={-1}
+                  title="Visit element"
+                >
+                  <ArrowCircleRightIcon />
+                </button>
+              )}
+            </div>
+          )}
+          {isReadOnly && (
+            <div
+              className={clsx(
+                'property-basic-editor__type',
+                `background--${typeName.toLowerCase()}`,
+                {
+                  'property-basic-editor__type--has-visit-btn':
+                    typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE,
+                },
+              )}
+            >
+              {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
+                <div className="property-basic-editor__type__abbr">
+                  {getElementIcon(editorStore, paramType)}
+                </div>
+              )}
+              <div className="property-basic-editor__type__label">
+                {paramType.name}
+              </div>
+              {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
+                <button
+                  data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
+                  className="property-basic-editor__type__visit-btn"
+                  onClick={openElement}
+                  tabIndex={-1}
+                  title="Visit element"
+                >
+                  <ArrowCircleRightIcon />
+                </button>
+              )}
+            </div>
+          )}
+          <div className="property-basic-editor__multiplicity">
+            <input
+              className="property-basic-editor__multiplicity-bound"
+              disabled={isReadOnly}
+              spellCheck={false}
+              value={lowerBound}
+              onChange={changeLowerBound}
+            />
+            <div className="property-basic-editor__multiplicity__range">..</div>
+            <input
+              className="property-basic-editor__multiplicity-bound"
+              disabled={isReadOnly}
+              spellCheck={false}
+              value={upperBound}
+              onChange={changeUpperBound}
+            />
           </div>
-        </PanelEntryDropZonePlaceholder>
-      </div>
+          {!isReadOnly && (
+            <button
+              className="uml-element-editor__remove-btn"
+              disabled={isReadOnly}
+              onClick={deleteParameter}
+              tabIndex={-1}
+              title="Remove"
+            >
+              <TimesIcon />
+            </button>
+          )}
+        </div>
+      </PanelDnDEntry>
     );
   },
 );

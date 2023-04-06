@@ -42,13 +42,13 @@ import {
   LockIcon,
   FireIcon,
   StickArrowCircleRightIcon,
-  PanelEntryDragHandle,
-  PanelEntryDropZonePlaceholder,
+  PanelDnDEntryDragHandle,
   DragPreviewLayer,
   useDragPreviewLayer,
   PanelDropZone,
   Panel,
   PanelContent,
+  PanelDnDEntry,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import {
@@ -100,6 +100,8 @@ const EnumBasicEditor = observer(
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
+
     const { enumValue, selectValue, deleteValue, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       enum_setName(enumValue, event.target.value);
@@ -148,47 +150,55 @@ const EnumBasicEditor = observer(
         }),
         [enumValue],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div ref={ref} className="enum-basic-editor__container">
-        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
-          <div className="enum-basic-editor">
-            <PanelEntryDragHandle />
-            <InputWithInlineValidation
-              className="enum-basic-editor__name input-group__input"
-              spellCheck={false}
-              disabled={isReadOnly}
-              value={enumValue.name}
-              onChange={changeValue}
-              placeholder="Enum name"
-              validationErrorMessage={
-                isEnumValueDuplicated(enumValue) ? 'Duplicated enum' : undefined
-              }
-            />
+      <PanelDnDEntry
+        ref={ref}
+        showPlaceholder={isBeingDragged}
+        placeholder={<div className="dnd__placeholder--light"></div>}
+        className="enum-basic-editor__container"
+      >
+        <PanelDnDEntryDragHandle
+          dropTargetConnector={handleRef}
+          isBeingDragged={isBeingDragged}
+        />
+
+        <div className="enum-basic-editor">
+          <InputWithInlineValidation
+            className="enum-basic-editor__name input-group__input"
+            spellCheck={false}
+            disabled={isReadOnly}
+            value={enumValue.name}
+            onChange={changeValue}
+            placeholder="Enum name"
+            validationErrorMessage={
+              isEnumValueDuplicated(enumValue) ? 'Duplicated enum' : undefined
+            }
+          />
+          <button
+            className="uml-element-editor__basic__detail-btn"
+            onClick={selectValue}
+            tabIndex={-1}
+            title="See detail"
+          >
+            <LongArrowRightIcon />
+          </button>
+          {!isReadOnly && (
             <button
-              className="uml-element-editor__basic__detail-btn"
-              onClick={selectValue}
+              className="uml-element-editor__remove-btn"
+              disabled={isReadOnly}
+              onClick={deleteValue}
               tabIndex={-1}
-              title="See detail"
+              title="Remove"
             >
-              <LongArrowRightIcon />
+              <TimesIcon />
             </button>
-            {!isReadOnly && (
-              <button
-                className="uml-element-editor__remove-btn"
-                disabled={isReadOnly}
-                onClick={deleteValue}
-                tabIndex={-1}
-                title="Remove"
-              >
-                <TimesIcon />
-              </button>
-            )}
-          </div>
-        </PanelEntryDropZonePlaceholder>
-      </div>
+          )}
+        </div>
+      </PanelDnDEntry>
     );
   },
 );

@@ -21,8 +21,8 @@ import {
   createFilter,
   TimesIcon,
   ArrowCircleRightIcon,
-  PanelEntryDragHandle,
-  PanelEntryDropZonePlaceholder,
+  PanelDnDEntryDragHandle,
+  PanelDnDEntry,
   DragPreviewLayer,
   useDragPreviewLayer,
 } from '@finos/legend-art';
@@ -74,6 +74,7 @@ export const StereotypeSelector = observer(
     darkTheme?: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
     const {
       annotatedElement,
       stereotype,
@@ -166,65 +167,72 @@ export const StereotypeSelector = observer(
         }),
         [stereotype],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div ref={ref} className="stereotype-selector__container">
-        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
-          <div className="stereotype-selector">
-            <PanelEntryDragHandle />
-            <div
-              className={`stereotype-selector__profile ${
-                darkTheme ? 'stereotype-selector-dark-theme' : ''
-              } stereotype-selector__profile`}
-            >
-              <CustomSelectorInput
-                className="stereotype-selector__profile__selector"
-                disabled={isReadOnly}
-                options={profileOptions}
-                onChange={changeProfile}
-                value={selectedProfile}
-                placeholder="Choose a profile"
-                filterOption={filterOption}
-                darkMode={Boolean(darkTheme)}
-              />
-              <button
-                className={`stereotype-selector__profile__visit-btn ${
-                  darkTheme ? 'stereotype-selector-dark-theme' : ''
-                }`}
-                disabled={isStubbed_PackageableElement(stereotype.value._OWNER)}
-                onClick={visitProfile}
-                tabIndex={-1}
-                title="Visit profile"
-              >
-                <ArrowCircleRightIcon />
-              </button>
-            </div>
+      <PanelDnDEntry
+        ref={ref}
+        className="stereotype-selector__container"
+        placeholder={<div className="dnd__placeholder--light"></div>}
+        showPlaceholder={isBeingDragged}
+      >
+        <PanelDnDEntryDragHandle
+          dropTargetConnector={handleRef}
+          isBeingDragged={isBeingDragged}
+        />
+        <div className="stereotype-selector">
+          <div
+            className={`stereotype-selector__profile ${
+              darkTheme ? 'stereotype-selector-dark-theme' : ''
+            } stereotype-selector__profile`}
+          >
             <CustomSelectorInput
-              className="stereotype-selector__stereotype"
+              className="stereotype-selector__profile__selector"
               disabled={isReadOnly}
-              options={stereotypeOptions}
-              onChange={updateStereotype}
-              value={selectedStereotype}
-              placeholder="Choose a stereotype"
-              filterOption={stereotypeFilterOption}
-              darkMode={darkTheme ?? false}
+              options={profileOptions}
+              onChange={changeProfile}
+              value={selectedProfile}
+              placeholder="Choose a profile"
+              filterOption={filterOption}
+              darkMode={Boolean(darkTheme)}
             />
-            {!isReadOnly && (
-              <button
-                className="uml-element-editor__remove-btn"
-                disabled={isReadOnly}
-                onClick={deleteStereotype}
-                tabIndex={-1}
-                title="Remove"
-              >
-                <TimesIcon />
-              </button>
-            )}
+            <button
+              className={`stereotype-selector__profile__visit-btn ${
+                darkTheme ? 'stereotype-selector-dark-theme' : ''
+              }`}
+              disabled={isStubbed_PackageableElement(stereotype.value._OWNER)}
+              onClick={visitProfile}
+              tabIndex={-1}
+              title="Visit profile"
+            >
+              <ArrowCircleRightIcon />
+            </button>
           </div>
-        </PanelEntryDropZonePlaceholder>
-      </div>
+          <CustomSelectorInput
+            className="stereotype-selector__stereotype"
+            disabled={isReadOnly}
+            options={stereotypeOptions}
+            onChange={updateStereotype}
+            value={selectedStereotype}
+            placeholder="Choose a stereotype"
+            filterOption={stereotypeFilterOption}
+            darkMode={darkTheme ?? false}
+          />
+          {!isReadOnly && (
+            <button
+              className="uml-element-editor__remove-btn"
+              disabled={isReadOnly}
+              onClick={deleteStereotype}
+              tabIndex={-1}
+              title="Remove"
+            >
+              <TimesIcon />
+            </button>
+          )}
+        </div>
+      </PanelDnDEntry>
     );
   },
 );

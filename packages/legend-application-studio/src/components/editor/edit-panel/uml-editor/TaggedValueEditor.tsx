@@ -24,8 +24,8 @@ import {
   TimesIcon,
   ArrowCircleRightIcon,
   LongArrowAltUpIcon,
-  PanelEntryDragHandle,
-  PanelEntryDropZonePlaceholder,
+  PanelDnDEntryDragHandle,
+  PanelDnDEntry,
   DragPreviewLayer,
   useDragPreviewLayer,
 } from '@finos/legend-art';
@@ -78,6 +78,8 @@ export const TaggedValueEditor = observer(
     darkTheme?: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
+
     const {
       annotatedElement,
       taggedValue,
@@ -176,110 +178,114 @@ export const TaggedValueEditor = observer(
         }),
         [taggedValue],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(handleRef);
+    dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div ref={ref} className="tagged-value-editor__container">
-        <PanelEntryDropZonePlaceholder
-          showPlaceholder={isBeingDragged}
-          className="tagged-value-editor__dnd__placeholder"
-        >
-          <div className="tagged-value-editor">
-            <PanelEntryDragHandle />
-            <div
-              className={`tagged-value-editor__profile ${
+      <PanelDnDEntry
+        ref={ref}
+        className="tagged-value-editor__container"
+        showPlaceholder={isBeingDragged}
+        placeholder={<div className="dnd__placeholder--light"></div>}
+      >
+        <PanelDnDEntryDragHandle
+          dropTargetConnector={handleRef}
+          isBeingDragged={isBeingDragged}
+        />
+        <div className="tagged-value-editor">
+          <div
+            className={`tagged-value-editor__profile ${
+              darkTheme ? 'tagged-value-editor-dark-theme' : ''
+            }`}
+          >
+            <CustomSelectorInput
+              className="tagged-value-editor__profile__selector"
+              disabled={isReadOnly}
+              options={profileOptions}
+              onChange={changeProfile}
+              value={selectedProfile}
+              placeholder="Choose a profile"
+              filterOption={profileFilterOption}
+              darkMode={darkTheme ?? false}
+            />
+            <button
+              className={`tagged-value-editor__profile__visit-btn ${
                 darkTheme ? 'tagged-value-editor-dark-theme' : ''
               }`}
-            >
-              <CustomSelectorInput
-                className="tagged-value-editor__profile__selector"
-                disabled={isReadOnly}
-                options={profileOptions}
-                onChange={changeProfile}
-                value={selectedProfile}
-                placeholder="Choose a profile"
-                filterOption={profileFilterOption}
-                darkMode={darkTheme ?? false}
-              />
-              <button
-                className={`tagged-value-editor__profile__visit-btn ${
-                  darkTheme ? 'tagged-value-editor-dark-theme' : ''
-                }`}
-                disabled={isStubbed_PackageableElement(
-                  taggedValue.tag.value._OWNER,
-                )}
-                onClick={visitProfile}
-                tabIndex={-1}
-                title="Visit profile"
-              >
-                <ArrowCircleRightIcon />
-              </button>
-            </div>
-            <CustomSelectorInput
-              className="tagged-value-editor__tag"
-              disabled={isReadOnly}
-              options={tagOptions}
-              onChange={changeTag}
-              value={selectedTag}
-              placeholder="Choose a tag"
-              filterOption={tagFilterOption}
-              darkMode={Boolean(darkTheme)}
-            />
-            {!isReadOnly && (
-              <button
-                className="uml-element-editor__remove-btn"
-                disabled={isReadOnly}
-                onClick={deleteValue}
-                tabIndex={-1}
-                title="Remove"
-              >
-                <TimesIcon />
-              </button>
-            )}
-            <div
-              className={clsx('tagged-value-editor__value', {
-                'tagged-value-editor__value__expanded': isExpanded,
-              })}
-            >
-              {isExpanded && (
-                <textarea
-                  className={`tagged-value-editor__value__input ${
-                    darkTheme ? 'tagged-value-editor-dark-theme' : ''
-                  }`}
-                  spellCheck={false}
-                  disabled={isReadOnly}
-                  value={taggedValue.value}
-                  onChange={changeValue}
-                  placeholder="Value"
-                />
+              disabled={isStubbed_PackageableElement(
+                taggedValue.tag.value._OWNER,
               )}
-              {!isExpanded && (
-                <input
-                  className={`tagged-value-editor__value__input ${
-                    darkTheme ? 'tagged-value-editor-dark-theme' : ''
-                  }`}
-                  spellCheck={false}
-                  disabled={isReadOnly}
-                  value={taggedValue.value}
-                  onChange={changeValue}
-                  placeholder="Value"
-                />
-              )}
-              <button
-                className={`tagged-value-editor__value__expand-btn ${
-                  darkTheme ? 'tagged-value-editor-dark-theme' : ''
-                }`}
-                onClick={toggleExpandedMode}
-                tabIndex={-1}
-                title="Expand/Collapse"
-              >
-                {isExpanded ? <LongArrowAltUpIcon /> : <MoreVerticalIcon />}
-              </button>
-            </div>
+              onClick={visitProfile}
+              tabIndex={-1}
+              title="Visit profile"
+            >
+              <ArrowCircleRightIcon />
+            </button>
           </div>
-        </PanelEntryDropZonePlaceholder>
-      </div>
+          <CustomSelectorInput
+            className="tagged-value-editor__tag"
+            disabled={isReadOnly}
+            options={tagOptions}
+            onChange={changeTag}
+            value={selectedTag}
+            placeholder="Choose a tag"
+            filterOption={tagFilterOption}
+            darkMode={Boolean(darkTheme)}
+          />
+          {!isReadOnly && (
+            <button
+              className="uml-element-editor__remove-btn"
+              disabled={isReadOnly}
+              onClick={deleteValue}
+              tabIndex={-1}
+              title="Remove"
+            >
+              <TimesIcon />
+            </button>
+          )}
+          <div
+            className={clsx('tagged-value-editor__value', {
+              'tagged-value-editor__value__expanded': isExpanded,
+            })}
+          >
+            {isExpanded && (
+              <textarea
+                className={`tagged-value-editor__value__input ${
+                  darkTheme ? 'tagged-value-editor-dark-theme' : ''
+                }`}
+                spellCheck={false}
+                disabled={isReadOnly}
+                value={taggedValue.value}
+                onChange={changeValue}
+                placeholder="Value"
+              />
+            )}
+            {!isExpanded && (
+              <input
+                className={`tagged-value-editor__value__input ${
+                  darkTheme ? 'tagged-value-editor-dark-theme' : ''
+                }`}
+                spellCheck={false}
+                disabled={isReadOnly}
+                value={taggedValue.value}
+                onChange={changeValue}
+                placeholder="Value"
+              />
+            )}
+            <button
+              className={`tagged-value-editor__value__expand-btn ${
+                darkTheme ? 'tagged-value-editor-dark-theme' : ''
+              }`}
+              onClick={toggleExpandedMode}
+              tabIndex={-1}
+              title="Expand/Collapse"
+            >
+              {isExpanded ? <LongArrowAltUpIcon /> : <MoreVerticalIcon />}
+            </button>
+          </div>
+        </div>
+      </PanelDnDEntry>
     );
   },
 );
