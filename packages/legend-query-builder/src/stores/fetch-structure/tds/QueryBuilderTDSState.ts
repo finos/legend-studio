@@ -35,6 +35,8 @@ import {
   filterByType,
   type Hashable,
   hashArray,
+  UnsupportedOperationError,
+  ContentType,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from '../../QueryBuilderState.js';
 import {
@@ -52,6 +54,7 @@ import {
   matchFunctionName,
   SimpleFunctionExpression,
   getAllSuperclasses,
+  EXECUTION_SERIALIZATION_FORMAT,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -97,6 +100,12 @@ import type { QueryBuilderTDS_WindowOperator } from './window/operators/QueryBui
 import { getQueryBuilderCoreWindowOperators } from './window/QueryBuilderWindowGroupByOperatorLoader.js';
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
 import { QUERY_BUILDER_SETTING_KEY } from '../../../application/QueryBuilderSetting.js';
+import type { ExportDataInfo } from '../../QueryBuilderResultState.js';
+
+// TODO: should we support raw once externalize() is supported on TDS ?
+export enum TDS_EXECUTION_SERIALIZATION_FORMAT {
+  CSV = 'CSV',
+}
 
 export class QueryBuilderTDSState
   extends QueryBuilderFetchStructureImplementationState
@@ -287,6 +296,25 @@ export class QueryBuilderTDSState
       ...projectionColumns,
       ...this.windowState.windowColumns,
     ];
+  }
+
+  override get exportDataFormatOptions(): string[] {
+    return [TDS_EXECUTION_SERIALIZATION_FORMAT.CSV];
+  }
+
+  override getExportDataInfo(format: string): ExportDataInfo {
+    switch (format) {
+      case TDS_EXECUTION_SERIALIZATION_FORMAT.CSV:
+        return {
+          contentType: ContentType.TEXT_CSV,
+          serializationFormat: EXECUTION_SERIALIZATION_FORMAT.CSV,
+        };
+
+      default:
+        throw new UnsupportedOperationError(
+          `Unsupported TDS export type ${format}`,
+        );
+    }
   }
 
   isDuplicateColumn(col: QueryBuilderTDSColumnState): boolean {
