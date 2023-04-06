@@ -502,6 +502,15 @@ export {
   V1_serializeConnectionValue,
 } from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper.js';
 export { V1_buildEngineRuntime } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper.js';
+export {
+  V1_DatasetSpecification,
+  V1_DatasetEntitlementReport,
+  V1_DatasetEntitlementAccessGrantedReport,
+  V1_DatasetEntitlementAccessNotGrantedReport,
+  V1_DatasetEntitlementAccessRequestedReport,
+  V1_DatasetEntitlementAccessApprovedReport,
+  V1_DatasetEntitlementUnsupportedReport,
+} from './graphManager/protocol/pure/v1/engine/analytics/V1_StoreEntitlementAnalysis.js';
 
 // ------------------------------------- TO BE MODULARIZED --------------------------------------------
 /**

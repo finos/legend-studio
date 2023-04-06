@@ -23,6 +23,7 @@
   background: var(--color-dark-grey-80);
   color: var(--color-light-grey-200);
   font-family: Roboto, sans-serif;
+  // min-width: 90rem;
 
   &__header {
     @include flexHCenter;
@@ -61,6 +62,7 @@
       padding: 0 3rem;
       user-select: none;
       background: var(--color-blue-200);
+      max-width: 50vw;
 
       &__label {
         font-size: 2.4rem;
@@ -151,6 +153,7 @@
   position: absolute;
   left: 2rem;
   top: 11rem;
+  z-index: 1;
   overflow-x: hidden;
   overflow-y: hidden;
   border-radius: 0.2rem;
