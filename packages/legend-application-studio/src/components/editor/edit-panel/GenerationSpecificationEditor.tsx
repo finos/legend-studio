@@ -179,7 +179,7 @@ const ModelGenerationItem = observer(
 
     return (
       <PanelDnDEntry
-        dndRef={ref}
+        ref={ref}
         className="generation-spec-model-generation-editor__item"
         showPlaceholder={isBeingDragged}
       >

@@ -156,7 +156,7 @@ const EnumBasicEditor = observer(
 
     return (
       <PanelDnDEntry
-        dndRef={ref}
+        ref={ref}
         showPlaceholder={isBeingDragged}
         placeholder={<div className="dnd__placeholder--light"></div>}
         className="enum-basic-editor__container"

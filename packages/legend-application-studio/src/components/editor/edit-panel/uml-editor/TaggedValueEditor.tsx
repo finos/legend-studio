@@ -184,7 +184,7 @@ export const TaggedValueEditor = observer(
 
     return (
       <PanelDnDEntry
-        dndRef={ref}
+        ref={ref}
         className="tagged-value-editor__container"
         showPlaceholder={isBeingDragged}
         placeholder={<div className="dnd__placeholder--light"></div>}

@@ -120,7 +120,7 @@ const TagBasicEditor = observer(
 
     return (
       <PanelDnDEntry
-        dndRef={ref}
+        ref={ref}
         className="tag-basic-editor__container"
         placeholder={<div className="dnd__placeholder--light"></div>}
         showPlaceholder={isBeingDragged}
@@ -225,7 +225,7 @@ const StereotypeBasicEditor = observer(
 
     return (
       <PanelDnDEntry
-        dndRef={ref}
+        ref={ref}
         placeholder={<div className="dnd__placeholder--light"></div>}
         className="stereotype-basic-editor__container"
         showPlaceholder={isBeingDragged}

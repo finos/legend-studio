@@ -294,7 +294,7 @@ const ParameterBasicEditor = observer(
 
     return (
       <PanelDnDEntry
-        dndRef={ref}
+        ref={ref}
         placeholder={<div className="dnd__placeholder--light"></div>}
         className="property-basic-editor__container"
         showPlaceholder={isBeingDragged}

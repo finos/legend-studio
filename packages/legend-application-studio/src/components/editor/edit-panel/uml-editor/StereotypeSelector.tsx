@@ -173,7 +173,7 @@ export const StereotypeSelector = observer(
 
     return (
       <PanelDnDEntry
-        dndRef={ref}
+        ref={ref}
         className="stereotype-selector__container"
         placeholder={<div className="dnd__placeholder--light"></div>}
         showPlaceholder={isBeingDragged}

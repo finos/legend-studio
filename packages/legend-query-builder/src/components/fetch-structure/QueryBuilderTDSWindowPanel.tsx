@@ -851,7 +851,7 @@ const QueryBuilderWindowColumnEditor = observer(
 
     return (
       <PanelDnDEntry
-        dndRef={ref}
+        ref={ref}
         className="query-builder__olap__column"
         showPlaceholder={isBeingDragged}
       >

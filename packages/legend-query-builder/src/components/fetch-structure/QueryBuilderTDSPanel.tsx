@@ -337,7 +337,7 @@ const QueryBuilderProjectionColumnEditor = observer(
 
     return (
       <PanelDnDEntry
-        dndRef={ref}
+        ref={ref}
         showPlaceholder={isBeingDragged}
         className="query-builder__projection__column"
       >

@@ -15,7 +15,8 @@
  */
 
 import { clsx } from 'clsx';
-import { type RefObject, useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
+import { type RefObject, useEffect, forwardRef } from 'react';
 import {
   type ConnectDropTarget,
   type ConnectDragPreview,
@@ -59,31 +60,35 @@ export const PanelDnDEntryDragHandle: React.FC<{
   );
 };
 
-export const PanelDnDEntry: React.FC<{
-  children: React.ReactNode;
-  placeholder?: React.ReactNode;
-  showPlaceholder: boolean;
-  className?: string;
-  dndRef: RefObject<HTMLDivElement>;
-}> = (props) => {
-  const { children, dndRef, placeholder, showPlaceholder, className } = props;
-  return (
-    <div ref={dndRef} className={className}>
-      <div className="dnd__entry__container">
-        {showPlaceholder && (
-          <div className="dnd__entry__placeholder">
-            {placeholder ? (
-              <>{placeholder}</>
-            ) : (
-              <div className="dnd__entry__placeholder__content"></div>
-            )}
-          </div>
-        )}
-        <>{children}</>
+export const PanelDnDEntry = observer(
+  forwardRef<
+    HTMLDivElement,
+    {
+      children: React.ReactNode;
+      placeholder?: React.ReactNode;
+      showPlaceholder: boolean;
+      className?: string;
+    }
+  >(function PanelDnDEntryAttempt(props, ref) {
+    const { children, placeholder, showPlaceholder, className } = props;
+    return (
+      <div ref={ref} className={className}>
+        <div className="dnd__entry__container">
+          {showPlaceholder && (
+            <div className="dnd__entry__placeholder">
+              {placeholder ? (
+                <>{placeholder}</>
+              ) : (
+                <div className="dnd__entry__placeholder__content"></div>
+              )}
+            </div>
+          )}
+          <>{children}</>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }),
+);
 
 export const PanelEntryDropZonePlaceholder: React.FC<{
   children: React.ReactNode;
