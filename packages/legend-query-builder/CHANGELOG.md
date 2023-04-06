@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 2.1.0
+
+### Minor Changes
+
+- [#2076](https://github.com/finos/legend-studio/pull/2076) [`fba8785a4`](https://github.com/finos/legend-studio/commit/fba8785a4353716ec11248c347f41eb5ec69a740) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add export data support for graph fetch including with `externalize()`.
+
+### Patch Changes
+
+- [#1993](https://github.com/finos/legend-studio/pull/1993) [`65dffc460`](https://github.com/finos/legend-studio/commit/65dffc460e64fe89045ea766755bfde3bfff5b91) ([@xannem](https://github.com/xannem)) - Enable drag-and-drop only when the handler is grabbed
+
 ## 2.0.1
 
 ### Patch Changes
