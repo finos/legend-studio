@@ -72,19 +72,17 @@ export const PanelDnDEntry = observer(
   >(function PanelDnDEntryAttempt(props, ref) {
     const { children, placeholder, showPlaceholder, className } = props;
     return (
-      <div ref={ref} className={className}>
-        <div className="dnd__entry__container">
-          {showPlaceholder && (
-            <div className="dnd__entry__placeholder">
-              {placeholder ? (
-                <>{placeholder}</>
-              ) : (
-                <div className="dnd__entry__placeholder__content"></div>
-              )}
-            </div>
-          )}
-          <>{children}</>
-        </div>
+      <div ref={ref} className={clsx('dnd__entry__container', className)}>
+        {showPlaceholder && (
+          <div className="dnd__entry__placeholder">
+            {placeholder ? (
+              <>{placeholder}</>
+            ) : (
+              <div className="dnd__entry__placeholder__content"></div>
+            )}
+          </div>
+        )}
+        <>{children}</>
       </div>
     );
   }),

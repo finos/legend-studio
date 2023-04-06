@@ -109,8 +109,7 @@ export class DataSpaceViewerDataAccessState {
       this.datasets.forEach((dataset) => {
         const matchingReport = reports.find(
           (report) =>
-            report.storeSpecification.hashCode ===
-            dataset.specification.hashCode,
+            report.dataset.hashCode === dataset.specification.hashCode,
         );
         if (matchingReport) {
           dataset.setEntitlementReport(matchingReport);
@@ -122,13 +121,10 @@ export class DataSpaceViewerDataAccessState {
       reports.forEach((report) => {
         const matchingDataset = this.datasets.find(
           (dataset) =>
-            dataset.specification.hashCode ===
-            report.storeSpecification.hashCode,
+            dataset.specification.hashCode === report.dataset.hashCode,
         );
         if (!matchingDataset) {
-          const newDataset = new DataSpaceDatasetInfo(
-            report.storeSpecification,
-          );
+          const newDataset = new DataSpaceDatasetInfo(report.dataset);
           newDataset.setEntitlementReport(report);
           newDatasets.push(newDataset);
         }

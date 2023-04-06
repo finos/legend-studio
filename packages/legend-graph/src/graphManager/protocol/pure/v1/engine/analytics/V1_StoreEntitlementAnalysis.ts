@@ -23,6 +23,7 @@ import {
   primitive,
   type ModelSchema,
   serialize,
+  list,
 } from 'serializr';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
 import type { V1_RawLambda } from '../../model/rawValueSpecification/V1_RawLambda.js';
@@ -91,7 +92,7 @@ export class V1_DatasetSpecification {
   );
 }
 
-export const V1_deserializeDatasetSpecification = (
+const V1_deserializeDatasetSpecification = (
   json: PlainObject<V1_DatasetSpecification>,
   plugins: PureProtocolProcessorPlugin[],
 ): V1_DatasetSpecification => {
@@ -116,6 +117,22 @@ export const V1_deserializeDatasetSpecification = (
   }
 };
 
+export class V1_SurveyDatasetsResult {
+  datasets: V1_DatasetSpecification[] = [];
+}
+
+export const V1_surveyDatasetsResultModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_SurveyDatasetsResult> =>
+  createModelSchema(V1_SurveyDatasetsResult, {
+    datasets: list(
+      custom(
+        () => SKIP,
+        (val) => V1_deserializeDatasetSpecification(val, plugins),
+      ),
+    ),
+  });
+
 export const V1_buildDatasetSpecification = (
   protocol: V1_DatasetSpecification,
   plugins: PureProtocolProcessorPlugin[],
@@ -136,7 +153,7 @@ export const V1_buildDatasetSpecification = (
 };
 
 export abstract class V1_DatasetEntitlementReport {
-  storeSpecification!: V1_DatasetSpecification;
+  dataset!: V1_DatasetSpecification;
 }
 
 export enum V1_DatasetEntitlementReportType {
@@ -156,7 +173,7 @@ const V1_datasetEntitlementAccessGrantedReportModelSchema = (
     _type: usingConstantValueSchema(
       V1_DatasetEntitlementReportType.ACCESS_GRANTED,
     ),
-    storeSpecification: custom(
+    dataset: custom(
       () => SKIP,
       (val) => V1_deserializeDatasetSpecification(val, plugins),
     ),
@@ -171,7 +188,7 @@ const V1_datasetEntitlementAccessApprovedReportModelSchema = (
     _type: usingConstantValueSchema(
       V1_DatasetEntitlementReportType.ACCESS_APPROVED,
     ),
-    storeSpecification: custom(
+    dataset: custom(
       () => SKIP,
       (val) => V1_deserializeDatasetSpecification(val, plugins),
     ),
@@ -186,7 +203,7 @@ const V1_datasetEntitlementAccessRequestedReportModelSchema = (
     _type: usingConstantValueSchema(
       V1_DatasetEntitlementReportType.ACCESS_REQUESTED,
     ),
-    storeSpecification: custom(
+    dataset: custom(
       () => SKIP,
       (val) => V1_deserializeDatasetSpecification(val, plugins),
     ),
@@ -201,7 +218,7 @@ const V1_datasetEntitlementAccessNotGrantedReportModelSchema = (
     _type: usingConstantValueSchema(
       V1_DatasetEntitlementReportType.ACCESS_NOT_GRANTED,
     ),
-    storeSpecification: custom(
+    dataset: custom(
       () => SKIP,
       (val) => V1_deserializeDatasetSpecification(val, plugins),
     ),
@@ -216,13 +233,13 @@ const V1_datasetEntitlementUnsupportedReportModelSchema = (
     _type: usingConstantValueSchema(
       V1_DatasetEntitlementReportType.UNSUPPORTED,
     ),
-    storeSpecification: custom(
+    dataset: custom(
       () => SKIP,
       (val) => V1_deserializeDatasetSpecification(val, plugins),
     ),
   });
 
-export const V1_deserializeDatasetEntitlementReport = (
+const V1_deserializeDatasetEntitlementReport = (
   json: PlainObject<V1_DatasetEntitlementReport>,
   plugins: PureProtocolProcessorPlugin[],
 ): V1_DatasetEntitlementReport => {
@@ -271,6 +288,22 @@ export const V1_deserializeDatasetEntitlementReport = (
   }
 };
 
+export class V1_CheckEntitlementsResult {
+  reports: V1_DatasetEntitlementReport[] = [];
+}
+
+export const V1_checkEntitlementsResultModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_CheckEntitlementsResult> =>
+  createModelSchema(V1_CheckEntitlementsResult, {
+    reports: list(
+      custom(
+        () => SKIP,
+        (val) => V1_deserializeDatasetEntitlementReport(val, plugins),
+      ),
+    ),
+  });
+
 export const V1_buildDatasetEntitlementReport = (
   protocol: V1_DatasetEntitlementReport,
   plugins: PureProtocolProcessorPlugin[],
@@ -287,38 +320,23 @@ export const V1_buildDatasetEntitlementReport = (
 
   if (protocol instanceof V1_DatasetEntitlementAccessGrantedReport) {
     const metamodel = new DatasetEntitlementAccessGrantedReport();
-    metamodel.storeSpecification = V1_buildDatasetSpecification(
-      protocol.storeSpecification,
-      plugins,
-    );
+    metamodel.dataset = V1_buildDatasetSpecification(protocol.dataset, plugins);
     return metamodel;
   } else if (protocol instanceof V1_DatasetEntitlementAccessApprovedReport) {
     const metamodel = new DatasetEntitlementAccessApprovedReport();
-    metamodel.storeSpecification = V1_buildDatasetSpecification(
-      protocol.storeSpecification,
-      plugins,
-    );
+    metamodel.dataset = V1_buildDatasetSpecification(protocol.dataset, plugins);
     return metamodel;
   } else if (protocol instanceof V1_DatasetEntitlementAccessRequestedReport) {
     const metamodel = new DatasetEntitlementAccessRequestedReport();
-    metamodel.storeSpecification = V1_buildDatasetSpecification(
-      protocol.storeSpecification,
-      plugins,
-    );
+    metamodel.dataset = V1_buildDatasetSpecification(protocol.dataset, plugins);
     return metamodel;
   } else if (protocol instanceof V1_DatasetEntitlementAccessNotGrantedReport) {
     const metamodel = new DatasetEntitlementAccessNotGrantedReport();
-    metamodel.storeSpecification = V1_buildDatasetSpecification(
-      protocol.storeSpecification,
-      plugins,
-    );
+    metamodel.dataset = V1_buildDatasetSpecification(protocol.dataset, plugins);
     return metamodel;
   } else if (protocol instanceof V1_DatasetEntitlementUnsupportedReport) {
     const metamodel = new DatasetEntitlementUnsupportedReport();
-    metamodel.storeSpecification = V1_buildDatasetSpecification(
-      protocol.storeSpecification,
-      plugins,
-    );
+    metamodel.dataset = V1_buildDatasetSpecification(protocol.dataset, plugins);
     return metamodel;
   }
 

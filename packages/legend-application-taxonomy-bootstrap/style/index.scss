@@ -294,6 +294,10 @@
     &__carousel__frame__indicator--active svg {
       color: var(--color-hclight-blue-60);
     }
+
+    .diagram-canvas {
+      border-color: var(--color-hclight-grey-60);
+    }
   }
 
   .data-space__viewer__models-documentation {

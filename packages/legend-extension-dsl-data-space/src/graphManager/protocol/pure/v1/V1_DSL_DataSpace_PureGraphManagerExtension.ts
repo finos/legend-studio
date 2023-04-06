@@ -316,20 +316,22 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     // elements documentation
     result.elementDocs = analysisResult.elementDocs.flatMap((docEntry) => {
       const entries: DataSpaceDocumentationEntry[] = [];
-      entries.push(
-        new DataSpaceDocumentationEntry(
-          docEntry.path,
-          undefined,
-          docEntry.docs.join('\n'),
-        ),
-      );
       if (docEntry instanceof V1_DataSpaceClassDocumentationEntry) {
+        entries.push(
+          new DataSpaceDocumentationEntry(
+            docEntry.path,
+            undefined,
+            docEntry.docs.join('\n'),
+            docEntry.milestoning,
+          ),
+        );
         docEntry.properties.forEach((property) => {
           entries.push(
             new DataSpaceDocumentationEntry(
               docEntry.path,
               property.name,
               property.docs.join('\n'),
+              property.milestoning,
             ),
           );
         });
@@ -337,24 +339,42 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       } else if (
         docEntry instanceof V1_DataSpaceEnumerationDocumentationEntry
       ) {
+        entries.push(
+          new DataSpaceDocumentationEntry(
+            docEntry.path,
+            undefined,
+            docEntry.docs.join('\n'),
+            undefined,
+          ),
+        );
         docEntry.enumValues.forEach((enumValue) => {
           entries.push(
             new DataSpaceDocumentationEntry(
               docEntry.path,
               enumValue.name,
               enumValue.docs.join('\n'),
+              undefined,
             ),
           );
         });
       } else if (
         docEntry instanceof V1_DataSpaceAssociationDocumentationEntry
       ) {
+        entries.push(
+          new DataSpaceDocumentationEntry(
+            docEntry.path,
+            undefined,
+            docEntry.docs.join('\n'),
+            undefined,
+          ),
+        );
         docEntry.properties.forEach((property) => {
           entries.push(
             new DataSpaceDocumentationEntry(
               docEntry.path,
               property.name,
               property.docs.join('\n'),
+              property.milestoning,
             ),
           );
         });

@@ -77,19 +77,6 @@
   margin: 0;
 }
 
-.dnd__entry__handle__container {
-  float: left;
-  cursor: move;
-  // we have relative position so that z-index will apply
-  position: relative;
-  z-index: 1;
-
-  &--dragging {
-    // we have 0 opacity upon dragging so that user does not see drag handle
-    opacity: 0;
-  }
-}
-
 .dnd__entry-drag-handle {
   @include flexCenter;
   @include flexConstantDimension;
@@ -149,17 +136,27 @@
   position: relative;
 }
 
-// NOTE: We have a mask placeholder for PanelDnDEntry components
-// since we want to potentially keep the original content inside
-// the droppable zone, but also want to potentially have a
-// placeholder that is set over it when we are dragging, hence
-// we use absolute positioning and a higher z-index
 .dnd__entry__placeholder {
   display: block;
   width: 100%;
   height: 100%;
   position: absolute;
   z-index: 1;
+}
+
+.dnd__entry__handle__container {
+  float: left;
+  cursor: move;
+  // NOTE: we need to ensure drag handle needs to be at least above placeholder in the stacking context,
+  // else while dragging and the placeholder is displayed, we would lose the handle
+  position: relative;
+  z-index: 1;
+
+  &--dragging {
+    // hide the drag handle while dragging to avoid showing it in front
+    // of the placeholder
+    opacity: 0;
+  }
 }
 
 .dnd__entry__placeholder__content {

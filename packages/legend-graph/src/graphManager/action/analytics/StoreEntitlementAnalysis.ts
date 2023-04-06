@@ -24,7 +24,7 @@ export class DatasetSpecification {
 }
 
 export abstract class DatasetEntitlementReport {
-  storeSpecification!: DatasetSpecification;
+  dataset!: DatasetSpecification;
 }
 
 export class DatasetEntitlementAccessGrantedReport extends DatasetEntitlementReport {}

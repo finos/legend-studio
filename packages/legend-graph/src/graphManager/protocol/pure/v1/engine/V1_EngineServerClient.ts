@@ -48,7 +48,6 @@ import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalF
 import type { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration.js';
 import type { V1_GenerateSchemaInput } from './externalFormat/V1_GenerateSchemaInput.js';
 import type { V1_RunTestsInput } from './test/V1_RunTestsInput.js';
-import type { V1_TestResult } from '../model/test/result/V1_TestResult.js';
 import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
 import type { V1_RenderStyle } from './grammar/V1_RenderStyle.js';
 import type { V1_ParserError } from './grammar/V1_ParserError.js';
@@ -58,10 +57,11 @@ import type {
 } from './analytics/V1_MappingModelCoverageAnalysis.js';
 import { ServiceExecutionMode } from '../../../../action/service/ServiceExecutionMode.js';
 import type {
-  V1_DatasetEntitlementReport,
-  V1_DatasetSpecification,
+  V1_CheckEntitlementsResult,
   V1_StoreEntitlementAnalysisInput,
+  V1_SurveyDatasetsResult,
 } from './analytics/V1_StoreEntitlementAnalysis.js';
+import type { V1_RunTestsResult } from './test/V1_RunTestsResult.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -337,7 +337,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   runTests = (
     input: PlainObject<V1_RunTestsInput>,
-  ): Promise<PlainObject<V1_TestResult[]>> =>
+  ): Promise<PlainObject<V1_RunTestsResult>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.RUN_TESTS),
       `${this._pure()}/testable/runTests`,
@@ -530,7 +530,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   surveyDatasets = (
     input: PlainObject<V1_StoreEntitlementAnalysisInput>,
-  ): Promise<PlainObject<V1_DatasetSpecification>[]> =>
+  ): Promise<PlainObject<V1_SurveyDatasetsResult>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.SURVEY_DATASET_ANALYTICS),
       `${this._pure()}/analytics/entitlements/surveyDatasets`,
@@ -543,7 +543,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   checkEntitlements = (
     input: PlainObject<V1_StoreEntitlementAnalysisInput>,
-  ): Promise<PlainObject<V1_DatasetEntitlementReport>[]> =>
+  ): Promise<PlainObject<V1_CheckEntitlementsResult>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.STORE_ENTITLEMENT_ANALYTICS),
       `${this._pure()}/analytics/entitlements/checkEntitlements`,

@@ -41,7 +41,6 @@ import {
   getClassView,
   _relationshipView_simplifyPath,
 } from '../../../../../../graph/helpers/DSL_Diagram_Helper.js';
-import type { RelationshipView } from '../../../../../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_RelationshipView.js';
 
 const buildPoint = (point: V1_Point): Point => {
   const x = guaranteeNonNullable(point.x, `Point 'x' coordinate is missing`);
@@ -95,19 +94,6 @@ export const V1_buildClassView = (
   return view;
 };
 
-const _relationshipView_simplifyPathWithErrorHandling = (
-  relationshipView: RelationshipView,
-  context: V1_GraphBuilderContext,
-): void => {
-  try {
-    _relationshipView_simplifyPath(relationshipView);
-  } catch (error) {
-    // since error is to simplify path we won't break graph building but add it to warnings
-    assertErrorThrown(error);
-    context.logService.warn(LogEvent.create(error.message));
-  }
-};
-
 export const V1_buildPropertyView = (
   propertyView: V1_PropertyView,
   context: V1_GraphBuilderContext,
@@ -134,7 +120,14 @@ export const V1_buildPropertyView = (
     targetClassView,
   );
   view.path = propertyView.line.points.map((point) => buildPoint(point));
-  _relationshipView_simplifyPathWithErrorHandling(view, context); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
+  // transform the line because we store only 2 end points that are inside points and we will calculate the offset
+  try {
+    _relationshipView_simplifyPath(view);
+  } catch (error) {
+    // NOTE: this is an optimization to simplify the path, so we should not break graph building if this fails
+    assertErrorThrown(error);
+    context.logService.warn(LogEvent.create(error.message));
+  }
   return view;
 };
 
@@ -161,7 +154,14 @@ export const V1_buildGeneralizationView = (
     targetClassView,
   );
   view.path = generalizationView.line.points.map((point) => buildPoint(point));
-  _relationshipView_simplifyPathWithErrorHandling(view, context); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
+  // transform the line because we store only 2 end points that are inside points and we will calculate the offset
+  try {
+    _relationshipView_simplifyPath(view);
+  } catch (error) {
+    // NOTE: this is an optimization to simplify the path, so we should not break graph building if this fails
+    assertErrorThrown(error);
+    context.logService.warn(LogEvent.create(error.message));
+  }
   return view;
 };
 
