@@ -47,8 +47,8 @@ export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilde
         PRIMITIVE_TYPE.DATETIME &&
         postFilterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
-        ? SUPPORTED_FUNCTIONS.IS_AFTER_DAY
-        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.GREATER_THAN,
+        ? SUPPORTED_FUNCTIONS.IS_ON_OR_AFTER_DAY
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.GREATER_THAN_EQUAL,
     );
   }
 
@@ -64,8 +64,8 @@ export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilde
           .path === PRIMITIVE_TYPE.DATETIME &&
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
-        ? SUPPORTED_FUNCTIONS.IS_AFTER_DAY
-        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.GREATER_THAN,
+        ? SUPPORTED_FUNCTIONS.IS_ON_OR_AFTER_DAY
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.GREATER_THAN_EQUAL,
       this,
     );
   }
