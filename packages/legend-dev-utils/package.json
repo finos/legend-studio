@@ -80,7 +80,7 @@
     "jsonc-parser": "3.2.0",
     "micromatch": "4.0.5",
     "mini-css-extract-plugin": "2.7.5",
-    "monaco-editor": "0.37.0",
+    "monaco-editor": "0.37.1",
     "monaco-editor-webpack-plugin": "7.0.1",
     "postcss": "8.4.21",
     "postcss-loader": "7.2.4",

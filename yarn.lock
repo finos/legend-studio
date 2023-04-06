@@ -2106,7 +2106,7 @@ __metadata:
     jest: 29.5.0
     mobx: 6.9.0
     mobx-react-lite: 3.4.3
-    monaco-editor: 0.37.0
+    monaco-editor: 0.37.1
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dnd: 16.0.1
@@ -2275,7 +2275,7 @@ __metadata:
     mobx: 6.9.0
     mobx-react-lite: 3.4.3
     mobx-utils: 6.0.6
-    monaco-editor: 0.37.0
+    monaco-editor: 0.37.1
     node-diff3: 3.1.2
     npm-run-all: 4.1.5
     react: 18.2.0
@@ -2384,7 +2384,7 @@ __metadata:
     jest: 29.5.0
     mobx: 6.9.0
     mobx-react-lite: 3.4.3
-    monaco-editor: 0.37.0
+    monaco-editor: 0.37.1
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dnd: 16.0.1
@@ -2433,7 +2433,7 @@ __metadata:
     jest: 29.5.0
     mobx: 6.9.0
     mobx-react-lite: 3.4.3
-    monaco-editor: 0.37.0
+    monaco-editor: 0.37.1
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dnd: 16.0.1
@@ -2491,7 +2491,7 @@ __metadata:
     jsonc-parser: 3.2.0
     micromatch: 4.0.5
     mini-css-extract-plugin: 2.7.5
-    monaco-editor: 0.37.0
+    monaco-editor: 0.37.1
     monaco-editor-webpack-plugin: 7.0.1
     postcss: 8.4.21
     postcss-loader: 7.2.4
@@ -2938,7 +2938,7 @@ __metadata:
     mathjs: 11.8.0
     mobx: 6.9.0
     mobx-react-lite: 3.4.3
-    monaco-editor: 0.37.0
+    monaco-editor: 0.37.1
     npm-run-all: 4.1.5
     papaparse: 5.4.1
     react: 18.2.0
@@ -11707,10 +11707,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monaco-editor@npm:0.37.0":
-  version: 0.37.0
-  resolution: "monaco-editor@npm:0.37.0"
-  checksum: c66bce4fbb2d6a41c78a13723928b3abbbd6df9d9d4bb855277d4919f7a1364ce36a4e75168b0bdb5eae20ca99cbf53cae16a8526ee4ccc4566755a0666d27d7
+"monaco-editor@npm:0.37.1":
+  version: 0.37.1
+  resolution: "monaco-editor@npm:0.37.1"
+  checksum: f2ac123d3044a1386d36ba52bb617ad18fb1c745d515a63258858b41c91bb68b71b57c7e5aff3fc2b3226b22c12ca3ad5b14c117babc85eebcf80317cb10691b
   languageName: node
   linkType: hard
 
