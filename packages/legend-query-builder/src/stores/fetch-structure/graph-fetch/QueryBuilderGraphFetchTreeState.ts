@@ -51,13 +51,20 @@ import {
   guaranteeNonNullable,
   hashArray,
   type Hashable,
+  UnsupportedOperationError,
+  ContentType,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
 import { isValueExpressionReferencedInValue } from '../../QueryBuilderValueSpecificationHelper.js';
+import type { ExportDataInfo } from '../../QueryBuilderResultState.js';
 
 export enum SERIALIZATION_TYPE {
   PURE = 'PURE',
   EXTERNAL_FORMAT = 'EXTERNAL_FORMAT',
+}
+
+export enum GRAPH_FETCH_EXPORT_DATA_FORMAT {
+  RESULT = 'RESULT',
 }
 
 const DEFAULT_PURE_CONFIG_TYPE_NAME = '@type';
@@ -135,6 +142,8 @@ export abstract class GraphFetchSerializationState {
   }
 
   abstract getLabel(): string;
+
+  abstract get serializationContentType(): ContentType;
 }
 
 export class GraphFetchPureSerializationState extends GraphFetchSerializationState {
@@ -161,6 +170,10 @@ export class GraphFetchPureSerializationState extends GraphFetchSerializationSta
   override getLabel(): string {
     return SERIALIZATION_TYPE.PURE;
   }
+
+  override get serializationContentType(): ContentType {
+    return ContentType.APPLICATION_JSON;
+  }
 }
 
 export class GraphFetchExternalFormatSerializationState extends GraphFetchSerializationState {
@@ -176,6 +189,7 @@ export class GraphFetchExternalFormatSerializationState extends GraphFetchSerial
     makeObservable(this, {
       targetBinding: observable,
       treeData: observable.ref,
+      serializationContentType: computed,
     });
     this.targetBinding = targetBinding;
     this.treeData = treeData;
@@ -191,6 +205,20 @@ export class GraphFetchExternalFormatSerializationState extends GraphFetchSerial
 
   override getLabel(): string {
     return SERIALIZATION_TYPE.EXTERNAL_FORMAT;
+  }
+
+  override get serializationContentType(): ContentType {
+    const contentType = this.targetBinding.contentType;
+    if (Object.values(ContentType).includes(contentType as ContentType)) {
+      return contentType as ContentType;
+    } else {
+      // TEMP: need to investigate if flatdata should be returned as content type
+      // for now we will assume all flatdata is csv
+      if (contentType === 'application/x.flatdata') {
+        return ContentType.TEXT_CSV;
+      }
+      return ContentType.TEXT_PLAIN;
+    }
   }
 }
 
@@ -319,6 +347,22 @@ export class QueryBuilderGraphFetchTreeState
           )
         : undefined,
     );
+  }
+
+  override get exportDataFormatOptions(): string[] {
+    return [GRAPH_FETCH_EXPORT_DATA_FORMAT.RESULT];
+  }
+
+  override getExportDataInfo(format: string): ExportDataInfo {
+    if (format === GRAPH_FETCH_EXPORT_DATA_FORMAT.RESULT) {
+      return {
+        contentType: this.serializationState.serializationContentType,
+      };
+    } else {
+      throw new UnsupportedOperationError(
+        `Unsupported Graph Fetch export type ${format}`,
+      );
+    }
   }
 
   onClassChange(_class: Class | undefined): void {

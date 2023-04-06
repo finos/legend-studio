@@ -26,6 +26,7 @@ import type { QueryBuilderExplorerTreePropertyNodeData } from '../explorer/Query
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import type { LambdaFunctionBuilderOption } from '../QueryBuilderValueSpecificationBuilderHelper.js';
 import type { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState.js';
+import type { ExportDataInfo } from '../QueryBuilderResultState.js';
 
 export enum FETCH_STRUCTURE_IMPLEMENTATION {
   TABULAR_DATA_STRUCTURE = 'TABULAR_DATA_STRUCTURE',
@@ -75,4 +76,8 @@ export abstract class QueryBuilderFetchStructureImplementationState
   get TEMPORARY__showPostFetchStructurePanel(): boolean {
     return this.queryBuilderState.filterState.showPanel;
   }
+
+  // export options
+  abstract get exportDataFormatOptions(): string[];
+  abstract getExportDataInfo(format: string): ExportDataInfo;
 }

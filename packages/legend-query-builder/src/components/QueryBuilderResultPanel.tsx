@@ -41,7 +41,6 @@ import {
   extractExecutionResultValues,
   TDSExecutionResult,
   RawExecutionResult,
-  EXECUTION_SERIALIZATION_FORMAT,
   EnumValueInstanceValue,
   EnumValueExplicitReference,
 } from '@finos/legend-graph';
@@ -60,6 +59,7 @@ import {
   isBoolean,
   type PlainObject,
   prettyDuration,
+  prettyCONSTName,
 } from '@finos/legend-shared';
 import { forwardRef, useState } from 'react';
 import type { CellMouseOverEvent } from '@ag-grid-community/core';
@@ -440,11 +440,11 @@ export const QueryBuilderResultPanel = observer(
     const resultState = queryBuilderState.resultState;
     const queryParametersState = queryBuilderState.parametersState;
     const executionResult = resultState.executionResult;
+    const fetchStructureImplementation =
+      queryBuilderState.fetchStructureState.implementation;
     const USER_ATTESTATION_MESSAGE =
       'I attest that I am aware of the sensitive data leakage risk when exporting queried data. The data I export will only be used by me.';
-    const exportQueryResults = async (
-      format: EXECUTION_SERIALIZATION_FORMAT,
-    ): Promise<void> => {
+    const exportQueryResults = async (format: string): Promise<void> => {
       if (queryBuilderState.parametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
           (): Promise<void> =>
@@ -460,7 +460,7 @@ export const QueryBuilderResultPanel = observer(
       }
     };
 
-    const confirmExport = (format: EXECUTION_SERIALIZATION_FORMAT): void => {
+    const confirmExport = (format: string): void => {
       applicationStore.alertService.setActionAlertInfo({
         message: USER_ATTESTATION_MESSAGE,
         type: ActionAlertType.CAUTION,
@@ -482,10 +482,8 @@ export const QueryBuilderResultPanel = observer(
     };
     const queryValidationIssues = queryBuilderState.validationIssues;
     const queryWindowValidationIssues =
-      queryBuilderState.fetchStructureState.implementation instanceof
-      QueryBuilderTDSState
-        ? queryBuilderState.fetchStructureState.implementation.windowState
-            .validationIssues
+      fetchStructureImplementation instanceof QueryBuilderTDSState
+        ? fetchStructureImplementation.windowState.validationIssues
         : undefined;
     const queryWindowStateIsValid = !queryWindowValidationIssues;
 
@@ -674,17 +672,17 @@ export const QueryBuilderResultPanel = observer(
               disabled={!isQueryValid}
               content={
                 <MenuContent>
-                  {Object.values(EXECUTION_SERIALIZATION_FORMAT).map(
-                    (format) => (
-                      <MenuContentItem
-                        key={format}
-                        className="query-builder__result__export__dropdown__menu__item"
-                        onClick={(): void => confirmExport(format)}
-                      >
-                        {format}
-                      </MenuContentItem>
-                    ),
-                  )}
+                  {Object.values(
+                    fetchStructureImplementation.exportDataFormatOptions,
+                  ).map((format) => (
+                    <MenuContentItem
+                      key={format}
+                      className="query-builder__result__export__dropdown__menu__item"
+                      onClick={(): void => confirmExport(format)}
+                    >
+                      {prettyCONSTName(format)}
+                    </MenuContentItem>
+                  ))}
                 </MenuContent>
               }
               menuProps={{

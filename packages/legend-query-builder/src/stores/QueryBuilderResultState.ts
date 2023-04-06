@@ -20,26 +20,26 @@ import {
   assertErrorThrown,
   LogEvent,
   guaranteeNonNullable,
-  ContentType,
-  guaranteeType,
+  type ContentType,
   downloadFileUsingDataURI,
-  UnsupportedOperationError,
   ActionState,
   StopWatch,
+  getContentTypeFileExtension,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   type RawExecutionPlan,
   type ExecutionResult,
   type RawLambda,
+  type EXECUTION_SERIALIZATION_FORMAT,
   GRAPH_MANAGER_EVENT,
-  EXECUTION_SERIALIZATION_FORMAT,
   RawExecutionResult,
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
+  extractExecutionResultValues,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
-import { ExecutionPlanState } from '@finos/legend-application';
+import { ExecutionPlanState, TAB_SIZE } from '@finos/legend-application';
 import {
   buildExecutionParameterValues,
   getExecutionQueryFromRawLambda,
@@ -49,6 +49,11 @@ import { QueryBuilderTelemetryHelper } from '../application/QueryBuilderTelemetr
 import { QUERY_BUILDER_EVENT } from '../application/QueryBuilderEvent.js';
 
 const DEFAULT_LIMIT = 1000;
+
+export interface ExportDataInfo {
+  contentType: ContentType;
+  serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
+}
 
 export class QueryBuilderResultState {
   readonly queryBuilderState: QueryBuilderState;
@@ -148,25 +153,21 @@ export class QueryBuilderResultState {
     return query;
   }
 
-  *exportData(
-    serializationFormat: EXECUTION_SERIALIZATION_FORMAT,
-  ): GeneratorFn<void> {
+  *exportData(format: string): GeneratorFn<void> {
     try {
+      const exportData =
+        this.queryBuilderState.fetchStructureState.implementation.getExportDataInfo(
+          format,
+        );
+      const contentType = exportData.contentType;
+      const serializationFormat = exportData.serializationFormat;
       this.exportDataState.inProgress();
-      const mapping = guaranteeNonNullable(
-        this.queryBuilderState.mapping,
-        'Mapping is required to execute query',
-      );
-      const runtime = guaranteeNonNullable(
-        this.queryBuilderState.runtimeValue,
-        `Runtime is required to execute query`,
-      );
       const query = this.buildExecutionRawLambda();
       const result =
         (yield this.queryBuilderState.graphManagerState.graphManager.runQuery(
           query,
-          mapping,
-          runtime,
+          this.queryBuilderState.mapping,
+          this.queryBuilderState.runtimeValue,
           this.queryBuilderState.graphManagerState.graph,
           {
             serializationFormat,
@@ -176,23 +177,17 @@ export class QueryBuilderResultState {
             ),
           },
         )) as ExecutionResult;
-      let contentType: ContentType;
-      let fileName = 'result';
       let content: string;
-      switch (serializationFormat) {
-        case EXECUTION_SERIALIZATION_FORMAT.CSV:
-          {
-            const rawResult = guaranteeType(result, RawExecutionResult);
-            contentType = ContentType.TEXT_CSV;
-            fileName = `${fileName}.csv`;
-            content = rawResult.value;
-          }
-          break;
-        default:
-          throw new UnsupportedOperationError(
-            `Can't download file for serialization type: '${serializationFormat}'`,
-          );
+      if (result instanceof RawExecutionResult) {
+        content = result.value;
+      } else {
+        content = JSON.stringify(
+          extractExecutionResultValues(result),
+          null,
+          TAB_SIZE,
+        );
       }
+      const fileName = `result.${getContentTypeFileExtension(contentType)}`;
       downloadFileUsingDataURI(fileName, content, contentType);
       this.exportDataState.pass();
     } catch (error) {
