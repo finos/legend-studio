@@ -54,6 +54,7 @@ test(integrationTest('Service Multi Execution Editor'), async () => {
     renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDIT_PANEL),
   );
 
+  fireEvent.click(getByText(editPanel, 'General'));
   await waitFor(() => getByText(editPanel, 'Service to test refiner flow'));
   await waitFor(() => getByText(editPanel, 'dummy1'));
   await waitFor(() => getByText(editPanel, 'dummy'));

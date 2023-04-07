@@ -31,6 +31,7 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../../stores/editor/shared/ModelClassifierUtils.js';
+import { MockedMonacoEditorInstance } from '@finos/legend-art';
 
 const addRootPackage = async (
   packagePath: string,
@@ -97,6 +98,7 @@ test(
 
 // TODO: add connection, runtime, text, etc.
 test(integrationTest('Create elements with no drivers'), async () => {
+  MockedMonacoEditorInstance.getValue.mockReturnValue('');
   const ROOT_PACKAGE_NAME = 'model';
   await addRootPackage(ROOT_PACKAGE_NAME, renderResult);
   await createNewElementOnRootPackage(

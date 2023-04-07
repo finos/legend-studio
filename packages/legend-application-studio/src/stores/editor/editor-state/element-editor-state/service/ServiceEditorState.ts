@@ -38,6 +38,7 @@ import {
   PureSingleExecution,
   PureMultiExecution,
   PureExecution,
+  isStubbed_RawLambda,
 } from '@finos/legend-graph';
 import { ServiceTestableState } from './testable/ServiceTestableState.js';
 import { User } from '@finos/legend-server-sdlc';
@@ -54,7 +55,7 @@ export class ServiceEditorState extends ElementEditorState {
   executionState: ServiceExecutionState;
   registrationState: ServiceRegistrationState;
   testableState: ServiceTestableState;
-  selectedTab = SERVICE_TAB.EXECUTION;
+  selectedTab: SERVICE_TAB;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -79,6 +80,12 @@ export class ServiceEditorState extends ElementEditorState {
         editorStore.sdlcServerClient.features.canCreateVersion,
     );
     this.testableState = new ServiceTestableState(editorStore, this);
+    const query = this.executionState.serviceExecutionParameters?.query;
+    // default to execution tab if query is defined
+    this.selectedTab =
+      query && !isStubbed_RawLambda(query)
+        ? SERVICE_TAB.EXECUTION
+        : SERVICE_TAB.GENERAL;
   }
 
   setSelectedTab(tab: SERVICE_TAB): void {
