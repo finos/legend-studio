@@ -1,15 +1,48 @@
-###Pure
-Class my::Person
+###Service
+ExecutionEnvironment test::executionEnvironment
 {
-  givenNames: String[*];
+  executions:
+  [
+    QA:
+    {
+      mapping: test::mapping;
+      runtime: test::runtime;
+    },
+    PROD:
+    {
+      mapping: test::mapping;
+      runtime: test::runtime;
+    }
+  ];
+}
+
+
+###Pure
+Class test::class
+{
+  prop1: Integer[0..1];
 }
 
 
 ###Mapping
-Mapping my::map
+Mapping test::mapping
 (
-  *my::Person: Pure
-  {
-    givenNames: 'name'
-  }
 )
+
+
+###Connection
+JsonModelConnection test::connection
+{
+  class: test::class;
+  url: 'asd';
+}
+
+
+###Runtime
+Runtime test::runtime
+{
+  mappings:
+  [
+    test::mapping
+  ];
+}
