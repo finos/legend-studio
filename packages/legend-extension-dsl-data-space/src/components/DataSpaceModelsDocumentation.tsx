@@ -15,17 +15,21 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { AnchorLinkIcon, SearchIcon } from '@finos/legend-art';
+import { AnchorLinkIcon, SearchIcon, clsx } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { AgGridReact } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
+
+const MIN_NUMBER_OF_ROWS_FOR_AUTO_HEIGHT = 20;
 
 export const DataSpaceModelsDocumentation = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     const documentationEntries =
       dataSpaceViewerState.dataSpaceAnalysisResult.elementDocs;
+    const autoHeight =
+      documentationEntries.length <= MIN_NUMBER_OF_ROWS_FOR_AUTO_HEIGHT;
 
     return (
       <div className="data-space__viewer__wiki__section">
@@ -39,7 +43,12 @@ export const DataSpaceModelsDocumentation = observer(
         </div>
         <div className="data-space__viewer__wiki__section__content">
           {documentationEntries.length > 0 && (
-            <div className="data-space__viewer__models-documentation">
+            <div
+              className={clsx('data-space__viewer__models-documentation', {
+                'data-space__viewer__models-documentation--auto-height':
+                  autoHeight,
+              })}
+            >
               <div className="data-space__viewer__models-documentation__search">
                 <div className="data-space__viewer__models-documentation__search__input-group">
                   <input className="data-space__viewer__models-documentation__search__input-group__input input" />
@@ -50,6 +59,7 @@ export const DataSpaceModelsDocumentation = observer(
               </div>
               <div className="data-space__viewer__models-documentation__grid data-space__viewer__grid ag-theme-balham-dark">
                 <AgGridReact
+                  domLayout={autoHeight ? 'autoHeight' : 'normal'}
                   rowData={documentationEntries}
                   gridOptions={{
                     suppressScrollOnNewData: true,

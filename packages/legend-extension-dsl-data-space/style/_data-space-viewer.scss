@@ -479,7 +479,11 @@
 }
 
 .data-space__viewer__models-documentation {
-  height: 70rem;
+  height: 50rem;
+
+  &--auto-height {
+    height: auto;
+  }
 
   &__search {
     @include flexVCenter;
@@ -627,7 +631,11 @@
 
     &__tab__content {
       margin-top: 1rem;
-      height: 40rem;
+      height: 30rem;
+
+      &--auto-height {
+        height: auto;
+      }
     }
   }
 
