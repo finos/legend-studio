@@ -224,7 +224,7 @@ const DataSpaceExecutableTDSResultView = observer(
                       minWidth: 50,
                       sortable: false,
                       resizable: true,
-                      field: 'sample_values',
+                      field: 'sampleValues',
                       headerName: 'Sample Values',
                       flex: 1,
                     },

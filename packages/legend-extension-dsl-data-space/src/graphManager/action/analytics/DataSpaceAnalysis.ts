@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import type {
-  Mapping,
-  PackageableRuntime,
-  PureModel,
+import {
+  extractElementNameFromPath,
+  type Mapping,
+  type PackageableRuntime,
+  type PureModel,
 } from '@finos/legend-graph';
-import { uuid } from '@finos/legend-shared';
+import { prettyCONSTName, uuid } from '@finos/legend-shared';
 import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram';
 
@@ -68,9 +69,17 @@ export class DataSpaceDocumentationEntry {
 }
 
 export class DataSpaceDiagramAnalysisResult {
+  readonly uuid = uuid();
   title!: string;
   description?: string | undefined;
   diagram!: Diagram;
+
+  get displayName(): string {
+    return (
+      this.title ??
+      prettyCONSTName(extractElementNameFromPath(this.diagram.path))
+    );
+  }
 }
 
 export abstract class DataSpaceExecutableInfo {
@@ -135,4 +144,8 @@ export class DataSpaceAnalysisResult {
   executables: DataSpaceExecutableAnalysisResult[] = [];
 
   supportInfo?: DataSpaceSupportInfo | undefined;
+
+  get displayName(): string {
+    return this.title ?? prettyCONSTName(this.name);
+  }
 }

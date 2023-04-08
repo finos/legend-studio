@@ -49,12 +49,10 @@ const DataSpaceHeader = observer(
         >
           <div
             className="data-space__viewer__header__title"
-            title={`${analysisResult.title ?? analysisResult.name} - ${
-              analysisResult.path
-            }`}
+            title={`${analysisResult.displayName} - ${analysisResult.path}`}
           >
             <div className="data-space__viewer__header__title__label">
-              {analysisResult.title ?? analysisResult.name}
+              {analysisResult.displayName}
             </div>
             {dataSpaceViewerState.isVerified && (
               <VerifiedIcon

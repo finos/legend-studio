@@ -73,6 +73,7 @@ import {
 import { getDiagram } from '@finos/legend-extension-dsl-diagram';
 
 const ANALYZE_DATA_SPACE_TRACE = 'analyze data space';
+const TEMPORARY__TDS_SAMPLE_VALUES__DELIMETER = '-- e.g.';
 
 export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_PureGraphManagerExtension {
   declare graphManager: V1_PureGraphManager;
@@ -419,6 +420,27 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
               column.type = tdsColumn.type;
               column.relationalType = tdsColumn.relationalType;
               column.documentation = tdsColumn.documentation;
+              if (
+                tdsColumn.documentation?.includes(
+                  TEMPORARY__TDS_SAMPLE_VALUES__DELIMETER,
+                )
+              ) {
+                column.documentation = tdsColumn.documentation
+                  .substring(
+                    0,
+                    tdsColumn.documentation.indexOf(
+                      TEMPORARY__TDS_SAMPLE_VALUES__DELIMETER,
+                    ),
+                  )
+                  .trim();
+                column.sampleValues = tdsColumn.documentation
+                  .substring(
+                    tdsColumn.documentation.indexOf(
+                      TEMPORARY__TDS_SAMPLE_VALUES__DELIMETER,
+                    ) + TEMPORARY__TDS_SAMPLE_VALUES__DELIMETER.length,
+                  )
+                  .trim();
+              }
               return column;
             },
           );
