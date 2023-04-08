@@ -1,5 +1,7 @@
 # @finos/legend-application-taxonomy
 
+## 7.0.12
+
 ## 7.0.11
 
 ## 7.0.10
