@@ -31,7 +31,7 @@ import { PureInstanceSetImplementationState } from './PureInstanceSetImplementat
 import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState.js';
 import {
   MAPPING_TEST_EDITOR_TAB_TYPE,
-  DEPRECATED_MappingTestState,
+  DEPRECATED__MappingTestState,
   TEST_RESULT,
 } from './MappingTestState.js';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
@@ -583,7 +583,7 @@ export class MappingEditorState extends ElementEditorState {
   mappingExplorerTreeData: TreeData<MappingExplorerTreeNodeData>;
   newMappingElementSpec?: MappingElementSpec | undefined;
 
-  mappingTestStates: DEPRECATED_MappingTestState[] = [];
+  mappingTestStates: DEPRECATED__MappingTestState[] = [];
   isRunningAllTests = false;
   allTestRunTime = 0;
 
@@ -623,7 +623,7 @@ export class MappingEditorState extends ElementEditorState {
     });
 
     this.mappingTestStates = this.mapping.test.map(
-      (t) => new DEPRECATED_MappingTestState(editorStore, t, this),
+      (t) => new DEPRECATED__MappingTestState(editorStore, t, this),
     );
     this.mappingExplorerTreeData = getMappingElementTreeData(
       this.mapping,
@@ -675,7 +675,7 @@ export class MappingEditorState extends ElementEditorState {
 
   *openTab(tabState: MappingEditorTabState): GeneratorFn<void> {
     if (tabState !== this.currentTabState) {
-      if (tabState instanceof DEPRECATED_MappingTestState) {
+      if (tabState instanceof DEPRECATED__MappingTestState) {
         yield flowResult(this.openTest(tabState.test));
       } else if (tabState instanceof MappingElementState) {
         this.openMappingElement(tabState.mappingElement, false);
@@ -1185,7 +1185,7 @@ export class MappingEditorState extends ElementEditorState {
             tabState.mappingElement.id.value,
           );
           return this.createMappingElementState(mappingElement);
-        } else if (tabState instanceof DEPRECATED_MappingTestState) {
+        } else if (tabState instanceof DEPRECATED__MappingTestState) {
           return mappingEditorState.mappingTestStates.find(
             (testState) => testState.test.name === tabState.test.name,
           );
@@ -1210,16 +1210,16 @@ export class MappingEditorState extends ElementEditorState {
           tabState instanceof MappingElementState &&
           tabState.mappingElement === currentlyOpenedMappingElement,
       );
-    } else if (this.currentTabState instanceof DEPRECATED_MappingTestState) {
+    } else if (this.currentTabState instanceof DEPRECATED__MappingTestState) {
       const currentlyOpenedMappingTest =
         mappingEditorState.mappingTestStates.find(
           (testState) =>
-            this.currentTabState instanceof DEPRECATED_MappingTestState &&
+            this.currentTabState instanceof DEPRECATED__MappingTestState &&
             testState.test.name === this.currentTabState.test.name,
         )?.test;
       mappingEditorState.currentTabState = this.openedTabStates.find(
         (tabState) =>
-          tabState instanceof DEPRECATED_MappingTestState &&
+          tabState instanceof DEPRECATED__MappingTestState &&
           tabState.test === currentlyOpenedMappingTest,
       );
     } else {
@@ -1351,7 +1351,7 @@ export class MappingEditorState extends ElementEditorState {
     const isOpened = Boolean(
       this.openedTabStates.find(
         (tabState) =>
-          tabState instanceof DEPRECATED_MappingTestState &&
+          tabState instanceof DEPRECATED__MappingTestState &&
           tabState.test === test,
       ),
     );
@@ -1365,7 +1365,7 @@ export class MappingEditorState extends ElementEditorState {
     if (
       !this.openedTabStates.find(
         (tabState) =>
-          tabState instanceof DEPRECATED_MappingTestState &&
+          tabState instanceof DEPRECATED__MappingTestState &&
           tabState.test === test,
       )
     ) {
@@ -1373,7 +1373,7 @@ export class MappingEditorState extends ElementEditorState {
     }
     this.currentTabState = this.openedTabStates.find(
       (tabState) =>
-        tabState instanceof DEPRECATED_MappingTestState &&
+        tabState instanceof DEPRECATED__MappingTestState &&
         tabState.test === test,
     );
     yield flowResult(
@@ -1413,7 +1413,7 @@ export class MappingEditorState extends ElementEditorState {
         testState.resetTestRunStatus(),
       );
       const input = this.mappingTestStates
-        .map((testState: DEPRECATED_MappingTestState) => {
+        .map((testState: DEPRECATED__MappingTestState) => {
           // run non-skip tests, and reset all skipped tests
           if (!testState.isSkipped) {
             testState.setIsRunningTest(true);
@@ -1454,7 +1454,7 @@ export class MappingEditorState extends ElementEditorState {
 
   *addTest(test: DEPRECATED__MappingTest): GeneratorFn<void> {
     this.mappingTestStates.push(
-      new DEPRECATED_MappingTestState(this.editorStore, test, this),
+      new DEPRECATED__MappingTestState(this.editorStore, test, this),
     );
     mapping_addTest(
       this.mapping,
@@ -1468,7 +1468,8 @@ export class MappingEditorState extends ElementEditorState {
     const matchMappingTestState = (
       tabState: MappingEditorTabState | undefined,
     ): boolean =>
-      tabState instanceof DEPRECATED_MappingTestState && tabState.test === test;
+      tabState instanceof DEPRECATED__MappingTestState &&
+      tabState.test === test;
     mapping_deleteTest(this.mapping, test);
     if (this.currentTabState && matchMappingTestState(this.currentTabState)) {
       yield flowResult(this.closeTab(this.currentTabState));
@@ -1536,7 +1537,7 @@ export class MappingEditorState extends ElementEditorState {
     );
     // open the test
     this.mappingTestStates.push(
-      new DEPRECATED_MappingTestState(this.editorStore, newTest, this),
+      new DEPRECATED__MappingTestState(this.editorStore, newTest, this),
     );
     yield flowResult(this.openTest(newTest));
   }

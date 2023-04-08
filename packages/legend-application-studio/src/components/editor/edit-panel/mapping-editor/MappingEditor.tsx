@@ -50,7 +50,7 @@ import {
 import { MappingElementState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingElementState.js';
 import { MappingExplorer } from './MappingExplorer.js';
 import { MappingTestEditor } from './MappingTestEditor.js';
-import { DEPRECATED_MappingTestState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTestState.js';
+import { DEPRECATED__MappingTestState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTestState.js';
 import { MappingTestsExplorer } from './MappingTestsExplorer.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { MappingExecutionState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionState.js';
@@ -151,7 +151,7 @@ export const MappingEditor = observer(() => {
   const isReadOnly = mappingEditorState.isReadOnly;
   const currentTabState = mappingEditorState.currentTabState;
   const renderActiveMappingElementTab = (): React.ReactNode => {
-    if (currentTabState instanceof DEPRECATED_MappingTestState) {
+    if (currentTabState instanceof DEPRECATED__MappingTestState) {
       return (
         <MappingTestEditor
           key={currentTabState.uuid}
@@ -256,7 +256,7 @@ export const MappingEditor = observer(() => {
                         />
                       }
                     >
-                      {tabState instanceof DEPRECATED_MappingTestState && (
+                      {tabState instanceof DEPRECATED__MappingTestState && (
                         <>
                           <FlaskIcon className="mapping-editor__header__tab__icon--test" />
                           <button

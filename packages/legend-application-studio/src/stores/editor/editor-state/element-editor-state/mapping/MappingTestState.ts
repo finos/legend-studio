@@ -397,7 +397,7 @@ export enum MAPPING_TEST_EDITOR_TAB_TYPE {
  * TODO: Remove once migration from `MappingTest_Legacy` to `MappingTest` is complete
  * @deprecated
  */
-export class DEPRECATED_MappingTestState extends MappingEditorTabState {
+export class DEPRECATED__MappingTestState extends MappingEditorTabState {
   readonly editorStore: EditorStore;
   readonly mappingEditorState: MappingEditorState;
 

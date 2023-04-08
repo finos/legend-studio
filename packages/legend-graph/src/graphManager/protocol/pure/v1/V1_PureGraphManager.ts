@@ -2407,7 +2407,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
     await Promise.all(
       tests.map((t) =>
-        this.DEPREACTED_runLegacyMappingTest(
+        this.DEPRECATED__runLegacyMappingTest(
           t,
           mapping,
           pureModelContext,
@@ -2418,7 +2418,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private async DEPREACTED_runLegacyMappingTest(
+  private async DEPRECATED__runLegacyMappingTest(
     testInfo: {
       test: DEPRECATED__MappingTest;
       runtime: Runtime;
