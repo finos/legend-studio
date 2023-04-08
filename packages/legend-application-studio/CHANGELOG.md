@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 23.1.7
+
+### Patch Changes
+
+- [#2059](https://github.com/finos/legend-studio/pull/2059) [`c92fcefee`](https://github.com/finos/legend-studio/commit/c92fcefee837e33c0dabbf185e1f790a422e479f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Default service panel to execution tab.
+
 ## 23.1.6
 
 ## 23.1.5
