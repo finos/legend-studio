@@ -85,6 +85,7 @@ import type {
 import type { PackageableRuntime } from '../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 import type { GraphDataOrigin } from '../graph/GraphDataOrigin.js';
 import type { GraphData } from './GraphData.js';
+import type { DEPRECATED__MappingTest } from '../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -401,6 +402,19 @@ export abstract class AbstractPureGraphManager {
     options?: ExecutionOptions,
     report?: GraphManagerOperationReport,
   ): Promise<ExecutionResult>;
+
+  abstract DEPRECATED__runLegacyMappingTests(
+    tests: {
+      test: DEPRECATED__MappingTest;
+      runtime: Runtime;
+      handleResult: (val: ExecutionResult) => void;
+      handleError: (message: Error) => void;
+    }[],
+    mapping: Mapping,
+    graph: PureModel,
+    options?: ExecutionOptions,
+    _report?: GraphManagerOperationReport,
+  ): Promise<void>;
 
   abstract generateExecutionPlan(
     lambda: RawLambda,

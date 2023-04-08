@@ -80,7 +80,7 @@ export * from './stores/editor/EditorStoreTestUtils.js';
 
 export { PostProcessorEditorState } from './stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 export { MappingExecutionState } from './stores/editor/editor-state/element-editor-state/mapping/MappingExecutionState.js';
-export { MappingTestState } from './stores/editor/editor-state/element-editor-state/mapping/MappingTestState.js';
+export { DEPRECATED_MappingTestState } from './stores/editor/editor-state/element-editor-state/mapping/MappingTestState.js';
 export {
   ConnectionValueState,
   RelationalDatabaseConnectionValueState,

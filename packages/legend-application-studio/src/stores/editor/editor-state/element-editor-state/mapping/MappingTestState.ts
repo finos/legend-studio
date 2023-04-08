@@ -393,8 +393,11 @@ export enum MAPPING_TEST_EDITOR_TAB_TYPE {
   SETUP = 'Test Setup',
   RESULT = 'Test Result',
 }
-
-export class MappingTestState extends MappingEditorTabState {
+/**
+ * TODO: Remove once migration from `MappingTest_Legacy` to `MappingTest` is complete
+ * @deprecated
+ */
+export class DEPRECATED_MappingTestState extends MappingEditorTabState {
   readonly editorStore: EditorStore;
   readonly mappingEditorState: MappingEditorState;
 
@@ -446,6 +449,8 @@ export class MappingTestState extends MappingEditorTabState {
       setQueryState: action,
       setInputDataState: action,
       setAssertionState: action,
+      handleError: action,
+      handleResult: action,
       setInputDataStateBasedOnSource: action,
       updateAssertion: action,
       generatePlan: flow,
@@ -725,36 +730,11 @@ export class MappingTestState extends MappingEditorTabState {
       this.setTestRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
       if (this.testRunPromise === promise) {
-        this.testExecutionResultText = stringifyLosslessJSON(
-          extractExecutionResultValues(result),
-          undefined,
-          TAB_SIZE,
-        );
-        let assertionMatched = false;
-        if (
-          this.assertionState instanceof MappingTestExpectedOutputAssertionState
-        ) {
-          // TODO: this logic should probably be better handled in by engine mapping test runner
-          assertionMatched =
-            hashObject(extractExecutionResultValues(result)) ===
-            hashObject(parseLosslessJSON(this.assertionState.expectedResult));
-        } else {
-          throw new UnsupportedOperationError();
-        }
-        this.setResult(
-          assertionMatched ? TEST_RESULT.PASSED : TEST_RESULT.FAILED,
-        );
+        this.handleResult(result);
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
-        error,
-      );
-      if (this.testRunPromise === promise) {
-        this.errorRunningTest = error;
-        this.setResult(TEST_RESULT.ERROR);
-      }
+      this.handleError(error, promise);
     } finally {
       this.isRunningTest = false;
       this.runTime = Date.now() - startTime;
@@ -767,6 +747,49 @@ export class MappingTestState extends MappingEditorTabState {
         this.setSelectedTab(MAPPING_TEST_EDITOR_TAB_TYPE.RESULT);
       }
     }
+  }
+
+  handleResult(result: ExecutionResult): void {
+    this.testExecutionResultText = stringifyLosslessJSON(
+      extractExecutionResultValues(result),
+      undefined,
+      TAB_SIZE,
+    );
+    let assertionMatched = false;
+    if (
+      this.assertionState instanceof MappingTestExpectedOutputAssertionState
+    ) {
+      // TODO: this logic should probably be better handled in by engine mapping test runner
+      assertionMatched =
+        hashObject(extractExecutionResultValues(result)) ===
+        hashObject(parseLosslessJSON(this.assertionState.expectedResult));
+    } else {
+      throw new UnsupportedOperationError();
+    }
+    this.setResult(assertionMatched ? TEST_RESULT.PASSED : TEST_RESULT.FAILED);
+    this.isExecutingTest = false;
+    this.isRunningTest = false;
+  }
+
+  handleError(
+    error: Error,
+    promise: Promise<ExecutionResult> | undefined,
+  ): void {
+    assertErrorThrown(error);
+    this.editorStore.applicationStore.logService.error(
+      LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+      error,
+    );
+
+    if (
+      this.mappingEditorState.isRunningAllTests ||
+      this.testRunPromise === promise
+    ) {
+      this.errorRunningTest = error;
+      this.setResult(TEST_RESULT.ERROR);
+    }
+    this.isExecutingTest = false;
+    this.isRunningTest = false;
   }
 
   *onTestStateOpen(openTab?: MAPPING_TEST_EDITOR_TAB_TYPE): GeneratorFn<void> {

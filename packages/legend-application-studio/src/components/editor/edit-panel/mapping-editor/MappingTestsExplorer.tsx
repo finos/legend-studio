@@ -18,7 +18,7 @@ import { useState, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useDrop } from 'react-dnd';
 import {
-  type MappingTestState,
+  type DEPRECATED_MappingTestState,
   MAPPING_TEST_EDITOR_TAB_TYPE,
   TEST_RESULT,
 } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTestState.js';
@@ -61,7 +61,7 @@ export const MappingTestExplorerContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
-      mappingTestState?: MappingTestState;
+      mappingTestState?: DEPRECATED_MappingTestState;
       showCreateNewTestModal?: () => void;
       isReadOnly: boolean;
     }
@@ -132,7 +132,7 @@ export const MappingTestExplorerContextMenu = observer(
 );
 
 export const MappingTestStatusIndicator: React.FC<{
-  testState: MappingTestState;
+  testState: DEPRECATED_MappingTestState;
 }> = (props) => {
   const { testState } = props;
   if (testState.isSkipped) {
@@ -194,7 +194,7 @@ export const MappingTestStatusIndicator: React.FC<{
 };
 
 export const MappingTestExplorer = observer(
-  (props: { testState: MappingTestState; isReadOnly: boolean }) => {
+  (props: { testState: DEPRECATED_MappingTestState; isReadOnly: boolean }) => {
     const { isReadOnly, testState } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
