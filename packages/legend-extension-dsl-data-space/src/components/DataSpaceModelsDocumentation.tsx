@@ -61,6 +61,12 @@ export const DataSpaceModelsDocumentation = observer(
                 <AgGridReact
                   domLayout={autoHeight ? 'autoHeight' : 'normal'}
                   rowData={documentationEntries}
+                  // highlight element row
+                  getRowClass={(params) =>
+                    !params.data?.subElementText
+                      ? 'data-space__viewer__models-documentation__grid__element-row'
+                      : undefined
+                  }
                   gridOptions={{
                     suppressScrollOnNewData: true,
                     getRowId: (rowData) => rowData.data.uuid,

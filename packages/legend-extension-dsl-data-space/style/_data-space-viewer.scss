@@ -516,6 +516,13 @@
   &__grid {
     height: calc(100% - 3.8rem);
     width: 100%;
+
+    &__element-row {
+      background: var(--color-yellow-200);
+      color: var(--color-dark-grey-100);
+
+      --ag-row-hover-color: var(--color-yellow-100);
+    }
   }
 }
 
