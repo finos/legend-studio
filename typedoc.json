@@ -6,13 +6,12 @@
   "gitRevision": "master",
   "includeVersion": true,
   "out": "build/docs",
-  "entryPoints": ["packages/*"],
+  "entryPoints": ["."],
   "entryPointStrategy": "packages",
   "exclude": [
     // NOTE: this uses `minimatch` pattern
-    "**/__tests__/**",
-    "**/__mocks__/**",
-    "**/node_modules/**",
+    "**/fixtures/**",
+    "**/scripts/**",
     "**/packages/babel-preset",
     "**/packages/eslint-plugin",
     "**/packages/stylelint-config",
@@ -22,9 +21,14 @@
     "**/packages/legend-application-*",
     "**/packages/legend-extension-*"
   ],
-  "plugin": ["./website/custom-typedoc-theme.cjs"],
+  "externalPattern": [
+    // NOTE: this uses `minimatch` pattern
+    "**/__tests__/**",
+    "**/__mocks__/**",
+    "**/node_modules/**"
+  ],
   "intentionallyNotExported": [],
-  "excludeExternals": false,
+  "excludeExternals": true,
   "excludeInternal": true,
   "excludePrivate": true,
   "excludeNotDocumented": true,
@@ -33,6 +37,7 @@
     "invalidLink": true,
     "notDocumented": false
   },
+  "plugin": ["./website/custom-typedoc-theme.js"],
   // NOTE: to be updated when we structure the doc better
   "readme": "./website/api.md",
   "visibilityFilters": {

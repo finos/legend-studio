@@ -91,8 +91,10 @@
     "applicationPlugin": "@finos/legend-application-plugin-core",
     "iframeEventNotifierPlugin": "@finos/legend-event-notifier-plugin-iframe"
   },
-  "typedoc": {
-    "entryPoint": "./src/index.ts",
-    "readmeFile": "./README.md"
+  "typedocOptions": {
+    "entryPoints": [
+      "./src/index.ts"
+    ],
+    "readme": "./README.md"
   }
 }

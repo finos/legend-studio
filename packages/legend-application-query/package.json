@@ -78,9 +78,5 @@
   },
   "extensions": {
     "applicationQueryPlugin": "@finos/legend-application-query-plugin-core"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts",
-    "readmeFile": "./README.md"
   }
 }

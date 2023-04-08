@@ -87,9 +87,5 @@
   "extensions": {
     "applicationStudioPlugin": "@finos/legend-application-studio-plugin-core",
     "dsl_external_format_applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-external-format"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts",
-    "readmeFile": "./README.md"
   }
 }

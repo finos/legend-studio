@@ -113,7 +113,7 @@
     "semver": "7.3.8",
     "sort-package-json": "2.4.1",
     "stylelint": "15.4.0",
-    "typedoc": "0.23.28",
+    "typedoc": "0.24.0",
     "typescript": "5.0.4",
     "yargs": "17.7.1"
   },

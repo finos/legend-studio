@@ -2442,7 +2442,7 @@ __metadata:
     react-icons: 4.8.0
     react-markdown: 8.0.6
     react-reflex: 4.0.12
-    react-resize-detector: 8.0.5
+    react-resize-detector: 9.0.0
     react-select: 4.3.1
     react-window: 1.8.8
     remark-gfm: 3.0.1
@@ -10395,7 +10395,7 @@ __metadata:
     semver: 7.3.8
     sort-package-json: 2.4.1
     stylelint: 15.4.0
-    typedoc: 0.23.28
+    typedoc: 0.24.0
     typescript: 5.0.4
     yargs: 17.7.1
   languageName: unknown
@@ -13556,15 +13556,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-resize-detector@npm:8.0.5":
-  version: 8.0.5
-  resolution: "react-resize-detector@npm:8.0.5"
+"react-resize-detector@npm:9.0.0":
+  version: 9.0.0
+  resolution: "react-resize-detector@npm:9.0.0"
   dependencies:
     lodash: ^4.17.21
   peerDependencies:
     react: ^16.0.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: e89b32f95054a3d52535385e5067e0483ede31792b10fcd1c5a5576165d990927a06c9b3ed959230bad18c41b182d3e137c52972e8396b14db85e616a077f841
+  checksum: 529984f086eb8e311824192bb05b70f7fda70eddb8dbdef1b13232c6de4a291ef521c2deb500ad61163d774b04010d800a16b5e3659235629d5722c212e344f7
   languageName: node
   linkType: hard
 
@@ -15727,9 +15727,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedoc@npm:0.23.28":
-  version: 0.23.28
-  resolution: "typedoc@npm:0.23.28"
+"typedoc@npm:0.24.0":
+  version: 0.24.0
+  resolution: "typedoc@npm:0.24.0"
   dependencies:
     lunr: ^2.3.9
     marked: ^4.2.12
@@ -15739,7 +15739,7 @@ __metadata:
     typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x
   bin:
     typedoc: bin/typedoc
-  checksum: 40eb4e207aac1b734e09400cf03f543642cc7b11000895198dd5a0d3166315759ccf4ac30a2915153597c5c186101c72bac2f1fc12b428184a9274d3a0e44c5e
+  checksum: 2c53037a8bc448713453e2f314265be058adff64710a83bd0d50a65ac72d4117265d89609c40da46fcd3e35c833f1641ec7c2ecb4b59cc29b8f46e4da5e4d50a
   languageName: node
   linkType: hard
 

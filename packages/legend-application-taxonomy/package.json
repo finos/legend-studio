@@ -79,9 +79,5 @@
   },
   "extensions": {
     "applicationTaxonomyPlugin": "@finos/legend-application-taxonomy-plugin-core"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts",
-    "readmeFile": "./README.md"
   }
 }

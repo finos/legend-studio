@@ -88,8 +88,10 @@
     "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-query-builder",
     "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-query-builder"
   },
-  "typedoc": {
-    "entryPoint": "./src/index.ts",
-    "readmeFile": "./README.md"
+  "typedocOptions": {
+    "entryPoints": [
+      "./src/index.ts"
+    ],
+    "readme": "./README.md"
   }
 }

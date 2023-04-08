@@ -77,9 +77,5 @@
   },
   "extensions": {
     "applicationPureIDEPlugin": "@finos/legend-application-pure-ide-plugin-core"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts",
-    "readmeFile": "./README.md"
   }
 }
