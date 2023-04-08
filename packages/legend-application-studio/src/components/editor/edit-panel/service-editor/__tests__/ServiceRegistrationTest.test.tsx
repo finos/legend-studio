@@ -51,6 +51,7 @@ import {
 import { TEST__getLegendStudioApplicationConfig } from '../../../../../stores/editor/EditorStoreTestUtils.js';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import { service_deleteOwner } from '../../../../../stores/editor/shared/modifier/DSL_Service_GraphModifierHelper.js';
+import { MockedMonacoEditorInstance } from '@finos/legend-art';
 
 let renderResult: RenderResult;
 
@@ -155,6 +156,7 @@ test(
     await act(async () => {
       await flowResult(MOCK__editorStore.sdlcState.fetchProjectVersions());
     });
+    MockedMonacoEditorInstance.getValue.mockReturnValue('');
     const result = new ServiceRegistrationSuccess(
       undefined,
       'https://legend.org/exec',
@@ -257,6 +259,8 @@ test(
       TEST_DATA__DefaultSDLCInfo.project,
       TEST_DATA__DefaultSDLCInfo.workspace,
     );
+    MockedMonacoEditorInstance.getValue.mockReturnValue('');
+
     const result = new ServiceRegistrationSuccess(
       undefined,
       'https://legend.org/exec',
@@ -282,6 +286,7 @@ test(
       renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDIT_PANEL),
     );
     // labels + values
+    fireEvent.click(getByText(editPanel, 'General'));
     await waitFor(() => getByText(editPanel, 'URL Pattern'));
     expect(
       await waitFor(() =>
