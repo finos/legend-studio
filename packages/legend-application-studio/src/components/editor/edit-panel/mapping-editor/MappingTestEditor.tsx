@@ -17,7 +17,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  type MappingTestState,
+  type DEPRECATED_MappingTestState,
   MAPPING_TEST_EDITOR_TAB_TYPE,
   TEST_RESULT,
   MappingTestObjectInputDataState,
@@ -98,7 +98,7 @@ import {
 import { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 
 const MappingTestQueryEditor = observer(
-  (props: { testState: MappingTestState; isReadOnly: boolean }) => {
+  (props: { testState: DEPRECATED_MappingTestState; isReadOnly: boolean }) => {
     const { testState, isReadOnly } = props;
     const queryState = testState.queryState;
     const editorStore = useEditorStore();
@@ -468,7 +468,7 @@ const RelationalMappingTestInputDataTypeSelector = observer(
 );
 
 export const MappingTestInputDataBuilder = observer(
-  (props: { testState: MappingTestState; isReadOnly: boolean }) => {
+  (props: { testState: DEPRECATED_MappingTestState; isReadOnly: boolean }) => {
     const { testState, isReadOnly } = props;
     const inputDataState = testState.inputDataState;
     const editorStore = useEditorStore();
@@ -573,7 +573,7 @@ export const MappingTestInputDataBuilder = observer(
 
 export const MappingTestExpectedOutputAssertionBuilder = observer(
   (props: {
-    testState: MappingTestState;
+    testState: DEPRECATED_MappingTestState;
     assertionState: MappingTestExpectedOutputAssertionState;
     isReadOnly: boolean;
   }) => {
@@ -651,7 +651,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
 );
 
 export const MappingTestAssertionBuilder = observer(
-  (props: { testState: MappingTestState; isReadOnly: boolean }) => {
+  (props: { testState: DEPRECATED_MappingTestState; isReadOnly: boolean }) => {
     const { testState, isReadOnly } = props;
     const assertionState = testState.assertionState;
 
@@ -669,7 +669,7 @@ export const MappingTestAssertionBuilder = observer(
 );
 
 export const MappingTestBuilder = observer(
-  (props: { testState: MappingTestState; isReadOnly: boolean }) => {
+  (props: { testState: DEPRECATED_MappingTestState; isReadOnly: boolean }) => {
     const { testState, isReadOnly } = props;
     const applicationStore = useApplicationStore();
 
@@ -720,7 +720,7 @@ export const MappingTestBuilder = observer(
 );
 
 export const MappingTestEditor = observer(
-  (props: { testState: MappingTestState; isReadOnly: boolean }) => {
+  (props: { testState: DEPRECATED_MappingTestState; isReadOnly: boolean }) => {
     const { testState, isReadOnly } = props;
     const applicationStore = useApplicationStore();
     const selectedTab = testState.selectedTab;

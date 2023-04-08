@@ -297,6 +297,8 @@ import {
   type GraphData,
   GraphDataWithOrigin,
 } from '../../../GraphData.js';
+import type { DEPRECATED__MappingTest } from '../../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
+import { DEPRECATED__validate_MappingTest } from '../../../action/validation/DSL_Mapping_ValidationHelper.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2255,6 +2257,26 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const pureModelContext = graph.origin
       ? this.buildPureModelSDLCPointer(graph.origin, undefined)
       : this.buildExecutionInputGraphData(graph, mapping, runtime);
+    return this.buildExecutionInputWithPureModelContext(
+      pureModelContext,
+      mapping,
+      lambda,
+      runtime,
+      clientVersion,
+      executeInput,
+      parameterValues,
+    );
+  };
+
+  private buildExecutionInputWithPureModelContext = (
+    pureModelContext: V1_PureModelContext,
+    mapping: Mapping | undefined,
+    lambda: RawLambda,
+    runtime: Runtime | undefined,
+    clientVersion: string | undefined,
+    executeInput: V1_ExecuteInput,
+    parameterValues?: ParameterValue[],
+  ): V1_ExecuteInput => {
     // NOTE: for execution, we usually will just assume that we send the connections embedded in the runtime value, since we don't want the user to have to create
     // packageable runtime and connection just to play with execution.
     executeInput.clientVersion = clientVersion;
@@ -2363,6 +2385,80 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     };
 
     return result;
+  }
+
+  async DEPRECATED__runLegacyMappingTests(
+    tests: {
+      test: DEPRECATED__MappingTest;
+      runtime: Runtime;
+      handleResult: (val: ExecutionResult) => void;
+      handleError: (message: Error) => void;
+    }[],
+    mapping: Mapping,
+    graph: PureModel,
+    options?: ExecutionOptions,
+    _report?: GraphManagerOperationReport,
+  ): Promise<void> {
+    const report = _report ?? createGraphManagerOperationReport();
+    const stopWatch = new StopWatch();
+    const pureModelContext = graph.origin
+      ? this.buildPureModelSDLCPointer(graph.origin, undefined)
+      : this.buildExecutionInputGraphData(graph, mapping, undefined);
+    stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
+    await Promise.all(
+      tests.map((t) =>
+        this.DEPREACTED_runLegacyMappingTest(
+          t,
+          mapping,
+          pureModelContext,
+          options,
+          report,
+        ),
+      ),
+    );
+  }
+
+  private async DEPREACTED_runLegacyMappingTest(
+    testInfo: {
+      test: DEPRECATED__MappingTest;
+      runtime: Runtime;
+      handleResult: (val: ExecutionResult) => void;
+      handleError: (message: Error) => void;
+    },
+    mapping: Mapping,
+    pureModelContext: V1_PureModelContext,
+    options?: ExecutionOptions,
+    _report?: GraphManagerOperationReport,
+  ): Promise<void> {
+    const report = _report ?? createGraphManagerOperationReport();
+    try {
+      const stopWatch = new StopWatch();
+      stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
+      DEPRECATED__validate_MappingTest(testInfo.test);
+      const input = this.buildExecutionInputWithPureModelContext(
+        pureModelContext,
+        mapping,
+        testInfo.test.query,
+        testInfo.runtime,
+        V1_PureGraphManager.PROD_PROTOCOL_VERSION,
+        new V1_ExecuteInput(),
+        options?.parameterValues,
+      );
+      const result = V1_buildExecutionResult(
+        await this.engine.executeMapping(input, options),
+      );
+      stopWatch.record(
+        GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,
+      );
+      report.timings = {
+        ...Object.fromEntries(stopWatch.records),
+        total: stopWatch.elapsed,
+      };
+      testInfo.handleResult(result);
+    } catch (error) {
+      assertErrorThrown(error);
+      testInfo.handleError(error);
+    }
   }
 
   async generateExecutionPlan(
