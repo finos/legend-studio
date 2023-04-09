@@ -21,17 +21,19 @@
     "**/packages/legend-application-*",
     "**/packages/legend-extension-*"
   ],
-  "externalPattern": [
-    // NOTE: this uses `minimatch` pattern
-    "**/__tests__/**",
-    "**/__mocks__/**",
-    "**/node_modules/**"
-  ],
-  "intentionallyNotExported": [],
+  // TODO: some of these options are not passed down to the package
+  // See https://github.com/TypeStrong/typedoc/issues/2222
+  // "externalPattern": [
+  //   // NOTE: this uses `minimatch` pattern
+  //   "**/__tests__/**",
+  //   "**/__mocks__/**",
+  //   "**/node_modules/**"
+  // ],
   "excludeExternals": true,
   "excludeInternal": true,
   "excludePrivate": true,
   "excludeNotDocumented": true,
+  "intentionallyNotExported": [],
   "validation": {
     "notExported": false,
     "invalidLink": true,

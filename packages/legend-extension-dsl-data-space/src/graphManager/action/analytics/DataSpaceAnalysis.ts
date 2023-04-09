@@ -15,7 +15,6 @@
  */
 
 import {
-  extractElementNameFromPath,
   type Mapping,
   type PackageableRuntime,
   type PureModel,
@@ -73,13 +72,6 @@ export class DataSpaceDiagramAnalysisResult {
   title!: string;
   description?: string | undefined;
   diagram!: Diagram;
-
-  get displayName(): string {
-    return (
-      this.title ??
-      prettyCONSTName(extractElementNameFromPath(this.diagram.path))
-    );
-  }
 }
 
 export abstract class DataSpaceExecutableInfo {

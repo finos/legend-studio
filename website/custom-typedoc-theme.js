@@ -20,14 +20,14 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const ROOT_DIR = resolve(__dirname, '../../../');
+const ROOT_DIR = resolve(__dirname, '../');
 const typeDocBuildDir = resolve(ROOT_DIR, 'build/docs');
 const faviconPath = resolve(typeDocBuildDir, 'img/favicon.ico');
 const TEMP_FAVICON_PATH = 'favicon.ico';
 
 class LegendTheme extends DefaultTheme {
-  render(page) {
-    let pageContent = super.render(page);
+  render(page, template) {
+    let pageContent = super.render(page, template);
     // replace the temporary favicon path by the relative path
     const relativeFaviconPath = relative(dirname(page.filename), faviconPath);
     pageContent = pageContent.replace(TEMP_FAVICON_PATH, relativeFaviconPath);
