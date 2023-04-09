@@ -93,7 +93,7 @@ export const DataSpaceModelsDocumentation = observer(
                     {
                       minWidth: 50,
                       sortable: false,
-                      resizable: true,
+                      resizable: false,
                       field: 'doc',
                       headerName: 'Documentation',
                       flex: 1,

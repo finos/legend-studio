@@ -15,6 +15,7 @@
  */
 
 import {
+  type Multiplicity,
   type Mapping,
   type PackageableRuntime,
   type PureModel,
@@ -47,24 +48,62 @@ export class DataSpaceStereotypeInfo {
   value!: string;
 }
 
-export class DataSpaceDocumentationEntry {
+export class NormalizedDataSpaceDocumentationEntry {
   readonly uuid = uuid();
   readonly elementPath: string;
   readonly subElementText?: string | undefined;
-  readonly doc: string;
-  readonly milestoning?: string | undefined;
+  readonly documentation: string;
+  readonly entry: DataSpaceBasicDocumentationEntry;
 
   constructor(
     elementPath: string,
     subElementText: string | undefined,
     documentation: string,
-    milestoning: string | undefined,
+    entry: DataSpaceBasicDocumentationEntry,
   ) {
     this.elementPath = elementPath;
     this.subElementText = subElementText;
-    this.doc = documentation;
-    this.milestoning = milestoning;
+    this.documentation = documentation;
+    this.entry = entry;
   }
+}
+
+export class DataSpaceBasicDocumentationEntry {
+  name!: string;
+  docs: string[] = [];
+}
+
+export class DataSpacePropertyDocumentationEntry extends DataSpaceBasicDocumentationEntry {
+  milestoning?: string | undefined;
+  /**
+   * Make this optional for backward compatibility
+   *
+   * @backwardCompatibility
+   */
+  type?: string | undefined;
+  /**
+   * Make this optional for backward compatibility
+   *
+   * @backwardCompatibility
+   */
+  multiplicity?: Multiplicity | undefined;
+}
+
+export class DataSpaceModelDocumentationEntry extends DataSpaceBasicDocumentationEntry {
+  path!: string;
+}
+
+export class DataSpaceClassDocumentationEntry extends DataSpaceModelDocumentationEntry {
+  properties: DataSpacePropertyDocumentationEntry[] = [];
+  milestoning?: string | undefined;
+}
+
+export class DataSpaceEnumerationDocumentationEntry extends DataSpaceModelDocumentationEntry {
+  enumValues: DataSpaceBasicDocumentationEntry[] = [];
+}
+
+export class DataSpaceAssociationDocumentationEntry extends DataSpaceModelDocumentationEntry {
+  properties: DataSpacePropertyDocumentationEntry[] = [];
 }
 
 export class DataSpaceDiagramAnalysisResult {
@@ -129,7 +168,7 @@ export class DataSpaceAnalysisResult {
   executionContextsIndex!: Map<string, DataSpaceExecutionContextAnalysisResult>;
   defaultExecutionContext!: DataSpaceExecutionContextAnalysisResult;
 
-  elementDocs: DataSpaceDocumentationEntry[] = [];
+  elementDocs: NormalizedDataSpaceDocumentationEntry[] = [];
 
   diagrams: DataSpaceDiagramAnalysisResult[] = [];
 

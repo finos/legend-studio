@@ -52,7 +52,7 @@ import {
 import {
   DataSpaceAnalysisResult,
   DataSpaceDiagramAnalysisResult,
-  DataSpaceDocumentationEntry,
+  NormalizedDataSpaceDocumentationEntry,
   DataSpaceExecutableAnalysisResult,
   DataSpaceExecutableTDSResultColumn,
   DataSpaceExecutableTDSResult,
@@ -60,6 +60,11 @@ import {
   DataSpaceServiceExecutableInfo,
   DataSpaceStereotypeInfo,
   DataSpaceTaggedValueInfo,
+  DataSpaceClassDocumentationEntry,
+  DataSpacePropertyDocumentationEntry,
+  DataSpaceEnumerationDocumentationEntry,
+  DataSpaceBasicDocumentationEntry,
+  DataSpaceAssociationDocumentationEntry,
 } from '../../../action/analytics/DataSpaceAnalysis.js';
 import { DSL_DataSpace_PureGraphManagerExtension } from '../DSL_DataSpace_PureGraphManagerExtension.js';
 import {
@@ -316,66 +321,107 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
 
     // elements documentation
     result.elementDocs = analysisResult.elementDocs.flatMap((docEntry) => {
-      const entries: DataSpaceDocumentationEntry[] = [];
+      const entries: NormalizedDataSpaceDocumentationEntry[] = [];
       if (docEntry instanceof V1_DataSpaceClassDocumentationEntry) {
+        const classData = new DataSpaceClassDocumentationEntry();
+        classData.name = docEntry.name;
+        classData.docs = docEntry.docs;
+        classData.path = docEntry.path;
+        classData.milestoning = docEntry.milestoning;
         entries.push(
-          new DataSpaceDocumentationEntry(
+          new NormalizedDataSpaceDocumentationEntry(
             docEntry.path,
             undefined,
             docEntry.docs.join('\n'),
-            docEntry.milestoning,
+            classData,
           ),
         );
+
         docEntry.properties.forEach((property) => {
+          const propertyData = new DataSpacePropertyDocumentationEntry();
+          propertyData.name = property.name;
+          propertyData.docs = property.docs;
+          propertyData.type = property.type;
+          propertyData.milestoning = property.milestoning;
+          propertyData.multiplicity = property.multiplicity
+            ? graph.getMultiplicity(
+                property.multiplicity.lowerBound,
+                property.multiplicity.upperBound,
+              )
+            : undefined;
+          classData.properties.push(propertyData);
           entries.push(
-            new DataSpaceDocumentationEntry(
+            new NormalizedDataSpaceDocumentationEntry(
               docEntry.path,
               property.name,
               property.docs.join('\n'),
-              property.milestoning,
+              propertyData,
             ),
           );
         });
-        // NOTE: we don't want to list inherited properties
       } else if (
         docEntry instanceof V1_DataSpaceEnumerationDocumentationEntry
       ) {
+        const enumerationData = new DataSpaceEnumerationDocumentationEntry();
+        enumerationData.name = docEntry.name;
+        enumerationData.docs = docEntry.docs;
+        enumerationData.path = docEntry.path;
         entries.push(
-          new DataSpaceDocumentationEntry(
+          new NormalizedDataSpaceDocumentationEntry(
             docEntry.path,
             undefined,
             docEntry.docs.join('\n'),
-            undefined,
+            enumerationData,
           ),
         );
         docEntry.enumValues.forEach((enumValue) => {
+          const enumData = new DataSpaceBasicDocumentationEntry();
+          enumData.name = enumValue.name;
+          enumData.docs = enumValue.docs;
+          enumerationData.enumValues.push(enumData);
           entries.push(
-            new DataSpaceDocumentationEntry(
+            new NormalizedDataSpaceDocumentationEntry(
               docEntry.path,
               enumValue.name,
               enumValue.docs.join('\n'),
-              undefined,
+              enumData,
             ),
           );
         });
       } else if (
         docEntry instanceof V1_DataSpaceAssociationDocumentationEntry
       ) {
+        const associationData = new DataSpaceAssociationDocumentationEntry();
+        associationData.name = docEntry.name;
+        associationData.docs = docEntry.docs;
+        associationData.path = docEntry.path;
         entries.push(
-          new DataSpaceDocumentationEntry(
+          new NormalizedDataSpaceDocumentationEntry(
             docEntry.path,
             undefined,
             docEntry.docs.join('\n'),
-            undefined,
+            associationData,
           ),
         );
         docEntry.properties.forEach((property) => {
+          const propertyData = new DataSpacePropertyDocumentationEntry();
+          propertyData.name = property.name;
+          propertyData.docs = property.docs;
+          propertyData.type = property.type;
+          propertyData.milestoning = property.milestoning;
+          propertyData.multiplicity = property.multiplicity
+            ? graph.getMultiplicity(
+                property.multiplicity.lowerBound,
+                property.multiplicity.upperBound,
+              )
+            : undefined;
+          associationData.properties.push(propertyData);
           entries.push(
-            new DataSpaceDocumentationEntry(
+            new NormalizedDataSpaceDocumentationEntry(
               docEntry.path,
               property.name,
               property.docs.join('\n'),
-              property.milestoning,
+              propertyData,
             ),
           );
         });

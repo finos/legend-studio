@@ -19,8 +19,8 @@ import {
   AnchorLinkIcon,
   CodeIcon,
   CopyIcon,
+  LegendLogo,
   MoreVerticalIcon,
-  QueryIcon,
   QuestionCircleIcon,
   clsx,
 } from '@finos/legend-art';
@@ -131,7 +131,7 @@ const DataSpaceExecutableTDSResultView = observer(
                 onClick={() => setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.QUERY)}
               >
                 <div className="data-space__viewer__quickstart__item__content__tab__icon">
-                  <QueryIcon className="data-space__viewer__quickstart__item__content__tab__icon--query" />
+                  <LegendLogo className="data-space__viewer__quickstart__item__content__tab__icon--query" />
                 </div>
                 <div className="data-space__viewer__quickstart__item__content__tab__label">
                   Query
@@ -223,7 +223,7 @@ const DataSpaceExecutableTDSResultView = observer(
                     {
                       minWidth: 50,
                       sortable: false,
-                      resizable: true,
+                      resizable: false,
                       field: 'sampleValues',
                       headerName: 'Sample Values',
                       flex: 1,

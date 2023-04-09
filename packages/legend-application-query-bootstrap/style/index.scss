@@ -416,11 +416,6 @@
     color: var(--color-legacylight-dark-grey-200);
     background: var(--color-white);
 
-    ::-webkit-scrollbar {
-      width: 1.1rem;
-      height: 1.1rem;
-    }
-
     ::-webkit-scrollbar-thumb {
       height: 5rem;
       background: var(--color-legacylight-light-grey-300);

@@ -142,6 +142,10 @@
       font-weight: 700;
     }
 
+    .ag-header-row .ag-header-cell:last-child::after {
+      display: none;
+    }
+
     .ag-cell-value {
       word-break: break-word;
     }
@@ -149,6 +153,8 @@
 }
 
 .data-space__viewer__activity-bar {
+  display: flex;
+  flex-direction: column;
   width: 5rem;
   position: absolute;
   left: 2rem;
@@ -158,6 +164,11 @@
   overflow-y: hidden;
   border-radius: 0.2rem;
   background: var(--color-dark-grey-100);
+  max-height: calc(100vh - 13rem);
+
+  ::-webkit-scrollbar {
+    width: 0.3rem;
+  }
 
   &__menu {
     height: 3.4rem;
@@ -177,7 +188,6 @@
   }
 
   &__items {
-    height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
     display: flex;
@@ -186,6 +196,7 @@
 
   &__item {
     @include flexCenter;
+    @include flexConstantDimension;
 
     height: 5rem;
     width: 5rem;
@@ -587,9 +598,9 @@
       @include flexVCenter;
 
       justify-content: space-between;
-      height: 3.4rem;
-      padding-bottom: 1rem;
+      height: 3.8rem;
       border-bottom: 0.1rem solid var(--color-dark-grey-280);
+      border-top: 0.1rem solid var(--color-dark-grey-280);
     }
 
     &__tabs {
@@ -601,6 +612,15 @@
 
       padding: 0 1rem;
       color: var(--color-dark-grey-300);
+      user-select: none;
+    }
+
+    &__tab + &__tab {
+      border-left: 0.1rem solid var(--color-dark-grey-280);
+    }
+
+    &__tab__label {
+      font-weight: 500;
     }
 
     &__tab__icon {

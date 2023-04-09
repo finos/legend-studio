@@ -130,6 +130,14 @@ export const optionalCustom = (
     (val) => (val ? deserializer(val) : SKIP),
   );
 
+export const optionalCustomUsingModelSchema = <T>(
+  schema: ModelSchema<T>,
+): PropSchema =>
+  custom(
+    (val) => (val ? serialize(schema, val) : SKIP),
+    (val) => (val ? deserialize(schema, val) : SKIP),
+  );
+
 export const deserializeArray = <T>(
   values: unknown,
   itemDeserializer: (val: PlainObject<T>) => T,

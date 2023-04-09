@@ -30,6 +30,7 @@
 :root {
   --color-hclight-white: #fff;
   --color-hclight-black: #000;
+  --color-hclight-grey-5: #fbfbfb; // non-standard
   --color-hclight-grey-10: #f2f5f7;
   --color-hclight-grey-15: #e1e7ea;
   --color-hclight-grey-20: #dce3e8;
@@ -40,12 +41,18 @@
   --color-hclight-grey-80: #2a3f4d;
   --color-hclight-grey-90: #1c2b36;
   --color-hclight-ultramarine-90: #23254d;
+  --color-hclight-aqua-10: #ebf3f7;
+  --color-hclight-aqua-20: #c9e7f5;
+  --color-hclight-aqua-30: #8bd3f7;
   --color-hclight-aqua-90: #0c2b45;
-  --color-hclight-blue-90: #11294d;
-  --color-hclight-blue-80: #103a75;
-  --color-hclight-blue-70: #0d4ea6;
-  --color-hclight-blue-60: #186ade;
+  --color-hclight-blue-10: #f0f4fa;
+  --color-hclight-blue-20: #d4e4fa;
+  --color-hclight-blue-30: #adccf7;
   --color-hclight-blue-50: #3d8df5;
+  --color-hclight-blue-60: #186ade;
+  --color-hclight-blue-70: #0d4ea6;
+  --color-hclight-blue-80: #103a75;
+  --color-hclight-blue-90: #11294d;
   --color-hclight-green-60: #077d55;
   --color-hclight-lime-50: #52a31d;
   --color-hclight-yellow-10: #faf6cf;
@@ -60,11 +67,6 @@
 
 .theme__hc-light {
   // ---------------------------- Scrollbar -------------------------------
-
-  ::-webkit-scrollbar {
-    width: 1.1rem;
-    height: 1.1rem;
-  }
 
   ::-webkit-scrollbar-thumb {
     height: 5rem;
@@ -206,6 +208,14 @@
     &__activity-bar {
       background: var(--color-hclight-grey-20);
 
+      ::-webkit-scrollbar-thumb {
+        background: var(--color-hclight-grey-30);
+      }
+
+      ::-webkit-scrollbar-track-piece {
+        background: transparent;
+      }
+
       &__menu {
         border-color: var(--color-hclight-grey-30);
       }
@@ -243,7 +253,7 @@
       --ag-balham-active-color: transparent;
       --ag-odd-row-background-color: var(--color-hclight-white);
       --ag-even-row-background-color: var(--color-hclight-white);
-      --ag-row-hover-color: var(--color-hclight-grey-10);
+      --ag-row-hover-color: var(--color-hclight-grey-5);
       --ag-row-border-color: var(--color-hclight-grey-30);
     }
   }
@@ -363,20 +373,22 @@
 
     &__item__content {
       &__tab__header {
-        border-bottom-color: var(--color-hclight-grey-30);
+        border-bottom-color: var(--color-hclight-grey-15);
+        border-top-color: var(--color-hclight-grey-15);
       }
 
       &__tab {
-        color: var(--color-hclight-grey-40);
+        color: var(--color-hclight-grey-30);
+        border-left-color: var(--color-hclight-grey-15);
       }
 
       &__tab:hover .data-space__viewer__quickstart__item__content__tab__label {
-        color: var(--color-hclight-grey-60);
+        color: var(--color-hclight-grey-40);
       }
 
       &__tab:hover .data-space__viewer__quickstart__item__content__tab__icon {
         svg {
-          color: var(--color-hclight-grey-60);
+          color: var(--color-hclight-grey-40);
         }
       }
 

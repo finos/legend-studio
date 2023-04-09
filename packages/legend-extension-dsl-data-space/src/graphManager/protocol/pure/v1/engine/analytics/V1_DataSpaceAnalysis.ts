@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { V1_PureModelContextData } from '@finos/legend-graph';
+import {
+  type V1_Multiplicity,
+  V1_PureModelContextData,
+  V1_multiplicityModelSchema,
+} from '@finos/legend-graph';
 import {
   SerializationFactory,
   optionalCustom,
@@ -24,6 +28,7 @@ import {
   usingConstantValueSchema,
   isString,
   isNonNullable,
+  optionalCustomUsingModelSchema,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -97,13 +102,27 @@ export class V1_DataSpaceBasicDocumentationEntry {
 }
 
 export class V1_DataSpacePropertyDocumentationEntry extends V1_DataSpaceBasicDocumentationEntry {
-  milestoning?: string;
+  milestoning?: string | undefined;
+  /**
+   * Make this optional for backward compatibility
+   *
+   * @backwardCompatibility
+   */
+  type?: string | undefined;
+  /**
+   * Make this optional for backward compatibility
+   *
+   * @backwardCompatibility
+   */
+  multiplicity?: V1_Multiplicity | undefined;
 
   static override readonly serialization = new SerializationFactory(
     createModelSchema(V1_DataSpacePropertyDocumentationEntry, {
       docs: list(primitive()),
       milestoning: optional(primitive()),
+      multiplicity: optionalCustomUsingModelSchema(V1_multiplicityModelSchema),
       name: primitive(),
+      type: optional(primitive()),
     }),
   );
 }
@@ -122,7 +141,7 @@ export class V1_DataSpaceModelDocumentationEntry extends V1_DataSpaceBasicDocume
 
 export class V1_DataSpaceClassDocumentationEntry extends V1_DataSpaceModelDocumentationEntry {
   properties: V1_DataSpacePropertyDocumentationEntry[] = [];
-  milestoning?: string;
+  milestoning?: string | undefined;
 
   static override readonly serialization = new SerializationFactory(
     createModelSchema(V1_DataSpaceClassDocumentationEntry, {
