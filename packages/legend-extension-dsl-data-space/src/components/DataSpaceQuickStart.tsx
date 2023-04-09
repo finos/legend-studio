@@ -47,6 +47,8 @@ enum TDS_EXECUTABLE_ACTION_TAB {
   QUERY_TEXT = 'QUERY_TEXT',
 }
 
+const MIN_NUMBER_OF_ROWS_FOR_AUTO_HEIGHT = 15;
+
 const DataSpaceExecutableTDSResultView = observer(
   (props: {
     dataSpaceViewerState: DataSpaceViewerState;
@@ -61,6 +63,8 @@ const DataSpaceExecutableTDSResultView = observer(
     const queryText = executableAnalysisResult.info?.query;
 
     const columnSpecifications = tdsResult.columns;
+    const autoHeight =
+      tdsResult.columns.length <= MIN_NUMBER_OF_ROWS_FOR_AUTO_HEIGHT;
     const extractTDSExecutableActionConfigurations =
       applicationStore.pluginManager
         .getApplicationPlugins()
@@ -177,10 +181,19 @@ const DataSpaceExecutableTDSResultView = observer(
               </button>
             )}
           </div>
-          <div className="data-space__viewer__quickstart__item__content__tab__content">
+          <div
+            className={clsx(
+              'data-space__viewer__quickstart__item__content__tab__content',
+              {
+                'data-space__viewer__quickstart__item__content__tab__content':
+                  autoHeight,
+              },
+            )}
+          >
             {selectedTab === TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS && (
               <div className="data-space__viewer__quickstart__tds__column-specs data-space__viewer__grid ag-theme-balham-dark">
                 <AgGridReact
+                  domLayout={autoHeight ? 'autoHeight' : 'normal'}
                   rowData={columnSpecifications}
                   gridOptions={{
                     suppressScrollOnNewData: true,
@@ -211,7 +224,7 @@ const DataSpaceExecutableTDSResultView = observer(
                       minWidth: 50,
                       sortable: false,
                       resizable: true,
-                      field: 'sample_values',
+                      field: 'sampleValues',
                       headerName: 'Sample Values',
                       flex: 1,
                     },

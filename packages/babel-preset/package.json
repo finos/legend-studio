@@ -39,9 +39,9 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.37.0",
+    "eslint": "8.38.0",
     "rimraf": "4.4.1",
-    "typescript": "5.0.3"
+    "typescript": "5.0.4"
   },
   "peerDependencies": {
     "@babel/core": "^7.0.0"

@@ -23,17 +23,17 @@ import {
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
-import { useEffect } from 'react';
-import { flowResult } from 'mobx';
-import { AgGridReact } from '@ag-grid-community/react';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import {
-  DatasetEntitlementAccessApprovedReport,
-  DatasetEntitlementAccessGrantedReport,
-  DatasetEntitlementAccessNotGrantedReport,
-  DatasetEntitlementAccessRequestedReport,
-  DatasetEntitlementUnsupportedReport,
-} from '@finos/legend-graph';
+// import { useEffect } from 'react';
+// import { flowResult } from 'mobx';
+// import { AgGridReact } from '@ag-grid-community/react';
+// import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+// import {
+//   DatasetEntitlementAccessApprovedReport,
+//   DatasetEntitlementAccessGrantedReport,
+//   DatasetEntitlementAccessNotGrantedReport,
+//   DatasetEntitlementAccessRequestedReport,
+//   DatasetEntitlementUnsupportedReport,
+// } from '@finos/legend-graph';
 
 export const DataSpaceDataAccess = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -51,18 +51,18 @@ export const DataSpaceDataAccess = observer(
       }
     };
 
-    useEffect(() => {
-      flowResult(dataAccessState.fetchDatasetSpecifications()).catch(
-        applicationStore.alertUnhandledError,
-      );
-      flowResult(dataAccessState.fetchDatasetEntitlementReports()).catch(
-        applicationStore.alertUnhandledError,
-      );
-    }, [
-      applicationStore,
-      dataAccessState,
-      dataSpaceViewerState.currentExecutionContext,
-    ]);
+    // useEffect(() => {
+    //   flowResult(dataAccessState.fetchDatasetSpecifications()).catch(
+    //     applicationStore.alertUnhandledError,
+    //   );
+    //   flowResult(dataAccessState.fetchDatasetEntitlementReports()).catch(
+    //     applicationStore.alertUnhandledError,
+    //   );
+    // }, [
+    //   applicationStore,
+    //   dataAccessState,
+    //   dataSpaceViewerState.currentExecutionContext,
+    // ]);
 
     return (
       <div className="data-space__viewer__wiki__section">
@@ -92,10 +92,10 @@ export const DataSpaceDataAccess = observer(
             }
           />
           <div className="data-space__viewer__data-access">
-            {dataAccessState.datasets.length > 0 && (
+            {dataAccessState.datasets.length === 0 && (
               <DataSpaceWikiPlaceholder message="View Data Access (Work in Progress)" />
             )}
-            {dataAccessState.datasets.length === 0 && (
+            {/* {dataAccessState.datasets.length > 0 && (
               <>
                 <div className="data-space__viewer__data-access__chart"></div>
                 <div className="data-space__viewer__data-access__grid data-space__viewer__grid ag-theme-balham-dark">
@@ -171,7 +171,7 @@ export const DataSpaceDataAccess = observer(
                 </div>
                 <DataSpaceWikiPlaceholder message="No documentation provided" />
               </>
-            )}
+            )} */}
           </div>
         </div>
       </div>

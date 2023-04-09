@@ -48,6 +48,10 @@
   --color-hclight-blue-50: #3d8df5;
   --color-hclight-green-60: #077d55;
   --color-hclight-lime-50: #52a31d;
+  --color-hclight-yellow-10: #faf6cf;
+  --color-hclight-yellow-15: #fff5c2; // non-standard
+  --color-hclight-yellow-18: #ffed8f; // non-standard
+  --color-hclight-yellow-20: #f7e379;
   --color-hclight-yellow-30: #f5c518;
   --color-hclight-orange-50: #e86427;
   --color-hclight-red-60: #d91f11;
@@ -303,6 +307,15 @@
   .data-space__viewer__models-documentation {
     &__search__input-group__icon svg {
       color: var(--color-hclight-grey-80);
+    }
+
+    &__grid {
+      &__element-row {
+        background: var(--color-hclight-yellow-15);
+        color: var(--color-hclight-grey-90);
+
+        --ag-row-hover-color: var(--color-hclight-yellow-18);
+      }
     }
   }
 

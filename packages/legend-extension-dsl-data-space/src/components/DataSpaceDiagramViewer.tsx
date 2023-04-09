@@ -168,7 +168,7 @@ export const DataSpaceDiagramViewer = observer(
                     <div className="data-space__viewer__diagram-viewer__carousel__frame__indicators__notch">
                       {analysisResult.diagrams.map((diagram) => (
                         <button
-                          key={diagram.diagram.path}
+                          key={diagram.uuid}
                           className={clsx(
                             'data-space__viewer__diagram-viewer__carousel__frame__indicator',
                             {

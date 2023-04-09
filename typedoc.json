@@ -6,13 +6,12 @@
   "gitRevision": "master",
   "includeVersion": true,
   "out": "build/docs",
-  "entryPoints": ["packages/*"],
+  "entryPoints": ["."],
   "entryPointStrategy": "packages",
   "exclude": [
     // NOTE: this uses `minimatch` pattern
-    "**/__tests__/**",
-    "**/__mocks__/**",
-    "**/node_modules/**",
+    "**/fixtures/**",
+    "**/scripts/**",
     "**/packages/babel-preset",
     "**/packages/eslint-plugin",
     "**/packages/stylelint-config",
@@ -22,17 +21,25 @@
     "**/packages/legend-application-*",
     "**/packages/legend-extension-*"
   ],
-  "plugin": ["./website/custom-typedoc-theme.cjs"],
-  "intentionallyNotExported": [],
-  "excludeExternals": false,
+  // TODO: some of these options are not passed down to the package
+  // See https://github.com/TypeStrong/typedoc/issues/2222
+  // "externalPattern": [
+  //   // NOTE: this uses `minimatch` pattern
+  //   "**/__tests__/**",
+  //   "**/__mocks__/**",
+  //   "**/node_modules/**"
+  // ],
+  "excludeExternals": true,
   "excludeInternal": true,
   "excludePrivate": true,
   "excludeNotDocumented": true,
+  "intentionallyNotExported": [],
   "validation": {
     "notExported": false,
     "invalidLink": true,
     "notDocumented": false
   },
+  "plugin": ["./website/custom-typedoc-theme.js"],
   // NOTE: to be updated when we structure the doc better
   "readme": "./website/api.md",
   "visibilityFilters": {
