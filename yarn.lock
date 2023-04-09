@@ -10395,7 +10395,7 @@ __metadata:
     semver: 7.3.8
     sort-package-json: 2.4.1
     stylelint: 15.4.0
-    typedoc: 0.24.0
+    typedoc: 0.24.1
     typescript: 5.0.4
     yargs: 17.7.1
   languageName: unknown
@@ -15727,9 +15727,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedoc@npm:0.24.0":
-  version: 0.24.0
-  resolution: "typedoc@npm:0.24.0"
+"typedoc@npm:0.24.1":
+  version: 0.24.1
+  resolution: "typedoc@npm:0.24.1"
   dependencies:
     lunr: ^2.3.9
     marked: ^4.2.12
@@ -15739,7 +15739,7 @@ __metadata:
     typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x
   bin:
     typedoc: bin/typedoc
-  checksum: 2c53037a8bc448713453e2f314265be058adff64710a83bd0d50a65ac72d4117265d89609c40da46fcd3e35c833f1641ec7c2ecb4b59cc29b8f46e4da5e4d50a
+  checksum: 49ecc56060a9d37fd3da4fb57f0a848bf618f3b97542ef503dad67e805a611359ad2453a625da0e2dd7a2d9eb7992bcefded58115b5cb3ddc98780b548e6dfd5
   languageName: node
   linkType: hard
 
