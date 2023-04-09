@@ -330,9 +330,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         classData.milestoning = docEntry.milestoning;
         entries.push(
           new NormalizedDataSpaceDocumentationEntry(
-            docEntry.path,
-            undefined,
-            docEntry.docs.join('\n'),
+            docEntry.name,
+            docEntry.docs.join('\n').trim(),
+            classData,
             classData,
           ),
         );
@@ -352,9 +352,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           classData.properties.push(propertyData);
           entries.push(
             new NormalizedDataSpaceDocumentationEntry(
-              docEntry.path,
               property.name,
-              property.docs.join('\n'),
+              property.docs.join('\n').trim(),
+              classData,
               propertyData,
             ),
           );
@@ -368,9 +368,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         enumerationData.path = docEntry.path;
         entries.push(
           new NormalizedDataSpaceDocumentationEntry(
-            docEntry.path,
-            undefined,
-            docEntry.docs.join('\n'),
+            docEntry.name,
+            docEntry.docs.join('\n').trim(),
+            enumerationData,
             enumerationData,
           ),
         );
@@ -381,9 +381,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           enumerationData.enumValues.push(enumData);
           entries.push(
             new NormalizedDataSpaceDocumentationEntry(
-              docEntry.path,
               enumValue.name,
-              enumValue.docs.join('\n'),
+              enumValue.docs.join('\n').trim(),
+              enumerationData,
               enumData,
             ),
           );
@@ -397,9 +397,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         associationData.path = docEntry.path;
         entries.push(
           new NormalizedDataSpaceDocumentationEntry(
-            docEntry.path,
-            undefined,
-            docEntry.docs.join('\n'),
+            docEntry.name,
+            docEntry.docs.join('\n').trim(),
+            associationData,
             associationData,
           ),
         );
@@ -418,9 +418,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           associationData.properties.push(propertyData);
           entries.push(
             new NormalizedDataSpaceDocumentationEntry(
-              docEntry.path,
               property.name,
               property.docs.join('\n'),
+              associationData,
               propertyData,
             ),
           );

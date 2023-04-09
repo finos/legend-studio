@@ -50,20 +50,20 @@ export class DataSpaceStereotypeInfo {
 
 export class NormalizedDataSpaceDocumentationEntry {
   readonly uuid = uuid();
-  readonly elementPath: string;
-  readonly subElementText?: string | undefined;
+  readonly text: string;
   readonly documentation: string;
+  readonly elementEntry: DataSpaceModelDocumentationEntry;
   readonly entry: DataSpaceBasicDocumentationEntry;
 
   constructor(
-    elementPath: string,
-    subElementText: string | undefined,
+    text: string,
     documentation: string,
+    elementEntry: DataSpaceModelDocumentationEntry,
     entry: DataSpaceBasicDocumentationEntry,
   ) {
-    this.elementPath = elementPath;
-    this.subElementText = subElementText;
+    this.text = text;
     this.documentation = documentation;
+    this.elementEntry = elementEntry;
     this.entry = entry;
   }
 }
@@ -135,7 +135,7 @@ export class DataSpaceExecutableTDSResultColumn {
 
   // TODO: we need to think of how we want to support sample values, should we rely on the type here
   // or should we rely on actual execution result on test data?
-  sampleValues = '';
+  sampleValues?: string | undefined;
 }
 
 export class DataSpaceExecutableTDSResult extends DataSpaceExecutableResult {

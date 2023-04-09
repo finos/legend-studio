@@ -23,7 +23,6 @@
   background: var(--color-dark-grey-80);
   color: var(--color-light-grey-200);
   font-family: Roboto, sans-serif;
-  // min-width: 90rem;
 
   &__header {
     @include flexHCenter;
@@ -119,6 +118,15 @@
   }
 
   &__grid {
+    &__empty-cell {
+      font-size: 1.2rem;
+      color: var(--color-dark-grey-280);
+    }
+
+    &__last-column-header {
+      --ag-header-column-separator-display: none;
+    }
+
     // NOTE: we need to ensure the specificity here in case a later imported ag-theme-balham-dark
     // might override our theme customization here
     &.ag-theme-balham-dark {
@@ -140,10 +148,6 @@
 
     .ag-header-cell-text {
       font-weight: 700;
-    }
-
-    .ag-header-row .ag-header-cell:last-child::after {
-      display: none;
     }
 
     .ag-cell-value {

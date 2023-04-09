@@ -35,11 +35,13 @@ import {
 import {
   DataSpaceExecutableTDSResult,
   type DataSpaceExecutableAnalysisResult,
+  type DataSpaceExecutableTDSResultColumn,
 } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
 import type { DSL_DataSpace_LegendApplicationPlugin_Extension } from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 import { useState } from 'react';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
+import type { ICellRendererParams } from '@ag-grid-community/core';
 
 enum TDS_EXECUTABLE_ACTION_TAB {
   COLUMN_SPECS = 'COLUMN_SPECS',
@@ -48,6 +50,38 @@ enum TDS_EXECUTABLE_ACTION_TAB {
 }
 
 const MIN_NUMBER_OF_ROWS_FOR_AUTO_HEIGHT = 15;
+
+const TDSColumnDocumentationCellRenderer = (
+  params: ICellRendererParams<DataSpaceExecutableTDSResultColumn>,
+): React.ReactNode => {
+  const data = params.data;
+  if (!data) {
+    return null;
+  }
+  return data.documentation?.trim() ? (
+    data.documentation
+  ) : (
+    <div className="data-space__viewer__grid__empty-cell">
+      No documentation provided
+    </div>
+  );
+};
+
+const TDSColumnSampleValuesCellRenderer = (
+  params: ICellRendererParams<DataSpaceExecutableTDSResultColumn>,
+): React.ReactNode => {
+  const data = params.data;
+  if (!data) {
+    return null;
+  }
+  return data.sampleValues?.trim() ? (
+    data.sampleValues
+  ) : (
+    <div className="data-space__viewer__grid__empty-cell">
+      No sample values provided
+    </div>
+  );
+};
 
 const DataSpaceExecutableTDSResultView = observer(
   (props: {
@@ -214,7 +248,7 @@ const DataSpaceExecutableTDSResultView = observer(
                       minWidth: 50,
                       sortable: false,
                       resizable: true,
-                      field: 'documentation',
+                      cellRenderer: TDSColumnDocumentationCellRenderer,
                       headerName: 'Documentation',
                       flex: 1,
                       wrapText: true,
@@ -224,7 +258,9 @@ const DataSpaceExecutableTDSResultView = observer(
                       minWidth: 50,
                       sortable: false,
                       resizable: false,
-                      field: 'sampleValues',
+                      headerClass:
+                        'data-space__viewer__grid__last-column-header',
+                      cellRenderer: TDSColumnSampleValuesCellRenderer,
                       headerName: 'Sample Values',
                       flex: 1,
                     },

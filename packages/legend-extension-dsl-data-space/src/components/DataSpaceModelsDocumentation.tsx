@@ -20,8 +20,70 @@ import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { AgGridReact } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
+import type { ICellRendererParams } from '@ag-grid-community/core';
+import {
+  DataSpaceAssociationDocumentationEntry,
+  DataSpaceBasicDocumentationEntry,
+  DataSpaceClassDocumentationEntry,
+  DataSpaceEnumerationDocumentationEntry,
+  DataSpaceModelDocumentationEntry,
+  DataSpacePropertyDocumentationEntry,
+  type NormalizedDataSpaceDocumentationEntry,
+} from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 
 const MIN_NUMBER_OF_ROWS_FOR_AUTO_HEIGHT = 20;
+
+const ElementContentCellRenderer = (
+  params: ICellRendererParams<NormalizedDataSpaceDocumentationEntry>,
+): React.ReactNode => {
+  const data = params.data;
+  if (!data) {
+    return null;
+  } else if (data.elementEntry instanceof DataSpaceClassDocumentationEntry) {
+    return <>{`C ${data.elementEntry.name}`}</>;
+  } else if (
+    data.elementEntry instanceof DataSpaceEnumerationDocumentationEntry
+  ) {
+    return <>{`E ${data.elementEntry.name}`}</>;
+  } else if (
+    data.elementEntry instanceof DataSpaceAssociationDocumentationEntry
+  ) {
+    return <>{`A ${data.elementEntry.name}`}</>;
+  }
+  return null;
+};
+
+const SubElementDocContentCellRenderer = (
+  params: ICellRendererParams<NormalizedDataSpaceDocumentationEntry>,
+): React.ReactNode => {
+  const data = params.data;
+  if (!data) {
+    return null;
+  } else if (data.entry instanceof DataSpaceModelDocumentationEntry) {
+    return null;
+  } else if (data.entry instanceof DataSpacePropertyDocumentationEntry) {
+    return <>{`p ${data.text}`}</>;
+  } else if (data.entry instanceof DataSpaceBasicDocumentationEntry) {
+    return <>{`e ${data.text}`}</>;
+  }
+  return null;
+};
+
+const ElementDocumentationCellRenderer = (
+  params: ICellRendererParams<NormalizedDataSpaceDocumentationEntry>,
+): React.ReactNode => {
+  const data = params.data;
+  if (!data) {
+    return null;
+  }
+  return data.documentation.trim() ? (
+    data.documentation
+  ) : (
+    <div className="data-space__viewer__grid__empty-cell">
+      No documentation provided
+    </div>
+  );
+};
 
 export const DataSpaceModelsDocumentation = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -63,7 +125,8 @@ export const DataSpaceModelsDocumentation = observer(
                   rowData={documentationEntries}
                   // highlight element row
                   getRowClass={(params) =>
-                    !params.data?.subElementText
+                    params.data?.entry instanceof
+                    DataSpaceModelDocumentationEntry
                       ? 'data-space__viewer__models-documentation__grid__element-row'
                       : undefined
                   }
@@ -78,7 +141,7 @@ export const DataSpaceModelsDocumentation = observer(
                       minWidth: 50,
                       sortable: true,
                       resizable: true,
-                      field: 'elementPath',
+                      cellRenderer: ElementContentCellRenderer,
                       headerName: 'Model',
                       flex: 1,
                     },
@@ -86,7 +149,7 @@ export const DataSpaceModelsDocumentation = observer(
                       minWidth: 50,
                       sortable: false,
                       resizable: true,
-                      field: 'subElementText',
+                      cellRenderer: SubElementDocContentCellRenderer,
                       headerName: '',
                       flex: 1,
                     },
@@ -94,7 +157,9 @@ export const DataSpaceModelsDocumentation = observer(
                       minWidth: 50,
                       sortable: false,
                       resizable: false,
-                      field: 'doc',
+                      headerClass:
+                        'data-space__viewer__grid__last-column-header',
+                      cellRenderer: ElementDocumentationCellRenderer,
                       headerName: 'Documentation',
                       flex: 1,
                       wrapText: true,

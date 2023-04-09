@@ -55,9 +55,9 @@
   --color-hclight-blue-90: #11294d;
   --color-hclight-green-60: #077d55;
   --color-hclight-lime-50: #52a31d;
+  --color-hclight-yellow-5: #fff9e3;
   --color-hclight-yellow-10: #faf6cf;
-  --color-hclight-yellow-15: #fff5c2; // non-standard
-  --color-hclight-yellow-18: #ffed8f; // non-standard
+  --color-hclight-yellow-15: #fff5d0; // non-standard
   --color-hclight-yellow-20: #f7e379;
   --color-hclight-yellow-30: #f5c518;
   --color-hclight-orange-50: #e86427;
@@ -243,6 +243,10 @@
     }
 
     &__grid {
+      &__empty-cell {
+        color: var(--color-hclight-grey-30);
+      }
+
       // Customize ag-grid theme
       // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
       --ag-border-color: var(--color-hclight-grey-30);
@@ -321,10 +325,10 @@
 
     &__grid {
       &__element-row {
-        background: var(--color-hclight-yellow-15);
+        background: var(--color-hclight-yellow-5);
         color: var(--color-hclight-grey-90);
 
-        --ag-row-hover-color: var(--color-hclight-yellow-18);
+        --ag-row-hover-color: var(--color-hclight-yellow-15);
       }
     }
   }
