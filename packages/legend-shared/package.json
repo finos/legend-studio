@@ -75,17 +75,5 @@
   },
   "extensions": {
     "webConsoleLoggerPlugin": "@finos/legend-logger-plugin-web-console"
-  },
-  "typedocOptions": {
-    "entryPoints": [
-      "./src/index.ts"
-    ],
-    "externalPattern": [
-      "**/__tests__/**",
-      "**/__mocks__/**",
-      "**/node_modules/**"
-    ],
-    "excludeExternals": true,
-    "readme": "./README.md"
   }
 }

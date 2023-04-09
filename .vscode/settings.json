@@ -22,7 +22,8 @@
     "/temp": true // temp dirs for local development
   },
   "files.associations": {
-    "typedoc.json": "jsonc"
+    "typedoc.json": "jsonc",
+    "**/typedoc.*.json": "jsonc"
   },
   // needed this to be `on` instead of `auto` so auto-import suggestion works properly with monorepo
   "typescript.preferences.includePackageJsonAutoImports": "on",

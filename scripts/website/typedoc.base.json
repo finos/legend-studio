@@ -1,0 +1,29 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "includeVersion": true,
+  "intentionallyNotExported": [],
+  "validation": {
+    "notExported": false,
+    "invalidLink": true,
+    "notDocumented": false
+  },
+  "visibilityFilters": {
+    "protected": false,
+    "private": false,
+    "inherited": true,
+    "external": false,
+    "@internal": false
+  },
+  "externalPattern": [
+    // NOTE: this uses `minimatch` pattern
+    "**/__tests__/**",
+    "**/__mocks__/**",
+    "**/node_modules/**"
+  ],
+  "excludeExternals": true,
+  "excludeInternal": true
+  // NOTE: for some reasons, these options don't work
+  // See https://github.com/TypeStrong/typedoc/issues/2231
+  // "excludePrivate": true
+  // "excludeNotDocumented": true
+}

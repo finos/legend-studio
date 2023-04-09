@@ -87,11 +87,5 @@
     "graphManagerPreset": "@finos/legend-graph-manager-preset-query-builder",
     "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-query-builder",
     "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-query-builder"
-  },
-  "typedocOptions": {
-    "entryPoints": [
-      "./src/index.ts"
-    ],
-    "readme": "./README.md"
   }
 }

@@ -58,11 +58,5 @@
   },
   "publishConfig": {
     "directory": "build/publishContent"
-  },
-  "typedocOptions": {
-    "entryPoints": [
-      "./src/index.ts"
-    ],
-    "readme": "./README.md"
   }
 }

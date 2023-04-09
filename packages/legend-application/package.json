@@ -90,11 +90,5 @@
   "extensions": {
     "applicationPlugin": "@finos/legend-application-plugin-core",
     "iframeEventNotifierPlugin": "@finos/legend-event-notifier-plugin-iframe"
-  },
-  "typedocOptions": {
-    "entryPoints": [
-      "./src/index.ts"
-    ],
-    "readme": "./README.md"
   }
 }

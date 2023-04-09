@@ -1,9 +1,9 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "name": "Legend Studio API Documentation",
-  "hideGenerator": true,
   "gitRemote": "origin",
   "gitRevision": "master",
+  "hideGenerator": true,
   "includeVersion": true,
   "out": "build/docs",
   "entryPoints": ["."],
@@ -21,34 +21,9 @@
     "**/packages/legend-application-*",
     "**/packages/legend-extension-*"
   ],
-  // TODO: some of these options are not passed down to the package
-  // See https://github.com/TypeStrong/typedoc/issues/2222
-  // "externalPattern": [
-  //   // NOTE: this uses `minimatch` pattern
-  //   "**/__tests__/**",
-  //   "**/__mocks__/**",
-  //   "**/node_modules/**"
-  // ],
-  "excludeExternals": true,
-  "excludeInternal": true,
-  "excludePrivate": true,
-  "excludeNotDocumented": true,
-  "intentionallyNotExported": [],
-  "validation": {
-    "notExported": false,
-    "invalidLink": true,
-    "notDocumented": false
-  },
-  "plugin": ["./website/custom-typedoc-theme.js"],
   // NOTE: to be updated when we structure the doc better
   "readme": "./website/api.md",
-  "visibilityFilters": {
-    "protected": false,
-    "private": false,
-    "inherited": true,
-    "external": false
-    // "@internal": false,
-  },
+  "plugin": ["./website/custom-typedoc-theme.js"],
   "theme": "legend",
   "customCss": "./website/legend-typedoc-theme.css",
   "logLevel": "Verbose",
