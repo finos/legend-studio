@@ -15,7 +15,17 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { AnchorLinkIcon, SearchIcon, clsx } from '@finos/legend-art';
+import {
+  AnchorLinkIcon,
+  DropdownMenu,
+  InfoCircleIcon,
+  MenuContent,
+  MenuContentItem,
+  MoreVerticalIcon,
+  SearchIcon,
+  Tooltip,
+  clsx,
+} from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { AgGridReact } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
@@ -30,47 +40,413 @@ import {
   DataSpacePropertyDocumentationEntry,
   type NormalizedDataSpaceDocumentationEntry,
 } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
+import { prettyCONSTName } from '@finos/legend-shared';
+import { useApplicationStore } from '@finos/legend-application';
+import {
+  MILESTONING_STEREOTYPE,
+  PROPERTY_ACCESSOR,
+  getMultiplicityDescription,
+} from '@finos/legend-graph';
 
 const MIN_NUMBER_OF_ROWS_FOR_AUTO_HEIGHT = 20;
 
-const ElementContentCellRenderer = (
-  params: ICellRendererParams<NormalizedDataSpaceDocumentationEntry>,
-): React.ReactNode => {
-  const data = params.data;
-  if (!data) {
-    return null;
-  } else if (data.elementEntry instanceof DataSpaceClassDocumentationEntry) {
-    return <>{`C ${data.elementEntry.name}`}</>;
-  } else if (
-    data.elementEntry instanceof DataSpaceEnumerationDocumentationEntry
-  ) {
-    return <>{`E ${data.elementEntry.name}`}</>;
-  } else if (
-    data.elementEntry instanceof DataSpaceAssociationDocumentationEntry
-  ) {
-    return <>{`A ${data.elementEntry.name}`}</>;
+const getMilestoningLabel = (val: string | undefined): string | undefined => {
+  switch (val) {
+    case MILESTONING_STEREOTYPE.BITEMPORAL:
+      return 'Bi-temporal';
+    case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL:
+      return 'Business Temporal';
+    case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL:
+      return 'Processing Temporal';
+    default:
+      return undefined;
   }
-  return null;
 };
 
-const SubElementDocContentCellRenderer = (
-  params: ICellRendererParams<NormalizedDataSpaceDocumentationEntry>,
-): React.ReactNode => {
-  const data = params.data;
-  if (!data) {
-    return null;
-  } else if (data.entry instanceof DataSpaceModelDocumentationEntry) {
-    return null;
-  } else if (data.entry instanceof DataSpacePropertyDocumentationEntry) {
-    return <>{`p ${data.text}`}</>;
-  } else if (data.entry instanceof DataSpaceBasicDocumentationEntry) {
-    return <>{`e ${data.text}`}</>;
-  }
-  return null;
+const ElementInfoTooltip: React.FC<{
+  entry: DataSpaceModelDocumentationEntry;
+  children: React.ReactElement;
+}> = (props) => {
+  const { entry, children } = props;
+
+  return (
+    <Tooltip
+      arrow={false}
+      placement="bottom-end"
+      disableInteractive={true}
+      classes={{
+        tooltip: 'data-space__viewer__tooltip',
+        tooltipPlacementRight: 'data-space__viewer__tooltip--right',
+      }}
+      TransitionProps={{
+        // disable transition
+        // NOTE: somehow, this is the only workaround we have, if for example
+        // we set `appear = true`, the tooltip will jump out of position
+        timeout: 0,
+      }}
+      title={
+        <div className="data-space__viewer__tooltip__content">
+          <div className="data-space__viewer__tooltip__item">
+            <div className="data-space__viewer__tooltip__item__label">Name</div>
+            <div className="data-space__viewer__tooltip__item__value">
+              {entry.name}
+            </div>
+          </div>
+          <div className="data-space__viewer__tooltip__item">
+            <div className="data-space__viewer__tooltip__item__label">Path</div>
+            <div className="data-space__viewer__tooltip__item__value">
+              {entry.path}
+            </div>
+          </div>
+          {entry instanceof DataSpaceClassDocumentationEntry &&
+            entry.milestoning !== undefined && (
+              <div className="data-space__viewer__tooltip__item">
+                <div className="data-space__viewer__tooltip__item__label">
+                  Milestoning
+                </div>
+                <div className="data-space__viewer__tooltip__item__value">
+                  {getMilestoningLabel(entry.milestoning)}
+                </div>
+              </div>
+            )}
+        </div>
+      }
+    >
+      {children}
+    </Tooltip>
+  );
 };
+
+const PropertyInfoTooltip: React.FC<{
+  entry: DataSpacePropertyDocumentationEntry;
+  elementEntry: DataSpaceModelDocumentationEntry;
+  children: React.ReactElement;
+}> = (props) => {
+  const { entry, elementEntry, children } = props;
+
+  return (
+    <Tooltip
+      arrow={false}
+      placement="bottom-end"
+      disableInteractive={true}
+      classes={{
+        tooltip: 'data-space__viewer__tooltip',
+        tooltipPlacementRight: 'data-space__viewer__tooltip--right',
+      }}
+      TransitionProps={{
+        // disable transition
+        // NOTE: somehow, this is the only workaround we have, if for example
+        // we set `appear = true`, the tooltip will jump out of position
+        timeout: 0,
+      }}
+      title={
+        <div className="data-space__viewer__tooltip__content">
+          <div className="data-space__viewer__tooltip__item">
+            <div className="data-space__viewer__tooltip__item__label">Name</div>
+            <div className="data-space__viewer__tooltip__item__value">
+              {entry.name}
+            </div>
+          </div>
+          <div className="data-space__viewer__tooltip__item">
+            <div className="data-space__viewer__tooltip__item__label">
+              Owner
+            </div>
+            <div className="data-space__viewer__tooltip__item__value">
+              {elementEntry.path}
+            </div>
+          </div>
+          {entry.type && (
+            <div className="data-space__viewer__tooltip__item">
+              <div className="data-space__viewer__tooltip__item__label">
+                Type
+              </div>
+              <div className="data-space__viewer__tooltip__item__value">
+                {entry.type}
+              </div>
+            </div>
+          )}
+          {entry.multiplicity && (
+            <div className="data-space__viewer__tooltip__item">
+              <div className="data-space__viewer__tooltip__item__label">
+                Multiplicity
+              </div>
+              <div className="data-space__viewer__tooltip__item__value">
+                {getMultiplicityDescription(entry.multiplicity)}
+              </div>
+            </div>
+          )}
+          {entry.milestoning && (
+            <div className="data-space__viewer__tooltip__item">
+              <div className="data-space__viewer__tooltip__item__label">
+                Milestoning
+              </div>
+              <div className="data-space__viewer__tooltip__item__value">
+                {getMilestoningLabel(entry.milestoning)}
+              </div>
+            </div>
+          )}
+        </div>
+      }
+    >
+      {children}
+    </Tooltip>
+  );
+};
+
+const ElementContentCellRenderer = observer(
+  (
+    params: ICellRendererParams<NormalizedDataSpaceDocumentationEntry> & {
+      dataSpaceViewerState: DataSpaceViewerState;
+    },
+  ) => {
+    const { data, dataSpaceViewerState } = params;
+    const applicationStore = useApplicationStore();
+    const showHumanizedForm =
+      dataSpaceViewerState.modelsDocumentationState.showHumanizedForm;
+
+    if (!data) {
+      return null;
+    }
+
+    const copyPath = (): void => {
+      applicationStore.clipboardService
+        .copyTextToClipboard(data.elementEntry.path)
+        .catch(applicationStore.alertUnhandledError);
+    };
+    const label = showHumanizedForm
+      ? prettyCONSTName(data.elementEntry.name)
+      : data.elementEntry.name;
+
+    if (data.elementEntry instanceof DataSpaceClassDocumentationEntry) {
+      return (
+        <div className="data-space__viewer__models-documentation__grid__cell">
+          <div className="data-space__viewer__models-documentation__grid__cell__label">
+            <div className="data-space__viewer__models-documentation__grid__cell__label__icon data-space__viewer__models-documentation__grid__cell__label__icon--class">
+              C
+            </div>
+            <div className="data-space__viewer__models-documentation__grid__cell__label__text">
+              {label}
+            </div>
+          </div>
+          <div className="data-space__viewer__models-documentation__grid__cell__actions">
+            <ElementInfoTooltip entry={data.elementEntry}>
+              <div className="data-space__viewer__models-documentation__grid__cell__action">
+                <InfoCircleIcon className="data-space__viewer__models-documentation__grid__cell__action__info" />
+              </div>
+            </ElementInfoTooltip>
+            <DropdownMenu
+              className="data-space__viewer__models-documentation__grid__cell__action"
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+                elevation: 7,
+              }}
+              content={
+                <MenuContent>
+                  <MenuContentItem onClick={copyPath}>
+                    Copy Path
+                  </MenuContentItem>
+                  <MenuContentItem disabled={true}>
+                    Preview Data
+                  </MenuContentItem>
+                </MenuContent>
+              }
+            >
+              <MoreVerticalIcon />
+            </DropdownMenu>
+          </div>
+        </div>
+      );
+    } else if (
+      data.elementEntry instanceof DataSpaceEnumerationDocumentationEntry
+    ) {
+      return (
+        <div className="data-space__viewer__models-documentation__grid__cell">
+          <div className="data-space__viewer__models-documentation__grid__cell__label">
+            <div className="data-space__viewer__models-documentation__grid__cell__label__icon data-space__viewer__models-documentation__grid__cell__label__icon--enumeration">
+              E
+            </div>
+            <div className="data-space__viewer__models-documentation__grid__cell__label__text">
+              {label}
+            </div>
+          </div>
+          <div className="data-space__viewer__models-documentation__grid__cell__actions">
+            <ElementInfoTooltip entry={data.elementEntry}>
+              <div className="data-space__viewer__models-documentation__grid__cell__action">
+                <InfoCircleIcon className="data-space__viewer__models-documentation__grid__cell__action__info" />
+              </div>
+            </ElementInfoTooltip>
+            <DropdownMenu
+              className="data-space__viewer__models-documentation__grid__cell__action"
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+                elevation: 7,
+              }}
+              content={
+                <MenuContent>
+                  <MenuContentItem onClick={copyPath}>
+                    Copy Path
+                  </MenuContentItem>
+                </MenuContent>
+              }
+            >
+              <MoreVerticalIcon />
+            </DropdownMenu>
+          </div>
+        </div>
+      );
+    } else if (
+      data.elementEntry instanceof DataSpaceAssociationDocumentationEntry
+    ) {
+      return (
+        <div className="data-space__viewer__models-documentation__grid__cell">
+          <div className="data-space__viewer__models-documentation__grid__cell__label">
+            <div className="data-space__viewer__models-documentation__grid__cell__label__icon data-space__viewer__models-documentation__grid__cell__label__icon--association">
+              A
+            </div>
+            <div className="data-space__viewer__models-documentation__grid__cell__label__text">
+              {label}
+            </div>
+          </div>
+          <div className="data-space__viewer__models-documentation__grid__cell__actions">
+            <ElementInfoTooltip entry={data.elementEntry}>
+              <div className="data-space__viewer__models-documentation__grid__cell__action">
+                <InfoCircleIcon className="data-space__viewer__models-documentation__grid__cell__action__info" />
+              </div>
+            </ElementInfoTooltip>
+            <DropdownMenu
+              className="data-space__viewer__models-documentation__grid__cell__action"
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+                elevation: 7,
+              }}
+              content={
+                <MenuContent>
+                  <MenuContentItem onClick={copyPath}>
+                    Copy Path
+                  </MenuContentItem>
+                </MenuContent>
+              }
+            >
+              <MoreVerticalIcon />
+            </DropdownMenu>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  },
+);
+
+const SubElementDocContentCellRenderer = observer(
+  (
+    params: ICellRendererParams<NormalizedDataSpaceDocumentationEntry> & {
+      dataSpaceViewerState: DataSpaceViewerState;
+    },
+  ) => {
+    const { data, dataSpaceViewerState } = params;
+    const applicationStore = useApplicationStore();
+    const showHumanizedForm =
+      dataSpaceViewerState.modelsDocumentationState.showHumanizedForm;
+
+    if (!data) {
+      return null;
+    }
+
+    const label = showHumanizedForm ? prettyCONSTName(data.text) : data.text;
+
+    if (data.entry instanceof DataSpaceModelDocumentationEntry) {
+      return null;
+    } else if (data.entry instanceof DataSpacePropertyDocumentationEntry) {
+      return (
+        <div className="data-space__viewer__models-documentation__grid__cell">
+          <div className="data-space__viewer__models-documentation__grid__cell__label">
+            <div className="data-space__viewer__models-documentation__grid__cell__label__icon data-space__viewer__models-documentation__grid__cell__label__icon--property">
+              P
+            </div>
+            <div className="data-space__viewer__models-documentation__grid__cell__label__text">
+              {label}
+            </div>
+          </div>
+          <div className="data-space__viewer__models-documentation__grid__cell__actions">
+            <PropertyInfoTooltip
+              entry={data.entry}
+              elementEntry={data.elementEntry}
+            >
+              <div className="data-space__viewer__models-documentation__grid__cell__action">
+                <InfoCircleIcon className="data-space__viewer__models-documentation__grid__cell__action__info" />
+              </div>
+            </PropertyInfoTooltip>
+            <DropdownMenu
+              className="data-space__viewer__models-documentation__grid__cell__action"
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+                elevation: 7,
+              }}
+              content={
+                <MenuContent>
+                  <MenuContentItem disabled={true}>
+                    Preview Data
+                  </MenuContentItem>
+                </MenuContent>
+              }
+            >
+              <MoreVerticalIcon />
+            </DropdownMenu>
+          </div>
+        </div>
+      );
+    } else if (data.entry instanceof DataSpaceBasicDocumentationEntry) {
+      const copyValue = (): void => {
+        applicationStore.clipboardService
+          .copyTextToClipboard(
+            data.elementEntry.path + PROPERTY_ACCESSOR + data.entry.name,
+          )
+          .catch(applicationStore.alertUnhandledError);
+      };
+      return (
+        <div className="data-space__viewer__models-documentation__grid__cell">
+          <div className="data-space__viewer__models-documentation__grid__cell__label">
+            <div className="data-space__viewer__models-documentation__grid__cell__label__icon data-space__viewer__models-documentation__grid__cell__label__icon--enum">
+              e
+            </div>
+            <div className="data-space__viewer__models-documentation__grid__cell__label__text">
+              {label}
+            </div>
+          </div>
+          <div className="data-space__viewer__models-documentation__grid__cell__actions">
+            <DropdownMenu
+              className="data-space__viewer__models-documentation__grid__cell__action"
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+                elevation: 7,
+              }}
+              content={
+                <MenuContent>
+                  <MenuContentItem onClick={copyValue}>
+                    Copy Value
+                  </MenuContentItem>
+                </MenuContent>
+              }
+            >
+              <MoreVerticalIcon />
+            </DropdownMenu>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  },
+);
 
 const ElementDocumentationCellRenderer = (
-  params: ICellRendererParams<NormalizedDataSpaceDocumentationEntry>,
+  params: ICellRendererParams<NormalizedDataSpaceDocumentationEntry> & {
+    dataSpaceViewerState: DataSpaceViewerState;
+  },
 ): React.ReactNode => {
   const data = params.data;
   if (!data) {
@@ -141,6 +517,9 @@ export const DataSpaceModelsDocumentation = observer(
                       minWidth: 50,
                       sortable: true,
                       resizable: true,
+                      cellRendererParams: {
+                        dataSpaceViewerState,
+                      },
                       cellRenderer: ElementContentCellRenderer,
                       headerName: 'Model',
                       flex: 1,
@@ -149,6 +528,9 @@ export const DataSpaceModelsDocumentation = observer(
                       minWidth: 50,
                       sortable: false,
                       resizable: true,
+                      cellRendererParams: {
+                        dataSpaceViewerState,
+                      },
                       cellRenderer: SubElementDocContentCellRenderer,
                       headerName: '',
                       flex: 1,

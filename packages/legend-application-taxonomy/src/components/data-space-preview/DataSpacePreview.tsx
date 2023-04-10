@@ -16,6 +16,7 @@
 
 import { createContext, useContext, useEffect } from 'react';
 import {
+  LEGEND_APPLICATION_COLOR_THEME,
   useApplicationStore,
   useNavigationZone,
   useParams,
@@ -24,6 +25,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
   LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN,
   type DataSpacePreviewPathParams,
+  LEGEND_TAXONOMY_QUERY_PARAM_TOKEN,
 } from '../../application/LegendTaxonomyNavigation.js';
 import { flowResult } from 'mobx';
 import {
@@ -75,11 +77,15 @@ const useDataSpacePreviewStore = (): DataSpacePreviewStore =>
 
 export const DataSpacePreview = withDataSpacePreviewStore(
   observer(() => {
+    const applicationStore = useApplicationStore();
     const params = useParams<DataSpacePreviewPathParams>();
     const gav = params[LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN.GAV];
     const dataSpacePath =
       params[LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH];
-    const applicationStore = useApplicationStore();
+    const colorTheme =
+      applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
+        LEGEND_TAXONOMY_QUERY_PARAM_TOKEN.COLOR_THEME,
+      );
     const previewStore = useDataSpacePreviewStore();
     const navigationZone = useNavigationZone();
 
@@ -88,6 +94,12 @@ export const DataSpacePreview = withDataSpacePreviewStore(
         previewStore.viewerState.changeZone(navigationZone);
       }
     }, [previewStore.viewerState, navigationZone]);
+
+    useEffect(() => {
+      applicationStore.layoutService.setColorTheme(
+        colorTheme ?? LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
+      );
+    }, [applicationStore, colorTheme]);
 
     useEffect(() => {
       flowResult(previewStore.initialize(gav, dataSpacePath)).catch(

@@ -53,6 +53,8 @@
   --color-hclight-blue-70: #0d4ea6;
   --color-hclight-blue-80: #103a75;
   --color-hclight-blue-90: #11294d;
+  --color-hclight-green-40: #43c478;
+  --color-hclight-green-50: #16a163;
   --color-hclight-green-60: #077d55;
   --color-hclight-lime-50: #52a31d;
   --color-hclight-yellow-5: #fff9e3;
@@ -60,9 +62,13 @@
   --color-hclight-yellow-15: #fff5d0; // non-standard
   --color-hclight-yellow-20: #f7e379;
   --color-hclight-yellow-30: #f5c518;
+  --color-hclight-orange-40: #fc9162;
   --color-hclight-orange-50: #e86427;
   --color-hclight-red-60: #d91f11;
+  --color-hclight-pink-40: #fa87d4;
+  --color-hclight-pink-50: #ed4cb7;
   --color-hclight-pink-60: #cc1d92;
+  --color-hclight-purple-60: #8f49de;
 }
 
 .theme__hc-light {
@@ -324,6 +330,40 @@
     }
 
     &__grid {
+      &__cell {
+        &__label__icon {
+          color: var(--color-hclight-white);
+
+          &--class {
+            background: var(--color-hclight-purple-60);
+          }
+
+          &--enumeration {
+            background: var(--color-hclight-pink-50);
+          }
+
+          &--association {
+            background: var(--color-hclight-green-40);
+          }
+
+          &--property {
+            background: var(--color-hclight-blue-50);
+          }
+
+          &--enum {
+            background: var(--color-hclight-orange-40);
+          }
+        }
+
+        &__action {
+          color: var(--color-hclight-grey-30);
+
+          &:hover {
+            color: var(--color-hclight-grey-60);
+          }
+        }
+      }
+
       &__element-row {
         background: var(--color-hclight-yellow-5);
         color: var(--color-hclight-grey-90);

@@ -532,11 +532,98 @@
     height: calc(100% - 3.8rem);
     width: 100%;
 
+    &__cell {
+      @include flexVCenter;
+
+      width: 100%;
+      justify-content: space-between;
+
+      &__label {
+        @include flexVCenter;
+
+        width: calc(100% - 4rem);
+      }
+
+      &__label__icon {
+        @include flexCenter;
+        @include flexConstantDimension;
+
+        height: 1.8rem;
+        width: 1.8rem;
+        border-radius: 0.2rem;
+        background: var(--color-dark-grey-100);
+        color: var(--color-light-grey-200);
+        font-size: 1.2rem;
+        font-family: 'Roboto Mono', monospace;
+        font-weight: 900;
+        margin-right: 0.5rem;
+
+        &--class {
+          background: var(--color-purple-400);
+        }
+
+        &--enumeration {
+          background: var(--color-pink-300);
+        }
+
+        &--association {
+          background: var(--color-green-200);
+        }
+
+        &--property {
+          background: var(--color-blue-180);
+        }
+
+        &--enum {
+          background: var(--color-orange-150);
+        }
+      }
+
+      &__label__text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      &__actions {
+        @include flexVCenter;
+
+        width: 4rem;
+      }
+
+      &__action {
+        @include flexCenter;
+        @include flexConstantDimension;
+
+        color: var(--color-dark-grey-350);
+        width: 2rem;
+        height: 2rem;
+
+        &:hover {
+          color: var(--color-light-grey-400);
+        }
+      }
+
+      &__action__info {
+        font-size: 1.2rem;
+      }
+    }
+
     &__element-row {
       background: var(--color-yellow-200);
       color: var(--color-dark-grey-100);
 
       --ag-row-hover-color: var(--color-yellow-100);
+    }
+
+    &__element-row &__cell {
+      &__action {
+        color: var(--color-dark-shade-300);
+
+        &:hover {
+          color: var(--color-dark-shade-800);
+        }
+      }
     }
   }
 }
@@ -965,5 +1052,47 @@
         user-select: none;
       }
     }
+  }
+}
+
+.data-space__viewer__tooltip {
+  border-radius: 0.2rem !important;
+  background: var(--color-dark-grey-200) !important;
+  opacity: 0.9 !important;
+  transition: none;
+  // as this tooltip can contain long documentation, it's best we limit its dimension
+  max-height: 30rem;
+  overflow: auto;
+  margin-top: 0.5rem !important;
+
+  &--right {
+    margin: 0 0.5rem !important;
+  }
+
+  &__content {
+    padding: 0.5rem;
+  }
+
+  &__item {
+    display: flex;
+    line-height: 1.6rem;
+  }
+
+  &__item__label {
+    font-size: 1.3rem;
+    user-select: none;
+    cursor: default;
+    color: var(--color-dark-grey-500);
+  }
+
+  &__item__value {
+    font-size: 1.3rem;
+    user-select: none;
+    cursor: default;
+    font-weight: 500;
+    margin-left: 0.5rem;
+    // as this tooltip can contain long documentation, it's best we limit its dimension
+    max-width: 50rem;
+    white-space: pre-line; // properly preserve newline characters
   }
 }

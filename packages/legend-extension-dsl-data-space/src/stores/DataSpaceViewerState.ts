@@ -43,6 +43,7 @@ import {
   PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE,
 } from '../graphManager/DSL_DataSpace_PureGraphManagerPlugin.js';
 import { DataSpaceViewerDataAccessState } from './DataSpaceViewerDataAccessState.js';
+import { DataSpaceViewerModelsDocumentationState } from './DataSpaceModelsDocumentationState.js';
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   DESCRIPTION = 'description',
@@ -107,6 +108,7 @@ export class DataSpaceViewerState {
     | undefined;
 
   readonly dataAccessState: DataSpaceViewerDataAccessState;
+  readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
 
   _renderer?: DiagramRenderer | undefined;
   currentDiagram?: DataSpaceDiagramAnalysisResult | undefined;
@@ -174,6 +176,9 @@ export class DataSpaceViewerState {
     this.onZoneChange = actions.onZoneChange;
 
     this.dataAccessState = new DataSpaceViewerDataAccessState(this);
+    this.modelsDocumentationState = new DataSpaceViewerModelsDocumentationState(
+      this,
+    );
   }
 
   get diagramRenderer(): DiagramRenderer {
