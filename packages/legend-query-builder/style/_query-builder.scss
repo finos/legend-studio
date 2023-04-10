@@ -391,6 +391,11 @@
     padding: 0 !important;
     position: relative;
     height: 100%;
+
+    &__table {
+      width: 100%;
+      height: 100%;
+    }
   }
 
   &__tds-grid {

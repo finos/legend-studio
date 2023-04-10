@@ -58,6 +58,11 @@ import {
   prettyCONSTName,
 } from '@finos/legend-shared';
 import { forwardRef, useState } from 'react';
+import type {
+  CellClassParams,
+  CellMouseDownEvent,
+  CellMouseOverEvent,
+} from '@ag-grid-community/core';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderProjectionColumnState,
@@ -89,6 +94,14 @@ import {
 } from '@finos/legend-lego/data-grid';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { ExecutionPlanViewer } from './execution-plan/ExecutionPlanViewer.js';
+import type {
+  FilteredResult,
+  ResultCoordinate,
+} from '../stores/QueryBuilderResultState.js';
+import {
+  QueryBuilderPostFilterOperator_IsEmpty,
+  QueryBuilderPostFilterOperator_IsNotEmpty,
+} from '../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
 
 const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
@@ -102,10 +115,16 @@ const QueryBuilderGridResultContextMenu = observer(
     const applicationStore = useApplicationStore();
     const postFilterEqualOperator = new QueryBuilderPostFilterOperator_Equal();
     const postFilterInOperator = new QueryBuilderPostFilterOperator_In();
+    const postFilterEmptyOperator =
+      new QueryBuilderPostFilterOperator_IsEmpty();
+    const postFilterNotEmptyOperator =
+      new QueryBuilderPostFilterOperator_IsNotEmpty();
+
     const postFilterNotEqualOperator =
       new QueryBuilderPostFilterOperator_NotEqual();
     const postFilterNotInOperator = new QueryBuilderPostFilterOperator_NotIn();
     const postFilterState = tdsState.postFilterState;
+
     const projectionColumnState = guaranteeNonNullable(
       tdsState.projectionColumns
         .filter((c) => c.columnName === event?.column.getColId())
@@ -118,6 +137,7 @@ const QueryBuilderGridResultContextMenu = observer(
 
     const getExistingPostFilterNode = (
       operators: QueryBuilderPostFilterOperator[],
+      projectionColumnName: string | undefined,
     ): QueryBuilderPostFilterTreeNodeData | undefined =>
       Array.from(postFilterState.nodes.values())
         .filter(
@@ -129,7 +149,9 @@ const QueryBuilderGridResultContextMenu = observer(
         .filter(
           (n) =>
             (n as QueryBuilderPostFilterTreeConditionNodeData).condition
-              .columnState.columnName === projectionColumnState.columnName &&
+              .columnState.columnName ===
+              (projectionColumnName ?? projectionColumnState.columnName) &&
+            // .columnState.columnName === projectionColumnState.columnName &&
             operators
               .map((op) => op.getLabel())
               .includes(
@@ -141,8 +163,9 @@ const QueryBuilderGridResultContextMenu = observer(
 
     const updateFilterConditionValue = (
       conditionValue: InstanceValue,
+      filteredResult: FilteredResult,
     ): void => {
-      if (event?.value !== null) {
+      if (filteredResult.value) {
         instanceValue_setValue(
           conditionValue,
           conditionValue instanceof EnumValueInstanceValue
@@ -151,10 +174,10 @@ const QueryBuilderGridResultContextMenu = observer(
                   (
                     conditionValue.genericType?.ownerReference
                       .value as Enumeration
-                  ).values.filter((v) => v.name === event?.value)[0],
+                  ).values.filter((v) => v.name === filteredResult.value)[0],
                 ),
               )
-            : event?.value,
+            : filteredResult.value,
           0,
           tdsState.queryBuilderState.observerContext,
         );
@@ -163,12 +186,23 @@ const QueryBuilderGridResultContextMenu = observer(
 
     const generateNewPostFilterConditionNodeData = async (
       operator: QueryBuilderPostFilterOperator,
+      filteredResult: FilteredResult,
     ): Promise<void> => {
       let postFilterConditionState: PostFilterConditionState;
       try {
         postFilterConditionState = new PostFilterConditionState(
           postFilterState,
-          projectionColumnState,
+          filteredResult.columnName
+            ? guaranteeNonNullable(
+                tdsState.projectionColumns
+                  .filter((c) => c.columnName === filteredResult.columnName)
+                  .concat(
+                    tdsState.aggregationState.columns
+                      .filter((c) => c.columnName === filteredResult.columnName)
+                      .map((ag) => ag.projectionColumnState),
+                  )[0],
+              )
+            : projectionColumnState,
           undefined,
           operator,
         );
@@ -187,6 +221,7 @@ const QueryBuilderGridResultContextMenu = observer(
         postFilterConditionState.setValue(defaultFilterConditionValue);
         updateFilterConditionValue(
           defaultFilterConditionValue as InstanceValue,
+          filteredResult,
         );
       } catch (error) {
         assertErrorThrown(error);
@@ -205,30 +240,45 @@ const QueryBuilderGridResultContextMenu = observer(
     const updateExistingPostFilterConditionNodeData = (
       existingPostFilterNode: QueryBuilderPostFilterTreeNodeData,
       isFilterBy: boolean,
+      filteredResult: FilteredResult,
+      operator: QueryBuilderPostFilterOperator,
     ): void => {
+      if (
+        operator === postFilterEmptyOperator ||
+        operator === postFilterNotEmptyOperator
+      ) {
+        const conditionState = (
+          existingPostFilterNode as QueryBuilderPostFilterTreeConditionNodeData
+        ).condition;
+        if (conditionState.operator.getLabel() !== operator.getLabel()) {
+          conditionState.changeOperator(
+            isFilterBy ? postFilterEmptyOperator : postFilterNotEmptyOperator,
+          );
+        }
+        return;
+      }
       const conditionState = (
         existingPostFilterNode as QueryBuilderPostFilterTreeConditionNodeData
       ).condition;
-      if (
-        conditionState.operator.getLabel() ===
-        (isFilterBy
-          ? postFilterEqualOperator
-          : postFilterNotEqualOperator
-        ).getLabel()
-      ) {
+
+      if (conditionState.operator.getLabel() === operator.getLabel()) {
         const doesValueAlreadyExist =
           conditionState.value instanceof InstanceValue &&
           (conditionState.value instanceof EnumValueInstanceValue
             ? conditionState.value.values.map((ef) => ef.value.name)
             : conditionState.value.values
-          ).includes(event?.value);
+          ).includes(filteredResult.value);
+
         if (!doesValueAlreadyExist) {
           const currentValueSpecificaton = conditionState.value;
           const newValueSpecification =
             conditionState.operator.getDefaultFilterConditionValue(
               conditionState,
             );
-          updateFilterConditionValue(newValueSpecification as InstanceValue);
+          updateFilterConditionValue(
+            newValueSpecification as InstanceValue,
+            filteredResult,
+          );
           conditionState.changeOperator(
             isFilterBy ? postFilterInOperator : postFilterNotInOperator,
           );
@@ -249,12 +299,16 @@ const QueryBuilderGridResultContextMenu = observer(
                 : (v as InstanceValue).values,
             )
             .flat()
-            .includes(event?.value);
+            .includes(filteredResult.value ?? event?.value);
+
         if (!doesValueAlreadyExist) {
           const newValueSpecification = (
             isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator
           ).getDefaultFilterConditionValue(conditionState);
-          updateFilterConditionValue(newValueSpecification as InstanceValue);
+          updateFilterConditionValue(
+            newValueSpecification as InstanceValue,
+            filteredResult,
+          );
           instanceValue_setValues(
             conditionState.value as InstanceValue,
             [
@@ -267,21 +321,61 @@ const QueryBuilderGridResultContextMenu = observer(
       }
     };
 
-    const filterByOrOut = (isFilterBy: boolean): void => {
+    const getFilterOperator = (
+      isFilterBy: boolean,
+      filteredResult: FilteredResult,
+    ): QueryBuilderPostFilterOperator => {
+      if (isFilterBy === true) {
+        if (filteredResult.value === null) {
+          return postFilterEmptyOperator;
+        } else {
+          return postFilterEqualOperator;
+        }
+      } else {
+        if (filteredResult.value === null) {
+          return postFilterNotEmptyOperator;
+        } else {
+          return postFilterNotEqualOperator;
+        }
+      }
+    };
+
+    const filterByOrOutValue = (
+      isFilterBy: boolean,
+      filteredResult: FilteredResult,
+    ): void => {
       tdsState.setShowPostFilterPanel(true);
+
+      const operator = getFilterOperator(isFilterBy, filteredResult);
+
       const existingPostFilterNode = getExistingPostFilterNode(
-        isFilterBy
+        filteredResult.value === null
+          ? [postFilterEmptyOperator, postFilterNotEmptyOperator]
+          : isFilterBy
           ? [postFilterEqualOperator, postFilterInOperator]
           : [postFilterNotEqualOperator, postFilterNotInOperator],
+        filteredResult.columnName,
       );
+
       existingPostFilterNode === undefined
         ? generateNewPostFilterConditionNodeData(
-            isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator,
+            operator,
+            filteredResult,
           ).catch(applicationStore.alertUnhandledError)
         : updateExistingPostFilterConditionNodeData(
             existingPostFilterNode,
             isFilterBy,
+            filteredResult,
+            operator,
           );
+    };
+
+    const filterByOrOutValues = (isFilterBy: boolean): void => {
+      tdsState.queryBuilderState.resultState.filteredResults.forEach(
+        (filteredResult) => {
+          filterByOrOutValue(isFilterBy, filteredResult);
+        },
+      );
     };
 
     const handleCopyCellValue = applicationStore.guardUnhandledError(() =>
@@ -298,14 +392,14 @@ const QueryBuilderGridResultContextMenu = observer(
       <MenuContent ref={ref}>
         <MenuContentItem
           onClick={(): void => {
-            filterByOrOut(true);
+            filterByOrOutValues(true);
           }}
         >
           Filter By
         </MenuContentItem>
         <MenuContentItem
           onClick={(): void => {
-            filterByOrOut(false);
+            filterByOrOutValues(false);
           }}
         >
           Filter Out
@@ -330,8 +424,13 @@ const QueryBuilderGridResult = observer(
     const { executionResult, queryBuilderState } = props;
     const fetchStructureImplementation =
       queryBuilderState.fetchStructureState.implementation;
+    const resultState = queryBuilderState.resultState;
+    const holdingCells = resultState.holdingCells;
     const [cellDoubleClickedEvent, setCellDoubleClickedEvent] =
       useState<DataGridCellMouseOverEvent | null>(null);
+    useState<CellMouseOverEvent | null>(null);
+    const [cellMouseDownEvent, setCellMouseDownEvent] =
+      useState<CellMouseDownEvent | null>(null);
     const columns = executionResult.result.columns;
     const rowData = executionResult.result.rows.map((_row, rowIdx) => {
       const row: PlainObject = {};
@@ -346,53 +445,200 @@ const QueryBuilderGridResult = observer(
       return row;
     });
 
+    const findCoordinatesFromResultValue = (
+      params:
+        | CellClassParams<PlainObject<unknown>>
+        | CellMouseOverEvent<PlainObject<unknown>>,
+    ): ResultCoordinate => {
+      const colIndex = executionResult.result.columns.findIndex(
+        (col) => col === params.column.getColId(),
+      );
+      const rowIndex = params.node.rowIndex;
+      return { rowIndex: rowIndex ?? -1, colIndex: colIndex };
+    };
+
     return (
-      <ContextMenu
-        content={
-          // NOTE: we only support this functionality for grid result with a projection fetch-structure
-          fetchStructureImplementation instanceof QueryBuilderTDSState ? (
-            <QueryBuilderGridResultContextMenu
-              event={cellDoubleClickedEvent}
-              tdsState={fetchStructureImplementation}
-            />
-          ) : null
-        }
-        disabled={
-          !(fetchStructureImplementation instanceof QueryBuilderTDSState) ||
-          !queryBuilderState.isQuerySupported ||
-          !cellDoubleClickedEvent
-        }
-        menuProps={{ elevation: 7 }}
-        key={executionResult._UUID}
-        className={clsx('ag-theme-balham-dark query-builder__result__tds-grid')}
+      <div
+        className="query-builder__result__values__table"
+        onMouseUp={() => {
+          resultState.setIsHoldingCells(false);
+        }}
       >
-        <DataGrid
-          rowData={rowData}
-          gridOptions={{
-            suppressScrollOnNewData: true,
-            getRowId: function (data) {
-              return data.data.rowNumber as string;
-            },
-          }}
-          // NOTE: we use onCellMouseOver as a bit of a workaround
-          // since we use the context menu so we want the user to be
-          // able to right click any cell and have the context menu
-          // options use the data belonging to the row that they are
-          // in. hence why we set the cell every time we mouse over
-          // rather than making user click multiple times.
-          onCellMouseOver={(event): void => {
-            setCellDoubleClickedEvent(event);
-          }}
-          suppressFieldDotNotation={true}
-          columnDefs={columns.map((colName) => ({
-            minWidth: 50,
-            sortable: true,
-            resizable: true,
-            field: colName,
-            flex: 1,
-          }))}
-        />
-      </ContextMenu>
+        <ContextMenu
+          content={
+            // NOTE: we only support this functionality for grid result with a projection fetch-structure
+            fetchStructureImplementation instanceof QueryBuilderTDSState ? (
+              <QueryBuilderGridResultContextMenu
+                event={cellDoubleClickedEvent}
+                tdsState={fetchStructureImplementation}
+              />
+            ) : null
+          }
+          disabled={
+            !(fetchStructureImplementation instanceof QueryBuilderTDSState) ||
+            !queryBuilderState.isQuerySupported ||
+            !cellDoubleClickedEvent
+          }
+          menuProps={{ elevation: 7 }}
+          key={executionResult._UUID}
+          className={clsx(
+            'ag-theme-balham-dark query-builder__result__tds-grid',
+          )}
+        >
+          <DataGrid
+            rowData={rowData}
+            gridOptions={{
+              suppressScrollOnNewData: true,
+              getRowId: function (data) {
+                return data.data.rowNumber as string;
+              },
+              columnTypes: {
+                resultColumn: {
+                  cellStyle: (params: CellClassParams<PlainObject>) => {
+                    const valueCoordinates =
+                      findCoordinatesFromResultValue(params);
+
+                    if (
+                      resultState.filteredResults.some(
+                        (result) =>
+                          result.coordinates.colIndex ===
+                            valueCoordinates.colIndex &&
+                          result.coordinates.rowIndex ===
+                            valueCoordinates.rowIndex,
+                      )
+                    ) {
+                      return {
+                        backgroundColor: queryBuilderState.applicationStore
+                          .layoutService.TEMPORARY__isLightColorThemeEnabled
+                          ? 'var(--color-navy-50)'
+                          : 'var(--color-navy-300)',
+                      };
+                    } else {
+                      return {};
+                    }
+                  },
+                },
+              },
+            }}
+            modules={[ClientSideRowModelModule]}
+            // NOTE: we use onCellMouseOver as a bit of a workaround
+            // since we use the context menu so we want the user to be
+            // able to right click any cell and have the context menu
+            // options use the data belonging to the row that they are
+            // in. hence why we set the cell every time we mouse over
+            // rather than making user click multiple times.
+            onCellMouseOver={(event): void => {
+              if (cellMouseDownEvent) {
+                if (!holdingCells || resultState.filteredResults.length < 1) {
+                  return;
+                }
+                const results = resultState.filteredResults[0];
+                if (!results) {
+                  return;
+                }
+
+                const firstCorner = results.coordinates;
+                const secondCorner = findCoordinatesFromResultValue(event);
+
+                resultState.setFilteredResults([results]);
+
+                const minRow = Math.min(
+                  firstCorner.rowIndex,
+                  secondCorner.rowIndex,
+                );
+                const minCol = Math.min(
+                  firstCorner.colIndex,
+                  secondCorner.colIndex,
+                );
+                const maxRow = Math.max(
+                  firstCorner.rowIndex,
+                  secondCorner.rowIndex,
+                );
+                const maxCol = Math.max(
+                  firstCorner.colIndex,
+                  secondCorner.colIndex,
+                );
+
+                for (let x = minRow; x <= maxRow; x++) {
+                  for (let y = minCol; y <= maxCol; y++) {
+                    const actualValue =
+                      resultState.findResultValueFromCoordinates([x, y]);
+
+                    const valueAndColumnId = {
+                      value: actualValue,
+                      columnName: resultState.findColumnFromCoordinates(y),
+                      coordinates: {
+                        rowIndex: x,
+                        colIndex: y,
+                      },
+                    } as FilteredResult;
+
+                    if (
+                      !resultState.filteredResults.find(
+                        (result) =>
+                          result.coordinates.colIndex === y &&
+                          result.coordinates.rowIndex === x,
+                      )
+                    ) {
+                      resultState.addFilteredResult(valueAndColumnId);
+                    }
+                  }
+                }
+              }
+
+              setCellDoubleClickedEvent(event);
+            }}
+            onCellMouseDown={(event): void => {
+              if ((event.event as MouseEvent).shiftKey) {
+                const coordinates = findCoordinatesFromResultValue(event);
+                const actualValue = resultState.findResultValueFromCoordinates([
+                  coordinates.rowIndex,
+                  coordinates.colIndex,
+                ]);
+                resultState.addFilteredResult({
+                  value: actualValue,
+                  columnName: event.column.getColId(),
+                  coordinates: coordinates,
+                });
+
+                event.api.redrawRows();
+
+                return;
+              }
+
+              if ((event.event as MouseEvent).button === 0) {
+                resultState.setIsHoldingCells(true);
+                resultState.setFilteredResults([]);
+                setCellMouseDownEvent(event);
+                const coordinates = findCoordinatesFromResultValue(event);
+                const actualValue = resultState.findResultValueFromCoordinates([
+                  coordinates.rowIndex,
+                  coordinates.colIndex,
+                ]);
+
+                resultState.setFilteredResults([
+                  {
+                    value: actualValue,
+                    columnName: event.column.getColId(),
+                    coordinates: coordinates,
+                  },
+                ]);
+
+                event.api.redrawRows();
+              }
+            }}
+            suppressFieldDotNotation={true}
+            columnDefs={columns.map((colName) => ({
+              minWidth: 50,
+              sortable: true,
+              type: 'resultColumn',
+              resizable: true,
+              field: colName,
+              flex: 1,
+            }))}
+          />
+        </ContextMenu>
+      </div>
     );
   },
 );
@@ -493,6 +739,7 @@ export const QueryBuilderResultPanel = observer(
       !queryBuilderState.isQuerySupported || !isSupportedQueryValid;
 
     const runQuery = (): void => {
+      resultState.setFilteredResults([]);
       resultState.pressedRunQuery.inProgress();
       if (queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(

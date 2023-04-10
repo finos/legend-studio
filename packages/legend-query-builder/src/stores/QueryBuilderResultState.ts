@@ -37,6 +37,7 @@ import {
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
   extractExecutionResultValues,
+  TDSExecutionResult,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import { TAB_SIZE } from '@finos/legend-application';
@@ -56,6 +57,17 @@ export interface ExportDataInfo {
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
 }
 
+export interface FilteredResult {
+  value: string | number | boolean | null | undefined;
+  columnName: string;
+  coordinates: ResultCoordinate;
+}
+
+export interface ResultCoordinate {
+  rowIndex: number;
+  colIndex: number;
+}
+
 export class QueryBuilderResultState {
   readonly queryBuilderState: QueryBuilderState;
   readonly exportDataState = ActionState.create();
@@ -68,6 +80,8 @@ export class QueryBuilderResultState {
   executionResult?: ExecutionResult | undefined;
   executionDuration?: number | undefined;
   latestRunHashCode?: string | undefined;
+  filteredResults: FilteredResult[];
+  holdingCells: boolean;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
@@ -78,17 +92,24 @@ export class QueryBuilderResultState {
       latestRunHashCode: observable,
       queryRunPromise: observable,
       isGeneratingPlan: observable,
+      holdingCells: observable,
+      filteredResults: observable,
       isRunningQuery: observable,
       setIsRunningQuery: action,
       setExecutionResult: action,
       setExecutionDuration: action,
       setPreviewLimit: action,
+      addFilteredResult: action,
+      setIsHoldingCells: action,
+      setFilteredResults: action,
       setQueryRunPromise: action,
       exportData: flow,
       runQuery: flow,
       generatePlan: flow,
     });
 
+    this.filteredResults = [];
+    this.holdingCells = false;
     this.queryBuilderState = queryBuilderState;
     this.executionPlanState = new ExecutionPlanState(
       this.queryBuilderState.applicationStore,
@@ -112,10 +133,55 @@ export class QueryBuilderResultState {
     this.previewLimit = Math.max(1, val);
   };
 
+  addFilteredResult = (val: FilteredResult): void => {
+    this.filteredResults.push(val);
+  };
+
+  setFilteredResults = (val: FilteredResult[]): void => {
+    this.filteredResults = val;
+  };
+
+  setIsHoldingCells = (val: boolean): void => {
+    this.holdingCells = val;
+  };
+
   setQueryRunPromise = (
     promise: Promise<ExecutionResult> | undefined,
   ): void => {
     this.queryRunPromise = promise;
+  };
+
+  findColumnFromCoordinates = (
+    colIndex: number,
+  ): string | number | boolean | null | undefined => {
+    if (
+      !this.executionResult ||
+      !(this.executionResult instanceof TDSExecutionResult)
+    ) {
+      return undefined;
+    }
+    return this.executionResult.result.columns[colIndex];
+  };
+
+  // NOTE: Due to the ways we edit Ag-grid's rendering, i.e.,
+  // we convert boolean values to strings values and
+  // a null value may show up as an empty string,
+  // we search for the coordinates of the ag-grid table and
+  // then find the original value of our execution results to store
+  findResultValueFromCoordinates = (
+    resultCoordinate: [number, number],
+  ): string | number | boolean | null | undefined => {
+    const rowIndex = resultCoordinate[0];
+    const colIndex = resultCoordinate[1];
+
+    if (
+      !this.executionResult ||
+      !(this.executionResult instanceof TDSExecutionResult)
+    ) {
+      return undefined;
+    }
+
+    return this.executionResult.result.rows[rowIndex]?.values[colIndex];
   };
 
   get checkForStaleResults(): boolean {
