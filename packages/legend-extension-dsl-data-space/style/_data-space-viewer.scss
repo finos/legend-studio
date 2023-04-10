@@ -585,6 +585,19 @@
         text-overflow: ellipsis;
       }
 
+      &__label__milestoning-badge {
+        @include flexCenter;
+        @include flexConstantDimension;
+
+        width: 2rem;
+        margin-right: 1rem;
+
+        svg {
+          color: var(--color-blue-150);
+          font-size: 1.2rem;
+        }
+      }
+
       &__actions {
         @include flexVCenter;
 

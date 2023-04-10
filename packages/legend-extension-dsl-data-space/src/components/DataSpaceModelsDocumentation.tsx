@@ -17,6 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import {
   AnchorLinkIcon,
+  ClockIcon,
   DropdownMenu,
   InfoCircleIcon,
   MenuContent,
@@ -219,7 +220,10 @@ const ElementContentCellRenderer = observer(
 
     if (data.elementEntry instanceof DataSpaceClassDocumentationEntry) {
       return (
-        <div className="data-space__viewer__models-documentation__grid__cell">
+        <div
+          className="data-space__viewer__models-documentation__grid__cell"
+          title={`Class: ${data.elementEntry.path}`}
+        >
           <div className="data-space__viewer__models-documentation__grid__cell__label">
             <div className="data-space__viewer__models-documentation__grid__cell__label__icon data-space__viewer__models-documentation__grid__cell__label__icon--class">
               C
@@ -227,6 +231,16 @@ const ElementContentCellRenderer = observer(
             <div className="data-space__viewer__models-documentation__grid__cell__label__text">
               {label}
             </div>
+            {data.elementEntry.milestoning && (
+              <div
+                className="data-space__viewer__models-documentation__grid__cell__label__milestoning-badge"
+                title={`Milestoning: ${getMilestoningLabel(
+                  data.elementEntry.milestoning,
+                )}`}
+              >
+                <ClockIcon />
+              </div>
+            )}
           </div>
           <div className="data-space__viewer__models-documentation__grid__cell__actions">
             <ElementInfoTooltip entry={data.elementEntry}>
@@ -261,7 +275,10 @@ const ElementContentCellRenderer = observer(
       data.elementEntry instanceof DataSpaceEnumerationDocumentationEntry
     ) {
       return (
-        <div className="data-space__viewer__models-documentation__grid__cell">
+        <div
+          className="data-space__viewer__models-documentation__grid__cell"
+          title={`Enumeration: ${data.elementEntry.path}`}
+        >
           <div className="data-space__viewer__models-documentation__grid__cell__label">
             <div className="data-space__viewer__models-documentation__grid__cell__label__icon data-space__viewer__models-documentation__grid__cell__label__icon--enumeration">
               E
@@ -300,7 +317,10 @@ const ElementContentCellRenderer = observer(
       data.elementEntry instanceof DataSpaceAssociationDocumentationEntry
     ) {
       return (
-        <div className="data-space__viewer__models-documentation__grid__cell">
+        <div
+          className="data-space__viewer__models-documentation__grid__cell"
+          title={`Association: ${data.elementEntry.path}`}
+        >
           <div className="data-space__viewer__models-documentation__grid__cell__label">
             <div className="data-space__viewer__models-documentation__grid__cell__label__icon data-space__viewer__models-documentation__grid__cell__label__icon--association">
               A
@@ -361,7 +381,10 @@ const SubElementDocContentCellRenderer = observer(
       return null;
     } else if (data.entry instanceof DataSpacePropertyDocumentationEntry) {
       return (
-        <div className="data-space__viewer__models-documentation__grid__cell">
+        <div
+          className="data-space__viewer__models-documentation__grid__cell"
+          title={`Property: ${data.elementEntry.path}${PROPERTY_ACCESSOR}${data.entry.name}`}
+        >
           <div className="data-space__viewer__models-documentation__grid__cell__label">
             <div className="data-space__viewer__models-documentation__grid__cell__label__icon data-space__viewer__models-documentation__grid__cell__label__icon--property">
               P
@@ -369,6 +392,16 @@ const SubElementDocContentCellRenderer = observer(
             <div className="data-space__viewer__models-documentation__grid__cell__label__text">
               {label}
             </div>
+            {data.entry.milestoning && (
+              <div
+                className="data-space__viewer__models-documentation__grid__cell__label__milestoning-badge"
+                title={`Milestoning: ${getMilestoningLabel(
+                  data.entry.milestoning,
+                )}`}
+              >
+                <ClockIcon />
+              </div>
+            )}
           </div>
           <div className="data-space__viewer__models-documentation__grid__cell__actions">
             <PropertyInfoTooltip
@@ -408,7 +441,10 @@ const SubElementDocContentCellRenderer = observer(
           .catch(applicationStore.alertUnhandledError);
       };
       return (
-        <div className="data-space__viewer__models-documentation__grid__cell">
+        <div
+          className="data-space__viewer__models-documentation__grid__cell"
+          title={`Enum: ${data.elementEntry.path}${PROPERTY_ACCESSOR}${data.entry.name}`}
+        >
           <div className="data-space__viewer__models-documentation__grid__cell__label">
             <div className="data-space__viewer__models-documentation__grid__cell__label__icon data-space__viewer__models-documentation__grid__cell__label__icon--enum">
               e

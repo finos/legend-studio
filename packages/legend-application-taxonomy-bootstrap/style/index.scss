@@ -355,6 +355,10 @@
           }
         }
 
+        &__label__milestoning-badge svg {
+          color: var(--color-hclight-blue-50);
+        }
+
         &__action {
           color: var(--color-hclight-grey-30);
 
