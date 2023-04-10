@@ -583,7 +583,7 @@ const DataSpaceModelsDocumentationSearchBar = observer(
       event,
     ) => {
       documentationState.setSearchText(event.target.value);
-      debouncedSearch?.cancel();
+      debouncedSearch.cancel();
       debouncedSearch();
     };
 

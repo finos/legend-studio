@@ -36,6 +36,7 @@
   --color-hclight-grey-20: #dce3e8;
   --color-hclight-grey-30: #c1ccd6;
   --color-hclight-grey-40: #9fb1bd;
+  --color-hclight-grey-50: #7a909e;
   --color-hclight-grey-60: #5b7282;
   --color-hclight-grey-70: #3e5463;
   --color-hclight-grey-80: #2a3f4d;
@@ -57,7 +58,7 @@
   --color-hclight-green-50: #16a163;
   --color-hclight-green-60: #077d55;
   --color-hclight-lime-50: #52a31d;
-  --color-hclight-yellow-5: #fff9e3;
+  --color-hclight-yellow-5: #fff9e3; // non-standard
   --color-hclight-yellow-10: #faf6cf;
   --color-hclight-yellow-15: #fff5d0; // non-standard
   --color-hclight-yellow-20: #f7e379;
@@ -441,7 +442,7 @@
 
       &__config__trigger {
         svg {
-          color: var(--color-hclight-grey-60);
+          color: var(--color-hclight-grey-50);
         }
 
         &--toggled svg,
