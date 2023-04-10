@@ -17,13 +17,16 @@
 import { observer } from 'mobx-react-lite';
 import {
   AnchorLinkIcon,
+  BasePopover,
   ClockIcon,
+  CogIcon,
   DropdownMenu,
   InfoCircleIcon,
   MenuContent,
   MenuContentItem,
   MoreVerticalIcon,
   SearchIcon,
+  TimesIcon,
   Tooltip,
   clsx,
 } from '@finos/legend-art';
@@ -41,15 +44,17 @@ import {
   DataSpacePropertyDocumentationEntry,
   type NormalizedDataSpaceDocumentationEntry,
 } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
-import { prettyCONSTName } from '@finos/legend-shared';
-import { useApplicationStore } from '@finos/legend-application';
+import { debounce, prettyCONSTName } from '@finos/legend-shared';
+import {
+  TextSearchAdvancedConfigMenu,
+  useApplicationStore,
+} from '@finos/legend-application';
 import {
   MILESTONING_STEREOTYPE,
   PROPERTY_ACCESSOR,
   getMultiplicityDescription,
 } from '@finos/legend-graph';
-
-const MIN_NUMBER_OF_ROWS_FOR_AUTO_HEIGHT = 20;
+import { useMemo, useRef } from 'react';
 
 const getMilestoningLabel = (val: string | undefined): string | undefined => {
   switch (val) {
@@ -497,13 +502,194 @@ const ElementDocumentationCellRenderer = (
   );
 };
 
+const DataSpaceModelsDocumentationGrid = observer(
+  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
+    const { dataSpaceViewerState } = props;
+
+    const documentationState = dataSpaceViewerState.modelsDocumentationState;
+    const documentationEntries = documentationState.searchResults;
+
+    return (
+      <div className="data-space__viewer__models-documentation__grid data-space__viewer__grid ag-theme-balham-dark">
+        <AgGridReact
+          rowData={documentationEntries}
+          overlayNoRowsTemplate={`<div class="data-space__viewer__grid--empty">No documentation found</div>`}
+          // highlight element row
+          getRowClass={(params) =>
+            params.data?.entry instanceof DataSpaceModelDocumentationEntry
+              ? 'data-space__viewer__models-documentation__grid__element-row'
+              : undefined
+          }
+          alwaysShowVerticalScroll={true}
+          gridOptions={{
+            suppressScrollOnNewData: true,
+            getRowId: (rowData) => rowData.data.uuid,
+          }}
+          modules={[ClientSideRowModelModule]}
+          suppressFieldDotNotation={true}
+          columnDefs={[
+            {
+              minWidth: 50,
+              sortable: true,
+              resizable: true,
+              cellRendererParams: {
+                dataSpaceViewerState,
+              },
+              cellRenderer: ElementContentCellRenderer,
+              headerName: 'Model',
+              flex: 1,
+            },
+            {
+              minWidth: 50,
+              sortable: false,
+              resizable: true,
+              cellRendererParams: {
+                dataSpaceViewerState,
+              },
+              cellRenderer: SubElementDocContentCellRenderer,
+              headerName: '',
+              flex: 1,
+            },
+            {
+              minWidth: 50,
+              sortable: false,
+              resizable: false,
+              headerClass: 'data-space__viewer__grid__last-column-header',
+              cellRenderer: ElementDocumentationCellRenderer,
+              headerName: 'Documentation',
+              flex: 1,
+              wrapText: true,
+              autoHeight: true,
+            },
+          ]}
+        />
+      </div>
+    );
+  },
+);
+
+const DataSpaceModelsDocumentationSearchBar = observer(
+  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
+    const { dataSpaceViewerState } = props;
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const searchConfigTriggerRef = useRef<HTMLButtonElement>(null);
+    const documentationState = dataSpaceViewerState.modelsDocumentationState;
+    const searchText = documentationState.searchText;
+    const debouncedSearch = useMemo(
+      () => debounce(() => documentationState.search(), 100),
+      [documentationState],
+    );
+    const onSearchTextChange: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      documentationState.setSearchText(event.target.value);
+      debouncedSearch?.cancel();
+      debouncedSearch();
+    };
+
+    // actions
+    const clearSearchText = (): void => {
+      documentationState.resetSearch();
+      searchInputRef.current?.focus();
+    };
+    const toggleSearchConfigMenu = (): void =>
+      documentationState.setShowSearchConfigurationMenu(
+        !documentationState.showSearchConfigurationMenu,
+      );
+    const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+      if (event.code === 'Escape') {
+        searchInputRef.current?.select();
+      }
+    };
+
+    // search config menu
+    const closeSearchConfigMenu = (): void =>
+      documentationState.setShowSearchConfigurationMenu(false);
+    const onSearchConfigMenuOpen = (): void => searchInputRef.current?.focus();
+
+    return (
+      <div className="data-space__viewer__models-documentation__search">
+        <input
+          ref={searchInputRef}
+          onKeyDown={onKeyDown}
+          className={clsx(
+            'data-space__viewer__models-documentation__search__input input--dark',
+            {
+              'data-space__viewer__models-documentation__search__input--searching':
+                documentationState.searchText,
+            },
+          )}
+          spellCheck={false}
+          onChange={onSearchTextChange}
+          value={searchText}
+          placeholder="Search documentation"
+        />
+        <button
+          ref={searchConfigTriggerRef}
+          className={clsx(
+            'data-space__viewer__models-documentation__search__input__config__trigger',
+            {
+              'data-space__viewer__models-documentation__search__input__config__trigger--toggled':
+                documentationState.showSearchConfigurationMenu,
+              'data-space__viewer__models-documentation__search__input__config__trigger--active':
+                documentationState.searchConfigurationState
+                  .isAdvancedSearchActive,
+            },
+          )}
+          tabIndex={-1}
+          onClick={toggleSearchConfigMenu}
+          title={`${
+            documentationState.searchConfigurationState.isAdvancedSearchActive
+              ? 'Advanced search is currently active\n'
+              : ''
+          }Click to toggle search config menu`}
+        >
+          <CogIcon />
+        </button>
+        <BasePopover
+          open={Boolean(documentationState.showSearchConfigurationMenu)}
+          TransitionProps={{
+            onEnter: onSearchConfigMenuOpen,
+          }}
+          anchorEl={searchConfigTriggerRef.current}
+          onClose={closeSearchConfigMenu}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+        >
+          <TextSearchAdvancedConfigMenu
+            configState={documentationState.searchConfigurationState}
+          />
+        </BasePopover>
+        {!searchText ? (
+          <div className="data-space__viewer__models-documentation__search__input__search__icon">
+            <SearchIcon />
+          </div>
+        ) : (
+          <button
+            className="data-space__viewer__models-documentation__search__input__clear-btn"
+            tabIndex={-1}
+            onClick={clearSearchText}
+            title="Clear"
+          >
+            <TimesIcon />
+          </button>
+        )}
+      </div>
+    );
+  },
+);
+
 export const DataSpaceModelsDocumentation = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     const documentationEntries =
       dataSpaceViewerState.dataSpaceAnalysisResult.elementDocs;
-    const autoHeight =
-      documentationEntries.length <= MIN_NUMBER_OF_ROWS_FOR_AUTO_HEIGHT;
 
     return (
       <div className="data-space__viewer__wiki__section">
@@ -517,73 +703,16 @@ export const DataSpaceModelsDocumentation = observer(
         </div>
         <div className="data-space__viewer__wiki__section__content">
           {documentationEntries.length > 0 && (
-            <div
-              className={clsx('data-space__viewer__models-documentation', {
-                'data-space__viewer__models-documentation--auto-height':
-                  autoHeight,
-              })}
-            >
-              <div className="data-space__viewer__models-documentation__search">
-                <div className="data-space__viewer__models-documentation__search__input-group">
-                  <input className="data-space__viewer__models-documentation__search__input-group__input input" />
-                  <div className="data-space__viewer__models-documentation__search__input-group__icon">
-                    <SearchIcon />
-                  </div>
-                </div>
+            <div className="data-space__viewer__models-documentation">
+              <div className="data-space__viewer__models-documentation__header">
+                <div className="data-space__viewer__models-documentation__header__filters"></div>
+                <DataSpaceModelsDocumentationSearchBar
+                  dataSpaceViewerState={dataSpaceViewerState}
+                />
               </div>
-              <div className="data-space__viewer__models-documentation__grid data-space__viewer__grid ag-theme-balham-dark">
-                <AgGridReact
-                  domLayout={autoHeight ? 'autoHeight' : 'normal'}
-                  rowData={documentationEntries}
-                  // highlight element row
-                  getRowClass={(params) =>
-                    params.data?.entry instanceof
-                    DataSpaceModelDocumentationEntry
-                      ? 'data-space__viewer__models-documentation__grid__element-row'
-                      : undefined
-                  }
-                  gridOptions={{
-                    suppressScrollOnNewData: true,
-                    getRowId: (rowData) => rowData.data.uuid,
-                  }}
-                  modules={[ClientSideRowModelModule]}
-                  suppressFieldDotNotation={true}
-                  columnDefs={[
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      cellRendererParams: {
-                        dataSpaceViewerState,
-                      },
-                      cellRenderer: ElementContentCellRenderer,
-                      headerName: 'Model',
-                      flex: 1,
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: false,
-                      resizable: true,
-                      cellRendererParams: {
-                        dataSpaceViewerState,
-                      },
-                      cellRenderer: SubElementDocContentCellRenderer,
-                      headerName: '',
-                      flex: 1,
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: false,
-                      resizable: false,
-                      headerClass:
-                        'data-space__viewer__grid__last-column-header',
-                      cellRenderer: ElementDocumentationCellRenderer,
-                      headerName: 'Documentation',
-                      flex: 1,
-                      wrapText: true,
-                      autoHeight: true,
-                    },
-                  ]}
+              <div className="data-space__viewer__models-documentation__content">
+                <DataSpaceModelsDocumentationGrid
+                  dataSpaceViewerState={dataSpaceViewerState}
                 />
               </div>
             </div>

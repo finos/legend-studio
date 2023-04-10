@@ -116,43 +116,97 @@
     overflow: auto;
     padding: 2rem 0;
   }
+}
 
-  &__grid {
-    &__empty-cell {
+.data-space__viewer__grid {
+  &--empty {
+    @include flexCenter;
+
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    background: var(--color-dark-grey-50);
+    color: var(--color-dark-grey-300);
+  }
+
+  &__empty-cell {
+    font-size: 1.2rem;
+    color: var(--color-dark-grey-280);
+  }
+
+  &__header-cell {
+    @include flexVCenter;
+
+    width: 100%;
+
+    &__label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &__count-badge {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 1.6rem;
+      padding: 0 0.5rem;
+      margin-left: 1rem;
+      border-radius: 0.2rem;
+      background: var(--color-blue-150);
+      color: var(--color-light-grey-200);
       font-size: 1.2rem;
-      color: var(--color-dark-grey-280);
+      font-family: 'Roboto Mono', monospace;
+      font-weight: 900;
+      margin-right: 0.5rem;
     }
+  }
 
-    &__last-column-header {
-      --ag-header-column-separator-display: none;
-    }
+  &__last-column-header {
+    --ag-header-column-separator-display: none;
+  }
 
-    // NOTE: we need to ensure the specificity here in case a later imported ag-theme-balham-dark
-    // might override our theme customization here
-    &.ag-theme-balham-dark {
-      --ag-font-family: 'Roboto';
+  // NOTE: we need to ensure the specificity here in case a later imported ag-theme-balham-dark
+  // might override our theme customization here
+  &.ag-theme-balham-dark {
+    --ag-font-family: 'Roboto';
 
-      // Customize ag-grid theme
-      // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
-      --ag-border-color: var(--color-dark-grey-200);
-      --ag-background-color: var(--color-dark-grey-50);
-      --ag-foreground-color: var(--color-light-grey-200);
-      --ag-header-background-color: var(--color-dark-grey-100);
-      --ag-header-foreground-color: var(--color-light-grey-50);
-      --ag-balham-active-color: var(--color-blue-200);
-      --ag-odd-row-background-color: var(--color-dark-grey-50);
-      --ag-even-row-background-color: var(--color-dark-grey-50);
-      --ag-row-hover-color: var(--color-dark-blue-shade-100);
-      --ag-row-border-color: var(--color-dark-grey-200);
-    }
+    // Customize ag-grid theme
+    // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
+    --ag-border-color: var(--color-dark-grey-200);
+    --ag-background-color: var(--color-dark-grey-50);
+    --ag-foreground-color: var(--color-light-grey-200);
+    --ag-header-background-color: var(--color-dark-grey-100);
+    --ag-header-foreground-color: var(--color-light-grey-50);
+    --ag-balham-active-color: var(--color-blue-200);
+    --ag-odd-row-background-color: var(--color-dark-grey-50);
+    --ag-even-row-background-color: var(--color-dark-grey-50);
+    --ag-row-hover-color: var(--color-dark-blue-shade-100);
+    --ag-row-border-color: var(--color-dark-grey-200);
+  }
 
-    .ag-header-cell-text {
-      font-weight: 700;
-    }
+  .ag-header-cell-text {
+    font-weight: 700;
+  }
 
-    .ag-cell-value {
-      word-break: break-word;
-    }
+  .ag-cell-value {
+    word-break: break-word;
+  }
+
+  .ag-center-cols-viewport {
+    // stripped background for remaining height of the grid when there are not enough rows
+    // See https://css-tricks.com/stripes-css/
+    background: repeating-linear-gradient(
+      135deg,
+      var(--color-dark-grey-50),
+      var(--color-dark-grey-50) 0.5rem,
+      var(--color-dark-grey-80) 0.5rem,
+      var(--color-dark-grey-80) 1rem
+    );
+  }
+
+  ::-webkit-scrollbar-track-piece {
+    background: transparent;
   }
 }
 
@@ -494,38 +548,16 @@
 }
 
 .data-space__viewer__models-documentation {
-  height: 50rem;
-
-  &--auto-height {
-    height: auto;
-  }
-
-  &__search {
+  &__header {
     @include flexVCenter;
 
+    width: 100%;
+    justify-content: space-between;
     height: 3.8rem;
-    justify-content: flex-end;
+  }
 
-    &__input-group {
-      @include flexVCenter;
-
-      position: relative;
-      width: 20rem;
-
-      &__input {
-        width: 100%;
-        height: 2.8rem;
-        padding-left: 2.8rem;
-      }
-
-      &__icon {
-        @include flexCenter;
-
-        position: absolute;
-        height: 2.8rem;
-        width: 2.8rem;
-      }
-    }
+  &__content {
+    height: 50rem;
   }
 
   &__grid {
@@ -636,6 +668,82 @@
         &:hover {
           color: var(--color-dark-shade-800);
         }
+      }
+    }
+  }
+}
+
+.data-space__viewer__models-documentation__search {
+  position: relative;
+
+  &__input {
+    font-size: 1.3rem;
+    height: 2.8rem;
+    padding-right: 2.8rem;
+    padding-left: 1rem;
+    width: 25rem;
+    background: var(--color-dark-grey-85);
+    border-radius: 0.2rem;
+    border: 0.1rem solid var(--color-dark-grey-200);
+
+    &--searching {
+      padding-right: 9rem; // account for the count badge
+    }
+
+    &__search__icon {
+      @include flexCenter;
+
+      position: absolute;
+      top: 0;
+      right: 0.3rem;
+      height: 2.8rem;
+      width: 2.8rem;
+
+      svg {
+        color: var(--color-light-shade-100);
+      }
+    }
+
+    &__clear-btn {
+      @include flexCenter;
+
+      position: absolute;
+      top: 0;
+      right: 0.3rem;
+      height: 2.8rem;
+      width: 2.8rem;
+
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+
+      &:hover svg {
+        color: var(--color-dark-grey-500);
+      }
+    }
+
+    &__config__trigger {
+      @include flexCenter;
+
+      position: absolute;
+      top: 0;
+      right: 3.1rem;
+      height: 2.8rem;
+      width: 1.8rem;
+      cursor: pointer;
+
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+
+      &--toggled svg,
+      &:hover svg {
+        color: var(--color-dark-grey-500);
+      }
+
+      &--active svg,
+      &--active:hover svg {
+        color: var(--color-blue-150);
       }
     }
   }

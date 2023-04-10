@@ -265,7 +265,6 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
 const VirtualAssistantSearchPanel = observer(() => {
   const applicationStore = useApplicationStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const searchConfigButtonRef = useRef<HTMLButtonElement>(null);
   const assistantService = applicationStore.assistantService;
 
   // search text
@@ -285,6 +284,10 @@ const VirtualAssistantSearchPanel = observer(() => {
     assistantService.currentDocumentationEntry = undefined;
     searchInputRef.current?.focus();
   };
+  const toggleSearchConfigMenu = (): void =>
+    assistantService.setShowSearchConfigurationMenu(
+      !assistantService.showSearchConfigurationMenu,
+    );
 
   const downloadDocRegistry = (): void => {
     downloadFileUsingDataURI(
@@ -314,10 +317,6 @@ const VirtualAssistantSearchPanel = observer(() => {
       ContentType.APPLICATION_JSON,
     );
   };
-  const toggleSearchConfigMenu = (): void =>
-    assistantService.setShowSearchConfigurationMenu(
-      !assistantService.showSearchConfigurationMenu,
-    );
 
   useEffect(() => {
     searchInputRef.current?.focus();
@@ -374,7 +373,6 @@ const VirtualAssistantSearchPanel = observer(() => {
           </div>
         )}
         <button
-          ref={searchConfigButtonRef}
           className={clsx('virtual-assistant__search__input__config__trigger', {
             'virtual-assistant__search__input__config__trigger--toggled':
               assistantService.showSearchConfigurationMenu,
@@ -410,7 +408,6 @@ const VirtualAssistantSearchPanel = observer(() => {
         <PanelLoadingIndicator
           isLoading={assistantService.searchState.isInProgress}
         />
-        {/* {assistantService.showSearchConfigurationMenu && ( */}
         <div
           className={clsx('virtual-assistant__search__input__config__panel', {
             'virtual-assistant__search__input__config__panel--toggled':
@@ -421,7 +418,6 @@ const VirtualAssistantSearchPanel = observer(() => {
             configState={assistantService.searchConfigurationState}
           />
         </div>
-        {/* )} */}
         {assistantService.currentDocumentationEntry && (
           <div className="virtual-assistant__search__results">
             <VirtualAssistantDocumentationEntryViewer

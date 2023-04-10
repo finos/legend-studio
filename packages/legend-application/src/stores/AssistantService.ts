@@ -114,7 +114,7 @@ export class AssistantService {
   // search text
   private readonly searchEngine: FuzzySearchEngine<DocumentationEntry>;
   searchConfigurationState: TextSearchAdvancedConfigState;
-  searchState = ActionState.create();
+  readonly searchState = ActionState.create();
   searchText = '';
   searchResults: VirtualAssistantDocumentationEntry[] = [];
   showSearchConfigurationMenu = false;

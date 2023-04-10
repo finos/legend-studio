@@ -241,7 +241,12 @@ const DataSpaceExecutableTDSResultView = observer(
                       sortable: true,
                       resizable: true,
                       field: 'name',
-                      headerName: `Column (${columnSpecifications.length})`,
+                      headerValueGetter: () =>
+                        `Column ${
+                          columnSpecifications.length
+                            ? ` (${columnSpecifications.length})`
+                            : ''
+                        }`,
                       flex: 1,
                     },
                     {
