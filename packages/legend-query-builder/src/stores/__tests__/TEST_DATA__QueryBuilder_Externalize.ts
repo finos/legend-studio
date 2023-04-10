@@ -99,6 +99,98 @@ export const TEST_DATA__lambda_Externalize_externalize_graphFetch = {
   parameters: [],
 };
 
+export const TEST_DATA__lambda_Externalize_externalize_graphFetch_with_different_trees =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'externalize',
+        parameters: [
+          {
+            _type: 'func',
+            function: 'graphFetch',
+            parameters: [
+              {
+                _type: 'func',
+                function: 'getAll',
+                parameters: [
+                  {
+                    _type: 'packageableElementPtr',
+                    fullPath: 'model::TargetPerson',
+                  },
+                ],
+              },
+              {
+                _type: 'classInstance',
+                multiplicity: {
+                  lowerBound: 1,
+                  upperBound: 1,
+                },
+                type: 'rootGraphFetchTree',
+                value: {
+                  subTrees: [
+                    {
+                      _type: 'propertyGraphFetchTree',
+                      subTrees: [],
+                      property: 'const',
+                      parameters: [],
+                    },
+                    {
+                      _type: 'propertyGraphFetchTree',
+                      subTrees: [],
+                      property: 'fullName',
+                      parameters: [],
+                    },
+                    {
+                      _type: 'propertyGraphFetchTree',
+                      subTrees: [],
+                      property: 'age',
+                      parameters: [],
+                    },
+                  ],
+                  _type: 'rootGraphFetchTree',
+                  class: 'model::TargetPerson',
+                },
+              },
+            ],
+          },
+          {
+            _type: 'packageableElementPtr',
+            fullPath: 'model::SourceBinding',
+          },
+          {
+            _type: 'classInstance',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            type: 'rootGraphFetchTree',
+            value: {
+              subTrees: [
+                {
+                  _type: 'propertyGraphFetchTree',
+                  subTrees: [],
+                  property: 'const',
+                  parameters: [],
+                },
+                {
+                  _type: 'propertyGraphFetchTree',
+                  subTrees: [],
+                  property: 'age',
+                  parameters: [],
+                },
+              ],
+              _type: 'rootGraphFetchTree',
+              class: 'model::TargetPerson',
+            },
+          },
+        ],
+      },
+    ],
+    parameters: [],
+  };
+
 export const TEST_DATA__lambda_Externalize_externalize_graphFetchChecked = {
   _type: 'lambda',
   body: [

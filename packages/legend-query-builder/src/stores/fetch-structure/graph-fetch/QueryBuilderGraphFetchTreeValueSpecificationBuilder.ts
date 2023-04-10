@@ -175,8 +175,8 @@ export const appendGraphFetch = (
     `Can't build graph-fetch tree expression: preceding expression is not defined`,
   );
 
-  const seriaizationState = graphFetchTreeState.serializationState;
-  if (seriaizationState instanceof GraphFetchPureSerializationState) {
+  const serializationState = graphFetchTreeState.serializationState;
+  if (serializationState instanceof GraphFetchPureSerializationState) {
     // build graph-fetch tree
     if (
       graphFetchTreeState.treeData &&
@@ -201,9 +201,9 @@ export const appendGraphFetch = (
         graphFetchInstance,
       ];
       serializeFunction.parametersValues = [graphFetchFunc, graphFetchInstance];
-      if (seriaizationState.config) {
+      if (serializationState.config) {
         const configFunction = buildPureSerializationConfig(
-          seriaizationState.config as unknown as Record<PropertyKey, boolean>,
+          serializationState.config as unknown as Record<PropertyKey, boolean>,
           graphFetchTreeState.queryBuilderState.graphManagerState.graph,
         );
         serializeFunction.parametersValues.push(configFunction);
@@ -211,18 +211,18 @@ export const appendGraphFetch = (
       lambdaFunction.expressionSequence[0] = serializeFunction;
     }
   } else if (
-    seriaizationState instanceof GraphFetchExternalFormatSerializationState
+    serializationState instanceof GraphFetchExternalFormatSerializationState
   ) {
     const externalizeFunction = new SimpleFunctionExpression(
       extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXTERNALIZE),
     );
     const mainGraphTree = graphFetchTreeState.treeData;
-    const externalizeTree = seriaizationState.treeData;
+    const externalizeGraphFetchTreeData = serializationState.treeData;
     if (
       mainGraphTree &&
-      externalizeTree &&
+      externalizeGraphFetchTreeData &&
       !isGraphFetchTreeDataEmpty(mainGraphTree) &&
-      !isGraphFetchTreeDataEmpty(externalizeTree)
+      !isGraphFetchTreeDataEmpty(externalizeGraphFetchTreeData)
     ) {
       // 0th param
       const graphFetchInstance = new GraphFetchTreeInstanceValue();
@@ -244,12 +244,12 @@ export const appendGraphFetch = (
       const bindingInstance = new InstanceValue(Multiplicity.ONE, undefined);
       bindingInstance.values = [
         PackageableElementExplicitReference.create(
-          seriaizationState.targetBinding,
+          serializationState.targetBinding,
         ),
       ];
       // 2nd parameter
       const xtGraphFetchInstance = new GraphFetchTreeInstanceValue();
-      xtGraphFetchInstance.values = [externalizeTree.tree];
+      xtGraphFetchInstance.values = [externalizeGraphFetchTreeData.tree];
       // build externalize
       externalizeFunction.parametersValues = [
         graphFetchFunc,
@@ -260,7 +260,7 @@ export const appendGraphFetch = (
     }
   } else {
     throw new UnsupportedOperationError(
-      `Unsupported serialization state ${seriaizationState.getLabel()}`,
+      `Unsupported serialization state ${serializationState.getLabel()}`,
     );
   }
   // build result set modifier: i.e. preview limit
