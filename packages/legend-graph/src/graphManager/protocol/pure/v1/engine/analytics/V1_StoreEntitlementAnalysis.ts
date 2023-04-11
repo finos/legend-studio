@@ -183,8 +183,8 @@ export class V1_DatasetEntitlementAccessApprovedReport extends V1_DatasetEntitle
 
 const V1_datasetEntitlementAccessApprovedReportModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_DatasetEntitlementAccessGrantedReport> =>
-  createModelSchema(V1_DatasetEntitlementAccessGrantedReport, {
+): ModelSchema<V1_DatasetEntitlementAccessApprovedReport> =>
+  createModelSchema(V1_DatasetEntitlementAccessApprovedReport, {
     _type: usingConstantValueSchema(
       V1_DatasetEntitlementReportType.ACCESS_APPROVED,
     ),
@@ -198,8 +198,8 @@ export class V1_DatasetEntitlementAccessRequestedReport extends V1_DatasetEntitl
 
 const V1_datasetEntitlementAccessRequestedReportModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_DatasetEntitlementAccessGrantedReport> =>
-  createModelSchema(V1_DatasetEntitlementAccessGrantedReport, {
+): ModelSchema<V1_DatasetEntitlementAccessRequestedReport> =>
+  createModelSchema(V1_DatasetEntitlementAccessRequestedReport, {
     _type: usingConstantValueSchema(
       V1_DatasetEntitlementReportType.ACCESS_REQUESTED,
     ),
@@ -213,8 +213,8 @@ export class V1_DatasetEntitlementAccessNotGrantedReport extends V1_DatasetEntit
 
 const V1_datasetEntitlementAccessNotGrantedReportModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_DatasetEntitlementAccessGrantedReport> =>
-  createModelSchema(V1_DatasetEntitlementAccessGrantedReport, {
+): ModelSchema<V1_DatasetEntitlementAccessNotGrantedReport> =>
+  createModelSchema(V1_DatasetEntitlementAccessNotGrantedReport, {
     _type: usingConstantValueSchema(
       V1_DatasetEntitlementReportType.ACCESS_NOT_GRANTED,
     ),
@@ -228,8 +228,8 @@ export class V1_DatasetEntitlementUnsupportedReport extends V1_DatasetEntitlemen
 
 const V1_datasetEntitlementUnsupportedReportModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_DatasetEntitlementAccessGrantedReport> =>
-  createModelSchema(V1_DatasetEntitlementAccessGrantedReport, {
+): ModelSchema<V1_DatasetEntitlementUnsupportedReport> =>
+  createModelSchema(V1_DatasetEntitlementUnsupportedReport, {
     _type: usingConstantValueSchema(
       V1_DatasetEntitlementReportType.UNSUPPORTED,
     ),
