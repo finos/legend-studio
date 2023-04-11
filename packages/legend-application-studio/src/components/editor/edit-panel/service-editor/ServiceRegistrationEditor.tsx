@@ -110,6 +110,12 @@ export const ServiceRegistrationEditor = observer(() => {
     );
   };
 
+  const toggleUseGenerateLineage = (): void => {
+    registrationState.setUseGenerateLineage(
+      !registrationState.TEMPORARY__useGenerateLineage,
+    );
+  };
+
   // actions
   const registerService = (): void => {
     if (selectedEnvOption && selectedServiceType) {
@@ -239,6 +245,35 @@ export const ServiceRegistrationEditor = observer(() => {
             </div>
           </div>
         )}
+      {
+        <div className="panel__content__form__section">
+          <div className="panel__content__form__section__header__label">
+            Store Model
+          </div>
+          <div
+            className="panel__content__form__section__toggler"
+            onClick={toggleUseGenerateLineage}
+          >
+            <button
+              className={clsx('panel__content__form__section__toggler__btn', {
+                'panel__content__form__section__toggler__btn--toggled':
+                  registrationState.TEMPORARY__useGenerateLineage,
+              })}
+              tabIndex={-1}
+            >
+              {registrationState.TEMPORARY__useGenerateLineage ? (
+                <CheckSquareIcon />
+              ) : (
+                <SquareIcon />
+              )}
+            </button>
+            <div className="panel__content__form__section__toggler__prompt">
+              Generate Lineage (slower)
+            </div>
+          </div>
+          </div>
+        }
+
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
             Project Version
