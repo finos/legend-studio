@@ -148,7 +148,7 @@ interface V1_EngineSetupConfig {
 
 /**
  * This class defines what the engine is capable of.
- * Right now for most engine oerations, we make network calls to the engine backend.
+ * Right now for most engine operations, we make network calls to the engine backend.
  * However, this might change in the future if we ever bring some engine functionalities
  * to Studio. As such, we want to encapsulate engine client within this class.
  */
