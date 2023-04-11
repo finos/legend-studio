@@ -118,6 +118,22 @@ test(unitTest('Mapping is loaded properly'), () => {
   );
 });
 
+test(unitTest('Mapping is loaded with auto mapped properties'), () => {
+  const graph = graphManagerState.graph;
+  const simpleMapping = graph.getMapping('ui::testAutoMapping');
+  expect(simpleMapping.classMappings).toHaveLength(1);
+  const targetClass = graph.getClass('ui::test2::Firm');
+  const pureInstanceMapping = simpleMapping.classMappings.find(
+    (classMapping) =>
+      classMapping.id.value ===
+      fromElementPathToMappingElementId(targetClass.path),
+  ) as PureInstanceSetImplementation;
+  expect(pureInstanceMapping).toBeDefined();
+  expect(pureInstanceMapping.class.value).toEqual(targetClass);
+  expect(pureInstanceMapping.srcClass?.value).toEqual(targetClass);
+  expect(pureInstanceMapping.propertyMappings.length).toBe(2);
+});
+
 test(unitTest('Milestoning properties are generated for class'), () => {
   const graph = graphManagerState.graph;
   const testClass = graph.getClass('ui::testB');
