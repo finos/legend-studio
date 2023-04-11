@@ -248,7 +248,7 @@ export const ServiceRegistrationEditor = observer(() => {
       {
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
-            Store Model
+            Generate Lineage
           </div>
           <div
             className="panel__content__form__section__toggler"
