@@ -18,9 +18,12 @@ import { observer } from 'mobx-react-lite';
 import {
   AnchorLinkIcon,
   BasePopover,
+  ChevronDownIcon,
+  ChevronRightIcon,
   ClockIcon,
   CogIcon,
   DropdownMenu,
+  FilterIcon,
   InfoCircleIcon,
   MenuContent,
   MenuContentItem,
@@ -29,6 +32,14 @@ import {
   TimesIcon,
   Tooltip,
   clsx,
+  type TreeNodeContainerProps,
+  TreeView,
+  PackageIcon,
+  CheckSquareIcon,
+  MinusSquareIcon,
+  EmptySquareIcon,
+  CaretRightIcon,
+  CaretLeftIcon,
 } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { AgGridReact } from '@ag-grid-community/react';
@@ -44,17 +55,31 @@ import {
   DataSpacePropertyDocumentationEntry,
   type NormalizedDataSpaceDocumentationEntry,
 } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
-import { debounce, prettyCONSTName } from '@finos/legend-shared';
+import { debounce, isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import {
   TextSearchAdvancedConfigMenu,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
+  CORE_PURE_PATH,
+  ELEMENT_PATH_DELIMITER,
   MILESTONING_STEREOTYPE,
   PROPERTY_ACCESSOR,
   getMultiplicityDescription,
 } from '@finos/legend-graph';
 import { useMemo, useRef } from 'react';
+import {
+  type ModelsDocumentationFilterTreeNodeData,
+  type DataSpaceViewerModelsDocumentationState,
+  ModelsDocumentationFilterTreeTypeNodeData,
+  ModelsDocumentationFilterTreeElementNodeData,
+  ModelsDocumentationFilterTreePackageNodeData,
+  ModelsDocumentationFilterTreeNodeCheckType,
+  uncheckFilterTreeNode,
+  checkFilterTreeNode,
+  uncheckAllFilterTree,
+  ModelsDocumentationFilterTreeRootNodeData,
+} from '../stores/DataSpaceModelsDocumentationState.js';
 
 const getMilestoningLabel = (val: string | undefined): string | undefined => {
   switch (val) {
@@ -502,17 +527,23 @@ const ElementDocumentationCellRenderer = (
   );
 };
 
-const DataSpaceModelsDocumentationGrid = observer(
+const DataSpaceModelsDocumentationGridPanel = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
-
     const documentationState = dataSpaceViewerState.modelsDocumentationState;
-    const documentationEntries = documentationState.searchResults;
 
     return (
-      <div className="data-space__viewer__models-documentation__grid data-space__viewer__grid ag-theme-balham-dark">
+      <div
+        className={clsx(
+          'data-space__viewer__models-documentation__grid data-space__viewer__grid ag-theme-balham-dark',
+          {
+            'data-space__viewer__models-documentation__grid--shrink':
+              documentationState.showFilterPanel,
+          },
+        )}
+      >
         <AgGridReact
-          rowData={documentationEntries}
+          rowData={documentationState.filteredSearchResults}
           overlayNoRowsTemplate={`<div class="data-space__viewer__grid--empty">No documentation found</div>`}
           // highlight element row
           getRowClass={(params) =>
@@ -568,6 +599,326 @@ const DataSpaceModelsDocumentationGrid = observer(
   },
 );
 
+const getFilterTreeNodeIcon = (
+  node: ModelsDocumentationFilterTreeNodeData,
+): React.ReactNode | undefined => {
+  if (node instanceof ModelsDocumentationFilterTreeElementNodeData) {
+    if (node.typePath === CORE_PURE_PATH.CLASS) {
+      return (
+        <div className="data-space__viewer__models-documentation__filter__tree__node__type-icon data-space__viewer__models-documentation__filter__tree__node__type-icon--class">
+          C
+        </div>
+      );
+    } else if (node.typePath === CORE_PURE_PATH.ENUMERATION) {
+      return (
+        <div className="data-space__viewer__models-documentation__filter__tree__node__type-icon data-space__viewer__models-documentation__filter__tree__node__type-icon--enumeration">
+          E
+        </div>
+      );
+    } else if (node.typePath === CORE_PURE_PATH.ASSOCIATION) {
+      return (
+        <div className="data-space__viewer__models-documentation__filter__tree__node__type-icon data-space__viewer__models-documentation__filter__tree__node__type-icon--association">
+          A
+        </div>
+      );
+    }
+  } else if (node instanceof ModelsDocumentationFilterTreePackageNodeData) {
+    return (
+      <div className="data-space__viewer__models-documentation__filter__tree__node__type-icon data-space__viewer__models-documentation__filter__tree__node__type-icon--package">
+        <PackageIcon />
+      </div>
+    );
+  } else if (node instanceof ModelsDocumentationFilterTreeTypeNodeData) {
+    switch (node.typePath) {
+      case CORE_PURE_PATH.CLASS:
+        return (
+          <div className="data-space__viewer__models-documentation__filter__tree__node__type-icon data-space__viewer__models-documentation__filter__tree__node__type-icon--class">
+            C
+          </div>
+        );
+      case CORE_PURE_PATH.ENUMERATION:
+        return (
+          <div className="data-space__viewer__models-documentation__filter__tree__node__type-icon data-space__viewer__models-documentation__filter__tree__node__type-icon--enumeration">
+            E
+          </div>
+        );
+      case CORE_PURE_PATH.ASSOCIATION:
+        return (
+          <div className="data-space__viewer__models-documentation__filter__tree__node__type-icon data-space__viewer__models-documentation__filter__tree__node__type-icon--association">
+            A
+          </div>
+        );
+      default:
+        return undefined;
+    }
+  }
+  return undefined;
+};
+
+const getFilterNodeCount = (
+  node: ModelsDocumentationFilterTreeNodeData,
+  documentationState: DataSpaceViewerModelsDocumentationState,
+): number | undefined => {
+  if (node instanceof ModelsDocumentationFilterTreeElementNodeData) {
+    return documentationState.searchResults.filter(
+      (result) => node.elementPath === result.elementEntry.path,
+    ).length;
+  } else if (node instanceof ModelsDocumentationFilterTreePackageNodeData) {
+    return documentationState.searchResults.filter(
+      (result) =>
+        node.packagePath === result.elementEntry.path ||
+        result.elementEntry.path.startsWith(
+          `${node.packagePath}${ELEMENT_PATH_DELIMITER}`,
+        ),
+    ).length;
+  } else if (node instanceof ModelsDocumentationFilterTreeTypeNodeData) {
+    return node.typePath === CORE_PURE_PATH.CLASS
+      ? documentationState.searchResults.filter(
+          (entry) =>
+            entry.elementEntry instanceof DataSpaceClassDocumentationEntry,
+        ).length
+      : node.typePath === CORE_PURE_PATH.ENUMERATION
+      ? documentationState.searchResults.filter(
+          (entry) =>
+            entry.elementEntry instanceof
+            DataSpaceEnumerationDocumentationEntry,
+        ).length
+      : node.typePath === CORE_PURE_PATH.ASSOCIATION
+      ? documentationState.searchResults.filter(
+          (entry) =>
+            entry.elementEntry instanceof
+            DataSpaceAssociationDocumentationEntry,
+        ).length
+      : undefined;
+  } else if (node instanceof ModelsDocumentationFilterTreeRootNodeData) {
+    return documentationState.searchResults.length;
+  }
+  return undefined;
+};
+
+const DataSpaceModelsDocumentationFilterTreeNodeContainer = observer(
+  (
+    props: TreeNodeContainerProps<
+      ModelsDocumentationFilterTreeNodeData,
+      {
+        documentationState: DataSpaceViewerModelsDocumentationState;
+        refreshTreeData: () => void;
+        uncheckTree: () => void;
+        updateFilter: () => void;
+      }
+    >,
+  ) => {
+    const { node, level, innerProps } = props;
+    const { documentationState, refreshTreeData, uncheckTree, updateFilter } =
+      innerProps;
+    const isExpandable = Boolean(node.childrenIds.length);
+    const expandIcon = isExpandable ? (
+      node.isOpen ? (
+        <ChevronDownIcon />
+      ) : (
+        <ChevronRightIcon />
+      )
+    ) : (
+      <div />
+    );
+    const checkerIcon =
+      node.checkType === ModelsDocumentationFilterTreeNodeCheckType.CHECKED ? (
+        <CheckSquareIcon />
+      ) : node.checkType ===
+        ModelsDocumentationFilterTreeNodeCheckType.PARTIALLY_CHECKED ? (
+        <MinusSquareIcon />
+      ) : (
+        <EmptySquareIcon />
+      );
+    const nodeCount = getFilterNodeCount(node, documentationState);
+    const toggleChecker: React.MouseEventHandler<Element> = (event) => {
+      event.stopPropagation();
+
+      if (
+        node.checkType === ModelsDocumentationFilterTreeNodeCheckType.CHECKED
+      ) {
+        uncheckFilterTreeNode(node);
+      } else {
+        checkFilterTreeNode(node);
+      }
+
+      refreshTreeData();
+      updateFilter();
+    };
+    const toggleExpandNode: React.MouseEventHandler<Element> = (event) => {
+      event.stopPropagation();
+
+      if (isExpandable) {
+        node.setIsOpen(!node.isOpen);
+        refreshTreeData();
+      }
+    };
+    const onNodeClick = (): void => {
+      uncheckTree();
+      checkFilterTreeNode(node);
+
+      if (isExpandable && !node.isOpen) {
+        node.setIsOpen(true);
+      }
+      refreshTreeData();
+      updateFilter();
+    };
+
+    return (
+      <div
+        className="tree-view__node__container data-space__viewer__models-documentation__filter__tree__node__container"
+        style={{
+          paddingLeft: `${(level - 1) * 1.4}rem`,
+          display: 'flex',
+        }}
+        onClick={onNodeClick}
+      >
+        <div
+          className="data-space__viewer__models-documentation__filter__tree__node__expand-icon"
+          onClick={toggleExpandNode}
+        >
+          {expandIcon}
+        </div>
+        <div
+          className="data-space__viewer__models-documentation__filter__tree__node__checker"
+          onClick={toggleChecker}
+        >
+          {checkerIcon}
+        </div>
+        {getFilterTreeNodeIcon(node)}
+        <div className="tree-view__node__label data-space__viewer__models-documentation__filter__tree__node__label">
+          {node.label}
+        </div>
+        {nodeCount !== undefined && (
+          <div className="tree-view__node__label data-space__viewer__models-documentation__filter__tree__node__count">
+            {nodeCount}
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+
+const DataSpaceModelsDocumentationFilterPanel = observer(
+  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
+    const { dataSpaceViewerState } = props;
+    const documentationState = dataSpaceViewerState.modelsDocumentationState;
+    const resetAll = (): void => documentationState.resetAllFilters();
+    const resetTypeFilter = (): void => documentationState.resetTypeFilter();
+    const resetPackageFilter = (): void =>
+      documentationState.resetPackageFilter();
+
+    return (
+      <div className="data-space__viewer__models-documentation__filter__panel">
+        <div className="data-space__viewer__models-documentation__filter__group">
+          <div className="data-space__viewer__models-documentation__filter__group__header">
+            <div className="data-space__viewer__models-documentation__filter__group__header__label">
+              Filter
+            </div>
+            <div className="data-space__viewer__models-documentation__filter__group__header__actions">
+              <button
+                className="data-space__viewer__models-documentation__filter__group__header__reset"
+                tabIndex={-1}
+                disabled={!documentationState.isFilterCustomized}
+                onClick={resetAll}
+              >
+                Reset All
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="data-space__viewer__models-documentation__filter__group data-space__viewer__models-documentation__filter__group--by-type">
+          <div className="data-space__viewer__models-documentation__filter__group__header">
+            <div className="data-space__viewer__models-documentation__filter__group__header__label">
+              Filter by Type
+            </div>
+            <div className="data-space__viewer__models-documentation__filter__group__header__actions">
+              <button
+                className="data-space__viewer__models-documentation__filter__group__header__reset"
+                tabIndex={-1}
+                disabled={!documentationState.isTypeFilterCustomized}
+                onClick={resetTypeFilter}
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+          <div className="data-space__viewer__models-documentation__filter__group__content">
+            <TreeView
+              components={{
+                TreeNodeContainer:
+                  DataSpaceModelsDocumentationFilterTreeNodeContainer,
+              }}
+              treeData={documentationState.typeFilterTreeData}
+              getChildNodes={(node) =>
+                node.childrenIds
+                  .map((id) =>
+                    documentationState.typeFilterTreeData.nodes.get(id),
+                  )
+                  .filter(isNonNullable)
+                  .sort((a, b) => a.label.localeCompare(b.label))
+              }
+              innerProps={{
+                documentationState,
+                refreshTreeData: (): void =>
+                  documentationState.resetTypeFilterTreeData(),
+                uncheckTree: (): void =>
+                  uncheckAllFilterTree(documentationState.typeFilterTreeData),
+                updateFilter: (): void => documentationState.updateTypeFilter(),
+              }}
+            />
+          </div>
+        </div>
+        <div className="data-space__viewer__models-documentation__filter__group data-space__viewer__models-documentation__filter__group--by-package">
+          <div className="data-space__viewer__models-documentation__filter__group__header">
+            <div className="data-space__viewer__models-documentation__filter__group__header__label">
+              Filter by Package
+            </div>
+            <div className="data-space__viewer__models-documentation__filter__group__header__actions">
+              <button
+                className="data-space__viewer__models-documentation__filter__group__header__reset"
+                tabIndex={-1}
+                disabled={!documentationState.isPackageFilterCustomized}
+                onClick={resetPackageFilter}
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+          <div className="data-space__viewer__models-documentation__filter__group__content">
+            <TreeView
+              components={{
+                TreeNodeContainer:
+                  DataSpaceModelsDocumentationFilterTreeNodeContainer,
+              }}
+              treeData={documentationState.packageFilterTreeData}
+              getChildNodes={(node) =>
+                node.childrenIds
+                  .map((id) =>
+                    documentationState.packageFilterTreeData.nodes.get(id),
+                  )
+                  .filter(isNonNullable)
+                  .sort((a, b) => a.label.localeCompare(b.label))
+              }
+              innerProps={{
+                documentationState,
+                refreshTreeData: (): void =>
+                  documentationState.resetPackageFilterTreeData(),
+                uncheckTree: (): void =>
+                  uncheckAllFilterTree(
+                    documentationState.packageFilterTreeData,
+                  ),
+                updateFilter: (): void =>
+                  documentationState.updatePackageFilter(),
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
 const DataSpaceModelsDocumentationSearchBar = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
@@ -612,13 +963,7 @@ const DataSpaceModelsDocumentationSearchBar = observer(
         <input
           ref={searchInputRef}
           onKeyDown={onKeyDown}
-          className={clsx(
-            'data-space__viewer__models-documentation__search__input input--dark',
-            {
-              'data-space__viewer__models-documentation__search__input--searching':
-                documentationState.searchText,
-            },
-          )}
+          className="data-space__viewer__models-documentation__search__input input--dark"
           spellCheck={false}
           onChange={onSearchTextChange}
           value={searchText}
@@ -690,6 +1035,11 @@ export const DataSpaceModelsDocumentation = observer(
     const { dataSpaceViewerState } = props;
     const documentationEntries =
       dataSpaceViewerState.dataSpaceAnalysisResult.elementDocs;
+    const documentationState = dataSpaceViewerState.modelsDocumentationState;
+    const toggleFilterPanel = (): void =>
+      documentationState.setShowFilterPanel(
+        !documentationState.showFilterPanel,
+      );
 
     return (
       <div className="data-space__viewer__wiki__section">
@@ -705,13 +1055,34 @@ export const DataSpaceModelsDocumentation = observer(
           {documentationEntries.length > 0 && (
             <div className="data-space__viewer__models-documentation">
               <div className="data-space__viewer__models-documentation__header">
-                <div className="data-space__viewer__models-documentation__header__filters"></div>
+                <button
+                  className="data-space__viewer__models-documentation__filter__toggler"
+                  title="Toggle Filter Panel"
+                  tabIndex={-1}
+                  onClick={toggleFilterPanel}
+                >
+                  <div className="data-space__viewer__models-documentation__filter__toggler__arrow">
+                    {documentationState.showFilterPanel ? (
+                      <CaretLeftIcon />
+                    ) : (
+                      <CaretRightIcon />
+                    )}
+                  </div>
+                  <div className="data-space__viewer__models-documentation__filter__toggler__icon">
+                    <FilterIcon />
+                  </div>
+                </button>
                 <DataSpaceModelsDocumentationSearchBar
                   dataSpaceViewerState={dataSpaceViewerState}
                 />
               </div>
               <div className="data-space__viewer__models-documentation__content">
-                <DataSpaceModelsDocumentationGrid
+                {documentationState.showFilterPanel && (
+                  <DataSpaceModelsDocumentationFilterPanel
+                    dataSpaceViewerState={dataSpaceViewerState}
+                  />
+                )}
+                <DataSpaceModelsDocumentationGridPanel
                   dataSpaceViewerState={dataSpaceViewerState}
                 />
               </div>

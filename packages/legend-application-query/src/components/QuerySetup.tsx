@@ -22,7 +22,7 @@ import {
   MoreHorizontalIcon,
   DropdownMenu,
   PencilIcon,
-  ChevronDownThinIcon,
+  ThinChevronDownIcon,
   CircleIcon,
   MenuContent,
   MenuContentItem,
@@ -332,7 +332,7 @@ export const QuerySetupLandingPage = withQuerySetupLandingPageStore(
                             tabIndex={-1}
                             title="Show all action groups"
                           >
-                            <ChevronDownThinIcon />
+                            <ThinChevronDownIcon />
                           </button>
                         </div>
                       )}

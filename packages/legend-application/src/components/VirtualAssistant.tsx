@@ -31,7 +31,7 @@ import {
   SunglassesIcon,
   WizardHatIcon,
   FaceLaughWinkIcon,
-  VerticalDragHandleThinIcon,
+  ThinVerticalDragHandleIcon,
   CircleIcon,
   PanelLoadingIndicator,
   BasePopover,
@@ -743,7 +743,7 @@ export const VirtualAssistant = observer(() => {
               className="virtual-assistant__station__drag-handle__content"
               title={isDragging ? undefined : 'Grab to drag assistant'}
             >
-              <VerticalDragHandleThinIcon />
+              <ThinVerticalDragHandleIcon />
             </div>
           </ContextMenu>
         </div>

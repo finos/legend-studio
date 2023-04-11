@@ -71,7 +71,7 @@
 
       &__verified-badge {
         margin-left: 1rem;
-        font-size: 3rem;
+        font-size: 2.4rem;
         color: var(--color-light-grey-0);
       }
     }
@@ -140,25 +140,7 @@
     width: 100%;
 
     &__label {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    &__count-badge {
-      @include flexCenter;
-      @include flexConstantDimension;
-
-      height: 1.6rem;
-      padding: 0 0.5rem;
-      margin-left: 1rem;
-      border-radius: 0.2rem;
-      background: var(--color-blue-150);
-      color: var(--color-light-grey-200);
-      font-size: 1.2rem;
-      font-family: 'Roboto Mono', monospace;
-      font-weight: 900;
-      margin-right: 0.5rem;
+      @include ellipsisTextOverflow;
     }
   }
 
@@ -557,119 +539,336 @@
   }
 
   &__content {
+    display: flex;
+    flex-direction: row;
     height: 50rem;
   }
+}
 
-  &__grid {
-    height: calc(100% - 3.8rem);
+.data-space__viewer__models-documentation__grid {
+  width: 100%;
+
+  &--shrink {
+    width: calc(100% - 25rem);
+  }
+
+  &__cell {
+    @include flexVCenter;
+
     width: 100%;
+    justify-content: space-between;
 
-    &__cell {
+    &__label {
       @include flexVCenter;
 
-      width: 100%;
-      justify-content: space-between;
+      width: calc(100% - 4rem);
+    }
 
-      &__label {
-        @include flexVCenter;
+    &__label__icon {
+      @include flexCenter;
+      @include flexConstantDimension;
 
-        width: calc(100% - 4rem);
+      height: 1.8rem;
+      width: 1.8rem;
+      border-radius: 0.2rem;
+      background: var(--color-dark-grey-100);
+      color: var(--color-light-grey-200);
+      font-size: 1.2rem;
+      font-family: 'Roboto Mono', monospace;
+      font-weight: 900;
+      margin-right: 0.5rem;
+
+      &--class {
+        background: var(--color-purple-400);
       }
 
-      &__label__icon {
-        @include flexCenter;
-        @include flexConstantDimension;
-
-        height: 1.8rem;
-        width: 1.8rem;
-        border-radius: 0.2rem;
-        background: var(--color-dark-grey-100);
-        color: var(--color-light-grey-200);
-        font-size: 1.2rem;
-        font-family: 'Roboto Mono', monospace;
-        font-weight: 900;
-        margin-right: 0.5rem;
-
-        &--class {
-          background: var(--color-purple-400);
-        }
-
-        &--enumeration {
-          background: var(--color-pink-300);
-        }
-
-        &--association {
-          background: var(--color-green-200);
-        }
-
-        &--property {
-          background: var(--color-blue-180);
-        }
-
-        &--enum {
-          background: var(--color-orange-150);
-        }
+      &--enumeration {
+        background: var(--color-pink-300);
       }
 
-      &__label__text {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+      &--association {
+        background: var(--color-green-200);
       }
 
-      &__label__milestoning-badge {
-        @include flexCenter;
-        @include flexConstantDimension;
-
-        width: 2rem;
-        margin-right: 1rem;
-
-        svg {
-          color: var(--color-blue-150);
-          font-size: 1.2rem;
-        }
+      &--property {
+        background: var(--color-blue-180);
       }
 
-      &__actions {
-        @include flexVCenter;
-
-        width: 4rem;
+      &--enum {
+        background: var(--color-orange-150);
       }
+    }
 
-      &__action {
-        @include flexCenter;
-        @include flexConstantDimension;
+    &__label__text {
+      @include ellipsisTextOverflow;
+    }
 
-        color: var(--color-dark-grey-350);
-        width: 2rem;
-        height: 2rem;
+    &__label__milestoning-badge {
+      @include flexCenter;
+      @include flexConstantDimension;
 
-        &:hover {
-          color: var(--color-light-grey-400);
-        }
-      }
+      width: 2rem;
+      margin-right: 1rem;
 
-      &__action__info {
+      svg {
+        color: var(--color-blue-150);
         font-size: 1.2rem;
       }
     }
 
-    &__element-row {
-      background: var(--color-yellow-200);
-      color: var(--color-dark-grey-100);
+    &__actions {
+      @include flexVCenter;
 
-      --ag-row-hover-color: var(--color-yellow-100);
+      width: 4rem;
     }
 
-    &__element-row &__cell {
-      &__action {
-        color: var(--color-dark-shade-300);
+    &__action {
+      @include flexCenter;
+      @include flexConstantDimension;
 
-        &:hover {
-          color: var(--color-dark-shade-800);
-        }
+      color: var(--color-dark-grey-350);
+      width: 2rem;
+      height: 2rem;
+
+      &:hover {
+        color: var(--color-light-grey-400);
       }
     }
+
+    &__action__info {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__element-row {
+    background: var(--color-yellow-200);
+    color: var(--color-dark-grey-100);
+
+    --ag-row-hover-color: var(--color-yellow-100);
+  }
+
+  &__element-row &__cell {
+    &__action {
+      color: var(--color-dark-shade-300);
+
+      &:hover {
+        color: var(--color-dark-shade-800);
+      }
+    }
+  }
+}
+
+.data-space__viewer__models-documentation__filter {
+  &__toggler {
+    @include flexVCenter;
+    @include flexConstantDimension;
+
+    height: 2.8rem;
+    border: 0.1rem solid var(--color-dark-grey-280);
+    color: var(--color-light-grey-200);
+    margin-right: 0.5rem;
+
+    &:hover {
+      color: var(--color-light-grey-50);
+    }
+
+    &__arrow {
+      @include flexCenter;
+
+      width: 1.2rem;
+
+      svg {
+        font-size: 1.2rem;
+      }
+    }
+
+    &__icon {
+      @include flexCenter;
+
+      border-left: 0.1rem solid var(--color-dark-grey-280);
+      width: 2.8rem;
+      height: 2.8rem;
+    }
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    width: 25rem;
+    margin-right: 0.5rem;
+    border-radius: 0.2rem;
+    background: var(--color-dark-grey-85);
+    border: 0.1rem solid var(--color-dark-grey-200);
+    color: var(--color-light-grey-50);
+  }
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__group + &__group {
+    border-top: 0.1rem solid var(--color-dark-grey-200);
+  }
+
+  &__group--by-type {
+    height: 13rem;
+  }
+
+  &__group--by-package {
+    height: calc(100% - 16.2rem);
+  }
+
+  &__group__header {
+    @include flexVCenter;
+    @include flexConstantDimension;
+
+    justify-content: space-between;
+    height: 3.2rem;
+    padding: 0 1rem;
+    user-select: none;
+  }
+
+  &__group__header__label {
+    @include ellipsisTextOverflow;
+
+    font-weight: 500;
+  }
+
+  &__group__header__actions {
+    @include flexVCenter;
+  }
+
+  &__group__header__reset {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.1rem;
+    color: var(--color-blue-150);
+    margin-left: 0.5rem;
+
+    &:hover {
+      color: var(--color-blue-100);
+    }
+
+    &[disabled],
+    &[disabled]:hover {
+      color: var(--color-dark-grey-350);
+    }
+  }
+
+  &__group__content {
+    padding: 0.5rem;
+    padding-top: 0;
+    overflow-y: auto;
+  }
+}
+
+.data-space__viewer__models-documentation__filter__tree {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &__node__container {
+    display: flex;
+    width: 100%;
+    height: 2.2rem;
+
+    &:hover {
+      background: var(--color-dark-blue-shade-100);
+    }
+  }
+
+  &__node__content {
+    @include flexVCenter;
+
+    height: 100%;
+    width: calc(100% - 3.3rem);
+  }
+
+  &__node__type-icon {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    height: 1.4rem;
+    width: 1.4rem;
+    border-radius: 0.2rem;
+    color: var(--color-light-grey-200);
+    font-size: 1rem;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    user-select: none;
+    margin-left: 0.5rem;
+
+    &--class {
+      background: var(--color-purple-400);
+    }
+
+    &--enumeration {
+      background: var(--color-pink-300);
+    }
+
+    &--association {
+      background: var(--color-green-200);
+    }
+
+    &--package {
+      color: var(--color-dark-grey-400);
+    }
+  }
+
+  &__node__checker {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    width: 1.4rem;
+    height: 100%;
+
+    svg {
+      color: var(--color-dark-grey-500);
+      font-size: 1.2rem;
+    }
+
+    &:hover svg {
+      color: var(--color-light-grey-300);
+    }
+  }
+
+  &__node__expand-icon {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    width: 1.4rem;
+    height: 100%;
+
+    svg {
+      color: var(--color-light-grey-400);
+      font-size: 1.2rem;
+    }
+  }
+
+  &__node__label {
+    font-size: 1.2rem;
+    color: var(--color-light-grey-400);
+    user-select: none;
+    margin-left: 0.5rem;
+  }
+
+  &__node__count {
+    @include flexCenter;
+
+    font-family: 'Roboto Mono', monospace;
+    margin-left: 0.5rem;
+    height: 1.4rem;
+    background: var(--color-dark-grey-200);
+    color: var(--color-dark-grey-500);
+    padding: 0 0.3rem;
+    border-radius: 0.2rem;
+    font-size: 0.8rem;
+    font-weight: 700;
   }
 }
 
@@ -679,16 +878,12 @@
   &__input {
     font-size: 1.3rem;
     height: 2.8rem;
-    padding-right: 2.8rem;
+    padding-right: 5.6rem;
     padding-left: 1rem;
     width: 25rem;
     background: var(--color-dark-grey-85);
     border-radius: 0.2rem;
     border: 0.1rem solid var(--color-dark-grey-200);
-
-    &--searching {
-      padding-right: 9rem; // account for the count badge
-    }
 
     &__search__icon {
       @include flexCenter;
@@ -1030,6 +1225,7 @@
 
     height: 100%;
     width: 15rem;
+    min-width: 15rem;
     border-radius: 0.2rem 0 0 0.2rem;
     padding: 0 1rem;
     line-height: 2.8rem;
@@ -1093,6 +1289,7 @@
 
     height: 100%;
     width: 15rem;
+    min-width: 15rem;
     border-radius: 0.2rem 0 0 0.2rem;
     padding: 0 1rem;
     line-height: 2.8rem;

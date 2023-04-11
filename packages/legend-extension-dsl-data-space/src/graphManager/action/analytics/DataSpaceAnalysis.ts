@@ -66,11 +66,19 @@ export class NormalizedDataSpaceDocumentationEntry {
     this.elementEntry = elementEntry;
     this.entry = entry;
   }
+
+  get humanizedText(): string {
+    return prettyCONSTName(this.text);
+  }
 }
 
 export class DataSpaceBasicDocumentationEntry {
   name!: string;
   docs: string[] = [];
+
+  get humanizedName(): string {
+    return prettyCONSTName(this.name);
+  }
 }
 
 export class DataSpacePropertyDocumentationEntry extends DataSpaceBasicDocumentationEntry {
