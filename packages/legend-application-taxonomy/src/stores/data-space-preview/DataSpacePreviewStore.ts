@@ -160,6 +160,11 @@ export class DataSpacePreviewStore {
             }
           },
         },
+        {
+          TEMPORARY__enableExperimentalFeatures:
+            this.applicationStore.config.options
+              .TEMPORARY__useDataSpaceViewerExperimentalFeatures,
+        },
       );
       this.initState.pass();
     } catch (error) {

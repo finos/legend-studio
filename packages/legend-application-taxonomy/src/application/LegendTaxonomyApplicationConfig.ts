@@ -65,7 +65,32 @@ export interface LegendTaxonomyApplicationConfigurationData
   taxonomy: PlainObject<TaxonomyTreeOption>[];
 }
 
+class LegendTaxonomyApplicationCoreOptions {
+  /**
+   * Enables experimental features for data-space viewer.
+   *
+   * NOTE: we should remove this when we finalize the data-space viewer feature set.
+   */
+  TEMPORARY__useDataSpaceViewerExperimentalFeatures = false;
+
+  private static readonly serialization = new SerializationFactory(
+    createModelSchema(LegendTaxonomyApplicationCoreOptions, {
+      TEMPORARY__useDataSpaceViewerExperimentalFeatures: optional(primitive()),
+    }),
+  );
+
+  static create(
+    configData: PlainObject<LegendTaxonomyApplicationCoreOptions>,
+  ): LegendTaxonomyApplicationCoreOptions {
+    return LegendTaxonomyApplicationCoreOptions.serialization.fromJson(
+      configData,
+    );
+  }
+}
+
 export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
+  readonly options = new LegendTaxonomyApplicationCoreOptions();
+
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
@@ -180,6 +205,12 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
     this.studioInstances = guaranteeNonNullable(
       input.configData.studio.instances,
       `Can't configure application: 'studio.instances' field is missing`,
+    );
+
+    // options
+    this.options = LegendTaxonomyApplicationCoreOptions.create(
+      (input.configData.extensions?.core ??
+        {}) as PlainObject<LegendTaxonomyApplicationCoreOptions>,
     );
   }
 
