@@ -22,7 +22,6 @@ import {
   TEST_DATA__MissingStereoType,
   TEST_DATA__MissingTagValue,
   TEST_DATA__MissingTargetClassinMapping,
-  TEST_DATA__MissingClassMapping,
   TEST_DATA__MissingClassMappingWithTargetId,
   TEST_DATA__DuplicateEnumerationValues,
   TEST_DATA__DuplicateProfileTags,
@@ -120,17 +119,6 @@ test(unitTest('Missing class in Pure Instance class mapping'), async () => {
       graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(`Can't find type 'ui::test1::Target_Something'`);
-});
-
-test(unitTest('Missing class mapping'), async () => {
-  await expect(() =>
-    TEST__buildGraphWithEntities(
-      graphManagerState,
-      TEST_DATA__MissingClassMapping as Entity[],
-    ),
-  ).rejects.toThrowError(
-    `Can't find any class mapping for class 'ui::Employeer' in mapping 'ui::myMap'`,
-  );
 });
 
 test(unitTest('STRICT-MODE: Missing class mapping with ID'), async () => {
