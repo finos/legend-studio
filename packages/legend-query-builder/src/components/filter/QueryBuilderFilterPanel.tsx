@@ -88,6 +88,19 @@ import {
 } from '../shared/BasicValueSpecificationEditor.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 
+export const IS_DRAGGABLE_FILTER_DND_TYPES_FETCHSUPPORTED = [
+  QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+  QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+];
+
+export const IS_DRAGGABLE_FILTER_DND_TYPES = [
+  QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+];
+
 const QueryBuilderFilterGroupConditionEditor = observer(
   (props: {
     node: QueryBuilderFilterTreeGroupNodeData;
@@ -242,15 +255,8 @@ const QueryBuilderFilterConditionEditor = observer(
       isPotentiallyDragging:
         monitor.isDragging() &&
         (queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
-          ? [
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-              QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-            ]
-          : [
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-            ]
+          ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCHSUPPORTED
+          : IS_DRAGGABLE_FILTER_DND_TYPES
         ).includes(monitor.getItemType()?.toString() ?? ''),
     }));
 
@@ -427,8 +433,9 @@ const QueryBuilderFilterBlankConditionEditor = observer(
   (props: {
     node: QueryBuilderFilterTreeBlankConditionNodeData;
     isDragOver: boolean;
+    isPotentiallyDragging: boolean;
   }) => {
-    const { isDragOver } = props;
+    const { isDragOver, isPotentiallyDragging } = props;
     return (
       <div className="query-builder-filter-tree__node__label__content">
         <PanelEntryDropZonePlaceholder
@@ -436,7 +443,14 @@ const QueryBuilderFilterBlankConditionEditor = observer(
           label="Create Condition"
           className="query-builder__dnd__placeholder"
         >
-          <div className="query-builder-filter-tree__blank-node">blank</div>
+          <div
+            className={clsx('query-builder-filter-tree__blank-node', {
+              'query-builder-filter-tree__blank-node--potential__dropzone':
+                isPotentiallyDragging,
+            })}
+          >
+            blank
+          </div>
         </PanelEntryDropZonePlaceholder>
       </div>
     );
@@ -518,11 +532,31 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     // Drag and Drop
     const handleDrop = useCallback(
       (item: QueryBuilderFilterDropTarget, type: string): void => {
-        if (
-          Object.values<string>(QUERY_BUILDER_FILTER_DND_TYPE).includes(type)
-        ) {
-          // const dropNode = (item as QueryBuilderFilterConditionDragSource).node;
-          // TODO: re-arrange
+        if (QUERY_BUILDER_FILTER_DND_TYPE.CONDITION === type) {
+          const nodeBeingDragged = (
+            item as QueryBuilderFilterConditionDragSource
+          ).node;
+
+          const newCreatedNode = new QueryBuilderFilterTreeConditionNodeData(
+            undefined,
+            (
+              filterState.nodes.get(
+                nodeBeingDragged.id,
+              ) as QueryBuilderFilterTreeConditionNodeData
+            ).condition,
+          );
+
+          if (node instanceof QueryBuilderFilterTreeBlankConditionNodeData) {
+            filterState.replaceBlankNodeWithNode(newCreatedNode, node);
+            filterState.removeNodeAndPruneBranch(nodeBeingDragged);
+          } else if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
+            filterState.newGroupWithConditionFromNode(newCreatedNode, node);
+
+            filterState.removeNodeAndPruneBranch(nodeBeingDragged);
+          } else if (node instanceof QueryBuilderFilterTreeGroupNodeData) {
+            filterState.addNodeFromNode(newCreatedNode, node);
+            filterState.removeNodeAndPruneBranch(nodeBeingDragged);
+          }
         } else {
           let filterConditionState: FilterConditionState;
           try {
@@ -597,17 +631,8 @@ const QueryBuilderFilterTreeNodeContainer = observer(
       () => ({
         accept:
           queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
-            ? [
-                ...Object.values(QUERY_BUILDER_FILTER_DND_TYPE),
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-                QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-              ]
-            : [
-                ...Object.values(QUERY_BUILDER_FILTER_DND_TYPE),
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-              ],
+            ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCHSUPPORTED
+            : IS_DRAGGABLE_FILTER_DND_TYPES,
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item, monitor.getItemType() as string);
@@ -640,15 +665,8 @@ const QueryBuilderFilterTreeNodeContainer = observer(
       isPotentiallyDragging:
         monitor.isDragging() &&
         (queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
-          ? [
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-              QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-            ]
-          : [
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-            ]
+          ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCHSUPPORTED
+          : IS_DRAGGABLE_FILTER_DND_TYPES
         ).includes(monitor.getItemType()?.toString() ?? ''),
     }));
 
@@ -724,6 +742,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                 <QueryBuilderFilterBlankConditionEditor
                   node={node}
                   isDragOver={isDragOver}
+                  isPotentiallyDragging={isPotentiallyDragging}
                 />
               )}
             </div>
@@ -897,15 +916,8 @@ export const QueryBuilderFilterPanel = observer(
       isPotentiallyDragging:
         monitor.isDragging() &&
         (queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
-          ? [
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-              QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-            ]
-          : [
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-            ]
+          ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCHSUPPORTED
+          : IS_DRAGGABLE_FILTER_DND_TYPES
         ).includes(monitor.getItemType()?.toString() ?? ''),
     }));
 

@@ -164,6 +164,11 @@
     font-weight: 700;
     color: var(--color-dark-grey-300);
     height: 2.8rem;
+
+    &--potential__dropzone {
+      border: 0.2rem dashed var(--color-dark-grey-400);
+      color: var(--color-dark-grey-300);
+    }
   }
 
   &__node__container--selected &__blank-node,

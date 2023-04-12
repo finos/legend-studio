@@ -71,8 +71,8 @@ import {
   type QueryBuilderPostFilterConditionDragSource,
   QueryBuilderPostFilterTreeConditionNodeData,
   QueryBuilderPostFilterTreeGroupNodeData,
-  QUERY_BUILDER_POST_FILTER_DND_TYPE,
   QueryBuilderPostFilterTreeBlankConditionNodeData,
+  QUERY_BUILDER_POST_FILTER_DND_TYPE,
 } from '../../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
 import {
   type QueryBuilderProjectionColumnState,
@@ -386,12 +386,20 @@ const QueryBuilderPostFilterConditionEditor = observer(
       cleanUpReloadValues,
     };
 
+    // svp0
     const { isPotentiallyDragging } = useDragLayer((monitor) => ({
       isPotentiallyDragging:
         monitor.isDragging() &&
         (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
-          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
+          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE ||
+          monitor.getItemType() ===
+            QUERY_BUILDER_POST_FILTER_DND_TYPE.CONDITION),
     }));
+    // [
+    //   ...Object.values(QUERY_BUILDER_POST_FILTER_DND_TYPE),
+    //   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+    //   QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
+    // ]
 
     return (
       <div className="query-builder-post-filter-tree__node__label__content">
@@ -475,7 +483,6 @@ const QueryBuilderPostFilterConditionEditor = observer(
           </div>
         ) : (
           <>
-            {' '}
             <PanelEntryDropZonePlaceholder
               showPlaceholder={isDragOver}
               label="Add New Logical Group"
@@ -559,8 +566,9 @@ const QueryBuilderPostFilterBlankConditionEditor = observer(
   (props: {
     node: QueryBuilderPostFilterTreeBlankConditionNodeData;
     isDragOver: boolean;
+    isPotentiallyDragging: boolean;
   }) => {
-    const { isDragOver } = props;
+    const { isDragOver, isPotentiallyDragging } = props;
     return (
       <div className="query-builder-post-filter-tree__node__label__content">
         <PanelEntryDropZonePlaceholder
@@ -568,7 +576,12 @@ const QueryBuilderPostFilterBlankConditionEditor = observer(
           label="Create Condition"
           className="query-builder__dnd__placeholder"
         >
-          <div className="query-builder-post-filter-tree__blank-node">
+          <div
+            className={clsx('query-builder-post-filter-tree__blank-node', {
+              'query-builder-post-filter-tree__blank-node--potential__dropzone':
+                isPotentiallyDragging,
+            })}
+          >
             blank
           </div>
         </PanelEntryDropZonePlaceholder>
@@ -601,7 +614,34 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       postFilterState.removeNodeAndPruneBranch(node);
     const handleDrop = useCallback(
       (item: QueryBuilderPostFilterDropTarget, type: string): void => {
-        if (
+        if (QUERY_BUILDER_POST_FILTER_DND_TYPE.CONDITION === type) {
+          const nodeBeingDragged = (
+            item as QueryBuilderPostFilterConditionDragSource
+          ).node;
+
+          const newCreatedNode =
+            new QueryBuilderPostFilterTreeConditionNodeData(
+              undefined,
+              (
+                postFilterState.nodes.get(
+                  nodeBeingDragged.id,
+                ) as QueryBuilderPostFilterTreeConditionNodeData
+              ).condition,
+            );
+
+          if (node instanceof QueryBuilderPostFilterTreeConditionNodeData) {
+            postFilterState.newGroupWithConditionFromNode(newCreatedNode, node);
+            postFilterState.removeNodeAndPruneBranch(nodeBeingDragged);
+          } else if (node instanceof QueryBuilderPostFilterTreeGroupNodeData) {
+            postFilterState.addNodeFromNode(newCreatedNode, node);
+            postFilterState.removeNodeAndPruneBranch(nodeBeingDragged);
+          } else if (
+            node instanceof QueryBuilderPostFilterTreeBlankConditionNodeData
+          ) {
+            postFilterState.replaceBlankNodeWithNode(newCreatedNode, node);
+            postFilterState.removeNodeAndPruneBranch(nodeBeingDragged);
+          }
+        } else if (
           type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
           type === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE
         ) {
@@ -709,7 +749,9 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       isPotentiallyDragging:
         monitor.isDragging() &&
         (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
-          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
+          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE ||
+          monitor.getItemType() ===
+            QUERY_BUILDER_POST_FILTER_DND_TYPE.CONDITION),
     }));
 
     return (
@@ -781,6 +823,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
                 <QueryBuilderPostFilterBlankConditionEditor
                   node={node}
                   isDragOver={isDragOver}
+                  isPotentiallyDragging={isPotentiallyDragging}
                 />
               )}
             </div>
@@ -1021,7 +1064,9 @@ const QueryBuilderPostFilterPanelContent = observer(
       isPotentiallyDragging:
         monitor.isDragging() &&
         (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
-          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
+          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE ||
+          monitor.getItemType() ===
+            QUERY_BUILDER_POST_FILTER_DND_TYPE.CONDITION),
     }));
 
     return (
