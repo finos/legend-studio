@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 26.0.5
+
+### Patch Changes
+
+- [#2053](https://github.com/finos/legend-studio/pull/2053) [`411b3c3d1`](https://github.com/finos/legend-studio/commit/411b3c3d1eaf8f2c0eee7121cec97638948e9390) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Remove non-null check for target set in case of complex property mapping.
+
 ## 26.0.4
 
 ## 26.0.3
