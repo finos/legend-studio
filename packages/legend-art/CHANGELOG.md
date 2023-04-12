@@ -1,5 +1,13 @@
 # @finos/legend-art
 
+## 6.0.0
+
+### Major Changes
+
+- [#2094](https://github.com/finos/legend-studio/pull/2094) [`7d8035415`](https://github.com/finos/legend-studio/commit/7d803541596f7dab018fae833eba01fdc7bbfcdb) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Changed how we expose test mocks in exports: `@finos/legend-art/lib/markdown/test/MockedReactMarkdown.js` -> `@finos/legend-art/markdown/test/MockedReactMarkdown.js` and `@finos/legend-art/lib/markdown/test/MockedRemarkGFM.js` -> `@finos/legend-art/markdown/test/MockedRemarkGFM.js`.
+
+  Moved all text editor logics to `@finos/legend-lego/code-editor` and renamed them to `CodeEditor` instead of `TextEditor`, e.g. `disposeEditor()` -> `disposeCodeEditor()`, `getBaseTextEditorOptions()` -> `getBaseCodeEditorOptions()`. In terms of testing, `monaco-editor` mock utils are now exposed under `@finos/legend-lego/code-editor/test` and the test mock has been exported via `@finos/legend-lego/code-editor/test/MockedMonacoEditor.js`.
+
 ## 5.0.42
 
 ## 5.0.41

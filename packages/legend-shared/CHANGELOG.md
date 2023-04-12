@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 8.1.0
+
+### Minor Changes
+
+- [#2094](https://github.com/finos/legend-studio/pull/2094) [`7d8035415`](https://github.com/finos/legend-studio/commit/7d803541596f7dab018fae833eba01fdc7bbfcdb) ([@akphi](https://github.com/akphi)) - Add `FuzzySearch` engine.
+
 ## 8.0.5
 
 ## 8.0.4

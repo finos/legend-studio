@@ -1,5 +1,13 @@
 # @finos/legend-application
 
+## 14.0.0
+
+### Major Changes
+
+- [#2094](https://github.com/finos/legend-studio/pull/2094) [`7d8035415`](https://github.com/finos/legend-studio/commit/7d803541596f7dab018fae833eba01fdc7bbfcdb) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Moved execution plan viewer logic to `@finos/legend-query-builder`
+
+- [#2094](https://github.com/finos/legend-studio/pull/2094) [`7d8035415`](https://github.com/finos/legend-studio/commit/7d803541596f7dab018fae833eba01fdc7bbfcdb) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `TextInputEditor` to `CodeEditor` and move it to `@finos/legend-lego/code-editor`. Moved unrelated documentation keys out of `LEGEND_APPLICATION_DOCUMENTATION_KEY`. Renamed `TextSearchAdvancedConfigMenu` and `TextSearchAdvancedConfigState` to `FuzzySearchAdvancedConfigMenu` and `FuzzySearchAdvancedConfigState` respectively.
+
 ## 13.0.11
 
 ## 13.0.10
