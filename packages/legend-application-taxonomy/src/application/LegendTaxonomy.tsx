@@ -19,7 +19,6 @@ import {
   type LegendApplicationConfig,
   LegendApplication,
   ApplicationStoreProvider,
-  setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
   type LegendApplicationConfigurationInput,
   BrowserRouter,
@@ -34,10 +33,6 @@ import {
   LegendTaxonomyApplicationConfig,
 } from './LegendTaxonomyApplicationConfig.js';
 import { Core_LegendTaxonomyApplicationPlugin } from '../components/Core_LegendTaxonomyApplicationPlugin.js';
-
-const setupLegendTaxonomyUILibrary = async (): Promise<void> => {
-  // do nothing
-};
 
 export class LegendTaxonomy extends LegendApplication {
   declare config: LegendTaxonomyApplicationConfig;
@@ -62,11 +57,6 @@ export class LegendTaxonomy extends LegendApplication {
   }
 
   async loadApplication(): Promise<void> {
-    // Setup React application libraries
-    await setupLegendApplicationUILibrary(this.pluginManager, this.logger);
-    await setupLegendTaxonomyUILibrary();
-
-    // Render React application
     const rootElement = createRoot(getRootElement());
     rootElement.render(
       <BrowserRouter basename={this.baseUrl}>

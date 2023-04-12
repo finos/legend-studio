@@ -21,6 +21,8 @@ import {
   type ContextualDocumentationEntry,
   type SettingConfigurationEntry,
   collectSettingConfigurationEntriesFromConfig,
+  type LegendApplicationSetup,
+  setupPureLanguageService,
 } from '@finos/legend-application';
 import packageJson from '../../../package.json';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/LegendStudioApplicationNavigationContext.js';
@@ -31,12 +33,31 @@ import {
 import { LegendStudioApplicationPlugin } from '../../stores/LegendStudioApplicationPlugin.js';
 import { LEGEND_STUDIO_COMMAND_CONFIG } from '../../application/LegendStudioCommand.js';
 import { LEGEND_STUDIO_SETTING_CONFIG } from '../../application/LegendStudioSetting.js';
+import type { LegendStudioApplicationStore } from '../../stores/LegendStudioBaseStore.js';
 
 export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationPlugin {
   static NAME = packageJson.extensions.applicationStudioPlugin;
 
   constructor() {
     super(Core_LegendStudioApplicationPlugin.NAME, packageJson.version);
+  }
+
+  override getExtraApplicationSetups(): LegendApplicationSetup[] {
+    return [
+      async (applicationStore) => {
+        setupPureLanguageService(
+          // TODO: move these inside of `DSL_LegendStudioApplicationPlugin_Extension`
+          (applicationStore as LegendStudioApplicationStore).pluginManager
+            .getPureGraphManagerPlugins()
+            .flatMap((plugin) => plugin.getExtraPureGrammarKeywords?.() ?? []),
+          (applicationStore as LegendStudioApplicationStore).pluginManager
+            .getPureGraphManagerPlugins()
+            .flatMap(
+              (plugin) => plugin.getExtraPureGrammarParserNames?.() ?? [],
+            ),
+        );
+      },
+    ];
   }
 
   override getExtraKeyedCommandConfigEntries(): KeyedCommandConfigEntry[] {

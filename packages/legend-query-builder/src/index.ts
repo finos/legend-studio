@@ -18,7 +18,6 @@
 export * from './application/QueryBuilderTelemetryHelper.js';
 export * from './application/QueryBuilderEvent.js';
 
-export * from './stores/QueryBuilderBootstraper.js';
 export { QueryBuilder_GraphManagerPreset } from './graphManager/QueryBuilder_GraphManagerPreset.js';
 
 export { QUERY_BUILDER_TEST_ID } from './application/QueryBuilderTesting.js';

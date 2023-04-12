@@ -19,6 +19,8 @@ import {
   LogService,
   LogEvent,
   uuid,
+  ActionState,
+  assertErrorThrown,
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../application/LegendApplicationEvent.js';
 import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
@@ -56,6 +58,7 @@ export class ApplicationStore<
 
   readonly config: T;
   readonly pluginManager: V;
+  readonly initState = ActionState.create();
 
   // core
   readonly timeService: TimeService;
@@ -130,6 +133,34 @@ export class ApplicationStore<
     this.telemetryService.setup();
     this.tracerService = new TracerService();
     this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
+  }
+
+  async initialize(): Promise<void> {
+    if (!this.initState.isInInitialState) {
+      this.notificationService.notifyIllegalState(
+        'Application store is re-initialized',
+      );
+      return;
+    }
+    this.initState.inProgress();
+
+    try {
+      await Promise.all(
+        this.pluginManager
+          .getApplicationPlugins()
+          .flatMap((plugin) => plugin.getExtraApplicationSetups?.() ?? [])
+          .map((setup) => setup(this)),
+      );
+      this.initState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.notificationService.notifyError(error);
+      this.logService.error(
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_LOAD__FAILURE),
+        'Failed to load Legend application',
+      );
+      this.initState.fail();
+    }
   }
 
   /**

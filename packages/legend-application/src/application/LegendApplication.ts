@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-import { configure as configureMobx } from 'mobx';
-import { editor as monacoEditorAPI } from 'monaco-editor';
-import { MONOSPACED_FONT_FAMILY } from '../const.js';
 import type {
   LegendApplicationConfig,
   LegendApplicationConfigurationData,
@@ -35,10 +32,7 @@ import {
   createRegExpPatternFromWildcardPattern,
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from './LegendApplicationEvent.js';
-import { configureComponents } from '@finos/legend-art';
-import type { GraphManagerPluginManager } from '@finos/legend-graph';
 import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager.js';
-import { setupPureLanguageService } from '../stores/pure-language/PureLanguageSupport.js';
 import {
   collectKeyedDocumentationEntriesFromConfig,
   type DocumentationEntryData,
@@ -87,57 +81,6 @@ export class LegendApplicationWebConsole extends LegendApplicationLogger {
     );
   }
 }
-
-// This is not considered side-effect that hinders tree-shaking because the effectful calls
-// are embedded in the function
-// See https://sgom.es/posts/2020-06-15-everything-you-never-wanted-to-know-about-side-effects/
-export const setupLegendApplicationUILibrary = async (
-  pluginManager: GraphManagerPluginManager,
-  logger: LegendApplicationLogger,
-): Promise<void> => {
-  setupPureLanguageService(pluginManager);
-
-  /**
-   * Since we use a custom fonts for text-editor, we want to make sure the font is loaded before any text-editor is opened
-   * this is to ensure
-   */
-  const fontLoadFailureErrorMessage = `Monospaced font '${MONOSPACED_FONT_FAMILY}' has not been loaded properly, text editor display problems might occur`;
-  await Promise.all(
-    [400, 700].map((weight) =>
-      document.fonts.load(`${weight} 1em ${MONOSPACED_FONT_FAMILY}`),
-    ),
-  )
-    .then(() => {
-      if (document.fonts.check(`1em ${MONOSPACED_FONT_FAMILY}`)) {
-        monacoEditorAPI.remeasureFonts();
-        logger.info(
-          LogEvent.create(APPLICATION_EVENT.LOAD_TEXT_EDITOR_FONT__SUCCESS),
-          `Monospaced font '${MONOSPACED_FONT_FAMILY}' has been loaded`,
-        );
-      } else {
-        logger.error(
-          LogEvent.create(APPLICATION_EVENT.APPLICATION_SETUP__FAILURE),
-          fontLoadFailureErrorMessage,
-        );
-      }
-    })
-    .catch(() =>
-      logger.error(
-        LogEvent.create(APPLICATION_EVENT.APPLICATION_SETUP__FAILURE),
-        fontLoadFailureErrorMessage,
-      ),
-    );
-
-  configureMobx({
-    // Force state modification to be done via actions
-    // Otherwise, warning will be shown in development mode
-    // However, no warning will shown in production mode
-    // See https://mobx.js.org/configuration.html#enforceactions
-    enforceActions: 'observed',
-  });
-
-  configureComponents();
-};
 
 export interface LegendApplicationConfigurationInput<
   T extends LegendApplicationConfigurationData,
@@ -358,13 +301,14 @@ export abstract class LegendApplication {
         [this.loadDocumentationRegistryData(config)],
       );
 
-      await this.loadApplication();
       await Promise.all(
         this.pluginManager
           .getApplicationPlugins()
-          .flatMap((plugin) => plugin.getExtraApplicationSetups?.() ?? [])
-          .map((setup) => setup(this.pluginManager)),
+          .flatMap((plugin) => plugin.getExtraApplicationBootstraps?.() ?? [])
+          .map((bootstrap) => bootstrap(this.pluginManager)),
       );
+
+      await this.loadApplication();
 
       this.logger.info(
         LogEvent.create(APPLICATION_EVENT.APPLICATION_LOAD__SUCCESS),

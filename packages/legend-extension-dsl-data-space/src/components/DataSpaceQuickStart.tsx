@@ -25,8 +25,6 @@ import {
   clsx,
 } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
-import { AgGridReact } from '@ag-grid-community/react';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
   EDITOR_LANGUAGE,
   TextInputEditor,
@@ -41,7 +39,10 @@ import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
 import type { DSL_DataSpace_LegendApplicationPlugin_Extension } from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 import { useState } from 'react';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
-import type { ICellRendererParams } from '@ag-grid-community/core';
+import {
+  DataGrid,
+  type DataGridCellRendererParams,
+} from '@finos/legend-art/grid';
 
 enum TDS_EXECUTABLE_ACTION_TAB {
   COLUMN_SPECS = 'COLUMN_SPECS',
@@ -52,7 +53,7 @@ enum TDS_EXECUTABLE_ACTION_TAB {
 const MIN_NUMBER_OF_ROWS_FOR_AUTO_HEIGHT = 15;
 
 const TDSColumnDocumentationCellRenderer = (
-  params: ICellRendererParams<DataSpaceExecutableTDSResultColumn>,
+  params: DataGridCellRendererParams<DataSpaceExecutableTDSResultColumn>,
 ): React.ReactNode => {
   const data = params.data;
   if (!data) {
@@ -68,7 +69,7 @@ const TDSColumnDocumentationCellRenderer = (
 };
 
 const TDSColumnSampleValuesCellRenderer = (
-  params: ICellRendererParams<DataSpaceExecutableTDSResultColumn>,
+  params: DataGridCellRendererParams<DataSpaceExecutableTDSResultColumn>,
 ): React.ReactNode => {
   const data = params.data;
   if (!data) {
@@ -226,14 +227,13 @@ const DataSpaceExecutableTDSResultView = observer(
           >
             {selectedTab === TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS && (
               <div className="data-space__viewer__quickstart__tds__column-specs data-space__viewer__grid ag-theme-balham-dark">
-                <AgGridReact
+                <DataGrid
                   domLayout={autoHeight ? 'autoHeight' : 'normal'}
                   rowData={columnSpecifications}
                   gridOptions={{
                     suppressScrollOnNewData: true,
                     getRowId: (rowData) => rowData.data.uuid,
                   }}
-                  modules={[ClientSideRowModelModule]}
                   suppressFieldDotNotation={true}
                   columnDefs={[
                     {

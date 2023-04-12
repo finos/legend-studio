@@ -25,8 +25,6 @@ import { useApplicationStore } from '@finos/legend-application';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import { useEffect } from 'react';
 import { flowResult } from 'mobx';
-import { AgGridReact } from '@ag-grid-community/react';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
   DatasetEntitlementAccessApprovedReport,
   DatasetEntitlementAccessGrantedReport,
@@ -34,6 +32,7 @@ import {
   DatasetEntitlementAccessRequestedReport,
   DatasetEntitlementUnsupportedReport,
 } from '@finos/legend-graph';
+import { DataGrid } from '@finos/legend-art/grid';
 
 const DataAccessOverview = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -64,13 +63,12 @@ const DataAccessOverview = observer(
         />
         <div className="data-space__viewer__data-access__chart"></div>
         <div className="data-space__viewer__data-access__grid data-space__viewer__grid ag-theme-balham-dark">
-          <AgGridReact
+          <DataGrid
             rowData={dataAccessState.datasets}
             gridOptions={{
               suppressScrollOnNewData: true,
               getRowId: (rowData) => rowData.data.uuid,
             }}
-            modules={[ClientSideRowModelModule]}
             suppressFieldDotNotation={true}
             columnDefs={[
               {

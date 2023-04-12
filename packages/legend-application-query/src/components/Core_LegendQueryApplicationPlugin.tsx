@@ -38,7 +38,11 @@ import {
   generateUpdateExistingServiceQuerySetup,
   LEGEND_QUERY_ROUTE_PATTERN,
 } from '../application/LegendQueryNavigation.js';
-import type { ApplicationPageEntry } from '@finos/legend-application';
+import {
+  setupPureLanguageService,
+  type ApplicationPageEntry,
+  type LegendApplicationSetup,
+} from '@finos/legend-application';
 import { CloneQueryServiceSetup } from './CloneQueryServiceSetup.js';
 import { QueryProductionizerSetup } from './QueryProductionizerSetup.js';
 import { UpdateExistingServiceQuerySetup } from './UpdateExistingServiceQuerySetup.js';
@@ -49,6 +53,14 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
 
   constructor() {
     super(Core_LegendQueryApplicationPlugin.NAME, packageJson.version);
+  }
+
+  override getExtraApplicationSetups(): LegendApplicationSetup[] {
+    return [
+      async (applicationStore) => {
+        setupPureLanguageService([], []);
+      },
+    ];
   }
 
   override getExtraApplicationPageEntries(): ApplicationPageEntry[] {

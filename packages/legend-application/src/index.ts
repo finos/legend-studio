@@ -73,7 +73,10 @@ export * from './stores/ExecutionPlanState.js';
 
 export * from './components/shared/TextInputEditor.js';
 export * from './components/shared/PackageableElementOptionLabel.js';
-export { PURE_GRAMMAR_TOKEN } from './stores/pure-language/PureLanguageSupport.js';
+export {
+  PURE_GRAMMAR_TOKEN,
+  setupPureLanguageService,
+} from './stores/pure-language/PureLanguageSupport.js';
 export * from './stores/pure-language/PureLanguageTextEditorSupport.js';
 export * from './stores/shared/PackageableElementOption.js';
 

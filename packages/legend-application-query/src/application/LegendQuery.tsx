@@ -19,7 +19,6 @@ import {
   type LegendApplicationConfig,
   ApplicationStoreProvider,
   LegendApplication,
-  setupLegendApplicationUILibrary,
   type LegendApplicationConfigurationInput,
   BrowserRouter,
   WebApplicationNavigatorProvider,
@@ -36,13 +35,8 @@ import {
 import {
   QueryBuilder_GraphManagerPreset,
   QueryBuilder_LegendApplicationPlugin,
-  setupQueryBuilderUILibrary,
 } from '@finos/legend-query-builder';
 import { Core_LegendQueryApplicationPlugin } from '../components/Core_LegendQueryApplicationPlugin.js';
-
-export const setupLegendQueryUILibrary = async (): Promise<void> => {
-  await setupQueryBuilderUILibrary();
-};
 
 export class LegendQuery extends LegendApplication {
   declare config: LegendQueryApplicationConfig;
@@ -69,11 +63,6 @@ export class LegendQuery extends LegendApplication {
   }
 
   async loadApplication(): Promise<void> {
-    // Setup React application libraries
-    await setupLegendApplicationUILibrary(this.pluginManager, this.logger);
-    await setupLegendQueryUILibrary();
-
-    // Render React application
     const rootElement = createRoot(getRootElement());
     rootElement.render(
       <BrowserRouter basename={this.baseUrl}>

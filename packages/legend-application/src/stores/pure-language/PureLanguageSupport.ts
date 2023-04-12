@@ -16,7 +16,6 @@
 
 /* eslint-disable prefer-named-capture-group */
 import {
-  type GraphManagerPluginManager,
   PARSER_SECTION_MARKER,
   PURE_ELEMENT_NAME,
   PURE_CONNECTION_NAME,
@@ -24,8 +23,6 @@ import {
 } from '@finos/legend-graph';
 import {
   editor as monacoEditorAPI,
-  KeyCode,
-  KeyMod,
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
 import { EDITOR_LANGUAGE, EDITOR_THEME } from '../../const.js';
@@ -485,69 +482,10 @@ const generateLanguageMonarch = (
   } as monacoLanguagesAPI.IMonarchLanguage);
 
 export const setupPureLanguageService = (
-  pluginManager: GraphManagerPluginManager,
+  extraKeywords: string[],
+  extraParserKeywords: string[],
 ): void => {
-  // register Pure language in `monaco-editor`
   monacoEditorAPI.defineTheme(EDITOR_THEME.LEGEND, theme);
-  // Override `monaco-editor` native hotkeys
-  // See https://github.com/microsoft/monaco-editor/issues/102#issuecomment-1282897640
-  monacoEditorAPI.addKeybindingRules([
-    {
-      // disable showing go-to-line command
-      keybinding: KeyMod.WinCtrl | KeyCode.KeyG,
-      command: null,
-    },
-    {
-      // disable cursor move (core command)
-      keybinding: KeyMod.WinCtrl | KeyCode.KeyB,
-      command: null,
-    },
-    {
-      // disable cursor move (core command)
-      keybinding: KeyMod.WinCtrl | KeyCode.KeyO,
-      command: null,
-    },
-    {
-      // disable cursor move (core command)
-      keybinding: KeyMod.WinCtrl | KeyCode.KeyD,
-      command: null,
-    },
-    {
-      // disable cursor move (core command)
-      keybinding: KeyMod.WinCtrl | KeyCode.KeyP,
-      command: null,
-    },
-    {
-      // disable show command center
-      keybinding: KeyCode.F1,
-      command: null,
-    },
-    {
-      // disable show error command
-      keybinding: KeyCode.F8,
-      command: null,
-    },
-    {
-      // disable toggle debugger breakpoint
-      keybinding: KeyCode.F9,
-      command: null,
-    },
-    {
-      // disable change all instances
-      keybinding: KeyMod.CtrlCmd | KeyCode.F2,
-      command: null,
-    },
-    {
-      // disable toggle debugger breakpoint
-      keybinding: KeyMod.Shift | KeyCode.F10,
-      command: null,
-    },
-    {
-      // disable go-to definition
-      keybinding: KeyMod.CtrlCmd | KeyCode.F12,
-      command: null,
-    },
-  ]);
   monacoLanguagesAPI.register({ id: EDITOR_LANGUAGE.PURE });
   monacoLanguagesAPI.setLanguageConfiguration(
     EDITOR_LANGUAGE.PURE,
@@ -555,13 +493,6 @@ export const setupPureLanguageService = (
   );
   monacoLanguagesAPI.setMonarchTokensProvider(
     EDITOR_LANGUAGE.PURE,
-    generateLanguageMonarch(
-      pluginManager
-        .getPureGraphManagerPlugins()
-        .flatMap((plugin) => plugin.getExtraPureGrammarKeywords?.() ?? []),
-      pluginManager
-        .getPureGraphManagerPlugins()
-        .flatMap((plugin) => plugin.getExtraPureGrammarParserNames?.() ?? []),
-    ),
+    generateLanguageMonarch(extraKeywords, extraParserKeywords),
   );
 };

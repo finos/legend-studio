@@ -22,6 +22,7 @@
   "type": "module",
   "exports": {
     ".": "./lib/index.js",
+    "./grid": "./lib/grid.js",
     "./lib/testMocks/MockedMonacoEditor.js": "./lib/testMocks/MockedMonacoEditor.js",
     "./lib/testMocks/MockedReactMarkdown.js": "./lib/testMocks/MockedReactMarkdown.js",
     "./lib/testMocks/MockedRemarkGFM.js": "./lib/testMocks/MockedRemarkGFM.js",
@@ -46,6 +47,10 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@ag-grid-community/client-side-row-model": "29.2.0",
+    "@ag-grid-community/core": "29.2.0",
+    "@ag-grid-community/react": "29.2.0",
+    "@ag-grid-community/styles": "29.2.0",
     "@emotion/react": "11.10.6",
     "@emotion/styled": "11.10.6",
     "@finos/legend-shared": "workspace:*",

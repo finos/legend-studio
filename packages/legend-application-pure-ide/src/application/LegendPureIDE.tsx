@@ -19,7 +19,6 @@ import {
   type LegendApplicationConfig,
   type LegendApplicationConfigurationInput,
   LegendApplication,
-  setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
   BrowserRouter,
   ApplicationStoreProvider,
@@ -56,10 +55,6 @@ export class LegendPureIDE extends LegendApplication {
   }
 
   async loadApplication(): Promise<void> {
-    // Setup React application libraries
-    await setupLegendApplicationUILibrary(this.pluginManager, this.logger);
-
-    // Render React application
     const rootElement = createRoot(getRootElement());
     rootElement.render(
       <BrowserRouter basename={this.baseUrl}>

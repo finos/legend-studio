@@ -14,10 +14,29 @@
  * limitations under the License.
  */
 
-import { ModuleRegistry as agGrid_ModuleRegistry } from '@ag-grid-community/core';
+import {
+  AgGridReact,
+  type AgReactUiProps,
+  type AgGridReactProps,
+} from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+import {
+  type CellMouseOverEvent,
+  type ICellRendererParams,
+  ModuleRegistry,
+} from '@ag-grid-community/core';
 
-export const setupQueryBuilderUILibrary = async (): Promise<void> => {
-  // Register module extensions for `ag-grid`
-  agGrid_ModuleRegistry.registerModules([ClientSideRowModelModule]);
+export function DataGrid<TData = unknown>(
+  props: AgGridReactProps<TData> | AgReactUiProps<TData>,
+): JSX.Element {
+  return <AgGridReact {...props} modules={[ClientSideRowModelModule]} />;
+}
+
+export const configureDataGridComponent = (): void => {
+  ModuleRegistry.registerModules([ClientSideRowModelModule]);
+};
+
+export type {
+  CellMouseOverEvent as DataGridCellMouseOverEvent,
+  ICellRendererParams as DataGridCellRendererParams,
 };

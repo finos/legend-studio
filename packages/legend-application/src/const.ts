@@ -21,7 +21,7 @@ export const DEFAULT_TYPEAHEAD_SEARCH_LIMIT = 10;
 export const MONOSPACED_FONT_FAMILY = 'Roboto Mono';
 
 export enum EDITOR_THEME {
-  LEGEND = 'LEGEND',
+  LEGEND = 'legend',
   TEMPORARY__VSCODE_LIGHT = 'vs',
 }
 

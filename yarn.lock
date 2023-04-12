@@ -2413,6 +2413,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-art@workspace:packages/legend-art"
   dependencies:
+    "@ag-grid-community/client-side-row-model": 29.2.0
+    "@ag-grid-community/core": 29.2.0
+    "@ag-grid-community/react": 29.2.0
+    "@ag-grid-community/styles": 29.2.0
     "@emotion/react": 11.10.6
     "@emotion/styled": 11.10.6
     "@finos/legend-dev-utils": "workspace:*"
@@ -2509,10 +2513,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-extension-dsl-data-space@workspace:packages/legend-extension-dsl-data-space"
   dependencies:
-    "@ag-grid-community/client-side-row-model": 29.2.0
-    "@ag-grid-community/core": 29.2.0
-    "@ag-grid-community/react": 29.2.0
-    "@ag-grid-community/styles": 29.2.0
     "@finos/legend-application": "workspace:*"
     "@finos/legend-application-query": "workspace:*"
     "@finos/legend-application-studio": "workspace:*"
@@ -2916,10 +2916,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-query-builder@workspace:packages/legend-query-builder"
   dependencies:
-    "@ag-grid-community/client-side-row-model": 29.2.0
-    "@ag-grid-community/core": 29.2.0
-    "@ag-grid-community/react": 29.2.0
-    "@ag-grid-community/styles": 29.2.0
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"

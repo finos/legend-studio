@@ -67,8 +67,8 @@ import {
 
 // NOTE: these are technically different parsers compared to the ones we have in `Legend Engine` so we will
 // not try to reuse the constants from DSL diagram
-const PURE_GRAMMAR_DIAGRAM_PARSER_NAME = 'Diagram';
-const PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL = 'Diagram';
+export const PURE_GRAMMAR_DIAGRAM_PARSER_NAME = 'Diagram';
+export const PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL = 'Diagram';
 
 export const collectParserKeywordSuggestions =
   (): PureGrammarTextSuggestion[] => [

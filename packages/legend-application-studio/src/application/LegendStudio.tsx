@@ -19,10 +19,8 @@ import { LegendStudioApplication } from '../components/LegendStudioApplication.j
 import { LegendStudioPluginManager } from './LegendStudioPluginManager.js';
 import {
   type LegendApplicationConfig,
-  type LegendApplicationLogger,
   ApplicationStoreProvider,
   LegendApplication,
-  setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
   type LegendApplicationConfigurationInput,
   BrowserRouter,
@@ -38,16 +36,7 @@ import { Core_LegendStudioApplicationPlugin } from '../components/extensions/Cor
 import {
   QueryBuilder_GraphManagerPreset,
   QueryBuilder_LegendApplicationPlugin,
-  setupQueryBuilderUILibrary,
 } from '@finos/legend-query-builder';
-
-const setupLegendStudioUILibrary = async (
-  pluginManager: LegendStudioPluginManager,
-  logger: LegendApplicationLogger,
-): Promise<void> => {
-  await setupLegendApplicationUILibrary(pluginManager, logger);
-  await setupQueryBuilderUILibrary();
-};
 
 export class LegendStudio extends LegendApplication {
   declare config: LegendStudioApplicationConfig;
@@ -74,15 +63,8 @@ export class LegendStudio extends LegendApplication {
   }
 
   async loadApplication(): Promise<void> {
-    // Setup React application libraries
-    await setupLegendStudioUILibrary(this.pluginManager, this.logger);
-
-    // Render React application
     const rootElement = createRoot(getRootElement());
     rootElement.render(
-      // TODO: would be great if we can have <React.StrictMode> here but since Mobx React is not ready for
-      // concurrency yet, we would have to wait
-      // See https://github.com/mobxjs/mobx/issues/2526
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>
           <ApplicationStoreProvider

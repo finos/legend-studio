@@ -42,10 +42,7 @@ import {
   CaretLeftIcon,
 } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
-import { AgGridReact } from '@ag-grid-community/react';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
-import type { ICellRendererParams } from '@ag-grid-community/core';
 import {
   DataSpaceAssociationDocumentationEntry,
   DataSpaceBasicDocumentationEntry,
@@ -80,6 +77,10 @@ import {
   uncheckAllFilterTree,
   ModelsDocumentationFilterTreeRootNodeData,
 } from '../stores/DataSpaceModelsDocumentationState.js';
+import {
+  DataGrid,
+  type DataGridCellRendererParams,
+} from '@finos/legend-art/grid';
 
 const getMilestoningLabel = (val: string | undefined): string | undefined => {
   switch (val) {
@@ -226,7 +227,7 @@ const PropertyInfoTooltip: React.FC<{
 
 const ElementContentCellRenderer = observer(
   (
-    params: ICellRendererParams<NormalizedDataSpaceDocumentationEntry> & {
+    params: DataGridCellRendererParams<NormalizedDataSpaceDocumentationEntry> & {
       dataSpaceViewerState: DataSpaceViewerState;
     },
   ) => {
@@ -392,7 +393,7 @@ const ElementContentCellRenderer = observer(
 
 const SubElementDocContentCellRenderer = observer(
   (
-    params: ICellRendererParams<NormalizedDataSpaceDocumentationEntry> & {
+    params: DataGridCellRendererParams<NormalizedDataSpaceDocumentationEntry> & {
       dataSpaceViewerState: DataSpaceViewerState;
     },
   ) => {
@@ -510,7 +511,7 @@ const SubElementDocContentCellRenderer = observer(
 );
 
 const ElementDocumentationCellRenderer = (
-  params: ICellRendererParams<NormalizedDataSpaceDocumentationEntry> & {
+  params: DataGridCellRendererParams<NormalizedDataSpaceDocumentationEntry> & {
     dataSpaceViewerState: DataSpaceViewerState;
   },
 ): React.ReactNode => {
@@ -542,7 +543,7 @@ const DataSpaceModelsDocumentationGridPanel = observer(
           },
         )}
       >
-        <AgGridReact
+        <DataGrid
           rowData={documentationState.filteredSearchResults}
           overlayNoRowsTemplate={`<div class="data-space__viewer__grid--empty">No documentation found</div>`}
           // highlight element row
@@ -556,7 +557,6 @@ const DataSpaceModelsDocumentationGridPanel = observer(
             suppressScrollOnNewData: true,
             getRowId: (rowData) => rowData.data.uuid,
           }}
-          modules={[ClientSideRowModelModule]}
           suppressFieldDotNotation={true}
           columnDefs={[
             {
