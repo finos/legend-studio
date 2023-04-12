@@ -1442,6 +1442,79 @@
     "classifierPath": "meta::pure::mapping::Mapping"
   },
   {
+    "path": "ui::testAutoMapping",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "ui::test2::Firm",
+          "id": "ui_test2_Firm",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "ui::test2::Firm",
+                "property": "legalName"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ],
+                    "property": "legalName"
+                  }
+                ],
+                "parameters": []
+              }
+            },
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "ui::test2::Firm",
+                "property": "applicants"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ],
+                    "property": "applicants"
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true,
+          "srcClass": "ui::test2::Firm"
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "testAutoMapping",
+      "package": "ui",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  },
+  {
     "path": "ui::testA",
     "content": {
       "_type": "class",
