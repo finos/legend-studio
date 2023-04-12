@@ -2112,7 +2112,7 @@ __metadata:
     react-dnd: 16.0.1
     react-dom: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     typescript: 5.0.4
   peerDependencies:
@@ -2145,7 +2145,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     typescript: 5.0.4
   languageName: unknown
   linkType: soft
@@ -2194,7 +2194,7 @@ __metadata:
     react: 18.2.0
     react-dom: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     typescript: 5.0.4
   peerDependencies:
@@ -2227,7 +2227,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     typescript: 5.0.4
   languageName: unknown
   linkType: soft
@@ -2282,7 +2282,7 @@ __metadata:
     react-dnd: 16.0.1
     react-dom: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     typescript: 5.0.4
     yaml: 2.2.1
@@ -2309,7 +2309,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     typescript: 5.0.4
   languageName: unknown
   linkType: soft
@@ -2357,7 +2357,7 @@ __metadata:
     react: 18.2.0
     react-dom: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     typescript: 5.0.4
   peerDependencies:
@@ -2394,7 +2394,7 @@ __metadata:
     react-router: 5.3.4
     react-router-dom: 5.3.4
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     sql-formatter: 12.2.0
     typescript: 5.0.4
@@ -2451,7 +2451,7 @@ __metadata:
     react-window: 1.8.8
     remark-gfm: 3.0.1
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     typescript: 5.0.4
   peerDependencies:
     react: ^18.0.0
@@ -2502,7 +2502,7 @@ __metadata:
     react-refresh: 0.14.0
     resolve: 1.22.2
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     sass-loader: 13.2.2
     typescript: 5.0.4
     webpack: 5.78.0
@@ -2535,7 +2535,7 @@ __metadata:
     react: 18.2.0
     react-dom: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     typescript: 5.0.4
   peerDependencies:
@@ -2567,7 +2567,7 @@ __metadata:
     react-dnd: 16.0.1
     react-dom: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     typescript: 5.0.4
   peerDependencies:
@@ -2595,7 +2595,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     typescript: 5.0.4
   peerDependencies:
@@ -2623,7 +2623,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     typescript: 5.0.4
   peerDependencies:
@@ -2657,7 +2657,7 @@ __metadata:
     react: 18.2.0
     react-dom: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     typescript: 5.0.4
   peerDependencies:
@@ -2686,7 +2686,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     typescript: 5.0.4
   peerDependencies:
@@ -2707,7 +2707,7 @@ __metadata:
     jest: 29.5.0
     npm-run-all: 4.1.5
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     typescript: 5.0.4
   languageName: unknown
   linkType: soft
@@ -2750,7 +2750,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     typescript: 5.0.4
   peerDependencies:
@@ -2779,7 +2779,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     typescript: 5.0.4
   peerDependencies:
@@ -2808,7 +2808,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     typescript: 5.0.4
   peerDependencies:
@@ -2939,7 +2939,7 @@ __metadata:
     react-dnd: 16.0.1
     react-dom: 18.2.0
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     serializr: 3.0.2
     typescript: 5.0.4
   peerDependencies:
@@ -7118,9 +7118,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.284":
-  version: 1.4.357
-  resolution: "electron-to-chromium@npm:1.4.357"
-  checksum: 7f801484e4f3b05d51bc0213aea7934003bedebbbba8049c03d9fb8a7c8b1bef2797bb237555928b1bf1924ad0fd8cc016e67b04590eb5c1b75d1424d47b6590
+  version: 1.4.359
+  resolution: "electron-to-chromium@npm:1.4.359"
+  checksum: ee8a6eae66a25200b6870dbd6b78d7c0cb2bbb873884d72141871f6e4080955135c16dcf46138158fc5aba5a5fa9177dc0aa37a7f0aaae54bb65305264f72c51
   languageName: node
   linkType: hard
 
@@ -10385,7 +10385,7 @@ __metadata:
     npm-run-all: 4.1.5
     prettier: 2.8.7
     rimraf: 5.0.0
-    sass: 1.61.0
+    sass: 1.62.0
     semver: 7.4.0
     sort-package-json: 2.4.1
     stylelint: 15.4.0
@@ -14244,16 +14244,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.61.0":
-  version: 1.61.0
-  resolution: "sass@npm:1.61.0"
+"sass@npm:1.62.0":
+  version: 1.62.0
+  resolution: "sass@npm:1.62.0"
   dependencies:
     chokidar: ">=3.0.0 <4.0.0"
     immutable: ^4.0.0
     source-map-js: ">=0.6.2 <2.0.0"
   bin:
     sass: sass.js
-  checksum: 31bfb3719f1bb1299bec7b8918bcbca77efa7328b8030cc8e665ed55a02bc5498a3e543b4eb0d06d55ceda8b2f5b2b3176f0678854a8277cb19a59addf65533f
+  checksum: d5f606aa25afdf3ed9f316602811a40cf3b29f64cb70ea02f4198ae4288f9687de6fcef9f4fd2d58e06c28282d859aa249bdbf7d7d97a3a6a582eeaa8e5607fa
   languageName: node
   linkType: hard
 
