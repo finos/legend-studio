@@ -603,10 +603,12 @@ export class V1_EngineServerClient extends AbstractServerClient {
       graphModelData,
       {},
       undefined,
-      {
-        storeModel: TEMPORARY__useStoreModel,
-        generateLineage: TEMPORARY__useGenerateLineage,
-      },
+      serviceExecutionMode === ServiceExecutionMode.FULL_INTERACTIVE
+        ? {
+            storeModel: TEMPORARY__useStoreModel,
+            generateLineage: TEMPORARY__useGenerateLineage,
+          }
+        : { generateLineage: TEMPORARY__useGenerateLineage },
       { enableCompression: true },
     );
   getServiceVersionInfo = (
