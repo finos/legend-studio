@@ -18,6 +18,7 @@
     "**/packages/legend-dev-utils",
     "**/packages/legend-manual-tests", // to be removed post https://github.com/finos/legend-studio/issues/820
     "**/packages/legend-art",
+    "**/packages/legend-lego",
     "**/packages/legend-application-*",
     "**/packages/legend-extension-*"
   ],

@@ -61,7 +61,7 @@ export { DISPLAY_ANSI_ESCAPE } from './stores/terminal/Terminal.js';
 
 // ------------------------------------------- TO BE MOVED -------------------------------------------
 
-// TODO: move to `@finos/legend-graph-editor`
+// TODO: move to `@finos/legend-lego/code-editor`
 export {
   PURE_GRAMMAR_TOKEN,
   setupPureLanguageService,
