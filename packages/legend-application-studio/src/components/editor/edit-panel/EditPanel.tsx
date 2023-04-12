@@ -71,8 +71,11 @@ import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../store
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { PackageableDataEditorState } from '../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
-import { TabManager, type TabState } from '@finos/legend-application';
 import { ElementXTGenerationEditor } from './element-generation-editor/ElementXTGenerationEditor.js';
+import {
+  TabManager,
+  type TabState,
+} from '@finos/legend-application/components';
 
 export const ViewerEditPanelSplashScreen: React.FC = () => {
   const commandListWidth = 300;

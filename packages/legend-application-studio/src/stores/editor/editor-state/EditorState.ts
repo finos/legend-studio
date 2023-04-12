@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+import { TabState } from '@finos/legend-application/components';
 import type { EditorStore } from '../EditorStore.js';
-import { TabState } from '@finos/legend-application';
 
 export abstract class EditorState extends TabState {
   readonly editorStore: EditorStore;

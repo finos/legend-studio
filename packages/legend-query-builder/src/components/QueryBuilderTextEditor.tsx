@@ -32,11 +32,11 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { QueryBuilderTextEditorMode } from '../stores/QueryBuilderTextEditorState.js';
 import { flowResult } from 'mobx';
 import {
-  EDITOR_LANGUAGE,
-  TextInputEditor,
+  CODE_EDITOR_LANGUAGE,
   useApplicationStore,
 } from '@finos/legend-application';
 import { LambdaEditor } from './shared/LambdaEditor.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 export const QueryBuilderTextEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -108,8 +108,8 @@ export const QueryBuilderTextEditor = observer(
                 />
               )}
               {mode === QueryBuilderTextEditorMode.JSON && (
-                <TextInputEditor
-                  language={EDITOR_LANGUAGE.JSON}
+                <CodeEditor
+                  language={CODE_EDITOR_LANGUAGE.JSON}
                   inputValue={queryTextEditorState.readOnlylambdaJson}
                   isReadOnly={true}
                 />

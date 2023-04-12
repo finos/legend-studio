@@ -23,27 +23,29 @@ import {
 } from 'monaco-editor';
 import {
   ContextMenu,
-  disposeEditor,
-  getBaseTextEditorOptions,
-  resetLineNumberGutterWidth,
   clsx,
   WordWrapIcon,
-  getEditorValue,
-  normalizeLineEnding,
   MoreHorizontalIcon,
   PanelContent,
   useResizeDetector,
-  setWarningMarkers,
-  clearMarkers,
-  setErrorMarkers,
-  moveCursorToPosition,
   MenuContent,
   MenuContentItem,
 } from '@finos/legend-art';
 import {
+  disposeCodeEditor,
+  getBaseCodeEditorOptions,
+  resetLineNumberGutterWidth,
+  getCodeEditorValue,
+  normalizeLineEnding,
+  setWarningMarkers,
+  clearMarkers,
+  setErrorMarkers,
+  moveCursorToPosition,
+} from '@finos/legend-lego/code-editor';
+import {
   TAB_SIZE,
-  EDITOR_THEME,
-  EDITOR_LANGUAGE,
+  CODE_EDITOR_THEME,
+  CODE_EDITOR_LANGUAGE,
   useApplicationStore,
   useApplicationNavigationContext,
   getInlineSnippetSuggestions,
@@ -722,13 +724,13 @@ export const GrammarTextEditor = observer(() => {
     if (!editor && textEditorRef.current) {
       const element = textEditorRef.current;
       const _editor = monacoEditorAPI.create(element, {
-        ...getBaseTextEditorOptions(),
-        language: EDITOR_LANGUAGE.PURE,
-        theme: EDITOR_THEME.LEGEND,
+        ...getBaseCodeEditorOptions(),
+        language: CODE_EDITOR_LANGUAGE.PURE,
+        theme: CODE_EDITOR_THEME.LEGEND,
         renderValidationDecorations: 'on',
       });
       _editor.onDidChangeModelContent(() => {
-        grammarTextEditorState.setGraphGrammarText(getEditorValue(_editor));
+        grammarTextEditorState.setGraphGrammarText(getCodeEditorValue(_editor));
         clearMarkers();
         // NOTE: we can technically can reset the current element label regex string here
         // but if we do that on first load, the cursor will not jump to the current element
@@ -788,7 +790,7 @@ export const GrammarTextEditor = observer(() => {
 
   if (editor) {
     // Set the value of the editor
-    const currentValue = getEditorValue(editor);
+    const currentValue = getCodeEditorValue(editor);
     if (currentValue !== value) {
       editor.setValue(value);
     }
@@ -844,7 +846,7 @@ export const GrammarTextEditor = observer(() => {
   // hover
   hoverProviderDisposer.current?.dispose();
   hoverProviderDisposer.current = monacoLanguagesAPI.registerHoverProvider(
-    EDITOR_LANGUAGE.PURE,
+    CODE_EDITOR_LANGUAGE.PURE,
     {
       provideHover: (model, position) => {
         const currentWord = model.getWordAtPosition(position);
@@ -944,42 +946,45 @@ export const GrammarTextEditor = observer(() => {
   // suggestion
   suggestionProviderDisposer.current?.dispose();
   suggestionProviderDisposer.current =
-    monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
-      // NOTE: we need to specify this to show suggestions for section
-      // because by default, only alphanumeric characters trigger completion item provider
-      // See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionContext.html#triggerCharacter
-      // See https://github.com/microsoft/monaco-editor/issues/2530#issuecomment-861757198
-      triggerCharacters: ['#'],
-      provideCompletionItems: (model, position) => {
-        let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+    monacoLanguagesAPI.registerCompletionItemProvider(
+      CODE_EDITOR_LANGUAGE.PURE,
+      {
+        // NOTE: we need to specify this to show suggestions for section
+        // because by default, only alphanumeric characters trigger completion item provider
+        // See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionContext.html#triggerCharacter
+        // See https://github.com/microsoft/monaco-editor/issues/2530#issuecomment-861757198
+        triggerCharacters: ['#'],
+        provideCompletionItems: (model, position) => {
+          let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
 
-        // suggestions for parser keyword
-        suggestions = suggestions.concat(
-          getParserKeywordSuggestions(
-            position,
-            model,
-            collectParserKeywordSuggestions(editorStore),
-          ),
-        );
+          // suggestions for parser keyword
+          suggestions = suggestions.concat(
+            getParserKeywordSuggestions(
+              position,
+              model,
+              collectParserKeywordSuggestions(editorStore),
+            ),
+          );
 
-        // suggestions for parser element snippets
-        suggestions = suggestions.concat(
-          getParserElementSnippetSuggestions(
-            position,
-            model,
-            (parserName: string) =>
-              collectParserElementSnippetSuggestions(editorStore, parserName),
-          ),
-        );
+          // suggestions for parser element snippets
+          suggestions = suggestions.concat(
+            getParserElementSnippetSuggestions(
+              position,
+              model,
+              (parserName: string) =>
+                collectParserElementSnippetSuggestions(editorStore, parserName),
+            ),
+          );
 
-        // inline code snippet suggestions
-        suggestions = suggestions.concat(
-          getInlineSnippetSuggestions(position, model),
-        );
+          // inline code snippet suggestions
+          suggestions = suggestions.concat(
+            getInlineSnippetSuggestions(position, model),
+          );
 
-        return { suggestions };
+          return { suggestions };
+        },
       },
-    });
+    );
 
   useEffect(() => {
     if (editor && forcedCursorPosition) {
@@ -1025,7 +1030,7 @@ export const GrammarTextEditor = observer(() => {
   useEffect(
     () => (): void => {
       if (editor) {
-        disposeEditor(editor);
+        disposeCodeEditor(editor);
       }
       // NOTE: make sure the call the disposer again after leaving this editor
       // else we would end up with duplicated suggestions and hover infos
@@ -1080,8 +1085,8 @@ export const GrammarTextEditor = observer(() => {
         </div>
       </div>
       <PanelContent className="edit-panel__content">
-        <div ref={ref} className="text-editor__container">
-          <div className="text-editor__body" ref={textEditorRef} />
+        <div ref={ref} className="code-editor__container">
+          <div className="code-editor__body" ref={textEditorRef} />
         </div>
       </PanelContent>
     </div>

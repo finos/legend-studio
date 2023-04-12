@@ -25,7 +25,7 @@ import {
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
-import { EDITOR_LANGUAGE, EDITOR_THEME } from '../../const.js';
+import { CODE_EDITOR_LANGUAGE, CODE_EDITOR_THEME } from '../../const.js';
 
 /**
  * The postfix to be added to all token types, i.e. identifier.pure, number.pure, etc.
@@ -485,14 +485,14 @@ export const setupPureLanguageService = (
   extraKeywords: string[],
   extraParserKeywords: string[],
 ): void => {
-  monacoEditorAPI.defineTheme(EDITOR_THEME.LEGEND, theme);
-  monacoLanguagesAPI.register({ id: EDITOR_LANGUAGE.PURE });
+  monacoEditorAPI.defineTheme(CODE_EDITOR_THEME.LEGEND, theme);
+  monacoLanguagesAPI.register({ id: CODE_EDITOR_LANGUAGE.PURE });
   monacoLanguagesAPI.setLanguageConfiguration(
-    EDITOR_LANGUAGE.PURE,
+    CODE_EDITOR_LANGUAGE.PURE,
     configuration,
   );
   monacoLanguagesAPI.setMonarchTokensProvider(
-    EDITOR_LANGUAGE.PURE,
+    CODE_EDITOR_LANGUAGE.PURE,
     generateLanguageMonarch(extraKeywords, extraParserKeywords),
   );
 };

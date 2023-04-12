@@ -106,10 +106,9 @@ import {
   getElementRootPackage,
 } from '@finos/legend-graph';
 import {
-  EDITOR_LANGUAGE,
+  CODE_EDITOR_LANGUAGE,
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
-  TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/shared/ModelClassifierUtils.js';
@@ -124,6 +123,7 @@ import {
   CLASS_MOCK_DATA_GENERATION_FORMAT,
   createMockDataForClassWithFormat,
 } from '../../../stores/editor/shared/MockDataUtils.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -266,16 +266,16 @@ const GENERATION_DEFAULT_DEPTH = 100;
 const GENERATION_DEFAULT_FORMAT = CLASS_MOCK_DATA_GENERATION_FORMAT.JSON;
 const getMockDataEditorLanguage = (
   format: CLASS_MOCK_DATA_GENERATION_FORMAT,
-): EDITOR_LANGUAGE => {
+): CODE_EDITOR_LANGUAGE => {
   switch (format) {
     case CLASS_MOCK_DATA_GENERATION_FORMAT.JSON:
-      return EDITOR_LANGUAGE.JSON;
+      return CODE_EDITOR_LANGUAGE.JSON;
     case CLASS_MOCK_DATA_GENERATION_FORMAT.XML:
-      return EDITOR_LANGUAGE.XML;
+      return CODE_EDITOR_LANGUAGE.XML;
     case CLASS_MOCK_DATA_GENERATION_FORMAT.YAML:
-      return EDITOR_LANGUAGE.YAML;
+      return CODE_EDITOR_LANGUAGE.YAML;
     default:
-      return EDITOR_LANGUAGE.TEXT;
+      return CODE_EDITOR_LANGUAGE.TEXT;
   }
 };
 
@@ -416,7 +416,7 @@ const SampleDataGenerator = observer(() => {
           />
         </div>
         <div className="sample-data-generator__result">
-          <TextInputEditor
+          <CodeEditor
             inputValue={resultText}
             isReadOnly={true}
             hideGutter={true}

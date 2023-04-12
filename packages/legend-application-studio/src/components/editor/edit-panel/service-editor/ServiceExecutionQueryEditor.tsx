@@ -49,9 +49,8 @@ import {
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
-  EDITOR_LANGUAGE,
+  CODE_EDITOR_LANGUAGE,
   ExecutionPlanViewer,
-  TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -71,6 +70,7 @@ import { useLegendStudioApplicationStore } from '../../../LegendStudioBaseStoreP
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { SNAPSHOT_VERSION_ALIAS } from '@finos/legend-server-depot';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -93,10 +93,10 @@ const ServiceExecutionResultViewer = observer(
         <Modal darkMode={true} className="editor-modal">
           <ModalHeader title="Execution Result" />
           <ModalBody>
-            <TextInputEditor
+            <CodeEditor
               inputValue={executionResultText ?? ''}
               isReadOnly={true}
-              language={EDITOR_LANGUAGE.JSON}
+              language={CODE_EDITOR_LANGUAGE.JSON}
               showMiniMap={true}
             />
           </ModalBody>
@@ -222,10 +222,10 @@ const ServiceExecutionQueryImporter = observer(
               isLoading={queryState.loadQueryInfoState.isInProgress}
             />
             {queryState.selectedQueryInfo && (
-              <TextInputEditor
+              <CodeEditor
                 inputValue={queryState.selectedQueryInfo.content}
                 isReadOnly={true}
-                language={EDITOR_LANGUAGE.PURE}
+                language={CODE_EDITOR_LANGUAGE.PURE}
                 showMiniMap={false}
                 hideGutter={true}
               />
@@ -601,10 +601,10 @@ export const ServiceExecutionQueryEditor = observer(
               editWithQueryBuilder()();
             }}
           >
-            <TextInputEditor
+            <CodeEditor
               inputValue={queryState.lambdaString}
               isReadOnly={true}
-              language={EDITOR_LANGUAGE.PURE}
+              language={CODE_EDITOR_LANGUAGE.PURE}
               showMiniMap={true}
             />
           </div>

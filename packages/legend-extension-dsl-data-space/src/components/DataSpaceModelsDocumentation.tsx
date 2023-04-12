@@ -53,10 +53,7 @@ import {
   type NormalizedDataSpaceDocumentationEntry,
 } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 import { debounce, isNonNullable, prettyCONSTName } from '@finos/legend-shared';
-import {
-  TextSearchAdvancedConfigMenu,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
@@ -81,6 +78,7 @@ import {
   DataGrid,
   type DataGridCellRendererParams,
 } from '@finos/legend-art/grid';
+import { FuzzySearchAdvancedConfigMenu } from '@finos/legend-application/components';
 
 const getMilestoningLabel = (val: string | undefined): string | undefined => {
   switch (val) {
@@ -1007,7 +1005,7 @@ const DataSpaceModelsDocumentationSearchBar = observer(
             horizontal: 'center',
           }}
         >
-          <TextSearchAdvancedConfigMenu
+          <FuzzySearchAdvancedConfigMenu
             configState={documentationState.searchConfigurationState}
           />
         </BasePopover>

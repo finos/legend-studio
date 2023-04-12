@@ -2073,8 +2073,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-application-pure-ide-deployment@workspace:packages/legend-application-pure-ide-deployment"
   dependencies:
+    "@finos/legend-application": "workspace:*"
     "@finos/legend-application-pure-ide": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
     copy-webpack-plugin: 11.0.0
     cross-env: 7.0.3
     eslint: 8.38.0
@@ -2138,6 +2141,7 @@ __metadata:
     "@finos/legend-extension-format-json-schema": "workspace:*"
     "@finos/legend-extension-store-service-store": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@types/react": 18.0.34
     cross-env: 7.0.3
@@ -2177,6 +2181,7 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
     "@finos/legend-query-builder": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -2220,6 +2225,7 @@ __metadata:
     "@finos/legend-extension-format-json-schema": "workspace:*"
     "@finos/legend-extension-store-service-store": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@types/react": 18.0.34
     cross-env: 7.0.3
@@ -2259,6 +2265,7 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
     "@finos/legend-query-builder": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-server-sdlc": "workspace:*"
@@ -2302,6 +2309,7 @@ __metadata:
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@types/react": 18.0.34
     cross-env: 7.0.3
@@ -2413,10 +2421,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-art@workspace:packages/legend-art"
   dependencies:
-    "@ag-grid-community/client-side-row-model": 29.2.0
-    "@ag-grid-community/core": 29.2.0
-    "@ag-grid-community/react": 29.2.0
-    "@ag-grid-community/styles": 29.2.0
     "@emotion/react": 11.10.6
     "@emotion/styled": 11.10.6
     "@finos/legend-dev-utils": "workspace:*"
@@ -2433,11 +2437,9 @@ __metadata:
     clsx: 1.2.1
     cross-env: 7.0.3
     eslint: 8.38.0
-    fuse.js: 6.6.2
     jest: 29.5.0
     mobx: 6.9.0
     mobx-react-lite: 3.4.3
-    monaco-editor: 0.37.1
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dnd: 16.0.1
@@ -2520,6 +2522,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
     "@finos/legend-query-builder": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -2674,6 +2677,7 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.5.0
@@ -2883,6 +2887,38 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-lego@workspace:*, @finos/legend-lego@workspace:packages/legend-lego":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-lego@workspace:packages/legend-lego"
+  dependencies:
+    "@ag-grid-community/client-side-row-model": 29.2.0
+    "@ag-grid-community/core": 29.2.0
+    "@ag-grid-community/react": 29.2.0
+    "@ag-grid-community/styles": 29.2.0
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 29.5.0
+    "@types/react": 18.0.34
+    "@types/react-dom": 18.0.11
+    cross-env: 7.0.3
+    eslint: 8.38.0
+    jest: 29.5.0
+    mobx: 6.9.0
+    mobx-react-lite: 3.4.3
+    monaco-editor: 0.37.1
+    npm-run-all: 4.1.5
+    react: 18.2.0
+    react-dom: 18.2.0
+    rimraf: 5.0.0
+    sass: 1.62.0
+    typescript: 5.0.4
+  peerDependencies:
+    react: ^18.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-manual-tests@workspace:packages/legend-manual-tests":
   version: 0.0.0-use.local
   resolution: "@finos/legend-manual-tests@workspace:packages/legend-manual-tests"
@@ -2920,6 +2956,7 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
@@ -3005,6 +3042,7 @@ __metadata:
     cross-env: 7.0.3
     date-fns: 2.29.3
     eslint: 8.38.0
+    fuse.js: 6.6.2
     hash.js: 1.1.7
     http-status-codes: 2.2.0
     jest: 29.5.0

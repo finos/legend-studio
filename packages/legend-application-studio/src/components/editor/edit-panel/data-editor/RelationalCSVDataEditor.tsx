@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   BlankPanelPlaceholder,
   clsx,
@@ -32,6 +32,7 @@ import type { RelationalCSVDataTable } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useState } from 'react';
 import type { RelationalCSVDataState } from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const RelationalTableIdentifierModal = observer(
   (props: { dataState: RelationalCSVDataState; isReadOnly: boolean }) => {
@@ -225,11 +226,11 @@ export const RelationalCSVDataEditor = observer(
             <div className="relational-data-editor__content">
               {currentTableState && (
                 <div className="relational-data-editor__values">
-                  <TextInputEditor
+                  <CodeEditor
                     inputValue={currentTableState.table.values}
                     updateInput={updateTableValues}
                     isReadOnly={isReadOnly}
-                    language={EDITOR_LANGUAGE.TEXT}
+                    language={CODE_EDITOR_LANGUAGE.TEXT}
                   />
                 </div>
               )}

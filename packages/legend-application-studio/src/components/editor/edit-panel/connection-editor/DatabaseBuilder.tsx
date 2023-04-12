@@ -45,8 +45,7 @@ import {
 } from '../../../../stores/editor/editor-state/element-editor-state/connection/DatabaseBuilderState.js';
 import { capitalize } from '@finos/legend-shared';
 import {
-  EDITOR_LANGUAGE,
-  TextInputEditor,
+  CODE_EDITOR_LANGUAGE,
   useApplicationStore,
   useConditionedApplicationNavigationContext,
 } from '@finos/legend-application';
@@ -56,6 +55,7 @@ import {
 } from './DatabaseEditorHelper.js';
 import { flowResult } from 'mobx';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const getNodeIcon = (node: DatabaseBuilderTreeNodeData): React.ReactNode => {
   if (node instanceof SchemaDatabaseBuilderTreeNodeData) {
@@ -344,8 +344,8 @@ export const DatabaseBuilder = observer(
                     </div>
                   </div>
                   <PanelContent>
-                    <TextInputEditor
-                      language={EDITOR_LANGUAGE.PURE}
+                    <CodeEditor
+                      language={CODE_EDITOR_LANGUAGE.PURE}
                       inputValue={databaseBuilderState.databaseGrammarCode}
                       isReadOnly={true}
                     />

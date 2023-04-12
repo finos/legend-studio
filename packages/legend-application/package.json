@@ -22,6 +22,7 @@
   "type": "module",
   "exports": {
     ".": "./lib/index.js",
+    "./components": "./lib/components.js",
     "./lib/index.css": "./lib/index.css"
   },
   "module": "lib/index.js",

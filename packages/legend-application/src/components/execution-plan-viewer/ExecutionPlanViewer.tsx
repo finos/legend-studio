@@ -58,8 +58,8 @@ import {
   RelationalTDSInstantiationExecutionNode,
   type RawExecutionPlan,
 } from '@finos/legend-graph';
-import { EDITOR_LANGUAGE, TAB_SIZE } from '../../const.js';
-import { TextInputEditor } from '../shared/TextInputEditor.js';
+import { CODE_EDITOR_LANGUAGE, TAB_SIZE } from '../../const.js';
+// import { CodeEditor } from '../shared/CodeEditor.js';
 import { SQLExecutionNodeViewer } from './SQLExecutionNodeViewer.js';
 
 /**
@@ -371,15 +371,17 @@ const ExecutionPlanViewPanel = observer(
               </DropdownMenu>
             </div>
             <div className="panel__content execution-plan-viewer__panel__content">
-              {executionPlanState.viewMode === EXECUTION_PLAN_VIEW_MODE.JSON &&
-                Boolean(displayData) && (
-                  <TextInputEditor
-                    inputValue={displayData}
-                    isReadOnly={true}
-                    language={EDITOR_LANGUAGE.JSON}
-                    showMiniMap={false}
-                  />
-                )}
+              {
+                executionPlanState.viewMode === EXECUTION_PLAN_VIEW_MODE.JSON &&
+                  Boolean(displayData) &&
+                  null
+                // <CodeEditor
+                //   inputValue={displayData}
+                //   isReadOnly={true}
+                //   language={CODE_EDITOR_LANGUAGE.JSON}
+                //   showMiniMap={false}
+                // />
+              }
               {executionPlanState.viewMode ===
                 EXECUTION_PLAN_VIEW_MODE.FORM && (
                 <>
@@ -428,40 +430,41 @@ const ExecutionPlanViewerContent = observer(
 
     return (
       <div className="execution-plan-viewer__content">
-        {plan ? (
-          <ResizablePanelGroup orientation="vertical">
-            <ResizablePanel size={300} minSize={300}>
-              <div className="panel execution-plan-viewer__explorer">
-                <PanelSideBarHeader
-                  darkMode={true}
-                  title="execution plan explorer"
-                />
-                <div className="panel__content execution-plan-viewer__explorer__content__container">
-                  <ExecutionPlanTree
-                    executionPlanState={executionPlanState}
-                    executionPlan={plan}
+        {
+          plan ? (
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel size={300} minSize={300}>
+                <div className="panel execution-plan-viewer__explorer">
+                  <PanelSideBarHeader
+                    darkMode={true}
+                    title="execution plan explorer"
                   />
+                  <div className="panel__content execution-plan-viewer__explorer__content__container">
+                    <ExecutionPlanTree
+                      executionPlanState={executionPlanState}
+                      executionPlan={plan}
+                    />
+                  </div>
                 </div>
-              </div>
-            </ResizablePanel>
-            <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-            </ResizablePanelSplitter>
-            <ResizablePanel>
-              <ExecutionPlanViewPanel
-                displayData={executionPlanState.displayData}
-                executionPlanState={executionPlanState}
-              />
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        ) : (
-          <TextInputEditor
-            inputValue={JSON.stringify(rawPlan, undefined, TAB_SIZE)}
-            isReadOnly={true}
-            language={EDITOR_LANGUAGE.JSON}
-            showMiniMap={true}
-          />
-        )}
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel>
+                <ExecutionPlanViewPanel
+                  displayData={executionPlanState.displayData}
+                  executionPlanState={executionPlanState}
+                />
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          ) : null
+          // <CodeEditor
+          //   inputValue={JSON.stringify(rawPlan, undefined, TAB_SIZE)}
+          //   isReadOnly={true}
+          //   language={CODE_EDITOR_LANGUAGE.JSON}
+          //   showMiniMap={true}
+          // />
+        }
       </div>
     );
   },
@@ -516,12 +519,12 @@ export const ExecutionPlanViewer = observer(
                       </div>
                     </div>
                     <PanelContent>
-                      <TextInputEditor
+                      {/* <CodeEditor
                         inputValue={executionPlanState.debugText}
                         isReadOnly={true}
-                        language={EDITOR_LANGUAGE.TEXT}
+                        language={CODE_EDITOR_LANGUAGE.TEXT}
                         showMiniMap={true}
-                      />
+                      /> */}
                     </PanelContent>
                   </div>
                 </ResizablePanel>

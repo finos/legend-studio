@@ -26,8 +26,7 @@ import {
 } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import {
-  EDITOR_LANGUAGE,
-  TextInputEditor,
+  CODE_EDITOR_LANGUAGE,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -43,6 +42,7 @@ import {
   DataGrid,
   type DataGridCellRendererParams,
 } from '@finos/legend-art/grid';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 enum TDS_EXECUTABLE_ACTION_TAB {
   COLUMN_SPECS = 'COLUMN_SPECS',
@@ -299,10 +299,10 @@ const DataSpaceExecutableTDSResultView = observer(
               queryText !== undefined && (
                 <div className="data-space__viewer__quickstart__tds__query-text">
                   <div className="data-space__viewer__quickstart__tds__query-text__content">
-                    <TextInputEditor
+                    <CodeEditor
                       inputValue={queryText}
                       isReadOnly={true}
-                      language={EDITOR_LANGUAGE.PURE}
+                      language={CODE_EDITOR_LANGUAGE.PURE}
                       showMiniMap={false}
                       hideGutter={true}
                     />

@@ -21,9 +21,9 @@ import { ELEMENT_NATIVE_VIEW_MODE } from '../../../../stores/editor/EditorConfig
 import { flowResult } from 'mobx';
 import {
   useApplicationStore,
-  EDITOR_LANGUAGE,
-  TextInputEditor,
+  CODE_EDITOR_LANGUAGE,
 } from '@finos/legend-application';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 export const ElementNativeView = observer(
   (props: { currentElementState: ElementEditorState }) => {
@@ -32,8 +32,8 @@ export const ElementNativeView = observer(
     const generatedText = currentElementState.textContent;
     const editorLanguage =
       currentElementState.editMode === ELEMENT_NATIVE_VIEW_MODE.GRAMMAR
-        ? EDITOR_LANGUAGE.PURE
-        : EDITOR_LANGUAGE.JSON;
+        ? CODE_EDITOR_LANGUAGE.PURE
+        : CODE_EDITOR_LANGUAGE.JSON;
 
     useEffect(() => {
       switch (currentElementState.editMode) {
@@ -51,7 +51,7 @@ export const ElementNativeView = observer(
     }, [applicationStore, currentElementState, currentElementState.editMode]);
 
     return (
-      <TextInputEditor
+      <CodeEditor
         inputValue={generatedText}
         language={editorLanguage}
         isReadOnly={true}

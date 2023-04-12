@@ -45,8 +45,9 @@ import {
   RelationalCSVDataState,
 } from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import type { DataElement } from '@finos/legend-graph';
-import { buildElementOption, TextInputEditor } from '@finos/legend-application';
+import { buildElementOption } from '@finos/legend-application';
 import { RelationalCSVDataEditor } from './RelationalCSVDataEditor.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 export const ExternalFormatDataEditor = observer(
   (props: {
@@ -134,7 +135,7 @@ export const ExternalFormatDataEditor = observer(
         </div>
         <div className={clsx('external-format-data-editor__content')}>
           <div className="external-format-data-editor__content__input">
-            <TextInputEditor
+            <CodeEditor
               language={language}
               inputValue={externalFormatDataState.embeddedData.data}
               updateInput={changeData}

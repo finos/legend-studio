@@ -56,10 +56,8 @@ import {
   SubjectIcon,
   ViewHeadlineIcon,
   TimesIcon,
-  disposeEditor,
   useResizeDetector,
   WordWrapIcon,
-  getBaseConsoleOptions,
 } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
@@ -67,8 +65,8 @@ import {
   noop,
 } from '@finos/legend-shared';
 import {
-  EDITOR_LANGUAGE,
-  EDITOR_THEME,
+  CODE_EDITOR_LANGUAGE,
+  CODE_EDITOR_THEME,
   useApplicationStore,
 } from '@finos/legend-application';
 import { useEditorStore } from '../EditorStoreProvider.js';
@@ -80,6 +78,10 @@ import {
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
+import {
+  disposeCodeEditor,
+  getBaseConsoleOptions,
+} from '@finos/legend-lego/code-editor';
 
 const TestTreeNodeContainer = observer(
   (
@@ -364,8 +366,8 @@ const TestResultConsole: React.FC<{
       const element = textInputRef.current;
       const newEditor = monacoEditorAPI.create(element, {
         ...getBaseConsoleOptions(),
-        theme: EDITOR_THEME.LEGEND,
-        language: EDITOR_LANGUAGE.TEXT,
+        theme: CODE_EDITOR_THEME.LEGEND,
+        language: CODE_EDITOR_LANGUAGE.TEXT,
       });
       setEditor(newEditor);
     }
@@ -373,7 +375,7 @@ const TestResultConsole: React.FC<{
 
   locationLinkProviderDisposer.current?.dispose();
   locationLinkProviderDisposer.current =
-    monacoLanguagesAPI.registerLinkProvider(EDITOR_LANGUAGE.TEXT, {
+    monacoLanguagesAPI.registerLinkProvider(CODE_EDITOR_LANGUAGE.TEXT, {
       provideLinks: (model) => {
         const links: TestErrorLocationLink[] = [];
 
@@ -477,7 +479,7 @@ const TestResultConsole: React.FC<{
   useEffect(
     () => (): void => {
       if (editor) {
-        disposeEditor(editor);
+        disposeCodeEditor(editor);
       }
 
       locationLinkProviderDisposer.current?.dispose();
@@ -486,8 +488,8 @@ const TestResultConsole: React.FC<{
   ); // dispose editor
 
   return (
-    <div ref={ref} className="text-editor__container">
-      <div className="text-editor__body" ref={textInputRef} />
+    <div ref={ref} className="code-editor__container">
+      <div className="code-editor__body" ref={textInputRef} />
     </div>
   );
 };

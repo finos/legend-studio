@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   type TreeData,
   type TreeNodeContainerProps,
@@ -78,6 +78,7 @@ import { TextDiffView } from '../../../shared/DiffView.js';
 import { getElementTypeIcon } from '../../../shared/ElementIconUtils.js';
 import { UnsupportedEditorPanel } from '../../edit-panel/UnsupportedElementEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 export const getTestableResultIcon = (
   testableResult: TESTABLE_RESULT,
@@ -189,26 +190,26 @@ const TestFailViewer = observer(
           <ModalHeader title={id} />
           <ModalBody>
             {failure instanceof TestError && (
-              <TextInputEditor
+              <CodeEditor
                 inputValue={failure.error}
                 isReadOnly={true}
-                language={EDITOR_LANGUAGE.TEXT}
+                language={CODE_EDITOR_LANGUAGE.TEXT}
                 showMiniMap={true}
               />
             )}
             {failure instanceof EqualToJsonAssertFail && (
               <TextDiffView
-                language={EDITOR_LANGUAGE.JSON}
+                language={CODE_EDITOR_LANGUAGE.JSON}
                 from={failure.expected}
                 to={failure.actual}
               />
             )}
             {failure instanceof AssertFail &&
               !(failure instanceof EqualToJsonAssertFail) && (
-                <TextInputEditor
+                <CodeEditor
                   inputValue={failure.message ?? ''}
                   isReadOnly={true}
-                  language={EDITOR_LANGUAGE.TEXT}
+                  language={CODE_EDITOR_LANGUAGE.TEXT}
                 />
               )}
           </ModalBody>

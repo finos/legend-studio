@@ -55,12 +55,12 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   buildElementOption,
-  LEGEND_APPLICATION_DOCUMENTATION_KEY,
   useApplicationStore,
 } from '@finos/legend-application';
 import { prettyCONSTName } from '@finos/legend-shared';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { useEditorStore } from '../../../EditorStoreProvider.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../../application/LegendStudioDocumentation.js';
 
 export const ConnectionTestDataEditor = observer(
   (props: { connectionTestDataState: ConnectionTestDataState }) => {
@@ -431,7 +431,7 @@ export const ServiceTestDataEditor = observer(
     };
     const seeDocumentation = (): void =>
       applicationStore.assistantService.openDocumentationEntry(
-        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_SERVICE_CONNECTION_TEST_DATA,
+        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_SERVICE_CONNECTION_TEST_DATA,
       );
     return (
       <div className="service-test-data-editor panel">

@@ -66,7 +66,6 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
-  type TabState,
   type CommandRegistrar,
 } from '@finos/legend-application';
 import {
@@ -103,6 +102,7 @@ import {
 } from './CodeFixSuggestion.js';
 import { ReferenceUsageResult } from './ReferenceUsageResult.js';
 import { TextSearchState } from './TextSearchState.js';
+import type { TabState } from '@finos/legend-application/components';
 
 export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;

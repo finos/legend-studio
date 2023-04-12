@@ -18,7 +18,6 @@ import {
   type PackageableElementOption,
   buildElementOption,
   getPackageableElementOptionFormatter,
-  LEGEND_APPLICATION_DOCUMENTATION_KEY,
 } from '@finos/legend-application';
 import {
   BlankPanelPlaceholder,
@@ -51,6 +50,7 @@ import { variableExpression_setName } from '../stores/shared/ValueSpecificationM
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 import { QUERY_BUILDER_TEST_ID } from '../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../application/QueryBuilderDocumentation.js';
 
 // NOTE: We currently only allow constant variables for primitive types of multiplicity ONE.
 // This is why we don't show multiplicity in the editor.
@@ -203,7 +203,7 @@ export const QueryBuilderConstantExpressionPanel = observer(
     const varNames = queryBuilderState.allVariableNames;
     const seeDocumentation = (): void =>
       queryBuilderState.applicationStore.assistantService.openDocumentationEntry(
-        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_ADD_CONSTANTS_TO_QUERY,
+        QUERY_BUILDER_DOCUMENTATION_KEY.QUESTION_HOW_TO_ADD_CONSTANTS_TO_QUERY,
       );
     const addConstant = (): void => {
       if (!isReadOnly) {

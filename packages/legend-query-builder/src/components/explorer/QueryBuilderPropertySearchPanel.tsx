@@ -61,7 +61,7 @@ import {
 } from './QueryBuilderExplorerPanel.js';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
-import { TextSearchAdvancedConfigMenu } from '@finos/legend-application';
+import { FuzzySearchAdvancedConfigMenu } from '@finos/legend-application/components';
 
 const prettyPropertyNameFromNodeId = (name: string): string => {
   let propNameArray = name.split('.');
@@ -387,7 +387,7 @@ export const QueryBuilderPropertySearchPanel = observer(
                   horizontal: 'center',
                 }}
               >
-                <TextSearchAdvancedConfigMenu
+                <FuzzySearchAdvancedConfigMenu
                   configState={propertySearchState.searchConfigurationState}
                 />
               </BasePopover>

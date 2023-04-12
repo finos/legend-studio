@@ -16,10 +16,10 @@
 
 import { observer } from 'mobx-react-lite';
 import type { ExecutionPlanState } from '../../stores/ExecutionPlanState.js';
-import { format } from 'sql-formatter';
+// import { format } from 'sql-formatter';
 import type { SQLResultColumn } from '@finos/legend-graph';
-import { TextInputEditor } from '../shared/TextInputEditor.js';
-import { EDITOR_LANGUAGE } from '../../const.js';
+// import { CodeEditor } from '../shared/CodeEditor.js';
+// import { CODE_EDITOR_LANGUAGE } from '../../const.js';
 
 /**
  * TODO: Create a new `AbstractPlugin` for this, called `ExecutionPlanViewerPlugin`
@@ -33,14 +33,13 @@ export const SQLExecutionNodeViewer: React.FC<{
   resultColumns: SQLResultColumn[];
   executionPlanState: ExecutionPlanState;
 }> = observer((props) => {
-  const { query } = props;
+  // const { query } = props;
 
-  return (
-    <TextInputEditor
-      inputValue={format(query)}
-      isReadOnly={true}
-      language={EDITOR_LANGUAGE.SQL}
-      showMiniMap={false}
-    />
-  );
+  return null;
+  // <CodeEditor
+  //   inputValue={format(query)}
+  //   isReadOnly={true}
+  //   language={CODE_EDITOR_LANGUAGE.SQL}
+  //   showMiniMap={false}
+  // />
 });

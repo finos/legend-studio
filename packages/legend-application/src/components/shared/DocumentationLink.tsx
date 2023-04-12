@@ -15,8 +15,8 @@
  */
 
 import { clsx, QuestionCircleIcon } from '@finos/legend-art';
-import { shouldDisplayVirtualAssistantDocumentationEntry } from '../../stores/AssistantService.js';
 import { useApplicationStore } from '../ApplicationStoreProvider.js';
+import { shouldDisplayVirtualAssistantDocumentationEntry } from '../../stores/AssistantService.js';
 
 export const DocumentationLink: React.FC<{
   documentationKey: string;

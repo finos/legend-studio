@@ -48,8 +48,7 @@ import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.
 import { flowResult } from 'mobx';
 import { WorkflowJobStatus, WorkflowStatus } from '@finos/legend-server-sdlc';
 import {
-  EDITOR_LANGUAGE,
-  TextInputEditor,
+  CODE_EDITOR_LANGUAGE,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -66,6 +65,7 @@ import {
   guaranteeType,
   isNonNullable,
 } from '@finos/legend-shared';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const getWorkflowStatusIcon = (
   workflowStatus: WorkflowStatus,
@@ -238,10 +238,10 @@ const WorkflowJobLogsViewer = observer(
             </ModalHeaderActions>
           </ModalHeader>
           <ModalBody>
-            <TextInputEditor
+            <CodeEditor
               inputValue={logs}
               isReadOnly={true}
-              language={EDITOR_LANGUAGE.TEXT}
+              language={CODE_EDITOR_LANGUAGE.TEXT}
               showMiniMap={true}
             />
           </ModalBody>

@@ -65,12 +65,11 @@ import {
   MappingExecutionRelationalInputDataState,
 } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionState.js';
 import {
-  EDITOR_LANGUAGE,
+  CODE_EDITOR_LANGUAGE,
   ActionAlertActionType,
   ActionAlertType,
   useApplicationStore,
   ExecutionPlanViewer,
-  TextInputEditor,
 } from '@finos/legend-application';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -90,6 +89,7 @@ import {
 } from '../../../../stores/editor/shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -167,12 +167,12 @@ export const ClassMappingSelectorModal = observer(
 
 export const getRelationalInputTestDataEditorLanguage = (
   type: RelationalInputType,
-): EDITOR_LANGUAGE => {
+): CODE_EDITOR_LANGUAGE => {
   switch (type) {
     case RelationalInputType.SQL:
-      return EDITOR_LANGUAGE.SQL;
+      return CODE_EDITOR_LANGUAGE.SQL;
     default:
-      return EDITOR_LANGUAGE.TEXT;
+      return CODE_EDITOR_LANGUAGE.TEXT;
   }
 };
 
@@ -385,10 +385,10 @@ const MappingExecutionQueryEditor = observer(
         {!isStubbed_RawLambda(queryState.query) && (
           <PanelContent>
             <div className="mapping-execution-builder__query-panel__query">
-              <TextInputEditor
+              <CodeEditor
                 inputValue={queryState.lambdaString}
                 isReadOnly={true}
-                language={EDITOR_LANGUAGE.PURE}
+                language={CODE_EDITOR_LANGUAGE.PURE}
                 showMiniMap={false}
               />
             </div>
@@ -434,8 +434,8 @@ export const MappingExecutionObjectInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
-        <TextInputEditor
-          language={EDITOR_LANGUAGE.JSON}
+        <CodeEditor
+          language={CODE_EDITOR_LANGUAGE.JSON}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
         />
@@ -454,8 +454,8 @@ export const MappingExecutionFlatDataInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
-        <TextInputEditor
-          language={EDITOR_LANGUAGE.TEXT}
+        <CodeEditor
+          language={CODE_EDITOR_LANGUAGE.TEXT}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
         />
@@ -477,7 +477,7 @@ export const MappingExecutionRelationalInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
-        <TextInputEditor
+        <CodeEditor
           language={getRelationalInputTestDataEditorLanguage(
             inputDataState.inputData.inputType,
           )}
@@ -853,10 +853,10 @@ export const MappingExecutionBuilder = observer(
                   </div>
                 </div>
                 <div className="panel__content mapping-execution-builder__result-panel__content">
-                  <TextInputEditor
+                  <CodeEditor
                     inputValue={executionResultText ?? ''}
                     isReadOnly={true}
-                    language={EDITOR_LANGUAGE.JSON}
+                    language={CODE_EDITOR_LANGUAGE.JSON}
                   />
                 </div>
               </div>

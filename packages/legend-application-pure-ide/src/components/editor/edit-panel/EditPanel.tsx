@@ -29,12 +29,12 @@ import {
 import { DiagramEditorState } from '../../../stores/DiagramEditorState.js';
 import { DiagramEditor } from './DiagramEditor.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
+import { PURE_DiagramIcon } from '../shared/ConceptIconUtils.js';
 import {
-  EDITOR_LANGUAGE,
   TabManager,
   type TabState,
-} from '@finos/legend-application';
-import { PURE_DiagramIcon } from '../shared/ConceptIconUtils.js';
+} from '@finos/legend-application/components';
 
 export const EditPanelSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -93,7 +93,7 @@ export const EditPanel = observer(() => {
   const currentTab = editorStore.tabManagerState.currentTab;
   const renderActiveEditorState = (): React.ReactNode => {
     if (currentTab instanceof FileEditorState) {
-      if (currentTab.textEditorState.language === EDITOR_LANGUAGE.PURE) {
+      if (currentTab.textEditorState.language === CODE_EDITOR_LANGUAGE.PURE) {
         return <PureFileEditor editorState={currentTab} />;
       }
       return <GenericFileEditor editorState={currentTab} />;

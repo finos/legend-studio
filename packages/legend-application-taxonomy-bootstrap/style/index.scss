@@ -16,6 +16,8 @@
 
 @import url('@finos/legend-art/lib/index.css');
 @import url('@finos/legend-application/lib/index.css');
+@import url('@finos/legend-lego/lib/index.css');
+
 @import url('@finos/legend-application-taxonomy/lib/index.css');
 
 // NOTE: the following styles are temporary so we can have a poor-man version of
@@ -175,7 +177,7 @@
     }
   }
 
-  .text-search-advanced-config__panel {
+  .fuzzy-search__advanced-config__panel {
     background: var(--color-hclight-white);
 
     &__header__label {

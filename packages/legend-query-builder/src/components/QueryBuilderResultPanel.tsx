@@ -45,10 +45,9 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
-  EDITOR_LANGUAGE,
+  CODE_EDITOR_LANGUAGE,
   ExecutionPlanViewer,
   TAB_SIZE,
-  TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -89,6 +88,7 @@ import {
   DataGrid,
   type DataGridCellMouseOverEvent,
 } from '@finos/legend-art/grid';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
@@ -412,16 +412,16 @@ const QueryBuilderResultValues = observer(
       );
     } else if (executionResult instanceof RawExecutionResult) {
       return (
-        <TextInputEditor
-          language={EDITOR_LANGUAGE.TEXT}
+        <CodeEditor
+          language={CODE_EDITOR_LANGUAGE.TEXT}
           inputValue={executionResult.value}
           isReadOnly={true}
         />
       );
     }
     return (
-      <TextInputEditor
-        language={EDITOR_LANGUAGE.JSON}
+      <CodeEditor
+        language={CODE_EDITOR_LANGUAGE.JSON}
         inputValue={JSON.stringify(
           extractExecutionResultValues(executionResult),
           null,

@@ -50,6 +50,7 @@
     "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-graph": "workspace:*",
+    "@finos/legend-lego": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/react": "18.0.34",
     "react": "18.2.0"

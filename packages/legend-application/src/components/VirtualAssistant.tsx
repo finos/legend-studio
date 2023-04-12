@@ -57,7 +57,7 @@ import { useApplicationStore } from './ApplicationStoreProvider.js';
 import Draggable from 'react-draggable';
 import { DATE_TIME_FORMAT } from '@finos/legend-graph';
 import { LegendApplicationTelemetryHelper } from '../application/LegendApplicationTelemetry.js';
-import { TextSearchAdvancedConfigMenu } from './shared/TextSearchAdvancedConfigMenu.js';
+import { FuzzySearchAdvancedConfigMenu } from './shared/FuzzySearchAdvancedConfigMenu.js';
 
 const WIZARD_GREETING = `Bonjour, It's Pierre!`;
 
@@ -414,7 +414,7 @@ const VirtualAssistantSearchPanel = observer(() => {
               assistantService.showSearchConfigurationMenu,
           })}
         >
-          <TextSearchAdvancedConfigMenu
+          <FuzzySearchAdvancedConfigMenu
             configState={assistantService.searchConfigurationState}
           />
         </div>

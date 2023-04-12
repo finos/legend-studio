@@ -28,12 +28,10 @@ import {
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { type Project, WorkspaceType } from '@finos/legend-server-sdlc';
-import {
-  useApplicationStore,
-  DocumentationLink,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/LegendStudioDocumentation.js';
 import { useWorkspaceSetupStore } from './WorkspaceSetup.js';
+import { DocumentationLink } from '@finos/legend-application/components';
 
 export const CreateWorkspaceModal = observer(
   (props: { selectedProject: Project }) => {

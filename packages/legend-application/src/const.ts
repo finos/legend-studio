@@ -20,12 +20,14 @@ export const DEFAULT_TYPEAHEAD_SEARCH_LIMIT = 10;
 
 export const MONOSPACED_FONT_FAMILY = 'Roboto Mono';
 
-export enum EDITOR_THEME {
+// TODO: to be moved to `@finos/legend-lego`
+export enum CODE_EDITOR_THEME {
   LEGEND = 'legend',
   TEMPORARY__VSCODE_LIGHT = 'vs',
 }
 
-export enum EDITOR_LANGUAGE {
+// TODO: to be moved to `@finos/legend-lego`
+export enum CODE_EDITOR_LANGUAGE {
   TEXT = 'plaintext',
   PURE = 'pure',
   JSON = 'json',

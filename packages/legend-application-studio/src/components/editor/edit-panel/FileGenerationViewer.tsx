@@ -29,7 +29,7 @@ import {
 } from '@finos/legend-art';
 import type { FileGenerationSpecification } from '@finos/legend-graph';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import { TextInputEditor } from '@finos/legend-application';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 export const FileGenerationViewer = observer(() => {
   const editorStore = useEditorStore();
@@ -90,7 +90,7 @@ export const FileGenerationViewer = observer(() => {
             </div>
           </div>
           <PanelContent>
-            <TextInputEditor
+            <CodeEditor
               inputValue={getTextContent(
                 generatedFile.content,
                 generatedFile.format,

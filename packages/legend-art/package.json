@@ -23,9 +23,8 @@
   "exports": {
     ".": "./lib/index.js",
     "./grid": "./lib/grid.js",
-    "./lib/testMocks/MockedMonacoEditor.js": "./lib/testMocks/MockedMonacoEditor.js",
-    "./lib/testMocks/MockedReactMarkdown.js": "./lib/testMocks/MockedReactMarkdown.js",
-    "./lib/testMocks/MockedRemarkGFM.js": "./lib/testMocks/MockedRemarkGFM.js",
+    "./markdown/test/MockedReactMarkdown.js": "./lib/markdown/testing/MockedReactMarkdown.js",
+    "./markdown/test/MockedRemarkGFM.js": "./lib/markdown/testing/MockedRemarkGFM.js",
     "./lib/index.css": "./lib/index.css"
   },
   "module": "lib/index.js",
@@ -47,10 +46,6 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "29.2.0",
-    "@ag-grid-community/core": "29.2.0",
-    "@ag-grid-community/react": "29.2.0",
-    "@ag-grid-community/styles": "29.2.0",
     "@emotion/react": "11.10.6",
     "@emotion/styled": "11.10.6",
     "@finos/legend-shared": "workspace:*",
@@ -63,10 +58,8 @@
     "@types/react-select": "4.0.18",
     "@types/react-window": "1.8.5",
     "clsx": "1.2.1",
-    "fuse.js": "6.6.2",
     "mobx": "6.9.0",
     "mobx-react-lite": "3.4.3",
-    "monaco-editor": "0.37.1",
     "react": "18.2.0",
     "react-dnd": "16.0.1",
     "react-dnd-html5-backend": "16.0.1",

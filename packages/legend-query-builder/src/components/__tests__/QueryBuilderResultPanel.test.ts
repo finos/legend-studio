@@ -35,9 +35,9 @@ import {
 import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
 import {
-  MockedMonacoEditorInstance,
   MockedMonacoEditorAPI,
-} from '@finos/legend-art';
+  MockedMonacoEditorInstance,
+} from '@finos/legend-lego/code-editor/test';
 
 type ResultStateTestCase = [
   string,

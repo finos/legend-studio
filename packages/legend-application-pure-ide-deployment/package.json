@@ -38,7 +38,10 @@
     "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js --dir ./dev"
   },
   "dependencies": {
-    "@finos/legend-application-pure-ide": "workspace:*"
+    "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-pure-ide": "workspace:*",
+    "@finos/legend-art": "workspace:*",
+    "@finos/legend-lego": "workspace:*"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

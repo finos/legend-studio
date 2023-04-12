@@ -36,8 +36,7 @@ import {
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import {
   useApplicationStore,
-  EDITOR_LANGUAGE,
-  TextInputEditor,
+  CODE_EDITOR_LANGUAGE,
 } from '@finos/legend-application';
 import {
   type QueryOption,
@@ -46,6 +45,7 @@ import {
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
 import { EditExistingQuerySetupStore } from '../stores/EditExistingQuerySetupStore.js';
 import { BaseQuerySetup, BaseQuerySetupStoreContext } from './QuerySetup.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const EditExistingQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -258,10 +258,10 @@ const EditExistingQuerySetupContent = observer(() => {
                 <BlankPanelContent>{`Can't preview query`}</BlankPanelContent>
               )}
               {setupStore.currentQueryInfo && (
-                <TextInputEditor
+                <CodeEditor
                   inputValue={setupStore.currentQueryInfo.content}
                   isReadOnly={true}
-                  language={EDITOR_LANGUAGE.PURE}
+                  language={CODE_EDITOR_LANGUAGE.PURE}
                   showMiniMap={false}
                   hideGutter={true}
                 />

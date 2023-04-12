@@ -16,16 +16,13 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataSpaceViewerState } from './DataSpaceViewerState.js';
-import { TextSearchAdvancedConfigState } from '@finos/legend-application';
-import {
-  FuzzySearchEngine,
-  type TreeData,
-  type TreeNodeData,
-} from '@finos/legend-art';
+import { FuzzySearchAdvancedConfigState } from '@finos/legend-application/components';
+import { type TreeData, type TreeNodeData } from '@finos/legend-art';
 import {
   ActionState,
   filterByType,
   guaranteeNonNullable,
+  FuzzySearchEngine,
 } from '@finos/legend-shared';
 import {
   DataSpaceAssociationDocumentationEntry,
@@ -341,7 +338,7 @@ export class DataSpaceViewerModelsDocumentationState {
 
   // search text
   private readonly searchEngine: FuzzySearchEngine<NormalizedDataSpaceDocumentationEntry>;
-  searchConfigurationState: TextSearchAdvancedConfigState;
+  searchConfigurationState: FuzzySearchAdvancedConfigState;
   readonly searchState = ActionState.create();
   searchText: string;
   searchResults: NormalizedDataSpaceDocumentationEntry[] = [];
@@ -435,7 +432,7 @@ export class DataSpaceViewerModelsDocumentationState {
         useExtendedSearch: true,
       },
     );
-    this.searchConfigurationState = new TextSearchAdvancedConfigState(
+    this.searchConfigurationState = new FuzzySearchAdvancedConfigState(
       (): void => this.search(),
     );
     this.searchText = '';

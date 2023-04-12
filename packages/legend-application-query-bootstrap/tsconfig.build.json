@@ -9,6 +9,7 @@
     { "path": "../legend-shared/tsconfig.build.json" },
     { "path": "../legend-application/tsconfig.build.json" },
     { "path": "../legend-art/tsconfig.build.json" },
+    { "path": "../legend-lego/tsconfig.build.json" },
     { "path": "../legend-graph/tsconfig.build.json" },
     { "path": "../legend-application-query/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" },

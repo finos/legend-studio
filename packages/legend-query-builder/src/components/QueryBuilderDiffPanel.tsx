@@ -15,19 +15,12 @@
  */
 
 import {
-  EDITOR_LANGUAGE,
-  EDITOR_THEME,
+  CODE_EDITOR_LANGUAGE,
+  CODE_EDITOR_THEME,
   TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
-import {
-  getBaseTextEditorOptions,
-  clsx,
-  Dialog,
-  disposeDiffEditor,
-  useResizeDetector,
-  Button,
-} from '@finos/legend-art';
+import { clsx, Dialog, useResizeDetector, Button } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI } from 'monaco-editor';
 import { useEffect, useRef, useState } from 'react';
@@ -36,10 +29,14 @@ import {
   QueryBuilderDiffViewMode,
 } from '../stores/QueryBuilderChangeDetectionState.js';
 import { pruneSourceInformation } from '@finos/legend-graph';
+import {
+  disposeDiffCodeEditor,
+  getBaseCodeEditorOptions,
+} from '@finos/legend-lego/code-editor';
 
 const TextDiffView = observer(
   (props: {
-    language: EDITOR_LANGUAGE;
+    language: CODE_EDITOR_LANGUAGE;
     from?: string | undefined;
     to?: string | undefined;
   }) => {
@@ -63,11 +60,11 @@ const TextDiffView = observer(
       if (!editor && editorRef.current) {
         const element = editorRef.current;
         const _editor = monacoEditorAPI.createDiffEditor(element, {
-          ...getBaseTextEditorOptions(),
+          ...getBaseCodeEditorOptions(),
           theme: applicationStore.layoutService
             .TEMPORARY__isLightColorThemeEnabled
-            ? EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
-            : EDITOR_THEME.LEGEND,
+            ? CODE_EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
+            : CODE_EDITOR_THEME.LEGEND,
           readOnly: true,
           wordWrap: 'on',
         });
@@ -87,15 +84,15 @@ const TextDiffView = observer(
     useEffect(
       () => (): void => {
         if (editor) {
-          disposeDiffEditor(editor);
+          disposeDiffCodeEditor(editor);
         }
       },
       [editor],
     ); // dispose editor
 
     return (
-      <div ref={ref} className="text-editor__container">
-        <div className="text-editor__body" ref={editorRef} />
+      <div ref={ref} className="code-editor__container">
+        <div className="code-editor__body" ref={editorRef} />
       </div>
     );
   },
@@ -153,14 +150,14 @@ export const QueryBuilderDiffViewPanel = observer(
             <div className="query-builder__diff-panel__content">
               {diffViewState.mode === QueryBuilderDiffViewMode.GRAMMAR && (
                 <TextDiffView
-                  language={EDITOR_LANGUAGE.PURE}
+                  language={CODE_EDITOR_LANGUAGE.PURE}
                   from={fromGrammarText}
                   to={toGrammarText}
                 />
               )}
               {diffViewState.mode === QueryBuilderDiffViewMode.JSON && (
                 <TextDiffView
-                  language={EDITOR_LANGUAGE.JSON}
+                  language={CODE_EDITOR_LANGUAGE.JSON}
                   from={JSON.stringify(
                     {
                       parameters: diffViewState.initialQuery.parameters

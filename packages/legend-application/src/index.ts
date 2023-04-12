@@ -20,7 +20,6 @@ export * from './application/LegendApplication.js';
 export * from './application/LegendApplicationConfig.js';
 export * from './application/LegendApplicationPluginManager.js';
 export * from './application/LegendApplicationEvent.js';
-export * from './application/LegendApplicationDocumentation.js';
 export * from './application/LegendApplicationTelemetry.js';
 export * from './application/LegendApplicationSetting.js';
 export { LEGEND_APPLICATION_COLOR_THEME } from './application/LegendApplicationTheme.js';
@@ -60,27 +59,17 @@ export * from './stores/ApplicationStoreTestUtils.js';
 export * from './stores/navigation/WebApplicationRouter.js';
 export { DISPLAY_ANSI_ESCAPE } from './stores/terminal/Terminal.js';
 
-// ------------------------------------------- Shared components -------------------------------------------
+// ------------------------------------------- TO BE MOVED -------------------------------------------
 
-export * from './components/shared/DocumentationLink.js';
-
-/**
- * To be moved to other packages
- * @modularize
- */
+// TODO: move to `@finos/legend-query-builder`
 export * from './components/execution-plan-viewer/ExecutionPlanViewer.js';
 export * from './stores/ExecutionPlanState.js';
 
-export * from './components/shared/TextInputEditor.js';
-export * from './components/shared/PackageableElementOptionLabel.js';
+// TODO: move to `@finos/legend-graph-editor`
 export {
   PURE_GRAMMAR_TOKEN,
   setupPureLanguageService,
 } from './stores/pure-language/PureLanguageSupport.js';
-export * from './stores/pure-language/PureLanguageTextEditorSupport.js';
+export * from './stores/pure-language/PureLanguageCodeEditorSupport.js';
+export * from './components/shared/PackageableElementOptionLabel.js';
 export * from './stores/shared/PackageableElementOption.js';
-
-export * from './components/shared/TabManager.js';
-export * from './components/shared/TextSearchAdvancedConfigMenu.js';
-export * from './stores/shared/TabManagerState.js';
-export * from './stores/shared/TextSearchAdvancedConfigState.js';

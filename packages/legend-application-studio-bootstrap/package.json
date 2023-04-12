@@ -57,6 +57,7 @@
     "@finos/legend-extension-format-json-schema": "workspace:*",
     "@finos/legend-extension-store-service-store": "workspace:*",
     "@finos/legend-graph": "workspace:*",
+    "@finos/legend-lego": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/react": "18.0.34",
     "react": "18.2.0"

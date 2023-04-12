@@ -16,6 +16,7 @@
     { "path": "../legend-application" },
     { "path": "../legend-query-builder" },
     { "path": "../legend-art" },
+    { "path": "../legend-lego" },
     { "path": "../legend-graph" }
   ]
 }

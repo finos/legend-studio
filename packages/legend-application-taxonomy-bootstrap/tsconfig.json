@@ -10,6 +10,7 @@
   "references": [
     { "path": "../legend-application" },
     { "path": "../legend-art" },
+    { "path": "../legend-lego" },
     { "path": "../legend-graph" },
     { "path": "../legend-application-taxonomy" },
     { "path": "../legend-shared" },

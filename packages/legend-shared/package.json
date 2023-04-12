@@ -45,6 +45,7 @@
     "@types/seedrandom": "3.0.5",
     "@types/uuid": "9.0.1",
     "date-fns": "2.29.3",
+    "fuse.js": "6.6.2",
     "hash.js": "1.1.7",
     "http-status-codes": "2.2.0",
     "lodash-es": "4.17.21",
