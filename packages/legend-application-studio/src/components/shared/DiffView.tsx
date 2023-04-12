@@ -30,7 +30,6 @@ import {
   tryToFormatJSONString,
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
-import { useEditorStore } from '../editor/EditorStoreProvider.js';
 import {
   disposeDiffCodeEditor,
   getBaseCodeEditorOptions,
@@ -43,7 +42,6 @@ export const TextDiffView = observer(
     to?: string | undefined;
   }) => {
     const { from, to, language } = props;
-    const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const [editor, setEditor] =
       useState<monacoEditorAPI.IStandaloneDiffEditor>();
@@ -69,7 +67,7 @@ export const TextDiffView = observer(
         });
         setEditor(_editor);
       }
-    }, [applicationStore, editorStore, editor]);
+    }, [applicationStore, editor]);
 
     if (editor) {
       const originalModel = monacoEditorAPI.createModel(originalText, language);
