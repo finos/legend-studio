@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 27.0.1
+
+### Patch Changes
+
+- [#2087](https://github.com/finos/legend-studio/pull/2087) [`d28bf7638`](https://github.com/finos/legend-studio/commit/d28bf763848f90a2154bde36aa14256b755ab783) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add graph origin to `DependencyManager` to remove unnecessary graph transformation per engine call.
+
 ## 27.0.0
 
 ## 26.0.5
