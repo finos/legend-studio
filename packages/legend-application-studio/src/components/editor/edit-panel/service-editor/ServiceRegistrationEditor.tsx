@@ -245,32 +245,32 @@ export const ServiceRegistrationEditor = observer(() => {
             </div>
           </div>
         )}
-      {
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Generate Lineage
-          </div>
-          <div
-            className="panel__content__form__section__toggler"
-            onClick={toggleUseGenerateLineage}
-          >
-            <button
-              className={clsx('panel__content__form__section__toggler__btn', {
-                'panel__content__form__section__toggler__btn--toggled':
-                  registrationState.TEMPORARY__useGenerateLineage,
-              })}
-              tabIndex={-1}
-            >
-              {registrationState.TEMPORARY__useGenerateLineage ? (
-                <CheckSquareIcon />
-              ) : (
-                <SquareIcon />
-              )}
-            </button>
-            <div className="panel__content__form__section__toggler__prompt">
-              Generate Lineage (slower)
+        {
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Generate Lineage
             </div>
-          </div>
+            <div
+              className="panel__content__form__section__toggler"
+              onClick={toggleUseGenerateLineage}
+            >
+              <button
+                className={clsx('panel__content__form__section__toggler__btn', {
+                  'panel__content__form__section__toggler__btn--toggled':
+                    registrationState.TEMPORARY__useGenerateLineage,
+                })}
+                tabIndex={-1}
+              >
+                {registrationState.TEMPORARY__useGenerateLineage ? (
+                  <CheckSquareIcon />
+                ) : (
+                  <SquareIcon />
+                )}
+              </button>
+              <div className="panel__content__form__section__toggler__prompt">
+                Generate Lineage (slower)
+              </div>
+            </div>
           </div>
         }
 
