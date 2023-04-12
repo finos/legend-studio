@@ -58,7 +58,8 @@
     "react": "18.2.0",
     "react-dnd": "16.0.1",
     "react-dom": "18.2.0",
-    "serializr": "3.0.2"
+    "serializr": "3.0.2",
+    "sql-formatter": "12.2.0"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

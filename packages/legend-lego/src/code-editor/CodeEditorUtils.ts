@@ -199,20 +199,3 @@ export const resetLineNumberGutterWidth = (
     ),
   });
 };
-
-export enum CODE_EDITOR_THEME {
-  LEGEND = 'legend',
-  TEMPORARY__VSCODE_LIGHT = 'vs',
-}
-
-export enum CODE_EDITOR_LANGUAGE {
-  TEXT = 'plaintext',
-  PURE = 'pure',
-  JSON = 'json',
-  JAVA = 'java',
-  MARKDOWN = 'markdown',
-  SQL = 'sql',
-  XML = 'xml',
-  YAML = 'yaml',
-  GRAPHQL = 'graphql',
-}

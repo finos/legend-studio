@@ -18,7 +18,7 @@ import { BaseRadioGroup, InfoCircleIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
   ADVANCED_FUZZY_SEARCH_MODE,
-  FuzzySearchAdvancedConfigState,
+  type FuzzySearchAdvancedConfigState,
 } from '../../stores/shared/FuzzySearchAdvancedConfigState.js';
 import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '../../application/LegendApplicationDocumentation.js';
 import { useApplicationStore } from '../ApplicationStoreProvider.js';

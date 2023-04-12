@@ -14,19 +14,6 @@
  * limitations under the License.
  */
 
-@forward 'shared/lambda-editor';
-@forward 'shared/value-spec-editor';
+import Draggable from 'react-draggable';
 
-@forward 'execution-plan-viewer';
-
-@forward 'query-builder';
-@forward 'query-builder-setup';
-@forward 'query-builder-olap';
-@forward 'query-builder-explorer';
-@forward 'query-builder-filter';
-@forward 'query-builder-post-filter';
-@forward 'query-builder-projection';
-@forward 'query-builder-graph-fetch-tree';
-@forward 'query-builder-functions-explorer';
-@forward 'query-builder-property-search-panel';
-@forward 'query-builder-service-plugin';
+export { Draggable };

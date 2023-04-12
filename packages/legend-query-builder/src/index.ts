@@ -52,15 +52,17 @@ export * from './components/QuerySetupUtils.js';
 export * from './components/QueryBuilderTextEditor.js';
 
 export { TEST__setUpQueryBuilder } from './components/QueryBuilderComponentTestUtils.js';
+export { QueryBuilderTextEditorMode } from './stores/QueryBuilderTextEditorState.js';
 
 // ------------------------------------------- Shared components -------------------------------------------
 
 export * from './components/shared/LambdaEditor.js';
 export * from './components/shared/BasicValueSpecificationEditor.js';
 export * from './components/shared/LambdaParameterValuesEditor.js';
+export * from './components/execution-plan/ExecutionPlanViewer.js';
 
 export { LambdaEditorState } from './stores/shared/LambdaEditorState.js';
 export * from './stores/shared/LambdaParameterState.js';
 export * from './stores/shared/ValueSpecificationModifierHelper.js';
 export * from './stores/shared/ValueSpecificationEditorHelper.js';
-export { QueryBuilderTextEditorMode } from './stores/QueryBuilderTextEditorState.js';
+export * from './stores/execution-plan/ExecutionPlanState.js';

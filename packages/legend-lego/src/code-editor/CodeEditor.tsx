@@ -22,11 +22,14 @@ import {
   resetLineNumberGutterWidth,
   getCodeEditorValue,
   normalizeLineEnding,
-  CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
 } from './CodeEditorUtils.js';
 import { useResizeDetector } from '@finos/legend-art';
-import { TAB_SIZE, useApplicationStore } from '@finos/legend-application';
+import {
+  type CODE_EDITOR_LANGUAGE,
+  CODE_EDITOR_THEME,
+  TAB_SIZE,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 export const CodeEditor: React.FC<{
   inputValue: string;

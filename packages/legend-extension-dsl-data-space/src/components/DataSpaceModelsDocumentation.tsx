@@ -77,7 +77,7 @@ import {
 import {
   DataGrid,
   type DataGridCellRendererParams,
-} from '@finos/legend-art/grid';
+} from '@finos/legend-lego/data-grid';
 import { FuzzySearchAdvancedConfigMenu } from '@finos/legend-application/components';
 
 const getMilestoningLabel = (val: string | undefined): string | undefined => {

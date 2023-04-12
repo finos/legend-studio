@@ -63,7 +63,6 @@ import {
   useApplicationStore,
   ActionAlertActionType,
   ActionAlertType,
-  ExecutionPlanViewer,
 } from '@finos/legend-application';
 import {
   ClassMappingSelectorModal,
@@ -93,6 +92,7 @@ import {
 import {
   type QueryBuilderState,
   QueryBuilderTextEditorMode,
+  ExecutionPlanViewer,
 } from '@finos/legend-query-builder';
 import { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';

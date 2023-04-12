@@ -41,7 +41,7 @@ import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import {
   DataGrid,
   type DataGridCellRendererParams,
-} from '@finos/legend-art/grid';
+} from '@finos/legend-lego/data-grid';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 enum TDS_EXECUTABLE_ACTION_TAB {

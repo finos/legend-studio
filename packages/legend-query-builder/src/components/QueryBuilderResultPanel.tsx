@@ -46,7 +46,6 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   CODE_EDITOR_LANGUAGE,
-  ExecutionPlanViewer,
   TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -87,8 +86,9 @@ import { QUERY_BUILDER_TEST_ID } from '../application/QueryBuilderTesting.js';
 import {
   DataGrid,
   type DataGridCellMouseOverEvent,
-} from '@finos/legend-art/grid';
+} from '@finos/legend-lego/data-grid';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
+import { ExecutionPlanViewer } from './execution-plan/ExecutionPlanViewer.js';
 
 const QueryBuilderGridResultContextMenu = observer(
   forwardRef<

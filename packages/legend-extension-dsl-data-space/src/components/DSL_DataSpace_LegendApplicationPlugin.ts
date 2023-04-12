@@ -20,7 +20,7 @@ import {
   type LegendApplicationSetup,
 } from '@finos/legend-application';
 import packageJson from '../../package.json';
-import { configureDataGridComponent } from '@finos/legend-art/grid';
+import { configureDataGridComponent } from '@finos/legend-lego/data-grid';
 
 export class DSL_DataSpace_LegendApplicationPlugin extends LegendApplicationPlugin {
   static NAME = packageJson.extensions.applicationPlugin;

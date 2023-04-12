@@ -39,7 +39,7 @@ import {
   extractExecutionResultValues,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
-import { ExecutionPlanState, TAB_SIZE } from '@finos/legend-application';
+import { TAB_SIZE } from '@finos/legend-application';
 import {
   buildExecutionParameterValues,
   getExecutionQueryFromRawLambda,
@@ -47,6 +47,7 @@ import {
 import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificationBuilderHelper.js';
 import { QueryBuilderTelemetryHelper } from '../application/QueryBuilderTelemetryHelper.js';
 import { QUERY_BUILDER_EVENT } from '../application/QueryBuilderEvent.js';
+import { ExecutionPlanState } from './execution-plan/ExecutionPlanState.js';
 
 const DEFAULT_LIMIT = 1000;
 

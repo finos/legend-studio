@@ -21,8 +21,8 @@ import {
   ExecutionPlan,
   ExecutionNode,
 } from '@finos/legend-graph';
-import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 import type { TreeNodeData } from '@finos/legend-art';
+import type { GenericLegendApplicationStore } from '@finos/legend-application';
 
 export class ExecutionPlanViewTreeNodeData implements TreeNodeData {
   id: string;

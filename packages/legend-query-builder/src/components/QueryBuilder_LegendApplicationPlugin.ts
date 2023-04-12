@@ -27,7 +27,7 @@ import packageJson from '../../package.json';
 import { QUERY_BUILDER_SETTING_CONFIG } from '../application/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMMAND_CONFIG } from '../stores/QueryBuilderCommand.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
-import { configureDataGridComponent } from '@finos/legend-art/grid';
+import { configureDataGridComponent } from '@finos/legend-lego/data-grid';
 
 export type CheckEntitlementEditorRender = (
   queryBuilderState: QueryBuilderState,

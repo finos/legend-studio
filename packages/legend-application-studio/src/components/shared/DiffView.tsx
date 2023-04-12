@@ -31,7 +31,10 @@ import {
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
-import { getBaseCodeEditorOptions } from '@finos/legend-lego/code-editor';
+import {
+  disposeDiffCodeEditor,
+  getBaseCodeEditorOptions,
+} from '@finos/legend-lego/code-editor';
 
 export const TextDiffView = observer(
   (props: {
@@ -80,7 +83,7 @@ export const TextDiffView = observer(
     useEffect(
       () => (): void => {
         if (editor) {
-          disposeDiffEditor(editor);
+          disposeDiffCodeEditor(editor);
         }
       },
       [editor],
@@ -125,6 +128,3 @@ export const JsonDiffView = observer(
     );
   },
 );
-function disposeDiffEditor(editor: monacoEditorAPI.IStandaloneDiffEditor) {
-  throw new Error('Function not implemented.');
-}

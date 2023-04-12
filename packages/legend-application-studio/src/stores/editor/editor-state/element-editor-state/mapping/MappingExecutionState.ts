@@ -105,7 +105,6 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
-  ExecutionPlanState,
   TAB_SIZE,
 } from '@finos/legend-application';
 import {
@@ -133,6 +132,7 @@ import {
   LambdaEditorState,
   QueryBuilderTelemetryHelper,
   QUERY_BUILDER_EVENT,
+  ExecutionPlanState,
 } from '@finos/legend-query-builder';
 import { MappingEditorTabState } from './MappingTabManagerState.js';
 

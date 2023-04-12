@@ -37,6 +37,7 @@ import {
   BasePopover,
   FaceSadTearIcon,
   CogIcon,
+  Draggable,
 } from '@finos/legend-art';
 import {
   ContentType,
@@ -54,7 +55,6 @@ import {
   VIRTUAL_ASSISTANT_TAB,
 } from '../stores/AssistantService.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
-import Draggable from 'react-draggable';
 import { DATE_TIME_FORMAT } from '@finos/legend-graph';
 import { LegendApplicationTelemetryHelper } from '../application/LegendApplicationTelemetry.js';
 import { FuzzySearchAdvancedConfigMenu } from './shared/FuzzySearchAdvancedConfigMenu.js';

@@ -69,7 +69,6 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   useApplicationStore,
-  ExecutionPlanViewer,
 } from '@finos/legend-application';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -88,7 +87,10 @@ import {
   relationalInputData_setInputType,
 } from '../../../../stores/editor/shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
-import type { QueryBuilderState } from '@finos/legend-query-builder';
+import {
+  ExecutionPlanViewer,
+  type QueryBuilderState,
+} from '@finos/legend-query-builder';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 interface ClassMappingSelectOption {

@@ -80,7 +80,7 @@ import {
   ModelStore,
   reportGraphAnalytics,
 } from '@finos/legend-graph';
-import { ExecutionPlanState, TAB_SIZE } from '@finos/legend-application';
+import { TAB_SIZE } from '@finos/legend-application';
 import { flatData_setData } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
@@ -99,6 +99,7 @@ import {
   LambdaEditorState,
   QueryBuilderTelemetryHelper,
   QUERY_BUILDER_EVENT,
+  ExecutionPlanState,
 } from '@finos/legend-query-builder';
 import { MappingEditorTabState } from './MappingTabManagerState.js';
 

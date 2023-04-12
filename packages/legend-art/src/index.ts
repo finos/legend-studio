@@ -65,3 +65,5 @@ export * from './utils/ComponentsConfiguration.js';
 export * from './utils/ComponentUtils.js';
 
 export * from './markdown/MarkdownTextViewer.js';
+
+export * from './drag-and-drop/Draggable.js';

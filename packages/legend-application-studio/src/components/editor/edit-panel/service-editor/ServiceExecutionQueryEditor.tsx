@@ -50,7 +50,6 @@ import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   CODE_EDITOR_LANGUAGE,
-  ExecutionPlanViewer,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -64,6 +63,7 @@ import {
   ServiceQueryBuilderState,
   LambdaParameterValuesEditor,
   QueryBuilderTextEditorMode,
+  ExecutionPlanViewer,
 } from '@finos/legend-query-builder';
 import { ProjectViewerEditorMode } from '../../../../stores/project-view/ProjectViewerEditorMode.js';
 import { useLegendStudioApplicationStore } from '../../../LegendStudioBaseStoreProvider.js';

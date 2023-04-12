@@ -32,7 +32,7 @@ import {
   DatasetEntitlementAccessRequestedReport,
   DatasetEntitlementUnsupportedReport,
 } from '@finos/legend-graph';
-import { DataGrid } from '@finos/legend-art/grid';
+import { DataGrid } from '@finos/legend-lego/data-grid';
 
 const DataAccessOverview = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
