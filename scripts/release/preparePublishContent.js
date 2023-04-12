@@ -30,7 +30,7 @@ import { resolveFullTsConfig } from '@finos/legend-dev-utils/TypescriptConfigUti
 import { mkdirs, copySync } from 'fs-extra/esm';
 import { fileURLToPath } from 'url';
 import { loadJSModule, loadJSON } from '@finos/legend-dev-utils/DevUtils';
-import rimraf from 'rimraf';
+import { rimrafSync } from 'rimraf';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -56,7 +56,7 @@ const preparePublishContent = async () => {
 
     // Attempt to clean the publish content directory
     if (existsSync(publishContentDir)) {
-      rimraf.sync(publishContentDir);
+      rimrafSync(publishContentDir);
     }
     mkdirs(publishContentDir);
 
