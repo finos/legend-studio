@@ -48,7 +48,6 @@ import {
   service_updateOwner,
 } from '../../../../stores/editor/shared/modifier/DSL_Service_GraphModifierHelper.js';
 import {
-  LEGEND_APPLICATION_DOCUMENTATION_KEY,
   useApplicationNavigationContext,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -56,6 +55,7 @@ import { validate_ServicePattern } from '@finos/legend-graph';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
 import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
 import { flowResult } from 'mobx';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../application/LegendStudioDocumentation.js';
 
 type UserOption = { label: string; value: string };
 
@@ -481,7 +481,7 @@ export const ServiceEditor = observer(() => {
   );
   const seeDocumentation = (): void =>
     applicationStore.assistantService.openDocumentationEntry(
-      LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_SERVICE_TEST,
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_SERVICE_TEST,
     );
 
   useApplicationNavigationContext(

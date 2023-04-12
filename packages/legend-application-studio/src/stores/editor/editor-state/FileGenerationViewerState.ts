@@ -18,7 +18,7 @@ import type { EditorStore } from '../EditorStore.js';
 import { EditorState } from './EditorState.js';
 import { observable, makeObservable, computed } from 'mobx';
 import type { FileSystem_File } from '../shared/FileSystemTreeUtils.js';
-import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
+import { CODE_EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
 import { returnUndefOnError } from '@finos/legend-shared';
 
 export const getTextContent = (
@@ -26,7 +26,7 @@ export const getTextContent = (
   format: string | undefined,
 ): string => {
   switch (format?.toLowerCase()) {
-    case EDITOR_LANGUAGE.JSON:
+    case CODE_EDITOR_LANGUAGE.JSON:
       return (
         returnUndefOnError(() =>
           JSON.stringify(JSON.parse(content), undefined, TAB_SIZE),
@@ -39,14 +39,14 @@ export const getTextContent = (
 
 export const getEditorLanguageForFormat = (
   format?: string,
-): EDITOR_LANGUAGE => {
+): CODE_EDITOR_LANGUAGE => {
   switch (format?.toLowerCase()) {
-    case EDITOR_LANGUAGE.JAVA:
-      return EDITOR_LANGUAGE.JAVA;
-    case EDITOR_LANGUAGE.JSON:
-      return EDITOR_LANGUAGE.JSON;
+    case CODE_EDITOR_LANGUAGE.JAVA:
+      return CODE_EDITOR_LANGUAGE.JAVA;
+    case CODE_EDITOR_LANGUAGE.JSON:
+      return CODE_EDITOR_LANGUAGE.JSON;
     default:
-      return EDITOR_LANGUAGE.TEXT;
+      return CODE_EDITOR_LANGUAGE.TEXT;
   }
 };
 

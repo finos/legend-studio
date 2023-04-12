@@ -8,10 +8,11 @@
 *.png                                         binary
 
 # Set the language for these files to json5 to ensure GitHub doesn't show the comments as errors
-/typedoc.json                                 linguist-language=jsonc
 /.vscode/*.json                               linguist-language=jsonc
 **/tsconfig.json                              linguist-language=jsonc
 **/tsconfig.*.json                            linguist-language=jsonc
+**/typedoc.json                               linguist-language=jsonc
+**/typedoc.*.json                             linguist-language=jsonc
 
 # Hide .yarn and docs from GitHub's language detection
 /.yarn/**                                     linguist-vendored

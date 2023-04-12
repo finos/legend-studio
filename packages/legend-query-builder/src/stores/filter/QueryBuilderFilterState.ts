@@ -245,9 +245,11 @@ export abstract class QueryBuilderFilterTreeNodeData
   }
 
   abstract get dragPreviewLabel(): string;
+
   setIsOpen(val: boolean): void {
     this.isOpen = val;
   }
+
   setParentId(val: string | undefined): void {
     this.parentId = val;
   }

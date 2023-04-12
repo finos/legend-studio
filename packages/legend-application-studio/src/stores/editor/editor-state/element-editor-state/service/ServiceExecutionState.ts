@@ -34,7 +34,6 @@ import {
 import {
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-  ExecutionPlanState,
   generateExtensionUrlPattern,
   generatePath,
   TAB_SIZE,
@@ -94,6 +93,7 @@ import {
   PARAMETER_SUBMIT_ACTION,
   QueryBuilderTelemetryHelper,
   QUERY_BUILDER_EVENT,
+  ExecutionPlanState,
 } from '@finos/legend-query-builder';
 
 enum DSL_SERVICE_PATH_PARAM_TOKEN {

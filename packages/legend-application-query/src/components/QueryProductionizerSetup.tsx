@@ -30,8 +30,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import {
-  EDITOR_LANGUAGE,
-  TextInputEditor,
+  CODE_EDITOR_LANGUAGE,
   useApplicationStore,
 } from '@finos/legend-application';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
@@ -42,6 +41,7 @@ import {
   type QueryOption,
 } from '@finos/legend-query-builder';
 import { generateQuerySetupRoute } from '../application/LegendQueryNavigation.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const QueryProductionizerSetupStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -180,10 +180,10 @@ const QueryProductionizerSetupContent = observer(() => {
                 <BlankPanelContent>{`Can't preview query`}</BlankPanelContent>
               )}
               {setupStore.currentQueryInfo && (
-                <TextInputEditor
+                <CodeEditor
                   inputValue={setupStore.currentQueryInfo.content}
                   isReadOnly={true}
-                  language={EDITOR_LANGUAGE.PURE}
+                  language={CODE_EDITOR_LANGUAGE.PURE}
                   showMiniMap={false}
                   hideGutter={true}
                 />

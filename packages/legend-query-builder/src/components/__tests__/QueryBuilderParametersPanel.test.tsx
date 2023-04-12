@@ -41,7 +41,7 @@ import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
 import {
   MockedMonacoEditorInstance,
   MockedMonacoEditorAPI,
-} from '@finos/legend-art';
+} from '@finos/legend-lego/code-editor/test';
 
 test(
   integrationTest(

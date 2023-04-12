@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { CommandRegistrar, TabState } from '@finos/legend-application';
+import type { CommandRegistrar } from '@finos/legend-application';
 import {
   type ClassView,
   type Diagram,
@@ -51,6 +51,7 @@ import { FileCoordinate, trimPathLeadingSlash } from '../server/models/File.js';
 import type { EditorStore } from './EditorStore.js';
 import { EditorTabState } from './EditorTabManagerState.js';
 import { LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY } from '../application/LegendPureIDECommand.js';
+import type { TabState } from '@finos/legend-application/components';
 
 export class DiagramEditorState
   extends EditorTabState

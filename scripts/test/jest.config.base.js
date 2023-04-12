@@ -151,7 +151,7 @@ export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
     moduleNameMapper: {
       ...config.moduleNameMapper,
       '^monaco-editor$':
-        '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
+        '@finos/legend-lego/code-editor/test/MockedMonacoEditor.js',
       /**
        * Here, we mock pure ESM modules so we don't have to transform them while running test
        *
@@ -165,8 +165,8 @@ export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
        * See https://github.com/finos/legend-studio/issues/502
        */
       '^react-markdown$':
-        '@finos/legend-art/lib/testMocks/MockedReactMarkdown.js',
-      '^remark-gfm$': '@finos/legend-art/lib/testMocks/MockedRemarkGFM.js',
+        '@finos/legend-art/markdown/test/MockedReactMarkdown.js',
+      '^remark-gfm$': '@finos/legend-art/markdown/test/MockedRemarkGFM.js',
     },
   };
 };

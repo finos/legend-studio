@@ -57,8 +57,9 @@
     "@finos/legend-extension-format-json-schema": "workspace:*",
     "@finos/legend-extension-store-service-store": "workspace:*",
     "@finos/legend-graph": "workspace:*",
+    "@finos/legend-lego": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@types/react": "18.0.33",
+    "@types/react": "18.0.34",
     "react": "18.2.0"
   },
   "devDependencies": {
@@ -66,8 +67,8 @@
     "cross-env": "7.0.3",
     "eslint": "8.38.0",
     "npm-run-all": "4.1.5",
-    "rimraf": "4.4.1",
-    "sass": "1.61.0",
+    "rimraf": "5.0.0",
+    "sass": "1.62.0",
     "typescript": "5.0.4"
   },
   "publishConfig": {

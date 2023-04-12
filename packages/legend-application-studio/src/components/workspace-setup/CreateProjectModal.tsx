@@ -34,14 +34,12 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
 import { isNumber } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import {
-  DocumentationLink,
-  useConditionedApplicationNavigationContext,
-} from '@finos/legend-application';
+import { useConditionedApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/LegendStudioDocumentation.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/LegendStudioApplicationNavigationContext.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 import { useWorkspaceSetupStore } from './WorkspaceSetup.js';
+import { DocumentationLink } from '@finos/legend-application/components';
 
 enum CREATE_PROJECT_MODAL_TAB {
   CREATE = 'CREATE',

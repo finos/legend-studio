@@ -356,20 +356,18 @@ const QueryBuilderWindowColumnModalEditor = observer(
                         elevation: 7,
                       }}
                     >
-                      <button
+                      <div
                         className="query-builder__olap__column__operation__operator__badge"
-                        tabIndex={-1}
                         title="Choose Window Function Operator..."
                       >
                         <SigmaIcon />
-                      </button>
-                      <button
+                      </div>
+                      <div
                         className="query-builder__olap__column__operation__operator__dropdown__trigger"
-                        tabIndex={-1}
                         title="Choose Window Function Operator..."
                       >
                         <CaretDownIcon />
-                      </button>
+                      </div>
                     </DropdownMenu>
                   </div>
                 </div>
@@ -918,20 +916,18 @@ const QueryBuilderWindowColumnEditor = observer(
                   elevation: 7,
                 }}
               >
-                <button
+                <div
                   className="query-builder__olap__column__operation__operator__badge"
-                  tabIndex={-1}
                   title="Choose Window Function Operator..."
                 >
                   <SigmaIcon />
-                </button>
-                <button
+                </div>
+                <div
                   className="query-builder__olap__column__operation__operator__dropdown__trigger"
-                  tabIndex={-1}
                   title="Choose Window Function Operator..."
                 >
                   <CaretDownIcon />
-                </button>
+                </div>
               </DropdownMenu>
             </div>
           </div>
@@ -1058,7 +1054,7 @@ const QueryBuilderWindowColumnEditor = observer(
                   elevation: 7,
                 }}
               >
-                <button
+                <div
                   className={clsx(
                     'query-builder__olap__column__sortby__operator__badge',
                     {
@@ -1066,18 +1062,16 @@ const QueryBuilderWindowColumnEditor = observer(
                         Boolean(sortByState),
                     },
                   )}
-                  tabIndex={-1}
                   title="Choose Window Function SortBy Operator..."
                 >
                   <SortIcon />
-                </button>
-                <button
+                </div>
+                <div
                   className="query-builder__olap__column__sortby__operator__dropdown__trigger"
-                  tabIndex={-1}
                   title="Choose Window Function SortBy Operator..."
                 >
                   <CaretDownIcon />
-                </button>
+                </div>
               </DropdownMenu>
             </div>
           </div>

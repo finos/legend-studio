@@ -44,7 +44,6 @@ import {
   buildElementOption,
   getPackageableElementOptionFormatter,
   useApplicationStore,
-  LEGEND_APPLICATION_DOCUMENTATION_KEY,
 } from '@finos/legend-application';
 import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { DEFAULT_VARIABLE_NAME } from '../stores/QueryBuilderConfig.js';
@@ -53,6 +52,7 @@ import { LambdaParameterState } from '../stores/shared/LambdaParameterState.js';
 import { LambdaParameterValuesEditor } from './shared/LambdaParameterValuesEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 import { QUERY_BUILDER_TEST_ID } from '../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../application/QueryBuilderDocumentation.js';
 
 type MultiplicityOption = { label: string; value: Multiplicity };
 
@@ -237,7 +237,7 @@ export const QueryBuilderParametersPanel = observer(
     );
     const seeDocumentation = (): void =>
       queryBuilderState.applicationStore.assistantService.openDocumentationEntry(
-        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_ADD_PARAMETERS_TO_QUERY,
+        QUERY_BUILDER_DOCUMENTATION_KEY.QUESTION_HOW_TO_ADD_PARAMETERS_TO_QUERY,
       );
     const addParameter = (): void => {
       if (!isReadOnly && !queryBuilderState.isParameterSupportDisabled) {

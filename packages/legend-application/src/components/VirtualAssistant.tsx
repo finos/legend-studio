@@ -31,12 +31,13 @@ import {
   SunglassesIcon,
   WizardHatIcon,
   FaceLaughWinkIcon,
-  VerticalDragHandleThinIcon,
+  ThinVerticalDragHandleIcon,
   CircleIcon,
   PanelLoadingIndicator,
   BasePopover,
   FaceSadTearIcon,
   CogIcon,
+  Draggable,
 } from '@finos/legend-art';
 import {
   ContentType,
@@ -54,10 +55,9 @@ import {
   VIRTUAL_ASSISTANT_TAB,
 } from '../stores/AssistantService.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
-import Draggable from 'react-draggable';
 import { DATE_TIME_FORMAT } from '@finos/legend-graph';
 import { LegendApplicationTelemetryHelper } from '../application/LegendApplicationTelemetry.js';
-import { TextSearchAdvancedConfigMenu } from './shared/TextSearchAdvancedConfigMenu.js';
+import { FuzzySearchAdvancedConfigMenu } from './shared/FuzzySearchAdvancedConfigMenu.js';
 
 const WIZARD_GREETING = `Bonjour, It's Pierre!`;
 
@@ -265,7 +265,6 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
 const VirtualAssistantSearchPanel = observer(() => {
   const applicationStore = useApplicationStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const searchConfigButtonRef = useRef<HTMLButtonElement>(null);
   const assistantService = applicationStore.assistantService;
 
   // search text
@@ -285,6 +284,10 @@ const VirtualAssistantSearchPanel = observer(() => {
     assistantService.currentDocumentationEntry = undefined;
     searchInputRef.current?.focus();
   };
+  const toggleSearchConfigMenu = (): void =>
+    assistantService.setShowSearchConfigurationMenu(
+      !assistantService.showSearchConfigurationMenu,
+    );
 
   const downloadDocRegistry = (): void => {
     downloadFileUsingDataURI(
@@ -314,10 +317,6 @@ const VirtualAssistantSearchPanel = observer(() => {
       ContentType.APPLICATION_JSON,
     );
   };
-  const toggleSearchConfigMenu = (): void =>
-    assistantService.setShowSearchConfigurationMenu(
-      !assistantService.showSearchConfigurationMenu,
-    );
 
   useEffect(() => {
     searchInputRef.current?.focus();
@@ -374,7 +373,6 @@ const VirtualAssistantSearchPanel = observer(() => {
           </div>
         )}
         <button
-          ref={searchConfigButtonRef}
           className={clsx('virtual-assistant__search__input__config__trigger', {
             'virtual-assistant__search__input__config__trigger--toggled':
               assistantService.showSearchConfigurationMenu,
@@ -410,18 +408,16 @@ const VirtualAssistantSearchPanel = observer(() => {
         <PanelLoadingIndicator
           isLoading={assistantService.searchState.isInProgress}
         />
-        {/* {assistantService.showSearchConfigurationMenu && ( */}
         <div
           className={clsx('virtual-assistant__search__input__config__panel', {
             'virtual-assistant__search__input__config__panel--toggled':
               assistantService.showSearchConfigurationMenu,
           })}
         >
-          <TextSearchAdvancedConfigMenu
+          <FuzzySearchAdvancedConfigMenu
             configState={assistantService.searchConfigurationState}
           />
         </div>
-        {/* )} */}
         {assistantService.currentDocumentationEntry && (
           <div className="virtual-assistant__search__results">
             <VirtualAssistantDocumentationEntryViewer
@@ -747,7 +743,7 @@ export const VirtualAssistant = observer(() => {
               className="virtual-assistant__station__drag-handle__content"
               title={isDragging ? undefined : 'Grab to drag assistant'}
             >
-              <VerticalDragHandleThinIcon />
+              <ThinVerticalDragHandleIcon />
             </div>
           </ContextMenu>
         </div>

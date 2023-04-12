@@ -21,7 +21,7 @@ import {
   createMock,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { MockedMonacoEditorInstance } from '@finos/legend-art';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import {
   TEST__openElementFromExplorerTree,
   TEST__setUpEditorWithDefaultSDLCData,

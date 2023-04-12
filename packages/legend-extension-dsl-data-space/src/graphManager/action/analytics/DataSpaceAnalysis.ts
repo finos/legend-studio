@@ -15,6 +15,7 @@
  */
 
 import {
+  type Multiplicity,
   type Mapping,
   type PackageableRuntime,
   type PureModel,
@@ -47,24 +48,70 @@ export class DataSpaceStereotypeInfo {
   value!: string;
 }
 
-export class DataSpaceDocumentationEntry {
+export class NormalizedDataSpaceDocumentationEntry {
   readonly uuid = uuid();
-  readonly elementPath: string;
-  readonly subElementText?: string | undefined;
-  readonly doc: string;
-  readonly milestoning?: string | undefined;
+  readonly text: string;
+  readonly documentation: string;
+  readonly elementEntry: DataSpaceModelDocumentationEntry;
+  readonly entry: DataSpaceBasicDocumentationEntry;
 
   constructor(
-    elementPath: string,
-    subElementText: string | undefined,
+    text: string,
     documentation: string,
-    milestoning: string | undefined,
+    elementEntry: DataSpaceModelDocumentationEntry,
+    entry: DataSpaceBasicDocumentationEntry,
   ) {
-    this.elementPath = elementPath;
-    this.subElementText = subElementText;
-    this.doc = documentation;
-    this.milestoning = milestoning;
+    this.text = text;
+    this.documentation = documentation;
+    this.elementEntry = elementEntry;
+    this.entry = entry;
   }
+
+  get humanizedText(): string {
+    return prettyCONSTName(this.text);
+  }
+}
+
+export class DataSpaceBasicDocumentationEntry {
+  name!: string;
+  docs: string[] = [];
+
+  get humanizedName(): string {
+    return prettyCONSTName(this.name);
+  }
+}
+
+export class DataSpacePropertyDocumentationEntry extends DataSpaceBasicDocumentationEntry {
+  milestoning?: string | undefined;
+  /**
+   * Make this optional for backward compatibility
+   *
+   * @backwardCompatibility
+   */
+  type?: string | undefined;
+  /**
+   * Make this optional for backward compatibility
+   *
+   * @backwardCompatibility
+   */
+  multiplicity?: Multiplicity | undefined;
+}
+
+export class DataSpaceModelDocumentationEntry extends DataSpaceBasicDocumentationEntry {
+  path!: string;
+}
+
+export class DataSpaceClassDocumentationEntry extends DataSpaceModelDocumentationEntry {
+  properties: DataSpacePropertyDocumentationEntry[] = [];
+  milestoning?: string | undefined;
+}
+
+export class DataSpaceEnumerationDocumentationEntry extends DataSpaceModelDocumentationEntry {
+  enumValues: DataSpaceBasicDocumentationEntry[] = [];
+}
+
+export class DataSpaceAssociationDocumentationEntry extends DataSpaceModelDocumentationEntry {
+  properties: DataSpacePropertyDocumentationEntry[] = [];
 }
 
 export class DataSpaceDiagramAnalysisResult {
@@ -96,7 +143,7 @@ export class DataSpaceExecutableTDSResultColumn {
 
   // TODO: we need to think of how we want to support sample values, should we rely on the type here
   // or should we rely on actual execution result on test data?
-  sampleValues = '';
+  sampleValues?: string | undefined;
 }
 
 export class DataSpaceExecutableTDSResult extends DataSpaceExecutableResult {
@@ -129,7 +176,7 @@ export class DataSpaceAnalysisResult {
   executionContextsIndex!: Map<string, DataSpaceExecutionContextAnalysisResult>;
   defaultExecutionContext!: DataSpaceExecutionContextAnalysisResult;
 
-  elementDocs: DataSpaceDocumentationEntry[] = [];
+  elementDocs: NormalizedDataSpaceDocumentationEntry[] = [];
 
   diagrams: DataSpaceDiagramAnalysisResult[] = [];
 

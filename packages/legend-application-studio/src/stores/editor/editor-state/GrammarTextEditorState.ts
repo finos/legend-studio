@@ -44,9 +44,9 @@ import {
   PURE_CONNECTION_NAME,
   ExecutionEnvironmentInstance,
 } from '@finos/legend-graph';
-import type { TextEditorPosition } from '@finos/legend-art';
 import { generatePackageableElementTreeNodeDataLabel } from '../shared/PackageTreeUtils.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../../application/LegendStudioSetting.js';
+import type { CodeEditorPosition } from '@finos/legend-lego/code-editor';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,
@@ -71,7 +71,7 @@ export class GrammarTextEditorState {
   graphGrammarText = '';
   currentElementLabelRegexString?: string | undefined;
   wrapText: boolean;
-  forcedCursorPosition?: TextEditorPosition | undefined;
+  forcedCursorPosition?: CodeEditorPosition | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -105,7 +105,7 @@ export class GrammarTextEditorState {
     this.wrapText = val;
   }
 
-  setForcedCursorPosition(position: TextEditorPosition | undefined): void {
+  setForcedCursorPosition(position: CodeEditorPosition | undefined): void {
     this.forcedCursorPosition = position;
   }
 

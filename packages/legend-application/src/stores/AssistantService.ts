@@ -17,15 +17,15 @@
 import { action, makeObservable, observable, computed } from 'mobx';
 import type { DocumentationEntry } from './DocumentationService.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
-import { FuzzySearchEngine } from '@finos/legend-art';
 import {
   type MarkdownText,
   guaranteeNonEmptyString,
   uuid,
   isNonNullable,
   ActionState,
+  FuzzySearchEngine,
 } from '@finos/legend-shared';
-import { TextSearchAdvancedConfigState } from './shared/TextSearchAdvancedConfigState.js';
+import { FuzzySearchAdvancedConfigState } from './shared/FuzzySearchAdvancedConfigState.js';
 
 export enum VIRTUAL_ASSISTANT_TAB {
   SEARCH = 'SEARCH',
@@ -113,8 +113,8 @@ export class AssistantService {
 
   // search text
   private readonly searchEngine: FuzzySearchEngine<DocumentationEntry>;
-  searchConfigurationState: TextSearchAdvancedConfigState;
-  searchState = ActionState.create();
+  searchConfigurationState: FuzzySearchAdvancedConfigState;
+  readonly searchState = ActionState.create();
   searchText = '';
   searchResults: VirtualAssistantDocumentationEntry[] = [];
   showSearchConfigurationMenu = false;
@@ -178,7 +178,7 @@ export class AssistantService {
         useExtendedSearch: true,
       },
     );
-    this.searchConfigurationState = new TextSearchAdvancedConfigState(() => {
+    this.searchConfigurationState = new FuzzySearchAdvancedConfigState(() => {
       this.search();
     });
   }

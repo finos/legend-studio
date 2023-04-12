@@ -44,7 +44,7 @@ import {
   type InnerSchemaSetEditorState,
   SCHEMA_SET_TAB_TYPE,
 } from '../../../../stores/editor/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
-import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
 import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/FileGenerationViewerState.js';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -56,6 +56,7 @@ import {
   externalFormat_schema_setLocation,
 } from '../../../../stores/editor/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import { SchemaSetModelGenerationEditor } from './DSL_ExternalFormat_SchemaSetModelGenerationEditor.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const SchemaLoader = observer(
   (props: {
@@ -147,7 +148,7 @@ const SchemaLoader = observer(
 const SchemaBasicEditor = observer(
   (props: {
     schema: Schema;
-    language: EDITOR_LANGUAGE;
+    language: CODE_EDITOR_LANGUAGE;
     isReadOnly: boolean;
   }) => {
     const { schema, isReadOnly, language } = props;
@@ -176,7 +177,7 @@ const SchemaBasicEditor = observer(
         />
         <div className={clsx('schema-editor__content')}>
           <div className="schema-editor__content__input">
-            <TextInputEditor
+            <CodeEditor
               inputValue={schema.content}
               language={language}
               updateInput={(val: string): void => {
@@ -207,7 +208,7 @@ export const SchemaSetGeneralEditor = observer(
     // TEMPROARY engine api should return `fileformat`.
     const language = description
       ? getEditorLanguageForFormat(description.name)
-      : EDITOR_LANGUAGE.TEXT;
+      : CODE_EDITOR_LANGUAGE.TEXT;
     const changeState =
       (schema: Schema): (() => void) =>
       (): void => {

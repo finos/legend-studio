@@ -16,7 +16,9 @@
 
 import {
   collectKeyedCommandConfigEntriesFromConfig,
+  setupPureLanguageService,
   type KeyedCommandConfigEntry,
+  type LegendApplicationSetup,
 } from '@finos/legend-application';
 import packageJson from '../../package.json';
 import { LegendPureIDEApplicationPlugin } from '../stores/LegendPureIDEApplicationPlugin.js';
@@ -25,12 +27,29 @@ import {
   LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_CONFIG,
   LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_CONFIG,
 } from '../application/LegendPureIDECommand.js';
+import {
+  PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
+  PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
+} from '../stores/PureFileEditorUtils.js';
 
 export class Core_LegendPureIDEApplicationPlugin extends LegendPureIDEApplicationPlugin {
   static NAME = packageJson.extensions.applicationPureIDEPlugin;
 
   constructor() {
     super(Core_LegendPureIDEApplicationPlugin.NAME, packageJson.version);
+  }
+
+  override getExtraApplicationSetups(): LegendApplicationSetup[] {
+    return [
+      async (applicationStore) => {
+        setupPureLanguageService(
+          // NOTE: we add these manually because Pure uses a different grammar syntax for DSL diagram than the one in engine
+          // also, in this particular case, for convenience, we would consider DSL Diagram as part of core Pure
+          [PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL],
+          [PURE_GRAMMAR_DIAGRAM_PARSER_NAME],
+        );
+      },
+    ];
   }
 
   override getExtraKeyedCommandConfigEntries(): KeyedCommandConfigEntry[] {

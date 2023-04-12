@@ -89,10 +89,9 @@ import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../
 import { DatabaseBuilder } from './DatabaseBuilder.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
-  EDITOR_LANGUAGE,
+  CODE_EDITOR_LANGUAGE,
   buildElementOption,
   type PackageableElementOption,
-  TextInputEditor,
 } from '@finos/legend-application';
 import { connection_setStore } from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
@@ -165,6 +164,7 @@ import {
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import type { MapperPostProcessorEditorState } from '../../../../stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const LocalH2DatasourceSpecificationEditor = observer(
   (props: {
@@ -186,7 +186,7 @@ const LocalH2DatasourceSpecificationEditor = observer(
               <Modal darkMode={true} className="editor-modal">
                 <ModalHeader title="test data setup SQL" />
                 <ModalBody className="modal__body__large">
-                  <TextInputEditor
+                  <CodeEditor
                     inputValue={SQLValue}
                     updateInput={(value: string | undefined): void =>
                       localH2DatasourceSpecification_setTestDataSetupSqls(
@@ -195,7 +195,7 @@ const LocalH2DatasourceSpecificationEditor = observer(
                       )
                     }
                     isReadOnly={isReadOnly}
-                    language={EDITOR_LANGUAGE.SQL}
+                    language={CODE_EDITOR_LANGUAGE.SQL}
                   />
                 </ModalBody>
                 <ModalFooter>
@@ -218,7 +218,7 @@ const LocalH2DatasourceSpecificationEditor = observer(
             </Button>
           </div>
           <div className="panel__content__form__section__text-editor">
-            <TextInputEditor
+            <CodeEditor
               inputValue={SQLValue}
               updateInput={(value: string | undefined): void =>
                 localH2DatasourceSpecification_setTestDataSetupSqls(
@@ -227,7 +227,7 @@ const LocalH2DatasourceSpecificationEditor = observer(
                 )
               }
               isReadOnly={isReadOnly}
-              language={EDITOR_LANGUAGE.SQL}
+              language={CODE_EDITOR_LANGUAGE.SQL}
             />
           </div>
         </div>

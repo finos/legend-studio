@@ -56,7 +56,6 @@ import {
   BackdropContainer,
   useApplicationStore,
   useCommands,
-  LEGEND_APPLICATION_DOCUMENTATION_KEY,
 } from '@finos/legend-application';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
@@ -70,6 +69,7 @@ import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpre
 import { QueryBuilder_LegendApplicationPlugin } from './QueryBuilder_LegendApplicationPlugin.js';
 import { QUERY_BUILDER_SETTING_KEY } from '../application/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
+import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../application/QueryBuilderDocumentation.js';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -253,7 +253,7 @@ export const QueryBuilder = observer(
     const toggleAssistant = (): void =>
       applicationStore.assistantService.toggleAssistant();
     const queryDocEntry = applicationStore.documentationService.getDocEntry(
-      LEGEND_APPLICATION_DOCUMENTATION_KEY.TUTORIAL_QUERY_BUILDER,
+      QUERY_BUILDER_DOCUMENTATION_KEY.TUTORIAL_QUERY_BUILDER,
     );
     const openQueryTutorial = (): void => {
       if (queryDocEntry?.url) {

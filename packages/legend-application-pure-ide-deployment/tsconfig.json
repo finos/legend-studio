@@ -12,5 +12,10 @@
     "src/**/*.json",
     "pure-ide.config.js"
   ],
-  "references": [{ "path": "../legend-application-pure-ide" }]
+  "references": [
+    { "path": "../legend-art" },
+    { "path": "../legend-application" },
+    { "path": "../legend-lego" },
+    { "path": "../legend-application-pure-ide" }
+  ]
 }

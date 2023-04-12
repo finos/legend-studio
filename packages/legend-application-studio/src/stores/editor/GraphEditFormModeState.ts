@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { TabState } from '@finos/legend-application';
 import {
   type PackageableElement,
   isElementReadOnly,
@@ -55,6 +54,7 @@ import {
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import { LegendStudioTelemetryHelper } from '../../application/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
+import type { TabState } from '@finos/legend-application/components';
 
 export class GraphEditFormModeState extends GraphEditorMode {
   *initialize(): GeneratorFn<void> {

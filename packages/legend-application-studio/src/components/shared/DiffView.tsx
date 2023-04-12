@@ -18,16 +18,12 @@ import { useEffect, useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI } from 'monaco-editor';
 import {
-  EDITOR_THEME,
-  EDITOR_LANGUAGE,
+  CODE_EDITOR_THEME,
+  CODE_EDITOR_LANGUAGE,
   TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
-import {
-  disposeDiffEditor,
-  getBaseTextEditorOptions,
-  useResizeDetector,
-} from '@finos/legend-art';
+import { useResizeDetector } from '@finos/legend-art';
 import {
   isString,
   stringifyLosslessJSON,
@@ -35,10 +31,14 @@ import {
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
+import {
+  disposeDiffCodeEditor,
+  getBaseCodeEditorOptions,
+} from '@finos/legend-lego/code-editor';
 
 export const TextDiffView = observer(
   (props: {
-    language: EDITOR_LANGUAGE;
+    language: CODE_EDITOR_LANGUAGE;
     from?: string | undefined;
     to?: string | undefined;
   }) => {
@@ -63,8 +63,8 @@ export const TextDiffView = observer(
       if (!editor && editorRef.current) {
         const element = editorRef.current;
         const _editor = monacoEditorAPI.createDiffEditor(element, {
-          ...getBaseTextEditorOptions(),
-          theme: EDITOR_THEME.LEGEND,
+          ...getBaseCodeEditorOptions(),
+          theme: CODE_EDITOR_THEME.LEGEND,
           readOnly: true,
         });
         setEditor(_editor);
@@ -83,15 +83,15 @@ export const TextDiffView = observer(
     useEffect(
       () => (): void => {
         if (editor) {
-          disposeDiffEditor(editor);
+          disposeDiffCodeEditor(editor);
         }
       },
       [editor],
     ); // dispose editor
 
     return (
-      <div ref={ref} className="text-editor__container">
-        <div className="text-editor__body" ref={editorRef} />
+      <div ref={ref} className="code-editor__container">
+        <div className="code-editor__body" ref={editorRef} />
       </div>
     );
   },
@@ -121,7 +121,7 @@ export const JsonDiffView = observer(
 
     return (
       <TextDiffView
-        language={EDITOR_LANGUAGE.JSON}
+        language={CODE_EDITOR_LANGUAGE.JSON}
         from={formatJSONLikeValue(from, Boolean(lossless))}
         to={formatJSONLikeValue(to, Boolean(lossless))}
       />

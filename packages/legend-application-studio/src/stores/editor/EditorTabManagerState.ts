@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { TabManagerState } from '@finos/legend-application';
 import {
   Association,
   Class,
@@ -57,6 +56,7 @@ import { GenerationSpecificationEditorState } from './editor-state/GenerationSpe
 import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState.js';
 import type { EditorStore } from './EditorStore.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
+import { TabManagerState } from '@finos/legend-application/components';
 
 export class EditorTabManagerState extends TabManagerState {
   readonly editorStore: EditorStore;

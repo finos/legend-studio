@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { TabState } from '@finos/legend-application';
+import { TabState } from '@finos/legend-application/components';
 
 export abstract class MappingEditorTabState extends TabState {}

@@ -26,6 +26,7 @@ import {
 } from '@finos/legend-graph';
 import {
   ActionState,
+  FuzzySearchEngine,
   addUniqueEntry,
   deleteEntry,
   guaranteeNonNullable,
@@ -51,8 +52,7 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
-import { FuzzySearchEngine } from '@finos/legend-art';
-import { TextSearchAdvancedConfigState } from '@finos/legend-application';
+import { FuzzySearchAdvancedConfigState } from '@finos/legend-application/components';
 
 export class QueryBuilderPropertySearchState {
   queryBuilderState: QueryBuilderState;
@@ -72,7 +72,7 @@ export class QueryBuilderPropertySearchState {
 
   // search
   searchEngine: FuzzySearchEngine<QueryBuilderExplorerTreeNodeData>;
-  searchConfigurationState: TextSearchAdvancedConfigState;
+  searchConfigurationState: FuzzySearchAdvancedConfigState;
   searchState = ActionState.create();
   searchText = '';
   searchResults: QueryBuilderExplorerTreeNodeData[] = [];
@@ -112,7 +112,7 @@ export class QueryBuilderPropertySearchState {
     });
 
     this.queryBuilderState = queryBuilderState;
-    this.searchConfigurationState = new TextSearchAdvancedConfigState(
+    this.searchConfigurationState = new FuzzySearchAdvancedConfigState(
       (): void => this.search(),
     );
     this.searchEngine = new FuzzySearchEngine(this.indexedExplorerTreeNodes);

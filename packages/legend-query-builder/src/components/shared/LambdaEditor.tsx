@@ -19,23 +19,25 @@ import { editor as monacoEditorAPI, type IDisposable } from 'monaco-editor';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
-  disposeEditor,
-  getBaseTextEditorOptions,
-  getEditorValue,
-  normalizeLineEnding,
   FilledWindowMaximizeIcon,
   LongArrowAltDownIcon,
   LongArrowAltUpIcon,
   Dialog,
   useResizeDetector,
-  clearMarkers,
-  setErrorMarkers,
   Modal,
   ModalBody,
   ModalFooter,
   ModalHeader,
   ModalTitle,
 } from '@finos/legend-art';
+import {
+  disposeCodeEditor,
+  getBaseCodeEditorOptions,
+  getCodeEditorValue,
+  normalizeLineEnding,
+  clearMarkers,
+  setErrorMarkers,
+} from '@finos/legend-lego/code-editor';
 import type { LambdaEditorState } from '../../stores/shared/LambdaEditorState.js';
 import {
   debounce,
@@ -46,8 +48,8 @@ import {
 import { flowResult } from 'mobx';
 import { ParserError, type EngineError, type Type } from '@finos/legend-graph';
 import {
-  EDITOR_LANGUAGE,
-  EDITOR_THEME,
+  CODE_EDITOR_LANGUAGE,
+  CODE_EDITOR_THEME,
   TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -181,12 +183,12 @@ const LambdaEditorInline = observer(
                 scrollbar: { vertical: 'hidden' },
               };
         const _editor = monacoEditorAPI.create(element, {
-          ...getBaseTextEditorOptions(),
-          language: EDITOR_LANGUAGE.PURE,
+          ...getBaseCodeEditorOptions(),
+          language: CODE_EDITOR_LANGUAGE.PURE,
           theme: applicationStore.layoutService
             .TEMPORARY__isLightColorThemeEnabled
-            ? EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
-            : EDITOR_THEME.LEGEND,
+            ? CODE_EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
+            : CODE_EDITOR_THEME.LEGEND,
           ...lambdaEditorOptions,
         });
         setEditor(_editor);
@@ -211,7 +213,7 @@ const LambdaEditorInline = observer(
                 },
           );
           // set the value here so we don't lose the error when toggling between expand/collape modes
-          const currentValue = getEditorValue(editor);
+          const currentValue = getCodeEditorValue(editor);
           editor.setValue(currentValue);
         }
       }
@@ -244,7 +246,7 @@ const LambdaEditorInline = observer(
       onDidChangeModelContentEventDisposer.current?.dispose();
       onDidChangeModelContentEventDisposer.current =
         editor.onDidChangeModelContent(() => {
-          const currentVal = getEditorValue(editor);
+          const currentVal = getCodeEditorValue(editor);
           /**
            * Avoid unecessary setting of lambda string. Also, this prevents clearing the non-parser error on first render.
            * Since this method is guaranteed to be called one time during the first rendering when we first set the
@@ -287,7 +289,7 @@ const LambdaEditorInline = observer(
       );
 
       // Set the text value
-      const currentValue = getEditorValue(editor);
+      const currentValue = getCodeEditorValue(editor);
       const editorModel = editor.getModel();
       const currentConfig = editor.getRawOptions();
       if (currentValue !== value) {
@@ -322,7 +324,7 @@ const LambdaEditorInline = observer(
     useEffect(
       () => (): void => {
         if (editor) {
-          disposeEditor(editor);
+          disposeCodeEditor(editor);
         }
         onDidChangeModelContentEventDisposer.current?.dispose();
         onDidFocusEditorWidgetDisposer.current?.dispose();
@@ -342,7 +344,7 @@ const LambdaEditorInline = observer(
             data-testid={QUERY_BUILDER_TEST_ID.LAMBDA_EDITOR__EDITOR_INPUT}
             className="lambda-editor__editor__input"
           >
-            <div className="text-editor__body" ref={textInputRef} />
+            <div className="code-editor__body" ref={textInputRef} />
           </div>
           {Boolean(expectedType) && (
             <div className="lambda-editor__editor__info">
@@ -459,12 +461,12 @@ const LambdaEditorPopUp = observer(
       if (!editor && textInputRef.current) {
         const element = textInputRef.current;
         const _editor = monacoEditorAPI.create(element, {
-          ...getBaseTextEditorOptions(),
-          language: EDITOR_LANGUAGE.PURE,
+          ...getBaseCodeEditorOptions(),
+          language: CODE_EDITOR_LANGUAGE.PURE,
           theme: applicationStore.layoutService
             .TEMPORARY__isLightColorThemeEnabled
-            ? EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
-            : EDITOR_THEME.LEGEND,
+            ? CODE_EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
+            : CODE_EDITOR_THEME.LEGEND,
         });
         setEditor(_editor);
       }
@@ -485,7 +487,7 @@ const LambdaEditorPopUp = observer(
       onDidChangeModelContentEventDisposer.current?.dispose();
       onDidChangeModelContentEventDisposer.current =
         editor.onDidChangeModelContent(() => {
-          const currentVal = getEditorValue(editor);
+          const currentVal = getCodeEditorValue(editor);
           /**
            * Avoid unecessary setting of lambda string. Also, this prevents clearing the non-parser error on first render.
            * Since this method is guaranteed to be called one time during the first rendering when we first set the
@@ -521,7 +523,7 @@ const LambdaEditorPopUp = observer(
         });
 
       // Set the text value
-      const currentValue = getEditorValue(editor);
+      const currentValue = getCodeEditorValue(editor);
       const editorModel = editor.getModel();
       const currentConfig = editor.getRawOptions();
       if (currentValue !== value) {
@@ -562,7 +564,7 @@ const LambdaEditorPopUp = observer(
     useEffect(
       () => (): void => {
         if (editor) {
-          disposeEditor(editor);
+          disposeCodeEditor(editor);
         }
         onDidChangeModelContentEventDisposer.current?.dispose();
       },
@@ -613,7 +615,7 @@ const LambdaEditorPopUp = observer(
                 data-testid={QUERY_BUILDER_TEST_ID.LAMBDA_EDITOR__EDITOR_INPUT}
                 className="lambda-editor__editor__input"
               >
-                <div className="text-editor__body" ref={textInputRef} />
+                <div className="code-editor__body" ref={textInputRef} />
               </div>
             </div>
           </ModalBody>

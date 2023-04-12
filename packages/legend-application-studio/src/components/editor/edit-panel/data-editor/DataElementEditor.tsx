@@ -72,12 +72,12 @@ import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-sta
 import type { ExternalFormatDataState } from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import { renderEmbeddedDataEditor } from './EmbeddedDataEditor.js';
 import {
-  LEGEND_APPLICATION_DOCUMENTATION_KEY,
-  TextInputEditor,
   useApplicationNavigationContext,
   useApplicationStore,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../application/LegendStudioDocumentation.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 export const ExternalFormatDataEditor = observer(
   (props: {
@@ -154,7 +154,7 @@ export const ExternalFormatDataEditor = observer(
         </div>
         <div className={clsx('external-format-data-editor__content')}>
           <div className="external-format-data-editor__content__input">
-            <TextInputEditor
+            <CodeEditor
               language={language}
               inputValue={externalFormatDataState.embeddedData.data}
               updateInput={changeData}
@@ -269,7 +269,7 @@ export const DataElementEditor = observer(() => {
   );
   const seeDocumentation = (): void =>
     applicationStore.assistantService.openDocumentationEntry(
-      LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_CREATE_A_DATA_ELEMENT,
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_CREATE_A_DATA_ELEMENT,
     );
 
   useApplicationNavigationContext(

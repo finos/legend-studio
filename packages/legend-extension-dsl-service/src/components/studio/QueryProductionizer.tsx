@@ -52,13 +52,10 @@ import {
 } from '@finos/legend-art';
 import type { QueryInfo } from '@finos/legend-graph';
 import { generateGAVCoordinates } from '@finos/legend-storage';
-import {
-  DocumentationLink,
-  EDITOR_LANGUAGE,
-  TextInputEditor,
-  useParams,
-} from '@finos/legend-application';
+import { CODE_EDITOR_LANGUAGE, useParams } from '@finos/legend-application';
 import { DSL_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/studio/DSL_Service_LegendStudioDocumentation.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
+import { DocumentationLink } from '@finos/legend-application/components';
 
 export type UserOption = { label: string; value: string };
 
@@ -149,10 +146,10 @@ const QueryPreviewModal = observer((props: { queryInfo: QueryInfo }) => {
               </div>
             </div>
             <div className="query-preview__code">
-              <TextInputEditor
+              <CodeEditor
                 inputValue={queryInfo.content}
                 isReadOnly={true}
-                language={EDITOR_LANGUAGE.PURE}
+                language={CODE_EDITOR_LANGUAGE.PURE}
                 showMiniMap={false}
                 hideGutter={true}
               />

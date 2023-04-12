@@ -43,6 +43,7 @@ import {
   PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE,
 } from '../graphManager/DSL_DataSpace_PureGraphManagerPlugin.js';
 import { DataSpaceViewerDataAccessState } from './DataSpaceViewerDataAccessState.js';
+import { DataSpaceViewerModelsDocumentationState } from './DataSpaceModelsDocumentationState.js';
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   DESCRIPTION = 'description',
@@ -107,12 +108,15 @@ export class DataSpaceViewerState {
     | undefined;
 
   readonly dataAccessState: DataSpaceViewerDataAccessState;
+  readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
 
   _renderer?: DiagramRenderer | undefined;
   currentDiagram?: DataSpaceDiagramAnalysisResult | undefined;
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
+
+  TEMPORARY__enableExperimentalFeatures = false;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -136,6 +140,9 @@ export class DataSpaceViewerState {
       ) => Promise<void>;
       onDiagramClassDoubleClick: (classView: ClassView) => void;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
+    },
+    options?: {
+      TEMPORARY__enableExperimentalFeatures?: boolean | undefined;
     },
   ) {
     makeObservable(this, {
@@ -174,6 +181,13 @@ export class DataSpaceViewerState {
     this.onZoneChange = actions.onZoneChange;
 
     this.dataAccessState = new DataSpaceViewerDataAccessState(this);
+    this.modelsDocumentationState = new DataSpaceViewerModelsDocumentationState(
+      this,
+    );
+
+    this.TEMPORARY__enableExperimentalFeatures = Boolean(
+      options?.TEMPORARY__enableExperimentalFeatures,
+    );
   }
 
   get diagramRenderer(): DiagramRenderer {

@@ -45,15 +45,16 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
-  DocumentationLink,
-  DocumentationPreview,
-  LEGEND_APPLICATION_DOCUMENTATION_KEY,
   shouldDisplayVirtualAssistantDocumentationEntry,
   useApplicationStore,
 } from '@finos/legend-application';
 import { ProjectDependencyEditor } from './ProjectDependencyEditor.js';
 import type { ProjectData } from '@finos/legend-server-depot';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../application/LegendStudioDocumentation.js';
+import {
+  DocumentationLink,
+  DocumentationPreview,
+} from '@finos/legend-application/components';
 
 const ProjectStructureEditor = observer(
   (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
@@ -309,7 +310,7 @@ const ProjectPlatformVersionEditor = observer(
               artifacts; in this case, you can freeze the platform dependencies'
               versions"
             documentationKey={
-              LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_WHEN_TO_CONFIGURE_PLATFORM_VERSIONS
+              LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHEN_TO_CONFIGURE_PLATFORM_VERSIONS
             }
           />
           <div className="platform-configurations-editor__dependencies">

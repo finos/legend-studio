@@ -19,15 +19,13 @@ import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI } from 'monaco-editor';
 import type { FileEditorState } from '../../../stores/FileEditorState.js';
 import {
-  EDITOR_THEME,
+  CODE_EDITOR_THEME,
   useApplicationStore,
   useCommands,
 } from '@finos/legend-application';
 import {
   clsx,
   Dialog,
-  getBaseTextEditorOptions,
-  moveCursorToPosition,
   useResizeDetector,
   WordWrapIcon,
 } from '@finos/legend-art';
@@ -38,6 +36,10 @@ import {
   guaranteeNonNullable,
   returnUndefOnError,
 } from '@finos/legend-shared';
+import {
+  getBaseCodeEditorOptions,
+  moveCursorToPosition,
+} from '@finos/legend-lego/code-editor';
 
 const POSITION_PATTERN = /[0-9]+(?::[0-9]+)?/;
 
@@ -161,8 +163,8 @@ export const GenericFileEditor = observer(
       if (!editor && textInputRef.current) {
         const element = textInputRef.current;
         const newEditor = monacoEditorAPI.create(element, {
-          ...getBaseTextEditorOptions(),
-          theme: EDITOR_THEME.LEGEND,
+          ...getBaseCodeEditorOptions(),
+          theme: CODE_EDITOR_THEME.LEGEND,
           wordWrap: editorState.textEditorState.wrapText ? 'on' : 'off',
           readOnly: editorState.file.RO,
         });
@@ -253,8 +255,8 @@ export const GenericFileEditor = observer(
           </div>
         </div>
         <div className="panel__content file-editor__content">
-          <div ref={ref} className="text-editor__container">
-            <div className="text-editor__body" ref={textInputRef} />
+          <div ref={ref} className="code-editor__container">
+            <div className="code-editor__body" ref={textInputRef} />
           </div>
         </div>
       </div>

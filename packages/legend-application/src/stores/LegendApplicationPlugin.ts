@@ -24,9 +24,14 @@ import type {
 } from './DocumentationService.js';
 import type { ColorTheme } from './LayoutService.js';
 import type { SettingConfigurationEntry } from './SettingService.js';
+import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 
-export type LegendApplicationSetup = <T extends LegendApplicationPlugin>(
+export type LegendApplicationBootstrap = <T extends LegendApplicationPlugin>(
   pluginManager: LegendApplicationPluginManager<T>,
+) => Promise<void>;
+
+export type LegendApplicationSetup = (
+  applicationStore: GenericLegendApplicationStore,
 ) => Promise<void>;
 
 /**
@@ -44,9 +49,19 @@ export type ApplicationPageEntry = {
 
 export abstract class LegendApplicationPlugin extends AbstractPlugin {
   /**
+   * Get the list of bootstrap procedures to be run when booting up the application.
+   *
+   * NOTE: The application will call the bootstrap procedures from all extensions concurrently.
+   * These procedures should be idempotent and should not depend on each other.
+   */
+  getExtraApplicationBootstraps?(): LegendApplicationBootstrap[];
+
+  /**
    * Get the list of setup procedures to be run when booting up the application.
    *
    * NOTE: The application will call the setup procedures from all extensions concurrently.
+   * These procedures should be idempotent and should not depend on each other.
+   * They will be called just before the application is rendered.
    */
   getExtraApplicationSetups?(): LegendApplicationSetup[];
 

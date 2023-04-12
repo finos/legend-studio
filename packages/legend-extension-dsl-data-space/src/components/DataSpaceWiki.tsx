@@ -26,8 +26,6 @@ export const DataSpaceWiki = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
 
-    // const a = new IntersectionObserver(() => {});
-
     return (
       <div className="data-space__viewer__wiki">
         <DataSpaceDescription dataSpaceViewerState={dataSpaceViewerState} />

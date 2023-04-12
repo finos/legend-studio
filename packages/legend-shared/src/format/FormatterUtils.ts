@@ -151,6 +151,9 @@ export const parseCSVString = (value: string): string[] | undefined => {
   }
 };
 
+export const csvStringify = (value: unknown[]): string =>
+  CSVParser.unparse(value);
+
 /**
  * One very common use case is that we get the JSON as response from the server than we will convert this to a string and persist
  * in the protocol. As such, we have to make sure this string is safe in PURE grammar format, i.e. it will escape single quotes

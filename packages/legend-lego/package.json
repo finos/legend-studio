@@ -1,0 +1,80 @@
+{
+  "name": "@finos/legend-lego",
+  "version": "0.0.0",
+  "description": "Legend shared advanced application components and building blocks",
+  "keywords": [
+    "legend",
+    "component",
+    "shared-component"
+  ],
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-lego",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-lego"
+  },
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    "./data-grid": "./lib/data-grid/index.js",
+    "./code-editor": "./lib/code-editor/index.js",
+    "./code-editor/test": "./lib/code-editor/testing/index.js",
+    "./code-editor/test/MockedMonacoEditor.js": "./lib/code-editor/testing/MockedMonacoEditor.js",
+    "./lib/index.css": "./lib/index.css"
+  },
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "yarn clean && yarn build:sass && yarn build:ts",
+    "build:sass": "cross-env INIT_CWD=$INIT_CWD node ../../scripts/workflow/buildSass.js",
+    "build:ts": "tsc --project ./tsconfig.build.json",
+    "clean": "npm-run-all clean:cache clean:lib",
+    "clean:cache": "rimraf \"build\"",
+    "clean:lib": "rimraf \"lib\"",
+    "dev": "npm-run-all --parallel dev:sass dev:ts",
+    "dev:sass": "sass style:lib --watch --load-path=../../node_modules/@finos/legend-art/scss",
+    "dev:ts": "tsc --watch --preserveWatchOutput",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@ag-grid-community/client-side-row-model": "29.2.0",
+    "@ag-grid-community/core": "29.2.0",
+    "@ag-grid-community/react": "29.2.0",
+    "@ag-grid-community/styles": "29.2.0",
+    "@finos/legend-application": "workspace:*",
+    "@finos/legend-art": "workspace:*",
+    "@finos/legend-shared": "workspace:*",
+    "@types/react": "18.0.34",
+    "@types/react-dom": "18.0.11",
+    "mobx": "6.9.0",
+    "mobx-react-lite": "3.4.3",
+    "monaco-editor": "0.37.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@finos/legend-dev-utils": "workspace:*",
+    "@jest/globals": "29.5.0",
+    "cross-env": "7.0.3",
+    "eslint": "8.38.0",
+    "jest": "29.5.0",
+    "npm-run-all": "4.1.5",
+    "rimraf": "5.0.0",
+    "sass": "1.62.0",
+    "typescript": "5.0.4"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
+  }
+}

@@ -34,7 +34,6 @@ import {
 } from '../../application/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import {
-  DocumentationLink,
   useApplicationNavigationContext,
   useParams,
 } from '@finos/legend-application';
@@ -57,6 +56,7 @@ import {
 import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
 import { WorkspaceSetupStore } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
+import { DocumentationLink } from '@finos/legend-application/components';
 
 const WorkspaceSetupStoreContext = createContext<
   WorkspaceSetupStore | undefined

@@ -49,11 +49,9 @@ import {
   FileSystem_File,
   getFileSystemChildNodes,
 } from '../../../../stores/editor/shared/FileSystemTreeUtils.js';
-import {
-  TextInputEditor,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 export const FileSystemTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -278,7 +276,7 @@ export const FileSystemViewer = observer(
             </div>
             <PanelContent>
               {fileNode instanceof FileSystem_File && (
-                <TextInputEditor
+                <CodeEditor
                   inputValue={getTextContent(fileNode.content, fileNode.format)}
                   isReadOnly={true}
                   language={getEditorLanguageForFormat(fileNode.format)}

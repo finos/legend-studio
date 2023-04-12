@@ -31,7 +31,8 @@ import {
   ResizablePanelSplitterLine,
 } from '@finos/legend-art';
 import { GenerationPropertyEditor } from '../element-generation-editor/FileGenerationEditor.js';
-import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 enum HIDDEN_CONFIGURATION_PROPERTIES {
   FORMAT = 'format',
@@ -212,10 +213,10 @@ export const SchemaSetModelGenerationEditor = observer(
                       .isInProgress
                   }
                 />
-                <TextInputEditor
+                <CodeEditor
                   inputValue={modelGenerationState.generationValue}
                   isReadOnly={true}
-                  language={EDITOR_LANGUAGE.PURE}
+                  language={CODE_EDITOR_LANGUAGE.PURE}
                 />
               </PanelContent>
             </div>

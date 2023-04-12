@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { createContext, useContext } from 'react';
-import { useLocalObservable } from 'mobx-react-lite';
+import { createContext, useContext, useEffect } from 'react';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
   ApplicationStore,
   type GenericLegendApplicationStore,
@@ -29,6 +29,34 @@ import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.
 const ApplicationStoreContext = createContext<
   GenericLegendApplicationStore | undefined
 >(undefined);
+
+export const useApplicationStore = <
+  T extends LegendApplicationConfig,
+  V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
+>(): ApplicationStore<T, V> =>
+  guaranteeNonNullable(
+    useContext(ApplicationStoreContext) as ApplicationStore<T, V> | undefined,
+    `Can't find application store in context`,
+  );
+
+const ApplicationContent = observer(
+  (props: { children: React.ReactNode }): React.ReactElement => {
+    const { children } = props;
+    const applicationStore = useApplicationStore();
+
+    useEffect(() => {
+      applicationStore.initialize().catch(applicationStore.alertUnhandledError);
+    }, [applicationStore]);
+
+    if (!applicationStore.initState.hasSucceeded) {
+      return <></>;
+    }
+    // TODO: would be great if we can have <React.StrictMode> here but since Mobx React is not ready for
+    // concurrency yet, we would have to wait
+    // See https://github.com/mobxjs/mobx/issues/2526
+    return <>{children}</>;
+  },
+);
 
 export const ApplicationStoreProvider = <
   T extends LegendApplicationConfig,
@@ -48,16 +76,7 @@ export const ApplicationStoreProvider = <
   );
   return (
     <ApplicationStoreContext.Provider value={applicationStore}>
-      {children}
+      <ApplicationContent>{children}</ApplicationContent>
     </ApplicationStoreContext.Provider>
   );
 };
-
-export const useApplicationStore = <
-  T extends LegendApplicationConfig,
-  V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
->(): ApplicationStore<T, V> =>
-  guaranteeNonNullable(
-    useContext(ApplicationStoreContext) as ApplicationStore<T, V> | undefined,
-    `Can't find application store in context`,
-  );

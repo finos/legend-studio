@@ -47,3 +47,5 @@ export * from './data-structure/Stack.js';
 
 export * from './log/LogService.js';
 export * from './log/WebConsole.js';
+
+export * from './search/FuzzySearch.js';

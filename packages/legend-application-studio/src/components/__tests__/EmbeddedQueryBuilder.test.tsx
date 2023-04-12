@@ -17,7 +17,7 @@
 import { test } from '@jest/globals';
 import { fireEvent, getByText, waitFor } from '@testing-library/react';
 import { integrationTest, createMock } from '@finos/legend-shared';
-import { MockedMonacoEditorInstance } from '@finos/legend-art';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query-builder';
 import {
   TEST__openElementFromExplorerTree,

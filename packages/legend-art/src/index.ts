@@ -14,55 +14,56 @@
  * limitations under the License.
  */
 
+export * from './icon/Icon.js';
+export * from './icon/TypeIcon.js';
+export * from './icon/LegendLogo.js';
+
+export * from './loader/LoadingIcon.js';
+
+export * from './input/Input.js';
+
+export * from './tree/TreeView.js';
+
+export * from './autocomplete/CustomSelectorInput.js';
+
+export * from './badge/Badge.js';
+
+export * from './button/Button.js';
+
+export * from './dialog/Dialog.js';
+export * from './dialog/NonBlockingDialog.js';
+export * from './dialog/Modal.js';
+
+export * from './menu/MenuContent.js';
+export * from './menu/ContextMenu.js';
+export * from './menu/DropdownMenu.js';
+
+export * from './popover/BasePopover.js';
+export * from './popover/BasePopper.js';
+
+export * from './radio-group/BaseRadioGroup.js';
+
+export * from './panel/Panel.js';
+export * from './panel/PanelListSelectorItem.js';
+export * from './panel/BlankPanelContent.js';
+export * from './panel/BlankPanelPlaceholder.js';
+export * from './panel/PanelLoadingIndicator.js';
+export * from './panel/PanelDropZone.js';
+export * from './panel/PanelDisplayState.js';
+export * from './panel/ResizablePanel.js';
+
+export * from './loader/ProgressBar.js';
+
+export * from './tooltip/Tooltip.js';
+
+export * from './notification/Notification.js';
+
+export * from './utils/Backdrop.js';
+export * from './utils/ClickAwayListener.js';
+export * from './utils/LegendStyleProvider.js';
+export * from './utils/ComponentsConfiguration.js';
 export * from './utils/ComponentUtils.js';
-export * from './utils/PanelDisplayState.js';
-export * from './utils/TextEditorUtils.js';
 
-export * from './components/FuzzySearch.js';
+export * from './markdown/MarkdownTextViewer.js';
 
-export * from './components/Icon.js';
-export * from './components/TypeIcon.js';
-export * from './components/LoadingIcon.js';
-export * from './components/Input.js';
-export * from './components/LegendLogo.js';
-export * from './components/TreeView.js';
-export * from './components/CustomSelectorInput.js';
-export * from './components/ComponentsConfiguration.js';
-export * from './components/ResizablePanel.js';
-export * from './components/Badge.js';
-export * from './components/Button.js';
-
-export * from './components/dialog/Dialog.js';
-export * from './components/dialog/NonBlockingDialog.js';
-export * from './components/dialog/Modal.js';
-
-export * from './components/menu/MenuContent.js';
-export * from './components/menu/ContextMenu.js';
-export * from './components/menu/DropdownMenu.js';
-
-export * from './components/popover/BasePopover.js';
-export * from './components/popover/BasePopper.js';
-export * from './components/radio-group/BaseRadioGroup.js';
-
-export * from './components/panel/Panel.js';
-export * from './components/panel/PanelListSelectorItem.js';
-export * from './components/panel/BlankPanelContent.js';
-export * from './components/panel/BlankPanelPlaceholder.js';
-export * from './components/panel/PanelLoadingIndicator.js';
-export * from './components/panel/PanelDropZone.js';
-
-export * from './components/ProgressBar.js';
-
-export * from './components/Tooltip.js';
-
-export * from './components/Notification.js';
-
-export * from './components/Backdrop.js';
-
-export * from './components/ClickAwayListener.js';
-
-export * from './components/LegendStyleProvider.js';
-
-export * from './components/markdown/MarkdownTextViewer.js';
-
-export * from './testMocks/MonacoEditorMockUtils.js';
+export * from './drag-and-drop/Draggable.js';

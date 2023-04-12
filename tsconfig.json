@@ -22,6 +22,7 @@
     { "path": "packages/legend-graph" },
     { "path": "packages/legend-query-builder" },
     { "path": "packages/legend-art" },
+    { "path": "packages/legend-lego" },
     { "path": "packages/legend-application" },
     // studio
     { "path": "packages/legend-application-studio" },

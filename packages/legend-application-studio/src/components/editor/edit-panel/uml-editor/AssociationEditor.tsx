@@ -93,9 +93,9 @@ import {
   buildElementOption,
   useApplicationNavigationContext,
   type PackageableElementOption,
-  LEGEND_APPLICATION_DOCUMENTATION_KEY,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../application/LegendStudioDocumentation.js';
 
 const AssociationPropertyBasicEditor = observer(
   (props: {
@@ -212,7 +212,7 @@ const AssociationPropertyBasicEditor = observer(
     };
     const seeErrorDocumentation = (): void =>
       editorStore.applicationStore.assistantService.openDocumentationEntry(
-        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_WHY_DO_I_SEE_ERROR_WITH_ASSOCIATION_PROPERTY_TYPE,
+        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHY_DO_I_SEE_ERROR_WITH_ASSOCIATION_PROPERTY_TYPE,
       );
 
     return (

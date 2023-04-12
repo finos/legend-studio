@@ -91,14 +91,12 @@ import {
   createGraphBuilderReport,
   ExecutionEnvironmentInstance,
 } from '@finos/legend-graph';
-import {
-  LegendApplicationTelemetryHelper,
-  type TabState,
-} from '@finos/legend-application';
+import { LegendApplicationTelemetryHelper } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../application/LegendStudioSetting.js';
+import type { TabState } from '@finos/legend-application/components';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',

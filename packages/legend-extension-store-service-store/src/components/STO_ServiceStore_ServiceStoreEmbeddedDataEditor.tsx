@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   CaretDownIcon,
   clsx,
@@ -80,6 +80,7 @@ import {
   SERVICE_REQUEST_PATTERN_TAB_TYPE,
   SERVICE_STUB_MAPPING_TAB_TYPE,
 } from '../stores/studio/STO_ServiceStore_ServiceStoreEmbeddedDataEditorState.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 export type StringValuePatternOption = {
   value: string;
@@ -235,11 +236,11 @@ export const QueryParamsEditor = observer(
                 </div>
                 <div className="query-params-editor__content__group">
                   <div className="query-params-editor__expected-value">
-                    <TextInputEditor
+                    <CodeEditor
                       language={
                         queryParam instanceof EqualToJsonPattern
-                          ? EDITOR_LANGUAGE.JSON
-                          : EDITOR_LANGUAGE.PURE
+                          ? CODE_EDITOR_LANGUAGE.JSON
+                          : CODE_EDITOR_LANGUAGE.PURE
                       }
                       inputValue={queryParam.expectedValue}
                       updateInput={(val: string): void =>
@@ -405,11 +406,11 @@ export const HeaderParamsEditor = observer(
                 </div>
                 <div className="header-params-editor__content__group">
                   <div className="header-params-editor__expected-value">
-                    <TextInputEditor
+                    <CodeEditor
                       language={
                         headerParam instanceof EqualToJsonPattern
-                          ? EDITOR_LANGUAGE.JSON
-                          : EDITOR_LANGUAGE.PURE
+                          ? CODE_EDITOR_LANGUAGE.JSON
+                          : CODE_EDITOR_LANGUAGE.PURE
                       }
                       inputValue={headerParam.expectedValue}
                       updateInput={(val: string): void =>
@@ -541,11 +542,11 @@ export const BodyPatternsEditor = observer(
                 </div>
                 <div className="body-patterns-editor__content__group">
                   <div className="body-patterns-editor__expected-value">
-                    <TextInputEditor
+                    <CodeEditor
                       language={
                         bodyPattern instanceof EqualToJsonPattern
-                          ? EDITOR_LANGUAGE.JSON
-                          : EDITOR_LANGUAGE.PURE
+                          ? CODE_EDITOR_LANGUAGE.JSON
+                          : CODE_EDITOR_LANGUAGE.PURE
                       }
                       inputValue={bodyPattern.expectedValue}
                       updateInput={(val: string): void =>

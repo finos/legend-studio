@@ -24,8 +24,8 @@ import {
 } from 'monaco-editor';
 import {
   TAB_SIZE,
-  EDITOR_THEME,
-  EDITOR_LANGUAGE,
+  CODE_EDITOR_THEME,
+  CODE_EDITOR_LANGUAGE,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -44,19 +44,21 @@ import {
 import {
   clsx,
   CustomSelectorInput,
-  disposeEditor,
-  getBaseTextEditorOptions,
-  moveCursorToPosition,
-  setErrorMarkers,
-  resetLineNumberGutterWidth,
-  getEditorValue,
-  normalizeLineEnding,
   CompareIcon,
   ArrowDownIcon,
   ArrowUpIcon,
   useResizeDetector,
-  clearMarkers,
 } from '@finos/legend-art';
+import {
+  disposeCodeEditor,
+  getBaseCodeEditorOptions,
+  moveCursorToPosition,
+  setErrorMarkers,
+  resetLineNumberGutterWidth,
+  getCodeEditorValue,
+  normalizeLineEnding,
+  clearMarkers,
+} from '@finos/legend-lego/code-editor';
 import { TextDiffView } from '../../../shared/DiffView.js';
 import { getPrettyLabelForRevision } from '../../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { flowResult } from 'mobx';
@@ -192,9 +194,9 @@ const MergeConflictEditor = observer(
       if (!editor && textInputRef.current) {
         const element = textInputRef.current;
         const _editor = monacoEditorAPI.create(element, {
-          ...getBaseTextEditorOptions(),
-          theme: EDITOR_THEME.LEGEND,
-          language: EDITOR_LANGUAGE.PURE,
+          ...getBaseCodeEditorOptions(),
+          theme: CODE_EDITOR_THEME.LEGEND,
+          language: CODE_EDITOR_LANGUAGE.PURE,
           minimap: { enabled: false },
           formatOnType: true,
           formatOnPaste: true,
@@ -210,7 +212,7 @@ const MergeConflictEditor = observer(
       onDidChangeModelContentEventDisposer.current?.dispose();
       onDidChangeModelContentEventDisposer.current =
         editor.onDidChangeModelContent(() => {
-          conflictEditorState.setMergedText(getEditorValue(editor));
+          conflictEditorState.setMergedText(getCodeEditorValue(editor));
           conflictEditorState.clearMergeEditorError();
         });
 
@@ -280,7 +282,7 @@ const MergeConflictEditor = observer(
       // CodeLens registration
       mergeConflictResolutionCodeLensDisposer.current?.dispose();
       mergeConflictResolutionCodeLensDisposer.current =
-        monacoLanguagesAPI.registerCodeLensProvider(EDITOR_LANGUAGE.PURE, {
+        monacoLanguagesAPI.registerCodeLensProvider(CODE_EDITOR_LANGUAGE.PURE, {
           provideCodeLenses: (model, token) => ({
             lenses: conflictEditorState.mergeConflicts.flatMap((conflict) =>
               [
@@ -522,7 +524,7 @@ const MergeConflictEditor = observer(
     useEffect(() => {
       if (editor) {
         const editorModel = editor.getModel();
-        const currentValue = getEditorValue(editor);
+        const currentValue = getCodeEditorValue(editor);
         if (editorModel && currentValue !== value) {
           if (!hasInitializedTextValue) {
             editor.setValue(value);
@@ -576,7 +578,7 @@ const MergeConflictEditor = observer(
     useEffect(
       () => (): void => {
         if (editor) {
-          disposeEditor(editor);
+          disposeCodeEditor(editor);
         }
         onDidChangeModelContentEventDisposer.current?.dispose();
         onDidChangeCursorPositionEventDisposer.current?.dispose();
@@ -588,8 +590,8 @@ const MergeConflictEditor = observer(
     ); // dispose editor
 
     return (
-      <div ref={ref} className="text-editor__container">
-        <div className="text-editor__body" ref={textInputRef} />
+      <div ref={ref} className="code-editor__container">
+        <div className="code-editor__body" ref={textInputRef} />
       </div>
     );
   },
@@ -764,7 +766,7 @@ export const EntityChangeConflictEditor = observer(
           {currentMode !==
             ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE.MERGE_VIEW && (
             <TextDiffView
-              language={EDITOR_LANGUAGE.PURE}
+              language={CODE_EDITOR_LANGUAGE.PURE}
               from={currentModeComparisonViewInfo.fromGrammarText ?? ''}
               to={currentModeComparisonViewInfo.toGrammarText ?? ''}
             />

@@ -19,6 +19,8 @@ import {
   LegendApplicationPlugin,
   type KeyedCommandConfigEntry,
   type LegendApplicationPluginManager,
+  type LegendApplicationSetup,
+  setupPureLanguageService,
 } from '@finos/legend-application';
 import packageJson from '../../package.json';
 import { LEGEND_TAXONOMY_COMMAND_CONFIG } from '../application/LegendTaxonomyCommand.js';
@@ -34,6 +36,14 @@ export class Core_LegendTaxonomyApplicationPlugin extends LegendApplicationPlugi
     pluginManager: LegendApplicationPluginManager<LegendApplicationPlugin>,
   ): void {
     pluginManager.registerApplicationPlugin(this);
+  }
+
+  override getExtraApplicationSetups(): LegendApplicationSetup[] {
+    return [
+      async (applicationStore) => {
+        setupPureLanguageService([], []);
+      },
+    ];
   }
 
   override getExtraKeyedCommandConfigEntries(): KeyedCommandConfigEntry[] {

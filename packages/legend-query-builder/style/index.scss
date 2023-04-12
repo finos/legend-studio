@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-@forward 'deps';
-
 @forward 'shared/lambda-editor';
 @forward 'shared/value-spec-editor';
+
+@forward 'execution-plan-viewer';
 
 @forward 'query-builder';
 @forward 'query-builder-setup';

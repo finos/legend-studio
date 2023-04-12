@@ -17,8 +17,10 @@
 import {
   LegendApplicationPlugin,
   type LegendApplicationPluginManager,
+  type LegendApplicationSetup,
 } from '@finos/legend-application';
 import packageJson from '../../package.json';
+import { configureDataGridComponent } from '@finos/legend-lego/data-grid';
 
 export class DSL_DataSpace_LegendApplicationPlugin extends LegendApplicationPlugin {
   static NAME = packageJson.extensions.applicationPlugin;
@@ -31,5 +33,13 @@ export class DSL_DataSpace_LegendApplicationPlugin extends LegendApplicationPlug
     pluginManager: LegendApplicationPluginManager<LegendApplicationPlugin>,
   ): void {
     pluginManager.registerApplicationPlugin(this);
+  }
+
+  override getExtraApplicationSetups(): LegendApplicationSetup[] {
+    return [
+      async (applicationStore) => {
+        configureDataGridComponent();
+      },
+    ];
   }
 }

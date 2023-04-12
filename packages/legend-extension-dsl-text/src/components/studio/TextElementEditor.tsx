@@ -32,8 +32,7 @@ import {
   ResizablePanelSplitter,
 } from '@finos/legend-art';
 import {
-  EDITOR_LANGUAGE,
-  TextInputEditor,
+  CODE_EDITOR_LANGUAGE,
   useApplicationNavigationContext,
 } from '@finos/legend-application';
 import {
@@ -42,16 +41,17 @@ import {
 } from '../../stores/studio/DSL_Text_GraphModifierHelper.js';
 import { TEXT_TYPE } from '../../graph/helpers/DSL_Text_Helper.js';
 import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/studio/DSL_Text_LegendStudioApplicationNavigationContext.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const getTextElementEditorLanguage = (
   type: string | undefined,
-): EDITOR_LANGUAGE => {
+): CODE_EDITOR_LANGUAGE => {
   switch (type) {
     case TEXT_TYPE.MARKDOWN:
-      return EDITOR_LANGUAGE.MARKDOWN;
+      return CODE_EDITOR_LANGUAGE.MARKDOWN;
     case TEXT_TYPE.PLAIN_TEXT:
     default:
-      return EDITOR_LANGUAGE.TEXT;
+      return CODE_EDITOR_LANGUAGE.TEXT;
   }
 };
 
@@ -63,7 +63,7 @@ export const TextElementEditor = observer(() => {
   const isReadOnly = textEditorState.isReadOnly;
   const typeNameRef = useRef<HTMLInputElement>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const isPreviewSupported = textElement.type === EDITOR_LANGUAGE.MARKDOWN;
+  const isPreviewSupported = textElement.type === CODE_EDITOR_LANGUAGE.MARKDOWN;
 
   const changeType =
     (val: TEXT_TYPE): (() => void) =>
@@ -140,7 +140,7 @@ export const TextElementEditor = observer(() => {
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel minSize={300}>
               <div className="text-element-editor__editor">
-                <TextInputEditor
+                <CodeEditor
                   language={getTextElementEditorLanguage(textElement.type)}
                   inputValue={textElement.content}
                   updateInput={changeContent}
@@ -161,7 +161,7 @@ export const TextElementEditor = observer(() => {
           </ResizablePanelGroup>
         ) : (
           <div className="text-element-editor__editor">
-            <TextInputEditor
+            <CodeEditor
               language={getTextElementEditorLanguage(textElement.type)}
               inputValue={textElement.content}
               updateInput={changeContent}

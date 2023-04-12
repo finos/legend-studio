@@ -12,11 +12,5 @@
   },
   "documentation": {
     "url": "https://legend.finos.org"
-  },
-  "extensions": {
-    "core": {
-      "TEMPORARY__disableSDLCProjectCreation": false,
-      "TEMPORARY__disableServiceRegistration": true
-    }
   }
 }

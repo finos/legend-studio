@@ -19,27 +19,30 @@ import {
   AnchorLinkIcon,
   CodeIcon,
   CopyIcon,
+  LegendLogo,
   MoreVerticalIcon,
-  QueryIcon,
   QuestionCircleIcon,
   clsx,
 } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
-import { AgGridReact } from '@ag-grid-community/react';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
-  EDITOR_LANGUAGE,
-  TextInputEditor,
+  CODE_EDITOR_LANGUAGE,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
   DataSpaceExecutableTDSResult,
   type DataSpaceExecutableAnalysisResult,
+  type DataSpaceExecutableTDSResultColumn,
 } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
 import type { DSL_DataSpace_LegendApplicationPlugin_Extension } from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 import { useState } from 'react';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
+import {
+  DataGrid,
+  type DataGridCellRendererParams,
+} from '@finos/legend-lego/data-grid';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 enum TDS_EXECUTABLE_ACTION_TAB {
   COLUMN_SPECS = 'COLUMN_SPECS',
@@ -48,6 +51,38 @@ enum TDS_EXECUTABLE_ACTION_TAB {
 }
 
 const MIN_NUMBER_OF_ROWS_FOR_AUTO_HEIGHT = 15;
+
+const TDSColumnDocumentationCellRenderer = (
+  params: DataGridCellRendererParams<DataSpaceExecutableTDSResultColumn>,
+): React.ReactNode => {
+  const data = params.data;
+  if (!data) {
+    return null;
+  }
+  return data.documentation?.trim() ? (
+    data.documentation
+  ) : (
+    <div className="data-space__viewer__grid__empty-cell">
+      No documentation provided
+    </div>
+  );
+};
+
+const TDSColumnSampleValuesCellRenderer = (
+  params: DataGridCellRendererParams<DataSpaceExecutableTDSResultColumn>,
+): React.ReactNode => {
+  const data = params.data;
+  if (!data) {
+    return null;
+  }
+  return data.sampleValues?.trim() ? (
+    data.sampleValues
+  ) : (
+    <div className="data-space__viewer__grid__empty-cell">
+      No sample values provided
+    </div>
+  );
+};
 
 const DataSpaceExecutableTDSResultView = observer(
   (props: {
@@ -131,7 +166,7 @@ const DataSpaceExecutableTDSResultView = observer(
                 onClick={() => setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.QUERY)}
               >
                 <div className="data-space__viewer__quickstart__item__content__tab__icon">
-                  <QueryIcon className="data-space__viewer__quickstart__item__content__tab__icon--query" />
+                  <LegendLogo className="data-space__viewer__quickstart__item__content__tab__icon--query" />
                 </div>
                 <div className="data-space__viewer__quickstart__item__content__tab__label">
                   Query
@@ -192,14 +227,13 @@ const DataSpaceExecutableTDSResultView = observer(
           >
             {selectedTab === TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS && (
               <div className="data-space__viewer__quickstart__tds__column-specs data-space__viewer__grid ag-theme-balham-dark">
-                <AgGridReact
+                <DataGrid
                   domLayout={autoHeight ? 'autoHeight' : 'normal'}
                   rowData={columnSpecifications}
                   gridOptions={{
                     suppressScrollOnNewData: true,
                     getRowId: (rowData) => rowData.data.uuid,
                   }}
-                  modules={[ClientSideRowModelModule]}
                   suppressFieldDotNotation={true}
                   columnDefs={[
                     {
@@ -207,14 +241,19 @@ const DataSpaceExecutableTDSResultView = observer(
                       sortable: true,
                       resizable: true,
                       field: 'name',
-                      headerName: `Column (${columnSpecifications.length})`,
+                      headerValueGetter: () =>
+                        `Column ${
+                          columnSpecifications.length
+                            ? ` (${columnSpecifications.length})`
+                            : ''
+                        }`,
                       flex: 1,
                     },
                     {
                       minWidth: 50,
                       sortable: false,
                       resizable: true,
-                      field: 'documentation',
+                      cellRenderer: TDSColumnDocumentationCellRenderer,
                       headerName: 'Documentation',
                       flex: 1,
                       wrapText: true,
@@ -223,8 +262,10 @@ const DataSpaceExecutableTDSResultView = observer(
                     {
                       minWidth: 50,
                       sortable: false,
-                      resizable: true,
-                      field: 'sampleValues',
+                      resizable: false,
+                      headerClass:
+                        'data-space__viewer__grid__last-column-header',
+                      cellRenderer: TDSColumnSampleValuesCellRenderer,
                       headerName: 'Sample Values',
                       flex: 1,
                     },
@@ -258,10 +299,10 @@ const DataSpaceExecutableTDSResultView = observer(
               queryText !== undefined && (
                 <div className="data-space__viewer__quickstart__tds__query-text">
                   <div className="data-space__viewer__quickstart__tds__query-text__content">
-                    <TextInputEditor
+                    <CodeEditor
                       inputValue={queryText}
                       isReadOnly={true}
-                      language={EDITOR_LANGUAGE.PURE}
+                      language={CODE_EDITOR_LANGUAGE.PURE}
                       showMiniMap={false}
                       hideGutter={true}
                     />

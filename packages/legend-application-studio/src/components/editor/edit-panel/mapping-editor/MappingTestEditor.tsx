@@ -59,12 +59,10 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import {
-  EDITOR_LANGUAGE,
+  CODE_EDITOR_LANGUAGE,
   useApplicationStore,
   ActionAlertActionType,
   ActionAlertType,
-  ExecutionPlanViewer,
-  TextInputEditor,
 } from '@finos/legend-application';
 import {
   ClassMappingSelectorModal,
@@ -94,8 +92,10 @@ import {
 import {
   type QueryBuilderState,
   QueryBuilderTextEditorMode,
+  ExecutionPlanViewer,
 } from '@finos/legend-query-builder';
 import { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: DEPRECATED__MappingTestState; isReadOnly: boolean }) => {
@@ -309,10 +309,10 @@ const MappingTestQueryEditor = observer(
                 editWithQueryBuilder()();
               }}
             >
-              <TextInputEditor
+              <CodeEditor
                 inputValue={queryState.lambdaString}
                 isReadOnly={true}
-                language={EDITOR_LANGUAGE.PURE}
+                language={CODE_EDITOR_LANGUAGE.PURE}
                 showMiniMap={false}
               />
             </div>
@@ -361,8 +361,8 @@ export const MappingTestObjectInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <TextInputEditor
-          language={EDITOR_LANGUAGE.JSON}
+        <CodeEditor
+          language={CODE_EDITOR_LANGUAGE.JSON}
           inputValue={inputDataState.data}
           isReadOnly={isReadOnly}
           updateInput={updateInput}
@@ -385,8 +385,8 @@ export const MappingTestFlatDataInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <TextInputEditor
-          language={EDITOR_LANGUAGE.TEXT}
+        <CodeEditor
+          language={CODE_EDITOR_LANGUAGE.TEXT}
           inputValue={inputDataState.inputData.data}
           isReadOnly={isReadOnly}
           updateInput={updateInput}
@@ -412,7 +412,7 @@ export const MappingTestRelationalInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <TextInputEditor
+        <CodeEditor
           language={getRelationalInputTestDataEditorLanguage(
             inputDataState.inputData.inputType,
           )}
@@ -638,11 +638,11 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               <ErrorIcon />
             </div>
           )}
-          <TextInputEditor
+          <CodeEditor
             inputValue={assertionState.expectedResult}
             updateInput={updateExpectedResult}
             isReadOnly={isReadOnly}
-            language={EDITOR_LANGUAGE.JSON}
+            language={CODE_EDITOR_LANGUAGE.JSON}
           />
         </div>
       </div>

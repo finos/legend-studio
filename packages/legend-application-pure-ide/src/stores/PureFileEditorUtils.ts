@@ -16,7 +16,7 @@
 
 import {
   type PureGrammarTextSuggestion,
-  EDITOR_LANGUAGE,
+  CODE_EDITOR_LANGUAGE,
   isTokenOneOf,
   PURE_GRAMMAR_TOKEN,
 } from '@finos/legend-application';
@@ -67,8 +67,8 @@ import {
 
 // NOTE: these are technically different parsers compared to the ones we have in `Legend Engine` so we will
 // not try to reuse the constants from DSL diagram
-const PURE_GRAMMAR_DIAGRAM_PARSER_NAME = 'Diagram';
-const PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL = 'Diagram';
+export const PURE_GRAMMAR_DIAGRAM_PARSER_NAME = 'Diagram';
+export const PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL = 'Diagram';
 
 export const collectParserKeywordSuggestions =
   (): PureGrammarTextSuggestion[] => [
@@ -684,7 +684,7 @@ export const getVariableSuggestions = async (
     const lineTokens = guaranteeNonNullable(
       monacoEditorAPI.tokenize(
         model.getLineContent(i + 1),
-        EDITOR_LANGUAGE.PURE,
+        CODE_EDITOR_LANGUAGE.PURE,
       )[0],
     );
     lineTokens.forEach((token, lineIndex) => {

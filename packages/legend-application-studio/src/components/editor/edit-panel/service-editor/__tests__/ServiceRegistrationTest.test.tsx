@@ -51,7 +51,7 @@ import {
 import { TEST__getLegendStudioApplicationConfig } from '../../../../../stores/editor/EditorStoreTestUtils.js';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import { service_deleteOwner } from '../../../../../stores/editor/shared/modifier/DSL_Service_GraphModifierHelper.js';
-import { MockedMonacoEditorInstance } from '@finos/legend-art';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 
 let renderResult: RenderResult;
 

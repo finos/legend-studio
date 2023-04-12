@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   clsx,
   CompareIcon,
@@ -49,6 +49,7 @@ import { externalFormatData_setData } from '../../../../stores/editor/shared/mod
 import { TESTABLE_RESULT } from '../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import { JsonDiffView } from '../../../shared/DiffView.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const EqualToJsonAsssertionEditor = observer(
   (props: {
@@ -84,9 +85,9 @@ const EqualToJsonAsssertionEditor = observer(
         </div>
         <div className="equal-to-json-editor__content panel__content">
           <div className="equal-to-json-editor__content__data">
-            <TextInputEditor
+            <CodeEditor
               inputValue={assertion.expected.data}
-              language={EDITOR_LANGUAGE.JSON}
+              language={CODE_EDITOR_LANGUAGE.JSON}
               updateInput={(val: string): void => {
                 equalToJsonAssertionState.setExpectedValue(val);
               }}

@@ -17,6 +17,7 @@
 export const MULTIPLICITY_INFINITE = '*';
 export const ELEMENT_PATH_DELIMITER = '::';
 export const MULTIPLICITY_RANGE_OPERATOR = '..';
+export const PROPERTY_ACCESSOR = '.';
 export const UNIT_PATH_DELIMITER = '~';
 export const LAMBDA_PIPE = '|';
 export const DEFAULT_SOURCE_PARAMETER_NAME = 'src';

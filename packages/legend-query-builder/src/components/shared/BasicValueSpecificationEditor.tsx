@@ -66,10 +66,10 @@ import {
   uniq,
   parseCSVString,
   guaranteeIsNumber,
+  csvStringify,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import CSVParser from 'papaparse';
 import { useEffect, useRef, useState } from 'react';
 import {
   instanceValue_setValue,
@@ -534,7 +534,7 @@ const stringifyValue = (values: ValueSpecification[]): string => {
   if (values.length === 0) {
     return '';
   }
-  return CSVParser.unparse([
+  return csvStringify([
     values
       .map((val) => {
         if (val instanceof PrimitiveInstanceValue) {

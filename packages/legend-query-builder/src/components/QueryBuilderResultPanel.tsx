@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { AgGridReact } from '@ag-grid-community/react';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
   BlankPanelContent,
   PanelLoadingIndicator,
@@ -47,10 +45,8 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
-  EDITOR_LANGUAGE,
-  ExecutionPlanViewer,
+  CODE_EDITOR_LANGUAGE,
   TAB_SIZE,
-  TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -62,7 +58,6 @@ import {
   prettyCONSTName,
 } from '@finos/legend-shared';
 import { forwardRef, useState } from 'react';
-import type { CellMouseOverEvent } from '@ag-grid-community/core';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderProjectionColumnState,
@@ -88,12 +83,18 @@ import {
 } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { PARAMETER_SUBMIT_ACTION } from '../stores/shared/LambdaParameterState.js';
 import { QUERY_BUILDER_TEST_ID } from '../application/QueryBuilderTesting.js';
+import {
+  DataGrid,
+  type DataGridCellMouseOverEvent,
+} from '@finos/legend-lego/data-grid';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
+import { ExecutionPlanViewer } from './execution-plan/ExecutionPlanViewer.js';
 
 const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
-      event: CellMouseOverEvent | null;
+      event: DataGridCellMouseOverEvent | null;
       tdsState: QueryBuilderTDSState;
     }
   >(function QueryBuilderResultContextMenu(props, ref) {
@@ -330,7 +331,7 @@ const QueryBuilderGridResult = observer(
     const fetchStructureImplementation =
       queryBuilderState.fetchStructureState.implementation;
     const [cellDoubleClickedEvent, setCellDoubleClickedEvent] =
-      useState<CellMouseOverEvent | null>(null);
+      useState<DataGridCellMouseOverEvent | null>(null);
     const columns = executionResult.result.columns;
     const rowData = executionResult.result.rows.map((_row, rowIdx) => {
       const row: PlainObject = {};
@@ -365,7 +366,7 @@ const QueryBuilderGridResult = observer(
         key={executionResult._UUID}
         className={clsx('ag-theme-balham-dark query-builder__result__tds-grid')}
       >
-        <AgGridReact
+        <DataGrid
           rowData={rowData}
           gridOptions={{
             suppressScrollOnNewData: true,
@@ -373,7 +374,6 @@ const QueryBuilderGridResult = observer(
               return data.data.rowNumber as string;
             },
           }}
-          modules={[ClientSideRowModelModule]}
           // NOTE: we use onCellMouseOver as a bit of a workaround
           // since we use the context menu so we want the user to be
           // able to right click any cell and have the context menu
@@ -412,16 +412,16 @@ const QueryBuilderResultValues = observer(
       );
     } else if (executionResult instanceof RawExecutionResult) {
       return (
-        <TextInputEditor
-          language={EDITOR_LANGUAGE.TEXT}
+        <CodeEditor
+          language={CODE_EDITOR_LANGUAGE.TEXT}
           inputValue={executionResult.value}
           isReadOnly={true}
         />
       );
     }
     return (
-      <TextInputEditor
-        language={EDITOR_LANGUAGE.JSON}
+      <CodeEditor
+        language={CODE_EDITOR_LANGUAGE.JSON}
         inputValue={JSON.stringify(
           extractExecutionResultValues(executionResult),
           null,

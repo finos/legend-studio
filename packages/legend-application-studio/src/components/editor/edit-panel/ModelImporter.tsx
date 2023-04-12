@@ -40,15 +40,15 @@ import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   useApplicationStore,
-  EDITOR_LANGUAGE,
+  CODE_EDITOR_LANGUAGE,
   useApplicationNavigationContext,
-  TextInputEditor,
 } from '@finos/legend-application';
 import type { ModelImporterExtensionConfiguration } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../application/LegendStudioApplicationNavigationContext.js';
 import { SCHEMA_SET_TAB_TYPE } from '../../../stores/editor/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
 import { SchemaSetModelGenerationEditor } from './external-format-editor/DSL_ExternalFormat_SchemaSetModelGenerationEditor.js';
 import { SchemaSetGeneralEditor } from './external-format-editor/DSL_ExternalFormat_SchemaSetElementEditor.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const ExternalFormatModelImporterEditor = observer(
   (props: { externalFormatState: ExternalFormatModelImporterState }) => {
@@ -189,12 +189,12 @@ export const ModelImporter = observer(() => {
         modelImportEditorState.setModelText(val);
       return (
         <div className="panel__content model-loader__editor">
-          <TextInputEditor
+          <CodeEditor
             language={
               modelImportEditorState.nativeType ===
               MODEL_IMPORT_NATIVE_INPUT_TYPE.PURE_GRAMMAR
-                ? EDITOR_LANGUAGE.PURE
-                : EDITOR_LANGUAGE.JSON
+                ? CODE_EDITOR_LANGUAGE.PURE
+                : CODE_EDITOR_LANGUAGE.JSON
             }
             inputValue={modelImportEditorState.modelText}
             updateInput={updateModel}

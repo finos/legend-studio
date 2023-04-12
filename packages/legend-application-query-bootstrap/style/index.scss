@@ -16,6 +16,8 @@
 
 @import url('@finos/legend-art/lib/index.css');
 @import url('@finos/legend-application/lib/index.css');
+@import url('@finos/legend-lego/lib/index.css');
+
 @import url('@finos/legend-query-builder/lib/index.css');
 @import url('@finos/legend-application-query/lib/index.css');
 @import url('@finos/legend-extension-dsl-data-space/lib/index.css');
@@ -204,7 +206,7 @@
     background: var(--color-legacylight-light-blue-100);
   }
 
-  .text-editor__container {
+  .code-editor__container {
     background: var(--color-white);
   }
 
@@ -382,7 +384,7 @@
 
   // ---------------------------- Search config -------------------------------
 
-  .text-search-advanced-config__panel {
+  .fuzzy-search__advanced-config__panel {
     background: var(--color-white);
 
     &__header__label {
@@ -415,11 +417,6 @@
   .query-editor {
     color: var(--color-legacylight-dark-grey-200);
     background: var(--color-white);
-
-    ::-webkit-scrollbar {
-      width: 1.1rem;
-      height: 1.1rem;
-    }
 
     ::-webkit-scrollbar-thumb {
       height: 5rem;

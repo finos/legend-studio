@@ -17,12 +17,14 @@
 import {
   ActionAlertActionType,
   ActionAlertType,
-  TabManagerState,
-  TabState,
 } from '@finos/legend-application';
 import { flowResult } from 'mobx';
 import type { EditorStore } from './EditorStore.js';
 import { FileEditorState } from './FileEditorState.js';
+import {
+  TabManagerState,
+  TabState,
+} from '@finos/legend-application/components';
 
 export abstract class EditorTabState extends TabState {
   readonly editorStore: EditorStore;

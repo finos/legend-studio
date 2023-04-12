@@ -16,16 +16,15 @@
 
 import {
   type CommandRegistrar,
-  EDITOR_LANGUAGE,
-  type TabState,
+  CODE_EDITOR_LANGUAGE,
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
 import {
   clearMarkers,
   setErrorMarkers,
-  type TextEditorPosition,
-} from '@finos/legend-art';
+  type CodeEditorPosition,
+} from '@finos/legend-lego/code-editor';
 import { DIRECTORY_PATH_DELIMITER } from '@finos/legend-graph';
 import {
   assertErrorThrown,
@@ -60,29 +59,30 @@ import {
 import type { EditorStore } from './EditorStore.js';
 import { EditorTabState } from './EditorTabManagerState.js';
 import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../application/LegendPureIDECommand.js';
+import type { TabState } from '@finos/legend-application/components';
 
 const getFileEditorLanguage = (filePath: string): string => {
   const extension = getNullableLastElement(filePath.split('.'));
   switch (extension) {
     case 'pure':
-      return EDITOR_LANGUAGE.PURE;
+      return CODE_EDITOR_LANGUAGE.PURE;
     case 'java':
-      return EDITOR_LANGUAGE.JAVA;
+      return CODE_EDITOR_LANGUAGE.JAVA;
     case 'md':
-      return EDITOR_LANGUAGE.MARKDOWN;
+      return CODE_EDITOR_LANGUAGE.MARKDOWN;
     case 'sql':
-      return EDITOR_LANGUAGE.SQL;
+      return CODE_EDITOR_LANGUAGE.SQL;
     case 'json':
-      return EDITOR_LANGUAGE.JSON;
+      return CODE_EDITOR_LANGUAGE.JSON;
     case 'xml':
-      return EDITOR_LANGUAGE.XML;
+      return CODE_EDITOR_LANGUAGE.XML;
     case 'yml':
     case 'yaml':
-      return EDITOR_LANGUAGE.YAML;
+      return CODE_EDITOR_LANGUAGE.YAML;
     case 'graphql':
-      return EDITOR_LANGUAGE.GRAPHQL;
+      return CODE_EDITOR_LANGUAGE.GRAPHQL;
     default:
-      return EDITOR_LANGUAGE.TEXT;
+      return CODE_EDITOR_LANGUAGE.TEXT;
   }
 };
 
@@ -95,7 +95,7 @@ class FileTextEditorState {
   language!: string;
   viewState?: monacoEditorAPI.ICodeEditorViewState | undefined;
 
-  forcedCursorPosition: TextEditorPosition | undefined;
+  forcedCursorPosition: CodeEditorPosition | undefined;
   wrapText = false;
 
   constructor(fileEditorState: FileEditorState) {
@@ -150,7 +150,7 @@ class FileTextEditorState {
     this.editor = val;
   }
 
-  setForcedCursorPosition(val: TextEditorPosition | undefined): void {
+  setForcedCursorPosition(val: CodeEditorPosition | undefined): void {
     this.forcedCursorPosition = val;
   }
 
@@ -300,7 +300,7 @@ export class FileEditorState
   }
 
   registerCommands(): void {
-    if (this.textEditorState.language === EDITOR_LANGUAGE.PURE) {
+    if (this.textEditorState.language === CODE_EDITOR_LANGUAGE.PURE) {
       this.editorStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_DEFINITION,
         trigger: () =>
@@ -511,7 +511,7 @@ export class FileEditorState
   }
 
   deregisterCommands(): void {
-    if (this.textEditorState.language === EDITOR_LANGUAGE.PURE) {
+    if (this.textEditorState.language === CODE_EDITOR_LANGUAGE.PURE) {
       [
         LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_DEFINITION,
         LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_BACK,

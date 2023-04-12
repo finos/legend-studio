@@ -28,7 +28,7 @@ import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   useApplicationStore,
-  EDITOR_LANGUAGE,
+  CODE_EDITOR_LANGUAGE,
 } from '@finos/legend-application';
 import { sortObjectKeys } from '@finos/legend-shared';
 
@@ -153,7 +153,7 @@ export const EntityDiffView = observer(
         <div className="entity-diff-view__content">
           {diffEditorState.diffMode === DIFF_VIEW_MODE.GRAMMAR && (
             <TextDiffView
-              language={EDITOR_LANGUAGE.PURE}
+              language={CODE_EDITOR_LANGUAGE.PURE}
               from={fromGrammarText}
               to={toGrammarText}
             />
