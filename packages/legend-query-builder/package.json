@@ -49,7 +49,7 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "@testing-library/react": "14.0.0",
-    "@types/react": "18.0.34",
+    "@types/react": "18.0.35",
     "@types/react-dom": "18.0.11",
     "mathjs": "11.8.0",
     "mobx": "6.9.0",
