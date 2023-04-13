@@ -118,6 +118,12 @@ export const BulkServiceRegistrationEditor = observer(() => {
     );
   };
 
+  const toggleUseGenerateLineage = (): void => {
+    bulkServiceRegistrationState.setUseGenerateLineage(
+      !bulkServiceRegistrationState.TEMPORARY__useStoreModel,
+    );
+  };
+
   const config = guaranteeNonNullable(
     bulkServiceRegistrationState.options.find(
       (info) => info.env === bulkServiceRegistrationState.serviceEnv,
@@ -288,6 +294,34 @@ export const BulkServiceRegistrationEditor = observer(() => {
             </div>
           </div>
         )}
+        {
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Generate Lineage
+            </div>
+            <div
+              className="panel__content__form__section__toggler"
+              onClick={toggleUseGenerateLineage}
+            >
+              <button
+                className={clsx('panel__content__form__section__toggler__btn', {
+                  'panel__content__form__section__toggler__btn--toggled':
+                    bulkServiceRegistrationState.TEMPORARY__useGenerateLineage,
+                })}
+                tabIndex={-1}
+              >
+                {bulkServiceRegistrationState.TEMPORARY__useGenerateLineage ? (
+                  <CheckSquareIcon />
+                ) : (
+                  <SquareIcon />
+                )}
+              </button>
+              <div className="panel__content__form__section__toggler__prompt">
+                Use Generate (slower)
+              </div>
+            </div>
+          </div>
+        }
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
             Project Version

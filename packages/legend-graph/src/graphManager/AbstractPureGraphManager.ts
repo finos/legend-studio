@@ -128,6 +128,7 @@ export interface ExecutionOptions {
 export interface ServiceRegistrationOptions {
   TEMPORARY__useStoreModel?: boolean | undefined;
   TEMPORARY__semiInteractiveOverridePattern?: string | undefined;
+  TEMPORARY__useGenerateLineage?: boolean | undefined;
 }
 
 export abstract class AbstractPureGraphManagerExtension {
