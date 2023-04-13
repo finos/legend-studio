@@ -95,7 +95,6 @@ export class ServiceConfigState {
   projectVersion?: Version | string | undefined;
   enableModesWithVersioning: boolean;
   TEMPORARY__useStoreModel = false;
-  TEMPORARY__useGenerateLineage = true;
 
   constructor(
     editorStore: EditorStore,
@@ -108,7 +107,6 @@ export class ServiceConfigState {
       projectVersion: observable,
       enableModesWithVersioning: observable,
       TEMPORARY__useStoreModel: observable,
-      TEMPORARY__useGenerateLineage: observable,
       executionModes: computed,
       options: computed,
       versionOptions: computed,
@@ -194,10 +192,6 @@ export class ServiceConfigState {
     this.TEMPORARY__useStoreModel = val;
   }
 
-  setUseGenerateLineage(val: boolean): void {
-    this.TEMPORARY__useGenerateLineage = val;
-  }
-
   initialize(): void {
     this.serviceEnv = getNullableFirstElement(this.registrationOptions)?.env;
     this.serviceExecutionMode = this.executionModes[0];
@@ -275,7 +269,6 @@ export class ServiceRegistrationState extends ServiceConfigState {
           guaranteeNonNullable(this.serviceExecutionMode),
           {
             TEMPORARY__useStoreModel: this.TEMPORARY__useStoreModel,
-            TEMPORARY__useGenerateLineage: this.TEMPORARY__useGenerateLineage,
           },
         )) as ServiceRegistrationSuccess;
       if (this.activatePostRegistration) {
