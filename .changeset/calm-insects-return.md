@@ -3,4 +3,4 @@
 "@finos/legend-graph": patch
 ---
 
-Adding Optional Service Lineage Feature to Registration
+Revert "adding Optional Service Lineage Feature to Registration (#2100)"

@@ -593,7 +593,6 @@ export class V1_EngineServerClient extends AbstractServerClient {
     serviceServerUrl: string,
     serviceExecutionMode: ServiceExecutionMode,
     TEMPORARY__useStoreModel: boolean,
-    TEMPORARY__useGenerateLineage: boolean,
   ): Promise<PlainObject<V1_ServiceRegistrationResult>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.REGISTER_SERVICE),
@@ -604,11 +603,8 @@ export class V1_EngineServerClient extends AbstractServerClient {
       {},
       undefined,
       serviceExecutionMode === ServiceExecutionMode.FULL_INTERACTIVE
-        ? {
-            storeModel: TEMPORARY__useStoreModel,
-            generateLineage: TEMPORARY__useGenerateLineage,
-          }
-        : { generateLineage: TEMPORARY__useGenerateLineage },
+        ? { storeModel: TEMPORARY__useStoreModel }
+        : undefined,
       { enableCompression: true },
     );
   getServiceVersionInfo = (

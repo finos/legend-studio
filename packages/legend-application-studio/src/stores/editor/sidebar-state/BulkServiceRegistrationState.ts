@@ -92,7 +92,6 @@ export class BulkServiceRegistrationState extends ServiceConfigState {
           guaranteeNonNullable(this.serviceExecutionMode),
           {
             TEMPORARY__useStoreModel: this.TEMPORARY__useStoreModel,
-            TEMPORARY__useGenerateLineage: this.TEMPORARY__useGenerateLineage,
           },
         )) as ServiceRegistrationResult[];
 
