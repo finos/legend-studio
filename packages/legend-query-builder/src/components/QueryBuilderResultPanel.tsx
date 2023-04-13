@@ -520,7 +520,6 @@ const QueryBuilderGridResult = observer(
                 },
               },
             }}
-            modules={[ClientSideRowModelModule]}
             // NOTE: we use onCellMouseOver as a bit of a workaround
             // since we use the context menu so we want the user to be
             // able to right click any cell and have the context menu
