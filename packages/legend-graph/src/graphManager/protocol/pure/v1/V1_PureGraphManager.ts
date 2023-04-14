@@ -291,7 +291,6 @@ import type {
 import {
   LegendSDLC,
   type GraphDataOrigin,
-  GraphEntities,
 } from '../../../../graph/GraphDataOrigin.js';
 import {
   LiveGraphData,
@@ -685,17 +684,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         buildState,
         options,
       );
-      // set dependency manager graph origin to entities
-      if (dependencyManager.origin === undefined) {
-        dependencyManager.setOrigin(
-          new GraphEntities(
-            Array.from(dependencyEntitiesIndex.values())
-              .map((e) => e.entities)
-              .flat(),
-          ),
-        );
-      }
+
       buildState.pass();
+
       const totalTime = stopWatch.elapsed;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
@@ -3384,10 +3375,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ...contextData1.elements,
       ...contextData2.elements,
     ];
-    contextData1.INTERNAL__rawEntities = [
-      ...contextData1.INTERNAL__rawEntities,
-      ...contextData2.INTERNAL__rawEntities,
-    ];
     return contextData1;
   }
 
@@ -3520,19 +3507,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const graphData = new V1_PureModelContextData();
     const dependencyManager = graph.dependencyManager;
     const generatedModel = graph.generationModel;
-    let elements = [...generatedModel.allOwnElements];
-    if (dependencyManager.origin instanceof GraphEntities) {
-      // If dependency manager holds the original entities we will just use those to save on transforming/serialization
-      // of dependency elements. This can further be improved by adding support for PureModelContext composite so engine understands
-      // list of pure model context sdlc pointers for dependencies.
-      graphData.INTERNAL__rawEntities = dependencyManager.origin.entities;
-    } else {
-      elements = [...dependencyManager.allOwnElements, ...elements];
-    }
-    graphData.elements = elements.map((element) =>
-      this.elementToProtocol(element),
-    );
-
+    graphData.elements = [
+      ...dependencyManager.allOwnElements,
+      ...generatedModel.allOwnElements,
+    ].map((element) => this.elementToProtocol(element));
     this.logService.info(
       LogEvent.create(
         GRAPH_MANAGER_EVENT.COLLECT_GRAPH_COMPILE_CONTEXT__SUCCESS,
