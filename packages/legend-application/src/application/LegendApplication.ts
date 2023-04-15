@@ -324,3 +324,20 @@ export abstract class LegendApplication {
     }
   }
 }
+
+export const LEGEND_APPLICATION_ROOT_ELEMENT_TAG = 'legend-application-root';
+
+// NOTE: we use a special tag to mount the application to avoid styling conflicts
+export const getApplicationRootElement = (): Element => {
+  let rootEl = document.getElementsByTagName(
+    LEGEND_APPLICATION_ROOT_ELEMENT_TAG,
+  ).length
+    ? document.getElementsByTagName(LEGEND_APPLICATION_ROOT_ELEMENT_TAG)[0]
+    : undefined;
+  if (!rootEl) {
+    rootEl = document.createElement(LEGEND_APPLICATION_ROOT_ELEMENT_TAG);
+    document.body.appendChild(rootEl);
+  }
+  rootEl.setAttribute('style', 'height: 100%; width: 100%; display: block');
+  return rootEl;
+};

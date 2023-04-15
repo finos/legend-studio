@@ -23,8 +23,8 @@ import {
   BrowserRouter,
   ApplicationStoreProvider,
   Core_LegendApplicationPlugin,
+  getApplicationRootElement,
 } from '@finos/legend-application';
-import { getRootElement } from '@finos/legend-art';
 import {
   LegendPureIDEApplicationConfig,
   type LegendPureIDEApplicationConfigData,
@@ -55,7 +55,7 @@ export class LegendPureIDE extends LegendApplication {
   }
 
   async loadApplication(): Promise<void> {
-    const rootElement = createRoot(getRootElement());
+    const rootElement = createRoot(getApplicationRootElement());
     rootElement.render(
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>

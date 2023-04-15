@@ -25,9 +25,9 @@ import {
   type LegendApplicationConfigurationInput,
   BrowserRouter,
   Core_LegendApplicationPlugin,
+  getApplicationRootElement,
 } from '@finos/legend-application';
 import { Core_GraphManagerPreset } from '@finos/legend-graph';
-import { getRootElement } from '@finos/legend-art';
 import {
   type LegendStudioApplicationConfigurationData,
   LegendStudioApplicationConfig,
@@ -63,7 +63,7 @@ export class LegendStudio extends LegendApplication {
   }
 
   async loadApplication(): Promise<void> {
-    const rootElement = createRoot(getRootElement());
+    const rootElement = createRoot(getApplicationRootElement());
     rootElement.render(
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>

@@ -23,10 +23,10 @@ import {
   type LegendApplicationConfigurationInput,
   BrowserRouter,
   Core_LegendApplicationPlugin,
+  getApplicationRootElement,
 } from '@finos/legend-application';
 import { LegendTaxonomyApplication } from '../components/LegendTaxonomyApplication.js';
 import { LegendTaxonomyPluginManager } from './LegendTaxonomyPluginManager.js';
-import { getRootElement } from '@finos/legend-art';
 import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import {
   type LegendTaxonomyApplicationConfigurationData,
@@ -57,7 +57,7 @@ export class LegendTaxonomy extends LegendApplication {
   }
 
   async loadApplication(): Promise<void> {
-    const rootElement = createRoot(getRootElement());
+    const rootElement = createRoot(getApplicationRootElement());
     rootElement.render(
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>

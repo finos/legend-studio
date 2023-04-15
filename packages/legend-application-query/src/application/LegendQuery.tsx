@@ -23,10 +23,10 @@ import {
   BrowserRouter,
   WebApplicationNavigatorProvider,
   Core_LegendApplicationPlugin,
+  getApplicationRootElement,
 } from '@finos/legend-application';
 import { LegendQueryApplication } from '../components/LegendQueryApplication.js';
 import { LegendQueryPluginManager } from './LegendQueryPluginManager.js';
-import { getRootElement } from '@finos/legend-art';
 import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import {
   type LegendQueryApplicationConfigurationData,
@@ -63,7 +63,7 @@ export class LegendQuery extends LegendApplication {
   }
 
   async loadApplication(): Promise<void> {
-    const rootElement = createRoot(getRootElement());
+    const rootElement = createRoot(getApplicationRootElement());
     rootElement.render(
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>

@@ -131,11 +131,11 @@ export class Core_LegendApplicationPlugin extends LegendApplicationPlugin {
           enforceActions: 'observed',
         });
 
-        // configure code editor
-        await configureCodeEditorComponent(applicationStore);
-
         // configure UI components
         configureComponents();
+
+        // configure code editor
+        await configureCodeEditorComponent(applicationStore);
       },
     ];
   }
