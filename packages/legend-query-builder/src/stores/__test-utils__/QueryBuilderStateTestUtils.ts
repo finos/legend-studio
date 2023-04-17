@@ -85,7 +85,11 @@ export class TEST__LegendApplicationPluginManager
   }
 }
 
-class TEST__LegendApplicationConfig extends LegendApplicationConfig {}
+class TEST__LegendApplicationConfig extends LegendApplicationConfig {
+  override getDefaultApplicationStorageKey(): string {
+    return 'test';
+  }
+}
 
 export const TEST__getGenericApplicationConfig = (
   extraConfigData = {},

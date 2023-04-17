@@ -57,4 +57,8 @@ export class LegendPureIDEApplicationConfig extends LegendApplicationConfig {
       this.useDynamicPureServer = Boolean(input.configData.pure.dynamic);
     }
   }
+
+  override getDefaultApplicationStorageKey(): string {
+    return 'legend-pure-ide';
+  }
 }

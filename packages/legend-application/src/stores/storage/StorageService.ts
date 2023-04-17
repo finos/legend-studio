@@ -20,28 +20,24 @@ import {
   guaranteeIsBoolean,
   guaranteeIsObject,
   isNonNullable,
+  returnUndefOnError,
+  isEmpty,
 } from '@finos/legend-shared';
 import type { GenericLegendApplicationStore } from '../ApplicationStore.js';
 import { LocalStorage } from './ApplicationStorage.js';
 
 type StoredValue = object | string | number | boolean;
+type StorageStoreData = Record<PropertyKey, StoredValue>;
 
 export class StorageStore {
   readonly storeIndex;
   readonly storageService: StorageService;
-  private readonly data!: Record<PropertyKey, StoredValue>;
+  private readonly data!: StorageStoreData;
 
   constructor(storageService: StorageService, storeIndex: string) {
     this.storageService = storageService;
     this.storeIndex = storeIndex;
-    const store = this.storageService.storage.getItem(this.storeIndex);
-
-    if (store) {
-      const data = JSON.parse(store) as Record<PropertyKey, StoredValue>;
-      this.data = data;
-    } else {
-      this.data = {};
-    }
+    this.data = this.storageService.getIndex(this.storeIndex) ?? {};
   }
 
   getValue(key: string): StoredValue | undefined {
@@ -78,19 +74,37 @@ export class StorageStore {
     } else {
       delete this.data[key];
     }
-    this.storageService.storage.setItem(
-      this.storeIndex,
-      JSON.stringify(this.data),
-    );
+    this.storageService.updateIndex(this.storeIndex, this.data);
   }
 }
 
 export class StorageService {
   readonly applicationStore: GenericLegendApplicationStore;
-  readonly storage: LocalStorage;
+  private readonly storage: LocalStorage;
+  private readonly data!: Record<string, StorageStoreData>;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     this.applicationStore = applicationStore;
     this.storage = new LocalStorage();
+    const data = this.storage.getItem(
+      applicationStore.config.applicationStorageKey,
+    );
+    this.data = data ? returnUndefOnError(() => JSON.parse(data)) ?? {} : {};
+  }
+
+  getIndex(index: string): StorageStoreData | undefined {
+    return this.data[index];
+  }
+
+  updateIndex(index: string, value: StorageStoreData): void {
+    if (isEmpty(value)) {
+      delete this.data[index];
+    } else {
+      this.data[index] = value;
+    }
+    this.storage.setItem(
+      this.applicationStore.config.applicationStorageKey,
+      JSON.stringify(this.data),
+    );
   }
 }

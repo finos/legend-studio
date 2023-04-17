@@ -177,4 +177,8 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
         {}) as PlainObject<LegendStudioApplicationCoreOptions>,
     );
   }
+
+  override getDefaultApplicationStorageKey(): string {
+    return 'legend-studio';
+  }
 }

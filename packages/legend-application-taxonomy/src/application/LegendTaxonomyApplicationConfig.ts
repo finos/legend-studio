@@ -224,4 +224,8 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
   setCurrentTaxonomyTreeOption(val: TaxonomyTreeOption): void {
     this.currentTaxonomyTreeOption = val;
   }
+
+  override getDefaultApplicationStorageKey(): string {
+    return 'legend-taxonomy';
+  }
 }

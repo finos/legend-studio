@@ -171,4 +171,8 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
         {}) as PlainObject<LegendQueryApplicationCoreOptions>,
     );
   }
+
+  override getDefaultApplicationStorageKey(): string {
+    return 'legend-query';
+  }
 }
