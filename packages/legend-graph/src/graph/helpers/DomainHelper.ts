@@ -87,6 +87,18 @@ export const deleteElementFromPackage = (
   );
 };
 
+export const getDescendantsOfPackage = (
+  parent: Package,
+): Set<PackageableElement> => {
+  const descendants: Set<PackageableElement> = new Set<PackageableElement>();
+  parent.children.forEach((c) => {
+    c instanceof Package
+      ? getDescendantsOfPackage(c).forEach((e) => descendants.add(e))
+      : descendants.add(c);
+  });
+  return descendants;
+};
+
 export const getElementRootPackage = (element: PackageableElement): Package =>
   !element.package
     ? guaranteeType(element, Package)

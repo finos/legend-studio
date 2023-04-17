@@ -119,6 +119,7 @@ import {
 } from './TEST_DATA__QueryBuilder_ConstantExpression.js';
 import {
   TEST_DATA__lambda_Externalize_externalize_graphFetch,
+  TEST_DATA__lambda_Externalize_externalize_graphFetch_with_different_trees,
   TEST_DATA__lambda_Externalize_externalize_graphFetchChecked,
 } from './TEST_DATA__QueryBuilder_Externalize.js';
 
@@ -574,6 +575,12 @@ const cases: RoundtripTestCase[] = [
     'Simple externalize() on graphfetch()',
     bindingM2MCtx,
     TEST_DATA__lambda_Externalize_externalize_graphFetch,
+    undefined,
+  ],
+  [
+    'Simple externalize() on graphfetch() with different trees',
+    bindingM2MCtx,
+    TEST_DATA__lambda_Externalize_externalize_graphFetch_with_different_trees,
     undefined,
   ],
   [

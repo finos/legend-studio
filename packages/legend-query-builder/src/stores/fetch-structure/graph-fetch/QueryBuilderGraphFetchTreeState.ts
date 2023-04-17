@@ -48,6 +48,7 @@ import {
 import type { LambdaFunctionBuilderOption } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
 import { appendGraphFetch } from './QueryBuilderGraphFetchTreeValueSpecificationBuilder.js';
 import {
+  deepClone,
   guaranteeNonNullable,
   hashArray,
   type Hashable,
@@ -190,6 +191,7 @@ export class GraphFetchExternalFormatSerializationState extends GraphFetchSerial
       targetBinding: observable,
       treeData: observable.ref,
       serializationContentType: computed,
+      setGraphFetchTree: action,
     });
     this.targetBinding = targetBinding;
     this.treeData = treeData;
@@ -201,6 +203,30 @@ export class GraphFetchExternalFormatSerializationState extends GraphFetchSerial
 
   setGraphFetchTree(val: QueryBuilderGraphFetchTreeData | undefined): void {
     this.treeData = val;
+  }
+
+  addProperty(
+    node: QueryBuilderExplorerTreePropertyNodeData,
+    options?: {
+      refreshTreeData?: boolean;
+    },
+  ): void {
+    if (!this.treeData) {
+      this.queryBuilderGraphFetchTreeState.queryBuilderState.applicationStore.notificationService.notifyWarning(
+        `Can't add property: graph-fetch tree has not been properly initialized`,
+      );
+      return;
+    }
+    addQueryBuilderPropertyNode(
+      this.treeData,
+      this.queryBuilderGraphFetchTreeState.queryBuilderState.explorerState
+        .nonNullableTreeData,
+      node,
+      this.queryBuilderGraphFetchTreeState.queryBuilderState,
+    );
+    if (options?.refreshTreeData) {
+      this.setGraphFetchTree({ ...this.treeData });
+    }
   }
 
   override getLabel(): string {
@@ -409,6 +435,14 @@ export class QueryBuilderGraphFetchTreeState
 
   fetchProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
     this.addProperty(node, { refreshTreeData: true });
+    if (
+      this.serializationState instanceof
+      GraphFetchExternalFormatSerializationState
+    ) {
+      this.serializationState.addProperty(deepClone(node), {
+        refreshTreeData: true,
+      });
+    }
   }
 
   fetchProperties(nodes: QueryBuilderExplorerTreePropertyNodeData[]): void {

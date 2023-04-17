@@ -27,7 +27,6 @@
 
     justify-content: space-between;
     height: 2.8rem;
-    padding: 0 1rem;
     font-size: 1.2rem;
     border-bottom: 0.1rem solid var(--color-dark-grey-100);
 
@@ -46,6 +45,10 @@
     display: flex;
     align-items: center;
     cursor: pointer;
+
+    &__action {
+      margin-right: 1rem;
+    }
 
     &__action-btn {
       @include flexVCenter;
@@ -97,6 +100,10 @@
     height: calc(100% - 2.8rem);
     width: 100%;
     padding: 0.5rem 0;
+
+    &__tree {
+      width: 100%;
+    }
   }
 
   &__node__container {
@@ -205,5 +212,83 @@
 
   &__content {
     height: 56.4rem;
+  }
+}
+
+.query-builder-graph-fetch-external-format {
+  width: 100%;
+
+  &__config-group {
+    width: 100%;
+
+    &__header {
+      @include flexVCenter;
+
+      justify-content: space-between;
+      height: 1.6rem;
+      padding-left: 1rem;
+      background: var(--color-dark-grey-280);
+      border-radius: 0.2rem 0.2rem 0.2rem 0;
+
+      &__title {
+        color: var(--color-light-grey-300);
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      &__dropdown-trigger {
+        @include flexCenter;
+
+        height: 100%;
+        width: 3rem;
+
+        svg {
+          color: var(--color-light-grey-300);
+        }
+      }
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      padding: 0.5rem 0 0 0.5rem;
+      border-left: 0.5rem solid var(--color-dark-grey-280);
+    }
+
+    &__item {
+      @include flexVCenter;
+
+      width: 100%;
+    }
+
+    &__item__label {
+      @include flexCenter;
+
+      background: var(--color-dark-grey-100);
+      margin-right: 0.5rem;
+    }
+
+    &__item__selector {
+      width: 100%;
+      max-width: unset;
+    }
+
+    &__item + &__item {
+      margin-top: 0.5rem;
+    }
+
+    &--class &__header {
+      background: var(--color-purple-400);
+    }
+
+    &--class &__content {
+      padding-top: 0;
+      border-left: 0.5rem solid var(--color-purple-400);
+    }
+
+    &--class &__item__label {
+      border: 0.1rem solid var(--color-purple-400);
+    }
   }
 }

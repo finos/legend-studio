@@ -41,9 +41,21 @@ import {
   ModalFooterButton,
   ModalFooter,
   SerializeIcon,
+  ResizablePanel,
+  ResizablePanelSplitter,
+  ResizablePanelGroup,
+  BufferIcon,
+  CustomSelectorInput,
+  FolderIcon,
 } from '@finos/legend-art';
 import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
-import { isNonNullable } from '@finos/legend-shared';
+import {
+  deepClone,
+  filterByType,
+  guaranteeNonNullable,
+  isNonNullable,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import {
   type QueryBuilderGraphFetchTreeData,
   type QueryBuilderGraphFetchTreeNodeData,
@@ -55,12 +67,51 @@ import {
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
 import {
+  type GraphFetchSerializationState,
+  GraphFetchExternalFormatSerializationState,
   GraphFetchPureSerializationState,
   PureSerializationConfig,
+  SERIALIZATION_TYPE,
   type QueryBuilderGraphFetchTreeState,
 } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { getClassPropertyIcon } from '../shared/ElementIconUtils.js';
 import { QueryBuilderTextEditorMode } from '../../stores/QueryBuilderTextEditorState.js';
+import {
+  type PackageableElement,
+  Binding,
+  Package,
+  getDescendantsOfPackage,
+} from '@finos/legend-graph';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-application';
+
+const getBindingFormatter = (props: {
+  darkMode?: boolean;
+}): ((
+  option: PackageableElementOption<PackageableElement>,
+) => React.ReactNode) =>
+  function BindingLabel(
+    option: PackageableElementOption<PackageableElement>,
+  ): React.ReactNode {
+    const className = props.darkMode
+      ? 'packageable-element-option-label--dark'
+      : 'packageable-element-option-label';
+    return (
+      <div className={className}>
+        <div className={`${className}__name`}>{option.label}</div>
+        {option.value.package && (
+          <div className={`${className}__tag`}>{option.value.path}</div>
+        )}
+        <div className={`${className}__tag`}>
+          {(option.value as Binding).contentType}
+        </div>
+      </div>
+    );
+  };
 
 const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -287,21 +338,130 @@ const PureSerializationConfigModal = observer(
   },
 );
 
+export const QueryBuilderGraphFetchExternalConfig = observer(
+  (props: {
+    graphFetchState: QueryBuilderGraphFetchTreeState;
+    serializationState: GraphFetchExternalFormatSerializationState;
+    serializationTreeData: QueryBuilderGraphFetchTreeData;
+    bindings: Binding[];
+    isReadOnly: boolean;
+  }) => {
+    const {
+      graphFetchState,
+      serializationState,
+      serializationTreeData,
+      bindings,
+      isReadOnly,
+    } = props;
+    const bindingOptions = bindings.map((result) => buildElementOption(result));
+    const selectedBinding = {
+      value: serializationState.targetBinding,
+      label: serializationState.targetBinding.name,
+    };
+    const onBindingChange = (
+      val: PackageableElementOption<Binding> | null,
+    ): void => {
+      if (val !== null) {
+        serializationState.setBinding(val.value);
+        serializationState.setGraphFetchTree(serializationTreeData);
+      }
+    };
+    const onNodeSelect = (node: QueryBuilderGraphFetchTreeNodeData): void => {
+      if (node.childrenIds.length) {
+        node.isOpen = !node.isOpen;
+      }
+    };
+    const getChildNodes = (
+      node: QueryBuilderGraphFetchTreeNodeData,
+    ): QueryBuilderGraphFetchTreeNodeData[] =>
+      node.childrenIds
+        .map((id) => serializationTreeData.nodes.get(id))
+        .filter(isNonNullable);
+    const removeNode = (node: QueryBuilderGraphFetchTreeNodeData): void => {
+      if (serializationTreeData.nodes.size === 1) {
+        graphFetchState.queryBuilderState.applicationStore.notificationService.notifyWarning(
+          'externalize serialization tree can not be empty',
+        );
+      } else {
+        removeNodeRecursively(serializationTreeData, node);
+        serializationState.setGraphFetchTree({ ...serializationTreeData });
+      }
+    };
+
+    return (
+      <div className="query-builder-graph-fetch-external-format">
+        <div className="service-execution-editor__configuration__items">
+          <div className="service-execution-editor__configuration__item">
+            <div className="btn--sm service-execution-editor__configuration__item__label">
+              <BufferIcon />
+            </div>
+            <CustomSelectorInput
+              className="panel__content__form__section__dropdown service-execution-editor__configuration__item__dropdown"
+              disabled={isReadOnly}
+              options={bindingOptions}
+              onChange={onBindingChange}
+              value={selectedBinding}
+              formatOptionLabel={getBindingFormatter({
+                darkMode: true,
+              })}
+              darkMode={true}
+            />
+          </div>
+          <div className="service-execution-editor__configuration__item">
+            <div className="btn--sm service-execution-editor__configuration__item__label">
+              <FolderIcon />
+            </div>
+            <TreeView
+              components={{
+                TreeNodeContainer: QueryBuilderGraphFetchTreeNodeContainer,
+              }}
+              className="query-builder-graph-fetch-tree__container__tree"
+              treeData={serializationTreeData}
+              onNodeSelect={onNodeSelect}
+              getChildNodes={getChildNodes}
+              innerProps={{
+                isReadOnly,
+                removeNode,
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
 export const QueryBuilderGraphFetchTreeExplorer = observer(
   (props: {
     graphFetchState: QueryBuilderGraphFetchTreeState;
-    pureSerializationState: GraphFetchPureSerializationState;
+    serializationState: GraphFetchSerializationState;
     treeData: QueryBuilderGraphFetchTreeData;
     updateTreeData: (data: QueryBuilderGraphFetchTreeData) => void;
     isReadOnly: boolean;
   }) => {
     const {
       graphFetchState,
-      pureSerializationState,
+      serializationState,
       treeData,
       updateTreeData,
       isReadOnly,
     } = props;
+
+    // Retrieve all bindings whose packageableElementIncludes contain the root class of main graph fetch tree
+    const compatibleBindings =
+      graphFetchState.queryBuilderState.graphManagerState.usableStores
+        .filter(filterByType(Binding))
+        .filter((b) => {
+          const elements = b.modelUnit.packageableElementIncludes.map(
+            (p) => p.value,
+          );
+          return elements
+            .filter(filterByType(Package))
+            .map((p) => Array.from(getDescendantsOfPackage(p)))
+            .flat()
+            .concat(elements.filter((e) => !(e instanceof Package)))
+            .includes(treeData.tree.class.value);
+        });
 
     const onNodeSelect = (node: QueryBuilderGraphFetchTreeNodeData): void => {
       if (node.childrenIds.length) {
@@ -319,6 +479,24 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
 
     const removeNode = (node: QueryBuilderGraphFetchTreeNodeData): void => {
       removeNodeRecursively(treeData, node);
+      if (treeData.nodes.size === 0) {
+        graphFetchState.setSerializationState(
+          new GraphFetchPureSerializationState(graphFetchState),
+        );
+      }
+      // Remove node from external format serialization tree as well
+      if (
+        serializationState instanceof
+          GraphFetchExternalFormatSerializationState &&
+        serializationState.treeData &&
+        serializationState.treeData.nodes.get(node.id)
+      ) {
+        removeNodeRecursively(
+          serializationState.treeData,
+          guaranteeNonNullable(serializationState.treeData.nodes.get(node.id)),
+        );
+        updateTreeData({ ...serializationState.treeData });
+      }
       updateTreeData({ ...treeData });
     };
 
@@ -326,71 +504,202 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
       graphFetchState.setChecked(!graphFetchState.isChecked);
 
     const openConfigModal = (): void => {
-      pureSerializationState.setConfigModal(true);
+      if (serializationState instanceof GraphFetchPureSerializationState) {
+        serializationState.setConfigModal(true);
+      }
     };
+
+    const onChangeSerializationType =
+      (implementationType: SERIALIZATION_TYPE): (() => void) =>
+      (): void => {
+        if (implementationType !== serializationState.getLabel()) {
+          graphFetchState.queryBuilderState.applicationStore.alertService.setActionAlertInfo(
+            {
+              message:
+                'Current graph-fetch will be lost when switching to a different serialization mode. Do you still want to proceed?',
+              type: ActionAlertType.CAUTION,
+              actions: [
+                {
+                  label: 'Proceed',
+                  type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+                  handler:
+                    graphFetchState.queryBuilderState.applicationStore.guardUnhandledError(
+                      async () => {
+                        switch (implementationType) {
+                          case SERIALIZATION_TYPE.EXTERNAL_FORMAT:
+                            if (
+                              compatibleBindings.length > 0 &&
+                              compatibleBindings[0]
+                            ) {
+                              const externalizeState =
+                                new GraphFetchExternalFormatSerializationState(
+                                  graphFetchState,
+                                  compatibleBindings[0],
+                                  undefined,
+                                );
+                              graphFetchState.setGraphFetchTree(treeData);
+                              externalizeState.setGraphFetchTree(
+                                deepClone(treeData),
+                              );
+                              graphFetchState.setSerializationState(
+                                externalizeState,
+                              );
+                            } else {
+                              graphFetchState.queryBuilderState.applicationStore.notificationService.notifyWarning(
+                                `Can't switch to external format serialization: No compatible bindings found`,
+                              );
+                            }
+                            break;
+                          case SERIALIZATION_TYPE.PURE:
+                          default:
+                            graphFetchState.setSerializationState(
+                              new GraphFetchPureSerializationState(
+                                graphFetchState,
+                              ),
+                            );
+                            break;
+                        }
+                      },
+                    ),
+                },
+                {
+                  label: 'Cancel',
+                  type: ActionAlertActionType.PROCEED,
+                  default: true,
+                },
+              ],
+            },
+          );
+        }
+      };
 
     return (
       <div className="query-builder-graph-fetch-tree">
         <div className="query-builder-graph-fetch-tree__toolbar">
-          <div className="query-builder-graph-fetch-tree__actions">
-            <button
-              className="query-builder-graph-fetch-tree__actions__action-btn__label"
-              onClick={openConfigModal}
-              title={`${
-                pureSerializationState.config
-                  ? 'Edit pure serialization config'
-                  : 'Add pure serialization config'
-              }`}
-              tabIndex={-1}
-            >
-              <SerializeIcon className="query-builder-graph-fetch-tree__actions__action-btn__label__icon" />
-              <div className="query-builder-graph-fetch-tree__actions__action-btn__label__title">
-                {pureSerializationState.config ? 'Edit Config' : 'Add Config'}
-              </div>
-            </button>
+          <div className="query-builder__fetch__structure__modes">
+            {Object.values(SERIALIZATION_TYPE).map((type) => (
+              <button
+                onClick={onChangeSerializationType(type)}
+                className={clsx('query-builder__fetch__structure__mode', {
+                  'query-builder__fetch__structure__mode--selected':
+                    type === serializationState.getLabel(),
+                })}
+                key={type}
+              >
+                {prettyCONSTName(type)}
+              </button>
+            ))}
           </div>
-          <div
-            className={clsx('panel__content__form__section__toggler')}
-            onClick={toggleChecked}
-          >
-            <button
-              className={clsx('panel__content__form__section__toggler__btn', {
-                'panel__content__form__section__toggler__btn--toggled':
-                  graphFetchState.isChecked,
-              })}
+          <div className="query-builder-graph-fetch-tree__actions">
+            {serializationState instanceof GraphFetchPureSerializationState && (
+              <div className="query-builder-graph-fetch-tree__actions__action">
+                <button
+                  className="query-builder-graph-fetch-tree__actions__action-btn__label"
+                  onClick={openConfigModal}
+                  title={`${
+                    serializationState.config
+                      ? 'Edit pure serialization config'
+                      : 'Add pure serialization config'
+                  }`}
+                  tabIndex={-1}
+                >
+                  <SerializeIcon className="query-builder-graph-fetch-tree__actions__action-btn__label__icon" />
+                  <div className="query-builder-graph-fetch-tree__actions__action-btn__label__title">
+                    {serializationState.config ? 'Edit Config' : 'Add Config'}
+                  </div>
+                </button>
+              </div>
+            )}
+            <div
+              className={clsx('panel__content__form__section__toggler')}
+              onClick={toggleChecked}
             >
-              {graphFetchState.isChecked ? <CheckSquareIcon /> : <SquareIcon />}
-            </button>
-            <div className="panel__content__form__section__toggler__prompt">
-              Check graph fetch
-            </div>
-            <div className="query-builder-graph-fetch-tree__toolbar__hint-icon">
-              <InfoCircleIcon title="With this enabled, while executing, violations of constraints will reported as part of the result, rather than causing a failure" />
+              <button
+                className={clsx('panel__content__form__section__toggler__btn', {
+                  'panel__content__form__section__toggler__btn--toggled':
+                    graphFetchState.isChecked,
+                })}
+              >
+                {graphFetchState.isChecked ? (
+                  <CheckSquareIcon />
+                ) : (
+                  <SquareIcon />
+                )}
+              </button>
+              <div className="panel__content__form__section__toggler__prompt">
+                Check graph fetch
+              </div>
+              <div className="query-builder-graph-fetch-tree__toolbar__hint-icon">
+                <InfoCircleIcon title="With this enabled, while executing, violations of constraints will reported as part of the result, rather than causing a failure" />
+              </div>
             </div>
           </div>
         </div>
         <div className="query-builder-graph-fetch-tree__container">
-          {pureSerializationState.configModal && (
-            <PureSerializationConfigModal
-              pureSerializationState={pureSerializationState}
-              graphFetchState={graphFetchState}
-              config={
-                pureSerializationState.config ?? new PureSerializationConfig()
-              }
-            />
-          )}
-          <TreeView
-            components={{
-              TreeNodeContainer: QueryBuilderGraphFetchTreeNodeContainer,
-            }}
-            treeData={treeData}
-            onNodeSelect={onNodeSelect}
-            getChildNodes={getChildNodes}
-            innerProps={{
-              isReadOnly,
-              removeNode,
-            }}
-          />
+          {serializationState instanceof GraphFetchPureSerializationState &&
+            serializationState.configModal && (
+              <PureSerializationConfigModal
+                pureSerializationState={serializationState}
+                graphFetchState={graphFetchState}
+                config={
+                  serializationState.config ?? new PureSerializationConfig()
+                }
+              />
+            )}
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel>
+              <div className="query-builder-graph-fetch-external-format__config-group">
+                <div className="query-builder-graph-fetch-external-format__config-group__header">
+                  <div className="query-builder-graph-fetch-external-format__config-group__header__title">
+                    Graph Fetch Tree
+                  </div>
+                </div>
+                <div className="query-builder-graph-fetch-external-format__config-group__content">
+                  <div className="query-builder-graph-fetch-external-format__config-group__item">
+                    <TreeView
+                      components={{
+                        TreeNodeContainer:
+                          QueryBuilderGraphFetchTreeNodeContainer,
+                      }}
+                      className="query-builder-graph-fetch-tree__container__tree"
+                      treeData={treeData}
+                      onNodeSelect={onNodeSelect}
+                      getChildNodes={getChildNodes}
+                      innerProps={{
+                        isReadOnly,
+                        removeNode,
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </ResizablePanel>
+            <ResizablePanelSplitter />
+            {serializationState instanceof
+              GraphFetchExternalFormatSerializationState &&
+              serializationState.treeData && (
+                <ResizablePanel>
+                  <div className="query-builder-graph-fetch-external-format__config-group">
+                    <div className="query-builder-graph-fetch-external-format__config-group__header">
+                      <div className="query-builder-graph-fetch-external-format__config-group__header__title">
+                        Externalize
+                      </div>
+                    </div>
+                    <div className="query-builder-graph-fetch-external-format__config-group__content">
+                      <div className="query-builder-graph-fetch-external-format_config-group__item">
+                        <QueryBuilderGraphFetchExternalConfig
+                          graphFetchState={graphFetchState}
+                          serializationState={serializationState}
+                          serializationTreeData={serializationState.treeData}
+                          bindings={compatibleBindings}
+                          isReadOnly={false}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </ResizablePanel>
+              )}
+          </ResizablePanelGroup>
         </div>
       </div>
     );
@@ -400,10 +709,9 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
 const QueryBuilderGraphFetchTreePanel = observer(
   (props: {
     graphFetchTreeState: QueryBuilderGraphFetchTreeState;
-
-    pureSerializationState: GraphFetchPureSerializationState;
+    serializationState: GraphFetchSerializationState;
   }) => {
-    const { graphFetchTreeState, pureSerializationState } = props;
+    const { graphFetchTreeState, serializationState } = props;
     const treeData = graphFetchTreeState.treeData;
 
     // Deep/Graph Fetch Tree
@@ -415,8 +723,18 @@ const QueryBuilderGraphFetchTreePanel = observer(
     const handleDrop = useCallback(
       (item: QueryBuilderExplorerTreeDragSource): void => {
         graphFetchTreeState.addProperty(item.node, { refreshTreeData: true });
+        // If serializationState is GraphFetchExternalFormatSerializationState, we should add this node to
+        // the external format serialization tree as well
+        if (
+          serializationState instanceof
+          GraphFetchExternalFormatSerializationState
+        ) {
+          serializationState.addProperty(deepClone(item.node), {
+            refreshTreeData: true,
+          });
+        }
       },
-      [graphFetchTreeState],
+      [graphFetchTreeState, serializationState],
     );
     const [{ isDragOver }, dropTargetConnector] = useDrop<
       QueryBuilderExplorerTreeDragSource,
@@ -458,7 +776,7 @@ const QueryBuilderGraphFetchTreePanel = observer(
           {treeData && !isGraphFetchTreeDataEmpty(treeData) && (
             <QueryBuilderGraphFetchTreeExplorer
               graphFetchState={graphFetchTreeState}
-              pureSerializationState={pureSerializationState}
+              serializationState={serializationState}
               treeData={treeData}
               isReadOnly={false}
               updateTreeData={updateTreeData}
@@ -478,11 +796,14 @@ export const QueryBuilderGraphFetchPanel = observer(
       graphFetchTreeState.queryBuilderState.textEditorState.openModal(
         QueryBuilderTextEditorMode.TEXT,
       );
-    if (serializationState instanceof GraphFetchPureSerializationState) {
+    if (
+      serializationState instanceof GraphFetchPureSerializationState ||
+      serializationState instanceof GraphFetchExternalFormatSerializationState
+    ) {
       return (
         <QueryBuilderGraphFetchTreePanel
           graphFetchTreeState={graphFetchTreeState}
-          pureSerializationState={serializationState}
+          serializationState={serializationState}
         />
       );
     }
