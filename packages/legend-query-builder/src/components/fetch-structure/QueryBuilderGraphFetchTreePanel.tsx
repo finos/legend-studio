@@ -457,7 +457,7 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
           );
           return elements
             .filter(filterByType(Package))
-            .map((p) => getDescendantsOfPackage(p))
+            .map((p) => Array.from(getDescendantsOfPackage(p)))
             .flat()
             .concat(elements.filter((e) => !(e instanceof Package)))
             .includes(treeData.tree.class.value);
@@ -546,7 +546,7 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
                               );
                             } else {
                               graphFetchState.queryBuilderState.applicationStore.notificationService.notifyWarning(
-                                'Can not switch to external format serialization: No compatible bindings found',
+                                `Can't switch to external format serialization: No compatible bindings found`,
                               );
                             }
                             break;

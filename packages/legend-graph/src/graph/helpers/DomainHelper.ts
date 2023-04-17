@@ -89,12 +89,12 @@ export const deleteElementFromPackage = (
 
 export const getDescendantsOfPackage = (
   parent: Package,
-): PackageableElement[] => {
-  const descendants: PackageableElement[] = [];
+): Set<PackageableElement> => {
+  const descendants: Set<PackageableElement> = new Set<PackageableElement>();
   parent.children.forEach((c) => {
     c instanceof Package
-      ? getDescendantsOfPackage(c).forEach((e) => descendants.push(e))
-      : descendants.push(c);
+      ? getDescendantsOfPackage(c).forEach((e) => descendants.add(e))
+      : descendants.add(c);
   });
   return descendants;
 };
