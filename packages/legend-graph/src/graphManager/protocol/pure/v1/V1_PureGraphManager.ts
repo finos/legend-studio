@@ -2162,7 +2162,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     input.targetBindingPath = targetBinding;
     const genPMCD = await this.engine.generateSchema(input);
-    const genGraph = await this.createEmptyGraph();
+    const genGraph = await this.createBasicGraph();
     const report = createGraphBuilderReport();
     const mainGraphBuilderInput: V1_PureGraphBuilderInput[] = [
       {

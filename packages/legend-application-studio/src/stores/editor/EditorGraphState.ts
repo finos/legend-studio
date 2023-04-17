@@ -280,7 +280,7 @@ export class EditorGraphState {
       // fetch and build dependencies
       stopWatch.record();
       const dependencyManager =
-        this.editorStore.graphManagerState.createEmptyDependencyManager();
+        this.editorStore.graphManagerState.graphManager.createDependencyManager();
       this.editorStore.graphManagerState.graph.dependencyManager =
         dependencyManager;
       this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
@@ -517,7 +517,7 @@ export class EditorGraphState {
         ),
       );
       const dependencyManager =
-        this.editorStore.graphManagerState.createEmptyDependencyManager();
+        this.editorStore.graphManagerState.graphManager.createDependencyManager();
       newGraph.dependencyManager = dependencyManager;
       const dependenciesBuildState = ActionState.create();
       yield this.editorStore.graphManagerState.graphManager.buildDependencies(
@@ -576,7 +576,7 @@ export class EditorGraphState {
       );
       // we reset the generation model
       this.editorStore.graphManagerState.graph.generationModel =
-        this.editorStore.graphManagerState.createEmptyGenerationModel();
+        this.editorStore.graphManagerState.graphManager.createGenerationModel();
       yield this.editorStore.graphManagerState.graphManager.buildGenerations(
         this.editorStore.graphManagerState.graph,
         this.graphGenerationState.generatedEntities,

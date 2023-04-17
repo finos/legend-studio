@@ -494,7 +494,7 @@ export abstract class QueryEditorStore {
     // fetch and build dependencies
     stopWatch.record();
     const dependencyManager =
-      this.graphManagerState.createEmptyDependencyManager();
+      this.graphManagerState.graphManager.createDependencyManager();
     this.graphManagerState.graph.dependencyManager = dependencyManager;
     this.graphManagerState.dependenciesBuildState.setMessage(
       `Fetching dependencies...`,

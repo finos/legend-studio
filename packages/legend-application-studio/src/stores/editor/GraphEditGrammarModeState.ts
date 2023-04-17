@@ -210,7 +210,7 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
     this.editorStore.graphState.isUpdatingApplication = true;
     this.editorStore.graphState.isUpdatingGraph = true;
     try {
-      const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
+      const newGraph = this.editorStore.graphManagerState.createNewGraph();
       yield flowResult(
         this.editorStore.graphState.rebuildDependencies(newGraph),
       );

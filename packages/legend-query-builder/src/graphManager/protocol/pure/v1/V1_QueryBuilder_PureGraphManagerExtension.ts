@@ -142,7 +142,7 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
     dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>,
   ): Promise<MappingRuntimeCompatibilityAnalysisResult[]> {
     const result: MappingRuntimeCompatibilityAnalysisResult[] = [];
-    const graph = await this.graphManager.createEmptyGraph({
+    const graph = await this.graphManager.createBasicGraph({
       initializeSystem: false,
     });
 
@@ -252,7 +252,7 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
     dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>,
   ): Promise<ServiceExecutionAnalysisResult[]> {
     const result: ServiceExecutionAnalysisResult[] = [];
-    const graph = await this.graphManager.createEmptyGraph({
+    const graph = await this.graphManager.createBasicGraph({
       initializeSystem: false,
     });
 

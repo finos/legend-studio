@@ -360,7 +360,7 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
     this.schemaSet.format = description.name;
 
     observe_SchemaSet(this.schemaSet);
-    const emptyGraph = this.editorStore.graphManagerState.createEmptyGraph();
+    const emptyGraph = this.editorStore.graphManagerState.createNewGraph();
     emptyGraph.addElement(this.schemaSet, DEFAULT_SCHEMA_PACKAGE);
     this.isolatedSchemaGraph = emptyGraph;
     this.schemaSetEditorState = new InnerSchemaSetEditorState(

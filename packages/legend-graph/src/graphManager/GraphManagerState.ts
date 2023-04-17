@@ -20,26 +20,14 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
-import { DependencyManager } from '../graph/DependencyManager.js';
-import {
-  CoreModel,
-  GenerationModel,
-  PureModel,
-  SystemModel,
-} from '../graph/PureModel.js';
+import { CoreModel, SystemModel, PureModel } from '../graph/PureModel.js';
 import type {
   AbstractPureGraphManager,
   GraphBuilderOptions,
 } from '../graphManager/AbstractPureGraphManager.js';
 import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
-import type { EnumerationMapping } from '../graph/metamodel/pure/packageableElements/mapping/EnumerationMapping.js';
-import { InstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
-import type { SetImplementation } from '../graph/metamodel/pure/packageableElements/mapping/SetImplementation.js';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
-import { EmbeddedFlatDataPropertyMapping } from '../graph/metamodel/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
-import { EmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 import { buildPureGraphManager } from '../graphManager/protocol/pure/PureGraphManagerBuilder.js';
-import type { AssociationImplementation } from '../graph/metamodel/pure/packageableElements/mapping/AssociationImplementation.js';
 import type { Profile } from '../graph/metamodel/pure/packageableElements/domain/Profile.js';
 import type { Enumeration } from '../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
 import type { Measure } from '../graph/metamodel/pure/packageableElements/domain/Measure.js';
@@ -71,48 +59,6 @@ export class BasicGraphManagerState {
     this.pluginManager = pluginManager;
     this.logService = logService;
     this.graphManager = buildPureGraphManager(this.pluginManager, logService);
-  }
-
-  // -------------------------------------------------- UTILITIES -----------------------------------------------------
-
-  /**
-   * Check if a mapping element is an instance set implementation
-   *
-   * NOTE: This would account for embedded property mappings as well
-   * these are technically instance of `InstanceSetImplementation`
-   * but since unlike Pure, Typescript cannot do multiple inheritance
-   * we only can make embedded property mapping extends `PropertyMapping`
-   *
-   * Potentially, we might need to apply an extension mechanism on this
-   */
-  isInstanceSetImplementation(
-    setImplementation:
-      | EnumerationMapping
-      | SetImplementation
-      | AssociationImplementation,
-  ): setImplementation is InstanceSetImplementation {
-    return (
-      setImplementation instanceof InstanceSetImplementation ||
-      setImplementation instanceof EmbeddedFlatDataPropertyMapping ||
-      setImplementation instanceof EmbeddedRelationalInstanceSetImplementation
-    );
-  }
-
-  /**
-   * Filter the list of system elements that will be shown in selection options
-   * to users. This is helpful to avoid overwhelming and confusing users in form
-   * mode since many system elements are needed to build the graph, but should
-   * not present at all as selection options in form mode.
-   */
-  collectExposedSystemElements<T extends PackageableElement>(
-    systemElements: T[],
-  ): T[] {
-    const allowedSystemElements = this.pluginManager
-      .getPureGraphManagerPlugins()
-      .flatMap((plugin) => plugin.getExtraExposedSystemElementPath?.() ?? []);
-    return systemElements.filter((element) =>
-      allowedSystemElements.includes(element.path),
-    );
   }
 }
 
@@ -164,7 +110,7 @@ export class GraphManagerState extends BasicGraphManagerState {
       .flatMap((plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? []);
     this.systemModel = new SystemModel(extensionElementClasses);
     this.coreModel = new CoreModel(extensionElementClasses);
-    this.graph = this.createEmptyGraph();
+    this.graph = this.createNewGraph();
     this.graphManager = buildPureGraphManager(this.pluginManager, logService);
 
     this.systemBuildState.setMessageFormatter(
@@ -203,34 +149,14 @@ export class GraphManagerState extends BasicGraphManagerState {
   }
 
   resetGraph(): void {
-    this.graph = this.createEmptyGraph();
+    this.graph = this.createNewGraph();
   }
 
-  createEmptyGraph(): PureModel {
+  createNewGraph(): PureModel {
     return new PureModel(
       this.coreModel,
       this.systemModel,
       this.pluginManager.getPureGraphPlugins(),
-    );
-  }
-
-  createEmptyDependencyManager(): DependencyManager {
-    return new DependencyManager(
-      this.pluginManager
-        .getPureGraphPlugins()
-        .flatMap(
-          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
-        ),
-    );
-  }
-
-  createEmptyGenerationModel(): GenerationModel {
-    return new GenerationModel(
-      this.pluginManager
-        .getPureGraphPlugins()
-        .flatMap(
-          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
-        ),
     );
   }
 
@@ -240,21 +166,25 @@ export class GraphManagerState extends BasicGraphManagerState {
         (type) => type !== PrimitiveType.LATESTDATE,
       ),
       ...this.graph.ownTypes,
-      ...this.collectExposedSystemElements(this.graph.systemModel.ownTypes),
+      ...this.graphManager.collectExposedSystemElements(
+        this.graph.systemModel.ownTypes,
+      ),
       ...this.graph.dependencyManager.types,
     ];
   }
 
   get usableProfiles(): Profile[] {
     return [
-      ...this.collectExposedSystemElements(this.graph.systemModel.ownProfiles),
+      ...this.graphManager.collectExposedSystemElements(
+        this.graph.systemModel.ownProfiles,
+      ),
       ...this.graph.dependencyManager.profiles,
       ...this.graph.ownProfiles,
     ];
   }
   get usableEnumerations(): Enumeration[] {
     return [
-      ...this.collectExposedSystemElements(
+      ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownEnumerations,
       ),
       ...this.graph.dependencyManager.enumerations,
@@ -263,14 +193,18 @@ export class GraphManagerState extends BasicGraphManagerState {
   }
   get usableMeasures(): Measure[] {
     return [
-      ...this.collectExposedSystemElements(this.graph.systemModel.ownMeasures),
+      ...this.graphManager.collectExposedSystemElements(
+        this.graph.systemModel.ownMeasures,
+      ),
       ...this.graph.dependencyManager.measures,
       ...this.graph.ownMeasures,
     ];
   }
   get usableClasses(): Class[] {
     return [
-      ...this.collectExposedSystemElements(this.graph.systemModel.ownClasses),
+      ...this.graphManager.collectExposedSystemElements(
+        this.graph.systemModel.ownClasses,
+      ),
       ...this.graph.dependencyManager.classes,
       ...this.graph.ownClasses,
     ];
@@ -281,7 +215,7 @@ export class GraphManagerState extends BasicGraphManagerState {
 
   get usableAssociations(): Association[] {
     return [
-      ...this.collectExposedSystemElements(
+      ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownAssociations,
       ),
       ...this.graph.dependencyManager.associations,
@@ -290,49 +224,61 @@ export class GraphManagerState extends BasicGraphManagerState {
   }
   get usableFunctions(): ConcreteFunctionDefinition[] {
     return [
-      ...this.collectExposedSystemElements(this.graph.systemModel.ownFunctions),
+      ...this.graphManager.collectExposedSystemElements(
+        this.graph.systemModel.ownFunctions,
+      ),
       ...this.graph.dependencyManager.functions,
       ...this.graph.ownFunctions,
     ];
   }
   get usableStores(): Store[] {
     return [
-      ...this.collectExposedSystemElements(this.graph.systemModel.ownStores),
+      ...this.graphManager.collectExposedSystemElements(
+        this.graph.systemModel.ownStores,
+      ),
       ...this.graph.dependencyManager.stores,
       ...this.graph.ownStores,
     ];
   }
   get usableDatabases(): Database[] {
     return [
-      ...this.collectExposedSystemElements(this.graph.systemModel.ownDatabases),
+      ...this.graphManager.collectExposedSystemElements(
+        this.graph.systemModel.ownDatabases,
+      ),
       ...this.graph.dependencyManager.databases,
       ...this.graph.ownDatabases,
     ];
   }
   get usableMappings(): Mapping[] {
     return [
-      ...this.collectExposedSystemElements(this.graph.systemModel.ownMappings),
+      ...this.graphManager.collectExposedSystemElements(
+        this.graph.systemModel.ownMappings,
+      ),
       ...this.graph.dependencyManager.mappings,
       ...this.graph.ownMappings,
     ];
   }
   get usableServices(): Service[] {
     return [
-      ...this.collectExposedSystemElements(this.graph.systemModel.ownServices),
+      ...this.graphManager.collectExposedSystemElements(
+        this.graph.systemModel.ownServices,
+      ),
       ...this.graph.dependencyManager.services,
       ...this.graph.ownServices,
     ];
   }
   get usableRuntimes(): PackageableRuntime[] {
     return [
-      ...this.collectExposedSystemElements(this.graph.systemModel.ownRuntimes),
+      ...this.graphManager.collectExposedSystemElements(
+        this.graph.systemModel.ownRuntimes,
+      ),
       ...this.graph.dependencyManager.runtimes,
       ...this.graph.ownRuntimes,
     ];
   }
   get usableConnections(): PackageableConnection[] {
     return [
-      ...this.collectExposedSystemElements(
+      ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownConnections,
       ),
       ...this.graph.dependencyManager.connections,
@@ -341,7 +287,7 @@ export class GraphManagerState extends BasicGraphManagerState {
   }
   get usableDataElements(): DataElement[] {
     return [
-      ...this.collectExposedSystemElements(
+      ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownDataElements,
       ),
       ...this.graph.dependencyManager.dataElements,
@@ -350,7 +296,7 @@ export class GraphManagerState extends BasicGraphManagerState {
   }
   get usableGenerationSpecifications(): GenerationSpecification[] {
     return [
-      ...this.collectExposedSystemElements(
+      ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownGenerationSpecifications,
       ),
       ...this.graph.dependencyManager.generationSpecifications,
@@ -359,7 +305,7 @@ export class GraphManagerState extends BasicGraphManagerState {
   }
   get usableFileGenerations(): FileGenerationSpecification[] {
     return [
-      ...this.collectExposedSystemElements(
+      ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownFileGenerations,
       ),
       ...this.graph.dependencyManager.fileGenerations,
@@ -368,7 +314,7 @@ export class GraphManagerState extends BasicGraphManagerState {
   }
   get usableElements(): PackageableElement[] {
     return [
-      ...this.collectExposedSystemElements(
+      ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.allOwnElements,
       ),
       ...this.graph.dependencyManager.allOwnElements,

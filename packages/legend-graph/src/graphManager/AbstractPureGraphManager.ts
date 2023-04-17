@@ -26,10 +26,15 @@ import type { Service } from '../graph/metamodel/pure/packageableElements/servic
 import type { FileGenerationSpecification } from '../graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
 import type { GenerationOutput } from './action/generation/GenerationOutput.js';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
-import { PureModel, CoreModel, SystemModel } from '../graph/PureModel.js';
+import {
+  PureModel,
+  CoreModel,
+  SystemModel,
+  GenerationModel,
+} from '../graph/PureModel.js';
 import type { Mapping } from '../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { Runtime } from '../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
-import type { DependencyManager } from '../graph/DependencyManager.js';
+import { DependencyManager } from '../graph/DependencyManager.js';
 import type { Class } from '../graph/metamodel/pure/packageableElements/domain/Class.js';
 import type { RawLambda } from '../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import type {
@@ -86,6 +91,12 @@ import type { PackageableRuntime } from '../graph/metamodel/pure/packageableElem
 import type { GraphDataOrigin } from '../graph/GraphDataOrigin.js';
 import type { GraphData } from './GraphData.js';
 import type { DEPRECATED__MappingTest } from '../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
+import type { EnumerationMapping } from '../graph/metamodel/pure/packageableElements/mapping/EnumerationMapping.js';
+import type { SetImplementation } from '../graph/metamodel/pure/packageableElements/mapping/SetImplementation.js';
+import type { AssociationImplementation } from '../graph/metamodel/pure/packageableElements/mapping/AssociationImplementation.js';
+import { InstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
+import { EmbeddedFlatDataPropertyMapping } from '../graph/metamodel/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
+import { EmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -548,7 +559,7 @@ export abstract class AbstractPureGraphManager {
     },
   ): Entity;
 
-  async createEmptyGraph(options?: {
+  async createBasicGraph(options?: {
     initializeSystem?: boolean;
   }): Promise<PureModel> {
     const extensionElementClasses = this.pluginManager
@@ -566,5 +577,65 @@ export abstract class AbstractPureGraphManager {
       this.pluginManager.getPureGraphPlugins(),
     );
     return graph;
+  }
+
+  createDependencyManager(): DependencyManager {
+    return new DependencyManager(
+      this.pluginManager
+        .getPureGraphPlugins()
+        .flatMap(
+          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
+        ),
+    );
+  }
+
+  createGenerationModel(): GenerationModel {
+    return new GenerationModel(
+      this.pluginManager
+        .getPureGraphPlugins()
+        .flatMap(
+          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
+        ),
+    );
+  }
+
+  /**
+   * Check if a mapping element is an instance set implementation
+   *
+   * NOTE: This would account for embedded property mappings as well
+   * these are technically instance of `InstanceSetImplementation`
+   * but since unlike Pure, Typescript cannot do multiple inheritance
+   * we only can make embedded property mapping extends `PropertyMapping`
+   *
+   * Potentially, we might need to apply an extension mechanism on this
+   */
+  isInstanceSetImplementation(
+    setImplementation:
+      | EnumerationMapping
+      | SetImplementation
+      | AssociationImplementation,
+  ): setImplementation is InstanceSetImplementation {
+    return (
+      setImplementation instanceof InstanceSetImplementation ||
+      setImplementation instanceof EmbeddedFlatDataPropertyMapping ||
+      setImplementation instanceof EmbeddedRelationalInstanceSetImplementation
+    );
+  }
+
+  /**
+   * Filter the list of system elements that will be shown in selection options
+   * to users. This is helpful to avoid overwhelming and confusing users in form
+   * mode since many system elements are needed to build the graph, but should
+   * not present at all as selection options in form mode.
+   */
+  collectExposedSystemElements<T extends PackageableElement>(
+    systemElements: T[],
+  ): T[] {
+    const allowedSystemElements = this.pluginManager
+      .getPureGraphManagerPlugins()
+      .flatMap((plugin) => plugin.getExtraExposedSystemElementPath?.() ?? []);
+    return systemElements.filter((element) =>
+      allowedSystemElements.includes(element.path),
+    );
   }
 }

@@ -378,7 +378,7 @@ export class ProjectViewerStore {
       // build dependencies
       stopWatch.record();
       const dependencyManager =
-        this.editorStore.graphManagerState.createEmptyDependencyManager();
+        this.editorStore.graphManagerState.graphManager.createDependencyManager();
       this.editorStore.graphManagerState.graph.dependencyManager =
         dependencyManager;
 

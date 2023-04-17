@@ -434,6 +434,7 @@ export const observe_Association = skipObserved(
       stereotypes: observable,
       taggedValues: observable,
       derivedProperties: observable,
+      dispose: override,
       _elementHashCode: override,
     });
 

@@ -1027,7 +1027,7 @@ export class MappingEditorState extends ElementEditorState {
   ): GeneratorFn<void> {
     let mappingElementsToClose = [mappingElement];
     if (
-      this.editorStore.graphManagerState.isInstanceSetImplementation(
+      this.editorStore.graphManagerState.graphManager.isInstanceSetImplementation(
         mappingElement,
       )
     ) {

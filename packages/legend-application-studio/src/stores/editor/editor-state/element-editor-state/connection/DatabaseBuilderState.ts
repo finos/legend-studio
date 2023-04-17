@@ -508,7 +508,7 @@ export class DatabaseBuilderState {
       (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
         grammar,
       )) as Entity[];
-    const dbGraph = this.editorStore.graphManagerState.createEmptyGraph();
+    const dbGraph = this.editorStore.graphManagerState.createNewGraph();
     (yield this.editorStore.graphManagerState.graphManager.buildGraph(
       dbGraph,
       entities,
@@ -528,7 +528,7 @@ export class DatabaseBuilderState {
       (yield this.editorStore.graphManagerState.graphManager.buildDatabase(
         databaseBuilderInput,
       )) as Entity[];
-    const dbGraph = this.editorStore.graphManagerState.createEmptyGraph();
+    const dbGraph = this.editorStore.graphManagerState.createNewGraph();
     (yield this.editorStore.graphManagerState.graphManager.buildGraph(
       dbGraph,
       entities,

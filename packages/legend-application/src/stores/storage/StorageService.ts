@@ -89,7 +89,11 @@ export class StorageService {
     const data = this.storage.getItem(
       applicationStore.config.applicationStorageKey,
     );
-    this.data = data ? returnUndefOnError(() => JSON.parse(data)) ?? {} : {};
+    this.data = data
+      ? returnUndefOnError(
+          () => JSON.parse(data) as Record<string, StorageStoreData>,
+        ) ?? {}
+      : {};
   }
 
   getIndex(index: string): StorageStoreData | undefined {
