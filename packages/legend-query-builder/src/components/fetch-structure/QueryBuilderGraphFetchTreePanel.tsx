@@ -525,35 +525,39 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
                   handler:
                     graphFetchState.queryBuilderState.applicationStore.guardUnhandledError(
                       async () => {
-                        if (implementationType === SERIALIZATION_TYPE.PURE) {
-                          graphFetchState.setSerializationState(
-                            new GraphFetchPureSerializationState(
-                              graphFetchState,
-                            ),
-                          );
-                        } else {
-                          if (
-                            compatibleBindings.length > 0 &&
-                            compatibleBindings[0]
-                          ) {
-                            const externalizeState =
-                              new GraphFetchExternalFormatSerializationState(
-                                graphFetchState,
-                                compatibleBindings[0],
-                                undefined,
+                        switch (implementationType) {
+                          case SERIALIZATION_TYPE.EXTERNAL_FORMAT:
+                            if (
+                              compatibleBindings.length > 0 &&
+                              compatibleBindings[0]
+                            ) {
+                              const externalizeState =
+                                new GraphFetchExternalFormatSerializationState(
+                                  graphFetchState,
+                                  compatibleBindings[0],
+                                  undefined,
+                                );
+                              graphFetchState.setGraphFetchTree(treeData);
+                              externalizeState.setGraphFetchTree(
+                                deepClone(treeData),
                               );
-                            graphFetchState.setGraphFetchTree(treeData);
-                            externalizeState.setGraphFetchTree(
-                              deepClone(treeData),
-                            );
+                              graphFetchState.setSerializationState(
+                                externalizeState,
+                              );
+                            } else {
+                              graphFetchState.queryBuilderState.applicationStore.notificationService.notifyWarning(
+                                'Can not switch to external format serialization: No compatible bindings found',
+                              );
+                            }
+                            break;
+                          case SERIALIZATION_TYPE.PURE:
+                          default:
                             graphFetchState.setSerializationState(
-                              externalizeState,
+                              new GraphFetchPureSerializationState(
+                                graphFetchState,
+                              ),
                             );
-                          } else {
-                            graphFetchState.queryBuilderState.applicationStore.notificationService.notifyWarning(
-                              'Can not switch to external format serialization: No compatible bindings found',
-                            );
-                          }
+                            break;
                         }
                       },
                     ),
