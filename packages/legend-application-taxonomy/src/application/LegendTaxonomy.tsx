@@ -60,7 +60,7 @@ export class LegendTaxonomy extends LegendApplication {
   ): Promise<void> {
     createRoot(getApplicationRootElement()).render(
       <ApplicationStoreProvider store={applicationStore}>
-        <LegendTaxonomyWebApplication baseUrl={this.baseUrl} />
+        <LegendTaxonomyWebApplication baseUrl={this.baseAddress} />
       </ApplicationStoreProvider>,
     );
   }

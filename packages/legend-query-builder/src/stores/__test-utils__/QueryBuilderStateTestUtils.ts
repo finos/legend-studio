@@ -95,7 +95,7 @@ export const TEST__getGenericApplicationConfig = (
       ...extraConfigData,
     },
     versionData: TEST__getApplicationVersionData(),
-    baseUrl: '/',
+    baseAddress: '/',
   });
   return config;
 };

@@ -66,7 +66,7 @@ export class LegendQuery extends LegendApplication {
   ): Promise<void> {
     createRoot(getApplicationRootElement()).render(
       <ApplicationStoreProvider store={applicationStore}>
-        <LegendQueryWebApplication baseUrl={this.baseUrl} />
+        <LegendQueryWebApplication baseUrl={this.baseAddress} />
       </ApplicationStoreProvider>,
     );
   }

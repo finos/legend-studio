@@ -85,7 +85,7 @@ export class LegendStudioWebApplication {
 
   static run(baseUrl: string): void {
     LegendStudio.create()
-      .setup({ baseUrl })
+      .setup({ baseAddress: baseUrl })
       .withPresets(LegendStudioWebApplication.getPresetCollection())
       .withPlugins(LegendStudioWebApplication.getPluginCollection())
       .start()

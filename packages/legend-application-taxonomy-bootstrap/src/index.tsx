@@ -46,7 +46,7 @@ export class LegendTaxonomyWebApplication {
 
   static run(baseUrl: string): void {
     LegendTaxonomy.create()
-      .setup({ baseUrl })
+      .setup({ baseAddress: baseUrl })
       .withPresets(LegendTaxonomyWebApplication.getPresetCollection())
       .withPlugins(LegendTaxonomyWebApplication.getPluginCollection())
       .start()

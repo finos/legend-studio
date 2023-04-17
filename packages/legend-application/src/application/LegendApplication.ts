@@ -86,7 +86,7 @@ export class LegendApplicationWebConsole extends LegendApplicationLogger {
 export interface LegendApplicationConfigurationInput<
   T extends LegendApplicationConfigurationData,
 > {
-  baseUrl: string;
+  baseAddress: string;
   configData: T;
   versionData: LegendApplicationVersionData;
   docEntries?: Record<string, DocumentationEntryData>;
@@ -100,7 +100,7 @@ export abstract class LegendApplication {
   protected basePresets: AbstractPreset[] = [];
   protected basePlugins: AbstractPlugin[] = [];
 
-  protected baseUrl!: string;
+  protected baseAddress!: string;
   protected pluginRegister?:
     | ((
         pluginManager: LegendApplicationPluginManager<LegendApplicationPlugin>,
@@ -118,7 +118,7 @@ export abstract class LegendApplication {
 
   setup(options: {
     /** Base URL of the application. e.g. /studio/, /query/ */
-    baseUrl: string;
+    baseAddress: string;
     /**
      * Provide an alternative mechanism to register and configure plugins and presets
      * which is more flexible by allowing configuring specific plugin or preset.
@@ -128,9 +128,9 @@ export abstract class LegendApplication {
       config: LegendApplicationConfig,
     ) => void;
   }): LegendApplication {
-    this.baseUrl = guaranteeNonEmptyString(
-      options.baseUrl,
-      `Can't setup application: 'baseUrl' is missing or empty`,
+    this.baseAddress = guaranteeNonEmptyString(
+      options.baseAddress,
+      `Can't setup application: 'baseAddress' is missing or empty`,
     );
     this.pluginRegister = options.pluginRegister;
     this._isConfigured = true;
@@ -199,7 +199,7 @@ export abstract class LegendApplication {
       await this.configureApplication({
         configData,
         versionData,
-        baseUrl,
+        baseAddress: baseUrl,
       }),
       configData.extensions ?? {},
     ];
@@ -293,7 +293,7 @@ export abstract class LegendApplication {
     try {
       // fetch application config
       const [config, extensionConfigData] =
-        await this.fetchApplicationConfiguration(this.baseUrl);
+        await this.fetchApplicationConfiguration(this.baseAddress);
       this.config = config;
 
       // setup plugins

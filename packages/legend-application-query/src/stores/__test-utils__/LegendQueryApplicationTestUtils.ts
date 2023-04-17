@@ -44,7 +44,7 @@ export const TEST__getTestLegendQueryApplicationConfig = (
       ...extraConfigData,
     },
     versionData: TEST__getApplicationVersionData(),
-    baseUrl: '/query/',
+    baseAddress: '/query/',
   });
   return config;
 };

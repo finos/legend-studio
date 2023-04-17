@@ -66,7 +66,7 @@ export class LegendStudio extends LegendApplication {
   ): Promise<void> {
     createRoot(getApplicationRootElement()).render(
       <ApplicationStoreProvider store={applicationStore}>
-        <LegendStudioWebApplication baseUrl={this.baseUrl} />
+        <LegendStudioWebApplication baseUrl={this.baseAddress} />
       </ApplicationStoreProvider>,
     );
   }

@@ -58,7 +58,7 @@ export class LegendPureIDE extends LegendApplication {
   ): Promise<void> {
     createRoot(getApplicationRootElement()).render(
       <ApplicationStoreProvider store={applicationStore}>
-        <LegendPureIDEWebApplication baseUrl={this.baseUrl} />
+        <LegendPureIDEWebApplication baseUrl={this.baseAddress} />
       </ApplicationStoreProvider>,
     );
   }

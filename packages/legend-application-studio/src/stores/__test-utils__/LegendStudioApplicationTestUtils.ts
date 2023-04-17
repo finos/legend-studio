@@ -43,7 +43,7 @@ export const TEST__getLegendStudioApplicationConfig = (
       ...extraConfigData,
     },
     versionData: TEST__getApplicationVersionData(),
-    baseUrl: '/studio/',
+    baseAddress: '/studio/',
   });
   return config;
 };

@@ -54,7 +54,7 @@ export interface LegendApplicationConfigurationData {
 
 export abstract class LegendApplicationConfig {
   readonly appName: string;
-  readonly baseUrl: string;
+  readonly baseAddress: string;
   readonly env: string;
 
   // documentation
@@ -71,7 +71,7 @@ export abstract class LegendApplicationConfig {
   constructor(
     input: LegendApplicationConfigurationInput<LegendApplicationConfigurationData>,
   ) {
-    this.baseUrl = input.baseUrl;
+    this.baseAddress = input.baseAddress;
     this.appName = guaranteeNonEmptyString(
       input.configData.appName,
       `Can't configure application: 'appName' field is missing or empty`,

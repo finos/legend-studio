@@ -64,7 +64,7 @@ export class LegendQueryWebApplication {
 
   static run(baseUrl: string): void {
     LegendQuery.create()
-      .setup({ baseUrl })
+      .setup({ baseAddress: baseUrl })
       .withPresets(LegendQueryWebApplication.getPresetCollection())
       .withPlugins(LegendQueryWebApplication.getPluginCollection())
       .start()
