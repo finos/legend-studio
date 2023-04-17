@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@finos/legend-storage';
-
 export abstract class GraphDataOrigin {}
 
 export class LegendSDLC extends GraphDataOrigin {
@@ -28,14 +26,5 @@ export class LegendSDLC extends GraphDataOrigin {
     this.groupId = groupId;
     this.artifactId = artifactId;
     this.versionId = versionId;
-  }
-}
-
-export class GraphEntities extends GraphDataOrigin {
-  entities: Entity[];
-
-  constructor(entities: Entity[]) {
-    super();
-    this.entities = entities;
   }
 }

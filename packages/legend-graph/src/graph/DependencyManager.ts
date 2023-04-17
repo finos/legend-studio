@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type Clazz,
-  guaranteeNonNullable,
-  IllegalStateError,
-} from '@finos/legend-shared';
+import { type Clazz, guaranteeNonNullable } from '@finos/legend-shared';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import type { Enumeration } from '../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
 import type { Type } from '../graph/metamodel/pure/packageableElements/domain/Type.js';
@@ -72,7 +68,6 @@ const buildDependencyElementGetter =
 export class DependencyManager {
   roots: Package[] = [];
   projectDependencyModelsIndex = new Map<string, BasicModel>();
-  _origin: GraphDataOrigin | undefined;
 
   private readonly extensionElementClasses: Clazz<PackageableElement>[];
 
@@ -119,18 +114,6 @@ export class DependencyManager {
 
   get allOwnElements(): PackageableElement[] {
     return this.dependencyGraphs.flatMap((dep) => dep.allOwnElements);
-  }
-
-  get origin(): GraphDataOrigin | undefined {
-    return this._origin;
-  }
-
-  setOrigin(val: GraphDataOrigin): void {
-    if (this._origin) {
-      throw new IllegalStateError(`Graph Origin has already been set`);
-    } else {
-      this._origin = val;
-    }
   }
 
   getOwnNullableSectionIndex = buildDependencyElementGetter(

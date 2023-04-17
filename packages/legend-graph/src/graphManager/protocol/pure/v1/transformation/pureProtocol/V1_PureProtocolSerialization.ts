@@ -194,14 +194,7 @@ export const V1_serializePureModelContext = (
   if (pureModelContext instanceof V1_PureModelContextPointer) {
     return serialize(V1_pureModelContextPointerModelSchema, pureModelContext);
   } else if (pureModelContext instanceof V1_PureModelContextData) {
-    const rawPMCD = V1_serializePureModelContextData(pureModelContext);
-    if (pureModelContext.INTERNAL__rawEntities.length) {
-      rawPMCD.elements = [
-        ...(rawPMCD as { elements: PlainObject[] }).elements,
-        ...pureModelContext.INTERNAL__rawEntities.map((e) => e.content),
-      ];
-    }
-    return rawPMCD;
+    return V1_serializePureModelContextData(pureModelContext);
   } else if (pureModelContext instanceof V1_PureModelContextComposite) {
     return serialize(V1_pureModelContextCompositeModelSchema, pureModelContext);
   } else if (pureModelContext instanceof V1_PureModelContextText) {
