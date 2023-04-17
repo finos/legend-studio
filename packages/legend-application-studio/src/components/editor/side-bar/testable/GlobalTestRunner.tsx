@@ -239,6 +239,11 @@ const TestableExplorerContextMenu = observer(
     };
     const viewError = (err: TestError | AssertFail): void =>
       globalTestRunnerState.setFailureViewing(err);
+    const visitTestable = (): void => {
+      globalTestRunnerState.visitTestable(
+        testableState.testableMetadata.testable,
+      );
+    };
     return (
       <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         <MenuContentItem
@@ -246,6 +251,12 @@ const TestableExplorerContextMenu = observer(
           onClick={runTest}
         >
           Run
+        </MenuContentItem>
+        <MenuContentItem
+          disabled={globalTestRunnerState.isDispatchingAction}
+          onClick={visitTestable}
+        >
+          Open Testable
         </MenuContentItem>
         {error &&
           (error instanceof TestError || error instanceof AssertFail) && (
@@ -311,8 +322,23 @@ const TestableTreeNodeContainer: React.FC<
     ),
   );
   const optionalError = getOptionalError(node, testableState);
-  // );
   const selectNode: React.MouseEventHandler = (event) => onNodeSelect?.(node);
+
+  const openTestable: React.MouseEventHandler = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    globalTestRunnerState.visitTestable(
+      testableState.testableMetadata.testable,
+    );
+  };
+  const dblClick = (): void => {
+    if (
+      optionalError instanceof TestError ||
+      optionalError instanceof AssertFail
+    ) {
+      globalTestRunnerState.setFailureViewing(optionalError);
+    }
+  };
 
   return (
     <ContextMenu
@@ -351,21 +377,30 @@ const TestableTreeNodeContainer: React.FC<
           )}
         </div>
         {node instanceof TestableTreeNodeData && (
-          <div className="global-test-runner__item__link__content">
+          <div
+            onClick={openTestable}
+            className="global-test-runner__item__link__content"
+          >
             <span className="global-test-runner__item__link__content__id">
               {node.testableMetadata.name}
             </span>
           </div>
         )}
         {node instanceof TestTreeNodeData && (
-          <div className="global-test-runner__item__link__content">
+          <div
+            onDoubleClick={dblClick}
+            className="global-test-runner__item__link__content"
+          >
             <span className="global-test-runner__item__link__content__id">
               {node.label}
             </span>
           </div>
         )}
         {node instanceof AssertionTestTreeNodeData && (
-          <div className="global-test-runner__item__link__content">
+          <div
+            onDoubleClick={dblClick}
+            className="global-test-runner__item__link__content"
+          >
             <span className="global-test-runner__item__link__content__id">
               {node.label}
             </span>
@@ -481,7 +516,7 @@ export const GlobalTestRunner = observer(
                   disabled={isDispatchingAction}
                   onClick={reset}
                   tabIndex={-1}
-                  title="Run All Tests"
+                  title="Reset"
                 >
                   <RefreshIcon />
                 </button>
