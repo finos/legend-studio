@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 27.0.2
+
+### Patch Changes
+
+- [#2111](https://github.com/finos/legend-studio/pull/2111) [`3743dcdf3`](https://github.com/finos/legend-studio/commit/3743dcdf3ddabdffb38a2b6056cbbad9f74ffdb0) ([@sprisha](https://github.com/sprisha)) - Revert "adding Optional Service Lineage Feature to Registration (#2100)"
+
+- [#2112](https://github.com/finos/legend-studio/pull/2112) [`26bae7353`](https://github.com/finos/legend-studio/commit/26bae7353eb15a5310aae611b6e8d8b80505375a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Revert Add graph origin to `DependencyManager` to remove unnecessary graph transformation per engine call.
+
 ## 27.0.1
 
 ### Patch Changes

@@ -1,5 +1,7 @@
 # @finos/legend-application-pure-ide
 
+## 7.0.15
+
 ## 7.0.14
 
 ## 7.0.13

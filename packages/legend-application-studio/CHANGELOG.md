@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 23.1.11
+
+### Patch Changes
+
+- [#2111](https://github.com/finos/legend-studio/pull/2111) [`3743dcdf3`](https://github.com/finos/legend-studio/commit/3743dcdf3ddabdffb38a2b6056cbbad9f74ffdb0) ([@sprisha](https://github.com/sprisha)) - Revert "adding Optional Service Lineage Feature to Registration (#2100)"
+
 ## 23.1.10
 
 ## 23.1.9
