@@ -63,7 +63,7 @@ import {
   UserIcon,
   UsersIcon,
 } from '@finos/legend-art';
-import { useParams } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 
 const UpdateServiceQuerySetupStoreContext = createContext<
   UpdateServiceQuerySetupStore | undefined

@@ -17,7 +17,7 @@
 import {
   generateExtensionUrlPattern,
   generatePath,
-} from '@finos/legend-application';
+} from '@finos/legend-application/browser';
 import { assertTrue, guaranteeNonEmptyString } from '@finos/legend-shared';
 import {
   generateGAVCoordinates,

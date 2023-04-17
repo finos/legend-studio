@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './MonacoEditorMockUtils.js';
+export * from './__test-utils__/TestUtils.js';

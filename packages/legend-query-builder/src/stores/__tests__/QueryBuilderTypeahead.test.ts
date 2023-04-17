@@ -15,11 +15,8 @@
  */
 
 import { expect, test, describe } from '@jest/globals';
-import {
-  guaranteeNonNullable,
-  guaranteeType,
-  integrationTest,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import { RawLambda } from '@finos/legend-graph';

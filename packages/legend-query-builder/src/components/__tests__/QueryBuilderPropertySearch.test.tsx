@@ -23,7 +23,7 @@ import {
   getByDisplayValue,
   waitFor,
 } from '@testing-library/react';
-import { integrationTest } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import TEST_DATA__QueryBuilder_Model_PropertySearch from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_PropertySearch.json';
 import { stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';

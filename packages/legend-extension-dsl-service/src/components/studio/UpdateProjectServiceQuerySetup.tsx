@@ -58,7 +58,7 @@ import {
 } from '@finos/legend-art';
 import type { Entity } from '@finos/legend-storage';
 import { extractElementNameFromPath } from '@finos/legend-graph';
-import { useParams } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 
 const UpdateProjectServiceQuerySetupStoreContext = createContext<
   UpdateProjectServiceQuerySetupStore | undefined

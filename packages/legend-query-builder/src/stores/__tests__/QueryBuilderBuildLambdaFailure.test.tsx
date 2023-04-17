@@ -26,13 +26,13 @@ import {
 } from './TEST_DATA__QueryBuilder_Failure.js';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
-import { integrationTest } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
+import { create_RawLambda } from '@finos/legend-graph';
 import {
-  create_RawLambda,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '@finos/legend-graph';
+} from '@finos/legend-graph/test';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { ApplicationStore } from '@finos/legend-application';
 import { INTERNAL__BasicQueryBuilderState } from '../QueryBuilderState.js';

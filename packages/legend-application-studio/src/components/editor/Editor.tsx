@@ -39,11 +39,11 @@ import { useEditorStore, withEditorStore } from './EditorStoreProvider.js';
 import {
   useApplicationStore,
   useApplicationNavigationContext,
-  useParams,
   ActionAlertType,
   ActionAlertActionType,
   useCommands,
 } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { WorkspaceSyncConflictResolver } from './side-bar/WorkspaceSyncConflictResolver.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/LegendStudioApplicationNavigationContext.js';

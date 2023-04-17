@@ -16,14 +16,14 @@
 
 import { test } from '@jest/globals';
 import type { Entity } from '@finos/legend-storage';
-import { unitTest } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import { roundtripTestData } from './TEST_DATA__STO_ServiceStore_Roundtrip.js';
 import { STO_ServiceStore_GraphManagerPreset } from '../../STO_ServiceStore_Extension.js';
+import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import {
-  TEST__GraphManagerPluginManager,
   TEST__checkBuildingElementsRoundtrip,
-  Core_GraphManagerPreset,
-} from '@finos/legend-graph';
+  TEST__GraphManagerPluginManager,
+} from '@finos/legend-graph/test';
 
 const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager

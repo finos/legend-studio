@@ -16,7 +16,7 @@
 
 import { test, expect, describe } from '@jest/globals';
 import type { Entity } from '@finos/legend-storage';
-import { unitTest } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import {
   TEST_DATA__M2MModel,
   TEST_DATA__complexRelationalModel,
@@ -46,11 +46,11 @@ import {
   groupByWithDerivationProjection,
   groupByWithDerivationAndAggregation,
 } from './TEST_DATA__QueryBuilder_ProcessingRoundtrip_TestDerivation.js';
+import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import {
-  Core_GraphManagerPreset,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '@finos/legend-graph';
+} from '@finos/legend-graph/test';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import {
   TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy,

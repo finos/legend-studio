@@ -23,7 +23,7 @@ import {
   getByTitle,
   queryByText,
 } from '@testing-library/react';
-import { integrationTest } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,

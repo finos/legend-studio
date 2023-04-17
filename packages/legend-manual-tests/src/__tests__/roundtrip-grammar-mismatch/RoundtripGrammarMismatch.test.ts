@@ -19,11 +19,13 @@ import { resolve, basename } from 'path';
 import fs from 'fs';
 import {
   Core_GraphManagerPreset,
+  type V1_PureModelContextData,
+} from '@finos/legend-graph';
+import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
   TEST__GraphManagerPluginManager,
-  type V1_PureModelContextData,
-} from '@finos/legend-graph';
+} from '@finos/legend-graph/test';
 import {
   ContentType,
   HttpHeader,

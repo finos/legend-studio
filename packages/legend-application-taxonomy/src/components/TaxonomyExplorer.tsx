@@ -60,7 +60,8 @@ import {
 } from './TaxonomyExplorerStoreProvider.js';
 import type { TaxonomyNodeViewerState } from '../stores/TaxonomyNodeViewerState.js';
 import { useLegendTaxonomyApplicationStore } from './LegendTaxonomyFrameworkProvider.js';
-import { useCommands, useParams } from '@finos/legend-application';
+import { useCommands } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 
 const TaxonomyExplorerActivityBar = observer(() => (
   <div className="taxonomy-explorer__activity-bar">

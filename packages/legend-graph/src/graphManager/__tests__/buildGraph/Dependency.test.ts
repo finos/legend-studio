@@ -15,8 +15,11 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { type TEMPORARY__JestMatcher, unitTest } from '@finos/legend-shared';
-import { TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils.js';
+import {
+  type TEMPORARY__JestMatcher,
+  unitTest,
+} from '@finos/legend-shared/test';
+import { TEST__getTestGraphManagerState } from '../../__test-utils__/GraphManagerTestUtils.js';
 import { DependencyManager } from '../../../graph/DependencyManager.js';
 import type { EntitiesWithOrigin } from '@finos/legend-storage';
 

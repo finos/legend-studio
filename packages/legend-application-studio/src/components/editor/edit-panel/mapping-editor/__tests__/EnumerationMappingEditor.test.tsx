@@ -24,7 +24,7 @@ import {
   fireEvent,
 } from '@testing-library/react';
 import TEST_DATA__enumerationMappingEntities from '../../../../editor/edit-panel/mapping-editor/__tests__/TEST_DATA__EnumerationMapping.json';
-import { integrationTest } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,

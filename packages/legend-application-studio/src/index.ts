@@ -24,6 +24,7 @@ export {
   generateReviewRoute,
   generateViewProjectRoute,
 } from './application/LegendStudioNavigation.js';
+export * from './application/LegendStudioTesting.js';
 export {
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
@@ -70,16 +71,6 @@ export * from './components/workspace-setup/WorkspaceSelectorUtils.js';
 export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor.js';
 export { TypeTree } from './components/editor/edit-panel/mapping-editor/TypeTree.js';
 export * from './stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
-
-// test
-export {
-  TEST__provideMockedEditorStore,
-  TEST__setUpEditor,
-  TEST__setUpEditorWithDefaultSDLCData,
-  TEST__openElementFromExplorerTree,
-} from './components/editor/__test-utils__/EditorComponentTestUtils.js';
-export * from './application/LegendStudioTesting.js';
-export * from './stores/editor/__test-utils__/EditorStoreTestUtils.js';
 
 export { PostProcessorEditorState } from './stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 export { MappingExecutionState } from './stores/editor/editor-state/element-editor-state/mapping/MappingExecutionState.js';

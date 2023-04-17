@@ -66,14 +66,13 @@ import {
   TEST_DATA__lambda_output_projectionWithFullPathFunctions,
 } from './TEST_DATA__QueryBuilder_TestQueriesWithFullPathFunctions.js';
 import type { Entity } from '@finos/legend-storage';
+import { Core_GraphManagerPreset, RawLambda } from '@finos/legend-graph';
 import {
-  Core_GraphManagerPreset,
-  RawLambda,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '@finos/legend-graph';
+} from '@finos/legend-graph/test';
 import { ApplicationStore } from '@finos/legend-application';
-import { integrationTest } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import {
   TEST_DATA__lambda_simpleConditionPostFilter,

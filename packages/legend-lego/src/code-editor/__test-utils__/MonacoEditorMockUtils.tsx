@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createMock } from '@finos/legend-shared';
+import { createMock } from '@finos/legend-shared/test';
 
 /**
  * NOTE: we have tried different ways to mock `monaco-editor`. But those ways often involve

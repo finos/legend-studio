@@ -15,11 +15,11 @@
  */
 
 import { test, expect } from '@jest/globals';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
-  type TEMPORARY__JestMatcher,
   unitTest,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+  type TEMPORARY__JestMatcher,
+} from '@finos/legend-shared/test';
 import {
   TEST_DATA__simpleDebuggingCase,
   TEST_DATA__AutoImportsWithAny,
@@ -31,7 +31,7 @@ import type { Entity } from '@finos/legend-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '../../GraphManagerTestUtils.js';
+} from '../../__test-utils__/GraphManagerTestUtils.js';
 import { isElementReadOnly } from '../../../graph/helpers/DomainHelper.js';
 
 const PARENT_ELEMENT_PATH = 'model::myFileGeneration';

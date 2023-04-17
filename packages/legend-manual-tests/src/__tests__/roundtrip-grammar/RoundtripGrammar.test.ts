@@ -20,22 +20,24 @@ import fs from 'fs';
 import axios, { type AxiosResponse } from 'axios';
 import {
   type PlainObject,
-  type TEMPORARY__JestMatcher,
   WebConsole,
   LogService,
   LogEvent,
   ContentType,
   HttpHeader,
 } from '@finos/legend-shared';
+import { type TEMPORARY__JestMatcher } from '@finos/legend-shared/test';
 import {
   type V1_PackageableElement,
-  TEST__GraphManagerPluginManager,
-  TEST__buildGraphWithEntities,
-  TEST__checkGraphHashUnchanged,
-  TEST__getTestGraphManagerState,
   GRAPH_MANAGER_EVENT,
   Core_GraphManagerPreset,
 } from '@finos/legend-graph';
+import {
+  TEST__checkGraphHashUnchanged,
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+  TEST__GraphManagerPluginManager,
+} from '@finos/legend-graph/test';
 import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
 import { DSL_Diagram_GraphManagerPreset as DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space';

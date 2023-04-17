@@ -16,7 +16,8 @@
 
 import { describe, test, expect } from '@jest/globals';
 import TEST_DATA__NestedSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_NestedSubType.json';
-import { integrationTest, type PlainObject } from '@finos/legend-shared';
+import { type PlainObject } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import {
   create_RawLambda,
   extractElementNameFromPath,

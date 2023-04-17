@@ -15,7 +15,10 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { type TEMPORARY__JestMatcher, unitTest } from '@finos/legend-shared';
+import {
+  type TEMPORARY__JestMatcher,
+  unitTest,
+} from '@finos/legend-shared/test';
 import {
   TEST_DATA__InferenceDefaultMappingElementID,
   TEST_DATA__ImportResolutionMultipleMatchesFound,
@@ -27,7 +30,7 @@ import {
   TEST__buildGraphWithEntities,
   TEST__excludeSectionIndex,
   TEST__getTestGraphManagerState,
-} from '../GraphManagerTestUtils.js';
+} from '../__test-utils__/GraphManagerTestUtils.js';
 import { getTag } from '../../graph/helpers/DomainHelper.js';
 
 test(unitTest('Infer default mapping element ID'), async () => {

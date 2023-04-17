@@ -34,7 +34,6 @@ export * from './format/ValidatorUtils.js';
 export * from './markdown/MarkdownUtils.js';
 
 export * from './application/HashUtils.js';
-export * from './__test-utils__/TestUtils.js';
 export * from './application/SerializationUtils.js';
 export * from './application/RandomizerUtils.js';
 export * from './application/ActionState.js';

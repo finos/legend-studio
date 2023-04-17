@@ -16,16 +16,13 @@
 
 import { test, expect, beforeEach } from '@jest/globals';
 import { TEST_DATA__inlineEmbeddedRelationalTestData } from './TEST_DATA__RelationalEntities.js';
-import {
-  guaranteeNonNullable,
-  guaranteeType,
-  unitTest,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '../../../GraphManagerTestUtils.js';
+} from '../../../__test-utils__/GraphManagerTestUtils.js';
 import type { GraphManagerState } from '../../../GraphManagerState.js';
 import { getOwnClassMappingsByClass } from '../../../../graph/helpers/DSL_Mapping_Helper.js';
 import { RootRelationalInstanceSetImplementation } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';

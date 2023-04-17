@@ -15,7 +15,8 @@
  */
 
 import { test, describe, expect } from '@jest/globals';
-import { guaranteeType, integrationTest } from '@finos/legend-shared';
+import { guaranteeType } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
   TEST_DATA__Milestoning_PreviewData,

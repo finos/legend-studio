@@ -34,10 +34,12 @@ import {
 import {
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-  generateExtensionUrlPattern,
-  generatePath,
   TAB_SIZE,
 } from '@finos/legend-application';
+import {
+  generatePath,
+  generateExtensionUrlPattern,
+} from '@finos/legend-application/browser';
 import {
   type ServiceExecution,
   type PureExecution,

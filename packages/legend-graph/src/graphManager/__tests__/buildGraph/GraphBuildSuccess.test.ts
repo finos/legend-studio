@@ -16,12 +16,13 @@
 
 import { test, expect, beforeAll } from '@jest/globals';
 import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
-import { guaranteeNonNullable, unitTest } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '../../GraphManagerTestUtils.js';
+} from '../../__test-utils__/GraphManagerTestUtils.js';
 import { PRIMITIVE_TYPE } from '../../../graph/MetaModelConst.js';
 import type { OperationSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/OperationSetImplementation.js';
 import type { PureInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation.js';

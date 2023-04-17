@@ -15,7 +15,8 @@
  */
 
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { useApplicationStore, useParams } from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 import {
   QueryEditor,
   QueryEditorStoreContext,

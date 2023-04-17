@@ -29,10 +29,12 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   LegendApplicationTelemetryHelper,
-  matchPath,
   APPLICATION_EVENT,
-  generateExtensionUrlPattern,
 } from '@finos/legend-application';
+import {
+  matchPath,
+  generateExtensionUrlPattern,
+} from '@finos/legend-application/browser';
 import {
   action,
   computed,

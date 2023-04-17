@@ -15,7 +15,7 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { unitTest } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import { TEST__getTestEditorStore } from '../__test-utils__/EditorStoreTestUtils.js';
 import { GrammarTextEditorState } from '../editor-state/GrammarTextEditorState.js';
 

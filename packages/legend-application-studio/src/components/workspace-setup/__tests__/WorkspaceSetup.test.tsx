@@ -17,12 +17,10 @@
 import { test, expect } from '@jest/globals';
 import { render, waitFor } from '@testing-library/react';
 import { WorkspaceSetup } from '../WorkspaceSetup.js';
-import { createSpy, integrationTest } from '@finos/legend-shared';
+import { createSpy, integrationTest } from '@finos/legend-shared/test';
 import { TEST_DATA__DefaultSDLCInfo } from '../../editor/__test-utils__/EditorComponentTestUtils.js';
-import {
-  ApplicationStoreProvider,
-  TEST__BrowserEnvironmentProvider,
-} from '@finos/legend-application';
+import { ApplicationStoreProvider } from '@finos/legend-application';
+import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 import { LegendStudioFrameworkProvider } from '../../LegendStudioFrameworkProvider.js';
 import { TEST__provideMockedLegendStudioBaseStore } from '../../__test-utils__/LegendStudioFrameworkTestUtils.js';
 

@@ -24,7 +24,7 @@ import {
   Redirect,
   Route,
   Switch,
-} from '@finos/legend-application';
+} from '@finos/legend-application/browser';
 import { TaxonomyExplorer } from './TaxonomyExplorer.js';
 import { DataSpacePreview } from './data-space-preview/DataSpacePreview.js';
 import {

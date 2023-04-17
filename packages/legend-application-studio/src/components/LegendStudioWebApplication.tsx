@@ -36,13 +36,13 @@ import {
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
 } from './LegendStudioFrameworkProvider.js';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   BrowserEnvironmentProvider,
   generateExtensionUrlPattern,
   Route,
   Switch,
-  useApplicationStore,
-} from '@finos/legend-application';
+} from '@finos/legend-application/browser';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../application/LegendStudioDocumentation.js';
 
 const NotFoundPage = observer(() => {

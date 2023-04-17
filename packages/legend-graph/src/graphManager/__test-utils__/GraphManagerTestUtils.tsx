@@ -17,20 +17,20 @@
 import { expect } from '@jest/globals';
 import {
   type LoggerPlugin,
-  type TEMPORARY__JestMatcher,
   type PlainObject,
   LogService,
   AbstractPluginManager,
   promisify,
 } from '@finos/legend-shared';
-import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
-import { GraphManagerState } from './GraphManagerState.js';
-import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
-import type { PureProtocolProcessorPlugin } from '../graphManager/protocol/pure/PureProtocolProcessorPlugin.js';
+import { type TEMPORARY__JestMatcher } from '@finos/legend-shared/test';
+import type { PureGraphManagerPlugin } from '../PureGraphManagerPlugin.js';
+import { GraphManagerState } from '../GraphManagerState.js';
+import type { GraphManagerPluginManager } from '../GraphManagerPluginManager.js';
+import type { PureProtocolProcessorPlugin } from '../protocol/pure/PureProtocolProcessorPlugin.js';
 import type { Entity } from '@finos/legend-storage';
-import { SECTION_INDEX_ELEMENT_PATH } from '../graph/MetaModelConst.js';
-import type { GraphBuilderOptions } from './AbstractPureGraphManager.js';
-import type { PureGraphPlugin } from '../graph/PureGraphPlugin.js';
+import { SECTION_INDEX_ELEMENT_PATH } from '../../graph/MetaModelConst.js';
+import type { GraphBuilderOptions } from '../AbstractPureGraphManager.js';
+import type { PureGraphPlugin } from '../../graph/PureGraphPlugin.js';
 
 export class TEST__GraphManagerPluginManager
   extends AbstractPluginManager

@@ -16,7 +16,7 @@
 
 import { test } from '@jest/globals';
 import type { Entity } from '@finos/legend-storage';
-import { unitTest } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import {
   TEST_DATA__roundtrip,
   TEST_DATA__diagramWithAssociationProperty,
@@ -26,7 +26,7 @@ import { DSL_Diagram_GraphManagerPreset } from '../../DSL_Diagram_Extension.js';
 import {
   TEST__GraphManagerPluginManager,
   TEST__checkBuildingElementsRoundtrip,
-} from '@finos/legend-graph';
+} from '@finos/legend-graph/test';
 
 const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager.usePresets([new DSL_Diagram_GraphManagerPreset()]).install();

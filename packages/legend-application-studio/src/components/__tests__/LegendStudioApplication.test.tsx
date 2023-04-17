@@ -15,18 +15,20 @@
  */
 
 import { test, expect } from '@jest/globals';
+import { noop } from '@finos/legend-shared';
 import {
   type TEMPORARY__JestMatcher,
   integrationTest,
-  noop,
   createSpy,
-} from '@finos/legend-shared';
+} from '@finos/legend-shared/test';
 import {
   ApplicationStore,
   ApplicationStoreProvider,
+} from '@finos/legend-application';
+import {
   TEST__BrowserEnvironmentProvider,
   TEST__provideMockedBrowserPlatform,
-} from '@finos/legend-application';
+} from '@finos/legend-application/test';
 import { render, waitFor } from '@testing-library/react';
 import { SDLCServerClient } from '@finos/legend-server-sdlc';
 import { TEST__provideMockedLegendStudioBaseStore } from '../__test-utils__/LegendStudioFrameworkTestUtils.js';

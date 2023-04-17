@@ -22,22 +22,22 @@ import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COV
 import TEST_DATA__AssociationMappingModel from './TEST_DATA__QueryBuilder_Model_AssociationMappingModel.json';
 import TEST_DATA__M2MAutoMapped from './TEST_DATA__QueryBuilder_Model_M2MAutoMapped.json';
 import TEST_DATA__RelationalInline from './TEST_DATA__QueryBuilder_Model_RelationalInline.json';
+import { type PlainObject } from '@finos/legend-shared';
 import {
-  type TEMPORARY__JestMatcher,
-  type PlainObject,
   integrationTest,
-} from '@finos/legend-shared';
+  type TEMPORARY__JestMatcher,
+} from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
   Class,
   getAllClassDerivedProperties,
   getAllClassProperties,
-  TEST__getTestGraphManagerState,
   type AbstractProperty,
   type GraphManagerState,
   type Mapping,
   type MappingModelCoverageAnalysisResult,
 } from '@finos/legend-graph';
+import { TEST__getTestGraphManagerState } from '@finos/legend-graph/test';
 import {
   getRootMappingData,
   generatePropertyNodeMappingData,

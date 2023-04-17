@@ -15,11 +15,8 @@
  */
 
 import { test, expect } from '@jest/globals';
-import {
-  type Clazz,
-  UnsupportedOperationError,
-  unitTest,
-} from '@finos/legend-shared';
+import { type Clazz, UnsupportedOperationError } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import {
   type PackageableElementVisitor,
   PackageableElement,

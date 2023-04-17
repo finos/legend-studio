@@ -16,13 +16,13 @@
 
 import { test } from '@jest/globals';
 import type { Entity } from '@finos/legend-storage';
-import { unitTest } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import { TEST_DATA__roundtrip } from './TEST_DATA__DSL_Text_Roundtrip.js';
 import { DSL_Text_GraphManagerPreset } from '../../DSL_Text_Extension.js';
 import {
   TEST__GraphManagerPluginManager,
   TEST__checkBuildingElementsRoundtrip,
-} from '@finos/legend-graph';
+} from '@finos/legend-graph/test';
 
 const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager.usePresets([new DSL_Text_GraphManagerPreset()]).install();

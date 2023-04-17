@@ -66,8 +66,8 @@ import {
 import {
   LEGEND_APPLICATION_COLOR_THEME,
   useApplicationStore,
-  useParams,
 } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 import {
   MappingQueryCreatorStoreProvider,
   ExistingQueryEditorStoreProvider,

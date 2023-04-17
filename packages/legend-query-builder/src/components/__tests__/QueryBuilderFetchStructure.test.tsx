@@ -46,11 +46,11 @@ import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA_
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
 import TEST_DATA_SimpleSubtypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json';
 import {
-  integrationTest,
   guaranteeNonNullable,
   guaranteeType,
   getNullableFirstElement,
 } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import {
   AbstractPropertyExpression,
   PrimitiveInstanceValue,

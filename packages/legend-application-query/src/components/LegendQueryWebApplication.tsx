@@ -24,11 +24,11 @@ import {
 } from './QueryEditor.js';
 import {
   BrowserEnvironmentProvider,
-  generateExtensionUrlPattern,
   Redirect,
   Route,
   Switch,
-} from '@finos/legend-application';
+  generateExtensionUrlPattern,
+} from '@finos/legend-application/browser';
 import {
   LegendQueryFrameworkProvider,
   useLegendQueryApplicationStore,

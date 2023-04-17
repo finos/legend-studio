@@ -16,11 +16,8 @@
 
 import { test, expect, beforeEach } from '@jest/globals';
 import { TEST_DATA__relationalCompleteGraphEntities } from './TEST_DATA__RelationalEntities.js';
-import {
-  unitTest,
-  guaranteeType,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { guaranteeType, guaranteeNonNullable } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import type { GraphManagerState } from '../../../GraphManagerState.js';
 import {
@@ -28,7 +25,7 @@ import {
   TEST__checkBuildingElementsRoundtrip,
   TEST__getTestGraphManagerState,
   TEST__GraphManagerPluginManager,
-} from '../../../GraphManagerTestUtils.js';
+} from '../../../__test-utils__/GraphManagerTestUtils.js';
 import { Database } from '../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import { RootRelationalInstanceSetImplementation } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
 import {

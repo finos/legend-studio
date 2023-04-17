@@ -33,10 +33,8 @@ import {
   LEGEND_STUDIO_ROUTE_PATTERN_TOKEN,
 } from '../../application/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
-import {
-  useApplicationNavigationContext,
-  useParams,
-} from '@finos/legend-application';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/LegendStudioDocumentation.js';
 import { CreateProjectModal } from './CreateProjectModal.js';
 import { ActivityBarMenu } from '../editor/ActivityBar.js';

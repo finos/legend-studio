@@ -15,7 +15,7 @@
  */
 
 import { test, describe, expect } from '@jest/globals';
-import { createMock, integrationTest } from '@finos/legend-shared';
+import { createMock, integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
   create_RawLambda,

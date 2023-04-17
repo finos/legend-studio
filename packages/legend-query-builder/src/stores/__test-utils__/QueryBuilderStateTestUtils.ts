@@ -19,11 +19,9 @@ import {
   LegendApplicationConfig,
   type LegendApplicationPlugin,
   LegendApplicationPluginManager,
-  TEST__getApplicationVersionData,
 } from '@finos/legend-application';
+import { TEST__getApplicationVersionData } from '@finos/legend-application/test';
 import {
-  TEST__buildGraphWithEntities,
-  TEST__getTestGraphManagerState,
   type RawLambda,
   type RawMappingModelCoverageAnalysisResult,
   type GraphManagerPluginManager,
@@ -31,7 +29,11 @@ import {
   type PureGraphManagerPlugin,
   type PureGraphPlugin,
 } from '@finos/legend-graph';
-import { createSpy } from '@finos/legend-shared';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '@finos/legend-graph/test';
+import { createSpy } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import { flowResult } from 'mobx';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';

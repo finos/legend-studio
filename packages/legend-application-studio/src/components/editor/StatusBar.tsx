@@ -43,7 +43,7 @@ import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
-import { useParams } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {

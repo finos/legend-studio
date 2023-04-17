@@ -16,13 +16,14 @@
 
 import { test, describe, expect } from '@jest/globals';
 import type { Entity } from '@finos/legend-storage';
-import { unitTest, LogService, ActionState } from '@finos/legend-shared';
+import { LogService, ActionState } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import {
   CoreModel,
   PureModel,
   SystemModel,
 } from '../../../../../../../../graph/PureModel.js';
-import { TEST__GraphManagerPluginManager } from '../../../../../../../GraphManagerTestUtils.js';
+import { TEST__GraphManagerPluginManager } from '../../../../../../../__test-utils__/GraphManagerTestUtils.js';
 import { buildPureGraphManager } from '../../../../../PureGraphManagerBuilder.js';
 import {
   V1_TEST_DATA__unsupportedFunctionExpression,

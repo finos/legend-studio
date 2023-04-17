@@ -16,12 +16,12 @@
 
 import { test } from '@jest/globals';
 import type { Entity } from '@finos/legend-storage';
-import { unitTest } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import { roundtripTestData } from './TEST_DATA__DSL_ExternalFormat_Roundtrip.js';
 import {
   TEST__checkBuildingElementsRoundtrip,
   TEST__GraphManagerPluginManager,
-} from '../../GraphManagerTestUtils.js';
+} from '../../__test-utils__/GraphManagerTestUtils.js';
 import { Core_GraphManagerPreset } from '../../../Core_GraphManagerPreset.js';
 
 const pluginManager = new TEST__GraphManagerPluginManager();

@@ -22,7 +22,7 @@ import {
   fireEvent,
   getByText,
 } from '@testing-library/react';
-import { integrationTest } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,

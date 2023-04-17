@@ -15,13 +15,14 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { unitTest, ActionState } from '@finos/legend-shared';
+import { ActionState } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import { DSL_Diagram_GraphManagerPreset } from '../../DSL_Diagram_Extension.js';
 import {
   TEST__getTestGraphManagerState,
   TEST__GraphManagerPluginManager,
-} from '@finos/legend-graph';
+} from '@finos/legend-graph/test';
 
 const TEST_DATA__MissingClassInDiagram = [
   {

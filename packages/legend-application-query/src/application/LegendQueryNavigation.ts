@@ -17,7 +17,7 @@
 import {
   generateExtensionUrlPattern,
   generatePath,
-} from '@finos/legend-application';
+} from '@finos/legend-application/browser';
 import {
   addQueryParamsStringToUrl,
   stringifyQueryParams,

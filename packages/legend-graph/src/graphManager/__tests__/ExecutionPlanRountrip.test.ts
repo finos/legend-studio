@@ -16,11 +16,11 @@
 
 import { test, describe, expect } from '@jest/globals';
 import type { Entity } from '@finos/legend-storage';
-import { unitTest } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '../GraphManagerTestUtils.js';
+} from '../__test-utils__/GraphManagerTestUtils.js';
 import { TEST_DATA__simpleRelationalPlan } from './roundtripTestData/executionPlan/TEST_DATA__SimpleRelationalPlan.js';
 
 type RoundtripTestCase = [

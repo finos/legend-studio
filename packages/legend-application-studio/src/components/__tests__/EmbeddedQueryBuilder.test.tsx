@@ -16,8 +16,7 @@
 
 import { test } from '@jest/globals';
 import { fireEvent, getByText, waitFor } from '@testing-library/react';
-import { integrationTest, createMock } from '@finos/legend-shared';
-import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
+import { integrationTest, createMock } from '@finos/legend-shared/test';
 import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query-builder';
 import {
   TEST__openElementFromExplorerTree,
@@ -25,7 +24,8 @@ import {
 } from '../editor/__test-utils__/EditorComponentTestUtils.js';
 import { GraphCompilationOutcome } from '../../stores/editor/EditorGraphState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
-import { TEST__buildQueryBuilderMockedEditorStore } from './EmbeddedQueryBuilderTestUtils.js';
+import { TEST__buildQueryBuilderMockedEditorStore } from '../__test-utils__/EmbeddedQueryBuilderTestUtils.js';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 
 const entities = [
   {

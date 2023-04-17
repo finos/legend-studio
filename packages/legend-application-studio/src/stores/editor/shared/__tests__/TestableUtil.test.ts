@@ -15,7 +15,8 @@
  */
 
 import { expect, test } from '@jest/globals';
-import { guaranteeNonNullable, unitTest } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import { TEMPORARY__createRelationalDataFromCSV } from '../TestableUtils.js';
 
 export const SINGLE_CSV =

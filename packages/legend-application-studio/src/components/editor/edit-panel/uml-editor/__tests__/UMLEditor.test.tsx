@@ -31,7 +31,8 @@ import {
   fireEvent,
 } from '@testing-library/react';
 import TEST_DATA__m2mGraphEntities from '../../../../../stores/editor/__tests__/TEST_DATA__M2MGraphEntities.json';
-import { guaranteeNonNullable, integrationTest } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,

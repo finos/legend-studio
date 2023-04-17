@@ -19,8 +19,8 @@ import type { Entity } from '@finos/legend-storage';
 // however, this makes it more convenient to test since we can quickly setup the graph from entities test data
 // so we will leave this here for now
 // eslint-disable-next-line @finos/legend-studio/enforce-module-import-hierarchy
-import { TEST__getTestGraphManagerState } from '../graphManager/GraphManagerTestUtils.js';
-import type { PureModel } from './PureModel.js';
+import { TEST__getTestGraphManagerState } from '../../graphManager/__test-utils__/GraphManagerTestUtils.js';
+import type { PureModel } from '../PureModel.js';
 
 export const TEST__getTestGraph = async (
   entities: Entity[],

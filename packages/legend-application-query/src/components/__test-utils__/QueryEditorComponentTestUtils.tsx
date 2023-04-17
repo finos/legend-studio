@@ -15,11 +15,8 @@
  */
 
 import { type RenderResult, render, waitFor } from '@testing-library/react';
-import {
-  guaranteeNonNullable,
-  createMock,
-  createSpy,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { createMock, createSpy } from '@finos/legend-shared/test';
 import {
   type GraphManagerState,
   Query,
@@ -30,7 +27,6 @@ import {
 } from '@finos/legend-graph';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import {
-  TEST__BrowserEnvironmentProvider,
   ApplicationStoreProvider,
   ApplicationStore,
 } from '@finos/legend-application';
@@ -45,6 +41,7 @@ import {
   QUERY_BUILDER_TEST_ID,
 } from '@finos/legend-query-builder';
 import { LegendQueryFrameworkProvider } from '../LegendQueryFrameworkProvider.js';
+import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 
 const TEST_QUERY_ID = 'test-query-id';
 

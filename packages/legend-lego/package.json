@@ -22,8 +22,8 @@
   "exports": {
     "./data-grid": "./lib/data-grid/index.js",
     "./code-editor": "./lib/code-editor/index.js",
-    "./code-editor/test": "./lib/code-editor/testing/index.js",
-    "./code-editor/test/MockedMonacoEditor.js": "./lib/code-editor/testing/MockedMonacoEditor.js",
+    "./code-editor/test": "./lib/code-editor/__test__.js",
+    "./code-editor/test/MockedMonacoEditor.js": "./lib/code-editor/__test-utils__/MockedMonacoEditor.js",
     "./lib/index.css": "./lib/index.css"
   },
   "module": "lib/index.js",

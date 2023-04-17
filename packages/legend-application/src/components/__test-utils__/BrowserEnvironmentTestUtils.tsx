@@ -21,7 +21,7 @@ import { BrowserPlatform } from '../../stores/platform/BrowserPlatform.js';
 import { ApplicationPlatformContext } from '../ApplicationPlatformProvider.js';
 import { type GenericLegendApplicationStore } from '../../stores/ApplicationStore.js';
 import { useApplicationStore } from '../ApplicationStoreProvider.js';
-import { createMock } from '@finos/legend-shared';
+import { createMock } from '@finos/legend-shared/test';
 
 export { createMemoryHistory };
 

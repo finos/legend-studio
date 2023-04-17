@@ -15,7 +15,7 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { unitTest } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import { getExpectedArtifactGenerationExtensionOutputPath } from '../ArtifactGenerationExtensionHelper.js';
 
 test(unitTest('Get expected artifact generation extension output path'), () => {

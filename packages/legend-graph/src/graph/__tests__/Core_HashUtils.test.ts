@@ -16,7 +16,7 @@
 
 import { test, expect } from '@jest/globals';
 import { hashRawLambda } from '../Core_HashUtils.js';
-import { unitTest } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 
 test(
   unitTest(

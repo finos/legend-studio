@@ -17,14 +17,14 @@
 import { test, expect, beforeAll } from '@jest/globals';
 import TEST_DATA__completeGraphEntities from './TEST_DATA__MockDataGeneration.json';
 import { classHasCycle, createMockClassInstance } from '../MockDataUtils.js';
+import { type PlainObject } from '@finos/legend-shared';
 import {
   type TEMPORARY__JestMatcher,
-  type PlainObject,
   unitTest,
-} from '@finos/legend-shared';
+} from '@finos/legend-shared/test';
 import { TEST__getTestEditorStore } from '../../__test-utils__/EditorStoreTestUtils.js';
 import type { Entity } from '@finos/legend-storage';
-import { TEST__buildGraphWithEntities } from '@finos/legend-graph';
+import { TEST__buildGraphWithEntities } from '@finos/legend-graph/test';
 
 const editorStore = TEST__getTestEditorStore();
 beforeAll(async () => {

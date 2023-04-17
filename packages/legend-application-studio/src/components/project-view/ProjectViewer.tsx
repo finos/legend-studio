@@ -53,11 +53,8 @@ import {
   useEditorStore,
   withEditorStore,
 } from '../editor/EditorStoreProvider.js';
-import {
-  useApplicationStore,
-  useCommands,
-  useParams,
-} from '@finos/legend-application';
+import { useApplicationStore, useCommands } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 import {
   ActivityBarMenu,
   type ActivityDisplay,

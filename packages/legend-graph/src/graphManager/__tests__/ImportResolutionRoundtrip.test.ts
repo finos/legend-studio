@@ -15,7 +15,7 @@
  */
 
 import { test, describe } from '@jest/globals';
-import { unitTest } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import {
   TEST_DATA__AutoImportsWithSystemProfiles,
   TEST_DATA__simpleDebuggingCase,
@@ -70,7 +70,7 @@ import {
   TEST_DATA__MappingTestSuiteRoundtrip,
 } from './roundtripTestData/TEST_DATA__MappingRoundtrip.js';
 import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip.js';
-import { TEST__checkBuildingElementsRoundtrip } from '../GraphManagerTestUtils.js';
+import { TEST__checkBuildingElementsRoundtrip } from '../__test-utils__/GraphManagerTestUtils.js';
 import { TEST_DATA__DataRoundtrip } from './roundtripTestData/TEST_DATA__DataRoundtrip.js';
 
 describe(unitTest('M2M graph roundtrip'), () => {

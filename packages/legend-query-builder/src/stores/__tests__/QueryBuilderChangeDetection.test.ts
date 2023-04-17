@@ -19,11 +19,8 @@ import {
   extractElementNameFromPath,
   create_RawLambda,
 } from '@finos/legend-graph';
-import {
-  guaranteeNonNullable,
-  guaranteeType,
-  integrationTest,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import { expect, test } from '@jest/globals';
 import { waitFor, getByText } from '@testing-library/react';

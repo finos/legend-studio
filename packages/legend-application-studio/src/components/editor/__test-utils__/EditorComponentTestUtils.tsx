@@ -29,7 +29,8 @@ import {
   generateEditorRoute,
   LEGEND_STUDIO_ROUTE_PATTERN,
 } from '../../../application/LegendStudioNavigation.js';
-import { createMock, createSpy, type PlainObject } from '@finos/legend-shared';
+import { type PlainObject } from '@finos/legend-shared';
+import { createMock, createSpy } from '@finos/legend-shared/test';
 import { LegendStudioPluginManager } from '../../../application/LegendStudioPluginManager.js';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -57,14 +58,16 @@ import {
 } from '@finos/legend-server-depot';
 import { LegendStudioFrameworkProvider } from '../../LegendStudioFrameworkProvider.js';
 import {
-  createMemoryHistory,
-  Route,
-  TEST__BrowserEnvironmentProvider,
   ApplicationStoreProvider,
   ApplicationStore,
 } from '@finos/legend-application';
+import {
+  createMemoryHistory,
+  TEST__BrowserEnvironmentProvider,
+} from '@finos/legend-application/test';
 import type { LegendStudioApplicationStore } from '../../../stores/LegendStudioBaseStore.js';
 import { TEST__getLegendStudioApplicationConfig } from '../../../stores/__test-utils__/LegendStudioApplicationTestUtils.js';
+import { Route } from '@finos/legend-application/browser';
 
 export const TEST_DATA__DefaultSDLCInfo = {
   project: {

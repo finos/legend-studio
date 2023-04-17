@@ -25,7 +25,8 @@ import {
   queryByText,
   queryAllByText,
 } from '@testing-library/react';
-import { guaranteeNonNullable, integrationTest } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,

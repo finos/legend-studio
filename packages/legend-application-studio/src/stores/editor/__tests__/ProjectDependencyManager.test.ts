@@ -15,12 +15,8 @@
  */
 
 import { test, expect } from '@jest/globals';
-import {
-  type PlainObject,
-  unitTest,
-  guaranteeNonNullable,
-  createSpy,
-} from '@finos/legend-shared';
+import { type PlainObject, guaranteeNonNullable } from '@finos/legend-shared';
+import { unitTest, createSpy } from '@finos/legend-shared/test';
 import { TEST__getTestEditorStore } from '../__test-utils__/EditorStoreTestUtils.js';
 import type { Entity } from '@finos/legend-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';

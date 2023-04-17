@@ -25,11 +25,8 @@ import {
   resolvePackagePathAndElementName,
   pruneSourceInformation,
 } from '../MetaModelUtils.js';
-import {
-  parseLosslessJSON,
-  stringifyLosslessJSON,
-  unitTest,
-} from '@finos/legend-shared';
+import { parseLosslessJSON, stringifyLosslessJSON } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import {
   ObjectInputData,
   ObjectInputType,

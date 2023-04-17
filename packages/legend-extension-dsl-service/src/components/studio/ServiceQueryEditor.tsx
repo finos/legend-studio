@@ -22,8 +22,8 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   useApplicationStore,
-  useParams,
 } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 import {
   type SelectComponent,
   BlankPanelContent,

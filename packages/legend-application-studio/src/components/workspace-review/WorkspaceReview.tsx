@@ -46,7 +46,8 @@ import {
   useEditorStore,
   withEditorStore,
 } from '../editor/EditorStoreProvider.js';
-import { useApplicationStore, useParams } from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 
 const WorkspaceReviewStatusBar = observer(() => {
   const reviewStore = useWorkspaceReviewStore();

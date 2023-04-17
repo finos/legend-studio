@@ -47,6 +47,13 @@ export const useNavigationZone = (): NavigationZone => {
   return location.hash.substring(NAVIGATION_ZONE_PREFIX.length);
 };
 
+/**
+ * Prefix URL patterns coming from extensions with `/extensions/`
+ * to avoid potential conflicts with main routes.
+ */
+export const generateExtensionUrlPattern = (pattern: string): string =>
+  `/extensions/${pattern}`.replace(/^\/extensions\/\//, '/extensions/');
+
 export class BrowserNavigator implements ApplicationNavigator {
   private readonly historyAPI: History;
   private _isNavigationBlocked = false;

@@ -29,13 +29,6 @@ export type LegendApplicationSetup = (
   applicationStore: GenericLegendApplicationStore,
 ) => Promise<void>;
 
-/**
- * Prefix URL patterns coming from extensions with `/extensions/`
- * to avoid potential conflicts with main routes.
- */
-export const generateExtensionUrlPattern = (pattern: string): string =>
-  `/extensions/${pattern}`.replace(/^\/extensions\/\//, '/extensions/');
-
 export type ApplicationPageEntry = {
   key: string;
   addressPatterns: string[];

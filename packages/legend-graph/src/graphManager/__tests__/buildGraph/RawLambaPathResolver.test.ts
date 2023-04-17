@@ -16,8 +16,8 @@
 
 import { test } from '@jest/globals';
 import type { Entity } from '@finos/legend-storage';
-import { unitTest } from '@finos/legend-shared';
-import { TEST__checkBuildingResolvedElements } from '../../GraphManagerTestUtils.js';
+import { unitTest } from '@finos/legend-shared/test';
+import { TEST__checkBuildingResolvedElements } from '../../__test-utils__/GraphManagerTestUtils.js';
 
 const getClassEntity = (enumPath: string): Entity => ({
   classifierPath: 'meta::pure::metamodel::type::Class',

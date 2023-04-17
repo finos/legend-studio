@@ -17,12 +17,12 @@
 import { test } from '@jest/globals';
 import { DSL_Mastery_GraphManagerPreset } from '../../DSL_Mastery_Extension.js';
 import { TEST_DATA__roundtrip } from './TEST_DATA__DSL_Mastery_Roundtrip.js';
+import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import {
-  Core_GraphManagerPreset,
   TEST__checkBuildingElementsRoundtrip,
   TEST__GraphManagerPluginManager,
-} from '@finos/legend-graph';
-import { unitTest } from '@finos/legend-shared';
+} from '@finos/legend-graph/test';
+import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 
 const pluginManager = new TEST__GraphManagerPluginManager();

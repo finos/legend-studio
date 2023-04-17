@@ -56,18 +56,6 @@ export * from './stores/LegendApplicationPlugin.js';
 export * from './stores/Core_LegendApplicationPlugin.js';
 export { DISPLAY_ANSI_ESCAPE } from './stores/terminal/Terminal.js';
 
-// --------- TO BE MOVED TO @finos/legend-application/test
-
-// TODO: also move a bunch of react-router stuff here
-export * from './stores/__test-utils__/ApplicationStoreTestUtils.js';
-
-// --------- TO BE MOVED TO @finos/legend-application/platform/browser
-
-export * from './components/__test-utils__/BrowserEnvironmentTestUtils.js';
-export * from './components/BrowserEnvironmentProvider.js';
-export * from './stores/platform/BrowserPlatform.js';
-export * from './stores/navigation/BrowserNavigator.js';
-
 // ------------------------------------------- TO BE MOVED -------------------------------------------
 
 // TODO: move to `@finos/legend-lego/code-editor`

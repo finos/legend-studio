@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { TEST__getApplicationVersionData } from '@finos/legend-application';
+import { TEST__getApplicationVersionData } from '@finos/legend-application/test';
 import { LegendStudioApplicationConfig } from '../../application/LegendStudioApplicationConfig.js';
 
 const TEST_DATA__appConfig = {

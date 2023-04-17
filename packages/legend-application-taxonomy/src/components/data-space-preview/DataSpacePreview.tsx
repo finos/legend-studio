@@ -18,9 +18,11 @@ import { createContext, useContext, useEffect } from 'react';
 import {
   LEGEND_APPLICATION_COLOR_THEME,
   useApplicationStore,
+} from '@finos/legend-application';
+import {
   useNavigationZone,
   useParams,
-} from '@finos/legend-application';
+} from '@finos/legend-application/browser';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
   LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { BrowserEnvironmentProvider } from '@finos/legend-application';
+import { BrowserEnvironmentProvider } from '@finos/legend-application/browser';
 import { Editor } from './editor/Editor.js';
 import { LegendPureIDEFrameworkProvider } from './LegendPureIDEFrameworkProvider.js';
 

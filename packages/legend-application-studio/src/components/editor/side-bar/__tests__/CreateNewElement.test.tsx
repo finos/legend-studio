@@ -23,7 +23,8 @@ import {
   getByPlaceholderText,
   act,
 } from '@testing-library/react';
-import { integrationTest, toTitleCase } from '@finos/legend-shared';
+import { toTitleCase } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,

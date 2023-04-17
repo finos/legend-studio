@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { generatePath } from '@finos/legend-application';
+import { generatePath } from '@finos/legend-application/browser';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 
 export enum LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN {

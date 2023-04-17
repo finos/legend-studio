@@ -16,17 +16,14 @@
 
 import { test, expect, beforeEach } from '@jest/globals';
 import { TEST_DATA__targetSetImplementationThroughAssociation } from './TEST_DATA__RelationalEntities.js';
-import {
-  unitTest,
-  guaranteeNonNullable,
-  guaranteeType,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import type { GraphManagerState } from '../../../GraphManagerState.js';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '../../../GraphManagerTestUtils.js';
+} from '../../../__test-utils__/GraphManagerTestUtils.js';
 import {
   DynaFunction,
   TableAliasColumn,

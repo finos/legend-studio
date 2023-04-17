@@ -15,7 +15,8 @@
  */
 
 import { type RenderResult, render, waitFor } from '@testing-library/react';
-import { createSpy, LogService } from '@finos/legend-shared';
+import { LogService } from '@finos/legend-shared';
+import { createSpy } from '@finos/legend-shared/test';
 import {
   type RawMappingModelCoverageAnalysisResult,
   type RawLambda,
@@ -25,10 +26,10 @@ import {
 } from '@finos/legend-graph';
 import {
   ApplicationStoreProvider,
-  TEST__BrowserEnvironmentProvider,
   ApplicationFrameworkProvider,
   ApplicationStore,
 } from '@finos/legend-application';
+import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 import type { Entity } from '@finos/legend-storage';
 import { QueryBuilder } from '../QueryBuilder.js';
 import {

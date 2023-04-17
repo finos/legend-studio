@@ -15,8 +15,9 @@
  */
 
 import { test, expect, describe } from '@jest/globals';
-import { type PlainObject, unitTest } from '@finos/legend-shared';
-import { TEST__GraphManagerPluginManager } from '../../../../../../GraphManagerTestUtils.js';
+import { type PlainObject } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
+import { TEST__GraphManagerPluginManager } from '../../../../../../__test-utils__/GraphManagerTestUtils.js';
 import {
   V1_deserializeValueSpecification,
   V1_serializeValueSpecification,

@@ -21,7 +21,7 @@ import {
   type LegendStudioApplicationStore,
 } from '../../stores/LegendStudioBaseStore.js';
 import { TEST__getLegendStudioApplicationConfig } from '../../stores/__test-utils__/LegendStudioApplicationTestUtils.js';
-import { createMock } from '@finos/legend-shared';
+import { createMock } from '@finos/legend-shared/test';
 
 export const TEST__provideMockedLegendStudioBaseStore = (customization?: {
   mock?: LegendStudioBaseStore;

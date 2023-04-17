@@ -182,7 +182,6 @@ export {
   BasicGraphManagerState,
   GraphManagerState,
 } from './graphManager/GraphManagerState.js';
-export * from './graphManager/GraphManagerTestUtils.js';
 export {
   AbstractPureGraphManagerExtension,
   AbstractPureGraphManager,
