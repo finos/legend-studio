@@ -52,7 +52,6 @@ import {
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
-import { TEST__LegendApplicationPluginManager } from '@finos/legend-application';
 import {
   TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy,
   TEST_DATA__lambda_olapGroupBy_StackedGroupBy,
@@ -65,6 +64,7 @@ import {
   TEST_DATA__lambda_Externalize_externalize_graphFetchChecked,
 } from './TEST_DATA__QueryBuilder_Externalize.js';
 import { TEST_DATA__graphFetchWithSerializationConfig } from './TEST_DATA__QueryBuilder_GraphFetch.js';
+import { TEST__LegendApplicationPluginManager } from '../__test-utils__/QueryBuilderStateTestUtils.js';
 
 const pluginManager = TEST__LegendApplicationPluginManager.create();
 pluginManager

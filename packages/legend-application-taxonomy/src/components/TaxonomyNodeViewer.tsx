@@ -44,7 +44,7 @@ import {
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import type { DataSpaceTaxonomyContext } from '../stores/TaxonomyExplorerStore.js';
 import type { TaxonomyNodeViewerState } from '../stores/TaxonomyNodeViewerState.js';
-import { useLegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStoreProvider.js';
+import { useLegendTaxonomyApplicationStore } from './LegendTaxonomyFrameworkProvider.js';
 
 const TaxonomyNodeDataSpaceItem = observer(
   (props: {

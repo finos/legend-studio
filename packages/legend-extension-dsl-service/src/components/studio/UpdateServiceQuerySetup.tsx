@@ -24,19 +24,17 @@ import {
 } from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
-import { useSDLCServerClient, WorkspaceType } from '@finos/legend-server-sdlc';
+import { WorkspaceType } from '@finos/legend-server-sdlc';
 import {
   type WorkspaceOption,
   ActivityBarMenu,
   buildWorkspaceOption,
   LEGEND_STUDIO_TEST_ID,
   useLegendStudioApplicationStore,
+  useLegendStudioBaseStore,
 } from '@finos/legend-application-studio';
 import { UpdateServiceQuerySetupStore } from '../../stores/studio/UpdateServiceQuerySetupStore.js';
-import {
-  type ProjectData,
-  useDepotServerClient,
-} from '@finos/legend-server-depot';
+import { type ProjectData } from '@finos/legend-server-depot';
 import {
   type ServiceQueryUpdaterSetupPathParams,
   generateServiceQueryUpdaterRoute,
@@ -75,14 +73,13 @@ const UpdateServiceQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendStudioApplicationStore();
-  const sdlcServerClient = useSDLCServerClient();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendStudioBaseStore();
   const store = useLocalObservable(
     () =>
       new UpdateServiceQuerySetupStore(
         applicationStore,
-        sdlcServerClient,
-        depotServerClient,
+        baseStore.sdlcServerClient,
+        baseStore.depotServerClient,
       ),
   );
   return (

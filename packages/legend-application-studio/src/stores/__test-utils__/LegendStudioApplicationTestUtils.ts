@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import { EditorStore } from './EditorStore.js';
-import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager.js';
-import { TEST__getTestSDLCServerClient } from '@finos/legend-server-sdlc';
-import { TEST__getTestDepotServerClient } from '@finos/legend-server-depot';
-import {
-  TEST_DATA__applicationVersion,
-  TEST__getTestApplicationStore,
-} from '@finos/legend-application';
+import { TEST__getApplicationVersionData } from '@finos/legend-application';
 import { LegendStudioApplicationConfig } from '../../application/LegendStudioApplicationConfig.js';
 
 const TEST_DATA__appConfig = {
@@ -49,22 +42,8 @@ export const TEST__getLegendStudioApplicationConfig = (
       ...TEST_DATA__appConfig,
       ...extraConfigData,
     },
-    versionData: TEST_DATA__applicationVersion,
+    versionData: TEST__getApplicationVersionData(),
     baseUrl: '/studio/',
   });
   return config;
-};
-
-export const TEST__getTestEditorStore = (
-  pluginManager = LegendStudioPluginManager.create(),
-): EditorStore => {
-  const applicationStore = TEST__getTestApplicationStore(
-    TEST__getLegendStudioApplicationConfig(),
-    pluginManager,
-  );
-  return new EditorStore(
-    applicationStore,
-    TEST__getTestSDLCServerClient(),
-    TEST__getTestDepotServerClient(),
-  );
 };

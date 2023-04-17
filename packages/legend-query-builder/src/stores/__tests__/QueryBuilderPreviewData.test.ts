@@ -34,7 +34,7 @@ import {
   buildNonNumericPreviewDataQuery,
   buildNumericPreviewDataQuery,
 } from '../QueryBuilderPreviewDataHelper.js';
-import { TEST__setUpQueryBuilderState } from '../QueryBuilderStateTestUtils.js';
+import { TEST__setUpQueryBuilderState } from '../__test-utils__/QueryBuilderStateTestUtils.js';
 import type { RawMappingModelCoverageAnalysisResult } from '@finos/legend-graph';
 
 type PreviewDataTestCase = [

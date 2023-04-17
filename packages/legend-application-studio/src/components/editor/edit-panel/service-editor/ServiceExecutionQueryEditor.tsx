@@ -66,7 +66,7 @@ import {
   ExecutionPlanViewer,
 } from '@finos/legend-query-builder';
 import { ProjectViewerEditorMode } from '../../../../stores/project-view/ProjectViewerEditorMode.js';
-import { useLegendStudioApplicationStore } from '../../../LegendStudioBaseStoreProvider.js';
+import { useLegendStudioApplicationStore } from '../../../LegendStudioFrameworkProvider.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { SNAPSHOT_VERSION_ALIAS } from '@finos/legend-server-depot';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';

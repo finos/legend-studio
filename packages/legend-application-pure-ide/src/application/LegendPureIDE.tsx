@@ -19,8 +19,6 @@ import {
   type LegendApplicationConfig,
   type LegendApplicationConfigurationInput,
   LegendApplication,
-  WebApplicationNavigatorProvider,
-  BrowserRouter,
   ApplicationStoreProvider,
   Core_LegendApplicationPlugin,
   getApplicationRootElement,
@@ -31,8 +29,9 @@ import {
 } from './LegendPureIDEApplicationConfig.js';
 import { LegendPureIDEPluginManager } from './LegendPureIDEPluginManager.js';
 import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
-import { LegendPureIDEApplication } from '../components/LegendPureIDEApplication.js';
+import { LegendPureIDEWebApplication } from '../components/LegendPureIDEApplication.js';
 import { Core_LegendPureIDEApplicationPlugin } from '../components/Core_LegendPureIDEApplicationPlugin.js';
+import type { LegendPureIDEApplicationStore } from '../stores/LegendPureIDEBaseStore.js';
 
 export class LegendPureIDE extends LegendApplication {
   declare config: LegendPureIDEApplicationConfig;
@@ -54,19 +53,13 @@ export class LegendPureIDE extends LegendApplication {
     return new LegendPureIDEApplicationConfig(input);
   }
 
-  async loadApplication(): Promise<void> {
-    const rootElement = createRoot(getApplicationRootElement());
-    rootElement.render(
-      <BrowserRouter basename={this.baseUrl}>
-        <WebApplicationNavigatorProvider>
-          <ApplicationStoreProvider
-            config={this.config}
-            pluginManager={this.pluginManager}
-          >
-            <LegendPureIDEApplication />
-          </ApplicationStoreProvider>
-        </WebApplicationNavigatorProvider>
-      </BrowserRouter>,
+  async loadApplication(
+    applicationStore: LegendPureIDEApplicationStore,
+  ): Promise<void> {
+    createRoot(getApplicationRootElement()).render(
+      <ApplicationStoreProvider store={applicationStore}>
+        <LegendPureIDEWebApplication baseUrl={this.baseUrl} />
+      </ApplicationStoreProvider>,
     );
   }
 }

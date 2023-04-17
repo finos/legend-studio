@@ -41,7 +41,7 @@ import type {
 } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/editor/EditorSDLCState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
+import { useLegendStudioApplicationStore } from '../../LegendStudioFrameworkProvider.js';
 
 export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();

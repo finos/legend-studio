@@ -33,10 +33,12 @@ import {
 import {
   LATEST_VERSION_ALIAS,
   SNAPSHOT_VERSION_ALIAS,
-  useDepotServerClient,
 } from '@finos/legend-server-depot';
 import { useApplicationStore } from '@finos/legend-application';
-import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import {
+  useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
+} from './LegendQueryFrameworkProvider.js';
 import {
   CloneServiceQuerySetupStore,
   type ServiceExecutionOption,
@@ -55,9 +57,13 @@ const CloneServiceQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendQueryApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
-    () => new CloneServiceQuerySetupStore(applicationStore, depotServerClient),
+    () =>
+      new CloneServiceQuerySetupStore(
+        applicationStore,
+        baseStore.depotServerClient,
+      ),
   );
   return (
     <BaseQuerySetupStoreContext.Provider value={store}>

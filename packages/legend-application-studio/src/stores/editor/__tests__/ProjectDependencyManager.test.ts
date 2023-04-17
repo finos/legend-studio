@@ -21,7 +21,7 @@ import {
   guaranteeNonNullable,
   createSpy,
 } from '@finos/legend-shared';
-import { TEST__getTestEditorStore } from '../EditorStoreTestUtils.js';
+import { TEST__getTestEditorStore } from '../__test-utils__/EditorStoreTestUtils.js';
 import type { Entity } from '@finos/legend-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import {

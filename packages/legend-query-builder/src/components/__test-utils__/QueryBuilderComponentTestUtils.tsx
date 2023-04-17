@@ -24,24 +24,23 @@ import {
   RuntimePointer,
 } from '@finos/legend-graph';
 import {
-  TEST__ApplicationStoreProvider,
-  TEST__getGenericApplicationConfig,
-  TEST__LegendApplicationPluginManager,
-  TEST__provideMockedApplicationStore,
-  WebApplicationNavigator,
-  TEST__provideMockedWebApplicationNavigator,
-  LegendApplicationComponentFrameworkProvider,
-  Router,
-  createMemoryHistory,
+  ApplicationStoreProvider,
+  TEST__BrowserEnvironmentProvider,
+  ApplicationFrameworkProvider,
+  ApplicationStore,
 } from '@finos/legend-application';
 import type { Entity } from '@finos/legend-storage';
-import { QueryBuilder } from './QueryBuilder.js';
+import { QueryBuilder } from '../QueryBuilder.js';
 import {
   type QueryBuilderState,
   INTERNAL__BasicQueryBuilderState,
-} from '../stores/QueryBuilderState.js';
-import { QueryBuilder_GraphManagerPreset } from '../graphManager/QueryBuilder_GraphManagerPreset.js';
-import { QUERY_BUILDER_TEST_ID } from '../application/QueryBuilderTesting.js';
+} from '../../stores/QueryBuilderState.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
+import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import {
+  TEST__LegendApplicationPluginManager,
+  TEST__getGenericApplicationConfig,
+} from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
 
 export const TEST__setUpQueryBuilder = async (
   entities: Entity[],
@@ -53,12 +52,15 @@ export const TEST__setUpQueryBuilder = async (
   renderResult: RenderResult;
   queryBuilderState: QueryBuilderState;
 }> => {
-  const pluginManager = TEST__LegendApplicationPluginManager.create();
-  pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
+  const MOCK__pluginManager = TEST__LegendApplicationPluginManager.create();
+  MOCK__pluginManager.usePresets([
+    new QueryBuilder_GraphManagerPreset(),
+  ]).install();
   const graphManagerState = new GraphManagerState(
-    pluginManager,
+    MOCK__pluginManager,
     new LogService(),
   );
+
   await graphManagerState.initializeSystem();
   await graphManagerState.graphManager.buildGraph(
     graphManagerState.graph,
@@ -66,18 +68,13 @@ export const TEST__setUpQueryBuilder = async (
     graphManagerState.graphBuildState,
   );
 
-  const history = createMemoryHistory();
-  const navigator = new WebApplicationNavigator(history);
-  TEST__provideMockedWebApplicationNavigator({ mock: navigator });
-
-  const applicationStore = TEST__provideMockedApplicationStore(
+  const MOCK__applicationStore = new ApplicationStore(
     TEST__getGenericApplicationConfig(),
-    pluginManager,
-    { navigator },
+    MOCK__pluginManager,
   );
 
   const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
-    applicationStore,
+    MOCK__applicationStore,
     graphManagerState,
   );
   const mapping = graphManagerState.graph.getMapping(mappingPath);
@@ -103,16 +100,13 @@ export const TEST__setUpQueryBuilder = async (
   }
 
   const renderResult = render(
-    <Router history={history}>
-      <TEST__ApplicationStoreProvider
-        config={TEST__getGenericApplicationConfig()}
-        pluginManager={pluginManager}
-      >
-        <LegendApplicationComponentFrameworkProvider>
+    <ApplicationStoreProvider store={MOCK__applicationStore}>
+      <TEST__BrowserEnvironmentProvider>
+        <ApplicationFrameworkProvider>
           <QueryBuilder queryBuilderState={queryBuilderState} />
-        </LegendApplicationComponentFrameworkProvider>
-      </TEST__ApplicationStoreProvider>
-    </Router>,
+        </ApplicationFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
   );
 
   await waitFor(() =>

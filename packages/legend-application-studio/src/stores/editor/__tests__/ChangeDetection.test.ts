@@ -16,7 +16,7 @@
 
 import { test, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared';
-import { TEST__getTestEditorStore } from '../EditorStoreTestUtils.js';
+import { TEST__getTestEditorStore } from '../__test-utils__/EditorStoreTestUtils.js';
 import { flowResult } from 'mobx';
 import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
 import { Class, getClassProperty } from '@finos/legend-graph';

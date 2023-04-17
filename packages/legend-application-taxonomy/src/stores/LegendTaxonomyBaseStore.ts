@@ -19,7 +19,7 @@ import {
   LegendApplicationTelemetryHelper,
   APPLICATION_EVENT,
 } from '@finos/legend-application';
-import type { DepotServerClient } from '@finos/legend-server-depot';
+import { DepotServerClient } from '@finos/legend-server-depot';
 import {
   ActionState,
   assertErrorThrown,
@@ -30,7 +30,7 @@ import {
 import { flow, makeObservable } from 'mobx';
 import type { LegendTaxonomyApplicationConfig } from '../application/LegendTaxonomyApplicationConfig.js';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
-import type { TaxonomyServerClient } from './TaxonomyServerClient.js';
+import { TaxonomyServerClient } from './TaxonomyServerClient.js';
 
 export type LegendTaxonomyApplicationStore = ApplicationStore<
   LegendTaxonomyApplicationConfig,
@@ -45,24 +45,25 @@ export class LegendTaxonomyBaseStore {
 
   readonly initState = ActionState.create();
 
-  constructor(
-    applicationStore: LegendTaxonomyApplicationStore,
-    taxonomyServerClient: TaxonomyServerClient,
-    depotServerClient: DepotServerClient,
-  ) {
+  constructor(applicationStore: LegendTaxonomyApplicationStore) {
     makeObservable(this, {
       initialize: flow,
     });
 
     this.applicationStore = applicationStore;
-    this.taxonomyServerClient = taxonomyServerClient;
-    this.depotServerClient = depotServerClient;
     this.pluginManager = applicationStore.pluginManager;
 
-    // Register plugins
+    // setup servers
+    this.taxonomyServerClient = new TaxonomyServerClient(
+      this.applicationStore.config.currentTaxonomyTreeOption.url,
+    );
     this.taxonomyServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
+
+    this.depotServerClient = new DepotServerClient({
+      serverUrl: this.applicationStore.config.depotServerUrl,
+    });
     this.depotServerClient.setTracerService(
       this.applicationStore.tracerService,
     );

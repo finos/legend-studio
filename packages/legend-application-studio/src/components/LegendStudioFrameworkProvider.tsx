@@ -16,15 +16,16 @@
 
 import { createContext, useContext } from 'react';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useSDLCServerClient } from '@finos/legend-server-sdlc';
-import { useDepotServerClient } from '@finos/legend-server-depot';
 import {
   type LegendStudioApplicationStore,
   LegendStudioBaseStore,
 } from '../stores/LegendStudioBaseStore.js';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import { useLocalObservable } from 'mobx-react-lite';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  ApplicationFrameworkProvider,
+  useApplicationStore,
+} from '@finos/legend-application';
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
 
 export const useLegendStudioApplicationStore =
@@ -38,19 +39,12 @@ const LegendStudioBaseStoreContext = createContext<
   LegendStudioBaseStore | undefined
 >(undefined);
 
-export const LegendStudioBaseStoreProvider: React.FC<{
+const LegendStudioBaseStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendStudioApplicationStore();
-  const sdlcServerClient = useSDLCServerClient();
-  const depotServerClient = useDepotServerClient();
   const baseStore = useLocalObservable(
-    () =>
-      new LegendStudioBaseStore(
-        applicationStore,
-        sdlcServerClient,
-        depotServerClient,
-      ),
+    () => new LegendStudioBaseStore(applicationStore),
   );
   return (
     <LegendStudioBaseStoreContext.Provider value={baseStore}>
@@ -64,3 +58,11 @@ export const useLegendStudioBaseStore = (): LegendStudioBaseStore =>
     useContext(LegendStudioBaseStoreContext),
     `Can't find Legend Studio base store in context`,
   );
+
+export const LegendStudioFrameworkProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => (
+  <ApplicationFrameworkProvider>
+    <LegendStudioBaseStoreProvider>{children}</LegendStudioBaseStoreProvider>
+  </ApplicationFrameworkProvider>
+);

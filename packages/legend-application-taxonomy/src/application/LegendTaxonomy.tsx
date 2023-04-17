@@ -19,13 +19,10 @@ import {
   type LegendApplicationConfig,
   LegendApplication,
   ApplicationStoreProvider,
-  WebApplicationNavigatorProvider,
   type LegendApplicationConfigurationInput,
-  BrowserRouter,
   Core_LegendApplicationPlugin,
   getApplicationRootElement,
 } from '@finos/legend-application';
-import { LegendTaxonomyApplication } from '../components/LegendTaxonomyApplication.js';
 import { LegendTaxonomyPluginManager } from './LegendTaxonomyPluginManager.js';
 import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import {
@@ -33,6 +30,8 @@ import {
   LegendTaxonomyApplicationConfig,
 } from './LegendTaxonomyApplicationConfig.js';
 import { Core_LegendTaxonomyApplicationPlugin } from '../components/Core_LegendTaxonomyApplicationPlugin.js';
+import type { LegendTaxonomyApplicationStore } from '../stores/LegendTaxonomyBaseStore.js';
+import { LegendTaxonomyWebApplication } from '../components/LegendTaxonomyWebApplication.js';
 
 export class LegendTaxonomy extends LegendApplication {
   declare config: LegendTaxonomyApplicationConfig;
@@ -56,19 +55,13 @@ export class LegendTaxonomy extends LegendApplication {
     return new LegendTaxonomyApplicationConfig(input);
   }
 
-  async loadApplication(): Promise<void> {
-    const rootElement = createRoot(getApplicationRootElement());
-    rootElement.render(
-      <BrowserRouter basename={this.baseUrl}>
-        <WebApplicationNavigatorProvider>
-          <ApplicationStoreProvider
-            config={this.config}
-            pluginManager={this.pluginManager}
-          >
-            <LegendTaxonomyApplication config={this.config} />
-          </ApplicationStoreProvider>
-        </WebApplicationNavigatorProvider>
-      </BrowserRouter>,
+  async loadApplication(
+    applicationStore: LegendTaxonomyApplicationStore,
+  ): Promise<void> {
+    createRoot(getApplicationRootElement()).render(
+      <ApplicationStoreProvider store={applicationStore}>
+        <LegendTaxonomyWebApplication baseUrl={this.baseUrl} />
+      </ApplicationStoreProvider>,
     );
   }
 }

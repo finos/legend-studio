@@ -63,7 +63,7 @@ import {
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalInheritance,
   TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
 } from './TEST_DATA__ModelCoverageAnalysisResult.js';
-import { TEST__LegendApplicationPluginManager } from '@finos/legend-application';
+import { TEST__LegendApplicationPluginManager } from '../__test-utils__/QueryBuilderStateTestUtils.js';
 
 interface NodeMappingData {
   name: string;

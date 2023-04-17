@@ -47,7 +47,7 @@ import {
   uniqBy,
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../../application/LegendApplicationEvent.js';
-import { forceDispatchKeyboardEvent } from '../../components/LegendApplicationComponentFrameworkProvider.js';
+import { forceDispatchKeyboardEvent } from '../../components/ApplicationComponentFrameworkProvider.js';
 
 const LEGEND_XTERM_THEME: XTermTheme = {
   foreground: '#cccccc',

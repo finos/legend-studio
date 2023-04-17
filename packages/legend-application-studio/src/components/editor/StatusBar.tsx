@@ -42,7 +42,7 @@ import {
 import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
-import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
+import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
 import { useParams } from '@finos/legend-application';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 

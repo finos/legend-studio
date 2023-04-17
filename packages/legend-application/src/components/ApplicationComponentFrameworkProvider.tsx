@@ -114,7 +114,7 @@ export const BackdropContainer: React.FC<{ elementId: string }> = (props) => (
   <div className="backdrop__container" data-elementid={props.elementId} />
 );
 
-export const LegendApplicationComponentFrameworkProvider = observer(
+export const ApplicationComponentFrameworkProvider = observer(
   (props: { children: React.ReactNode }) => {
     const { children } = props;
     const applicationStore = useApplicationStore();

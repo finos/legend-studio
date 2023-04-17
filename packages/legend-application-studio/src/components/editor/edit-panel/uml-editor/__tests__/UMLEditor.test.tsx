@@ -36,7 +36,7 @@ import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../../../../EditorComponentTestUtils.js';
+} from '../../../__test-utils__/EditorComponentTestUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../application/LegendStudioTesting.js';
 
 let renderResult: RenderResult;

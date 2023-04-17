@@ -33,7 +33,6 @@ import {
 import {
   LATEST_VERSION_ALIAS,
   SNAPSHOT_VERSION_ALIAS,
-  useDepotServerClient,
 } from '@finos/legend-server-depot';
 import {
   useApplicationStore,
@@ -41,7 +40,10 @@ import {
   type PackageableElementOption,
   getPackageableElementOptionFormatter,
 } from '@finos/legend-application';
-import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import {
+  useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
+} from './LegendQueryFrameworkProvider.js';
 import { CreateMappingQuerySetupStore } from '../stores/CreateMappingQuerySetupStore.js';
 import {
   BaseQuerySetup,
@@ -58,9 +60,13 @@ const CreateMappingQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendQueryApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
-    () => new CreateMappingQuerySetupStore(applicationStore, depotServerClient),
+    () =>
+      new CreateMappingQuerySetupStore(
+        applicationStore,
+        baseStore.depotServerClient,
+      ),
   );
   return (
     <BaseQuerySetupStoreContext.Provider value={store}>

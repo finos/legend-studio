@@ -15,7 +15,6 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { LegendStudioApplicationRoot } from '../LegendStudioApplication.js';
 import {
   type TEMPORARY__JestMatcher,
   integrationTest,
@@ -23,64 +22,52 @@ import {
   createSpy,
 } from '@finos/legend-shared';
 import {
-  WebApplicationNavigator,
-  TEST__provideMockedApplicationStore,
-  TEST__ApplicationStoreProvider,
-  TEST__provideMockedWebApplicationNavigator,
-  LegendApplicationComponentFrameworkProvider,
-  MemoryRouter,
-  createMemoryHistory,
+  ApplicationStore,
+  ApplicationStoreProvider,
+  TEST__BrowserEnvironmentProvider,
+  TEST__provideMockedBrowserPlatform,
 } from '@finos/legend-application';
-import { TEST__LegendStudioBaseStoreProvider } from '../EditorComponentTestUtils.js';
 import { render, waitFor } from '@testing-library/react';
-import {
-  SDLCServerClient,
-  TEST__provideMockedSDLCServerClient,
-  TEST__SDLCServerClientProvider,
-} from '@finos/legend-server-sdlc';
-import { TEST__DepotServerClientProvider } from '@finos/legend-server-depot';
-import { TEST__getLegendStudioApplicationConfig } from '../../stores/editor/EditorStoreTestUtils.js';
+import { SDLCServerClient } from '@finos/legend-server-sdlc';
+import { TEST__provideMockedLegendStudioBaseStore } from '../__test-utils__/LegendStudioFrameworkTestUtils.js';
+import { LegendStudioFrameworkProvider } from '../LegendStudioFrameworkProvider.js';
+import { LegendStudioWebApplicationRouter } from '../LegendStudioWebApplication.js';
+import { TEST__getLegendStudioApplicationConfig } from '../../stores/__test-utils__/LegendStudioApplicationTestUtils.js';
 import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager.js';
 
 test(
   integrationTest('Failed to accept SDLC Terms of Service will show alert'),
   async () => {
-    const sdlcServerClient = TEST__provideMockedSDLCServerClient();
+    const baseStore = TEST__provideMockedLegendStudioBaseStore();
 
-    createSpy(sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(true);
-    createSpy(sdlcServerClient, 'getCurrentUser').mockResolvedValueOnce({
+    createSpy(baseStore.sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(
+      true,
+    );
+    createSpy(
+      baseStore.sdlcServerClient,
+      'getCurrentUser',
+    ).mockResolvedValueOnce({
       name: 'testUser',
       userId: 'testUserId',
     });
     createSpy(
-      sdlcServerClient,
+      baseStore.sdlcServerClient,
       'hasAcceptedTermsOfService',
     ).mockResolvedValueOnce(['stubUrl']);
-    createSpy(sdlcServerClient, 'getProjects').mockResolvedValue([]);
+    createSpy(baseStore.sdlcServerClient, 'getProjects').mockResolvedValue([]);
     createSpy(
-      sdlcServerClient,
+      baseStore.sdlcServerClient,
       'fetchServerFeaturesConfiguration',
     ).mockResolvedValue();
 
-    TEST__provideMockedWebApplicationNavigator();
-
     const { queryByText } = render(
-      <MemoryRouter>
-        <TEST__ApplicationStoreProvider
-          config={TEST__getLegendStudioApplicationConfig()}
-          pluginManager={LegendStudioPluginManager.create()}
-        >
-          <TEST__SDLCServerClientProvider>
-            <TEST__DepotServerClientProvider>
-              <TEST__LegendStudioBaseStoreProvider>
-                <LegendApplicationComponentFrameworkProvider>
-                  <LegendStudioApplicationRoot />
-                </LegendApplicationComponentFrameworkProvider>
-              </TEST__LegendStudioBaseStoreProvider>
-            </TEST__DepotServerClientProvider>
-          </TEST__SDLCServerClientProvider>
-        </TEST__ApplicationStoreProvider>
-      </MemoryRouter>,
+      <ApplicationStoreProvider store={baseStore.applicationStore}>
+        <TEST__BrowserEnvironmentProvider>
+          <LegendStudioFrameworkProvider>
+            <LegendStudioWebApplicationRouter />
+          </LegendStudioFrameworkProvider>
+        </TEST__BrowserEnvironmentProvider>
+      </ApplicationStoreProvider>,
     );
 
     await waitFor(() =>
@@ -90,23 +77,30 @@ test(
 );
 
 test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
-  const navigator = new WebApplicationNavigator(createMemoryHistory());
-  TEST__provideMockedWebApplicationNavigator({ mock: navigator });
-
-  const applicationStore = TEST__provideMockedApplicationStore(
+  const applicationStore = new ApplicationStore(
     TEST__getLegendStudioApplicationConfig(),
     LegendStudioPluginManager.create(),
-    { navigator },
   );
-  const sdlcServerClient = TEST__provideMockedSDLCServerClient();
-  const stubURL = 'stubUrl';
-
-  createSpy(sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(false);
-  createSpy(sdlcServerClient, 'getCurrentUser').mockResolvedValueOnce({
-    name: 'testUser',
-    userId: 'testUserId',
+  const MOCK__browserPlatform =
+    TEST__provideMockedBrowserPlatform(applicationStore);
+  const baseStore = TEST__provideMockedLegendStudioBaseStore({
+    applicationStore,
   });
 
+  const stubURL = 'stubUrl';
+
+  createSpy(baseStore.sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(
+    false,
+  );
+  createSpy(baseStore.sdlcServerClient, 'getCurrentUser').mockResolvedValueOnce(
+    {
+      name: 'testUser',
+      userId: 'testUserId',
+    },
+  );
+
+  const navigator = MOCK__browserPlatform.getNavigator();
+  createSpy(MOCK__browserPlatform, 'getNavigator').mockReturnValue(navigator);
   const navigationActionSpy = createSpy(
     navigator,
     'goToAddress',
@@ -116,28 +110,19 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   );
 
   render(
-    <MemoryRouter>
-      <TEST__ApplicationStoreProvider
-        config={TEST__getLegendStudioApplicationConfig()}
-        pluginManager={LegendStudioPluginManager.create()}
-      >
-        <TEST__SDLCServerClientProvider>
-          <TEST__DepotServerClientProvider>
-            <TEST__LegendStudioBaseStoreProvider>
-              <LegendApplicationComponentFrameworkProvider>
-                <LegendStudioApplicationRoot />
-              </LegendApplicationComponentFrameworkProvider>
-            </TEST__LegendStudioBaseStoreProvider>
-          </TEST__DepotServerClientProvider>
-        </TEST__SDLCServerClientProvider>
-      </TEST__ApplicationStoreProvider>
-    </MemoryRouter>,
+    <ApplicationStoreProvider store={baseStore.applicationStore}>
+      <TEST__BrowserEnvironmentProvider>
+        <LegendStudioFrameworkProvider>
+          <LegendStudioWebApplicationRouter />
+        </LegendStudioFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
   );
 
   await waitFor(() =>
     expect(navigationActionSpy as TEMPORARY__JestMatcher).toHaveBeenCalledWith(
       SDLCServerClient.authorizeCallbackUrl(
-        applicationStore.config.sdlcServerUrl,
+        baseStore.applicationStore.config.sdlcServerUrl,
         stubURL,
       ),
     ),

@@ -55,7 +55,7 @@ import {
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
+import { useLegendStudioApplicationStore } from '../../LegendStudioFrameworkProvider.js';
 import { ProjectDependantsEditor } from './ProjectDependantsEditor.js';
 
 const ShareProjectModal = observer(

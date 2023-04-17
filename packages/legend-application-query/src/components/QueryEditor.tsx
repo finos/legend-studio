@@ -76,7 +76,7 @@ import {
 } from './QueryEditorStoreProvider.js';
 import type { RawLambda } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
-import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import { useLegendQueryApplicationStore } from './LegendQueryFrameworkProvider.js';
 import {
   QueryBuilder,
   QueryBuilderNavigationBlocker,

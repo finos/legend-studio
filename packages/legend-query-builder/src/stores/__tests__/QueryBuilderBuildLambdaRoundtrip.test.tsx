@@ -72,11 +72,7 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
-import {
-  TEST__getGenericApplicationConfig,
-  TEST__getTestApplicationStore,
-  TEST__LegendApplicationPluginManager,
-} from '@finos/legend-application';
+import { ApplicationStore } from '@finos/legend-application';
 import { integrationTest } from '@finos/legend-shared';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import {
@@ -122,6 +118,10 @@ import {
   TEST_DATA__lambda_Externalize_externalize_graphFetch_with_different_trees,
   TEST_DATA__lambda_Externalize_externalize_graphFetchChecked,
 } from './TEST_DATA__QueryBuilder_Externalize.js';
+import {
+  TEST__LegendApplicationPluginManager,
+  TEST__getGenericApplicationConfig,
+} from '../__test-utils__/QueryBuilderStateTestUtils.js';
 
 type RoundtripTestCase = [
   string,
@@ -610,7 +610,7 @@ describe(
             new QueryBuilder_GraphManagerPreset(),
           ])
           .install();
-        const applicationStore = TEST__getTestApplicationStore(
+        const applicationStore = new ApplicationStore(
           TEST__getGenericApplicationConfig(),
           pluginManager,
         );

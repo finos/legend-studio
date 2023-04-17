@@ -24,7 +24,7 @@ import {
 } from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { debounce, guaranteeNonNullable, isString } from '@finos/legend-shared';
-import { type Project, useSDLCServerClient } from '@finos/legend-server-sdlc';
+import type { Project } from '@finos/legend-server-sdlc';
 import {
   type WorkspaceOption,
   type ProjectOption,
@@ -35,6 +35,7 @@ import {
   useLegendStudioApplicationStore,
   buildProjectOption,
   getProjectOptionLabelFormatter,
+  useLegendStudioBaseStore,
 } from '@finos/legend-application-studio';
 import { UpdateProjectServiceQuerySetupStore } from '../../stores/studio/UpdateProjectServiceQuerySetupStore.js';
 import {
@@ -67,12 +68,12 @@ const UpdateProjectServiceQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendStudioApplicationStore();
-  const sdlcServerClient = useSDLCServerClient();
+  const baseStore = useLegendStudioBaseStore();
   const store = useLocalObservable(
     () =>
       new UpdateProjectServiceQuerySetupStore(
         applicationStore,
-        sdlcServerClient,
+        baseStore.sdlcServerClient,
       ),
   );
   return (

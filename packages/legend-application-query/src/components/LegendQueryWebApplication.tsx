@@ -22,27 +22,25 @@ import {
   ExistingQueryEditor,
   ServiceQueryCreator,
 } from './QueryEditor.js';
-import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import {
+  BrowserEnvironmentProvider,
   generateExtensionUrlPattern,
-  LegendApplicationComponentFrameworkProvider,
   Redirect,
   Route,
   Switch,
 } from '@finos/legend-application';
-import type { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
 import {
-  LegendQueryBaseStoreProvider,
+  LegendQueryFrameworkProvider,
   useLegendQueryApplicationStore,
   useLegendQueryBaseStore,
-} from './LegendQueryBaseStoreProvider.js';
+} from './LegendQueryFrameworkProvider.js';
 import { EditExistingQuerySetup } from './EditExistingQuerySetup.js';
 import { CreateMappingQuerySetup } from './CreateMappingQuerySetup.js';
 import { useEffect } from 'react';
 import { flowResult } from 'mobx';
 import { PanelLoadingIndicator } from '@finos/legend-art';
 
-const LegendQueryApplicationRoot = observer(() => {
+const LegendQueryWebApplicationRouter = observer(() => {
   const applicationStore = useLegendQueryApplicationStore();
   const baseStore = useLegendQueryBaseStore();
 
@@ -102,7 +100,7 @@ const LegendQueryApplicationRoot = observer(() => {
           <Route
             key={entry.key}
             exact={true}
-            path={entry.urlPatterns.map(generateExtensionUrlPattern)}
+            path={entry.addressPatterns.map(generateExtensionUrlPattern)}
             component={entry.renderer as React.ComponentType<unknown>}
           />
         ))}
@@ -112,22 +110,16 @@ const LegendQueryApplicationRoot = observer(() => {
   );
 });
 
-export const LegendQueryApplication = observer(
-  (props: { config: LegendQueryApplicationConfig }) => {
-    const { config } = props;
+export const LegendQueryWebApplication = observer(
+  (props: { baseUrl: string }) => {
+    const { baseUrl } = props;
 
     return (
-      <DepotServerClientProvider
-        config={{
-          serverUrl: config.depotServerUrl,
-        }}
-      >
-        <LegendQueryBaseStoreProvider>
-          <LegendApplicationComponentFrameworkProvider>
-            <LegendQueryApplicationRoot />
-          </LegendApplicationComponentFrameworkProvider>
-        </LegendQueryBaseStoreProvider>
-      </DepotServerClientProvider>
+      <BrowserEnvironmentProvider baseUrl={baseUrl}>
+        <LegendQueryFrameworkProvider>
+          <LegendQueryWebApplicationRouter />
+        </LegendQueryFrameworkProvider>
+      </BrowserEnvironmentProvider>
     );
   },
 );

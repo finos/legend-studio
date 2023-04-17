@@ -20,7 +20,10 @@ export * from './application/LegendQueryApplicationConfig.js';
 export * from './application/LegendQueryPluginManager.js';
 export * from './application/LegendQueryEvent.js';
 export * from './application/LegendQueryEventHelper.js';
-export { useLegendQueryApplicationStore } from './components/LegendQueryBaseStoreProvider.js';
+export {
+  useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
+} from './components/LegendQueryFrameworkProvider.js';
 export type { LegendQueryApplicationStore } from './stores/LegendQueryBaseStore.js';
 export { generateExistingQueryEditorRoute } from './application/LegendQueryNavigation.js';
 

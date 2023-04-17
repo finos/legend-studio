@@ -37,7 +37,7 @@ import { flowResult } from 'mobx';
 import { useConditionedApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/LegendStudioDocumentation.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/LegendStudioApplicationNavigationContext.js';
-import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
+import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
 import { useWorkspaceSetupStore } from './WorkspaceSetup.js';
 import { DocumentationLink } from '@finos/legend-application/components';
 

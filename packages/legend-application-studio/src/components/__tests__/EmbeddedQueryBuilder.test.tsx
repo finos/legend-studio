@@ -22,7 +22,7 @@ import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query-builder';
 import {
   TEST__openElementFromExplorerTree,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../EditorComponentTestUtils.js';
+} from '../editor/__test-utils__/EditorComponentTestUtils.js';
 import { GraphCompilationOutcome } from '../../stores/editor/EditorGraphState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
 import { TEST__buildQueryBuilderMockedEditorStore } from './EmbeddedQueryBuilderTestUtils.js';

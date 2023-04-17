@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DepotServerClient } from '@finos/legend-server-depot';
+import { DepotServerClient } from '@finos/legend-server-depot';
 import {
   type ApplicationStore,
   LegendApplicationTelemetryHelper,
@@ -43,19 +43,18 @@ export class LegendQueryBaseStore {
 
   readonly initState = ActionState.create();
 
-  constructor(
-    applicationStore: LegendQueryApplicationStore,
-    depotServerClient: DepotServerClient,
-  ) {
+  constructor(applicationStore: LegendQueryApplicationStore) {
     makeObservable(this, {
       initialize: flow,
     });
 
     this.applicationStore = applicationStore;
-    this.depotServerClient = depotServerClient;
     this.pluginManager = applicationStore.pluginManager;
 
-    // Register plugins
+    // setup servers
+    this.depotServerClient = new DepotServerClient({
+      serverUrl: this.applicationStore.config.depotServerUrl,
+    });
     this.depotServerClient.setTracerService(
       this.applicationStore.tracerService,
     );

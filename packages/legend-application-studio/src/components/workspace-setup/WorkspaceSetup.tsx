@@ -42,7 +42,10 @@ import { CreateProjectModal } from './CreateProjectModal.js';
 import { ActivityBarMenu } from '../editor/ActivityBar.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/LegendStudioApplicationNavigationContext.js';
 import { CreateWorkspaceModal } from './CreateWorkspaceModal.js';
-import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
+import {
+  useLegendStudioApplicationStore,
+  useLegendStudioBaseStore,
+} from '../LegendStudioFrameworkProvider.js';
 import {
   type ProjectOption,
   buildProjectOption,
@@ -55,7 +58,6 @@ import {
 } from './WorkspaceSelectorUtils.js';
 import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
 import { WorkspaceSetupStore } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
-import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 import { DocumentationLink } from '@finos/legend-application/components';
 
 const WorkspaceSetupStoreContext = createContext<
@@ -66,9 +68,9 @@ const WorkspaceSetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendStudioApplicationStore();
-  const sdlcServerClient = useSDLCServerClient();
+  const baseStore = useLegendStudioBaseStore();
   const store = useLocalObservable(
-    () => new WorkspaceSetupStore(applicationStore, sdlcServerClient),
+    () => new WorkspaceSetupStore(applicationStore, baseStore.sdlcServerClient),
   );
   return (
     <WorkspaceSetupStoreContext.Provider value={store}>

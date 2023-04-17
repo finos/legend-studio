@@ -28,7 +28,7 @@ import type { Entity } from '@finos/legend-storage';
 import { expect, test } from '@jest/globals';
 import { waitFor, getByText } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
-import { TEST__setUpQueryBuilder } from '../../components/QueryBuilderComponentTestUtils.js';
+import { TEST__setUpQueryBuilder } from '../../components/__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
 import { QueryBuilderTDSState } from '../fetch-structure/tds/QueryBuilderTDSState.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ChangeDetection } from './TEST_DATA__ModelCoverageAnalysisResult.js';

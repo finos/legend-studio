@@ -41,35 +41,35 @@ export class DSL_Service_LegendStudioApplicationPlugin
     return [
       {
         key: 'update-service-query-setup-application-page',
-        urlPatterns: [
+        addressPatterns: [
           DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_SERVICE_QUERY_SETUP,
         ],
         renderer: UpdateServiceQuerySetup,
       },
       {
         key: 'update-service-query-application-page',
-        urlPatterns: [
+        addressPatterns: [
           DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_SERVICE_QUERY,
         ],
         renderer: ServiceQueryUpdater,
       },
       {
         key: 'update-project-service-query-setup-application-page',
-        urlPatterns: [
+        addressPatterns: [
           DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_PROJECT_SERVICE_QUERY_SETUP,
         ],
         renderer: UpdateProjectServiceQuerySetup,
       },
       {
         key: 'update-project-service-query-application-page',
-        urlPatterns: [
+        addressPatterns: [
           DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_PROJECT_SERVICE_QUERY,
         ],
         renderer: ProjectServiceQueryUpdater,
       },
       {
         key: 'productionize-query-application-page',
-        urlPatterns: [
+        addressPatterns: [
           DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.PRODUCTIONIZE_QUERY,
         ],
         renderer: QueryProductionizer,

@@ -112,7 +112,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/shared/ModelClassifierUtils.js';
-import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
+import { useLegendStudioApplicationStore } from '../../LegendStudioFrameworkProvider.js';
 import { queryClass } from '../edit-panel/uml-editor/ClassQueryBuilder.js';
 import { createViewSDLCProjectHandler } from '../../../stores/editor/DependencyProjectViewerHelper.js';
 import {

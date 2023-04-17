@@ -22,9 +22,10 @@ import {
   ServiceQueryUpdaterStore,
   ProjectServiceQueryUpdaterStore,
 } from '../../stores/studio/ServiceQueryEditorStore.js';
-import { useDepotServerClient } from '@finos/legend-server-depot';
-import { useSDLCServerClient } from '@finos/legend-server-sdlc';
-import { useLegendStudioApplicationStore } from '@finos/legend-application-studio';
+import {
+  useLegendStudioApplicationStore,
+  useLegendStudioBaseStore,
+} from '@finos/legend-application-studio';
 
 export const ServiceQueryEditorStoreContext = createContext<
   ServiceQueryEditorStore | undefined
@@ -36,14 +37,13 @@ export const ServiceQueryUpdaterStoreProvider: React.FC<{
   groupWorkspaceId: string;
 }> = ({ children, serviceCoordinates, groupWorkspaceId }) => {
   const applicationStore = useLegendStudioApplicationStore();
-  const sdlcServerClient = useSDLCServerClient();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendStudioBaseStore();
   const store = useLocalObservable(
     () =>
       new ServiceQueryUpdaterStore(
         applicationStore,
-        sdlcServerClient,
-        depotServerClient,
+        baseStore.sdlcServerClient,
+        baseStore.depotServerClient,
         serviceCoordinates,
         groupWorkspaceId,
       ),
@@ -62,14 +62,13 @@ export const ProjectServiceQueryUpdaterStoreProvider: React.FC<{
   servicePath: string;
 }> = ({ children, projectId, groupWorkspaceId, servicePath }) => {
   const applicationStore = useLegendStudioApplicationStore();
-  const sdlcServerClient = useSDLCServerClient();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendStudioBaseStore();
   const store = useLocalObservable(
     () =>
       new ProjectServiceQueryUpdaterStore(
         applicationStore,
-        sdlcServerClient,
-        depotServerClient,
+        baseStore.sdlcServerClient,
+        baseStore.depotServerClient,
         projectId,
         groupWorkspaceId,
         servicePath,

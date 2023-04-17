@@ -19,7 +19,6 @@ import {
   guaranteeNonNullable,
   createMock,
   createSpy,
-  type Writable,
 } from '@finos/legend-shared';
 import {
   type GraphManagerState,
@@ -29,62 +28,50 @@ import {
   PackageableElementExplicitReference,
   type RawMappingModelCoverageAnalysisResult,
 } from '@finos/legend-graph';
+import { DepotServerClient } from '@finos/legend-server-depot';
 import {
-  type DepotServerClient,
-  TEST__DepotServerClientProvider,
-  TEST__getTestDepotServerClient,
-} from '@finos/legend-server-depot';
-import {
-  TEST__provideMockedWebApplicationNavigator,
-  TEST__ApplicationStoreProvider,
-  WebApplicationNavigator,
-  TEST__getTestApplicationStore,
-  Router,
-  createMemoryHistory,
-  type NavigationService,
+  TEST__BrowserEnvironmentProvider,
+  ApplicationStoreProvider,
+  ApplicationStore,
 } from '@finos/legend-application';
-import { TEST__getTestLegendQueryApplicationConfig } from '../stores/QueryEditorStoreTestUtils.js';
-import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import { ExistingQueryEditor } from './QueryEditor.js';
-import { generateExistingQueryEditorRoute } from '../application/LegendQueryNavigation.js';
+import { TEST__getTestLegendQueryApplicationConfig } from '../../stores/__test-utils__/LegendQueryApplicationTestUtils.js';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
+import { ExistingQueryEditor } from '../QueryEditor.js';
 import type { Entity } from '@finos/legend-storage';
-import { ExistingQueryEditorStore } from '../stores/QueryEditorStore.js';
-import { LegendQueryBaseStoreProvider } from './LegendQueryBaseStoreProvider.js';
-import type { LegendQueryApplicationStore } from '../stores/LegendQueryBaseStore.js';
+import { ExistingQueryEditorStore } from '../../stores/QueryEditorStore.js';
+import type { LegendQueryApplicationStore } from '../../stores/LegendQueryBaseStore.js';
 import {
   type QueryBuilderState,
   QUERY_BUILDER_TEST_ID,
 } from '@finos/legend-query-builder';
-
-export const TEST__LegendQueryBaseStoreProvider: React.FC<{
-  children: React.ReactNode;
-}> = ({ children }) => (
-  <LegendQueryBaseStoreProvider>{children}</LegendQueryBaseStoreProvider>
-);
+import { LegendQueryFrameworkProvider } from '../LegendQueryFrameworkProvider.js';
 
 const TEST_QUERY_ID = 'test-query-id';
 
 export const TEST__provideMockedQueryEditorStore = (customization?: {
   mock?: ExistingQueryEditorStore;
   applicationStore?: LegendQueryApplicationStore;
-  depotServerClient?: DepotServerClient;
   graphManagerState?: GraphManagerState;
   pluginManager?: LegendQueryPluginManager;
 }): ExistingQueryEditorStore => {
   const pluginManager =
     customization?.pluginManager ?? LegendQueryPluginManager.create();
+  const applicationStore =
+    customization?.applicationStore ??
+    new ApplicationStore(
+      TEST__getTestLegendQueryApplicationConfig(),
+      pluginManager,
+    );
   const value =
     customization?.mock ??
     new ExistingQueryEditorStore(
-      customization?.applicationStore ??
-        TEST__getTestApplicationStore(
-          TEST__getTestLegendQueryApplicationConfig(),
-          pluginManager,
-        ),
-      customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
+      applicationStore,
+      new DepotServerClient({
+        serverUrl: applicationStore.config.depotServerUrl,
+      }),
       TEST_QUERY_ID,
     );
-  const MOCK__QueryEditorStoreProvider = require('./QueryEditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MOCK__QueryEditorStoreProvider = require('../QueryEditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MOCK__QueryEditorStoreProvider.useQueryEditorStore = createMock();
   MOCK__QueryEditorStoreProvider.useQueryEditorStore.mockReturnValue(value);
   return value;
@@ -170,31 +157,14 @@ export const TEST__setUpQueryEditor = async (
   MOCK__editorStore.buildGraph = createMock();
   graphManagerState.graphManager.initialize = createMock();
 
-  const history = createMemoryHistory({
-    initialEntries: [generateExistingQueryEditorRoute(lightQuery.id)],
-  });
-  const navigator = new WebApplicationNavigator(history);
-  TEST__provideMockedWebApplicationNavigator({ mock: navigator });
-  // TODO: this is not the proper way to do this, we prefer to mock and inject this when we
-  // create the editor store, let's consider how we clean this up in the future
-  (
-    MOCK__editorStore.applicationStore
-      .navigationService as Writable<NavigationService>
-  ).navigator = navigator;
-
   const renderResult = render(
-    <Router history={history}>
-      <TEST__ApplicationStoreProvider
-        config={TEST__getTestLegendQueryApplicationConfig()}
-        pluginManager={LegendQueryPluginManager.create()}
-      >
-        <TEST__DepotServerClientProvider>
-          <TEST__LegendQueryBaseStoreProvider>
-            <ExistingQueryEditor />
-          </TEST__LegendQueryBaseStoreProvider>
-        </TEST__DepotServerClientProvider>
-      </TEST__ApplicationStoreProvider>
-    </Router>,
+    <ApplicationStoreProvider store={MOCK__editorStore.applicationStore}>
+      <TEST__BrowserEnvironmentProvider>
+        <LegendQueryFrameworkProvider>
+          <ExistingQueryEditor />
+        </LegendQueryFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
   );
   await waitFor(() =>
     renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),

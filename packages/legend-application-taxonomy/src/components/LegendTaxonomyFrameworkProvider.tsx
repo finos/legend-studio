@@ -16,12 +16,13 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  ApplicationFrameworkProvider,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useDepotServerClient } from '@finos/legend-server-depot';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
 import type { LegendTaxonomyApplicationConfig } from '../application/LegendTaxonomyApplicationConfig.js';
-import { TaxonomyServerClient } from '../stores/TaxonomyServerClient.js';
 import {
   type LegendTaxonomyApplicationStore,
   LegendTaxonomyBaseStore,
@@ -38,22 +39,14 @@ const LegendTaxonomyBaseStoreContext = createContext<
   LegendTaxonomyBaseStore | undefined
 >(undefined);
 
-export const LegendTaxonomyBaseStoreProvider: React.FC<{
+const LegendTaxonomyBaseStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendTaxonomyApplicationStore();
-  const taxonomyServerClient = new TaxonomyServerClient(
-    applicationStore.config.currentTaxonomyTreeOption.url,
-  );
-  const depotServerClient = useDepotServerClient();
   const store = useLocalObservable(
-    () =>
-      new LegendTaxonomyBaseStore(
-        applicationStore,
-        taxonomyServerClient,
-        depotServerClient,
-      ),
+    () => new LegendTaxonomyBaseStore(applicationStore),
   );
+
   return (
     <LegendTaxonomyBaseStoreContext.Provider value={store}>
       {children}
@@ -66,3 +59,13 @@ export const useLegendTaxonomyBaseStore = (): LegendTaxonomyBaseStore =>
     useContext(LegendTaxonomyBaseStoreContext),
     `Can't find Legend Taxonomy base store in context`,
   );
+
+export const LegendTaxonomyFrameworkProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => (
+  <ApplicationFrameworkProvider>
+    <LegendTaxonomyBaseStoreProvider>
+      {children}
+    </LegendTaxonomyBaseStoreProvider>
+  </ApplicationFrameworkProvider>
+);

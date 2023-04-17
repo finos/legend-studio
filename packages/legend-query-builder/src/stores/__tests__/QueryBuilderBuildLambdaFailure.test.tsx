@@ -34,13 +34,13 @@ import {
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
-import {
-  TEST__getGenericApplicationConfig,
-  TEST__getTestApplicationStore,
-  TEST__LegendApplicationPluginManager,
-} from '@finos/legend-application';
+import { ApplicationStore } from '@finos/legend-application';
 import { INTERNAL__BasicQueryBuilderState } from '../QueryBuilderState.js';
 import { act } from 'react-dom/test-utils';
+import {
+  TEST__LegendApplicationPluginManager,
+  TEST__getGenericApplicationConfig,
+} from '../__test-utils__/QueryBuilderStateTestUtils.js';
 
 type TestCase = [
   string,
@@ -122,7 +122,7 @@ describe(
         pluginManager
           .usePresets([new QueryBuilder_GraphManagerPreset()])
           .install();
-        const applicationStore = TEST__getTestApplicationStore(
+        const applicationStore = new ApplicationStore(
           TEST__getGenericApplicationConfig(),
           pluginManager,
         );

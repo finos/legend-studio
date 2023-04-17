@@ -35,9 +35,11 @@ import {
 } from '@finos/legend-art';
 import { DataSpaceViewer } from '@finos/legend-extension-dsl-data-space';
 import { DataSpacePreviewStore as DataSpacePreviewStore } from '../../stores/data-space-preview/DataSpacePreviewStore.js';
-import { useDepotServerClient } from '@finos/legend-server-depot';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useLegendTaxonomyApplicationStore } from '../LegendTaxonomyBaseStoreProvider.js';
+import {
+  useLegendTaxonomyApplicationStore,
+  useLegendTaxonomyBaseStore,
+} from '../LegendTaxonomyFrameworkProvider.js';
 
 const DataSpacePreviewStoreContext = createContext<
   DataSpacePreviewStore | undefined
@@ -47,9 +49,10 @@ const DataSpacePreviewStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendTaxonomyApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendTaxonomyBaseStore();
   const store = useLocalObservable(
-    () => new DataSpacePreviewStore(applicationStore, depotServerClient),
+    () =>
+      new DataSpacePreviewStore(applicationStore, baseStore.depotServerClient),
   );
   return (
     <DataSpacePreviewStoreContext.Provider value={store}>

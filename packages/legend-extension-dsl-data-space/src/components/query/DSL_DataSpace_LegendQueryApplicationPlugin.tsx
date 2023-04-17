@@ -60,13 +60,13 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
       // data space query editor setup
       {
         key: 'data-space-query-setup-application-page',
-        urlPatterns: [DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP],
+        addressPatterns: [DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP],
         renderer: DataSpaceQuerySetup,
       },
       // data space query editor
       {
         key: 'data-space-query-editor-application-page',
-        urlPatterns: [DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE],
+        addressPatterns: [DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE],
         renderer: DataSpaceQueryCreator,
       },
     ];

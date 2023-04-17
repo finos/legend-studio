@@ -68,7 +68,7 @@ import { WorkflowManager } from '../editor/side-bar/WorkflowManager.js';
 import {
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
-} from '../LegendStudioBaseStoreProvider.js';
+} from '../LegendStudioFrameworkProvider.js';
 import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
 
 const ProjectViewerStatusBar = observer(() => {

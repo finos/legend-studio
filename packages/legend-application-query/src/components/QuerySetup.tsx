@@ -42,7 +42,7 @@ import {
 } from '../stores/QuerySetupStore.js';
 import type { ProjectData } from '@finos/legend-server-depot';
 import { useApplicationStore } from '@finos/legend-application';
-import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import { useLegendQueryApplicationStore } from './LegendQueryFrameworkProvider.js';
 import type { QuerySetupActionConfiguration } from '../stores/LegendQueryApplicationPlugin.js';
 
 export type ProjectOption = { label: string; value: ProjectData };

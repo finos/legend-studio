@@ -28,7 +28,7 @@ import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../../../../EditorComponentTestUtils.js';
+} from '../../../__test-utils__/EditorComponentTestUtils.js';
 import { TEST_DATA__multiEXecutionService } from './TEST_DATA__ServiceEditor.js';
 import type { EditorStore } from '../../../../../stores/editor/EditorStore.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';

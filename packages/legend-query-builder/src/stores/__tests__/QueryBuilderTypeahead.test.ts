@@ -34,7 +34,7 @@ import {
   TEST_DATA__lambda_expected_typeahead_postFilter_with_derivation,
   TEST_DATA__lambda_typeahead_simple_postFilter,
 } from './TEST_DATA__QueryBuilder_TestTypeaheadSearch.js';
-import { TEST__setUpQueryBuilderState } from '../QueryBuilderStateTestUtils.js';
+import { TEST__setUpQueryBuilderState } from '../__test-utils__/QueryBuilderStateTestUtils.js';
 import { QueryBuilderProjectionColumnState } from '../fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { QueryBuilderAggregateColumnState } from '../fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import {

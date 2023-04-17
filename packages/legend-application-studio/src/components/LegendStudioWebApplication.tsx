@@ -31,24 +31,21 @@ import {
   LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN,
 } from '../application/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
-import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
-import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import {
-  LegendStudioBaseStoreProvider,
+  LegendStudioFrameworkProvider,
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
-} from './LegendStudioBaseStoreProvider.js';
+} from './LegendStudioFrameworkProvider.js';
 import {
+  BrowserEnvironmentProvider,
   generateExtensionUrlPattern,
-  LegendApplicationComponentFrameworkProvider,
   Route,
   Switch,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../application/LegendStudioDocumentation.js';
 
-const LegendStudioNotFoundRouteScreen = observer(() => {
+const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
 
   const currentPath =
@@ -108,7 +105,7 @@ const LegendStudioNotFoundRouteScreen = observer(() => {
   );
 });
 
-export const LegendStudioApplicationRoot = observer(() => {
+export const LegendStudioWebApplicationRouter = observer(() => {
   const baseStore = useLegendStudioBaseStore();
   const applicationStore = useLegendStudioApplicationStore();
 
@@ -154,12 +151,12 @@ export const LegendStudioApplicationRoot = observer(() => {
               <Route
                 key={entry.key}
                 exact={true}
-                path={entry.urlPatterns.map(generateExtensionUrlPattern)}
+                path={entry.addressPatterns.map(generateExtensionUrlPattern)}
                 component={entry.renderer as React.ComponentType<unknown>}
               />
             ))}
             <Route>
-              <LegendStudioNotFoundRouteScreen />
+              <NotFoundPage />
             </Route>
           </Switch>
         </>
@@ -209,12 +206,12 @@ export const LegendStudioApplicationRoot = observer(() => {
               <Route
                 key={entry.key}
                 exact={true}
-                path={entry.urlPatterns.map(generateExtensionUrlPattern)}
+                path={entry.addressPatterns.map(generateExtensionUrlPattern)}
                 component={entry.renderer as React.ComponentType<unknown>}
               />
             ))}
             <Route>
-              <LegendStudioNotFoundRouteScreen />
+              <NotFoundPage />
             </Route>
           </Switch>
         </>
@@ -223,30 +220,16 @@ export const LegendStudioApplicationRoot = observer(() => {
   );
 });
 
-export const LegendStudioApplication = observer(
-  (props: { config: LegendStudioApplicationConfig }) => {
-    const { config } = props;
+export const LegendStudioWebApplication = observer(
+  (props: { baseUrl: string }) => {
+    const { baseUrl } = props;
 
     return (
-      <SDLCServerClientProvider
-        config={{
-          env: config.env,
-          serverUrl: config.sdlcServerUrl,
-          baseHeaders: config.SDLCServerBaseHeaders,
-        }}
-      >
-        <DepotServerClientProvider
-          config={{
-            serverUrl: config.depotServerUrl,
-          }}
-        >
-          <LegendStudioBaseStoreProvider>
-            <LegendApplicationComponentFrameworkProvider>
-              <LegendStudioApplicationRoot />
-            </LegendApplicationComponentFrameworkProvider>
-          </LegendStudioBaseStoreProvider>
-        </DepotServerClientProvider>
-      </SDLCServerClientProvider>
+      <BrowserEnvironmentProvider baseUrl={baseUrl}>
+        <LegendStudioFrameworkProvider>
+          <LegendStudioWebApplicationRouter />
+        </LegendStudioFrameworkProvider>
+      </BrowserEnvironmentProvider>
     );
   },
 );

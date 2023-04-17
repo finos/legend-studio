@@ -19,26 +19,24 @@ import {
   generateExploreTaxonomyTreeRoute,
   LEGEND_TAXONOMY_ROUTE_PATTERN,
 } from '../application/LegendTaxonomyNavigation.js';
-import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import {
-  LegendApplicationComponentFrameworkProvider,
+  BrowserEnvironmentProvider,
   Redirect,
   Route,
   Switch,
 } from '@finos/legend-application';
-import type { LegendTaxonomyApplicationConfig } from '../application/LegendTaxonomyApplicationConfig.js';
 import { TaxonomyExplorer } from './TaxonomyExplorer.js';
 import { DataSpacePreview } from './data-space-preview/DataSpacePreview.js';
 import {
-  LegendTaxonomyBaseStoreProvider,
+  LegendTaxonomyFrameworkProvider,
   useLegendTaxonomyApplicationStore,
   useLegendTaxonomyBaseStore,
-} from './LegendTaxonomyBaseStoreProvider.js';
+} from './LegendTaxonomyFrameworkProvider.js';
 import { useEffect } from 'react';
 import { flowResult } from 'mobx';
 import { PanelLoadingIndicator } from '@finos/legend-art';
 
-export const LegendTaxonomyApplicationRoot = observer(() => {
+const LegendTaxonomyWebApplicationRouter = observer(() => {
   const applicationStore = useLegendTaxonomyApplicationStore();
   const baseStore = useLegendTaxonomyBaseStore();
 
@@ -82,22 +80,16 @@ export const LegendTaxonomyApplicationRoot = observer(() => {
   );
 });
 
-export const LegendTaxonomyApplication = observer(
-  (props: { config: LegendTaxonomyApplicationConfig }) => {
-    const { config } = props;
+export const LegendTaxonomyWebApplication = observer(
+  (props: { baseUrl: string }) => {
+    const { baseUrl } = props;
 
     return (
-      <DepotServerClientProvider
-        config={{
-          serverUrl: config.depotServerUrl,
-        }}
-      >
-        <LegendTaxonomyBaseStoreProvider>
-          <LegendApplicationComponentFrameworkProvider>
-            <LegendTaxonomyApplicationRoot />
-          </LegendApplicationComponentFrameworkProvider>
-        </LegendTaxonomyBaseStoreProvider>
-      </DepotServerClientProvider>
+      <BrowserEnvironmentProvider baseUrl={baseUrl}>
+        <LegendTaxonomyFrameworkProvider>
+          <LegendTaxonomyWebApplicationRouter />
+        </LegendTaxonomyFrameworkProvider>
+      </BrowserEnvironmentProvider>
     );
   },
 );

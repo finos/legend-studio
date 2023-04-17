@@ -30,8 +30,24 @@ import {
   type NavigationZone,
   NAVIGATION_ZONE_PREFIX,
 } from './NavigationService.js';
+import {
+  Route,
+  Switch,
+  Redirect,
+  matchPath,
+  generatePath,
+  useParams,
+  useLocation,
+} from 'react-router';
 
-export class WebApplicationNavigator implements ApplicationNavigator {
+export { BrowserRouter } from 'react-router-dom';
+export { Route, Switch, Redirect, useParams, matchPath, generatePath };
+export const useNavigationZone = (): NavigationZone => {
+  const location = useLocation() as { hash: string }; // TODO: this is a temporary hack until we upgrade react-router
+  return location.hash.substring(NAVIGATION_ZONE_PREFIX.length);
+};
+
+export class BrowserNavigator implements ApplicationNavigator {
   private readonly historyAPI: History;
   private _isNavigationBlocked = false;
   private _forceBypassNavigationBlocking = false;
@@ -51,7 +67,7 @@ export class WebApplicationNavigator implements ApplicationNavigator {
   onNativePlatformNavigationBlock?: (() => void) | undefined;
 
   constructor(historyApiClient: History) {
-    makeObservable<WebApplicationNavigator, '_isNavigationBlocked'>(this, {
+    makeObservable<BrowserNavigator, '_isNavigationBlocked'>(this, {
       _isNavigationBlocked: observable,
       isNavigationBlocked: computed,
       blockNavigation: action,

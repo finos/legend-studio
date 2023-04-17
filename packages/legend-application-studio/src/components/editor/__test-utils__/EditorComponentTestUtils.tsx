@@ -22,33 +22,26 @@ import {
   waitFor,
   getByText,
 } from '@testing-library/react';
-import { LEGEND_STUDIO_TEST_ID } from '../application/LegendStudioTesting.js';
-import { EditorStore } from '../stores/editor/EditorStore.js';
-import { Editor } from './editor/Editor.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
+import { EditorStore } from '../../../stores/editor/EditorStore.js';
+import { Editor } from '../Editor.js';
 import {
   generateEditorRoute,
   LEGEND_STUDIO_ROUTE_PATTERN,
-} from '../application/LegendStudioNavigation.js';
-import {
-  createMock,
-  createSpy,
-  type Writable,
-  type PlainObject,
-} from '@finos/legend-shared';
-import { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
+} from '../../../application/LegendStudioNavigation.js';
+import { createMock, createSpy, type PlainObject } from '@finos/legend-shared';
+import { LegendStudioPluginManager } from '../../../application/LegendStudioPluginManager.js';
 import type { Entity } from '@finos/legend-storage';
 import {
   type Project,
   type ProjectConfiguration,
   type ProjectStructureVersion,
   type Revision,
-  type SDLCServerClient,
   type Version,
   type Workspace,
   WorkspaceType,
-  TEST__SDLCServerClientProvider,
-  TEST__getTestSDLCServerClient,
   SDLCServerFeaturesConfiguration,
+  SDLCServerClient,
 } from '@finos/legend-server-sdlc';
 import {
   type GenerationConfigurationDescription,
@@ -57,27 +50,21 @@ import {
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
 import {
-  type DepotServerClient,
+  DepotServerClient,
   type ProjectData,
   type ProjectVersionEntities,
-  TEST__DepotServerClientProvider,
-  TEST__getTestDepotServerClient,
   type RawProjectDependencyReport,
 } from '@finos/legend-server-depot';
-import { LegendStudioBaseStoreProvider } from './LegendStudioBaseStoreProvider.js';
+import { LegendStudioFrameworkProvider } from '../../LegendStudioFrameworkProvider.js';
 import {
-  TEST__provideMockedWebApplicationNavigator,
-  TEST__ApplicationStoreProvider,
-  TEST__getTestApplicationStore,
-  LegendApplicationComponentFrameworkProvider,
-  WebApplicationNavigator,
-  Router,
   createMemoryHistory,
   Route,
-  type NavigationService,
+  TEST__BrowserEnvironmentProvider,
+  ApplicationStoreProvider,
+  ApplicationStore,
 } from '@finos/legend-application';
-import { TEST__getLegendStudioApplicationConfig } from '../stores/editor/EditorStoreTestUtils.js';
-import type { LegendStudioApplicationStore } from '../stores/LegendStudioBaseStore.js';
+import type { LegendStudioApplicationStore } from '../../../stores/LegendStudioBaseStore.js';
+import { TEST__getLegendStudioApplicationConfig } from '../../../stores/__test-utils__/LegendStudioApplicationTestUtils.js';
 
 export const TEST_DATA__DefaultSDLCInfo = {
   project: {
@@ -142,34 +129,34 @@ export const TEST_DATA__DefaultDepotReport = {
   },
 };
 
-export const TEST__LegendStudioBaseStoreProvider: React.FC<{
-  children: React.ReactNode;
-}> = ({ children }) => (
-  <LegendStudioBaseStoreProvider>{children}</LegendStudioBaseStoreProvider>
-);
-
 export const TEST__provideMockedEditorStore = (customization?: {
   mock?: EditorStore;
   applicationStore?: LegendStudioApplicationStore;
-  sdlcServerClient?: SDLCServerClient;
-  depotServerClient?: DepotServerClient;
   graphManagerState?: GraphManagerState;
   pluginManager?: LegendStudioPluginManager;
 }): EditorStore => {
   const pluginManager =
     customization?.pluginManager ?? LegendStudioPluginManager.create();
+  const applicationStore =
+    customization?.applicationStore ??
+    new ApplicationStore(
+      TEST__getLegendStudioApplicationConfig(),
+      pluginManager,
+    );
   const value =
     customization?.mock ??
     new EditorStore(
-      customization?.applicationStore ??
-        TEST__getTestApplicationStore(
-          TEST__getLegendStudioApplicationConfig(),
-          pluginManager,
-        ),
-      customization?.sdlcServerClient ?? TEST__getTestSDLCServerClient(),
-      customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
+      applicationStore,
+      new SDLCServerClient({
+        env: applicationStore.config.env,
+        serverUrl: applicationStore.config.sdlcServerUrl,
+        baseHeaders: applicationStore.config.SDLCServerBaseHeaders,
+      }),
+      new DepotServerClient({
+        serverUrl: applicationStore.config.depotServerUrl,
+      }),
     );
-  const MOCK__EditorStoreProvider = require('./editor/EditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MOCK__EditorStoreProvider = require('../EditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MOCK__EditorStoreProvider.useEditorStore = createMock();
   MOCK__EditorStoreProvider.useEditorStore.mockReturnValue(value);
   return value;
@@ -341,34 +328,17 @@ export const TEST__setUpEditor = async (
       ),
     ],
   });
-  const navigator = new WebApplicationNavigator(history);
-  TEST__provideMockedWebApplicationNavigator({ mock: navigator });
-  // TODO: this is not the proper way to do this, we prefer to mock and inject this when we
-  // create the editor store, let's consider how we clean this up in the future
-  (
-    MOCK__editorStore.applicationStore
-      .navigationService as Writable<NavigationService>
-  ).navigator = navigator;
 
   const renderResult = render(
-    <Router history={history}>
-      <TEST__ApplicationStoreProvider
-        config={TEST__getLegendStudioApplicationConfig()}
-        pluginManager={LegendStudioPluginManager.create()}
-      >
-        <TEST__SDLCServerClientProvider>
-          <TEST__DepotServerClientProvider>
-            <TEST__LegendStudioBaseStoreProvider>
-              <LegendApplicationComponentFrameworkProvider>
-                <Route path={[LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE]}>
-                  <Editor />
-                </Route>
-              </LegendApplicationComponentFrameworkProvider>
-            </TEST__LegendStudioBaseStoreProvider>
-          </TEST__DepotServerClientProvider>
-        </TEST__SDLCServerClientProvider>
-      </TEST__ApplicationStoreProvider>
-    </Router>,
+    <ApplicationStoreProvider store={MOCK__editorStore.applicationStore}>
+      <TEST__BrowserEnvironmentProvider historyAPI={history}>
+        <LegendStudioFrameworkProvider>
+          <Route path={[LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE]}>
+            <Editor />
+          </Route>
+        </LegendStudioFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
   );
   // assert project/workspace have been set
   await waitFor(() =>

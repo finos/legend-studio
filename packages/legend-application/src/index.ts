@@ -25,15 +25,15 @@ export * from './application/LegendApplicationSetting.js';
 export { LEGEND_APPLICATION_COLOR_THEME } from './application/LegendApplicationTheme.js';
 
 export * from './components/ApplicationStoreProvider.js';
-export * from './components/WebApplicationNavigatorProvider.js';
-export * from './components/LegendApplicationComponentFrameworkProvider.js';
+export * from './components/ApplicationFrameworkProvider.js';
 export * from './components/useApplicationNavigationContext.js';
 export * from './components/useCommands.js';
-export * from './components/ApplicationStoreProviderTestUtils.js';
-export * from './components/WebApplicationNavigatorProviderTestUtils.js';
+export {
+  forceDispatchKeyboardEvent,
+  BackdropContainer,
+} from './components/ApplicationComponentFrameworkProvider.js';
 
 export * from './stores/ApplicationStore.js';
-export { WebApplicationNavigator } from './stores/navigation/WebApplicationNavigator.js';
 export {
   NavigationService,
   type NavigationAddress,
@@ -54,10 +54,19 @@ export * from './stores/AssistantService.js';
 export * from './stores/ApplicationNavigationContextService.js';
 export * from './stores/LegendApplicationPlugin.js';
 export * from './stores/Core_LegendApplicationPlugin.js';
-
-export * from './stores/ApplicationStoreTestUtils.js';
-export * from './stores/navigation/WebApplicationRouter.js';
 export { DISPLAY_ANSI_ESCAPE } from './stores/terminal/Terminal.js';
+
+// --------- TO BE MOVED TO @finos/legend-application/test
+
+// TODO: also move a bunch of react-router stuff here
+export * from './stores/__test-utils__/ApplicationStoreTestUtils.js';
+
+// --------- TO BE MOVED TO @finos/legend-application/platform/browser
+
+export * from './components/__test-utils__/BrowserEnvironmentTestUtils.js';
+export * from './components/BrowserEnvironmentProvider.js';
+export * from './stores/platform/BrowserPlatform.js';
+export * from './stores/navigation/BrowserNavigator.js';
 
 // ------------------------------------------- TO BE MOVED -------------------------------------------
 

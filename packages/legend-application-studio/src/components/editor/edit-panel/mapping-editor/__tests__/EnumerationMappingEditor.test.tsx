@@ -29,7 +29,7 @@ import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../../../../EditorComponentTestUtils.js';
+} from '../../../__test-utils__/EditorComponentTestUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../application/LegendStudioTesting.js';
 import type { EditorStore } from '../../../../../stores/editor/EditorStore.js';
 import { MappingEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';

@@ -51,7 +51,6 @@ export * from './components/ServiceQuerySetupUtils.js';
 export * from './components/QuerySetupUtils.js';
 export * from './components/QueryBuilderTextEditor.js';
 
-export { TEST__setUpQueryBuilder } from './components/QueryBuilderComponentTestUtils.js';
 export { QueryBuilderTextEditorMode } from './stores/QueryBuilderTextEditorState.js';
 
 // ------------------------------------------- Shared components -------------------------------------------
@@ -66,3 +65,8 @@ export * from './stores/shared/LambdaParameterState.js';
 export * from './stores/shared/ValueSpecificationModifierHelper.js';
 export * from './stores/shared/ValueSpecificationEditorHelper.js';
 export * from './stores/execution-plan/ExecutionPlanState.js';
+
+// ------------------ TEMP ------------------------
+// TODO: remove this when we move the test from `legend-manual-tests` here
+
+export { TEST__setUpQueryBuilder } from './components/__test-utils__/QueryBuilderComponentTestUtils.js';

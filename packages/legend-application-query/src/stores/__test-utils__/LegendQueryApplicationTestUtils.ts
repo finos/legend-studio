@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
-import { TEST_DATA__applicationVersion } from '@finos/legend-application';
+import { TEST__getApplicationVersionData } from '@finos/legend-application';
+import { LegendQueryApplicationConfig } from '../../application/LegendQueryApplicationConfig.js';
 
 const TEST_DATA__appConfig = {
   appName: 'test-query-app',
@@ -43,7 +43,7 @@ export const TEST__getTestLegendQueryApplicationConfig = (
       ...TEST_DATA__appConfig,
       ...extraConfigData,
     },
-    versionData: TEST_DATA__applicationVersion,
+    versionData: TEST__getApplicationVersionData(),
     baseUrl: '/query/',
   });
   return config;

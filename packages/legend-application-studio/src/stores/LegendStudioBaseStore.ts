@@ -43,7 +43,7 @@ import {
 } from 'mobx';
 import { User, SDLCServerClient } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../application/LegendStudioEvent.js';
-import type { DepotServerClient } from '@finos/legend-server-depot';
+import { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
 import { LegendStudioEventHelper } from '../application/LegendStudioEventHelper.js';
@@ -65,11 +65,7 @@ export class LegendStudioBaseStore {
   isSDLCAuthorized: boolean | undefined = false;
   SDLCServerTermsOfServicesUrlsToView: string[] = [];
 
-  constructor(
-    applicationStore: LegendStudioApplicationStore,
-    sdlcServerClient: SDLCServerClient,
-    depotServerClient: DepotServerClient,
-  ) {
+  constructor(applicationStore: LegendStudioApplicationStore) {
     makeObservable<LegendStudioBaseStore, 'initializeSDLCServerClient'>(this, {
       isSDLCAuthorized: observable,
       SDLCServerTermsOfServicesUrlsToView: observable,
@@ -80,13 +76,19 @@ export class LegendStudioBaseStore {
     });
 
     this.applicationStore = applicationStore;
-    this.sdlcServerClient = sdlcServerClient;
-    this.depotServerClient = depotServerClient;
-
     this.pluginManager = applicationStore.pluginManager;
 
-    // Register plugins
+    // setup servers
+    this.sdlcServerClient = new SDLCServerClient({
+      env: this.applicationStore.config.env,
+      serverUrl: this.applicationStore.config.sdlcServerUrl,
+      baseHeaders: this.applicationStore.config.SDLCServerBaseHeaders,
+    });
     this.sdlcServerClient.setTracerService(this.applicationStore.tracerService);
+
+    this.depotServerClient = new DepotServerClient({
+      serverUrl: this.applicationStore.config.depotServerUrl,
+    });
     this.depotServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
@@ -105,7 +107,9 @@ export class LegendStudioBaseStore {
       .getApplicationPlugins()
       .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? [])
       .filter((entry) => entry.bypassSDLC)
-      .flatMap((entry) => entry.urlPatterns.map(generateExtensionUrlPattern));
+      .flatMap((entry) =>
+        entry.addressPatterns.map(generateExtensionUrlPattern),
+      );
 
     // authorize SDLC, unless navigation location match SDLC-bypassed patterns
     if (

@@ -17,7 +17,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
-import { type User, useSDLCServerClient } from '@finos/legend-server-sdlc';
+import type { User } from '@finos/legend-server-sdlc';
 import {
   type ProjectOption,
   ActivityBarMenu,
@@ -25,9 +25,9 @@ import {
   useLegendStudioApplicationStore,
   buildProjectOption,
   getProjectOptionLabelFormatter,
+  useLegendStudioBaseStore,
 } from '@finos/legend-application-studio';
 import { QueryProductionizerStore } from '../../stores/studio/QueryProductionizerStore.js';
-import { useDepotServerClient } from '@finos/legend-server-depot';
 import type { QueryProductionizerPathParams } from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import {
@@ -72,14 +72,13 @@ const QueryProductionizerStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendStudioApplicationStore();
-  const sdlcServerClient = useSDLCServerClient();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendStudioBaseStore();
   const store = useLocalObservable(
     () =>
       new QueryProductionizerStore(
         applicationStore,
-        sdlcServerClient,
-        depotServerClient,
+        baseStore.sdlcServerClient,
+        baseStore.depotServerClient,
       ),
   );
   return (

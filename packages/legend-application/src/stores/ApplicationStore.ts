@@ -21,10 +21,11 @@ import {
   uuid,
   ActionState,
   assertErrorThrown,
+  IllegalStateError,
+  type Writable,
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../application/LegendApplicationEvent.js';
 import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
-import type { WebApplicationNavigator } from './navigation/WebApplicationNavigator.js';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 import { DocumentationService } from './DocumentationService.js';
 import { AssistantService } from './AssistantService.js';
@@ -44,6 +45,8 @@ import { LayoutService } from './LayoutService.js';
 import { ClipboardService } from './ClipboardService.js';
 import { NavigationService } from './navigation/NavigationService.js';
 import { SettingService } from './SettingService.js';
+import { DefaultNavigator } from './navigation/DefaultNavigator.js';
+import type { ApplicationPlatform } from './platform/ApplicationPlatform.js';
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
@@ -59,6 +62,7 @@ export class ApplicationStore<
   readonly config: T;
   readonly pluginManager: V;
   readonly initState = ActionState.create();
+  readonly platform?: ApplicationPlatform | undefined;
 
   // core
   readonly timeService: TimeService;
@@ -86,15 +90,7 @@ export class ApplicationStore<
   readonly telemetryService: TelemetryService;
   readonly tracerService: TracerService;
 
-  constructor(
-    config: T,
-    /**
-     * NOTE: as of now, we only support web environment, we will not provide a generic `ApplicationNavigator`
-     * This is something we need to think about when we potentially move to another platform
-     */
-    navigator: WebApplicationNavigator,
-    pluginManager: V,
-  ) {
+  constructor(config: T, pluginManager: V) {
     this.config = config;
     this.pluginManager = pluginManager;
 
@@ -114,7 +110,7 @@ export class ApplicationStore<
     this.commandService = new CommandService(this);
     this.keyboardShortcutsService = new KeyboardShortcutsService(this);
 
-    this.navigationService = new NavigationService(navigator);
+    this.navigationService = new NavigationService(new DefaultNavigator());
     this.navigationContextService = new ApplicationNavigationContextService(
       this,
     );
@@ -135,7 +131,7 @@ export class ApplicationStore<
     this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
   }
 
-  async initialize(): Promise<void> {
+  async initialize(platform: ApplicationPlatform): Promise<void> {
     if (!this.initState.isInInitialState) {
       this.notificationService.notifyIllegalState(
         'Application store is re-initialized',
@@ -145,12 +141,13 @@ export class ApplicationStore<
     this.initState.inProgress();
 
     try {
-      await Promise.all(
-        this.pluginManager
-          .getApplicationPlugins()
-          .flatMap((plugin) => plugin.getExtraApplicationSetups?.() ?? [])
-          .map((setup) => setup(this)),
-      );
+      if (this.platform) {
+        throw new IllegalStateError(`Platform is already configured`);
+      }
+      (this as Writable<ApplicationStore<T, V>>).platform = platform;
+      (this as Writable<ApplicationStore<T, V>>).navigationService =
+        new NavigationService(platform.getNavigator());
+
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);

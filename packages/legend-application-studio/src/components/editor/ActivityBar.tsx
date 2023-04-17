@@ -45,7 +45,7 @@ import { forwardRef, useState } from 'react';
 import { VIRTUAL_ASSISTANT_TAB } from '@finos/legend-application';
 import { LegendStudioAppInfo } from '../LegendStudioAppInfo.js';
 import { generateSetupRoute } from '../../application/LegendStudioNavigation.js';
-import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
+import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
 
 const SettingsMenu = observer(
   forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {

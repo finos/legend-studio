@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-import { createContext, useContext } from 'react';
+import { createContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { useApplicationStore } from '@finos/legend-application';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  ApplicationFrameworkProvider,
+  useApplicationStore,
+} from '@finos/legend-application';
 import type { LegendPureIDEPluginManager } from '../application/LegendPureIDEPluginManager.js';
 import type { LegendPureIDEApplicationConfig } from '../application/LegendPureIDEApplicationConfig.js';
 import {
@@ -36,7 +38,7 @@ const LegendPureIDEBaseStoreContext = createContext<
   LegendPureIDEBaseStore | undefined
 >(undefined);
 
-export const LegendPureIDEBaseStoreProvider: React.FC<{
+const LegendPureIDEBaseStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendPureIDEApplicationStore();
@@ -50,8 +52,10 @@ export const LegendPureIDEBaseStoreProvider: React.FC<{
   );
 };
 
-export const useLegendPureIDEBaseStore = (): LegendPureIDEBaseStore =>
-  guaranteeNonNullable(
-    useContext(LegendPureIDEBaseStoreContext),
-    `Can't find Legend Pure IDE base store in context`,
-  );
+export const LegendPureIDEFrameworkProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => (
+  <ApplicationFrameworkProvider>
+    <LegendPureIDEBaseStoreProvider>{children}</LegendPureIDEBaseStoreProvider>
+  </ApplicationFrameworkProvider>
+);

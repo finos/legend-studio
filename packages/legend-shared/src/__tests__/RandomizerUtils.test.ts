@@ -15,7 +15,7 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { unitTest } from '../application/TestUtils.js';
+import { unitTest } from '../__test-utils__/TestUtils.js';
 import { Randomizer } from '../application/RandomizerUtils.js';
 
 const NUMBER_OF_ITERATIONS = 10000;

@@ -18,7 +18,7 @@ import { test, expect } from '@jest/globals';
 import { applyEntityChanges, EntityChange } from '@finos/legend-server-sdlc';
 import { type TEMPORARY__JestMatcher, unitTest } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils.js';
+import { TEST__getTestEditorStore } from '../../__test-utils__/EditorStoreTestUtils.js';
 
 const entities = [
   {

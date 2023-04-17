@@ -16,11 +16,11 @@
 
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useApplicationStore, useParams } from '@finos/legend-application';
-import { useDepotServerClient } from '@finos/legend-server-depot';
 import {
   QueryEditor,
   QueryEditorStoreContext,
   useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
 } from '@finos/legend-application-query';
 import { DataSpaceQueryCreatorStore } from '../../stores/query/DataSpaceQueryCreatorStore.js';
 import {
@@ -47,12 +47,12 @@ const DataSpaceQueryCreatorStoreProvider: React.FC<{
 }) => {
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new DataSpaceQueryCreatorStore(
         applicationStore,
-        depotServerClient,
+        baseStore.depotServerClient,
         groupId,
         artifactId,
         versionId,

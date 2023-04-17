@@ -22,7 +22,7 @@ import {
   getSuperclass,
   sortObjectKeys,
 } from '../CommonUtils.js';
-import { unitTest } from '../application/TestUtils.js';
+import { unitTest } from '../__test-utils__/TestUtils.js';
 
 test(unitTest('Recursive omit'), () => {
   const obj = { a: '', b: { c: '', d: '' } };

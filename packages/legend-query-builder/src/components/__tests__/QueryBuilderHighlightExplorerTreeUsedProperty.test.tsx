@@ -38,7 +38,7 @@ import { act } from 'react-dom/test-utils';
 import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
 import { isExplorerTreeNodeAlreadyUsed } from '../explorer/QueryBuilderExplorerPanel.js';
 import type { Entity } from '@finos/legend-storage';
-import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
+import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 
 type TestCase = [
   string,

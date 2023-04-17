@@ -25,8 +25,10 @@ import { flowResult } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { generateQuerySetupRoute } from '../application/LegendQueryNavigation.js';
-import { useDepotServerClient } from '@finos/legend-server-depot';
-import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import {
+  useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
+} from './LegendQueryFrameworkProvider.js';
 import { UpdateExistingServiceQuerySetupStore } from '../stores/UpdateExistingServiceQuerySetupStore.js';
 import { BaseQuerySetup, BaseQuerySetupStoreContext } from './QuerySetup.js';
 import {
@@ -39,12 +41,12 @@ const UpdateExistingServiceQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendQueryApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new UpdateExistingServiceQuerySetupStore(
         applicationStore,
-        depotServerClient,
+        baseStore.depotServerClient,
       ),
   );
   return (

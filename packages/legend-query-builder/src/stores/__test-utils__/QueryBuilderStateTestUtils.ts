@@ -15,24 +15,90 @@
  */
 
 import {
-  TEST__getGenericApplicationConfig,
-  TEST__getTestApplicationStore,
-  TEST__LegendApplicationPluginManager,
+  ApplicationStore,
+  LegendApplicationConfig,
+  type LegendApplicationPlugin,
+  LegendApplicationPluginManager,
+  TEST__getApplicationVersionData,
 } from '@finos/legend-application';
 import {
-  type RawLambda,
-  type RawMappingModelCoverageAnalysisResult,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
+  type RawLambda,
+  type RawMappingModelCoverageAnalysisResult,
+  type GraphManagerPluginManager,
+  type PureProtocolProcessorPlugin,
+  type PureGraphManagerPlugin,
+  type PureGraphPlugin,
 } from '@finos/legend-graph';
 import { createSpy } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import { flowResult } from 'mobx';
-import { QueryBuilder_GraphManagerPreset } from '../graphManager/QueryBuilder_GraphManagerPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import {
   INTERNAL__BasicQueryBuilderState,
   type QueryBuilderState,
-} from './QueryBuilderState.js';
+} from '../QueryBuilderState.js';
+
+export class TEST__LegendApplicationPluginManager
+  extends LegendApplicationPluginManager<LegendApplicationPlugin>
+  implements GraphManagerPluginManager
+{
+  private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
+  private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
+  private pureGraphPlugins: PureGraphPlugin[] = [];
+
+  private constructor() {
+    super();
+  }
+
+  static create(): TEST__LegendApplicationPluginManager {
+    return new TEST__LegendApplicationPluginManager();
+  }
+
+  registerPureProtocolProcessorPlugin(
+    plugin: PureProtocolProcessorPlugin,
+  ): void {
+    this.pureProtocolProcessorPlugins.push(plugin);
+  }
+
+  registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin): void {
+    this.pureGraphManagerPlugins.push(plugin);
+  }
+
+  registerPureGraphPlugin(plugin: PureGraphPlugin): void {
+    this.pureGraphPlugins.push(plugin);
+  }
+
+  getPureGraphManagerPlugins(): PureGraphManagerPlugin[] {
+    return [...this.pureGraphManagerPlugins];
+  }
+
+  getPureProtocolProcessorPlugins(): PureProtocolProcessorPlugin[] {
+    return [...this.pureProtocolProcessorPlugins];
+  }
+
+  getPureGraphPlugins(): PureGraphPlugin[] {
+    return [...this.pureGraphPlugins];
+  }
+}
+
+class TEST__LegendApplicationConfig extends LegendApplicationConfig {}
+
+export const TEST__getGenericApplicationConfig = (
+  extraConfigData = {},
+): LegendApplicationConfig => {
+  const config = new TEST__LegendApplicationConfig({
+    configData: {
+      env: 'TEST',
+      appName: 'TEST',
+      ...extraConfigData,
+    },
+    versionData: TEST__getApplicationVersionData(),
+    baseUrl: '/',
+  });
+  return config;
+};
 
 export const TEST__setUpQueryBuilderState = async (
   entities: Entity[],
@@ -50,7 +116,7 @@ export const TEST__setUpQueryBuilderState = async (
 ): Promise<QueryBuilderState> => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
   pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
-  const applicationStore = TEST__getTestApplicationStore(
+  const applicationStore = new ApplicationStore(
     TEST__getGenericApplicationConfig(),
     pluginManager,
   );

@@ -18,12 +18,12 @@ import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { LegendQueryBaseStore } from '../stores/LegendQueryBaseStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useDepotServerClient } from '@finos/legend-server-depot';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
 import {
   type ApplicationStore,
   useApplicationStore,
+  ApplicationFrameworkProvider,
 } from '@finos/legend-application';
 
 export const useLegendQueryApplicationStore = (): ApplicationStore<
@@ -36,13 +36,12 @@ const LegendQueryBaseStoreContext = createContext<
   LegendQueryBaseStore | undefined
 >(undefined);
 
-export const LegendQueryBaseStoreProvider: React.FC<{
+const LegendQueryBaseStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendQueryApplicationStore();
-  const depotServerClient = useDepotServerClient();
   const store = useLocalObservable(
-    () => new LegendQueryBaseStore(applicationStore, depotServerClient),
+    () => new LegendQueryBaseStore(applicationStore),
   );
   return (
     <LegendQueryBaseStoreContext.Provider value={store}>
@@ -56,3 +55,11 @@ export const useLegendQueryBaseStore = (): LegendQueryBaseStore =>
     useContext(LegendQueryBaseStoreContext),
     `Can't find Legend Query base store in context`,
   );
+
+export const LegendQueryFrameworkProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => (
+  <ApplicationFrameworkProvider>
+    <LegendQueryBaseStoreProvider>{children}</LegendQueryBaseStoreProvider>
+  </ApplicationFrameworkProvider>
+);

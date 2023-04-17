@@ -24,7 +24,10 @@ export {
   generateReviewRoute,
   generateViewProjectRoute,
 } from './application/LegendStudioNavigation.js';
-export { useLegendStudioApplicationStore } from './components/LegendStudioBaseStoreProvider.js';
+export {
+  useLegendStudioApplicationStore,
+  useLegendStudioBaseStore,
+} from './components/LegendStudioFrameworkProvider.js';
 export type { LegendStudioApplicationStore } from './stores/LegendStudioBaseStore.js';
 
 // stores
@@ -74,9 +77,9 @@ export {
   TEST__setUpEditor,
   TEST__setUpEditorWithDefaultSDLCData,
   TEST__openElementFromExplorerTree,
-} from './components/EditorComponentTestUtils.js';
+} from './components/editor/__test-utils__/EditorComponentTestUtils.js';
 export * from './application/LegendStudioTesting.js';
-export * from './stores/editor/EditorStoreTestUtils.js';
+export * from './stores/editor/__test-utils__/EditorStoreTestUtils.js';
 
 export { PostProcessorEditorState } from './stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 export { MappingExecutionState } from './stores/editor/editor-state/element-editor-state/mapping/MappingExecutionState.js';

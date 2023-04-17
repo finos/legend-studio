@@ -40,6 +40,7 @@ import {
   type DocumentationRegistryEntry,
 } from '../stores/DocumentationService.js';
 import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';
+import { ApplicationStore } from '../stores/ApplicationStore.js';
 
 export abstract class LegendApplicationLogger {
   abstract debug(event: LogEvent, ...data: unknown[]): void;
@@ -277,7 +278,12 @@ export abstract class LegendApplication {
     input: LegendApplicationConfigurationInput<LegendApplicationConfigurationData>,
   ): Promise<LegendApplicationConfig>;
 
-  protected abstract loadApplication(): Promise<void>;
+  protected abstract loadApplication(
+    applicationStore: ApplicationStore<
+      LegendApplicationConfig,
+      LegendApplicationPluginManager<LegendApplicationPlugin>
+    >,
+  ): Promise<void>;
 
   async start(): Promise<void> {
     assertNonNullable(
@@ -285,30 +291,36 @@ export abstract class LegendApplication {
       'Legend application has not been configured properly. Make sure to run setup() before start()',
     );
     try {
-      // Fetch application config
+      // fetch application config
       const [config, extensionConfigData] =
         await this.fetchApplicationConfiguration(this.baseUrl);
       this.config = config;
 
-      // Setup plugins
+      // setup plugins
       this.pluginRegister?.(this.pluginManager, this.config);
       this.pluginManager.configure(extensionConfigData);
       this.pluginManager.install();
 
-      // Other setups
+      // other setups
       await Promise.all(
         // NOTE: to be done in parallel to save time
         [this.loadDocumentationRegistryData(config)],
       );
 
+      // setup application store
+      const applicationStore = new ApplicationStore(
+        this.config,
+        this.pluginManager,
+      );
       await Promise.all(
         this.pluginManager
           .getApplicationPlugins()
-          .flatMap((plugin) => plugin.getExtraApplicationBootstraps?.() ?? [])
-          .map((bootstrap) => bootstrap(this.pluginManager)),
+          .flatMap((plugin) => plugin.getExtraApplicationSetups?.() ?? [])
+          .map((setup) => setup(applicationStore)),
       );
 
-      await this.loadApplication();
+      // load application
+      await this.loadApplication(applicationStore);
 
       this.logger.info(
         LogEvent.create(APPLICATION_EVENT.APPLICATION_LOAD__SUCCESS),
