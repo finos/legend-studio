@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-service",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Legend extension for Service DSL",
   "keywords": [
     "legend",
