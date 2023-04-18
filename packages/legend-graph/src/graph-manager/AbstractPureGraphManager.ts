@@ -539,7 +539,8 @@ export abstract class AbstractPureGraphManager {
     graphData: GraphData,
   ): Promise<DatasetSpecification[]>;
 
-  abstract checkEntitlements(
+  abstract checkDatasetEntitlements(
+    datasets: DatasetSpecification[],
     mapping: Mapping,
     runtime: PackageableRuntime,
     query: RawLambda | undefined,

@@ -100,7 +100,8 @@ export class DataSpaceViewerDataAccessState {
 
     try {
       const reports =
-        (yield this.dataSpaceViewerState.graphManagerState.graphManager.checkEntitlements(
+        (yield this.dataSpaceViewerState.graphManagerState.graphManager.checkDatasetEntitlements(
+          this.datasets.map((d) => d.specification),
           this.dataSpaceViewerState.currentExecutionContext.mapping,
           this.dataSpaceViewerState.currentExecutionContext.defaultRuntime,
           undefined,

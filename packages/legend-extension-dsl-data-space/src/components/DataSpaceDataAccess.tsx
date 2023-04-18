@@ -41,12 +41,9 @@ const DataAccessOverview = observer(
     const applicationStore = useApplicationStore();
 
     useEffect(() => {
-      flowResult(dataAccessState.fetchDatasetSpecifications()).catch(
-        applicationStore.alertUnhandledError,
-      );
-      flowResult(dataAccessState.fetchDatasetEntitlementReports()).catch(
-        applicationStore.alertUnhandledError,
-      );
+      flowResult(dataAccessState.fetchDatasetSpecifications())
+        .then(() => dataAccessState.fetchDatasetEntitlementReports())
+        .catch(applicationStore.alertUnhandledError);
     }, [
       applicationStore,
       dataAccessState,

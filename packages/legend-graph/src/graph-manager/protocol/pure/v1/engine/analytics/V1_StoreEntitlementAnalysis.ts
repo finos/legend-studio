@@ -34,6 +34,7 @@ import {
   usingConstantValueSchema,
   UnsupportedOperationError,
   optionalCustom,
+  usingModelSchema,
 } from '@finos/legend-shared';
 import { V1_rawLambdaModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin.js';
@@ -116,6 +117,26 @@ const V1_deserializeDatasetSpecification = (
     }
   }
 };
+
+export class V1_EntitlementReportAnalyticsInput {
+  storeEntitlementAnalyticsInput!: V1_StoreEntitlementAnalysisInput;
+  reports: V1_DatasetSpecification[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_EntitlementReportAnalyticsInput, {
+      storeEntitlementAnalyticsInput: usingModelSchema(
+        V1_StoreEntitlementAnalysisInput.serialization.schema,
+      ),
+      reports: list(
+        custom(
+          (val) => serialize(V1_DatasetSpecification.serialization.schema, val),
+          (val) =>
+            deserialize(V1_DatasetSpecification.serialization.schema, val),
+        ),
+      ),
+    }),
+  );
+}
 
 export class V1_SurveyDatasetsResult {
   datasets: V1_DatasetSpecification[] = [];

@@ -108,6 +108,7 @@ import {
   type V1_DatasetSpecification,
   V1_surveyDatasetsResultModelSchema,
   V1_checkEntitlementsResultModelSchema,
+  V1_EntitlementReportAnalyticsInput,
 } from './analytics/V1_StoreEntitlementAnalysis.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
@@ -768,14 +769,14 @@ export class V1_Engine {
     ).datasets;
   }
 
-  async checkEntitlements(
-    input: V1_StoreEntitlementAnalysisInput,
+  async checkDatasetEntitlements(
+    input: V1_EntitlementReportAnalyticsInput,
     plugins: PureProtocolProcessorPlugin[],
   ): Promise<V1_DatasetEntitlementReport[]> {
     return deserialize(
       V1_checkEntitlementsResultModelSchema(plugins),
-      await this.engineServerClient.checkEntitlements(
-        V1_StoreEntitlementAnalysisInput.serialization.toJson(input),
+      await this.engineServerClient.checkDatasetEntitlements(
+        V1_EntitlementReportAnalyticsInput.serialization.toJson(input),
       ),
     ).reports;
   }
