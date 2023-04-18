@@ -14,48 +14,31 @@
  * limitations under the License.
  */
 
-import { test, expect, beforeEach } from '@jest/globals';
+import { test, expect } from '@jest/globals';
 import { render, waitFor } from '@testing-library/react';
 import { WorkspaceSetup } from '../WorkspaceSetup.js';
-import { createSpy, integrationTest } from '@finos/legend-shared';
-import { TEST_DATA__DefaultSDLCInfo } from '../../EditorComponentTestUtils.js';
-import {
-  type SDLCServerClient,
-  TEST__SDLCServerClientProvider,
-  TEST__provideMockedSDLCServerClient,
-} from '@finos/legend-server-sdlc';
-import {
-  MemoryRouter,
-  TEST__ApplicationStoreProvider,
-  TEST__provideMockedWebApplicationNavigator,
-} from '@finos/legend-application';
-import { TEST__getLegendStudioApplicationConfig } from '../../../stores/editor/EditorStoreTestUtils.js';
-import { LegendStudioPluginManager } from '../../../application/LegendStudioPluginManager.js';
-
-let sdlcServerClient: SDLCServerClient;
-
-beforeEach(() => {
-  sdlcServerClient = TEST__provideMockedSDLCServerClient();
-});
+import { createSpy, integrationTest } from '@finos/legend-shared/test';
+import { TEST_DATA__DefaultSDLCInfo } from '../../editor/__test-utils__/EditorComponentTestUtils.js';
+import { ApplicationStoreProvider } from '@finos/legend-application';
+import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
+import { LegendStudioFrameworkProvider } from '../../LegendStudioFrameworkProvider.js';
+import { TEST__provideMockedLegendStudioBaseStore } from '../../__test-utils__/LegendStudioFrameworkTestUtils.js';
 
 test(integrationTest('Shows project searcher properly'), async () => {
-  createSpy(sdlcServerClient, 'getProjects')
+  const baseStore = TEST__provideMockedLegendStudioBaseStore();
+
+  createSpy(baseStore.sdlcServerClient, 'getProjects')
     .mockResolvedValueOnce([TEST_DATA__DefaultSDLCInfo.project])
     .mockResolvedValueOnce([]);
 
-  TEST__provideMockedWebApplicationNavigator();
-
   const { queryByText } = render(
-    <MemoryRouter>
-      <TEST__ApplicationStoreProvider
-        config={TEST__getLegendStudioApplicationConfig()}
-        pluginManager={LegendStudioPluginManager.create()}
-      >
-        <TEST__SDLCServerClientProvider>
+    <ApplicationStoreProvider store={baseStore.applicationStore}>
+      <TEST__BrowserEnvironmentProvider>
+        <LegendStudioFrameworkProvider>
           <WorkspaceSetup />
-        </TEST__SDLCServerClientProvider>
-      </TEST__ApplicationStoreProvider>
-    </MemoryRouter>,
+        </LegendStudioFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
   );
 
   // NOTE: react-select does not seem to produce a normal input box where we could set the placeholder attribute

@@ -16,13 +16,13 @@
 
 import { jest, test, expect, afterEach } from '@jest/globals';
 import TEST_DATA__simpleGraphEntities from './TEST_DATA__FunctionSignatureGeneration.json';
-import { unitTest } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
   generateFunctionCallString,
   generateFunctionPrettyName,
 } from '../PureLanguageHelper.js';
-import { TEST__getTestGraph } from '../../GraphTestUtils.js';
+import { TEST__getTestGraph } from '../../__test-utils__/GraphTestUtils.js';
 
 afterEach(() => {
   // running all pending timers and switching to real timers using Jest

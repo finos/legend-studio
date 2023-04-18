@@ -15,13 +15,9 @@
  */
 
 import { test, expect } from '@jest/globals';
-import {
-  type PlainObject,
-  unitTest,
-  guaranteeNonNullable,
-  createSpy,
-} from '@finos/legend-shared';
-import { TEST__getTestEditorStore } from '../EditorStoreTestUtils.js';
+import { type PlainObject, guaranteeNonNullable } from '@finos/legend-shared';
+import { unitTest, createSpy } from '@finos/legend-shared/test';
+import { TEST__getTestEditorStore } from '../__test-utils__/EditorStoreTestUtils.js';
 import type { Entity } from '@finos/legend-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import {
@@ -36,7 +32,7 @@ import {
   getClassProperty,
 } from '@finos/legend-graph';
 import TEST_DATA__M2MGraphEntities from './TEST_DATA__M2MGraphEntities.json';
-import { TEST_DATA__ProjectDependencyReportWithConflict } from '../../../components/editor/edit-panel/__tests__/TEST_DATA__ProjectDependencyReport.js';
+import { TEST_DATA__ProjectDependencyReportWithConflict } from '../../../components/editor/editor-group/__tests__/TEST_DATA__ProjectDependencyReport.js';
 import type { EditorStore } from '../EditorStore.js';
 import {
   TEST_DATA__projectVersionDependencyEntities,

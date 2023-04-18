@@ -30,6 +30,7 @@ import {
   type ContextualDocumentationEntry,
   type DocumentationRegistryEntry,
 } from '../stores/DocumentationService.js';
+import type { SettingOverrideConfigData } from '../stores/SettingService.js';
 
 export interface LegendApplicationVersionData {
   buildTime: string;
@@ -46,6 +47,10 @@ export interface LegendApplicationConfigurationData {
     entries?: Record<string, DocumentationEntryData>;
     contextualEntries?: ContextualDocumentationConfig;
   };
+  application?: {
+    storageKey?: string;
+    settingsOverrides?: SettingOverrideConfigData;
+  };
   // TODO: when we support vault-like settings, we could support `settingOverrides`
   // See https://github.com/finos/legend-studio/issues/407
   // settingOverrides
@@ -54,8 +59,9 @@ export interface LegendApplicationConfigurationData {
 
 export abstract class LegendApplicationConfig {
   readonly appName: string;
-  readonly baseUrl: string;
+  readonly baseAddress: string;
   readonly env: string;
+  readonly applicationStorageKey: string;
 
   // documentation
   readonly documentationUrl?: string | undefined;
@@ -71,7 +77,7 @@ export abstract class LegendApplicationConfig {
   constructor(
     input: LegendApplicationConfigurationInput<LegendApplicationConfigurationData>,
   ) {
-    this.baseUrl = input.baseUrl;
+    this.baseAddress = input.baseAddress;
     this.appName = guaranteeNonEmptyString(
       input.configData.appName,
       `Can't configure application: 'appName' field is missing or empty`,
@@ -80,6 +86,9 @@ export abstract class LegendApplicationConfig {
       input.configData.env,
       `Can't configure application: 'env' field is missing or empty`,
     );
+    this.applicationStorageKey =
+      input.configData.application?.storageKey ??
+      this.getDefaultApplicationStorageKey();
 
     // Documentation
     this.documentationUrl = input.configData.documentation?.url;
@@ -113,4 +122,6 @@ export abstract class LegendApplicationConfig {
     }
     return url;
   }
+
+  abstract getDefaultApplicationStorageKey(): string;
 }

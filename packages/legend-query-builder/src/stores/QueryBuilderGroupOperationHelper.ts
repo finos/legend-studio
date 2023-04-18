@@ -16,7 +16,7 @@
 
 import { matchFunctionName } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
 
 export enum QUERY_BUILDER_GROUP_OPERATION {
   AND = 'and',

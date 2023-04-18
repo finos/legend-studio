@@ -21,7 +21,7 @@ import {
   type ValueSpecification,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import { fromGroupOperation } from '../../../QueryBuilderGroupOperationHelper.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
 import {

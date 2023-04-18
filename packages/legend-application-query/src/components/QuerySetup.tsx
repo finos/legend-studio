@@ -35,14 +35,14 @@ import {
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import React, { createContext, useContext, useEffect } from 'react';
-import { LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN } from '../application/LegendQueryNavigation.js';
+import { LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN } from '../__lib__/LegendQueryNavigation.js';
 import {
   QuerySetupLandingPageStore,
   type BaseQuerySetupStore,
 } from '../stores/QuerySetupStore.js';
 import type { ProjectData } from '@finos/legend-server-depot';
 import { useApplicationStore } from '@finos/legend-application';
-import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import { useLegendQueryApplicationStore } from './LegendQueryFrameworkProvider.js';
 import type { QuerySetupActionConfiguration } from '../stores/LegendQueryApplicationPlugin.js';
 
 export type ProjectOption = { label: string; value: ProjectData };

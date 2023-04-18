@@ -15,7 +15,7 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { unitTest } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import { addElementToPackage } from '../helpers/DomainHelper.js';
 import { Class } from '../metamodel/pure/packageableElements/domain/Class.js';
 import { Package } from '../metamodel/pure/packageableElements/domain/Package.js';

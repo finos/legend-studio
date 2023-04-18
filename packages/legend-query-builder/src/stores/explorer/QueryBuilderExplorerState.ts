@@ -67,7 +67,7 @@ import {
   type QueryBuilderPreviewData,
 } from '../QueryBuilderPreviewDataHelper.js';
 import { QueryBuilderPropertySearchState } from './QueryBuilderPropertySearchState.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import { propertyExpression_setFunc } from '../shared/ValueSpecificationModifierHelper.js';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {

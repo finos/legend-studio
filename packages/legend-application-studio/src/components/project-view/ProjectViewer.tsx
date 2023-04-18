@@ -16,9 +16,9 @@
 
 import { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
-import { EditPanel } from '../editor/edit-panel/EditPanel.js';
-import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
+import { EditorGroup } from '../editor/editor-group/EditorGroup.js';
+import { GrammarTextEditor } from '../editor/editor-group/GrammarTextEditor.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
   ACTIVITY_MODE,
   GRAPH_EDITOR_MODE,
@@ -46,18 +46,15 @@ import {
 import {
   type ProjectViewerPathParams,
   generateSetupRoute,
-} from '../../application/LegendStudioNavigation.js';
+} from '../../__lib__/LegendStudioNavigation.js';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { flowResult } from 'mobx';
 import {
   useEditorStore,
   withEditorStore,
 } from '../editor/EditorStoreProvider.js';
-import {
-  useApplicationStore,
-  useCommands,
-  useParams,
-} from '@finos/legend-application';
+import { useApplicationStore, useCommands } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 import {
   ActivityBarMenu,
   type ActivityDisplay,
@@ -68,7 +65,7 @@ import { WorkflowManager } from '../editor/side-bar/WorkflowManager.js';
 import {
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
-} from '../LegendStudioBaseStoreProvider.js';
+} from '../LegendStudioFrameworkProvider.js';
 import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
 
 const ProjectViewerStatusBar = observer(() => {
@@ -296,7 +293,9 @@ export const ProjectViewer = withEditorStore(
       const { ref, width, height } = useResizeDetector<HTMLDivElement>();
       useEffect(() => {
         if (ref.current) {
-          editorStore.auxPanelDisplayState.setMaxSize(ref.current.offsetHeight);
+          editorStore.panelGroupDisplayState.setMaxSize(
+            ref.current.offsetHeight,
+          );
         }
       }, [ref, editorStore, width, height]);
 
@@ -334,7 +333,7 @@ export const ProjectViewer = withEditorStore(
                       minSize={300}
                     >
                       {editorStore.graphEditorMode.mode ===
-                        GRAPH_EDITOR_MODE.FORM && <EditPanel />}
+                        GRAPH_EDITOR_MODE.FORM && <EditorGroup />}
                       {editorStore.graphEditorMode.mode ===
                         GRAPH_EDITOR_MODE.GRAMMAR_TEXT && <GrammarTextEditor />}
                     </ResizablePanel>

@@ -66,7 +66,7 @@ describe('UML End to End Test', () => {
     cy.getByTestID(TEST_ID.EXPLORER_TREES).contains('Inctype');
     cy.getByTestID(TEST_ID.EXPLORER_TREES).contains('Firm');
     // wait until we are back to form mode
-    cy.getByTestID('edit-panel__content');
+    cy.getByTestID('editor-group__content');
     coreHelper.addProperty('Firm', 'legalName', 1);
     //Create new profile
     cy.contains('demo').rightclick();

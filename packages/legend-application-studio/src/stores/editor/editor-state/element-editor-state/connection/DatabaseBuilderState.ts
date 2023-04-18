@@ -30,7 +30,7 @@ import {
   ActionState,
 } from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   type RelationalDatabaseConnection,
@@ -49,7 +49,7 @@ import {
   getNullableSchema,
   getNullableTable,
 } from '@finos/legend-graph';
-import { connection_setStore } from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { connection_setStore } from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import { GraphEditFormModeState } from '../../../GraphEditFormModeState.js';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
@@ -508,7 +508,7 @@ export class DatabaseBuilderState {
       (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
         grammar,
       )) as Entity[];
-    const dbGraph = this.editorStore.graphManagerState.createEmptyGraph();
+    const dbGraph = this.editorStore.graphManagerState.createNewGraph();
     (yield this.editorStore.graphManagerState.graphManager.buildGraph(
       dbGraph,
       entities,
@@ -528,7 +528,7 @@ export class DatabaseBuilderState {
       (yield this.editorStore.graphManagerState.graphManager.buildDatabase(
         databaseBuilderInput,
       )) as Entity[];
-    const dbGraph = this.editorStore.graphManagerState.createEmptyGraph();
+    const dbGraph = this.editorStore.graphManagerState.createNewGraph();
     (yield this.editorStore.graphManagerState.graphManager.buildGraph(
       dbGraph,
       entities,

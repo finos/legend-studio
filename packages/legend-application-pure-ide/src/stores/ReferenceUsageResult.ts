@@ -21,17 +21,17 @@ import {
   SearchResultEntry,
 } from '../server/models/SearchEntry.js';
 import type { Usage, ConceptInfo } from '../server/models/Usage.js';
-import type { EditorStore } from './EditorStore.js';
+import type { PureIDEStore } from './PureIDEStore.js';
 import { deleteEntry, guaranteeNonNullable } from '@finos/legend-shared';
 
 export class ReferenceUsageResult {
-  readonly editorStore: EditorStore;
+  readonly ideStore: PureIDEStore;
   readonly usageConcept: ConceptInfo;
 
   searchEntries: SearchResultEntry[] = [];
 
   constructor(
-    editorStore: EditorStore,
+    ideStore: PureIDEStore,
     usageConcept: ConceptInfo,
     references: Usage[],
     searchResultCoordinates: SearchResultCoordinate[],
@@ -42,7 +42,7 @@ export class ReferenceUsageResult {
       numberOfResults: computed,
     });
 
-    this.editorStore = editorStore;
+    this.ideStore = ideStore;
     this.usageConcept = usageConcept;
 
     const fileMap = new Map<string, SearchResultEntry>();
@@ -90,7 +90,7 @@ export class ReferenceUsageResult {
   dismissSearchEntry(value: SearchEntry): void {
     deleteEntry(this.searchEntries, value);
     if (!this.searchEntries.length) {
-      this.editorStore.setReferenceUsageResult(undefined);
+      this.ideStore.setReferenceUsageResult(undefined);
     }
   }
 

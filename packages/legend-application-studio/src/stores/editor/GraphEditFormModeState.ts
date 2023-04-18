@@ -41,20 +41,20 @@ import { flowResult } from 'mobx';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import { FormLocalChangesState } from './sidebar-state/LocalChangesState.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import { GraphCompilationOutcome, type Problem } from './EditorGraphState.js';
-import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
+import { GRAPH_EDITOR_MODE, PANEL_MODE } from './EditorConfig.js';
 import {
   graph_addElement,
   graph_deleteElement,
   graph_deleteOwnElement,
   graph_dispose,
   graph_renameElement,
-} from './shared/modifier/GraphModifierHelper.js';
+} from '../graph-modifier/GraphModifierHelper.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
-import { LegendStudioTelemetryHelper } from '../../application/LegendStudioTelemetryHelper.js';
+import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
-import type { TabState } from '@finos/legend-application/components';
+import type { TabState } from '@finos/legend-lego/application';
 
 export class GraphEditFormModeState extends GraphEditorMode {
   *initialize(): GeneratorFn<void> {
@@ -267,7 +267,7 @@ export class GraphEditFormModeState extends GraphEditorMode {
     this.editorStore.graphState.isUpdatingApplication = true;
     this.editorStore.graphState.isUpdatingGraph = true;
     try {
-      const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
+      const newGraph = this.editorStore.graphManagerState.createNewGraph();
       yield flowResult(
         this.editorStore.graphState.rebuildDependencies(newGraph),
       );
@@ -439,7 +439,7 @@ export class GraphEditFormModeState extends GraphEditorMode {
       this.editorStore.graphState.isRunningGlobalCompile = true;
       this.editorStore.graphState.clearProblems();
       if (options?.openConsole) {
-        this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+        this.editorStore.setActivePanelMode(PANEL_MODE.CONSOLE);
       }
 
       // NOTE: here we always keep the source information while compiling in form mode

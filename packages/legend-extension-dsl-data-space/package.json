@@ -21,7 +21,10 @@
   "sideEffects": false,
   "type": "module",
   "exports": {
-    ".": "./lib/index.js",
+    "./graph": "./lib/graph-manager/index.js",
+    "./application": "./lib/components/index.js",
+    "./application-studio": "./lib/components/studio/index.js",
+    "./application-query": "./lib/components/query/index.js",
     "./lib/index.css": "./lib/index.css"
   },
   "module": "lib/index.js",
@@ -54,7 +57,7 @@
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
-    "@types/react": "18.0.34",
+    "@types/react": "18.0.37",
     "mobx": "6.9.0",
     "mobx-react-lite": "3.4.3",
     "react": "18.2.0",

@@ -68,7 +68,7 @@ import {
 } from '../../../QueryBuilderTypeaheadHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../../QueryBuilderGroupOperationHelper.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../QueryBuilderStateHashUtils.js';
 import type { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
 import { isValueExpressionReferencedInValue } from '../../../QueryBuilderValueSpecificationHelper.js';
 
@@ -242,7 +242,7 @@ export class QueryBuilderPostFilterTreeGroupNodeData
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_TREE_GROUP_NODE_DATA,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.POST_FILTER_TREE_GROUP_NODE_DATA,
       this.parentId ?? '',
       hashArray(this.childrenIds),
       this.groupOperation,
@@ -276,7 +276,7 @@ export class QueryBuilderPostFilterTreeConditionNodeData
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_TREE_CONDIITION_NODE_DATA,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.POST_FILTER_TREE_CONDIITION_NODE_DATA,
       this.parentId ?? '',
       this.condition,
     ]);
@@ -301,7 +301,7 @@ export class QueryBuilderPostFilterTreeBlankConditionNodeData
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_TREE_BLANK_CONDITION_NODE_DATA,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.POST_FILTER_TREE_BLANK_CONDITION_NODE_DATA,
       this.parentId ?? '',
     ]);
   }
@@ -460,7 +460,7 @@ export class PostFilterConditionState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_CONDITION_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.POST_FILTER_CONDITION_STATE,
       this.columnState,
       this.value ?? '',
       this.operator,
@@ -891,7 +891,7 @@ export class QueryBuilderPostFilterState
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.POST_FILTER_STATE,
       hashArray(this.rootIds),
       hashArray(Array.from(this.nodes.values())),
     ]);

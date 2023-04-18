@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { PureGrammarTextSuggestion } from '@finos/legend-application';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import type { ConnectionValueState } from '../editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import type { EditorStore } from '../editor/EditorStore.js';
@@ -34,11 +33,16 @@ import type {
   MappingElementState,
   PropertyMappingState,
 } from '../editor/editor-state/element-editor-state/mapping/MappingElementState.js';
+import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 type MappingSourceTypeInfo = {
   sourceType: string;
   sourceName: string;
 };
+
+export type PureGrammarConnectionLabeler = (
+  connection: Connection,
+) => string | undefined;
 
 export type SetImplementationDecorator = (
   setImplementation: SetImplementation,
@@ -124,6 +128,11 @@ export type InstanceSetImplementationStoreExtractor = (
 
 export interface DSL_Mapping_LegendStudioApplicationPlugin_Extension
   extends DSL_LegendStudioApplicationPlugin_Extension {
+  /**
+   * Get the list of Pure grammar type labelers for connections.
+   */
+  getExtraPureGrammarConnectionLabelers?(): PureGrammarConnectionLabeler[];
+
   /**
    * Get the list of set implementation decorators.
    */

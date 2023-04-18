@@ -31,7 +31,7 @@ import {
   generateViewVersionRoute,
   generateViewRevisionRoute,
   generateViewProjectRoute,
-} from '../../application/LegendStudioNavigation.js';
+} from '../../__lib__/LegendStudioNavigation.js';
 import {
   type Entity,
   type ProjectGAVCoordinates,
@@ -45,11 +45,8 @@ import {
   Version,
   Workspace,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
-import {
-  LegendApplicationTelemetryHelper,
-  TAB_SIZE,
-} from '@finos/legend-application';
+import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { ProjectData, resolveVersion } from '@finos/legend-server-depot';
 import {
   type WorkflowManagerState,
@@ -65,6 +62,7 @@ import {
   LegendSDLC,
 } from '@finos/legend-graph';
 import { GRAPH_EDITOR_MODE } from '../editor/EditorConfig.js';
+import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 
 interface ProjectViewerGraphBuilderMaterial {
   entities: Entity[];
@@ -293,7 +291,7 @@ export class ProjectViewerStore {
 
     return {
       entities,
-      dependencyEntitiesIndex: dependencyEntitiesIndex,
+      dependencyEntitiesIndex,
     };
   }
 
@@ -358,7 +356,7 @@ export class ProjectViewerStore {
       yield this.editorStore.graphManagerState.graphManager.initialize(
         {
           env: this.editorStore.applicationStore.config.env,
-          tabSize: TAB_SIZE,
+          tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
             queryBaseUrl:
@@ -378,7 +376,7 @@ export class ProjectViewerStore {
       // build dependencies
       stopWatch.record();
       const dependencyManager =
-        this.editorStore.graphManagerState.createEmptyDependencyManager();
+        this.editorStore.graphManagerState.graphManager.createDependencyManager();
       this.editorStore.graphManagerState.graph.dependencyManager =
         dependencyManager;
 
@@ -424,7 +422,7 @@ export class ProjectViewerStore {
             .numberOfDependencies,
         graph: graph_buildReport,
       };
-      LegendApplicationTelemetryHelper.logEvent_GraphInitializationSucceeded(
+      LegendStudioTelemetryHelper.logEvent_GraphInitializationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         graphBuilderReportData,
       );

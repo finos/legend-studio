@@ -15,16 +15,16 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { unitTest } from '@finos/legend-shared';
-import { TEST__getTestEditorStore } from '../EditorStoreTestUtils.js';
+import { unitTest } from '@finos/legend-shared/test';
+import { TEST__getTestEditorStore } from '../__test-utils__/EditorStoreTestUtils.js';
 import { flowResult } from 'mobx';
 import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
 import { Class, getClassProperty } from '@finos/legend-graph';
-import { property_setName } from '../shared/modifier/DomainGraphModifierHelper.js';
+import { property_setName } from '../../graph-modifier/DomainGraphModifierHelper.js';
 import {
   graph_addElement,
   graph_deleteElement,
-} from '../shared/modifier/GraphModifierHelper.js';
+} from '../../graph-modifier/GraphModifierHelper.js';
 
 const entities = [
   {

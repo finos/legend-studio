@@ -22,29 +22,29 @@ import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COV
 import TEST_DATA__AssociationMappingModel from './TEST_DATA__QueryBuilder_Model_AssociationMappingModel.json';
 import TEST_DATA__M2MAutoMapped from './TEST_DATA__QueryBuilder_Model_M2MAutoMapped.json';
 import TEST_DATA__RelationalInline from './TEST_DATA__QueryBuilder_Model_RelationalInline.json';
+import { type PlainObject } from '@finos/legend-shared';
 import {
-  type TEMPORARY__JestMatcher,
-  type PlainObject,
   integrationTest,
-} from '@finos/legend-shared';
+  type TEMPORARY__JestMatcher,
+} from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
   Class,
   getAllClassDerivedProperties,
   getAllClassProperties,
-  TEST__getTestGraphManagerState,
   type AbstractProperty,
   type GraphManagerState,
   type Mapping,
   type MappingModelCoverageAnalysisResult,
 } from '@finos/legend-graph';
+import { TEST__getTestGraphManagerState } from '@finos/legend-graph/test';
 import {
   getRootMappingData,
   generatePropertyNodeMappingData,
   generateSubtypeNodeMappingData,
   type QueryBuilderExplorerTreeNodeMappingData,
 } from '../explorer/QueryBuilderExplorerState.js';
-import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graph-manager/QueryBuilder_GraphManagerPreset.js';
 import {
   TEST_DATA__MappingData__ComplexM2MModel,
   TEST_DATA__MappingData__AssociationMapping,
@@ -63,7 +63,7 @@ import {
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalInheritance,
   TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
 } from './TEST_DATA__ModelCoverageAnalysisResult.js';
-import { TEST__LegendApplicationPluginManager } from '@finos/legend-application';
+import { TEST__LegendApplicationPluginManager } from '../__test-utils__/QueryBuilderStateTestUtils.js';
 
 interface NodeMappingData {
   name: string;

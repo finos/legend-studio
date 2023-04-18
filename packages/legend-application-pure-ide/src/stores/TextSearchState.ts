@@ -22,7 +22,7 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
-import type { EditorStore } from './EditorStore.js';
+import type { PureIDEStore } from './PureIDEStore.js';
 import {
   getSearchResultEntry,
   type SearchEntry,
@@ -65,7 +65,7 @@ export class TextSearchResult {
 }
 
 export class TextSearchState {
-  readonly editorStore: EditorStore;
+  readonly ideStore: PureIDEStore;
   readonly loadState = ActionState.create();
 
   private searchInput?: HTMLInputElement | undefined;
@@ -75,7 +75,7 @@ export class TextSearchState {
   isRegExp = false;
   result?: TextSearchResult | undefined;
 
-  constructor(editorStore: EditorStore) {
+  constructor(ideStore: PureIDEStore) {
     makeObservable(this, {
       text: observable,
       isCaseSensitive: observable,
@@ -88,7 +88,7 @@ export class TextSearchState {
       search: flow,
     });
 
-    this.editorStore = editorStore;
+    this.ideStore = ideStore;
   }
 
   setSearchInput(el: HTMLInputElement | undefined): void {
@@ -110,7 +110,7 @@ export class TextSearchState {
     this.loadState.inProgress();
     try {
       const results = (
-        (yield this.editorStore.client.searchText(
+        (yield this.ideStore.client.searchText(
           this.text,
           this.isCaseSensitive,
           this.isRegExp,
@@ -120,7 +120,7 @@ export class TextSearchState {
       this.loadState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(error);
+      this.ideStore.applicationStore.notificationService.notifyError(error);
       this.loadState.fail();
     }
   }

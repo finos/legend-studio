@@ -37,6 +37,8 @@ import {
   normalizeLineEnding,
   clearMarkers,
   setErrorMarkers,
+  CODE_EDITOR_LANGUAGE,
+  CODE_EDITOR_THEME,
 } from '@finos/legend-lego/code-editor';
 import type { LambdaEditorState } from '../../stores/shared/LambdaEditorState.js';
 import {
@@ -48,12 +50,10 @@ import {
 import { flowResult } from 'mobx';
 import { ParserError, type EngineError, type Type } from '@finos/legend-graph';
 import {
-  CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
-import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 
 const LambdaErrorFeedback: React.FC<{
   error?: EngineError | undefined;
@@ -303,7 +303,7 @@ const LambdaEditorInline = observer(
 
       // Set the errors
       if (editorModel) {
-        editorModel.updateOptions({ tabSize: TAB_SIZE });
+        editorModel.updateOptions({ tabSize: DEFAULT_TAB_SIZE });
         const error = parserError ?? compilationError;
         if (error?.sourceInformation) {
           setErrorMarkers(editorModel, [
@@ -321,6 +321,7 @@ const LambdaEditorInline = observer(
       }
     }
 
+    // dispose editor
     useEffect(
       () => (): void => {
         if (editor) {
@@ -330,7 +331,7 @@ const LambdaEditorInline = observer(
         onDidFocusEditorWidgetDisposer.current?.dispose();
       },
       [editor],
-    ); // dispose editor
+    );
 
     return (
       <>
@@ -537,7 +538,7 @@ const LambdaEditorPopUp = observer(
 
       // Set the errors
       if (editorModel) {
-        editorModel.updateOptions({ tabSize: TAB_SIZE });
+        editorModel.updateOptions({ tabSize: DEFAULT_TAB_SIZE });
         const error = parserError ?? compilationError;
         if (error?.sourceInformation) {
           setErrorMarkers(editorModel, [
@@ -561,6 +562,7 @@ const LambdaEditorPopUp = observer(
       ).catch(applicationStore.alertUnhandledError);
     }, [applicationStore, lambdaEditorState]);
 
+    // dispose editor
     useEffect(
       () => (): void => {
         if (editor) {
@@ -569,7 +571,7 @@ const LambdaEditorPopUp = observer(
         onDidChangeModelContentEventDisposer.current?.dispose();
       },
       [editor],
-    ); // dispose editor
+    );
 
     return (
       <Dialog

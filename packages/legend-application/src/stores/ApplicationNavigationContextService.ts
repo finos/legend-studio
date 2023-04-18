@@ -17,7 +17,7 @@
 import { IllegalStateError } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
-import { LegendApplicationTelemetryHelper } from '../application/LegendApplicationTelemetry.js';
+import { LegendApplicationTelemetryHelper } from '../__lib__/LegendApplicationTelemetry.js';
 
 /**
  * Context data refers to the area of the application that the user is

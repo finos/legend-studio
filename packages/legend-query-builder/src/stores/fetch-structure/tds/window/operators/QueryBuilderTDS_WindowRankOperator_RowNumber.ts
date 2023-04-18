@@ -16,8 +16,8 @@
 
 import { PRIMITIVE_TYPE, type Type } from '@finos/legend-graph';
 import { hashArray } from '@finos/legend-shared';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import { QueryBuilderTDS_WindowOperator } from './QueryBuilderTDS_WindowOperator.js';
 
 export class QueryBuilderTDS_WindowRankOperator_RowNumber extends QueryBuilderTDS_WindowOperator {
@@ -31,7 +31,7 @@ export class QueryBuilderTDS_WindowRankOperator_RowNumber extends QueryBuilderTD
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_ROW_NUMBER,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_ROW_NUMBER,
     ]);
   }
 

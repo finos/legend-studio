@@ -20,9 +20,9 @@
 @forward 'editor/status-bar';
 @forward 'editor/side-bar';
 @forward 'editor/command';
-@forward 'editor/auxiliary-panel';
+@forward 'editor/panel-group';
 @forward 'editor/model-loader';
-@forward 'editor/edit-panel';
+@forward 'editor/editor-group';
 @forward 'editor/query-builder-dialog';
 @forward 'editor/sample-data-generator';
 @forward 'editor/mapping-editor';

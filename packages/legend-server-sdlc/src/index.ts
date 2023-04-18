@@ -52,6 +52,3 @@ export * from './models/configuration/PlatformConfiguration.js';
 export * from './models/User.js';
 
 export { SDLCServerClient } from './SDLCServerClient.js';
-export * from './SDLCServerClientProvider.js';
-
-export * from './SDLCServerClientTestUtils.js';

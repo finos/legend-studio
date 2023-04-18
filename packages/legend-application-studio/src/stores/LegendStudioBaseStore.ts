@@ -29,10 +29,9 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   LegendApplicationTelemetryHelper,
-  matchPath,
   APPLICATION_EVENT,
-  generateExtensionUrlPattern,
 } from '@finos/legend-application';
+import { matchPath } from '@finos/legend-application/browser';
 import {
   action,
   computed,
@@ -42,12 +41,12 @@ import {
   observable,
 } from 'mobx';
 import { User, SDLCServerClient } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../application/LegendStudioEvent.js';
-import type { DepotServerClient } from '@finos/legend-server-depot';
+import { LEGEND_STUDIO_APP_EVENT } from '../__lib__/LegendStudioEvent.js';
+import { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
-import { LegendStudioEventHelper } from '../application/LegendStudioEventHelper.js';
-import { LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN } from '../application/LegendStudioNavigation.js';
+import { LegendStudioEventHelper } from '../__lib__/LegendStudioEventHelper.js';
+import { LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN } from '../__lib__/LegendStudioNavigation.js';
 
 export type LegendStudioApplicationStore = ApplicationStore<
   LegendStudioApplicationConfig,
@@ -65,11 +64,7 @@ export class LegendStudioBaseStore {
   isSDLCAuthorized: boolean | undefined = false;
   SDLCServerTermsOfServicesUrlsToView: string[] = [];
 
-  constructor(
-    applicationStore: LegendStudioApplicationStore,
-    sdlcServerClient: SDLCServerClient,
-    depotServerClient: DepotServerClient,
-  ) {
+  constructor(applicationStore: LegendStudioApplicationStore) {
     makeObservable<LegendStudioBaseStore, 'initializeSDLCServerClient'>(this, {
       isSDLCAuthorized: observable,
       SDLCServerTermsOfServicesUrlsToView: observable,
@@ -80,13 +75,19 @@ export class LegendStudioBaseStore {
     });
 
     this.applicationStore = applicationStore;
-    this.sdlcServerClient = sdlcServerClient;
-    this.depotServerClient = depotServerClient;
-
     this.pluginManager = applicationStore.pluginManager;
 
-    // Register plugins
+    // setup servers
+    this.sdlcServerClient = new SDLCServerClient({
+      env: this.applicationStore.config.env,
+      serverUrl: this.applicationStore.config.sdlcServerUrl,
+      baseHeaders: this.applicationStore.config.SDLCServerBaseHeaders,
+    });
     this.sdlcServerClient.setTracerService(this.applicationStore.tracerService);
+
+    this.depotServerClient = new DepotServerClient({
+      serverUrl: this.applicationStore.config.depotServerUrl,
+    });
     this.depotServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
@@ -101,12 +102,6 @@ export class LegendStudioBaseStore {
     }
     this.initState.inProgress();
 
-    const SDLCBypassedRoutePatterns = this.applicationStore.pluginManager
-      .getApplicationPlugins()
-      .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? [])
-      .filter((entry) => entry.bypassSDLC)
-      .flatMap((entry) => entry.urlPatterns.map(generateExtensionUrlPattern));
-
     // authorize SDLC, unless navigation location match SDLC-bypassed patterns
     if (
       !matchPath(
@@ -115,7 +110,6 @@ export class LegendStudioBaseStore {
           LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
           LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
           LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.PREVIEW_BY_GAV_ENTITY,
-          ...SDLCBypassedRoutePatterns,
         ],
       )
     ) {
@@ -138,9 +132,6 @@ export class LegendStudioBaseStore {
         );
         this.applicationStore.notificationService.notifyWarning(error.message);
       }
-
-      // setup telemetry service
-      this.applicationStore.telemetryService.setup();
     } else {
       this.isSDLCAuthorized = undefined;
     }
@@ -162,6 +153,9 @@ export class LegendStudioBaseStore {
         this.applicationStore.notificationService.notifyWarning(error.message);
       }
     }
+
+    // setup telemetry service
+    this.applicationStore.telemetryService.setup();
 
     LegendApplicationTelemetryHelper.logEvent_ApplicationInitializationSucceeded(
       this.applicationStore.telemetryService,

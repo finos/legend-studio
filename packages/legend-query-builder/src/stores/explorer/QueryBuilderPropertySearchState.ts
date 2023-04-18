@@ -30,6 +30,7 @@ import {
   addUniqueEntry,
   deleteEntry,
   guaranteeNonNullable,
+  FuzzySearchAdvancedConfigState,
 } from '@finos/legend-shared';
 import {
   observable,
@@ -52,7 +53,6 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
-import { FuzzySearchAdvancedConfigState } from '@finos/legend-application/components';
 
 export class QueryBuilderPropertySearchState {
   queryBuilderState: QueryBuilderState;

@@ -19,7 +19,7 @@ import {
   generateViewProjectByGAVRoute,
   generateViewRevisionRoute,
   generateViewVersionRoute,
-} from '../../application/LegendStudioNavigation.js';
+} from '../../__lib__/LegendStudioNavigation.js';
 import { EditorMode } from '../editor/EditorMode.js';
 import type { ProjectViewerStore } from './ProjectViewerStore.js';
 import type { ProjectDependency } from '@finos/legend-server-sdlc';

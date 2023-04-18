@@ -15,10 +15,7 @@
  */
 
 import packageJson from '../../../package.json';
-import type {
-  DocumentationEntry,
-  PureGrammarTextSuggestion,
-} from '@finos/legend-application';
+import type { DocumentationEntry } from '@finos/legend-application';
 import { MeteorIcon, PuzzlePieceIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
@@ -38,19 +35,16 @@ import {
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
   type ElementTypeLabelGetter,
+  type PureGrammarElementLabeler,
 } from '@finos/legend-application-studio';
 import { Persistence } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Persistence.js';
 import { PersistenceContext } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceContext.js';
 import {
-  PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL,
-  PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
-  PURE_GRAMMAR_PERSISTENCE_PARSER_NAME,
-} from '../../graphManager/DSL_Persistence_PureGraphManagerPlugin.js';
-import {
   BLANK_PERSISTENCE_CONTEXT_SNIPPET,
   BLANK_PERSISTENCE_SNIPPET,
-} from '../../application/studio/DSL_Persistence_LegendStudioCodeSnippet.js';
-import { DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/studio/DSL_Persistence_LegendStudioDocumentation.js';
+} from '../../__lib__/studio/DSL_Persistence_LegendStudioCodeSnippet.js';
+import { DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/DSL_Persistence_LegendStudioDocumentation.js';
+import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 const PERSISTENCE_ELEMENT_TYPE = 'PERSISTENCE';
 const PERSISTENCE_CONTEXT_ELEMENT_TYPE = 'PERSISTENCE_CONTEXT';
@@ -59,6 +53,11 @@ const PERSISTENCE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_PERSISTENCE';
 const PERSISTENCE_CONTEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_PERSISTENCE_CONTEXT';
+
+const PURE_GRAMMAR_PERSISTENCE_PARSER_NAME = 'Persistence';
+const PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL = 'Persistence';
+const PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL =
+  'PersistenceContext';
 
 export class DSL_Persistence_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -73,6 +72,30 @@ export class DSL_Persistence_LegendStudioApplicationPlugin
       DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_PERSISTENCE,
       DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_PERSISTENCE_CONTEXT,
       DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
+  }
+
+  getExtraPureGrammarParserNames(): string[] {
+    return [PURE_GRAMMAR_PERSISTENCE_PARSER_NAME];
+  }
+
+  getExtraPureGrammarKeywords(): string[] {
+    return [
+      PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
+      PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL,
+    ];
+  }
+
+  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
+    return [
+      (element: PackageableElement): string | undefined => {
+        if (element instanceof Persistence) {
+          return PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL;
+        } else if (element instanceof PersistenceContext) {
+          return PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
+      },
     ];
   }
 

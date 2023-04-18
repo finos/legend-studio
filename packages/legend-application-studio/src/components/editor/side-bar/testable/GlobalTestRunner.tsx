@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   type TreeData,
   type TreeNodeContainerProps,
@@ -73,12 +72,15 @@ import {
   getAssertionStatus,
 } from '../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import type { STO_ProjectOverview_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/STO_ProjectOverview_LegendStudioApplicationPlugin_Extension.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
-import { TextDiffView } from '../../../shared/DiffView.js';
-import { getElementTypeIcon } from '../../../shared/ElementIconUtils.js';
-import { UnsupportedEditorPanel } from '../../edit-panel/UnsupportedElementEditor.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
+import { getElementTypeIcon } from '../../../ElementIconUtils.js';
+import { UnsupportedEditorPanel } from '../../editor-group/UnsupportedElementEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+  CodeDiffView,
+} from '@finos/legend-lego/code-editor';
 
 export const getTestableResultIcon = (
   testableResult: TESTABLE_RESULT,
@@ -198,7 +200,7 @@ const TestFailViewer = observer(
               />
             )}
             {failure instanceof EqualToJsonAssertFail && (
-              <TextDiffView
+              <CodeDiffView
                 language={CODE_EDITOR_LANGUAGE.JSON}
                 from={failure.expected}
                 to={failure.actual}

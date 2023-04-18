@@ -66,7 +66,7 @@ import {
   processTDSSortExpression,
   processTDSTakeExpression,
 } from './fetch-structure/tds/projection/QueryBuilderProjectionStateBuilder.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
 import { LambdaParameterState } from './shared/LambdaParameterState.js';
 import { processTDS_OLAPGroupByExpression } from './fetch-structure/tds/window/QueryBuilderWindowStateBuilder.js';
 import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkStateBuilder.js';

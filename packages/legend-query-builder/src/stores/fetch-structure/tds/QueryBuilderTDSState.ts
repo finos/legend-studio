@@ -93,13 +93,13 @@ import {
 } from '@finos/legend-application';
 import type { LambdaFunctionBuilderOption } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
 import { appendProjection } from './projection/QueryBuilderProjectionValueSpecificationBuilder.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
 import { QueryBuilderWindowState } from './window/QueryBuilderWindowState.js';
 import type { QueryBuilderTDS_WindowOperator } from './window/operators/QueryBuilderTDS_WindowOperator.js';
 import { getQueryBuilderCoreWindowOperators } from './window/QueryBuilderWindowGroupByOperatorLoader.js';
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
-import { QUERY_BUILDER_SETTING_KEY } from '../../../application/QueryBuilderSetting.js';
+import { QUERY_BUILDER_SETTING_KEY } from '../../../__lib__/QueryBuilderSetting.js';
 import type { ExportDataInfo } from '../../QueryBuilderResultState.js';
 
 // TODO: should we support raw once externalize() is supported on TDS ?
@@ -722,7 +722,7 @@ export class QueryBuilderTDSState
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.PROJECTION_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.PROJECTION_STATE,
       hashArray(this.projectionColumns),
       this.aggregationState,
       this.postFilterState,

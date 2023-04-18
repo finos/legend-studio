@@ -34,7 +34,7 @@ import {
   FilterConditionState,
   type QueryBuilderFilterState,
 } from '../QueryBuilderFilterState.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
   buildGenericLambdaFunctionInstanceValue,
   simplifyValueExpression,

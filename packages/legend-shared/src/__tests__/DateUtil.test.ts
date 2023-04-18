@@ -16,7 +16,7 @@
 
 import { test, expect } from '@jest/globals';
 import { prettyDuration } from '../date/DateUtils.js';
-import { unitTest } from '../application/TestUtils.js';
+import { unitTest } from '../__test-utils__/TestUtils.js';
 
 test(unitTest('Test Pretty Duration'), () => {
   expect(prettyDuration(400)).toEqual('');

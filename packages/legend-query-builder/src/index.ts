@@ -15,12 +15,12 @@
  */
 
 // application
-export * from './application/QueryBuilderTelemetryHelper.js';
-export * from './application/QueryBuilderEvent.js';
+export * from './__lib__/QueryBuilderTelemetryHelper.js';
+export * from './__lib__/QueryBuilderEvent.js';
 
-export { QueryBuilder_GraphManagerPreset } from './graphManager/QueryBuilder_GraphManagerPreset.js';
+export { QueryBuilder_GraphManagerPreset } from './graph-manager/QueryBuilder_GraphManagerPreset.js';
 
-export { QUERY_BUILDER_TEST_ID } from './application/QueryBuilderTesting.js';
+export { QUERY_BUILDER_TEST_ID } from './__lib__/QueryBuilderTesting.js';
 export {
   type CheckEntitlementEditorRender,
   QueryBuilder_LegendApplicationPlugin,
@@ -43,26 +43,28 @@ export {
   ServiceQueryBuilderState,
 } from './stores/workflows/ServiceQueryBuilderState.js';
 
-export { getQueryBuilderGraphManagerExtension } from './graphManager/protocol/pure/QueryBuilder_PureGraphManagerExtension.js';
-export type { ServiceExecutionAnalysisResult } from './graphManager/action/analytics/ServiceExecutionAnalysis.js';
-export type { MappingRuntimeCompatibilityAnalysisResult } from './graphManager/action/analytics/MappingRuntimeCompatibilityAnalysis.js';
+export { getQueryBuilderGraphManagerExtension } from './graph-manager/protocol/pure/QueryBuilder_PureGraphManagerExtension.js';
+export type { ServiceExecutionAnalysisResult } from './graph-manager/action/analytics/ServiceExecutionAnalysis.js';
+export type { MappingRuntimeCompatibilityAnalysisResult } from './graph-manager/action/analytics/MappingRuntimeCompatibilityAnalysis.js';
 export * from './stores/ServiceInfo.js';
 export * from './components/ServiceQuerySetupUtils.js';
 export * from './components/QuerySetupUtils.js';
 export * from './components/QueryBuilderTextEditor.js';
 
-export { TEST__setUpQueryBuilder } from './components/QueryBuilderComponentTestUtils.js';
 export { QueryBuilderTextEditorMode } from './stores/QueryBuilderTextEditorState.js';
 
 // ------------------------------------------- Shared components -------------------------------------------
 
 export * from './components/shared/LambdaEditor.js';
+export { LambdaEditorState } from './stores/shared/LambdaEditorState.js';
+
+export * from './stores/shared/LambdaParameterState.js';
+
 export * from './components/shared/BasicValueSpecificationEditor.js';
 export * from './components/shared/LambdaParameterValuesEditor.js';
-export * from './components/execution-plan/ExecutionPlanViewer.js';
 
-export { LambdaEditorState } from './stores/shared/LambdaEditorState.js';
-export * from './stores/shared/LambdaParameterState.js';
 export * from './stores/shared/ValueSpecificationModifierHelper.js';
 export * from './stores/shared/ValueSpecificationEditorHelper.js';
+
+export * from './components/execution-plan/ExecutionPlanViewer.js';
 export * from './stores/execution-plan/ExecutionPlanState.js';

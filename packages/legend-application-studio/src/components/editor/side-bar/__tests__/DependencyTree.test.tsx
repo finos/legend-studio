@@ -22,13 +22,13 @@ import {
   getByText,
   findByText,
 } from '@testing-library/react';
-import { integrationTest } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../../../EditorComponentTestUtils.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
-import { TEST_DATA__ProjectDependencyReport } from '../../edit-panel/__tests__/TEST_DATA__ProjectDependencyReport.js';
+} from '../../__test-utils__/EditorComponentTestUtils.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
+import { TEST_DATA__ProjectDependencyReport } from '../../editor-group/__tests__/TEST_DATA__ProjectDependencyReport.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 
 let renderResult: RenderResult;
@@ -163,25 +163,25 @@ beforeEach(async () => {
 });
 
 test(integrationTest('Test navigation of dependency tree'), async () => {
-  const editPanel = renderResult.getByTestId(
+  const explorerTree = renderResult.getByTestId(
     LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
   );
 
   // expanding dependency tree
-  await waitFor(() => findByText(editPanel, 'dependencies'));
-  fireEvent.click(getByText(editPanel, 'dependencies'));
+  await waitFor(() => findByText(explorerTree, 'dependencies'));
+  fireEvent.click(getByText(explorerTree, 'dependencies'));
 
   // expanding first dependency
-  await waitFor(() => findByText(editPanel, 'prod-1'));
-  fireEvent.click(getByText(editPanel, 'prod-1'));
-  await waitFor(() => findByText(editPanel, 'model'));
-  fireEvent.click(getByText(editPanel, 'model'));
-  await waitFor(() => findByText(editPanel, 'ClassB'));
+  await waitFor(() => findByText(explorerTree, 'org.finos.legend:prod-1'));
+  fireEvent.click(getByText(explorerTree, 'org.finos.legend:prod-1'));
+  await waitFor(() => findByText(explorerTree, 'model'));
+  fireEvent.click(getByText(explorerTree, 'model'));
+  await waitFor(() => findByText(explorerTree, 'ClassB'));
 
   // expanding second dependency
-  await waitFor(() => findByText(editPanel, 'prod-2'));
-  fireEvent.click(getByText(editPanel, 'prod-2'));
-  await waitFor(() => findByText(editPanel, 'test'));
-  fireEvent.click(getByText(editPanel, 'test'));
-  await waitFor(() => findByText(editPanel, 'ClassC'));
+  await waitFor(() => findByText(explorerTree, 'org.finos.legend:prod-2'));
+  fireEvent.click(getByText(explorerTree, 'org.finos.legend:prod-2'));
+  await waitFor(() => findByText(explorerTree, 'test'));
+  fireEvent.click(getByText(explorerTree, 'test'));
+  await waitFor(() => findByText(explorerTree, 'ClassC'));
 });

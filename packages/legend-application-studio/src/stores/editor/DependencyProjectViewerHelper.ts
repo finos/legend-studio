@@ -19,7 +19,7 @@ import {
   ProjectData,
 } from '@finos/legend-server-depot';
 import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
-import { generateViewProjectRoute } from '../../application/LegendStudioNavigation.js';
+import { generateViewProjectRoute } from '../../__lib__/LegendStudioNavigation.js';
 
 export const createViewSDLCProjectHandler =
   (

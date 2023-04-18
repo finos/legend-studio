@@ -18,26 +18,29 @@ import { createContext, useContext, useEffect } from 'react';
 import {
   LEGEND_APPLICATION_COLOR_THEME,
   useApplicationStore,
+} from '@finos/legend-application';
+import {
   useNavigationZone,
   useParams,
-} from '@finos/legend-application';
+} from '@finos/legend-application/browser';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
   LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN,
   type DataSpacePreviewPathParams,
-  LEGEND_TAXONOMY_QUERY_PARAM_TOKEN,
-} from '../../application/LegendTaxonomyNavigation.js';
+} from '../../__lib__/LegendTaxonomyNavigation.js';
 import { flowResult } from 'mobx';
 import {
   BlankPanelContent,
   PanelLoadingIndicator,
   TimesCircleIcon,
 } from '@finos/legend-art';
-import { DataSpaceViewer } from '@finos/legend-extension-dsl-data-space';
+import { DataSpaceViewer } from '@finos/legend-extension-dsl-data-space/application';
 import { DataSpacePreviewStore as DataSpacePreviewStore } from '../../stores/data-space-preview/DataSpacePreviewStore.js';
-import { useDepotServerClient } from '@finos/legend-server-depot';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useLegendTaxonomyApplicationStore } from '../LegendTaxonomyBaseStoreProvider.js';
+import {
+  useLegendTaxonomyApplicationStore,
+  useLegendTaxonomyBaseStore,
+} from '../LegendTaxonomyFrameworkProvider.js';
 
 const DataSpacePreviewStoreContext = createContext<
   DataSpacePreviewStore | undefined
@@ -47,9 +50,10 @@ const DataSpacePreviewStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendTaxonomyApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendTaxonomyBaseStore();
   const store = useLocalObservable(
-    () => new DataSpacePreviewStore(applicationStore, depotServerClient),
+    () =>
+      new DataSpacePreviewStore(applicationStore, baseStore.depotServerClient),
   );
   return (
     <DataSpacePreviewStoreContext.Provider value={store}>
@@ -82,10 +86,6 @@ export const DataSpacePreview = withDataSpacePreviewStore(
     const gav = params[LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN.GAV];
     const dataSpacePath =
       params[LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH];
-    const colorTheme =
-      applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
-        LEGEND_TAXONOMY_QUERY_PARAM_TOKEN.COLOR_THEME,
-      );
     const previewStore = useDataSpacePreviewStore();
     const navigationZone = useNavigationZone();
 
@@ -97,9 +97,9 @@ export const DataSpacePreview = withDataSpacePreviewStore(
 
     useEffect(() => {
       applicationStore.layoutService.setColorTheme(
-        colorTheme ?? LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
+        LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
       );
-    }, [applicationStore, colorTheme]);
+    }, [applicationStore]);
 
     useEffect(() => {
       flowResult(previewStore.initialize(gav, dataSpacePath)).catch(

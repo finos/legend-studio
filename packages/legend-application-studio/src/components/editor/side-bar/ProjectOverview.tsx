@@ -16,7 +16,7 @@
 
 import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import {
   clsx,
   CustomSelectorInput,
@@ -44,7 +44,7 @@ import {
   generateViewProjectRoute,
   generateViewVersionRoute,
   generateReviewRoute,
-} from '../../../application/LegendStudioNavigation.js';
+} from '../../../__lib__/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import {
   type Workspace,
@@ -55,7 +55,7 @@ import {
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
+import { useLegendStudioApplicationStore } from '../../LegendStudioFrameworkProvider.js';
 import { ProjectDependantsEditor } from './ProjectDependantsEditor.js';
 
 const ShareProjectModal = observer(

@@ -27,7 +27,7 @@ import {
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import { flow, makeObservable, observable } from 'mobx';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
-import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl } from '../application/LegendQueryNavigation.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl } from '../__lib__/LegendQueryNavigation.js';
 import { BaseQuerySetupStore } from './QuerySetupStore.js';
 
 export class LoadProjectServiceQuerySetupStore extends BaseQuerySetupStore {

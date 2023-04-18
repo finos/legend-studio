@@ -37,9 +37,8 @@ import {
   generateQueryProductionizerSetupRoute,
   generateUpdateExistingServiceQuerySetup,
   LEGEND_QUERY_ROUTE_PATTERN,
-} from '../application/LegendQueryNavigation.js';
+} from '../__lib__/LegendQueryNavigation.js';
 import {
-  setupPureLanguageService,
   type ApplicationPageEntry,
   type LegendApplicationSetup,
 } from '@finos/legend-application';
@@ -47,6 +46,10 @@ import { CloneQueryServiceSetup } from './CloneQueryServiceSetup.js';
 import { QueryProductionizerSetup } from './QueryProductionizerSetup.js';
 import { UpdateExistingServiceQuerySetup } from './UpdateExistingServiceQuerySetup.js';
 import { LoadProjectServiceQuerySetup } from './LoadProjectServiceQuerySetup.js';
+import {
+  configureCodeEditorComponent,
+  setupPureLanguageService,
+} from '@finos/legend-lego/code-editor';
 
 export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   static NAME = packageJson.extensions.applicationQueryPlugin;
@@ -58,7 +61,8 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
   override getExtraApplicationSetups(): LegendApplicationSetup[] {
     return [
       async (applicationStore) => {
-        setupPureLanguageService([], []);
+        await configureCodeEditorComponent(applicationStore);
+        setupPureLanguageService({});
       },
     ];
   }
@@ -67,24 +71,26 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
     return [
       {
         key: 'clone-service-query-setup-application-page',
-        urlPatterns: [LEGEND_QUERY_ROUTE_PATTERN.CLONE_SERVICE_QUERY_SETUP],
+        addressPatterns: [LEGEND_QUERY_ROUTE_PATTERN.CLONE_SERVICE_QUERY_SETUP],
         renderer: CloneQueryServiceSetup,
       },
       {
         key: 'query-productionizer-setup-application-page',
-        urlPatterns: [LEGEND_QUERY_ROUTE_PATTERN.QUERY_PRODUCTIONIZER_SETUP],
+        addressPatterns: [
+          LEGEND_QUERY_ROUTE_PATTERN.QUERY_PRODUCTIONIZER_SETUP,
+        ],
         renderer: QueryProductionizerSetup,
       },
       {
         key: 'update-existing-service-query-setup-application-page',
-        urlPatterns: [
+        addressPatterns: [
           LEGEND_QUERY_ROUTE_PATTERN.UPDATE_EXISTING_SERVICE_QUERY_SETUP,
         ],
         renderer: UpdateExistingServiceQuerySetup,
       },
       {
         key: 'load-project-service-query-setup-application-page',
-        urlPatterns: [
+        addressPatterns: [
           LEGEND_QUERY_ROUTE_PATTERN.LOAD_PROJECT_SERVICE_QUERY_SETUP,
         ],
         renderer: LoadProjectServiceQuerySetup,

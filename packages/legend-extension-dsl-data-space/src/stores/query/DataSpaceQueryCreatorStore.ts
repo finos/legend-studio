@@ -40,11 +40,11 @@ import {
   QUERY_PROFILE_PATH,
   QUERY_PROFILE_TAG_CLASS,
   QUERY_PROFILE_TAG_DATA_SPACE,
-} from '../../DSL_DataSpace_Const.js';
-import { getDataSpace } from '../../graphManager/DSL_DataSpace_GraphManagerHelper.js';
+} from '../../graph/DSL_DataSpace_MetaModelConst.js';
+import { getDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
 import { DataSpaceQueryBuilderState } from './DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from './DataSpaceInfo.js';
-import { generateDataSpaceQueryCreatorRoute } from '../../application/query/DSL_DataSpace_LegendQueryNavigation.js';
+import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import type { DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';

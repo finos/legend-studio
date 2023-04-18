@@ -41,9 +41,10 @@ import {
   formatDate,
 } from '@finos/legend-shared';
 import {
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
   ActionAlertType,
   ActionAlertActionType,
+  DEFAULT_DATE_TIME_FORMAT,
 } from '@finos/legend-application';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
@@ -55,11 +56,10 @@ import {
   Revision,
   EntityChangeType,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 import { WorkspaceSyncState } from './WorkspaceSyncState.js';
 import { ACTIVITY_MODE } from '../EditorConfig.js';
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
-import { DATE_TIME_FORMAT } from '@finos/legend-graph';
 
 class PatchLoaderState {
   readonly editorStore: EditorStore;
@@ -209,7 +209,7 @@ export abstract class LocalChangesState {
   downloadLocalChanges(): void {
     const fileName = `entityChanges_(${this.sdlcState.currentProject?.name}_${
       this.sdlcState.activeWorkspace.workspaceId
-    })_${formatDate(new Date(Date.now()), DATE_TIME_FORMAT)}.json`;
+    })_${formatDate(new Date(Date.now()), DEFAULT_DATE_TIME_FORMAT)}.json`;
     const content = JSON.stringify(
       {
         message: '', // TODO?
@@ -217,7 +217,7 @@ export abstract class LocalChangesState {
         revisionId: this.sdlcState.activeRevision.id,
       },
       undefined,
-      TAB_SIZE,
+      DEFAULT_TAB_SIZE,
     );
     downloadFileUsingDataURI(fileName, content, ContentType.APPLICATION_JSON);
   }

@@ -15,7 +15,8 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { guaranteeType, unitTest } from '@finos/legend-shared';
+import { guaranteeType } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import { Package } from '../../metamodel/pure/packageableElements/domain/Package.js';
 import {
   getMilestoneTemporalStereotype,
@@ -24,7 +25,7 @@ import {
 import { TEST_DATA__Milestoning } from './TEST_DATA__Milestoning.js';
 import type { Entity } from '@finos/legend-storage';
 import { MILESTONING_STEREOTYPE } from '../../MetaModelConst.js';
-import { TEST__getTestGraph } from '../../GraphTestUtils.js';
+import { TEST__getTestGraph } from '../../__test-utils__/GraphTestUtils.js';
 
 test(unitTest('Get or create package utility properly handle cache'), () => {
   const root = new Package('ROOT');

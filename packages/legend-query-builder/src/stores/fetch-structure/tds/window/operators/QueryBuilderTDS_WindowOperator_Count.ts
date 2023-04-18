@@ -17,8 +17,8 @@
 import { hashArray } from '@finos/legend-shared';
 import { type Type, PRIMITIVE_TYPE } from '@finos/legend-graph';
 import { QueryBuilderTDS_WindowOperator } from './QueryBuilderTDS_WindowOperator.js';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 
 export class QueryBuilderTDS_WindowOperator_Count extends QueryBuilderTDS_WindowOperator {
   override isColumnAggregator(): boolean {
@@ -33,7 +33,9 @@ export class QueryBuilderTDS_WindowOperator_Count extends QueryBuilderTDS_Window
   }
 
   get hashCode(): string {
-    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_COUNT]);
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_COUNT,
+    ]);
   }
 
   isCompatibleWithType(type: Type | undefined): boolean {

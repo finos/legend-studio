@@ -22,7 +22,7 @@ import {
 } from '@finos/legend-art';
 import type { Project } from '@finos/legend-server-sdlc';
 import type { LegendStudioApplicationStore } from '../../stores/LegendStudioBaseStore.js';
-import { generateViewProjectRoute } from '../../application/LegendStudioNavigation.js';
+import { generateViewProjectRoute } from '../../__lib__/LegendStudioNavigation.js';
 import type { ProjectConfigurationStatus } from '../../stores/workspace-setup/ProjectConfigurationStatus.js';
 
 export interface ProjectOption {

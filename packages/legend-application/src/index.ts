@@ -14,26 +14,28 @@
  * limitations under the License.
  */
 
-export * from './const.js';
+export * from './stores/ApplicationConfig.js';
 
 export * from './application/LegendApplication.js';
 export * from './application/LegendApplicationConfig.js';
 export * from './application/LegendApplicationPluginManager.js';
-export * from './application/LegendApplicationEvent.js';
-export * from './application/LegendApplicationTelemetry.js';
-export * from './application/LegendApplicationSetting.js';
-export { LEGEND_APPLICATION_COLOR_THEME } from './application/LegendApplicationTheme.js';
+
+export * from './__lib__/LegendApplicationEvent.js';
+export * from './__lib__/LegendApplicationTelemetry.js';
+export * from './__lib__/LegendApplicationSetting.js';
+export * from './__lib__/LegendApplicationDocumentation.js';
+export { LEGEND_APPLICATION_COLOR_THEME } from './__lib__/LegendApplicationTheme.js';
 
 export * from './components/ApplicationStoreProvider.js';
-export * from './components/WebApplicationNavigatorProvider.js';
-export * from './components/LegendApplicationComponentFrameworkProvider.js';
+export * from './components/ApplicationFrameworkProvider.js';
 export * from './components/useApplicationNavigationContext.js';
 export * from './components/useCommands.js';
-export * from './components/ApplicationStoreProviderTestUtils.js';
-export * from './components/WebApplicationNavigatorProviderTestUtils.js';
+export {
+  forceDispatchKeyboardEvent,
+  BackdropContainer,
+} from './components/ApplicationComponentFrameworkProvider.js';
 
 export * from './stores/ApplicationStore.js';
-export { WebApplicationNavigator } from './stores/navigation/WebApplicationNavigator.js';
 export {
   NavigationService,
   type NavigationAddress,
@@ -54,18 +56,4 @@ export * from './stores/AssistantService.js';
 export * from './stores/ApplicationNavigationContextService.js';
 export * from './stores/LegendApplicationPlugin.js';
 export * from './stores/Core_LegendApplicationPlugin.js';
-
-export * from './stores/ApplicationStoreTestUtils.js';
-export * from './stores/navigation/WebApplicationRouter.js';
 export { DISPLAY_ANSI_ESCAPE } from './stores/terminal/Terminal.js';
-
-// ------------------------------------------- TO BE MOVED -------------------------------------------
-
-// TODO: move to `@finos/legend-lego/code-editor`
-export {
-  PURE_GRAMMAR_TOKEN,
-  setupPureLanguageService,
-} from './stores/pure-language/PureLanguageSupport.js';
-export * from './stores/pure-language/PureLanguageCodeEditorSupport.js';
-export * from './components/shared/PackageableElementOptionLabel.js';
-export * from './stores/shared/PackageableElementOption.js';

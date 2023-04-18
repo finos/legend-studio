@@ -49,7 +49,7 @@ import { QueryBuilderTextEditor } from './QueryBuilderTextEditor.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { QueryBuilderTextEditorMode } from '../stores/QueryBuilderTextEditorState.js';
 import { QueryBuilderFetchStructurePanel } from './fetch-structure/QueryBuilderFetchStructurePanel.js';
-import { QUERY_BUILDER_TEST_ID } from '../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import { flowResult } from 'mobx';
 import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor.js';
 import {
@@ -67,9 +67,9 @@ import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSP
 import { QueryBuilderWatermarkEditor } from './watermark/QueryBuilderWatermark.js';
 import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpressionPanel.js';
 import { QueryBuilder_LegendApplicationPlugin } from './QueryBuilder_LegendApplicationPlugin.js';
-import { QUERY_BUILDER_SETTING_KEY } from '../application/QueryBuilderSetting.js';
+import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
-import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../application/QueryBuilderDocumentation.js';
+import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {

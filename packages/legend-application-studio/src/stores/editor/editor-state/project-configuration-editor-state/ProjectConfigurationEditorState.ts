@@ -40,7 +40,7 @@ import {
   UpdateProjectConfigurationCommand,
   UpdatePlatformConfigurationsCommand,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../__lib__/LegendStudioEvent.js';
 import { MASTER_SNAPSHOT_ALIAS, ProjectData } from '@finos/legend-server-depot';
 import { ProjectDependencyEditorState } from './ProjectDependencyEditorState.js';
 

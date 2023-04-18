@@ -68,6 +68,7 @@ import type { GenericType } from '../metamodel/pure/packageableElements/domain/G
 import { Multiplicity } from '../metamodel/pure/packageableElements/domain/Multiplicity.js';
 import type { AnnotatedElement } from '../metamodel/pure/packageableElements/domain/AnnotatedElement.js';
 import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import { extractDependencyGACoordinateFromRootPackageName } from '../DependencyManager.js';
 
 export const addElementToPackage = (
   parent: Package,
@@ -245,13 +246,14 @@ export const isElementReadOnly = (element: PackageableElement): boolean =>
 
 export const isDependencyElement = (
   element: PackageableElement,
-  pureModel: PureModel,
 ): element is PackageableElement => {
   const rootPackage = returnUndefOnError(() => getElementRootPackage(element));
   return (
     rootPackage?.name === ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT ||
     (rootPackage !== undefined &&
-      pureModel.dependencyManager.roots.includes(rootPackage))
+      Boolean(
+        extractDependencyGACoordinateFromRootPackageName(rootPackage.name),
+      ))
   );
 };
 

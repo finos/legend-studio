@@ -38,8 +38,11 @@ import {
   FaceSadTearIcon,
   CogIcon,
   Draggable,
+  BaseRadioGroup,
+  QuestionCircleIcon,
 } from '@finos/legend-art';
 import {
+  ADVANCED_FUZZY_SEARCH_MODE,
   ContentType,
   debounce,
   downloadFileUsingDataURI,
@@ -49,15 +52,17 @@ import {
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { TAB_SIZE } from '../const.js';
+import {
+  DEFAULT_DATE_TIME_FORMAT,
+  DEFAULT_TAB_SIZE,
+} from '../stores/ApplicationConfig.js';
 import {
   type VirtualAssistantDocumentationEntry,
   VIRTUAL_ASSISTANT_TAB,
 } from '../stores/AssistantService.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
-import { DATE_TIME_FORMAT } from '@finos/legend-graph';
-import { LegendApplicationTelemetryHelper } from '../application/LegendApplicationTelemetry.js';
-import { FuzzySearchAdvancedConfigMenu } from './shared/FuzzySearchAdvancedConfigMenu.js';
+import { LegendApplicationTelemetryHelper } from '../__lib__/LegendApplicationTelemetry.js';
+import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '../__lib__/LegendApplicationDocumentation.js';
 
 const WIZARD_GREETING = `Bonjour, It's Pierre!`;
 
@@ -293,12 +298,12 @@ const VirtualAssistantSearchPanel = observer(() => {
     downloadFileUsingDataURI(
       `documentation-registry_${formatDate(
         new Date(Date.now()),
-        DATE_TIME_FORMAT,
+        DEFAULT_DATE_TIME_FORMAT,
       )}.json`,
       JSON.stringify(
         applicationStore.documentationService.publishDocRegistry(),
         undefined,
-        TAB_SIZE,
+        DEFAULT_TAB_SIZE,
       ),
       ContentType.APPLICATION_JSON,
     );
@@ -307,12 +312,12 @@ const VirtualAssistantSearchPanel = observer(() => {
     downloadFileUsingDataURI(
       `documentation-registry_${formatDate(
         new Date(Date.now()),
-        DATE_TIME_FORMAT,
+        DEFAULT_DATE_TIME_FORMAT,
       )}.json`,
       JSON.stringify(
         applicationStore.documentationService.publishContextualDocIndex(),
         undefined,
-        TAB_SIZE,
+        DEFAULT_TAB_SIZE,
       ),
       ContentType.APPLICATION_JSON,
     );
@@ -414,9 +419,46 @@ const VirtualAssistantSearchPanel = observer(() => {
               assistantService.showSearchConfigurationMenu,
           })}
         >
-          <FuzzySearchAdvancedConfigMenu
-            configState={assistantService.searchConfigurationState}
-          />
+          <div className="virtual-assistant__search__input__advanced-config__panel">
+            <div className="virtual-assistant__search__input__advanced-config__panel__header__label">
+              search config
+              {applicationStore.documentationService.hasDocEntry(
+                LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_USE_ADVANCED_SEARCH_SYNTAX,
+              ) && (
+                <div
+                  onClick={() =>
+                    assistantService.openDocumentationEntryLink(
+                      LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_USE_ADVANCED_SEARCH_SYNTAX,
+                    )
+                  }
+                  title="Click to see documentation"
+                  className="virtual-assistant__search__input__advanced-config__panel__header__label__hint"
+                >
+                  <QuestionCircleIcon />
+                </div>
+              )}
+            </div>
+            <div>
+              <BaseRadioGroup
+                value={assistantService.searchConfigurationState.currentMode}
+                onChange={(event): void => {
+                  const searchMode = event.target
+                    .value as ADVANCED_FUZZY_SEARCH_MODE;
+                  assistantService.searchConfigurationState.setCurrentMode(
+                    searchMode,
+                  );
+                }}
+                row={false}
+                options={[
+                  ADVANCED_FUZZY_SEARCH_MODE.STANDARD,
+                  ADVANCED_FUZZY_SEARCH_MODE.INCLUDE,
+                  ADVANCED_FUZZY_SEARCH_MODE.EXACT,
+                  ADVANCED_FUZZY_SEARCH_MODE.INVERSE,
+                ]}
+                size={1}
+              />
+            </div>
+          </div>
         </div>
         {assistantService.currentDocumentationEntry && (
           <div className="virtual-assistant__search__results">

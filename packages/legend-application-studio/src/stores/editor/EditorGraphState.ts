@@ -91,12 +91,12 @@ import {
   createGraphBuilderReport,
   ExecutionEnvironmentInstance,
 } from '@finos/legend-graph';
-import { LegendApplicationTelemetryHelper } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
-import { LEGEND_STUDIO_SETTING_KEY } from '../../application/LegendStudioSetting.js';
-import type { TabState } from '@finos/legend-application/components';
+import { PACKAGEABLE_ELEMENT_TYPE } from './utils/ModelClassifierUtils.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
+import { LEGEND_STUDIO_SETTING_KEY } from '../../__lib__/LegendStudioSetting.js';
+import type { TabState } from '@finos/legend-lego/application';
+import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -280,7 +280,7 @@ export class EditorGraphState {
       // fetch and build dependencies
       stopWatch.record();
       const dependencyManager =
-        this.editorStore.graphManagerState.createEmptyDependencyManager();
+        this.editorStore.graphManagerState.graphManager.createDependencyManager();
       this.editorStore.graphManagerState.graph.dependencyManager =
         dependencyManager;
       this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
@@ -347,7 +347,7 @@ export class EditorGraphState {
         generations: generation_buildReport,
         generationsCount: this.graphGenerationState.generatedEntities.size,
       };
-      LegendApplicationTelemetryHelper.logEvent_GraphInitializationSucceeded(
+      LegendStudioTelemetryHelper.logEvent_GraphInitializationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         graphBuilderReportData,
       );
@@ -517,7 +517,7 @@ export class EditorGraphState {
         ),
       );
       const dependencyManager =
-        this.editorStore.graphManagerState.createEmptyDependencyManager();
+        this.editorStore.graphManagerState.graphManager.createDependencyManager();
       newGraph.dependencyManager = dependencyManager;
       const dependenciesBuildState = ActionState.create();
       yield this.editorStore.graphManagerState.graphManager.buildDependencies(
@@ -576,7 +576,7 @@ export class EditorGraphState {
       );
       // we reset the generation model
       this.editorStore.graphManagerState.graph.generationModel =
-        this.editorStore.graphManagerState.createEmptyGenerationModel();
+        this.editorStore.graphManagerState.graphManager.createGenerationModel();
       yield this.editorStore.graphManagerState.graphManager.buildGenerations(
         this.editorStore.graphManagerState.graph,
         this.graphGenerationState.generatedEntities,
@@ -631,7 +631,7 @@ export class EditorGraphState {
         const dependencyProjects = new Map<string, Set<string>>();
         dependencyEntities.forEach((dependencyInfo) => {
           const projectId = dependencyInfo.id;
-          // There are a few validations that must be done:P
+          // There are a few validations that must be done:
           // 1. Unlike above, if in the depdendency graph, we have both A@v1 and A@v2
           //    then we need to throw. Both SDLC and metadata server should handle this
           //    validation, but haven't, so for now, we can do that in Studio.

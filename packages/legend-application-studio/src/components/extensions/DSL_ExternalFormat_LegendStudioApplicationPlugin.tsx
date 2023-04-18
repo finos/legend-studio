@@ -16,7 +16,7 @@
 
 import packageJson from '../../../package.json';
 import { BufferIcon, SitemapIcon } from '@finos/legend-art';
-import { SchemaSetEditor } from '../editor/edit-panel/external-format-editor/DSL_ExternalFormat_SchemaSetElementEditor.js';
+import { SchemaSetEditor } from '../editor/editor-group/external-format-editor/DSL_ExternalFormat_SchemaSetElementEditor.js';
 import {
   type Connection,
   type PackageableElement,
@@ -27,16 +27,13 @@ import {
   ModelUnit,
   ExternalFormatConnection,
   UrlStream,
-  PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
-  PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME,
-  PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
 } from '@finos/legend-graph';
 import {
   ExternalFormatConnectionEditor,
   ExternalFormatConnectionValueState,
   NewExternalFormatConnectionDriver,
-} from '../editor/edit-panel/external-format-editor/DSL_ExternalFormat_ExternalFormatConnectionEditor.js';
-import { BindingEditor } from '../editor/edit-panel/external-format-editor/DSL_ExternalFormat_BindingElementEditor.js';
+} from '../editor/editor-group/external-format-editor/DSL_ExternalFormat_ExternalFormatConnectionEditor.js';
+import { BindingEditor } from '../editor/editor-group/external-format-editor/DSL_ExternalFormat_BindingElementEditor.js';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import type { ReactNode } from 'react';
 import {
@@ -53,6 +50,8 @@ import {
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   LegendStudioApplicationPlugin,
+  type DSL_LegendStudioApplicationPlugin_Extension,
+  type PureGrammarElementLabeler,
 } from '../../stores/LegendStudioApplicationPlugin.js';
 import type {
   ConnectionEditorRenderer,
@@ -61,6 +60,7 @@ import type {
   DefaultConnectionValueBuilder,
   DSL_Mapping_LegendStudioApplicationPlugin_Extension,
   NewConnectionDriverCreator,
+  PureGrammarConnectionLabeler,
   RuntimeConnectionTooltipTextBuilder,
 } from '../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { EditorStore } from '../../stores/editor/EditorStore.js';
@@ -71,28 +71,26 @@ import type { ConnectionValueState } from '../../stores/editor/editor-state/elem
 import {
   externalFormat_Binding_setContentType,
   externalFormat_urlStream_setUrl,
-} from '../../stores/editor/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
-import type {
-  DocumentationEntry,
-  PureGrammarTextSuggestion,
-} from '@finos/legend-application';
-import { DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/DSL_ExternalFormat_LegendStudioDocumentation.js';
+} from '../../stores/graph-modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+import type { DocumentationEntry } from '@finos/legend-application';
+import { DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/DSL_ExternalFormat_LegendStudioDocumentation.js';
 import {
   BASIC_BINDING_SNIPPET,
   BASIC_SCHEMASET_SNIPPET,
   SCHEMASET_WITH_JSON_SCHEMA_SNIPPET,
   SCHEMASET_WITH_XML_SCHEMA_SNIPPET,
   SCHEMASET_WITH_FLAT_DATA_SCHEMA_SNIPPET,
-} from '../../application/DSL_ExternalFormat_LegendStudioCodeSnippet.js';
+} from '../../__lib__/DSL_ExternalFormat_LegendStudioCodeSnippet.js';
 import {
   NewSchemaSetDriver,
   NewSchemaSetDriverEditor,
-} from '../editor/edit-panel/external-format-editor/DSL_ExternalFormat_NewSchemaSetDriver.js';
+} from '../editor/editor-group/external-format-editor/DSL_ExternalFormat_NewSchemaSetDriver.js';
 import type {
   NewConnectionValueDriver,
   NewElementDriver,
   NewElementState,
 } from '../../stores/editor/NewElementState.js';
+import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
 const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -101,9 +99,17 @@ const BINDING_ELEMENT_TYPE = 'BINDING';
 const BINDING_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_BINDING';
 export const EXTERNAL_FORMAT_CONNECTION = 'EXTERNAL_FORMAT_CONNECTION';
 
+const PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME = 'ExternalFormat';
+const PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL = 'Binding';
+const PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL = 'SchemaSet';
+const PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL =
+  'ExternalFormatConnection';
+
 export class DSL_ExternalFormat_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
-  implements DSL_Mapping_LegendStudioApplicationPlugin_Extension
+  implements
+    DSL_LegendStudioApplicationPlugin_Extension,
+    DSL_Mapping_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
     super(
@@ -117,6 +123,42 @@ export class DSL_ExternalFormat_LegendStudioApplicationPlugin
       DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_BINDING,
       DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_SCHEMASET,
       DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
+  }
+
+  getExtraPureGrammarParserNames(): string[] {
+    return [PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME];
+  }
+
+  getExtraPureGrammarKeywords(): string[] {
+    return [
+      PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
+      PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
+      PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL,
+    ];
+  }
+
+  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
+    return [
+      (element): string | undefined => {
+        if (element instanceof Binding) {
+          return PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL;
+        } else if (element instanceof SchemaSet) {
+          return PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarConnectionLabelers(): PureGrammarConnectionLabeler[] {
+    return [
+      (connection): string | undefined => {
+        if (connection instanceof ExternalFormatConnection) {
+          return PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL;
+        }
+        return undefined;
+      },
     ];
   }
 

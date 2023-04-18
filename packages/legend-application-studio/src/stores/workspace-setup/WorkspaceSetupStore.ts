@@ -15,7 +15,7 @@
  */
 
 import { observable, action, flowResult, makeObservable, flow } from 'mobx';
-import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -24,7 +24,7 @@ import {
   ActionState,
   IllegalStateError,
 } from '@finos/legend-shared';
-import { generateSetupRoute } from '../../application/LegendStudioNavigation.js';
+import { generateSetupRoute } from '../../__lib__/LegendStudioNavigation.js';
 import {
   type SDLCServerClient,
   WorkspaceType,
@@ -50,9 +50,10 @@ interface ImportProjectSuccessReport {
 }
 
 export class WorkspaceSetupStore {
-  applicationStore: LegendStudioApplicationStore;
-  sdlcServerClient: SDLCServerClient;
-  initState = ActionState.create();
+  readonly applicationStore: LegendStudioApplicationStore;
+
+  readonly sdlcServerClient: SDLCServerClient;
+  readonly initState = ActionState.create();
 
   projects: Project[] = [];
   currentProject?: Project | undefined;
@@ -141,6 +142,9 @@ export class WorkspaceSetupStore {
       return;
     }
     this.initState.inProgress();
+
+    // TODO: when we genericize the way to initialize an application page
+    this.applicationStore.assistantService.setIsHidden(false);
 
     try {
       if (projectId) {

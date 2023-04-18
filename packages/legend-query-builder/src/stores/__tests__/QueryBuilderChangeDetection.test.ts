@@ -19,17 +19,14 @@ import {
   extractElementNameFromPath,
   create_RawLambda,
 } from '@finos/legend-graph';
-import {
-  guaranteeNonNullable,
-  guaranteeType,
-  integrationTest,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import { expect, test } from '@jest/globals';
 import { waitFor, getByText } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
-import { TEST__setUpQueryBuilder } from '../../components/QueryBuilderComponentTestUtils.js';
-import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import { TEST__setUpQueryBuilder } from '../../components/__test-utils__/QueryBuilderComponentTestUtils.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { QueryBuilderTDSState } from '../fetch-structure/tds/QueryBuilderTDSState.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ChangeDetection } from './TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ChangeDetectionModel from './TEST_DATA__QueryBuilder_Model_ChangeDetection.json';

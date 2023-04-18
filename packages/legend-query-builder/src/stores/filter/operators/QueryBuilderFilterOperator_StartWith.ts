@@ -34,14 +34,14 @@ import {
   buildFilterConditionState,
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
   buildNotExpression,
   generateDefaultValueForPrimitiveType,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
 import { buildPrimitiveInstanceValue } from '../../shared/ValueSpecificationEditorHelper.js';
 
 export class QueryBuilderFilterOperator_StartWith
@@ -118,7 +118,9 @@ export class QueryBuilderFilterOperator_StartWith
   }
 
   get hashCode(): string {
-    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_START_WITH]);
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_OPERATOR_START_WITH,
+    ]);
   }
 }
 
@@ -147,7 +149,7 @@ export class QueryBuilderFilterOperator_NotStartWith extends QueryBuilderFilterO
 
   override get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_NOT_START_WITH,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_OPERATOR_NOT_START_WITH,
     ]);
   }
 }

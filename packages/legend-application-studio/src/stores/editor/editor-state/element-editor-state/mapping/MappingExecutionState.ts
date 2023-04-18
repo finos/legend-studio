@@ -49,7 +49,7 @@ import {
   tryToFormatLosslessJSONString,
   StopWatch,
 } from '@finos/legend-shared';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
+import { createMockDataForMappingElementSource } from '../../../utils/MockDataUtils.js';
 import {
   type InputData,
   type Mapping,
@@ -105,28 +105,28 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
 } from '@finos/legend-application';
 import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
-import { flatData_setData } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
+} from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
+import { flatData_setData } from '../../../../graph-modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   service_addTestSuite,
   service_initNewService,
   service_setExecution,
-} from '../../../shared/modifier/DSL_Service_GraphModifierHelper.js';
+} from '../../../../graph-modifier/DSL_Service_GraphModifierHelper.js';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../graph-modifier/STO_Relational_GraphModifierHelper.js';
 import {
   createEmptyEqualToJsonAssertion,
   createBareExternalFormat,
-} from '../../../shared/TestableUtils.js';
+} from '../../../utils/TestableUtils.js';
 import { SERIALIZATION_FORMAT } from '../service/testable/ServiceTestEditorState.js';
 import {
   LambdaEditorState,
@@ -795,7 +795,7 @@ export class MappingExecutionState extends MappingEditorTabState {
           stringifyLosslessJSON(
             extractExecutionResultValues(result),
             undefined,
-            TAB_SIZE,
+            DEFAULT_TAB_SIZE,
           ),
         );
 

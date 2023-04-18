@@ -53,11 +53,11 @@ import type { Entity } from '@finos/legend-storage';
 import { type EntityChange, EntityChangeType } from '@finos/legend-server-sdlc';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 import {
   configurationProperty_addConfigurationProperty,
   configurationProperty_setValue,
-} from '../../../shared/modifier/DSL_Generation_GraphModifierHelper.js';
+} from '../../../../graph-modifier/DSL_Generation_GraphModifierHelper.js';
 
 export enum SCHEMA_SET_TAB_TYPE {
   SCHEMAS = 'SCHEMAS',
@@ -563,7 +563,7 @@ export class SchemaSetEditorState extends ElementEditorState {
       const _schemaSet = new SchemaSet(this.schemaSet.name);
       _schemaSet.format = this.schemaSet.format;
       _schemaSet.schemas = [currentSchema];
-      const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
+      const newGraph = this.editorStore.graphManagerState.createNewGraph();
       newGraph.addElement(_schemaSet, this.schemaSet.package?.path);
       yield this.editorStore.graphManagerState.graphManager.compileGraph(
         newGraph,

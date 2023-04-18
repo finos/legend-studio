@@ -15,7 +15,7 @@
  */
 
 import { test, describe, expect } from '@jest/globals';
-import { createMock, integrationTest } from '@finos/legend-shared';
+import { createMock, integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
   create_RawLambda,
@@ -32,8 +32,8 @@ import {
   TEST_DATA__ResultState_entities,
   TEST_DATA__simpleProjectionQuery,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_ResultStateTest.js';
-import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
-import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   MockedMonacoEditorAPI,
   MockedMonacoEditorInstance,

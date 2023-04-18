@@ -29,7 +29,7 @@ import {
 import { QueryBuilderSidebar } from './QueryBuilderSideBar.js';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 
-const QueryBuilderUnsupportedQueryEditPanel = observer(
+const QueryBuilderUnsupportedQueryViewer = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const queryUnsupportedState = queryBuilderState.unsupportedQueryState;
@@ -77,7 +77,7 @@ export const QueryBuilderUnsupportedQueryEditor = observer(
         </ResizablePanel>
         <ResizablePanelSplitter />
         <ResizablePanel>
-          <QueryBuilderUnsupportedQueryEditPanel
+          <QueryBuilderUnsupportedQueryViewer
             queryBuilderState={queryBuilderState}
           />
         </ResizablePanel>

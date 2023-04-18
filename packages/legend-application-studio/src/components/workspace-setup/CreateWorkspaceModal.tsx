@@ -29,9 +29,9 @@ import {
 import { flowResult } from 'mobx';
 import { type Project, WorkspaceType } from '@finos/legend-server-sdlc';
 import { useApplicationStore } from '@finos/legend-application';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/LegendStudioDocumentation.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/LegendStudioDocumentation.js';
 import { useWorkspaceSetupStore } from './WorkspaceSetup.js';
-import { DocumentationLink } from '@finos/legend-application/components';
+import { DocumentationLink } from '@finos/legend-lego/application';
 
 export const CreateWorkspaceModal = observer(
   (props: { selectedProject: Project }) => {

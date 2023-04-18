@@ -65,7 +65,7 @@ import type {
   ElementSuggestion,
   VariableSuggestion,
 } from './models/Suggestion.js';
-import { ROOT_PACKAGE_PATH } from '../stores/EditorConfig.js';
+import { ROOT_PACKAGE_PATH } from '../stores/PureIDEConfig.js';
 
 export class PureClient {
   private networkClient: NetworkClient;

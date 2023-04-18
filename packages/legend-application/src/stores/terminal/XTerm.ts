@@ -28,7 +28,10 @@ import {
 } from 'xterm-addon-search';
 import { Unicode11Addon as XTermUnicode11Addon } from 'xterm-addon-unicode11';
 import { WebglAddon as XTermWebglAddon } from 'xterm-addon-webgl';
-import { MONOSPACED_FONT_FAMILY, TAB_SIZE } from '../../const.js';
+import {
+  DEFAULT_MONOSPACED_FONT_FAMILY,
+  DEFAULT_TAB_SIZE,
+} from '../ApplicationConfig.js';
 import {
   Terminal,
   DISPLAY_ANSI_ESCAPE,
@@ -46,8 +49,8 @@ import {
   prettyCONSTName,
   uniqBy,
 } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from '../../application/LegendApplicationEvent.js';
-import { forceDispatchKeyboardEvent } from '../../components/LegendApplicationComponentFrameworkProvider.js';
+import { APPLICATION_EVENT } from '../../__lib__/LegendApplicationEvent.js';
+import { forceDispatchKeyboardEvent } from '../../components/ApplicationComponentFrameworkProvider.js';
 
 const LEGEND_XTERM_THEME: XTermTheme = {
   foreground: '#cccccc',
@@ -185,8 +188,8 @@ export class XTerm extends Terminal {
       letterSpacing: 2,
       fontWeight: 400,
       fontWeightBold: 700,
-      fontFamily: `"${MONOSPACED_FONT_FAMILY}", Menlo, Consolas, monospace`,
-      tabStopWidth: TAB_SIZE,
+      fontFamily: `"${DEFAULT_MONOSPACED_FONT_FAMILY}", Menlo, Consolas, monospace`,
+      tabStopWidth: DEFAULT_TAB_SIZE,
       theme: LEGEND_XTERM_THEME,
       overviewRulerWidth: 14, // 14px
       scrollback: 100000, // buffer a substantial content length

@@ -15,6 +15,7 @@
     { "path": "../legend-server-depot" },
     { "path": "../legend-application" },
     { "path": "../legend-art" },
+    { "path": "../legend-lego" },
     { "path": "../legend-extension-dsl-data-space" }
   ]
 }

@@ -15,11 +15,8 @@
  */
 
 import { expect, test, describe } from '@jest/globals';
-import {
-  guaranteeNonNullable,
-  guaranteeType,
-  integrationTest,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import { RawLambda } from '@finos/legend-graph';
@@ -34,7 +31,7 @@ import {
   TEST_DATA__lambda_expected_typeahead_postFilter_with_derivation,
   TEST_DATA__lambda_typeahead_simple_postFilter,
 } from './TEST_DATA__QueryBuilder_TestTypeaheadSearch.js';
-import { TEST__setUpQueryBuilderState } from '../QueryBuilderStateTestUtils.js';
+import { TEST__setUpQueryBuilderState } from '../__test-utils__/QueryBuilderStateTestUtils.js';
 import { QueryBuilderProjectionColumnState } from '../fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { QueryBuilderAggregateColumnState } from '../fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import {

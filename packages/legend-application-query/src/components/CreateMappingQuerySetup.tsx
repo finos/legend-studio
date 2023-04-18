@@ -29,19 +29,16 @@ import { useContext, useEffect } from 'react';
 import {
   generateMappingQueryCreatorRoute,
   generateQuerySetupRoute,
-} from '../application/LegendQueryNavigation.js';
+} from '../__lib__/LegendQueryNavigation.js';
 import {
   LATEST_VERSION_ALIAS,
   SNAPSHOT_VERSION_ALIAS,
-  useDepotServerClient,
 } from '@finos/legend-server-depot';
+import { useApplicationStore } from '@finos/legend-application';
 import {
-  useApplicationStore,
-  buildElementOption,
-  type PackageableElementOption,
-  getPackageableElementOptionFormatter,
-} from '@finos/legend-application';
-import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+  useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
+} from './LegendQueryFrameworkProvider.js';
 import { CreateMappingQuerySetupStore } from '../stores/CreateMappingQuerySetupStore.js';
 import {
   BaseQuerySetup,
@@ -53,14 +50,23 @@ import {
 } from './QuerySetup.js';
 import { compareSemVerVersions } from '@finos/legend-storage';
 import type { Mapping, PackageableRuntime } from '@finos/legend-graph';
+import {
+  buildElementOption,
+  getPackageableElementOptionFormatter,
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
 
 const CreateMappingQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendQueryApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
-    () => new CreateMappingQuerySetupStore(applicationStore, depotServerClient),
+    () =>
+      new CreateMappingQuerySetupStore(
+        applicationStore,
+        baseStore.depotServerClient,
+      ),
   );
   return (
     <BaseQuerySetupStoreContext.Provider value={store}>

@@ -32,7 +32,6 @@ import {
   PRIMITIVE_TYPE,
   INTERNAL__PropagatedValue,
   SimpleFunctionExpression,
-  SUPPORTED_FUNCTIONS,
   type ObserverContext,
 } from '@finos/legend-graph';
 import { Randomizer, UnsupportedOperationError } from '@finos/legend-shared';
@@ -41,11 +40,12 @@ import {
   instanceValue_setValues,
   valueSpecification_setGenericType,
 } from './ValueSpecificationModifierHelper.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 
 const VAR_DEFAULT_NAME = 'var';
 
 export const createSupportedFunctionExpression = (
-  supportedFuncName: SUPPORTED_FUNCTIONS,
+  supportedFuncName: string,
   expectedReturnType: Type,
 ): SimpleFunctionExpression => {
   const funcExpression = new SimpleFunctionExpression(supportedFuncName);
@@ -67,12 +67,12 @@ const createMockPrimitiveValueSpecification = (
     primitiveTypeName === PRIMITIVE_TYPE.DATETIME
   ) {
     return createSupportedFunctionExpression(
-      SUPPORTED_FUNCTIONS.NOW,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW,
       PrimitiveType.DATETIME,
     );
   } else if (primitiveTypeName === PRIMITIVE_TYPE.STRICTDATE) {
     return createSupportedFunctionExpression(
-      SUPPORTED_FUNCTIONS.TODAY,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY,
       PrimitiveType.STRICTDATE,
     );
   }

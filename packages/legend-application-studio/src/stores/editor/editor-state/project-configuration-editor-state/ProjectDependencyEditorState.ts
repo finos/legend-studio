@@ -38,7 +38,7 @@ import {
   RawProjectDependencyReport,
 } from '@finos/legend-server-depot';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../__lib__/LegendStudioEvent.js';
 import type { ProjectConfiguration } from '@finos/legend-server-sdlc';
 
 export abstract class ProjectDependencyConflictTreeNodeData

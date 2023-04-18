@@ -25,13 +25,16 @@ import {
   ResizablePanelSplitterLine,
   useResizeDetector,
 } from '@finos/legend-art';
-import { AuxiliaryPanel } from './aux-panel/AuxiliaryPanel.js';
+import { PanelGroup } from './panel-group/PanelGroup.js';
 import { SideBar } from './side-bar/SideBar.js';
-import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel.js';
-import { GrammarTextEditor } from './edit-panel/GrammarTextEditor.js';
+import {
+  EditorGroup,
+  EditorGroupSplashScreen,
+} from './editor-group/EditorGroup.js';
+import { GrammarTextEditor } from './editor-group/GrammarTextEditor.js';
 import { StatusBar } from './StatusBar.js';
 import { ActivityBar } from './ActivityBar.js';
-import type { WorkspaceEditorPathParams } from '../../application/LegendStudioNavigation.js';
+import type { WorkspaceEditorPathParams } from '../../__lib__/LegendStudioNavigation.js';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -39,14 +42,14 @@ import { useEditorStore, withEditorStore } from './EditorStoreProvider.js';
 import {
   useApplicationStore,
   useApplicationNavigationContext,
-  useParams,
   ActionAlertType,
   ActionAlertActionType,
   useCommands,
 } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { WorkspaceSyncConflictResolver } from './side-bar/WorkspaceSyncConflictResolver.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
 import { GRAPH_EDITOR_MODE } from '../../stores/editor/EditorConfig.js';
 
@@ -91,33 +94,32 @@ export const Editor = withEditorStore(
         (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
           .width,
       );
-    const resizeAuxPanel = (handleProps: ResizablePanelHandlerProps): void =>
-      editorStore.auxPanelDisplayState.setSize(
+    const resizePanel = (handleProps: ResizablePanelHandlerProps): void =>
+      editorStore.panelGroupDisplayState.setSize(
         (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
           .height,
       );
-    const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+    const collapsibleSideBarGroupProps = getCollapsiblePanelGroupProps(
       editorStore.sideBarDisplayState.size === 0,
       {
         onStopResize: resizeSideBar,
         size: editorStore.sideBarDisplayState.size,
       },
     );
-    const auxCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
-      editorStore.auxPanelDisplayState.size === 0,
+    const collapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      editorStore.panelGroupDisplayState.size === 0,
       {
-        onStopResize: resizeAuxPanel,
-        size: editorStore.auxPanelDisplayState.size,
+        onStopResize: resizePanel,
+        size: editorStore.panelGroupDisplayState.size,
       },
     );
-    const maximizedAuxCollapsiblePanelGroupProps =
-      getCollapsiblePanelGroupProps(
-        editorStore.auxPanelDisplayState.isMaximized,
-      );
+    const maximizedCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      editorStore.panelGroupDisplayState.isMaximized,
+    );
 
     useEffect(() => {
       if (ref.current) {
-        editorStore.auxPanelDisplayState.setMaxSize(ref.current.offsetHeight);
+        editorStore.panelGroupDisplayState.setMaxSize(ref.current.offsetHeight);
       }
     }, [editorStore, ref, height, width]);
 
@@ -187,50 +189,50 @@ export const Editor = withEditorStore(
               <div className="editor__content">
                 <ResizablePanelGroup orientation="vertical">
                   <ResizablePanel
-                    {...sideBarCollapsiblePanelGroupProps.collapsiblePanel}
+                    {...collapsibleSideBarGroupProps.collapsiblePanel}
                     direction={1}
                   >
                     <SideBar />
                   </ResizablePanel>
                   <ResizablePanelSplitter />
                   <ResizablePanel
-                    {...sideBarCollapsiblePanelGroupProps.remainingPanel}
+                    {...collapsibleSideBarGroupProps.remainingPanel}
                     minSize={300}
                   >
                     <ResizablePanelGroup orientation="horizontal">
                       <ResizablePanel
-                        {...maximizedAuxCollapsiblePanelGroupProps.collapsiblePanel}
-                        {...(editorStore.auxPanelDisplayState.size === 0
-                          ? auxCollapsiblePanelGroupProps.remainingPanel
+                        {...maximizedCollapsiblePanelGroupProps.collapsiblePanel}
+                        {...(editorStore.panelGroupDisplayState.size === 0
+                          ? collapsiblePanelGroupProps.remainingPanel
                           : {})}
                       >
                         {(isResolvingConflicts || editable) &&
                           editorStore.graphEditorMode.mode ===
-                            GRAPH_EDITOR_MODE.FORM && <EditPanel />}
+                            GRAPH_EDITOR_MODE.FORM && <EditorGroup />}
                         {editable &&
                           editorStore.graphEditorMode.mode ===
                             GRAPH_EDITOR_MODE.GRAMMAR_TEXT && (
                             <GrammarTextEditor />
                           )}
-                        {!editable && <EditPanelSplashScreen />}
+                        {!editable && <EditorGroupSplashScreen />}
                       </ResizablePanel>
                       <ResizablePanelSplitter>
                         <ResizablePanelSplitterLine
                           color={
-                            editorStore.auxPanelDisplayState.isMaximized
+                            editorStore.panelGroupDisplayState.isMaximized
                               ? 'transparent'
                               : 'var(--color-dark-grey-250)'
                           }
                         />
                       </ResizablePanelSplitter>
                       <ResizablePanel
-                        {...auxCollapsiblePanelGroupProps.collapsiblePanel}
-                        {...(editorStore.auxPanelDisplayState.isMaximized
-                          ? maximizedAuxCollapsiblePanelGroupProps.remainingPanel
+                        {...collapsiblePanelGroupProps.collapsiblePanel}
+                        {...(editorStore.panelGroupDisplayState.isMaximized
+                          ? maximizedCollapsiblePanelGroupProps.remainingPanel
                           : {})}
                         direction={-1}
                       >
-                        <AuxiliaryPanel />
+                        <PanelGroup />
                       </ResizablePanel>
                     </ResizablePanelGroup>
                   </ResizablePanel>

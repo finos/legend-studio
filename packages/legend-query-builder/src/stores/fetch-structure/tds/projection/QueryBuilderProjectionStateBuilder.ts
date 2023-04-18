@@ -38,7 +38,7 @@ import {
   returnUndefOnError,
   type PlainObject,
 } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderState } from '../../../QueryBuilderState.js';
 import { QueryBuilderValueSpecificationProcessor } from '../../../QueryBuilderStateBuilder.js';
 import {

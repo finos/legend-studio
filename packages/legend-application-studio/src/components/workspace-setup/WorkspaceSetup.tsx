@@ -26,23 +26,24 @@ import {
   CustomSelectorInput,
   RepoIcon,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
   type WorkspaceSetupPathParams,
   generateEditorRoute,
   LEGEND_STUDIO_ROUTE_PATTERN_TOKEN,
-} from '../../application/LegendStudioNavigation.js';
+} from '../../__lib__/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
-import {
-  useApplicationNavigationContext,
-  useParams,
-} from '@finos/legend-application';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/LegendStudioDocumentation.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/LegendStudioDocumentation.js';
 import { CreateProjectModal } from './CreateProjectModal.js';
 import { ActivityBarMenu } from '../editor/ActivityBar.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { CreateWorkspaceModal } from './CreateWorkspaceModal.js';
-import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
+import {
+  useLegendStudioApplicationStore,
+  useLegendStudioBaseStore,
+} from '../LegendStudioFrameworkProvider.js';
 import {
   type ProjectOption,
   buildProjectOption,
@@ -55,8 +56,7 @@ import {
 } from './WorkspaceSelectorUtils.js';
 import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
 import { WorkspaceSetupStore } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
-import { useSDLCServerClient } from '@finos/legend-server-sdlc';
-import { DocumentationLink } from '@finos/legend-application/components';
+import { DocumentationLink } from '@finos/legend-lego/application';
 
 const WorkspaceSetupStoreContext = createContext<
   WorkspaceSetupStore | undefined
@@ -66,9 +66,9 @@ const WorkspaceSetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendStudioApplicationStore();
-  const sdlcServerClient = useSDLCServerClient();
+  const baseStore = useLegendStudioBaseStore();
   const store = useLocalObservable(
-    () => new WorkspaceSetupStore(applicationStore, sdlcServerClient),
+    () => new WorkspaceSetupStore(applicationStore, baseStore.sdlcServerClient),
   );
   return (
     <WorkspaceSetupStoreContext.Provider value={store}>

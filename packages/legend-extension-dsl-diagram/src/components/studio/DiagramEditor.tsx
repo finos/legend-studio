@@ -23,7 +23,7 @@ import {
   DIAGRAM_INTERACTION_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
   DIAGRAM_ZOOM_LEVELS,
-} from '../../DiagramRenderer.js';
+} from '../DiagramRenderer.js';
 import {
   type DiagramEditorInlineClassCreatorState,
   type DiagramEditorInlineClassRenamerState,
@@ -93,10 +93,8 @@ import {
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import {
-  type PackageableElementOption,
   useApplicationStore,
   useApplicationNavigationContext,
-  buildElementOption,
   useCommands,
 } from '@finos/legend-application';
 import {
@@ -116,8 +114,12 @@ import {
   classView_setHideStereotypes,
   classView_setHideTaggedValues,
 } from '../../stores/studio/DSL_Diagram_GraphModifierHelper.js';
-import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
-import { DSL_DIAGRAM_TEST_ID } from '../../application/studio/DSL_Diagram_LegendStudioTesting.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
+import { DSL_DIAGRAM_TEST_ID } from '../../__lib__/studio/DSL_Diagram_LegendStudioTesting.js';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
 
 const DiagramEditorContextMenu = observer(
   forwardRef<

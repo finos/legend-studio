@@ -16,13 +16,13 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataSpaceViewerState } from './DataSpaceViewerState.js';
-import { FuzzySearchAdvancedConfigState } from '@finos/legend-application/components';
 import { type TreeData, type TreeNodeData } from '@finos/legend-art';
 import {
   ActionState,
   filterByType,
   guaranteeNonNullable,
   FuzzySearchEngine,
+  FuzzySearchAdvancedConfigState,
 } from '@finos/legend-shared';
 import {
   DataSpaceAssociationDocumentationEntry,
@@ -30,7 +30,7 @@ import {
   DataSpaceEnumerationDocumentationEntry,
   DataSpaceModelDocumentationEntry,
   type NormalizedDataSpaceDocumentationEntry,
-} from '../graphManager/action/analytics/DataSpaceAnalysis.js';
+} from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import { CORE_PURE_PATH, ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 
 export enum ModelsDocumentationFilterTreeNodeCheckType {

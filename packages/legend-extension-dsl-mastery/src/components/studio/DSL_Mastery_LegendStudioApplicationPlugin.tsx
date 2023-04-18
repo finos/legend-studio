@@ -31,18 +31,18 @@ import {
   type ElementTypeLabelGetter,
   LegendStudioApplicationPlugin,
   UnsupportedElementEditorState,
+  type PureGrammarElementLabeler,
 } from '@finos/legend-application-studio';
 import { MasterRecordDefinition } from '../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
-import { SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET } from '../../application/studio/DSL_Mastery_LegendStudioCodeSnippet.js';
-import {
-  PURE_GRAMMAR_MASTERY_ELEMENT_TYPE_LABEL,
-  PURE_GRAMMAR_MASTERY_PARSER_NAME,
-} from '../../graphManager/DSL_Mastery_PureGraphManagerPlugin.js';
-import type { PureGrammarTextSuggestion } from '@finos/legend-application';
+import { SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET } from '../../__lib__/studio/DSL_Mastery_LegendStudioCodeSnippet.js';
+import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 const MASTERY_ELEMENT_TYPE = 'MASTERY';
 const MASTERY_CONTEXT_ELEMENT_TYPE = 'MASTERY_CONTEXT';
 const MASTERY_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_MASTERY';
+
+const PURE_GRAMMAR_MASTERY_PARSER_NAME = 'Mastery';
+const PURE_GRAMMAR_MASTERY_ELEMENT_TYPE_LABEL = 'MasterRecordDefinition';
 
 export class DSL_Mastery_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -50,6 +50,25 @@ export class DSL_Mastery_LegendStudioApplicationPlugin
 {
   constructor() {
     super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
+  }
+
+  getExtraPureGrammarParserNames(): string[] {
+    return [PURE_GRAMMAR_MASTERY_PARSER_NAME];
+  }
+
+  getExtraPureGrammarKeywords(): string[] {
+    return [PURE_GRAMMAR_MASTERY_ELEMENT_TYPE_LABEL];
+  }
+
+  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
+    return [
+      (element: PackageableElement): string | undefined => {
+        if (element instanceof MasterRecordDefinition) {
+          return PURE_GRAMMAR_MASTERY_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
+      },
+    ];
   }
 
   getExtraSupportedElementTypes(): string[] {

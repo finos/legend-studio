@@ -30,11 +30,11 @@ import {
   TreeView,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
-import { generateExploreTaxonomyTreeNodeRoute } from '../application/LegendTaxonomyNavigation.js';
+import { generateExploreTaxonomyTreeNodeRoute } from '../__lib__/LegendTaxonomyNavigation.js';
 import { useTaxonomyExplorerStore } from './TaxonomyExplorerStoreProvider.js';
 import type { TaxonomyTreeNodeData } from '../stores/TaxonomyExplorerStore.js';
 import { TaxonomyNodeViewerState } from '../stores/TaxonomyNodeViewerState.js';
-import { useLegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStoreProvider.js';
+import { useLegendTaxonomyApplicationStore } from './LegendTaxonomyFrameworkProvider.js';
 
 const TaxonomyTreeNodeContainer = observer(
   (

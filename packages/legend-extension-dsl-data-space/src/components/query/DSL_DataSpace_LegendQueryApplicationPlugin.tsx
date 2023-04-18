@@ -35,17 +35,17 @@ import {
 import {
   DATA_SPACE_QUERY_ROUTE_PATTERN,
   generateDataSpaceQuerySetupRoute,
-} from '../../application/query/DSL_DataSpace_LegendQueryNavigation.js';
+} from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { DataSpaceQueryCreator } from './DataSpaceQueryCreator.js';
 import { createQueryDataSpaceTaggedValue } from '../../stores/query/DataSpaceQueryCreatorStore.js';
 import { Query, isValidFullPath } from '@finos/legend-graph';
 import {
   QUERY_PROFILE_PATH,
   QUERY_PROFILE_TAG_DATA_SPACE,
-} from '../../DSL_DataSpace_Const.js';
+} from '../../graph/DSL_DataSpace_MetaModelConst.js';
 import { DataSpaceQueryBuilderState } from '../../stores/query/DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
-import { getOwnDataSpace } from '../../graphManager/DSL_DataSpace_GraphManagerHelper.js';
+import { getOwnDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
 import { assertErrorThrown, LogEvent, uuid } from '@finos/legend-shared';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import { DataSpaceQuerySetup } from './DataSpaceQuerySetup.js';
@@ -60,13 +60,13 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
       // data space query editor setup
       {
         key: 'data-space-query-setup-application-page',
-        urlPatterns: [DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP],
+        addressPatterns: [DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP],
         renderer: DataSpaceQuerySetup,
       },
       // data space query editor
       {
         key: 'data-space-query-editor-application-page',
-        urlPatterns: [DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE],
+        addressPatterns: [DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE],
         renderer: DataSpaceQueryCreator,
       },
     ];

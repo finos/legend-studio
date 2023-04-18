@@ -25,10 +25,8 @@ import {
 import type { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useRef } from 'react';
-import {
-  DiagramRenderer,
-  type Diagram,
-} from '@finos/legend-extension-dsl-diagram';
+import { type Diagram } from '@finos/legend-extension-dsl-diagram/graph';
+import { DiagramRenderer } from '@finos/legend-extension-dsl-diagram/application';
 import {
   getNullableFirstElement,
   getNullableLastElement,

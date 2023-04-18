@@ -31,7 +31,7 @@ import {
   isNonNullable,
   ActionState,
 } from '@finos/legend-shared';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 import {
   type FileSystemTreeNodeData,
   type FileResult,
@@ -43,7 +43,7 @@ import {
   buildFileSystemDirectory,
   reprocessOpenNodes,
   getFileSystemTreeData,
-} from '../shared/FileSystemTreeUtils.js';
+} from '../utils/FileSystemTreeUtils.js';
 import type { TreeData } from '@finos/legend-art';
 import type { EditorStore } from '../EditorStore.js';
 import { FileGenerationViewerState } from './FileGenerationViewerState.js';
@@ -66,7 +66,7 @@ import { ExternalFormatState } from './ExternalFormatState.js';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_addGenerationElement,
-} from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
+} from '../../graph-modifier/DSL_Generation_GraphModifierHelper.js';
 import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState.js';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =

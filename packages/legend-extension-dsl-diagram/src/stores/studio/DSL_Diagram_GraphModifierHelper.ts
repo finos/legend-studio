@@ -36,7 +36,7 @@ import {
   observe_ClassView,
   observe_GeneralizationView,
   observe_PropertyView,
-} from '../../graphManager/action/changeDetection/DSL_Diagram_ObserverHelper.js';
+} from '../../graph-manager/action/changeDetection/DSL_Diagram_ObserverHelper.js';
 
 export const diagram_setClassViews = action(
   (diagram: Diagram, val: ClassView[]): void => {

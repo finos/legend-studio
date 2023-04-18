@@ -25,11 +25,13 @@ import {
 } from './CodeEditorUtils.js';
 import { useResizeDetector } from '@finos/legend-art';
 import {
-  type CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
+import {
+  CODE_EDITOR_THEME,
+  type CODE_EDITOR_LANGUAGE,
+} from './CodeEditorConfig.js';
 
 export const CodeEditor: React.FC<{
   inputValue: string;
@@ -137,9 +139,10 @@ export const CodeEditor: React.FC<{
       ...(extraEditorOptions ?? {}),
     });
     const model = editor.getModel();
-    model?.updateOptions({ tabSize: TAB_SIZE });
+    model?.updateOptions({ tabSize: DEFAULT_TAB_SIZE });
   }
 
+  // dispose editor
   useEffect(
     () => (): void => {
       if (editor) {
@@ -147,7 +150,7 @@ export const CodeEditor: React.FC<{
       }
     },
     [editor],
-  ); // dispose editor
+  );
 
   return (
     <div ref={ref} className="code-editor__container">

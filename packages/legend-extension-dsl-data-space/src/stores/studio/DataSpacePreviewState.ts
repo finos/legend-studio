@@ -19,7 +19,7 @@ import {
   queryClass,
   type EditorStore,
 } from '@finos/legend-application-studio';
-import type { ClassView } from '@finos/legend-extension-dsl-diagram';
+import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
   type GeneratorFn,
   guaranteeNonNullable,
@@ -28,8 +28,8 @@ import {
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import type { DataSpace } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
-import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytics/DataSpaceAnalysis.js';
-import { DSL_DataSpace_getGraphManagerExtension } from '../../graphManager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
+import type { DataSpaceAnalysisResult } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
+import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
 import { LiveGraphData } from '@finos/legend-graph';
 

@@ -32,7 +32,7 @@ import { QueryBuilderSimpleProjectionColumnState } from '../../projection/QueryB
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { isPropertyExpressionChainOptional } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
 
 export class QueryBuilderPostFilterOperator_IsEmpty
   extends QueryBuilderPostFilterOperator
@@ -105,7 +105,7 @@ export class QueryBuilderPostFilterOperator_IsEmpty
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_IS_EMPTY,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.POST_FILTER_OPERATOR_IS_EMPTY,
     ]);
   }
 }
@@ -121,7 +121,7 @@ export class QueryBuilderPostFilterOperator_IsNotEmpty extends QueryBuilderPostF
 
   override get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_IS_NOT_EMPTY,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.POST_FILTER_OPERATOR_IS_NOT_EMPTY,
     ]);
   }
 }

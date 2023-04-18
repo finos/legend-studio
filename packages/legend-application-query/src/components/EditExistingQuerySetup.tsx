@@ -32,28 +32,34 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   generateExistingQueryEditorRoute,
   generateQuerySetupRoute,
-} from '../application/LegendQueryNavigation.js';
-import { useDepotServerClient } from '@finos/legend-server-depot';
-import {
-  useApplicationStore,
-  CODE_EDITOR_LANGUAGE,
-} from '@finos/legend-application';
+} from '../__lib__/LegendQueryNavigation.js';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   type QueryOption,
   buildQueryOption,
 } from '@finos/legend-query-builder';
-import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import {
+  useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
+} from './LegendQueryFrameworkProvider.js';
 import { EditExistingQuerySetupStore } from '../stores/EditExistingQuerySetupStore.js';
 import { BaseQuerySetup, BaseQuerySetupStoreContext } from './QuerySetup.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 const EditExistingQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendQueryApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
-    () => new EditExistingQuerySetupStore(applicationStore, depotServerClient),
+    () =>
+      new EditExistingQuerySetupStore(
+        applicationStore,
+        baseStore.depotServerClient,
+      ),
   );
   return (
     <BaseQuerySetupStoreContext.Provider value={store}>

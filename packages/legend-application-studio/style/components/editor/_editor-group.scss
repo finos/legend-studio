@@ -1,0 +1,247 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.editor-group {
+  &__header {
+    background: var(--color-dark-grey-100);
+    z-index: 1;
+    height: 3.4rem;
+    min-height: 3.4rem;
+    padding: 0;
+  }
+
+  &__content {
+    overflow-y: hidden;
+    position: relative;
+    background: var(--color-dark-grey-50);
+    height: calc(100% - 3.4rem);
+  }
+
+  &__header__tabs {
+    display: flex;
+    height: 100%;
+    // NOTE: these allow the header actions to be of whatever width
+    flex: 1;
+    overflow: hidden;
+  }
+
+  &__text-mode__tab {
+    @include flexVCenter;
+
+    cursor: pointer;
+    color: var(--color-light-grey-400);
+    background: var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-dark-grey-50);
+
+    &--active {
+      color: var(--color-light-grey-100);
+      background: var(--color-dark-grey-50);
+    }
+
+    svg {
+      color: var(--color-blue-100) !important;
+      font-size: 1.3rem;
+    }
+
+    &__label {
+      @include flexCenter;
+
+      height: 100%;
+      padding: 0 1rem;
+    }
+  }
+
+  &__header__actions {
+    display: flex;
+    height: 100%;
+  }
+
+  &__header__action {
+    @include flexConstantDimension;
+
+    height: 3.4rem;
+    width: 3.4rem;
+    color: var(--color-dark-grey-400);
+
+    &--active {
+      color: var(--color-light-grey-400);
+    }
+  }
+
+  &__icon__word-wrap {
+    font-size: 2.2rem;
+  }
+
+  &__view-mode {
+    &__type {
+      @include flexCenter;
+
+      width: 15rem;
+      background: var(--color-dark-grey-100);
+      border-right: 0.1rem solid var(--color-dark-grey-50);
+      border-left: 0.1rem solid var(--color-dark-grey-50);
+      color: var(--color-light-grey-300);
+      cursor: pointer;
+    }
+
+    &__type:hover {
+      background: var(--color-dark-grey-200);
+    }
+
+    &__type__label {
+      @include flexVCenter;
+
+      height: 3.4rem;
+      padding: 0 0.5rem;
+      border-top: 0.3rem solid var(--color-yellow-200);
+    }
+
+    &__options {
+      width: 15rem;
+    }
+
+    &__options--with-group {
+      border: none;
+      padding: 0;
+    }
+
+    &__option__group__name {
+      @include flexCenter;
+
+      flex-direction: column;
+      cursor: default;
+      writing-mode: vertical-lr;
+      transform: rotate(180deg);
+      font-size: 1.1rem;
+      width: 2.2rem;
+      padding: 0.5rem 0;
+    }
+
+    &__option__group {
+      display: flex;
+      flex-direction: row;
+
+      &--native {
+        background: var(--color-blue-100);
+        border: 0.1rem solid var(--color-blue-100);
+      }
+
+      &--native &__name {
+        background: var(--color-blue-100);
+        color: var(--color-light-grey-50);
+      }
+
+      &--generation {
+        background: var(--color-pink-300);
+        border: 0.1rem solid var(--color-pink-300);
+      }
+
+      &--generation &__name {
+        background: var(--color-pink-300);
+        color: var(--color-light-grey-50);
+      }
+    }
+
+    &__option__group__separator {
+      height: 0.2rem;
+      width: 100%;
+    }
+
+    &__option__group__options {
+      width: 100%;
+      background: var(--color-dark-grey-100);
+    }
+
+    &__option {
+      @include flexCenter;
+
+      height: 2rem;
+    }
+  }
+
+  &__splash-screen {
+    @include flexCenter;
+
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+    user-select: none;
+    background: var(--color-dark-grey-50);
+
+    &__content--hidden {
+      display: none;
+    }
+
+    &__content__item {
+      @include flexVCenter;
+
+      height: 3.4rem;
+    }
+
+    &__content__item__label {
+      @include flexVCenter;
+
+      height: 2.8rem;
+      font-weight: 500;
+      width: 20rem;
+      justify-content: flex-end;
+      margin-right: 1.5rem;
+      color: var(--color-light-grey-400);
+    }
+
+    &__content__item__hot-keys {
+      @include flexVCenter;
+
+      height: 2.8rem;
+    }
+
+    .hotkey {
+      &__key {
+        color: var(--color-light-grey-400);
+        background: var(--color-dark-grey-200);
+      }
+
+      &__plus svg {
+        color: var(--color-light-grey-400);
+      }
+    }
+  }
+}
+
+.diff-tab {
+  @include flexVCenter;
+
+  &__element-name {
+    margin-right: 0.5rem;
+  }
+
+  &__text {
+    font-size: 1.2rem;
+  }
+
+  &__icon {
+    @include flexVCenter;
+
+    height: 100%;
+    margin: 0 0.5rem;
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+}

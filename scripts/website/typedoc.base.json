@@ -21,9 +21,7 @@
     "**/node_modules/**"
   ],
   "excludeExternals": true,
-  "excludeInternal": true
-  // NOTE: for some reasons, these options don't work
-  // See https://github.com/TypeStrong/typedoc/issues/2231
-  // "excludePrivate": true
-  // "excludeNotDocumented": true
+  "excludeInternal": true,
+  "excludePrivate": true,
+  "excludeNotDocumented": true
 }

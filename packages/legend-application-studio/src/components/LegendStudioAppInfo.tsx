@@ -42,7 +42,7 @@ import {
   PresetInfo,
   type PluginManagerInfo,
 } from '@finos/legend-shared';
-import { useLegendStudioApplicationStore } from './LegendStudioBaseStoreProvider.js';
+import { useLegendStudioApplicationStore } from './LegendStudioFrameworkProvider.js';
 
 class AppExtensionInfoTreeNodeData implements TreeNodeData {
   id: string;

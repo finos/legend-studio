@@ -346,7 +346,6 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                     darkMode:
                       !applicationStore.layoutService
                         .TEMPORARY__isLightColorThemeEnabled,
-                    pureModel: queryBuilderState.graphManagerState.graph,
                   })}
                 />
               </div>

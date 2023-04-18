@@ -23,7 +23,7 @@ import {
 } from '@finos/legend-art';
 import { type PackageableRuntime } from '@finos/legend-graph';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
-import type { DataSpaceExecutionContextAnalysisResult } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
+import type { DataSpaceExecutionContextAnalysisResult } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import { useApplicationStore } from '@finos/legend-application';
 
 type ExecutionContextOption = {

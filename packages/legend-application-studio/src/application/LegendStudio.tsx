@@ -15,19 +15,17 @@
  */
 
 import { createRoot } from 'react-dom/client';
-import { LegendStudioApplication } from '../components/LegendStudioApplication.js';
+import { LegendStudioWebApplication } from '../components/LegendStudioWebApplication.js';
 import { LegendStudioPluginManager } from './LegendStudioPluginManager.js';
 import {
   type LegendApplicationConfig,
   ApplicationStoreProvider,
   LegendApplication,
-  WebApplicationNavigatorProvider,
   type LegendApplicationConfigurationInput,
-  BrowserRouter,
   Core_LegendApplicationPlugin,
+  getApplicationRootElement,
 } from '@finos/legend-application';
 import { Core_GraphManagerPreset } from '@finos/legend-graph';
-import { getRootElement } from '@finos/legend-art';
 import {
   type LegendStudioApplicationConfigurationData,
   LegendStudioApplicationConfig,
@@ -37,6 +35,7 @@ import {
   QueryBuilder_GraphManagerPreset,
   QueryBuilder_LegendApplicationPlugin,
 } from '@finos/legend-query-builder';
+import type { LegendStudioApplicationStore } from '../stores/LegendStudioBaseStore.js';
 
 export class LegendStudio extends LegendApplication {
   declare config: LegendStudioApplicationConfig;
@@ -62,19 +61,13 @@ export class LegendStudio extends LegendApplication {
     return new LegendStudioApplicationConfig(input);
   }
 
-  async loadApplication(): Promise<void> {
-    const rootElement = createRoot(getRootElement());
-    rootElement.render(
-      <BrowserRouter basename={this.baseUrl}>
-        <WebApplicationNavigatorProvider>
-          <ApplicationStoreProvider
-            config={this.config}
-            pluginManager={this.pluginManager}
-          >
-            <LegendStudioApplication config={this.config} />
-          </ApplicationStoreProvider>
-        </WebApplicationNavigatorProvider>
-      </BrowserRouter>,
+  async loadApplication(
+    applicationStore: LegendStudioApplicationStore,
+  ): Promise<void> {
+    createRoot(getApplicationRootElement()).render(
+      <ApplicationStoreProvider store={applicationStore}>
+        <LegendStudioWebApplication baseUrl={this.baseAddress} />
+      </ApplicationStoreProvider>,
     );
   }
 }

@@ -30,18 +30,18 @@ import {
   getMappingCompatibleRuntimes,
   getClassCompatibleMappings,
 } from '@finos/legend-graph';
-import {
-  type PackageableElementOption,
-  getPackageableElementOptionFormatter,
-  buildElementOption,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   buildRuntimeValueOption,
   getRuntimeOptionFormatter,
   QueryBuilderClassSelector,
 } from '../QueryBuilderSideBar.js';
 import type { ClassQueryBuilderState } from '../../stores/workflows/ClassQueryBuilderState.js';
+import {
+  buildElementOption,
+  getPackageableElementOptionFormatter,
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
 
 /**
  * This setup panel supports cascading in order: Class -> Mapping -> Runtime
@@ -162,7 +162,6 @@ const ClassQueryBuilderSetupPanelContent = observer(
                   darkMode:
                     !applicationStore.layoutService
                       .TEMPORARY__isLightColorThemeEnabled,
-                  graph: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </div>
@@ -192,7 +191,6 @@ const ClassQueryBuilderSetupPanelContent = observer(
                   darkMode:
                     !applicationStore.layoutService
                       .TEMPORARY__isLightColorThemeEnabled,
-                  pureModel: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </div>

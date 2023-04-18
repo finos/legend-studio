@@ -15,7 +15,7 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { unitTest } from '../../application/TestUtils.js';
+import { unitTest } from '../../__test-utils__/TestUtils.js';
 import { buildUrl } from '../NetworkUtils.js';
 
 test(unitTest('Build URL'), () => {

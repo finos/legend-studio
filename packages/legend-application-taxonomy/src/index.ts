@@ -17,5 +17,5 @@
 // application
 export * from './application/LegendTaxonomy.js';
 
-export { useLegendTaxonomyApplicationStore } from './components/LegendTaxonomyBaseStoreProvider.js';
+export { useLegendTaxonomyApplicationStore } from './components/LegendTaxonomyFrameworkProvider.js';
 export type { LegendTaxonomyApplicationStore } from './stores/LegendTaxonomyBaseStore.js';

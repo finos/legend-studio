@@ -20,7 +20,7 @@ import {
   type LegendTaxonomyPathParams,
   generateExploreTaxonomyTreeRoute,
   LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN,
-} from '../application/LegendTaxonomyNavigation.js';
+} from '../__lib__/LegendTaxonomyNavigation.js';
 import { flowResult } from 'mobx';
 import {
   type ResizablePanelHandlerProps,
@@ -59,8 +59,9 @@ import {
   withTaxonomyExplorerStore,
 } from './TaxonomyExplorerStoreProvider.js';
 import type { TaxonomyNodeViewerState } from '../stores/TaxonomyNodeViewerState.js';
-import { useLegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStoreProvider.js';
-import { useCommands, useParams } from '@finos/legend-application';
+import { useLegendTaxonomyApplicationStore } from './LegendTaxonomyFrameworkProvider.js';
+import { useCommands } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 
 const TaxonomyExplorerActivityBar = observer(() => (
   <div className="taxonomy-explorer__activity-bar">

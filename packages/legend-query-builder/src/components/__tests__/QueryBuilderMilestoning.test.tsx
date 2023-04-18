@@ -35,16 +35,13 @@ import {
   TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessingTemporalTarget,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Milestoning.js';
 import TEST_MilestoningModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Milestoning.json';
-import {
-  integrationTest,
-  guaranteeNonNullable,
-  guaranteeType,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import { stub_RawLambda, create_RawLambda } from '@finos/legend-graph';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import type { Entity } from '@finos/legend-storage';
-import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
+import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 
 type QueryComparisonTestCase = [
   string,

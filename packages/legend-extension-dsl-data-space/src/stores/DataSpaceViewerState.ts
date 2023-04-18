@@ -18,11 +18,11 @@ import type {
   GenericLegendApplicationStore,
   NavigationZone,
 } from '@finos/legend-application';
+import { type ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
-  type ClassView,
   type DiagramRenderer,
   DIAGRAM_INTERACTION_MODE,
-} from '@finos/legend-extension-dsl-diagram';
+} from '@finos/legend-extension-dsl-diagram/application';
 import type {
   BasicGraphManagerState,
   GraphData,
@@ -37,11 +37,11 @@ import type {
   DataSpaceAnalysisResult,
   DataSpaceDiagramAnalysisResult,
   DataSpaceExecutionContextAnalysisResult,
-} from '../graphManager/action/analytics/DataSpaceAnalysis.js';
+} from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import {
   PURE_DATA_SPACE_INFO_PROFILE_PATH,
   PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE,
-} from '../graphManager/DSL_DataSpace_PureGraphManagerPlugin.js';
+} from '../graph-manager/DSL_DataSpace_PureGraphManagerPlugin.js';
 import { DataSpaceViewerDataAccessState } from './DataSpaceViewerDataAccessState.js';
 import { DataSpaceViewerModelsDocumentationState } from './DataSpaceModelsDocumentationState.js';
 

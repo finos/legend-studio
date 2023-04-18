@@ -14,21 +14,12 @@
  * limitations under the License.
  */
 
-// Dependencies
 @forward 'deps';
 
 @forward 'extensions';
 
-// Components
 @forward 'components/app';
 @forward 'components/blocking-alert';
 @forward 'components/backdrop';
 @forward 'components/notification';
 @forward 'components/virtual-assistant';
-
-// Shared
-@forward 'components/shared/fuzzy-search';
-@forward 'components/shared/tab-manager';
-@forward 'components/shared/documentation-link';
-@forward 'components/shared/packageable-element-option-label';
-@forward 'components/shared/execution-plan-viewer';

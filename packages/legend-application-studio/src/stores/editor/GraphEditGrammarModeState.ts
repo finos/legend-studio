@@ -42,9 +42,9 @@ import { ExplorerTreeState } from './ExplorerTreeState.js';
 
 import { TextLocalChangesState } from './sidebar-state/LocalChangesState.js';
 import { GraphCompilationOutcome, type Problem } from './EditorGraphState.js';
-import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
-import { graph_dispose } from './shared/modifier/GraphModifierHelper.js';
-import { LegendStudioTelemetryHelper } from '../../application/LegendStudioTelemetryHelper.js';
+import { GRAPH_EDITOR_MODE, PANEL_MODE } from './EditorConfig.js';
+import { graph_dispose } from '../graph-modifier/GraphModifierHelper.js';
+import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 
@@ -210,7 +210,7 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
     this.editorStore.graphState.isUpdatingApplication = true;
     this.editorStore.graphState.isUpdatingGraph = true;
     try {
-      const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
+      const newGraph = this.editorStore.graphManagerState.createNewGraph();
       yield flowResult(
         this.editorStore.graphState.rebuildDependencies(newGraph),
       );
@@ -294,7 +294,7 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
       this.editorStore.graphState.isRunningGlobalCompile = true;
       this.editorStore.graphState.clearProblems();
       if (options?.openConsole) {
-        this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+        this.editorStore.setActivePanelMode(PANEL_MODE.CONSOLE);
       }
 
       const compilationResult = (yield flowResult(

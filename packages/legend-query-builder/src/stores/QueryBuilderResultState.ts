@@ -39,14 +39,14 @@ import {
   extractExecutionResultValues,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
-import { TAB_SIZE } from '@finos/legend-application';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import {
   buildExecutionParameterValues,
   getExecutionQueryFromRawLambda,
 } from './shared/LambdaParameterState.js';
 import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificationBuilderHelper.js';
-import { QueryBuilderTelemetryHelper } from '../application/QueryBuilderTelemetryHelper.js';
-import { QUERY_BUILDER_EVENT } from '../application/QueryBuilderEvent.js';
+import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHelper.js';
+import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { ExecutionPlanState } from './execution-plan/ExecutionPlanState.js';
 
 const DEFAULT_LIMIT = 1000;
@@ -185,7 +185,7 @@ export class QueryBuilderResultState {
         content = JSON.stringify(
           extractExecutionResultValues(result),
           null,
-          TAB_SIZE,
+          DEFAULT_TAB_SIZE,
         );
       }
       const fileName = `result.${getContentTypeFileExtension(contentType)}`;

@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { type CommandRegistrar, TAB_SIZE } from '@finos/legend-application';
+import {
+  type CommandRegistrar,
+  DEFAULT_TAB_SIZE,
+} from '@finos/legend-application';
 import {
   type TreeData,
   type TreeNodeData,
@@ -24,7 +27,7 @@ import {
 import {
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   extractDataSpaceTaxonomyNodes,
-} from '@finos/legend-extension-dsl-data-space';
+} from '@finos/legend-extension-dsl-data-space/graph';
 import { BasicGraphManagerState } from '@finos/legend-graph';
 import type {
   DepotServerClient,
@@ -44,13 +47,13 @@ import {
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { makeObservable, flow, observable, action, flowResult } from 'mobx';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
-import { LEGEND_TAXONOMY_APP_EVENT } from '../application/LegendTaxonomyEvent.js';
+import { LEGEND_TAXONOMY_APP_EVENT } from '../__lib__/LegendTaxonomyEvent.js';
 import type { LegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStore.js';
-import { LEGEND_TAXONOMY_COMMAND_KEY } from '../application/LegendTaxonomyCommand.js';
+import { LEGEND_TAXONOMY_COMMAND_KEY } from '../__lib__/LegendTaxonomyCommand.js';
 import {
   generateExploreTaxonomyTreeRoute,
   type LegendTaxonomyPathParams,
-} from '../application/LegendTaxonomyNavigation.js';
+} from '../__lib__/LegendTaxonomyNavigation.js';
 import { TaxonomyNodeViewerState } from './TaxonomyNodeViewerState.js';
 import {
   type TaxonomyServerClient,
@@ -395,7 +398,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
       yield this.graphManagerState.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
-          tabSize: TAB_SIZE,
+          tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,

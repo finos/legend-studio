@@ -17,11 +17,11 @@
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { debounce } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
-import { useDepotServerClient } from '@finos/legend-server-depot';
 import {
   QueryEditor,
   QueryEditorStoreContext,
   useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
 } from '@finos/legend-application-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { flowResult } from 'mobx';
@@ -47,9 +47,13 @@ const DataSpaceQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendQueryApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
-    () => new DataSpaceQuerySetupStore(applicationStore, depotServerClient),
+    () =>
+      new DataSpaceQuerySetupStore(
+        applicationStore,
+        baseStore.depotServerClient,
+      ),
   );
   return (
     <QueryEditorStoreContext.Provider value={store}>

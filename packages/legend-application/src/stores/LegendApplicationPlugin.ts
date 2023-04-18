@@ -15,7 +15,6 @@
  */
 
 import { AbstractPlugin } from '@finos/legend-shared';
-import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 import type { KeyedCommandConfigEntry } from './CommandService.js';
 import type {
   ContextualDocumentationEntry,
@@ -26,36 +25,17 @@ import type { ColorTheme } from './LayoutService.js';
 import type { SettingConfigurationEntry } from './SettingService.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 
-export type LegendApplicationBootstrap = <T extends LegendApplicationPlugin>(
-  pluginManager: LegendApplicationPluginManager<T>,
-) => Promise<void>;
-
 export type LegendApplicationSetup = (
   applicationStore: GenericLegendApplicationStore,
 ) => Promise<void>;
 
-/**
- * Prefix URL patterns coming from extensions with `/extensions/`
- * to avoid potential conflicts with main routes.
- */
-export const generateExtensionUrlPattern = (pattern: string): string =>
-  `/extensions/${pattern}`.replace(/^\/extensions\/\//, '/extensions/');
-
 export type ApplicationPageEntry = {
   key: string;
-  urlPatterns: string[];
+  addressPatterns: string[];
   renderer: React.FC | React.ReactElement;
 };
 
 export abstract class LegendApplicationPlugin extends AbstractPlugin {
-  /**
-   * Get the list of bootstrap procedures to be run when booting up the application.
-   *
-   * NOTE: The application will call the bootstrap procedures from all extensions concurrently.
-   * These procedures should be idempotent and should not depend on each other.
-   */
-  getExtraApplicationBootstraps?(): LegendApplicationBootstrap[];
-
   /**
    * Get the list of setup procedures to be run when booting up the application.
    *

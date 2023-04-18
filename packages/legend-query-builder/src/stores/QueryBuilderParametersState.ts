@@ -16,7 +16,7 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { observable, makeObservable, action, override } from 'mobx';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from './QueryBuilderStateHashUtils.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   type LambdaParameterState,
@@ -50,7 +50,7 @@ export class QueryBuilderParametersState
 
   override get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.PARAMETERS_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.PARAMETERS_STATE,
       hashArray(this.parameterStates),
     ]);
   }

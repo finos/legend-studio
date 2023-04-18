@@ -28,7 +28,7 @@ import {
   TITLE_CASE_EXCEPTION_WORDS,
   parseCSVString,
 } from '../FormatterUtils.js';
-import { unitTest } from '../../application/TestUtils.js';
+import { unitTest } from '../../__test-utils__/TestUtils.js';
 
 test(unitTest('To sentence case'), () => {
   expect(toSentenceCase('')).toEqual('');

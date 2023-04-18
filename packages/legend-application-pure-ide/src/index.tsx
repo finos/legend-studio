@@ -35,7 +35,7 @@ export class LegendPureIDEWebApplication {
 
   static run(baseUrl: string): void {
     LegendPureIDE.create()
-      .setup({ baseUrl })
+      .setup({ baseAddress: baseUrl })
       .withPresets(LegendPureIDEWebApplication.getPresetCollection())
       .withPlugins(LegendPureIDEWebApplication.getPluginCollection())
       .start()

@@ -30,7 +30,7 @@ import {
 } from '@finos/legend-shared';
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import { TAB_SIZE } from '@finos/legend-application';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { LambdaEditorState } from './shared/LambdaEditorState.js';
 
 export class QueryBuilderRawLambdaState {
@@ -182,7 +182,7 @@ export class QueryBuilderTextEditorState extends LambdaEditorState {
             ),
           ),
           null,
-          TAB_SIZE,
+          DEFAULT_TAB_SIZE,
         ),
       );
     }

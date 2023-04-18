@@ -29,7 +29,7 @@ import {
   QueryBuilderFilterTreeGroupNodeData,
   type QueryBuilderFilterTreeNodeData,
 } from './QueryBuilderFilterState.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 
 const buildFilterConditionExpression = (
   filterState: QueryBuilderFilterState,

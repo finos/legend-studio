@@ -53,8 +53,8 @@ import {
   generateDefaultValueForPrimitiveType,
 } from './QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from './QueryBuilderStateHashUtils.js';
 import {
   propertyExpression_setFunc,
   functionExpression_setParametersValues,
@@ -426,7 +426,7 @@ export class QueryBuilderPropertyExpressionState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.PROPERTY_EXPRESSION_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.PROPERTY_EXPRESSION_STATE,
       this.propertyExpression,
     ]);
   }

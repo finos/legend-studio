@@ -39,6 +39,19 @@ import type { DataElement } from '../graph/metamodel/pure/packageableElements/da
 import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 import { LegendSDLC, type GraphDataOrigin } from './GraphDataOrigin.js';
 
+const DEPENDENCY_ROOT_PACKAGE_PREFIX = '@dependency__';
+const generateDependencyRootPackageName = (dependencyKey: string): string =>
+  `${DEPENDENCY_ROOT_PACKAGE_PREFIX}${dependencyKey}`;
+export const extractDependencyGACoordinateFromRootPackageName = (
+  packageName: string,
+): string | undefined => {
+  const idx = packageName.indexOf(DEPENDENCY_ROOT_PACKAGE_PREFIX);
+  if (idx !== 0) {
+    return undefined;
+  }
+  return packageName.substring(DEPENDENCY_ROOT_PACKAGE_PREFIX.length);
+};
+
 class DependencyModel extends BasicModel {
   constructor(
     extensionElementClasses: Clazz<PackageableElement>[],
@@ -81,7 +94,9 @@ export class DependencyManager {
   initialize(dependencyEntitiesIndex: Map<string, EntitiesWithOrigin>): void {
     Array.from(dependencyEntitiesIndex.entries()).forEach(
       ([dependencyKey, entitiesWithOrigin]) => {
-        const pkg = new Package(dependencyKey);
+        const pkg = new Package(
+          generateDependencyRootPackageName(dependencyKey),
+        );
         this.roots.push(pkg);
         // NOTE: all dependency models will share the dependency manager root package.
         this.projectDependencyModelsIndex.set(

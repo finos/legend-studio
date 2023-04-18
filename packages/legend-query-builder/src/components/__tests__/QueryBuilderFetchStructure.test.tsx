@@ -46,11 +46,11 @@ import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA_
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
 import TEST_DATA_SimpleSubtypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json';
 import {
-  integrationTest,
   guaranteeNonNullable,
   guaranteeType,
   getNullableFirstElement,
 } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import {
   AbstractPropertyExpression,
   PrimitiveInstanceValue,
@@ -58,7 +58,7 @@ import {
   getClassProperty,
   stub_RawLambda,
 } from '@finos/legend-graph';
-import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   QueryBuilderExplorerTreeRootNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
@@ -67,7 +67,7 @@ import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-stru
 import { COLUMN_SORT_TYPE } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
-import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
+import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QueryBuilderFilterTreeConditionNodeData } from '../../stores/filter/QueryBuilderFilterState.js';
 
 test(

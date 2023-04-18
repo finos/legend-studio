@@ -15,7 +15,7 @@
  */
 
 import { useRef } from 'react';
-import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import { observer } from 'mobx-react-lite';
 import {
   NewPackageableRuntimeDriver,
@@ -40,15 +40,15 @@ import {
 } from '@finos/legend-graph';
 import type { FileGenerationTypeOption } from '../../../stores/editor/editor-state/GraphGenerationState.js';
 import { flowResult } from 'mobx';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,
-  useApplicationStore,
   type PackageableElementOption,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 import type { EmbeddedDataTypeOption } from '../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/shared/ModelClassifierUtils.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/utils/ModelClassifierUtils.js';
 import { EmbeddedDataType } from '../../../stores/editor/editor-state/ExternalFormatState.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 
@@ -233,7 +233,6 @@ const NewPureModelConnectionDriverEditor = observer(
             darkMode={true}
             formatOptionLabel={getPackageableElementOptionFormatter({
               darkMode: true,
-              graph: editorStore.graphManagerState.graph,
             })}
           />
         </div>

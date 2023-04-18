@@ -52,7 +52,7 @@ import {
 } from '../QueryBuilderTypeaheadHelper.js';
 import type { QueryBuilderFilterOperator } from './QueryBuilderFilterOperator.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../QueryBuilderGroupOperationHelper.js';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../QueryBuilderStateHashUtils.js';
 import { isValueExpressionReferencedInValue } from '../QueryBuilderValueSpecificationHelper.js';
 
 export enum QUERY_BUILDER_FILTER_DND_TYPE {
@@ -215,7 +215,7 @@ export class FilterConditionState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.FILTER_CONDITION_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_CONDITION_STATE,
       this.propertyExpressionState,
       this.value ?? '',
       this.operator,
@@ -308,7 +308,7 @@ export class QueryBuilderFilterTreeGroupNodeData
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.FILTER_TREE_GROUP_NODE_DATA,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_TREE_GROUP_NODE_DATA,
       this.parentId ?? '',
       hashArray(this.childrenIds),
       this.groupOperation,
@@ -339,7 +339,7 @@ export class QueryBuilderFilterTreeConditionNodeData
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.FILTER_TREE_CONDIITION_NODE_DATA,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_TREE_CONDIITION_NODE_DATA,
       this.parentId ?? '',
       this.condition,
     ]);
@@ -364,7 +364,7 @@ export class QueryBuilderFilterTreeBlankConditionNodeData
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.FILTER_TREE_BLANK_CONDITION_NODE_DATA,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_TREE_BLANK_CONDITION_NODE_DATA,
       this.parentId ?? '',
     ]);
   }
@@ -810,7 +810,7 @@ export class QueryBuilderFilterState
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.FILTER_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_STATE,
       hashArray(this.rootIds),
       hashArray(Array.from(this.nodes.values())),
     ]);

@@ -16,7 +16,7 @@
 
 import { test, expect, describe } from '@jest/globals';
 import type { Entity } from '@finos/legend-storage';
-import { unitTest } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import {
   TEST_DATA__M2MModel,
   TEST_DATA__complexRelationalModel,
@@ -46,13 +46,12 @@ import {
   groupByWithDerivationProjection,
   groupByWithDerivationAndAggregation,
 } from './TEST_DATA__QueryBuilder_ProcessingRoundtrip_TestDerivation.js';
+import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import {
-  Core_GraphManagerPreset,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '@finos/legend-graph';
-import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
-import { TEST__LegendApplicationPluginManager } from '@finos/legend-application';
+} from '@finos/legend-graph/test';
+import { QueryBuilder_GraphManagerPreset } from '../../graph-manager/QueryBuilder_GraphManagerPreset.js';
 import {
   TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy,
   TEST_DATA__lambda_olapGroupBy_StackedGroupBy,
@@ -65,6 +64,7 @@ import {
   TEST_DATA__lambda_Externalize_externalize_graphFetchChecked,
 } from './TEST_DATA__QueryBuilder_Externalize.js';
 import { TEST_DATA__graphFetchWithSerializationConfig } from './TEST_DATA__QueryBuilder_GraphFetch.js';
+import { TEST__LegendApplicationPluginManager } from '../__test-utils__/QueryBuilderStateTestUtils.js';
 
 const pluginManager = TEST__LegendApplicationPluginManager.create();
 pluginManager

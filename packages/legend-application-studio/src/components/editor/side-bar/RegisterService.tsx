@@ -15,7 +15,7 @@
  */
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   ContextMenu,
@@ -28,7 +28,7 @@ import {
   TimesIcon,
 } from '@finos/legend-art';
 import type { BulkServiceRegistrationState } from '../../../stores/editor/sidebar-state/BulkServiceRegistrationState.js';
-import { BulkServiceRegistrationEditor } from '../edit-panel/service-editor/BulkServiceRegistrationEditor.js';
+import { BulkServiceRegistrationEditor } from '../editor-group/service-editor/BulkServiceRegistrationEditor.js';
 import { noop } from '@finos/legend-shared';
 
 export const RegisterService = observer(

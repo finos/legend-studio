@@ -20,7 +20,7 @@ import {
   LegendStudioApplicationPlugin,
 } from '@finos/legend-application-studio';
 import type { ApplicationPageEntry } from '@finos/legend-application';
-import { DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN } from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
+import { DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN } from '../../__lib__/studio/DSL_Service_LegendStudioNavigation.js';
 import { UpdateServiceQuerySetup } from './UpdateServiceQuerySetup.js';
 import { UpdateProjectServiceQuerySetup } from './UpdateProjectServiceQuerySetup.js';
 import {
@@ -41,35 +41,35 @@ export class DSL_Service_LegendStudioApplicationPlugin
     return [
       {
         key: 'update-service-query-setup-application-page',
-        urlPatterns: [
+        addressPatterns: [
           DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_SERVICE_QUERY_SETUP,
         ],
         renderer: UpdateServiceQuerySetup,
       },
       {
         key: 'update-service-query-application-page',
-        urlPatterns: [
+        addressPatterns: [
           DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_SERVICE_QUERY,
         ],
         renderer: ServiceQueryUpdater,
       },
       {
         key: 'update-project-service-query-setup-application-page',
-        urlPatterns: [
+        addressPatterns: [
           DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_PROJECT_SERVICE_QUERY_SETUP,
         ],
         renderer: UpdateProjectServiceQuerySetup,
       },
       {
         key: 'update-project-service-query-application-page',
-        urlPatterns: [
+        addressPatterns: [
           DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_PROJECT_SERVICE_QUERY,
         ],
         renderer: ProjectServiceQueryUpdater,
       },
       {
         key: 'productionize-query-application-page',
-        urlPatterns: [
+        addressPatterns: [
           DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.PRODUCTIONIZE_QUERY,
         ],
         renderer: QueryProductionizer,

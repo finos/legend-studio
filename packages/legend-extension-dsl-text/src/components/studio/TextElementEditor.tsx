@@ -31,17 +31,17 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
 } from '@finos/legend-art';
-import {
-  CODE_EDITOR_LANGUAGE,
-  useApplicationNavigationContext,
-} from '@finos/legend-application';
+import { useApplicationNavigationContext } from '@finos/legend-application';
 import {
   text_setContent,
   text_setType,
 } from '../../stores/studio/DSL_Text_GraphModifierHelper.js';
 import { TEXT_TYPE } from '../../graph/helpers/DSL_Text_Helper.js';
-import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/studio/DSL_Text_LegendStudioApplicationNavigationContext.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/studio/DSL_Text_LegendStudioApplicationNavigationContext.js';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 const getTextElementEditorLanguage = (
   type: string | undefined,

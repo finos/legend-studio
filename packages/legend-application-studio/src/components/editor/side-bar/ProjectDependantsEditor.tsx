@@ -42,7 +42,7 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   generateViewProjectByGAVRoute,
   generateViewVersionRoute,
-} from '../../../application/LegendStudioNavigation.js';
+} from '../../../__lib__/LegendStudioNavigation.js';
 
 const ProjectDependantEditor = observer(
   (props: { dependant: ProjectVersionPlatformDependency }) => {

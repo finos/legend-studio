@@ -20,19 +20,17 @@ import {
   type AbstractPlugin,
   WebConsole,
 } from '@finos/legend-shared';
-import {
-  DSL_DataSpace_GraphManagerPreset,
-  DSL_DataSpace_LegendQueryApplicationPlugin,
-  DSL_DataSpace_LegendApplicationPlugin,
-} from '@finos/legend-extension-dsl-data-space';
-import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
-import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
-import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store';
-import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
-import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery';
-import { DSL_Service_LegendQueryApplicationPlugin } from '@finos/legend-extension-dsl-service';
-import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-format-json-schema';
-import { FMT_GraphQL_GraphManagerPreset } from '@finos/legend-extension-format-graphql';
+import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
+import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text/graph';
+import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram/graph';
+import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store/graph';
+import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence/graph';
+import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery/graph';
+import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-format-json-schema/graph';
+import { FMT_GraphQL_GraphManagerPreset } from '@finos/legend-extension-format-graphql/graph';
+import { DSL_Service_LegendQueryApplicationPlugin } from '@finos/legend-extension-dsl-service/application-query';
+import { DSL_DataSpace_LegendQueryApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application-query';
+import { DSL_DataSpace_LegendApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application';
 
 export class LegendQueryWebApplication {
   static getPresetCollection(): AbstractPreset[] {
@@ -64,7 +62,7 @@ export class LegendQueryWebApplication {
 
   static run(baseUrl: string): void {
     LegendQuery.create()
-      .setup({ baseUrl })
+      .setup({ baseAddress: baseUrl })
       .withPresets(LegendQueryWebApplication.getPresetCollection())
       .withPlugins(LegendQueryWebApplication.getPluginCollection())
       .start()

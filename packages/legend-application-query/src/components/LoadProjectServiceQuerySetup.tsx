@@ -19,9 +19,11 @@ import { guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useContext, useEffect } from 'react';
-import { generateQuerySetupRoute } from '../application/LegendQueryNavigation.js';
-import { useDepotServerClient } from '@finos/legend-server-depot';
-import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import { generateQuerySetupRoute } from '../__lib__/LegendQueryNavigation.js';
+import {
+  useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
+} from './LegendQueryFrameworkProvider.js';
 import { LoadProjectServiceQuerySetupStore } from '../stores/LoadProjectServiceQuerySetupStore.js';
 import {
   BaseQuerySetup,
@@ -36,12 +38,12 @@ const LoadProjectServiceQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendQueryApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new LoadProjectServiceQuerySetupStore(
         applicationStore,
-        depotServerClient,
+        baseStore.depotServerClient,
       ),
   );
   return (

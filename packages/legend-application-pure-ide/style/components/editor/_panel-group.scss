@@ -1,0 +1,155 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+@forward 'panel-group/terminal-panel';
+@forward 'panel-group/references-panel';
+@forward 'panel-group/text-search-panel';
+@forward 'panel-group/suggestions-panel';
+@forward 'panel-group/test-runner-panel';
+
+.panel-group {
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  border-top: 0.1rem solid var(--color-dark-grey-250);
+
+  .panel {
+    &__header {
+      padding: 0 0 0 1rem;
+      height: 3.4rem;
+      background: var(--color-dark-grey-50);
+    }
+
+    &__content {
+      height: calc(100% - 3.4rem);
+      background: var(--color-dark-grey-50);
+    }
+  }
+
+  &__header__tabs {
+    display: flex;
+    height: 3.4rem;
+    color: var(--color-dark-grey-400);
+  }
+
+  &__header__tab {
+    @include flexVCenter;
+
+    cursor: pointer;
+    height: 3.4rem;
+    font-size: 1.2rem;
+    margin: 0 0.5rem;
+    padding: 0 0.5rem;
+    font-weight: 500;
+    border-bottom: 0.2rem solid var(--color-dark-grey-50);
+    color: var(--color-dark-grey-400);
+  }
+
+  &__header__tab--active {
+    color: var(--color-light-grey-200);
+    border-bottom: 0.2rem solid var(--color-yellow-300);
+  }
+
+  &__header__tab__icon {
+    @include flexVCenter;
+
+    svg {
+      font-size: 1.1rem;
+      margin-right: 0.5rem;
+    }
+  }
+
+  &__header__tab__title {
+    font-size: 1.2rem;
+    font-weight: 500;
+    user-select: none;
+  }
+
+  &__content__tab {
+    height: 100%;
+    color: var(--color-light-grey-400);
+  }
+
+  &__header__actions {
+    display: flex;
+  }
+
+  &__header__action {
+    @include flexCenter;
+
+    height: 3.6rem;
+    width: 3.6rem;
+    cursor: pointer;
+  }
+
+  &__header__action svg {
+    color: var(--color-light-grey-400);
+    font-size: 1.8rem;
+  }
+
+  &__splash-screen {
+    @include flexCenter;
+
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+    user-select: none;
+    background: var(--color-dark-grey-50);
+
+    &__content--hidden,
+    &__logo--hidden {
+      display: none;
+    }
+
+    &__content__item {
+      @include flexVCenter;
+
+      height: 3.4rem;
+    }
+
+    &__content__item__label {
+      @include flexVCenter;
+
+      height: 2.8rem;
+      font-weight: 500;
+      width: 20rem;
+      justify-content: flex-end;
+      margin-right: 1.5rem;
+      color: var(--color-light-grey-400);
+    }
+
+    &__content__item__hot-keys {
+      @include flexVCenter;
+
+      height: 2.8rem;
+    }
+
+    .hotkey {
+      &__key {
+        color: var(--color-light-grey-400);
+        background: var(--color-dark-grey-200);
+      }
+
+      &__plus svg {
+        color: var(--color-light-grey-400);
+      }
+    }
+  }
+}

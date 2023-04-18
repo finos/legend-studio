@@ -32,7 +32,7 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from './QueryBuilderStateHashUtils.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { buildDefaultInstanceValue } from './shared/ValueSpecificationEditorHelper.js';
 import { valueSpecification_setGenericType } from './shared/ValueSpecificationModifierHelper.js';
@@ -109,7 +109,7 @@ export class QueryBuilderConstantExpressionState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.CONSTANT_EXPRESSION_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.CONSTANT_EXPRESSION_STATE,
       this.variable.name,
       this.value,
     ]);
@@ -169,7 +169,7 @@ export class QueryBuilderConstantsState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.CONSTANT_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.CONSTANT_STATE,
       hashArray(this.constants),
     ]);
   }

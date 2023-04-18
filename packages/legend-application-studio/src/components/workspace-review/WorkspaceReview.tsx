@@ -40,13 +40,14 @@ import {
 import {
   type WorkspaceReviewPathParams,
   generateSetupRoute,
-} from '../../application/LegendStudioNavigation.js';
+} from '../../__lib__/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import {
   useEditorStore,
   withEditorStore,
 } from '../editor/EditorStoreProvider.js';
-import { useApplicationStore, useParams } from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 
 const WorkspaceReviewStatusBar = observer(() => {
   const reviewStore = useWorkspaceReviewStore();

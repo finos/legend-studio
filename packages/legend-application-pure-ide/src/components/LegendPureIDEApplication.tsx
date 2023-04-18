@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-import { LegendApplicationComponentFrameworkProvider } from '@finos/legend-application';
-import { LegendPureIDEBaseStoreProvider } from './LegendPureIDEBaseStoreProvider.js';
-import { Editor } from './editor/Editor.js';
+import { BrowserEnvironmentProvider } from '@finos/legend-application/browser';
+import { Editor } from './PureIDE.js';
+import { LegendPureIDEFrameworkProvider } from './LegendPureIDEFrameworkProvider.js';
 
-export const LegendPureIDEApplication: React.FC = () => (
-  <LegendPureIDEBaseStoreProvider>
-    <LegendApplicationComponentFrameworkProvider>
-      <Editor />
-    </LegendApplicationComponentFrameworkProvider>
-  </LegendPureIDEBaseStoreProvider>
-);
+export const LegendPureIDEWebApplication: React.FC<{ baseUrl: string }> = (
+  props,
+) => {
+  const { baseUrl } = props;
+
+  return (
+    <BrowserEnvironmentProvider baseUrl={baseUrl}>
+      <LegendPureIDEFrameworkProvider>
+        <Editor />
+      </LegendPureIDEFrameworkProvider>
+    </BrowserEnvironmentProvider>
+  );
+};

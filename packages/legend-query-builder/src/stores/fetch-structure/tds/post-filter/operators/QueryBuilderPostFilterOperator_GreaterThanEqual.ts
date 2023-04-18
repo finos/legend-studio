@@ -19,7 +19,6 @@ import {
   type ValueSpecification,
   AbstractPropertyExpression,
   PRIMITIVE_TYPE,
-  SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterStateBuilder.js';
 import type {
@@ -28,9 +27,9 @@ import type {
 } from '../QueryBuilderPostFilterState.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { QueryBuilderPostFilterOperator_GreaterThan } from './QueryBuilderPostFilterOperator_GreaterThan.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import { hashArray } from '@finos/legend-shared';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
 
 export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilderPostFilterOperator_GreaterThan {
   override getLabel(): string {
@@ -47,7 +46,7 @@ export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilde
         PRIMITIVE_TYPE.DATETIME &&
         postFilterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
-        ? SUPPORTED_FUNCTIONS.IS_ON_OR_AFTER_DAY
+        ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_ON_OR_AFTER_DAY
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.GREATER_THAN_EQUAL,
     );
   }
@@ -64,7 +63,7 @@ export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilde
           .path === PRIMITIVE_TYPE.DATETIME &&
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
-        ? SUPPORTED_FUNCTIONS.IS_ON_OR_AFTER_DAY
+        ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_ON_OR_AFTER_DAY
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.GREATER_THAN_EQUAL,
       this,
     );
@@ -72,7 +71,7 @@ export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilde
 
   override get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_GREATER_THAN_EQUAL,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.POST_FILTER_OPERATOR_GREATER_THAN_EQUAL,
     ]);
   }
 }

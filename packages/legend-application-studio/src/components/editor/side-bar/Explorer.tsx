@@ -51,35 +51,29 @@ import {
   PURE_ClassIcon,
   CodeIcon,
 } from '@finos/legend-art';
-import {
-  getElementIcon,
-  getElementTypeIcon,
-} from '../../shared/ElementIconUtils.js';
+import { getElementIcon, getElementTypeIcon } from '../../ElementIconUtils.js';
 import {
   getElementTypeLabel,
   CreateNewElementModal,
 } from './CreateNewElementModal.js';
 import { useDrag } from 'react-dnd';
-import { ElementDragSource } from '../../../stores/editor/shared/DnDUtils.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
+import { ElementDragSource } from '../../../stores/editor/utils/DnDUtils.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import {
   ACTIVITY_MODE,
   GRAPH_EDITOR_MODE,
 } from '../../../stores/editor/EditorConfig.js';
-import {
-  generatePackageableElementTreeNodeDataLabel,
-  getTreeChildNodes,
-} from '../../../stores/editor/shared/PackageTreeUtils.js';
-import type { PackageTreeNodeData } from '../../../stores/editor/shared/TreeUtils.js';
+import { getTreeChildNodes } from '../../../stores/editor/utils/PackageTreeUtils.js';
+import type { PackageTreeNodeData } from '../../../stores/editor/utils/TreeUtils.js';
 import {
   type FileSystemTreeNodeData,
   getFileSystemChildNodes,
-} from '../../../stores/editor/shared/FileSystemTreeUtils.js';
-import { FileSystemTree } from '../edit-panel/element-generation-editor/FileSystemViewer.js';
+} from '../../../stores/editor/utils/FileSystemTreeUtils.js';
+import { FileSystemTree } from '../editor-group/element-generation-editor/FileSystemViewer.js';
 import {
   generateViewEntityRoute,
   generateViewProjectByGAVRoute,
-} from '../../../application/LegendStudioNavigation.js';
+} from '../../../__lib__/LegendStudioNavigation.js';
 import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
@@ -105,15 +99,14 @@ import {
   getFunctionNameWithPath,
   getElementRootPackage,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 import {
-  CODE_EDITOR_LANGUAGE,
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
-  useApplicationStore,
-} from '@finos/legend-application';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/shared/ModelClassifierUtils.js';
-import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
-import { queryClass } from '../edit-panel/uml-editor/ClassQueryBuilder.js';
+} from '@finos/legend-lego/graph-editor';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/utils/ModelClassifierUtils.js';
+import { useLegendStudioApplicationStore } from '../../LegendStudioFrameworkProvider.js';
+import { queryClass } from '../editor-group/uml-editor/ClassQueryBuilder.js';
 import { createViewSDLCProjectHandler } from '../../../stores/editor/DependencyProjectViewerHelper.js';
 import {
   MASTER_SNAPSHOT_ALIAS,
@@ -122,8 +115,11 @@ import {
 import {
   CLASS_MOCK_DATA_GENERATION_FORMAT,
   createMockDataForClassWithFormat,
-} from '../../../stores/editor/shared/MockDataUtils.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+} from '../../../stores/editor/utils/MockDataUtils.js';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -369,7 +365,6 @@ const SampleDataGenerator = observer(() => {
             filterOption={elementFilterOption}
             formatOptionLabel={getPackageableElementOptionFormatter({
               darkMode: true,
-              graph: editorStore.graphManagerState.graph,
             })}
           />
           <div
@@ -465,11 +460,7 @@ const ExplorerContextMenu = observer(
     const projectId = editorStore.sdlcState.currentProject?.projectId;
     const isReadOnly = editorStore.isInViewerMode || Boolean(nodeIsImmutable);
     const isDependencyProjectElement =
-      node &&
-      isDependencyElement(
-        node.packageableElement,
-        editorStore.graphManagerState.graph,
-      );
+      node && isDependencyElement(node.packageableElement);
     const _package = node
       ? node.packageableElement instanceof Package
         ? node.packageableElement
@@ -808,10 +799,7 @@ const PackageTreeNodeContainer = observer(
       ? 'color--generated'
       : isSystemElement(node.packageableElement)
       ? 'color--system'
-      : isDependencyElement(
-          node.packageableElement,
-          editorStore.graphManagerState.graph,
-        )
+      : isDependencyElement(node.packageableElement)
       ? 'color--dependency'
       : '';
 
@@ -877,10 +865,7 @@ const PackageTreeNodeContainer = observer(
             tabIndex={-1}
             title={node.packageableElement.path}
           >
-            {generatePackageableElementTreeNodeDataLabel(
-              node.packageableElement,
-              node,
-            )}
+            {node.label}
           </button>
         </div>
       </ContextMenu>

@@ -27,12 +27,14 @@ import {
   HttpHeader,
 } from '@finos/legend-shared';
 import {
-  TEST__GraphManagerPluginManager,
-  TEST__buildGraphWithEntities,
-  TEST__getTestGraphManagerState,
   GRAPH_MANAGER_EVENT,
   type V1_PureModelContextData,
 } from '@finos/legend-graph';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+  TEST__GraphManagerPluginManager,
+} from '@finos/legend-graph/test';
 
 // NOTE: when we reorganize manual tests, i.e. when we remove this module
 // we should consider moving this performance test to another module, maybe

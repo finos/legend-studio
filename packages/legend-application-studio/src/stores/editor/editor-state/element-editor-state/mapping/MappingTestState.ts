@@ -41,7 +41,7 @@ import {
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore.js';
 import { observable, flow, action, makeObservable, flowResult } from 'mobx';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
+import { createMockDataForMappingElementSource } from '../../../utils/MockDataUtils.js';
 import {
   type RawLambda,
   type Runtime,
@@ -80,8 +80,8 @@ import {
   ModelStore,
   reportGraphAnalytics,
 } from '@finos/legend-graph';
-import { TAB_SIZE } from '@finos/legend-application';
-import { flatData_setData } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
+import { flatData_setData } from '../../../../graph-modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
   mappingTest_setAssert,
@@ -89,12 +89,12 @@ import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../graph-modifier/STO_Relational_GraphModifierHelper.js';
 import {
   LambdaEditorState,
   QueryBuilderTelemetryHelper,
@@ -675,7 +675,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
           stringifyLosslessJSON(
             extractExecutionResultValues(result),
             undefined,
-            TAB_SIZE,
+            DEFAULT_TAB_SIZE,
           ),
         );
         this.updateAssertion();
@@ -754,7 +754,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
     this.testExecutionResultText = stringifyLosslessJSON(
       extractExecutionResultValues(result),
       undefined,
-      TAB_SIZE,
+      DEFAULT_TAB_SIZE,
     );
     let assertionMatched = false;
     if (

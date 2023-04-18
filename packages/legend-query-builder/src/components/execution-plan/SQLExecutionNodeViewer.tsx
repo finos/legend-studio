@@ -18,8 +18,10 @@ import { observer } from 'mobx-react-lite';
 import type { ExecutionPlanState } from '../../stores/execution-plan/ExecutionPlanState.js';
 import { format as formatSQL } from 'sql-formatter';
 import type { SQLResultColumn } from '@finos/legend-graph';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
-import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 /**
  * TODO: Create a new `AbstractPlugin` for this, called `ExecutionPlanViewerPlugin`

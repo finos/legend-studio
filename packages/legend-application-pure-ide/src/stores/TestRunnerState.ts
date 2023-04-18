@@ -45,7 +45,7 @@ import {
   TestResultStatus,
   TestRunnerCheckResult,
 } from '../server/models/Test.js';
-import type { EditorStore } from '../stores/EditorStore.js';
+import type { PureIDEStore } from './PureIDEStore.js';
 
 const getFullParentId = (
   testInfo: TestInfo,
@@ -222,7 +222,7 @@ export class TestResultInfo {
 }
 
 export class TestRunnerState {
-  readonly editorStore: EditorStore;
+  readonly ideStore: PureIDEStore;
   readonly testExecutionResult: TestExecutionResult;
 
   readonly checkTestRunnerState = ActionState.create();
@@ -236,7 +236,7 @@ export class TestRunnerState {
   viewAsList = false;
 
   constructor(
-    editorStore: EditorStore,
+    ideStore: PureIDEStore,
     testExecutionResult: TestExecutionResult,
   ) {
     makeObservable(this, {
@@ -260,7 +260,7 @@ export class TestRunnerState {
       cancelTestRun: flow,
     });
 
-    this.editorStore = editorStore;
+    this.ideStore = ideStore;
     this.testExecutionResult = testExecutionResult;
   }
 
@@ -395,7 +395,7 @@ export class TestRunnerState {
 
   async pullTestRunnerResult(testResultInfo: TestResultInfo): Promise<void> {
     const result = deserializeTestRunnerCheckResult(
-      await this.editorStore.client.checkTestRunner(
+      await this.ideStore.client.checkTestRunner(
         this.testExecutionResult.runnerId,
       ),
     );
@@ -417,7 +417,7 @@ export class TestRunnerState {
               resolve(this.pullTestRunnerResult(testResultInfo));
             } catch (error) {
               assertErrorThrown(error);
-              this.editorStore.applicationStore.notificationService.notifyWarning(
+              this.ideStore.applicationStore.notificationService.notifyWarning(
                 `Failed to run test${
                   error.message ? `: ${error.message}` : ''
                 }`,
@@ -436,11 +436,11 @@ export class TestRunnerState {
   }
 
   *rerunTestSuite(): GeneratorFn<void> {
-    if (this.editorStore.testRunState.isInProgress) {
+    if (this.ideStore.testRunState.isInProgress) {
       return;
     }
     yield flowResult(
-      this.editorStore.executeTests(
+      this.ideStore.executeTests(
         this.testExecutionResult.path,
         this.testExecutionResult.relevantTestsOnly,
       ),
@@ -448,13 +448,13 @@ export class TestRunnerState {
   }
 
   *cancelTestRun(): GeneratorFn<void> {
-    if (!this.editorStore.testRunState.isInProgress) {
+    if (!this.ideStore.testRunState.isInProgress) {
       return;
     }
-    yield this.editorStore.client.cancelTestRunner(
+    yield this.ideStore.client.cancelTestRunner(
       this.testExecutionResult.runnerId,
     );
-    this.editorStore.applicationStore.notificationService.notifyWarning(
+    this.ideStore.applicationStore.notificationService.notifyWarning(
       `Stopped running test (id: ${this.testExecutionResult.runnerId}) successfully!`,
     );
   }

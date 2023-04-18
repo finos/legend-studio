@@ -16,21 +16,18 @@
 
 import { test, expect } from '@jest/globals';
 import { act, fireEvent, getByText, waitFor } from '@testing-library/react';
-import {
-  integrationTest,
-  createMock,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
-import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { integrationTest, createMock } from '@finos/legend-shared/test';
 import {
   TEST__openElementFromExplorerTree,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../EditorComponentTestUtils.js';
+} from '../editor/__test-utils__/EditorComponentTestUtils.js';
 import { GraphCompilationOutcome } from '../../stores/editor/EditorGraphState.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import { extractElementNameFromPath } from '@finos/legend-graph';
 import TEST_DATA__ClassQueryBuilder from './TEST_DATA__ClassQueryBuilderModel.json';
-import { TEST__buildQueryBuilderMockedEditorStore } from './EmbeddedQueryBuilderTestUtils.js';
+import { TEST__buildQueryBuilderMockedEditorStore } from '../__test-utils__/EmbeddedQueryBuilderTestUtils.js';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 
 test(integrationTest('Test Explorer tree context menu '), async () => {
   const MOCK__editorStore = TEST__buildQueryBuilderMockedEditorStore();

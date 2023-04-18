@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-import { createContext, useContext, useEffect } from 'react';
-import { observer, useLocalObservable } from 'mobx-react-lite';
-import {
+import { createContext, useContext } from 'react';
+import { useLocalObservable } from 'mobx-react-lite';
+import type {
   ApplicationStore,
-  type GenericLegendApplicationStore,
+  GenericLegendApplicationStore,
 } from '../stores/ApplicationStore.js';
 import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useWebApplicationNavigator } from './WebApplicationNavigatorProvider.js';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';
 
@@ -39,44 +38,20 @@ export const useApplicationStore = <
     `Can't find application store in context`,
   );
 
-const ApplicationContent = observer(
-  (props: { children: React.ReactNode }): React.ReactElement => {
-    const { children } = props;
-    const applicationStore = useApplicationStore();
-
-    useEffect(() => {
-      applicationStore.initialize().catch(applicationStore.alertUnhandledError);
-    }, [applicationStore]);
-
-    if (!applicationStore.initState.hasSucceeded) {
-      return <></>;
-    }
-    // TODO: would be great if we can have <React.StrictMode> here but since Mobx React is not ready for
-    // concurrency yet, we would have to wait
-    // See https://github.com/mobxjs/mobx/issues/2526
-    return <>{children}</>;
-  },
-);
-
 export const ApplicationStoreProvider = <
   T extends LegendApplicationConfig,
   V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
 >({
   children,
-  config,
-  pluginManager,
+  store,
 }: {
   children: React.ReactNode;
-  config: T;
-  pluginManager: V;
+  store: ApplicationStore<T, V>;
 }): React.ReactElement => {
-  const navigator = useWebApplicationNavigator();
-  const applicationStore = useLocalObservable(
-    () => new ApplicationStore(config, navigator, pluginManager),
-  );
+  const applicationStore = useLocalObservable(() => store);
   return (
     <ApplicationStoreContext.Provider value={applicationStore}>
-      <ApplicationContent>{children}</ApplicationContent>
+      {children}
     </ApplicationStoreContext.Provider>
   );
 };

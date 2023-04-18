@@ -16,11 +16,10 @@
 
 import {
   type DataSpaceAnalysisResult,
-  DataSpaceViewerState,
   DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
-} from '@finos/legend-extension-dsl-data-space';
-import type { ClassView } from '@finos/legend-extension-dsl-diagram';
+} from '@finos/legend-extension-dsl-data-space/graph';
+import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
   ProjectData,
   retrieveProjectEntitiesWithDependencies,
@@ -39,7 +38,7 @@ import {
   flowResult,
   computed,
 } from 'mobx';
-import { EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl } from '../application/LegendTaxonomyNavigation.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl } from '../__lib__/LegendTaxonomyNavigation.js';
 import type {
   DataSpaceTaxonomyContext,
   TaxonomyExplorerStore,
@@ -50,6 +49,7 @@ import {
   createViewSDLCProjectHandler,
 } from './LegendTaxonomyDataSpaceViewerHelper.js';
 import { GraphDataWithOrigin, LegendSDLC } from '@finos/legend-graph';
+import { DataSpaceViewerState } from '@finos/legend-extension-dsl-data-space/application';
 
 interface TaxonomyNodeDataSpaceOption {
   label: string;

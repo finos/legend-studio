@@ -22,7 +22,7 @@ import {
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderTDSState } from './QueryBuilderTDSState.js';
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
 import { COLUMN_SORT_TYPE } from './QueryResultSetModifierState.js';

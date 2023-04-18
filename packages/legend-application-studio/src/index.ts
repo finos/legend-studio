@@ -18,13 +18,17 @@
 export * from './application/LegendStudio.js';
 export * from './application/LegendStudioApplicationConfig.js';
 export * from './application/LegendStudioPluginManager.js';
-export * from './application/LegendStudioEvent.js';
+export * from './__lib__/LegendStudioEvent.js';
 export {
   generateEditorRoute,
   generateReviewRoute,
   generateViewProjectRoute,
-} from './application/LegendStudioNavigation.js';
-export { useLegendStudioApplicationStore } from './components/LegendStudioBaseStoreProvider.js';
+} from './__lib__/LegendStudioNavigation.js';
+export * from './__lib__/LegendStudioTesting.js';
+export {
+  useLegendStudioApplicationStore,
+  useLegendStudioBaseStore,
+} from './components/LegendStudioFrameworkProvider.js';
 export type { LegendStudioApplicationStore } from './stores/LegendStudioBaseStore.js';
 
 // stores
@@ -48,35 +52,25 @@ export {
   TypeDragSource,
   type UMLEditorElementDropTarget,
   type TransformDropTarget,
-} from './stores/editor/shared/DnDUtils.js';
+} from './stores/editor/utils/DnDUtils.js';
 export { ExplorerTreeRootPackageLabel } from './stores/editor/ExplorerTreeState.js';
-export * from './stores/editor/shared/modifier/GraphModifierHelper.js';
-export * from './stores/editor/shared/modifier/DomainGraphModifierHelper.js';
-export * from './stores/editor/shared/modifier/DSL_Generation_GraphModifierHelper.js';
-export * from './stores/editor/shared/modifier/DSL_Service_GraphModifierHelper.js';
+export * from './stores/graph-modifier/GraphModifierHelper.js';
+export * from './stores/graph-modifier/DomainGraphModifierHelper.js';
+export * from './stores/graph-modifier/DSL_Generation_GraphModifierHelper.js';
+export * from './stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
 export * from './stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 
 // components
-export { queryClass } from './components/editor/edit-panel/uml-editor/ClassQueryBuilder.js';
+export { queryClass } from './components/editor/editor-group/uml-editor/ClassQueryBuilder.js';
 export * from './components/editor/EditorStoreProvider.js';
 export { ActivityBarMenu } from './components/editor/ActivityBar.js';
 export * from './components/workspace-setup/ProjectSelectorUtils.js';
 export * from './components/workspace-setup/WorkspaceSelectorUtils.js';
-export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor.js';
-export { TypeTree } from './components/editor/edit-panel/mapping-editor/TypeTree.js';
+export { ClassFormEditor } from './components/editor/editor-group/uml-editor/ClassEditor.js';
+export { TypeTree } from './components/editor/editor-group/mapping-editor/TypeTree.js';
 export * from './stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
-
-// test
-export {
-  TEST__provideMockedEditorStore,
-  TEST__setUpEditor,
-  TEST__setUpEditorWithDefaultSDLCData,
-  TEST__openElementFromExplorerTree,
-} from './components/EditorComponentTestUtils.js';
-export * from './application/LegendStudioTesting.js';
-export * from './stores/editor/EditorStoreTestUtils.js';
 
 export { PostProcessorEditorState } from './stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 export { MappingExecutionState } from './stores/editor/editor-state/element-editor-state/mapping/MappingExecutionState.js';
@@ -88,7 +82,7 @@ export {
 export * from './stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 export { MappingElementState } from './stores/editor/editor-state/element-editor-state/mapping/MappingElementState.js';
 export { UnsupportedInstanceSetImplementationState } from './stores/editor/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
-export { getElementIcon } from './components/shared/ElementIconUtils.js';
+export { getElementIcon } from './components/ElementIconUtils.js';
 
 // --------------------------------------------- DSL --------------------------------------------------
 /**
@@ -106,8 +100,8 @@ export {
   generateServiceManagementUrl,
 } from './stores/editor/editor-state/element-editor-state/service/ServiceRegistrationState.js';
 export { ServicePureExecutionState } from './stores/editor/editor-state/element-editor-state/service/ServiceExecutionState.js';
-export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal.js';
-export { FileSystem_File as GenerationFile } from './stores/editor/shared/FileSystemTreeUtils.js';
+export { NewServiceModal } from './components/editor/editor-group/service-editor/NewServiceModal.js';
+export { FileSystem_File as GenerationFile } from './stores/editor/utils/FileSystemTreeUtils.js';
 export {
   FileGenerationState,
   GeneratedFileStructureState,
@@ -116,8 +110,8 @@ export { DSL_ExternalFormat_LegendStudioApplicationPlugin } from './components/e
 export {
   externalFormatData_setData,
   externalFormatData_setContentType,
-} from './stores/editor/shared/modifier/DSL_Data_GraphModifierHelper.js';
-export { ExternalFormatDataEditor } from './components/editor/edit-panel/data-editor/DataElementEditor.js';
+} from './stores/graph-modifier/DSL_Data_GraphModifierHelper.js';
+export { ExternalFormatDataEditor } from './components/editor/editor-group/data-editor/DataElementEditor.js';
 export {
   ExternalFormatDataState,
   EmbeddedDataState,

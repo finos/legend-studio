@@ -22,7 +22,7 @@ import {
   isString,
   LogEvent,
 } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from '../application/LegendApplicationEvent.js';
+import { APPLICATION_EVENT } from '../__lib__/LegendApplicationEvent.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 import { StorageStore } from './storage/StorageService.js';
 
@@ -32,6 +32,7 @@ type SettingConfigurationEntryData = {
   // See https://github.com/finos/legend-studio/issues/407
   defaultValue: SettingValue;
 };
+export type SettingOverrideConfigData = Record<string, SettingValue>;
 export type SettingConfigurationEntry = {
   key: string;
   defaultValue: SettingValue;

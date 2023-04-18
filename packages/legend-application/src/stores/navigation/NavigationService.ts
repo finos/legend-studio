@@ -121,6 +121,14 @@ export interface ApplicationNavigator {
   ): void;
   unblockNavigation(): void;
   get isNavigationBlocked(): boolean;
+
+  /**
+   * Remove a transient parameter, i.e. parameter that the application reads in and internalize
+   * as a state and then remove from the address as it's no longer needed and would dirty the address.
+   *
+   * NOTE: This is somewhat a non-standard and hacky behavior, please avoid using this unless you know what you are doing.
+   */
+  INTERNAL__internalizeTransientParameter(key: string): void;
 }
 
 export class NavigationService {

@@ -55,7 +55,7 @@ import {
   LEGEND_QUERY_ROUTE_PATTERN_TOKEN,
   generateExistingQueryEditorRoute,
   generateQuerySetupRoute,
-} from '../application/LegendQueryNavigation.js';
+} from '../__lib__/LegendQueryNavigation.js';
 import {
   type QueryEditorStore,
   ExistingQueryEditorStore,
@@ -66,8 +66,8 @@ import {
 import {
   LEGEND_APPLICATION_COLOR_THEME,
   useApplicationStore,
-  useParams,
 } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 import {
   MappingQueryCreatorStoreProvider,
   ExistingQueryEditorStoreProvider,
@@ -76,7 +76,7 @@ import {
 } from './QueryEditorStoreProvider.js';
 import type { RawLambda } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
-import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import { useLegendQueryApplicationStore } from './LegendQueryFrameworkProvider.js';
 import {
   QueryBuilder,
   QueryBuilderNavigationBlocker,

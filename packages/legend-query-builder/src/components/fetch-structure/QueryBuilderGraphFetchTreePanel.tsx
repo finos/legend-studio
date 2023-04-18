@@ -48,7 +48,7 @@ import {
   CustomSelectorInput,
   FolderIcon,
 } from '@finos/legend-art';
-import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   deepClone,
   filterByType,
@@ -74,7 +74,6 @@ import {
   SERIALIZATION_TYPE,
   type QueryBuilderGraphFetchTreeState,
 } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
-import { getClassPropertyIcon } from '../shared/ElementIconUtils.js';
 import { QueryBuilderTextEditorMode } from '../../stores/QueryBuilderTextEditorState.js';
 import {
   type PackageableElement,
@@ -85,9 +84,12 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
-  buildElementOption,
-  type PackageableElementOption,
 } from '@finos/legend-application';
+import {
+  buildElementOption,
+  getClassPropertyIcon,
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
 
 const getBindingFormatter = (props: {
   darkMode?: boolean;

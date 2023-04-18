@@ -20,13 +20,11 @@ import {
   ApplicationStoreProvider,
   LegendApplication,
   type LegendApplicationConfigurationInput,
-  BrowserRouter,
-  WebApplicationNavigatorProvider,
   Core_LegendApplicationPlugin,
+  getApplicationRootElement,
 } from '@finos/legend-application';
-import { LegendQueryApplication } from '../components/LegendQueryApplication.js';
+import { LegendQueryWebApplication } from '../components/LegendQueryWebApplication.js';
 import { LegendQueryPluginManager } from './LegendQueryPluginManager.js';
-import { getRootElement } from '@finos/legend-art';
 import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import {
   type LegendQueryApplicationConfigurationData,
@@ -37,6 +35,7 @@ import {
   QueryBuilder_LegendApplicationPlugin,
 } from '@finos/legend-query-builder';
 import { Core_LegendQueryApplicationPlugin } from '../components/Core_LegendQueryApplicationPlugin.js';
+import type { LegendQueryApplicationStore } from '../stores/LegendQueryBaseStore.js';
 
 export class LegendQuery extends LegendApplication {
   declare config: LegendQueryApplicationConfig;
@@ -62,19 +61,13 @@ export class LegendQuery extends LegendApplication {
     return new LegendQueryApplicationConfig(input);
   }
 
-  async loadApplication(): Promise<void> {
-    const rootElement = createRoot(getRootElement());
-    rootElement.render(
-      <BrowserRouter basename={this.baseUrl}>
-        <WebApplicationNavigatorProvider>
-          <ApplicationStoreProvider
-            config={this.config}
-            pluginManager={this.pluginManager}
-          >
-            <LegendQueryApplication config={this.config} />
-          </ApplicationStoreProvider>
-        </WebApplicationNavigatorProvider>
-      </BrowserRouter>,
+  async loadApplication(
+    applicationStore: LegendQueryApplicationStore,
+  ): Promise<void> {
+    createRoot(getApplicationRootElement()).render(
+      <ApplicationStoreProvider store={applicationStore}>
+        <LegendQueryWebApplication baseUrl={this.baseAddress} />
+      </ApplicationStoreProvider>,
     );
   }
 }

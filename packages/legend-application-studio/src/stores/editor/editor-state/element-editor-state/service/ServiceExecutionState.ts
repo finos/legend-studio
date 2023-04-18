@@ -34,10 +34,12 @@ import {
 import {
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-  generateExtensionUrlPattern,
-  generatePath,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
 } from '@finos/legend-application';
+import {
+  generatePath,
+  generateExtensionUrlPattern,
+} from '@finos/legend-application/browser';
 import {
   type ServiceExecution,
   type PureExecution,
@@ -72,7 +74,7 @@ import {
   parseGACoordinates,
   generateGAVCoordinates,
 } from '@finos/legend-storage';
-import { runtime_addMapping } from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { runtime_addMapping } from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   keyedExecutionParameter_setKey,
@@ -83,7 +85,7 @@ import {
   pureSingleExecution_setMapping,
   pureSingleExecution_setRuntime,
   service_setExecution,
-} from '../../../shared/modifier/DSL_Service_GraphModifierHelper.js';
+} from '../../../../graph-modifier/DSL_Service_GraphModifierHelper.js';
 import {
   buildExecutionParameterValues,
   getExecutionQueryFromRawLambda,
@@ -687,7 +689,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       const result = (yield promise) as ExecutionResult;
       if (this.queryRunPromise === promise) {
         this.setExecutionResultText(
-          stringifyLosslessJSON(result, undefined, TAB_SIZE),
+          stringifyLosslessJSON(result, undefined, DEFAULT_TAB_SIZE),
         );
         this.parameterState.setParameters([]);
 

@@ -15,7 +15,8 @@
  */
 
 import { test, describe, expect } from '@jest/globals';
-import { guaranteeType, integrationTest } from '@finos/legend-shared';
+import { guaranteeType } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
   TEST_DATA__Milestoning_PreviewData,
@@ -34,7 +35,7 @@ import {
   buildNonNumericPreviewDataQuery,
   buildNumericPreviewDataQuery,
 } from '../QueryBuilderPreviewDataHelper.js';
-import { TEST__setUpQueryBuilderState } from '../QueryBuilderStateTestUtils.js';
+import { TEST__setUpQueryBuilderState } from '../__test-utils__/QueryBuilderStateTestUtils.js';
 import type { RawMappingModelCoverageAnalysisResult } from '@finos/legend-graph';
 
 type PreviewDataTestCase = [

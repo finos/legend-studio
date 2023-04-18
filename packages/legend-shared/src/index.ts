@@ -34,7 +34,6 @@ export * from './format/ValidatorUtils.js';
 export * from './markdown/MarkdownUtils.js';
 
 export * from './application/HashUtils.js';
-export * from './application/TestUtils.js';
 export * from './application/SerializationUtils.js';
 export * from './application/RandomizerUtils.js';
 export * from './application/ActionState.js';
@@ -49,3 +48,4 @@ export * from './log/LogService.js';
 export * from './log/WebConsole.js';
 
 export * from './search/FuzzySearch.js';
+export * from './search/FuzzySearchAdvancedConfigState.js';

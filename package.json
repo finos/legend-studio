@@ -110,10 +110,10 @@
     "prettier": "2.8.7",
     "rimraf": "5.0.0",
     "sass": "1.62.0",
-    "semver": "7.4.0",
+    "semver": "7.5.0",
     "sort-package-json": "2.4.1",
-    "stylelint": "15.4.0",
-    "typedoc": "0.24.1",
+    "stylelint": "15.5.0",
+    "typedoc": "0.24.4",
     "typescript": "5.0.4",
     "yargs": "17.7.1"
   },

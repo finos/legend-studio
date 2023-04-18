@@ -25,7 +25,7 @@ import {
 import { ExplorerTreeState } from './ExplorerTreeState.js';
 import {
   ACTIVITY_MODE,
-  AUX_PANEL_MODE,
+  PANEL_MODE,
   GRAPH_EDITOR_MODE,
   EDITOR_MODE,
 } from './EditorConfig.js';
@@ -61,13 +61,13 @@ import { EditorSDLCState } from './EditorSDLCState.js';
 import { ModelImporterState } from './editor-state/ModelImporterState.js';
 import { ProjectConfigurationEditorState } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState.js';
-import { DevToolState } from './aux-panel-state/DevToolState.js';
+import { DevToolPanelState } from './panel-group/DevToolPanelState.js';
 import {
   generateEditorRoute,
   generateSetupRoute,
   generateViewProjectRoute,
   type WorkspaceEditorPathParams,
-} from '../../application/LegendStudioNavigation.js';
+} from '../../__lib__/LegendStudioNavigation.js';
 import { NonBlockingDialogState, PanelDisplayState } from '@finos/legend-art';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import type { Entity } from '@finos/legend-storage';
@@ -84,17 +84,17 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   APPLICATION_EVENT,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
 } from '@finos/legend-application';
-import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import type { EditorMode } from './EditorMode.js';
 import { StandardEditorMode } from './StandardEditorMode.js';
 import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from './utils/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
-import { LEGEND_STUDIO_COMMAND_KEY } from '../../application/LegendStudioCommand.js';
+import { LEGEND_STUDIO_COMMAND_KEY } from '../../__lib__/LegendStudioCommand.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
 import type { ProjectViewerEditorMode } from '../project-view/ProjectViewerEditorMode.js';
 import { GraphEditFormModeState } from './GraphEditFormModeState.js';
@@ -142,7 +142,7 @@ export class EditorStore implements CommandRegistrar {
   workspaceReviewState: WorkspaceReviewState;
   localChangesState: LocalChangesState;
   conflictResolutionState: WorkspaceUpdateConflictResolutionState;
-  devToolState: DevToolState;
+  devToolState: DevToolPanelState;
   embeddedQueryBuilderState: EmbeddedQueryBuilderState;
   newElementState: NewElementState;
   bulkServiceRegistrationState: BulkServiceRegistrationState;
@@ -153,8 +153,8 @@ export class EditorStore implements CommandRegistrar {
   elementGenerationStates: ElementFileGenerationState[] = [];
   searchElementCommandState = new NonBlockingDialogState();
 
-  activeAuxPanelMode: AUX_PANEL_MODE = AUX_PANEL_MODE.CONSOLE;
-  readonly auxPanelDisplayState = new PanelDisplayState({
+  activePanelMode: PANEL_MODE = PANEL_MODE.CONSOLE;
+  readonly panelGroupDisplayState = new PanelDisplayState({
     initial: 0,
     default: 300,
     snap: 100,
@@ -178,7 +178,7 @@ export class EditorStore implements CommandRegistrar {
     >(this, {
       editorMode: observable,
       mode: observable,
-      activeAuxPanelMode: observable,
+      activePanelMode: observable,
       activeActivity: observable,
       graphEditorMode: observable,
 
@@ -189,7 +189,7 @@ export class EditorStore implements CommandRegistrar {
       setEditorMode: action,
       setMode: action,
 
-      setActiveAuxPanelMode: action,
+      setActivePanelMode: action,
       cleanUp: action,
       reset: action,
       setActiveActivity: action,
@@ -218,7 +218,7 @@ export class EditorStore implements CommandRegistrar {
     );
     this.graphEditorMode = new GraphEditFormModeState(this);
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);
-    this.devToolState = new DevToolState(this);
+    this.devToolState = new DevToolPanelState(this);
     this.embeddedQueryBuilderState = new EmbeddedQueryBuilderState(this);
     // side bar panels
     this.explorerTreeState = new ExplorerTreeState(this);
@@ -395,9 +395,9 @@ export class EditorStore implements CommandRegistrar {
       },
     });
     this.applicationStore.commandService.registerCommand({
-      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_AUX_PANEL,
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_PANEL_GROUP,
       trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
-      action: () => this.auxPanelDisplayState.toggle(),
+      action: () => this.panelGroupDisplayState.toggle(),
     });
     this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_EXPLORER,
@@ -429,7 +429,7 @@ export class EditorStore implements CommandRegistrar {
       LEGEND_STUDIO_COMMAND_KEY.TOGGLE_TEXT_MODE,
       LEGEND_STUDIO_COMMAND_KEY.GENERATE,
       LEGEND_STUDIO_COMMAND_KEY.COMPILE,
-      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_AUX_PANEL,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_PANEL_GROUP,
       LEGEND_STUDIO_COMMAND_KEY.TOGGLE_MODEL_LOADER,
       LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_EXPLORER,
       LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_LOCAL_CHANGES,
@@ -498,6 +498,10 @@ export class EditorStore implements CommandRegistrar {
       return;
     }
     this.initState.inProgress();
+
+    // TODO: when we genericize the way to initialize an application page
+    this.applicationStore.assistantService.setIsHidden(false);
+
     const onLeave = (hasBuildSucceeded: boolean): void => {
       this.initState.complete(hasBuildSucceeded);
       this.initState.setMessage(undefined);
@@ -631,7 +635,7 @@ export class EditorStore implements CommandRegistrar {
       this.graphManagerState.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
-          tabSize: TAB_SIZE,
+          tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
@@ -851,8 +855,8 @@ export class EditorStore implements CommandRegistrar {
     this.activeActivity = activity;
   }
 
-  setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
-    this.activeAuxPanelMode = val;
+  setActivePanelMode(val: PANEL_MODE): void {
+    this.activePanelMode = val;
   }
 
   *toggleTextMode(): GeneratorFn<void> {

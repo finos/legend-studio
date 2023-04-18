@@ -31,7 +31,7 @@ import {
   type ExtensionsConfigurationData,
   createRegExpPatternFromWildcardPattern,
 } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from './LegendApplicationEvent.js';
+import { APPLICATION_EVENT } from '../__lib__/LegendApplicationEvent.js';
 import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager.js';
 import {
   collectKeyedDocumentationEntriesFromConfig,
@@ -40,6 +40,7 @@ import {
   type DocumentationRegistryEntry,
 } from '../stores/DocumentationService.js';
 import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';
+import { ApplicationStore } from '../stores/ApplicationStore.js';
 
 export abstract class LegendApplicationLogger {
   abstract debug(event: LogEvent, ...data: unknown[]): void;
@@ -85,7 +86,7 @@ export class LegendApplicationWebConsole extends LegendApplicationLogger {
 export interface LegendApplicationConfigurationInput<
   T extends LegendApplicationConfigurationData,
 > {
-  baseUrl: string;
+  baseAddress: string;
   configData: T;
   versionData: LegendApplicationVersionData;
   docEntries?: Record<string, DocumentationEntryData>;
@@ -99,7 +100,7 @@ export abstract class LegendApplication {
   protected basePresets: AbstractPreset[] = [];
   protected basePlugins: AbstractPlugin[] = [];
 
-  protected baseUrl!: string;
+  protected baseAddress!: string;
   protected pluginRegister?:
     | ((
         pluginManager: LegendApplicationPluginManager<LegendApplicationPlugin>,
@@ -117,7 +118,7 @@ export abstract class LegendApplication {
 
   setup(options: {
     /** Base URL of the application. e.g. /studio/, /query/ */
-    baseUrl: string;
+    baseAddress: string;
     /**
      * Provide an alternative mechanism to register and configure plugins and presets
      * which is more flexible by allowing configuring specific plugin or preset.
@@ -127,9 +128,9 @@ export abstract class LegendApplication {
       config: LegendApplicationConfig,
     ) => void;
   }): LegendApplication {
-    this.baseUrl = guaranteeNonEmptyString(
-      options.baseUrl,
-      `Can't setup application: 'baseUrl' is missing or empty`,
+    this.baseAddress = guaranteeNonEmptyString(
+      options.baseAddress,
+      `Can't setup application: 'baseAddress' is missing or empty`,
     );
     this.pluginRegister = options.pluginRegister;
     this._isConfigured = true;
@@ -198,7 +199,7 @@ export abstract class LegendApplication {
       await this.configureApplication({
         configData,
         versionData,
-        baseUrl,
+        baseAddress: baseUrl,
       }),
       configData.extensions ?? {},
     ];
@@ -277,7 +278,12 @@ export abstract class LegendApplication {
     input: LegendApplicationConfigurationInput<LegendApplicationConfigurationData>,
   ): Promise<LegendApplicationConfig>;
 
-  protected abstract loadApplication(): Promise<void>;
+  protected abstract loadApplication(
+    applicationStore: ApplicationStore<
+      LegendApplicationConfig,
+      LegendApplicationPluginManager<LegendApplicationPlugin>
+    >,
+  ): Promise<void>;
 
   async start(): Promise<void> {
     assertNonNullable(
@@ -285,30 +291,36 @@ export abstract class LegendApplication {
       'Legend application has not been configured properly. Make sure to run setup() before start()',
     );
     try {
-      // Fetch application config
+      // fetch application config
       const [config, extensionConfigData] =
-        await this.fetchApplicationConfiguration(this.baseUrl);
+        await this.fetchApplicationConfiguration(this.baseAddress);
       this.config = config;
 
-      // Setup plugins
+      // setup plugins
       this.pluginRegister?.(this.pluginManager, this.config);
       this.pluginManager.configure(extensionConfigData);
       this.pluginManager.install();
 
-      // Other setups
+      // other setups
       await Promise.all(
         // NOTE: to be done in parallel to save time
         [this.loadDocumentationRegistryData(config)],
       );
 
+      // setup application store
+      const applicationStore = new ApplicationStore(
+        this.config,
+        this.pluginManager,
+      );
       await Promise.all(
         this.pluginManager
           .getApplicationPlugins()
-          .flatMap((plugin) => plugin.getExtraApplicationBootstraps?.() ?? [])
-          .map((bootstrap) => bootstrap(this.pluginManager)),
+          .flatMap((plugin) => plugin.getExtraApplicationSetups?.() ?? [])
+          .map((setup) => setup(applicationStore)),
       );
 
-      await this.loadApplication();
+      // load application
+      await this.loadApplication(applicationStore);
 
       this.logger.info(
         LogEvent.create(APPLICATION_EVENT.APPLICATION_LOAD__SUCCESS),
@@ -324,3 +336,20 @@ export abstract class LegendApplication {
     }
   }
 }
+
+export const LEGEND_APPLICATION_ROOT_ELEMENT_TAG = 'legend-application-root';
+
+// NOTE: we use a special tag to mount the application to avoid styling conflicts
+export const getApplicationRootElement = (): Element => {
+  let rootEl = document.getElementsByTagName(
+    LEGEND_APPLICATION_ROOT_ELEMENT_TAG,
+  ).length
+    ? document.getElementsByTagName(LEGEND_APPLICATION_ROOT_ELEMENT_TAG)[0]
+    : undefined;
+  if (!rootEl) {
+    rootEl = document.createElement(LEGEND_APPLICATION_ROOT_ELEMENT_TAG);
+    document.body.appendChild(rootEl);
+  }
+  rootEl.setAttribute('style', 'height: 100%; width: 100%; display: block');
+  return rootEl;
+};

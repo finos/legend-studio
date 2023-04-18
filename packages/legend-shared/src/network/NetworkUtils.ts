@@ -567,7 +567,7 @@ export const stringifyQueryParams = (params: PlainObject): string => {
   return queryString.stringify(data);
 };
 
-export const addQueryParamsStringToUrl = (
+export const addQueryParametersToUrl = (
   url: string,
   val: string | undefined,
 ): string => (val ? `${url}?${val}` : url);

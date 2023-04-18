@@ -59,14 +59,13 @@ import {
   ContentType,
   HttpHeader,
   guaranteeNonNullable,
-  integrationTest,
-  createSpy,
 } from '@finos/legend-shared';
+import { integrationTest, createSpy } from '@finos/legend-shared/test';
 import {
   buildExecutionParameterValues,
   QUERY_BUILDER_TEST_ID,
-  TEST__setUpQueryBuilder,
 } from '@finos/legend-query-builder';
+import { TEST__setUpQueryBuilder } from '@finos/legend-query-builder/test';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {

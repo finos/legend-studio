@@ -28,15 +28,15 @@ import {
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
-import { createMock, integrationTest } from '@finos/legend-shared';
+import { createMock, integrationTest } from '@finos/legend-shared/test';
 import {
   create_RawLambda,
   PrimitiveType,
   PRIMITIVE_TYPE,
   stub_RawLambda,
 } from '@finos/legend-graph';
-import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
-import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
+import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
 import {
   MockedMonacoEditorInstance,

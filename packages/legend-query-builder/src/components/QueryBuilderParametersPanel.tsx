@@ -39,20 +39,20 @@ import {
   Multiplicity,
   getMultiplicityPrettyDescription,
 } from '@finos/legend-graph';
-import {
-  type PackageableElementOption,
-  buildElementOption,
-  getPackageableElementOptionFormatter,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { DEFAULT_VARIABLE_NAME } from '../stores/QueryBuilderConfig.js';
 import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { LambdaParameterState } from '../stores/shared/LambdaParameterState.js';
 import { LambdaParameterValuesEditor } from './shared/LambdaParameterValuesEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
-import { QUERY_BUILDER_TEST_ID } from '../application/QueryBuilderTesting.js';
-import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../application/QueryBuilderDocumentation.js';
+import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
+import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
+import {
+  buildElementOption,
+  getPackageableElementOptionFormatter,
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
 
 type MultiplicityOption = { label: string; value: Multiplicity };
 
@@ -182,7 +182,6 @@ const VariableExpressionEditor = observer(
                   darkMode:
                     !applicationStore.layoutService
                       .TEMPORARY__isLightColorThemeEnabled,
-                  graph: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </div>

@@ -17,12 +17,13 @@
 import { test, expect, beforeEach } from '@jest/globals';
 import { type RenderResult, getByText } from '@testing-library/react';
 import TEST_DATA__m2mGraphEntities from '../../../../stores/editor/__tests__/TEST_DATA__M2MGraphEntities.json';
-import { integrationTest, guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__openAndAssertPathWithElement,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../../../EditorComponentTestUtils.js';
+} from '../../__test-utils__/EditorComponentTestUtils.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 
 const packageRootChildren = ['ui'];

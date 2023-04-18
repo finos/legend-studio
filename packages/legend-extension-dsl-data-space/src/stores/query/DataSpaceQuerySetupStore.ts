@@ -41,8 +41,8 @@ import {
   type GeneratorFn,
 } from '@finos/legend-shared';
 import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
-import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graphManager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
-import { generateDataSpaceQueryCreatorRoute } from '../../application/query/DSL_DataSpace_LegendQueryNavigation.js';
+import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
+import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { renderDataSpaceQuerySetupSetupPanelContent } from '../../components/query/DataSpaceQuerySetup.js';
 import { DataSpaceAdvancedSearchState } from './DataSpaceAdvancedSearchState.js';
 

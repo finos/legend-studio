@@ -28,7 +28,6 @@ import {
   Binding,
   SUPPORTED_FUNCTIONS,
   Class,
-  PURE_SERIALIZE_CONFIG_CLASS,
   KeyExpressionInstanceValue,
   CollectionInstanceValue,
   getClassProperty,
@@ -42,7 +41,10 @@ import {
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
+import {
+  QUERY_BUILDER_PURE_PATH,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+} from '../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderState } from '../../QueryBuilderState.js';
 import { QueryBuilderValueSpecificationProcessor } from '../../QueryBuilderStateBuilder.js';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../QueryBuilderFetchStructureImplementationState.js';
@@ -140,7 +142,7 @@ const processKeyExpressionValueOnSerializationConfig = (
   const _classType = guaranteeType(
     _classProperty.genericType.value.rawType,
     PrimitiveType,
-    `Only primitive types suppported for config. Property ${keyValue} for class ${PURE_SERIALIZE_CONFIG_CLASS} is of type ${_classProperty.genericType.value.rawType.path}`,
+    `Only primitive types suppported for config. Property ${keyValue} for class '${QUERY_BUILDER_PURE_PATH.SERIALIZE_CONFIG}' is of type '${_classProperty.genericType.value.rawType.path}'`,
   );
   const expressionValue = guaranteeNonNullable(
     guaranteeType(
@@ -255,8 +257,8 @@ export const processGraphFetchSerializeExpression = (
         `Can't process serialize() expression: serialization config expects first param to be a class`,
       );
       assertTrue(
-        configClass.path === PURE_SERIALIZE_CONFIG_CLASS,
-        `Can't process serialize() expression: serialiaztion config class expected to be ${PURE_SERIALIZE_CONFIG_CLASS}, got : ${configClass.path}`,
+        configClass.path === QUERY_BUILDER_PURE_PATH.SERIALIZE_CONFIG,
+        `Can't process serialize() expression: serialiaztion config class expected to be '${QUERY_BUILDER_PURE_PATH.SERIALIZE_CONFIG}', got : ${configClass.path}`,
       );
       // 2nd param: empty string
       // TODO: Investigate why `new` function as the second input as empty string

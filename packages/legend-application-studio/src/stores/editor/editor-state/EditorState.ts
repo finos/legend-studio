@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { TabState } from '@finos/legend-application/components';
+import { TabState } from '@finos/legend-lego/application';
 import type { EditorStore } from '../EditorStore.js';
 
 export abstract class EditorState extends TabState {

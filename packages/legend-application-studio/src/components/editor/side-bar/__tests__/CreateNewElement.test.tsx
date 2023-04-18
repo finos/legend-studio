@@ -23,14 +23,15 @@ import {
   getByPlaceholderText,
   act,
 } from '@testing-library/react';
-import { integrationTest, toTitleCase } from '@finos/legend-shared';
+import { toTitleCase } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../../../EditorComponentTestUtils.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
+} from '../../__test-utils__/EditorComponentTestUtils.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../../stores/editor/shared/ModelClassifierUtils.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../../stores/editor/utils/ModelClassifierUtils.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 
 const addRootPackage = async (

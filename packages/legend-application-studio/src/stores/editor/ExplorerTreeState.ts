@@ -31,14 +31,14 @@ import {
   openNodeById,
   openNodes,
   populatePackageTreeNodeChildren,
-} from './shared/PackageTreeUtils.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
-import type { PackageTreeNodeData } from './shared/TreeUtils.js';
+} from './utils/PackageTreeUtils.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
+import type { PackageTreeNodeData } from './utils/TreeUtils.js';
 import type { TreeData } from '@finos/legend-art';
 import {
   type FileSystemTreeNodeData,
   getFileSystemTreeData,
-} from './shared/FileSystemTreeUtils.js';
+} from './utils/FileSystemTreeUtils.js';
 import {
   type PackageableElement,
   ROOT_PACKAGE_NAME,
@@ -517,10 +517,7 @@ export class ExplorerTreeState {
       );
       this.setSelectedNode(openingNode);
       opened = true;
-    } else if (
-      isDependencyElement(element, this.editorStore.graphManagerState.graph) &&
-      this.dependencyTreeData
-    ) {
+    } else if (isDependencyElement(element) && this.dependencyTreeData) {
       const openingNode = openNode(
         this.editorStore,
         element,

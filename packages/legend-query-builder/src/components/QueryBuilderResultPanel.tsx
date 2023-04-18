@@ -45,8 +45,7 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
-  CODE_EDITOR_LANGUAGE,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -82,12 +81,15 @@ import {
   instanceValue_setValues,
 } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { PARAMETER_SUBMIT_ACTION } from '../stores/shared/LambdaParameterState.js';
-import { QUERY_BUILDER_TEST_ID } from '../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import {
   DataGrid,
   type DataGridCellMouseOverEvent,
 } from '@finos/legend-lego/data-grid';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 import { ExecutionPlanViewer } from './execution-plan/ExecutionPlanViewer.js';
 
 const QueryBuilderGridResultContextMenu = observer(
@@ -428,7 +430,7 @@ const QueryBuilderResultValues = observer(
         inputValue={JSON.stringify(
           extractExecutionResultValues(executionResult),
           null,
-          TAB_SIZE,
+          DEFAULT_TAB_SIZE,
         )}
         isReadOnly={true}
       />

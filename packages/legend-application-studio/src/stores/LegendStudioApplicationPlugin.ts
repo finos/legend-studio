@@ -27,15 +27,14 @@ import type {
 import type { Class, PackageableElement, Testable } from '@finos/legend-graph';
 import {
   type DocumentationEntry,
-  type PureGrammarTextSuggestion,
   LegendApplicationPlugin,
-  type ApplicationPageEntry,
 } from '@finos/legend-application';
 import type { TestableMetadata } from './editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import type {
   ExtensionModelImportRendererState,
   ModelImporterState,
 } from './editor/editor-state/ModelImporterState.js';
+import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 export type ExplorerContextMenuItemRendererConfiguration = {
   key: string;
@@ -73,10 +72,6 @@ export type ModelImporterExtensionConfiguration = {
   ) => Promise<void>;
 };
 
-export type LegendStudioApplicationPageEntry = ApplicationPageEntry & {
-  bypassSDLC?: boolean | undefined;
-};
-
 export type TestableMetadataGetter = (
   testable: Testable,
   editorStore: EditorStore,
@@ -92,11 +87,6 @@ export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlu
   install(pluginManager: LegendStudioPluginManager): void {
     pluginManager.registerApplicationPlugin(this);
   }
-
-  /**
-   * Get the list of application page entries to be rendered
-   */
-  override getExtraApplicationPageEntries?(): LegendStudioApplicationPageEntry[];
 
   /**
    * Get the list of items to be rendered in the explorer context menu.
@@ -130,6 +120,10 @@ export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlu
    */
   getExtraTestableMetadata?(): TestableMetadataGetter[];
 }
+
+export type PureGrammarElementLabeler = (
+  metamodel: PackageableElement,
+) => string | undefined;
 
 export type ElementClassifier = (
   metamodel: PackageableElement,
@@ -208,6 +202,21 @@ export type PureGrammarParserElementSnippetSuggestionsGetter = (
  */
 export interface DSL_LegendStudioApplicationPlugin_Extension
   extends LegendStudioApplicationPlugin {
+  /**
+   * Get the list of supported Pure grammar parsers.
+   */
+  getExtraPureGrammarParserNames?(): string[];
+
+  /**
+   * Get the list of supported Pure grammar keywords.
+   */
+  getExtraPureGrammarKeywords?(): string[];
+
+  /**
+   * Get the list of Pure grammar element labelers.
+   */
+  getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
+
   /**
    * Get the list of the supported packageable element type specifiers.
    */

@@ -34,14 +34,14 @@ import {
   buildFilterConditionState,
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
   buildNotExpression,
   getCollectionValueSpecificationType,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
 
 export class QueryBuilderFilterOperator_In
   extends QueryBuilderFilterOperator
@@ -155,7 +155,7 @@ export class QueryBuilderFilterOperator_In
   }
 
   get hashCode(): string {
-    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_IN]);
+    return hashArray([QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_OPERATOR_IN]);
   }
 }
 
@@ -183,6 +183,8 @@ export class QueryBuilderFilterOperator_NotIn extends QueryBuilderFilterOperator
   }
 
   override get hashCode(): string {
-    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_NOT_IN]);
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_OPERATOR_NOT_IN,
+    ]);
   }
 }

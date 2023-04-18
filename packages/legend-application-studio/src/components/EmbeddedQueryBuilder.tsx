@@ -34,7 +34,7 @@ import {
   QueryBuilder,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../__lib__/LegendStudioApplicationNavigationContext.js';
 import { useEditorStore } from './editor/EditorStoreProvider.js';
 import type { EmbeddedQueryBuilderState } from '../stores/editor/EmbeddedQueryBuilderState.js';
 

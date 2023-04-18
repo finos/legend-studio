@@ -32,10 +32,10 @@ import {
   ActionState,
   assertTrue,
 } from '@finos/legend-shared';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 import type { EditorStore } from '../EditorStore.js';
 import type { Entity } from '@finos/legend-storage';
-import { TAB_SIZE } from '@finos/legend-application';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import type {
   ModelImporterExtensionConfiguration,
   LegendStudioApplicationPlugin,
@@ -49,7 +49,7 @@ import {
 import {
   externalFormat_schemaSet_setFormat,
   externalFormat_schemaSet_setSchemas,
-} from '../shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+} from '../../graph-modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import { InnerSchemaSetEditorState } from './element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
 
 export enum MODEL_IMPORT_NATIVE_INPUT_TYPE {
@@ -195,7 +195,11 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
             )
           : this.editorStore.changeDetectionState
               .workspaceLocalLatestRevisionState.entities;
-        this.modelText = JSON.stringify(graphEntities, undefined, TAB_SIZE);
+        this.modelText = JSON.stringify(
+          graphEntities,
+          undefined,
+          DEFAULT_TAB_SIZE,
+        );
         break;
       }
       case MODEL_IMPORT_NATIVE_INPUT_TYPE.PURE_GRAMMAR: {
@@ -224,7 +228,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
         } as Entity,
       ],
       undefined,
-      TAB_SIZE,
+      DEFAULT_TAB_SIZE,
     )}`;
   }
 
@@ -360,7 +364,7 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
     this.schemaSet.format = description.name;
 
     observe_SchemaSet(this.schemaSet);
-    const emptyGraph = this.editorStore.graphManagerState.createEmptyGraph();
+    const emptyGraph = this.editorStore.graphManagerState.createNewGraph();
     emptyGraph.addElement(this.schemaSet, DEFAULT_SCHEMA_PACKAGE);
     this.isolatedSchemaGraph = emptyGraph;
     this.schemaSetEditorState = new InnerSchemaSetEditorState(

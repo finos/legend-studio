@@ -16,7 +16,7 @@
 
 import type { EditorStore } from '../EditorStore.js';
 import { observable, action, makeObservable, flow } from 'mobx';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 import {
   type FileSystem_File,
   type FileResult,
@@ -24,7 +24,7 @@ import {
   GENERATION_FILE_ROOT_NAME,
   getFileSystemTreeData,
   buildFileSystemDirectory,
-} from '../shared/FileSystemTreeUtils.js';
+} from '../utils/FileSystemTreeUtils.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -50,7 +50,7 @@ import {
   configurationProperty_addConfigurationProperty,
   fileGeneration_addScopeElement,
   fileGeneration_deleteScopeElement,
-} from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
+} from '../../graph-modifier/DSL_Generation_GraphModifierHelper.js';
 import { FileSystemState } from './FileSystemState.js';
 
 export abstract class GeneratedFileStructureState {

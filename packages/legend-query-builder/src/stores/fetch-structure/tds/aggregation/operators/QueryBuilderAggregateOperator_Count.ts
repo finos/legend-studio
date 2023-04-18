@@ -35,9 +35,9 @@ import {
   buildAggregateColumnState,
   buildAggregateExpression,
 } from './QueryBuilderAggregateOperatorValueSpecificationBuilder.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
 
 export class QueryBuilderAggregateOperator_Count
   extends QueryBuilderAggregateOperator
@@ -108,6 +108,8 @@ export class QueryBuilderAggregateOperator_Count
   }
 
   get hashCode(): string {
-    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.AGGREGATE_OPERATOR_COUNT]);
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.AGGREGATE_OPERATOR_COUNT,
+    ]);
   }
 }

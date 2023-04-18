@@ -15,11 +15,8 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  ACTIVITY_MODE,
-  AUX_PANEL_MODE,
-} from '../../stores/editor/EditorConfig.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
+import { ACTIVITY_MODE, PANEL_MODE } from '../../stores/editor/EditorConfig.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
   clsx,
   DropdownMenu,
@@ -44,15 +41,15 @@ import { useEditorStore } from './EditorStoreProvider.js';
 import { forwardRef, useState } from 'react';
 import { VIRTUAL_ASSISTANT_TAB } from '@finos/legend-application';
 import { LegendStudioAppInfo } from '../LegendStudioAppInfo.js';
-import { generateSetupRoute } from '../../application/LegendStudioNavigation.js';
-import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
+import { generateSetupRoute } from '../../__lib__/LegendStudioNavigation.js';
+import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
 
 const SettingsMenu = observer(
   forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {
     const editorStore = useEditorStore();
     const showDeveloperTool = (): void => {
-      editorStore.auxPanelDisplayState.open();
-      editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.DEV_TOOL);
+      editorStore.panelGroupDisplayState.open();
+      editorStore.setActivePanelMode(PANEL_MODE.DEV_TOOL);
     };
 
     return (

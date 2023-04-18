@@ -23,8 +23,10 @@ import {
   ExistingQueryEditorStore,
   ServiceQueryCreatorStore,
 } from '../stores/QueryEditorStore.js';
-import { useDepotServerClient } from '@finos/legend-server-depot';
-import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import {
+  useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
+} from './LegendQueryFrameworkProvider.js';
 import { parseGAVCoordinates } from '@finos/legend-storage';
 
 export const QueryEditorStoreContext = createContext<
@@ -36,12 +38,12 @@ export const ExistingQueryEditorStoreProvider: React.FC<{
   queryId: string;
 }> = ({ children, queryId }) => {
   const applicationStore = useLegendQueryApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new ExistingQueryEditorStore(
         applicationStore,
-        depotServerClient,
+        baseStore.depotServerClient,
         queryId,
       ),
   );
@@ -60,12 +62,12 @@ export const MappingQueryCreatorStoreProvider: React.FC<{
 }> = ({ children, gav, mappingPath, runtimePath }) => {
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new MappingQueryCreatorStore(
         applicationStore,
-        depotServerClient,
+        baseStore.depotServerClient,
         groupId,
         artifactId,
         versionId,
@@ -88,12 +90,12 @@ export const ServiceQueryCreatorStoreProvider: React.FC<{
 }> = ({ children, gav, servicePath, executionKey }) => {
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new ServiceQueryCreatorStore(
         applicationStore,
-        depotServerClient,
+        baseStore.depotServerClient,
         groupId,
         artifactId,
         versionId,

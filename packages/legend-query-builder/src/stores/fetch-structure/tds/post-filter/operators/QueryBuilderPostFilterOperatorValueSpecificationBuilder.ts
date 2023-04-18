@@ -24,7 +24,6 @@ import {
   SimpleFunctionExpression,
   VariableExpression,
   getAllClassDerivedProperties,
-  CORE_PURE_PATH,
   PropertyExplicitReference,
   Multiplicity,
   PrimitiveType,
@@ -36,6 +35,7 @@ import {
   type TDS_COLUMN_GETTER,
   getTDSColumnDerivedProperyFromType,
 } from '../QueryBuilderPostFilterState.js';
+import { QUERY_BUILDER_PURE_PATH } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 
 export const buildPostFilterConditionExpression = (
   filterConditionState: PostFilterConditionState,
@@ -65,9 +65,9 @@ export const buildPostFilterConditionExpression = (
   }
   tdsPropertyExpression.func = PropertyExplicitReference.create(
     guaranteeNonNullable(
-      getAllClassDerivedProperties(graph.getClass(CORE_PURE_PATH.TDS_ROW)).find(
-        (p) => p.name === tdsDerivedPropertyName,
-      ),
+      getAllClassDerivedProperties(
+        graph.getClass(QUERY_BUILDER_PURE_PATH.TDS_ROW),
+      ).find((p) => p.name === tdsDerivedPropertyName),
     ),
   );
   const variableName = new VariableExpression(

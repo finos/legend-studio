@@ -27,7 +27,7 @@ import {
   filterByType,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState.js';
-import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtils.js';
+import type { RuntimeExplorerTreeNodeData } from '../../utils/TreeUtils.js';
 import type { TreeData } from '@finos/legend-art';
 import { ConnectionEditorState } from './connection/ConnectionEditorState.js';
 import { getMappingElementSource } from './mapping/MappingEditorState.js';
@@ -67,14 +67,14 @@ import {
   generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
-import { packageableElementReference_setValue } from '../../shared/modifier/DomainGraphModifierHelper.js';
+import { packageableElementReference_setValue } from '../../../graph-modifier/DomainGraphModifierHelper.js';
 import {
   runtime_addIdentifiedConnection,
   runtime_addMapping,
   runtime_addUniqueStoreConnectionsForStore,
   runtime_deleteIdentifiedConnection,
   runtime_deleteMapping,
-} from '../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 
 export const getClassMappingStore = (
   setImplementation: SetImplementation,

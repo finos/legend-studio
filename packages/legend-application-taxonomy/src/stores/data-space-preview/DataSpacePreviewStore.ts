@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-import { TAB_SIZE, type NavigationZone } from '@finos/legend-application';
+import {
+  DEFAULT_TAB_SIZE,
+  type NavigationZone,
+} from '@finos/legend-application';
 import {
   type DataSpaceAnalysisResult,
-  DataSpaceViewerState,
   DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
-} from '@finos/legend-extension-dsl-data-space';
-import type { ClassView } from '@finos/legend-extension-dsl-diagram';
+} from '@finos/legend-extension-dsl-data-space/graph';
+import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
   BasicGraphManagerState,
   GraphDataWithOrigin,
@@ -42,11 +44,12 @@ import {
 import { makeObservable, flow, observable, flowResult } from 'mobx';
 import type { LegendTaxonomyPluginManager } from '../../application/LegendTaxonomyPluginManager.js';
 import type { LegendTaxonomyApplicationStore } from '../LegendTaxonomyBaseStore.js';
-import { EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl } from '../../application/LegendTaxonomyNavigation.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl } from '../../__lib__/LegendTaxonomyNavigation.js';
 import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from '../LegendTaxonomyDataSpaceViewerHelper.js';
+import { DataSpaceViewerState } from '@finos/legend-extension-dsl-data-space/application';
 
 export class DataSpacePreviewStore {
   readonly applicationStore: LegendTaxonomyApplicationStore;
@@ -77,9 +80,6 @@ export class DataSpacePreviewStore {
   }
 
   *initialize(gav: string, dataSpacePath: string): GeneratorFn<void> {
-    // set up the application
-    this.applicationStore.assistantService.setIsHidden(true);
-
     this.initState.inProgress();
     this.initState.setMessage(`Initializing...`);
 
@@ -90,7 +90,7 @@ export class DataSpacePreviewStore {
       yield this.graphManagerState.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
-          tabSize: TAB_SIZE,
+          tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,

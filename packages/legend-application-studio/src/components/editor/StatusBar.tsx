@@ -29,21 +29,21 @@ import {
   ErrorIcon,
   WarningIcon,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
   ACTIVITY_MODE,
-  AUX_PANEL_MODE,
+  PANEL_MODE,
   GRAPH_EDITOR_MODE,
 } from '../../stores/editor/EditorConfig.js';
 import {
   generateSetupRoute,
   type WorkspaceEditorPathParams,
-} from '../../application/LegendStudioNavigation.js';
+} from '../../__lib__/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
-import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
-import { useParams } from '@finos/legend-application';
+import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
+import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
@@ -130,11 +130,11 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       : 'all conflicts resolved';
 
   // Other actions
-  const toggleAuxPanel = (): void => editorStore.auxPanelDisplayState.toggle();
+  const togglePanel = (): void => editorStore.panelGroupDisplayState.toggle();
 
   const showCompilationWarnings = (): void => {
-    editorStore.auxPanelDisplayState.open();
-    editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.PROBLEMS);
+    editorStore.panelGroupDisplayState.open();
+    editorStore.setActivePanelMode(PANEL_MODE.PROBLEMS);
   };
 
   const handleTextModeClick = applicationStore.guardUnhandledError(() =>
@@ -366,12 +366,12 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             'editor__status-bar__action editor__status-bar__action__toggler',
             {
               'editor__status-bar__action__toggler--active':
-                editorStore.auxPanelDisplayState.isOpen,
+                editorStore.panelGroupDisplayState.isOpen,
             },
           )}
-          onClick={toggleAuxPanel}
+          onClick={togglePanel}
           tabIndex={-1}
-          title="Toggle auxiliary panel (Ctrl + `)"
+          title="Toggle panel (Ctrl + `)"
         >
           <TerminalIcon />
         </button>

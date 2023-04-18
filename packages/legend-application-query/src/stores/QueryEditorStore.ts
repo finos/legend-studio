@@ -58,8 +58,8 @@ import {
   generateExistingQueryEditorRoute,
   generateMappingQueryCreatorRoute,
   generateServiceQueryCreatorRoute,
-} from '../application/LegendQueryNavigation.js';
-import { LEGEND_QUERY_APP_EVENT } from '../application/LegendQueryEvent.js';
+} from '../__lib__/LegendQueryNavigation.js';
+import { LEGEND_QUERY_APP_EVENT } from '../__lib__/LegendQueryEvent.js';
 import {
   type Entity,
   type ProjectGAVCoordinates,
@@ -72,13 +72,12 @@ import {
   resolveVersion,
 } from '@finos/legend-server-depot';
 import {
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-  LegendApplicationTelemetryHelper,
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import { LegendQueryEventHelper } from '../application/LegendQueryEventHelper.js';
+import { LegendQueryEventHelper } from '../__lib__/LegendQueryEventHelper.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import {
   type QueryBuilderState,
@@ -87,7 +86,7 @@ import {
   MappingQueryBuilderState,
   ServiceQueryBuilderState,
 } from '@finos/legend-query-builder';
-import { LegendQueryTelemetryHelper } from '../application/LegendQueryTelemetryHelper.js';
+import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
 export const createViewProjectHandler =
   (applicationStore: LegendQueryApplicationStore) =>
@@ -430,11 +429,14 @@ export abstract class QueryEditorStore {
     try {
       this.initState.inProgress();
 
+      // TODO: when we genericize the way to initialize an application page
+      this.applicationStore.assistantService.setIsHidden(false);
+
       // initialize the graph manager
       yield this.graphManagerState.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
-          tabSize: TAB_SIZE,
+          tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
@@ -494,7 +496,7 @@ export abstract class QueryEditorStore {
     // fetch and build dependencies
     stopWatch.record();
     const dependencyManager =
-      this.graphManagerState.createEmptyDependencyManager();
+      this.graphManagerState.graphManager.createDependencyManager();
     this.graphManagerState.graph.dependencyManager = dependencyManager;
     this.graphManagerState.dependenciesBuildState.setMessage(
       `Fetching dependencies...`,
@@ -545,7 +547,7 @@ export abstract class QueryEditorStore {
         this.graphManagerState.graph.dependencyManager.numberOfDependencies,
       graph: graph_buildReport,
     };
-    LegendApplicationTelemetryHelper.logEvent_GraphInitializationSucceeded(
+    LegendQueryTelemetryHelper.logEvent_GraphInitializationSucceeded(
       this.applicationStore.telemetryService,
       graphBuilderReportData,
     );

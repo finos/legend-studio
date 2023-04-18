@@ -16,7 +16,8 @@
 
 import { describe, test, expect } from '@jest/globals';
 import TEST_DATA__NestedSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_NestedSubType.json';
-import { integrationTest, type PlainObject } from '@finos/legend-shared';
+import { type PlainObject } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import {
   create_RawLambda,
   extractElementNameFromPath,
@@ -35,10 +36,10 @@ import {
 } from './TEST_DATA__QueryBuilder_Query_HighlightProperties.js';
 import { waitFor, getByText, fireEvent } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
-import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { isExplorerTreeNodeAlreadyUsed } from '../explorer/QueryBuilderExplorerPanel.js';
 import type { Entity } from '@finos/legend-storage';
-import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
+import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 
 type TestCase = [
   string,

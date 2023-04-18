@@ -26,21 +26,21 @@ import {
 } from './TEST_DATA__QueryBuilder_Failure.js';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
-import { integrationTest } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
+import { create_RawLambda } from '@finos/legend-graph';
 import {
-  create_RawLambda,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '@finos/legend-graph';
-import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
-import {
-  TEST__getGenericApplicationConfig,
-  TEST__getTestApplicationStore,
-  TEST__LegendApplicationPluginManager,
-} from '@finos/legend-application';
+} from '@finos/legend-graph/test';
+import { QueryBuilder_GraphManagerPreset } from '../../graph-manager/QueryBuilder_GraphManagerPreset.js';
+import { ApplicationStore } from '@finos/legend-application';
 import { INTERNAL__BasicQueryBuilderState } from '../QueryBuilderState.js';
 import { act } from 'react-dom/test-utils';
+import {
+  TEST__LegendApplicationPluginManager,
+  TEST__getGenericApplicationConfig,
+} from '../__test-utils__/QueryBuilderStateTestUtils.js';
 
 type TestCase = [
   string,
@@ -122,7 +122,7 @@ describe(
         pluginManager
           .usePresets([new QueryBuilder_GraphManagerPreset()])
           .install();
-        const applicationStore = TEST__getTestApplicationStore(
+        const applicationStore = new ApplicationStore(
           TEST__getGenericApplicationConfig(),
           pluginManager,
         );

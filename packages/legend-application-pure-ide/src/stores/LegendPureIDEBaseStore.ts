@@ -30,7 +30,5 @@ export class LegendPureIDEBaseStore {
   constructor(applicationStore: LegendPureIDEApplicationStore) {
     this.applicationStore = applicationStore;
     this.pluginManager = applicationStore.pluginManager;
-
-    this.applicationStore.assistantService.hideAssistant();
   }
 }

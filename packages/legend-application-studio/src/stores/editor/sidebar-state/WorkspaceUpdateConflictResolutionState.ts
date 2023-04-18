@@ -16,7 +16,7 @@
 
 import { action, flowResult, makeObservable, observable, flow } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import {
   type GeneratorFn,

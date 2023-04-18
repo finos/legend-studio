@@ -15,19 +15,20 @@
  */
 
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { useApplicationStore, useParams } from '@finos/legend-application';
-import { useDepotServerClient } from '@finos/legend-server-depot';
+import { useApplicationStore } from '@finos/legend-application';
+import { useParams } from '@finos/legend-application/browser';
 import {
   QueryEditor,
   QueryEditorStoreContext,
   useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
 } from '@finos/legend-application-query';
 import { DataSpaceQueryCreatorStore } from '../../stores/query/DataSpaceQueryCreatorStore.js';
 import {
   type DataSpaceQueryCreatorPathParams,
   DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN,
   DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN,
-} from '../../application/query/DSL_DataSpace_LegendQueryNavigation.js';
+} from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { parseGAVCoordinates } from '@finos/legend-storage';
 
 const DataSpaceQueryCreatorStoreProvider: React.FC<{
@@ -47,12 +48,12 @@ const DataSpaceQueryCreatorStoreProvider: React.FC<{
 }) => {
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new DataSpaceQueryCreatorStore(
         applicationStore,
-        depotServerClient,
+        baseStore.depotServerClient,
         groupId,
         artifactId,
         versionId,

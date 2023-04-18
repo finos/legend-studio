@@ -39,13 +39,13 @@ import type {
 import {
   EntityChangeConflictEditor,
   EntityChangeConflictSideBarItem,
-} from '../edit-panel/diff-editor/EntityChangeConflictEditor.js';
+} from '../editor-group/diff-editor/EntityChangeConflictEditor.js';
 import { EntityChangeConflictEditorState } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import type { EntityDiffViewerState } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import {
   EntityDiffSideBarItem,
   EntityDiffView,
-} from '../edit-panel/diff-editor/EntityDiffView.js';
+} from '../editor-group/diff-editor/EntityDiffView.js';
 import { EntityDiffViewState } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { entityDiffSorter } from '../../../stores/editor/EditorSDLCState.js';
 import { flowResult } from 'mobx';
@@ -210,7 +210,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                         )}
                         onMouseUp={closeTabOnMiddleClick(mergedState)}
                       >
-                        <div className="edit-panel__header__tab__content">
+                        <div className="editor-group__header__tab__content">
                           <button
                             className="workspace-sync-conflict-resolver__header__tab__label"
                             tabIndex={-1}
