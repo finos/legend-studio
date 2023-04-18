@@ -87,9 +87,9 @@ import {
   QueryBuilderNavigationBlocker,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
-import { LegendQueryTelemetryHelper } from '../application/LegendQueryTelemetryHelper.js';
 import type { HelpMenuEntry } from '../stores/LegendQueryApplicationPlugin.js';
 import { QUERY_DOCUMENTATION_KEY } from '../application/LegendQueryDocumentation.js';
+import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
 const QuerySaveAsDialogContent = observer(
   (props: { saveAsState: QuerySaveAsState }) => {

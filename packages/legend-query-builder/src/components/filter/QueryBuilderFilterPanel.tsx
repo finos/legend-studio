@@ -87,7 +87,7 @@ import {
   type QueryBuilderVariableDragSource,
   QUERY_BUILDER_VARIABLE_DND_TYPE,
 } from '../shared/BasicValueSpecificationEditor.js';
-import { QueryBuilderTelemetryHelper } from '../../application/QueryBuilderTelemetryHelper.js';
+import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 
 const QueryBuilderFilterGroupConditionEditor = observer(
   (props: {
