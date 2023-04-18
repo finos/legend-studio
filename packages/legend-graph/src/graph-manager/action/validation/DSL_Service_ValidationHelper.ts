@@ -34,6 +34,8 @@ export const validate_ServicePattern = (
     addUniqueEntry(errors, `Pattern must not be '/'`);
   } else if (!pattern.startsWith(URL_SEPARATOR)) {
     addUniqueEntry(errors, `Pattern must start with a '/'`);
+  } else if (pattern.includes(' ')) {
+    addUniqueEntry(errors, `Pattern must not include whitespace`);
   }
   // TODO: potentially do more validation
   return errors.length ? createValidationError(errors) : undefined;

@@ -26,12 +26,12 @@ import {
   PencilIcon,
   LockIcon,
   TimesIcon,
-  SaveIcon,
   InfoCircleIcon,
   ErrorIcon,
   PanelFormBooleanField,
   PanelForm,
   CustomSelectorInput,
+  PanelFormValidatedTextField,
 } from '@finos/legend-art';
 import { debounce, prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor.js';
@@ -68,17 +68,19 @@ const ServiceGeneralEditor = observer(() => {
   // Pattern
   const patternRef = useRef<HTMLInputElement>(null);
   const [pattern, setPattern] = useState(service.pattern);
-  const changePattern: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-    setPattern(event.target.value);
-  const updatePattern = (): void => {
+
+  const updatePattern = (newPattern: string): void => {
     if (!isReadOnly) {
-      service_setPattern(service, pattern);
+      service_setPattern(service, newPattern);
     }
   };
-  const patternValidationResult = validate_ServicePattern(pattern);
-  const allowUpdatingPattern =
-    !patternValidationResult ||
-    (!patternValidationResult.messages.length && pattern !== service.pattern);
+
+  const getValidationMessage = (inputPattern: string): string | undefined => {
+    const patternValidationResult = validate_ServicePattern(inputPattern);
+    return patternValidationResult
+      ? patternValidationResult.messages[0]
+      : undefined;
+  };
   const removePatternParameter =
     (val: string): (() => void) =>
     (): void => {
@@ -197,49 +199,25 @@ const ServiceGeneralEditor = observer(() => {
   return (
     <div className="panel__content__lists service-editor__general">
       <PanelForm>
-        <div className="panel__content__form__section service-editor__pattern">
-          <div className="panel__content__form__section__header__label">
-            URL Pattern
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            Specifies the URL pattern of the service (e.g. /myService/
-            <span className="service-editor__pattern__example__param">{`{param}`}</span>
-            )
-          </div>
-          <div className="input-group service-editor__pattern__edit">
-            <div className="input-group service-editor__pattern__input__group">
-              <input
-                ref={patternRef}
-                className="input-group__input panel__content__form__section__input service-editor__pattern__input"
-                spellCheck={false}
-                disabled={isReadOnly}
-                value={pattern}
-                onChange={changePattern}
-              />
-              {patternValidationResult?.messages.length && (
-                <div className="input-group__error-message">
-                  {patternValidationResult.messages.map((error) => (
-                    <div
-                      key={error}
-                      className="input-group__error-message__item"
-                    >
-                      {error}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <button
-              className="service-editor__pattern__input__save-btn btn--dark"
-              tabIndex={-1}
-              disabled={isReadOnly || !allowUpdatingPattern}
-              onClick={updatePattern}
-              title="Save change"
-            >
-              <SaveIcon />
-            </button>
-          </div>
-        </div>
+        <PanelFormValidatedTextField
+          ref={patternRef}
+          name="URL Pattern"
+          isReadOnly={isReadOnly}
+          className="service-editor__pattern__input"
+          errorMessageClassname="service-editor__pattern__input"
+          prompt={
+            <>
+              Specifies the URL pattern of the service (e.g. /myService/
+              <span className="service-editor__pattern__example__param">{`{param}`}</span>
+              )
+            </>
+          }
+          update={(value: string | undefined): void => {
+            updatePattern(value ?? '');
+          }}
+          validateInput={getValidationMessage}
+          value={pattern}
+        />
       </PanelForm>
       <PanelForm>
         <div className="panel__content__form__section service-editor__parameters">

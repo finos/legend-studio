@@ -124,16 +124,6 @@
       margin-bottom: 2rem;
     }
 
-    &__edit {
-      display: flex;
-    }
-
-    &__input__save-btn {
-      margin-left: 0.5rem;
-      width: 3rem;
-      height: 2.8rem;
-    }
-
     &__example__param {
       color: var(--color-pink-200);
     }
@@ -202,7 +192,7 @@
   &__pattern__input,
   &__documentation__input {
     width: 50rem;
-    max-width: 50rem;
+    max-width: 50rem !important;
   }
 
   &__execution {

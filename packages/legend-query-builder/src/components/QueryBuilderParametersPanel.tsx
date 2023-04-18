@@ -26,9 +26,9 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
-  PanelFormTextField,
   InfoCircleIcon,
   ModalFooterButton,
+  PanelFormValidatedTextField,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -38,6 +38,7 @@ import {
   PrimitiveType,
   Multiplicity,
   getMultiplicityPrettyDescription,
+  isValidIdentifier,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { generateEnumerableNameFromToken } from '@finos/legend-shared';
@@ -48,6 +49,7 @@ import { LambdaParameterValuesEditor } from './shared/LambdaParameterValuesEdito
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
+import { useState } from 'react';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,
@@ -77,21 +79,6 @@ const VariableExpressionEditor = observer(
       !queryParametersState.parameterStates.includes(lambdaParameterState);
     const varState = lambdaParameterState.parameter;
     const multiplity = varState.multiplicity;
-    const validationMessage = !varState.name
-      ? `Parameter name can't be empty`
-      : allVariableNames.filter((e) => e === varState.name).length >
-        (isCreating ? 0 : 1)
-      ? 'Parameter Name Already Exists'
-      : (isCreating &&
-          queryParametersState.parameterStates.find(
-            (p) => p.parameter.name === varState.name,
-          )) ||
-        (!isCreating &&
-          queryParametersState.parameterStates.filter(
-            (p) => p.parameter.name === varState.name,
-          ).length > 1)
-      ? 'Parameter name already exists'
-      : undefined;
 
     // type
     const variableType =
@@ -124,6 +111,34 @@ const VariableExpressionEditor = observer(
       lambdaParameterState.changeMultiplicity(varState, val.value);
     };
 
+    const parameterNameValue = varState.name;
+
+    const [hasFailedValidation, setFailedValidation] = useState<boolean>(false);
+
+    const getValidationMessage = (input: string): string | undefined => {
+      const possibleMessage = !input
+        ? `Parameter name can't be empty`
+        : allVariableNames.filter((e) => e === input).length >
+          (isCreating ? 0 : 1)
+        ? 'Parameter name already exists'
+        : (isCreating &&
+            queryParametersState.parameterStates.find(
+              (p) => p.parameter.name === input,
+            )) ||
+          (!isCreating &&
+            queryParametersState.parameterStates.filter(
+              (p) => p.parameter.name === input,
+            ).length > 1)
+        ? 'Parameter name already exists'
+        : isValidIdentifier(input, true) === false
+        ? 'Parameter name must be text with no spaces and not start with an uppercase letter or number'
+        : undefined;
+
+      setFailedValidation(possibleMessage !== undefined);
+
+      return possibleMessage;
+    };
+
     const close = (): void => {
       queryParametersState.setSelectedParameter(undefined);
     };
@@ -152,14 +167,14 @@ const VariableExpressionEditor = observer(
             title={`${isCreating ? 'Create Parameter' : 'Update Parameter'}`}
           />
           <ModalBody className="query-builder__variables__modal__body">
-            <PanelFormTextField
+            <PanelFormValidatedTextField
               name="Parameter Name"
               prompt="Name of the parameter. Should be descriptive of its purpose."
-              update={(value: string | undefined): void =>
-                variableExpression_setName(varState, value ?? '')
-              }
-              value={varState.name}
-              errorMessage={validationMessage}
+              value={parameterNameValue}
+              validateInput={getValidationMessage}
+              update={(value: string | undefined): void => {
+                variableExpression_setName(varState, value ?? '');
+              }}
               isReadOnly={false}
             />
             <div className="panel__content__form__section">
@@ -214,7 +229,7 @@ const VariableExpressionEditor = observer(
             {isCreating && (
               <ModalFooterButton
                 text="Create"
-                inProgress={Boolean(validationMessage)}
+                inProgress={hasFailedValidation}
                 onClick={onAction}
               />
             )}
