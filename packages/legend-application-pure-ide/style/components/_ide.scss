@@ -16,34 +16,35 @@
 
 @use 'mixins' as *;
 
-@forward 'extensions';
+@forward 'editor/activity-bar';
+@forward 'editor/status-bar';
+@forward 'editor/side-bar';
+@forward 'editor/command';
+@forward 'editor/auxiliary-panel';
+@forward 'editor/editor-group';
+@forward 'editor/file-editor';
+@forward 'editor/diagram-editor';
 
-@forward 'components/ide';
+.ide {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 
-:root {
-  --color-pure-association: var(--color-magenta-100);
-  --color-native-function: var(--color-lime-75);
-  --color-diagram: var(--color-magenta-100);
-  --color-file: var(--color-blue-150);
-}
-
-.color {
-  &--native-function {
-    color: var(--color-native-function);
+  &__body {
+    display: flex;
+    height: calc(100% - 2.2rem);
   }
 
-  &--pure-association {
-    color: var(--color-pure-association);
+  &__content-container {
+    @include flexHCenter;
+
+    background: var(--color-dark-grey-80);
+    flex: 1 0 auto;
+    width: calc(100% - 5rem);
   }
 
-  &--diagram {
-    color: var(--color-diagram);
-  }
-}
-
-.icon--database {
-  svg {
-    color: var(--color-yellow-100);
-    font-size: 1.2rem;
+  &__content {
+    position: relative;
+    width: 100%;
   }
 }

@@ -48,13 +48,13 @@ import {
   buildGraphFromDiagramInfo,
 } from '../server/models/DiagramInfo.js';
 import { FileCoordinate, trimPathLeadingSlash } from '../server/models/File.js';
-import type { EditorStore } from './EditorStore.js';
-import { EditorTabState } from './EditorTabManagerState.js';
+import type { PureIDEStore } from './PureIDEStore.js';
+import { PureIDETabState } from './PureIDETabManagerState.js';
 import { LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY } from '../application/LegendPureIDECommand.js';
 import type { TabState } from '@finos/legend-application/components';
 
 export class DiagramEditorState
-  extends EditorTabState
+  extends PureIDETabState
   implements CommandRegistrar
 {
   diagramInfo: DiagramInfo;
@@ -68,14 +68,14 @@ export class DiagramEditorState
   fileColumn: number;
 
   constructor(
-    editorStore: EditorStore,
+    ideStore: PureIDEStore,
     diagramInfo: DiagramInfo,
     diagramPath: string,
     filePath: string,
     fileLine: number,
     fileColumn: number,
   ) {
-    super(editorStore);
+    super(ideStore);
 
     makeObservable(this, {
       _renderer: observable,
@@ -191,8 +191,8 @@ export class DiagramEditorState
           sourceInformation.startLine,
           sourceInformation.startColumn,
         );
-        flowResult(this.editorStore.executeNavigation(coordinate)).catch(
-          this.editorStore.applicationStore.alertUnhandledError,
+        flowResult(this.ideStore.executeNavigation(coordinate)).catch(
+          this.ideStore.applicationStore.alertUnhandledError,
         );
       }
     };
@@ -205,7 +205,7 @@ export class DiagramEditorState
   *addClassView(path: string, position: Point | undefined): GeneratorFn<void> {
     const diagramClassInfo = deserialize(
       DiagramClassInfo,
-      yield this.editorStore.client.getDiagramClassInfo(path),
+      yield this.ideStore.client.getDiagramClassInfo(path),
     );
     const _class = addClassToGraph(
       diagramClassInfo,
@@ -226,25 +226,25 @@ export class DiagramEditorState
   registerCommands(): void {
     const DEFAULT_TRIGGER = (): boolean =>
       // make sure the current active editor is this diagram editor
-      this.editorStore.tabManagerState.currentTab === this &&
+      this.ideStore.tabManagerState.currentTab === this &&
       // make sure the renderer is initialized
       this.isDiagramRendererInitialized;
-    this.editorStore.applicationStore.commandService.registerCommand({
+    this.ideStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.RECENTER,
       trigger: DEFAULT_TRIGGER,
       action: () => this.renderer.recenter(),
     });
-    this.editorStore.applicationStore.commandService.registerCommand({
+    this.ideStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_ZOOM_TOOL,
       trigger: DEFAULT_TRIGGER,
       action: () => this.renderer.switchToZoomMode(),
     });
-    this.editorStore.applicationStore.commandService.registerCommand({
+    this.ideStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_VIEW_TOOL,
       trigger: DEFAULT_TRIGGER,
       action: () => this.renderer.switchToViewMode(),
     });
-    this.editorStore.applicationStore.commandService.registerCommand({
+    this.ideStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_PAN_TOOL,
       trigger: DEFAULT_TRIGGER,
       action: () => this.renderer.switchToPanMode(),
@@ -258,7 +258,7 @@ export class DiagramEditorState
       LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_VIEW_TOOL,
       LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_PAN_TOOL,
     ].forEach((commandKey) =>
-      this.editorStore.applicationStore.commandService.deregisterCommand(
+      this.ideStore.applicationStore.commandService.deregisterCommand(
         commandKey,
       ),
     );

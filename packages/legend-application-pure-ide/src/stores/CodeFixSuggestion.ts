@@ -18,21 +18,21 @@ import type {
   UnmatchedFunctionResult,
   UnknownSymbolResult,
 } from '../server/models/Execution.js';
-import type { EditorStore } from './EditorStore.js';
+import type { PureIDEStore } from './PureIDEStore.js';
 
 export class CodeFixSuggestion {
-  readonly editorStore: EditorStore;
+  readonly ideStore: PureIDEStore;
 
-  constructor(editorStore: EditorStore) {
-    this.editorStore = editorStore;
+  constructor(ideStore: PureIDEStore) {
+    this.ideStore = ideStore;
   }
 }
 
 export class UnmatchedFunctionCodeFixSuggestion extends CodeFixSuggestion {
   readonly result: UnmatchedFunctionResult;
 
-  constructor(editorStore: EditorStore, result: UnmatchedFunctionResult) {
-    super(editorStore);
+  constructor(ideStore: PureIDEStore, result: UnmatchedFunctionResult) {
+    super(ideStore);
     this.result = result;
   }
 }
@@ -40,8 +40,8 @@ export class UnmatchedFunctionCodeFixSuggestion extends CodeFixSuggestion {
 export class UnknownSymbolCodeFixSuggestion extends CodeFixSuggestion {
   readonly result: UnknownSymbolResult;
 
-  constructor(editorStore: EditorStore, result: UnknownSymbolResult) {
-    super(editorStore);
+  constructor(ideStore: PureIDEStore, result: UnknownSymbolResult) {
+    super(ideStore);
     this.result = result;
   }
 }

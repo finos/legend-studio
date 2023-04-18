@@ -15,7 +15,7 @@
  */
 
 import { BrowserEnvironmentProvider } from '@finos/legend-application/browser';
-import { Editor } from './editor/Editor.js';
+import { Editor } from './PureIDE.js';
 import { LegendPureIDEFrameworkProvider } from './LegendPureIDEFrameworkProvider.js';
 
 export const LegendPureIDEWebApplication: React.FC<{ baseUrl: string }> = (

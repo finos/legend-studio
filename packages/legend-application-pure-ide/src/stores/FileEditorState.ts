@@ -56,8 +56,8 @@ import {
   type ConceptInfo,
   FIND_USAGE_FUNCTION_PATH,
 } from '../server/models/Usage.js';
-import type { EditorStore } from './EditorStore.js';
-import { EditorTabState } from './EditorTabManagerState.js';
+import type { PureIDEStore } from './PureIDEStore.js';
+import { PureIDETabState } from './PureIDETabManagerState.js';
 import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../application/LegendPureIDECommand.js';
 import type { TabState } from '@finos/legend-application/components';
 
@@ -183,7 +183,7 @@ export class FileEditorRenameConceptState {
 }
 
 export class FileEditorState
-  extends EditorTabState
+  extends PureIDETabState
   implements CommandRegistrar
 {
   readonly filePath: string;
@@ -194,8 +194,8 @@ export class FileEditorState
   renameConceptState: FileEditorRenameConceptState | undefined;
   showGoToLinePrompt = false;
 
-  constructor(editorStore: EditorStore, file: File, filePath: string) {
-    super(editorStore);
+  constructor(ideStore: PureIDEStore, file: File, filePath: string) {
+    super(ideStore);
 
     makeObservable<FileEditorState, '_currentHashCode'>(this, {
       _currentHashCode: observable,
@@ -266,12 +266,12 @@ export class FileEditorState
       return;
     }
     if (this.hasChanged) {
-      this.editorStore.applicationStore.notificationService.notifyWarning(
+      this.ideStore.applicationStore.notificationService.notifyWarning(
         `Can't rename concept: source is not compiled`,
       );
       return;
     }
-    const concept = (yield this.editorStore.getConceptInfo(coordinate)) as
+    const concept = (yield this.ideStore.getConceptInfo(coordinate)) as
       | ConceptInfo
       | undefined;
     this.renameConceptState = concept
@@ -301,43 +301,43 @@ export class FileEditorState
 
   registerCommands(): void {
     if (this.textEditorState.language === CODE_EDITOR_LANGUAGE.PURE) {
-      this.editorStore.applicationStore.commandService.registerCommand({
+      this.ideStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_DEFINITION,
         trigger: () =>
-          this.editorStore.tabManagerState.currentTab === this &&
+          this.ideStore.tabManagerState.currentTab === this &&
           Boolean(this.textEditorState.editor?.hasTextFocus()),
         action: () => {
           const currentPosition = this.textEditorState.editor?.getPosition();
           if (currentPosition) {
             flowResult(
-              this.editorStore.executeNavigation(
+              this.ideStore.executeNavigation(
                 new FileCoordinate(
                   this.filePath,
                   currentPosition.lineNumber,
                   currentPosition.column,
                 ),
               ),
-            ).catch(this.editorStore.applicationStore.alertUnhandledError);
+            ).catch(this.ideStore.applicationStore.alertUnhandledError);
           }
         },
       });
-      this.editorStore.applicationStore.commandService.registerCommand({
+      this.ideStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_BACK,
         action: () => {
-          flowResult(this.editorStore.navigateBack()).catch(
-            this.editorStore.applicationStore.alertUnhandledError,
+          flowResult(this.ideStore.navigateBack()).catch(
+            this.ideStore.applicationStore.alertUnhandledError,
           );
         },
       });
-      this.editorStore.applicationStore.commandService.registerCommand({
+      this.ideStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE,
         trigger: () =>
-          this.editorStore.tabManagerState.currentTab === this &&
+          this.ideStore.tabManagerState.currentTab === this &&
           Boolean(this.textEditorState.editor?.hasTextFocus()),
         action: () => {
           const currentPosition = this.textEditorState.editor?.getPosition();
           if (currentPosition) {
-            this.editorStore
+            this.ideStore
               .revealConceptInTree(
                 new FileCoordinate(
                   this.filePath,
@@ -345,14 +345,14 @@ export class FileEditorState
                   currentPosition.column,
                 ),
               )
-              .catch(this.editorStore.applicationStore.alertUnhandledError);
+              .catch(this.ideStore.applicationStore.alertUnhandledError);
           }
         },
       });
-      this.editorStore.applicationStore.commandService.registerCommand({
+      this.ideStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.FIND_USAGES,
         trigger: () =>
-          this.editorStore.tabManagerState.currentTab === this &&
+          this.ideStore.tabManagerState.currentTab === this &&
           Boolean(this.textEditorState.editor?.hasTextFocus()),
         action: () => {
           const currentPosition = this.textEditorState.editor?.getPosition();
@@ -366,10 +366,10 @@ export class FileEditorState
           }
         },
       });
-      this.editorStore.applicationStore.commandService.registerCommand({
+      this.ideStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
         trigger: () =>
-          this.editorStore.tabManagerState.currentTab === this &&
+          this.ideStore.tabManagerState.currentTab === this &&
           Boolean(this.textEditorState.editor?.hasTextFocus()),
         action: () => {
           const currentPosition = this.textEditorState.editor?.getPosition();
@@ -385,16 +385,16 @@ export class FileEditorState
               currentPosition.column,
             );
             flowResult(this.setConceptToRenameState(coordinate)).catch(
-              this.editorStore.applicationStore.alertUnhandledError,
+              this.ideStore.applicationStore.alertUnhandledError,
             );
           }
         },
       });
     }
-    this.editorStore.applicationStore.commandService.registerCommand({
+    this.ideStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.DELETE_LINE,
       trigger: () =>
-        this.editorStore.tabManagerState.currentTab === this &&
+        this.ideStore.tabManagerState.currentTab === this &&
         Boolean(this.textEditorState.editor?.hasTextFocus()),
       action: () => {
         const currentPosition = this.textEditorState.editor?.getPosition();
@@ -418,16 +418,16 @@ export class FileEditorState
         }
       },
     });
-    this.editorStore.applicationStore.commandService.registerCommand({
+    this.ideStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_LINE,
-      trigger: () => this.editorStore.tabManagerState.currentTab === this,
+      trigger: () => this.ideStore.tabManagerState.currentTab === this,
       action: () => {
         this.setShowGoToLinePrompt(true);
       },
     });
-    this.editorStore.applicationStore.commandService.registerCommand({
+    this.ideStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.TOGGLE_TEXT_WRAP,
-      trigger: () => this.editorStore.tabManagerState.currentTab === this,
+      trigger: () => this.ideStore.tabManagerState.currentTab === this,
       action: () => {
         this.textEditorState.setWrapText(!this.textEditorState.wrapText);
       },
@@ -436,12 +436,12 @@ export class FileEditorState
 
   findConceptUsages(coordinate: FileCoordinate): void {
     const proceed = (): void => {
-      flowResult(this.editorStore.findUsagesFromCoordinate(coordinate)).catch(
-        this.editorStore.applicationStore.alertUnhandledError,
+      flowResult(this.ideStore.findUsagesFromCoordinate(coordinate)).catch(
+        this.ideStore.applicationStore.alertUnhandledError,
       );
     };
     if (this.hasChanged) {
-      this.editorStore.applicationStore.alertService.setActionAlertInfo({
+      this.ideStore.applicationStore.alertService.setActionAlertInfo({
         message:
           'Source is not compiled, finding concept usages might be inaccurate. Do you want compile to proceed?',
         type: ActionAlertType.CAUTION,
@@ -450,9 +450,9 @@ export class FileEditorState
             label: 'Compile and Proceed',
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: (): void => {
-              flowResult(this.editorStore.executeGo())
+              flowResult(this.ideStore.executeGo())
                 .then(proceed)
-                .catch(this.editorStore.applicationStore.alertUnhandledError);
+                .catch(this.ideStore.applicationStore.alertUnhandledError);
             },
           },
           {
@@ -473,11 +473,11 @@ export class FileEditorState
     }
     const concept = this.renameConceptState.concept;
     try {
-      this.editorStore.applicationStore.alertService.setBlockingAlert({
+      this.ideStore.applicationStore.alertService.setBlockingAlert({
         message: 'Finding concept usages...',
         showLoading: true,
       });
-      const usages = await this.editorStore.findConceptUsages(
+      const usages = await this.ideStore.findConceptUsages(
         concept.pureType === ConceptType.ENUM_VALUE
           ? FIND_USAGE_FUNCTION_PATH.ENUM
           : concept.pureType === ConceptType.PROPERTY ||
@@ -489,7 +489,7 @@ export class FileEditorState
         ),
       );
       await flowResult(
-        this.editorStore.renameConcept(
+        this.ideStore.renameConcept(
           concept.pureName,
           newName,
           concept.pureType,
@@ -502,11 +502,9 @@ export class FileEditorState
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(error);
+      this.ideStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.editorStore.applicationStore.alertService.setBlockingAlert(
-        undefined,
-      );
+      this.ideStore.applicationStore.alertService.setBlockingAlert(undefined);
     }
   }
 
@@ -519,14 +517,14 @@ export class FileEditorState
         LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.FIND_USAGES,
         LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
       ].forEach((key) =>
-        this.editorStore.applicationStore.commandService.deregisterCommand(key),
+        this.ideStore.applicationStore.commandService.deregisterCommand(key),
       );
     }
     [
       LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_LINE,
       LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.TOGGLE_TEXT_WRAP,
     ].forEach((key) =>
-      this.editorStore.applicationStore.commandService.deregisterCommand(key),
+      this.ideStore.applicationStore.commandService.deregisterCommand(key),
     );
   }
 }

@@ -25,7 +25,7 @@ import {
   PackageConceptAttribute,
 } from '../server/models/ConceptTree.js';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import type { EditorStore } from './EditorStore.js';
+import type { PureIDEStore } from './PureIDEStore.js';
 import { FileCoordinate } from '../server/models/File.js';
 import type { ConceptActivity } from '../server/models/Initialization.js';
 import {
@@ -47,7 +47,7 @@ import {
   ELEMENT_PATH_DELIMITER,
   extractPackagePathFromPath,
 } from '@finos/legend-graph';
-import { ACTIVITY_MODE } from './EditorConfig.js';
+import { ACTIVITY_MODE } from './PureIDEConfig.js';
 
 const getParentPath = (path: string): string | undefined => {
   const trimmedPath = path.trim();
@@ -65,8 +65,8 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
   nodeForRenameConcept?: ConceptTreeNode | undefined;
   nodeForMoveElement?: ConceptTreeNode | undefined;
 
-  constructor(editorStore: EditorStore) {
-    super(editorStore);
+  constructor(ideStore: PureIDEStore) {
+    super(ideStore);
 
     makeObservable(this, {
       statusText: observable,
@@ -95,7 +95,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
 
   async getRootNodes(): Promise<ConceptNode[]> {
     await flowResult(this.pollConceptsActivity());
-    return (await this.editorStore.client.getConceptChildren()).map((node) =>
+    return (await this.ideStore.client.getConceptChildren()).map((node) =>
       deserialize(ConceptNode, node),
     );
   }
@@ -118,7 +118,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
 
   async getChildNodes(node: ConceptTreeNode): Promise<ConceptNode[]> {
     return (
-      await this.editorStore.client.getConceptChildren(node.data.li_attr.pureId)
+      await this.ideStore.client.getConceptChildren(node.data.li_attr.pureId)
     ).map((child) => deserialize(ConceptNode, child));
   }
 
@@ -146,7 +146,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
     ) {
       if (node.data.li_attr.pureType === 'Diagram') {
         yield flowResult(
-          this.editorStore.loadDiagram(
+          this.ideStore.loadDiagram(
             node.data.li_attr.file,
             node.data.li_attr.pureId,
             Number.parseInt(node.data.li_attr.line, 10),
@@ -155,7 +155,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
         );
       } else {
         yield flowResult(
-          this.editorStore.loadFile(
+          this.ideStore.loadFile(
             node.data.li_attr.file,
             new FileCoordinate(
               node.data.li_attr.file,
@@ -184,7 +184,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
 
   async pullConceptsActivity(): Promise<void> {
     const result =
-      (await this.editorStore.client.getConceptActivity()) as unknown as ConceptActivity;
+      (await this.ideStore.client.getConceptActivity()) as unknown as ConceptActivity;
     if (result.text) {
       this.setStatusText(`Preparing - ${result.text}`);
     }
@@ -213,7 +213,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
     },
   ): GeneratorFn<void> {
     if (options?.forceOpenExplorerPanel) {
-      this.editorStore.setActiveActivity(ACTIVITY_MODE.CONCEPT_EXPLORER, {
+      this.ideStore.setActiveActivity(ACTIVITY_MODE.CONCEPT_EXPLORER, {
         keepShowingIfMatchedCurrent: true,
       });
     }
@@ -254,19 +254,17 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
     let elementsUsage: PackageableElementUsage[] = [];
     try {
       elementsUsage = (
-        await this.editorStore.client.getPackageableElementsUsage(
+        await this.ideStore.client.getPackageableElementsUsage(
           elementNodeAttributes.map((attr) => attr.pureId),
         )
       ).map((usage) => deserialize(PackageableElementUsage, usage));
     } catch {
-      this.editorStore.applicationStore.notificationService.notifyError(
+      this.ideStore.applicationStore.notificationService.notifyError(
         `Can't find usage for child packageable elements`,
       );
       return;
     } finally {
-      this.editorStore.applicationStore.alertService.setBlockingAlert(
-        undefined,
-      );
+      this.ideStore.applicationStore.alertService.setBlockingAlert(undefined);
     }
     const inputs = [];
     assertTrue(
@@ -285,7 +283,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
         usages: guaranteeNonNullable(elementsUsage[i]).second,
       });
     }
-    await flowResult(this.editorStore.movePackageableElements(inputs));
+    await flowResult(this.ideStore.movePackageableElements(inputs));
   }
 
   async renameConcept(node: ConceptTreeNode, newName: string): Promise<void> {
@@ -293,7 +291,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
     const oldName = attr.pureName ?? attr.pureId;
     let usages: Usage[] = [];
     try {
-      this.editorStore.applicationStore.alertService.setBlockingAlert({
+      this.ideStore.applicationStore.alertService.setBlockingAlert({
         message: 'Finding concept usages...',
         showLoading: true,
       });
@@ -301,7 +299,7 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
         case ConceptType.PROPERTY:
         case ConceptType.QUALIFIED_PROPERTY: {
           assertType(attr, PropertyConceptAttribute);
-          usages = await this.editorStore.findConceptUsages(
+          usages = await this.ideStore.findConceptUsages(
             FIND_USAGE_FUNCTION_PATH.PROPERTY,
             [`'${attr.classPath}'`, `'${attr.pureId}'`],
           );
@@ -312,21 +310,19 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
           let childElementsInfo: ChildPackageableElementInfo[] = [];
           try {
             childElementsInfo =
-              await this.editorStore.client.getChildPackageableElements(
-                oldName,
-              );
+              await this.ideStore.client.getChildPackageableElements(oldName);
             elementsUsage = (
-              await this.editorStore.client.getPackageableElementsUsage(
+              await this.ideStore.client.getPackageableElementsUsage(
                 childElementsInfo.map((info) => info.pureId),
               )
             ).map((usage) => deserialize(PackageableElementUsage, usage));
           } catch {
-            this.editorStore.applicationStore.notificationService.notifyError(
+            this.ideStore.applicationStore.notificationService.notifyError(
               `Can't find usage for child packageable elements`,
             );
             return;
           } finally {
-            this.editorStore.applicationStore.alertService.setBlockingAlert(
+            this.ideStore.applicationStore.alertService.setBlockingAlert(
               undefined,
             );
           }
@@ -357,12 +353,12 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
               usages: guaranteeNonNullable(elementsUsage[i]).second,
             });
           }
-          await flowResult(this.editorStore.movePackageableElements(inputs));
+          await flowResult(this.ideStore.movePackageableElements(inputs));
           return;
         }
 
         default: {
-          usages = await this.editorStore.findConceptUsages(
+          usages = await this.ideStore.findConceptUsages(
             FIND_USAGE_FUNCTION_PATH.ELEMENT,
             [`'${attr.pureId}'`],
           );
@@ -371,15 +367,13 @@ export class ConceptTreeState extends TreeState<ConceptTreeNode, ConceptNode> {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(error);
+      this.ideStore.applicationStore.notificationService.notifyError(error);
       return;
     } finally {
-      this.editorStore.applicationStore.alertService.setBlockingAlert(
-        undefined,
-      );
+      this.ideStore.applicationStore.alertService.setBlockingAlert(undefined);
     }
     await flowResult(
-      this.editorStore.renameConcept(oldName, newName, attr.pureType, usages),
+      this.ideStore.renameConcept(oldName, newName, attr.pureType, usages),
     );
   }
 }

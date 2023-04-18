@@ -21,9 +21,9 @@ import {
   DirectoryNode,
 } from '../server/models/DirectoryTree.js';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import type { EditorStore } from './EditorStore.js';
+import type { PureIDEStore } from './PureIDEStore.js';
 import type { FileCoordinate } from '../server/models/File.js';
-import { ACTIVITY_MODE } from './EditorConfig.js';
+import { ACTIVITY_MODE } from './PureIDEConfig.js';
 import {
   type GeneratorFn,
   assertTrue,
@@ -51,8 +51,8 @@ export class DirectoryTreeState extends TreeState<
   nodeForCreateNewDirectory?: DirectoryTreeNode | undefined;
   nodeForRenameFile?: DirectoryTreeNode | undefined;
 
-  constructor(editorStore: EditorStore) {
-    super(editorStore);
+  constructor(ideStore: PureIDEStore) {
+    super(ideStore);
     makeObservable(this, {
       nodeForCreateNewFile: observable,
       nodeForCreateNewDirectory: observable,
@@ -91,7 +91,7 @@ export class DirectoryTreeState extends TreeState<
   };
 
   async getRootNodes(): Promise<DirectoryNode[]> {
-    return (await this.editorStore.client.getDirectoryChildren()).map((node) =>
+    return (await this.ideStore.client.getDirectoryChildren()).map((node) =>
       deserialize(DirectoryNode, node),
     );
   }
@@ -114,7 +114,7 @@ export class DirectoryTreeState extends TreeState<
 
   async getChildNodes(node: DirectoryTreeNode): Promise<DirectoryNode[]> {
     return (
-      await this.editorStore.client.getDirectoryChildren(node.data.li_attr.path)
+      await this.ideStore.client.getDirectoryChildren(node.data.li_attr.path)
     ).map((child) => deserialize(DirectoryNode, child));
   }
 
@@ -139,7 +139,7 @@ export class DirectoryTreeState extends TreeState<
 
   *openNode(node: DirectoryTreeNode): GeneratorFn<void> {
     if (node.data.isFileNode) {
-      yield flowResult(this.editorStore.loadFile(node.data.li_attr.path));
+      yield flowResult(this.ideStore.loadFile(node.data.li_attr.path));
     }
   }
 
@@ -156,7 +156,7 @@ export class DirectoryTreeState extends TreeState<
     },
   ): GeneratorFn<void> {
     if (options?.forceOpenExplorerPanel) {
-      this.editorStore.setActiveActivity(ACTIVITY_MODE.FILE_EXPLORER, {
+      this.ideStore.setActiveActivity(ACTIVITY_MODE.FILE_EXPLORER, {
         keepShowingIfMatchedCurrent: true,
       });
     }
@@ -178,9 +178,7 @@ export class DirectoryTreeState extends TreeState<
         if (options?.directoryOnly) {
           throw new Error(`Can't reveal non-directory path`);
         } else {
-          yield flowResult(
-            this.editorStore.loadFile(_path, options?.coordinate),
-          );
+          yield flowResult(this.ideStore.loadFile(_path, options?.coordinate));
         }
       }
     }
