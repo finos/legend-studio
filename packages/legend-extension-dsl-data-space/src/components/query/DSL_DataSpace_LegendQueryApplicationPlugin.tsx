@@ -42,7 +42,7 @@ import { Query, isValidFullPath } from '@finos/legend-graph';
 import {
   QUERY_PROFILE_PATH,
   QUERY_PROFILE_TAG_DATA_SPACE,
-} from '../../DSL_DataSpace_Const.js';
+} from '../../graph/DSL_DataSpace_MetaModelConst.js';
 import { DataSpaceQueryBuilderState } from '../../stores/query/DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import { getOwnDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';

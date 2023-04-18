@@ -38,12 +38,12 @@ import {
   TEST__getTestGraphManagerState,
   TEST__GraphManagerPluginManager,
 } from '@finos/legend-graph/test';
-import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
-import { DSL_Diagram_GraphManagerPreset as DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space';
-import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
-import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery';
-import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store';
+import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text/graph';
+import { DSL_Diagram_GraphManagerPreset as DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram/graph';
+import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
+import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence/graph';
+import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery/graph';
+import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store/graph';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {

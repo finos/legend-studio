@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import packageJson from '../package.json';
+import packageJson from '../../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { DSL_Text_PureGraphManagerPlugin as DSL_Text_PureGraphManagerPlugin } from './graph-manager/DSL_Text_PureGraphManagerPlugin.js';
-import { DSL_Text_PureProtocolProcessorPlugin as DSL_Text_PureProtocolProcessorPlugin } from './graph-manager/protocol/pure/DSL_Text_PureProtocolProcessorPlugin.js';
-import { DSL_Text_PureGraphPlugin as DSL_Text_PureGraphPlugin } from './graph/DSL_Text_PureGraphPlugin.js';
+import { DSL_Text_PureGraphManagerPlugin as DSL_Text_PureGraphManagerPlugin } from './DSL_Text_PureGraphManagerPlugin.js';
+import { DSL_Text_PureProtocolProcessorPlugin as DSL_Text_PureProtocolProcessorPlugin } from './protocol/pure/DSL_Text_PureProtocolProcessorPlugin.js';
+import { DSL_Text_PureGraphPlugin as DSL_Text_PureGraphPlugin } from '../graph/DSL_Text_PureGraphPlugin.js';
 
 export class DSL_Text_GraphManagerPreset extends AbstractPreset {
   constructor() {

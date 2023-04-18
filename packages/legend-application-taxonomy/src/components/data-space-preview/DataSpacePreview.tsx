@@ -34,7 +34,7 @@ import {
   PanelLoadingIndicator,
   TimesCircleIcon,
 } from '@finos/legend-art';
-import { DataSpaceViewer } from '@finos/legend-extension-dsl-data-space';
+import { DataSpaceViewer } from '@finos/legend-extension-dsl-data-space/application';
 import { DataSpacePreviewStore as DataSpacePreviewStore } from '../../stores/data-space-preview/DataSpacePreviewStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {

@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './FMT_JSONSchema_Extension.js';
+export * from './DSL_Text_GraphManagerPreset.js';

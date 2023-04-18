@@ -28,7 +28,7 @@ import {
   type LegendPureIDEApplicationConfigData,
 } from './LegendPureIDEApplicationConfig.js';
 import { LegendPureIDEPluginManager } from './LegendPureIDEPluginManager.js';
-import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
+import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram/graph';
 import { LegendPureIDEWebApplication } from '../components/LegendPureIDEApplication.js';
 import { Core_LegendPureIDEApplicationPlugin } from '../components/Core_LegendPureIDEApplicationPlugin.js';
 import type { LegendPureIDEApplicationStore } from '../stores/LegendPureIDEBaseStore.js';

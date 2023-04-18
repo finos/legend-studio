@@ -78,7 +78,7 @@ import {
 } from '../../__lib__/studio/STO_ServiceStore_CodeSnippets.js';
 import { ServiceStoreEmbeddedData } from '../../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceStoreEmbeddedData.js';
 import { ServiceStoreEmbeddedDataState } from '../../stores/studio/STO_ServiceStore_ServiceStoreEmbeddedDataEditorState.js';
-import { ServiceStoreEmbeddedDataEditor } from './STO_ServiceStore_ServiceStoreEmbeddedDataEditor.js';
+import { ServiceStoreEmbeddedDataEditor } from './ServiceStoreEmbeddedDataEditor.js';
 import {
   ServiceStoreConnectionValueState,
   ServiceStoreConnectionEditor,

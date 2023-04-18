@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import packageJson from '../package.json';
+import packageJson from '../../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { DSL_Diagram_PureGraphManagerPlugin } from './graph-manager/DSL_Diagram_PureGraphManagerPlugin.js';
-import { DSL_Diagram_PureProtocolProcessorPlugin } from './graph-manager/protocol/pure/DSL_Diagram_PureProtocolProcessorPlugin.js';
-import { DSL_Diagram_PureGraphPlugin } from './graph/DSL_Diagram_PureGraphPlugin.js';
+import { STO_ServiceStore_PureGraphManagerPlugin } from './STO_ServiceStore_PureGraphManagerPlugin.js';
+import { STO_ServiceStore_PureProtocolProcessorPlugin } from './protocol/pure/STO_ServiceStore_PureProtocolProcessorPlugin.js';
+import { STO_ServiceStore_PureGraphPlugin } from '../graph/STO_ServiceStore_PureGraphPlugin.js';
 
-export class DSL_Diagram_GraphManagerPreset extends AbstractPreset {
+export class STO_ServiceStore_GraphManagerPreset extends AbstractPreset {
   constructor() {
     super(packageJson.extensions.graphManagerPreset, packageJson.version, [
-      new DSL_Diagram_PureGraphPlugin(),
-      new DSL_Diagram_PureGraphManagerPlugin(),
-      new DSL_Diagram_PureProtocolProcessorPlugin(),
+      new STO_ServiceStore_PureGraphPlugin(),
+      new STO_ServiceStore_PureGraphManagerPlugin(),
+      new STO_ServiceStore_PureProtocolProcessorPlugin(),
     ]);
   }
 }

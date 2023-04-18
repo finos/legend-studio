@@ -20,7 +20,9 @@
   "license": "Apache-2.0",
   "sideEffects": false,
   "type": "module",
-  "exports": "./lib/index.js",
+  "exports": {
+    "./graph": "./lib/graph-manager/index.js"
+  },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {

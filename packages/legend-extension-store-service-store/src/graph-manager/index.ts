@@ -14,4 +14,10 @@
  * limitations under the License.
  */
 
-export * from './FMT_GraphQL_Extension.js';
+export * from './STO_ServiceStore_GraphManagerPreset.js';
+export * from './protocol/pure/STO_ServiceStore_PureProtocolPlugin_Extension.js';
+export * from './STO_ServiceStore_PureGraphManagerPlugin_Extension.js';
+
+export { V1_SecurityScheme } from './protocol/pure/v1/model/packageableElements/store/serviceStore/model/V1_STO_ServiceStore_SecurityScheme.js';
+
+export { SecurityScheme } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_SecurityScheme.js';

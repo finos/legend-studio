@@ -18,7 +18,7 @@ import { test } from '@jest/globals';
 import type { Entity } from '@finos/legend-storage';
 import { unitTest } from '@finos/legend-shared/test';
 import { TEST_DATA__roundtrip } from './TEST_DATA__DSL_Text_Roundtrip.js';
-import { DSL_Text_GraphManagerPreset } from '../../DSL_Text_Extension.js';
+import { DSL_Text_GraphManagerPreset } from '../DSL_Text_GraphManagerPreset.js';
 import {
   TEST__GraphManagerPluginManager,
   TEST__checkBuildingElementsRoundtrip,

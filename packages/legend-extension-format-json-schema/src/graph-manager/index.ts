@@ -14,5 +14,4 @@
  * limitations under the License.
  */
 
-export * from './DSL_Text_Extension.js';
-export { DSL_Text_LegendStudioApplicationPlugin } from './components/studio/DSL_Text_LegendStudioApplicationPlugin.js';
+export * from './FMT_JSONSchema_GraphManagerPreset.js';

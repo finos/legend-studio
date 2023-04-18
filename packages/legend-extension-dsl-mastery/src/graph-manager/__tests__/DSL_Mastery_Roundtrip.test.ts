@@ -15,7 +15,7 @@
  */
 
 import { test } from '@jest/globals';
-import { DSL_Mastery_GraphManagerPreset } from '../../DSL_Mastery_Extension.js';
+import { DSL_Mastery_GraphManagerPreset } from '../../graph-manager/DSL_Mastery_GraphManagerPreset.js';
 import { TEST_DATA__roundtrip } from './TEST_DATA__DSL_Mastery_Roundtrip.js';
 import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import {

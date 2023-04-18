@@ -24,7 +24,7 @@ import {
 import {
   type DiagramRenderer,
   DIAGRAM_INTERACTION_MODE,
-} from '../../DiagramRenderer.js';
+} from '../../components/DiagramRenderer.js';
 import { PanelDisplayState } from '@finos/legend-art';
 import {
   type PackageableElement,

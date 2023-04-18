@@ -22,7 +22,7 @@ import {
   PropertyView,
   Rectangle,
   _relationshipView_simplifyPath,
-} from '@finos/legend-extension-dsl-diagram';
+} from '@finos/legend-extension-dsl-diagram/graph';
 import {
   Class,
   CoreModel,

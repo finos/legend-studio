@@ -75,7 +75,7 @@ import {
   V1_DataSpaceExecutableTDSResult,
   V1_DataSpaceServiceExecutableInfo,
 } from './engine/analytics/V1_DataSpaceAnalysis.js';
-import { getDiagram } from '@finos/legend-extension-dsl-diagram';
+import { getDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 
 const ANALYZE_DATA_SPACE_TRACE = 'analyze data space';
 const TEMPORARY__TDS_SAMPLE_VALUES__DELIMETER = '-- e.g.';

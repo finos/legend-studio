@@ -18,10 +18,8 @@ import type { CommandRegistrar } from '@finos/legend-application';
 import {
   type ClassView,
   type Diagram,
-  type DiagramRenderer,
-  DIAGRAM_INTERACTION_MODE,
   type Point,
-} from '@finos/legend-extension-dsl-diagram';
+} from '@finos/legend-extension-dsl-diagram/graph';
 import {
   extractElementNameFromPath,
   type PureModel,
@@ -52,6 +50,10 @@ import type { PureIDEStore } from './PureIDEStore.js';
 import { PureIDETabState } from './PureIDETabManagerState.js';
 import { LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY } from '../__lib__/LegendPureIDECommand.js';
 import type { TabState } from '@finos/legend-lego/application';
+import {
+  DIAGRAM_INTERACTION_MODE,
+  DiagramRenderer,
+} from '@finos/legend-extension-dsl-diagram/application';
 
 export class DiagramEditorState
   extends PureIDETabState

@@ -43,15 +43,15 @@ import {
   AggregationKind,
 } from '@finos/legend-graph';
 import { action, makeObservable, observable } from 'mobx';
-import type { Diagram } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
-import { Rectangle } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Rectangle.js';
-import { Point } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Point.js';
-import { PositionedRectangle } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_PositionedRectangle.js';
-import { ClassView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_ClassView.js';
-import type { PropertyHolderView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_PropertyHolderView.js';
-import { GeneralizationView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_GeneralizationView.js';
-import { RelationshipView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_RelationshipView.js';
-import { PropertyView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_PropertyView.js';
+import type { Diagram } from '../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
+import { Rectangle } from '../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Rectangle.js';
+import { Point } from '../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Point.js';
+import { PositionedRectangle } from '../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_PositionedRectangle.js';
+import { ClassView } from '../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_ClassView.js';
+import type { PropertyHolderView } from '../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_PropertyHolderView.js';
+import { GeneralizationView } from '../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_GeneralizationView.js';
+import { RelationshipView } from '../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_RelationshipView.js';
+import { PropertyView } from '../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_PropertyView.js';
 import {
   boxContains,
   buildBottomRightCornerBox,
@@ -59,8 +59,8 @@ import {
   getElementPosition,
   rotatePointX,
   rotatePointY,
-} from './graph/helpers/DSL_Diagram_Helper.js';
-import { AssociationView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_AssociationView.js';
+} from '../graph/helpers/DSL_Diagram_Helper.js';
+import { AssociationView } from '../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_AssociationView.js';
 import {
   class_addProperty,
   class_addSuperType,
@@ -89,7 +89,7 @@ import {
   relationshipView_changePoint,
   relationshipView_simplifyPath,
   relationshipView_setPath,
-} from './stores/studio/DSL_Diagram_GraphModifierHelper.js';
+} from '../stores/studio/DSL_Diagram_GraphModifierHelper.js';
 
 export enum DIAGRAM_INTERACTION_MODE {
   LAYOUT,

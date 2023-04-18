@@ -24,7 +24,7 @@ import {
   TEST__openElementFromExplorerTree,
 } from '@finos/legend-application-studio/test';
 import { DSL_DIAGRAM_TEST_ID } from '../../../__lib__/studio/DSL_Diagram_LegendStudioTesting.js';
-import { DSL_Diagram_GraphManagerPreset } from '../../../DSL_Diagram_Extension.js';
+import { DSL_Diagram_GraphManagerPreset } from '../../../graph-manager/DSL_Diagram_GraphManagerPreset.js';
 import { DSL_Diagram_LegendStudioApplicationPlugin } from '../DSL_Diagram_LegendStudioApplicationPlugin.js';
 
 const TEST_DATA__dummyModel = [

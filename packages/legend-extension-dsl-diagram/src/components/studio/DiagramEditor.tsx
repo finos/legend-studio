@@ -23,7 +23,7 @@ import {
   DIAGRAM_INTERACTION_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
   DIAGRAM_ZOOM_LEVELS,
-} from '../../DiagramRenderer.js';
+} from '../DiagramRenderer.js';
 import {
   type DiagramEditorInlineClassCreatorState,
   type DiagramEditorInlineClassRenamerState,

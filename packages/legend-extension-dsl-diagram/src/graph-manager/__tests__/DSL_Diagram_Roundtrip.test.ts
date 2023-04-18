@@ -22,7 +22,7 @@ import {
   TEST_DATA__diagramWithAssociationProperty,
   TEST_DATA__diagramWithOverlappingConnectedClassViews,
 } from './TEST_DATA__DSL_Diagram_Roundtrip.js';
-import { DSL_Diagram_GraphManagerPreset } from '../../DSL_Diagram_Extension.js';
+import { DSL_Diagram_GraphManagerPreset } from '../DSL_Diagram_GraphManagerPreset.js';
 import {
   TEST__GraphManagerPluginManager,
   TEST__checkBuildingElementsRoundtrip,

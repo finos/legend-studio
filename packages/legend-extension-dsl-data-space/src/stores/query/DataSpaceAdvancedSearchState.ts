@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { ClassView } from '@finos/legend-extension-dsl-diagram';
+import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
   GraphDataWithOrigin,
   type Class,

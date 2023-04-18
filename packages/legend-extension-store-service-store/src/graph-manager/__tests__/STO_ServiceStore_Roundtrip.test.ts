@@ -18,7 +18,7 @@ import { test } from '@jest/globals';
 import type { Entity } from '@finos/legend-storage';
 import { unitTest } from '@finos/legend-shared/test';
 import { roundtripTestData } from './TEST_DATA__STO_ServiceStore_Roundtrip.js';
-import { STO_ServiceStore_GraphManagerPreset } from '../../STO_ServiceStore_Extension.js';
+import { STO_ServiceStore_GraphManagerPreset } from '../STO_ServiceStore_GraphManagerPreset.js';
 import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import {
   TEST__checkBuildingElementsRoundtrip,

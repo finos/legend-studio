@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-import packageJson from '../package.json';
+import packageJson from '../../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { DSL_DataSpace_PureGraphManagerPlugin } from './graph-manager/DSL_DataSpace_PureGraphManagerPlugin.js';
-import { DSL_DataSpace_PureProtocolProcessorPlugin } from './graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
-import { DSL_DataSpace_PureGraphPlugin } from './graph/DSL_DataSpace_PureGraphPlugin.js';
+import { FMT_JSONSchema_PureGraphManagerPlugin } from './FMT_JSONSchema_PureGraphManagerPlugin.js';
+import { FMT_JSONSchema_PureProtocolProcessorPlugin } from './protocol/pure/FMT_JSONSchema_PureProtocolProcessorPlugin.js';
 
-export class DSL_DataSpace_GraphManagerPreset extends AbstractPreset {
+export class FMT_JSONSchema_GraphManagerPreset extends AbstractPreset {
   constructor() {
     super(packageJson.extensions.graphManagerPreset, packageJson.version, [
-      new DSL_DataSpace_PureGraphPlugin(),
-      new DSL_DataSpace_PureGraphManagerPlugin(),
-      new DSL_DataSpace_PureProtocolProcessorPlugin(),
+      new FMT_JSONSchema_PureGraphManagerPlugin(),
+      new FMT_JSONSchema_PureProtocolProcessorPlugin(),
     ]);
   }
 }

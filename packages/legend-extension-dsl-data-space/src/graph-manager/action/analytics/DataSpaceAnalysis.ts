@@ -22,7 +22,7 @@ import {
 } from '@finos/legend-graph';
 import { prettyCONSTName, uuid } from '@finos/legend-shared';
 import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
-import type { Diagram } from '@finos/legend-extension-dsl-diagram';
+import type { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
 
 export class DataSpaceExecutionContextAnalysisResult {
   name!: string;

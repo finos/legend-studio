@@ -20,11 +20,10 @@ import {
 } from '@finos/legend-application';
 import {
   type DataSpaceAnalysisResult,
-  DataSpaceViewerState,
   DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
-} from '@finos/legend-extension-dsl-data-space';
-import type { ClassView } from '@finos/legend-extension-dsl-diagram';
+} from '@finos/legend-extension-dsl-data-space/graph';
+import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
   BasicGraphManagerState,
   GraphDataWithOrigin,
@@ -50,6 +49,7 @@ import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from '../LegendTaxonomyDataSpaceViewerHelper.js';
+import { DataSpaceViewerState } from '@finos/legend-extension-dsl-data-space/application';
 
 export class DataSpacePreviewStore {
   readonly applicationStore: LegendTaxonomyApplicationStore;

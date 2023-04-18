@@ -20,11 +20,11 @@ import type { DiagramEditorState } from '../../stores/DiagramEditorState.js';
 import {
   DIAGRAM_ALIGNER_OPERATOR,
   DiagramRenderer,
-  Point,
   DIAGRAM_ZOOM_LEVELS,
   DIAGRAM_INTERACTION_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
-} from '@finos/legend-extension-dsl-diagram';
+} from '@finos/legend-extension-dsl-diagram/application';
+import { Point } from '@finos/legend-extension-dsl-diagram/graph';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { CONCEPT_TREE_DND_TYPE } from '../side-bar/ConceptTreeExplorer.js';
 import { ConceptNode } from '../../server/models/ConceptTree.js';

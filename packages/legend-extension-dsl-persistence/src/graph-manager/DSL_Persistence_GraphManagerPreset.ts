@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import packageJson from '../package.json';
+import packageJson from '../../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { DSL_Mastery_PureGraphPlugin as DSL_Mastery_PureGraphPlugin } from './graph/DSL_Mastery_PureGraphPlugin.js';
-import { DSL_Mastery_PureGraphManagerPlugin } from './graph-manager/DSL_Mastery_PureGraphManagerPlugin.js';
-import { DSL_Mastery_PureProtocolProcessorPlugin } from './graph-manager/protocol/pure/DSL_Mastery_PureProtocolProcessorPlugin.js';
+import { DSL_Persistence_PureGraphPlugin } from '../graph/DSL_Persistence_PureGraphPlugin.js';
+import { DSL_Persistence_PureGraphManagerPlugin } from './DSL_Persistence_PureGraphManagerPlugin.js';
+import { DSL_Persistence_PureProtocolProcessorPlugin } from './protocol/pure/DSL_Persistence_PureProtocolProcessorPlugin.js';
 
-export class DSL_Mastery_GraphManagerPreset extends AbstractPreset {
+export class DSL_Persistence_GraphManagerPreset extends AbstractPreset {
   constructor() {
     super(packageJson.extensions.graphManagerPreset, packageJson.version, [
-      new DSL_Mastery_PureGraphPlugin(),
-      new DSL_Mastery_PureGraphManagerPlugin(),
-      new DSL_Mastery_PureProtocolProcessorPlugin(),
+      new DSL_Persistence_PureGraphPlugin(),
+      new DSL_Persistence_PureGraphManagerPlugin(),
+      new DSL_Persistence_PureProtocolProcessorPlugin(),
     ]);
   }
 }

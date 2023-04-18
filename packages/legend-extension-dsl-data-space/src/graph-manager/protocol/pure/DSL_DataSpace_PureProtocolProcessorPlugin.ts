@@ -78,7 +78,7 @@ import {
   type PackageableElementReference,
   Package,
 } from '@finos/legend-graph';
-import { V1_resolveDiagram } from '@finos/legend-extension-dsl-diagram';
+import { V1_resolveDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 
 export const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::metamodel::dataSpace::DataSpace';

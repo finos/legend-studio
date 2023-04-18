@@ -18,7 +18,7 @@ import { test, expect } from '@jest/globals';
 import { ActionState } from '@finos/legend-shared';
 import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
-import { DSL_Diagram_GraphManagerPreset } from '../../DSL_Diagram_Extension.js';
+import { DSL_Diagram_GraphManagerPreset } from '../DSL_Diagram_GraphManagerPreset.js';
 import {
   TEST__getTestGraphManagerState,
   TEST__GraphManagerPluginManager,

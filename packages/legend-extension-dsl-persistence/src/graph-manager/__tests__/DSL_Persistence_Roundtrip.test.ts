@@ -15,7 +15,7 @@
  */
 
 import { test } from '@jest/globals';
-import { DSL_Persistence_GraphManagerPreset } from '../../DSL_Persistence_Extension.js';
+import { DSL_Persistence_GraphManagerPreset } from '../../graph-manager/DSL_Persistence_GraphManagerPreset.js';
 import {
   TEST_DATA__roundtrip_case1,
   TEST_DATA__roundtrip_case2,

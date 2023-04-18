@@ -18,11 +18,11 @@ import type {
   GenericLegendApplicationStore,
   NavigationZone,
 } from '@finos/legend-application';
+import { type ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
-  type ClassView,
   type DiagramRenderer,
   DIAGRAM_INTERACTION_MODE,
-} from '@finos/legend-extension-dsl-diagram';
+} from '@finos/legend-extension-dsl-diagram/application';
 import type {
   BasicGraphManagerState,
   GraphData,

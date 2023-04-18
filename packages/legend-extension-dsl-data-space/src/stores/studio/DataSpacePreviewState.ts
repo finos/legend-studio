@@ -19,7 +19,7 @@ import {
   queryClass,
   type EditorStore,
 } from '@finos/legend-application-studio';
-import type { ClassView } from '@finos/legend-extension-dsl-diagram';
+import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
   type GeneratorFn,
   guaranteeNonNullable,

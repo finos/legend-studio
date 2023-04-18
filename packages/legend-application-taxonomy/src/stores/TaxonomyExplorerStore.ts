@@ -27,7 +27,7 @@ import {
 import {
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   extractDataSpaceTaxonomyNodes,
-} from '@finos/legend-extension-dsl-data-space';
+} from '@finos/legend-extension-dsl-data-space/graph';
 import { BasicGraphManagerState } from '@finos/legend-graph';
 import type {
   DepotServerClient,

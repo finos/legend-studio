@@ -40,7 +40,7 @@ import {
   QUERY_PROFILE_PATH,
   QUERY_PROFILE_TAG_CLASS,
   QUERY_PROFILE_TAG_DATA_SPACE,
-} from '../../DSL_DataSpace_Const.js';
+} from '../../graph/DSL_DataSpace_MetaModelConst.js';
 import { getDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
 import { DataSpaceQueryBuilderState } from './DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from './DataSpaceInfo.js';
