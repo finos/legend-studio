@@ -16,6 +16,10 @@
 
 import type { TelemetryService } from '@finos/legend-application';
 import { LEGEND_QUERY_APP_EVENT } from './LegendQueryEvent.js';
+import {
+  GRAPH_MANAGER_EVENT,
+  type GraphInitializationReport,
+} from '@finos/legend-graph';
 
 type Query_TelemetryData = {
   query: {
@@ -51,6 +55,16 @@ export class LegendQueryTelemetryHelper {
   ): void {
     telemetryService.logEvent(
       LEGEND_QUERY_APP_EVENT.UPDATE_QUERY__SUCCESS,
+      data,
+    );
+  }
+
+  static logEvent_GraphInitializationSucceeded(
+    telemetryService: TelemetryService,
+    data: GraphInitializationReport,
+  ): void {
+    telemetryService.logEvent(
+      GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
       data,
     );
   }

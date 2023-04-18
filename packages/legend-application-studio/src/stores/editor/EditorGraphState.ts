@@ -91,12 +91,12 @@ import {
   createGraphBuilderReport,
   ExecutionEnvironmentInstance,
 } from '@finos/legend-graph';
-import { LegendApplicationTelemetryHelper } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../application/LegendStudioSetting.js';
 import type { TabState } from '@finos/legend-application/components';
+import { LegendStudioTelemetryHelper } from '../../application/LegendStudioTelemetryHelper.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -347,7 +347,7 @@ export class EditorGraphState {
         generations: generation_buildReport,
         generationsCount: this.graphGenerationState.generatedEntities.size,
       };
-      LegendApplicationTelemetryHelper.logEvent_GraphInitializationSucceeded(
+      LegendStudioTelemetryHelper.logEvent_GraphInitializationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         graphBuilderReportData,
       );

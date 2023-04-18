@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-import {
-  type GraphManagerOperationReport,
-  GRAPH_MANAGER_EVENT,
-} from '@finos/legend-graph';
-import type { TimingsRecord } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from './LegendApplicationEvent.js';
 import type { GenericLegendApplicationStore } from '../stores/ApplicationStore.js';
 import type { TelemetryService } from '../stores/TelemetryService.js';
@@ -29,15 +24,6 @@ type ApplicationContextAccessed_TelemetryData = {
 
 type VirtualAssistantDocumentationEntryAccessed_TelemetryData = {
   key: string;
-};
-
-type GraphInitialized_TelemetryData = {
-  timings: TimingsRecord;
-  dependencies: GraphManagerOperationReport;
-  dependenciesCount: number;
-  graph: GraphManagerOperationReport;
-  generations?: GraphManagerOperationReport;
-  generationCount?: number;
 };
 
 export class LegendApplicationTelemetryHelper {
@@ -77,16 +63,6 @@ export class LegendApplicationTelemetryHelper {
   ): void {
     telemetryService.logEvent(
       APPLICATION_EVENT.VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY__ACCESS,
-      data,
-    );
-  }
-
-  static logEvent_GraphInitializationSucceeded(
-    telemetryService: TelemetryService,
-    data: GraphInitialized_TelemetryData,
-  ): void {
-    telemetryService.logEvent(
-      GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
       data,
     );
   }

@@ -75,7 +75,6 @@ import {
   TAB_SIZE,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-  LegendApplicationTelemetryHelper,
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { LegendQueryEventHelper } from '../application/LegendQueryEventHelper.js';
@@ -548,7 +547,7 @@ export abstract class QueryEditorStore {
         this.graphManagerState.graph.dependencyManager.numberOfDependencies,
       graph: graph_buildReport,
     };
-    LegendApplicationTelemetryHelper.logEvent_GraphInitializationSucceeded(
+    LegendQueryTelemetryHelper.logEvent_GraphInitializationSucceeded(
       this.applicationStore.telemetryService,
       graphBuilderReportData,
     );

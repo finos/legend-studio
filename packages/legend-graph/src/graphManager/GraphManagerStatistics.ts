@@ -26,6 +26,15 @@ export type GraphManagerOperationReport = {
   };
 };
 
+export type GraphInitializationReport = {
+  timings: TimingsRecord;
+  dependencies: GraphManagerOperationReport;
+  dependenciesCount: number;
+  graph: GraphManagerOperationReport;
+  generations?: GraphManagerOperationReport;
+  generationCount?: number;
+};
+
 export const createGraphManagerOperationReport =
   (): GraphManagerOperationReport => ({
     timings: { total: 0 },

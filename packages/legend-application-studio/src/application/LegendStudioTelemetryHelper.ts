@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { GraphManagerOperationReport } from '@finos/legend-graph';
+import {
+  GRAPH_MANAGER_EVENT,
+  type GraphInitializationReport,
+  type GraphManagerOperationReport,
+} from '@finos/legend-graph';
 import type { TelemetryService } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioEvent.js';
 
@@ -65,6 +69,16 @@ export class LegendStudioTelemetryHelper {
   ): void {
     service.logEvent(
       LEGEND_STUDIO_APP_EVENT.TEST_DATA_GENERATION__SUCCESS,
+      data,
+    );
+  }
+
+  static logEvent_GraphInitializationSucceeded(
+    telemetryService: TelemetryService,
+    data: GraphInitializationReport,
+  ): void {
+    telemetryService.logEvent(
+      GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
       data,
     );
   }

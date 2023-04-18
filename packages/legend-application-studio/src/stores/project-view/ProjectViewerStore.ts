@@ -46,10 +46,7 @@ import {
   Workspace,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
-import {
-  LegendApplicationTelemetryHelper,
-  TAB_SIZE,
-} from '@finos/legend-application';
+import { TAB_SIZE } from '@finos/legend-application';
 import { ProjectData, resolveVersion } from '@finos/legend-server-depot';
 import {
   type WorkflowManagerState,
@@ -65,6 +62,7 @@ import {
   LegendSDLC,
 } from '@finos/legend-graph';
 import { GRAPH_EDITOR_MODE } from '../editor/EditorConfig.js';
+import { LegendStudioTelemetryHelper } from '../../application/LegendStudioTelemetryHelper.js';
 
 interface ProjectViewerGraphBuilderMaterial {
   entities: Entity[];
@@ -424,7 +422,7 @@ export class ProjectViewerStore {
             .numberOfDependencies,
         graph: graph_buildReport,
       };
-      LegendApplicationTelemetryHelper.logEvent_GraphInitializationSucceeded(
+      LegendStudioTelemetryHelper.logEvent_GraphInitializationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         graphBuilderReportData,
       );
