@@ -57,7 +57,7 @@ import {
   prettyDuration,
   prettyCONSTName,
 } from '@finos/legend-shared';
-import { forwardRef, useState } from 'react';
+import { type MutableRefObject, forwardRef, useRef } from 'react';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderProjectionColumnState,
@@ -94,7 +94,7 @@ const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
-      event: DataGridCellMouseOverEvent | null;
+      event: MutableRefObject<DataGridCellMouseOverEvent | null>;
       tdsState: QueryBuilderTDSState;
     }
   >(function QueryBuilderResultContextMenu(props, ref) {
@@ -108,10 +108,10 @@ const QueryBuilderGridResultContextMenu = observer(
     const postFilterState = tdsState.postFilterState;
     const projectionColumnState = guaranteeNonNullable(
       tdsState.projectionColumns
-        .filter((c) => c.columnName === event?.column.getColId())
+        .filter((c) => c.columnName === event.current?.column.getColId())
         .concat(
           tdsState.aggregationState.columns
-            .filter((c) => c.columnName === event?.column.getColId())
+            .filter((c) => c.columnName === event.current?.column.getColId())
             .map((ag) => ag.projectionColumnState),
         )[0],
     );
@@ -142,7 +142,7 @@ const QueryBuilderGridResultContextMenu = observer(
     const updateFilterConditionValue = (
       conditionValue: InstanceValue,
     ): void => {
-      if (event?.value !== null) {
+      if (event.current?.value !== null) {
         instanceValue_setValue(
           conditionValue,
           conditionValue instanceof EnumValueInstanceValue
@@ -151,10 +151,10 @@ const QueryBuilderGridResultContextMenu = observer(
                   (
                     conditionValue.genericType?.ownerReference
                       .value as Enumeration
-                  ).values.filter((v) => v.name === event?.value)[0],
+                  ).values.filter((v) => v.name === event.current?.value)[0],
                 ),
               )
-            : event?.value,
+            : event.current?.value,
           0,
           tdsState.queryBuilderState.observerContext,
         );
@@ -221,7 +221,7 @@ const QueryBuilderGridResultContextMenu = observer(
           (conditionState.value instanceof EnumValueInstanceValue
             ? conditionState.value.values.map((ef) => ef.value.name)
             : conditionState.value.values
-          ).includes(event?.value);
+          ).includes(event.current?.value);
         if (!doesValueAlreadyExist) {
           const currentValueSpecificaton = conditionState.value;
           const newValueSpecification =
@@ -249,7 +249,7 @@ const QueryBuilderGridResultContextMenu = observer(
                 : (v as InstanceValue).values,
             )
             .flat()
-            .includes(event?.value);
+            .includes(event.current?.value);
         if (!doesValueAlreadyExist) {
           const newValueSpecification = (
             isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator
@@ -285,12 +285,14 @@ const QueryBuilderGridResultContextMenu = observer(
     };
 
     const handleCopyCellValue = applicationStore.guardUnhandledError(() =>
-      applicationStore.clipboardService.copyTextToClipboard(event?.value),
+      applicationStore.clipboardService.copyTextToClipboard(
+        event.current?.value,
+      ),
     );
 
     const handleCopyRowValue = applicationStore.guardUnhandledError(() =>
       applicationStore.clipboardService.copyTextToClipboard(
-        Object.values(event?.data).toString(),
+        Object.values(event.current?.data).toString(),
       ),
     );
 
@@ -330,8 +332,9 @@ const QueryBuilderGridResult = observer(
     const { executionResult, queryBuilderState } = props;
     const fetchStructureImplementation =
       queryBuilderState.fetchStructureState.implementation;
-    const [cellDoubleClickedEvent, setCellDoubleClickedEvent] =
-      useState<DataGridCellMouseOverEvent | null>(null);
+    const cellDoubleClickedEvent = useRef<DataGridCellMouseOverEvent | null>(
+      null,
+    );
     const columns = executionResult.result.columns;
     const rowData = executionResult.result.rows.map((_row, rowIdx) => {
       const row: PlainObject = {};
@@ -381,7 +384,7 @@ const QueryBuilderGridResult = observer(
           // in. hence why we set the cell every time we mouse over
           // rather than making user click multiple times.
           onCellMouseOver={(event): void => {
-            setCellDoubleClickedEvent(event);
+            cellDoubleClickedEvent.current = event;
           }}
           suppressFieldDotNotation={true}
           columnDefs={columns.map((colName) => ({
