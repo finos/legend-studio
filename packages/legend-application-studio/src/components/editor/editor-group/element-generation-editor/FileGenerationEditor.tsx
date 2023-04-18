@@ -71,7 +71,7 @@ import {
   fileGeneration_changeScopeElement,
   fileGeneration_deleteScopeElement,
   fileGeneration_setGenerationOutputPath,
-} from '../../../../stores/editor/utils/modifier/DSL_Generation_GraphModifierHelper.js';
+} from '../../../../stores/graph-modifier/DSL_Generation_GraphModifierHelper.js';
 import { FileSystemViewer } from './FileSystemViewer.js';
 
 const FileGenerationScopeEditor = observer(

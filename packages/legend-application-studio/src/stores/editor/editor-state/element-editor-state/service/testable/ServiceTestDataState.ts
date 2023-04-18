@@ -52,7 +52,7 @@ import type { EditorStore } from '../../../../EditorStore.js';
 import {
   service_addConnectionTestData,
   service_setConnectionTestDataEmbeddedData,
-} from '../../../../utils/modifier/DSL_Service_GraphModifierHelper.js';
+} from '../../../../../graph-modifier/DSL_Service_GraphModifierHelper.js';
 import {
   createMockEnumerationProperty,
   createMockPrimitiveProperty,

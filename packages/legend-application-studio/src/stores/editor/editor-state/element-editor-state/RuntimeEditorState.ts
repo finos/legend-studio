@@ -67,14 +67,14 @@ import {
   generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
-import { packageableElementReference_setValue } from '../../utils/modifier/DomainGraphModifierHelper.js';
+import { packageableElementReference_setValue } from '../../../graph-modifier/DomainGraphModifierHelper.js';
 import {
   runtime_addIdentifiedConnection,
   runtime_addMapping,
   runtime_addUniqueStoreConnectionsForStore,
   runtime_deleteIdentifiedConnection,
   runtime_deleteMapping,
-} from '../../utils/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 
 export const getClassMappingStore = (
   setImplementation: SetImplementation,

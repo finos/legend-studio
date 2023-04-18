@@ -50,7 +50,7 @@ import {
   configurationProperty_addConfigurationProperty,
   fileGeneration_addScopeElement,
   fileGeneration_deleteScopeElement,
-} from '../utils/modifier/DSL_Generation_GraphModifierHelper.js';
+} from '../../graph-modifier/DSL_Generation_GraphModifierHelper.js';
 import { FileSystemState } from './FileSystemState.js';
 
 export abstract class GeneratedFileStructureState {

@@ -84,7 +84,7 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteTaggedValue,
   association_changePropertyType,
-} from '../../../../stores/editor/utils/modifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/graph-modifier/DomainGraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,

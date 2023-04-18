@@ -63,7 +63,7 @@ import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../
 import {
   relationDbConnection_setNewAuthenticationStrategy,
   relationDbConnection_setDatasourceSpecification,
-} from '../../../utils/modifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../graph-modifier/STO_Relational_GraphModifierHelper.js';
 import {
   MapperPostProcessorEditorState,
   type PostProcessorEditorState,

@@ -58,7 +58,7 @@ import {
   externalFormat_modelUnit_addPackageableElementIncludes,
   externalFormat_modelUnit_deletePackageableElementExcludes,
   externalFormat_modelUnit_deletePackageableElementIncludes,
-} from '../../../../stores/editor/utils/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+} from '../../../../stores/graph-modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 
 const ModelUnitPackagableElementEntryEditor = observer(
   (props: {

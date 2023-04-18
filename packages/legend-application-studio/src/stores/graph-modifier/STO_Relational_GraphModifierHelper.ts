@@ -61,7 +61,7 @@ import {
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
-import type { RelationalDatabaseConnectionValueState } from '../../editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import type { RelationalDatabaseConnectionValueState } from '../editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 
 // --------------------------------------------- DB Connection -------------------------------------
 

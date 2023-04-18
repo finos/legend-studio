@@ -101,16 +101,16 @@ import {
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
   function_swapParameters,
-} from '../../../stores/editor/utils/modifier/DomainGraphModifierHelper.js';
+} from '../../../stores/graph-modifier/DomainGraphModifierHelper.js';
 import {
   rawVariableExpression_setMultiplicity,
   rawVariableExpression_setName,
   rawVariableExpression_setType,
-} from '../../../stores/editor/utils/modifier/RawValueSpecificationGraphModifierHelper.js';
+} from '../../../stores/graph-modifier/RawValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
-import { graph_renameElement } from '../../../stores/editor/utils/modifier/GraphModifierHelper.js';
+import { graph_renameElement } from '../../../stores/graph-modifier/GraphModifierHelper.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',

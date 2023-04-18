@@ -82,7 +82,7 @@ import {
   enum_deleteValue,
   enum_addValue,
   enum_swapValues,
-} from '../../../../stores/editor/utils/modifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/graph-modifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 

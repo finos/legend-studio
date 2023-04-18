@@ -45,7 +45,7 @@ import {
   getRawGenericType,
   EnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
-import { flatDataPropertyMapping_setTransformer } from '../../../../stores/editor/utils/modifier/STO_FlatData_GraphModifierHelper.js';
+import { flatDataPropertyMapping_setTransformer } from '../../../../stores/graph-modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,

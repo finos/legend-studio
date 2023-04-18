@@ -82,11 +82,11 @@ import {
   isStubbed_RawLambda,
   DEPRECATED__validate_MappingTestAssert,
 } from '@finos/legend-graph';
-import { flatData_setData } from '../../../../stores/editor/utils/modifier/STO_FlatData_GraphModifierHelper.js';
+import { flatData_setData } from '../../../../stores/graph-modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/editor/utils/modifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../stores/graph-modifier/STO_Relational_GraphModifierHelper.js';
 import {
   type QueryBuilderState,
   QueryBuilderTextEditorMode,

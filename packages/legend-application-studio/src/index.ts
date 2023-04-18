@@ -54,10 +54,10 @@ export {
   type TransformDropTarget,
 } from './stores/editor/utils/DnDUtils.js';
 export { ExplorerTreeRootPackageLabel } from './stores/editor/ExplorerTreeState.js';
-export * from './stores/editor/utils/modifier/GraphModifierHelper.js';
-export * from './stores/editor/utils/modifier/DomainGraphModifierHelper.js';
-export * from './stores/editor/utils/modifier/DSL_Generation_GraphModifierHelper.js';
-export * from './stores/editor/utils/modifier/DSL_Service_GraphModifierHelper.js';
+export * from './stores/graph-modifier/GraphModifierHelper.js';
+export * from './stores/graph-modifier/DomainGraphModifierHelper.js';
+export * from './stores/graph-modifier/DSL_Generation_GraphModifierHelper.js';
+export * from './stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
 export * from './stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
@@ -110,7 +110,7 @@ export { DSL_ExternalFormat_LegendStudioApplicationPlugin } from './components/e
 export {
   externalFormatData_setData,
   externalFormatData_setContentType,
-} from './stores/editor/utils/modifier/DSL_Data_GraphModifierHelper.js';
+} from './stores/graph-modifier/DSL_Data_GraphModifierHelper.js';
 export { ExternalFormatDataEditor } from './components/editor/editor-group/data-editor/DataElementEditor.js';
 export {
   ExternalFormatDataState,

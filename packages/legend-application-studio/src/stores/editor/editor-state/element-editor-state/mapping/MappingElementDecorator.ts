@@ -74,8 +74,8 @@ import {
   operationMapping_setParameters,
   pureInstanceSetImpl_setPropertyMappings,
   purePropertyMapping_setTransformer,
-} from '../../../utils/modifier/DSL_Mapping_GraphModifierHelper.js';
-import { rootRelationalSetImp_setPropertyMappings } from '../../../utils/modifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
+import { rootRelationalSetImp_setPropertyMappings } from '../../../../graph-modifier/STO_Relational_GraphModifierHelper.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 
 /**

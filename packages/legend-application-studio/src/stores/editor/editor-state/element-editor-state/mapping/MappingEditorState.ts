@@ -105,7 +105,7 @@ import type {
   MappingElementLabel,
 } from '../../../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { LegendStudioApplicationPlugin } from '../../../../LegendStudioApplicationPlugin.js';
-import { flatData_setSourceRootRecordType } from '../../../utils/modifier/STO_FlatData_GraphModifierHelper.js';
+import { flatData_setSourceRootRecordType } from '../../../../graph-modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   pureInstanceSetImpl_setSrcClass,
   mapping_addClassMapping,
@@ -117,9 +117,9 @@ import {
   mapping_deleteTest,
   setImpl_updateRootOnCreate,
   setImpl_updateRootOnDelete,
-} from '../../../utils/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../utils/ModelClassifierUtils.js';
-import { rootRelationalSetImp_setMainTableAlias } from '../../../utils/modifier/STO_Relational_GraphModifierHelper.js';
+import { rootRelationalSetImp_setMainTableAlias } from '../../../../graph-modifier/STO_Relational_GraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
 import type { MappingEditorTabState } from './MappingTabManagerState.js';
 

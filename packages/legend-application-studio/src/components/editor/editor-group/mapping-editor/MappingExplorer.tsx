@@ -70,7 +70,7 @@ import {
   PureInstanceSetImplementationFilterState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
-import { pureInstanceSetImpl_setMappingFilter } from '../../../../stores/editor/utils/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { pureInstanceSetImpl_setMappingFilter } from '../../../../stores/graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 
 export const MappingExplorerContextMenu = observer(
   forwardRef<

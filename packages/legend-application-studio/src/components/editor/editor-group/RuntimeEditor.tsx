@@ -111,7 +111,7 @@ import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../
 import {
   runtime_addIdentifiedConnection,
   runtime_deleteIdentifiedConnection,
-} from '../../../stores/editor/utils/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../stores/graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib__/LegendStudioApplicationNavigationContext.js';
 
 const getConnectionTooltipText = (

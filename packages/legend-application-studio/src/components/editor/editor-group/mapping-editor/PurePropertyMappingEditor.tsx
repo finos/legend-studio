@@ -44,7 +44,7 @@ import {
   getRawGenericType,
   EnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
-import { purePropertyMapping_setTransformer } from '../../../../stores/editor/utils/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { purePropertyMapping_setTransformer } from '../../../../stores/graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import { getExpectedReturnType } from './PropertyMappingsEditor.js';
 import {
   CLASS_PROPERTY_TYPE,

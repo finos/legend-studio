@@ -42,7 +42,7 @@ import {
   operationMapping_setOperation,
   operationMapping_setParameters,
   setImplementation_setRoot,
-} from '../../../../stores/editor/utils/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../../stores/graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 
 export const OperatorSelector = observer(

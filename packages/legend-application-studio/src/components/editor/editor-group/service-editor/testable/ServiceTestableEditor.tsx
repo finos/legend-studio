@@ -33,7 +33,7 @@ import type { ServiceTestSuite } from '@finos/legend-graph';
 import { ServiceTestDataEditor } from './ServiceTestDataEditor.js';
 import { ServiceTestsEditor } from './ServiceTestsEditor.js';
 import { forwardRef, useEffect, useState } from 'react';
-import { testSuite_setId } from '../../../../../stores/editor/utils/modifier/Testable_GraphModifierHelper.js';
+import { testSuite_setId } from '../../../../../stores/graph-modifier/Testable_GraphModifierHelper.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type {
   ServiceTestableState,

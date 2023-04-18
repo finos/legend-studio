@@ -74,7 +74,7 @@ import {
   parseGACoordinates,
   generateGAVCoordinates,
 } from '@finos/legend-storage';
-import { runtime_addMapping } from '../../../utils/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { runtime_addMapping } from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   keyedExecutionParameter_setKey,
@@ -85,7 +85,7 @@ import {
   pureSingleExecution_setMapping,
   pureSingleExecution_setRuntime,
   service_setExecution,
-} from '../../../utils/modifier/DSL_Service_GraphModifierHelper.js';
+} from '../../../../graph-modifier/DSL_Service_GraphModifierHelper.js';
 import {
   buildExecutionParameterValues,
   getExecutionQueryFromRawLambda,

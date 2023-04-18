@@ -41,7 +41,7 @@ import { GENERATION_FILE_ROOT_NAME } from '../../utils/FileSystemTreeUtils.js';
 import {
   configurationProperty_addConfigurationProperty,
   configurationProperty_setValue,
-} from '../../utils/modifier/DSL_Generation_GraphModifierHelper.js';
+} from '../../../graph-modifier/DSL_Generation_GraphModifierHelper.js';
 import { GeneratedFileStructureState } from '../FileGenerationState.js';
 import { ElementEditorState } from './ElementEditorState.js';
 

@@ -33,7 +33,7 @@ import type { EmbeddedQueryBuilderState } from '../../../../stores/editor/Embedd
 import {
   service_initNewService,
   service_setExecution,
-} from '../../../../stores/editor/utils/modifier/DSL_Service_GraphModifierHelper.js';
+} from '../../../../stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { NewServiceModal } from '../service-editor/NewServiceModal.js';
 

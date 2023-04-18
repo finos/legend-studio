@@ -79,12 +79,12 @@ import {
   stub_RawLambda,
   isStubbed_RawLambda,
 } from '@finos/legend-graph';
-import { objectInputData_setData } from '../../../../stores/editor/utils/modifier/DSL_Mapping_GraphModifierHelper.js';
-import { flatData_setData } from '../../../../stores/editor/utils/modifier/STO_FlatData_GraphModifierHelper.js';
+import { objectInputData_setData } from '../../../../stores/graph-modifier/DSL_Mapping_GraphModifierHelper.js';
+import { flatData_setData } from '../../../../stores/graph-modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/editor/utils/modifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../stores/graph-modifier/STO_Relational_GraphModifierHelper.js';
 import { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 import {
   ExecutionPlanViewer,

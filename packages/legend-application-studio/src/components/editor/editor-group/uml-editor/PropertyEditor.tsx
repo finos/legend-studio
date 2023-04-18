@@ -63,7 +63,7 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteStereotype,
   property_setAggregationKind,
-} from '../../../../stores/editor/utils/modifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/graph-modifier/DomainGraphModifierHelper.js';
 
 type AggregationKindOption = { label: string; value: AggregationKind };
 const buildAggregationKindOption = (

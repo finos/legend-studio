@@ -37,7 +37,7 @@ import {
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
-import { externalFormatData_setData } from '../../../utils/modifier/DSL_Data_GraphModifierHelper.js';
+import { externalFormatData_setData } from '../../../../graph-modifier/DSL_Data_GraphModifierHelper.js';
 import {
   getTestableResultFromAssertionStatus,
   TESTABLE_RESULT,

@@ -44,7 +44,7 @@ import {
   type TestAssertionEditorState,
   type TestAssertionState,
 } from '../../../../stores/editor/editor-state/element-editor-state/testable/TestAssertionState.js';
-import { externalFormatData_setData } from '../../../../stores/editor/utils/modifier/DSL_Data_GraphModifierHelper.js';
+import { externalFormatData_setData } from '../../../../stores/graph-modifier/DSL_Data_GraphModifierHelper.js';
 import { TESTABLE_RESULT } from '../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import {
