@@ -36,10 +36,11 @@ export enum LEGEND_STUDIO_TEST_ID {
   STATUS_BAR = 'status-bar',
   EDITOR__STATUS_BAR__RIGHT = 'editor__status-bar__right',
 
-  EDIT_PANEL = 'edit-panel',
-  EDIT_PANEL_CONTENT = 'edit-panel__content',
-  EDIT_PANEL__HEADER_TABS = 'edit-panel__header-tabs',
-  EDIT_PANEL__ELEMENT_VIEW__OPTIONS = 'edit-panel__view-mode__options',
+  EDITOR_GROUP = 'editor-group',
+  EDITOR_GROUP_CONTENT = 'editor-group__content',
+  EDITOR_GROUP__HEADER_TABS = 'editor-group__header-tabs',
+  EDITOR_GROUP__ELEMENT_VIEW__OPTIONS = 'editor-group__view-mode__options',
+
   EDITOR__TABS__HEADER = 'editor__tabs__header',
 
   CLASS_FORM_EDITOR = 'class-form-editor',

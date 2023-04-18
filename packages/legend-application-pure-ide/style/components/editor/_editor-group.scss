@@ -1,0 +1,144 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.editor-group {
+  &__header {
+    background: var(--color-dark-grey-100);
+    z-index: 1;
+    height: 3.4rem;
+    min-height: 3.4rem;
+    padding: 0;
+  }
+
+  &__header__action {
+    svg {
+      color: var(--color-light-grey-400);
+    }
+  }
+
+  &__content {
+    overflow-y: hidden;
+    position: relative;
+    background: var(--color-dark-grey-50);
+    height: calc(100% - 3.4rem);
+  }
+
+  &__header__tabs {
+    display: flex;
+    height: 100%;
+    // NOTE: these allow the header actions to be of whatever width
+    flex: 1;
+    overflow: hidden;
+  }
+
+  &__header__tab {
+    @include flexVCenter;
+
+    &__icon {
+      &--file {
+        color: var(--color-file);
+      }
+
+      &--readonly {
+        margin-left: 0.5rem;
+        font-size: 1rem;
+        color: var(--color-dark-grey-350);
+      }
+    }
+
+    &__label {
+      margin-left: 0.5rem;
+    }
+
+    &__path {
+      @include flexVCenter;
+
+      color: var(--color-dark-grey-350);
+      margin-left: 0.5rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      padding: 0 0.5rem;
+      height: 1.6rem;
+      font-weight: 500;
+      font-family: 'Roboto Mono', monospace;
+    }
+  }
+
+  &__header__actions {
+    display: flex;
+    height: 100%;
+  }
+
+  &__splash-screen {
+    @include flexCenter;
+
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+    user-select: none;
+    background: var(--color-dark-grey-50);
+
+    &__logo svg {
+      height: 19rem;
+      fill: var(--color-dark-grey-85);
+    }
+
+    &__content--hidden,
+    &__logo--hidden {
+      display: none;
+    }
+
+    &__content__item {
+      @include flexVCenter;
+
+      height: 3.4rem;
+    }
+
+    &__content__item__label {
+      @include flexVCenter;
+
+      height: 2.8rem;
+      font-weight: 500;
+      width: 20rem;
+      justify-content: flex-end;
+      margin-right: 1.5rem;
+      color: var(--color-light-grey-400);
+    }
+
+    &__content__item__hot-keys {
+      @include flexVCenter;
+
+      height: 2.8rem;
+    }
+
+    .hotkey {
+      &__key {
+        color: var(--color-light-grey-400);
+        background: var(--color-dark-grey-200);
+      }
+
+      &__plus svg {
+        color: var(--color-light-grey-400);
+      }
+    }
+  }
+
+  .tab-manager__tab--active {
+    border-bottom: 0.1rem solid var(--color-yellow-400);
+  }
+}

@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { EntityDiffViewState } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
-import { EntityDiffSideBarItem } from '../edit-panel/diff-editor/EntityDiffView.js';
+import { EntityDiffSideBarItem } from '../editor-group/diff-editor/EntityDiffView.js';
 import {
   PanelLoadingIndicator,
   CloudDownloadIcon,
@@ -26,7 +26,7 @@ import {
   BanIcon,
   PanelContent,
 } from '@finos/legend-art';
-import { EntityChangeConflictSideBarItem } from '../edit-panel/diff-editor/EntityChangeConflictEditor.js';
+import { EntityChangeConflictSideBarItem } from '../editor-group/diff-editor/EntityChangeConflictEditor.js';
 import { EntityChangeConflictEditorState } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
 import { flowResult } from 'mobx';

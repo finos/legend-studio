@@ -16,7 +16,7 @@
 
 import packageJson from '../../../package.json';
 import { BufferIcon, SitemapIcon } from '@finos/legend-art';
-import { SchemaSetEditor } from '../editor/edit-panel/external-format-editor/DSL_ExternalFormat_SchemaSetElementEditor.js';
+import { SchemaSetEditor } from '../editor/editor-group/external-format-editor/DSL_ExternalFormat_SchemaSetElementEditor.js';
 import {
   type Connection,
   type PackageableElement,
@@ -35,8 +35,8 @@ import {
   ExternalFormatConnectionEditor,
   ExternalFormatConnectionValueState,
   NewExternalFormatConnectionDriver,
-} from '../editor/edit-panel/external-format-editor/DSL_ExternalFormat_ExternalFormatConnectionEditor.js';
-import { BindingEditor } from '../editor/edit-panel/external-format-editor/DSL_ExternalFormat_BindingElementEditor.js';
+} from '../editor/editor-group/external-format-editor/DSL_ExternalFormat_ExternalFormatConnectionEditor.js';
+import { BindingEditor } from '../editor/editor-group/external-format-editor/DSL_ExternalFormat_BindingElementEditor.js';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import type { ReactNode } from 'react';
 import {
@@ -87,7 +87,7 @@ import {
 import {
   NewSchemaSetDriver,
   NewSchemaSetDriverEditor,
-} from '../editor/edit-panel/external-format-editor/DSL_ExternalFormat_NewSchemaSetDriver.js';
+} from '../editor/editor-group/external-format-editor/DSL_ExternalFormat_NewSchemaSetDriver.js';
 import type {
   NewConnectionValueDriver,
   NewElementDriver,

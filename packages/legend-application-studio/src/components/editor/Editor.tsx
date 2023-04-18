@@ -27,8 +27,11 @@ import {
 } from '@finos/legend-art';
 import { AuxiliaryPanel } from './aux-panel/AuxiliaryPanel.js';
 import { SideBar } from './side-bar/SideBar.js';
-import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel.js';
-import { GrammarTextEditor } from './edit-panel/GrammarTextEditor.js';
+import {
+  EditorGroup,
+  EditorGroupSplashScreen,
+} from './editor-group/EditorGroup.js';
+import { GrammarTextEditor } from './editor-group/GrammarTextEditor.js';
 import { StatusBar } from './StatusBar.js';
 import { ActivityBar } from './ActivityBar.js';
 import type { WorkspaceEditorPathParams } from '../../application/LegendStudioNavigation.js';
@@ -206,13 +209,13 @@ export const Editor = withEditorStore(
                       >
                         {(isResolvingConflicts || editable) &&
                           editorStore.graphEditorMode.mode ===
-                            GRAPH_EDITOR_MODE.FORM && <EditPanel />}
+                            GRAPH_EDITOR_MODE.FORM && <EditorGroup />}
                         {editable &&
                           editorStore.graphEditorMode.mode ===
                             GRAPH_EDITOR_MODE.GRAMMAR_TEXT && (
                             <GrammarTextEditor />
                           )}
-                        {!editable && <EditPanelSplashScreen />}
+                        {!editable && <EditorGroupSplashScreen />}
                       </ResizablePanel>
                       <ResizablePanelSplitter>
                         <ResizablePanelSplitterLine

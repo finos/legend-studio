@@ -16,8 +16,8 @@
 
 import { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
-import { EditPanel } from '../editor/edit-panel/EditPanel.js';
-import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor.js';
+import { EditorGroup } from '../editor/editor-group/EditorGroup.js';
+import { GrammarTextEditor } from '../editor/editor-group/GrammarTextEditor.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
 import {
   ACTIVITY_MODE,
@@ -331,7 +331,7 @@ export const ProjectViewer = withEditorStore(
                       minSize={300}
                     >
                       {editorStore.graphEditorMode.mode ===
-                        GRAPH_EDITOR_MODE.FORM && <EditPanel />}
+                        GRAPH_EDITOR_MODE.FORM && <EditorGroup />}
                       {editorStore.graphEditorMode.mode ===
                         GRAPH_EDITOR_MODE.GRAMMAR_TEXT && <GrammarTextEditor />}
                     </ResizablePanel>

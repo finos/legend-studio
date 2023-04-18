@@ -28,7 +28,7 @@ import {
   TimesIcon,
 } from '@finos/legend-art';
 import type { BulkServiceRegistrationState } from '../../../stores/editor/sidebar-state/BulkServiceRegistrationState.js';
-import { BulkServiceRegistrationEditor } from '../edit-panel/service-editor/BulkServiceRegistrationEditor.js';
+import { BulkServiceRegistrationEditor } from '../editor-group/service-editor/BulkServiceRegistrationEditor.js';
 import { noop } from '@finos/legend-shared';
 
 export const RegisterService = observer(

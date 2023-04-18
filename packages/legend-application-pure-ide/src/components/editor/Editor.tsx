@@ -21,7 +21,7 @@ import { SideBar } from './side-bar/SideBar.js';
 import { ActivityBar } from './ActivityBar.js';
 import { withEditorStore, useEditorStore } from './EditorStoreProvider.js';
 import { StatusBar } from './StatusBar.js';
-import { EditPanel } from './edit-panel/EditPanel.js';
+import { EditorGroup } from './editor-group/EditorGroup.js';
 import { FileSearchCommand } from './command-center/FileSearchCommand.js';
 import { flowResult } from 'mobx';
 import { useApplicationStore, useCommands } from '@finos/legend-application';
@@ -144,7 +144,7 @@ export const Editor = withEditorStore(
                         ? auxCollapsiblePanelGroupProps.remainingPanel
                         : {})}
                     >
-                      <EditPanel />
+                      <EditorGroup />
                     </ResizablePanel>
                     <ResizablePanelSplitter>
                       <ResizablePanelSplitterLine

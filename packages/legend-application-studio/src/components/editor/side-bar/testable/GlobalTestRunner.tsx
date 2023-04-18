@@ -76,7 +76,7 @@ import type { STO_ProjectOverview_LegendStudioApplicationPlugin_Extension } from
 import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
 import { TextDiffView } from '../../../shared/DiffView.js';
 import { getElementTypeIcon } from '../../../shared/ElementIconUtils.js';
-import { UnsupportedEditorPanel } from '../../edit-panel/UnsupportedElementEditor.js';
+import { UnsupportedEditorPanel } from '../../editor-group/UnsupportedElementEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 

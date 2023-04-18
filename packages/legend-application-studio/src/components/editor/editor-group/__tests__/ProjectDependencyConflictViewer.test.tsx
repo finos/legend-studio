@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-import { test, beforeEach } from '@jest/globals';
+import { test, expect, beforeEach } from '@jest/globals';
 import {
   type RenderResult,
   waitFor,
   fireEvent,
   getByText,
   findByText,
+  getByTitle,
+  queryByText,
+  queryAllByText,
+  queryByTitle,
+  queryAllByTitle,
 } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
@@ -28,8 +33,8 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../__test-utils__/EditorComponentTestUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
-import { TEST_DATA__ProjectDependencyReport } from '../../editor-group/__tests__/TEST_DATA__ProjectDependencyReport.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
+import { TEST_DATA__ProjectDependencyReportWithConflict } from './TEST_DATA__ProjectDependencyReport.js';
 
 let renderResult: RenderResult;
 
@@ -95,54 +100,14 @@ const TEST_DATA__DependencyEntities = [
     artifactId: 'prod-1',
     versionId: '2.0.0',
     versionedEntity: false,
-    entities: [
-      {
-        path: 'model::ClassB',
-        content: {
-          _type: 'class',
-          name: 'ClassB',
-          package: 'model',
-          properties: [
-            {
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              name: 'prop1',
-              type: 'String',
-            },
-          ],
-        },
-        classifierPath: 'meta::pure::metamodel::type::Class',
-      },
-    ],
+    entities: [],
   },
   {
     groupId: 'org.finos.legend',
     artifactId: 'prod-2',
     versionId: '3.0.0',
     versionedEntity: false,
-    entities: [
-      {
-        path: 'test::ClassC',
-        content: {
-          _type: 'class',
-          name: 'ClassC',
-          package: 'test',
-          properties: [
-            {
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              name: 'prop',
-              type: 'String',
-            },
-          ],
-        },
-        classifierPath: 'meta::pure::metamodel::type::Class',
-      },
-    ],
+    entities: [],
   },
 ];
 
@@ -158,30 +123,69 @@ beforeEach(async () => {
     projects: TEST_DATA__Projects,
     projectData: TEST_DATA__ProjectData,
     projectDependency: TEST_DATA__DependencyEntities,
-    dependencyReport: TEST_DATA__ProjectDependencyReport,
+    dependencyReport: TEST_DATA__ProjectDependencyReportWithConflict,
   });
+  fireEvent.click(renderResult.getByText('config'));
+  const editorGroup = await renderResult.findByTestId(
+    LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
+  );
+  const updateButton = getByText(editorGroup, 'Update');
+  expect(updateButton.getAttribute('disabled')).not.toBeNull();
+  await waitFor(() => renderResult.getByText('Project Structure'));
 });
 
-test(integrationTest('Test navigation of dependency tree'), async () => {
-  const explorerTree = renderResult.getByTestId(
-    LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
+test(integrationTest('Test Project Report With Conflicts'), async () => {
+  const editorGroup = renderResult.getByTestId(
+    LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
   );
+  await findByText(editorGroup, 'Project Dependencies');
+  fireEvent.click(getByText(editorGroup, 'Project Dependencies'));
 
-  // expanding dependency tree
-  await waitFor(() => findByText(explorerTree, 'dependencies'));
-  fireEvent.click(getByText(explorerTree, 'dependencies'));
+  // NOTE: We do this check to ensure the async processes is done to avoid warnings.
+  // See: https://davidwcai.medium.com/react-testing-library-and-the-not-wrapped-in-act-errors-491a5629193b
+  await waitFor(() => getByText(editorGroup, 'PROD-1'));
 
-  // expanding first dependency
-  await waitFor(() => findByText(explorerTree, 'prod-1'));
-  fireEvent.click(getByText(explorerTree, 'prod-1'));
-  await waitFor(() => findByText(explorerTree, 'model'));
-  fireEvent.click(getByText(explorerTree, 'model'));
-  await waitFor(() => findByText(explorerTree, 'ClassB'));
+  await findByText(editorGroup, 'View Dependency Explorer');
+  await findByText(editorGroup, 'View Conflicts');
 
-  // expanding second dependency
-  await waitFor(() => findByText(explorerTree, 'prod-2'));
-  fireEvent.click(getByText(explorerTree, 'prod-2'));
-  await waitFor(() => findByText(explorerTree, 'test'));
-  fireEvent.click(getByText(explorerTree, 'test'));
-  await waitFor(() => findByText(explorerTree, 'ClassC'));
+  fireEvent.click(getByText(editorGroup, 'View Conflicts'));
+  const dependencyExplorer = await waitFor(() =>
+    renderResult.getByRole('dialog'),
+  );
+  await waitFor(() => getByTitle(dependencyExplorer, 'com.company0:artifact0'));
+  fireEvent.click(getByTitle(dependencyExplorer, 'com.company0:artifact0'));
+  await waitFor(() =>
+    getByTitle(dependencyExplorer, 'com.company0:artifact0.2.0.0'),
+  );
+  await waitFor(() =>
+    getByTitle(dependencyExplorer, 'com.company0:artifact0.3.0.0'),
+  );
+  fireEvent.click(
+    getByTitle(dependencyExplorer, 'com.company0:artifact0.2.0.0'),
+  );
+  await waitFor(() => getByText(dependencyExplorer, 'artifact36'));
+  fireEvent.click(getByText(dependencyExplorer, 'artifact36'));
+  await waitFor(() => getByText(dependencyExplorer, 'artifact4'));
+  fireEvent.click(getByText(dependencyExplorer, 'artifact4'));
+  await waitFor(() => getByText(dependencyExplorer, 'artifact0'));
+  expect(
+    getByTitle(dependencyExplorer, 'com.company0:artifact0:2.0.0'),
+  ).toBeDefined();
+
+  // collaspe tree
+  fireEvent.click(getByTitle(dependencyExplorer, 'Collapse Tree'));
+  expect(queryByText(dependencyExplorer, 'artifact0')).toBeNull();
+  fireEvent.click(getByTitle(dependencyExplorer, 'Expand All Conflict Paths'));
+  await waitFor(() => queryAllByText(dependencyExplorer, 'artifact11'));
+  expect(
+    queryAllByTitle(dependencyExplorer, 'com.company0:artifact33:20.0.0'),
+  ).toBeDefined();
+
+  fireEvent.click(getByText(dependencyExplorer, 'Explorer'));
+  await waitFor(() =>
+    queryByTitle(dependencyExplorer, 'com.company3:artifact36:3.0.0'),
+  );
+  expect(queryAllByText(dependencyExplorer, 'artifact36').length).toBe(2);
+  expect(queryByText(dependencyExplorer, '2.0.0')).toBeDefined();
+  expect(queryByText(dependencyExplorer, '3.0.0')).toBeDefined();
 });

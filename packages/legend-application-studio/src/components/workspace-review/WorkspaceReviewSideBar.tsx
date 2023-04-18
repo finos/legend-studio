@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { EntityDiffSideBarItem } from '../editor/edit-panel/diff-editor/EntityDiffView.js';
+import { EntityDiffSideBarItem } from '../editor/editor-group/diff-editor/EntityDiffView.js';
 import {
   clsx,
   PanelLoadingIndicator,

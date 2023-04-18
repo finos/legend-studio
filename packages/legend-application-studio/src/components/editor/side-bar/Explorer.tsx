@@ -75,7 +75,7 @@ import {
   type FileSystemTreeNodeData,
   getFileSystemChildNodes,
 } from '../../../stores/editor/shared/FileSystemTreeUtils.js';
-import { FileSystemTree } from '../edit-panel/element-generation-editor/FileSystemViewer.js';
+import { FileSystemTree } from '../editor-group/element-generation-editor/FileSystemViewer.js';
 import {
   generateViewEntityRoute,
   generateViewProjectByGAVRoute,
@@ -113,7 +113,7 @@ import {
 } from '@finos/legend-application';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/shared/ModelClassifierUtils.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioFrameworkProvider.js';
-import { queryClass } from '../edit-panel/uml-editor/ClassQueryBuilder.js';
+import { queryClass } from '../editor-group/uml-editor/ClassQueryBuilder.js';
 import { createViewSDLCProjectHandler } from '../../../stores/editor/DependencyProjectViewerHelper.js';
 import {
   MASTER_SNAPSHOT_ALIAS,

@@ -63,13 +63,13 @@ export * from './stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Ext
 export * from './stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 
 // components
-export { queryClass } from './components/editor/edit-panel/uml-editor/ClassQueryBuilder.js';
+export { queryClass } from './components/editor/editor-group/uml-editor/ClassQueryBuilder.js';
 export * from './components/editor/EditorStoreProvider.js';
 export { ActivityBarMenu } from './components/editor/ActivityBar.js';
 export * from './components/workspace-setup/ProjectSelectorUtils.js';
 export * from './components/workspace-setup/WorkspaceSelectorUtils.js';
-export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor.js';
-export { TypeTree } from './components/editor/edit-panel/mapping-editor/TypeTree.js';
+export { ClassFormEditor } from './components/editor/editor-group/uml-editor/ClassEditor.js';
+export { TypeTree } from './components/editor/editor-group/mapping-editor/TypeTree.js';
 export * from './stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 
 export { PostProcessorEditorState } from './stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
@@ -100,7 +100,7 @@ export {
   generateServiceManagementUrl,
 } from './stores/editor/editor-state/element-editor-state/service/ServiceRegistrationState.js';
 export { ServicePureExecutionState } from './stores/editor/editor-state/element-editor-state/service/ServiceExecutionState.js';
-export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal.js';
+export { NewServiceModal } from './components/editor/editor-group/service-editor/NewServiceModal.js';
 export { FileSystem_File as GenerationFile } from './stores/editor/shared/FileSystemTreeUtils.js';
 export {
   FileGenerationState,
@@ -111,7 +111,7 @@ export {
   externalFormatData_setData,
   externalFormatData_setContentType,
 } from './stores/editor/shared/modifier/DSL_Data_GraphModifierHelper.js';
-export { ExternalFormatDataEditor } from './components/editor/edit-panel/data-editor/DataElementEditor.js';
+export { ExternalFormatDataEditor } from './components/editor/editor-group/data-editor/DataElementEditor.js';
 export {
   ExternalFormatDataState,
   EmbeddedDataState,
