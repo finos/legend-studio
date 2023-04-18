@@ -40,6 +40,10 @@ type MappingSourceTypeInfo = {
   sourceName: string;
 };
 
+export type PureGrammarConnectionLabeler = (
+  connection: Connection,
+) => string | undefined;
+
 export type SetImplementationDecorator = (
   setImplementation: SetImplementation,
 ) => void;
@@ -124,6 +128,11 @@ export type InstanceSetImplementationStoreExtractor = (
 
 export interface DSL_Mapping_LegendStudioApplicationPlugin_Extension
   extends DSL_LegendStudioApplicationPlugin_Extension {
+  /**
+   * Get the list of Pure grammar type labelers for connections.
+   */
+  getExtraPureGrammarConnectionLabelers?(): PureGrammarConnectionLabeler[];
+
   /**
    * Get the list of set implementation decorators.
    */

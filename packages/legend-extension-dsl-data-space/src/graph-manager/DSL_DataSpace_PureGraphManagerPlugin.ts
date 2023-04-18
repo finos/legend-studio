@@ -21,14 +21,11 @@ import {
   type ObserverContext,
   type ElementObserver,
   type PackageableElement,
-  type PureGrammarElementLabeler,
   type PureGraphManagerExtensionBuilder,
 } from '@finos/legend-graph';
 import { observe_DataSpace } from './action/changeDetection/DSL_DataSpace_ObserverHelper.js';
 import { DSL_DataSpace_buildGraphManagerExtension } from './protocol/pure/DSL_DataSpace_PureGraphManagerExtensionBuilder.js';
 
-export const PURE_GRAMMAR_DATA_SPACE_PARSER_NAME = 'DataSpace';
-export const PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL = 'DataSpace';
 export const PURE_ENTERPRISE_PROFILE_PATH = 'meta::pure::profiles::enterprise';
 export const PURE_ENTERPRISE_PROFILE_TAXONOMY_NODE_STEREOTYPE = 'taxonomyNodes';
 export const PURE_DATA_SPACE_INFO_PROFILE_PATH =
@@ -46,25 +43,6 @@ export class DSL_DataSpace_PureGraphManagerPlugin extends PureGraphManagerPlugin
 
   override getExtraPureGraphManagerExtensionBuilders(): PureGraphManagerExtensionBuilder[] {
     return [DSL_DataSpace_buildGraphManagerExtension];
-  }
-
-  override getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_DATA_SPACE_PARSER_NAME];
-  }
-
-  override getExtraPureGrammarKeywords(): string[] {
-    return [PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL];
-  }
-
-  override getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element: PackageableElement): string | undefined => {
-        if (element instanceof DataSpace) {
-          return PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
-    ];
   }
 
   override getExtraElementObservers(): ElementObserver[] {

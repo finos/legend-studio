@@ -21,35 +21,12 @@ import {
   type ObserverContext,
   type ElementObserver,
   type PackageableElement,
-  type PureGrammarElementLabeler,
 } from '@finos/legend-graph';
 import { observe_Text } from './action/changeDetection/DSL_Text_ObserverHelper.js';
-
-export const PURE_GRAMMAR_TEXT_PARSER_NAME = 'Text';
-export const PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL = 'Text';
 
 export class DSL_Text_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
-  }
-
-  override getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_TEXT_PARSER_NAME];
-  }
-
-  override getExtraPureGrammarKeywords(): string[] {
-    return [PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL];
-  }
-
-  override getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element: PackageableElement): string | undefined => {
-        if (element instanceof Text) {
-          return PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
-    ];
   }
 
   override getExtraElementObservers(): ElementObserver[] {

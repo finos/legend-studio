@@ -31,6 +31,7 @@ import {
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarParserElementSnippetSuggestionsGetter,
   type PureGrammarParserElementDocumentationGetter,
+  type PureGrammarElementLabeler,
 } from '@finos/legend-application-studio';
 import { FileIcon } from '@finos/legend-art';
 import { TextEditorState } from '../../stores/studio/TextEditorState.js';
@@ -38,10 +39,6 @@ import { TextElementEditor } from './TextElementEditor.js';
 import type { PackageableElement } from '@finos/legend-graph';
 import { Text } from '../../graph/metamodel/pure/model/packageableElements/text/DSL_Text_Text.js';
 import { DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/DSL_Text_LegendStudioDocumentation.js';
-import {
-  PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL,
-  PURE_GRAMMAR_TEXT_PARSER_NAME,
-} from '../../graph-manager/DSL_Text_PureGraphManagerPlugin.js';
 import {
   MARKDOWN_TEXT_SNIPPET,
   PLAIN_TEXT_SNIPPET,
@@ -53,6 +50,9 @@ import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
+
+const PURE_GRAMMAR_TEXT_PARSER_NAME = 'Text';
+const PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL = 'Text';
 
 export class DSL_Text_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -72,6 +72,25 @@ export class DSL_Text_LegendStudioApplicationPlugin
   override getExtraAccessEventLoggingApplicationContextKeys(): string[] {
     return [
       DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.TEXT_EDITOR,
+    ];
+  }
+
+  getExtraPureGrammarParserNames(): string[] {
+    return [PURE_GRAMMAR_TEXT_PARSER_NAME];
+  }
+
+  getExtraPureGrammarKeywords(): string[] {
+    return [PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL];
+  }
+
+  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
+    return [
+      (element: PackageableElement): string | undefined => {
+        if (element instanceof Text) {
+          return PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
+      },
     ];
   }
 

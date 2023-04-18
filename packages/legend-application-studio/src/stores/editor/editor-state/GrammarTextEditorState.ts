@@ -19,7 +19,6 @@ import { action, makeObservable, observable } from 'mobx';
 import { hashValue, UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type PackageableElement,
-  type DSL_Mapping_PureGraphManagerPlugin_Extension,
   Profile,
   Enumeration,
   Class,
@@ -47,6 +46,8 @@ import {
 import { generatePackageableElementTreeNodeDataLabel } from '../utils/PackageTreeUtils.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../../__lib__/LegendStudioSetting.js';
 import type { CodeEditorPosition } from '@finos/legend-lego/code-editor';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../LegendStudioApplicationPlugin.js';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,
@@ -154,11 +155,11 @@ export class GrammarTextEditorState {
         typeLabel = PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION;
       }
       const extraPureGrammarConnectionLabelers = this.editorStore.pluginManager
-        .getPureGraphManagerPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_Mapping_PureGraphManagerPlugin_Extension
+              plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
             ).getExtraPureGrammarConnectionLabelers?.() ?? [],
         );
       for (const labeler of extraPureGrammarConnectionLabelers) {
@@ -176,9 +177,12 @@ export class GrammarTextEditorState {
       typeLabel = PURE_ELEMENT_NAME.EXECUTION_ENVIRONMENT;
     } else {
       const extraPureGrammarElementLabelers = this.editorStore.pluginManager
-        .getPureGraphManagerPlugins()
+        .getApplicationPlugins()
         .flatMap(
-          (plugin) => plugin.getExtraPureGrammarElementLabelers?.() ?? [],
+          (plugin) =>
+            (
+              plugin as DSL_LegendStudioApplicationPlugin_Extension
+            ).getExtraPureGrammarElementLabelers?.() ?? [],
         );
       for (const labeler of extraPureGrammarElementLabelers) {
         const _typeLabel = labeler(element);

@@ -29,10 +29,12 @@ import {
   CORE_CONTEXTUAL_DOCUMENTATION_CONFIG,
   LEGEND_STUDIO_DOCUMENTATION_KEY,
 } from '../../__lib__/LegendStudioDocumentation.js';
-import { LegendStudioApplicationPlugin } from '../../stores/LegendStudioApplicationPlugin.js';
+import {
+  LegendStudioApplicationPlugin,
+  type DSL_LegendStudioApplicationPlugin_Extension,
+} from '../../stores/LegendStudioApplicationPlugin.js';
 import { LEGEND_STUDIO_COMMAND_CONFIG } from '../../__lib__/LegendStudioCommand.js';
 import { LEGEND_STUDIO_SETTING_CONFIG } from '../../__lib__/LegendStudioSetting.js';
-import type { LegendStudioApplicationStore } from '../../stores/LegendStudioBaseStore.js';
 import {
   configureCodeEditorComponent,
   setupPureLanguageService,
@@ -50,17 +52,21 @@ export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationP
       async (applicationStore) => {
         await configureCodeEditorComponent(applicationStore);
         setupPureLanguageService({
-          extraKeywords: (
-            applicationStore as LegendStudioApplicationStore
-          ).pluginManager
-            .getPureGraphManagerPlugins()
-            .flatMap((plugin) => plugin.getExtraPureGrammarKeywords?.() ?? []),
-          extraParserKeywords: (
-            applicationStore as LegendStudioApplicationStore
-          ).pluginManager
-            .getPureGraphManagerPlugins()
+          extraKeywords: applicationStore.pluginManager
+            .getApplicationPlugins()
             .flatMap(
-              (plugin) => plugin.getExtraPureGrammarParserNames?.() ?? [],
+              (plugin) =>
+                (
+                  plugin as DSL_LegendStudioApplicationPlugin_Extension
+                ).getExtraPureGrammarKeywords?.() ?? [],
+            ),
+          extraParserKeywords: applicationStore.pluginManager
+            .getApplicationPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSL_LegendStudioApplicationPlugin_Extension
+                ).getExtraPureGrammarParserNames?.() ?? [],
             ),
         });
       },

@@ -21,10 +21,6 @@ import type { SetImplementation } from '../../graph/metamodel/pure/packageableEl
 import type { ObserverContext } from '../action/changeDetection/CoreObserverHelper.js';
 import type { PureGraphManagerPlugin } from '../PureGraphManagerPlugin.js';
 
-export type PureGrammarConnectionLabeler = (
-  connection: Connection,
-) => string | undefined;
-
 export type ConnectionObserver = (
   connection: Connection,
   context: ObserverContext,
@@ -51,11 +47,6 @@ export type MappingTestInputDataObserver = (
 
 export interface DSL_Mapping_PureGraphManagerPlugin_Extension
   extends PureGraphManagerPlugin {
-  /**
-   * Get the list of Pure grammar type labelers for connections.
-   */
-  getExtraPureGrammarConnectionLabelers?(): PureGrammarConnectionLabeler[];
-
   getExtraSetImplementationObservers?(): SetImplementationObserver[];
 
   getExtraMappingTestInputDataObservers?(): MappingTestInputDataObserver[];

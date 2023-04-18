@@ -29,19 +29,11 @@ import {
 import type {
   ConnectionObserver,
   DSL_Mapping_PureGraphManagerPlugin_Extension,
-  PureGrammarConnectionLabeler,
 } from './DSL_Mapping_PureGraphManagerPlugin_Extension.js';
 import {
-  type PureGrammarElementLabeler,
   type ElementObserver,
   PureGraphManagerPlugin,
 } from '../PureGraphManagerPlugin.js';
-
-export const PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME = 'ExternalFormat';
-export const PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL = 'Binding';
-export const PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL = 'SchemaSet';
-const PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL =
-  'ExternalFormatConnection';
 
 export class DSL_ExternalFormat_PureGraphManagerPlugin
   extends PureGraphManagerPlugin
@@ -54,31 +46,6 @@ export class DSL_ExternalFormat_PureGraphManagerPlugin
     );
   }
 
-  override getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME];
-  }
-
-  override getExtraPureGrammarKeywords(): string[] {
-    return [
-      PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
-      PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
-      PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL,
-    ];
-  }
-
-  override getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element): string | undefined => {
-        if (element instanceof Binding) {
-          return PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL;
-        } else if (element instanceof SchemaSet) {
-          return PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
-    ];
-  }
-
   override getExtraElementObservers(): ElementObserver[] {
     return [
       (
@@ -89,17 +56,6 @@ export class DSL_ExternalFormat_PureGraphManagerPlugin
           return observe_Binding(element);
         } else if (element instanceof SchemaSet) {
           return observe_SchemaSet(element);
-        }
-        return undefined;
-      },
-    ];
-  }
-
-  getExtraPureGrammarConnectionLabelers(): PureGrammarConnectionLabeler[] {
-    return [
-      (connection): string | undefined => {
-        if (connection instanceof ExternalFormatConnection) {
-          return PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL;
         }
         return undefined;
       },

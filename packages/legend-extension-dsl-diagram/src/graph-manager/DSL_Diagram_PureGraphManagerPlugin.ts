@@ -20,36 +20,13 @@ import {
   type ObserverContext,
   type ElementObserver,
   type PackageableElement,
-  type PureGrammarElementLabeler,
 } from '@finos/legend-graph';
 import { observe_Diagram } from './action/changeDetection/DSL_Diagram_ObserverHelper.js';
 import { Diagram } from '../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
 
-export const PURE_GRAMMAR_DIAGRAM_PARSER_NAME = 'Diagram';
-export const PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL = 'Diagram';
-
 export class DSL_Diagram_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
-  }
-
-  override getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_DIAGRAM_PARSER_NAME];
-  }
-
-  override getExtraPureGrammarKeywords(): string[] {
-    return [PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL];
-  }
-
-  override getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element: PackageableElement): string | undefined => {
-        if (element instanceof Diagram) {
-          return PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
-    ];
   }
 
   override getExtraElementObservers(): ElementObserver[] {

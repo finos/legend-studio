@@ -28,16 +28,10 @@ import {
   type ElementObserver,
   type ObserverContext,
   type PackageableElement,
-  type PureGrammarElementLabeler,
   PureGraphManagerPlugin,
   type Testable_PureGraphManagerPlugin_Extension,
 } from '@finos/legend-graph';
 import { PersistenceTest } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
-
-export const PURE_GRAMMAR_PERSISTENCE_PARSER_NAME = 'Persistence';
-export const PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL = 'Persistence';
-export const PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL =
-  'PersistenceContext';
 
 export class DSL_Persistence_PureGraphManagerPlugin
   extends PureGraphManagerPlugin
@@ -45,30 +39,6 @@ export class DSL_Persistence_PureGraphManagerPlugin
 {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
-  }
-
-  override getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_PERSISTENCE_PARSER_NAME];
-  }
-
-  override getExtraPureGrammarKeywords(): string[] {
-    return [
-      PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
-      PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL,
-    ];
-  }
-
-  override getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element: PackageableElement): string | undefined => {
-        if (element instanceof Persistence) {
-          return PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL;
-        } else if (element instanceof PersistenceContext) {
-          return PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
-    ];
   }
 
   override getExtraElementObservers(): ElementObserver[] {

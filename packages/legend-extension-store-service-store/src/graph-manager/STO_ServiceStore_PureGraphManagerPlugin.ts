@@ -20,8 +20,6 @@ import {
   PureGraphManagerPlugin,
   type DSL_Mapping_PureGraphManagerPlugin_Extension,
   type PackageableElement,
-  type PureGrammarElementLabeler,
-  type PureGrammarConnectionLabeler,
   type ElementObserver,
   type ObserverContext,
   type SetImplementation,
@@ -42,12 +40,6 @@ import {
 import { RootServiceInstanceSetImplementation } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/mapping/STO_ServiceStore_RootServiceInstanceSetImplementation.js';
 import { ServiceStoreEmbeddedData } from '../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceStoreEmbeddedData.js';
 
-export const PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME = 'ServiceStore';
-export const PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL = 'ServiceStore';
-export const PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL =
-  'ServiceStoreConnection';
-const PURE_GRAMMAR_SERVICE_STORE_SERVICE_GROUP_LABEL = 'ServiceGroup';
-
 export class STO_ServiceStore_PureGraphManagerPlugin
   extends PureGraphManagerPlugin
   implements
@@ -58,29 +50,6 @@ export class STO_ServiceStore_PureGraphManagerPlugin
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
   }
 
-  override getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME];
-  }
-
-  override getExtraPureGrammarKeywords(): string[] {
-    return [
-      PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
-      PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL,
-      PURE_GRAMMAR_SERVICE_STORE_SERVICE_GROUP_LABEL,
-    ];
-  }
-
-  override getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element: PackageableElement): string | undefined => {
-        if (element instanceof ServiceStore) {
-          return PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
-    ];
-  }
-
   override getExtraElementObservers(): ElementObserver[] {
     return [
       (
@@ -89,17 +58,6 @@ export class STO_ServiceStore_PureGraphManagerPlugin
       ): PackageableElement | undefined => {
         if (element instanceof ServiceStore) {
           return observe_ServiceStore(element, context);
-        }
-        return undefined;
-      },
-    ];
-  }
-
-  getExtraPureGrammarConnectionLabelers(): PureGrammarConnectionLabeler[] {
-    return [
-      (connection): string | undefined => {
-        if (connection instanceof ServiceStoreConnection) {
-          return PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL;
         }
         return undefined;
       },

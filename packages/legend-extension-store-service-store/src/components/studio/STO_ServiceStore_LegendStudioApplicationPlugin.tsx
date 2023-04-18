@@ -53,6 +53,8 @@ import {
   type EmbeddedDataCreator,
   type MappingElementSource,
   type ConnectionTypeOption,
+  type PureGrammarElementLabeler,
+  type PureGrammarConnectionLabeler,
 } from '@finos/legend-application-studio';
 import { SwaggerIcon } from '@finos/legend-art';
 import {
@@ -65,11 +67,6 @@ import {
 import { ServiceStore } from '../../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_ServiceStore.js';
 import { RootServiceInstanceSetImplementation } from '../../graph/metamodel/pure/model/packageableElements/store/serviceStore/mapping/STO_ServiceStore_RootServiceInstanceSetImplementation.js';
 import { ServiceStoreConnection } from '../../graph/metamodel/pure/model/packageableElements/store/serviceStore/connection/STO_ServiceStore_ServiceStoreConnection.js';
-import {
-  PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL,
-  PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
-  PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
-} from '../../graph-manager/STO_ServiceStore_PureGraphManagerPlugin.js';
 import { EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/STO_ServiceStore_LegendStudioDocumentation.js';
 import {
   BLANK_SERVICE_STORE_SNIPPET,
@@ -97,6 +94,12 @@ const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
 const SERVICE_STORE_EMBEDDED_DATA_TYPE = 'ServiceStore';
 export const SERVICE_STORE_CONNECTION = 'SERVICE_STORE_CONNECTION';
 
+const PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME = 'ServiceStore';
+const PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL = 'ServiceStore';
+const PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL =
+  'ServiceStoreConnection';
+const PURE_GRAMMAR_SERVICE_STORE_SERVICE_GROUP_LABEL = 'ServiceGroup';
+
 export class STO_ServiceStore_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
   implements
@@ -111,6 +114,40 @@ export class STO_ServiceStore_LegendStudioApplicationPlugin
     return [
       EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_SERVICE_STORE,
       EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
+  }
+
+  getExtraPureGrammarParserNames(): string[] {
+    return [PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME];
+  }
+
+  getExtraPureGrammarKeywords(): string[] {
+    return [
+      PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
+      PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL,
+      PURE_GRAMMAR_SERVICE_STORE_SERVICE_GROUP_LABEL,
+    ];
+  }
+
+  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
+    return [
+      (element: PackageableElement): string | undefined => {
+        if (element instanceof ServiceStore) {
+          return PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarConnectionLabelers(): PureGrammarConnectionLabeler[] {
+    return [
+      (connection): string | undefined => {
+        if (connection instanceof ServiceStoreConnection) {
+          return PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL;
+        }
+        return undefined;
+      },
     ];
   }
 

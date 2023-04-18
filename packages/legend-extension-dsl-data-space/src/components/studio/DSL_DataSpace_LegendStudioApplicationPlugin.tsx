@@ -34,6 +34,7 @@ import {
   type ExplorerContextMenuItemRendererConfiguration,
   type EditorExtensionStateCreator,
   type EditorExtensionComponentRendererConfiguration,
+  type PureGrammarElementLabeler,
 } from '@finos/legend-application-studio';
 import {
   PackageableElementExplicitReference,
@@ -46,10 +47,6 @@ import {
   DataSpaceExecutionContext,
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/DSL_DataSpace_LegendStudioDocumentation.js';
-import {
-  PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
-  PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
-} from '../../graph-manager/DSL_DataSpace_PureGraphManagerPlugin.js';
 import { SIMPLE_DATA_SPACE_SNIPPET } from '../../__lib__/studio/DSL_DataSpace_LegendStudioCodeSnippet.js';
 import type { DocumentationEntry } from '@finos/legend-application';
 import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
@@ -63,6 +60,9 @@ import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_DATA_SPACE';
+
+const PURE_GRAMMAR_DATA_SPACE_PARSER_NAME = 'DataSpace';
+const PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL = 'DataSpace';
 
 export class DSL_DataSpace_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -102,6 +102,25 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
       {
         key: 'data-space-preview',
         renderer: (editorStore) => <DataSpacePreviewDialog />,
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserNames(): string[] {
+    return [PURE_GRAMMAR_DATA_SPACE_PARSER_NAME];
+  }
+
+  getExtraPureGrammarKeywords(): string[] {
+    return [PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL];
+  }
+
+  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
+    return [
+      (element: PackageableElement): string | undefined => {
+        if (element instanceof DataSpace) {
+          return PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
       },
     ];
   }

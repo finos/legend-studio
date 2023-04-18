@@ -35,14 +35,10 @@ import {
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
   type ElementTypeLabelGetter,
+  type PureGrammarElementLabeler,
 } from '@finos/legend-application-studio';
 import { Persistence } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Persistence.js';
 import { PersistenceContext } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceContext.js';
-import {
-  PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL,
-  PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
-  PURE_GRAMMAR_PERSISTENCE_PARSER_NAME,
-} from '../../graph-manager/DSL_Persistence_PureGraphManagerPlugin.js';
 import {
   BLANK_PERSISTENCE_CONTEXT_SNIPPET,
   BLANK_PERSISTENCE_SNIPPET,
@@ -58,6 +54,11 @@ const PERSISTENCE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
 const PERSISTENCE_CONTEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_PERSISTENCE_CONTEXT';
 
+const PURE_GRAMMAR_PERSISTENCE_PARSER_NAME = 'Persistence';
+const PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL = 'Persistence';
+const PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL =
+  'PersistenceContext';
+
 export class DSL_Persistence_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
   implements DSL_LegendStudioApplicationPlugin_Extension
@@ -71,6 +72,30 @@ export class DSL_Persistence_LegendStudioApplicationPlugin
       DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_PERSISTENCE,
       DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_PERSISTENCE_CONTEXT,
       DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
+  }
+
+  getExtraPureGrammarParserNames(): string[] {
+    return [PURE_GRAMMAR_PERSISTENCE_PARSER_NAME];
+  }
+
+  getExtraPureGrammarKeywords(): string[] {
+    return [
+      PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
+      PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL,
+    ];
+  }
+
+  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
+    return [
+      (element: PackageableElement): string | undefined => {
+        if (element instanceof Persistence) {
+          return PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL;
+        } else if (element instanceof PersistenceContext) {
+          return PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
+      },
     ];
   }
 

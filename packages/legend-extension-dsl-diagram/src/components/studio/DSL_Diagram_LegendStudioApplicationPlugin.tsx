@@ -34,6 +34,7 @@ import {
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarParserElementSnippetSuggestionsGetter,
+  type PureGrammarElementLabeler,
 } from '@finos/legend-application-studio';
 import { ShapesIcon } from '@finos/legend-art';
 import type { Class, PackageableElement } from '@finos/legend-graph';
@@ -41,10 +42,6 @@ import { Diagram } from '../../graph/metamodel/pure/packageableElements/diagram/
 import { DiagramEditorState } from '../../stores/studio/DiagramEditorState.js';
 import { DiagramEditor } from './DiagramEditor.js';
 import { ClassDiagramPreview } from './ClassDiagramPreview.js';
-import {
-  PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
-  PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
-} from '../../graph-manager/DSL_Diagram_PureGraphManagerPlugin.js';
 import { DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/DSL_Diagram_LegendStudioDocumentation.js';
 import {
   EMPTY_DIAGRAM_SNIPPET,
@@ -63,6 +60,9 @@ import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';
 const DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_DIAGRAM';
+
+const PURE_GRAMMAR_DIAGRAM_PARSER_NAME = 'Diagram';
+const PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL = 'Diagram';
 
 export class DSL_Diagram_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -96,6 +96,25 @@ export class DSL_Diagram_LegendStudioApplicationPlugin
   override getExtraAccessEventLoggingApplicationContextKeys(): string[] {
     return [
       DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DIAGRAM_EDITOR,
+    ];
+  }
+
+  getExtraPureGrammarParserNames(): string[] {
+    return [PURE_GRAMMAR_DIAGRAM_PARSER_NAME];
+  }
+
+  getExtraPureGrammarKeywords(): string[] {
+    return [PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL];
+  }
+
+  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
+    return [
+      (element: PackageableElement): string | undefined => {
+        if (element instanceof Diagram) {
+          return PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
+      },
     ];
   }
 

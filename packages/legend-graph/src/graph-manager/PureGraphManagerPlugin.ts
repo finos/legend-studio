@@ -37,10 +37,6 @@ export type ElementObserver = (
  * on the graph instead of within the graph. As such processes involving grammar, compilation,
  * generation,etc. should be placed here.
  */
-export type PureGrammarElementLabeler = (
-  metamodel: PackageableElement,
-) => string | undefined;
-
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   /**
    * This helps to better type-check for this empty abtract type
@@ -69,19 +65,4 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
    * become observable by change detection engine.
    */
   getExtraElementObservers?(): ElementObserver[];
-
-  /**
-   * Get the list of supported Pure grammar parsers.
-   */
-  getExtraPureGrammarParserNames?(): string[];
-
-  /**
-   * Get the list of supported Pure grammar keywords.
-   */
-  getExtraPureGrammarKeywords?(): string[];
-
-  /**
-   * Get the list of Pure grammar element labelers.
-   */
-  getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
 }

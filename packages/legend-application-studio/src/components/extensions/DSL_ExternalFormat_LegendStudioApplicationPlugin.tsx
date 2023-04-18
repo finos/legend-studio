@@ -27,9 +27,6 @@ import {
   ModelUnit,
   ExternalFormatConnection,
   UrlStream,
-  PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
-  PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME,
-  PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
 } from '@finos/legend-graph';
 import {
   ExternalFormatConnectionEditor,
@@ -53,6 +50,8 @@ import {
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   LegendStudioApplicationPlugin,
+  type DSL_LegendStudioApplicationPlugin_Extension,
+  type PureGrammarElementLabeler,
 } from '../../stores/LegendStudioApplicationPlugin.js';
 import type {
   ConnectionEditorRenderer,
@@ -61,6 +60,7 @@ import type {
   DefaultConnectionValueBuilder,
   DSL_Mapping_LegendStudioApplicationPlugin_Extension,
   NewConnectionDriverCreator,
+  PureGrammarConnectionLabeler,
   RuntimeConnectionTooltipTextBuilder,
 } from '../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { EditorStore } from '../../stores/editor/EditorStore.js';
@@ -99,9 +99,17 @@ const BINDING_ELEMENT_TYPE = 'BINDING';
 const BINDING_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_BINDING';
 export const EXTERNAL_FORMAT_CONNECTION = 'EXTERNAL_FORMAT_CONNECTION';
 
+const PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME = 'ExternalFormat';
+const PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL = 'Binding';
+const PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL = 'SchemaSet';
+const PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL =
+  'ExternalFormatConnection';
+
 export class DSL_ExternalFormat_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
-  implements DSL_Mapping_LegendStudioApplicationPlugin_Extension
+  implements
+    DSL_LegendStudioApplicationPlugin_Extension,
+    DSL_Mapping_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
     super(
@@ -115,6 +123,42 @@ export class DSL_ExternalFormat_LegendStudioApplicationPlugin
       DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_BINDING,
       DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_SCHEMASET,
       DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
+  }
+
+  getExtraPureGrammarParserNames(): string[] {
+    return [PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME];
+  }
+
+  getExtraPureGrammarKeywords(): string[] {
+    return [
+      PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
+      PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
+      PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL,
+    ];
+  }
+
+  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
+    return [
+      (element): string | undefined => {
+        if (element instanceof Binding) {
+          return PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL;
+        } else if (element instanceof SchemaSet) {
+          return PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarConnectionLabelers(): PureGrammarConnectionLabeler[] {
+    return [
+      (connection): string | undefined => {
+        if (connection instanceof ExternalFormatConnection) {
+          return PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL;
+        }
+        return undefined;
+      },
     ];
   }
 
