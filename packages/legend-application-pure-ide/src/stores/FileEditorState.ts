@@ -16,7 +16,6 @@
 
 import {
   type CommandRegistrar,
-  CODE_EDITOR_LANGUAGE,
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
@@ -24,6 +23,7 @@ import {
   clearMarkers,
   setErrorMarkers,
   type CodeEditorPosition,
+  CODE_EDITOR_LANGUAGE,
 } from '@finos/legend-lego/code-editor';
 import { DIRECTORY_PATH_DELIMITER } from '@finos/legend-graph';
 import {
@@ -59,7 +59,7 @@ import {
 import type { PureIDEStore } from './PureIDEStore.js';
 import { PureIDETabState } from './PureIDETabManagerState.js';
 import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../application/LegendPureIDECommand.js';
-import type { TabState } from '@finos/legend-application/components';
+import type { TabState } from '@finos/legend-lego/application';
 
 const getFileEditorLanguage = (filePath: string): string => {
   const extension = getNullableLastElement(filePath.split('.'));

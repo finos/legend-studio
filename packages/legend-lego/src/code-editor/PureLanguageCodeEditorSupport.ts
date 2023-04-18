@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { DocumentationEntry } from '@finos/legend-application';
 import { PARSER_SECTION_MARKER, PURE_PARSER } from '@finos/legend-graph';
 import {
   getNullableFirstElement,
@@ -25,7 +26,6 @@ import {
   languages as monacoLanguagesAPI,
   type IPosition,
 } from 'monaco-editor';
-import type { DocumentationEntry } from '../DocumentationService.js';
 
 /**
  * This snippet suggestion is meant for an embedded content of an element

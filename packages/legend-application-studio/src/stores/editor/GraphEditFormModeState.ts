@@ -54,7 +54,7 @@ import {
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import { LegendStudioTelemetryHelper } from '../../application/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
-import type { TabState } from '@finos/legend-application/components';
+import type { TabState } from '@finos/legend-lego/application';
 
 export class GraphEditFormModeState extends GraphEditorMode {
   *initialize(): GeneratorFn<void> {

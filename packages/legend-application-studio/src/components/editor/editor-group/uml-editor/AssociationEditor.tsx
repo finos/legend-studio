@@ -89,11 +89,11 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '../../../../stores/editor/shared/ModelClassifierUtils.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
 import {
   buildElementOption,
-  useApplicationNavigationContext,
   type PackageableElementOption,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../application/LegendStudioDocumentation.js';
 

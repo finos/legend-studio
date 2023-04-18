@@ -14,5 +14,11 @@
  * limitations under the License.
  */
 
+export * from './CodeEditorConfig.js';
 export * from './CodeEditor.js';
 export * from './CodeEditorUtils.js';
+export {
+  PURE_GRAMMAR_TOKEN,
+  setupPureLanguageService,
+} from './PureLanguageService.js';
+export * from './PureLanguageCodeEditorSupport.js';

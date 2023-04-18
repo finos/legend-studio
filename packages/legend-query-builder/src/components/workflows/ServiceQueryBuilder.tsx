@@ -17,16 +17,16 @@
 import { CustomSelectorInput, PlayIcon, RobotIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { getMappingCompatibleClasses, type Service } from '@finos/legend-graph';
-import {
-  buildElementOption,
-  useApplicationStore,
-  type PackageableElementOption,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import { QueryBuilderClassSelector } from '../QueryBuilderSideBar.js';
 import type {
   ServiceExecutionContext,
   ServiceQueryBuilderState,
 } from '../../stores/workflows/ServiceQueryBuilderState.js';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
 
 type ExecutionContextOption = {
   label: string;

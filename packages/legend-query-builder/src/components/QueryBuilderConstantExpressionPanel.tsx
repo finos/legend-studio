@@ -15,10 +15,10 @@
  */
 
 import {
-  type PackageableElementOption,
   buildElementOption,
   getPackageableElementOptionFormatter,
-} from '@finos/legend-application';
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
 import {
   BlankPanelPlaceholder,
   CustomSelectorInput,

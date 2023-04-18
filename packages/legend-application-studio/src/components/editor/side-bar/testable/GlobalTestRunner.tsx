@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   type TreeData,
   type TreeNodeContainerProps,
@@ -78,7 +77,10 @@ import { TextDiffView } from '../../../shared/DiffView.js';
 import { getElementTypeIcon } from '../../../shared/ElementIconUtils.js';
 import { UnsupportedEditorPanel } from '../../editor-group/UnsupportedElementEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 export const getTestableResultIcon = (
   testableResult: TESTABLE_RESULT,

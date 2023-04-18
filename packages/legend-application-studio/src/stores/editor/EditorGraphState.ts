@@ -95,7 +95,7 @@ import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-e
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../application/LegendStudioSetting.js';
-import type { TabState } from '@finos/legend-application/components';
+import type { TabState } from '@finos/legend-lego/application';
 import { LegendStudioTelemetryHelper } from '../../application/LegendStudioTelemetryHelper.js';
 
 export enum GraphBuilderStatus {

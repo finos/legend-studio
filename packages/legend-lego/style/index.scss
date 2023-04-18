@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-@forward 'code-editor';
-@forward 'data-grid';
+@forward 'application/fuzzy-search';
+@forward 'application/tab-manager';
+@forward 'application/documentation-link';
 
 // Reset (override library styles)
 @forward 'reset/monaco-editor';
+@forward 'code-editor';
+
+@forward 'data-grid';
+
+@forward 'graph-editor/packageable-element-option-label';

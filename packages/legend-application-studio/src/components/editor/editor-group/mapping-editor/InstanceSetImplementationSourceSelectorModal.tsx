@@ -43,11 +43,11 @@ import {
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
+import { useApplicationStore } from '@finos/legend-application';
 import {
-  useApplicationStore,
   buildElementOption,
   getPackageableElementOptionFormatter,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 
 export const getMappingElementSourceFilterText = (
   option: MappingElementSourceSelectOption,

@@ -31,8 +31,10 @@ import {
   ResizablePanelSplitterLine,
 } from '@finos/legend-art';
 import { GenerationPropertyEditor } from '../element-generation-editor/FileGenerationEditor.js';
-import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 enum HIDDEN_CONFIGURATION_PROPERTIES {
   FORMAT = 'format',

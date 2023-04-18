@@ -39,7 +39,6 @@ import {
   LEGEND_QUERY_ROUTE_PATTERN,
 } from '../application/LegendQueryNavigation.js';
 import {
-  setupPureLanguageService,
   type ApplicationPageEntry,
   type LegendApplicationSetup,
 } from '@finos/legend-application';
@@ -47,6 +46,10 @@ import { CloneQueryServiceSetup } from './CloneQueryServiceSetup.js';
 import { QueryProductionizerSetup } from './QueryProductionizerSetup.js';
 import { UpdateExistingServiceQuerySetup } from './UpdateExistingServiceQuerySetup.js';
 import { LoadProjectServiceQuerySetup } from './LoadProjectServiceQuerySetup.js';
+import {
+  configureCodeEditorComponent,
+  setupPureLanguageService,
+} from '@finos/legend-lego/code-editor';
 
 export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   static NAME = packageJson.extensions.applicationQueryPlugin;
@@ -58,7 +61,8 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
   override getExtraApplicationSetups(): LegendApplicationSetup[] {
     return [
       async (applicationStore) => {
-        setupPureLanguageService([], []);
+        await configureCodeEditorComponent(applicationStore);
+        setupPureLanguageService({});
       },
     ];
   }

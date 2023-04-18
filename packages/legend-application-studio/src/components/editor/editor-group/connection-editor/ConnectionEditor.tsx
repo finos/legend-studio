@@ -33,11 +33,12 @@ import {
   modelConnection_setClass,
   modelConnection_setUrl,
 } from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,
-  useApplicationNavigationContext,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
+
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
 
 const ModelConnectionEditor = observer(

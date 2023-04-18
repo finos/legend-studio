@@ -102,7 +102,7 @@ import {
 } from './CodeFixSuggestion.js';
 import { ReferenceUsageResult } from './ReferenceUsageResult.js';
 import { TextSearchState } from './TextSearchState.js';
-import type { TabState } from '@finos/legend-application/components';
+import type { TabState } from '@finos/legend-lego/application';
 
 export class PureIDEStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;

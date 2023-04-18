@@ -18,8 +18,6 @@ import { useEffect, useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI } from 'monaco-editor';
 import {
-  CODE_EDITOR_THEME,
-  CODE_EDITOR_LANGUAGE,
   DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -31,6 +29,8 @@ import {
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
 import {
+  CODE_EDITOR_LANGUAGE,
+  CODE_EDITOR_THEME,
   disposeDiffCodeEditor,
   getBaseCodeEditorOptions,
 } from '@finos/legend-lego/code-editor';

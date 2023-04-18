@@ -52,7 +52,10 @@ import {
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { DEFAULT_DATE_TIME_FORMAT, DEFAULT_TAB_SIZE } from '../const.js';
+import {
+  DEFAULT_DATE_TIME_FORMAT,
+  DEFAULT_TAB_SIZE,
+} from '../stores/ApplicationConfig.js';
 import {
   type VirtualAssistantDocumentationEntry,
   VIRTUAL_ASSISTANT_TAB,

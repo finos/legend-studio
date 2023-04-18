@@ -54,9 +54,9 @@ import { flowResult } from 'mobx';
 import {
   ActionAlertActionType,
   ActionAlertType,
-  buildElementOption,
   useApplicationStore,
 } from '@finos/legend-application';
+import { buildElementOption } from '@finos/legend-lego/graph-editor';
 import { prettyCONSTName } from '@finos/legend-shared';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { useEditorStore } from '../../../EditorStoreProvider.js';

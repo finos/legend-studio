@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export * from './const.js';
+export * from './stores/ApplicationConfig.js';
 
 export * from './application/LegendApplication.js';
 export * from './application/LegendApplicationConfig.js';
@@ -22,6 +22,7 @@ export * from './application/LegendApplicationPluginManager.js';
 export * from './application/LegendApplicationEvent.js';
 export * from './application/LegendApplicationTelemetry.js';
 export * from './application/LegendApplicationSetting.js';
+export * from './application/LegendApplicationDocumentation.js';
 export { LEGEND_APPLICATION_COLOR_THEME } from './application/LegendApplicationTheme.js';
 
 export * from './components/ApplicationStoreProvider.js';
@@ -55,14 +56,3 @@ export * from './stores/ApplicationNavigationContextService.js';
 export * from './stores/LegendApplicationPlugin.js';
 export * from './stores/Core_LegendApplicationPlugin.js';
 export { DISPLAY_ANSI_ESCAPE } from './stores/terminal/Terminal.js';
-
-// ------------------------------------------- TO BE MOVED -------------------------------------------
-
-// TODO: move to `@finos/legend-lego/code-editor`
-export {
-  PURE_GRAMMAR_TOKEN,
-  setupPureLanguageService,
-} from './stores/pure-language/PureLanguageSupport.js';
-export * from './stores/pure-language/PureLanguageCodeEditorSupport.js';
-export * from './components/shared/PackageableElementOptionLabel.js';
-export * from './stores/shared/PackageableElementOption.js';

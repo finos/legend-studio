@@ -26,11 +26,9 @@ import { getPrettyLabelForRevision } from '../../../../stores/editor/editor-stat
 import { flowResult } from 'mobx';
 import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import {
-  useApplicationStore,
-  CODE_EDITOR_LANGUAGE,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import { sortObjectKeys } from '@finos/legend-shared';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-lego/code-editor';
 
 const getDiffItemTitle = (diff: EntityDiff): string | undefined => {
   switch (diff.entityChangeType) {

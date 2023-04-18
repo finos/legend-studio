@@ -94,12 +94,14 @@ import {
 } from '@finos/legend-graph';
 import {
   ApplicationNavigationContextData,
-  buildElementOption,
-  getPackageableElementOptionFormatter,
   useApplicationNavigationContext,
   useApplicationStore,
-  type PackageableElementOption,
 } from '@finos/legend-application';
+import {
+  buildElementOption,
+  getPackageableElementOptionFormatter,
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import type { ClassPreviewRenderer } from '../../../../stores/LegendStudioApplicationPlugin.js';
 import {

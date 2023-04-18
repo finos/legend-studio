@@ -47,10 +47,7 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
 import { flowResult } from 'mobx';
 import { WorkflowJobStatus, WorkflowStatus } from '@finos/legend-server-sdlc';
-import {
-  CODE_EDITOR_LANGUAGE,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   type WorkflowExplorerTreeNodeData,
   type WorkflowLogState,
@@ -65,7 +62,10 @@ import {
   guaranteeType,
   isNonNullable,
 } from '@finos/legend-shared';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 const getWorkflowStatusIcon = (
   workflowStatus: WorkflowStatus,

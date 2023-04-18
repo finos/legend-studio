@@ -45,7 +45,7 @@ import {
   RelationalCSVDataState,
 } from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import type { DataElement } from '@finos/legend-graph';
-import { buildElementOption } from '@finos/legend-application';
+import { buildElementOption } from '@finos/legend-lego/graph-editor';
 import { RelationalCSVDataEditor } from './RelationalCSVDataEditor.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 

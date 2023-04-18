@@ -59,11 +59,11 @@ import {
   type RawExecutionPlan,
 } from '@finos/legend-graph';
 import { SQLExecutionNodeViewer } from './SQLExecutionNodeViewer.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
   CODE_EDITOR_LANGUAGE,
-  DEFAULT_TAB_SIZE,
-} from '@finos/legend-application';
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 
 /**
  * @modularize

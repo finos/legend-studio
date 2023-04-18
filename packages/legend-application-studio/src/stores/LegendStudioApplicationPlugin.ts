@@ -27,7 +27,6 @@ import type {
 import type { Class, PackageableElement, Testable } from '@finos/legend-graph';
 import {
   type DocumentationEntry,
-  type PureGrammarTextSuggestion,
   LegendApplicationPlugin,
 } from '@finos/legend-application';
 import type { TestableMetadata } from './editor/sidebar-state/testable/GlobalTestRunnerState.js';
@@ -35,6 +34,7 @@ import type {
   ExtensionModelImportRendererState,
   ModelImporterState,
 } from './editor/editor-state/ModelImporterState.js';
+import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 export type ExplorerContextMenuItemRendererConfiguration = {
   key: string;

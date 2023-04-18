@@ -24,7 +24,7 @@ import {
   assertTrue,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { GRAPH_MANAGER_EVENT } from '../../../../../../../graphManager/GraphManagerEvent.js';
+import { GRAPH_MANAGER_EVENT } from '../../../../../../../__lib__/GraphManagerEvent.js';
 import type { Mapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { SetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/SetImplementation.js';
 import type { PurePropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping.js';

@@ -31,7 +31,7 @@ import { WebglAddon as XTermWebglAddon } from 'xterm-addon-webgl';
 import {
   DEFAULT_MONOSPACED_FONT_FAMILY,
   DEFAULT_TAB_SIZE,
-} from '../../const.js';
+} from '../ApplicationConfig.js';
 import {
   Terminal,
   DISPLAY_ANSI_ESCAPE,

@@ -16,12 +16,12 @@
 
 import { BaseRadioGroup } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '../../application/LegendApplicationDocumentation.js';
 import { DocumentationLink } from './DocumentationLink.js';
 import {
   ADVANCED_FUZZY_SEARCH_MODE,
   type FuzzySearchAdvancedConfigState,
 } from '@finos/legend-shared';
+import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '@finos/legend-application';
 
 export const FuzzySearchAdvancedConfigMenu = observer(
   (props: { configState: FuzzySearchAdvancedConfigState }) => {

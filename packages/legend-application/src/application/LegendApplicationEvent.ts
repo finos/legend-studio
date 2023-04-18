@@ -35,7 +35,6 @@ export enum APPLICATION_EVENT {
   TERMINAL_COMMAND_CONFIGURATION_CHECK__FAILURE = 'application.load.terminal-command.configuration-check.failure',
 
   COLOR_THEME_CONFIGURATION_CHECK__FAILURE = 'application.layout.color-theme.configuration-check.failure',
-  LOAD_TEXT_EDITOR_FONT__SUCCESS = 'application.load.font.success',
 
   SETTING_CONFIGURATION_CHECK__FAILURE = 'application.setting.configuration-check.failure',
   SETTING_RETRIVE_FAILURE = 'application.setting.retrieve.failure',

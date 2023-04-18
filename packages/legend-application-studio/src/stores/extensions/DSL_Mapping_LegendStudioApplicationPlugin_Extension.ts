@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { PureGrammarTextSuggestion } from '@finos/legend-application';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import type { ConnectionValueState } from '../editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import type { EditorStore } from '../editor/EditorStore.js';
@@ -34,6 +33,7 @@ import type {
   MappingElementState,
   PropertyMappingState,
 } from '../editor/editor-state/element-editor-state/mapping/MappingElementState.js';
+import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 type MappingSourceTypeInfo = {
   sourceType: string;

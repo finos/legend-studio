@@ -22,7 +22,6 @@ import {
   type SettingConfigurationEntry,
   collectSettingConfigurationEntriesFromConfig,
   type LegendApplicationSetup,
-  setupPureLanguageService,
 } from '@finos/legend-application';
 import packageJson from '../../../package.json';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/LegendStudioApplicationNavigationContext.js';
@@ -34,6 +33,10 @@ import { LegendStudioApplicationPlugin } from '../../stores/LegendStudioApplicat
 import { LEGEND_STUDIO_COMMAND_CONFIG } from '../../application/LegendStudioCommand.js';
 import { LEGEND_STUDIO_SETTING_CONFIG } from '../../application/LegendStudioSetting.js';
 import type { LegendStudioApplicationStore } from '../../stores/LegendStudioBaseStore.js';
+import {
+  configureCodeEditorComponent,
+  setupPureLanguageService,
+} from '@finos/legend-lego/code-editor';
 
 export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationPlugin {
   static NAME = packageJson.extensions.applicationStudioPlugin;
@@ -45,17 +48,21 @@ export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationP
   override getExtraApplicationSetups(): LegendApplicationSetup[] {
     return [
       async (applicationStore) => {
-        setupPureLanguageService(
-          // TODO: move these inside of `DSL_LegendStudioApplicationPlugin_Extension`
-          (applicationStore as LegendStudioApplicationStore).pluginManager
+        await configureCodeEditorComponent(applicationStore);
+        setupPureLanguageService({
+          extraKeywords: (
+            applicationStore as LegendStudioApplicationStore
+          ).pluginManager
             .getPureGraphManagerPlugins()
             .flatMap((plugin) => plugin.getExtraPureGrammarKeywords?.() ?? []),
-          (applicationStore as LegendStudioApplicationStore).pluginManager
+          extraParserKeywords: (
+            applicationStore as LegendStudioApplicationStore
+          ).pluginManager
             .getPureGraphManagerPlugins()
             .flatMap(
               (plugin) => plugin.getExtraPureGrammarParserNames?.() ?? [],
             ),
-        );
+        });
       },
     ];
   }

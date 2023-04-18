@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+import {
+  shouldDisplayVirtualAssistantDocumentationEntry,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { clsx, QuestionCircleIcon } from '@finos/legend-art';
-import { useApplicationStore } from '../ApplicationStoreProvider.js';
-import { shouldDisplayVirtualAssistantDocumentationEntry } from '../../stores/AssistantService.js';
 
 export const DocumentationLink: React.FC<{
   documentationKey: string;

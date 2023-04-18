@@ -86,7 +86,7 @@ import type { ExecutionOptions } from '../../../../../graphManager/AbstractPureG
 import type { ExternalFormatDescription } from '../../../../../graphManager/action/externalFormat/ExternalFormatDescription.js';
 import { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
 import { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration.js';
-import { GRAPH_MANAGER_EVENT } from '../../../../../graphManager/GraphManagerEvent.js';
+import { GRAPH_MANAGER_EVENT } from '../../../../../__lib__/GraphManagerEvent.js';
 import { V1_RunTestsInput } from './test/V1_RunTestsInput.js';
 import { V1_RunTestsResult } from './test/V1_RunTestsResult.js';
 import { V1_RenderStyle } from './grammar/V1_RenderStyle.js';

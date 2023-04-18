@@ -24,8 +24,6 @@ import {
 } from 'monaco-editor';
 import {
   DEFAULT_TAB_SIZE,
-  CODE_EDITOR_THEME,
-  CODE_EDITOR_LANGUAGE,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -58,6 +56,8 @@ import {
   getCodeEditorValue,
   normalizeLineEnding,
   clearMarkers,
+  CODE_EDITOR_THEME,
+  CODE_EDITOR_LANGUAGE,
 } from '@finos/legend-lego/code-editor';
 import { TextDiffView } from '../../../shared/DiffView.js';
 import { getPrettyLabelForRevision } from '../../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';

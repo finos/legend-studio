@@ -192,7 +192,7 @@ export {
 } from './graphManager/AbstractPureGraphManager.js';
 export * from './graphManager/GraphManagerStatistics.js';
 export * from './graphManager/GraphManagerUtils.js';
-export * from './graphManager/GraphManagerEvent.js';
+export * from './__lib__/GraphManagerEvent.js';
 export {
   ExecutionResult,
   TDSExecutionResult as TDSExecutionResult,

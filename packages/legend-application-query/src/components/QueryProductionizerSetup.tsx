@@ -28,10 +28,7 @@ import { debounce, guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  CODE_EDITOR_LANGUAGE,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   useLegendQueryApplicationStore,
   useLegendQueryBaseStore,
@@ -43,7 +40,10 @@ import {
   type QueryOption,
 } from '@finos/legend-query-builder';
 import { generateQuerySetupRoute } from '../application/LegendQueryNavigation.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 const QueryProductionizerSetupStoreProvider: React.FC<{
   children: React.ReactNode;

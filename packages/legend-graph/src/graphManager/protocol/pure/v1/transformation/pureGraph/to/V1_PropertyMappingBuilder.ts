@@ -23,7 +23,7 @@ import {
   returnUndefOnError,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { GRAPH_MANAGER_EVENT } from '../../../../../../../graphManager/GraphManagerEvent.js';
+import { GRAPH_MANAGER_EVENT } from '../../../../../../../__lib__/GraphManagerEvent.js';
 import type { PropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/PropertyMapping.js';
 import { PurePropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping.js';
 import { RelationalPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';

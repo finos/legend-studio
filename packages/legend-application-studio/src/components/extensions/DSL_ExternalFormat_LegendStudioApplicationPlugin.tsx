@@ -72,10 +72,7 @@ import {
   externalFormat_Binding_setContentType,
   externalFormat_urlStream_setUrl,
 } from '../../stores/editor/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
-import type {
-  DocumentationEntry,
-  PureGrammarTextSuggestion,
-} from '@finos/legend-application';
+import type { DocumentationEntry } from '@finos/legend-application';
 import { DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/DSL_ExternalFormat_LegendStudioDocumentation.js';
 import {
   BASIC_BINDING_SNIPPET,
@@ -93,6 +90,7 @@ import type {
   NewElementDriver,
   NewElementState,
 } from '../../stores/editor/NewElementState.js';
+import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
 const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

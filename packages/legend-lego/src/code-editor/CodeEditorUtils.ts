@@ -14,7 +14,18 @@
  * limitations under the License.
  */
 
-import { editor as monacoEditorAPI, MarkerSeverity } from 'monaco-editor';
+import {
+  APPLICATION_EVENT,
+  DEFAULT_MONOSPACED_FONT_FAMILY,
+  type GenericLegendApplicationStore,
+} from '@finos/legend-application';
+import { LogEvent } from '@finos/legend-shared';
+import {
+  editor as monacoEditorAPI,
+  KeyCode,
+  KeyMod,
+  MarkerSeverity,
+} from 'monaco-editor';
 
 export type CodeEditorPosition = {
   lineNumber: number;
@@ -198,4 +209,68 @@ export const resetLineNumberGutterWidth = (
       5,
     ),
   });
+};
+
+export const configureCodeEditorComponent = async (
+  applicationStore: GenericLegendApplicationStore,
+): Promise<void> => {
+  /**
+   * Since we use a custom fonts for text-editor, we want to make sure the font is loaded before any text-editor is opened
+   * this is to ensure
+   */
+  const fontLoadFailureErrorMessage = `Monospaced font '${DEFAULT_MONOSPACED_FONT_FAMILY}' has not been loaded properly, code editor might not display properly`;
+  await Promise.all(
+    [400, 700].map((weight) =>
+      document.fonts.load(`${weight} 1em ${DEFAULT_MONOSPACED_FONT_FAMILY}`),
+    ),
+  )
+    .then(() => {
+      if (document.fonts.check(`1em ${DEFAULT_MONOSPACED_FONT_FAMILY}`)) {
+        monacoEditorAPI.remeasureFonts();
+      } else {
+        applicationStore.logService.error(
+          LogEvent.create(APPLICATION_EVENT.APPLICATION_SETUP__FAILURE),
+          fontLoadFailureErrorMessage,
+        );
+      }
+    })
+    .catch(() =>
+      applicationStore.logService.error(
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_SETUP__FAILURE),
+        fontLoadFailureErrorMessage,
+      ),
+    );
+
+  // override native hotkeys supported by monaco-editor
+  // here we map these keys to a dummy command that would just dispatch the key combination
+  // to the application keyboard shortcut service, effectively bypassing the command associated
+  // with the native keybinding
+  const OVERRIDE_DEFAULT_KEYBINDING_COMMAND =
+    'legend.code-editor.override-default-keybinding';
+  monacoEditorAPI.registerCommand(
+    OVERRIDE_DEFAULT_KEYBINDING_COMMAND,
+    (accessor, ...args) => {
+      applicationStore.keyboardShortcutsService.dispatch(args[0]);
+    },
+  );
+  const hotkeyMapping: [number, string][] = [
+    [KeyCode.F1, 'F1'], // show command center
+    [KeyCode.F8, 'F8'], // show error
+    [KeyCode.F9, 'F9'], // toggle debugger breakpoint
+    [KeyMod.WinCtrl | KeyCode.KeyG, 'Control+KeyG'], // go-to line command
+    [KeyMod.WinCtrl | KeyCode.KeyB, 'Control+KeyB'], // cursor move (core command)
+    [KeyMod.WinCtrl | KeyCode.KeyO, 'Control+KeyO'], // cursor move (core command)
+    [KeyMod.WinCtrl | KeyCode.KeyD, 'Control+KeyD'], // cursor move (core command)
+    [KeyMod.WinCtrl | KeyCode.KeyP, 'Control+KeyP'], // cursor move (core command)
+    [KeyMod.Shift | KeyCode.F10, 'Shift+F10'], // show editor context menu
+    [KeyMod.WinCtrl | KeyCode.F2, 'Control+F2'], // change all instances
+    [KeyMod.WinCtrl | KeyCode.F12, 'Control+F12'], // go-to definition
+  ];
+  monacoEditorAPI.addKeybindingRules(
+    hotkeyMapping.map(([nativeCodeEditorKeyBinding, keyCombination]) => ({
+      keybinding: nativeCodeEditorKeyBinding,
+      command: OVERRIDE_DEFAULT_KEYBINDING_COMMAND,
+      commandArgs: keyCombination,
+    })),
+  );
 };

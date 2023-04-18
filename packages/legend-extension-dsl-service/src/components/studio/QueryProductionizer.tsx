@@ -52,11 +52,13 @@ import {
 } from '@finos/legend-art';
 import type { QueryInfo } from '@finos/legend-graph';
 import { generateGAVCoordinates } from '@finos/legend-storage';
-import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
 import { useParams } from '@finos/legend-application/browser';
 import { DSL_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/studio/DSL_Service_LegendStudioDocumentation.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
-import { DocumentationLink } from '@finos/legend-application/components';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
+import { DocumentationLink } from '@finos/legend-lego/application';
 
 export type UserOption = { label: string; value: string };
 

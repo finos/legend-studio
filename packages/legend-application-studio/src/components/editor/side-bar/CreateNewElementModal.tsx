@@ -40,12 +40,12 @@ import {
 } from '@finos/legend-graph';
 import type { FileGenerationTypeOption } from '../../../stores/editor/editor-state/GraphGenerationState.js';
 import { flowResult } from 'mobx';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,
-  useApplicationStore,
   type PackageableElementOption,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 import type { EmbeddedDataTypeOption } from '../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/shared/ModelClassifierUtils.js';

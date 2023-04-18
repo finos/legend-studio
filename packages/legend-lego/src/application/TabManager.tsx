@@ -29,10 +29,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import { useRef, useCallback } from 'react';
 import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
-import type {
-  TabManagerState,
-  TabState,
-} from '../../stores/shared/TabManagerState.js';
+import type { TabManagerState, TabState } from './TabManagerState.js';
 
 type TabDragSource = {
   tab: TabState;

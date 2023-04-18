@@ -42,12 +42,12 @@ import {
   isElementDeprecated,
   PrimitiveType,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 import {
-  type PackageableElementOption,
-  getPackageableElementOptionFormatter,
   buildElementOption,
-  useApplicationStore,
-} from '@finos/legend-application';
+  getPackageableElementOptionFormatter,
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
 import { MilestoningParametersEditor } from './explorer/QueryBuilderMilestoningEditor.js';
 
 export const getParameterValue = (

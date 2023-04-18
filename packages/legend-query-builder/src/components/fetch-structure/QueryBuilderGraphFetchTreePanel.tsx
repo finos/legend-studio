@@ -85,9 +85,11 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
+} from '@finos/legend-application';
+import {
   buildElementOption,
   type PackageableElementOption,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 
 const getBindingFormatter = (props: {
   darkMode?: boolean;

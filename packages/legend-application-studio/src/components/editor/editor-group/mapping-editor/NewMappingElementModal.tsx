@@ -48,7 +48,7 @@ import {
   buildElementOption,
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 
 interface ClassMappingSubTypeOption {
   label: string;

@@ -18,11 +18,7 @@ import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI } from 'monaco-editor';
 import type { FileEditorState } from '../../stores/FileEditorState.js';
-import {
-  CODE_EDITOR_THEME,
-  useApplicationStore,
-  useCommands,
-} from '@finos/legend-application';
+import { useApplicationStore, useCommands } from '@finos/legend-application';
 import {
   clsx,
   Dialog,
@@ -37,6 +33,7 @@ import {
   returnUndefOnError,
 } from '@finos/legend-shared';
 import {
+  CODE_EDITOR_THEME,
   getBaseCodeEditorOptions,
   moveCursorToPosition,
 } from '@finos/legend-lego/code-editor';

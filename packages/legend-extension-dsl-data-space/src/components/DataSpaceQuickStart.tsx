@@ -25,10 +25,7 @@ import {
   clsx,
 } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   DataSpaceExecutableTDSResult,
   type DataSpaceExecutableAnalysisResult,
@@ -42,7 +39,10 @@ import {
   DataGrid,
   type DataGridCellRendererParams,
 } from '@finos/legend-lego/data-grid';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 enum TDS_EXECUTABLE_ACTION_TAB {
   COLUMN_SPECS = 'COLUMN_SPECS',

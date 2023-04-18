@@ -93,10 +93,8 @@ import {
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import {
-  type PackageableElementOption,
   useApplicationStore,
   useApplicationNavigationContext,
-  buildElementOption,
   useCommands,
 } from '@finos/legend-application';
 import {
@@ -118,6 +116,10 @@ import {
 } from '../../stores/studio/DSL_Diagram_GraphModifierHelper.js';
 import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
 import { DSL_DIAGRAM_TEST_ID } from '../../application/studio/DSL_Diagram_LegendStudioTesting.js';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
 
 const DiagramEditorContextMenu = observer(
   forwardRef<

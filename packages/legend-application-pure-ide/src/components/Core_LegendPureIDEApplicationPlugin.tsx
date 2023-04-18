@@ -16,7 +16,6 @@
 
 import {
   collectKeyedCommandConfigEntriesFromConfig,
-  setupPureLanguageService,
   type KeyedCommandConfigEntry,
   type LegendApplicationSetup,
 } from '@finos/legend-application';
@@ -31,6 +30,10 @@ import {
   PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
 } from '../stores/PureFileEditorUtils.js';
+import {
+  configureCodeEditorComponent,
+  setupPureLanguageService,
+} from '@finos/legend-lego/code-editor';
 
 export class Core_LegendPureIDEApplicationPlugin extends LegendPureIDEApplicationPlugin {
   static NAME = packageJson.extensions.applicationPureIDEPlugin;
@@ -42,11 +45,14 @@ export class Core_LegendPureIDEApplicationPlugin extends LegendPureIDEApplicatio
   override getExtraApplicationSetups(): LegendApplicationSetup[] {
     return [
       async (applicationStore) => {
+        await configureCodeEditorComponent(applicationStore);
         setupPureLanguageService(
           // NOTE: we add these manually because Pure uses a different grammar syntax for DSL diagram than the one in engine
           // also, in this particular case, for convenience, we would consider DSL Diagram as part of core Pure
-          [PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL],
-          [PURE_GRAMMAR_DIAGRAM_PARSER_NAME],
+          {
+            extraKeywords: [PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL],
+            extraParserKeywords: [PURE_GRAMMAR_DIAGRAM_PARSER_NAME],
+          },
         );
       },
     ];

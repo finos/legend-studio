@@ -54,12 +54,12 @@ import {
 } from '../../application/studio/DSL_Diagram_LegendStudioCodeSnippet.js';
 import {
   collectKeyedCommandConfigEntriesFromConfig,
-  type PureGrammarTextSuggestion,
   type DocumentationEntry,
   type KeyedCommandConfigEntry,
 } from '@finos/legend-application';
 import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
 import { DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_CONFIG } from '../../application/studio/DSL_Diagram_LegendStudioCommand.js';
+import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';
 const DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_DIAGRAM';

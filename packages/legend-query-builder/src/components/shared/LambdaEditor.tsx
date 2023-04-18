@@ -37,6 +37,8 @@ import {
   normalizeLineEnding,
   clearMarkers,
   setErrorMarkers,
+  CODE_EDITOR_LANGUAGE,
+  CODE_EDITOR_THEME,
 } from '@finos/legend-lego/code-editor';
 import type { LambdaEditorState } from '../../stores/shared/LambdaEditorState.js';
 import {
@@ -48,8 +50,6 @@ import {
 import { flowResult } from 'mobx';
 import { ParserError, type EngineError, type Type } from '@finos/legend-graph';
 import {
-  CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
   DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';

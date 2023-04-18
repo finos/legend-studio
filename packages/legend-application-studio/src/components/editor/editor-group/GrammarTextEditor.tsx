@@ -32,6 +32,12 @@ import {
   MenuContentItem,
 } from '@finos/legend-art';
 import {
+  DEFAULT_TAB_SIZE,
+  useApplicationStore,
+  useApplicationNavigationContext,
+  type DocumentationEntry,
+} from '@finos/legend-application';
+import {
   disposeCodeEditor,
   getBaseCodeEditorOptions,
   resetLineNumberGutterWidth,
@@ -41,20 +47,14 @@ import {
   clearMarkers,
   setErrorMarkers,
   moveCursorToPosition,
-} from '@finos/legend-lego/code-editor';
-import {
-  DEFAULT_TAB_SIZE,
   CODE_EDITOR_THEME,
   CODE_EDITOR_LANGUAGE,
-  useApplicationStore,
-  useApplicationNavigationContext,
   getInlineSnippetSuggestions,
-  type DocumentationEntry,
   type PureGrammarTextSuggestion,
   getParserKeywordSuggestions,
   getParserElementSnippetSuggestions,
   getSectionParserNameFromLineText,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/code-editor';
 import {
   type ElementDragSource,
   CORE_DND_TYPE,

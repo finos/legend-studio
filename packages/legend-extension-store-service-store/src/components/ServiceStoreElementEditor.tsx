@@ -29,7 +29,7 @@ import { computed, makeObservable } from 'mobx';
 import {
   buildElementOption,
   type PackageableElementOption,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 import {
   ConnectionValueState,
   NewConnectionValueDriver,

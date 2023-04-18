@@ -44,7 +44,6 @@ import {
   type InnerSchemaSetEditorState,
   SCHEMA_SET_TAB_TYPE,
 } from '../../../../stores/editor/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
-import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
 import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/FileGenerationViewerState.js';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -56,7 +55,10 @@ import {
   externalFormat_schema_setLocation,
 } from '../../../../stores/editor/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import { SchemaSetModelGenerationEditor } from './DSL_ExternalFormat_SchemaSetModelGenerationEditor.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 const SchemaLoader = observer(
   (props: {

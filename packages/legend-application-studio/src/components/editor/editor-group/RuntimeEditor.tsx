@@ -102,9 +102,11 @@ import {
 import {
   useApplicationNavigationContext,
   useApplicationStore,
+} from '@finos/legend-application';
+import {
   buildElementOption,
   type PackageableElementOption,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   runtime_addIdentifiedConnection,

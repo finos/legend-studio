@@ -20,10 +20,12 @@
   "sideEffects": false,
   "type": "module",
   "exports": {
-    "./data-grid": "./lib/data-grid/index.js",
+    "./application": "./lib/application/index.js",
     "./code-editor": "./lib/code-editor/index.js",
     "./code-editor/test": "./lib/code-editor/__test__.js",
     "./code-editor/test/MockedMonacoEditor.js": "./lib/code-editor/__test-utils__/MockedMonacoEditor.js",
+    "./data-grid": "./lib/data-grid/index.js",
+    "./graph-editor": "./lib/graph-editor/index.js",
     "./lib/index.css": "./lib/index.css"
   },
   "module": "lib/index.js",
@@ -51,13 +53,16 @@
     "@ag-grid-community/styles": "29.2.0",
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
+    "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
+    "@types/css-font-loading-module": "0.0.8",
     "@types/react": "18.0.37",
     "@types/react-dom": "18.0.11",
     "mobx": "6.9.0",
     "mobx-react-lite": "3.4.3",
     "monaco-editor": "0.37.1",
     "react": "18.2.0",
+    "react-dnd": "16.0.1",
     "react-dom": "18.2.0"
   },
   "devDependencies": {

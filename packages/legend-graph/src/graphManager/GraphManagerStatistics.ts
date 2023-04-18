@@ -16,7 +16,7 @@
 
 import { isNonNullable, type TimingsRecord } from '@finos/legend-shared';
 import type { PureModel } from '../graph/PureModel.js';
-import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent.js';
+import { GRAPH_MANAGER_EVENT } from '../__lib__/GraphManagerEvent.js';
 
 export type GraphManagerOperationReport = {
   timings: TimingsRecord;

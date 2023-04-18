@@ -79,15 +79,17 @@ import {
   getFunctionSignature,
 } from '@finos/legend-graph';
 import {
-  type PackageableElementOption,
   type ApplicationStore,
   type LegendApplicationPlugin,
   type LegendApplicationConfig,
   type LegendApplicationPluginManager,
   useApplicationNavigationContext,
   useApplicationStore,
-  buildElementOption,
 } from '@finos/legend-application';
+import {
+  type PackageableElementOption,
+  buildElementOption,
+} from '@finos/legend-lego/graph-editor';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
 import {
   function_setReturnType,

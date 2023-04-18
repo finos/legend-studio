@@ -72,10 +72,7 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 import { PackageableDataEditorState } from '../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
 import { ElementXTGenerationEditor } from './element-generation-editor/ElementXTGenerationEditor.js';
-import {
-  TabManager,
-  type TabState,
-} from '@finos/legend-application/components';
+import { TabManager, type TabState } from '@finos/legend-lego/application';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;

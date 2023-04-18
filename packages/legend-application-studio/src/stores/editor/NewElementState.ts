@@ -95,7 +95,7 @@ import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import {
   buildElementOption,
   type PackageableElementOption,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 import { EmbeddedDataType } from './editor-state/ExternalFormatState.js';
 import { createEmbeddedData } from './editor-state/element-editor-state/data/EmbeddedDataState.js';
 

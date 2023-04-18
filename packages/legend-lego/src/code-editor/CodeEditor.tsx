@@ -25,11 +25,13 @@ import {
 } from './CodeEditorUtils.js';
 import { useResizeDetector } from '@finos/legend-art';
 import {
-  type CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
   DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
+import {
+  CODE_EDITOR_THEME,
+  type CODE_EDITOR_LANGUAGE,
+} from './CodeEditorConfig.js';
 
 export const CodeEditor: React.FC<{
   inputValue: string;

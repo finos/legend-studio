@@ -90,9 +90,12 @@ import { DatabaseBuilder } from './DatabaseBuilder.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
+import {
   buildElementOption,
   type PackageableElementOption,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 import { connection_setStore } from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   apiTokenAuthenticationStrategy_setApiToken,
@@ -164,7 +167,6 @@ import {
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import type { MapperPostProcessorEditorState } from '../../../../stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const LocalH2DatasourceSpecificationEditor = observer(
   (props: {

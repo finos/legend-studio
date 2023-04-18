@@ -64,11 +64,7 @@ import {
   isNonNullable,
   noop,
 } from '@finos/legend-shared';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import { usePureIDEStore } from '../PureIDEStoreProvider.js';
 import { FileCoordinate } from '../../server/models/File.js';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
@@ -79,6 +75,8 @@ import {
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
 import {
+  CODE_EDITOR_LANGUAGE,
+  CODE_EDITOR_THEME,
   disposeCodeEditor,
   getBaseConsoleOptions,
 } from '@finos/legend-lego/code-editor';

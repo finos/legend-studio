@@ -51,16 +51,14 @@ import {
   PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
 } from '../../graphManager/DSL_DataSpace_PureGraphManagerPlugin.js';
 import { SIMPLE_DATA_SPACE_SNIPPET } from '../../application/studio/DSL_DataSpace_LegendStudioCodeSnippet.js';
-import type {
-  DocumentationEntry,
-  PureGrammarTextSuggestion,
-} from '@finos/legend-application';
+import type { DocumentationEntry } from '@finos/legend-application';
 import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
 import { DataSpacePreviewState } from '../../stores/studio/DataSpacePreviewState.js';
 import {
   DataSpacePreviewDialog,
   DataSpacePreviewAction,
 } from './DataSpacePreviewAction.js';
+import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

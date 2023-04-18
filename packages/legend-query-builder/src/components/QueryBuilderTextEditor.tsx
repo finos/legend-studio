@@ -31,12 +31,12 @@ import {
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { QueryBuilderTextEditorMode } from '../stores/QueryBuilderTextEditorState.js';
 import { flowResult } from 'mobx';
+import { useApplicationStore } from '@finos/legend-application';
+import { LambdaEditor } from './shared/LambdaEditor.js';
 import {
   CODE_EDITOR_LANGUAGE,
-  useApplicationStore,
-} from '@finos/legend-application';
-import { LambdaEditor } from './shared/LambdaEditor.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 export const QueryBuilderTextEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {

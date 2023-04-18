@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   CaretDownIcon,
   clsx,
@@ -80,7 +79,10 @@ import {
   SERVICE_REQUEST_PATTERN_TAB_TYPE,
   SERVICE_STUB_MAPPING_TAB_TYPE,
 } from '../stores/studio/STO_ServiceStore_ServiceStoreEmbeddedDataEditorState.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 export type StringValuePatternOption = {
   value: string;

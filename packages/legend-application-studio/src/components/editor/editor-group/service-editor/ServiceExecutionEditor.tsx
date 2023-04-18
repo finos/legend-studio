@@ -74,7 +74,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   buildElementOption,
   type PackageableElementOption,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 
 const PureExecutionContextConfigurationEditor = observer(
   (props: {

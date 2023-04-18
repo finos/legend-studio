@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { GRAPH_MANAGER_EVENT } from '../../../../graphManager/GraphManagerEvent.js';
+import { GRAPH_MANAGER_EVENT } from '../../../../__lib__/GraphManagerEvent.js';
 import {
   CORE_PURE_PATH,
   PackageableElementPointerType,

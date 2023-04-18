@@ -34,12 +34,7 @@ import {
   LATEST_VERSION_ALIAS,
   SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
-import {
-  useApplicationStore,
-  buildElementOption,
-  type PackageableElementOption,
-  getPackageableElementOptionFormatter,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   useLegendQueryApplicationStore,
   useLegendQueryBaseStore,
@@ -55,6 +50,11 @@ import {
 } from './QuerySetup.js';
 import { compareSemVerVersions } from '@finos/legend-storage';
 import type { Mapping, PackageableRuntime } from '@finos/legend-graph';
+import {
+  buildElementOption,
+  getPackageableElementOptionFormatter,
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
 
 const CreateMappingQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;

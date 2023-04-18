@@ -47,11 +47,9 @@ import {
   PLAIN_TEXT_SNIPPET,
 } from '../../application/studio/DSL_Text_LegendStudioCodeSnippet.js';
 import { create_TextElement } from '../../graph/helpers/DSL_Text_Helper.js';
-import type {
-  DocumentationEntry,
-  PureGrammarTextSuggestion,
-} from '@finos/legend-application';
+import type { DocumentationEntry } from '@finos/legend-application';
 import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/studio/DSL_Text_LegendStudioApplicationNavigationContext.js';
+import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';

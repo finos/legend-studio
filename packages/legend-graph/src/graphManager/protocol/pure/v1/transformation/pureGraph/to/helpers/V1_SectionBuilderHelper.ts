@@ -20,7 +20,7 @@ import {
   isNonNullable,
   uniq,
 } from '@finos/legend-shared';
-import { GRAPH_MANAGER_EVENT } from '../../../../../../../../graphManager/GraphManagerEvent.js';
+import { GRAPH_MANAGER_EVENT } from '../../../../../../../../__lib__/GraphManagerEvent.js';
 import {
   type Section,
   ImportAwareCodeSection,

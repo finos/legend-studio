@@ -20,7 +20,18 @@ import {
   isGeneratedElement,
   isDependencyElement,
 } from '@finos/legend-graph';
-import type { PackageableElementOption } from '../../stores/shared/PackageableElementOption.js';
+
+export interface PackageableElementOption<T extends PackageableElement> {
+  label: string;
+  value: T;
+}
+
+export const buildElementOption = <T extends PackageableElement>(
+  element: T,
+): PackageableElementOption<T> => ({
+  label: element.name,
+  value: element,
+});
 
 const getElementColorCode = (element: PackageableElement): string =>
   isSystemElement(element)

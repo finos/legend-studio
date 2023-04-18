@@ -75,7 +75,7 @@ import {
   buildElementOption,
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 
 const EnumerationMappingSourceSelectorModal = observer(
   (props: {

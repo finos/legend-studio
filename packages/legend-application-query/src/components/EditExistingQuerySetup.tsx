@@ -33,10 +33,7 @@ import {
   generateExistingQueryEditorRoute,
   generateQuerySetupRoute,
 } from '../application/LegendQueryNavigation.js';
-import {
-  useApplicationStore,
-  CODE_EDITOR_LANGUAGE,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   type QueryOption,
   buildQueryOption,
@@ -47,7 +44,10 @@ import {
 } from './LegendQueryFrameworkProvider.js';
 import { EditExistingQuerySetupStore } from '../stores/EditExistingQuerySetupStore.js';
 import { BaseQuerySetup, BaseQuerySetupStoreContext } from './QuerySetup.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 const EditExistingQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;

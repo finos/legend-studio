@@ -27,6 +27,7 @@ import type {
   FileEditorRenameConceptState,
   FileEditorState,
 } from '../../stores/FileEditorState.js';
+import { useApplicationStore, useCommands } from '@finos/legend-application';
 import {
   CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
@@ -35,9 +36,9 @@ import {
   getParserKeywordSuggestions,
   isTokenOneOf,
   PURE_GRAMMAR_TOKEN,
-  useApplicationStore,
-  useCommands,
-} from '@finos/legend-application';
+  getBaseCodeEditorOptions,
+  moveCursorToPosition,
+} from '@finos/legend-lego/code-editor';
 import {
   clsx,
   Dialog,
@@ -63,10 +64,6 @@ import { flowResult } from 'mobx';
 import { FileCoordinate } from '../../server/models/File.js';
 import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../../application/LegendPureIDECommand.js';
 import { GoToLinePrompt } from './GenericFileEditor.js';
-import {
-  getBaseCodeEditorOptions,
-  moveCursorToPosition,
-} from '@finos/legend-lego/code-editor';
 
 const IDENTIFIER_PATTERN = /^\w[\w$]*$/;
 

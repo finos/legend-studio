@@ -45,7 +45,7 @@ import {
 import {
   buildElementOption,
   type PackageableElementOption,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 import { useDrop, useDrag } from 'react-dnd';
 
 interface TagOption {

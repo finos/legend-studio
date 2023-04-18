@@ -102,12 +102,11 @@ import {
   getFunctionNameWithPath,
   getElementRootPackage,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 import {
-  CODE_EDITOR_LANGUAGE,
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
-  useApplicationStore,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/shared/ModelClassifierUtils.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioFrameworkProvider.js';
 import { queryClass } from '../editor-group/uml-editor/ClassQueryBuilder.js';
@@ -120,7 +119,10 @@ import {
   CLASS_MOCK_DATA_GENERATION_FORMAT,
   createMockDataForClassWithFormat,
 } from '../../../stores/editor/shared/MockDataUtils.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();

@@ -62,11 +62,11 @@ import {
   PackageableElementExplicitReference,
   GenerationTreeNode,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   buildElementOption,
-  useApplicationStore,
   type PackageableElementOption,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 import { packageableElementReference_setValue } from '../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
 import {
   generationSpecification_addFileGeneration,

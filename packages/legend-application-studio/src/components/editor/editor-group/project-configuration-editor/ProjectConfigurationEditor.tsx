@@ -54,7 +54,7 @@ import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../application/LegendS
 import {
   DocumentationLink,
   DocumentationPreview,
-} from '@finos/legend-application/components';
+} from '@finos/legend-lego/application';
 
 const ProjectStructureEditor = observer(
   (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {

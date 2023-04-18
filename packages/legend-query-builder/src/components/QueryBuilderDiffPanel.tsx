@@ -15,8 +15,6 @@
  */
 
 import {
-  CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
   DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -30,6 +28,8 @@ import {
 } from '../stores/QueryBuilderChangeDetectionState.js';
 import { pruneSourceInformation } from '@finos/legend-graph';
 import {
+  CODE_EDITOR_LANGUAGE,
+  CODE_EDITOR_THEME,
   disposeDiffCodeEditor,
   getBaseCodeEditorOptions,
 } from '@finos/legend-lego/code-editor';

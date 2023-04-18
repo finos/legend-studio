@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { CODE_EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   clsx,
   CompareIcon,
@@ -49,7 +48,10 @@ import { externalFormatData_setData } from '../../../../stores/editor/shared/mod
 import { TESTABLE_RESULT } from '../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import { JsonDiffView } from '../../../shared/DiffView.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 const EqualToJsonAsssertionEditor = observer(
   (props: {

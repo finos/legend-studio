@@ -36,7 +36,7 @@ import {
   buildElementOption,
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 
 export const ProjectSearchCommand = observer(() => {
   const editorStore = useEditorStore();

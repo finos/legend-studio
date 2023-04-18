@@ -15,11 +15,11 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,
-  useApplicationStore,
-} from '@finos/legend-application';
+} from '@finos/legend-lego/graph-editor';
 import { CustomSelectorInput, PURE_MappingIcon } from '@finos/legend-art';
 import { getMappingCompatibleClasses } from '@finos/legend-graph';
 import { QueryBuilderClassSelector } from '@finos/legend-query-builder';

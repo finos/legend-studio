@@ -56,7 +56,7 @@ import {
 } from './WorkspaceSelectorUtils.js';
 import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
 import { WorkspaceSetupStore } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
-import { DocumentationLink } from '@finos/legend-application/components';
+import { DocumentationLink } from '@finos/legend-lego/application';
 
 const WorkspaceSetupStoreContext = createContext<
   WorkspaceSetupStore | undefined
