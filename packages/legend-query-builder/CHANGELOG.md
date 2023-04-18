@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 2.1.7
+
+### Patch Changes
+
+- [#2096](https://github.com/finos/legend-studio/pull/2096) [`f3ce8259a`](https://github.com/finos/legend-studio/commit/f3ce8259a1a307becc7f6f866173ddd59c27e32d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add form support for graphfetch with externalize ([#2095](https://github.com/finos/legend-studio/issues/2095))
+
+- [#2120](https://github.com/finos/legend-studio/pull/2120) [`6950c021b`](https://github.com/finos/legend-studio/commit/6950c021bbadb4ad2cf9e980fe1b13d39f3335b4) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where QueryBuilderResultPanel column's width gets auto-resized if hovering over the mouse on cells.
+
 ## 2.1.6
 
 ## 2.1.5
