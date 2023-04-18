@@ -16,6 +16,7 @@
 
 export enum APPLICATION_EVENT {
   APPLICATION_SETUP__FAILURE = 'application.setup.failure',
+
   APPLICATION_LOAD__SUCCESS = 'application.load.success',
   APPLICATION_LOAD__FAILURE = 'application.load.failure',
 

@@ -148,6 +148,8 @@ export class ApplicationStore<
       (this as Writable<ApplicationStore<T, V>>).navigationService =
         new NavigationService(platform.getNavigator());
 
+      await platform.initialize();
+
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);

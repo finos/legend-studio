@@ -14,21 +14,6 @@
  * limitations under the License.
  */
 
-@use 'mixins' as *;
-
-.fuzzy-search__advanced-config__panel {
-  width: 100%;
-  background: var(--color-dark-grey-250);
-
-  &__header__label {
-    @include flexVCenter;
-
-    font-weight: 500;
-    color: var(--color-light-grey-50);
-    background: var(--color-dark-grey-300);
-    padding: 0 1rem;
-    line-height: 2rem;
-    font-size: 1.2rem;
-    cursor: default;
-  }
+export enum LEGEND_APPLICATION_PARAM_TOKEN {
+  INITIAL_COLOR_THEME = 'initialColorTheme',
 }

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { LEGEND_APPLICATION_PARAM_TOKEN } from '../../application/LegendApplicationNavigation.js';
 import type { GenericLegendApplicationStore } from '../ApplicationStore.js';
 import type { ApplicationNavigator } from '../navigation/NavigationService.js';
 
@@ -25,4 +26,20 @@ export abstract class ApplicationPlatform {
   }
 
   abstract getNavigator(): ApplicationNavigator;
+
+  async initialize(): Promise<void> {
+    // set initial color theme
+    // NOTE: we allow this to avoid the flash of default color theme
+    // when loading the page from another page/ when using the application in an iframe
+    const initialColorTheme =
+      this.applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
+        LEGEND_APPLICATION_PARAM_TOKEN.INITIAL_COLOR_THEME,
+      );
+    if (initialColorTheme) {
+      this.applicationStore.layoutService.setColorTheme(initialColorTheme);
+      this.applicationStore.navigationService.navigator.INTERNAL__internalizeTransientParameter(
+        LEGEND_APPLICATION_PARAM_TOKEN.INITIAL_COLOR_THEME,
+      );
+    }
+  }
 }

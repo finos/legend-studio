@@ -20,9 +20,10 @@ import { shouldDisplayVirtualAssistantDocumentationEntry } from '../../stores/As
 
 export const DocumentationLink: React.FC<{
   documentationKey: string;
+  title?: string | undefined;
   className?: string | undefined;
 }> = (props) => {
-  const { documentationKey, className } = props;
+  const { documentationKey, title, className } = props;
   const applicationStore = useApplicationStore();
   const documentationEntry =
     applicationStore.documentationService.getDocEntry(documentationKey);
@@ -54,7 +55,7 @@ export const DocumentationLink: React.FC<{
   return (
     <div
       onClick={openDocLink}
-      title="Click to see documentation"
+      title={title ?? 'Click to see documentation'}
       className={clsx('documentation-link', className)}
     >
       <QuestionCircleIcon />

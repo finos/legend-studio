@@ -77,9 +77,6 @@ export class DataSpacePreviewStore {
   }
 
   *initialize(gav: string, dataSpacePath: string): GeneratorFn<void> {
-    // set up the application
-    this.applicationStore.assistantService.setIsHidden(true);
-
     this.initState.inProgress();
     this.initState.setMessage(`Initializing...`);
 

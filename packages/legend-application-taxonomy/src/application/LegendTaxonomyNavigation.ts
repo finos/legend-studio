@@ -24,10 +24,6 @@ export enum LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN {
   DATA_SPACE_PATH = 'dataSpacePath',
 }
 
-export enum LEGEND_TAXONOMY_QUERY_PARAM_TOKEN {
-  COLOR_THEME = 'colorTheme',
-}
-
 export const LEGEND_TAXONOMY_ROUTE_PATTERN = Object.freeze({
   EXPLORE_TAXONOMY_TREE: `/tree/:${LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN.TAXONOMY_TREE_KEY}`,
   EXPLORE_TAXONOMY_TREE_NODE: `/tree/:${LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN.TAXONOMY_TREE_KEY}/:${LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN.TAXONOMY_PATH}`,
@@ -45,10 +41,6 @@ export type LegendTaxonomyPathParams = {
 export type DataSpacePreviewPathParams = {
   [LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN.GAV]: string;
   [LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH]: string;
-};
-
-export type DataSpacePreviewQueryParams = {
-  [LEGEND_TAXONOMY_QUERY_PARAM_TOKEN.COLOR_THEME]?: string | undefined;
 };
 
 export const generateExploreTaxonomyTreeRoute = (

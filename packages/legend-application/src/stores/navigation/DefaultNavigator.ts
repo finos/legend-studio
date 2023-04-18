@@ -141,4 +141,10 @@ export class DefaultNavigator implements ApplicationNavigator {
       `Navigator does not support this operation`,
     );
   }
+
+  INTERNAL__internalizeTransientParameter(key: string): void {
+    throw new UnsupportedOperationError(
+      `Navigator does not support this operation`,
+    );
+  }
 }

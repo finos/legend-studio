@@ -498,6 +498,10 @@ export class EditorStore implements CommandRegistrar {
       return;
     }
     this.initState.inProgress();
+
+    // TODO: when we genericize the way to initialize an application page
+    this.applicationStore.assistantService.setIsHidden(false);
+
     const onLeave = (hasBuildSucceeded: boolean): void => {
       this.initState.complete(hasBuildSucceeded);
       this.initState.setMessage(undefined);

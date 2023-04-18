@@ -106,7 +106,7 @@ export class AssistantService {
    * This key is used to allow programmatic re-rendering of the assistant panel
    */
   panelRenderingKey = uuid();
-  isHidden = false;
+  isHidden = true; // hide by default unless specified by the application to show
   isOpen = false;
   selectedTab = VIRTUAL_ASSISTANT_TAB.SEARCH;
   currentDocumentationEntry: VirtualAssistantDocumentationEntry | undefined;

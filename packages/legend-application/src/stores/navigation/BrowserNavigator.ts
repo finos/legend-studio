@@ -16,10 +16,12 @@
 
 import type { History } from 'history';
 import {
+  addQueryParametersToUrl,
   getQueryParameterValue,
   getQueryParameters,
   guaranteeNonNullable,
   sanitizeURL,
+  stringifyQueryParams,
 } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
@@ -251,5 +253,19 @@ export class BrowserNavigator implements ApplicationNavigator {
 
   get isNavigationBlocked(): boolean {
     return this._isNavigationBlocked;
+  }
+
+  INTERNAL__internalizeTransientParameter(key: string): void {
+    const currentZone = this.getCurrentZone();
+    const parameters = this.getCurrentLocationParameters();
+    delete parameters[key];
+
+    this.updateCurrentLocation(
+      addQueryParametersToUrl(
+        this.getCurrentLocation(),
+        stringifyQueryParams(parameters),
+      ),
+    );
+    this.updateCurrentZone(currentZone);
   }
 }

@@ -430,6 +430,9 @@ export abstract class QueryEditorStore {
     try {
       this.initState.inProgress();
 
+      // TODO: when we genericize the way to initialize an application page
+      this.applicationStore.assistantService.setIsHidden(false);
+
       // initialize the graph manager
       yield this.graphManagerState.graphManager.initialize(
         {

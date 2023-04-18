@@ -34,7 +34,6 @@ import {
 } from './LegendTaxonomyFrameworkProvider.js';
 import { useEffect } from 'react';
 import { flowResult } from 'mobx';
-import { PanelLoadingIndicator } from '@finos/legend-art';
 
 const LegendTaxonomyWebApplicationRouter = observer(() => {
   const applicationStore = useLegendTaxonomyApplicationStore();
@@ -48,12 +47,7 @@ const LegendTaxonomyWebApplicationRouter = observer(() => {
 
   return (
     <div className="app">
-      {baseStore.initState.isInProgress && (
-        <div className="app__page">
-          <PanelLoadingIndicator isLoading={true} />
-        </div>
-      )}
-      {baseStore.initState.hasSucceeded && (
+      {baseStore.initState.hasCompleted && (
         <Switch>
           <Route
             exact={true}

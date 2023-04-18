@@ -38,7 +38,6 @@ import { EditExistingQuerySetup } from './EditExistingQuerySetup.js';
 import { CreateMappingQuerySetup } from './CreateMappingQuerySetup.js';
 import { useEffect } from 'react';
 import { flowResult } from 'mobx';
-import { PanelLoadingIndicator } from '@finos/legend-art';
 
 const LegendQueryWebApplicationRouter = observer(() => {
   const applicationStore = useLegendQueryApplicationStore();
@@ -54,58 +53,51 @@ const LegendQueryWebApplicationRouter = observer(() => {
     );
   }, [applicationStore, baseStore]);
 
-  if (baseStore.initState.isInProgress) {
-    return (
-      <div className="app">
-        <div className="app__page">
-          <PanelLoadingIndicator isLoading={true} />
-        </div>
-      </div>
-    );
-  }
   return (
     <div className="app">
-      <Switch>
-        <Route
-          exact={true}
-          path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
-          component={QuerySetupLandingPage}
-        />
-        <Route
-          exact={true}
-          path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY_SETUP}
-          component={EditExistingQuerySetup}
-        />
-        <Route
-          exact={true}
-          path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_MAPPING_QUERY_SETUP}
-          component={CreateMappingQuerySetup}
-        />
-        <Route
-          exact={true}
-          path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY}
-          component={ExistingQueryEditor}
-        />
-        <Route
-          exact={true}
-          path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY}
-          component={ServiceQueryCreator}
-        />
-        <Route
-          exact={true}
-          path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_MAPPING_QUERY}
-          component={MappingQueryCreator}
-        />
-        {extraApplicationPageEntries.map((entry) => (
+      {baseStore.initState.hasCompleted && (
+        <Switch>
           <Route
-            key={entry.key}
             exact={true}
-            path={entry.addressPatterns.map(generateExtensionUrlPattern)}
-            component={entry.renderer as React.ComponentType<unknown>}
+            path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
+            component={QuerySetupLandingPage}
           />
-        ))}
-        <Redirect to={LEGEND_QUERY_ROUTE_PATTERN.SETUP} />
-      </Switch>
+          <Route
+            exact={true}
+            path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY_SETUP}
+            component={EditExistingQuerySetup}
+          />
+          <Route
+            exact={true}
+            path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_MAPPING_QUERY_SETUP}
+            component={CreateMappingQuerySetup}
+          />
+          <Route
+            exact={true}
+            path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY}
+            component={ExistingQueryEditor}
+          />
+          <Route
+            exact={true}
+            path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY}
+            component={ServiceQueryCreator}
+          />
+          <Route
+            exact={true}
+            path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_MAPPING_QUERY}
+            component={MappingQueryCreator}
+          />
+          {extraApplicationPageEntries.map((entry) => (
+            <Route
+              key={entry.key}
+              exact={true}
+              path={entry.addressPatterns.map(generateExtensionUrlPattern)}
+              component={entry.renderer as React.ComponentType<unknown>}
+            />
+          ))}
+          <Redirect to={LEGEND_QUERY_ROUTE_PATTERN.SETUP} />
+        </Switch>
+      )}
     </div>
   );
 });

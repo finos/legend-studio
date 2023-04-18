@@ -19,7 +19,7 @@ import {
   generatePath,
 } from '@finos/legend-application/browser';
 import {
-  addQueryParamsStringToUrl,
+  addQueryParametersToUrl,
   stringifyQueryParams,
 } from '@finos/legend-shared';
 import { generateGAVCoordinates } from '@finos/legend-storage';
@@ -66,7 +66,7 @@ export const generateDataSpaceQueryCreatorRoute = (
   runtimePath?: string | undefined,
   classPath?: string | undefined,
 ): string =>
-  addQueryParamsStringToUrl(
+  addQueryParametersToUrl(
     generatePath(
       generateExtensionUrlPattern(DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE),
       {

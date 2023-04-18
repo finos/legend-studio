@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-import { BaseRadioGroup, InfoCircleIcon } from '@finos/legend-art';
+import { BaseRadioGroup } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
   ADVANCED_FUZZY_SEARCH_MODE,
   type FuzzySearchAdvancedConfigState,
 } from '../../stores/shared/FuzzySearchAdvancedConfigState.js';
 import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '../../application/LegendApplicationDocumentation.js';
-import { useApplicationStore } from '../ApplicationStoreProvider.js';
+import { DocumentationLink } from './DocumentationLink.js';
 
 export const FuzzySearchAdvancedConfigMenu = observer(
   (props: { configState: FuzzySearchAdvancedConfigState }) => {
     const { configState } = props;
-    const applicationStore = useApplicationStore();
 
     const handleSearchMode: React.ChangeEventHandler<HTMLInputElement> = (
       event,
@@ -34,23 +33,17 @@ export const FuzzySearchAdvancedConfigMenu = observer(
       const searchMode = event.target.value as ADVANCED_FUZZY_SEARCH_MODE;
       configState.setCurrentMode(searchMode);
     };
-    const seeDocumentation = (): void =>
-      applicationStore.assistantService.openDocumentationEntry(
-        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_USE_ADVANCED_SEARCH_SYNTAX,
-      );
 
     return (
       <div className="fuzzy-search__advanced-config__panel">
         <div className="fuzzy-search__advanced-config__panel__header__label">
           search config
-          <button
+          <DocumentationLink
             className="fuzzy-search__advanced-config__panel__header__hint"
-            tabIndex={-1}
-            onClick={seeDocumentation}
-            title="Click to see more details on advanced search"
-          >
-            <InfoCircleIcon />
-          </button>
+            documentationKey={
+              LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_USE_ADVANCED_SEARCH_SYNTAX
+            }
+          />
         </div>
         <div>
           <BaseRadioGroup

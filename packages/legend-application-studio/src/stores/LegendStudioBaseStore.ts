@@ -31,10 +31,7 @@ import {
   LegendApplicationTelemetryHelper,
   APPLICATION_EVENT,
 } from '@finos/legend-application';
-import {
-  matchPath,
-  generateExtensionUrlPattern,
-} from '@finos/legend-application/browser';
+import { matchPath } from '@finos/legend-application/browser';
 import {
   action,
   computed,
@@ -105,14 +102,6 @@ export class LegendStudioBaseStore {
     }
     this.initState.inProgress();
 
-    const SDLCBypassedRoutePatterns = this.applicationStore.pluginManager
-      .getApplicationPlugins()
-      .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? [])
-      .filter((entry) => entry.bypassSDLC)
-      .flatMap((entry) =>
-        entry.addressPatterns.map(generateExtensionUrlPattern),
-      );
-
     // authorize SDLC, unless navigation location match SDLC-bypassed patterns
     if (
       !matchPath(
@@ -121,7 +110,6 @@ export class LegendStudioBaseStore {
           LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
           LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
           LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.PREVIEW_BY_GAV_ENTITY,
-          ...SDLCBypassedRoutePatterns,
         ],
       )
     ) {
@@ -144,9 +132,6 @@ export class LegendStudioBaseStore {
         );
         this.applicationStore.notificationService.notifyWarning(error.message);
       }
-
-      // setup telemetry service
-      this.applicationStore.telemetryService.setup();
     } else {
       this.isSDLCAuthorized = undefined;
     }
@@ -168,6 +153,9 @@ export class LegendStudioBaseStore {
         this.applicationStore.notificationService.notifyWarning(error.message);
       }
     }
+
+    // setup telemetry service
+    this.applicationStore.telemetryService.setup();
 
     LegendApplicationTelemetryHelper.logEvent_ApplicationInitializationSucceeded(
       this.applicationStore.telemetryService,

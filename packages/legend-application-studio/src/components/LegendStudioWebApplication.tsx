@@ -20,12 +20,7 @@ import { Editor } from './editor/Editor.js';
 import { WorkspaceReview } from './workspace-review/WorkspaceReview.js';
 import { ProjectViewer } from './project-view/ProjectViewer.js';
 import { observer } from 'mobx-react-lite';
-import {
-  clsx,
-  GhostIcon,
-  MarkdownTextViewer,
-  PanelLoadingIndicator,
-} from '@finos/legend-art';
+import { clsx, GhostIcon, MarkdownTextViewer } from '@finos/legend-art';
 import {
   LEGEND_STUDIO_ROUTE_PATTERN,
   LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN,
@@ -112,12 +107,6 @@ export const LegendStudioWebApplicationRouter = observer(() => {
   const extraApplicationPageEntries = applicationStore.pluginManager
     .getApplicationPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
-  const SDLCBypassedPageEntries = extraApplicationPageEntries.filter(
-    (entry) => entry.bypassSDLC,
-  );
-  const SDLCPageEntries = extraApplicationPageEntries.filter(
-    (entry) => !entry.bypassSDLC,
-  );
 
   useEffect(() => {
     flowResult(baseStore.initialize()).catch(
@@ -125,95 +114,84 @@ export const LegendStudioWebApplicationRouter = observer(() => {
     );
   }, [applicationStore, baseStore]);
 
-  if (baseStore.initState.isInProgress) {
-    return (
-      <div className="app">
-        <div className="app__page">
-          <PanelLoadingIndicator isLoading={true} />
-        </div>
-      </div>
-    );
-  }
   return (
     <div className="app">
-      {baseStore.isSDLCAuthorized === undefined && (
+      {baseStore.initState.hasCompleted && (
         <>
-          <Switch>
-            <Route
-              exact={true}
-              path={[
-                LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
-                LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
-              ]}
-              component={ProjectViewer}
-            />
-            {SDLCBypassedPageEntries.map((entry) => (
-              <Route
-                key={entry.key}
-                exact={true}
-                path={entry.addressPatterns.map(generateExtensionUrlPattern)}
-                component={entry.renderer as React.ComponentType<unknown>}
-              />
-            ))}
-            <Route>
-              <NotFoundPage />
-            </Route>
-          </Switch>
-        </>
-      )}
-      {baseStore.isSDLCAuthorized && (
-        <>
-          <Switch>
-            <Route
-              exact={true}
-              path={[
-                LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
-                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
-                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
-                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
-                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
-                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
-              ]}
-              component={ProjectViewer}
-            />
-            <Route
-              exact={true}
-              path={LEGEND_STUDIO_ROUTE_PATTERN.REVIEW}
-              component={WorkspaceReview}
-            />
-            <Route
-              exact={true}
-              strict={true}
-              path={[
-                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE,
-                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE_ENTITY,
-                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE,
-                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE_ENTITY,
-              ]}
-              component={Editor}
-            />
-            <Route
-              exact={true}
-              path={[
-                // root path will lead to setup page (home page)
-                '/',
-                LEGEND_STUDIO_ROUTE_PATTERN.SETUP_WORKSPACE,
-                LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP_WORKSPACE,
-              ]}
-              component={WorkspaceSetup}
-            />
-            {SDLCPageEntries.map((entry) => (
-              <Route
-                key={entry.key}
-                exact={true}
-                path={entry.addressPatterns.map(generateExtensionUrlPattern)}
-                component={entry.renderer as React.ComponentType<unknown>}
-              />
-            ))}
-            <Route>
-              <NotFoundPage />
-            </Route>
-          </Switch>
+          {baseStore.isSDLCAuthorized === undefined && (
+            <>
+              <Switch>
+                <Route
+                  exact={true}
+                  path={[
+                    LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
+                    LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+                  ]}
+                  component={ProjectViewer}
+                />
+                <Route>
+                  <NotFoundPage />
+                </Route>
+              </Switch>
+            </>
+          )}
+          {baseStore.isSDLCAuthorized && (
+            <>
+              <Switch>
+                <Route
+                  exact={true}
+                  path={[
+                    LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
+                    LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
+                    LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
+                    LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
+                    LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
+                    LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
+                  ]}
+                  component={ProjectViewer}
+                />
+                <Route
+                  exact={true}
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.REVIEW}
+                  component={WorkspaceReview}
+                />
+                <Route
+                  exact={true}
+                  strict={true}
+                  path={[
+                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE,
+                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE_ENTITY,
+                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE,
+                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE_ENTITY,
+                  ]}
+                  component={Editor}
+                />
+                <Route
+                  exact={true}
+                  path={[
+                    // root path will lead to setup page (home page)
+                    '/',
+                    LEGEND_STUDIO_ROUTE_PATTERN.SETUP_WORKSPACE,
+                    LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP_WORKSPACE,
+                  ]}
+                  component={WorkspaceSetup}
+                />
+                {extraApplicationPageEntries.map((entry) => (
+                  <Route
+                    key={entry.key}
+                    exact={true}
+                    path={entry.addressPatterns.map(
+                      generateExtensionUrlPattern,
+                    )}
+                    component={entry.renderer as React.ComponentType<unknown>}
+                  />
+                ))}
+                <Route>
+                  <NotFoundPage />
+                </Route>
+              </Switch>
+            </>
+          )}
         </>
       )}
     </div>

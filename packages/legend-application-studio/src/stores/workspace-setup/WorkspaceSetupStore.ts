@@ -50,9 +50,10 @@ interface ImportProjectSuccessReport {
 }
 
 export class WorkspaceSetupStore {
-  applicationStore: LegendStudioApplicationStore;
-  sdlcServerClient: SDLCServerClient;
-  initState = ActionState.create();
+  readonly applicationStore: LegendStudioApplicationStore;
+
+  readonly sdlcServerClient: SDLCServerClient;
+  readonly initState = ActionState.create();
 
   projects: Project[] = [];
   currentProject?: Project | undefined;
@@ -141,6 +142,9 @@ export class WorkspaceSetupStore {
       return;
     }
     this.initState.inProgress();
+
+    // TODO: when we genericize the way to initialize an application page
+    this.applicationStore.assistantService.setIsHidden(false);
 
     try {
       if (projectId) {

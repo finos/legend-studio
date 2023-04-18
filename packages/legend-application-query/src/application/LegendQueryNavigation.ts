@@ -19,7 +19,7 @@ import {
   generatePath,
 } from '@finos/legend-application/browser';
 import {
-  addQueryParamsStringToUrl,
+  addQueryParametersToUrl,
   stringifyQueryParams,
 } from '@finos/legend-shared';
 import { generateGAVCoordinates } from '@finos/legend-storage';
@@ -68,7 +68,7 @@ export const generateQuerySetupRoute = (
   showAdvancedActions?: boolean | undefined,
   tag?: string | undefined,
 ): string =>
-  addQueryParamsStringToUrl(
+  addQueryParametersToUrl(
     generatePath(LEGEND_QUERY_ROUTE_PATTERN.SETUP, {}),
     stringifyQueryParams({
       [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ALL_GROUPS]: showAllGroups
@@ -141,7 +141,7 @@ export const generateServiceQueryCreatorRoute = (
   servicePath: string,
   executionKey?: string | undefined,
 ): string =>
-  addQueryParamsStringToUrl(
+  addQueryParametersToUrl(
     generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY, {
       [LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV]: generateGAVCoordinates(
         groupId,

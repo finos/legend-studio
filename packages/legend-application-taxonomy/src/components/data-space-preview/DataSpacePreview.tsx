@@ -27,7 +27,6 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
   LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN,
   type DataSpacePreviewPathParams,
-  LEGEND_TAXONOMY_QUERY_PARAM_TOKEN,
 } from '../../application/LegendTaxonomyNavigation.js';
 import { flowResult } from 'mobx';
 import {
@@ -87,10 +86,6 @@ export const DataSpacePreview = withDataSpacePreviewStore(
     const gav = params[LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN.GAV];
     const dataSpacePath =
       params[LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH];
-    const colorTheme =
-      applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
-        LEGEND_TAXONOMY_QUERY_PARAM_TOKEN.COLOR_THEME,
-      );
     const previewStore = useDataSpacePreviewStore();
     const navigationZone = useNavigationZone();
 
@@ -102,9 +97,9 @@ export const DataSpacePreview = withDataSpacePreviewStore(
 
     useEffect(() => {
       applicationStore.layoutService.setColorTheme(
-        colorTheme ?? LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
+        LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
       );
-    }, [applicationStore, colorTheme]);
+    }, [applicationStore]);
 
     useEffect(() => {
       flowResult(previewStore.initialize(gav, dataSpacePath)).catch(
