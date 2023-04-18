@@ -17,7 +17,7 @@
 import packageJson from '../../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
 import { QueryBuilder_PureProtocolProcessorPlugin } from './protocol/pure/QueryBuilder_PureProtocolProcessorPlugin.js';
-import { QueryBuilder_PureGraphManagerPlugin } from './QueryBuilder_GraphManagerPlugin.js';
+import { QueryBuilder_PureGraphManagerPlugin } from './QueryBuilder_PureGraphManagerPlugin.js';
 
 /**
  * This is the core graph manager preset and should not be exported

@@ -48,11 +48,13 @@ import {
   V1_ValueSpecificationBuilder,
   AbstractPropertyExpression,
   VariableExpression,
-  CORE_PURE_PATH,
   Multiplicity,
   PrimitiveType,
 } from '@finos/legend-graph';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilderSupportedFunctions.js';
+import {
+  QUERY_BUILDER_PURE_PATH,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+} from '../../../../graph/QueryBuilderMetaModelConst.js';
 
 const buildProjectionColumnLambda = (
   valueSpecification: V1_ValueSpecification,
@@ -433,7 +435,9 @@ export const V1_buildProjectFunctionExpression = (
     compileContext,
   );
   expression.genericType = GenericTypeExplicitReference.create(
-    new GenericType(compileContext.resolveType(CORE_PURE_PATH.TDS_ROW).value),
+    new GenericType(
+      compileContext.resolveType(QUERY_BUILDER_PURE_PATH.TDS_ROW).value,
+    ),
   );
 
   return expression;
@@ -574,7 +578,9 @@ export const V1_buildGroupByFunctionExpression = (
     compileContext,
   );
   expression.genericType = GenericTypeExplicitReference.create(
-    new GenericType(compileContext.resolveType(CORE_PURE_PATH.TDS_ROW).value),
+    new GenericType(
+      compileContext.resolveType(QUERY_BUILDER_PURE_PATH.TDS_ROW).value,
+    ),
   );
 
   return expression;
@@ -774,7 +780,9 @@ export const V1_buildOLAPGroupByFunctionExpression = (
     compileContext,
   );
   expression.genericType = GenericTypeExplicitReference.create(
-    new GenericType(compileContext.resolveType(CORE_PURE_PATH.TDS_ROW).value),
+    new GenericType(
+      compileContext.resolveType(QUERY_BUILDER_PURE_PATH.TDS_ROW).value,
+    ),
   );
 
   return expression;

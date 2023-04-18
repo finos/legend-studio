@@ -22,7 +22,7 @@ import {
   type Hashable,
   hashArray,
 } from '@finos/legend-shared';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
 
 export enum COLUMN_SORT_TYPE {
@@ -56,7 +56,7 @@ export class SortColumnState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.SORT_COLUMN_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.SORT_COLUMN_STATE,
       this.sortType.toString(),
       this.columnState,
     ]);
@@ -116,7 +116,7 @@ export class QueryResultSetModifierState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.RESULT_SET_MODIFIER_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.RESULT_SET_MODIFIER_STATE,
       hashArray(this.sortColumns),
       this.limit?.toString() ?? '',
       this.distinct.toString(),

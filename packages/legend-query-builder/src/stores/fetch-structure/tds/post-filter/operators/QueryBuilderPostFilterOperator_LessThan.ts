@@ -20,7 +20,6 @@ import {
   AbstractPropertyExpression,
   type FunctionExpression,
   PRIMITIVE_TYPE,
-  SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -40,8 +39,8 @@ import {
   isTypeCompatibleForAssignment,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
 import { buildPrimitiveInstanceValue } from '../../../../shared/ValueSpecificationEditorHelper.js';
 
 export class QueryBuilderPostFilterOperator_LessThan
@@ -128,7 +127,7 @@ export class QueryBuilderPostFilterOperator_LessThan
         PRIMITIVE_TYPE.DATETIME &&
         postFilterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
-        ? SUPPORTED_FUNCTIONS.IS_BEFORE_DAY
+        ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_BEFORE_DAY
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.LESS_THAN,
     );
   }
@@ -145,7 +144,7 @@ export class QueryBuilderPostFilterOperator_LessThan
           .path === PRIMITIVE_TYPE.DATETIME &&
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
-        ? SUPPORTED_FUNCTIONS.IS_BEFORE_DAY
+        ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_BEFORE_DAY
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.LESS_THAN,
       this,
     );
@@ -153,7 +152,7 @@ export class QueryBuilderPostFilterOperator_LessThan
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_LESS_THAN,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.POST_FILTER_OPERATOR_LESS_THAN,
     ]);
   }
 }

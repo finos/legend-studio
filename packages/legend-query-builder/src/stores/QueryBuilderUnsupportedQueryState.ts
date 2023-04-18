@@ -18,7 +18,7 @@ import { makeObservable, action, observable, computed } from 'mobx';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import type { RawLambda } from '@finos/legend-graph';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from './QueryBuilderStateHashUtils.js';
 
 export class QueryBuilderUnsupportedQueryState implements Hashable {
   readonly queryBuilderState: QueryBuilderState;
@@ -47,7 +47,7 @@ export class QueryBuilderUnsupportedQueryState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.UNSUPPORTED_QUERY_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.UNSUPPORTED_QUERY_STATE,
       this.rawLambda ?? '',
     ]);
   }

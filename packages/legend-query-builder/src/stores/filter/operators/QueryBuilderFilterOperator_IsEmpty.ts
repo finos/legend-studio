@@ -29,14 +29,14 @@ import {
   buildFilterConditionState,
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
   buildNotExpression,
   isPropertyExpressionChainOptional,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
 
 export class QueryBuilderFilterOperator_IsEmpty
   extends QueryBuilderFilterOperator
@@ -101,7 +101,9 @@ export class QueryBuilderFilterOperator_IsEmpty
   }
 
   get hashCode(): string {
-    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_IS_EMPTY]);
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_OPERATOR_IS_EMPTY,
+    ]);
   }
 }
 
@@ -130,7 +132,7 @@ export class QueryBuilderFilterOperator_IsNotEmpty extends QueryBuilderFilterOpe
 
   override get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_IS_NOT_EMPTY,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_OPERATOR_IS_NOT_EMPTY,
     ]);
   }
 }

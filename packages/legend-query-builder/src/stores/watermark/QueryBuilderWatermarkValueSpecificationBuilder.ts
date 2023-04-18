@@ -20,7 +20,7 @@ import {
   type LambdaFunction,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderWatermarkState } from './QueryBuilderWatermarkState.js';
 
 export const buildWatermarkExpression = (

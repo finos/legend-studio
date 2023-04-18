@@ -16,7 +16,7 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../QueryBuilderStateHashUtils.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 
 export class QueryBuilderCheckEntitlementsState implements Hashable {
@@ -39,7 +39,7 @@ export class QueryBuilderCheckEntitlementsState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.CHECK_ENTITLEMENTS_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.CHECK_ENTITLEMENTS_STATE,
       this.isCheckingEntitlements,
     ]);
   }

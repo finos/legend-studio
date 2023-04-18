@@ -74,7 +74,7 @@ import type { QueryBuilderFilterOperator } from './filter/QueryBuilderFilterOper
 import { getQueryBuilderCoreFilterOperators } from './filter/QueryBuilderFilterOperatorLoader.js';
 import { QueryBuilderChangeDetectionState } from './QueryBuilderChangeDetectionState.js';
 import { QueryBuilderMilestoningState } from './milestoning/QueryBuilderMilestoningState.js';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from './QueryBuilderStateHashUtils.js';
 import { QUERY_BUILDER_COMMAND_KEY } from './QueryBuilderCommand.js';
 import { QueryBuilderWatermarkState } from './watermark/QueryBuilderWatermarkState.js';
 import { QueryBuilderConstantsState } from './QueryBuilderConstantsState.js';
@@ -577,7 +577,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.QUERY_BUILDER_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.QUERY_BUILDER_STATE,
       this.unsupportedQueryState,
       this.milestoningState,
       this.parametersState,

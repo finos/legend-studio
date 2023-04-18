@@ -55,7 +55,7 @@ import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SOURCE_ID_LABEL,
 } from '../../../QueryBuilderConfig.js';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../QueryBuilderStateHashUtils.js';
 import { LambdaEditorState } from '../../../shared/LambdaEditorState.js';
 import { isValueExpressionReferencedInValue } from '../../../QueryBuilderValueSpecificationHelper.js';
 
@@ -160,7 +160,7 @@ export class QueryBuilderSimpleProjectionColumnState
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.SIMPLE_PROJECTION_COLUMN_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.SIMPLE_PROJECTION_COLUMN_STATE,
       this.propertyExpressionState,
       this.columnName,
     ]);
@@ -345,7 +345,7 @@ export class QueryBuilderDerivationProjectionColumnState
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.DERIVATION_PROJECTION_COLUMN_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.DERIVATION_PROJECTION_COLUMN_STATE,
       this.returnType ?? '',
       this.lambda,
       this.columnName,

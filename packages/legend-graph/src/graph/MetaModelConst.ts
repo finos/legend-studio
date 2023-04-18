@@ -99,9 +99,11 @@ export const AUTO_IMPORTS = [
 ];
 
 export enum CORE_PURE_PATH {
+  // type
   ANY = 'meta::pure::metamodel::type::Any',
   NIL = 'meta::pure::metamodel::type::Nil',
 
+  // profile
   PROFILE_DOC = 'meta::pure::profiles::doc',
   PROFILE_TEMPORAL = 'meta::pure::profiles::temporal',
 
@@ -123,11 +125,6 @@ export enum CORE_PURE_PATH {
   GENERATION_SPECIFICATION = 'meta::pure::generation::metamodel::GenerationSpecification',
   SECTION_INDEX = 'meta::pure::metamodel::section::SectionIndex',
   DATA_ELEMENT = 'meta::pure::data::DataElement',
-
-  // TDS
-  TDS_ROW = 'meta::pure::tds::TDSRow',
-  TDS_TABULARDATASET = 'meta::pure::tds::TabularDataSet',
-  TDS_COLUMN = 'meta::pure::tds::TDSColumn',
 }
 
 export const PURE_DOC_TAG = 'doc';
@@ -158,38 +155,12 @@ export enum PackageableElementPointerType {
   SERVICE = 'SERVICE',
 }
 
-export const DURATION_UNIT = 'meta::pure::functions::date::DurationUnit';
-export const DAY_OF_WEEK = 'meta::pure::functions::date::DayOfWeek';
-
 export enum SUPPORTED_FUNCTIONS {
-  // date-time value helper functions
-  TODAY = 'meta::pure::functions::date::today',
-  NOW = 'meta::pure::functions::date::now',
-  FIRST_DAY_OF_WEEK = 'meta::pure::functions::date::firstDayOfThisWeek',
-  FIRST_DAY_OF_MONTH = 'meta::pure::functions::date::firstDayOfThisMonth',
-  FIRST_DAY_OF_QUARTER = 'meta::pure::functions::date::firstDayOfThisQuarter',
-  FIRST_DAY_OF_YEAR = 'meta::pure::functions::date::firstDayOfThisYear',
-  PREVIOUS_DAY_OF_WEEK = 'meta::pure::functions::date::previousDayOfWeek',
-  IS_ON_DAY = 'meta::pure::functions::date::isOnDay',
-  IS_ON_OR_AFTER_DAY = 'meta::pure::functions::date::isOnOrAfterDay',
-  IS_AFTER_DAY = 'meta::pure::functions::date::isAfterDay',
-  IS_ON_OR_BEFORE_DAY = 'meta::pure::functions::date::isOnOrBeforeDay',
-  IS_BEFORE_DAY = 'meta::pure::functions::date::isBeforeDay',
-
-  // adjust time
-  MINUS = 'meta::pure::functions::math::minus',
-  ADJUST = 'meta::pure::functions::date::adjust',
-  // variables
   LET = 'meta::pure::functions::lang::letFunction',
   NEW = 'meta::pure::functions::meta::new',
 }
 
-// Date formats
 export const DATE_TIME_FORMAT_WITH_MILLISECONDS =
   "yyyy-MM-dd'T'HH:mm:ss.SSSxxxx";
 export const DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssxxxx";
 export const DATE_FORMAT = 'yyyy-MM-dd';
-
-// Serialization
-export const PURE_SERIALIZE_CONFIG_CLASS =
-  'meta::pure::graphFetch::execution::AlloySerializationConfig';

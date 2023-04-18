@@ -38,8 +38,11 @@ import {
   SimpleFunctionExpression,
   extractElementNameFromPath,
   V1_buildGenericFunctionExpression,
+  GenericType,
+  GenericTypeExplicitReference,
+  PrimitiveType,
 } from '@finos/legend-graph';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 
 export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
@@ -149,6 +152,57 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             compileContext,
             processingContext,
           );
+        } else if (
+          matchFunctionName(functionName, [
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
+          ])
+        ) {
+          const expression = V1_buildGenericFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+          expression.genericType = GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.STRICTDATE),
+          );
+          return expression;
+        } else if (
+          matchFunctionName(functionName, QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW)
+        ) {
+          const expression = V1_buildGenericFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+          expression.genericType = GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.DATETIME),
+          );
+          return expression;
+        } else if (
+          matchFunctionName(functionName, [
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST,
+          ])
+        ) {
+          const expression = V1_buildGenericFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+          expression.genericType = GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.DATE),
+          );
+          return expression;
         } else if (
           matchFunctionName(
             functionName,

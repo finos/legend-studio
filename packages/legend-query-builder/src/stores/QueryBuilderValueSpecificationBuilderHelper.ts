@@ -31,7 +31,7 @@ import {
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   functionExpression_setParametersValues,

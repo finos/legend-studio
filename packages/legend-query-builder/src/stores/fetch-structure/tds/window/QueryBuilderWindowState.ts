@@ -24,7 +24,7 @@ import {
   type Hashable,
 } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../QueryBuilderStateHashUtils.js';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../../QueryBuilderConfig.js';
 import type { QueryBuilderProjectionColumnDragSource } from '../projection/QueryBuilderProjectionColumnState.js';
 import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
@@ -71,7 +71,7 @@ export class WindowGroupByColumnSortByState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.TDS_WINDOW_COLUMN_SORTBY_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_COLUMN_SORTBY_STATE,
       this.sortType,
       this.columnState.columnName,
     ]);
@@ -101,7 +101,7 @@ export abstract class QueryBuilderTDS_WindowOperatorState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.TDS_WINDOW_GROUPBY_OPERATION_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_GROUPBY_OPERATION_STATE,
       this.lambdaParameterName,
       this.operator,
     ]);
@@ -142,7 +142,7 @@ export class QueryBuilderTDS_WindowAggreationOperatorState extends QueryBuilderT
 
   override get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.TDS_WINDOW_GROUPBY_AGG_OPERATION_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_GROUPBY_AGG_OPERATION_STATE,
       this.lambdaParameterName,
       this.operator,
       this.columnState.columnName,
@@ -311,7 +311,7 @@ export class QueryBuilderWindowColumnState
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.TDS_WINDOW_COLUMN_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_COLUMN_STATE,
       hashArray(this.windowColumns),
       this.sortByState ?? '',
       this.operationState,
@@ -390,7 +390,7 @@ export class QueryBuilderWindowState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.TDS_WINDOW_GROUPBY_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_GROUPBY_STATE,
       hashArray(this.windowColumns),
     ]);
   }

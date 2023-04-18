@@ -44,8 +44,8 @@ import {
   getCollectionValueSpecificationType,
   unwrapNotExpression,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
 
 export class QueryBuilderPostFilterOperator_In
   extends QueryBuilderPostFilterOperator
@@ -155,7 +155,9 @@ export class QueryBuilderPostFilterOperator_In
   }
 
   get hashCode(): string {
-    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_IN]);
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.POST_FILTER_OPERATOR_IN,
+    ]);
   }
 }
 
@@ -185,7 +187,7 @@ export class QueryBuilderPostFilterOperator_NotIn extends QueryBuilderPostFilter
 
   override get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_NOT_IN,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.POST_FILTER_OPERATOR_NOT_IN,
     ]);
   }
 }

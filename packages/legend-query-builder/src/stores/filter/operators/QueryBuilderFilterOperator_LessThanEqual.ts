@@ -24,7 +24,6 @@ import {
   type ValueSpecification,
   type SimpleFunctionExpression,
   type AbstractPropertyExpression,
-  SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
 import {
   type Hashable,
@@ -35,13 +34,13 @@ import {
   buildFilterConditionState,
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
   generateDefaultValueForPrimitiveType,
   getNonCollectionValueSpecificationType,
   isTypeCompatibleForAssignment,
 } from '../../QueryBuilderValueSpecificationHelper.js';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
 import { buildPrimitiveInstanceValue } from '../../shared/ValueSpecificationEditorHelper.js';
 
 export class QueryBuilderFilterOperator_LessThanEqual
@@ -131,7 +130,7 @@ export class QueryBuilderFilterOperator_LessThanEqual
         .genericType.value.rawType.path === PRIMITIVE_TYPE.DATETIME &&
         filterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
-        ? SUPPORTED_FUNCTIONS.IS_ON_OR_BEFORE_DAY
+        ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_ON_OR_BEFORE_DAY
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL,
     );
   }
@@ -147,7 +146,7 @@ export class QueryBuilderFilterOperator_LessThanEqual
         .genericType.value.rawType.path === PRIMITIVE_TYPE.DATETIME &&
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
-        ? SUPPORTED_FUNCTIONS.IS_ON_OR_BEFORE_DAY
+        ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_ON_OR_BEFORE_DAY
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL,
       this,
     );
@@ -155,7 +154,7 @@ export class QueryBuilderFilterOperator_LessThanEqual
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_LESS_THAN_EQUAL,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_OPERATOR_LESS_THAN_EQUAL,
     ]);
   }
 }

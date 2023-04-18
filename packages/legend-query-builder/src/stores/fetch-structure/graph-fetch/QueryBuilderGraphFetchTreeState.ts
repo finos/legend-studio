@@ -55,7 +55,7 @@ import {
   UnsupportedOperationError,
   ContentType,
 } from '@finos/legend-shared';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
 import { isValueExpressionReferencedInValue } from '../../QueryBuilderValueSpecificationHelper.js';
 import type { ExportDataInfo } from '../../QueryBuilderResultState.js';
 
@@ -497,7 +497,7 @@ export class QueryBuilderGraphFetchTreeState
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.GRAPH_FETCH_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.GRAPH_FETCH_STATE,
       this.isChecked.toString(),
       this.treeData?.tree ?? '',
     ]);

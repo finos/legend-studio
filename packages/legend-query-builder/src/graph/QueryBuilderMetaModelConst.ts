@@ -14,6 +14,20 @@
  * limitations under the License.
  */
 
+export enum QUERY_BUILDER_PURE_PATH {
+  // TDS
+  TDS_ROW = 'meta::pure::tds::TDSRow',
+  TDS_COLUMN = 'meta::pure::tds::TDSColumn',
+  TDS_TABULAR_DATASET = 'meta::pure::tds::TabularDataSet',
+
+  // time
+  DURATION_UNIT = 'meta::pure::functions::date::DurationUnit',
+  DAY_OF_WEEK = 'meta::pure::functions::date::DayOfWeek',
+
+  // serialization
+  SERIALIZE_CONFIG = 'meta::pure::graphFetch::execution::AlloySerializationConfig',
+}
+
 export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   AND = 'meta::pure::functions::boolean::and',
   EXISTS = 'meta::pure::functions::collection::exists',
@@ -25,6 +39,21 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   TAKE = 'meta::pure::functions::collection::take',
   SUBTYPE = 'meta::pure::functions::lang::subType',
   MINUS = 'meta::pure::functions::math::minus',
+
+  // time
+  ADJUST = 'meta::pure::functions::date::adjust',
+  TODAY = 'meta::pure::functions::date::today',
+  NOW = 'meta::pure::functions::date::now',
+  FIRST_DAY_OF_WEEK = 'meta::pure::functions::date::firstDayOfThisWeek',
+  FIRST_DAY_OF_MONTH = 'meta::pure::functions::date::firstDayOfThisMonth',
+  FIRST_DAY_OF_QUARTER = 'meta::pure::functions::date::firstDayOfThisQuarter',
+  FIRST_DAY_OF_YEAR = 'meta::pure::functions::date::firstDayOfThisYear',
+  PREVIOUS_DAY_OF_WEEK = 'meta::pure::functions::date::previousDayOfWeek',
+  IS_ON_DAY = 'meta::pure::functions::date::isOnDay',
+  IS_ON_OR_AFTER_DAY = 'meta::pure::functions::date::isOnOrAfterDay',
+  IS_AFTER_DAY = 'meta::pure::functions::date::isAfterDay',
+  IS_ON_OR_BEFORE_DAY = 'meta::pure::functions::date::isOnOrBeforeDay',
+  IS_BEFORE_DAY = 'meta::pure::functions::date::isBeforeDay',
 
   // graph-fetch
   GRAPH_FETCH = 'meta::pure::graphFetch::execution::graphFetch',

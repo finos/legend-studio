@@ -34,12 +34,8 @@ import {
   EnumValueExplicitReference,
   EnumValueInstanceValue,
   matchFunctionName,
-  SUPPORTED_FUNCTIONS,
-  DAY_OF_WEEK,
-  DURATION_UNIT,
   type ObserverContext,
   PrimitiveType,
-  getSupportFunctionFullPath,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -58,6 +54,10 @@ import {
   instanceValue_setValues,
   valueSpecification_setGenericType,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
+import {
+  QUERY_BUILDER_PURE_PATH,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+} from '../../graph/QueryBuilderMetaModelConst.js';
 
 export enum CUSTOM_DATE_PICKER_OPTION {
   ABSOLUTE_DATE = 'Absolute Date',
@@ -237,6 +237,13 @@ const reservedCustomDateOptions: CustomDateOption[] = [
   ),
 ];
 
+const getSupportedDateFunctionFullPath = (
+  functionName: string,
+): string | undefined =>
+  Object.values(QUERY_BUILDER_SUPPORTED_FUNCTIONS).find((_func) =>
+    matchFunctionName(functionName, _func),
+  );
+
 /**
  * Generate pure date functions based on the DatePickerOption.
  */
@@ -247,7 +254,7 @@ const buildPureDateFunctionExpression = (
 ): SimpleFunctionExpression => {
   if (datePickerOption instanceof CustomPreviousDayOfWeekOption) {
     const previousFridaySFE = new SimpleFunctionExpression(
-      SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
     );
     valueSpecification_setGenericType(
       previousFridaySFE,
@@ -255,7 +262,7 @@ const buildPureDateFunctionExpression = (
     );
     const dayOfWeekEnumIntanceValue = new EnumValueInstanceValue(
       GenericTypeExplicitReference.create(
-        new GenericType(graph.getType(DAY_OF_WEEK)),
+        new GenericType(graph.getType(QUERY_BUILDER_PURE_PATH.DAY_OF_WEEK)),
       ),
     );
     instanceValue_setValues(
@@ -265,7 +272,7 @@ const buildPureDateFunctionExpression = (
         EnumValueExplicitReference.create(
           guaranteeNonNullable(
             graph
-              .getEnumeration(DAY_OF_WEEK)
+              .getEnumeration(QUERY_BUILDER_PURE_PATH.DAY_OF_WEEK)
               .values.filter((e) => e.name === datePickerOption.day)[0],
           ),
         ),
@@ -282,7 +289,7 @@ const buildPureDateFunctionExpression = (
     switch (datePickerOption.unit) {
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.YEAR: {
         const firstDayOfYearSFE = new SimpleFunctionExpression(
-          SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
         );
         valueSpecification_setGenericType(
           firstDayOfYearSFE,
@@ -294,7 +301,7 @@ const buildPureDateFunctionExpression = (
       }
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.QUARTER: {
         const firstDayOfQuarterSFE = new SimpleFunctionExpression(
-          SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
         );
         valueSpecification_setGenericType(
           firstDayOfQuarterSFE,
@@ -306,7 +313,7 @@ const buildPureDateFunctionExpression = (
       }
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.MONTH: {
         const firstDayOfMonthSFE = new SimpleFunctionExpression(
-          SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
         );
         valueSpecification_setGenericType(
           firstDayOfMonthSFE,
@@ -318,7 +325,7 @@ const buildPureDateFunctionExpression = (
       }
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.WEEK: {
         const firstDayOfWeekSFE = new SimpleFunctionExpression(
-          SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
         );
         valueSpecification_setGenericType(
           firstDayOfWeekSFE,
@@ -337,19 +344,19 @@ const buildPureDateFunctionExpression = (
     switch (datePickerOption.value) {
       case CUSTOM_DATE_PICKER_OPTION.TODAY: {
         return createSupportedFunctionExpression(
-          SUPPORTED_FUNCTIONS.TODAY,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY,
           PrimitiveType.STRICTDATE,
         );
       }
       case CUSTOM_DATE_PICKER_OPTION.NOW: {
         return createSupportedFunctionExpression(
-          SUPPORTED_FUNCTIONS.NOW,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW,
           PrimitiveType.DATETIME,
         );
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_YEAR: {
         const firstDayOfYearSFE = new SimpleFunctionExpression(
-          SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
         );
         valueSpecification_setGenericType(
           firstDayOfYearSFE,
@@ -361,7 +368,7 @@ const buildPureDateFunctionExpression = (
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER: {
         const firstDayOfQuarterSFE = new SimpleFunctionExpression(
-          SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
         );
         valueSpecification_setGenericType(
           firstDayOfQuarterSFE,
@@ -373,7 +380,7 @@ const buildPureDateFunctionExpression = (
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH: {
         const firstDayOfMonthSFE = new SimpleFunctionExpression(
-          SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
         );
         valueSpecification_setGenericType(
           firstDayOfMonthSFE,
@@ -385,7 +392,7 @@ const buildPureDateFunctionExpression = (
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK: {
         const firstDayOfWeekSFE = new SimpleFunctionExpression(
-          SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
         );
         valueSpecification_setGenericType(
           firstDayOfWeekSFE,
@@ -410,7 +417,9 @@ const buildPureDurationEnumValue = (
   unitString: string,
   graph: PureModel,
 ): Enum => {
-  const durationUnitEnum = graph.getEnumeration(DURATION_UNIT);
+  const durationUnitEnum = graph.getEnumeration(
+    QUERY_BUILDER_PURE_PATH.DURATION_UNIT,
+  );
   const targetPureDurationEnumValue = durationUnitEnum.values.filter(
     (e) =>
       e.name ===
@@ -436,7 +445,7 @@ const buildPureAdjustDateFunction = (
   observerContext: ObserverContext,
 ): SimpleFunctionExpression => {
   const dateAdjustSimpleFunctionExpression = new SimpleFunctionExpression(
-    SUPPORTED_FUNCTIONS.ADJUST,
+    QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST,
   );
   functionExpression_addParameterValue(
     dateAdjustSimpleFunctionExpression,
@@ -451,7 +460,9 @@ const buildPureAdjustDateFunction = (
     observerContext,
   );
   if (customDateOption.direction === CUSTOM_DATE_OPTION_DIRECTION.BEFORE) {
-    const minusFunc = new SimpleFunctionExpression(SUPPORTED_FUNCTIONS.MINUS);
+    const minusFunc = new SimpleFunctionExpression(
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
+    );
     functionExpression_addParameterValue(
       minusFunc,
       buildPrimitiveInstanceValue(
@@ -481,7 +492,7 @@ const buildPureAdjustDateFunction = (
   }
   const durationUnitEnumIntanceValue = new EnumValueInstanceValue(
     GenericTypeExplicitReference.create(
-      new GenericType(graph.getType(DURATION_UNIT)),
+      new GenericType(graph.getType(QUERY_BUILDER_PURE_PATH.DURATION_UNIT)),
     ),
   );
   instanceValue_setValues(
@@ -521,7 +532,10 @@ const buildCustomDateOptionDurationValue = (
   return durationParam instanceof PrimitiveInstanceValue
     ? (durationParam.values[0] as number)
     : durationParam instanceof SimpleFunctionExpression &&
-      matchFunctionName(durationParam.functionName, SUPPORTED_FUNCTIONS.MINUS)
+      matchFunctionName(
+        durationParam.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
+      )
     ? durationParam.parametersValues[0] instanceof PrimitiveInstanceValue
       ? (durationParam.parametersValues[0].values[0] as number)
       : 0
@@ -538,7 +552,7 @@ const buildCustomDateOptionDirectionValue = (
     SimpleFunctionExpression &&
   matchFunctionName(
     pureDateAdjustFunction.parametersValues[1].functionName,
-    SUPPORTED_FUNCTIONS.MINUS,
+    QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
   )
     ? CUSTOM_DATE_OPTION_DIRECTION.BEFORE
     : CUSTOM_DATE_OPTION_DIRECTION.AFTER;
@@ -572,18 +586,18 @@ const buildCustomDateOptionReferenceMomentValue = (
   const funcName = (
     pureDateAjustFunction.parametersValues[0] as SimpleFunctionExpression
   ).functionName;
-  switch (getSupportFunctionFullPath(funcName)) {
-    case SUPPORTED_FUNCTIONS.TODAY:
+  switch (getSupportedDateFunctionFullPath(funcName)) {
+    case QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY:
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY;
-    case SUPPORTED_FUNCTIONS.NOW:
+    case QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW:
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.NOW;
-    case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR:
+    case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR:
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_YEAR;
-    case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER:
+    case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER:
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER;
-    case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH:
+    case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH:
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH;
-    case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK:
+    case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK:
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK;
     default:
       throw new UnsupportedOperationError(
@@ -603,7 +617,7 @@ const buildCustomDateOption = (
     valueSpecification instanceof SimpleFunctionExpression &&
     matchFunctionName(
       valueSpecification.functionName,
-      SUPPORTED_FUNCTIONS.ADJUST,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST,
     )
   ) {
     const customDateOption = new CustomDateOption(
@@ -640,38 +654,38 @@ export const buildDatePickerOption = (
   valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
 ): DatePickerOption => {
   if (valueSpecification instanceof SimpleFunctionExpression) {
-    switch (getSupportFunctionFullPath(valueSpecification.functionName)) {
-      case SUPPORTED_FUNCTIONS.TODAY:
+    switch (getSupportedDateFunctionFullPath(valueSpecification.functionName)) {
+      case QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY:
         return new DatePickerOption(
           CUSTOM_DATE_PICKER_OPTION.TODAY,
           CUSTOM_DATE_PICKER_OPTION.TODAY,
         );
-      case SUPPORTED_FUNCTIONS.NOW:
+      case QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW:
         return new DatePickerOption(
           CUSTOM_DATE_PICKER_OPTION.NOW,
           CUSTOM_DATE_PICKER_OPTION.NOW,
         );
-      case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR:
+      case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR:
         return new CustomFirstDayOfOption(
           CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_YEAR,
           CUSTOM_DATE_FIRST_DAY_OF_UNIT.YEAR,
         );
-      case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER:
+      case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER:
         return new CustomFirstDayOfOption(
           CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER,
           CUSTOM_DATE_FIRST_DAY_OF_UNIT.QUARTER,
         );
-      case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH:
+      case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH:
         return new CustomFirstDayOfOption(
           CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH,
           CUSTOM_DATE_FIRST_DAY_OF_UNIT.MONTH,
         );
-      case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK:
+      case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK:
         return new CustomFirstDayOfOption(
           CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK,
           CUSTOM_DATE_FIRST_DAY_OF_UNIT.WEEK,
         );
-      case SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK:
+      case QUERY_BUILDER_SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK:
         return new CustomPreviousDayOfWeekOption(
           `Previous ${
             (valueSpecification.parametersValues[0] as EnumValueInstanceValue)
@@ -680,8 +694,7 @@ export const buildDatePickerOption = (
           (valueSpecification.parametersValues[0] as EnumValueInstanceValue)
             .values[0]?.value.name as CUSTOM_DATE_DAY_OF_WEEK,
         );
-
-      case SUPPORTED_FUNCTIONS.ADJUST:
+      case QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST:
         return buildCustomDateOption(valueSpecification);
       default:
         return new DatePickerOption('', '');

@@ -30,7 +30,6 @@ import {
   Multiplicity,
   PackageableElementExplicitReference,
   SUPPORTED_FUNCTIONS,
-  PURE_SERIALIZE_CONFIG_CLASS,
   CollectionInstanceValue,
   KeyExpressionInstanceValue,
   KeyExpression,
@@ -40,7 +39,10 @@ import {
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
+import {
+  QUERY_BUILDER_PURE_PATH,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+} from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
   GraphFetchExternalFormatSerializationState,
   GraphFetchPureSerializationState,
@@ -100,7 +102,7 @@ export const buildPureSerializationConfig = (
   config: Record<PropertyKey, boolean>,
   graph: PureModel,
 ): SimpleFunctionExpression => {
-  const configClass = graph.getClass(PURE_SERIALIZE_CONFIG_CLASS);
+  const configClass = graph.getClass(QUERY_BUILDER_PURE_PATH.SERIALIZE_CONFIG);
   const newFunction = new SimpleFunctionExpression(
     extractElementNameFromPath(SUPPORTED_FUNCTIONS.NEW),
   );

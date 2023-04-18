@@ -76,7 +76,7 @@ import {
   instanceValue_setValues,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
 import { CustomDatePicker } from './CustomDatePicker.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import { simplifyValueExpression } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { evaluate } from 'mathjs';
 

@@ -44,7 +44,7 @@ import {
   type QueryResultSetModifierState,
   type SortColumnState,
 } from '../QueryResultSetModifierState.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPropertyExpressionChain } from '../../../QueryBuilderValueSpecificationBuilderHelper.js';
 import { appendOLAPGroupByState } from '../window/QueryBuilderWindowValueSpecificationBuilder.js';

@@ -56,7 +56,7 @@ import {
   isString,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
 import {
   getDerivedPropertyMilestoningSteoreotype,
   validateMilestoningPropertyExpressionChain,

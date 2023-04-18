@@ -95,7 +95,6 @@ import type { V1_ClassInstance } from '../../../../model/valueSpecification/raw/
 import type { V1_GenericTypeInstance } from '../../../../model/valueSpecification/raw/V1_GenericTypeInstance.js';
 import { V1_ClassInstanceType } from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 import { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
-import { PrimitiveType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 import {
   KeyExpression,
   KeyExpressionInstanceValue,
@@ -617,58 +616,7 @@ export function V1_buildFunctionExpression(
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
 ): SimpleFunctionExpression {
-  if (
-    matchFunctionName(functionName, [
-      SUPPORTED_FUNCTIONS.TODAY,
-      SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
-    ])
-  ) {
-    const expression = V1_buildGenericFunctionExpression(
-      functionName,
-      parameters,
-      openVariables,
-      compileContext,
-      processingContext,
-    );
-    expression.genericType = GenericTypeExplicitReference.create(
-      new GenericType(PrimitiveType.STRICTDATE),
-    );
-    return expression;
-  } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.NOW)) {
-    const expression = V1_buildGenericFunctionExpression(
-      functionName,
-      parameters,
-      openVariables,
-      compileContext,
-      processingContext,
-    );
-    expression.genericType = GenericTypeExplicitReference.create(
-      new GenericType(PrimitiveType.DATETIME),
-    );
-    return expression;
-  } else if (
-    matchFunctionName(functionName, [
-      SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
-      SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
-      SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
-      SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
-      SUPPORTED_FUNCTIONS.ADJUST,
-    ])
-  ) {
-    const expression = V1_buildGenericFunctionExpression(
-      functionName,
-      parameters,
-      openVariables,
-      compileContext,
-      processingContext,
-    );
-    expression.genericType = GenericTypeExplicitReference.create(
-      new GenericType(PrimitiveType.DATE),
-    );
-    return expression;
-  } else if (
-    matchFunctionName(functionName, Object.values(SUPPORTED_FUNCTIONS))
-  ) {
+  if (matchFunctionName(functionName, Object.values(SUPPORTED_FUNCTIONS))) {
     // NOTE: this is a catch-all builder that is only meant for basic function expression
     // such as and(), or(), etc. It will fail when type-inferencing/function-matching is required
     // such as for project(), filter(), getAll(), etc.

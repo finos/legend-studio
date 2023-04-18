@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export enum QUERY_BUILDER_HASH_STRUCTURE {
+export enum QUERY_BUILDER_STATE_HASH_STRUCTURE {
   // parameters state
   PARAMETERS_STATE = 'PARAMETERS_STATE',
   CONSTANT_STATE = 'CONSTANT_STATE',

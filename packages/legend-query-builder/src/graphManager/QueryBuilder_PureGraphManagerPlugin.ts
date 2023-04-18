@@ -20,6 +20,7 @@ import {
   type PureGraphManagerExtensionBuilder,
 } from '@finos/legend-graph';
 import { QueryBuilder_buildGraphManagerExtension } from './protocol/pure/QueryBuilder_PureGraphManagerExtensionBuilder.js';
+import { QUERY_BUILDER_PURE_PATH } from '../graph/QueryBuilderMetaModelConst.js';
 
 export class QueryBuilder_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
@@ -28,5 +29,13 @@ export class QueryBuilder_PureGraphManagerPlugin extends PureGraphManagerPlugin 
 
   override getExtraPureGraphManagerExtensionBuilders(): PureGraphManagerExtensionBuilder[] {
     return [QueryBuilder_buildGraphManagerExtension];
+  }
+
+  override getExtraExposedSystemElementPath(): string[] {
+    return [
+      QUERY_BUILDER_PURE_PATH.TDS_TABULAR_DATASET,
+      QUERY_BUILDER_PURE_PATH.TDS_ROW,
+      QUERY_BUILDER_PURE_PATH.TDS_COLUMN,
+    ];
   }
 }
