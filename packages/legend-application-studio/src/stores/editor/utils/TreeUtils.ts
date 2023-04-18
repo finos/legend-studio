@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { CORE_DND_TYPE } from '../shared/DnDUtils.js';
+import type { CORE_DND_TYPE } from './DnDUtils.js';
 import type { TreeNodeData } from '@finos/legend-art';
 import type {
   Type,

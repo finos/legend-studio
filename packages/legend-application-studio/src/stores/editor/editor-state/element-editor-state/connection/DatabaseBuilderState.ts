@@ -49,7 +49,7 @@ import {
   getNullableSchema,
   getNullableTable,
 } from '@finos/legend-graph';
-import { connection_setStore } from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { connection_setStore } from '../../../utils/modifier/DSL_Mapping_GraphModifierHelper.js';
 import { GraphEditFormModeState } from '../../../GraphEditFormModeState.js';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {

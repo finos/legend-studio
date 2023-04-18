@@ -43,7 +43,7 @@ import {
   Association,
   PrimitiveType,
 } from '@finos/legend-graph';
-import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/editor/shared/ModelClassifierUtils.js';
+import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/editor/utils/ModelClassifierUtils.js';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,

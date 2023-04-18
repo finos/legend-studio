@@ -53,7 +53,7 @@ import {
   externalFormat_schema_setContent,
   externalFormat_schema_setId,
   externalFormat_schema_setLocation,
-} from '../../../../stores/editor/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+} from '../../../../stores/editor/utils/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import { SchemaSetModelGenerationEditor } from './DSL_ExternalFormat_SchemaSetModelGenerationEditor.js';
 import {
   CODE_EDITOR_LANGUAGE,

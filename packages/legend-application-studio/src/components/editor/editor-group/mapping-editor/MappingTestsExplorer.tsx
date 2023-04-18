@@ -43,7 +43,7 @@ import {
 import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import { ClassMappingSelectorModal } from './MappingExecutionBuilder.js';
 import { flowResult } from 'mobx';
 import { Randomizer } from '@finos/legend-shared';

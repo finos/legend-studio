@@ -24,7 +24,7 @@ import {
   openNode,
   populateDirectoryTreeNodeChildren,
   reprocessOpenNodes,
-} from '../shared/FileSystemTreeUtils.js';
+} from '../utils/FileSystemTreeUtils.js';
 
 export class FileSystemState {
   root: FileSystem_Directory;

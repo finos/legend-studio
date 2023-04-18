@@ -21,7 +21,7 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import {
   clsx,
   CustomSelectorInput,
@@ -128,11 +128,11 @@ import {
   class_swapConstraints,
   class_swapSuperTypes,
   setGenericTypeReferenceValue,
-} from '../../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/editor/utils/modifier/DomainGraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/editor/shared/ModelClassifierUtils.js';
+} from '../../../../stores/editor/utils/ModelClassifierUtils.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 

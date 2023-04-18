@@ -49,7 +49,7 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import {
   externalFormat_Binding_setContentType,
   externalFormat_Binding_setSchemaId,
@@ -58,7 +58,7 @@ import {
   externalFormat_modelUnit_addPackageableElementIncludes,
   externalFormat_modelUnit_deletePackageableElementExcludes,
   externalFormat_modelUnit_deletePackageableElementIncludes,
-} from '../../../../stores/editor/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+} from '../../../../stores/editor/utils/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 
 const ModelUnitPackagableElementEntryEditor = observer(
   (props: {

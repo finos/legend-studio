@@ -41,7 +41,7 @@ import {
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore.js';
 import { observable, flow, action, makeObservable, flowResult } from 'mobx';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
+import { createMockDataForMappingElementSource } from '../../../utils/MockDataUtils.js';
 import {
   type RawLambda,
   type Runtime,
@@ -81,7 +81,7 @@ import {
   reportGraphAnalytics,
 } from '@finos/legend-graph';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
-import { flatData_setData } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
+import { flatData_setData } from '../../../utils/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
   mappingTest_setAssert,
@@ -89,12 +89,12 @@ import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../utils/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../utils/modifier/STO_Relational_GraphModifierHelper.js';
 import {
   LambdaEditorState,
   QueryBuilderTelemetryHelper,

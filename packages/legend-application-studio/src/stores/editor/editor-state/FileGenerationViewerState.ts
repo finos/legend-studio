@@ -17,7 +17,7 @@
 import type { EditorStore } from '../EditorStore.js';
 import { EditorState } from './EditorState.js';
 import { observable, makeObservable, computed } from 'mobx';
-import type { FileSystem_File } from '../shared/FileSystemTreeUtils.js';
+import type { FileSystem_File } from '../utils/FileSystemTreeUtils.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { returnUndefOnError } from '@finos/legend-shared';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-lego/code-editor';

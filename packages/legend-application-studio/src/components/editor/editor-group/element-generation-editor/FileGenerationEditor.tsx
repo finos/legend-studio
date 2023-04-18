@@ -50,7 +50,7 @@ import {
   type FileGenerationSourceDropTarget,
   type ElementDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import type { FileGenerationState } from '../../../../stores/editor/editor-state/FileGenerationState.js';
 import type { ElementFileGenerationState } from '../../../../stores/editor/editor-state/element-editor-state/ElementFileGenerationState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
@@ -71,7 +71,7 @@ import {
   fileGeneration_changeScopeElement,
   fileGeneration_deleteScopeElement,
   fileGeneration_setGenerationOutputPath,
-} from '../../../../stores/editor/shared/modifier/DSL_Generation_GraphModifierHelper.js';
+} from '../../../../stores/editor/utils/modifier/DSL_Generation_GraphModifierHelper.js';
 import { FileSystemViewer } from './FileSystemViewer.js';
 
 const FileGenerationScopeEditor = observer(

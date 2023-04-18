@@ -64,13 +64,13 @@ import {
   Modal,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
-import type { RuntimeExplorerTreeNodeData } from '../../../stores/editor/shared/TreeUtils.js';
+import type { RuntimeExplorerTreeNodeData } from '../../../stores/editor/utils/TreeUtils.js';
 import { ConnectionEditor } from './connection-editor/ConnectionEditor.js';
 import {
   type UMLEditorElementDropTarget,
   CORE_DND_TYPE,
   ElementDragSource,
-} from '../../../stores/editor/shared/DnDUtils.js';
+} from '../../../stores/editor/utils/DnDUtils.js';
 import { useDrop } from 'react-dnd';
 import {
   assertErrorThrown,
@@ -111,7 +111,7 @@ import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../
 import {
   runtime_addIdentifiedConnection,
   runtime_deleteIdentifiedConnection,
-} from '../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../stores/editor/utils/modifier/DSL_Mapping_GraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib__/LegendStudioApplicationNavigationContext.js';
 
 const getConnectionTooltipText = (

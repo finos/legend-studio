@@ -24,7 +24,7 @@ import {
   CORE_DND_TYPE,
   type UMLEditorElementDropTarget,
   type ElementDragSource,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import { useDrop } from 'react-dnd';
 import {
   clsx,
@@ -84,11 +84,11 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteTaggedValue,
   association_changePropertyType,
-} from '../../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/editor/utils/modifier/DomainGraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/editor/shared/ModelClassifierUtils.js';
+} from '../../../../stores/editor/utils/ModelClassifierUtils.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import {
   buildElementOption,

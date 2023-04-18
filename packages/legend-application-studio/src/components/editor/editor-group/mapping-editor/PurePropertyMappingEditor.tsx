@@ -20,7 +20,7 @@ import {
   type TransformDropTarget,
   CORE_DND_TYPE,
   TypeDragSource,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import {
   type MappingElement,
   MappingEditorState,
@@ -44,12 +44,12 @@ import {
   getRawGenericType,
   EnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
-import { purePropertyMapping_setTransformer } from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { purePropertyMapping_setTransformer } from '../../../../stores/editor/utils/modifier/DSL_Mapping_GraphModifierHelper.js';
 import { getExpectedReturnType } from './PropertyMappingsEditor.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/editor/shared/ModelClassifierUtils.js';
+} from '../../../../stores/editor/utils/ModelClassifierUtils.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 
 const SimplePropertyMappingEditor = observer(

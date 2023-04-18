@@ -32,7 +32,7 @@ import {
 import {
   generationSpecification_addNode,
   generationSpecification_deleteGenerationNode,
-} from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
+} from '../utils/modifier/DSL_Generation_GraphModifierHelper.js';
 
 export interface GenerationSpecNodeDragSource {
   nodeState: GenerationTreeNodeState;

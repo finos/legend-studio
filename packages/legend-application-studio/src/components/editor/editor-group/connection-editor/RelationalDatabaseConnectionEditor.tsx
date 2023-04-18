@@ -96,7 +96,7 @@ import {
   buildElementOption,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
-import { connection_setStore } from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { connection_setStore } from '../../../../stores/editor/utils/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   apiTokenAuthenticationStrategy_setApiToken,
   bigQueryDatasourceSpecification_setDefaultDataset,
@@ -163,7 +163,7 @@ import {
   middleTierUsernamePasswordAuthenticationStrategy_setVaultReference,
   relationalDatabaseConnection_addPostProcessor,
   relationalDatabaseConnection_deletePostProcessor,
-} from '../../../../stores/editor/shared/modifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../stores/editor/utils/modifier/STO_Relational_GraphModifierHelper.js';
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import type { MapperPostProcessorEditorState } from '../../../../stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';

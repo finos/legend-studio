@@ -48,7 +48,7 @@ import {
   FileSystem_Directory,
   FileSystem_File,
   getFileSystemChildNodes,
-} from '../../../../stores/editor/shared/FileSystemTreeUtils.js';
+} from '../../../../stores/editor/utils/FileSystemTreeUtils.js';
 import { useApplicationStore } from '@finos/legend-application';
 import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';

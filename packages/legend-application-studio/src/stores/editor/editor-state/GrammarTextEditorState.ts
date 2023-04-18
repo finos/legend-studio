@@ -44,7 +44,7 @@ import {
   PURE_CONNECTION_NAME,
   ExecutionEnvironmentInstance,
 } from '@finos/legend-graph';
-import { generatePackageableElementTreeNodeDataLabel } from '../shared/PackageTreeUtils.js';
+import { generatePackageableElementTreeNodeDataLabel } from '../utils/PackageTreeUtils.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../../__lib__/LegendStudioSetting.js';
 import type { CodeEditorPosition } from '@finos/legend-lego/code-editor';
 

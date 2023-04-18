@@ -48,13 +48,13 @@ import {
   annotatedElement_addTaggedValue,
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
-} from '../../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/editor/utils/modifier/DomainGraphModifierHelper.js';
 import { useDrop } from 'react-dnd';
 import {
   CORE_DND_TYPE,
   type UMLEditorElementDropTarget,
   type ElementDragSource,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import {
   TaggedValueDragPreviewLayer,
   TaggedValueEditor,
@@ -67,7 +67,7 @@ import {
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
-} from '../../../../stores/editor/shared/modifier/DSL_Data_GraphModifierHelper.js';
+} from '../../../../stores/editor/utils/modifier/DSL_Data_GraphModifierHelper.js';
 import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/FileGenerationViewerState.js';
 import type { ExternalFormatDataState } from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import { renderEmbeddedDataEditor } from './EmbeddedDataEditor.js';

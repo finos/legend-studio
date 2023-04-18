@@ -31,7 +31,7 @@ import {
   CORE_DND_TYPE,
   type OperationSetImplementationDropTarget,
   type MappingElementDragSource,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import { useDrop } from 'react-dnd';
 import { noop } from '@finos/legend-shared';
 import {
@@ -57,7 +57,7 @@ import {
   operationMapping_addParameter,
   operationMapping_changeParameter,
   operationMapping_deleteParameter,
-} from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../../stores/editor/utils/modifier/DSL_Mapping_GraphModifierHelper.js';
 
 interface SetImplementationOption {
   value: SetImplementation;

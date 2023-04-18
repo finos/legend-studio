@@ -21,7 +21,7 @@ import {
   type ElementDragSource,
   CORE_DND_TYPE,
   MappingElementDragSource,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import {
   type TreeNodeContainerProps,
   clsx,
@@ -70,7 +70,7 @@ import {
   PureInstanceSetImplementationFilterState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
-import { pureInstanceSetImpl_setMappingFilter } from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { pureInstanceSetImpl_setMappingFilter } from '../../../../stores/editor/utils/modifier/DSL_Mapping_GraphModifierHelper.js';
 
 export const MappingExplorerContextMenu = observer(
   forwardRef<

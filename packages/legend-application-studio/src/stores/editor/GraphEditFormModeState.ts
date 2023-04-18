@@ -50,7 +50,7 @@ import {
   graph_deleteOwnElement,
   graph_dispose,
   graph_renameElement,
-} from './shared/modifier/GraphModifierHelper.js';
+} from './utils/modifier/GraphModifierHelper.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';

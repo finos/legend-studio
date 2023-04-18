@@ -60,18 +60,18 @@ import {
   CreateNewElementModal,
 } from './CreateNewElementModal.js';
 import { useDrag } from 'react-dnd';
-import { ElementDragSource } from '../../../stores/editor/shared/DnDUtils.js';
+import { ElementDragSource } from '../../../stores/editor/utils/DnDUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import {
   ACTIVITY_MODE,
   GRAPH_EDITOR_MODE,
 } from '../../../stores/editor/EditorConfig.js';
-import { getTreeChildNodes } from '../../../stores/editor/shared/PackageTreeUtils.js';
-import type { PackageTreeNodeData } from '../../../stores/editor/shared/TreeUtils.js';
+import { getTreeChildNodes } from '../../../stores/editor/utils/PackageTreeUtils.js';
+import type { PackageTreeNodeData } from '../../../stores/editor/utils/TreeUtils.js';
 import {
   type FileSystemTreeNodeData,
   getFileSystemChildNodes,
-} from '../../../stores/editor/shared/FileSystemTreeUtils.js';
+} from '../../../stores/editor/utils/FileSystemTreeUtils.js';
 import { FileSystemTree } from '../editor-group/element-generation-editor/FileSystemViewer.js';
 import {
   generateViewEntityRoute,
@@ -107,7 +107,7 @@ import {
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/shared/ModelClassifierUtils.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/utils/ModelClassifierUtils.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioFrameworkProvider.js';
 import { queryClass } from '../editor-group/uml-editor/ClassQueryBuilder.js';
 import { createViewSDLCProjectHandler } from '../../../stores/editor/DependencyProjectViewerHelper.js';
@@ -118,7 +118,7 @@ import {
 import {
   CLASS_MOCK_DATA_GENERATION_FORMAT,
   createMockDataForClassWithFormat,
-} from '../../../stores/editor/shared/MockDataUtils.js';
+} from '../../../stores/editor/utils/MockDataUtils.js';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,

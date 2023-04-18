@@ -92,7 +92,7 @@ import {
   ExecutionEnvironmentInstance,
 } from '@finos/legend-graph';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from './utils/ModelClassifierUtils.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../__lib__/LegendStudioSetting.js';
 import type { TabState } from '@finos/legend-lego/application';

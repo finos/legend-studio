@@ -45,7 +45,7 @@ import {
   type MappingElementSourceDropTarget,
   CORE_DND_TYPE,
   TypeDragSource,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { noop } from '@finos/legend-shared';
 import {
@@ -70,7 +70,7 @@ import {
   enumValueMapping_addSourceValue,
   enumValueMapping_deleteSourceValue,
   enumValueMapping_updateSourceValue,
-} from '../../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../../stores/editor/utils/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,

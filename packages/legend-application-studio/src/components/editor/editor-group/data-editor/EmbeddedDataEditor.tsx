@@ -35,7 +35,7 @@ import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
-} from '../../../../stores/editor/shared/modifier/DSL_Data_GraphModifierHelper.js';
+} from '../../../../stores/editor/utils/modifier/DSL_Data_GraphModifierHelper.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/FileGenerationViewerState.js';
 import {

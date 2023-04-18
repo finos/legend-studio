@@ -35,9 +35,9 @@ import { useDrag } from 'react-dnd';
 import {
   TypeDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import { getClassPropertyIcon } from '../../../shared/ElementIconUtils.js';
-import type { TypeTreeNodeData } from '../../../../stores/editor/shared/TreeUtils.js';
+import type { TypeTreeNodeData } from '../../../../stores/editor/utils/TreeUtils.js';
 import {
   type Type,
   type Enum,
@@ -53,7 +53,7 @@ import {
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/editor/shared/ModelClassifierUtils.js';
+} from '../../../../stores/editor/utils/ModelClassifierUtils.js';
 
 const getEnumTypeTreeNodeData = (
   _enum: Enum,

@@ -57,7 +57,7 @@ import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEven
 import {
   configurationProperty_addConfigurationProperty,
   configurationProperty_setValue,
-} from '../../../shared/modifier/DSL_Generation_GraphModifierHelper.js';
+} from '../../../utils/modifier/DSL_Generation_GraphModifierHelper.js';
 
 export enum SCHEMA_SET_TAB_TYPE {
   SCHEMAS = 'SCHEMAS',

@@ -32,7 +32,7 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type MappingElementSourceDropTarget,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import {
   InstanceSetImplementationState,

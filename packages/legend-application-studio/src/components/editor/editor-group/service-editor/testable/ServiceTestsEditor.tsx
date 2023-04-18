@@ -61,7 +61,7 @@ import type { TestAssertionEditorState } from '../../../../../stores/editor/edit
 import {
   atomicTest_setId,
   testAssertion_setId,
-} from '../../../../../stores/editor/shared/modifier/Testable_GraphModifierHelper.js';
+} from '../../../../../stores/editor/utils/modifier/Testable_GraphModifierHelper.js';
 import {
   getTestableResultFromTestResult,
   TESTABLE_RESULT,

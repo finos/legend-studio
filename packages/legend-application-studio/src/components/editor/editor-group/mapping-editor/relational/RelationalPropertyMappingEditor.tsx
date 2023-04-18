@@ -45,12 +45,12 @@ import {
   getRawGenericType,
   EnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
-import { relationalPropertyMapping_setTransformer } from '../../../../../stores/editor/shared/modifier/STO_Relational_GraphModifierHelper.js';
+import { relationalPropertyMapping_setTransformer } from '../../../../../stores/editor/utils/modifier/STO_Relational_GraphModifierHelper.js';
 import { getExpectedReturnType } from '../PropertyMappingsEditor.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../../stores/editor/shared/ModelClassifierUtils.js';
+} from '../../../../../stores/editor/utils/ModelClassifierUtils.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 
 const SimplePropertyMappingEditor = observer(

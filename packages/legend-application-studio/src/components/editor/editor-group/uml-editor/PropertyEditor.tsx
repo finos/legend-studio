@@ -21,7 +21,7 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import {
   clsx,
   CustomSelectorInput,
@@ -63,7 +63,7 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteStereotype,
   property_setAggregationKind,
-} from '../../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/editor/utils/modifier/DomainGraphModifierHelper.js';
 
 type AggregationKindOption = { label: string; value: AggregationKind };
 const buildAggregationKindOption = (

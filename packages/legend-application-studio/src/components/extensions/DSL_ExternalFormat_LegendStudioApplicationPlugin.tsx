@@ -71,7 +71,7 @@ import type { ConnectionValueState } from '../../stores/editor/editor-state/elem
 import {
   externalFormat_Binding_setContentType,
   externalFormat_urlStream_setUrl,
-} from '../../stores/editor/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+} from '../../stores/editor/utils/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import type { DocumentationEntry } from '@finos/legend-application';
 import { DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/DSL_ExternalFormat_LegendStudioDocumentation.js';
 import {

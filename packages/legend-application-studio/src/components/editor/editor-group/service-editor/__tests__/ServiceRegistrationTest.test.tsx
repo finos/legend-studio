@@ -44,7 +44,7 @@ import {
   ServiceRegistrationSuccess,
 } from '@finos/legend-graph';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
-import { service_deleteOwner } from '../../../../../stores/editor/shared/modifier/DSL_Service_GraphModifierHelper.js';
+import { service_deleteOwner } from '../../../../../stores/editor/utils/modifier/DSL_Service_GraphModifierHelper.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { ApplicationStore } from '@finos/legend-application';
 import { TEST__getLegendStudioApplicationConfig } from '../../../../../stores/__test-utils__/LegendStudioApplicationTestUtils.js';

@@ -49,7 +49,7 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type FileGenerationSourceDropTarget,
-} from '../../../stores/editor/shared/DnDUtils.js';
+} from '../../../stores/editor/utils/DnDUtils.js';
 import { getNullableFirstElement } from '@finos/legend-shared';
 import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import { flowResult } from 'mobx';
@@ -67,12 +67,12 @@ import {
   buildElementOption,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
-import { packageableElementReference_setValue } from '../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
+import { packageableElementReference_setValue } from '../../../stores/editor/utils/modifier/DomainGraphModifierHelper.js';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_deleteFileGeneration,
   generationSpecification_setId,
-} from '../../../stores/editor/shared/modifier/DSL_Generation_GraphModifierHelper.js';
+} from '../../../stores/editor/utils/modifier/DSL_Generation_GraphModifierHelper.js';
 
 const GENERATION_SPEC_NODE_DND_TYPE = 'GENERATION_SPEC_NODE';
 

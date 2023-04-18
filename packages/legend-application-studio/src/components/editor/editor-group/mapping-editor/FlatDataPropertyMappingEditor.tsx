@@ -20,7 +20,7 @@ import {
   type FlatDataPropertyMappingTransformDropTarget,
   CORE_DND_TYPE,
   FlatDataColumnDragSource,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import {
   type MappingElement,
   MappingEditorState,
@@ -45,11 +45,11 @@ import {
   getRawGenericType,
   EnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
-import { flatDataPropertyMapping_setTransformer } from '../../../../stores/editor/shared/modifier/STO_FlatData_GraphModifierHelper.js';
+import { flatDataPropertyMapping_setTransformer } from '../../../../stores/editor/utils/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/editor/shared/ModelClassifierUtils.js';
+} from '../../../../stores/editor/utils/ModelClassifierUtils.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 
 const SimplePropertyMappingEditor = observer(

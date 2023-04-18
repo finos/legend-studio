@@ -46,7 +46,7 @@ import {
   service_setDocumentation,
   service_setPattern,
   service_updateOwner,
-} from '../../../../stores/editor/shared/modifier/DSL_Service_GraphModifierHelper.js';
+} from '../../../../stores/editor/utils/modifier/DSL_Service_GraphModifierHelper.js';
 import {
   useApplicationNavigationContext,
   useApplicationStore,

@@ -43,7 +43,7 @@ import {
   buildFileSystemDirectory,
   reprocessOpenNodes,
   getFileSystemTreeData,
-} from '../shared/FileSystemTreeUtils.js';
+} from '../utils/FileSystemTreeUtils.js';
 import type { TreeData } from '@finos/legend-art';
 import type { EditorStore } from '../EditorStore.js';
 import { FileGenerationViewerState } from './FileGenerationViewerState.js';
@@ -66,7 +66,7 @@ import { ExternalFormatState } from './ExternalFormatState.js';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_addGenerationElement,
-} from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
+} from '../utils/modifier/DSL_Generation_GraphModifierHelper.js';
 import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState.js';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =

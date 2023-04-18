@@ -48,7 +48,7 @@ import {
 } from '@finos/legend-lego/graph-editor';
 import type { EmbeddedDataTypeOption } from '../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/shared/ModelClassifierUtils.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/utils/ModelClassifierUtils.js';
 import { EmbeddedDataType } from '../../../stores/editor/editor-state/ExternalFormatState.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 

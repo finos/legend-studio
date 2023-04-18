@@ -42,7 +42,7 @@ import {
   relationalData_setTableName,
   relationalData_setTableSchemaName,
   relationalData_setTableValues,
-} from '../../../shared/modifier/DSL_Data_GraphModifierHelper.js';
+} from '../../../utils/modifier/DSL_Data_GraphModifierHelper.js';
 import { EmbeddedDataType } from '../../ExternalFormatState.js';
 
 export const createEmbeddedData = (

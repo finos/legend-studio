@@ -37,11 +37,11 @@ import {
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../EditorStore.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../__lib__/LegendStudioEvent.js';
-import { GENERATION_FILE_ROOT_NAME } from '../../shared/FileSystemTreeUtils.js';
+import { GENERATION_FILE_ROOT_NAME } from '../../utils/FileSystemTreeUtils.js';
 import {
   configurationProperty_addConfigurationProperty,
   configurationProperty_setValue,
-} from '../../shared/modifier/DSL_Generation_GraphModifierHelper.js';
+} from '../../utils/modifier/DSL_Generation_GraphModifierHelper.js';
 import { GeneratedFileStructureState } from '../FileGenerationState.js';
 import { ElementEditorState } from './ElementEditorState.js';
 

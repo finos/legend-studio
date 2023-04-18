@@ -40,7 +40,7 @@ import {
   constraint_setFunctionDefinition,
   derivedProperty_setBody,
   derivedProperty_setParameters,
-} from '../../shared/modifier/DomainGraphModifierHelper.js';
+} from '../../utils/modifier/DomainGraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export const CONSTRAINT_SOURCE_ID_LABEL = 'constraint';

@@ -52,17 +52,17 @@ import type { EditorStore } from '../../../../EditorStore.js';
 import {
   service_addConnectionTestData,
   service_setConnectionTestDataEmbeddedData,
-} from '../../../../shared/modifier/DSL_Service_GraphModifierHelper.js';
+} from '../../../../utils/modifier/DSL_Service_GraphModifierHelper.js';
 import {
   createMockEnumerationProperty,
   createMockPrimitiveProperty,
-} from '../../../../shared/MockDataUtils.js';
+} from '../../../../utils/MockDataUtils.js';
 import {
   TEMPORARY__createRelationalDataFromCSV,
   EmbeddedDataConnectionTypeVisitor,
   getAllIdentifiedConnectionsFromRuntime,
   TEMPORARY__EmbeddedDataConnectionVisitor,
-} from '../../../../shared/TestableUtils.js';
+} from '../../../../utils/TestableUtils.js';
 import { EmbeddedDataType } from '../../../ExternalFormatState.js';
 import {
   type EmbeddedDataTypeOption,

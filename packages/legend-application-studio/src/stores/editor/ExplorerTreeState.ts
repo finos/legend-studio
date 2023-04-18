@@ -31,14 +31,14 @@ import {
   openNodeById,
   openNodes,
   populatePackageTreeNodeChildren,
-} from './shared/PackageTreeUtils.js';
+} from './utils/PackageTreeUtils.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
-import type { PackageTreeNodeData } from './shared/TreeUtils.js';
+import type { PackageTreeNodeData } from './utils/TreeUtils.js';
 import type { TreeData } from '@finos/legend-art';
 import {
   type FileSystemTreeNodeData,
   getFileSystemTreeData,
-} from './shared/FileSystemTreeUtils.js';
+} from './utils/FileSystemTreeUtils.js';
 import {
   type PackageableElement,
   ROOT_PACKAGE_NAME,

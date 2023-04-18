@@ -29,7 +29,7 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/editor/shared/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import {
   clsx,

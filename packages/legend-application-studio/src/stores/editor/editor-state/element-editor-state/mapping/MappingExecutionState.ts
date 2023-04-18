@@ -49,7 +49,7 @@ import {
   tryToFormatLosslessJSONString,
   StopWatch,
 } from '@finos/legend-shared';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
+import { createMockDataForMappingElementSource } from '../../../utils/MockDataUtils.js';
 import {
   type InputData,
   type Mapping,
@@ -111,22 +111,22 @@ import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
-import { flatData_setData } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
+} from '../../../utils/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { flatData_setData } from '../../../utils/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   service_addTestSuite,
   service_initNewService,
   service_setExecution,
-} from '../../../shared/modifier/DSL_Service_GraphModifierHelper.js';
+} from '../../../utils/modifier/DSL_Service_GraphModifierHelper.js';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../utils/modifier/STO_Relational_GraphModifierHelper.js';
 import {
   createEmptyEqualToJsonAssertion,
   createBareExternalFormat,
-} from '../../../shared/TestableUtils.js';
+} from '../../../utils/TestableUtils.js';
 import { SERIALIZATION_FORMAT } from '../service/testable/ServiceTestEditorState.js';
 import {
   LambdaEditorState,
