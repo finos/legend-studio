@@ -53,7 +53,7 @@ import {
   DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
-import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 
 const LambdaErrorFeedback: React.FC<{
   error?: EngineError | undefined;

@@ -38,7 +38,7 @@ import { type ProjectData } from '@finos/legend-server-depot';
 import {
   type ServiceQueryUpdaterSetupPathParams,
   generateServiceQueryUpdaterRoute,
-} from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
+} from '../../__lib__/studio/DSL_Service_LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import {
   type ServiceInfo,

@@ -19,7 +19,7 @@ import { BrowserNavigator } from '../navigation/BrowserNavigator.js';
 import { ApplicationPlatform } from './ApplicationPlatform.js';
 import type { ApplicationNavigator } from '../navigation/NavigationService.js';
 import type { GenericLegendApplicationStore } from '../ApplicationStore.js';
-import { LEGEND_APPLICATION_PARAM_TOKEN } from '../../application/LegendApplicationNavigation.js';
+import { LEGEND_APPLICATION_PARAM_TOKEN } from '../../__lib__/LegendApplicationNavigation.js';
 
 export class BrowserPlatform extends ApplicationPlatform {
   readonly navigator: BrowserNavigator;

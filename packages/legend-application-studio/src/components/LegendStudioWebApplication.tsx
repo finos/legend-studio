@@ -24,7 +24,7 @@ import { clsx, GhostIcon, MarkdownTextViewer } from '@finos/legend-art';
 import {
   LEGEND_STUDIO_ROUTE_PATTERN,
   LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN,
-} from '../application/LegendStudioNavigation.js';
+} from '../__lib__/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import {
   LegendStudioFrameworkProvider,
@@ -38,7 +38,7 @@ import {
   Route,
   Switch,
 } from '@finos/legend-application/browser';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../application/LegendStudioDocumentation.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/LegendStudioDocumentation.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();

@@ -15,12 +15,12 @@
  */
 
 // application
-export * from './application/QueryBuilderTelemetryHelper.js';
-export * from './application/QueryBuilderEvent.js';
+export * from './__lib__/QueryBuilderTelemetryHelper.js';
+export * from './__lib__/QueryBuilderEvent.js';
 
 export { QueryBuilder_GraphManagerPreset } from './graphManager/QueryBuilder_GraphManagerPreset.js';
 
-export { QUERY_BUILDER_TEST_ID } from './application/QueryBuilderTesting.js';
+export { QUERY_BUILDER_TEST_ID } from './__lib__/QueryBuilderTesting.js';
 export {
   type CheckEntitlementEditorRender,
   QueryBuilder_LegendApplicationPlugin,

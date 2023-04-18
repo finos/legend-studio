@@ -29,7 +29,7 @@ import {
   EntityDiffViewerState,
 } from './EntityDiffEditorState.js';
 import { type Entity, extractEntityNameFromPath } from '@finos/legend-storage';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../__lib__/LegendStudioEvent.js';
 import type { PackageableElement } from '@finos/legend-graph';
 import type { EditorState } from '../EditorState.js';
 

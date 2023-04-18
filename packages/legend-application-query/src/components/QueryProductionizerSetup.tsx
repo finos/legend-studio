@@ -39,7 +39,7 @@ import {
   buildQueryOption,
   type QueryOption,
 } from '@finos/legend-query-builder';
-import { generateQuerySetupRoute } from '../application/LegendQueryNavigation.js';
+import { generateQuerySetupRoute } from '../__lib__/LegendQueryNavigation.js';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,

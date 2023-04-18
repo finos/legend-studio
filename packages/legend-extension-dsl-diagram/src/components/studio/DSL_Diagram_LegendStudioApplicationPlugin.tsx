@@ -45,20 +45,20 @@ import {
   PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
 } from '../../graphManager/DSL_Diagram_PureGraphManagerPlugin.js';
-import { DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/studio/DSL_Diagram_LegendStudioDocumentation.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/DSL_Diagram_LegendStudioDocumentation.js';
 import {
   EMPTY_DIAGRAM_SNIPPET,
   getDiagramSnippetWithGeneralizationView,
   getDiagramSnippetWithOneClassView,
   getDiagramSnippetWithPropertyView,
-} from '../../application/studio/DSL_Diagram_LegendStudioCodeSnippet.js';
+} from '../../__lib__/studio/DSL_Diagram_LegendStudioCodeSnippet.js';
 import {
   collectKeyedCommandConfigEntriesFromConfig,
   type DocumentationEntry,
   type KeyedCommandConfigEntry,
 } from '@finos/legend-application';
-import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
-import { DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_CONFIG } from '../../application/studio/DSL_Diagram_LegendStudioCommand.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_CONFIG } from '../../__lib__/studio/DSL_Diagram_LegendStudioCommand.js';
 import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';

@@ -28,7 +28,7 @@ import {
   type DataSpaceQueryCreatorPathParams,
   DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN,
   DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN,
-} from '../../application/query/DSL_DataSpace_LegendQueryNavigation.js';
+} from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { parseGAVCoordinates } from '@finos/legend-storage';
 
 const DataSpaceQueryCreatorStoreProvider: React.FC<{

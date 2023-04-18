@@ -48,7 +48,7 @@ import {
   CustomSelectorInput,
   FolderIcon,
 } from '@finos/legend-art';
-import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   deepClone,
   filterByType,

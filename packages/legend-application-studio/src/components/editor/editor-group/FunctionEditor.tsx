@@ -46,7 +46,7 @@ import {
   PanelContent,
   PanelDnDEntry,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import {
   StereotypeDragPreviewLayer,
   StereotypeSelector,
@@ -107,7 +107,7 @@ import {
   rawVariableExpression_setName,
   rawVariableExpression_setType,
 } from '../../../stores/editor/shared/modifier/RawValueSpecificationGraphModifierHelper.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
 import { graph_renameElement } from '../../../stores/editor/shared/modifier/GraphModifierHelper.js';

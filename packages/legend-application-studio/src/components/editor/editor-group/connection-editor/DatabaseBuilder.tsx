@@ -53,7 +53,7 @@ import {
   renderColumnTypeIcon,
 } from './DatabaseEditorHelper.js';
 import { flowResult } from 'mobx';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,

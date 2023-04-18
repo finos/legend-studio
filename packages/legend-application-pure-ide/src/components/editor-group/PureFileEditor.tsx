@@ -62,7 +62,7 @@ import {
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { FileCoordinate } from '../../server/models/File.js';
-import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../../application/LegendPureIDECommand.js';
+import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../../__lib__/LegendPureIDECommand.js';
 import { GoToLinePrompt } from './GenericFileEditor.js';
 
 const IDENTIFIER_PATTERN = /^\w[\w$]*$/;

@@ -24,14 +24,14 @@ import {
   type LegendApplicationSetup,
 } from '@finos/legend-application';
 import packageJson from '../../../package.json';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/LegendStudioApplicationNavigationContext.js';
 import {
   CORE_CONTEXTUAL_DOCUMENTATION_CONFIG,
   LEGEND_STUDIO_DOCUMENTATION_KEY,
-} from '../../application/LegendStudioDocumentation.js';
+} from '../../__lib__/LegendStudioDocumentation.js';
 import { LegendStudioApplicationPlugin } from '../../stores/LegendStudioApplicationPlugin.js';
-import { LEGEND_STUDIO_COMMAND_CONFIG } from '../../application/LegendStudioCommand.js';
-import { LEGEND_STUDIO_SETTING_CONFIG } from '../../application/LegendStudioSetting.js';
+import { LEGEND_STUDIO_COMMAND_CONFIG } from '../../__lib__/LegendStudioCommand.js';
+import { LEGEND_STUDIO_SETTING_CONFIG } from '../../__lib__/LegendStudioSetting.js';
 import type { LegendStudioApplicationStore } from '../../stores/LegendStudioBaseStore.js';
 import {
   configureCodeEditorComponent,

@@ -31,7 +31,7 @@ import {
   type ExtensionsConfigurationData,
   createRegExpPatternFromWildcardPattern,
 } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from './LegendApplicationEvent.js';
+import { APPLICATION_EVENT } from '../__lib__/LegendApplicationEvent.js';
 import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager.js';
 import {
   collectKeyedDocumentationEntriesFromConfig,

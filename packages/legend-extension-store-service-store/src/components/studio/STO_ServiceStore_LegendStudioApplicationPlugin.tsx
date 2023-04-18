@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
+import packageJson from '../../../package.json';
 import {
   UnsupportedElementEditorState,
   UnsupportedInstanceSetImplementationState,
@@ -62,15 +62,15 @@ import {
   type Store,
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
-import { ServiceStore } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_ServiceStore.js';
-import { RootServiceInstanceSetImplementation } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/mapping/STO_ServiceStore_RootServiceInstanceSetImplementation.js';
-import { ServiceStoreConnection } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/connection/STO_ServiceStore_ServiceStoreConnection.js';
+import { ServiceStore } from '../../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_ServiceStore.js';
+import { RootServiceInstanceSetImplementation } from '../../graph/metamodel/pure/model/packageableElements/store/serviceStore/mapping/STO_ServiceStore_RootServiceInstanceSetImplementation.js';
+import { ServiceStoreConnection } from '../../graph/metamodel/pure/model/packageableElements/store/serviceStore/connection/STO_ServiceStore_ServiceStoreConnection.js';
 import {
   PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL,
   PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
-} from '../graphManager/STO_ServiceStore_PureGraphManagerPlugin.js';
-import { EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from './STO_ServiceStore_LegendStudioDocumentation.js';
+} from '../../graphManager/STO_ServiceStore_PureGraphManagerPlugin.js';
+import { EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/STO_ServiceStore_LegendStudioDocumentation.js';
 import {
   BLANK_SERVICE_STORE_SNIPPET,
   SERVICE_STORE_EMBEDDED_DATA,
@@ -78,9 +78,9 @@ import {
   SERVICE_STORE_WITH_SERVICE,
   SERVICE_STORE_WITH_SERVICE_GROUP,
   SERVICE_STORE_CONNECTION_SNIPPET,
-} from './STO_ServiceStore_CodeSnippets.js';
-import { ServiceStoreEmbeddedData } from '../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceStoreEmbeddedData.js';
-import { ServiceStoreEmbeddedDataState } from '../stores/studio/STO_ServiceStore_ServiceStoreEmbeddedDataEditorState.js';
+} from '../../__lib__/studio/STO_ServiceStore_CodeSnippets.js';
+import { ServiceStoreEmbeddedData } from '../../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceStoreEmbeddedData.js';
+import { ServiceStoreEmbeddedDataState } from '../../stores/studio/STO_ServiceStore_ServiceStoreEmbeddedDataEditorState.js';
 import { ServiceStoreEmbeddedDataEditor } from './STO_ServiceStore_ServiceStoreEmbeddedDataEditor.js';
 import {
   ServiceStoreConnectionValueState,

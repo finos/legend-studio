@@ -32,7 +32,7 @@ import {
   ActionState,
   assertTrue,
 } from '@finos/legend-shared';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 import type { EditorStore } from '../EditorStore.js';
 import type { Entity } from '@finos/legend-storage';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';

@@ -41,7 +41,7 @@ import { UpdateProjectServiceQuerySetupStore } from '../../stores/studio/UpdateP
 import {
   type ProjectServiceQueryUpdaterSetupPathParams,
   generateProjectServiceQueryUpdaterRoute,
-} from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
+} from '../../__lib__/studio/DSL_Service_LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import {
   compareLabelFn,

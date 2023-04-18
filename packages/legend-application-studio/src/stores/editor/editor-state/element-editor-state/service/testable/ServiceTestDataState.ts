@@ -70,7 +70,7 @@ import {
 } from '../../data/DataEditorState.js';
 import { createEmbeddedData } from '../../data/EmbeddedDataState.js';
 import type { ServiceTestSuiteState } from './ServiceTestableState.js';
-import { LegendStudioTelemetryHelper } from '../../../../../../application/LegendStudioTelemetryHelper.js';
+import { LegendStudioTelemetryHelper } from '../../../../../../__lib__/LegendStudioTelemetryHelper.js';
 
 const buildTestDataParameters = (
   rawLambda: RawLambda,

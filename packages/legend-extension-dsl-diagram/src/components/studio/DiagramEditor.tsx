@@ -114,8 +114,8 @@ import {
   classView_setHideStereotypes,
   classView_setHideTaggedValues,
 } from '../../stores/studio/DSL_Diagram_GraphModifierHelper.js';
-import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
-import { DSL_DIAGRAM_TEST_ID } from '../../application/studio/DSL_Diagram_LegendStudioTesting.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
+import { DSL_DIAGRAM_TEST_ID } from '../../__lib__/studio/DSL_Diagram_LegendStudioTesting.js';
 import {
   buildElementOption,
   type PackageableElementOption,

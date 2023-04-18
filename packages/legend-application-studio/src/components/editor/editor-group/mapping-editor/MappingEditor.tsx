@@ -52,7 +52,7 @@ import { MappingExplorer } from './MappingExplorer.js';
 import { MappingTestEditor } from './MappingTestEditor.js';
 import { DEPRECATED__MappingTestState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTestState.js';
 import { MappingTestsExplorer } from './MappingTestsExplorer.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { MappingExecutionState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionState.js';
 import { MappingExecutionBuilder } from './MappingExecutionBuilder.js';
 import { flowResult } from 'mobx';
@@ -68,7 +68,7 @@ import {
   useApplicationNavigationContext,
   useApplicationStore,
 } from '@finos/legend-application';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import type { MappingEditorTabState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTabManagerState.js';
 
 export const MappingEditorSplashScreen: React.FC = () => {

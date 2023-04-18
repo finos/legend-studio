@@ -112,7 +112,7 @@ import {
   runtime_addIdentifiedConnection,
   runtime_deleteIdentifiedConnection,
 } from '../../../stores/editor/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib__/LegendStudioApplicationNavigationContext.js';
 
 const getConnectionTooltipText = (
   connection: Connection,

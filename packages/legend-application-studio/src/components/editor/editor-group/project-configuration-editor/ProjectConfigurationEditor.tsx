@@ -50,7 +50,7 @@ import {
 } from '@finos/legend-application';
 import { ProjectDependencyEditor } from './ProjectDependencyEditor.js';
 import type { ProjectData } from '@finos/legend-server-depot';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../application/LegendStudioDocumentation.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 import {
   DocumentationLink,
   DocumentationPreview,

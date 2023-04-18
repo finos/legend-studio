@@ -24,7 +24,7 @@ import { debounce, guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { generateQuerySetupRoute } from '../application/LegendQueryNavigation.js';
+import { generateQuerySetupRoute } from '../__lib__/LegendQueryNavigation.js';
 import {
   useLegendQueryApplicationStore,
   useLegendQueryBaseStore,

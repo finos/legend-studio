@@ -29,7 +29,7 @@ import {
   ErrorIcon,
   WarningIcon,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
   ACTIVITY_MODE,
   PANEL_MODE,
@@ -38,7 +38,7 @@ import {
 import {
   generateSetupRoute,
   type WorkspaceEditorPathParams,
-} from '../../application/LegendStudioNavigation.js';
+} from '../../__lib__/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';

@@ -53,7 +53,7 @@ import {
 } from '../../../../stores/editor/shared/DnDUtils.js';
 import type { FileGenerationState } from '../../../../stores/editor/editor-state/FileGenerationState.js';
 import type { ElementFileGenerationState } from '../../../../stores/editor/editor-state/element-editor-state/ElementFileGenerationState.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type GenerationProperty,

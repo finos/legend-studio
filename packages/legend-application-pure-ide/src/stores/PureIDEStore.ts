@@ -89,7 +89,7 @@ import { PureIDETabManagerState } from './PureIDETabManagerState.js';
 import {
   LEGEND_PURE_IDE_COMMAND_KEY,
   LEGEND_PURE_IDE_TERMINAL_COMMAND,
-} from '../application/LegendPureIDECommand.js';
+} from '../__lib__/LegendPureIDECommand.js';
 import { ExecutionError } from '../server/models/ExecutionError.js';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import type { SourceModificationResult } from '../server/models/Source.js';

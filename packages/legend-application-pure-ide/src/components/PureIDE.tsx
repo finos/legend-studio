@@ -34,7 +34,7 @@ import {
   ResizablePanelSplitter,
   getCollapsiblePanelGroupProps,
 } from '@finos/legend-art';
-import { LEGEND_PURE_IDE_ROUTE_PATTERN_TOKEN } from '../application/LegendPureIDENavigation.js';
+import { LEGEND_PURE_IDE_ROUTE_PATTERN_TOKEN } from '../__lib__/LegendPureIDENavigation.js';
 
 export const Editor = withEditorStore(
   observer(() => {

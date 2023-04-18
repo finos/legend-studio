@@ -27,7 +27,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
   LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN,
   type DataSpacePreviewPathParams,
-} from '../../application/LegendTaxonomyNavigation.js';
+} from '../../__lib__/LegendTaxonomyNavigation.js';
 import { flowResult } from 'mobx';
 import {
   BlankPanelContent,

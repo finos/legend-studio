@@ -55,7 +55,7 @@ import {
   LEGEND_QUERY_ROUTE_PATTERN_TOKEN,
   generateExistingQueryEditorRoute,
   generateQuerySetupRoute,
-} from '../application/LegendQueryNavigation.js';
+} from '../__lib__/LegendQueryNavigation.js';
 import {
   type QueryEditorStore,
   ExistingQueryEditorStore,

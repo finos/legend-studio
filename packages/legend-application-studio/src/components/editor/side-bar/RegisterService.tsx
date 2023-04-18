@@ -15,7 +15,7 @@
  */
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   ContextMenu,

@@ -15,7 +15,7 @@
  */
 
 export * from './STO_ServiceStore_Extension.js';
-export { STO_ServiceStore_LegendStudioApplicationPlugin } from './components/STO_ServiceStore_LegendStudioApplicationPlugin.js';
+export { STO_ServiceStore_LegendStudioApplicationPlugin } from './components/studio/STO_ServiceStore_LegendStudioApplicationPlugin.js';
 export * from './graphManager/protocol/pure/STO_ServiceStore_PureProtocolPlugin_Extension.js';
 export * from './graphManager/STO_ServiceStore_PureGraphManagerPlugin_Extension.js';
 

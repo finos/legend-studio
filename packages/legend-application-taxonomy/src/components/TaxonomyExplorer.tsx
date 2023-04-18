@@ -20,7 +20,7 @@ import {
   type LegendTaxonomyPathParams,
   generateExploreTaxonomyTreeRoute,
   LEGEND_TAXONOMY_ROUTE_PATTERN_TOKEN,
-} from '../application/LegendTaxonomyNavigation.js';
+} from '../__lib__/LegendTaxonomyNavigation.js';
 import { flowResult } from 'mobx';
 import {
   type ResizablePanelHandlerProps,

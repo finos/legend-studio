@@ -58,7 +58,7 @@ import {
 } from '../server/models/Usage.js';
 import type { PureIDEStore } from './PureIDEStore.js';
 import { PureIDETabState } from './PureIDETabManagerState.js';
-import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../application/LegendPureIDECommand.js';
+import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../__lib__/LegendPureIDECommand.js';
 import type { TabState } from '@finos/legend-lego/application';
 
 const getFileEditorLanguage = (filePath: string): string => {

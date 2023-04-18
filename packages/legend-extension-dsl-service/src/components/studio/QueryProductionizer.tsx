@@ -28,7 +28,7 @@ import {
   useLegendStudioBaseStore,
 } from '@finos/legend-application-studio';
 import { QueryProductionizerStore } from '../../stores/studio/QueryProductionizerStore.js';
-import type { QueryProductionizerPathParams } from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
+import type { QueryProductionizerPathParams } from '../../__lib__/studio/DSL_Service_LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import {
   type QueryOption,
@@ -53,7 +53,7 @@ import {
 import type { QueryInfo } from '@finos/legend-graph';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { useParams } from '@finos/legend-application/browser';
-import { DSL_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/studio/DSL_Service_LegendStudioDocumentation.js';
+import { DSL_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/DSL_Service_LegendStudioDocumentation.js';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,

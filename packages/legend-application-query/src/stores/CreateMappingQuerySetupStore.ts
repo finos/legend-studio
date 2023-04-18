@@ -39,7 +39,7 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { LEGEND_QUERY_APP_EVENT } from '../application/LegendQueryEvent.js';
+import { LEGEND_QUERY_APP_EVENT } from '../__lib__/LegendQueryEvent.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import { BaseQuerySetupStore } from './QuerySetupStore.js';
 

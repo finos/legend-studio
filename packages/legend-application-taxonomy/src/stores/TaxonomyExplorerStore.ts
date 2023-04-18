@@ -47,13 +47,13 @@ import {
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { makeObservable, flow, observable, action, flowResult } from 'mobx';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
-import { LEGEND_TAXONOMY_APP_EVENT } from '../application/LegendTaxonomyEvent.js';
+import { LEGEND_TAXONOMY_APP_EVENT } from '../__lib__/LegendTaxonomyEvent.js';
 import type { LegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStore.js';
-import { LEGEND_TAXONOMY_COMMAND_KEY } from '../application/LegendTaxonomyCommand.js';
+import { LEGEND_TAXONOMY_COMMAND_KEY } from '../__lib__/LegendTaxonomyCommand.js';
 import {
   generateExploreTaxonomyTreeRoute,
   type LegendTaxonomyPathParams,
-} from '../application/LegendTaxonomyNavigation.js';
+} from '../__lib__/LegendTaxonomyNavigation.js';
 import { TaxonomyNodeViewerState } from './TaxonomyNodeViewerState.js';
 import {
   type TaxonomyServerClient,

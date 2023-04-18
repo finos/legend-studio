@@ -41,12 +41,12 @@ import {
   observable,
 } from 'mobx';
 import { User, SDLCServerClient } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../__lib__/LegendStudioEvent.js';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
-import { LegendStudioEventHelper } from '../application/LegendStudioEventHelper.js';
-import { LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN } from '../application/LegendStudioNavigation.js';
+import { LegendStudioEventHelper } from '../__lib__/LegendStudioEventHelper.js';
+import { LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN } from '../__lib__/LegendStudioNavigation.js';
 
 export type LegendStudioApplicationStore = ApplicationStore<
   LegendStudioApplicationConfig,

@@ -45,8 +45,8 @@ import {
   getExecutionQueryFromRawLambda,
 } from './shared/LambdaParameterState.js';
 import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificationBuilderHelper.js';
-import { QueryBuilderTelemetryHelper } from '../application/QueryBuilderTelemetryHelper.js';
-import { QUERY_BUILDER_EVENT } from '../application/QueryBuilderEvent.js';
+import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHelper.js';
+import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { ExecutionPlanState } from './execution-plan/ExecutionPlanState.js';
 
 const DEFAULT_LIMIT = 1000;

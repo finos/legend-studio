@@ -19,12 +19,12 @@ import {
   type PackageableElementReference,
   type Store,
 } from '@finos/legend-graph';
-import { ServiceStoreConnection } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/connection/STO_ServiceStore_ServiceStoreConnection.js';
-import { ServiceStore } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_ServiceStore.js';
+import { ServiceStoreConnection } from '../../graph/metamodel/pure/model/packageableElements/store/serviceStore/connection/STO_ServiceStore_ServiceStoreConnection.js';
+import { ServiceStore } from '../../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_ServiceStore.js';
 import {
   serviceStore_connection_setBaseUrl,
   service_store_connection_setStore,
-} from '../stores/studio/STO_ServiceStore_GraphModifierHelper.js';
+} from '../../stores/studio/STO_ServiceStore_GraphModifierHelper.js';
 import { computed, makeObservable } from 'mobx';
 import {
   buildElementOption,

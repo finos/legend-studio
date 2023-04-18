@@ -73,14 +73,14 @@ import {
   externalFormat_urlStream_setUrl,
 } from '../../stores/editor/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import type { DocumentationEntry } from '@finos/legend-application';
-import { DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/DSL_ExternalFormat_LegendStudioDocumentation.js';
+import { DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/DSL_ExternalFormat_LegendStudioDocumentation.js';
 import {
   BASIC_BINDING_SNIPPET,
   BASIC_SCHEMASET_SNIPPET,
   SCHEMASET_WITH_JSON_SCHEMA_SNIPPET,
   SCHEMASET_WITH_XML_SCHEMA_SNIPPET,
   SCHEMASET_WITH_FLAT_DATA_SCHEMA_SNIPPET,
-} from '../../application/DSL_ExternalFormat_LegendStudioCodeSnippet.js';
+} from '../../__lib__/DSL_ExternalFormat_LegendStudioCodeSnippet.js';
 import {
   NewSchemaSetDriver,
   NewSchemaSetDriverEditor,

@@ -16,11 +16,11 @@
 
 import packageJson from '../../package.json';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
-import { LEGEND_APPLICATION_SETTING_CONFIG } from '../application/LegendApplicationSetting.js';
+import { LEGEND_APPLICATION_SETTING_CONFIG } from '../__lib__/LegendApplicationSetting.js';
 import {
   HIGH_CONTRAST_LIGHT_COLOR_THEME,
   LEGACY_LIGHT_COLOR_THEME,
-} from '../application/LegendApplicationTheme.js';
+} from '../__lib__/LegendApplicationTheme.js';
 import type { ColorTheme } from './LayoutService.js';
 import {
   LegendApplicationPlugin,

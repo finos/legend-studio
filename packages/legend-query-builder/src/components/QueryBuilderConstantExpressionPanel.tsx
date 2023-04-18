@@ -49,8 +49,8 @@ import { buildDefaultInstanceValue } from '../stores/shared/ValueSpecificationEd
 import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
-import { QUERY_BUILDER_TEST_ID } from '../application/QueryBuilderTesting.js';
-import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../application/QueryBuilderDocumentation.js';
+import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
+import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
 
 // NOTE: We currently only allow constant variables for primitive types of multiplicity ONE.
 // This is why we don't show multiplicity in the editor.

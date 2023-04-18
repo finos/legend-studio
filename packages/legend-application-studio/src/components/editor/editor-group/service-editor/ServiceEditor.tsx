@@ -35,7 +35,7 @@ import {
 } from '@finos/legend-art';
 import { debounce, prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { ServiceRegistrationEditor } from './ServiceRegistrationEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -52,10 +52,10 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { validate_ServicePattern } from '@finos/legend-graph';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
 import { flowResult } from 'mobx';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../application/LegendStudioDocumentation.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 
 type UserOption = { label: string; value: string };
 

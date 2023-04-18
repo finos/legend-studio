@@ -60,7 +60,7 @@ import {
   renderPropertyTypeIcon,
 } from './QueryBuilderExplorerPanel.js';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
-import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { FuzzySearchAdvancedConfigMenu } from '@finos/legend-lego/application';
 
 const prettyPropertyNameFromNodeId = (name: string): string => {

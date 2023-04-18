@@ -22,13 +22,13 @@ import {
   waitFor,
   getByText,
 } from '@testing-library/react';
-import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import { EditorStore } from '../../../stores/editor/EditorStore.js';
 import { Editor } from '../Editor.js';
 import {
   generateEditorRoute,
   LEGEND_STUDIO_ROUTE_PATTERN,
-} from '../../../application/LegendStudioNavigation.js';
+} from '../../../__lib__/LegendStudioNavigation.js';
 import { type PlainObject } from '@finos/legend-shared';
 import { createMock, createSpy } from '@finos/legend-shared/test';
 import { LegendStudioPluginManager } from '../../../application/LegendStudioPluginManager.js';

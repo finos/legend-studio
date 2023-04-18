@@ -88,7 +88,7 @@ import {
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { getClassPropertyIcon } from '../shared/ElementIconUtils.js';
-import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   filterByType,
   guaranteeNonNullable,

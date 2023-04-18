@@ -53,7 +53,7 @@ import {
 } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { QueryBuilderPropertyExpressionBadge } from '../QueryBuilderPropertyExpressionEditor.js';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel.js';
-import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import {

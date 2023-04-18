@@ -36,7 +36,7 @@ import {
 } from './TEST_DATA__QueryBuilder_Query_HighlightProperties.js';
 import { waitFor, getByText, fireEvent } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
-import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { isExplorerTreeNodeAlreadyUsed } from '../explorer/QueryBuilderExplorerPanel.js';
 import type { Entity } from '@finos/legend-storage';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';

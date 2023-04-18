@@ -41,7 +41,7 @@ import { flowResult } from 'mobx';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import { FormLocalChangesState } from './sidebar-state/LocalChangesState.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import { GraphCompilationOutcome, type Problem } from './EditorGraphState.js';
 import { GRAPH_EDITOR_MODE, PANEL_MODE } from './EditorConfig.js';
 import {
@@ -52,7 +52,7 @@ import {
   graph_renameElement,
 } from './shared/modifier/GraphModifierHelper.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
-import { LegendStudioTelemetryHelper } from '../../application/LegendStudioTelemetryHelper.js';
+import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
 import type { TabState } from '@finos/legend-lego/application';
 

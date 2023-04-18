@@ -32,7 +32,7 @@ import {
   openNodes,
   populatePackageTreeNodeChildren,
 } from './shared/PackageTreeUtils.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import type { PackageTreeNodeData } from './shared/TreeUtils.js';
 import type { TreeData } from '@finos/legend-art';
 import {

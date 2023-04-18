@@ -31,7 +31,7 @@ import {
 } from '@finos/legend-shared';
 import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import { LEGEND_QUERY_APP_EVENT } from '../application/LegendQueryEvent.js';
+import { LEGEND_QUERY_APP_EVENT } from '../__lib__/LegendQueryEvent.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import { BaseQuerySetupStore } from './QuerySetupStore.js';
 import type { Service } from '@finos/legend-graph';

@@ -33,7 +33,7 @@ import {
   UnsupportedElementEditorState,
 } from '@finos/legend-application-studio';
 import { MasterRecordDefinition } from '../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
-import { SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET } from '../../application/studio/DSL_Mastery_LegendStudioCodeSnippet.js';
+import { SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET } from '../../__lib__/studio/DSL_Mastery_LegendStudioCodeSnippet.js';
 import {
   PURE_GRAMMAR_MASTERY_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_MASTERY_PARSER_NAME,

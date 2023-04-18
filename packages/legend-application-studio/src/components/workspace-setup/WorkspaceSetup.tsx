@@ -26,19 +26,19 @@ import {
   CustomSelectorInput,
   RepoIcon,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
   type WorkspaceSetupPathParams,
   generateEditorRoute,
   LEGEND_STUDIO_ROUTE_PATTERN_TOKEN,
-} from '../../application/LegendStudioNavigation.js';
+} from '../../__lib__/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { useParams } from '@finos/legend-application/browser';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../application/LegendStudioDocumentation.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/LegendStudioDocumentation.js';
 import { CreateProjectModal } from './CreateProjectModal.js';
 import { ActivityBarMenu } from '../editor/ActivityBar.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { CreateWorkspaceModal } from './CreateWorkspaceModal.js';
 import {
   useLegendStudioApplicationStore,

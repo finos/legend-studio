@@ -35,7 +35,7 @@ import {
   LEGEND_STUDIO_APP_EVENT,
   fetchProjectConfigurationStatus,
 } from '@finos/legend-application-studio';
-import { generateProjectServiceQueryUpdaterSetupRoute } from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
+import { generateProjectServiceQueryUpdaterSetupRoute } from '../../__lib__/studio/DSL_Service_LegendStudioNavigation.js';
 import { CORE_PURE_PATH } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import {

@@ -30,8 +30,8 @@ import {
   PanelContent,
 } from '@finos/legend-art';
 import { ACTIVITY_MODE } from '../../../stores/editor/EditorConfig.js';
-import { generateReviewRoute } from '../../../application/LegendStudioNavigation.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
+import { generateReviewRoute } from '../../../__lib__/LegendStudioNavigation.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/editor/EditorSDLCState.js';

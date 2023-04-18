@@ -31,7 +31,7 @@ import {
   guaranteeNonNullable,
   prettyCONSTName,
 } from '@finos/legend-shared';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import {
   ServiceRegistrationFail,
   ServiceRegistrationSuccess,

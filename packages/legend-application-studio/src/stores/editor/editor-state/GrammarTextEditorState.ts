@@ -45,7 +45,7 @@ import {
   ExecutionEnvironmentInstance,
 } from '@finos/legend-graph';
 import { generatePackageableElementTreeNodeDataLabel } from '../shared/PackageTreeUtils.js';
-import { LEGEND_STUDIO_SETTING_KEY } from '../../../application/LegendStudioSetting.js';
+import { LEGEND_STUDIO_SETTING_KEY } from '../../../__lib__/LegendStudioSetting.js';
 import type { CodeEditorPosition } from '@finos/legend-lego/code-editor';
 
 const getGrammarElementTypeLabelRegexString = (

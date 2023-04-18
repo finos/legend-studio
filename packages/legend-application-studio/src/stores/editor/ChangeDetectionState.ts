@@ -24,7 +24,7 @@ import {
   makeObservable,
   isComputedProp,
 } from 'mobx';
-import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import {
   type GeneratorFn,
   LogEvent,

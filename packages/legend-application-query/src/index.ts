@@ -18,14 +18,16 @@
 export * from './application/LegendQuery.js';
 export * from './application/LegendQueryApplicationConfig.js';
 export * from './application/LegendQueryPluginManager.js';
-export * from './application/LegendQueryEvent.js';
-export * from './application/LegendQueryEventHelper.js';
+
+export * from './__lib__/LegendQueryEvent.js';
+export * from './__lib__/LegendQueryEventHelper.js';
+export { generateExistingQueryEditorRoute } from './__lib__/LegendQueryNavigation.js';
+
 export {
   useLegendQueryApplicationStore,
   useLegendQueryBaseStore,
 } from './components/LegendQueryFrameworkProvider.js';
 export type { LegendQueryApplicationStore } from './stores/LegendQueryBaseStore.js';
-export { generateExistingQueryEditorRoute } from './application/LegendQueryNavigation.js';
 
 // stores
 export * from './stores/LegendQueryApplicationPlugin.js';

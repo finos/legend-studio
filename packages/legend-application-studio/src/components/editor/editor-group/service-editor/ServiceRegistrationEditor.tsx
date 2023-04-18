@@ -24,7 +24,7 @@ import {
   SquareIcon,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { ServiceExecutionMode } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { Version } from '@finos/legend-server-sdlc';

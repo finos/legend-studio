@@ -49,7 +49,7 @@ import {
   prettyCONSTName,
   uniqBy,
 } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from '../../application/LegendApplicationEvent.js';
+import { APPLICATION_EVENT } from '../../__lib__/LegendApplicationEvent.js';
 import { forceDispatchKeyboardEvent } from '../../components/ApplicationComponentFrameworkProvider.js';
 
 const LEGEND_XTERM_THEME: XTermTheme = {

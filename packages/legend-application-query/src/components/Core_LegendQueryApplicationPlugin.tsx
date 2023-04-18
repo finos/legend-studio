@@ -37,7 +37,7 @@ import {
   generateQueryProductionizerSetupRoute,
   generateUpdateExistingServiceQuerySetup,
   LEGEND_QUERY_ROUTE_PATTERN,
-} from '../application/LegendQueryNavigation.js';
+} from '../__lib__/LegendQueryNavigation.js';
 import {
   type ApplicationPageEntry,
   type LegendApplicationSetup,

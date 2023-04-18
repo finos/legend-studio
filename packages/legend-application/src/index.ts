@@ -19,11 +19,12 @@ export * from './stores/ApplicationConfig.js';
 export * from './application/LegendApplication.js';
 export * from './application/LegendApplicationConfig.js';
 export * from './application/LegendApplicationPluginManager.js';
-export * from './application/LegendApplicationEvent.js';
-export * from './application/LegendApplicationTelemetry.js';
-export * from './application/LegendApplicationSetting.js';
-export * from './application/LegendApplicationDocumentation.js';
-export { LEGEND_APPLICATION_COLOR_THEME } from './application/LegendApplicationTheme.js';
+
+export * from './__lib__/LegendApplicationEvent.js';
+export * from './__lib__/LegendApplicationTelemetry.js';
+export * from './__lib__/LegendApplicationSetting.js';
+export * from './__lib__/LegendApplicationDocumentation.js';
+export { LEGEND_APPLICATION_COLOR_THEME } from './__lib__/LegendApplicationTheme.js';
 
 export * from './components/ApplicationStoreProvider.js';
 export * from './components/ApplicationFrameworkProvider.js';

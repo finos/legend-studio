@@ -26,7 +26,7 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
-import { QUERY_BUILDER_TEST_ID } from '../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import {
   type Class,
   type Mapping,

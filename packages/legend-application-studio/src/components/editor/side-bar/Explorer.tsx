@@ -61,7 +61,7 @@ import {
 } from './CreateNewElementModal.js';
 import { useDrag } from 'react-dnd';
 import { ElementDragSource } from '../../../stores/editor/shared/DnDUtils.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import {
   ACTIVITY_MODE,
   GRAPH_EDITOR_MODE,
@@ -76,7 +76,7 @@ import { FileSystemTree } from '../editor-group/element-generation-editor/FileSy
 import {
   generateViewEntityRoute,
   generateViewProjectByGAVRoute,
-} from '../../../application/LegendStudioNavigation.js';
+} from '../../../__lib__/LegendStudioNavigation.js';
 import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,

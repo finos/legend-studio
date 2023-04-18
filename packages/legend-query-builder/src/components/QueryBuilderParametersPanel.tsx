@@ -46,8 +46,8 @@ import { variableExpression_setName } from '../stores/shared/ValueSpecificationM
 import { LambdaParameterState } from '../stores/shared/LambdaParameterState.js';
 import { LambdaParameterValuesEditor } from './shared/LambdaParameterValuesEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
-import { QUERY_BUILDER_TEST_ID } from '../application/QueryBuilderTesting.js';
-import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../application/QueryBuilderDocumentation.js';
+import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
+import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,

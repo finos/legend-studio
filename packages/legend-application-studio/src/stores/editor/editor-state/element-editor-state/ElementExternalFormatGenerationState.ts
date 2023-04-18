@@ -36,7 +36,7 @@ import {
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../EditorStore.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../__lib__/LegendStudioEvent.js';
 import { GENERATION_FILE_ROOT_NAME } from '../../shared/FileSystemTreeUtils.js';
 import {
   configurationProperty_addConfigurationProperty,

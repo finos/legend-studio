@@ -31,7 +31,7 @@ import {
   generateViewVersionRoute,
   generateViewRevisionRoute,
   generateViewProjectRoute,
-} from '../../application/LegendStudioNavigation.js';
+} from '../../__lib__/LegendStudioNavigation.js';
 import {
   type Entity,
   type ProjectGAVCoordinates,
@@ -45,7 +45,7 @@ import {
   Version,
   Workspace,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { ProjectData, resolveVersion } from '@finos/legend-server-depot';
 import {
@@ -62,7 +62,7 @@ import {
   LegendSDLC,
 } from '@finos/legend-graph';
 import { GRAPH_EDITOR_MODE } from '../editor/EditorConfig.js';
-import { LegendStudioTelemetryHelper } from '../../application/LegendStudioTelemetryHelper.js';
+import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 
 interface ProjectViewerGraphBuilderMaterial {
   entities: Entity[];

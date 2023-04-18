@@ -28,7 +28,7 @@ import {
   ServiceConfigState,
   ServiceRegistrationState,
 } from '../editor-state/element-editor-state/service/ServiceRegistrationState.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 import type { ServiceRegistrationEnvironmentConfig } from '../../../application/LegendStudioApplicationConfig.js';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';

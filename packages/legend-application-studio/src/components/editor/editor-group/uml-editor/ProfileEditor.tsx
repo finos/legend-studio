@@ -33,7 +33,7 @@ import {
   PanelContent,
   PanelDnDEntry,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type Profile,
@@ -52,7 +52,7 @@ import {
   profile_swapStereotypes,
 } from '../../../../stores/editor/shared/modifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { useRef, useCallback } from 'react';
 import { useDrop, useDrag } from 'react-dnd';
 

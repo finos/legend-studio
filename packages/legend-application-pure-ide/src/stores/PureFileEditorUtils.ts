@@ -63,7 +63,7 @@ import {
   SIMPLE_PROFILE_SNIPPET,
   BLANK_DIAGRAM_SNIPPET,
   getCopyrightHeaderSnippet,
-} from '../application/LegendPureIDECodeSnippet.js';
+} from '../__lib__/LegendPureIDECodeSnippet.js';
 
 // NOTE: these are technically different parsers compared to the ones we have in `Legend Engine` so we will
 // not try to reuse the constants from DSL diagram

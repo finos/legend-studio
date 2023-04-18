@@ -23,7 +23,7 @@ import {
 } from '@finos/legend-art';
 import { isValidUrl } from '@finos/legend-shared';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import { LEGEND_STUDIO_SETTING_KEY } from '../../../application/LegendStudioSetting.js';
+import { LEGEND_STUDIO_SETTING_KEY } from '../../../__lib__/LegendStudioSetting.js';
 
 export const DevToolPanel = observer(() => {
   const editorStore = useEditorStore();

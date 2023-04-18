@@ -33,7 +33,7 @@ import {
   TEST_DATA__simpleProjectionQuery,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_ResultStateTest.js';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
-import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   MockedMonacoEditorAPI,
   MockedMonacoEditorInstance,

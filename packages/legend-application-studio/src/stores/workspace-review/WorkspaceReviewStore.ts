@@ -33,7 +33,7 @@ import type { EditorStore } from '../editor/EditorStore.js';
 import { ACTIVITY_MODE } from '../editor/EditorConfig.js';
 import type { Entity } from '@finos/legend-storage';
 import { Project, Review } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 
 export class WorkspaceReviewStore {

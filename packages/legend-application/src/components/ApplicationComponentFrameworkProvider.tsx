@@ -28,7 +28,7 @@ import {
   type KeyBindingConfig,
 } from '@finos/legend-shared';
 import { VirtualAssistant } from './VirtualAssistant.js';
-import { LegendApplicationTelemetryHelper } from '../application/LegendApplicationTelemetry.js';
+import { LegendApplicationTelemetryHelper } from '../__lib__/LegendApplicationTelemetry.js';
 import type { GenericLegendApplicationStore } from '../stores/ApplicationStore.js';
 
 enum APPLICATION_COMPONENT_ELEMENT_ID {

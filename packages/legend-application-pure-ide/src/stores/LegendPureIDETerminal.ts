@@ -33,7 +33,7 @@ import {
   WELCOME_FILE_PATH,
 } from './PureIDEConfig.js';
 import type { PureIDEStore } from './PureIDEStore.js';
-import { LEGEND_PURE_IDE_TERMINAL_COMMAND } from '../application/LegendPureIDECommand.js';
+import { LEGEND_PURE_IDE_TERMINAL_COMMAND } from '../__lib__/LegendPureIDECommand.js';
 
 const PACKAGE_PATH_PATTERN = /^(?:(?:\w[\w$]*)::)*\w[\w$]*$/;
 const FILE_PATH_PATTERN = /^\/?(?:\w+\/)*\w+(?:\.\w+)*$/;

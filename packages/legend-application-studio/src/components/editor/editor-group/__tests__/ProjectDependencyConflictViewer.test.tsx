@@ -32,7 +32,7 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../__test-utils__/EditorComponentTestUtils.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { TEST_DATA__ProjectDependencyReportWithConflict } from './TEST_DATA__ProjectDependencyReport.js';
 

@@ -18,7 +18,7 @@ import { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { EditorGroup } from '../editor/editor-group/EditorGroup.js';
 import { GrammarTextEditor } from '../editor/editor-group/GrammarTextEditor.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
   ACTIVITY_MODE,
   GRAPH_EDITOR_MODE,
@@ -46,7 +46,7 @@ import {
 import {
   type ProjectViewerPathParams,
   generateSetupRoute,
-} from '../../application/LegendStudioNavigation.js';
+} from '../../__lib__/LegendStudioNavigation.js';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { flowResult } from 'mobx';
 import {

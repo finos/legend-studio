@@ -32,7 +32,7 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   generateExistingQueryEditorRoute,
   generateQuerySetupRoute,
-} from '../application/LegendQueryNavigation.js';
+} from '../__lib__/LegendQueryNavigation.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   type QueryOption,

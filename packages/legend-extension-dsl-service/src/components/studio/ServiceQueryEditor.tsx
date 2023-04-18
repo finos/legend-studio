@@ -49,7 +49,7 @@ import {
   DSL_SERVICE_ROUTE_PATTERN_TOKEN,
   generateServiceQueryUpdaterRoute,
   generateProjectServiceQueryUpdaterRoute,
-} from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
+} from '../../__lib__/studio/DSL_Service_LegendStudioNavigation.js';
 import {
   ProjectServiceQueryUpdaterStoreProvider,
   ServiceQueryUpdaterStoreProvider,

@@ -61,8 +61,8 @@ import {
   VIRTUAL_ASSISTANT_TAB,
 } from '../stores/AssistantService.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
-import { LegendApplicationTelemetryHelper } from '../application/LegendApplicationTelemetry.js';
-import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '../application/LegendApplicationDocumentation.js';
+import { LegendApplicationTelemetryHelper } from '../__lib__/LegendApplicationTelemetry.js';
+import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '../__lib__/LegendApplicationDocumentation.js';
 
 const WIZARD_GREETING = `Bonjour, It's Pierre!`;
 

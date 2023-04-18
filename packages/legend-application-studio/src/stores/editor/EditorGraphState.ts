@@ -93,10 +93,10 @@ import {
 } from '@finos/legend-graph';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
-import { LEGEND_STUDIO_SETTING_KEY } from '../../application/LegendStudioSetting.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
+import { LEGEND_STUDIO_SETTING_KEY } from '../../__lib__/LegendStudioSetting.js';
 import type { TabState } from '@finos/legend-lego/application';
-import { LegendStudioTelemetryHelper } from '../../application/LegendStudioTelemetryHelper.js';
+import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',

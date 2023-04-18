@@ -45,7 +45,7 @@ import {
 import { makeObservable, flow, observable, flowResult } from 'mobx';
 import type { LegendTaxonomyPluginManager } from '../../application/LegendTaxonomyPluginManager.js';
 import type { LegendTaxonomyApplicationStore } from '../LegendTaxonomyBaseStore.js';
-import { EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl } from '../../application/LegendTaxonomyNavigation.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl } from '../../__lib__/LegendTaxonomyNavigation.js';
 import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,

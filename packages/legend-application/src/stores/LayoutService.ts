@@ -16,13 +16,13 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
-import { LEGEND_APPLICATION_SETTING_KEY } from '../application/LegendApplicationSetting.js';
+import { LEGEND_APPLICATION_SETTING_KEY } from '../__lib__/LegendApplicationSetting.js';
 import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from '../application/LegendApplicationEvent.js';
+import { APPLICATION_EVENT } from '../__lib__/LegendApplicationEvent.js';
 import {
   DEFAULT_DARK_COLOR_THEME,
   LEGEND_APPLICATION_COLOR_THEME,
-} from '../application/LegendApplicationTheme.js';
+} from '../__lib__/LegendApplicationTheme.js';
 
 export type ColorTheme = {
   name: string;

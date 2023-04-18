@@ -56,7 +56,7 @@ import {
   Revision,
   EntityChangeType,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 import { WorkspaceSyncState } from './WorkspaceSyncState.js';
 import { ACTIVITY_MODE } from '../EditorConfig.js';
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';

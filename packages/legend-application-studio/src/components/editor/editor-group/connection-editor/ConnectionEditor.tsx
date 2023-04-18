@@ -39,7 +39,7 @@ import {
   getPackageableElementOptionFormatter,
 } from '@finos/legend-lego/graph-editor';
 
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 
 const ModelConnectionEditor = observer(
   (props: {

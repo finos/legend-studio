@@ -44,7 +44,7 @@ import { TextLocalChangesState } from './sidebar-state/LocalChangesState.js';
 import { GraphCompilationOutcome, type Problem } from './EditorGraphState.js';
 import { GRAPH_EDITOR_MODE, PANEL_MODE } from './EditorConfig.js';
 import { graph_dispose } from './shared/modifier/GraphModifierHelper.js';
-import { LegendStudioTelemetryHelper } from '../../application/LegendStudioTelemetryHelper.js';
+import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 

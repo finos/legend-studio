@@ -44,13 +44,13 @@ import {
   ExternalFormatDataState,
 } from '@finos/legend-application-studio';
 import { observer } from 'mobx-react-lite';
-import { EqualToJsonPattern } from '../graph/metamodel/pure/model/data/contentPattern/STO_ServiceStore_EqualToJsonPattern.js';
-import { EqualToPattern } from '../graph/metamodel/pure/model/data/contentPattern/STO_ServiceStore_EqualToPattern.js';
-import type { StringValuePattern } from '../graph/metamodel/pure/model/data/contentPattern/STO_ServiceStore_StringValuePattern.js';
-import { ServiceRequestPattern } from '../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceRequestPattern.js';
-import { ServiceResponseDefinition } from '../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceResponseDefinition.js';
-import { ServiceStubMapping } from '../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceStubMapping.js';
-import { HTTP_METHOD } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_ServiceStoreService.js';
+import { EqualToJsonPattern } from '../../graph/metamodel/pure/model/data/contentPattern/STO_ServiceStore_EqualToJsonPattern.js';
+import { EqualToPattern } from '../../graph/metamodel/pure/model/data/contentPattern/STO_ServiceStore_EqualToPattern.js';
+import type { StringValuePattern } from '../../graph/metamodel/pure/model/data/contentPattern/STO_ServiceStore_StringValuePattern.js';
+import { ServiceRequestPattern } from '../../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceRequestPattern.js';
+import { ServiceResponseDefinition } from '../../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceResponseDefinition.js';
+import { ServiceStubMapping } from '../../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceStubMapping.js';
+import { HTTP_METHOD } from '../../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_ServiceStoreService.js';
 import {
   serviceStore_embeddedData_addServiceStubMapping,
   serviceStore_embeddedData_deleteServiceStubMapping,
@@ -72,13 +72,13 @@ import {
   serviceStore_serviceStubMapping_setServiceRequestPattern,
   serviceStore_serviceStubMapping_setServiceResponseDefinition,
   serviceStore_stringValuePattern_setExpectedValue,
-} from '../stores/studio/STO_ServiceStore_GraphModifierHelper.js';
+} from '../../stores/studio/STO_ServiceStore_GraphModifierHelper.js';
 import {
   type ServiceStoreEmbeddedDataState,
   ServiceStubMappingState,
   SERVICE_REQUEST_PATTERN_TAB_TYPE,
   SERVICE_STUB_MAPPING_TAB_TYPE,
-} from '../stores/studio/STO_ServiceStore_ServiceStoreEmbeddedDataEditorState.js';
+} from '../../stores/studio/STO_ServiceStore_ServiceStoreEmbeddedDataEditorState.js';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,

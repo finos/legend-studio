@@ -40,7 +40,7 @@ import type {
   ServiceTestSuiteState,
 } from '../../../../../stores/editor/editor-state/element-editor-state/service/testable/ServiceTestableState.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 
 export const ServiceTestSuiteEditor = observer(
   (props: { serviceTestSuiteState: ServiceTestSuiteState }) => {

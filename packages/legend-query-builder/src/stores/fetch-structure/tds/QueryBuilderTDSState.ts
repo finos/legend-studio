@@ -99,7 +99,7 @@ import { QueryBuilderWindowState } from './window/QueryBuilderWindowState.js';
 import type { QueryBuilderTDS_WindowOperator } from './window/operators/QueryBuilderTDS_WindowOperator.js';
 import { getQueryBuilderCoreWindowOperators } from './window/QueryBuilderWindowGroupByOperatorLoader.js';
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
-import { QUERY_BUILDER_SETTING_KEY } from '../../../application/QueryBuilderSetting.js';
+import { QUERY_BUILDER_SETTING_KEY } from '../../../__lib__/QueryBuilderSetting.js';
 import type { ExportDataInfo } from '../../QueryBuilderResultState.js';
 
 // TODO: should we support raw once externalize() is supported on TDS ?

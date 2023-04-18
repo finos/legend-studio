@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import {
   generateExploreTaxonomyTreeRoute,
   LEGEND_TAXONOMY_ROUTE_PATTERN,
-} from '../application/LegendTaxonomyNavigation.js';
+} from '../__lib__/LegendTaxonomyNavigation.js';
 import {
   BrowserEnvironmentProvider,
   Redirect,

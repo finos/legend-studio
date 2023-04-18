@@ -24,7 +24,7 @@ import {
   IllegalStateError,
   type Writable,
 } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from '../application/LegendApplicationEvent.js';
+import { APPLICATION_EVENT } from '../__lib__/LegendApplicationEvent.js';
 import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 import { DocumentationService } from './DocumentationService.js';

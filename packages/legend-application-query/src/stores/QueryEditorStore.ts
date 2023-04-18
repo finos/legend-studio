@@ -58,8 +58,8 @@ import {
   generateExistingQueryEditorRoute,
   generateMappingQueryCreatorRoute,
   generateServiceQueryCreatorRoute,
-} from '../application/LegendQueryNavigation.js';
-import { LEGEND_QUERY_APP_EVENT } from '../application/LegendQueryEvent.js';
+} from '../__lib__/LegendQueryNavigation.js';
+import { LEGEND_QUERY_APP_EVENT } from '../__lib__/LegendQueryEvent.js';
 import {
   type Entity,
   type ProjectGAVCoordinates,
@@ -77,7 +77,7 @@ import {
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import { LegendQueryEventHelper } from '../application/LegendQueryEventHelper.js';
+import { LegendQueryEventHelper } from '../__lib__/LegendQueryEventHelper.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import {
   type QueryBuilderState,
@@ -86,7 +86,7 @@ import {
   MappingQueryBuilderState,
   ServiceQueryBuilderState,
 } from '@finos/legend-query-builder';
-import { LegendQueryTelemetryHelper } from '../application/LegendQueryTelemetryHelper.js';
+import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
 export const createViewProjectHandler =
   (applicationStore: LegendQueryApplicationStore) =>

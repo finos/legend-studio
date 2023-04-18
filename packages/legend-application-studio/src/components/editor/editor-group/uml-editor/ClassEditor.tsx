@@ -47,7 +47,7 @@ import {
   Panel,
   PanelDnDEntry,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { PropertyEditor } from './PropertyEditor.js';
 import {
   StereotypeSelector,
@@ -133,7 +133,7 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '../../../../stores/editor/shared/ModelClassifierUtils.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../application/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
 
 type ClassPropertyDragSource = {

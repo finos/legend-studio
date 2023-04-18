@@ -22,7 +22,7 @@ import {
   type LegendApplicationSetup,
 } from '@finos/legend-application';
 import packageJson from '../../package.json';
-import { LEGEND_TAXONOMY_COMMAND_CONFIG } from '../application/LegendTaxonomyCommand.js';
+import { LEGEND_TAXONOMY_COMMAND_CONFIG } from '../__lib__/LegendTaxonomyCommand.js';
 import {
   configureCodeEditorComponent,
   setupPureLanguageService,

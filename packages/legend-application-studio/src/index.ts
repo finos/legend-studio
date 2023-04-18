@@ -18,13 +18,13 @@
 export * from './application/LegendStudio.js';
 export * from './application/LegendStudioApplicationConfig.js';
 export * from './application/LegendStudioPluginManager.js';
-export * from './application/LegendStudioEvent.js';
+export * from './__lib__/LegendStudioEvent.js';
 export {
   generateEditorRoute,
   generateReviewRoute,
   generateViewProjectRoute,
-} from './application/LegendStudioNavigation.js';
-export * from './application/LegendStudioTesting.js';
+} from './__lib__/LegendStudioNavigation.js';
+export * from './__lib__/LegendStudioTesting.js';
 export {
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,

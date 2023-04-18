@@ -20,7 +20,7 @@ import {
   LegendStudioApplicationPlugin,
 } from '@finos/legend-application-studio';
 import type { ApplicationPageEntry } from '@finos/legend-application';
-import { DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN } from '../../application/studio/DSL_Service_LegendStudioNavigation.js';
+import { DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN } from '../../__lib__/studio/DSL_Service_LegendStudioNavigation.js';
 import { UpdateServiceQuerySetup } from './UpdateServiceQuerySetup.js';
 import { UpdateProjectServiceQuerySetup } from './UpdateProjectServiceQuerySetup.js';
 import {

@@ -29,7 +29,7 @@ import { useContext, useEffect } from 'react';
 import {
   generateQuerySetupRoute,
   generateServiceQueryCreatorRoute,
-} from '../application/LegendQueryNavigation.js';
+} from '../__lib__/LegendQueryNavigation.js';
 import {
   LATEST_VERSION_ALIAS,
   SNAPSHOT_VERSION_ALIAS,

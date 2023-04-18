@@ -23,7 +23,7 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../editor/__test-utils__/EditorComponentTestUtils.js';
 import { GraphCompilationOutcome } from '../../stores/editor/EditorGraphState.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import { TEST__buildQueryBuilderMockedEditorStore } from '../__test-utils__/EmbeddedQueryBuilderTestUtils.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 

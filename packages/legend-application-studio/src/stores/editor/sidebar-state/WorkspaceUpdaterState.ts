@@ -41,7 +41,7 @@ import {
   Revision,
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../application/LegendStudioEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 
 export class WorkspaceUpdaterState {
   readonly editorStore: EditorStore;
