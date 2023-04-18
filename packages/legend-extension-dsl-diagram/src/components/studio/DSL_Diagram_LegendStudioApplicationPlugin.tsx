@@ -44,7 +44,7 @@ import { ClassDiagramPreview } from './ClassDiagramPreview.js';
 import {
   PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
-} from '../../graphManager/DSL_Diagram_PureGraphManagerPlugin.js';
+} from '../../graph-manager/DSL_Diagram_PureGraphManagerPlugin.js';
 import { DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/DSL_Diagram_LegendStudioDocumentation.js';
 import {
   EMPTY_DIAGRAM_SNIPPET,

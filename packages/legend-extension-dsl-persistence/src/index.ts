@@ -27,20 +27,20 @@ export { PersistencePlatform } from './graph/metamodel/pure/model/packageableEle
 export { Trigger } from './graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Trigger.js';
 
 // v1 protocols
-export { V1_Persistence } from './graphManager/protocol/pure/v1/model/packageableElements/persistence/V1_DSL_Persistence_Persistence.js';
-export { V1_PersistenceContext } from './graphManager/protocol/pure/v1/model/packageableElements/persistence/V1_DSL_Persistence_PersistenceContext.js';
-export { V1_PersistencePlatform } from './graphManager/protocol/pure/v1/model/packageableElements/persistence/V1_DSL_Persistence_PersistencePlatform.js';
-export { V1_Trigger } from './graphManager/protocol/pure/v1/model/packageableElements/persistence/V1_DSL_Persistence_Trigger.js';
+export { V1_Persistence } from './graph-manager/protocol/pure/v1/model/packageableElements/persistence/V1_DSL_Persistence_Persistence.js';
+export { V1_PersistenceContext } from './graph-manager/protocol/pure/v1/model/packageableElements/persistence/V1_DSL_Persistence_PersistenceContext.js';
+export { V1_PersistencePlatform } from './graph-manager/protocol/pure/v1/model/packageableElements/persistence/V1_DSL_Persistence_PersistencePlatform.js';
+export { V1_Trigger } from './graph-manager/protocol/pure/v1/model/packageableElements/persistence/V1_DSL_Persistence_Trigger.js';
 
 // ---------- TRANSFORMATION ----------
 
 // extension
-export * from './graphManager/protocol/pure/DSL_Persistence_PureProtocolProcessorPlugin_Extension.js';
+export * from './graph-manager/protocol/pure/DSL_Persistence_PureProtocolProcessorPlugin_Extension.js';
 
 // builders
-export { V1_buildPersistence } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_DSL_Persistence_BuilderHelper.js';
-export { V1_buildPersistenceContext } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_DSL_Persistence_ContextBuilder.js';
+export { V1_buildPersistence } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_DSL_Persistence_BuilderHelper.js';
+export { V1_buildPersistenceContext } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_DSL_Persistence_ContextBuilder.js';
 
 // transformers
-export { V1_transformPersistence } from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_DSL_Persistence_TransformerHelper.js';
-export { V1_transformPersistenceContext } from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_DSL_Persistence_ContextTransformer.js';
+export { V1_transformPersistence } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_DSL_Persistence_TransformerHelper.js';
+export { V1_transformPersistenceContext } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_DSL_Persistence_ContextTransformer.js';

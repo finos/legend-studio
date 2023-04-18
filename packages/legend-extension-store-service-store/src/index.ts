@@ -16,8 +16,8 @@
 
 export * from './STO_ServiceStore_Extension.js';
 export { STO_ServiceStore_LegendStudioApplicationPlugin } from './components/studio/STO_ServiceStore_LegendStudioApplicationPlugin.js';
-export * from './graphManager/protocol/pure/STO_ServiceStore_PureProtocolPlugin_Extension.js';
-export * from './graphManager/STO_ServiceStore_PureGraphManagerPlugin_Extension.js';
+export * from './graph-manager/protocol/pure/STO_ServiceStore_PureProtocolPlugin_Extension.js';
+export * from './graph-manager/STO_ServiceStore_PureGraphManagerPlugin_Extension.js';
 
 export { SecurityScheme } from './graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_SecurityScheme.js';
-export { V1_SecurityScheme } from './graphManager/protocol/pure/v1/model/packageableElements/store/serviceStore/model/V1_STO_ServiceStore_SecurityScheme.js';
+export { V1_SecurityScheme } from './graph-manager/protocol/pure/v1/model/packageableElements/store/serviceStore/model/V1_STO_ServiceStore_SecurityScheme.js';

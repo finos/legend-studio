@@ -16,9 +16,9 @@
 
 const micromatch = require('micromatch');
 
-const PROTOCOL_FILE_PATTERN = '**/src/graphManager/protocol/*/v*/**';
+const PROTOCOL_FILE_PATTERN = '**/src/graph-manager/protocol/*/v*/**';
 const PROTOCOL_VERSION_MATCH_PATTERN =
-  /[/\\]src[/\\]graphManager[/\\]protocol[/\\][^/\\]+[/\\]v(?<protocolVersion>.*?)[/\\]/u;
+  /[/\\]src[/\\]graph-manager[/\\]protocol[/\\][^/\\]+[/\\]v(?<protocolVersion>.*?)[/\\]/u;
 
 /**
  * Enforce files related to a specific protocol version

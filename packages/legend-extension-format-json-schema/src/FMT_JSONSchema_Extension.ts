@@ -16,8 +16,8 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { FMT_JSONSchema_PureGraphManagerPlugin } from './graphManager/FMT_JSONSchema_PureGraphManagerPlugin.js';
-import { FMT_JSONSchema_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/FMT_JSONSchema_PureProtocolProcessorPlugin.js';
+import { FMT_JSONSchema_PureGraphManagerPlugin } from './graph-manager/FMT_JSONSchema_PureGraphManagerPlugin.js';
+import { FMT_JSONSchema_PureProtocolProcessorPlugin } from './graph-manager/protocol/pure/FMT_JSONSchema_PureProtocolProcessorPlugin.js';
 
 export class FMT_JSONSchema_GraphManagerPreset extends AbstractPreset {
   constructor() {

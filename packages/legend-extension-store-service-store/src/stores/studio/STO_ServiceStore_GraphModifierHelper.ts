@@ -29,7 +29,7 @@ import { action } from 'mobx';
 import {
   observe_ServiceStubMapping,
   observe_StringValuePattern,
-} from '../../graphManager/action/changeDetection/STO_ServiceStore_ObserverHelper.js';
+} from '../../graph-manager/action/changeDetection/STO_ServiceStore_ObserverHelper.js';
 import type { StringValuePattern } from '../../graph/metamodel/pure/model/data/contentPattern/STO_ServiceStore_StringValuePattern.js';
 import type { ServiceRequestPattern } from '../../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceRequestPattern.js';
 import type { ServiceResponseDefinition } from '../../graph/metamodel/pure/model/data/STO_ServiceStore_ServiceResponseDefinition.js';

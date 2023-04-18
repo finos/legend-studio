@@ -39,6 +39,6 @@ export { Rectangle } from './graph/metamodel/pure/packageableElements/diagram/ge
 export { PositionedRectangle } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_PositionedRectangle.js';
 
 export * from './graph/helpers/DSL_Diagram_Helper.js';
-export * from './graphManager/DSL_Diagram_GraphManagerHelper.js';
-export { V1_DSL_Diagram_PackageableElementPointerType } from './graphManager/protocol/pure/DSL_Diagram_PureProtocolProcessorPlugin.js';
-export { V1_resolveDiagram } from './graphManager/protocol/pure/v1/transformation/pureGraph/V1_DSL_Diagram_GraphBuilderHelper.js';
+export * from './graph-manager/DSL_Diagram_GraphManagerHelper.js';
+export { V1_DSL_Diagram_PackageableElementPointerType } from './graph-manager/protocol/pure/DSL_Diagram_PureProtocolProcessorPlugin.js';
+export { V1_resolveDiagram } from './graph-manager/protocol/pure/v1/transformation/pureGraph/V1_DSL_Diagram_GraphBuilderHelper.js';

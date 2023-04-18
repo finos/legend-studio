@@ -51,7 +51,7 @@ import {
   DataSpaceModelDocumentationEntry,
   DataSpacePropertyDocumentationEntry,
   type NormalizedDataSpaceDocumentationEntry,
-} from '../graphManager/action/analytics/DataSpaceAnalysis.js';
+} from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import { debounce, isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import {

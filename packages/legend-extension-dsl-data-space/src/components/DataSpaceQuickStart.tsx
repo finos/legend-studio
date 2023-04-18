@@ -30,7 +30,7 @@ import {
   DataSpaceExecutableTDSResult,
   type DataSpaceExecutableAnalysisResult,
   type DataSpaceExecutableTDSResultColumn,
-} from '../graphManager/action/analytics/DataSpaceAnalysis.js';
+} from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
 import type { DSL_DataSpace_LegendApplicationPlugin_Extension } from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 import { useState } from 'react';

@@ -30,7 +30,7 @@ import {
   DataSpaceEnumerationDocumentationEntry,
   DataSpaceModelDocumentationEntry,
   type NormalizedDataSpaceDocumentationEntry,
-} from '../graphManager/action/analytics/DataSpaceAnalysis.js';
+} from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import { CORE_PURE_PATH, ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 
 export enum ModelsDocumentationFilterTreeNodeCheckType {

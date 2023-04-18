@@ -36,7 +36,7 @@ import {
   type QueryBuilderState,
   INTERNAL__BasicQueryBuilderState,
 } from '../../stores/QueryBuilderState.js';
-import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graph-manager/QueryBuilder_GraphManagerPreset.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   TEST__LegendApplicationPluginManager,

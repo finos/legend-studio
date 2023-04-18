@@ -41,7 +41,7 @@ import {
   QUERY_PROFILE_TAG_CLASS,
   QUERY_PROFILE_TAG_DATA_SPACE,
 } from '../../DSL_DataSpace_Const.js';
-import { getDataSpace } from '../../graphManager/DSL_DataSpace_GraphManagerHelper.js';
+import { getDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
 import { DataSpaceQueryBuilderState } from './DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from './DataSpaceInfo.js';
 import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';

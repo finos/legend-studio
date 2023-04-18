@@ -45,7 +45,7 @@ import {
 } from '../../DSL_DataSpace_Const.js';
 import { DataSpaceQueryBuilderState } from '../../stores/query/DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
-import { getOwnDataSpace } from '../../graphManager/DSL_DataSpace_GraphManagerHelper.js';
+import { getOwnDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
 import { assertErrorThrown, LogEvent, uuid } from '@finos/legend-shared';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import { DataSpaceQuerySetup } from './DataSpaceQuerySetup.js';

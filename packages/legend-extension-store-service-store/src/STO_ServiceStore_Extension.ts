@@ -16,8 +16,8 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { STO_ServiceStore_PureGraphManagerPlugin } from './graphManager/STO_ServiceStore_PureGraphManagerPlugin.js';
-import { STO_ServiceStore_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/STO_ServiceStore_PureProtocolProcessorPlugin.js';
+import { STO_ServiceStore_PureGraphManagerPlugin } from './graph-manager/STO_ServiceStore_PureGraphManagerPlugin.js';
+import { STO_ServiceStore_PureProtocolProcessorPlugin } from './graph-manager/protocol/pure/STO_ServiceStore_PureProtocolProcessorPlugin.js';
 import { STO_ServiceStore_PureGraphPlugin } from './graph/STO_ServiceStore_PureGraphPlugin.js';
 
 export class STO_ServiceStore_GraphManagerPreset extends AbstractPreset {

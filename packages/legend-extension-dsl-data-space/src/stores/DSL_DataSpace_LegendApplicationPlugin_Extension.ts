@@ -19,7 +19,7 @@ import type { DataSpaceViewerState } from './DataSpaceViewerState.js';
 import type {
   DataSpaceExecutableAnalysisResult,
   DataSpaceExecutableTDSResult,
-} from '../graphManager/action/analytics/DataSpaceAnalysis.js';
+} from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 
 export type TDSExecutableActionConfiguration = {
   key: string;

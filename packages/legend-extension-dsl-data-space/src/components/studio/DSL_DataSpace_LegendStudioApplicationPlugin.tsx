@@ -49,7 +49,7 @@ import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/st
 import {
   PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
-} from '../../graphManager/DSL_DataSpace_PureGraphManagerPlugin.js';
+} from '../../graph-manager/DSL_DataSpace_PureGraphManagerPlugin.js';
 import { SIMPLE_DATA_SPACE_SNIPPET } from '../../__lib__/studio/DSL_DataSpace_LegendStudioCodeSnippet.js';
 import type { DocumentationEntry } from '@finos/legend-application';
 import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';

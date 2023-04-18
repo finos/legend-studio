@@ -26,9 +26,9 @@ export * from './graph/metamodel/pure/packageableElements/service/ServiceTestDat
 export * from './graph/metamodel/pure/packageableElements/service/DEPRECATED__ServiceTest.js';
 export * from './graph/metamodel/pure/packageableElements/service/MultiExecutionServiceTestResult.js';
 export * from './graph/metamodel/pure/packageableElements/service/ParameterValue.js';
-export { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
-export { V1_Service } from './graphManager/protocol/pure/v1/model/packageableElements/service/V1_Service.js';
+export { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
+export { V1_Service } from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_Service.js';
 export {
   V1_PureMultiExecution,
   V1_PureSingleExecution,
-} from './graphManager/protocol/pure/v1/model/packageableElements/service/V1_ServiceExecution.js';
+} from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ServiceExecution.js';

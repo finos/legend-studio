@@ -73,7 +73,7 @@ import {
 } from '@finos/legend-graph/test';
 import { ApplicationStore } from '@finos/legend-application';
 import { integrationTest } from '@finos/legend-shared/test';
-import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graph-manager/QueryBuilder_GraphManagerPreset.js';
 import {
   TEST_DATA__lambda_simpleConditionPostFilter,
   TEST_DATA__lambda_aggregationPostFilter,

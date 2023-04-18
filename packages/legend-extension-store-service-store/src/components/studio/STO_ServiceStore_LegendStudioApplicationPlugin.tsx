@@ -69,7 +69,7 @@ import {
   PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL,
   PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
-} from '../../graphManager/STO_ServiceStore_PureGraphManagerPlugin.js';
+} from '../../graph-manager/STO_ServiceStore_PureGraphManagerPlugin.js';
 import { EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/STO_ServiceStore_LegendStudioDocumentation.js';
 import {
   BLANK_SERVICE_STORE_SNIPPET,

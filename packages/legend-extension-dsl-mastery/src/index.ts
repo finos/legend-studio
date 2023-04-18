@@ -23,9 +23,9 @@ export { DSL_Mastery_LegendStudioApplicationPlugin } from './components/studio/D
 export { MasterRecordDefinition } from './graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
 
 // v1 protocols
-export { V1_MasterRecordDefinition } from './graphManager/protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
+export { V1_MasterRecordDefinition } from './graph-manager/protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
 
 // ---------- TRANSFORMATION ----------
 
-export { V1_transformMasterRecordDefinition } from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_DSL_Mastery_TransformerHelper.js';
-export { V1_buildMasterRecordDefinition } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';
+export { V1_transformMasterRecordDefinition } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_DSL_Mastery_TransformerHelper.js';
+export { V1_buildMasterRecordDefinition } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';

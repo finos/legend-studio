@@ -16,10 +16,10 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { DSL_ExternalFormat_PureGraphManagerPlugin } from './graphManager/extensions/DSL_ExternalFormat_PureGraphManagerPlugin.js';
-import { DSL_ExternalFormat_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/extensions/DSL_ExternalFormat_PureProtocolProcessorPlugin.js';
+import { DSL_ExternalFormat_PureGraphManagerPlugin } from './graph-manager/extensions/DSL_ExternalFormat_PureGraphManagerPlugin.js';
+import { DSL_ExternalFormat_PureProtocolProcessorPlugin } from './graph-manager/protocol/pure/extensions/DSL_ExternalFormat_PureProtocolProcessorPlugin.js';
 import { DSL_ExternalFormat_PureGraphPlugin } from './graph/extensions/DSL_ExternalFormat_PureGraphPlugin.js';
-import { Core_PureGraphManagerPlugin } from './graphManager/extensions/Core_PureGraphManagerPlugin.js';
+import { Core_PureGraphManagerPlugin } from './graph-manager/extensions/Core_PureGraphManagerPlugin.js';
 
 export class Core_GraphManagerPreset extends AbstractPreset {
   constructor() {

@@ -17,8 +17,8 @@
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
 import { DSL_Mastery_PureGraphPlugin as DSL_Mastery_PureGraphPlugin } from './graph/DSL_Mastery_PureGraphPlugin.js';
-import { DSL_Mastery_PureGraphManagerPlugin } from './graphManager/DSL_Mastery_PureGraphManagerPlugin.js';
-import { DSL_Mastery_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/DSL_Mastery_PureProtocolProcessorPlugin.js';
+import { DSL_Mastery_PureGraphManagerPlugin } from './graph-manager/DSL_Mastery_PureGraphManagerPlugin.js';
+import { DSL_Mastery_PureProtocolProcessorPlugin } from './graph-manager/protocol/pure/DSL_Mastery_PureProtocolProcessorPlugin.js';
 
 export class DSL_Mastery_GraphManagerPreset extends AbstractPreset {
   constructor() {

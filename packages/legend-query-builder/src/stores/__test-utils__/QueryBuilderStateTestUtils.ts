@@ -36,7 +36,7 @@ import {
 import { createSpy } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import { flowResult } from 'mobx';
-import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graph-manager/QueryBuilder_GraphManagerPreset.js';
 import {
   INTERNAL__BasicQueryBuilderState,
   type QueryBuilderState,

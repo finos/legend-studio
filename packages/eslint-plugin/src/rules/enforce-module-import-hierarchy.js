@@ -18,9 +18,9 @@ const path = require('path');
 const micromatch = require('micromatch');
 
 const GRAPH_FILE_PATTERN = '**/src/graph/**';
-const GRAPH_MANAGER_FILE_PATTERN = '**/src/graphManager/**';
-const PROTOCOL_FILE_PATTERN = '**/src/graphManager/protocol/*/v*/**';
-const GENERIC_PROTOCOL_FILE_PATTERN = '**/src/graphManager/protocol/**';
+const GRAPH_MANAGER_FILE_PATTERN = '**/src/graph-manager/**';
+const PROTOCOL_FILE_PATTERN = '**/src/graph-manager/protocol/*/v*/**';
+const GENERIC_PROTOCOL_FILE_PATTERN = '**/src/graph-manager/protocol/**';
 const COMPONENT_FILE_PATTERN = '**/src/components/**';
 const STORE_FILE_PATTERN = '**/src/stores/**';
 

@@ -42,7 +42,7 @@ import {
   PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_PERSISTENCE_PARSER_NAME,
-} from '../../graphManager/DSL_Persistence_PureGraphManagerPlugin.js';
+} from '../../graph-manager/DSL_Persistence_PureGraphManagerPlugin.js';
 import {
   BLANK_PERSISTENCE_CONTEXT_SNIPPET,
   BLANK_PERSISTENCE_SNIPPET,

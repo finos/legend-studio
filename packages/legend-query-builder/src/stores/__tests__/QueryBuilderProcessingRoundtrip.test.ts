@@ -51,7 +51,7 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph/test';
-import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graph-manager/QueryBuilder_GraphManagerPreset.js';
 import {
   TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy,
   TEST_DATA__lambda_olapGroupBy_StackedGroupBy,

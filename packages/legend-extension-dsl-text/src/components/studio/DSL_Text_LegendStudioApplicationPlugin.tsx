@@ -41,7 +41,7 @@ import { DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/D
 import {
   PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_TEXT_PARSER_NAME,
-} from '../../graphManager/DSL_Text_PureGraphManagerPlugin.js';
+} from '../../graph-manager/DSL_Text_PureGraphManagerPlugin.js';
 import {
   MARKDOWN_TEXT_SNIPPET,
   PLAIN_TEXT_SNIPPET,

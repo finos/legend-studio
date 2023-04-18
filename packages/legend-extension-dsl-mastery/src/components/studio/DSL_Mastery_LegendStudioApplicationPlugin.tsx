@@ -37,7 +37,7 @@ import { SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET } from '../../__lib__/studio/DS
 import {
   PURE_GRAMMAR_MASTERY_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_MASTERY_PARSER_NAME,
-} from '../../graphManager/DSL_Mastery_PureGraphManagerPlugin.js';
+} from '../../graph-manager/DSL_Mastery_PureGraphManagerPlugin.js';
 import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 
 const MASTERY_ELEMENT_TYPE = 'MASTERY';
