@@ -44,6 +44,8 @@ import {
   useDragPreviewLayer,
   PanelContent,
   MoreVerticalIcon,
+  MenuContentItemIcon,
+  MenuContentItemLabel,
 } from '@finos/legend-art';
 import {
   type QueryBuilderFilterConditionDragSource,
@@ -85,7 +87,7 @@ import {
   type QueryBuilderVariableDragSource,
   QUERY_BUILDER_VARIABLE_DND_TYPE,
 } from '../shared/BasicValueSpecificationEditor.js';
-import { QueryBuilderTelemetry } from '../../stores/QueryBuilderTelemetry.js';
+import { QueryBuilderTelemetryHelper } from '../../application/QueryBuilderTelemetryHelper.js';
 
 const QueryBuilderFilterGroupConditionEditor = observer(
   (props: {
@@ -337,11 +339,8 @@ const QueryBuilderFilterConditionContextMenu = observer(
       filterState.addGroupConditionNodeFromNode(node);
     };
     const newGroupWithCondition = (): void => {
-      QueryBuilderTelemetry.logEvent_FilterCreateGroupFromConditionClicked(
+      QueryBuilderTelemetryHelper.logEvent_FilterCreateGroupFromConditionLaunched(
         queryBuilderState.applicationStore.telemetryService,
-        {
-          applicationContext: queryBuilderState.applicationContext,
-        },
       );
 
       filterState.suppressClickawayEventListener();
@@ -691,51 +690,36 @@ export const QueryBuilderFilterPanel = observer(
     const filterState = queryBuilderState.filterState;
     const rootNode = filterState.getRootNode();
     const collapseTree = (): void => {
-      QueryBuilderTelemetry.logEvent_FilterCollapseTreeClicked(
+      QueryBuilderTelemetryHelper.logEvent_FilterCollapseTreeLaunched(
         queryBuilderState.applicationStore.telemetryService,
-        {
-          applicationContext: queryBuilderState.applicationContext,
-        },
       );
       filterState.setSelectedNode(undefined);
       filterState.collapseTree();
     };
     const expandTree = (): void => {
-      QueryBuilderTelemetry.logEvent_FilterExpandTreeClicked(
+      QueryBuilderTelemetryHelper.logEvent_FilterExpandTreeLaunched(
         queryBuilderState.applicationStore.telemetryService,
-        {
-          applicationContext: queryBuilderState.applicationContext,
-        },
       );
       filterState.setSelectedNode(undefined);
       filterState.expandTree();
     };
     const pruneTree = (): void => {
-      QueryBuilderTelemetry.logEvent_FilterCleanupTreeClicked(
+      QueryBuilderTelemetryHelper.logEvent_FilterCleanupTreeLaunched(
         queryBuilderState.applicationStore.telemetryService,
-        {
-          applicationContext: queryBuilderState.applicationContext,
-        },
       );
       filterState.suppressClickawayEventListener();
       filterState.pruneTree();
     };
     const simplifyTree = (): void => {
-      QueryBuilderTelemetry.logEvent_FilterSimplifyTreeClicked(
+      QueryBuilderTelemetryHelper.logEvent_FilterSimplifyTreeLaunched(
         queryBuilderState.applicationStore.telemetryService,
-        {
-          applicationContext: queryBuilderState.applicationContext,
-        },
       );
       filterState.suppressClickawayEventListener();
       filterState.simplifyTree();
     };
     const createCondition = (): void => {
-      QueryBuilderTelemetry.logEvent_FilterCreateConditionClicked(
+      QueryBuilderTelemetryHelper.logEvent_FilterCreateConditionLaunched(
         queryBuilderState.applicationStore.telemetryService,
-        {
-          applicationContext: queryBuilderState.applicationContext,
-        },
       );
       filterState.suppressClickawayEventListener();
       filterState.addNodeFromNode(
@@ -749,11 +733,8 @@ export const QueryBuilderFilterPanel = observer(
         (filterState.selectedNode !== rootNode || // either not a root node
           rootNode instanceof QueryBuilderFilterTreeGroupNodeData)); // or if it is the root note, it has to be a group node
     const createGroupCondition = (): void => {
-      QueryBuilderTelemetry.logEvent_FilterCreateLogicalGroupClicked(
+      QueryBuilderTelemetryHelper.logEvent_FilterCreateLogicalGroupLaunched(
         queryBuilderState.applicationStore.telemetryService,
-        {
-          applicationContext: queryBuilderState.applicationContext,
-        },
       );
       filterState.suppressClickawayEventListener();
       if (allowGroupCreation) {
@@ -761,6 +742,9 @@ export const QueryBuilderFilterPanel = observer(
       }
     };
     const newGroupWithCondition = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_FilterCreateLogicalGroupLaunched(
+        applicationStore.telemetryService,
+      );
       filterState.suppressClickawayEventListener();
       if (
         filterState.selectedNode instanceof
@@ -866,8 +850,12 @@ export const QueryBuilderFilterPanel = observer(
               content={
                 <MenuContent>
                   <MenuContentItem onClick={createCondition}>
-                    <PlusIcon />
-                    Create Condition
+                    <MenuContentItemIcon>
+                      <PlusIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      Create Condition
+                    </MenuContentItemLabel>
                   </MenuContentItem>
                   <MenuContentItem
                     disabled={
@@ -878,26 +866,52 @@ export const QueryBuilderFilterPanel = observer(
                     }
                     onClick={newGroupWithCondition}
                   >
-                    <PlusCircleIcon />
-                    Create Group From Condition
+                    <MenuContentItemIcon>
+                      <PlusCircleIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      Create Group From Condition
+                    </MenuContentItemLabel>
                   </MenuContentItem>
                   <MenuContentItem
                     disabled={!allowGroupCreation}
+                    title={
+                      !allowGroupCreation
+                        ? 'Please select a filter node first to create logical group'
+                        : ''
+                    }
                     onClick={createGroupCondition}
                   >
-                    <NewFolderIcon /> Create Logical Group
+                    <MenuContentItemIcon>
+                      <NewFolderIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      Create Logical Group
+                    </MenuContentItemLabel>
                   </MenuContentItem>
                   <MenuContentItem onClick={pruneTree}>
-                    <TrashIcon /> Cleanup Tree
+                    <MenuContentItemIcon>
+                      <TrashIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>Cleanup Tree</MenuContentItemLabel>
                   </MenuContentItem>
                   <MenuContentItem onClick={simplifyTree}>
-                    <CircleIcon /> Simplify Tree
+                    <MenuContentItemIcon>
+                      <CircleIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>Simplify Tree</MenuContentItemLabel>
                   </MenuContentItem>
                   <MenuContentItem onClick={collapseTree}>
-                    <CompressIcon /> Collapse Tree
+                    <MenuContentItemIcon>
+                      <CompressIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>Collapse Tree</MenuContentItemLabel>
                   </MenuContentItem>
                   <MenuContentItem onClick={expandTree}>
-                    <ExpandIcon /> Expand Tree
+                    <MenuContentItemIcon>
+                      <ExpandIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>Expand Tree</MenuContentItemLabel>
                   </MenuContentItem>
                 </MenuContent>
               }

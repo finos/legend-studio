@@ -18,7 +18,7 @@ import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
   QueryEditorStore,
-  type QueryExportConfiguration,
+  type QueryPersistConfiguration,
 } from '@finos/legend-application-query';
 import {
   DepotScope,
@@ -163,7 +163,10 @@ export class DataSpaceQuerySetupStore extends QueryEditorStore {
     throw new UnsupportedOperationError();
   }
 
-  getExportConfiguration(lambda: RawLambda): Promise<QueryExportConfiguration> {
+  getExportConfiguration(
+    lambda: RawLambda,
+    options?: { update?: boolean | undefined },
+  ): Promise<QueryPersistConfiguration> {
     throw new UnsupportedOperationError();
   }
 

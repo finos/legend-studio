@@ -30,6 +30,7 @@ import {
   type ObserverContext,
   PrimitiveType,
 } from '@finos/legend-graph';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import type { LambdaParametersState } from '../../stores/shared/LambdaParameterState.js';
@@ -123,7 +124,7 @@ export const LambdaParameterValuesEditor = observer(
                   isSubmitAction ? `${submitAction.label}...` : undefined
                 }
                 onClick={submit}
-                text={submitAction.label}
+                text={prettyCONSTName(submitAction.label)}
               />
             )}
             <ModalFooterButton

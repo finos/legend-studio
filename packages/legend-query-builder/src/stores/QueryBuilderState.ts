@@ -87,6 +87,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   readonly changeDetectionState: QueryBuilderChangeDetectionState;
   readonly queryCompileState = ActionState.create();
   readonly observerContext: ObserverContext;
+  readonly saveQueryState = ActionState.create();
 
   explorerState: QueryBuilderExplorerState;
   functionsExplorerState: QueryFunctionsExplorerState;
@@ -102,8 +103,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   resultState: QueryBuilderResultState;
   textEditorState: QueryBuilderTextEditorState;
   unsupportedQueryState: QueryBuilderUnsupportedQueryState;
-
-  titleOfQuery: string | undefined;
   showFunctionsExplorerPanel = false;
   showParametersPanel = false;
   isEditingWatermark = false;
@@ -129,7 +128,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       fetchStructureState: observable,
       filterState: observable,
       watermarkState: observable,
-      titleOfQuery: observable,
       checkEntitlementsState: observable,
       resultState: observable,
       textEditorState: observable,
@@ -154,8 +152,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setClass: action,
       setMapping: action,
       setRuntimeValue: action,
-
-      setTitleOfQuery: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -257,10 +253,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setRuntimeValue(val: Runtime | undefined): void {
     this.runtimeValue = val;
-  }
-
-  setTitleOfQuery(val: string | undefined): void {
-    this.titleOfQuery = val;
   }
 
   get isQuerySupported(): boolean {
@@ -455,6 +447,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   async saveQuery(
     onSaveQuery: (lambda: RawLambda) => Promise<void>,
   ): Promise<void> {
+    this.saveQueryState.inProgress();
     try {
       const query = this.buildQuery();
       await onSaveQuery(query);
@@ -463,6 +456,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.applicationStore.notificationService.notifyError(
         `Can't save query: ${error.message}`,
       );
+    } finally {
+      this.saveQueryState.complete();
     }
   }
 

@@ -18,7 +18,6 @@ import {
   type SelectComponent,
   Dialog,
   PanelLoadingIndicator,
-  SaveIcon,
   BlankPanelContent,
   clsx,
   SearchIcon,
@@ -45,10 +44,13 @@ import {
   EmptyLightBulbIcon,
   SaveCurrIcon,
   SaveAsIcon,
+  ExclamationTriangleIcon,
+  PanelListItem,
+  Button,
 } from '@finos/legend-art';
 import { debounce } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
   type MappingQueryCreatorPathParams,
   type ExistingQueryEditorPathParams,
@@ -60,10 +62,11 @@ import {
 } from '../__lib__/LegendQueryNavigation.js';
 import {
   type QueryEditorStore,
-  ExistingQueryEditorStore,
-  QueryExportState,
+  QuerySaveAsState,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
+  QuerySaveState,
+  QueryRenameState,
 } from '../stores/QueryEditorStore.js';
 import {
   LEGEND_APPLICATION_COLOR_THEME,
@@ -84,79 +87,105 @@ import {
   QueryBuilderNavigationBlocker,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
+import { LegendQueryTelemetryHelper } from '../application/LegendQueryTelemetryHelper.js';
+import type { HelpMenuEntry } from '../stores/LegendQueryApplicationPlugin.js';
+import { QUERY_DOCUMENTATION_KEY } from '../application/LegendQueryDocumentation.js';
 
-const QueryExportDialogContent = observer(
-  (props: { exportState: QueryExportState }) => {
-    const { exportState } = props;
+const QuerySaveAsDialogContent = observer(
+  (props: { saveAsState: QuerySaveAsState }) => {
+    const { saveAsState } = props;
     const applicationStore = useApplicationStore();
-    const allowSaveNewQuery = exportState.allowPersist;
-    const allowSave = exportState.allowPersist && exportState.allowUpdate;
-    const saveAsNewQuery = applicationStore.guardUnhandledError(() =>
-      exportState.persistQuery(true),
+    const saveNewQuery = saveAsState.allowPersist;
+    const create = applicationStore.guardUnhandledError(() =>
+      saveAsState.persistQuery(true),
     );
-    const overwriteExistingQuery = applicationStore.guardUnhandledError(() =>
-      exportState.persistQuery(false),
-    );
+
+    const isExistingQueryName = saveAsState.editorStore.existingQueryName;
 
     // name
     const nameInputRef = useRef<HTMLInputElement>(null);
-    const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      exportState.setQueryName(event.target.value);
+
+    const debouncedLoadQueries = useMemo(
+      () =>
+        debounce((input: string): void => {
+          flowResult(
+            saveAsState.editorStore.searchExistingQueryName(input),
+          ).catch(applicationStore.alertUnhandledError);
+        }, 500),
+      [applicationStore, saveAsState.editorStore],
+    );
+
+    const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      saveAsState.setQueryName(event.target.value);
+    };
 
     useEffect(() => {
       nameInputRef.current?.focus();
     }, []);
 
+    useEffect(() => {
+      const searchText = saveAsState.queryName;
+      debouncedLoadQueries.cancel();
+      debouncedLoadQueries(searchText);
+    }, [
+      saveAsState.queryName,
+      debouncedLoadQueries,
+      saveAsState.editorStore.queryLoaderState.queries,
+    ]);
+
     return (
       <>
         <ModalBody>
           <PanelLoadingIndicator
-            isLoading={exportState.persistQueryState.isInProgress}
+            isLoading={saveAsState.persistQueryState.isInProgress}
           />
-          <input
-            ref={nameInputRef}
-            className="input input--dark"
-            spellCheck={false}
-            value={exportState.queryName}
-            onChange={changeName}
-          />
+          <PanelListItem>
+            <div className="input--with-validation">
+              <input
+                ref={nameInputRef}
+                className={clsx('input input--dark', {
+                  'input--caution': isExistingQueryName,
+                })}
+                spellCheck={false}
+                value={saveAsState.queryName}
+                onChange={changeName}
+              />
+              {isExistingQueryName && (
+                <div
+                  className="input--with-validation__caution"
+                  title={`Query named '${isExistingQueryName}' already exists`}
+                >
+                  <ExclamationTriangleIcon className="input--with-validation__caution__indicator" />
+                </div>
+              )}
+            </div>
+          </PanelListItem>
         </ModalBody>
         <ModalFooter>
-          {allowSave && (
-            <ModalFooterButton
-              title="Save/overwrite existing query"
-              text="Overwrite existing"
-              onClick={overwriteExistingQuery}
-            >
-              <SaveCurrIcon />
-            </ModalFooterButton>
-          )}
           <ModalFooterButton
-            text="Save as New Query"
+            text="Create Query"
             title={
-              exportState.unallowedPersistInfo
-                ? `Cannot save as new query because ${exportState.unallowedPersistInfo}`
-                : 'Save as New Query'
+              saveAsState.unallowedPersistInfo
+                ? `Cannot create query because ${saveAsState.unallowedPersistInfo}`
+                : 'Create New Query'
             }
-            inProgress={!allowSaveNewQuery}
-            onClick={saveAsNewQuery}
-          >
-            <SaveAsIcon />
-          </ModalFooterButton>
+            inProgress={!saveNewQuery}
+            onClick={create}
+          />
         </ModalFooter>
       </>
     );
   },
 );
 
-const QueryExport = observer(() => {
+const QuerySaveDialog = observer(() => {
   const editorStore = useQueryEditorStore();
-  const exportState = editorStore.exportState;
-  const close = (): void => editorStore.setExportState(undefined);
+  const saveAsState = editorStore.saveAsState;
+  const close = (): void => editorStore.setSaveAsState(undefined);
 
   return (
     <Dialog
-      open={Boolean(exportState)}
+      open={Boolean(saveAsState)}
       onClose={close}
       classes={{
         root: 'editor-modal__root-container',
@@ -165,8 +194,8 @@ const QueryExport = observer(() => {
       }}
     >
       <Modal darkMode={true} className="query-export">
-        <ModalHeader title="save query" />
-        {exportState && <QueryExportDialogContent exportState={exportState} />}
+        <ModalHeader title={'save new query'} />
+        {saveAsState && <QuerySaveAsDialogContent saveAsState={saveAsState} />}
       </Modal>
     </Dialog>
   );
@@ -179,6 +208,7 @@ const QueryLoader = observer(
   }) => {
     const { editorStore, queryBuilderState } = props;
     const applicationStore = useApplicationStore();
+
     const queryFinderRef = useRef<SelectComponent>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const [selectedQueryID, setSelectedQueryID] = useState('');
@@ -385,10 +415,22 @@ const QueryLoader = observer(
   },
 );
 
+const HelpMenuContentItemRenderer = (
+  props: HelpMenuEntry,
+): React.ReactElement => (
+  <MenuContentItem title={props.title ?? ''} onClick={props.onClick}>
+    {props.icon && <MenuContentItemIcon>{props.icon}</MenuContentItemIcon>}
+    <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+      {props.label}
+    </MenuContentItemLabel>
+  </MenuContentItem>
+);
+
 const QueryEditorHeaderContent = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const editorStore = useQueryEditorStore();
+    const renameState = editorStore.renameState;
     const applicationStore = useLegendQueryApplicationStore();
 
     // actions
@@ -396,6 +438,9 @@ const QueryEditorHeaderContent = observer(
       editorStore.queryLoaderState.setIsQueryLoaderOpen(true);
     };
     const viewProject = (): void => {
+      LegendQueryTelemetryHelper.logEvent_QueryViewProjectLaunched(
+        editorStore.applicationStore.telemetryService,
+      );
       const { groupId, artifactId, versionId } = editorStore.getProjectInfo();
       createViewProjectHandler(applicationStore)(
         groupId,
@@ -405,6 +450,9 @@ const QueryEditorHeaderContent = observer(
       );
     };
     const viewSDLCProject = (): void => {
+      LegendQueryTelemetryHelper.logEvent_QueryViewSdlcProjectLaunched(
+        editorStore.applicationStore.telemetryService,
+      );
       const { groupId, artifactId } = editorStore.getProjectInfo();
       createViewSDLCProjectHandler(
         applicationStore,
@@ -421,11 +469,58 @@ const QueryEditorHeaderContent = observer(
         { persist: true },
       );
     };
+
+    const renameRef = useRef<HTMLInputElement>(null);
+
+    const updateQuery = (): void => {
+      queryBuilderState
+        .saveQuery(async (lambda: RawLambda) => {
+          editorStore.setRenameState(
+            new QueryRenameState(
+              editorStore,
+              queryBuilderState,
+              lambda,
+              await editorStore.getExportConfiguration(lambda, {
+                update: true,
+              }),
+            ),
+          );
+        })
+        .then(() => {
+          renameRef.current?.select();
+        })
+        .catch(applicationStore.alertUnhandledError);
+    };
+
+    const renameQuery = applicationStore.guardUnhandledError(async () => {
+      await renameState?.persistRenameQuery();
+    });
+
     const saveQuery = (): void => {
       queryBuilderState
         .saveQuery(async (lambda: RawLambda) => {
-          editorStore.setExportState(
-            new QueryExportState(
+          editorStore.setSaveState(
+            new QuerySaveState(
+              editorStore,
+              queryBuilderState,
+              lambda,
+              await editorStore.getExportConfiguration(lambda, {
+                update: true,
+              }),
+            ),
+          );
+          editorStore.saveState
+            ?.persistSaveQuery()
+            .catch(applicationStore.alertUnhandledError);
+        })
+        .catch(applicationStore.alertUnhandledError);
+    };
+
+    const saveAsQuery = (): void => {
+      queryBuilderState
+        .saveQuery(async (lambda: RawLambda) => {
+          editorStore.setSaveAsState(
+            new QuerySaveAsState(
               editorStore,
               queryBuilderState,
               lambda,
@@ -436,26 +531,123 @@ const QueryEditorHeaderContent = observer(
         .catch(applicationStore.alertUnhandledError);
     };
 
+    const toggleAssistant = (): void =>
+      applicationStore.assistantService.toggleAssistant();
+
+    const queryDocEntry = applicationStore.documentationService.getDocEntry(
+      QUERY_DOCUMENTATION_KEY.TUTORIAL_QUERY_BUILDER,
+    );
+
+    const openQueryTutorial = (): void => {
+      if (queryDocEntry?.url) {
+        applicationStore.navigationService.navigator.visitAddress(
+          queryDocEntry.url,
+        );
+      }
+    };
+
+    const changeQueryName: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => renameState?.setQueryName(event.target.value);
+
+    const onEnter: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+      if (event.code === 'Enter') {
+        renameQuery();
+      }
+    };
+
+    const debouncedLoadQueries = useMemo(
+      () =>
+        debounce((input: string): void => {
+          flowResult(
+            renameState?.editorStore.searchExistingQueryName(input),
+          ).catch(applicationStore.alertUnhandledError);
+        }, 500),
+      [applicationStore, renameState?.editorStore],
+    );
+
+    useEffect(() => {
+      if (renameState && renameState.queryName !== editorStore.title) {
+        const searchText = renameState.queryName;
+        debouncedLoadQueries.cancel();
+        debouncedLoadQueries(searchText);
+      }
+    }, [
+      renameState,
+      debouncedLoadQueries,
+      editorStore.title,
+      renameState?.queryName,
+    ]);
+
+    const isExistingQueryName = renameState?.editorStore.existingQueryName;
+
+    const extraHelpMenuContentItems = applicationStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap((plugin) => plugin.getExtraHelpMenuEntries?.() ?? [])
+      .map((item) => <>{HelpMenuContentItemRenderer(item)}</>);
+
     return (
       <div className="query-editor__header__content">
-        <div className="query-editor__header__content__main" />
+        {renameState ? (
+          <div className="query-editor__header__content__main query-editor__header__content__title">
+            <PanelListItem>
+              <div className="input--with-validation">
+                <input
+                  title="Query title rename"
+                  ref={renameRef}
+                  className={clsx('input input--dark', {
+                    'input--caution': isExistingQueryName,
+                  })}
+                  onChange={changeQueryName}
+                  onKeyDown={onEnter}
+                  value={renameState.queryName}
+                  placeholder="Search"
+                />
+                {isExistingQueryName && (
+                  <div
+                    className="input--with-validation__caution"
+                    title={`Query named '${isExistingQueryName}' already exists`}
+                  >
+                    <ExclamationTriangleIcon className="input--with-validation__caution__indicator" />
+                  </div>
+                )}
+              </div>
+              <button
+                className={clsx('input__btn', {
+                  'btn--icon__caution': isExistingQueryName,
+                })}
+                onClick={renameQuery}
+                title="Rename Query"
+              >
+                <CheckIcon />
+              </button>
+            </PanelListItem>
+          </div>
+        ) : (
+          <div
+            className="query-editor__header__content__main query-editor__header__content__title"
+            title="Query title"
+          >
+            {editorStore.title}
+          </div>
+        )}
+
         <div className="query-editor__header__actions">
-          {editorStore instanceof ExistingQueryEditorStore &&
-            applicationStore.pluginManager
-              .getApplicationPlugins()
-              .flatMap(
-                (plugin) =>
-                  plugin.getExtraExistingQueryActionRendererConfiguration?.() ??
-                  [],
-              )
-              .map((actionConfig) => (
-                <Fragment key={actionConfig.key}>
-                  {actionConfig.renderer(editorStore, queryBuilderState)}
-                </Fragment>
-              ))}
-          <button
+          {applicationStore.pluginManager
+            .getApplicationPlugins()
+            .flatMap(
+              (plugin) =>
+                plugin.getExtraQueryEditorActionConfigurations?.(editorStore) ??
+                [],
+            )
+            .map((actionConfig) => (
+              <Fragment key={actionConfig.key}>
+                {actionConfig.renderer(editorStore, queryBuilderState)}
+              </Fragment>
+            ))}
+
+          <Button
             className="query-editor__header__action btn--dark"
-            tabIndex={-1}
             onClick={openQueryLoader}
             title="Load query..."
           >
@@ -463,22 +655,69 @@ const QueryEditorHeaderContent = observer(
             <div className="query-editor__header__action__label">
               Load Query
             </div>
-          </button>
+          </Button>
 
-          <button
+          <Button
             className="query-editor__header__action btn--dark"
-            tabIndex={-1}
-            disabled={editorStore.isSaveActionDisabled}
+            disabled={
+              editorStore.isSaveActionDisabled ||
+              !editorStore.title ||
+              queryBuilderState.saveQueryState.isInProgress
+            }
             onClick={saveQuery}
             title="Save query"
           >
-            <SaveIcon />
-
+            <SaveCurrIcon />
+            <div className="query-editor__header__action__label">Save</div>
+          </Button>
+          <Button
+            className="query-editor__header__action btn--dark"
+            disabled={editorStore.isSaveActionDisabled}
+            onClick={saveAsQuery}
+            title="Save as new query"
+          >
+            <SaveAsIcon />
             <div className="query-editor__header__action__label">
-              Save Query
+              Save As...
             </div>
-          </button>
+          </Button>
 
+          <DropdownMenu
+            className="query-editor__header__action btn--dark"
+            disabled={editorStore.isViewProjectActionDisabled}
+            content={
+              <MenuContent>
+                {extraHelpMenuContentItems}
+                {queryDocEntry && (
+                  <MenuContentItem onClick={openQueryTutorial}>
+                    <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                    <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                      Open Documentation
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                )}
+
+                <MenuContentItem onClick={toggleAssistant}>
+                  <MenuContentItemIcon>
+                    {!applicationStore.assistantService.isHidden ? (
+                      <CheckIcon />
+                    ) : null}
+                  </MenuContentItemIcon>
+                  <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                    Show Virtual Assistant
+                  </MenuContentItemLabel>
+                </MenuContentItem>
+              </MenuContent>
+            }
+          >
+            <div
+              className=" query-editor__header__action__label"
+              title="See more options"
+            >
+              Help
+            </div>
+            <CaretDownIcon />
+          </DropdownMenu>
           {editorStore.queryLoaderState.isQueryLoaderOpen && (
             <QueryLoader
               editorStore={editorStore}
@@ -512,14 +751,21 @@ const QueryEditorHeaderContent = observer(
                   disabled={editorStore.isViewProjectActionDisabled}
                   onClick={viewProject}
                 >
-                  Project
+                  Go to Project
                 </MenuContentItem>
                 <MenuContentItem
                   className="query-editor__header__action__options"
                   disabled={editorStore.isViewProjectActionDisabled}
                   onClick={viewSDLCProject}
                 >
-                  SDLC project
+                  Go to SDLC project
+                </MenuContentItem>
+                <MenuContentItem
+                  className="query-editor__header__action__options"
+                  onClick={updateQuery}
+                  disabled={!editorStore.title}
+                >
+                  Rename Query
                 </MenuContentItem>
               </MenuContent>
             }
@@ -528,12 +774,12 @@ const QueryEditorHeaderContent = observer(
               className="query-editor__header__action__label"
               title="See more options"
             >
-              Go to...
+              More Actions...
             </div>
             <CaretDownIcon />
           </DropdownMenu>
 
-          {editorStore.exportState && <QueryExport />}
+          {editorStore.saveAsState && <QuerySaveDialog />}
         </div>
       </div>
     );

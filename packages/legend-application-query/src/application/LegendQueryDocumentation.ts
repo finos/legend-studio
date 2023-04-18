@@ -14,14 +14,6 @@
  * limitations under the License.
  */
 
-export enum LEGEND_QUERY_APP_EVENT {
-  // TODO: split this into specific events
-  GENERIC_FAILURE = 'application.failure.generic',
-
-  VIEW_QUERY__SUCCESS = 'query-editor.view-query.success',
-  CREATE_QUERY__SUCCESS = 'query-editor.create-query.success',
-  UPDATE_QUERY__SUCCESS = 'query-editor.update-query.success',
-
-  VIEW_PROJECT__LAUNCH = 'query-editor.view-project.launch',
-  VIEW_SDLC_PROJECT__LAUNCH = 'query-editor.view-sdlc-project.launch',
+export enum QUERY_DOCUMENTATION_KEY {
+  TUTORIAL_QUERY_BUILDER = 'tutorial.query.builder',
 }

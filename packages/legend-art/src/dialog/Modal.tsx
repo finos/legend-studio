@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { toTitleCase } from '@finos/legend-shared';
+import { prettyCONSTName, toTitleCase } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 import { generateSimpleDIVComponent } from '../utils/ComponentCreatorUtils.js';
 
@@ -117,7 +117,6 @@ export const ModalFooterButton: React.FC<{
     >
       {inProgressText ? prettyCONSTName(inProgressText) : prettyCONSTName(text)}
       {children}
-      {buttonText}
     </button>
   );
 };

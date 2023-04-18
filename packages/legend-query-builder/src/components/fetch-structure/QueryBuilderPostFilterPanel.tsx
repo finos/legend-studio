@@ -44,6 +44,9 @@ import {
   useDragPreviewLayer,
   BlankPanelContent,
   PanelContent,
+  MoreVerticalIcon,
+  MenuContentItemIcon,
+  MenuContentItemLabel,
 } from '@finos/legend-art';
 import {
   type ValueSpecification,
@@ -97,6 +100,7 @@ import {
   QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
 } from '../../stores/fetch-structure/tds/window/QueryBuilderWindowState.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
+import { QueryBuilderTelemetryHelper } from '../../application/QueryBuilderTelemetryHelper.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
   forwardRef<
@@ -765,22 +769,37 @@ const QueryBuilderPostFilterPanelContent = observer(
     const rootNode = postFilterState.getRootNode();
     // actions
     const collapseTree = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_PostFilterCollapseTreeLaunched(
+        applicationStore.telemetryService,
+      );
       postFilterState.setSelectedNode(undefined);
       postFilterState.collapseTree();
     };
     const expandTree = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_PostFilterExpandTreeLaunched(
+        applicationStore.telemetryService,
+      );
       postFilterState.setSelectedNode(undefined);
       postFilterState.expandTree();
     };
     const pruneTree = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_PostFilterCleanupTreeLaunched(
+        applicationStore.telemetryService,
+      );
       postFilterState.suppressClickawayEventListener();
       postFilterState.pruneTree();
     };
     const simplifyTree = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_PostFilterSimplifyTreeLaunched(
+        applicationStore.telemetryService,
+      );
       postFilterState.suppressClickawayEventListener();
       postFilterState.simplifyTree();
     };
     const createCondition = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_PostFilterCreateConditionLaunched(
+        applicationStore.telemetryService,
+      );
       postFilterState.suppressClickawayEventListener();
       postFilterState.addNodeFromNode(
         new QueryBuilderPostFilterTreeBlankConditionNodeData(undefined),
@@ -794,6 +813,9 @@ const QueryBuilderPostFilterPanelContent = observer(
           rootNode instanceof QueryBuilderPostFilterTreeGroupNodeData)); // or if it is the root note, it has to be a group node
 
     const createGroupCondition = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_PostFilterCreateLogicalGroupLaunched(
+        applicationStore.telemetryService,
+      );
       postFilterState.suppressClickawayEventListener();
       if (allowGroupCreation) {
         postFilterState.addGroupConditionNodeFromNode(
@@ -802,6 +824,9 @@ const QueryBuilderPostFilterPanelContent = observer(
       }
     };
     const newGroupWithCondition = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_PostFilterCreateGroupFromConditionLaunched(
+        applicationStore.telemetryService,
+      );
       postFilterState.suppressClickawayEventListener();
       if (
         postFilterState.selectedNode instanceof
@@ -889,69 +914,80 @@ const QueryBuilderPostFilterPanelContent = observer(
             <div className="panel__header__title__label">post-filter</div>
           </div>
           <div className="panel__header__actions">
-            <button
+            <DropdownMenu
               className="panel__header__action"
-              onClick={createCondition}
-              tabIndex={-1}
-              title="Create Condition"
-            >
-              <PlusIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              disabled={
-                !(
-                  postFilterState.selectedNode instanceof
-                  QueryBuilderPostFilterTreeConditionNodeData
-                )
+              title="Show Filter Options Menu..."
+              content={
+                <MenuContent>
+                  <MenuContentItem onClick={createCondition}>
+                    <MenuContentItemIcon>
+                      <PlusIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      Create Condition
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                  <MenuContentItem
+                    disabled={
+                      !(
+                        postFilterState.selectedNode instanceof
+                        QueryBuilderPostFilterTreeConditionNodeData
+                      )
+                    }
+                    onClick={newGroupWithCondition}
+                  >
+                    <MenuContentItemIcon>
+                      <PlusCircleIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      Create Group From Condition
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                  <MenuContentItem
+                    disabled={!allowGroupCreation}
+                    title={
+                      !allowGroupCreation
+                        ? 'Please select a filter node first to create logical group'
+                        : ''
+                    }
+                    onClick={createGroupCondition}
+                  >
+                    <MenuContentItemIcon>
+                      <NewFolderIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      Create Logical Group
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                  <MenuContentItem onClick={pruneTree}>
+                    <MenuContentItemIcon>
+                      <TrashIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>Cleanup Tree</MenuContentItemLabel>
+                  </MenuContentItem>
+                  <MenuContentItem onClick={simplifyTree}>
+                    <MenuContentItemIcon>
+                      <CircleIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>Simplify Tree</MenuContentItemLabel>
+                  </MenuContentItem>
+                  <MenuContentItem onClick={collapseTree}>
+                    <MenuContentItemIcon>
+                      <CompressIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>Collapse Tree</MenuContentItemLabel>
+                  </MenuContentItem>
+                  <MenuContentItem onClick={expandTree}>
+                    <MenuContentItemIcon>
+                      <ExpandIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>Expand Tree</MenuContentItemLabel>
+                  </MenuContentItem>
+                </MenuContent>
               }
-              onClick={newGroupWithCondition}
-              tabIndex={-1}
-              title="Create Group From Condition"
             >
-              <PlusCircleIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              disabled={!allowGroupCreation}
-              onClick={createGroupCondition}
-              tabIndex={-1}
-              title="Create Logical Group"
-            >
-              <NewFolderIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              onClick={pruneTree}
-              tabIndex={-1}
-              title="Cleanup Tree"
-            >
-              <TrashIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              onClick={simplifyTree}
-              tabIndex={-1}
-              title="Simplify Tree"
-            >
-              <CircleIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              onClick={collapseTree}
-              tabIndex={-1}
-              title="Collapse Tree"
-            >
-              <CompressIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              onClick={expandTree}
-              tabIndex={-1}
-              title="Expand Tree"
-            >
-              <ExpandIcon />
-            </button>
+              <MoreVerticalIcon className="query-builder__icon__more-options" />
+            </DropdownMenu>
           </div>
         </div>
         <PanelContent>

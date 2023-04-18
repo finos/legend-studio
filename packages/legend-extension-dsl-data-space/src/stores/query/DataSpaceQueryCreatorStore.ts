@@ -22,10 +22,11 @@ import {
   PackageableElementExplicitReference,
   type Runtime,
   type Class,
+  type RawLambda,
 } from '@finos/legend-graph';
 import {
   QueryEditorStore,
-  type QueryExportConfiguration,
+  type QueryPersistConfiguration,
   type LegendQueryApplicationStore,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
@@ -236,11 +237,16 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     return queryBuilderState;
   }
 
-  async getExportConfiguration(): Promise<QueryExportConfiguration> {
+  async getExportConfiguration(
+    lambda: RawLambda,
+    options?: { update?: boolean | undefined },
+  ): Promise<QueryPersistConfiguration> {
     return {
-      defaultName: `New Query for ${extractElementNameFromPath(
-        this.dataSpacePath,
-      )}[${this.executionContext}]`,
+      defaultName: options?.update
+        ? `${extractElementNameFromPath(this.dataSpacePath)}`
+        : `New Query for ${extractElementNameFromPath(this.dataSpacePath)}[${
+            this.executionContext
+          }]`,
       decorator: (query: Query): void => {
         query.id = uuid();
         query.groupId = this.groupId;

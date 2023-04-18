@@ -61,12 +61,6 @@
     flex: 1;
   }
 
-  &__sub-header__query__title {
-    color: var(--color-light-grey-180);
-    margin: 0 1rem;
-    flex: 1;
-  }
-
   &__sub-header__custom-action {
     @include flexCenter;
 

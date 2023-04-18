@@ -20,13 +20,24 @@ import { TimesCircleIcon } from '../icon/Icon.js';
 export const InputWithInlineValidation: React.FC<
   React.InputHTMLAttributes<HTMLInputElement> & {
     validationErrorMessage?: string | undefined;
+    validationCautionMessage?: string | undefined;
   }
 > = (props) => {
-  const { validationErrorMessage, className, ...inputProps } = props;
+  const {
+    validationErrorMessage,
+    validationCautionMessage,
+    className,
+    ...inputProps
+  } = props;
+
+  const showCautionMessage =
+    Boolean(validationCautionMessage) && !validationErrorMessage;
+
   return (
     <div className="input--with-validation">
       <input
         className={clsx(className, {
+          'input--caution': showCautionMessage,
           'input--with-validation--error': Boolean(validationErrorMessage),
         })}
         {...inputProps}
@@ -37,6 +48,14 @@ export const InputWithInlineValidation: React.FC<
           title={validationErrorMessage}
         >
           <TimesCircleIcon className="input--with-validation__error__indicator" />
+        </div>
+      )}
+      {showCautionMessage && (
+        <div
+          className="input--with-validation_caution"
+          title={validationCautionMessage}
+        >
+          <TimesCircleIcon className="input--with-validation_caution__indicator" />
         </div>
       )}
     </div>
