@@ -68,7 +68,7 @@ export type DocumentationEntryData = {
 };
 
 export class DocumentationEntry {
-  readonly _documentationKey!: string;
+  readonly key!: string;
 
   markdownText?: MarkdownText | undefined;
   title?: string | undefined;
@@ -94,8 +94,7 @@ export class DocumentationEntry {
     documentationKey: string,
   ): DocumentationEntry {
     const entry = DocumentationEntry.serialization.fromJson(json);
-    (entry as Writable<DocumentationEntry>)._documentationKey =
-      documentationKey;
+    (entry as Writable<DocumentationEntry>).key = documentationKey;
     return entry;
   }
 }
@@ -261,7 +260,7 @@ export class DocumentationService {
   publishContextualDocIndex(): ContextualDocumentationConfig {
     const result: ContextualDocumentationConfig = {};
     this.contextualDocIndex.forEach((value, key) => {
-      result[key] = value._documentationKey;
+      result[key] = value.key;
     });
     return result;
   }

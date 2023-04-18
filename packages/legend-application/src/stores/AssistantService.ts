@@ -24,8 +24,8 @@ import {
   isNonNullable,
   ActionState,
   FuzzySearchEngine,
+  FuzzySearchAdvancedConfigState,
 } from '@finos/legend-shared';
-import { FuzzySearchAdvancedConfigState } from './shared/FuzzySearchAdvancedConfigState.js';
 
 export enum VIRTUAL_ASSISTANT_TAB {
   SEARCH = 'SEARCH',
@@ -48,7 +48,7 @@ export class VirtualAssistantDocumentationEntry {
       setIsOpen: action,
     });
 
-    this.documentationKey = docEntry._documentationKey;
+    this.documentationKey = docEntry.key;
     this.title = guaranteeNonEmptyString(docEntry.title);
     this.content = docEntry.markdownText ?? docEntry.text;
     this.url = docEntry.url;
@@ -211,19 +211,30 @@ export class AssistantService {
       : undefined;
   }
 
-  openDocumentationEntry(docKey: string): void {
-    const matchingDocEntry = this.applicationStore.documentationService
-      .getAllDocEntries()
-      .find((entry) => entry._documentationKey === docKey);
+  openDocumentationEntry(key: string): void {
+    const entry = this.applicationStore.documentationService.getDocEntry(key);
 
-    if (matchingDocEntry) {
+    if (entry) {
       this.setIsOpen(true);
       this.setIsHidden(false);
       this.currentDocumentationEntry = new VirtualAssistantDocumentationEntry(
-        matchingDocEntry,
+        entry,
       );
       this.currentDocumentationEntry.setIsOpen(true);
       this.resetSearch();
+    }
+  }
+
+  openDocumentationEntryLink(key: string): void {
+    const entry = this.applicationStore.documentationService.getDocEntry(key);
+    if (entry) {
+      if (shouldDisplayVirtualAssistantDocumentationEntry(entry)) {
+        this.openDocumentationEntry(entry.key);
+      } else if (entry.url) {
+        this.applicationStore.navigationService.navigator.visitAddress(
+          entry.url,
+        );
+      }
     }
   }
 

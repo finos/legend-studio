@@ -401,6 +401,36 @@
     }
   }
 
+  &__input__advanced-config__panel {
+    width: 100%;
+    background: var(--color-dark-grey-250);
+
+    &__header__label {
+      @include flexVCenter;
+
+      font-weight: 500;
+      color: var(--color-light-grey-50);
+      background: var(--color-dark-grey-300);
+      padding: 0 1rem;
+      line-height: 2rem;
+      font-size: 1.2rem;
+      cursor: default;
+      user-select: none;
+    }
+
+    &__header__label__hint {
+      display: inline-flex;
+      align-self: center;
+      color: var(--color-dark-grey-500);
+      cursor: pointer;
+      margin-left: 0.5rem;
+
+      svg {
+        font-size: 1.2rem;
+      }
+    }
+  }
+
   &__content {
     height: calc(100% - 3.4rem);
     position: relative;

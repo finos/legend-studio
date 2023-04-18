@@ -477,7 +477,7 @@ export const ProjectConfigurationEditor = observer(() => {
               )
             ) {
               applicationStore.assistantService.openDocumentationEntry(
-                documentationEntry._documentationKey,
+                documentationEntry.key,
               );
             } else if (documentationEntry.url) {
               applicationStore.navigationService.navigator.visitAddress(

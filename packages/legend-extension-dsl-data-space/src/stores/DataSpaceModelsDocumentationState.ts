@@ -16,13 +16,13 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataSpaceViewerState } from './DataSpaceViewerState.js';
-import { FuzzySearchAdvancedConfigState } from '@finos/legend-application/components';
 import { type TreeData, type TreeNodeData } from '@finos/legend-art';
 import {
   ActionState,
   filterByType,
   guaranteeNonNullable,
   FuzzySearchEngine,
+  FuzzySearchAdvancedConfigState,
 } from '@finos/legend-shared';
 import {
   DataSpaceAssociationDocumentationEntry,

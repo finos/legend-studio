@@ -23,15 +23,13 @@ import {
 } from '@finos/legend-art';
 import { isValidUrl } from '@finos/legend-shared';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import { observe_TEMPORARY__AbstractEngineConfig } from '@finos/legend-graph';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../../application/LegendStudioSetting.js';
 
 export const DevToolPanel = observer(() => {
   const editorStore = useEditorStore();
   // Engine
-  const engineConfig = observe_TEMPORARY__AbstractEngineConfig(
-    editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig(),
-  );
+  const engineConfig =
+    editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
   const toggleEngineClientRequestPayloadCompression = (): void =>
     engineConfig.setUseClientRequestPayloadCompression(
       !engineConfig.useClientRequestPayloadCompression,

@@ -32,17 +32,9 @@ export const DocumentationLink: React.FC<{
   ): void => {
     event.preventDefault();
     event.stopPropagation();
-    if (documentationEntry) {
-      if (shouldDisplayVirtualAssistantDocumentationEntry(documentationEntry)) {
-        applicationStore.assistantService.openDocumentationEntry(
-          documentationKey,
-        );
-      } else if (documentationEntry.url) {
-        applicationStore.navigationService.navigator.visitAddress(
-          documentationEntry.url,
-        );
-      }
-    }
+    applicationStore.assistantService.openDocumentationEntryLink(
+      documentationKey,
+    );
   };
 
   if (

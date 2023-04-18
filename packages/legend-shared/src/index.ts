@@ -48,3 +48,4 @@ export * from './log/LogService.js';
 export * from './log/WebConsole.js';
 
 export * from './search/FuzzySearch.js';
+export * from './search/FuzzySearchAdvancedConfigState.js';

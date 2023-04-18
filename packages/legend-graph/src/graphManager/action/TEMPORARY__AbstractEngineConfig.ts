@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { action, makeObservable, observable } from 'mobx';
+
 const DEFAULT_TAB_SIZE = 2;
 
 /**
@@ -27,6 +29,21 @@ export class TEMPORARY__AbstractEngineConfig {
   baseUrl?: string | undefined;
   useClientRequestPayloadCompression = false;
   useBase64ForAdhocConnectionDataUrls = false;
+
+  constructor() {
+    makeObservable(this, {
+      env: observable,
+      currentUserId: observable,
+      baseUrl: observable,
+      useClientRequestPayloadCompression: observable,
+      useBase64ForAdhocConnectionDataUrls: observable,
+      setEnv: action,
+      setCurrentUserId: action,
+      setBaseUrl: action,
+      setUseClientRequestPayloadCompression: action,
+      setUseBase64ForAdhocConnectionDataUrls: action,
+    });
+  }
 
   setEnv(val: string | undefined): void {
     this.env = val;

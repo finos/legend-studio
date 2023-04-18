@@ -20,4 +20,3 @@ export * from './components/shared/TabManager.js';
 export * from './stores/shared/TabManagerState.js';
 
 export * from './components/shared/FuzzySearchAdvancedConfigMenu.js';
-export * from './stores/shared/FuzzySearchAdvancedConfigState.js';

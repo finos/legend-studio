@@ -329,8 +329,6 @@ export * from './graphManager/action/changeDetection/DSL_Service_ObserverHelper.
 export * from './graphManager/action/changeDetection/DSL_Generation_ObserverHelper.js';
 export * from './graphManager/action/changeDetection/Testable_ObserverHelper.js';
 
-export * from './graphManager/action/changeDetection/EngineObserverHelper.js';
-
 // ------------------------------------- DSL Data --------------------------------------------
 
 export { DataElement } from './graph/metamodel/pure/packageableElements/data/DataElement.js';
