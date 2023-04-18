@@ -1,5 +1,11 @@
 # @finos/legend-server-sdlc
 
+## 5.0.0
+
+### Major Changes
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `React`-style component provider for the server clients as well as their respective mocking/testing utilities.
+
 ## 4.1.37
 
 ## 4.1.36

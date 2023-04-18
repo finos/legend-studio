@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.0.0
+
+### Major Changes
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Partition exports into separate paths, `/graph` for graph and graph manager extensions, `/application` for generic application extensions, `/application-studio` for `Legend Studio` specific application extensions, and `/application-query` for `Legend Query` specific application extensions.
+
+### Patch Changes
+
+- [#2123](https://github.com/finos/legend-studio/pull/2123) [`dbade2d38`](https://github.com/finos/legend-studio/commit/dbade2d3890e42e8a20c9f95a1bdb2032b9d4a38) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Utilize the latest engine store entitlement APIs
+
 ## 9.2.9
 
 ## 9.2.8

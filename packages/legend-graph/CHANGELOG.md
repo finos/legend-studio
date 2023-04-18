@@ -1,5 +1,17 @@
 # @finos/legend-graph
 
+## 28.0.0
+
+### Major Changes
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `getExtraPureGrammarParserNames()`, `getExtraPureGrammarKeywords()` and `getExtraPureGrammarElementLabelers()` out of `@finos/legend-graph` and into `@finos/legend-application-studio`'s `DSL_LegendStudioApplicationPlugin_Extension`.
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Moved all test utils to a separate export path `@finos/legend-graph/test`.
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `GraphManagerState` has now been simplified, utilities methods have been moved to `AbstractPureGraphManager`.
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Duration, time, TDS, serialization config Pure paths and supported functions have now been moved to `@finos/legend-query-builder`.
+
 ## 27.0.3
 
 ## 27.0.2
