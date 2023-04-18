@@ -321,6 +321,7 @@ const LambdaEditorInline = observer(
       }
     }
 
+    // dispose editor
     useEffect(
       () => (): void => {
         if (editor) {
@@ -330,7 +331,7 @@ const LambdaEditorInline = observer(
         onDidFocusEditorWidgetDisposer.current?.dispose();
       },
       [editor],
-    ); // dispose editor
+    );
 
     return (
       <>
@@ -561,6 +562,7 @@ const LambdaEditorPopUp = observer(
       ).catch(applicationStore.alertUnhandledError);
     }, [applicationStore, lambdaEditorState]);
 
+    // dispose editor
     useEffect(
       () => (): void => {
         if (editor) {
@@ -569,7 +571,7 @@ const LambdaEditorPopUp = observer(
         onDidChangeModelContentEventDisposer.current?.dispose();
       },
       [editor],
-    ); // dispose editor
+    );
 
     return (
       <Dialog

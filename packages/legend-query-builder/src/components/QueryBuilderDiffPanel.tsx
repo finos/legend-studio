@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  DEFAULT_TAB_SIZE,
-  useApplicationStore,
-} from '@finos/legend-application';
-import { clsx, Dialog, useResizeDetector, Button } from '@finos/legend-art';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
+import { clsx, Dialog, Button } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { editor as monacoEditorAPI } from 'monaco-editor';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import {
   type QueryBuilderDiffViewState,
   QueryBuilderDiffViewMode,
@@ -29,74 +25,9 @@ import {
 import { pruneSourceInformation } from '@finos/legend-graph';
 import {
   CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
-  disposeDiffCodeEditor,
-  getBaseCodeEditorOptions,
+  CodeDiffView,
+  JSONDiffView,
 } from '@finos/legend-lego/code-editor';
-
-const TextDiffView = observer(
-  (props: {
-    language: CODE_EDITOR_LANGUAGE;
-    from?: string | undefined;
-    to?: string | undefined;
-  }) => {
-    const { from, to, language } = props;
-    const applicationStore = useApplicationStore();
-    const [editor, setEditor] =
-      useState<monacoEditorAPI.IStandaloneDiffEditor>();
-    const editorRef = useRef<HTMLDivElement>(null);
-    const originalText = from ?? '';
-    const modifiedText = to ?? '';
-
-    const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-
-    useEffect(() => {
-      if (width !== undefined && height !== undefined) {
-        editor?.layout({ width, height });
-      }
-    }, [editor, width, height]);
-
-    useEffect(() => {
-      if (!editor && editorRef.current) {
-        const element = editorRef.current;
-        const _editor = monacoEditorAPI.createDiffEditor(element, {
-          ...getBaseCodeEditorOptions(),
-          theme: applicationStore.layoutService
-            .TEMPORARY__isLightColorThemeEnabled
-            ? CODE_EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
-            : CODE_EDITOR_THEME.LEGEND,
-          readOnly: true,
-          wordWrap: 'on',
-        });
-        setEditor(_editor);
-      }
-    }, [applicationStore, editor]);
-
-    if (editor) {
-      const originalModel = monacoEditorAPI.createModel(originalText, language);
-      const modifiedModel = monacoEditorAPI.createModel(modifiedText, language);
-      editor.setModel({
-        original: originalModel,
-        modified: modifiedModel,
-      });
-    }
-
-    useEffect(
-      () => (): void => {
-        if (editor) {
-          disposeDiffCodeEditor(editor);
-        }
-      },
-      [editor],
-    ); // dispose editor
-
-    return (
-      <div ref={ref} className="code-editor__container">
-        <div className="code-editor__body" ref={editorRef} />
-      </div>
-    );
-  },
-);
 
 export const QueryBuilderDiffViewPanel = observer(
   (props: { diffViewState: QueryBuilderDiffViewState }) => {
@@ -149,15 +80,14 @@ export const QueryBuilderDiffViewPanel = observer(
             </div>
             <div className="query-builder__diff-panel__content">
               {diffViewState.mode === QueryBuilderDiffViewMode.GRAMMAR && (
-                <TextDiffView
+                <CodeDiffView
                   language={CODE_EDITOR_LANGUAGE.PURE}
                   from={fromGrammarText}
                   to={toGrammarText}
                 />
               )}
               {diffViewState.mode === QueryBuilderDiffViewMode.JSON && (
-                <TextDiffView
-                  language={CODE_EDITOR_LANGUAGE.JSON}
+                <JSONDiffView
                   from={JSON.stringify(
                     {
                       parameters: diffViewState.initialQuery.parameters

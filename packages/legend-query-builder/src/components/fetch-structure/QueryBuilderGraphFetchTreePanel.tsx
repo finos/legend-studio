@@ -74,7 +74,6 @@ import {
   SERIALIZATION_TYPE,
   type QueryBuilderGraphFetchTreeState,
 } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
-import { getClassPropertyIcon } from '../shared/ElementIconUtils.js';
 import { QueryBuilderTextEditorMode } from '../../stores/QueryBuilderTextEditorState.js';
 import {
   type PackageableElement,
@@ -88,6 +87,7 @@ import {
 } from '@finos/legend-application';
 import {
   buildElementOption,
+  getClassPropertyIcon,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
 

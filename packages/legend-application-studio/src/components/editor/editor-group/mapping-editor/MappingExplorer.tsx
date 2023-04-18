@@ -52,7 +52,7 @@ import {
   getMappingElementLabel,
 } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
-import { getElementIcon } from '../../../shared/ElementIconUtils.js';
+import { getElementIcon } from '../../../ElementIconUtils.js';
 import { NewMappingElementModal } from './NewMappingElementModal.js';
 import { MappingElementDecorator } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
 import { flowResult } from 'mobx';

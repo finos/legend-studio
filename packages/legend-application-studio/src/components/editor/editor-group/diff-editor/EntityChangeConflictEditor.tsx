@@ -58,8 +58,8 @@ import {
   clearMarkers,
   CODE_EDITOR_THEME,
   CODE_EDITOR_LANGUAGE,
+  CodeDiffView,
 } from '@finos/legend-lego/code-editor';
-import { TextDiffView } from '../../../shared/DiffView.js';
 import { getPrettyLabelForRevision } from '../../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { flowResult } from 'mobx';
 import type { EntityChangeConflict } from '@finos/legend-server-sdlc';
@@ -575,6 +575,7 @@ const MergeConflictEditor = observer(
       conflictEditorState.currentMergeEditorConflict,
     ]);
 
+    // dispose editor
     useEffect(
       () => (): void => {
         if (editor) {
@@ -587,7 +588,7 @@ const MergeConflictEditor = observer(
         mergeConflictResolutionCodeLensDisposer.current?.dispose();
       },
       [editor],
-    ); // dispose editor
+    );
 
     return (
       <div ref={ref} className="code-editor__container">
@@ -765,7 +766,7 @@ export const EntityChangeConflictEditor = observer(
           )}
           {currentMode !==
             ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE.MERGE_VIEW && (
-            <TextDiffView
+            <CodeDiffView
               language={CODE_EDITOR_LANGUAGE.PURE}
               from={currentModeComparisonViewInfo.fromGrammarText ?? ''}
               to={currentModeComparisonViewInfo.toGrammarText ?? ''}

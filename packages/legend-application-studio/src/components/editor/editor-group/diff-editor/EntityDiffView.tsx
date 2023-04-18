@@ -20,7 +20,6 @@ import {
   type EntityDiffViewState,
   DIFF_VIEW_MODE,
 } from '../../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
-import { TextDiffView, JsonDiffView } from '../../../shared/DiffView.js';
 import { clsx, GoToFileIcon, CompareIcon } from '@finos/legend-art';
 import { getPrettyLabelForRevision } from '../../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { flowResult } from 'mobx';
@@ -28,7 +27,11 @@ import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { sortObjectKeys } from '@finos/legend-shared';
-import { CODE_EDITOR_LANGUAGE } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeDiffView,
+  JSONDiffView,
+} from '@finos/legend-lego/code-editor';
 
 const getDiffItemTitle = (diff: EntityDiff): string | undefined => {
   switch (diff.entityChangeType) {
@@ -150,14 +153,14 @@ export const EntityDiffView = observer(
         </div>
         <div className="entity-diff-view__content">
           {diffEditorState.diffMode === DIFF_VIEW_MODE.GRAMMAR && (
-            <TextDiffView
+            <CodeDiffView
               language={CODE_EDITOR_LANGUAGE.PURE}
               from={fromGrammarText}
               to={toGrammarText}
             />
           )}
           {diffEditorState.diffMode === DIFF_VIEW_MODE.JSON && (
-            <JsonDiffView
+            <JSONDiffView
               from={
                 fromEntity?.content
                   ? sortObjectKeys(fromEntity.content)

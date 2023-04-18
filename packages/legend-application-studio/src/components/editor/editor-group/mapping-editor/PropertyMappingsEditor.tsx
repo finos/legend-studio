@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { PurePropertyMappingEditor } from './PurePropertyMappingEditor.js';
-import { getElementIcon } from '../../../shared/ElementIconUtils.js';
+import { getElementIcon } from '../../../ElementIconUtils.js';
 import {
   type MappingElement,
   MappingEditorState,

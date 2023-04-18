@@ -44,7 +44,7 @@ import {
 import { useCallback, useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import { getElementIcon } from '../../../shared/ElementIconUtils.js';
+import { getElementIcon } from '../../../ElementIconUtils.js';
 import {
   CORE_DND_TYPE,
   type ElementDragSource,

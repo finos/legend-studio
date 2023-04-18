@@ -73,13 +73,13 @@ import {
 } from '../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import type { STO_ProjectOverview_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/STO_ProjectOverview_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
-import { TextDiffView } from '../../../shared/DiffView.js';
-import { getElementTypeIcon } from '../../../shared/ElementIconUtils.js';
+import { getElementTypeIcon } from '../../../ElementIconUtils.js';
 import { UnsupportedEditorPanel } from '../../editor-group/UnsupportedElementEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
+  CodeDiffView,
 } from '@finos/legend-lego/code-editor';
 
 export const getTestableResultIcon = (
@@ -200,7 +200,7 @@ const TestFailViewer = observer(
               />
             )}
             {failure instanceof EqualToJsonAssertFail && (
-              <TextDiffView
+              <CodeDiffView
                 language={CODE_EDITOR_LANGUAGE.JSON}
                 from={failure.expected}
                 to={failure.actual}

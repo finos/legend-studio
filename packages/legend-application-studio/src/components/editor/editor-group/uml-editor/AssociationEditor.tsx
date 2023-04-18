@@ -45,7 +45,7 @@ import {
   Panel,
   InfoCircleIcon,
 } from '@finos/legend-art';
-import { getElementIcon } from '../../../shared/ElementIconUtils.js';
+import { getElementIcon } from '../../../ElementIconUtils.js';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import {

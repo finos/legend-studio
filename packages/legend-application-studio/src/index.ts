@@ -82,7 +82,7 @@ export {
 export * from './stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 export { MappingElementState } from './stores/editor/editor-state/element-editor-state/mapping/MappingElementState.js';
 export { UnsupportedInstanceSetImplementationState } from './stores/editor/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
-export { getElementIcon } from './components/shared/ElementIconUtils.js';
+export { getElementIcon } from './components/ElementIconUtils.js';
 
 // --------------------------------------------- DSL --------------------------------------------------
 /**

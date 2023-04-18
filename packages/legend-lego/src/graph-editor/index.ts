@@ -15,3 +15,4 @@
  */
 
 export * from './PackageableElementOption.js';
+export * from './ElementIconUtils.js';

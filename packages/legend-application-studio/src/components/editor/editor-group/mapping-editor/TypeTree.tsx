@@ -36,7 +36,6 @@ import {
   TypeDragSource,
   CORE_DND_TYPE,
 } from '../../../../stores/editor/utils/DnDUtils.js';
-import { getClassPropertyIcon } from '../../../shared/ElementIconUtils.js';
 import type { TypeTreeNodeData } from '../../../../stores/editor/utils/TreeUtils.js';
 import {
   type Type,
@@ -54,6 +53,7 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '../../../../stores/editor/utils/ModelClassifierUtils.js';
+import { getClassPropertyIcon } from '@finos/legend-lego/graph-editor';
 
 const getEnumTypeTreeNodeData = (
   _enum: Enum,

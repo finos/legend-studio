@@ -46,11 +46,11 @@ import {
 } from '../../../../stores/editor/editor-state/element-editor-state/testable/TestAssertionState.js';
 import { externalFormatData_setData } from '../../../../stores/editor/utils/modifier/DSL_Data_GraphModifierHelper.js';
 import { TESTABLE_RESULT } from '../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
-import { JsonDiffView } from '../../../shared/DiffView.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
+  JSONDiffView,
 } from '@finos/legend-lego/code-editor';
 
 const EqualToJsonAsssertionEditor = observer(
@@ -137,7 +137,7 @@ const EqualToJsonAssertFailViewer = observer(
                 </div>
               </ModalHeader>
               <ModalBody>
-                <JsonDiffView
+                <JSONDiffView
                   from={equalToJsonAssertFailState.status.expected}
                   to={equalToJsonAssertFailState.status.actual}
                 />

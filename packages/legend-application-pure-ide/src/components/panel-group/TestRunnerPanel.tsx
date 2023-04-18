@@ -474,6 +474,7 @@ const TestResultConsole: React.FC<{
     }
   }, [editor, wrapText]);
 
+  // dispose editor
   useEffect(
     () => (): void => {
       if (editor) {
@@ -483,7 +484,7 @@ const TestResultConsole: React.FC<{
       locationLinkProviderDisposer.current?.dispose();
     },
     [editor],
-  ); // dispose editor
+  );
 
   return (
     <div ref={ref} className="code-editor__container">

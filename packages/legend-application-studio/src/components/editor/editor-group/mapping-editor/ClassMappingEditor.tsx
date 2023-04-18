@@ -24,7 +24,7 @@ import {
   EmptySquareIcon,
   CheckSquareIcon,
 } from '@finos/legend-art';
-import { getElementTypeIcon } from '../../../shared/ElementIconUtils.js';
+import { getElementTypeIcon } from '../../../ElementIconUtils.js';
 import { MappingEditorState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {

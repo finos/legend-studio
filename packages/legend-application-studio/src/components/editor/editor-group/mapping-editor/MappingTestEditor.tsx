@@ -25,7 +25,6 @@ import {
   MappingTestExpectedOutputAssertionState,
   MappingTestRelationalInputDataState,
 } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTestState.js';
-import { JsonDiffView } from '../../../shared/DiffView.js';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -97,6 +96,7 @@ import { MappingExecutionQueryBuilderState } from '../../../../stores/editor/edi
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
+  JSONDiffView,
 } from '@finos/legend-lego/code-editor';
 
 const MappingTestQueryEditor = observer(
@@ -875,7 +875,7 @@ export const MappingTestEditor = observer(
                   {testState.assertionState instanceof
                     MappingTestExpectedOutputAssertionState && (
                     <div className="mapping-test-editor__result__diff">
-                      <JsonDiffView
+                      <JSONDiffView
                         from={testState.assertionState.expectedResult} // expected
                         to={testState.testExecutionResultText} // actual
                         lossless={true}

@@ -29,13 +29,12 @@ import {
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
 import {
-  CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
   disposeDiffCodeEditor,
   getBaseCodeEditorOptions,
-} from '@finos/legend-lego/code-editor';
+} from './CodeEditorUtils.js';
+import { CODE_EDITOR_LANGUAGE, CODE_EDITOR_THEME } from './CodeEditorConfig.js';
 
-export const TextDiffView = observer(
+export const CodeDiffView = observer(
   (props: {
     language: CODE_EDITOR_LANGUAGE;
     from?: string | undefined;
@@ -78,6 +77,7 @@ export const TextDiffView = observer(
       });
     }
 
+    // dispose editor
     useEffect(
       () => (): void => {
         if (editor) {
@@ -85,7 +85,7 @@ export const TextDiffView = observer(
         }
       },
       [editor],
-    ); // dispose editor
+    );
 
     return (
       <div ref={ref} className="code-editor__container">
@@ -106,7 +106,7 @@ const formatJSONLikeValue = (value: unknown, lossless: boolean): string =>
       : JSON.stringify(value, undefined, DEFAULT_TAB_SIZE)
     : '';
 
-export const JsonDiffView = observer(
+export const JSONDiffView = observer(
   (props: {
     from?: unknown;
     to?: unknown;
@@ -118,7 +118,7 @@ export const JsonDiffView = observer(
     const { from, to, lossless } = props;
 
     return (
-      <TextDiffView
+      <CodeDiffView
         language={CODE_EDITOR_LANGUAGE.JSON}
         from={formatJSONLikeValue(from, Boolean(lossless))}
         to={formatJSONLikeValue(to, Boolean(lossless))}

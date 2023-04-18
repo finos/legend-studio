@@ -63,7 +63,7 @@ import {
   ModalBody,
   Modal,
 } from '@finos/legend-art';
-import { getElementIcon } from '../../shared/ElementIconUtils.js';
+import { getElementIcon } from '../../ElementIconUtils.js';
 import type { RuntimeExplorerTreeNodeData } from '../../../stores/editor/utils/TreeUtils.js';
 import { ConnectionEditor } from './connection-editor/ConnectionEditor.js';
 import {

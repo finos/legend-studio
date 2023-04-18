@@ -90,7 +90,7 @@ import {
   type PackageableElementOption,
   buildElementOption,
 } from '@finos/legend-lego/graph-editor';
-import { getElementIcon } from '../../shared/ElementIconUtils.js';
+import { getElementIcon } from '../../ElementIconUtils.js';
 import {
   function_setReturnType,
   function_setReturnMultiplicity,

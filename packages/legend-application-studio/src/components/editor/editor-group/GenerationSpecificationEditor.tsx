@@ -23,7 +23,7 @@ import {
   type GenerationTreeNodeState,
 } from '../../../stores/editor/editor-state/GenerationSpecificationEditorState.js';
 import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
-import { getElementIcon } from '../../shared/ElementIconUtils.js';
+import { getElementIcon } from '../../ElementIconUtils.js';
 import {
   clsx,
   BlankPanelContent,

@@ -51,10 +51,7 @@ import {
   PURE_ClassIcon,
   CodeIcon,
 } from '@finos/legend-art';
-import {
-  getElementIcon,
-  getElementTypeIcon,
-} from '../../shared/ElementIconUtils.js';
+import { getElementIcon, getElementTypeIcon } from '../../ElementIconUtils.js';
 import {
   getElementTypeLabel,
   CreateNewElementModal,

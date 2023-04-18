@@ -142,6 +142,7 @@ export const CodeEditor: React.FC<{
     model?.updateOptions({ tabSize: DEFAULT_TAB_SIZE });
   }
 
+  // dispose editor
   useEffect(
     () => (): void => {
       if (editor) {
@@ -149,7 +150,7 @@ export const CodeEditor: React.FC<{
       }
     },
     [editor],
-  ); // dispose editor
+  );
 
   return (
     <div ref={ref} className="code-editor__container">

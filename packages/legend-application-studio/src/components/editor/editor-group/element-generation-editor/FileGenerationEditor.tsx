@@ -17,7 +17,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { flowResult, runInAction } from 'mobx';
-import { getElementIcon } from '../../../shared/ElementIconUtils.js';
+import { getElementIcon } from '../../../ElementIconUtils.js';
 import { useDrop } from 'react-dnd';
 import { FileGenerationEditorState } from '../../../../stores/editor/editor-state/element-editor-state/FileGenerationEditorState.js';
 import {

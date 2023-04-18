@@ -15,17 +15,9 @@
  */
 
 import { returnUndefOnError } from '@finos/legend-shared';
-import type { EditorStore } from '../../stores/editor/EditorStore.js';
-import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../stores/LegendStudioApplicationPlugin.js';
-import {
-  type PackageableElement,
-  type Type,
-  Class,
-  Enumeration,
-  Measure,
-  Unit,
-  PrimitiveType,
-} from '@finos/legend-graph';
+import type { EditorStore } from '../stores/editor/EditorStore.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '../stores/LegendStudioApplicationPlugin.js';
+import { type PackageableElement } from '@finos/legend-graph';
 import {
   PURE_ClassIcon,
   PURE_PrimitiveTypeIcon,
@@ -47,22 +39,7 @@ import {
   PURE_PackageIcon,
   PURE_DataIcon,
 } from '@finos/legend-art';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../stores/editor/utils/ModelClassifierUtils.js';
-
-export const getClassPropertyIcon = (type: Type): React.ReactNode => {
-  if (type instanceof PrimitiveType) {
-    return <PURE_PrimitiveTypeIcon />;
-  } else if (type instanceof Class) {
-    return <PURE_ClassIcon />;
-  } else if (type instanceof Enumeration) {
-    return <PURE_EnumerationIcon />;
-  } else if (type instanceof Measure) {
-    return <PURE_MeasureIcon />;
-  } else if (type instanceof Unit) {
-    return <PURE_UnitIcon />;
-  }
-  return <PURE_UnknownElementTypeIcon />;
-};
+import { PACKAGEABLE_ELEMENT_TYPE } from '../stores/editor/utils/ModelClassifierUtils.js';
 
 export const getElementTypeIcon = (
   editorStore: EditorStore,

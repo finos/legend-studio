@@ -29,7 +29,7 @@ import {
   MenuContent,
   MenuContentItem,
 } from '@finos/legend-art';
-import { getElementTypeIcon } from '../../shared/ElementIconUtils.js';
+import { getElementTypeIcon } from '../../ElementIconUtils.js';
 import type { PackageableElement } from '@finos/legend-graph';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
