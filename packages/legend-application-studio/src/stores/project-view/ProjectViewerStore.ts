@@ -291,7 +291,7 @@ export class ProjectViewerStore {
 
     return {
       entities,
-      dependencyEntitiesIndex: dependencyEntitiesIndex,
+      dependencyEntitiesIndex,
     };
   }
 

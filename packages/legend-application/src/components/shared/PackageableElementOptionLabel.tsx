@@ -19,57 +19,47 @@ import {
   isSystemElement,
   isGeneratedElement,
   isDependencyElement,
-  type PureModel,
 } from '@finos/legend-graph';
 import type { PackageableElementOption } from '../../stores/shared/PackageableElementOption.js';
 
-const getElementColorCode = (
-  element: PackageableElement,
-  graph: PureModel | undefined,
-): string =>
-  graph
-    ? isSystemElement(element)
-      ? 'system'
-      : isGeneratedElement(element)
-      ? 'generated'
-      : isDependencyElement(element, graph)
-      ? 'dependency'
-      : ''
+const getElementColorCode = (element: PackageableElement): string =>
+  isSystemElement(element)
+    ? 'system'
+    : isGeneratedElement(element)
+    ? 'generated'
+    : isDependencyElement(element)
+    ? 'dependency'
     : '';
 
 const generateOptionTooltipText = (
   element: PackageableElement,
-  graph: PureModel | undefined,
 ): string | undefined =>
-  graph
-    ? isSystemElement(element)
-      ? 'system element'
-      : isGeneratedElement(element)
-      ? 'generated element'
-      : isDependencyElement(element, graph)
-      ? 'dependency element'
-      : undefined
+  isSystemElement(element)
+    ? 'system element'
+    : isGeneratedElement(element)
+    ? 'generated element'
+    : isDependencyElement(element)
+    ? 'dependency element'
     : undefined;
 
 export const getPackageableElementOptionFormatter = (props: {
   darkMode?: boolean | undefined;
-  graph?: PureModel | undefined;
 }): ((
   option: PackageableElementOption<PackageableElement>,
 ) => React.ReactNode) =>
   function PackageableElementOptionLabel(
     option: PackageableElementOption<PackageableElement>,
   ): React.ReactNode {
-    const { darkMode, graph } = props;
+    const { darkMode } = props;
     const className = darkMode
       ? 'packageable-element-option-label--dark'
       : 'packageable-element-option-label';
-    const colorCode = getElementColorCode(option.value, graph);
+    const colorCode = getElementColorCode(option.value);
 
     return (
       <div className={className}>
         <div
-          title={generateOptionTooltipText(option.value, graph)}
+          title={generateOptionTooltipText(option.value)}
           className={`packageable-element-option-label__type ${
             colorCode
               ? `packageable-element-option-label__type--${colorCode}`

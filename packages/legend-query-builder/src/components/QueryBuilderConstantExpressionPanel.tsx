@@ -153,7 +153,6 @@ const QueryBuilderConstantExpressionEditor = observer(
                   darkMode:
                     !applicationStore.layoutService
                       .TEMPORARY__isLightColorThemeEnabled,
-                  graph: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </PanelFormSection>

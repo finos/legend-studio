@@ -517,10 +517,7 @@ export class ExplorerTreeState {
       );
       this.setSelectedNode(openingNode);
       opened = true;
-    } else if (
-      isDependencyElement(element, this.editorStore.graphManagerState.graph) &&
-      this.dependencyTreeData
-    ) {
+    } else if (isDependencyElement(element) && this.dependencyTreeData) {
       const openingNode = openNode(
         this.editorStore,
         element,

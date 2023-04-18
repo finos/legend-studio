@@ -172,15 +172,15 @@ test(integrationTest('Test navigation of dependency tree'), async () => {
   fireEvent.click(getByText(explorerTree, 'dependencies'));
 
   // expanding first dependency
-  await waitFor(() => findByText(explorerTree, 'prod-1'));
-  fireEvent.click(getByText(explorerTree, 'prod-1'));
+  await waitFor(() => findByText(explorerTree, 'org.finos.legend:prod-1'));
+  fireEvent.click(getByText(explorerTree, 'org.finos.legend:prod-1'));
   await waitFor(() => findByText(explorerTree, 'model'));
   fireEvent.click(getByText(explorerTree, 'model'));
   await waitFor(() => findByText(explorerTree, 'ClassB'));
 
   // expanding second dependency
-  await waitFor(() => findByText(explorerTree, 'prod-2'));
-  fireEvent.click(getByText(explorerTree, 'prod-2'));
+  await waitFor(() => findByText(explorerTree, 'org.finos.legend:prod-2'));
+  fireEvent.click(getByText(explorerTree, 'org.finos.legend:prod-2'));
   await waitFor(() => findByText(explorerTree, 'test'));
   fireEvent.click(getByText(explorerTree, 'test'));
   await waitFor(() => findByText(explorerTree, 'ClassC'));

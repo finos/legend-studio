@@ -66,10 +66,7 @@ import {
   ACTIVITY_MODE,
   GRAPH_EDITOR_MODE,
 } from '../../../stores/editor/EditorConfig.js';
-import {
-  generatePackageableElementTreeNodeDataLabel,
-  getTreeChildNodes,
-} from '../../../stores/editor/shared/PackageTreeUtils.js';
+import { getTreeChildNodes } from '../../../stores/editor/shared/PackageTreeUtils.js';
 import type { PackageTreeNodeData } from '../../../stores/editor/shared/TreeUtils.js';
 import {
   type FileSystemTreeNodeData,
@@ -369,7 +366,6 @@ const SampleDataGenerator = observer(() => {
             filterOption={elementFilterOption}
             formatOptionLabel={getPackageableElementOptionFormatter({
               darkMode: true,
-              graph: editorStore.graphManagerState.graph,
             })}
           />
           <div
@@ -465,11 +461,7 @@ const ExplorerContextMenu = observer(
     const projectId = editorStore.sdlcState.currentProject?.projectId;
     const isReadOnly = editorStore.isInViewerMode || Boolean(nodeIsImmutable);
     const isDependencyProjectElement =
-      node &&
-      isDependencyElement(
-        node.packageableElement,
-        editorStore.graphManagerState.graph,
-      );
+      node && isDependencyElement(node.packageableElement);
     const _package = node
       ? node.packageableElement instanceof Package
         ? node.packageableElement
@@ -808,10 +800,7 @@ const PackageTreeNodeContainer = observer(
       ? 'color--generated'
       : isSystemElement(node.packageableElement)
       ? 'color--system'
-      : isDependencyElement(
-          node.packageableElement,
-          editorStore.graphManagerState.graph,
-        )
+      : isDependencyElement(node.packageableElement)
       ? 'color--dependency'
       : '';
 
@@ -877,10 +866,7 @@ const PackageTreeNodeContainer = observer(
             tabIndex={-1}
             title={node.packageableElement.path}
           >
-            {generatePackageableElementTreeNodeDataLabel(
-              node.packageableElement,
-              node,
-            )}
+            {node.label}
           </button>
         </div>
       </ContextMenu>

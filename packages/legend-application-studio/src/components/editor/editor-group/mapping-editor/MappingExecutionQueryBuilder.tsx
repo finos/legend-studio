@@ -24,7 +24,6 @@ import { CustomSelectorInput, PURE_MappingIcon } from '@finos/legend-art';
 import { getMappingCompatibleClasses } from '@finos/legend-graph';
 import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
 import type { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
-import { useEditorStore } from '../../EditorStoreProvider.js';
 
 /**
  * This setup panel supports limited cascading, we will only show:
@@ -34,7 +33,6 @@ const MappingExecutionQueryBuilderSetupPanelContent = observer(
   (props: { queryBuilderState: MappingExecutionQueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
-    const editorStore = useEditorStore();
 
     // mapping
     const selectedMappingOption = buildElementOption(
@@ -76,7 +74,6 @@ const MappingExecutionQueryBuilderSetupPanelContent = observer(
                   darkMode:
                     !applicationStore.layoutService
                       .TEMPORARY__isLightColorThemeEnabled,
-                  graph: editorStore.graphManagerState.graph,
                 })}
               />
             </div>

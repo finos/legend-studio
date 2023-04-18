@@ -631,7 +631,7 @@ export class EditorGraphState {
         const dependencyProjects = new Map<string, Set<string>>();
         dependencyEntities.forEach((dependencyInfo) => {
           const projectId = dependencyInfo.id;
-          // There are a few validations that must be done:P
+          // There are a few validations that must be done:
           // 1. Unlike above, if in the depdendency graph, we have both A@v1 and A@v2
           //    then we need to throw. Both SDLC and metadata server should handle this
           //    validation, but haven't, so for now, we can do that in Studio.

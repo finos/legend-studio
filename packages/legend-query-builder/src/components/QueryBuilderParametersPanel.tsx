@@ -182,7 +182,6 @@ const VariableExpressionEditor = observer(
                   darkMode:
                     !applicationStore.layoutService
                       .TEMPORARY__isLightColorThemeEnabled,
-                  graph: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </div>

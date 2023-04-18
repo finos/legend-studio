@@ -162,7 +162,6 @@ const ClassQueryBuilderSetupPanelContent = observer(
                   darkMode:
                     !applicationStore.layoutService
                       .TEMPORARY__isLightColorThemeEnabled,
-                  graph: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </div>
@@ -192,7 +191,6 @@ const ClassQueryBuilderSetupPanelContent = observer(
                   darkMode:
                     !applicationStore.layoutService
                       .TEMPORARY__isLightColorThemeEnabled,
-                  pureModel: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </div>

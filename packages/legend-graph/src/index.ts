@@ -159,7 +159,10 @@ export * from './graphManager/helpers/ValueSpecificationGraphManagerHelper.js';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
 
-export { DependencyManager } from './graph/DependencyManager.js';
+export {
+  DependencyManager,
+  extractDependencyGACoordinateFromRootPackageName,
+} from './graph/DependencyManager.js';
 export { BasicModel } from './graph/BasicModel.js';
 export {
   CoreModel,

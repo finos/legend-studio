@@ -335,9 +335,7 @@ const PropertyBasicEditor = observer(
                 value={selectedPropertyType}
                 placeholder="Choose a type..."
                 filterOption={filterOption}
-                formatOptionLabel={getPackageableElementOptionFormatter({
-                  graph: editorStore.graphManagerState.graph,
-                })}
+                formatOptionLabel={getPackageableElementOptionFormatter({})}
               />
             )}
             {!isIndirectProperty && !isReadOnly && !isEditingType && (
@@ -706,9 +704,7 @@ const DerivedPropertyBasicEditor = observer(
                   value={selectedPropertyType}
                   placeholder="Choose a type..."
                   filterOption={filterOption}
-                  formatOptionLabel={getPackageableElementOptionFormatter({
-                    graph: editorStore.graphManagerState.graph,
-                  })}
+                  formatOptionLabel={getPackageableElementOptionFormatter({})}
                 />
               )}
               {!isInheritedProperty && !isReadOnly && !isEditingType && (
@@ -1131,9 +1127,7 @@ const SuperTypeEditor = observer(
             value={selectedType}
             placeholder="Choose a class"
             filterOption={filterOption}
-            formatOptionLabel={getPackageableElementOptionFormatter({
-              graph: editorStore.graphManagerState.graph,
-            })}
+            formatOptionLabel={getPackageableElementOptionFormatter({})}
           />
           <button
             className="uml-element-editor__basic__detail-btn"

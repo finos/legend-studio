@@ -41,7 +41,6 @@ import {
   VARIABLE_REFERENCE_TOKEN,
   isElementDeprecated,
   PrimitiveType,
-  type PureModel,
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
@@ -188,7 +187,6 @@ export const QueryBuilderClassSelector = observer(
                 darkMode:
                   !applicationStore.layoutService
                     .TEMPORARY__isLightColorThemeEnabled,
-                graph: queryBuilderState.graphManagerState.graph,
               })}
             />
             {queryBuilderState.isQuerySupported && (
@@ -226,7 +224,6 @@ export const buildRuntimeValueOption = (
 
 export const getRuntimeOptionFormatter = (props: {
   darkMode?: boolean;
-  pureModel: PureModel;
 }): ((option: { value: Runtime }) => React.ReactNode) =>
   function RuntimeOptionLabel(option: { value: Runtime }): React.ReactNode {
     if (option.value instanceof RuntimePointer) {
@@ -351,7 +348,6 @@ const BasicQueryBuilderSetup = observer(
                   darkMode:
                     !applicationStore.layoutService
                       .TEMPORARY__isLightColorThemeEnabled,
-                  graph: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </div>
@@ -386,7 +382,6 @@ const BasicQueryBuilderSetup = observer(
                   darkMode:
                     !applicationStore.layoutService
                       .TEMPORARY__isLightColorThemeEnabled,
-                  pureModel: queryBuilderState.graphManagerState.graph,
                 })}
               />
             </div>

@@ -147,9 +147,7 @@ const EnumerationMappingSourceSelectorModal = observer(
             placeholder="Choose a type..."
             isClearable={true}
             filterOption={filterOption}
-            formatOptionLabel={getPackageableElementOptionFormatter({
-              graph: editorStore.graphManagerState.graph,
-            })}
+            formatOptionLabel={getPackageableElementOptionFormatter({})}
           />
         </Modal>
       </Dialog>
