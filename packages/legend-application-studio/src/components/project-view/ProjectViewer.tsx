@@ -293,7 +293,9 @@ export const ProjectViewer = withEditorStore(
       const { ref, width, height } = useResizeDetector<HTMLDivElement>();
       useEffect(() => {
         if (ref.current) {
-          editorStore.auxPanelDisplayState.setMaxSize(ref.current.offsetHeight);
+          editorStore.panelGroupDisplayState.setMaxSize(
+            ref.current.offsetHeight,
+          );
         }
       }, [ref, editorStore, width, height]);
 

@@ -18,7 +18,7 @@ import type { EditorStore } from '../EditorStore.js';
 
 // TODO: We might potentially make this persisting data to local storage
 // as such the logic in this state might get a little more complicated, so we just leave it like this for now
-export class DevToolState {
+export class DevToolPanelState {
   editorStore: EditorStore;
 
   constructor(editorStore: EditorStore) {

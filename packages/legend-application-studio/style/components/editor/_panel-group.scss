@@ -16,10 +16,10 @@
 
 @use 'mixins' as *;
 
-@forward 'aux-panel/console-panel';
-@forward 'aux-panel/dev-tool';
+@forward 'panel-group/console-panel';
+@forward 'panel-group/dev-tool';
 
-.auxiliary-panel {
+.panel-group {
   width: 100%;
   position: absolute;
   top: 0;

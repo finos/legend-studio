@@ -705,7 +705,7 @@ const TestRunnerResultDisplay = observer(
           <ResizablePanelSplitter>
             <ResizablePanelSplitterLine
               color={
-                ideStore.auxPanelDisplayState.isMaximized
+                ideStore.panelGroupDisplayState.isMaximized
                   ? 'transparent'
                   : 'var(--color-dark-grey-250)'
               }
@@ -744,21 +744,21 @@ export const TestRunnerPanel = observer(() => {
     <div className="test-runner-panel">
       {!testRunnerState && (
         <BlankPanelContent>
-          <div className="auxiliary-panel__splash-screen">
-            <div className="auxiliary-panel__splash-screen__content">
-              <div className="auxiliary-panel__splash-screen__content__item">
-                <div className="auxiliary-panel__splash-screen__content__item__label">
+          <div className="panel-group__splash-screen">
+            <div className="panel-group__splash-screen__content">
+              <div className="panel-group__splash-screen__content__item">
+                <div className="panel-group__splash-screen__content__item__label">
                   Run full test suite
                 </div>
-                <div className="auxiliary-panel__splash-screen__content__item__hot-keys">
+                <div className="panel-group__splash-screen__content__item__hot-keys">
                   <div className="hotkey__key">F10</div>
                 </div>
               </div>
-              <div className="auxiliary-panel__splash-screen__content__item">
-                <div className="auxiliary-panel__splash-screen__content__item__label">
+              <div className="panel-group__splash-screen__content__item">
+                <div className="panel-group__splash-screen__content__item__label">
                   Run relevant tests only
                 </div>
-                <div className="auxiliary-panel__splash-screen__content__item__hot-keys">
+                <div className="panel-group__splash-screen__content__item__hot-keys">
                   <div className="hotkey__key">Shift</div>
                   <div className="hotkey__plus">
                     <PlusIcon />

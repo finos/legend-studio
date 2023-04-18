@@ -25,7 +25,7 @@ import {
   ResizablePanelSplitterLine,
   useResizeDetector,
 } from '@finos/legend-art';
-import { AuxiliaryPanel } from './aux-panel/AuxiliaryPanel.js';
+import { PanelGroup } from './panel-group/PanelGroup.js';
 import { SideBar } from './side-bar/SideBar.js';
 import {
   EditorGroup,
@@ -94,33 +94,32 @@ export const Editor = withEditorStore(
         (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
           .width,
       );
-    const resizeAuxPanel = (handleProps: ResizablePanelHandlerProps): void =>
-      editorStore.auxPanelDisplayState.setSize(
+    const resizePanel = (handleProps: ResizablePanelHandlerProps): void =>
+      editorStore.panelGroupDisplayState.setSize(
         (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
           .height,
       );
-    const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+    const collapsibleSideBarGroupProps = getCollapsiblePanelGroupProps(
       editorStore.sideBarDisplayState.size === 0,
       {
         onStopResize: resizeSideBar,
         size: editorStore.sideBarDisplayState.size,
       },
     );
-    const auxCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
-      editorStore.auxPanelDisplayState.size === 0,
+    const collapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      editorStore.panelGroupDisplayState.size === 0,
       {
-        onStopResize: resizeAuxPanel,
-        size: editorStore.auxPanelDisplayState.size,
+        onStopResize: resizePanel,
+        size: editorStore.panelGroupDisplayState.size,
       },
     );
-    const maximizedAuxCollapsiblePanelGroupProps =
-      getCollapsiblePanelGroupProps(
-        editorStore.auxPanelDisplayState.isMaximized,
-      );
+    const maximizedCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      editorStore.panelGroupDisplayState.isMaximized,
+    );
 
     useEffect(() => {
       if (ref.current) {
-        editorStore.auxPanelDisplayState.setMaxSize(ref.current.offsetHeight);
+        editorStore.panelGroupDisplayState.setMaxSize(ref.current.offsetHeight);
       }
     }, [editorStore, ref, height, width]);
 
@@ -190,21 +189,21 @@ export const Editor = withEditorStore(
               <div className="editor__content">
                 <ResizablePanelGroup orientation="vertical">
                   <ResizablePanel
-                    {...sideBarCollapsiblePanelGroupProps.collapsiblePanel}
+                    {...collapsibleSideBarGroupProps.collapsiblePanel}
                     direction={1}
                   >
                     <SideBar />
                   </ResizablePanel>
                   <ResizablePanelSplitter />
                   <ResizablePanel
-                    {...sideBarCollapsiblePanelGroupProps.remainingPanel}
+                    {...collapsibleSideBarGroupProps.remainingPanel}
                     minSize={300}
                   >
                     <ResizablePanelGroup orientation="horizontal">
                       <ResizablePanel
-                        {...maximizedAuxCollapsiblePanelGroupProps.collapsiblePanel}
-                        {...(editorStore.auxPanelDisplayState.size === 0
-                          ? auxCollapsiblePanelGroupProps.remainingPanel
+                        {...maximizedCollapsiblePanelGroupProps.collapsiblePanel}
+                        {...(editorStore.panelGroupDisplayState.size === 0
+                          ? collapsiblePanelGroupProps.remainingPanel
                           : {})}
                       >
                         {(isResolvingConflicts || editable) &&
@@ -220,20 +219,20 @@ export const Editor = withEditorStore(
                       <ResizablePanelSplitter>
                         <ResizablePanelSplitterLine
                           color={
-                            editorStore.auxPanelDisplayState.isMaximized
+                            editorStore.panelGroupDisplayState.isMaximized
                               ? 'transparent'
                               : 'var(--color-dark-grey-250)'
                           }
                         />
                       </ResizablePanelSplitter>
                       <ResizablePanel
-                        {...auxCollapsiblePanelGroupProps.collapsiblePanel}
-                        {...(editorStore.auxPanelDisplayState.isMaximized
-                          ? maximizedAuxCollapsiblePanelGroupProps.remainingPanel
+                        {...collapsiblePanelGroupProps.collapsiblePanel}
+                        {...(editorStore.panelGroupDisplayState.isMaximized
+                          ? maximizedCollapsiblePanelGroupProps.remainingPanel
                           : {})}
                         direction={-1}
                       >
-                        <AuxiliaryPanel />
+                        <PanelGroup />
                       </ResizablePanel>
                     </ResizablePanelGroup>
                   </ResizablePanel>

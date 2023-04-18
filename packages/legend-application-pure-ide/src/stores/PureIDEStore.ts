@@ -17,7 +17,7 @@
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
   ACTIVITY_MODE,
-  AUX_PANEL_MODE,
+  PANEL_MODE,
   ROOT_PACKAGE_PATH,
   WELCOME_FILE_PATH,
 } from './PureIDEConfig.js';
@@ -113,9 +113,8 @@ export class PureIDEStore implements CommandRegistrar {
   readonly client: PureServerClient;
 
   // Layout
-  isMaxAuxPanelSizeSet = false;
-  activeAuxPanelMode = AUX_PANEL_MODE.TERMINAL;
-  readonly auxPanelDisplayState = new PanelDisplayState({
+  activePanelMode = PANEL_MODE.TERMINAL;
+  readonly panelGroupDisplayState = new PanelDisplayState({
     initial: 0,
     default: 300,
     snap: 100,
@@ -153,8 +152,7 @@ export class PureIDEStore implements CommandRegistrar {
 
   constructor(applicationStore: LegendPureIDEApplicationStore) {
     makeObservable(this, {
-      isMaxAuxPanelSizeSet: observable,
-      activeAuxPanelMode: observable,
+      activePanelMode: observable,
       activeActivity: observable,
       navigationStack: observable,
       openFileSearchCommand: observable,
@@ -168,7 +166,7 @@ export class PureIDEStore implements CommandRegistrar {
       setReferenceUsageResult: action,
 
       setOpenFileSearchCommand: action,
-      setActiveAuxPanelMode: action,
+      setActivePanelMode: action,
       setActiveActivity: action,
       setTestRunnerState: action,
       pullInitializationActivity: action,
@@ -223,8 +221,8 @@ export class PureIDEStore implements CommandRegistrar {
     this.openFileSearchCommand = val;
   }
 
-  setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
-    this.activeAuxPanelMode = val;
+  setActivePanelMode(val: PANEL_MODE): void {
+    this.activePanelMode = val;
   }
 
   setCodeFixSuggestion(val: CodeFixSuggestion | undefined): void {
@@ -305,8 +303,8 @@ export class PureIDEStore implements CommandRegistrar {
         this.applicationStore.terminalService.terminal.output(result.text, {
           systemCommand: 'initialize application',
         });
-        this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
-        this.auxPanelDisplayState.open();
+        this.setActivePanelMode(PANEL_MODE.TERMINAL);
+        this.panelGroupDisplayState.open();
       }
       if (result instanceof InitializationFailureResult) {
         if (result.sessionError) {
@@ -413,8 +411,8 @@ export class PureIDEStore implements CommandRegistrar {
     this.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_TEXT,
       action: () => {
-        this.setActiveAuxPanelMode(AUX_PANEL_MODE.SEARCH);
-        this.auxPanelDisplayState.open();
+        this.setActivePanelMode(PANEL_MODE.SEARCH);
+        this.panelGroupDisplayState.open();
         this.textSearchState.focus();
         this.textSearchState.select();
       },
@@ -435,23 +433,23 @@ export class PureIDEStore implements CommandRegistrar {
     this.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.TOGGLE_TERMINAL_PANEL,
       action: () => {
-        // toggle the aux panel and activate terminal tab if needs be
+        // toggle the panel and activate terminal tab if needs be
         // if the terminal is already open, and not yet focused, focus on it
         // else, close it
-        if (this.auxPanelDisplayState.isOpen) {
-          if (this.activeAuxPanelMode !== AUX_PANEL_MODE.TERMINAL) {
-            this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
+        if (this.panelGroupDisplayState.isOpen) {
+          if (this.activePanelMode !== PANEL_MODE.TERMINAL) {
+            this.setActivePanelMode(PANEL_MODE.TERMINAL);
             this.applicationStore.terminalService.terminal.focus();
           } else {
             if (!this.applicationStore.terminalService.terminal.isFocused()) {
               this.applicationStore.terminalService.terminal.focus();
             } else {
-              this.auxPanelDisplayState.close();
+              this.panelGroupDisplayState.close();
             }
           }
         } else {
-          this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
-          this.auxPanelDisplayState.open();
+          this.setActivePanelMode(PANEL_MODE.TERMINAL);
+          this.panelGroupDisplayState.open();
         }
       },
     });
@@ -863,14 +861,14 @@ export class PureIDEStore implements CommandRegistrar {
         this.setCodeFixSuggestion(
           new UnmatchedFunctionCodeFixSuggestion(this, result),
         );
-        this.setActiveAuxPanelMode(AUX_PANEL_MODE.CODE_FIX_SUGGESTION);
-        this.auxPanelDisplayState.open();
+        this.setActivePanelMode(PANEL_MODE.CODE_FIX_SUGGESTION);
+        this.panelGroupDisplayState.open();
       } else if (result instanceof UnknownSymbolResult) {
         this.setCodeFixSuggestion(
           new UnknownSymbolCodeFixSuggestion(this, result),
         );
-        this.setActiveAuxPanelMode(AUX_PANEL_MODE.CODE_FIX_SUGGESTION);
-        this.auxPanelDisplayState.open();
+        this.setActivePanelMode(PANEL_MODE.CODE_FIX_SUGGESTION);
+        this.panelGroupDisplayState.open();
       }
       this.resetChangeDetection(potentiallyAffectedFiles);
     } else if (result instanceof ExecutionSuccessResult) {
@@ -935,12 +933,12 @@ export class PureIDEStore implements CommandRegistrar {
                 ),
               );
             }
-            this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
-            this.auxPanelDisplayState.open();
+            this.setActivePanelMode(PANEL_MODE.TERMINAL);
+            this.panelGroupDisplayState.open();
             this.testRunState.fail();
           } else if (result instanceof TestExecutionResult) {
-            this.setActiveAuxPanelMode(AUX_PANEL_MODE.TEST_RUNNER);
-            this.auxPanelDisplayState.open();
+            this.setActivePanelMode(PANEL_MODE.TEST_RUNNER);
+            this.panelGroupDisplayState.open();
             const testRunnerState = new TestRunnerState(this, result);
             this.setTestRunnerState(testRunnerState);
             await flowResult(testRunnerState.buildTestTreeData());
@@ -1229,8 +1227,8 @@ export class PureIDEStore implements CommandRegistrar {
           searchResultCoordinates,
         ),
       );
-      this.setActiveAuxPanelMode(AUX_PANEL_MODE.REFERENCES);
-      this.auxPanelDisplayState.open();
+      this.setActivePanelMode(PANEL_MODE.REFERENCES);
+      this.panelGroupDisplayState.open();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(error);
@@ -1327,8 +1325,8 @@ export class PureIDEStore implements CommandRegistrar {
         candidate.messageToBeModified,
       ),
     );
-    this.setActiveAuxPanelMode(AUX_PANEL_MODE.TERMINAL);
-    this.auxPanelDisplayState.open();
+    this.setActivePanelMode(PANEL_MODE.TERMINAL);
+    this.panelGroupDisplayState.open();
   }
 
   *updateFile(

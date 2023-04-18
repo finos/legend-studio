@@ -16,13 +16,13 @@
 
 @use 'mixins' as *;
 
-@forward 'aux-panel/terminal-panel';
-@forward 'aux-panel/references-panel';
-@forward 'aux-panel/text-search-panel';
-@forward 'aux-panel/suggestions-panel';
-@forward 'aux-panel/test-runner-panel';
+@forward 'panel-group/terminal-panel';
+@forward 'panel-group/references-panel';
+@forward 'panel-group/text-search-panel';
+@forward 'panel-group/suggestions-panel';
+@forward 'panel-group/test-runner-panel';
 
-.auxiliary-panel {
+.panel-group {
   width: 100%;
   position: absolute;
   top: 0;

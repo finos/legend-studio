@@ -43,7 +43,7 @@ import { usePureIDEStore } from '../PureIDEStoreProvider.js';
 import type { TextSearchResult } from '../../stores/TextSearchState.js';
 import { useEffect, useMemo, useRef } from 'react';
 import { debounce } from '@finos/legend-shared';
-import { AUX_PANEL_MODE } from '../../stores/PureIDEConfig.js';
+import { PANEL_MODE } from '../../stores/PureIDEConfig.js';
 
 const TextSearchResultEntryDisplay = observer(
   (props: { searchResult: TextSearchResult; result: SearchResultEntry }) => {
@@ -299,15 +299,15 @@ export const TextSearchPanel = observer(() => {
 
   useEffect(() => {
     if (
-      ideStore.auxPanelDisplayState.isOpen &&
-      ideStore.activeAuxPanelMode === AUX_PANEL_MODE.SEARCH
+      ideStore.panelGroupDisplayState.isOpen &&
+      ideStore.activePanelMode === PANEL_MODE.SEARCH
     ) {
       searchState.focus();
     }
   }, [
     searchState,
-    ideStore.auxPanelDisplayState.isOpen,
-    ideStore.activeAuxPanelMode,
+    ideStore.panelGroupDisplayState.isOpen,
+    ideStore.activePanelMode,
   ]);
 
   return (

@@ -15,10 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  ACTIVITY_MODE,
-  AUX_PANEL_MODE,
-} from '../../stores/editor/EditorConfig.js';
+import { ACTIVITY_MODE, PANEL_MODE } from '../../stores/editor/EditorConfig.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../application/LegendStudioTesting.js';
 import {
   clsx,
@@ -51,8 +48,8 @@ const SettingsMenu = observer(
   forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {
     const editorStore = useEditorStore();
     const showDeveloperTool = (): void => {
-      editorStore.auxPanelDisplayState.open();
-      editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.DEV_TOOL);
+      editorStore.panelGroupDisplayState.open();
+      editorStore.setActivePanelMode(PANEL_MODE.DEV_TOOL);
     };
 
     return (

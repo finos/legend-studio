@@ -43,7 +43,7 @@ import { FormLocalChangesState } from './sidebar-state/LocalChangesState.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import { GraphCompilationOutcome, type Problem } from './EditorGraphState.js';
-import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
+import { GRAPH_EDITOR_MODE, PANEL_MODE } from './EditorConfig.js';
 import {
   graph_addElement,
   graph_deleteElement,
@@ -439,7 +439,7 @@ export class GraphEditFormModeState extends GraphEditorMode {
       this.editorStore.graphState.isRunningGlobalCompile = true;
       this.editorStore.graphState.clearProblems();
       if (options?.openConsole) {
-        this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+        this.editorStore.setActivePanelMode(PANEL_MODE.CONSOLE);
       }
 
       // NOTE: here we always keep the source information while compiling in form mode

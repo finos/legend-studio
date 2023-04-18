@@ -27,46 +27,46 @@ import {
   PanelHeaderActions,
   PanelHeaderActionItem,
 } from '@finos/legend-art';
-import { Console } from './Console.js';
-import { AUX_PANEL_MODE } from '../../../stores/editor/EditorConfig.js';
+import { ConsolePanel } from './ConsolePanel.js';
+import { PANEL_MODE } from '../../../stores/editor/EditorConfig.js';
 import { isNonNullable } from '@finos/legend-shared';
-import { DevTool } from './DevTool.js';
+import { DevToolPanel } from './DevToolPanel.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import { Problems } from './Problems.js';
+import { ProblemsPanel } from './ProblemsPanel.js';
 
-export const AuxiliaryPanel = observer(() => {
+export const PanelGroup = observer(() => {
   const editorStore = useEditorStore();
   const changeMode =
-    (mode: AUX_PANEL_MODE): (() => void) =>
+    (mode: PANEL_MODE): (() => void) =>
     (): void =>
-      editorStore.setActiveAuxPanelMode(mode);
-  const closePanel = (): void => editorStore.auxPanelDisplayState.toggle();
-  const toggleExpandAuxPanel = (): void =>
-    editorStore.auxPanelDisplayState.toggleMaximize();
+      editorStore.setActivePanelMode(mode);
+  const closePanel = (): void => editorStore.panelGroupDisplayState.toggle();
+  const toggleExpandPanelGroup = (): void =>
+    editorStore.panelGroupDisplayState.toggleMaximize();
 
-  const auxTabMap: {
-    [key in AUX_PANEL_MODE]: {
-      mode: AUX_PANEL_MODE;
+  const tabs: {
+    [key in PANEL_MODE]: {
+      mode: PANEL_MODE;
       name: string;
       icon?: React.ReactNode;
       isVisible: boolean;
       counter?: number;
     };
   } = {
-    [AUX_PANEL_MODE.CONSOLE]: {
-      mode: AUX_PANEL_MODE.CONSOLE,
+    [PANEL_MODE.CONSOLE]: {
+      mode: PANEL_MODE.CONSOLE,
       name: 'CONSOLE',
       icon: undefined,
       isVisible: true,
     },
-    [AUX_PANEL_MODE.DEV_TOOL]: {
-      mode: AUX_PANEL_MODE.DEV_TOOL,
+    [PANEL_MODE.DEV_TOOL]: {
+      mode: PANEL_MODE.DEV_TOOL,
       name: 'DEVELOPER TOOLS',
       icon: undefined,
       isVisible: true,
     },
-    [AUX_PANEL_MODE.PROBLEMS]: {
-      mode: AUX_PANEL_MODE.PROBLEMS,
+    [PANEL_MODE.PROBLEMS]: {
+      mode: PANEL_MODE.PROBLEMS,
       name: 'PROBLEMS',
       icon: undefined,
       isVisible: true,
@@ -74,46 +74,46 @@ export const AuxiliaryPanel = observer(() => {
     },
   };
 
-  const tabsToShow = Object.values(AUX_PANEL_MODE).filter(
-    (tab) => isNonNullable(auxTabMap[tab]) && auxTabMap[tab].isVisible,
+  const tabsToShow = Object.values(PANEL_MODE).filter(
+    (tab) => isNonNullable(tabs[tab]) && tabs[tab].isVisible,
   );
-  const isTabVisible = (tabType: AUX_PANEL_MODE): boolean =>
-    editorStore.activeAuxPanelMode === tabType && tabsToShow.includes(tabType);
+  const isTabVisible = (tabType: PANEL_MODE): boolean =>
+    editorStore.activePanelMode === tabType && tabsToShow.includes(tabType);
 
   useEffect(() => {
-    if (!tabsToShow.includes(editorStore.activeAuxPanelMode)) {
-      editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+    if (!tabsToShow.includes(editorStore.activePanelMode)) {
+      editorStore.setActivePanelMode(PANEL_MODE.CONSOLE);
     }
-  }, [editorStore, tabsToShow, editorStore.activeAuxPanelMode]);
+  }, [editorStore, tabsToShow, editorStore.activePanelMode]);
 
   return (
-    <div className="panel auxiliary-panel">
+    <div className="panel panel-group">
       <PanelHeader>
-        <div className="auxiliary-panel__header__tabs">
+        <div className="panel-group__header__tabs">
           {tabsToShow
-            .map((tab) => auxTabMap[tab])
+            .map((tab) => tabs[tab])
             .filter(isNonNullable)
             .map((tab) => (
               <button
                 key={tab.mode}
                 tabIndex={-1}
-                className={clsx('auxiliary-panel__header__tab', {
-                  'auxiliary-panel__header__tab--active':
-                    editorStore.activeAuxPanelMode === tab.mode,
+                className={clsx('panel-group__header__tab', {
+                  'panel-group__header__tab--active':
+                    editorStore.activePanelMode === tab.mode,
                 })}
                 onClick={changeMode(tab.mode)}
               >
                 {tab.icon && (
-                  <div className="auxiliary-panel__header__tab__icon">
+                  <div className="panel-group__header__tab__icon">
                     {tab.icon}
                   </div>
                 )}
-                <div className="auxiliary-panel__header__tab__title">
+                <div className="panel-group__header__tab__title">
                   {tab.name}
                   {tab.counter !== undefined && (
                     <Badge
                       title={tab.counter.toString()}
-                      className="auxiliary-panel__header__tab__title__problem__count"
+                      className="panel-group__header__tab__title__problem__count"
                     />
                   )}
                 </div>
@@ -122,18 +122,18 @@ export const AuxiliaryPanel = observer(() => {
         </div>
         <PanelHeaderActions>
           <PanelHeaderActionItem
-            className="auxiliary-panel__header__action"
-            onClick={toggleExpandAuxPanel}
+            className="panel-group__header__action"
+            onClick={toggleExpandPanelGroup}
             title="Toggle expand/collapse"
           >
-            {editorStore.auxPanelDisplayState.isMaximized ? (
+            {editorStore.panelGroupDisplayState.isMaximized ? (
               <ChevronDownIcon />
             ) : (
               <ChevronUpIcon />
             )}
           </PanelHeaderActionItem>
           <PanelHeaderActionItem
-            className="auxiliary-panel__header__action"
+            className="panel-group__header__action"
             onClick={closePanel}
             title="Close"
           >
@@ -142,19 +142,19 @@ export const AuxiliaryPanel = observer(() => {
         </PanelHeaderActions>
       </PanelHeader>
       <PanelContent>
-        {isTabVisible(AUX_PANEL_MODE.PROBLEMS) && (
-          <div className="auxiliary-panel__content__tab">
-            <Problems />
+        {isTabVisible(PANEL_MODE.PROBLEMS) && (
+          <div className="panel-group__content__tab">
+            <ProblemsPanel />
           </div>
         )}
-        {isTabVisible(AUX_PANEL_MODE.CONSOLE) && (
-          <div className="auxiliary-panel__content__tab">
-            <Console />
+        {isTabVisible(PANEL_MODE.CONSOLE) && (
+          <div className="panel-group__content__tab">
+            <ConsolePanel />
           </div>
         )}
-        {isTabVisible(AUX_PANEL_MODE.DEV_TOOL) && (
-          <div className="auxiliary-panel__content__tab">
-            <DevTool />
+        {isTabVisible(PANEL_MODE.DEV_TOOL) && (
+          <div className="panel-group__content__tab">
+            <DevToolPanel />
           </div>
         )}
       </PanelContent>

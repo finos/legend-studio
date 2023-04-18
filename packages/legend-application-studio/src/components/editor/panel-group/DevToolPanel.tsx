@@ -26,7 +26,7 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 import { observe_TEMPORARY__AbstractEngineConfig } from '@finos/legend-graph';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../../application/LegendStudioSetting.js';
 
-export const DevTool = observer(() => {
+export const DevToolPanel = observer(() => {
   const editorStore = useEditorStore();
   // Engine
   const engineConfig = observe_TEMPORARY__AbstractEngineConfig(

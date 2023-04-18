@@ -20,7 +20,7 @@ export enum LEGEND_PURE_IDE_COMMAND_KEY {
   SEARCH_FILE = 'editor.search.file',
   SEARCH_TEXT = 'editor.search.text',
   GO_TO_FILE = 'editor.go-to-file',
-  TOGGLE_TERMINAL_PANEL = 'editor.toggle-auxiliary-panel',
+  TOGGLE_TERMINAL_PANEL = 'editor.toggle-terminal-panel',
   EXECUTE = 'editor.execute',
   FULL_RECOMPILE = 'editor.full-compile',
   FULL_RECOMPILE_WITH_FULL_INIT = 'editor.full-compile.with-init',

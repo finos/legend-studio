@@ -39,25 +39,23 @@ const ProblemItem = observer((props: { problem: Problem }) => {
     <PanelListItem>
       <button
         className={clsx([
-          'auxiliary-panel__problem',
+          'panel-group__problem',
           {
-            'auxiliary-panel__problem--stale': isStale,
+            'panel-group__problem--stale': isStale,
           },
         ])}
         title={problem.message}
         onClick={goToSource}
       >
         {problem instanceof EngineError && (
-          <ErrorIcon className="auxiliary-panel__problem__icon auxiliary-panel__problem__icon--error" />
+          <ErrorIcon className="panel-group__problem__icon panel-group__problem__icon--error" />
         )}
         {problem instanceof CompilationWarning && (
-          <WarningIcon className="auxiliary-panel__problem__icon auxiliary-panel__problem__icon--warning" />
+          <WarningIcon className="panel-group__problem__icon panel-group__problem__icon--warning" />
         )}
-        <div className="auxiliary-panel__problem__message">
-          {problem.message}
-        </div>
+        <div className="panel-group__problem__message">{problem.message}</div>
         {problem.sourceInformation && (
-          <div className="auxiliary-panel__problem__source">
+          <div className="panel-group__problem__source">
             {editorStore.graphEditorMode.mode ===
               GRAPH_EDITOR_MODE.GRAMMAR_TEXT &&
               `[Ln ${problem.sourceInformation.startLine}, Col ${problem.sourceInformation.startColumn}]`}
@@ -68,7 +66,7 @@ const ProblemItem = observer((props: { problem: Problem }) => {
   );
 });
 
-export const Problems = observer(() => {
+export const ProblemsPanel = observer(() => {
   const editorStore = useEditorStore();
   const problems = editorStore.graphState.problems;
   const isStale = editorStore.graphState.areProblemsStale;
@@ -76,13 +74,13 @@ export const Problems = observer(() => {
   return (
     <Panel>
       {isStale && (
-        <div className="auxiliary-panel__problems__stale-warning">
+        <div className="panel-group__problems__stale-warning">
           The following result might be stale - please run compilation (F9) to
           check for the latest problems
         </div>
       )}
       {problems.length === 0 && (
-        <div className="auxiliary-panel__problems__placeholder">
+        <div className="panel-group__problems__placeholder">
           No problems have been detected in the workspace.
         </div>
       )}

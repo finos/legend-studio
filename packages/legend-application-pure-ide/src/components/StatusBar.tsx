@@ -63,7 +63,7 @@ export const StatusBar = observer(() => {
   const applicationStore = useApplicationStore();
 
   // actions
-  const toggleAuxPanel = (): void => ideStore.auxPanelDisplayState.toggle();
+  const togglePanelGroup = (): void => ideStore.panelGroupDisplayState.toggle();
   const executeGo = (): void => {
     flowResult(ideStore.executeGo()).catch(
       applicationStore.alertUnhandledError,
@@ -106,13 +106,13 @@ export const StatusBar = observer(() => {
             'editor__status-bar__action editor__status-bar__action__toggler',
             {
               'editor__status-bar__action__toggler--active': Boolean(
-                ideStore.auxPanelDisplayState.isOpen,
+                ideStore.panelGroupDisplayState.isOpen,
               ),
             },
           )}
-          onClick={toggleAuxPanel}
+          onClick={togglePanelGroup}
           tabIndex={-1}
-          title="Toggle auxiliary panel"
+          title="Toggle panel"
         >
           <TerminalIcon />
         </button>

@@ -23,7 +23,7 @@ export enum LEGEND_STUDIO_COMMAND_KEY {
   TOGGLE_TEXT_MODE = 'editor.toggle-text-mode',
   GENERATE = 'editor.generate',
   COMPILE = 'editor.compile',
-  TOGGLE_AUX_PANEL = 'editor.toggle-auxiliary-panel',
+  TOGGLE_PANEL_GROUP = 'editor.toggle-panel-group',
   TOGGLE_MODEL_LOADER = 'editor.toggle-model-loader',
   TOGGLE_SIDEBAR_EXPLORER = 'editor.sidebar.toggle-explorer',
   TOGGLE_SIDEBAR_LOCAL_CHANGES = 'editor.sidebar.toggle-local-changes',
@@ -60,8 +60,8 @@ export const LEGEND_STUDIO_COMMAND_CONFIG: CommandConfigData = {
     title: 'Generate',
     defaultKeyboardShortcut: 'F10',
   },
-  [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_AUX_PANEL]: {
-    title: 'Toggle auxiliary panel',
+  [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_PANEL_GROUP]: {
+    title: 'Toggle panel',
     defaultKeyboardShortcut: 'Control+Backquote',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_EXPLORER]: {

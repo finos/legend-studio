@@ -35,7 +35,7 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
-import { AUX_PANEL_MODE } from '../../stores/PureIDEConfig.js';
+import { PANEL_MODE } from '../../stores/PureIDEConfig.js';
 import { usePureIDEStore } from '../PureIDEStoreProvider.js';
 
 export const Console = observer(() => {
@@ -61,15 +61,15 @@ export const Console = observer(() => {
   // auto-focus on the terminal when the console tab is open
   useEffect(() => {
     if (
-      ideStore.auxPanelDisplayState.isOpen &&
-      ideStore.activeAuxPanelMode === AUX_PANEL_MODE.TERMINAL
+      ideStore.panelGroupDisplayState.isOpen &&
+      ideStore.activePanelMode === PANEL_MODE.TERMINAL
     ) {
       terminal.focus();
     }
   }, [
     terminal,
-    ideStore.auxPanelDisplayState.isOpen,
-    ideStore.activeAuxPanelMode,
+    ideStore.panelGroupDisplayState.isOpen,
+    ideStore.activePanelMode,
   ]);
 
   useEffect(() => {

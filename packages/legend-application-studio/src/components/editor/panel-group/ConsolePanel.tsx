@@ -17,9 +17,9 @@
 import { Panel, PanelContent } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 
-// TODO: add `xterm` so we have a stream/log
+// TODO: add `xterm/monaco-editor` so we have a stream/log
 // See https://github.com/finos/legend-studio/issues/273
-export const Console = observer(() => (
+export const ConsolePanel = observer(() => (
   <Panel className="console-panel">
     <PanelContent className="console-panel__content"></PanelContent>
   </Panel>
