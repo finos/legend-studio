@@ -52,7 +52,7 @@ import { LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY } from '../__lib__/LegendPur
 import type { TabState } from '@finos/legend-lego/application';
 import {
   DIAGRAM_INTERACTION_MODE,
-  DiagramRenderer,
+  type DiagramRenderer,
 } from '@finos/legend-extension-dsl-diagram/application';
 
 export class DiagramEditorState
