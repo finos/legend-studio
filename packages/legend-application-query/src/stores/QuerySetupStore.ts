@@ -26,7 +26,7 @@ import {
 import { BasicGraphManagerState } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import { LEGEND_QUERY_APP_EVENT } from '../application/LegendQueryEvent.js';
-import { TAB_SIZE } from '@finos/legend-application';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import { generateQuerySetupRoute } from '../application/LegendQueryNavigation.js';
@@ -67,7 +67,7 @@ export abstract class BaseQuerySetupStore {
       yield this.graphManagerState.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
-          tabSize: TAB_SIZE,
+          tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,

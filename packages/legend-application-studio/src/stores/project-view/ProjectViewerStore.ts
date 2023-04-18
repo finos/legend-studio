@@ -46,7 +46,7 @@ import {
   Workspace,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
-import { TAB_SIZE } from '@finos/legend-application';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { ProjectData, resolveVersion } from '@finos/legend-server-depot';
 import {
   type WorkflowManagerState,
@@ -356,7 +356,7 @@ export class ProjectViewerStore {
       yield this.editorStore.graphManagerState.graphManager.initialize(
         {
           env: this.editorStore.applicationStore.config.env,
-          tabSize: TAB_SIZE,
+          tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
             queryBaseUrl:

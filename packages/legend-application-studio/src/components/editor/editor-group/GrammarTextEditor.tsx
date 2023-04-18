@@ -43,7 +43,7 @@ import {
   moveCursorToPosition,
 } from '@finos/legend-lego/code-editor';
 import {
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
   CODE_EDITOR_THEME,
   CODE_EDITOR_LANGUAGE,
   useApplicationStore,
@@ -800,7 +800,7 @@ export const GrammarTextEditor = observer(() => {
     resetLineNumberGutterWidth(editor);
     const editorModel = editor.getModel();
     if (editorModel) {
-      editorModel.updateOptions({ tabSize: TAB_SIZE });
+      editorModel.updateOptions({ tabSize: DEFAULT_TAB_SIZE });
       if (
         !editorStore.graphState.areProblemsStale &&
         error?.sourceInformation

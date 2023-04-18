@@ -19,7 +19,7 @@ import {
   ActionAlertType,
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
 } from '@finos/legend-application';
 import {
   type LegendStudioApplicationStore,
@@ -316,7 +316,7 @@ export class QueryProductionizerStore {
       yield this.graphManagerState.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
-          tabSize: TAB_SIZE,
+          tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,

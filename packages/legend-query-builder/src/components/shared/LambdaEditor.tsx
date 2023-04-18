@@ -50,7 +50,7 @@ import { ParserError, type EngineError, type Type } from '@finos/legend-graph';
 import {
   CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
 import { QUERY_BUILDER_TEST_ID } from '../../application/QueryBuilderTesting.js';
@@ -303,7 +303,7 @@ const LambdaEditorInline = observer(
 
       // Set the errors
       if (editorModel) {
-        editorModel.updateOptions({ tabSize: TAB_SIZE });
+        editorModel.updateOptions({ tabSize: DEFAULT_TAB_SIZE });
         const error = parserError ?? compilationError;
         if (error?.sourceInformation) {
           setErrorMarkers(editorModel, [
@@ -537,7 +537,7 @@ const LambdaEditorPopUp = observer(
 
       // Set the errors
       if (editorModel) {
-        editorModel.updateOptions({ tabSize: TAB_SIZE });
+        editorModel.updateOptions({ tabSize: DEFAULT_TAB_SIZE });
         const error = parserError ?? compilationError;
         if (error?.sourceInformation) {
           setErrorMarkers(editorModel, [

@@ -39,7 +39,7 @@ import {
   extractExecutionResultValues,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
-import { TAB_SIZE } from '@finos/legend-application';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import {
   buildExecutionParameterValues,
   getExecutionQueryFromRawLambda,
@@ -185,7 +185,7 @@ export class QueryBuilderResultState {
         content = JSON.stringify(
           extractExecutionResultValues(result),
           null,
-          TAB_SIZE,
+          DEFAULT_TAB_SIZE,
         );
       }
       const fileName = `result.${getContentTypeFileExtension(contentType)}`;

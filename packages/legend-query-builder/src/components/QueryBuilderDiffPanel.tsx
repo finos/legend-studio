@@ -17,7 +17,7 @@
 import {
   CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
 import { clsx, Dialog, useResizeDetector, Button } from '@finos/legend-art';
@@ -172,7 +172,7 @@ export const QueryBuilderDiffViewPanel = observer(
                         : undefined,
                     },
                     null,
-                    TAB_SIZE,
+                    DEFAULT_TAB_SIZE,
                   )}
                   to={JSON.stringify(
                     {
@@ -188,7 +188,7 @@ export const QueryBuilderDiffViewPanel = observer(
                         : undefined,
                     },
                     null,
-                    TAB_SIZE,
+                    DEFAULT_TAB_SIZE,
                   )}
                 />
               )}

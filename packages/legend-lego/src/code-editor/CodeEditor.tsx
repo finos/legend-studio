@@ -27,7 +27,7 @@ import { useResizeDetector } from '@finos/legend-art';
 import {
   type CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
 
@@ -137,7 +137,7 @@ export const CodeEditor: React.FC<{
       ...(extraEditorOptions ?? {}),
     });
     const model = editor.getModel();
-    model?.updateOptions({ tabSize: TAB_SIZE });
+    model?.updateOptions({ tabSize: DEFAULT_TAB_SIZE });
   }
 
   useEffect(

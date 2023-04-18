@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { useApplicationStore, TAB_SIZE } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  DEFAULT_TAB_SIZE,
+} from '@finos/legend-application';
 import {
   type SelectComponent,
   type TreeData,
@@ -499,7 +502,7 @@ export const getConflictsString = (
   Array.from(report.conflictInfo.entries())
     .map(([k, conflictVersionPaths]) => {
       const base = `project:\n${
-        ' '.repeat(TAB_SIZE) +
+        ' '.repeat(DEFAULT_TAB_SIZE) +
         generateGAVCoordinates(k.groupId, k.artifactId, undefined)
       }`;
       const versionConflictString = conflictVersionPaths
@@ -508,7 +511,7 @@ export const getConflictsString = (
           const paths = `paths:\n${conflictVersion.pathsToVersion
             .map(
               (p, idx) =>
-                `${' '.repeat(TAB_SIZE) + (idx + 1)}:\n${p
+                `${' '.repeat(DEFAULT_TAB_SIZE) + (idx + 1)}:\n${p
                   .map((l) => l.id)
                   .join('>')}`,
             )

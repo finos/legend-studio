@@ -52,13 +52,12 @@ import {
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { TAB_SIZE } from '../const.js';
+import { DEFAULT_DATE_TIME_FORMAT, DEFAULT_TAB_SIZE } from '../const.js';
 import {
   type VirtualAssistantDocumentationEntry,
   VIRTUAL_ASSISTANT_TAB,
 } from '../stores/AssistantService.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
-import { DATE_TIME_FORMAT } from '@finos/legend-graph';
 import { LegendApplicationTelemetryHelper } from '../application/LegendApplicationTelemetry.js';
 import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '../application/LegendApplicationDocumentation.js';
 
@@ -296,12 +295,12 @@ const VirtualAssistantSearchPanel = observer(() => {
     downloadFileUsingDataURI(
       `documentation-registry_${formatDate(
         new Date(Date.now()),
-        DATE_TIME_FORMAT,
+        DEFAULT_DATE_TIME_FORMAT,
       )}.json`,
       JSON.stringify(
         applicationStore.documentationService.publishDocRegistry(),
         undefined,
-        TAB_SIZE,
+        DEFAULT_TAB_SIZE,
       ),
       ContentType.APPLICATION_JSON,
     );
@@ -310,12 +309,12 @@ const VirtualAssistantSearchPanel = observer(() => {
     downloadFileUsingDataURI(
       `documentation-registry_${formatDate(
         new Date(Date.now()),
-        DATE_TIME_FORMAT,
+        DEFAULT_DATE_TIME_FORMAT,
       )}.json`,
       JSON.stringify(
         applicationStore.documentationService.publishContextualDocIndex(),
         undefined,
-        TAB_SIZE,
+        DEFAULT_TAB_SIZE,
       ),
       ContentType.APPLICATION_JSON,
     );

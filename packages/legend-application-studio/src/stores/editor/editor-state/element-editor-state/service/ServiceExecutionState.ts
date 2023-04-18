@@ -34,7 +34,7 @@ import {
 import {
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
 } from '@finos/legend-application';
 import {
   generatePath,
@@ -689,7 +689,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       const result = (yield promise) as ExecutionResult;
       if (this.queryRunPromise === promise) {
         this.setExecutionResultText(
-          stringifyLosslessJSON(result, undefined, TAB_SIZE),
+          stringifyLosslessJSON(result, undefined, DEFAULT_TAB_SIZE),
         );
         this.parameterState.setParameters([]);
 

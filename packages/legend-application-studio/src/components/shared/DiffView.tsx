@@ -20,7 +20,7 @@ import { editor as monacoEditorAPI } from 'monaco-editor';
 import {
   CODE_EDITOR_THEME,
   CODE_EDITOR_LANGUAGE,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
 import { useResizeDetector } from '@finos/legend-art';
@@ -102,8 +102,8 @@ const formatJSONLikeValue = (value: unknown, lossless: boolean): string =>
         ? tryToFormatLosslessJSONString(value)
         : tryToFormatJSONString(value)
       : lossless
-      ? stringifyLosslessJSON(value, undefined, TAB_SIZE)
-      : JSON.stringify(value, undefined, TAB_SIZE)
+      ? stringifyLosslessJSON(value, undefined, DEFAULT_TAB_SIZE)
+      : JSON.stringify(value, undefined, DEFAULT_TAB_SIZE)
     : '';
 
 export const JsonDiffView = observer(

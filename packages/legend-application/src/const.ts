@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-export const TAB_SIZE = 2;
+export const DEFAULT_TAB_SIZE = 2;
+export const DEFAULT_MONOSPACED_FONT_FAMILY = 'Roboto Mono';
+export const DEFAULT_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+
 export const DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH = 2;
 export const DEFAULT_TYPEAHEAD_SEARCH_LIMIT = 10;
-
-export const MONOSPACED_FONT_FAMILY = 'Roboto Mono';
 
 // TODO-PR: to be moved to `@finos/legend-lego`
 export enum CODE_EDITOR_THEME {

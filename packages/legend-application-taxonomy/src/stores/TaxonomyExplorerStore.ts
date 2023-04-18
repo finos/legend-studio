@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { type CommandRegistrar, TAB_SIZE } from '@finos/legend-application';
+import {
+  type CommandRegistrar,
+  DEFAULT_TAB_SIZE,
+} from '@finos/legend-application';
 import {
   type TreeData,
   type TreeNodeData,
@@ -395,7 +398,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
       yield this.graphManagerState.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
-          tabSize: TAB_SIZE,
+          tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,

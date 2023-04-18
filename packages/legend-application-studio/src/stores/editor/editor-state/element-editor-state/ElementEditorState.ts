@@ -30,7 +30,7 @@ import {
   GRAPH_MANAGER_EVENT,
   isElementReadOnly,
 } from '@finos/legend-graph';
-import { TAB_SIZE } from '@finos/legend-application';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import type { ElementFileGenerationState } from './ElementFileGenerationState.js';
 import type { ElementXTSchemaGenerationState } from './ElementExternalFormatGenerationState.js';
 
@@ -193,7 +193,7 @@ export abstract class ElementEditorState extends EditorState {
           },
         );
       this.setTextContent(
-        JSON.stringify(elementEntity.content, undefined, TAB_SIZE),
+        JSON.stringify(elementEntity.content, undefined, DEFAULT_TAB_SIZE),
       );
     } catch (error) {
       assertErrorThrown(error);

@@ -23,7 +23,7 @@ import {
   Range,
 } from 'monaco-editor';
 import {
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
   CODE_EDITOR_THEME,
   CODE_EDITOR_LANGUAGE,
   useApplicationStore,
@@ -374,7 +374,7 @@ const MergeConflictEditor = observer(
 
       const editorModel = editor.getModel();
       if (editorModel) {
-        editorModel.updateOptions({ tabSize: TAB_SIZE });
+        editorModel.updateOptions({ tabSize: DEFAULT_TAB_SIZE });
         if (error?.sourceInformation) {
           setErrorMarkers(editorModel, [
             {

@@ -72,7 +72,7 @@ import {
   resolveVersion,
 } from '@finos/legend-server-depot';
 import {
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
 } from '@finos/legend-application';
@@ -436,7 +436,7 @@ export abstract class QueryEditorStore {
       yield this.graphManagerState.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
-          tabSize: TAB_SIZE,
+          tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,

@@ -34,7 +34,7 @@ import { ACTIVITY_MODE } from '../editor/EditorConfig.js';
 import type { Entity } from '@finos/legend-storage';
 import { Project, Review } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
-import { TAB_SIZE } from '@finos/legend-application';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 
 export class WorkspaceReviewStore {
   readonly editorStore: EditorStore;
@@ -103,7 +103,7 @@ export class WorkspaceReviewStore {
       yield this.editorStore.graphManagerState.graphManager.initialize(
         {
           env: this.editorStore.applicationStore.config.env,
-          tabSize: TAB_SIZE,
+          tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
             queryBaseUrl:

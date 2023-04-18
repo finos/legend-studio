@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { TAB_SIZE } from '@finos/legend-application';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { indent } from '@finos/legend-shared';
 
 // ------------------------------------- Class -------------------------------------
@@ -189,7 +189,7 @@ export const createConnectionSnippetWithPostProcessorSuggestionSnippet = (
     auth: \${5:DefaultH2 {\\}};
     postProcessors:
     [
-    ${indent(snippetText, ' '.repeat(TAB_SIZE))}\n`;
+    ${indent(snippetText, ' '.repeat(DEFAULT_TAB_SIZE))}\n`;
 
 // ------------------------------------- Mapping -------------------------------------
 
@@ -368,4 +368,7 @@ export const DATA_WITH_MODEL_STORE_SNIPPET = `Data \${1:model::NewData}
 export const createDataElementSnippetWithEmbeddedDataSuggestionSnippet = (
   snippetText: string,
 ): string =>
-  `Data \${1:model::NewData}\n${indent(snippetText, ' '.repeat(TAB_SIZE))}\n}`;
+  `Data \${1:model::NewData}\n${indent(
+    snippetText,
+    ' '.repeat(DEFAULT_TAB_SIZE),
+  )}\n}`;

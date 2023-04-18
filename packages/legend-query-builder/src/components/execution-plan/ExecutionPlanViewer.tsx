@@ -60,7 +60,10 @@ import {
 } from '@finos/legend-graph';
 import { SQLExecutionNodeViewer } from './SQLExecutionNodeViewer.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
-import { CODE_EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
+import {
+  CODE_EDITOR_LANGUAGE,
+  DEFAULT_TAB_SIZE,
+} from '@finos/legend-application';
 
 /**
  * @modularize
@@ -456,7 +459,7 @@ const ExecutionPlanViewerContent = observer(
           </ResizablePanelGroup>
         ) : (
           <CodeEditor
-            inputValue={JSON.stringify(rawPlan, undefined, TAB_SIZE)}
+            inputValue={JSON.stringify(rawPlan, undefined, DEFAULT_TAB_SIZE)}
             isReadOnly={true}
             language={CODE_EDITOR_LANGUAGE.JSON}
             showMiniMap={true}

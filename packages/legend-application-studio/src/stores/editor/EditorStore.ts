@@ -84,7 +84,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   APPLICATION_EVENT,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from '../../application/LegendStudioEvent.js';
 import type { EditorMode } from './EditorMode.js';
@@ -635,7 +635,7 @@ export class EditorStore implements CommandRegistrar {
       this.graphManagerState.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
-          tabSize: TAB_SIZE,
+          tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,

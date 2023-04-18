@@ -32,7 +32,7 @@ import {
 } from './SettingService.js';
 import { configure as configureMobx } from 'mobx';
 import { KeyCode, KeyMod, editor as monacoEditorAPI } from 'monaco-editor';
-import { MONOSPACED_FONT_FAMILY } from '../const.js';
+import { DEFAULT_MONOSPACED_FONT_FAMILY } from '../const.js';
 import { LogEvent } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../application/LegendApplicationEvent.js';
 import { configureComponents } from '@finos/legend-art';
@@ -45,18 +45,18 @@ const configureCodeEditorComponent = async (
    * Since we use a custom fonts for text-editor, we want to make sure the font is loaded before any text-editor is opened
    * this is to ensure
    */
-  const fontLoadFailureErrorMessage = `Monospaced font '${MONOSPACED_FONT_FAMILY}' has not been loaded properly, text editor display problems might occur`;
+  const fontLoadFailureErrorMessage = `Monospaced font '${DEFAULT_MONOSPACED_FONT_FAMILY}' has not been loaded properly, text editor display problems might occur`;
   await Promise.all(
     [400, 700].map((weight) =>
-      document.fonts.load(`${weight} 1em ${MONOSPACED_FONT_FAMILY}`),
+      document.fonts.load(`${weight} 1em ${DEFAULT_MONOSPACED_FONT_FAMILY}`),
     ),
   )
     .then(() => {
-      if (document.fonts.check(`1em ${MONOSPACED_FONT_FAMILY}`)) {
+      if (document.fonts.check(`1em ${DEFAULT_MONOSPACED_FONT_FAMILY}`)) {
         monacoEditorAPI.remeasureFonts();
         applicationStore.logService.info(
           LogEvent.create(APPLICATION_EVENT.LOAD_TEXT_EDITOR_FONT__SUCCESS),
-          `Monospaced font '${MONOSPACED_FONT_FAMILY}' has been loaded`,
+          `Monospaced font '${DEFAULT_MONOSPACED_FONT_FAMILY}' has been loaded`,
         );
       } else {
         applicationStore.logService.error(

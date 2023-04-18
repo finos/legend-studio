@@ -37,7 +37,7 @@ import {
   getClassPropertyType,
 } from './ModelClassifierUtils.js';
 import type { MappingElementSource } from '../editor-state/element-editor-state/mapping/MappingEditorState.js';
-import { TAB_SIZE } from '@finos/legend-application';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { XMLBuilder } from 'fast-xml-parser';
 import { stringify as YAML_stringify } from 'yaml';
 
@@ -187,15 +187,15 @@ export const createMockDataForClassWithFormat = (
   const obj = createMockClassInstance(element, true, depth);
   switch (format) {
     case CLASS_MOCK_DATA_GENERATION_FORMAT.JSON:
-      return JSON.stringify(obj, undefined, TAB_SIZE);
+      return JSON.stringify(obj, undefined, DEFAULT_TAB_SIZE);
     case CLASS_MOCK_DATA_GENERATION_FORMAT.XML: {
       return new XMLBuilder({
-        indentBy: ' '.repeat(TAB_SIZE),
+        indentBy: ' '.repeat(DEFAULT_TAB_SIZE),
         format: true,
       }).build(obj);
     }
     case CLASS_MOCK_DATA_GENERATION_FORMAT.YAML:
-      return YAML_stringify(obj, { indent: TAB_SIZE });
+      return YAML_stringify(obj, { indent: DEFAULT_TAB_SIZE });
     default:
       throw new UnsupportedOperationError(
         `Can't create mock data for class with format '${format}'`,
@@ -212,7 +212,7 @@ export const createMockDataForMappingElementSource = (
       return JSON.stringify(
         createMockDataForClass(srcElement),
         undefined,
-        TAB_SIZE,
+        DEFAULT_TAB_SIZE,
       );
     } catch (error) {
       assertErrorThrown(error);

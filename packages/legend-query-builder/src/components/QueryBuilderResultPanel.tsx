@@ -46,7 +46,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   CODE_EDITOR_LANGUAGE,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -428,7 +428,7 @@ const QueryBuilderResultValues = observer(
         inputValue={JSON.stringify(
           extractExecutionResultValues(executionResult),
           null,
-          TAB_SIZE,
+          DEFAULT_TAB_SIZE,
         )}
         isReadOnly={true}
       />

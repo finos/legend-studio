@@ -80,7 +80,7 @@ import {
   ModelStore,
   reportGraphAnalytics,
 } from '@finos/legend-graph';
-import { TAB_SIZE } from '@finos/legend-application';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { flatData_setData } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
@@ -675,7 +675,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
           stringifyLosslessJSON(
             extractExecutionResultValues(result),
             undefined,
-            TAB_SIZE,
+            DEFAULT_TAB_SIZE,
           ),
         );
         this.updateAssertion();
@@ -754,7 +754,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
     this.testExecutionResultText = stringifyLosslessJSON(
       extractExecutionResultValues(result),
       undefined,
-      TAB_SIZE,
+      DEFAULT_TAB_SIZE,
     );
     let assertionMatched = false;
     if (

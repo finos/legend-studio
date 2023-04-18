@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { TAB_SIZE, type NavigationZone } from '@finos/legend-application';
+import {
+  DEFAULT_TAB_SIZE,
+  type NavigationZone,
+} from '@finos/legend-application';
 import {
   type DataSpaceAnalysisResult,
   DataSpaceViewerState,
@@ -87,7 +90,7 @@ export class DataSpacePreviewStore {
       yield this.graphManagerState.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
-          tabSize: TAB_SIZE,
+          tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,

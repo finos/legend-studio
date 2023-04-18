@@ -105,7 +105,7 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
-  TAB_SIZE,
+  DEFAULT_TAB_SIZE,
 } from '@finos/legend-application';
 import {
   objectInputData_setData,
@@ -795,7 +795,7 @@ export class MappingExecutionState extends MappingEditorTabState {
           stringifyLosslessJSON(
             extractExecutionResultValues(result),
             undefined,
-            TAB_SIZE,
+            DEFAULT_TAB_SIZE,
           ),
         );
 
