@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 28.0.1
+
+### Patch Changes
+
+- [#2125](https://github.com/finos/legend-studio/pull/2125) [`c487352a8`](https://github.com/finos/legend-studio/commit/c487352a874198ae6a1352b2def151bfeb837bd6) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - fix a bug in generating `V1_StoreEntitlementAnalysisInput`
+
 ## 28.0.0
 
 ### Major Changes

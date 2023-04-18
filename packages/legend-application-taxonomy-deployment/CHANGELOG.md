@@ -1,5 +1,7 @@
 # @finos/legend-application-taxonomy-deployment
 
+## 9.22.0
+
 ## 9.21.0
 
 ## 9.20.0
