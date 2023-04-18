@@ -3104,8 +3104,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       : undefined;
 
     if (graphData instanceof LiveGraphData) {
-      input.model = this.buildMappingModelCoverageAnalysisInputContextData(
+      input.model = this.buildExecutionInputGraphData(
         graphData.graph,
+        mapping,
+        undefined,
       );
     } else if (graphData instanceof GraphDataWithOrigin) {
       input.model = this.buildPureModelSDLCPointer(
