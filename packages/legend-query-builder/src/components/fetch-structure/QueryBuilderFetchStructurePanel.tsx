@@ -83,9 +83,15 @@ export const QueryBuilderFetchStructurePanel = observer(
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">fetch structure</div>
-            <QueryBuilderPanelIssueCountBadge
-              issues={fetchStructureState.implementation.validationIssues}
-            />
+            {fetchStructureState.implementation.fetchStructureValidationIssues
+              .length !== 0 && (
+              <QueryBuilderPanelIssueCountBadge
+                issues={
+                  fetchStructureState.implementation
+                    .fetchStructureValidationIssues
+                }
+              />
+            )}
           </div>
           <div className="panel__header__actions">
             <div className="query-builder__fetch__structure__modes">

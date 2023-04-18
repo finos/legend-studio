@@ -145,7 +145,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
       sideBarClassName: computed,
       isQuerySupported: computed,
-      validationIssues: computed,
+      allValidationIssues: computed,
 
       setShowFunctionsExplorerPanel: action,
       setShowParametersPanel: action,
@@ -554,8 +554,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     }
   }
 
-  get validationIssues(): string[] | undefined {
-    return this.fetchStructureState.implementation.validationIssues;
+  get allValidationIssues(): string[] {
+    return this.fetchStructureState.implementation.allValidationIssues;
   }
 
   /**

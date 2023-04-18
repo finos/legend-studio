@@ -693,6 +693,12 @@ const QueryBuilderWindowColumnEditor = observer(
     const isDuplicatedColumnName =
       tdsState.isDuplicateColumn(windowColumnState);
 
+    const isInvalidColumnName = windowState.invalidWindowColumnNames.some(
+      (col) =>
+        col.invalidColumnName === windowColumnState.columnName ||
+        col.missingColumnName === windowColumnState.columnName,
+    );
+
     // window columns
     const windowOptions = windowColumnState.possibleReferencedColumns;
     const addWindowOptions = windowOptions.filter(
@@ -1082,7 +1088,11 @@ const QueryBuilderWindowColumnEditor = observer(
               value={windowColumnState.columnName}
               onChange={changeColumnName}
               validationErrorMessage={
-                isDuplicatedColumnName ? 'Duplicated column' : undefined
+                isDuplicatedColumnName
+                  ? 'Duplicated column'
+                  : isInvalidColumnName
+                  ? 'Invalid column order'
+                  : undefined
               }
             />
           </div>
@@ -1175,9 +1185,11 @@ export const QueryBuilderTDSWindowPanel = observer(
           <div className="panel__header">
             <div className="panel__header__title">
               <div className="panel__header__title__label">Window Function</div>
-              <QueryBuilderPanelIssueCountBadge
-                issues={tdsWindowState.validationIssues}
-              />
+              {tdsWindowState.windowValidationIssues.length !== 0 && (
+                <QueryBuilderPanelIssueCountBadge
+                  issues={tdsWindowState.windowValidationIssues}
+                />
+              )}
             </div>
             <div className="panel__header__actions">
               <button

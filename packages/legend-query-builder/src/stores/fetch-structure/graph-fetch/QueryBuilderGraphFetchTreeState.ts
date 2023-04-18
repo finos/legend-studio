@@ -343,8 +343,12 @@ export class QueryBuilderGraphFetchTreeState
     return Array.from(new Set(ids).values());
   }
 
-  get validationIssues(): string[] | undefined {
-    return undefined;
+  get fetchStructureValidationIssues(): string[] {
+    return [];
+  }
+
+  get allValidationIssues(): string[] {
+    return [];
   }
 
   override initialize(): void {

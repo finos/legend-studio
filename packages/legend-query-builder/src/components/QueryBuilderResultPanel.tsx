@@ -485,17 +485,13 @@ export const QueryBuilderResultPanel = observer(
         ],
       });
     };
-    const queryValidationIssues = queryBuilderState.validationIssues;
-    const queryWindowValidationIssues =
-      fetchStructureImplementation instanceof QueryBuilderTDSState
-        ? fetchStructureImplementation.windowState.validationIssues
-        : undefined;
-    const queryWindowStateIsValid = !queryWindowValidationIssues;
 
-    const isSupportedQueryValid =
-      queryBuilderState.validationIssues && queryWindowStateIsValid;
+    const allValidationIssues = queryBuilderState.allValidationIssues;
+
+    const isSupportedQueryValid = allValidationIssues.length === 0;
+
     const isQueryValid =
-      !queryBuilderState.isQuerySupported || !isSupportedQueryValid;
+      !queryBuilderState.isQuerySupported || isSupportedQueryValid;
 
     const runQuery = (): void => {
       resultState.pressedRunQuery.inProgress();
@@ -624,12 +620,8 @@ export const QueryBuilderResultPanel = observer(
                   onClick={runQuery}
                   tabIndex={-1}
                   title={
-                    queryValidationIssues
-                      ? `Query is not valid:\n${queryValidationIssues
-                          .map((issue) => `\u2022 ${issue}`)
-                          .join('\n')}`
-                      : queryWindowValidationIssues
-                      ? `Query is not valid:\n${queryWindowValidationIssues
+                    allValidationIssues.length !== 0
+                      ? `Query is not valid:\n${allValidationIssues
                           .map((issue) => `\u2022 ${issue}`)
                           .join('\n')}`
                       : undefined

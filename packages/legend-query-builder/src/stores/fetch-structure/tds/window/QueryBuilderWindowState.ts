@@ -38,6 +38,11 @@ export interface QueryBuilderWindowColumnDragSource {
   columnState: QueryBuilderTDSColumnState;
 }
 
+export interface QueryBuilderInvalidWindowColumnName {
+  invalidColumnName: string;
+  missingColumnName: string;
+}
+
 export type QueryBuilderWindowDropTarget =
   | QueryBuilderProjectionColumnDragSource
   | QueryBuilderWindowColumnDragSource;
@@ -333,7 +338,8 @@ export class QueryBuilderWindowState implements Hashable {
     makeObservable(this, {
       windowColumns: observable,
       editColumn: observable,
-      validationIssues: computed,
+      invalidWindowColumnNames: computed,
+      windowValidationIssues: computed,
       addWindowColumn: action,
       removeColumn: action,
       moveColumn: action,
@@ -347,16 +353,53 @@ export class QueryBuilderWindowState implements Hashable {
     return !this.windowColumns.length;
   }
 
-  get validationIssues(): string[] | undefined {
+  get invalidWindowColumnNames(): QueryBuilderInvalidWindowColumnName[] {
+    const invalidColNames: QueryBuilderInvalidWindowColumnName[] = [];
+    const windowCols = this.windowColumns;
+    windowCols.forEach((item, index) => {
+      if (
+        item.operationState instanceof
+        QueryBuilderTDS_WindowAggreationOperatorState
+      ) {
+        if (
+          item.operationState.columnState instanceof
+          QueryBuilderWindowColumnState
+        ) {
+          const windowColumnName = item.operationState.columnState.columnName;
+          const hasExistingColumn = item.windowState.isColumnOrderValid(
+            windowColumnName,
+            index,
+          );
+          if (!hasExistingColumn) {
+            invalidColNames.push({
+              invalidColumnName: item.columnName,
+              missingColumnName: windowColumnName,
+            });
+          }
+        }
+      }
+    });
+    return invalidColNames;
+  }
+
+  get windowValidationIssues(): string[] {
+    const invalidWindowColumnNames = this.invalidWindowColumnNames;
+    const issues = [];
+    invalidWindowColumnNames.forEach((item) => {
+      issues.push(
+        `Column '${item.invalidColumnName}' cannot exist before column name '${item.missingColumnName}'`,
+      );
+    });
+
     const hasDuplicatedWindowColumns = this.windowColumns.some(
       (column) =>
         this.windowColumns.filter((c) => c.columnName === column.columnName)
           .length > 1,
     );
     if (hasDuplicatedWindowColumns) {
-      return ['Query has duplicated window columns'];
+      issues.push(`Query has duplicated window columns`);
     }
-    return undefined;
+    return issues;
   }
 
   get referencedTDSColumns(): QueryBuilderTDSColumnState[] {
@@ -386,6 +429,12 @@ export class QueryBuilderWindowState implements Hashable {
       this.windowColumns[fromIndex] = toCol;
       this.windowColumns[toIndex] = fromCol;
     }
+  }
+
+  isColumnOrderValid(columnName: string, indexRange: number): boolean {
+    return this.windowColumns
+      .slice(0, indexRange)
+      .some((col) => col.columnName === columnName);
   }
 
   get hashCode(): string {
