@@ -58,6 +58,7 @@ import type {
 import { ServiceExecutionMode } from '../../../../action/service/ServiceExecutionMode.js';
 import type {
   V1_CheckEntitlementsResult,
+  V1_EntitlementReportAnalyticsInput,
   V1_StoreEntitlementAnalysisInput,
   V1_SurveyDatasetsResult,
 } from './analytics/V1_StoreEntitlementAnalysis.js';
@@ -533,7 +534,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   ): Promise<PlainObject<V1_SurveyDatasetsResult>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.SURVEY_DATASET_ANALYTICS),
-      `${this._pure()}/analytics/entitlements/surveyDatasets`,
+      `${this._pure()}/analytics/store-entitlement/surveyDatasets`,
       input,
       {},
       undefined,
@@ -541,12 +542,12 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
-  checkEntitlements = (
-    input: PlainObject<V1_StoreEntitlementAnalysisInput>,
+  checkDatasetEntitlements = (
+    input: PlainObject<V1_EntitlementReportAnalyticsInput>,
   ): Promise<PlainObject<V1_CheckEntitlementsResult>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.STORE_ENTITLEMENT_ANALYTICS),
-      `${this._pure()}/analytics/entitlements/checkEntitlements`,
+      `${this._pure()}/analytics/store-entitlement/checkDatasetEntitlements`,
       input,
       {},
       undefined,

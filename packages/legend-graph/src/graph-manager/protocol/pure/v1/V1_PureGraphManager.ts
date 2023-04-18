@@ -279,6 +279,7 @@ import type { ParameterValue } from '../../../../graph/metamodel/pure/packageabl
 import type { Service } from '../../../../graph/metamodel/pure/packageableElements/service/Service.js';
 import { V1_ExecutionEnvironmentInstance } from './model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
 import {
+  V1_EntitlementReportAnalyticsInput,
   V1_StoreEntitlementAnalysisInput,
   V1_buildDatasetEntitlementReport,
   V1_buildDatasetSpecification,
@@ -299,6 +300,7 @@ import {
 } from '../../../GraphData.js';
 import type { DEPRECATED__MappingTest } from '../../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import { DEPRECATED__validate_MappingTest } from '../../../action/validation/DSL_Mapping_ValidationHelper.js';
+import { V1_transformDatasetSpecification } from './transformation/pureGraph/from/V1_StoreEntitlementTransformer.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -3082,12 +3084,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  async surveyDatasets(
+  private generateStoreEntitlementAnalysisInput(
     mapping: Mapping,
     runtime: PackageableRuntime,
     query: RawLambda | undefined,
     graphData: GraphData,
-  ): Promise<DatasetSpecification[]> {
+  ): V1_StoreEntitlementAnalysisInput {
     const input = new V1_StoreEntitlementAnalysisInput();
     input.clientVersion = V1_PureGraphManager.PROD_PROTOCOL_VERSION;
     input.mapping = mapping.path;
@@ -3116,10 +3118,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         graphData,
       );
     }
+    return input;
+  }
 
+  async surveyDatasets(
+    mapping: Mapping,
+    runtime: PackageableRuntime,
+    query: RawLambda | undefined,
+    graphData: GraphData,
+  ): Promise<DatasetSpecification[]> {
     return (
       await this.engine.surveyDatasets(
-        input,
+        this.generateStoreEntitlementAnalysisInput(
+          mapping,
+          runtime,
+          query,
+          graphData,
+        ),
         this.pluginManager.getPureProtocolProcessorPlugins(),
       )
     ).map((dataset) =>
@@ -3130,51 +3145,30 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  async checkEntitlements(
+  async checkDatasetEntitlements(
+    datasets: DatasetSpecification[],
     mapping: Mapping,
     runtime: PackageableRuntime,
     query: RawLambda | undefined,
     graphData: GraphData,
   ): Promise<DatasetEntitlementReport[]> {
-    const input = new V1_StoreEntitlementAnalysisInput();
-    input.clientVersion = V1_PureGraphManager.PROD_PROTOCOL_VERSION;
-    input.mapping = mapping.path;
-    input.runtime = runtime.path;
-    input.query = query
-      ? V1_transformRawLambda(
-          query,
-          new V1_GraphTransformerContextBuilder(
-            this.pluginManager.getPureProtocolProcessorPlugins(),
-          ).build(),
-        )
-      : undefined;
-
-    if (graphData instanceof LiveGraphData) {
-      input.model = this.buildMappingModelCoverageAnalysisInputContextData(
-        graphData.graph,
-      );
-    } else if (graphData instanceof GraphDataWithOrigin) {
-      input.model = this.buildPureModelSDLCPointer(
-        graphData.origin,
-        V1_PureGraphManager.PROD_PROTOCOL_VERSION,
-      );
-    } else {
-      throw new UnsupportedOperationError(
-        `Can't process unsupported graph data`,
+    const pureProtocolPlugins =
+      this.pluginManager.getPureProtocolProcessorPlugins();
+    const input = new V1_EntitlementReportAnalyticsInput();
+    input.storeEntitlementAnalyticsInput =
+      this.generateStoreEntitlementAnalysisInput(
+        mapping,
+        runtime,
+        query,
         graphData,
       );
-    }
-
+    input.reports = datasets.map((d) =>
+      V1_transformDatasetSpecification(d, pureProtocolPlugins),
+    );
     return (
-      await this.engine.checkEntitlements(
-        input,
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      )
+      await this.engine.checkDatasetEntitlements(input, pureProtocolPlugins)
     ).map((report) =>
-      V1_buildDatasetEntitlementReport(
-        report,
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      ),
+      V1_buildDatasetEntitlementReport(report, pureProtocolPlugins),
     );
   }
 

@@ -467,6 +467,7 @@ export {
   DatasetEntitlementAccessApprovedReport,
   DatasetEntitlementUnsupportedReport,
 } from './graph-manager/action/analytics/StoreEntitlementAnalysis.js';
+export { V1_transformDatasetSpecification } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_StoreEntitlementTransformer.js';
 
 // protocols
 export {

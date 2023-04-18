@@ -124,6 +124,11 @@ export type V1_DatasetSpecificationBuilder = (
   plugins: PureProtocolProcessorPlugin[],
 ) => DatasetSpecification | undefined;
 
+export type V1_DatasetSpecificationTransformer = (
+  protocol: DatasetSpecification,
+  plugins: PureProtocolProcessorPlugin[],
+) => V1_DatasetSpecification | undefined;
+
 export type V1_DatasetEntitlementReportBuilder = (
   protocol: V1_DatasetEntitlementReport,
   plugins: PureProtocolProcessorPlugin[],
@@ -245,6 +250,11 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * Get the list of builders for dataset specification.
    */
   V1_getExtraDatasetSpecificationBuilders?(): V1_DatasetSpecificationBuilder[];
+
+  /**
+   * Get the list of transformers for dataset specification.
+   */
+  V1_getExtraDatasetSpecificationTransformers?(): V1_DatasetSpecificationTransformer[];
 
   /**
    * Get the list of builders for dataset entitlement report.
