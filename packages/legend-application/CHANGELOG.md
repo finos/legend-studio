@@ -1,5 +1,67 @@
 # @finos/legend-application
 
+## 15.0.0
+
+### Major Changes
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `Pure` language utilities to `@finos/legend-lego/code-editor`, move `PackageableElementOption` logic to `@finos/legend-lego/graph-editor`, move `DocumnetationLink`, `TabManager`, etc. to `@finos/legend-lego/application`.
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `LegendApplication.loadApplication()` now takes a required parameter of type `ApplicationStore`. The base `ApplicationStore` itself has been re-written to have platform injected to it rather than having it dependent on the platform to initialize; as before, the current supported platform is `BrowserPlatform` which include `BrowserNavigator` which has been removed from `WebNavigator` -- the testing tooling has been updated accordingly. Also, we have slimmed down our testing tools further by removing redundant application test utilities such as `TEST__getApplicationStore()` and `TEST__provideMockedApplicationStore()`.
+
+  Renamed `LegendApplicationComponentFrameworkProvider` to `ApplicationComponentFrameworkProvider`
+
+  The idiomatic usage to render an application component now is as follows (using `LegendStudio` as an example):
+
+  ```ts
+  // LegendStudio.ts
+  export class LegendStudio extends LegendApplication {
+    // ...
+    async loadApplication(
+      applicationStore: LegendStudioApplicationStore,
+    ): Promise<void> {
+      createRoot(getApplicationRootElement()).render(
+        <ApplicationStoreProvider store={applicationStore}>
+          <LegendStudioWebApplication baseUrl={this.baseUrl} />
+        </ApplicationStoreProvider>,
+      );
+    }
+  }
+
+  // LegendStudioWebApplication.tsx
+  export const LegendStudioWebApplication = observer(
+    (props: { baseUrl: string }) => {
+      const { baseUrl } = props;
+
+      return (
+        // injects the browser platform to the application store
+        <BrowserEnvironmentProvider baseUrl={baseUrl}>
+          // provide application component framework
+          <LegendStudioFrameworkProvider>
+            // the web application router
+            <LegendStudioWebApplicationRouter />
+          </LegendStudioFrameworkProvider>
+        </BrowserEnvironmentProvider>
+      );
+    },
+  );
+  ```
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Moved all test utils to a separate export path `@finos/legend-application/test`;
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Simplify `getPackageableElementOptionFormatter()` to no longer need the graph to determine element origin
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE**: Renamed `ApplicationConfig.baseUrl` to `ApplicationConfig.baseAddress`, `LegendApplication.setup()`'s input `baseUrl` has also been renamed to `baseAddress`.
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Index local storage by application: top level application storage with index key default to the application name, e.g. `legend-studio`, `legend-query`, etc. This key is configurable via the config option `application.storageKey`. This change helps different legend applications being deployed on the same host have their settings separated.
+
+### Minor Changes
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - Support transient query parameters in `BrowserNavigator`, these query parameter can be internalized (consumed and stored as state) by the application navigator and then removed from the URL without reloading the page.
+
+### Patch Changes
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - Hide virtual assistant by default.
+
 ## 14.0.4
 
 ## 14.0.3

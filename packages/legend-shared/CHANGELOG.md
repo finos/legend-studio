@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 9.0.0
+
+### Major Changes
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Moved all test utils to a separate export path `@finos/legend-shared/test`.
+
 ## 8.2.0
 
 ## 8.1.0

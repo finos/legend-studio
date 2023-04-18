@@ -1,5 +1,7 @@
 # @finos/legend-application-studio-bootstrap
 
+## 9.21.0
+
 ## 9.20.0
 
 ## 9.19.0

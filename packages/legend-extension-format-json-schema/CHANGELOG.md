@@ -1,5 +1,11 @@
 # @finos/legend-extension-format-json-schema
 
+## 2.0.0
+
+### Major Changes
+
+- [#2113](https://github.com/finos/legend-studio/pull/2113) [`4e7b750ee`](https://github.com/finos/legend-studio/commit/4e7b750ee649033b66c87b84b4ff242ad3829580) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Partition exports into separate paths, `/graph` for graph and graph manager extensions, `/application` for generic application extensions, `/application-studio` for `Legend Studio` specific application extensions, and `/application-query` for `Legend Query` specific application extensions.
+
 ## 1.0.55
 
 ## 1.0.54
