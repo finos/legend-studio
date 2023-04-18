@@ -103,13 +103,11 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
 
   const navigator = MOCK__browserPlatform.getNavigator();
   createSpy(MOCK__browserPlatform, 'getNavigator').mockReturnValue(navigator);
+  createSpy(navigator, 'getCurrentAddress').mockImplementation(() => stubURL);
   const navigationActionSpy = createSpy(
     navigator,
     'goToAddress',
   ).mockImplementation(noop);
-  createSpy(navigator, 'getCurrentAddress').mockImplementationOnce(
-    () => stubURL,
-  );
 
   render(
     <ApplicationStoreProvider store={baseStore.applicationStore}>
