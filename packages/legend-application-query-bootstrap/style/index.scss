@@ -404,6 +404,21 @@
     }
   }
 
+  // ---------------------------- SQL Query Viewer Modal -------------------------------
+
+  .query-builder__sql__item {
+    border: 0.1rem solid (var(--color-legacylight-light-blue-250));
+  }
+
+  .query-builder__sql__item__label,
+  .query-builder__sql__item__label svg {
+    color: (var(--color-legacylight-dark-grey-200));
+  }
+
+  .query-builder__sql__item__label svg:hover {
+    color: (var(--color-legacylight-dark-grey-400));
+  }
+
   // ---------------------------- Diff Panel -------------------------------
 
   .query-builder__diff-panel {

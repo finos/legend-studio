@@ -91,6 +91,7 @@ import {
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
 import { ExecutionPlanViewer } from './execution-plan/ExecutionPlanViewer.js';
+import { SqlQueryViewer } from './sql-query/SqlQueryViewer.js';
 
 const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
@@ -722,6 +723,7 @@ export const QueryBuilderResultPanel = observer(
         <ExecutionPlanViewer
           executionPlanState={resultState.executionPlanState}
         />
+        <SqlQueryViewer resultState={resultState} />
       </div>
     );
   },
