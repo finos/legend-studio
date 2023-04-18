@@ -156,6 +156,7 @@ const V1_pureModelContextCompositeModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_PureModelContextType.COMPOSITE),
     serializer: usingModelSchema(V1_Protocol.serialization.schema),
+    // TODO: use `V1_pureModelContextDataPropSchema`
     data: object(V1_PureModelContextData),
     pointer: usingModelSchema(V1_pureModelContextPointerModelSchema),
   },
@@ -194,7 +195,16 @@ export const V1_serializePureModelContext = (
   if (pureModelContext instanceof V1_PureModelContextPointer) {
     return serialize(V1_pureModelContextPointerModelSchema, pureModelContext);
   } else if (pureModelContext instanceof V1_PureModelContextData) {
-    return V1_serializePureModelContextData(pureModelContext);
+    const rawPMCD = V1_serializePureModelContextData(pureModelContext);
+    if (pureModelContext.INTERNAL__rawDependencyEntities.length) {
+      rawPMCD.elements = [
+        ...(rawPMCD as { elements: PlainObject[] }).elements,
+        ...pureModelContext.INTERNAL__rawDependencyEntities.map(
+          (e) => e.content,
+        ),
+      ];
+    }
+    return rawPMCD;
   } else if (pureModelContext instanceof V1_PureModelContextComposite) {
     return serialize(V1_pureModelContextCompositeModelSchema, pureModelContext);
   } else if (pureModelContext instanceof V1_PureModelContextText) {
@@ -205,6 +215,12 @@ export const V1_serializePureModelContext = (
     pureModelContext,
   );
 };
+
+export const V1_pureModelContextDataPropSchema = custom(
+  (val: V1_PureModelContextData) => V1_serializePureModelContextData(val),
+  (val: PlainObject<V1_PureModelContextData>) =>
+    V1_deserializePureModelContextData(val),
+);
 
 export const V1_pureModelContextPropSchema = custom(
   (val: V1_PureModelContext) => V1_serializePureModelContext(val),

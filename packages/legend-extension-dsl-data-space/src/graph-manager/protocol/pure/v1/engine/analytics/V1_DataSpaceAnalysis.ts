@@ -16,11 +16,12 @@
 
 import {
   type V1_Multiplicity,
-  V1_PureModelContextData,
+  type V1_PureModelContextData,
   V1_multiplicityModelSchema,
   type V1_DatasetSpecification,
   type PureProtocolProcessorPlugin,
   V1_deserializeDatasetSpecification,
+  V1_pureModelContextDataPropSchema,
 } from '@finos/legend-graph';
 import {
   SerializationFactory,
@@ -398,7 +399,7 @@ const V1_dataSpaceAnalysisResultModelSchema = (
       (val) => V1_deserializeSupportInfo(val),
     ),
 
-    model: object(V1_PureModelContextData),
+    model: V1_pureModelContextDataPropSchema,
 
     executionContexts: customListWithSchema(
       V1_dataSpaceExecutionContextAnalysisResultModelSchema(plugins),

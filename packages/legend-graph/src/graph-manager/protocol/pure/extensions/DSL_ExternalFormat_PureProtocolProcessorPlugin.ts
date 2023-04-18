@@ -29,10 +29,8 @@ import {
   getOwnSchemaSet,
 } from '../../../helpers/DSL_ExternalFormat_GraphManagerHelper.js';
 import type { Connection } from '../../../../graph/metamodel/pure/packageableElements/connection/Connection.js';
-import type { Mapping } from '../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { PackageableElement } from '../../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import { PackageableElementReference } from '../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
-import type { Runtime } from '../../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
 import { ExternalFormatConnection } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_ExternalFormatConnection.js';
 import { UrlStream } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_UrlStream.js';
 import { Schema } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_Schema.js';
@@ -53,7 +51,6 @@ import {
   type V1_ElementProtocolSerializer,
   type V1_ElementTransformer,
   type V1_ExecutionInputCollector,
-  type V1_MappingModelCoverageAnalysisInputCollector,
   PureProtocolProcessorPlugin,
 } from '../PureProtocolProcessorPlugin.js';
 import type { V1_PureModelContextData } from '../v1/model/context/V1_PureModelContextData.js';
@@ -296,20 +293,6 @@ export class DSL_ExternalFormat_PureProtocolProcessorPlugin
   }
 
   override V1_getExtraExecutionInputCollectors(): V1_ExecutionInputCollector[] {
-    return [
-      (
-        graph: PureModel,
-        mapping: Mapping | undefined,
-        runtime: Runtime | undefined,
-        protocolGraph: V1_PureModelContextData,
-      ): V1_PackageableElement[] =>
-        protocolGraph.elements.filter(
-          (element) => element instanceof V1_SchemaSet,
-        ),
-    ];
-  }
-
-  override V1_getExtraMappingModelCoverageAnalysisInputCollectors(): V1_MappingModelCoverageAnalysisInputCollector[] {
     return [
       (
         graph: PureModel,

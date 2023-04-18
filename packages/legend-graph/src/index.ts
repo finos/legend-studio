@@ -262,8 +262,10 @@ export { V1_Engine } from './graph-manager/protocol/pure/v1/engine/V1_Engine.js'
 export {
   V1_PureModelContextType,
   V1_pureModelContextPropSchema,
+  V1_pureModelContextDataPropSchema,
   V1_entitiesToPureModelContextData,
   V1_deserializePureModelContextData,
+  V1_serializePureModelContextData,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
 export {
   V1_propertyPointerModelSchema,
