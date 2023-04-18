@@ -66,6 +66,7 @@ export class ServiceEditorState extends ElementEditorState {
       selectedTab: observable,
       setSelectedTab: action,
       resetExecutionState: action,
+      openToTestTab: action,
       service: computed,
       reprocess: action,
       searchUsers: flow,
@@ -90,6 +91,10 @@ export class ServiceEditorState extends ElementEditorState {
 
   setSelectedTab(tab: SERVICE_TAB): void {
     this.selectedTab = tab;
+  }
+
+  openToTestTab(): void {
+    this.selectedTab = SERVICE_TAB.TEST;
   }
 
   resetExecutionState(): void {

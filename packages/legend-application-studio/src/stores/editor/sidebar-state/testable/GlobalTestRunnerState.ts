@@ -52,6 +52,7 @@ import type {
   LegendStudioApplicationPlugin,
   TestableMetadataGetter,
 } from '../../../LegendStudioApplicationPlugin.js';
+import { ServiceEditorState } from '../../editor-state/element-editor-state/service/ServiceEditorState.js';
 
 // Testable Metadata
 export interface TestableMetadata {
@@ -564,6 +565,7 @@ export class GlobalTestRunnerState {
       runAllTests: flow,
       failureViewing: observable,
       setFailureViewing: action,
+      visitTestable: action,
     });
     this.editorStore = editorStore;
     this.sdlcState = sdlcState;
@@ -595,6 +597,17 @@ export class GlobalTestRunnerState {
       this.isRunningTests.isInProgress ||
       this.testables.some((s) => s.isRunningTests.isInProgress)
     );
+  }
+
+  visitTestable(testable: Testable): void {
+    if (testable instanceof PackageableElement) {
+      this.editorStore.graphEditorMode.openElement(testable);
+      const currentTab = this.editorStore.tabManagerState.currentTab;
+      // TODO: should be abstracted onto a `TestableEditorState`
+      if (currentTab instanceof ServiceEditorState) {
+        currentTab.openToTestTab();
+      }
+    }
   }
 
   setFailureViewing(val: AssertFail | TestError | undefined): void {
