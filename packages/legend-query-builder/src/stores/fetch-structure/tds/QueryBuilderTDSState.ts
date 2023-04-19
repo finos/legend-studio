@@ -267,7 +267,7 @@ export class QueryBuilderTDSState
     return Array.from(new Set(nodeIDs).values());
   }
 
-  get validationIssues(): string[] | undefined {
+  get fetchStructureValidationIssues(): string[] {
     const hasDuplicatedProjectionColumns = this.projectionColumns.some(
       (column) =>
         this.projectionColumns.filter((c) => c.columnName === column.columnName)
@@ -280,7 +280,16 @@ export class QueryBuilderTDSState
     if (hasNoProjectionColumns) {
       return ['Query has no projection columns'];
     }
-    return undefined;
+    return [];
+  }
+
+  get allValidationIssues(): string[] {
+    const fetchStructureValidationIssues = [
+      ...this.fetchStructureValidationIssues,
+      ...this.windowState.windowValidationIssues,
+    ];
+
+    return fetchStructureValidationIssues;
   }
 
   get tdsColumns(): QueryBuilderTDSColumnState[] {

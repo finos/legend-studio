@@ -45,7 +45,8 @@ export abstract class QueryBuilderFetchStructureImplementationState
   ) {
     makeObservable(this, {
       usedExplorerTreePropertyNodeIDs: computed,
-      validationIssues: computed,
+      fetchStructureValidationIssues: computed,
+      allValidationIssues: computed,
       hashCode: computed,
     });
 
@@ -55,7 +56,8 @@ export abstract class QueryBuilderFetchStructureImplementationState
 
   abstract get type(): string;
   abstract get usedExplorerTreePropertyNodeIDs(): string[];
-  abstract get validationIssues(): string[] | undefined;
+  abstract get fetchStructureValidationIssues(): string[];
+  abstract get allValidationIssues(): string[];
 
   abstract onClassChange(_class: Class | undefined): void;
   abstract revealCompilationError(compilationError: CompilationError): boolean;
