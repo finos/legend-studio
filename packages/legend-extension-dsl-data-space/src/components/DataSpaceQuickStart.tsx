@@ -108,6 +108,13 @@ const DataSpaceExecutableTDSResultView = observer(
             (
               plugin as DSL_DataSpace_LegendApplicationPlugin_Extension
             ).getExtraDataSpaceTDSExecutableActionConfigurations?.() ?? [],
+        )
+        .filter((configuration) =>
+          configuration.isSupported(
+            dataSpaceViewerState,
+            executableAnalysisResult,
+            tdsResult,
+          ),
         );
     const currentTabExtensionConfig =
       extractTDSExecutableActionConfigurations.find(

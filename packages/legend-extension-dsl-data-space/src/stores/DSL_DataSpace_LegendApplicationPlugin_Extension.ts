@@ -25,6 +25,11 @@ export type TDSExecutableActionConfiguration = {
   key: string;
   title: string;
   icon?: React.ReactNode | undefined;
+  isSupported: (
+    dataSpaceViewerState: DataSpaceViewerState,
+    executableAnalysisResult: DataSpaceExecutableAnalysisResult,
+    tdsResult: DataSpaceExecutableTDSResult,
+  ) => boolean;
   renderer: (
     dataSpaceViewerState: DataSpaceViewerState,
     executableAnalysisResult: DataSpaceExecutableAnalysisResult,
