@@ -833,14 +833,14 @@ export const QueryEditor = observer(() => {
             }}
             content={
               <MenuContent>
+                <MenuContentItem onClick={goToQuerySetup}>
+                  Back to query setup
+                </MenuContentItem>
                 <MenuContentItem
                   disabled={!appDocUrl}
                   onClick={goToDocumentation}
                 >
                   See Documentation
-                </MenuContentItem>
-                <MenuContentItem onClick={goToQuerySetup}>
-                  Back to query setup
                 </MenuContentItem>
                 <MenuContentDivider />
                 <MenuContentItem disabled={true}>Settings</MenuContentItem>
