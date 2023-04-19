@@ -109,8 +109,13 @@ export type V1_ClassInstanceValueProtocolDeserializer = (
   plugins: PureProtocolProcessorPlugin[],
 ) => unknown | undefined;
 
+export type V1_DatasetSpecificationSerializer = (
+  protocol: V1_DatasetSpecification,
+  plugins: PureProtocolProcessorPlugin[],
+) => PlainObject<V1_DatasetSpecification> | undefined;
+
 export type V1_DatasetSpecificationDeserializer = (
-  protocol: PlainObject<V1_DatasetSpecification>,
+  json: PlainObject<V1_DatasetSpecification>,
   plugins: PureProtocolProcessorPlugin[],
 ) => V1_DatasetSpecification | undefined;
 
@@ -235,6 +240,11 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * Get the list of deserializers for class instance value.
    */
   V1_getExtraClassInstanceValueProtocolSerializers?(): V1_ClassInstanceValueProtocolSerializer[];
+
+  /**
+   * Get the list of serializers for dataset specification.
+   */
+  V1_getExtraDatasetSpecificationProtocolSerializers?(): V1_DatasetSpecificationSerializer[];
 
   /**
    * Get the list of serializers for dataset specification.

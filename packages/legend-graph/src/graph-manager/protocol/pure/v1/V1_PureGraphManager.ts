@@ -283,6 +283,7 @@ import {
   V1_StoreEntitlementAnalysisInput,
   V1_buildDatasetEntitlementReport,
   V1_buildDatasetSpecification,
+  V1_transformDatasetSpecification,
 } from './engine/analytics/V1_StoreEntitlementAnalysis.js';
 import type { PackageableRuntime } from '../../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 import type {
@@ -300,7 +301,6 @@ import {
 } from '../../../GraphData.js';
 import type { DEPRECATED__MappingTest } from '../../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import { DEPRECATED__validate_MappingTest } from '../../../action/validation/DSL_Mapping_ValidationHelper.js';
-import { V1_transformDatasetSpecification } from './transformation/pureGraph/from/V1_StoreEntitlementTransformer.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -3164,8 +3164,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         query,
         graphData,
       );
-    input.reports = datasets.map((d) =>
-      V1_transformDatasetSpecification(d, pureProtocolPlugins),
+    input.reports = datasets.map((dataset) =>
+      V1_transformDatasetSpecification(dataset, pureProtocolPlugins),
     );
     return (
       await this.engine.checkDatasetEntitlements(input, pureProtocolPlugins)

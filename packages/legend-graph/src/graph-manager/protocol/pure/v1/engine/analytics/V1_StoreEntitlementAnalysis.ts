@@ -76,6 +76,7 @@ export class V1_StoreEntitlementAnalysisInput {
 
 export enum V1_DatasetSpecificationType {
   DATASET_SPECIFICATION = 'datasetSpecification',
+  RELATIONAL_DATABASE_TABLE_SPECIFICATION = 'relationalDatabaseTable',
 }
 
 export class V1_DatasetSpecification {
@@ -118,25 +119,42 @@ const V1_deserializeDatasetSpecification = (
   }
 };
 
+const V1_serializeDatasetSpecification = (
+  protocol: V1_DatasetSpecification,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_DatasetSpecification> => {
+  const extraSerializers = plugins.flatMap(
+    (plugin) =>
+      plugin.V1_getExtraDatasetSpecificationProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraSerializers) {
+    const json = serializer(protocol, plugins);
+    if (json) {
+      return json;
+    }
+  }
+  return serialize(V1_DatasetSpecification.serialization.schema);
+};
+
 export class V1_EntitlementReportAnalyticsInput {
   storeEntitlementAnalyticsInput!: V1_StoreEntitlementAnalysisInput;
   reports: V1_DatasetSpecification[] = [];
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_EntitlementReportAnalyticsInput, {
-      storeEntitlementAnalyticsInput: usingModelSchema(
-        V1_StoreEntitlementAnalysisInput.serialization.schema,
-      ),
-      reports: list(
-        custom(
-          (val) => serialize(V1_DatasetSpecification.serialization.schema, val),
-          (val) =>
-            deserialize(V1_DatasetSpecification.serialization.schema, val),
-        ),
-      ),
-    }),
-  );
 }
+
+export const V1_entitlementReportAnalyticsInputModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_EntitlementReportAnalyticsInput> =>
+  createModelSchema(V1_EntitlementReportAnalyticsInput, {
+    storeEntitlementAnalyticsInput: usingModelSchema(
+      V1_StoreEntitlementAnalysisInput.serialization.schema,
+    ),
+    reports: list(
+      custom(
+        (val) => V1_serializeDatasetSpecification(val, plugins),
+        (val) => V1_deserializeDatasetSpecification(val, plugins),
+      ),
+    ),
+  });
 
 export class V1_SurveyDatasetsResult {
   datasets: V1_DatasetSpecification[] = [];
@@ -171,6 +189,25 @@ export const V1_buildDatasetSpecification = (
   metamodel.name = protocol.name;
   metamodel.type = protocol.type;
   return metamodel;
+};
+
+export const V1_transformDatasetSpecification = (
+  element: DatasetSpecification,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_DatasetSpecification => {
+  const extraTransformers = plugins.flatMap(
+    (plugin) => plugin.V1_getExtraDatasetSpecificationTransformers?.() ?? [],
+  );
+  for (const transformer of extraTransformers) {
+    const metamodel = transformer(element, plugins);
+    if (metamodel) {
+      return metamodel;
+    }
+  }
+  const protocol = new V1_DatasetSpecification();
+  protocol.name = element.name;
+  protocol.type = element.type;
+  return protocol;
 };
 
 export abstract class V1_DatasetEntitlementReport {
