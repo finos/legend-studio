@@ -192,6 +192,17 @@
   }
 }
 
+.data-space__viewer__scroller {
+  @include flexCenter;
+
+  position: absolute;
+  bottom: 2rem;
+  right: 3rem;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 0.2rem;
+}
+
 .data-space__viewer__activity-bar {
   display: flex;
   flex-direction: column;

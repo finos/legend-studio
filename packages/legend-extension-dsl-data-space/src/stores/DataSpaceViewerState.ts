@@ -67,10 +67,17 @@ class DataSpaceLayoutState {
 
   isExpandedModeEnabled = false;
 
+  frame?: Element | undefined;
+  isTopScrollerVisible = false;
+
   constructor(dataSpaceViewerState: DataSpaceViewerState) {
     makeObservable(this, {
       isExpandedModeEnabled: observable,
+      isTopScrollerVisible: observable,
+      frame: observable.ref,
       enableExpandedMode: action,
+      setFrame: action,
+      setTopScrollerVisible: action,
     });
 
     this.dataSpaceViewerState = dataSpaceViewerState;
@@ -78,6 +85,14 @@ class DataSpaceLayoutState {
 
   enableExpandedMode(val: boolean): void {
     this.isExpandedModeEnabled = val;
+  }
+
+  setFrame(val: Element | undefined): void {
+    this.frame = val;
+  }
+
+  setTopScrollerVisible(val: boolean): void {
+    this.isTopScrollerVisible = val;
   }
 }
 
