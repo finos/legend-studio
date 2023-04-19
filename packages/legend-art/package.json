@@ -22,7 +22,6 @@
   "type": "module",
   "exports": {
     ".": "./lib/index.js",
-    "./grid": "./lib/grid.js",
     "./markdown/test/MockedReactMarkdown.js": "./lib/markdown/__test-utils__/MockedReactMarkdown.js",
     "./markdown/test/MockedRemarkGFM.js": "./lib/markdown/__test-utils__/MockedRemarkGFM.js",
     "./lib/index.css": "./lib/index.css"
