@@ -38,7 +38,7 @@ export interface QueryBuilderWindowColumnDragSource {
   columnState: QueryBuilderTDSColumnState;
 }
 
-export interface QueryBuilderInvalidWindowColumnName {
+interface QueryBuilderInvalidWindowColumnName {
   invalidColumnName: string;
   missingColumnName: string;
 }

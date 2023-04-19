@@ -620,7 +620,7 @@ export const QueryBuilderResultPanel = observer(
                   onClick={runQuery}
                   tabIndex={-1}
                   title={
-                    allValidationIssues.length !== 0
+                    allValidationIssues.length
                       ? `Query is not valid:\n${allValidationIssues
                           .map((issue) => `\u2022 ${issue}`)
                           .join('\n')}`
