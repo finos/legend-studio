@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 3.0.3
+
+### Patch Changes
+
+- [#2101](https://github.com/finos/legend-studio/pull/2101) [`6d381f312`](https://github.com/finos/legend-studio/commit/6d381f312e61cf9d43e8e9f8a758da6203930180) ([@xannem](https://github.com/xannem)) - Add validation error for invalid olap column arrangement
+
 ## 3.0.2
 
 ## 3.0.1
