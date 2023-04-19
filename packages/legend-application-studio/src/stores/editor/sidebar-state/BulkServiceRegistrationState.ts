@@ -16,12 +16,19 @@
 import { action, makeObservable, observable, flow } from 'mobx';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import type { EditorStore } from '../EditorStore.js';
-import type { ServiceRegistrationResult, Service } from '@finos/legend-graph';
+import {
+  type ServiceRegistrationResult,
+  type Service,
+  ServiceRegistrationSuccess,
+  ServiceRegistrationFail,
+} from '@finos/legend-graph';
 import {
   type GeneratorFn,
   guaranteeNonNullable,
   assertErrorThrown,
   LogEvent,
+  ActionState,
+  assertTrue,
 } from '@finos/legend-shared';
 import { Version } from '@finos/legend-server-sdlc';
 import {
@@ -29,73 +36,204 @@ import {
   ServiceRegistrationState,
 } from '../editor-state/element-editor-state/service/ServiceRegistrationState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
-import type { ServiceRegistrationEnvironmentConfig } from '../../../application/LegendStudioApplicationConfig.js';
+import { type ServiceRegistrationEnvironmentConfig } from '../../../application/LegendStudioApplicationConfig.js';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 
-export class BulkServiceRegistrationState extends ServiceConfigState {
-  sdlcState: EditorSDLCState;
-  registrationResult: ServiceRegistrationResult[] | undefined;
-  showSuccessModel = false;
+export enum REGISTRATION_RESULT {
+  DID_NOT_RUN = 'DID_NOT_RUN',
+  FAILED = 'FAILED',
+  SUCCESS = 'SUCCESS',
+  IN_PROGRESS = 'IN_PROGRESS',
+}
+
+export const getServiceRegistrationResult = (
+  isServiceRegistering: boolean,
+  result: ServiceRegistrationResult | undefined,
+): REGISTRATION_RESULT => {
+  if (isServiceRegistering) {
+    return REGISTRATION_RESULT.IN_PROGRESS;
+  } else if (result instanceof ServiceRegistrationSuccess) {
+    return REGISTRATION_RESULT.SUCCESS;
+  } else if (result instanceof ServiceRegistrationFail) {
+    return REGISTRATION_RESULT.FAILED;
+  }
+  return REGISTRATION_RESULT.DID_NOT_RUN;
+};
+
+export class BulkServiceRegistrationState {
+  globalBulkServiceRegistrationState: GlobalBulkServiceRegistrationState;
+  registrationResult: ServiceRegistrationResult | undefined;
+  service: Service;
+  showFailingView = false;
+  isSelected = false;
+
+  constructor(
+    globalBulkServiceRegistrationState: GlobalBulkServiceRegistrationState,
+    service: Service,
+  ) {
+    makeObservable(this, {
+      service: observable,
+      registrationResult: observable,
+      setShowFailingView: action,
+      toggleIsSelected: action,
+      isSelected: observable,
+    });
+    this.globalBulkServiceRegistrationState =
+      globalBulkServiceRegistrationState;
+    this.service = service;
+  }
+
+  toggleIsSelected(): void {
+    this.isSelected = !this.isSelected;
+  }
+  setShowFailingView(val: boolean): void {
+    this.showFailingView = val;
+  }
+
+  handleRegistrationResult(
+    registrationResult: ServiceRegistrationResult,
+  ): void {
+    try {
+      assertTrue(registrationResult.service?.pattern === this.service.pattern);
+      this.registrationResult = registrationResult;
+    } catch (error) {
+      assertErrorThrown(error);
+    }
+  }
+}
+
+export class GlobalBulkServiceRegistrationState {
+  readonly editorStore: EditorStore;
+  readonly sdlcState: EditorSDLCState;
+  bulkServiceRegistrationState: BulkServiceRegistrationState[] | undefined;
+  serviceConfigState: ServiceConfigState;
+  isServiceRegistering = ActionState.create();
+  showRegistrationConfig = false;
+  failingView: ServiceRegistrationFail | undefined;
+  selectAllServices = false;
+  activatePostRegistration = true;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    super(
+    makeObservable(this, {
+      editorStore: false,
+      sdlcState: false,
+      bulkServiceRegistrationState: observable,
+      init: action,
+      setShowRegConfig: action,
+      showRegistrationConfig: observable,
+      registerServices: flow,
+      failingView: observable,
+      setFailingView: action,
+      setSelectAll: action,
+      selectAllServices: observable,
+      toggleSelectAllServices: action,
+      activatePostRegistration: observable,
+      setActivatePostRegistration: action,
+    });
+    this.editorStore = editorStore;
+    this.sdlcState = sdlcState;
+    this.serviceConfigState = new ServiceConfigState(
       editorStore,
-      editorStore.applicationStore.config.options
-        .TEMPORARY__serviceRegistrationConfig,
+      editorStore.applicationStore.config.options.TEMPORARY__serviceRegistrationConfig,
       editorStore.sdlcServerClient.featuresConfigHasBeenFetched &&
         editorStore.sdlcServerClient.features.canCreateVersion,
     );
+  }
 
-    makeObservable(this, {
-      showSuccessModel: observable,
-      editorStore: false,
-      sdlcState: false,
-      registerServices: flow,
-      setSuccessModal: action,
-    });
-    this.sdlcState = sdlcState;
+  init(force?: boolean): void {
+    if (!this.bulkServiceRegistrationState || force) {
+      this.bulkServiceRegistrationState =
+        this.editorStore.graphManagerState.graph.ownServices.map(
+          (service) => new BulkServiceRegistrationState(this, service),
+        );
+    }
   }
-  setSuccessModal(val: boolean): void {
-    this.showSuccessModel = val;
+
+  toggleSelectAllServices(val: boolean): void {
+    this.selectAllServices = val;
   }
+
+  setSelectAll(val: boolean): void {
+    this.bulkServiceRegistrationStates.map(
+      (serviceRegistrationState) => (serviceRegistrationState.isSelected = val),
+    );
+  }
+
+  setFailingView(val: ServiceRegistrationFail | undefined): void {
+    this.failingView = val;
+  }
+
+  setShowRegConfig(val: boolean): void {
+    this.showRegistrationConfig = val;
+  }
+
+  setActivatePostRegistration(val: boolean): void {
+    this.activatePostRegistration = val;
+  }
+
+  get bulkServiceRegistrationStates(): BulkServiceRegistrationState[] {
+    return this.bulkServiceRegistrationState ?? [];
+  }
+
   *registerServices(): GeneratorFn<void> {
-    this.registrationState.inProgress();
-    const bulkService = this.editorStore.graphManagerState.graph.ownServices;
+    this.isServiceRegistering.inProgress();
+    const selectedServices = this.bulkServiceRegistrationStates
+      .filter((bulkRegState) => bulkRegState.isSelected)
+      .map((serviceState) => serviceState.service);
+
     try {
       this.validateBulkServiceForRegistration(
         this.editorStore,
-        bulkService,
-        this.registrationOptions,
-        this.enableModesWithVersioning,
+        selectedServices,
+        this.serviceConfigState.registrationOptions,
+        this.serviceConfigState.enableModesWithVersioning,
       );
       const projectConfig = guaranteeNonNullable(
         this.editorStore.projectConfigurationEditorState.projectConfiguration,
       );
 
       const versionInput =
-        this.projectVersion instanceof Version
-          ? this.projectVersion.id.id
+        this.serviceConfigState.projectVersion instanceof Version
+          ? this.serviceConfigState.projectVersion.id.id
           : undefined;
 
       const config = guaranteeNonNullable(
-        this.options.find((info) => info.env === this.serviceEnv),
+        this.serviceConfigState.options.find(
+          (info) => info.env === this.serviceConfigState.serviceEnv,
+        ),
       );
-      this.registrationResult =
+      const registrationResults =
         (yield this.editorStore.graphManagerState.graphManager.bulkServiceRegistration(
-          bulkService,
+          selectedServices,
           this.editorStore.graphManagerState.graph,
           projectConfig.groupId,
           projectConfig.artifactId,
           versionInput,
           config.executionUrl,
-          guaranteeNonNullable(this.serviceExecutionMode),
+          guaranteeNonNullable(this.serviceConfigState.serviceExecutionMode),
           {
-            TEMPORARY__useStoreModel: this.TEMPORARY__useStoreModel,
+            TEMPORARY__useStoreModel:
+              this.serviceConfigState.TEMPORARY__useStoreModel,
           },
         )) as ServiceRegistrationResult[];
 
-      this.showSuccessModel = true;
+      const successfulResults = registrationResults.filter(
+        (result) => result instanceof ServiceRegistrationSuccess,
+      ) as ServiceRegistrationSuccess[];
+
+      if (this.activatePostRegistration) {
+        yield Promise.resolve(
+          successfulResults.map((serviceResult) =>
+            this.editorStore.graphManagerState.graphManager.activateService(
+              config.executionUrl,
+              serviceResult.serviceInstanceId,
+            ),
+          ),
+        );
+      }
+      this.handleResults(registrationResults);
+      this.isServiceRegistering.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -104,8 +242,8 @@ export class BulkServiceRegistrationState extends ServiceConfigState {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.registrationState.reset();
-      this.registrationState.setMessage(undefined);
+      this.serviceConfigState.registrationState.reset();
+      this.isServiceRegistering.fail();
     }
   }
 
@@ -123,6 +261,19 @@ export class BulkServiceRegistrationState extends ServiceConfigState {
         enableModesWithVersioning,
       );
       serviceRegState.validateServiceForRegistration();
+    });
+  }
+
+  handleResults(registrationResults: ServiceRegistrationResult[]): void {
+    registrationResults.forEach((registrationResult) => {
+      const registrationState = this.bulkServiceRegistrationStates.find(
+        (bulkRegState) =>
+          bulkRegState.service.path ===
+          guaranteeNonNullable(registrationResult.service).path,
+      );
+      if (registrationState) {
+        registrationState.handleRegistrationResult(registrationResult);
+      }
     });
   }
 }

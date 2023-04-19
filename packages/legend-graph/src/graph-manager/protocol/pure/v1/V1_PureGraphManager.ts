@@ -40,7 +40,6 @@ import {
   uniq,
   IllegalStateError,
   filterByType,
-  getNullableFirstEntry,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -113,7 +112,6 @@ import { V1_RawBaseExecutionContext } from './model/rawValueSpecification/V1_Raw
 import {
   type V1_GraphBuilderContext,
   V1_GraphBuilderContextBuilder,
-  V1_buildFullPath,
 } from './transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import { V1_PureModelContextPointer } from './model/context/V1_PureModelContextPointer.js';
 import { V1_Engine } from './engine/V1_Engine.js';
@@ -475,6 +473,11 @@ export interface V1_EngineSetupConfig {
   env: string;
   tabSize: number;
   clientConfig: ServerClientConfig;
+}
+
+interface ServiceRegistrationInput {
+  service: Service;
+  context: V1_PureModelContext;
 }
 
 export class V1_PureGraphManager extends AbstractPureGraphManager {
@@ -2723,7 +2726,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: ServiceRegistrationOptions,
   ): Promise<ServiceRegistrationResult[]> {
     const serverServiceInfo = await this.engine.getServerServiceInfo();
-    const input: V1_PureModelContext[] = [];
+    const input: ServiceRegistrationInput[] = [];
 
     const protocol = new V1_Protocol(
       V1_PureGraphManager.PURE_PROTOCOL_NAME,
@@ -2731,13 +2734,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     switch (executionMode) {
       case ServiceExecutionMode.FULL_INTERACTIVE: {
-        services.forEach((service) => {
-          const data = this.prunePureModelContextData(
-            this.createServiceRegistrationInputGraphData(graph),
-          );
-          data.elements.push(this.elementToProtocol<V1_Service>(service));
-          data.origin = new V1_PureModelContextPointer(protocol);
-          input.push(data);
+        const pmcp = this.createBulkServiceRegistrationInput(graph, services);
+        pmcp.forEach((data) => {
+          const pmcd = data.context as V1_PureModelContextData;
+          pmcd.origin = new V1_PureModelContextPointer(protocol);
+          input.push({ service: data.service, context: pmcd });
         });
         break;
       }
@@ -2787,7 +2788,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             );
           }
           // composite input
-          input.push(new V1_PureModelContextComposite(protocol, data, pointer));
+          input.push({
+            service: service,
+            context: new V1_PureModelContextComposite(protocol, data, pointer),
+          });
         });
         break;
       }
@@ -2800,7 +2804,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             service.path,
           );
           sdlcInfo.packageableElementPointers.push(data);
-          input.push(pointer);
+          input.push({ service: service, context: pointer });
         });
         break;
       }
@@ -2813,17 +2817,17 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
     const results = (
       await Promise.all(
-        input.map(async (graphData) => {
+        input.map(async (inputData) => {
           try {
             const result = await this.engine.registerService(
-              graphData,
+              inputData.context,
               server,
               executionMode,
               Boolean(options?.TEMPORARY__useStoreModel),
             );
             if (result.status === 'success') {
               return new ServiceRegistrationSuccess(
-                undefined,
+                inputData.service,
                 result.serverURL,
                 result.pattern,
                 result.serviceInstanceId,
@@ -2832,23 +2836,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             return undefined;
           } catch (error) {
             assertErrorThrown(error);
-            const result = new ServiceRegistrationFail(
-              undefined,
+            return new ServiceRegistrationFail(
+              inputData.service,
               error.message,
             );
-            if (graphData instanceof V1_PureModelContextData) {
-              const servicePackage = getNullableFirstEntry(
-                graphData.elements.filter(filterByType(V1_Service)),
-              )?.package;
-              const serviceName = getNullableFirstEntry(
-                graphData.elements.filter(filterByType(V1_Service)),
-              )?.name;
-              const service = graph.getOwnService(
-                V1_buildFullPath(servicePackage, serviceName),
-              );
-              result.service = service;
-            }
-            return result;
           }
         }),
       )
@@ -2885,7 +2876,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     return prunedGraphData;
   };
-
+  private createBulkServiceRegistrationInput = (
+    graph: PureModel,
+    services: Service[],
+  ): ServiceRegistrationInput[] => {
+    const graphData = this.getFullGraphModelData(graph);
+    const results: ServiceRegistrationInput[] = [];
+    services.forEach((service) => {
+      const prunedGraphData = this.prunePureModelContextData(
+        graphData,
+        (element: V1_PackageableElement) => !(element instanceof V1_Service),
+      );
+      prunedGraphData.elements.push(
+        this.elementToProtocol<V1_Service>(service),
+      );
+      results.push({ service: service, context: prunedGraphData });
+    });
+    return results;
+  };
   async TEMPORARY__deploySnowflakeService(
     query: RawLambda,
     graph: PureModel,
@@ -2909,8 +2917,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       );
   }
-
-  // --------------------------------------------- Query ---------------------------------------------
+  // -----------------------------/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html---------------- Query ---------------------------------------------
 
   async searchQueries(
     searchSpecification: QuerySearchSpecification,
