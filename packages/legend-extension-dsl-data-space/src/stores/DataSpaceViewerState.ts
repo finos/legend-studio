@@ -107,8 +107,11 @@ export class DataSpaceViewerState {
     | ((zone: NavigationZone | undefined) => void)
     | undefined;
 
-  readonly dataAccessState: DataSpaceViewerDataAccessState;
   readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
+
+  // TODO: change this so it holds the data access state for each execution context
+  readonly dataAccessState: DataSpaceViewerDataAccessState;
+  // TODO: have a state similar to dataAccessState for each executables
 
   _renderer?: DiagramRenderer | undefined;
   currentDiagram?: DataSpaceDiagramAnalysisResult | undefined;

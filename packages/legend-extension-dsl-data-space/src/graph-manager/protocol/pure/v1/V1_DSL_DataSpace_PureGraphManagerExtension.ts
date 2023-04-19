@@ -28,6 +28,8 @@ import {
   V1_EngineRuntime,
   V1_Class,
   GRAPH_MANAGER_EVENT,
+  V1_buildDatasetSpecification,
+  type PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -68,12 +70,13 @@ import {
 } from '../../../action/analytics/DataSpaceAnalysis.js';
 import { DSL_DataSpace_PureGraphManagerExtension } from '../DSL_DataSpace_PureGraphManagerExtension.js';
 import {
-  V1_DataSpaceAnalysisResult,
+  type V1_DataSpaceAnalysisResult,
   V1_DataSpaceAssociationDocumentationEntry,
   V1_DataSpaceClassDocumentationEntry,
   V1_DataSpaceEnumerationDocumentationEntry,
   V1_DataSpaceExecutableTDSResult,
   V1_DataSpaceServiceExecutableInfo,
+  V1_deserializeDataSpaceAnalysisResult,
 } from './engine/analytics/V1_DataSpaceAnalysis.js';
 import { getDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 
@@ -141,13 +144,16 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       );
     }
     return this.buildDataSpaceAnalytics(
-      V1_DataSpaceAnalysisResult.deserialize(analysisResult),
+      analysisResult,
+      this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
     );
   }
 
   private async buildDataSpaceAnalytics(
-    analysisResult: V1_DataSpaceAnalysisResult,
+    json: PlainObject<V1_DataSpaceAnalysisResult>,
+    plugins: PureProtocolProcessorPlugin[],
   ): Promise<DataSpaceAnalysisResult> {
+    const analysisResult = V1_deserializeDataSpaceAnalysisResult(json, plugins);
     const result = new DataSpaceAnalysisResult();
     result.name = analysisResult.name;
     result.package = analysisResult.package;
@@ -310,6 +316,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       contextAnalysisResult.compatibleRuntimes = context.compatibleRuntimes.map(
         (runtime) => graph.getRuntime(runtime),
       );
+      contextAnalysisResult.datasets = context.datasets.map((dataset) =>
+        V1_buildDatasetSpecification(dataset, plugins),
+      );
       result.executionContextsIndex.set(
         contextAnalysisResult.name,
         contextAnalysisResult,
@@ -445,6 +454,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         executable.title = executableProtocol.title;
         executable.description = executableProtocol.description;
         executable.executable = executableProtocol.executable;
+        executable.datasets = executableProtocol.datasets.map((dataset) =>
+          V1_buildDatasetSpecification(dataset, plugins),
+        );
         if (
           executableProtocol.info instanceof V1_DataSpaceServiceExecutableInfo
         ) {

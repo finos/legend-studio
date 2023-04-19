@@ -18,6 +18,9 @@ import {
   type V1_Multiplicity,
   V1_PureModelContextData,
   V1_multiplicityModelSchema,
+  type V1_DatasetSpecification,
+  type PureProtocolProcessorPlugin,
+  V1_deserializeDatasetSpecification,
 } from '@finos/legend-graph';
 import {
   SerializationFactory,
@@ -39,6 +42,7 @@ import {
   optional,
   primitive,
   SKIP,
+  type ModelSchema,
 } from 'serializr';
 import type { V1_DataSpaceSupportInfo } from '../../model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import { V1_deserializeSupportInfo } from '../../transformation/pureProtocol/V1_DSL_DataSpace_ProtocolHelper.js';
@@ -76,18 +80,27 @@ class V1_DataSpaceExecutionContextAnalysisResult {
   mapping!: string;
   defaultRuntime!: string;
   compatibleRuntimes!: string[];
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_DataSpaceExecutionContextAnalysisResult, {
-      compatibleRuntimes: list(primitive()),
-      defaultRuntime: primitive(),
-      description: optional(primitive()),
-      mapping: primitive(),
-      name: primitive(),
-      title: optional(primitive()),
-    }),
-  );
+  datasets: V1_DatasetSpecification[] = [];
 }
+
+const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataSpaceExecutionContextAnalysisResult> =>
+  createModelSchema(V1_DataSpaceExecutionContextAnalysisResult, {
+    compatibleRuntimes: list(primitive()),
+    datasets: list(
+      custom(
+        () => SKIP,
+        (val: PlainObject<V1_DatasetSpecification>) =>
+          V1_deserializeDatasetSpecification(val, plugins),
+      ),
+    ),
+    defaultRuntime: primitive(),
+    description: optional(primitive()),
+    mapping: primitive(),
+    name: primitive(),
+    title: optional(primitive()),
+  });
 
 export class V1_DataSpaceBasicDocumentationEntry {
   name!: string;
@@ -321,17 +334,26 @@ export class V1_DataSpaceExecutableAnalysisResult {
   executable!: string;
   info?: V1_DataSpaceExecutableInfo | undefined;
   result!: V1_DataSpaceExecutableResult;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_DataSpaceExecutableAnalysisResult, {
-      executable: primitive(),
-      description: optional(primitive()),
-      info: optionalCustom(() => SKIP, V1_deserializeDataSpaceExecutableInfo),
-      result: custom(() => SKIP, V1_deserializeDataSpaceExecutableResult),
-      title: primitive(),
-    }),
-  );
+  datasets: V1_DatasetSpecification[] = [];
 }
+
+const V1_dataSpaceExecutableAnalysisResultModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataSpaceExecutableAnalysisResult> =>
+  createModelSchema(V1_DataSpaceExecutableAnalysisResult, {
+    datasets: list(
+      custom(
+        () => SKIP,
+        (val: PlainObject<V1_DatasetSpecification>) =>
+          V1_deserializeDatasetSpecification(val, plugins),
+      ),
+    ),
+    executable: primitive(),
+    description: optional(primitive()),
+    info: optionalCustom(() => SKIP, V1_deserializeDataSpaceExecutableInfo),
+    result: custom(() => SKIP, V1_deserializeDataSpaceExecutableResult),
+    title: primitive(),
+  });
 
 export class V1_DataSpaceAnalysisResult {
   name!: string;
@@ -355,74 +377,75 @@ export class V1_DataSpaceAnalysisResult {
 
   executables: V1_DataSpaceExecutableAnalysisResult[] = [];
   diagrams: V1_DataSpaceDiagramAnalysisResult[] = [];
-
-  private static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_DataSpaceAnalysisResult, {
-      name: primitive(),
-      package: primitive(),
-      path: primitive(),
-
-      taggedValues: list(object(V1_DataSpaceTaggedValueInfo)),
-      stereotypes: list(object(V1_DataSpaceStereotypeInfo)),
-
-      title: optional(primitive()),
-      description: optional(primitive()),
-
-      supportInfo: optionalCustom(
-        () => SKIP,
-        (val) => V1_deserializeSupportInfo(val),
-      ),
-
-      model: object(V1_PureModelContextData),
-
-      executionContexts: list(
-        object(V1_DataSpaceExecutionContextAnalysisResult),
-      ),
-      defaultExecutionContext: primitive(),
-
-      elements: list(primitive()),
-      elementDocs: list(
-        custom(() => SKIP, V1_deserializeModelDocumentationEntry),
-      ),
-
-      featuredDiagrams: list(primitive()),
-      diagrams: customListWithSchema(
-        V1_DataSpaceDiagramAnalysisResult.serialization.schema,
-      ),
-      executables: customListWithSchema(
-        V1_DataSpaceExecutableAnalysisResult.serialization.schema,
-      ),
-    }),
-  );
-
-  static deserialize(
-    json: PlainObject<V1_DataSpaceAnalysisResult>,
-  ): V1_DataSpaceAnalysisResult {
-    const result = deserialize(
-      V1_DataSpaceAnalysisResult.serialization.schema,
-      json,
-    );
-    /**
-     * Featured diagrams will be transformed to diagrams, so here we nicely
-     * auto-transform it for backward compatibility
-     *
-     * @backwardCompatibility
-     */
-    if (json.featuredDiagrams && Array.isArray(json.featuredDiagrams)) {
-      const diagramResults = json.featuredDiagrams
-        .map((featuredDiagram) => {
-          if (isString(featuredDiagram)) {
-            const diagramAnalysisResult =
-              new V1_DataSpaceDiagramAnalysisResult();
-            diagramAnalysisResult.title = '';
-            diagramAnalysisResult.diagram = featuredDiagram;
-            return diagramAnalysisResult;
-          }
-          return undefined;
-        })
-        .filter(isNonNullable);
-      result.diagrams = result.diagrams.concat(diagramResults);
-    }
-    return result;
-  }
 }
+
+const V1_dataSpaceAnalysisResultModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataSpaceAnalysisResult> =>
+  createModelSchema(V1_DataSpaceAnalysisResult, {
+    name: primitive(),
+    package: primitive(),
+    path: primitive(),
+
+    taggedValues: list(object(V1_DataSpaceTaggedValueInfo)),
+    stereotypes: list(object(V1_DataSpaceStereotypeInfo)),
+
+    title: optional(primitive()),
+    description: optional(primitive()),
+
+    supportInfo: optionalCustom(
+      () => SKIP,
+      (val) => V1_deserializeSupportInfo(val),
+    ),
+
+    model: object(V1_PureModelContextData),
+
+    executionContexts: customListWithSchema(
+      V1_dataSpaceExecutionContextAnalysisResultModelSchema(plugins),
+    ),
+    defaultExecutionContext: primitive(),
+
+    elements: list(primitive()),
+    elementDocs: list(
+      custom(() => SKIP, V1_deserializeModelDocumentationEntry),
+    ),
+
+    featuredDiagrams: list(primitive()),
+    diagrams: customListWithSchema(
+      V1_DataSpaceDiagramAnalysisResult.serialization.schema,
+    ),
+    executables: customListWithSchema(
+      V1_dataSpaceExecutableAnalysisResultModelSchema(plugins),
+    ),
+  });
+
+export const V1_deserializeDataSpaceAnalysisResult = (
+  json: PlainObject<V1_DataSpaceAnalysisResult>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_DataSpaceAnalysisResult => {
+  const result = deserialize(
+    V1_dataSpaceAnalysisResultModelSchema(plugins),
+    json,
+  );
+  /**
+   * Featured diagrams will be transformed to diagrams, so here we nicely
+   * auto-transform it for backward compatibility
+   *
+   * @backwardCompatibility
+   */
+  if (json.featuredDiagrams && Array.isArray(json.featuredDiagrams)) {
+    const diagramResults = json.featuredDiagrams
+      .map((featuredDiagram) => {
+        if (isString(featuredDiagram)) {
+          const diagramAnalysisResult = new V1_DataSpaceDiagramAnalysisResult();
+          diagramAnalysisResult.title = '';
+          diagramAnalysisResult.diagram = featuredDiagram;
+          return diagramAnalysisResult;
+        }
+        return undefined;
+      })
+      .filter(isNonNullable);
+    result.diagrams = result.diagrams.concat(diagramResults);
+  }
+  return result;
+};

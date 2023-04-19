@@ -511,6 +511,8 @@ export {
   V1_DatasetEntitlementAccessRequestedReport,
   V1_DatasetEntitlementAccessApprovedReport,
   V1_DatasetEntitlementUnsupportedReport,
+  V1_deserializeDatasetSpecification,
+  V1_buildDatasetSpecification,
 } from './graph-manager/protocol/pure/v1/engine/analytics/V1_StoreEntitlementAnalysis.js';
 
 // ------------------------------------- TO BE MODULARIZED --------------------------------------------

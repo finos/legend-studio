@@ -114,7 +114,7 @@ export class V1_RelationalDatabaseTableSpecification extends V1_DatasetSpecifica
   );
 }
 
-const V1_deserializeDatasetSpecification = (
+export const V1_deserializeDatasetSpecification = (
   json: PlainObject<V1_DatasetSpecification>,
   plugins: PureProtocolProcessorPlugin[],
 ): V1_DatasetSpecification => {

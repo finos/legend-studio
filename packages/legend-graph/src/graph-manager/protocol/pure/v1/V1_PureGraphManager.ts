@@ -3154,8 +3154,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     query: RawLambda | undefined,
     graphData: GraphData,
   ): Promise<DatasetEntitlementReport[]> {
-    const pureProtocolPlugins =
-      this.pluginManager.getPureProtocolProcessorPlugins();
     const input = new V1_EntitlementReportAnalyticsInput();
     input.storeEntitlementAnalyticsInput =
       this.generateStoreEntitlementAnalysisInput(
@@ -3165,12 +3163,21 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         graphData,
       );
     input.reports = datasets.map((dataset) =>
-      V1_transformDatasetSpecification(dataset, pureProtocolPlugins),
+      V1_transformDatasetSpecification(
+        dataset,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
     );
     return (
-      await this.engine.checkDatasetEntitlements(input, pureProtocolPlugins)
+      await this.engine.checkDatasetEntitlements(
+        input,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      )
     ).map((report) =>
-      V1_buildDatasetEntitlementReport(report, pureProtocolPlugins),
+      V1_buildDatasetEntitlementReport(
+        report,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
     );
   }
 
