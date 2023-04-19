@@ -23,6 +23,12 @@ export class DatasetSpecification {
   }
 }
 
+export class RelationalDatabaseTableSpecification extends DatasetSpecification {
+  database!: string;
+  schema!: string;
+  table!: string;
+}
+
 export abstract class DatasetEntitlementReport {
   dataset!: DatasetSpecification;
 }

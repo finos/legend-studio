@@ -46,6 +46,7 @@ import {
   DatasetEntitlementAccessRequestedReport,
   DatasetEntitlementAccessNotGrantedReport,
   DatasetEntitlementUnsupportedReport,
+  RelationalDatabaseTableSpecification,
 } from '../../../../../action/analytics/StoreEntitlementAnalysis.js';
 
 export class V1_StoreEntitlementAnalysisInput {
@@ -94,6 +95,25 @@ export class V1_DatasetSpecification {
   );
 }
 
+export class V1_RelationalDatabaseTableSpecification extends V1_DatasetSpecification {
+  database!: string;
+  schema!: string;
+  table!: string;
+
+  static override readonly serialization = new SerializationFactory(
+    createModelSchema(V1_RelationalDatabaseTableSpecification, {
+      _type: usingConstantValueSchema(
+        V1_DatasetSpecificationType.RELATIONAL_DATABASE_TABLE_SPECIFICATION,
+      ),
+      database: primitive(),
+      name: primitive(),
+      schema: primitive(),
+      table: primitive(),
+      type: primitive(),
+    }),
+  );
+}
+
 const V1_deserializeDatasetSpecification = (
   json: PlainObject<V1_DatasetSpecification>,
   plugins: PureProtocolProcessorPlugin[],
@@ -101,6 +121,11 @@ const V1_deserializeDatasetSpecification = (
   switch (json._type) {
     case V1_DatasetSpecificationType.DATASET_SPECIFICATION:
       return deserialize(V1_DatasetSpecification.serialization.schema, json);
+    case V1_DatasetSpecificationType.RELATIONAL_DATABASE_TABLE_SPECIFICATION:
+      return deserialize(
+        V1_RelationalDatabaseTableSpecification.serialization.schema,
+        json,
+      );
     default: {
       const extraDeserializers = plugins.flatMap(
         (plugin) =>
@@ -123,6 +148,12 @@ const V1_serializeDatasetSpecification = (
   protocol: V1_DatasetSpecification,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_DatasetSpecification> => {
+  if (protocol instanceof V1_RelationalDatabaseTableSpecification) {
+    return serialize(
+      V1_RelationalDatabaseTableSpecification.serialization.schema,
+      protocol,
+    );
+  }
   const extraSerializers = plugins.flatMap(
     (plugin) =>
       plugin.V1_getExtraDatasetSpecificationProtocolSerializers?.() ?? [],
@@ -133,7 +164,63 @@ const V1_serializeDatasetSpecification = (
       return json;
     }
   }
-  return serialize(V1_DatasetSpecification.serialization.schema);
+  return serialize(V1_DatasetSpecification.serialization.schema, protocol);
+};
+
+export const V1_buildDatasetSpecification = (
+  protocol: V1_DatasetSpecification,
+  plugins: PureProtocolProcessorPlugin[],
+): DatasetSpecification => {
+  if (protocol instanceof V1_RelationalDatabaseTableSpecification) {
+    const metamodel = new RelationalDatabaseTableSpecification();
+    metamodel.name = protocol.name;
+    metamodel.type = protocol.type;
+    metamodel.database = protocol.database;
+    metamodel.schema = protocol.schema;
+    metamodel.table = protocol.table;
+    return metamodel;
+  }
+  const extraBuilders = plugins.flatMap(
+    (plugin) => plugin.V1_getExtraDatasetSpecificationBuilders?.() ?? [],
+  );
+  for (const builder of extraBuilders) {
+    const metamodel = builder(protocol, plugins);
+    if (metamodel) {
+      return metamodel;
+    }
+  }
+  const metamodel = new DatasetSpecification();
+  metamodel.name = protocol.name;
+  metamodel.type = protocol.type;
+  return metamodel;
+};
+
+export const V1_transformDatasetSpecification = (
+  metamodel: DatasetSpecification,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_DatasetSpecification => {
+  if (metamodel instanceof RelationalDatabaseTableSpecification) {
+    const protocol = new V1_RelationalDatabaseTableSpecification();
+    protocol.name = metamodel.name;
+    protocol.type = metamodel.type;
+    protocol.database = metamodel.database;
+    protocol.schema = metamodel.schema;
+    protocol.table = metamodel.table;
+    return protocol;
+  }
+  const extraTransformers = plugins.flatMap(
+    (plugin) => plugin.V1_getExtraDatasetSpecificationTransformers?.() ?? [],
+  );
+  for (const transformer of extraTransformers) {
+    const protocol = transformer(metamodel, plugins);
+    if (protocol) {
+      return protocol;
+    }
+  }
+  const protocol = new V1_DatasetSpecification();
+  protocol.name = metamodel.name;
+  protocol.type = metamodel.type;
+  return protocol;
 };
 
 export class V1_EntitlementReportAnalyticsInput {
@@ -171,44 +258,6 @@ export const V1_surveyDatasetsResultModelSchema = (
       ),
     ),
   });
-
-export const V1_buildDatasetSpecification = (
-  protocol: V1_DatasetSpecification,
-  plugins: PureProtocolProcessorPlugin[],
-): DatasetSpecification => {
-  const extraBuilders = plugins.flatMap(
-    (plugin) => plugin.V1_getExtraDatasetSpecificationBuilders?.() ?? [],
-  );
-  for (const builder of extraBuilders) {
-    const metamodel = builder(protocol, plugins);
-    if (metamodel) {
-      return metamodel;
-    }
-  }
-  const metamodel = new DatasetSpecification();
-  metamodel.name = protocol.name;
-  metamodel.type = protocol.type;
-  return metamodel;
-};
-
-export const V1_transformDatasetSpecification = (
-  element: DatasetSpecification,
-  plugins: PureProtocolProcessorPlugin[],
-): V1_DatasetSpecification => {
-  const extraTransformers = plugins.flatMap(
-    (plugin) => plugin.V1_getExtraDatasetSpecificationTransformers?.() ?? [],
-  );
-  for (const transformer of extraTransformers) {
-    const metamodel = transformer(element, plugins);
-    if (metamodel) {
-      return metamodel;
-    }
-  }
-  const protocol = new V1_DatasetSpecification();
-  protocol.name = element.name;
-  protocol.type = element.type;
-  return protocol;
-};
 
 export abstract class V1_DatasetEntitlementReport {
   dataset!: V1_DatasetSpecification;
