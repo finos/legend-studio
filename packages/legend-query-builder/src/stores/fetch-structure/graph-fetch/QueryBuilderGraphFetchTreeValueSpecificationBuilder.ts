@@ -122,7 +122,7 @@ export const buildPureSerializationConfig = (
     const property = Object.getOwnPropertyNames(config).find(
       (p) => p === classProperty.name,
     );
-    if (property) {
+    if (property && config[property] !== undefined) {
       const keyExpressionInstance = new KeyExpressionInstanceValue();
       // key expression
       const keyInstance = new PrimitiveInstanceValue(

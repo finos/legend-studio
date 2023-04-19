@@ -281,7 +281,6 @@ const PureSerializationConfigModal = observer(
                     config.setInclueEnumType(Boolean(value))
                   }
                 />
-
                 <PanelFormBooleanField
                   name="Remove Properties With Null Values"
                   value={config.removePropertiesWithNullValues}
@@ -290,7 +289,6 @@ const PureSerializationConfigModal = observer(
                     config.setRemovePropertiesWithNullValues(Boolean(value))
                   }
                 />
-
                 <PanelFormBooleanField
                   name="Remove properties with empty sets"
                   value={config.removePropertiesWithEmptySets}
@@ -299,7 +297,6 @@ const PureSerializationConfigModal = observer(
                     config.setRemovePropertiesWithEmptySets(Boolean(value))
                   }
                 />
-
                 <PanelFormBooleanField
                   name="Use Fully Qualified Type Path"
                   value={config.fullyQualifiedTypePath}
@@ -644,7 +641,8 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
                 pureSerializationState={serializationState}
                 graphFetchState={graphFetchState}
                 config={
-                  serializationState.config ?? new PureSerializationConfig()
+                  serializationState.config ??
+                  PureSerializationConfig.createDefault()
                 }
               />
             )}

@@ -100,7 +100,10 @@ import {
   TEST_DATA__lambda_groupBy_postFilter_OlapGroupBy,
   TEST_DATA__lambda_olapGroupBy_withSortOnOlapColumn,
 } from './TEST_DATA__QueryBuilder__OLAPGroupBy.js';
-import { TEST_DATA__graphFetchWithSerializationConfig } from './TEST_DATA__QueryBuilder_GraphFetch.js';
+import {
+  TEST_DATA__graphFetchWithSerializationConfig,
+  TEST_DATA__graphFetchWithSerializationConfigWithNullableConfigProperties,
+} from './TEST_DATA__QueryBuilder_GraphFetch.js';
 import {
   TEST_DATA_lambda_watermark_Constant,
   TEST_DATA_lambda_watermark_filter_Constant,
@@ -246,6 +249,12 @@ const cases: RoundtripTestCase[] = [
     'Graph Fetch with serialization config',
     identitfyM2MCtx,
     TEST_DATA__graphFetchWithSerializationConfig,
+    undefined,
+  ],
+  [
+    'Graph Fetch with serialization config with config properties not set',
+    identitfyM2MCtx,
+    TEST_DATA__graphFetchWithSerializationConfigWithNullableConfigProperties,
     undefined,
   ],
   // filter

@@ -238,3 +238,157 @@ export const TEST_DATA__graphFetchWithSerializationConfig = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA__graphFetchWithSerializationConfigWithNullableConfigProperties =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'serialize',
+        parameters: [
+          {
+            _type: 'func',
+            function: 'graphFetch',
+            parameters: [
+              {
+                _type: 'func',
+                function: 'getAll',
+                parameters: [
+                  {
+                    _type: 'packageableElementPtr',
+                    fullPath: 'model::Person',
+                  },
+                ],
+              },
+              {
+                _type: 'classInstance',
+                type: 'rootGraphFetchTree',
+                multiplicity: {
+                  lowerBound: 1,
+                  upperBound: 1,
+                },
+                value: {
+                  subTrees: [
+                    {
+                      _type: 'propertyGraphFetchTree',
+                      subTrees: [],
+                      property: 'age',
+                      parameters: [],
+                    },
+                    {
+                      _type: 'propertyGraphFetchTree',
+                      subTrees: [],
+                      property: 'firstName',
+                      parameters: [],
+                    },
+                    {
+                      _type: 'propertyGraphFetchTree',
+                      subTrees: [],
+                      property: 'lastName',
+                      parameters: [],
+                    },
+                    {
+                      _type: 'propertyGraphFetchTree',
+                      subTrees: [],
+                      property: 'nickName',
+                      parameters: [],
+                    },
+                    {
+                      _type: 'propertyGraphFetchTree',
+                      subTrees: [],
+                      property: 'status',
+                      parameters: [],
+                    },
+                  ],
+                  _type: 'rootGraphFetchTree',
+                  class: 'model::Person',
+                },
+              },
+            ],
+          },
+          {
+            _type: 'classInstance',
+            type: 'rootGraphFetchTree',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            value: {
+              subTrees: [
+                {
+                  _type: 'propertyGraphFetchTree',
+                  subTrees: [],
+                  property: 'age',
+                  parameters: [],
+                },
+                {
+                  _type: 'propertyGraphFetchTree',
+                  subTrees: [],
+                  property: 'firstName',
+                  parameters: [],
+                },
+                {
+                  _type: 'propertyGraphFetchTree',
+                  subTrees: [],
+                  property: 'lastName',
+                  parameters: [],
+                },
+                {
+                  _type: 'propertyGraphFetchTree',
+                  subTrees: [],
+                  property: 'nickName',
+                  parameters: [],
+                },
+                {
+                  _type: 'propertyGraphFetchTree',
+                  subTrees: [],
+                  property: 'status',
+                  parameters: [],
+                },
+              ],
+              _type: 'rootGraphFetchTree',
+              class: 'model::Person',
+            },
+          },
+          {
+            _type: 'func',
+            function: 'new',
+            parameters: [
+              {
+                _type: 'packageableElementPtr',
+                fullPath:
+                  'meta::pure::graphFetch::execution::AlloySerializationConfig',
+              },
+              {
+                _type: 'string',
+                value: '',
+              },
+              {
+                _type: 'collection',
+                multiplicity: {
+                  lowerBound: 1,
+                  upperBound: 1,
+                },
+                values: [
+                  {
+                    _type: 'keyExpression',
+                    add: false,
+                    expression: {
+                      _type: 'string',
+                      value: 'CustomizeType',
+                    },
+                    key: {
+                      _type: 'string',
+                      value: 'typeKeyName',
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    parameters: [],
+  };
