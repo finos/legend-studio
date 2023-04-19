@@ -104,7 +104,7 @@ export type V1_ClassInstanceValueProtocolSerializer = (
 ) => PlainObject | undefined;
 
 export type V1_ClassInstanceValueProtocolDeserializer = (
-  protocol: PlainObject,
+  json: PlainObject,
   type: string,
   plugins: PureProtocolProcessorPlugin[],
 ) => unknown | undefined;
@@ -115,7 +115,7 @@ export type V1_DatasetSpecificationDeserializer = (
 ) => V1_DatasetSpecification | undefined;
 
 export type V1_DatasetEntitlementReportDeserializer = (
-  protocol: PlainObject<V1_DatasetEntitlementReport>,
+  json: PlainObject<V1_DatasetEntitlementReport>,
   plugins: PureProtocolProcessorPlugin[],
 ) => V1_DatasetEntitlementReport | undefined;
 
@@ -125,7 +125,7 @@ export type V1_DatasetSpecificationBuilder = (
 ) => DatasetSpecification | undefined;
 
 export type V1_DatasetSpecificationTransformer = (
-  protocol: DatasetSpecification,
+  metamodel: DatasetSpecification,
   plugins: PureProtocolProcessorPlugin[],
 ) => V1_DatasetSpecification | undefined;
 

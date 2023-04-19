@@ -25,14 +25,13 @@ import {
   type PackageableElementVisitor,
   PackageableElement,
 } from '../PackageableElement.js';
-import type { Property } from './Property.js';
+import { Property } from './Property.js';
 import type { DerivedProperty } from './DerivedProperty.js';
 import type { AbstractProperty } from './AbstractProperty.js';
-import {
-  stub_Class,
-  stub_Property,
-} from '../../../../../graph/helpers/creator/DomainModelCreatorHelper.js';
 import { Class } from './Class.js';
+import { Multiplicity } from './Multiplicity.js';
+import { GenericTypeExplicitReference } from './GenericTypeReference.js';
+import { GenericType } from './GenericType.js';
 
 /**
  * Assocation needs exactly 2 properties (for 2 classes, not enumeration, not primitive), e.g.
@@ -68,8 +67,18 @@ export class Association extends PackageableElement implements Hashable {
 
     // NOTE: we might want to revisit this decision to initialize to association properties to stubs
     const properties: [Property, Property] = [
-      stub_Property(stub_Class(), stub_Class()),
-      stub_Property(stub_Class(), stub_Class()),
+      new Property(
+        '',
+        Multiplicity.ONE,
+        GenericTypeExplicitReference.create(new GenericType(new Class(''))),
+        new Class(''),
+      ),
+      new Property(
+        '',
+        Multiplicity.ONE,
+        GenericTypeExplicitReference.create(new GenericType(new Class(''))),
+        new Class(''),
+      ),
     ];
     (properties[0] as Writable<Property>)._OWNER = this;
     (properties[1] as Writable<Property>)._OWNER = this;
