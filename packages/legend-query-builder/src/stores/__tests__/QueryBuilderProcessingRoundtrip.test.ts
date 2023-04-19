@@ -63,7 +63,10 @@ import {
   TEST_DATA__lambda_Externalize_externalize_graphFetch,
   TEST_DATA__lambda_Externalize_externalize_graphFetchChecked,
 } from './TEST_DATA__QueryBuilder_Externalize.js';
-import { TEST_DATA__graphFetchWithSerializationConfig } from './TEST_DATA__QueryBuilder_GraphFetch.js';
+import {
+  TEST_DATA__graphFetchWithSerializationConfig,
+  TEST_DATA__graphFetchWithSerializationConfigWithNullableConfigProperties,
+} from './TEST_DATA__QueryBuilder_GraphFetch.js';
 import { TEST__LegendApplicationPluginManager } from '../__test-utils__/QueryBuilderStateTestUtils.js';
 
 const pluginManager = TEST__LegendApplicationPluginManager.create();
@@ -176,6 +179,11 @@ const cases: RoundtripTestCase[] = [
     'Graph Fetch with serialization config',
     identitfyM2MCtx,
     TEST_DATA__graphFetchWithSerializationConfig,
+  ],
+  [
+    'Graph Fetch with serialization config with config properties not set',
+    identitfyM2MCtx,
+    TEST_DATA__graphFetchWithSerializationConfigWithNullableConfigProperties,
   ],
   [
     'Simple project() and filter() with parameter',

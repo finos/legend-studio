@@ -72,22 +72,15 @@ const DEFAULT_PURE_CONFIG_TYPE_NAME = '@type';
 
 export class PureSerializationConfig {
   typeKeyName: string;
-  includeType: boolean;
-  includeEnumType: boolean;
-  removePropertiesWithNullValues: boolean;
-  removePropertiesWithEmptySets: boolean;
-  fullyQualifiedTypePath: boolean;
-  includeObjectReference: boolean;
+  includeType: boolean | undefined;
+  includeEnumType: boolean | undefined;
+  removePropertiesWithNullValues: boolean | undefined;
+  removePropertiesWithEmptySets: boolean | undefined;
+  fullyQualifiedTypePath: boolean | undefined;
+  includeObjectReference: boolean | undefined;
 
   constructor() {
-    // default values
     this.typeKeyName = DEFAULT_PURE_CONFIG_TYPE_NAME;
-    this.includeType = true;
-    this.includeEnumType = true;
-    this.removePropertiesWithNullValues = true;
-    this.removePropertiesWithEmptySets = false;
-    this.fullyQualifiedTypePath = true;
-    this.includeObjectReference = false;
     makeObservable(this, {
       typeKeyName: observable,
       includeType: observable,
@@ -104,6 +97,17 @@ export class PureSerializationConfig {
       setInclueEnumType: action,
       setRemovePropertiesWithNullValues: action,
     });
+  }
+
+  static createDefault(): PureSerializationConfig {
+    const config = new PureSerializationConfig();
+    config.typeKeyName = DEFAULT_PURE_CONFIG_TYPE_NAME;
+    config.includeType = true;
+    config.includeEnumType = true;
+    config.removePropertiesWithNullValues = true;
+    config.removePropertiesWithEmptySets = false;
+    config.fullyQualifiedTypePath = true;
+    return config;
   }
 
   setTypeName(val: string): void {
