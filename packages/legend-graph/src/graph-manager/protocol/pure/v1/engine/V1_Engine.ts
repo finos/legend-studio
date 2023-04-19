@@ -108,7 +108,8 @@ import {
   type V1_DatasetSpecification,
   V1_surveyDatasetsResultModelSchema,
   V1_checkEntitlementsResultModelSchema,
-  V1_EntitlementReportAnalyticsInput,
+  type V1_EntitlementReportAnalyticsInput,
+  V1_entitlementReportAnalyticsInputModelSchema,
 } from './analytics/V1_StoreEntitlementAnalysis.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
@@ -776,7 +777,10 @@ export class V1_Engine {
     return deserialize(
       V1_checkEntitlementsResultModelSchema(plugins),
       await this.engineServerClient.checkDatasetEntitlements(
-        V1_EntitlementReportAnalyticsInput.serialization.toJson(input),
+        serialize(
+          V1_entitlementReportAnalyticsInputModelSchema(plugins),
+          input,
+        ),
       ),
     ).reports;
   }
