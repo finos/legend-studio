@@ -23,7 +23,7 @@ import {
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
-  getNullableFirstElement,
+  getNullableFirstEntry,
   NetworkClientError,
   HttpStatus,
 } from '@finos/legend-shared';
@@ -328,7 +328,7 @@ export class WorkspaceUpdaterState {
           RevisionAlias.BASE,
         )) as PlainObject<Revision>,
       );
-      const baseReviewObj = getNullableFirstElement(
+      const baseReviewObj = getNullableFirstEntry(
         (yield this.editorStore.sdlcServerClient.getReviews(
           this.sdlcState.activeProject.projectId,
           ReviewState.COMMITTED,

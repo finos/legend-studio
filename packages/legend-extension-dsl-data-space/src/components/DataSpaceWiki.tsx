@@ -21,10 +21,24 @@ import { DataSpaceModelsDocumentation } from './DataSpaceModelsDocumentation.js'
 import { DataSpaceQuickStart } from './DataSpaceQuickStart.js';
 import { DataSpaceDataAccess } from './DataSpaceDataAccess.js';
 import { DataSpaceDescription } from './DataSpaceDescription.js';
+import { useEffect } from 'react';
 
 export const DataSpaceWiki = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+
+    useEffect(() => {
+      if (
+        dataSpaceViewerState.layoutState.wikiNavigationCommand &&
+        dataSpaceViewerState.layoutState.isAllWikiPageFullyRendered
+      ) {
+        dataSpaceViewerState.layoutState.navigateWikiAnchor();
+      }
+    }, [
+      dataSpaceViewerState,
+      dataSpaceViewerState.layoutState.wikiNavigationCommand,
+      dataSpaceViewerState.layoutState.isAllWikiPageFullyRendered,
+    ]);
 
     return (
       <div className="data-space__viewer__wiki">

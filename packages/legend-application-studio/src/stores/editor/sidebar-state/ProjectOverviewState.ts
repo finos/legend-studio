@@ -22,7 +22,7 @@ import {
   type PlainObject,
   assertErrorThrown,
   LogEvent,
-  getNullableFirstElement,
+  getNullableFirstEntry,
 } from '@finos/legend-shared';
 import { generateSetupRoute } from '../../../__lib__/LegendStudioNavigation.js';
 import {
@@ -303,7 +303,7 @@ export class ProjectOverviewState {
         // 1. the revision is somehow directly added to the branch by the user (in the case of `git`, user directly pushed to unprotected default branch)
         // 2. the revision is the merged/comitted review revision (this usually happens for projects where fast forwarding merging is not default)
         // in those case, we will get the time from the revision
-        const latestProjectVersionRevisionReviewObj = getNullableFirstElement(
+        const latestProjectVersionRevisionReviewObj = getNullableFirstEntry(
           (yield this.editorStore.sdlcServerClient.getReviews(
             this.sdlcState.activeProject.projectId,
             ReviewState.COMMITTED,

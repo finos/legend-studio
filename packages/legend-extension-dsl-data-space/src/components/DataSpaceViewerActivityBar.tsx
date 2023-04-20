@@ -89,8 +89,7 @@ export const DataSpaceViewerActivityBar = observer(
     const changeActivity =
       (activity: DATA_SPACE_VIEWER_ACTIVITY_MODE): (() => void) =>
       (): void => {
-        dataSpaceViewerState.setCurrentActivity(activity);
-        dataSpaceViewerState.onZoneChange?.(activity);
+        dataSpaceViewerState.changeZone(activity);
       };
 
     const wikiActivities: DataSpaceViewerActivityConfig[] = [

@@ -22,14 +22,17 @@ import {
   clsx,
   useResizeDetector,
 } from '@finos/legend-art';
-import type { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  type DataSpaceViewerState,
+} from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useRef } from 'react';
 import { type Diagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { DiagramRenderer } from '@finos/legend-extension-dsl-diagram/application';
 import {
-  getNullableFirstElement,
-  getNullableLastElement,
+  getNullableFirstEntry,
+  getNullableLastEntry,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
@@ -81,6 +84,16 @@ export const DataSpaceDiagramViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
+    const sectionRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      if (sectionRef.current) {
+        dataSpaceViewerState.layoutState.setWikiPageAnchor(
+          DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
+          sectionRef.current,
+        );
+      }
+    }, [dataSpaceViewerState]);
 
     // diagram selector
     const diagramCanvasRef = useRef<HTMLDivElement>(null);
@@ -115,7 +128,7 @@ export const DataSpaceDiagramViewer = observer(
     };
 
     return (
-      <div className="data-space__viewer__wiki__section">
+      <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
             Diagrams
@@ -143,7 +156,7 @@ export const DataSpaceDiagramViewer = observer(
                     tabIndex={-1}
                     title="Previous"
                     disabled={
-                      getNullableFirstElement(analysisResult.diagrams) ===
+                      getNullableFirstEntry(analysisResult.diagrams) ===
                       dataSpaceViewerState.currentDiagram
                     }
                     onClick={showPreviousDiagram}
@@ -155,7 +168,7 @@ export const DataSpaceDiagramViewer = observer(
                     tabIndex={-1}
                     title="Next"
                     disabled={
-                      getNullableLastElement(analysisResult.diagrams) ===
+                      getNullableLastEntry(analysisResult.diagrams) ===
                       dataSpaceViewerState.currentDiagram
                     }
                     onClick={showNextDiagram}

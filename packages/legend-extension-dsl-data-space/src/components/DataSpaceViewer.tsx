@@ -24,6 +24,7 @@ import {
 import {
   type DataSpaceViewerState,
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  DATA_SPACE_WIKI_PAGE_SECTIONS,
 } from '../stores/DataSpaceViewerState.js';
 import { DataSpaceExecutionContextViewer } from './DataSpaceExecutionContextViewer.js';
 import { DataSpaceInfoPanel } from './DataSpaceInfoPanel.js';
@@ -38,10 +39,18 @@ const DataSpaceHeader = observer(
     showFullHeader: boolean;
   }) => {
     const { dataSpaceViewerState, showFullHeader } = props;
+    const headerRef = useRef<HTMLDivElement>(null);
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
+
+    useEffect(() => {
+      if (headerRef.current) {
+        dataSpaceViewerState.layoutState.header = headerRef.current;
+      }
+    }, [dataSpaceViewerState]);
 
     return (
       <div
+        ref={headerRef}
         className={clsx('data-space__viewer__header', {
           'data-space__viewer__header--floating': showFullHeader,
         })}
@@ -96,17 +105,16 @@ export const DataSpaceViewer = observer(
 
     const scrollToTop = (): void => {
       if (dataSpaceViewerState.layoutState.frame) {
-        dataSpaceViewerState.layoutState.frame.scrollTop = 0;
+        dataSpaceViewerState.layoutState.frame.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
       }
     };
 
-    const isShowingWiki = [
-      DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION,
-      DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
-      DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION,
-      DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START,
-      DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
-    ].includes(dataSpaceViewerState.currentActivity);
+    const isShowingWiki = DATA_SPACE_WIKI_PAGE_SECTIONS.includes(
+      dataSpaceViewerState.currentActivity,
+    );
 
     useEffect(() => {
       if (frame.current) {

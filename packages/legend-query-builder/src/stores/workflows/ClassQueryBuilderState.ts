@@ -22,7 +22,7 @@ import {
   RuntimePointer,
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
-import { getNullableFirstElement } from '@finos/legend-shared';
+import { getNullableFirstEntry } from '@finos/legend-shared';
 import type React from 'react';
 import { renderClassQueryBuilderSetupPanelContent } from '../../components/workflows/ClassQueryBuilder.js';
 import { QueryBuilderState } from '../QueryBuilderState.js';
@@ -49,7 +49,7 @@ export class ClassQueryBuilderState extends QueryBuilderState {
       return;
     }
     // try to select the first compatible mapping
-    const possibleNewMapping = getNullableFirstElement(compatibleMappings);
+    const possibleNewMapping = getNullableFirstEntry(compatibleMappings);
     if (possibleNewMapping) {
       this.changeMapping(possibleNewMapping);
       this.propagateMappingChange(possibleNewMapping);
@@ -68,7 +68,7 @@ export class ClassQueryBuilderState extends QueryBuilderState {
       mapping,
       this.graphManagerState.usableRuntimes,
     );
-    const possibleNewRuntime = getNullableFirstElement(compatibleRuntimes);
+    const possibleNewRuntime = getNullableFirstEntry(compatibleRuntimes);
     if (possibleNewRuntime) {
       this.changeRuntime(
         new RuntimePointer(

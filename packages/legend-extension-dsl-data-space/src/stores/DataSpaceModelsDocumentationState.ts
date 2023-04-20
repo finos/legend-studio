@@ -345,7 +345,7 @@ export class DataSpaceViewerModelsDocumentationState {
   showSearchConfigurationMenu = false;
 
   // filter
-  showFilterPanel = false;
+  showFilterPanel = true;
   typeFilterTreeData: TreeData<ModelsDocumentationFilterTreeNodeData>;
   packageFilterTreeData: TreeData<ModelsDocumentationFilterTreeNodeData>;
   filterTypes: string[] = [];

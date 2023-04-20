@@ -40,7 +40,7 @@ import {
   uniq,
   IllegalStateError,
   filterByType,
-  getNullableFirstElement,
+  getNullableFirstEntry,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -2842,10 +2842,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               error.message,
             );
             if (graphData instanceof V1_PureModelContextData) {
-              const servicePackage = getNullableFirstElement(
+              const servicePackage = getNullableFirstEntry(
                 graphData.elements.filter(filterByType(V1_Service)),
               )?.package;
-              const serviceName = getNullableFirstElement(
+              const serviceName = getNullableFirstEntry(
                 graphData.elements.filter(filterByType(V1_Service)),
               )?.name;
               const service = graph.getOwnService(

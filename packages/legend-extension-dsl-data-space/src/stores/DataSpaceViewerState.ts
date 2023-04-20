@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import type {
-  GenericLegendApplicationStore,
-  NavigationZone,
+import {
+  NAVIGATION_ZONE_SEPARATOR,
+  type GenericLegendApplicationStore,
+  type NavigationZone,
 } from '@finos/legend-application';
 import { type ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
@@ -29,8 +30,10 @@ import type {
   PackageableRuntime,
 } from '@finos/legend-graph';
 import {
-  getNullableFirstElement,
+  getNullableEntry,
+  getNullableFirstEntry,
   guaranteeNonNullable,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import type {
@@ -62,37 +65,108 @@ export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   SUPPORT = 'support',
 }
 
+export const DATA_SPACE_WIKI_PAGE_SECTIONS = [
+  DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION,
+  DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
+  DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION,
+  DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START,
+  DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
+];
+
+type DataSpacePageNavigationCommand = {
+  anchor: string;
+  useSmoothScroll?: boolean;
+};
+
 class DataSpaceLayoutState {
   readonly dataSpaceViewerState: DataSpaceViewerState;
 
+  currentNavigationZone = '';
   isExpandedModeEnabled = false;
 
-  frame?: Element | undefined;
+  frame?: HTMLElement | undefined;
+  header?: HTMLElement | undefined;
   isTopScrollerVisible = false;
+
+  wikiPageAnchorIndex = new Map<string, HTMLElement>();
+  wikiNavigationCommand?: DataSpacePageNavigationCommand | undefined;
 
   constructor(dataSpaceViewerState: DataSpaceViewerState) {
     makeObservable(this, {
+      currentNavigationZone: observable,
       isExpandedModeEnabled: observable,
       isTopScrollerVisible: observable,
+      wikiPageAnchorIndex: observable.struct,
       frame: observable.ref,
+      wikiNavigationCommand: observable.ref,
+      isAllWikiPageFullyRendered: computed,
+      setCurrentNavigationZone: action,
       enableExpandedMode: action,
       setFrame: action,
       setTopScrollerVisible: action,
+      setWikiPageAnchor: action,
+      setWikiAnchorToNavigate: action,
     });
 
     this.dataSpaceViewerState = dataSpaceViewerState;
+  }
+
+  setCurrentNavigationZone(val: string): void {
+    this.currentNavigationZone = val;
+  }
+
+  get isAllWikiPageFullyRendered(): boolean {
+    return (
+      DATA_SPACE_WIKI_PAGE_SECTIONS.includes(
+        this.dataSpaceViewerState.currentActivity,
+      ) &&
+      DATA_SPACE_WIKI_PAGE_SECTIONS.every((section) =>
+        this.wikiPageAnchorIndex.has(section),
+      ) &&
+      Array.from(this.wikiPageAnchorIndex.values()).every(isNonNullable)
+    );
   }
 
   enableExpandedMode(val: boolean): void {
     this.isExpandedModeEnabled = val;
   }
 
-  setFrame(val: Element | undefined): void {
+  setFrame(val: HTMLElement | undefined): void {
     this.frame = val;
   }
 
   setTopScrollerVisible(val: boolean): void {
     this.isTopScrollerVisible = val;
+  }
+
+  setWikiPageAnchor(anchorKey: string, element: HTMLElement): void {
+    this.wikiPageAnchorIndex.set(anchorKey, element);
+  }
+
+  setWikiAnchorToNavigate(
+    val: DataSpacePageNavigationCommand | undefined,
+  ): void {
+    this.wikiNavigationCommand = val;
+  }
+
+  navigateWikiAnchor(): void {
+    if (this.wikiNavigationCommand && this.isAllWikiPageFullyRendered) {
+      const matchingWikiPageSection = this.wikiPageAnchorIndex.get(
+        this.wikiNavigationCommand.anchor,
+      );
+      if (matchingWikiPageSection) {
+        this.frame?.scrollTo({
+          top:
+            matchingWikiPageSection.offsetTop -
+            (this.header?.getBoundingClientRect().height ?? 0),
+          behavior: this.wikiNavigationCommand.useSmoothScroll
+            ? 'smooth'
+            : 'auto',
+        });
+      }
+
+      this.setWikiAnchorToNavigate(undefined);
+    }
   }
 }
 
@@ -129,8 +203,8 @@ export class DataSpaceViewerState {
   // TODO: have a state similar to dataAccessState for each executables
 
   _renderer?: DiagramRenderer | undefined;
-  currentDiagram?: DataSpaceDiagramAnalysisResult | undefined;
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
+  currentDiagram?: DataSpaceDiagramAnalysisResult | undefined;
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
 
@@ -189,7 +263,7 @@ export class DataSpaceViewerState {
     this.currentExecutionContext =
       dataSpaceAnalysisResult.defaultExecutionContext;
     this.currentRuntime = this.currentExecutionContext.defaultRuntime;
-    this.currentDiagram = getNullableFirstElement(
+    this.currentDiagram = getNullableFirstEntry(
       this.dataSpaceAnalysisResult.diagrams,
     );
     this.retriveGraphData = actions.retriveGraphData;
@@ -284,61 +358,33 @@ export class DataSpaceViewerState {
   }
 
   changeZone(zone: NavigationZone): void {
-    switch (zone) {
-      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION:
-      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER:
-      case DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION:
-      case DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START: {
-        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION);
-        break;
-      }
-      case DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION_CONTEXT: {
-        this.setCurrentActivity(
-          DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION_CONTEXT,
-        );
-        break;
-      }
-      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS: {
-        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS);
-        break;
-      }
-      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_STORES: {
-        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_STORES);
-        break;
-      }
-      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_AVAILABILITY: {
-        this.setCurrentActivity(
-          DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_AVAILABILITY,
-        );
-        break;
-      }
-      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_READINESS: {
-        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_READINESS);
-        break;
-      }
-      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_COST: {
-        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_COST);
-        break;
-      }
-      case DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_GOVERNANCE: {
-        this.setCurrentActivity(
-          DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_GOVERNANCE,
-        );
-        break;
-      }
-      case DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO: {
-        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO);
-        break;
-      }
-      case DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT: {
-        this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT);
-        break;
-      }
-      default: {
-        // unknown
+    if (zone !== this.layoutState.currentNavigationZone) {
+      const zoneChunks = zone.split(NAVIGATION_ZONE_SEPARATOR);
+      const activityChunk = getNullableEntry(zoneChunks, 0);
+      if (
+        activityChunk &&
+        (Object.values(DATA_SPACE_VIEWER_ACTIVITY_MODE) as string[]).includes(
+          activityChunk,
+        )
+      ) {
+        const activty = activityChunk as DATA_SPACE_VIEWER_ACTIVITY_MODE;
+        this.setCurrentActivity(activty);
+        if (DATA_SPACE_WIKI_PAGE_SECTIONS.includes(activty)) {
+          this.layoutState.setWikiAnchorToNavigate({
+            anchor: zone,
+            // NOTE: if we are already on the wiki page, use smooth scroll to suggest the scrollability of the page
+            // if we are navigating from a different section, go directly to the section within the page to avoid the wait
+            useSmoothScroll: DATA_SPACE_WIKI_PAGE_SECTIONS.includes(
+              this.currentActivity,
+            ),
+          });
+        }
+        this.onZoneChange?.(zone);
+        this.layoutState.setCurrentNavigationZone(zone);
+      } else {
         this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION);
         this.onZoneChange?.(undefined);
-        break;
+        this.layoutState.setCurrentNavigationZone('');
       }
     }
   }

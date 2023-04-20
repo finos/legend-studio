@@ -166,6 +166,7 @@ export class DataSpacePreviewStore {
               .TEMPORARY__useDataSpaceViewerExperimentalFeatures,
         },
       );
+
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);

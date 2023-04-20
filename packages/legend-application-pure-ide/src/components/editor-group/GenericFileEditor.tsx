@@ -27,8 +27,8 @@ import {
 } from '@finos/legend-art';
 import { usePureIDEStore } from '../PureIDEStoreProvider.js';
 import {
-  getNullableFirstElement,
-  getNullableLastElement,
+  getNullableFirstEntry,
+  getNullableLastEntry,
   guaranteeNonNullable,
   returnUndefOnError,
 } from '@finos/legend-shared';
@@ -49,10 +49,10 @@ const getPositionFromGoToLinePromptInputValue = (
   }
   return [
     returnUndefOnError(() =>
-      parseInt(guaranteeNonNullable(getNullableFirstElement(parts))),
+      parseInt(guaranteeNonNullable(getNullableFirstEntry(parts))),
     ) ?? 1,
     returnUndefOnError(() =>
-      parseInt(guaranteeNonNullable(getNullableLastElement(parts))),
+      parseInt(guaranteeNonNullable(getNullableLastEntry(parts))),
     ),
   ];
 };

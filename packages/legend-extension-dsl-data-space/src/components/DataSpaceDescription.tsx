@@ -15,7 +15,10 @@
  */
 
 import { AnchorLinkIcon } from '@finos/legend-art';
-import type { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  type DataSpaceViewerState,
+} from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
@@ -28,7 +31,12 @@ export const DataSpaceDescription = observer(
     const sectionRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-      // do
+      if (sectionRef.current) {
+        dataSpaceViewerState.layoutState.setWikiPageAnchor(
+          DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION,
+          sectionRef.current,
+        );
+      }
     }, [dataSpaceViewerState]);
 
     return (

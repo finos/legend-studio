@@ -17,7 +17,7 @@
 import {
   uuid,
   noop,
-  getNullableFirstElement,
+  getNullableFirstEntry,
   UnsupportedOperationError,
   IllegalStateError,
   guaranteeNonNullable,
@@ -2441,7 +2441,7 @@ export class DiagramRenderer {
 
   recenter(): void {
     if (this.selectedClasses.length !== 0) {
-      const firstClass = getNullableFirstElement(this.selectedClasses);
+      const firstClass = getNullableFirstEntry(this.selectedClasses);
       if (firstClass) {
         this.center(
           firstClass.position.x + firstClass.rectangle.width / 2,

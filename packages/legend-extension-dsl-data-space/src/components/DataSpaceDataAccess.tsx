@@ -20,10 +20,13 @@ import {
   PanelLoadingIndicator,
   QuestionCircleIcon,
 } from '@finos/legend-art';
-import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  type DataSpaceViewerState,
+} from '../stores/DataSpaceViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { flowResult } from 'mobx';
 import {
   DatasetEntitlementAccessApprovedReport,
@@ -137,6 +140,16 @@ export const DataSpaceDataAccess = observer(
     const applicationStore = useApplicationStore();
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
     const documentationUrl = analysisResult.supportInfo?.documentationUrl;
+    const sectionRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      if (sectionRef.current) {
+        dataSpaceViewerState.layoutState.setWikiPageAnchor(
+          DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
+          sectionRef.current,
+        );
+      }
+    }, [dataSpaceViewerState]);
 
     const seeDocumentation = (): void => {
       if (documentationUrl) {
@@ -147,7 +160,7 @@ export const DataSpaceDataAccess = observer(
     };
 
     return (
-      <div className="data-space__viewer__wiki__section">
+      <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
             Data Access

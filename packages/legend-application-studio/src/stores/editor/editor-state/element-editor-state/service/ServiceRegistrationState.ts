@@ -26,7 +26,7 @@ import {
   assertNonEmptyString,
   guaranteeNonNullable,
   UnsupportedOperationError,
-  getNullableFirstElement,
+  getNullableFirstEntry,
   assertTrue,
   URL_SEPARATOR,
   filterByType,
@@ -193,7 +193,7 @@ export class ServiceConfigState {
   }
 
   initialize(): void {
-    this.serviceEnv = getNullableFirstElement(this.registrationOptions)?.env;
+    this.serviceEnv = getNullableFirstEntry(this.registrationOptions)?.env;
     this.serviceExecutionMode = this.executionModes[0];
     this.updateVersion();
   }

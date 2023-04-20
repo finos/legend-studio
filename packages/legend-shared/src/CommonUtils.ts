@@ -247,11 +247,16 @@ export const generateEnumerableNameFromToken = (
 /**
  * NOTE: These are small helpers to workaround Typescript strictness check with the flag --noUncheckedIndexedAccess enabled
  */
-export const getNullableFirstElement = <T>(array: T[]): T | undefined =>
+export const getNullableFirstEntry = <T>(array: T[]): T | undefined =>
   array.length ? array[0] : undefined;
-
-export const getNullableLastElement = <T>(array: T[]): T | undefined =>
+export const getNullableLastEntry = <T>(array: T[]): T | undefined =>
   array.length ? array[array.length - 1] : undefined;
+export const getNullableEntry = <T>(array: T[], idx: number): T | undefined => {
+  if (idx < 0 || idx >= array.length) {
+    return undefined;
+  }
+  return array.length > idx ? array[idx] : undefined;
+};
 
 /**
  * NOTE: This object mutates the input object (obj1)
