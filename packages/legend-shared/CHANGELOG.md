@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 10.0.0
+
+### Major Changes
+
+- [#2134](https://github.com/finos/legend-studio/pull/2134) [`94d7a16bc`](https://github.com/finos/legend-studio/commit/94d7a16bcdde97cb57c027dd16ab2408d8a59f67) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `getNullableFirstElement()` to `getNullableFirstEntry()` and `getNullableLastElement()` to `getNullableLastEntry()`.
+
 ## 9.0.0
 
 ### Major Changes
