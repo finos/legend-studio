@@ -79,9 +79,10 @@
   // ---------------------------- Scrollbar -------------------------------
 
   ::-webkit-scrollbar-thumb {
-    background: var(--color-hclight-grey-15);
-    outline-color: var(--color-hclight-grey-10);
-    border-color: var(--color-hclight-grey-10);
+    background: var(--color-hclight-grey-30);
+    border: 0.2rem solid transparent;
+    background-clip: content-box;
+    border-radius: 0.4rem;
   }
 
   ::-webkit-scrollbar-track-piece {
@@ -272,10 +273,22 @@
 
     ::-webkit-scrollbar-thumb {
       background: var(--color-hclight-grey-15);
+      border: 0.1rem solid transparent;
+      background-clip: content-box;
+      border-radius: 0.4rem;
     }
 
     ::-webkit-scrollbar-track-piece {
       background: transparent;
+    }
+  }
+
+  .data-space__viewer__scroller {
+    background: var(--color-hclight-blue-60);
+
+    &__percentage {
+      background: var(--color-hclight-blue-70);
+      color: var(--color-hclight-white);
     }
   }
 

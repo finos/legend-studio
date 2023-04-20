@@ -39,7 +39,7 @@ import {
   deleteEntry,
   isNonNullable,
   generateEnumerableNameFromToken,
-  getNullableFirstElement,
+  getNullableFirstEntry,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
@@ -292,7 +292,7 @@ export class ServiceTestableState {
   }
 
   initSuites(): void {
-    const serviceSuite = getNullableFirstElement(
+    const serviceSuite = getNullableFirstEntry(
       this.serviceEditorState.service.tests,
     );
     if (serviceSuite instanceof ServiceTestSuite) {

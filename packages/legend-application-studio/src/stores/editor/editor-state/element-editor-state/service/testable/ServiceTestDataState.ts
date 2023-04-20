@@ -44,7 +44,7 @@ import {
   guaranteeNonNullable,
   isNonNullable,
   returnUndefOnError,
-  getNullableFirstElement,
+  getNullableFirstEntry,
   uniq,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
@@ -335,9 +335,7 @@ export class ServiceTestDataState {
     this.testData = testData;
     this.testSuiteState = testSuiteState;
     this.editorStore = testSuiteState.editorStore;
-    const connectionData = getNullableFirstElement(
-      testData.connectionsTestData,
-    );
+    const connectionData = getNullableFirstEntry(testData.connectionsTestData);
     if (connectionData) {
       this.selectedDataState = new ConnectionTestDataState(
         this,
@@ -371,7 +369,7 @@ export class ServiceTestDataState {
   deleteConnectionTestData(val: ConnectionTestData): void {
     deleteEntry(this.testData.connectionsTestData, val);
     if (this.selectedDataState?.connectionData === val) {
-      const data = getNullableFirstElement(this.testData.connectionsTestData);
+      const data = getNullableFirstEntry(this.testData.connectionsTestData);
       this.selectedDataState = data
         ? new ConnectionTestDataState(this, data)
         : undefined;

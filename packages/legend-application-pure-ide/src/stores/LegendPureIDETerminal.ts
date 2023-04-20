@@ -15,10 +15,7 @@
  */
 
 import { DISPLAY_ANSI_ESCAPE } from '@finos/legend-application';
-import {
-  assertErrorThrown,
-  getNullableFirstElement,
-} from '@finos/legend-shared';
+import { assertErrorThrown, getNullableFirstEntry } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { deserialize } from 'serializr';
 import {
@@ -90,7 +87,7 @@ export const setupTerminal = (ideStore: PureIDEStore): void => {
         description: 'Run the test suite (by path if specified)',
         usage: 'test [/some/path]',
         handler: async (args: string[]): Promise<void> => {
-          const path = getNullableFirstElement(args);
+          const path = getNullableFirstEntry(args);
           if (path) {
             if (!path.match(PACKAGE_PATH_PATTERN)) {
               ideStore.applicationStore.terminalService.terminal.fail(
@@ -111,7 +108,7 @@ export const setupTerminal = (ideStore: PureIDEStore): void => {
         description: 'Remove a file or directory',
         usage: 'rm /some/path',
         handler: async (args: string[]): Promise<void> => {
-          const path = getNullableFirstElement(args);
+          const path = getNullableFirstEntry(args);
           if (!path?.match(FILE_PATH_PATTERN)) {
             ideStore.applicationStore.terminalService.terminal.fail(
               `rm command requires a valid file/directory path`,

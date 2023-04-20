@@ -40,7 +40,7 @@ import {
   uniq,
   IllegalStateError,
   filterByType,
-  getNullableFirstElement,
+  getNullableFirstEntry,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -2842,10 +2842,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               error.message,
             );
             if (graphData instanceof V1_PureModelContextData) {
-              const servicePackage = getNullableFirstElement(
+              const servicePackage = getNullableFirstEntry(
                 graphData.elements.filter(filterByType(V1_Service)),
               )?.package;
-              const serviceName = getNullableFirstElement(
+              const serviceName = getNullableFirstEntry(
                 graphData.elements.filter(filterByType(V1_Service)),
               )?.name;
               const service = graph.getOwnService(
@@ -3154,8 +3154,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     query: RawLambda | undefined,
     graphData: GraphData,
   ): Promise<DatasetEntitlementReport[]> {
-    const pureProtocolPlugins =
-      this.pluginManager.getPureProtocolProcessorPlugins();
     const input = new V1_EntitlementReportAnalyticsInput();
     input.storeEntitlementAnalyticsInput =
       this.generateStoreEntitlementAnalysisInput(
@@ -3165,12 +3163,21 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         graphData,
       );
     input.reports = datasets.map((dataset) =>
-      V1_transformDatasetSpecification(dataset, pureProtocolPlugins),
+      V1_transformDatasetSpecification(
+        dataset,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
     );
     return (
-      await this.engine.checkDatasetEntitlements(input, pureProtocolPlugins)
+      await this.engine.checkDatasetEntitlements(
+        input,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      )
     ).map((report) =>
-      V1_buildDatasetEntitlementReport(report, pureProtocolPlugins),
+      V1_buildDatasetEntitlementReport(
+        report,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
     );
   }
 

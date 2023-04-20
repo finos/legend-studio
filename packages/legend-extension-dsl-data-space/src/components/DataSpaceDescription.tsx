@@ -15,7 +15,11 @@
  */
 
 import { AnchorLinkIcon } from '@finos/legend-art';
-import type { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
+  type DataSpaceViewerState,
+} from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
@@ -26,19 +30,31 @@ export const DataSpaceDescription = observer(
     const { dataSpaceViewerState } = props;
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
     const sectionRef = useRef<HTMLDivElement>(null);
+    const anchor = generateAnchorForActivity(
+      DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION,
+    );
 
     useEffect(() => {
-      // do
-    }, [dataSpaceViewerState]);
+      if (sectionRef.current) {
+        dataSpaceViewerState.layoutState.setWikiPageAnchor(
+          anchor,
+          sectionRef.current,
+        );
+      }
+    }, [dataSpaceViewerState, anchor]);
 
     return (
       <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
             Description
-            <div className="data-space__viewer__wiki__section__header__anchor">
+            <button
+              className="data-space__viewer__wiki__section__header__anchor"
+              tabIndex={-1}
+              onClick={() => dataSpaceViewerState.changeZone(anchor, true)}
+            >
               <AnchorLinkIcon />
-            </div>
+            </button>
           </div>
         </div>
         <div className="data-space__viewer__wiki__section__content">

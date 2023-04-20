@@ -19,7 +19,7 @@ import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import {
   type GeneratorFn,
   assertTrue,
-  getNullableFirstElement,
+  getNullableFirstEntry,
   guaranteeNonNullable,
   guaranteeType,
   IllegalStateError,
@@ -456,7 +456,7 @@ export class QueryBuilderFilterState
       this.rootIds.length < 2,
       'Query builder filter tree cannot have more than 1 root',
     );
-    const rootId = getNullableFirstElement(this.rootIds);
+    const rootId = getNullableFirstEntry(this.rootIds);
     return rootId ? this.getNode(rootId) : undefined;
   }
 

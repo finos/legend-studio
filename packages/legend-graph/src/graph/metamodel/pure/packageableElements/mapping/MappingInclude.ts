@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray, getNullableFirstElement } from '@finos/legend-shared';
+import { hashArray, getNullableFirstEntry } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
 import type { Mapping } from './Mapping.js';
@@ -35,9 +35,9 @@ export class MappingInclude {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING_INCLUDE,
       this.included.valueForSerialization ?? '',
-      getNullableFirstElement(this.storeSubstitutions)?.original
+      getNullableFirstEntry(this.storeSubstitutions)?.original
         .valueForSerialization ?? '',
-      getNullableFirstElement(this.storeSubstitutions)?.substitute
+      getNullableFirstEntry(this.storeSubstitutions)?.substitute
         .valueForSerialization ?? '',
     ]);
   }

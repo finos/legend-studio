@@ -19,7 +19,7 @@ export type NavigationLocationParameterValue = string | undefined;
 export type NavigationLocation = string;
 export type NavigationZone = string;
 
-export const NAVIGATION_ZONE_SEPARATOR = '__';
+export const NAVIGATION_ZONE_SEPARATOR = '.';
 export const NAVIGATION_ZONE_PREFIX = '#';
 
 /**

@@ -37,7 +37,7 @@ import {
   type GeneratorFn,
   ActionState,
   assertErrorThrown,
-  getNullableFirstElement,
+  getNullableFirstEntry,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query/DataSpaceQueryBuilder.js';
@@ -228,7 +228,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     // if there is no chosen class or the chosen one is not compatible
     // with the mapping then pick a compatible class if possible
     if (!this.class || !compatibleClasses.includes(this.class)) {
-      const possibleNewClass = getNullableFirstElement(compatibleClasses);
+      const possibleNewClass = getNullableFirstEntry(compatibleClasses);
       if (possibleNewClass) {
         this.changeClass(possibleNewClass);
       }

@@ -41,7 +41,11 @@ import {
   CaretRightIcon,
   CaretLeftIcon,
 } from '@finos/legend-art';
-import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
+  type DataSpaceViewerState,
+} from '../stores/DataSpaceViewerState.js';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import {
   DataSpaceAssociationDocumentationEntry,
@@ -61,7 +65,7 @@ import {
   PROPERTY_ACCESSOR,
   getMultiplicityDescription,
 } from '@finos/legend-graph';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import {
   type ModelsDocumentationFilterTreeNodeData,
   type DataSpaceViewerModelsDocumentationState,
@@ -1031,22 +1035,41 @@ const DataSpaceModelsDocumentationSearchBar = observer(
 export const DataSpaceModelsDocumentation = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+    const sectionRef = useRef<HTMLDivElement>(null);
+    const anchor = generateAnchorForActivity(
+      DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION,
+    );
+
+    useEffect(() => {
+      if (sectionRef.current) {
+        dataSpaceViewerState.layoutState.setWikiPageAnchor(
+          anchor,
+          sectionRef.current,
+        );
+      }
+    }, [dataSpaceViewerState, anchor]);
+
     const documentationEntries =
       dataSpaceViewerState.dataSpaceAnalysisResult.elementDocs;
     const documentationState = dataSpaceViewerState.modelsDocumentationState;
+
     const toggleFilterPanel = (): void =>
       documentationState.setShowFilterPanel(
         !documentationState.showFilterPanel,
       );
 
     return (
-      <div className="data-space__viewer__wiki__section">
+      <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
             Models Documentation
-            <div className="data-space__viewer__wiki__section__header__anchor">
+            <button
+              className="data-space__viewer__wiki__section__header__anchor"
+              tabIndex={-1}
+              onClick={() => dataSpaceViewerState.changeZone(anchor, true)}
+            >
               <AnchorLinkIcon />
-            </div>
+            </button>
           </div>
         </div>
         <div className="data-space__viewer__wiki__section__content">

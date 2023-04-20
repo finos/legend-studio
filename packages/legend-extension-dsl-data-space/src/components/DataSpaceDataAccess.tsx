@@ -20,10 +20,14 @@ import {
   PanelLoadingIndicator,
   QuestionCircleIcon,
 } from '@finos/legend-art';
-import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
+  type DataSpaceViewerState,
+} from '../stores/DataSpaceViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { flowResult } from 'mobx';
 import {
   DatasetEntitlementAccessApprovedReport,
@@ -137,6 +141,19 @@ export const DataSpaceDataAccess = observer(
     const applicationStore = useApplicationStore();
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
     const documentationUrl = analysisResult.supportInfo?.documentationUrl;
+    const sectionRef = useRef<HTMLDivElement>(null);
+    const anchor = generateAnchorForActivity(
+      DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
+    );
+
+    useEffect(() => {
+      if (sectionRef.current) {
+        dataSpaceViewerState.layoutState.setWikiPageAnchor(
+          anchor,
+          sectionRef.current,
+        );
+      }
+    }, [dataSpaceViewerState, anchor]);
 
     const seeDocumentation = (): void => {
       if (documentationUrl) {
@@ -147,13 +164,17 @@ export const DataSpaceDataAccess = observer(
     };
 
     return (
-      <div className="data-space__viewer__wiki__section">
+      <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
             Data Access
-            <div className="data-space__viewer__wiki__section__header__anchor">
+            <button
+              className="data-space__viewer__wiki__section__header__anchor"
+              tabIndex={-1}
+              onClick={() => dataSpaceViewerState.changeZone(anchor, true)}
+            >
               <AnchorLinkIcon />
-            </div>
+            </button>
           </div>
           {Boolean(documentationUrl) && (
             <button

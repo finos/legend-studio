@@ -22,7 +22,7 @@ import {
   CustomSelectorInput,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
-import { getNullableFirstElement, guaranteeType } from '@finos/legend-shared';
+import { getNullableFirstEntry, guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useContext, useEffect } from 'react';
@@ -189,7 +189,7 @@ const CreateMappingQuerySetupContent = observer(() => {
     // cascade
     if (setupStore.currentMapping) {
       setupStore.setCurrentRuntime(
-        getNullableFirstElement(setupStore.compatibleRuntimes),
+        getNullableFirstEntry(setupStore.compatibleRuntimes),
       );
     } else {
       setupStore.setCurrentRuntime(undefined);

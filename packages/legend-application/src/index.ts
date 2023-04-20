@@ -37,6 +37,7 @@ export {
 
 export * from './stores/ApplicationStore.js';
 export {
+  NAVIGATION_ZONE_SEPARATOR,
   NavigationService,
   type NavigationAddress,
   type NavigationLocation,

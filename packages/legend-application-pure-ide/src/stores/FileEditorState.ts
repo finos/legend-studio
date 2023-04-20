@@ -28,7 +28,7 @@ import {
 import { DIRECTORY_PATH_DELIMITER } from '@finos/legend-graph';
 import {
   assertErrorThrown,
-  getNullableLastElement,
+  getNullableLastEntry,
   guaranteeNonNullable,
   type GeneratorFn,
 } from '@finos/legend-shared';
@@ -62,7 +62,7 @@ import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../__lib__/LegendP
 import type { TabState } from '@finos/legend-lego/application';
 
 const getFileEditorLanguage = (filePath: string): string => {
-  const extension = getNullableLastElement(filePath.split('.'));
+  const extension = getNullableLastEntry(filePath.split('.'));
   switch (extension) {
     case 'pure':
       return CODE_EDITOR_LANGUAGE.PURE;
@@ -227,7 +227,7 @@ export class FileEditorState
 
   get fileName(): string {
     return guaranteeNonNullable(
-      getNullableLastElement(this.filePath.split(DIRECTORY_PATH_DELIMITER)),
+      getNullableLastEntry(this.filePath.split(DIRECTORY_PATH_DELIMITER)),
     );
   }
 

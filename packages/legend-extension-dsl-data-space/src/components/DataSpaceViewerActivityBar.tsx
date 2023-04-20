@@ -38,6 +38,7 @@ import {
 import {
   type DataSpaceViewerState,
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
 } from '../stores/DataSpaceViewerState.js';
 
 const ActivityBarMenu = observer(
@@ -64,7 +65,7 @@ const ActivityBarMenu = observer(
                 <MenuContentItem onClick={toggleExpandedMode}>
                   {layoutState.isExpandedModeEnabled
                     ? 'Disable Expanded Mode'
-                    : 'Enable Expanded Mode'}{' '}
+                    : 'Enable Expanded Mode'}
                 </MenuContentItem>
               </MenuContent>
             }
@@ -89,8 +90,10 @@ export const DataSpaceViewerActivityBar = observer(
     const changeActivity =
       (activity: DATA_SPACE_VIEWER_ACTIVITY_MODE): (() => void) =>
       (): void => {
-        dataSpaceViewerState.setCurrentActivity(activity);
-        dataSpaceViewerState.onZoneChange?.(activity);
+        dataSpaceViewerState.changeZone(
+          generateAnchorForActivity(activity),
+          true,
+        );
       };
 
     const wikiActivities: DataSpaceViewerActivityConfig[] = [

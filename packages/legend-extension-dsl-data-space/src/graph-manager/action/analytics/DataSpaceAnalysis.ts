@@ -19,6 +19,7 @@ import {
   type Mapping,
   type PackageableRuntime,
   type PureModel,
+  type DatasetSpecification,
 } from '@finos/legend-graph';
 import { prettyCONSTName, uuid } from '@finos/legend-shared';
 import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
@@ -31,6 +32,8 @@ export class DataSpaceExecutionContextAnalysisResult {
   mapping!: Mapping;
   defaultRuntime!: PackageableRuntime;
   compatibleRuntimes!: PackageableRuntime[];
+  // TODO: mapping coverage analysis
+  datasets: DatasetSpecification[] = [];
 }
 
 export class DataSpaceTaggedValueInfo {
@@ -158,6 +161,7 @@ export class DataSpaceExecutableAnalysisResult {
   executable!: string;
   info?: DataSpaceExecutableInfo | undefined;
   result!: DataSpaceExecutableResult;
+  datasets: DatasetSpecification[] = [];
 }
 
 export class DataSpaceAnalysisResult {

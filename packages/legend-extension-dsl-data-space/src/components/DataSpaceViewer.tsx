@@ -15,17 +15,23 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { BlankPanelContent, VerifiedIcon, clsx } from '@finos/legend-art';
+import {
+  BlankPanelContent,
+  CaretUpIcon,
+  VerifiedIcon,
+  clsx,
+} from '@finos/legend-art';
 import {
   type DataSpaceViewerState,
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  DATA_SPACE_WIKI_PAGE_SECTIONS,
 } from '../stores/DataSpaceViewerState.js';
 import { DataSpaceExecutionContextViewer } from './DataSpaceExecutionContextViewer.js';
 import { DataSpaceInfoPanel } from './DataSpaceInfoPanel.js';
 import { DataSpaceSupportPanel } from './DataSpaceSupportPanel.js';
 import { DataSpaceWiki } from './DataSpaceWiki.js';
 import { DataSpaceViewerActivityBar } from './DataSpaceViewerActivityBar.js';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const DataSpaceHeader = observer(
   (props: {
@@ -33,10 +39,18 @@ const DataSpaceHeader = observer(
     showFullHeader: boolean;
   }) => {
     const { dataSpaceViewerState, showFullHeader } = props;
+    const headerRef = useRef<HTMLDivElement>(null);
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
+
+    useEffect(() => {
+      if (headerRef.current) {
+        dataSpaceViewerState.layoutState.header = headerRef.current;
+      }
+    }, [dataSpaceViewerState]);
 
     return (
       <div
+        ref={headerRef}
         className={clsx('data-space__viewer__header', {
           'data-space__viewer__header--floating': showFullHeader,
         })}
@@ -80,20 +94,44 @@ const DataSpacePlaceholderPanel: React.FC<{ message: string }> = (props) => {
 export const DataSpaceViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
-    const bodyElement = useRef<HTMLDivElement>(null);
+    const frame = useRef<HTMLDivElement>(null);
     const [showFullHeader, setShowFullHeader] = useState(false);
+    const [scrollPercentage, setScrollPercentage] = useState(0);
 
     const onScroll: React.UIEventHandler<HTMLDivElement> = (event) => {
-      setShowFullHeader(event.currentTarget.scrollTop > 0);
+      const scrollTop = event.currentTarget.scrollTop;
+      setShowFullHeader(scrollTop > 0);
+      dataSpaceViewerState.layoutState.setTopScrollerVisible(scrollTop > 0);
+      setScrollPercentage(
+        event.currentTarget.scrollHeight <= 0
+          ? 100
+          : Math.round(
+              ((event.currentTarget.scrollTop +
+                event.currentTarget.clientHeight) /
+                event.currentTarget.scrollHeight) *
+                100,
+            ),
+      );
     };
 
-    const isShowingWiki = [
-      DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION,
-      DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
-      DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION,
-      DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START,
-      DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
-    ].includes(dataSpaceViewerState.currentActivity);
+    const scrollToTop = (): void => {
+      if (dataSpaceViewerState.layoutState.frame) {
+        dataSpaceViewerState.layoutState.frame.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
+      }
+    };
+
+    const isShowingWiki = DATA_SPACE_WIKI_PAGE_SECTIONS.includes(
+      dataSpaceViewerState.currentActivity,
+    );
+
+    useEffect(() => {
+      if (frame.current) {
+        dataSpaceViewerState.layoutState.setFrame(frame.current);
+      }
+    }, [dataSpaceViewerState]);
 
     return (
       <div className="data-space__viewer">
@@ -101,7 +139,7 @@ export const DataSpaceViewer = observer(
           dataSpaceViewerState={dataSpaceViewerState}
         />
         <div
-          ref={bodyElement}
+          ref={frame}
           className="data-space__viewer__body"
           onScroll={onScroll}
         >
@@ -109,6 +147,22 @@ export const DataSpaceViewer = observer(
             dataSpaceViewerState={dataSpaceViewerState}
             showFullHeader={showFullHeader}
           />
+          {dataSpaceViewerState.layoutState.isTopScrollerVisible && (
+            <div className="data-space__viewer__scroller">
+              <button
+                className="data-space__viewer__scroller__btn btn--dark"
+                tabIndex={-1}
+                title="Scroll to top"
+                disabled={!dataSpaceViewerState.layoutState.frame}
+                onClick={scrollToTop}
+              >
+                <CaretUpIcon />
+              </button>
+              <div className="data-space__viewer__scroller__percentage">
+                {scrollPercentage}%
+              </div>
+            </div>
+          )}
           <div
             className={clsx('data-space__viewer__frame', {
               'data-space__viewer__frame--boundless': isShowingWiki,

@@ -89,6 +89,12 @@ export const DataSpacePreview = withDataSpacePreviewStore(
     const previewStore = useDataSpacePreviewStore();
     const navigationZone = useNavigationZone();
 
+    // TEMPORARY
+    const colorTheme =
+      applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
+        'colorTheme',
+      );
+
     useEffect(() => {
       if (previewStore.viewerState) {
         previewStore.viewerState.changeZone(navigationZone);
@@ -97,9 +103,9 @@ export const DataSpacePreview = withDataSpacePreviewStore(
 
     useEffect(() => {
       applicationStore.layoutService.setColorTheme(
-        LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
+        colorTheme ?? LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
       );
-    }, [applicationStore]);
+    }, [applicationStore, colorTheme]);
 
     useEffect(() => {
       flowResult(previewStore.initialize(gav, dataSpacePath)).catch(

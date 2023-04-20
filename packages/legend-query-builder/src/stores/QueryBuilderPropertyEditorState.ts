@@ -16,7 +16,7 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
-  getNullableFirstElement,
+  getNullableFirstEntry,
   guaranteeNonNullable,
   guaranteeType,
   type Hashable,
@@ -72,7 +72,7 @@ export const getPropertyChainName = (
   const chunks = [propertyNameDecorator(propertyExpression.func.value.name)];
   let currentExpression: ValueSpecification | undefined = propertyExpression;
   while (currentExpression instanceof AbstractPropertyExpression) {
-    currentExpression = getNullableFirstElement(
+    currentExpression = getNullableFirstEntry(
       currentExpression.parametersValues,
     );
     // Take care of chain of subtypes (a pattern that is not useful, but we want to support and potentially rectify)
@@ -90,7 +90,7 @@ export const getPropertyChainName = (
         )[0]?.genericType?.value.rawType.name ?? '',
       )})`;
       chunks.unshift(subtypeChunk);
-      currentExpression = getNullableFirstElement(
+      currentExpression = getNullableFirstEntry(
         currentExpression.parametersValues,
       );
     }
@@ -124,7 +124,7 @@ export const getPropertyPath = (
   const propertyNameChain = [propertyExpression.func.value.name];
   let currentExpression: ValueSpecification | undefined = propertyExpression;
   while (currentExpression instanceof AbstractPropertyExpression) {
-    currentExpression = getNullableFirstElement(
+    currentExpression = getNullableFirstEntry(
       currentExpression.parametersValues,
     );
     if (currentExpression instanceof AbstractPropertyExpression) {
@@ -403,7 +403,7 @@ export class QueryBuilderPropertyExpressionState implements Hashable {
           );
         result.push(derivedPropertyExpressionState);
       }
-      currentExpression = getNullableFirstElement(
+      currentExpression = getNullableFirstEntry(
         currentExpression.parametersValues,
       );
       // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
@@ -415,7 +415,7 @@ export class QueryBuilderPropertyExpressionState implements Hashable {
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
         )
       ) {
-        currentExpression = getNullableFirstElement(
+        currentExpression = getNullableFirstEntry(
           currentExpression.parametersValues,
         );
       }

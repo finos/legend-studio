@@ -16,7 +16,7 @@
 
 import {
   hashArray,
-  getNullableFirstElement,
+  getNullableFirstEntry,
   type Hashable,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
@@ -46,7 +46,7 @@ export class V1_EnumerationMapping implements Hashable {
       // otherwise, we don't need to account for the source type in hash computation
       // If there is no enum value mapping, ignore the source type since it's synthetic and used by the editor
       this.enumValueMappings.length
-        ? getNullableFirstElement(
+        ? getNullableFirstEntry(
             Array.from(
               new Set(
                 this.enumValueMappings.flatMap((evm) =>

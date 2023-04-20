@@ -42,6 +42,7 @@ export const TimesCircleIcon = FA.FaTimesCircle;
 export const PlusIcon = FA.FaPlus;
 export const CogIcon = FA.FaCog;
 export const EyeIcon = FA.FaEye;
+export const CaretUpIcon = FA.FaCaretUp;
 export const CaretDownIcon = FA.FaCaretDown;
 export const FireIcon = FA.FaFire;
 export const SaveIcon = FA.FaSave;

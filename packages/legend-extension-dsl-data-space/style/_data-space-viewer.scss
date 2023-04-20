@@ -84,7 +84,6 @@
     height: 100%;
     width: 100%;
     overflow: overlay;
-    scroll-behavior: smooth;
   }
 
   &__frame {
@@ -189,6 +188,39 @@
 
   ::-webkit-scrollbar-track-piece {
     background: transparent;
+  }
+}
+
+.data-space__viewer__scroller {
+  @include flexCenter;
+
+  position: absolute;
+  flex-direction: column;
+  bottom: 2rem;
+  right: 3rem;
+  width: 3.4rem;
+  height: 5rem;
+  background: var(--color-blue-200);
+  border-radius: 0.2rem;
+
+  &__btn {
+    @include flexCenter;
+
+    height: 3.4rem;
+    width: 3.4rem;
+  }
+
+  &__percentage {
+    @include flexCenter;
+
+    height: 1.6rem;
+    width: 100%;
+    font-size: 1rem;
+    user-select: none;
+    font-family: 'Roboto Mono', monospace;
+    background: var(--color-blue-300);
+    color: var(--color-light-grey-50);
+    border-radius: 0 0 0.2rem 0.2rem;
   }
 }
 
@@ -339,6 +371,7 @@
       &__anchor {
         @include flexVCenter;
 
+        display: none;
         margin-left: 0.5rem;
         cursor: pointer;
 
@@ -349,6 +382,10 @@
         &:hover svg {
           color: var(--color-dark-grey-400);
         }
+      }
+
+      &:hover &__anchor {
+        display: flex;
       }
 
       &__documentation {
@@ -550,6 +587,17 @@
 
   &--shrink {
     width: calc(100% - 25rem);
+  }
+
+  ::-webkit-scrollbar {
+    width: 0.6rem;
+    height: 0.6rem;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 0.2rem solid transparent;
+    background-clip: content-box;
+    border-radius: 0.3rem;
   }
 
   &__cell {
@@ -982,6 +1030,7 @@
 
     margin-left: 0.5rem;
     cursor: pointer;
+    display: none;
 
     svg {
       color: var(--color-dark-grey-300);
@@ -990,6 +1039,10 @@
     &:hover svg {
       color: var(--color-dark-grey-400);
     }
+  }
+
+  &__item__header:hover &__item__header__anchor {
+    display: flex;
   }
 
   &__item__description {
@@ -1066,10 +1119,6 @@
     &__tab__content {
       margin-top: 1rem;
       height: 30rem;
-
-      &--auto-height {
-        height: auto;
-      }
     }
   }
 

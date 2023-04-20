@@ -17,7 +17,7 @@
 import type { DocumentationEntry } from '@finos/legend-application';
 import { PARSER_SECTION_MARKER, PURE_PARSER } from '@finos/legend-graph';
 import {
-  getNullableFirstElement,
+  getNullableFirstEntry,
   guaranteeNonNullable,
   hasWhiteSpace,
 } from '@finos/legend-shared';
@@ -332,7 +332,7 @@ export const isTokenOneOf = (
     return baseTokens.map((baseToken) => `${baseToken}.pure`).includes(token);
   }
   const baseToken = guaranteeNonNullable(
-    getNullableFirstElement(token.split('.')),
+    getNullableFirstEntry(token.split('.')),
   );
   return baseTokens.includes(baseToken);
 };

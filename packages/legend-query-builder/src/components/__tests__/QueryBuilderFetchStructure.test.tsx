@@ -49,7 +49,7 @@ import TEST_DATA_SimpleSubtypeModel from '../../stores/__tests__/TEST_DATA__Quer
 import {
   guaranteeNonNullable,
   guaranteeType,
-  getNullableFirstElement,
+  getNullableFirstEntry,
 } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
@@ -581,7 +581,7 @@ test(
 
     const filterConditionValue = guaranteeType(
       guaranteeType(
-        getNullableFirstElement(
+        getNullableFirstEntry(
           Array.from(queryBuilderState.filterState.nodes.values()),
         ),
         QueryBuilderFilterTreeConditionNodeData,
@@ -636,7 +636,7 @@ test(
 
     const filterConditionValue = guaranteeType(
       guaranteeType(
-        getNullableFirstElement(
+        getNullableFirstEntry(
           Array.from(queryBuilderState.filterState.nodes.values()),
         ),
         QueryBuilderFilterTreeConditionNodeData,
