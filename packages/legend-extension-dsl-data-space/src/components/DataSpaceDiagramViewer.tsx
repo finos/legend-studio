@@ -98,6 +98,7 @@ export const DataSpaceDiagramViewer = observer(
           sectionRef.current,
         );
       }
+      return () => dataSpaceViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [dataSpaceViewerState, anchor]);
 
     // diagram selector

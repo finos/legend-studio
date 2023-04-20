@@ -41,6 +41,7 @@ export const DataSpaceDescription = observer(
           sectionRef.current,
         );
       }
+      return () => dataSpaceViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [dataSpaceViewerState, anchor]);
 
     return (
