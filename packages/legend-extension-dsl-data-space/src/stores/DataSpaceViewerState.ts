@@ -66,6 +66,30 @@ export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   SUPPORT = 'support',
 }
 
+const generateAnchorChunk = (text: string): string =>
+  encodeURIComponent(
+    text
+      .trim()
+      .toLowerCase() // anchor is case-insensitive
+      .replace(/\s+/gu, '-'), // spaces will be replaced by hyphens
+  );
+export const generateAnchorForActivity = (activity: string): string =>
+  generateAnchorChunk(activity);
+export const generateAnchorForQuickStart = (
+  quickStart: DataSpaceExecutableAnalysisResult,
+): string =>
+  [
+    DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START,
+    generateAnchorChunk(quickStart.title),
+  ].join(NAVIGATION_ZONE_SEPARATOR);
+export const generateAnchorForDiagram = (
+  diagram: DataSpaceDiagramAnalysisResult,
+): string =>
+  [
+    DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
+    generateAnchorChunk(diagram.title),
+  ].join(NAVIGATION_ZONE_SEPARATOR);
+
 export const DATA_SPACE_WIKI_PAGE_SECTIONS = [
   DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION,
   DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
@@ -74,33 +98,14 @@ export const DATA_SPACE_WIKI_PAGE_SECTIONS = [
   DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
 ];
 
+const DATA_SPACE_WIKI_PAGE_ANCHORS = DATA_SPACE_WIKI_PAGE_SECTIONS.map(
+  (activity) => generateAnchorForActivity(activity),
+);
+
 type DataSpacePageNavigationCommand = {
   anchor: string;
   useSmoothScroll?: boolean;
 };
-
-const titleToAnchorChunk = (title: string): string =>
-  encodeURIComponent(
-    title
-      .trim()
-      .toLowerCase() // anchor is case-insensitive
-      .replace(/\s+/gu, '-'), // spaces will be replaced by hyphens
-  );
-export const generateAnchorForActivity = (activity: string): string => activity;
-export const generateAnchorForQuickStart = (
-  quickStart: DataSpaceExecutableAnalysisResult,
-): string =>
-  [
-    DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START,
-    titleToAnchorChunk(quickStart.title),
-  ].join(NAVIGATION_ZONE_SEPARATOR);
-export const generateAnchorForDiagram = (
-  diagram: DataSpaceDiagramAnalysisResult,
-): string =>
-  [
-    DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
-    titleToAnchorChunk(diagram.title),
-  ].join(NAVIGATION_ZONE_SEPARATOR);
 
 class DataSpaceLayoutState {
   readonly dataSpaceViewerState: DataSpaceViewerState;
@@ -120,7 +125,7 @@ class DataSpaceLayoutState {
       currentNavigationZone: observable,
       isExpandedModeEnabled: observable,
       isTopScrollerVisible: observable,
-      wikiPageAnchorIndex: observable.struct,
+      wikiPageAnchorIndex: observable,
       frame: observable.ref,
       wikiNavigationCommand: observable.ref,
       isAllWikiPageFullyRendered: computed,
@@ -129,6 +134,7 @@ class DataSpaceLayoutState {
       setFrame: action,
       setTopScrollerVisible: action,
       setWikiPageAnchor: action,
+      unsetWikiPageAnchor: action,
       setWikiAnchorToNavigate: action,
     });
 
@@ -144,8 +150,8 @@ class DataSpaceLayoutState {
       DATA_SPACE_WIKI_PAGE_SECTIONS.includes(
         this.dataSpaceViewerState.currentActivity,
       ) &&
-      DATA_SPACE_WIKI_PAGE_SECTIONS.every((section) =>
-        this.wikiPageAnchorIndex.has(section),
+      DATA_SPACE_WIKI_PAGE_ANCHORS.every((anchor) =>
+        this.wikiPageAnchorIndex.has(anchor),
       ) &&
       Array.from(this.wikiPageAnchorIndex.values()).every(isNonNullable)
     );
@@ -170,6 +176,10 @@ class DataSpaceLayoutState {
     }
   }
 
+  unsetWikiPageAnchor(anchorKey: string): void {
+    this.wikiPageAnchorIndex.delete(anchorKey);
+  }
+
   setWikiAnchorToNavigate(
     val: DataSpacePageNavigationCommand | undefined,
   ): void {
@@ -192,7 +202,9 @@ class DataSpaceLayoutState {
         });
       } else if (
         getNullableFirstEntry(anchorChunks) ===
-        DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER
+        generateAnchorForActivity(
+          DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
+        )
       ) {
         const matchingDiagram =
           this.dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.find(
@@ -407,14 +419,13 @@ export class DataSpaceViewerState {
     if (zone !== this.layoutState.currentNavigationZone) {
       const zoneChunks = zone.split(NAVIGATION_ZONE_SEPARATOR);
       const activityChunk = getNullableEntry(zoneChunks, 0);
-      if (
-        activityChunk &&
-        (Object.values(DATA_SPACE_VIEWER_ACTIVITY_MODE) as string[]).includes(
-          activityChunk,
-        )
-      ) {
-        const activty = activityChunk as DATA_SPACE_VIEWER_ACTIVITY_MODE;
-        if (DATA_SPACE_WIKI_PAGE_SECTIONS.includes(activty)) {
+      const matchingActivity = Object.values(
+        DATA_SPACE_VIEWER_ACTIVITY_MODE,
+      ).find(
+        (activity) => generateAnchorForActivity(activity) === activityChunk,
+      );
+      if (activityChunk && matchingActivity) {
+        if (DATA_SPACE_WIKI_PAGE_SECTIONS.includes(matchingActivity)) {
           this.layoutState.setWikiAnchorToNavigate({
             anchor: zone,
             // NOTE: if we are already on the wiki page, use smooth scroll to suggest the scrollability of the page
@@ -424,7 +435,7 @@ export class DataSpaceViewerState {
             ),
           });
         }
-        this.setCurrentActivity(activty);
+        this.setCurrentActivity(matchingActivity);
         this.onZoneChange?.(zone);
         this.layoutState.setCurrentNavigationZone(zone);
       } else {

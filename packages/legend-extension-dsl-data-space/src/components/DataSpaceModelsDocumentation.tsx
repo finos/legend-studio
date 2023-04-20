@@ -1047,6 +1047,7 @@ export const DataSpaceModelsDocumentation = observer(
           sectionRef.current,
         );
       }
+      return () => dataSpaceViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [dataSpaceViewerState, anchor]);
 
     const documentationEntries =

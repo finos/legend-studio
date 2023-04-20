@@ -335,6 +335,7 @@ const DataSpaceExecutableAnalysisResultView = observer(
           quickStartRef.current,
         );
       }
+      return () => dataSpaceViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [dataSpaceViewerState, anchor]);
 
     return (
@@ -395,6 +396,7 @@ export const DataSpaceQuickStart = observer(
           sectionRef.current,
         );
       }
+      return () => dataSpaceViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [dataSpaceViewerState, anchor]);
 
     const seeDocumentation = (): void => {
