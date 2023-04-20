@@ -195,11 +195,33 @@
   @include flexCenter;
 
   position: absolute;
+  flex-direction: column;
   bottom: 2rem;
   right: 3rem;
   width: 3.4rem;
-  height: 3.4rem;
+  height: 5rem;
+  background: var(--color-blue-200);
   border-radius: 0.2rem;
+
+  &__btn {
+    @include flexCenter;
+
+    height: 3.4rem;
+    width: 3.4rem;
+  }
+
+  &__percentage {
+    @include flexCenter;
+
+    height: 1.6rem;
+    width: 100%;
+    font-size: 1rem;
+    user-select: none;
+    font-family: 'Roboto Mono', monospace;
+    background: var(--color-blue-300);
+    color: var(--color-light-grey-50);
+    border-radius: 0 0 0.2rem 0.2rem;
+  }
 }
 
 .data-space__viewer__activity-bar {
@@ -565,6 +587,17 @@
 
   &--shrink {
     width: calc(100% - 25rem);
+  }
+
+  ::-webkit-scrollbar {
+    width: 0.6rem;
+    height: 0.6rem;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 0.2rem solid transparent;
+    background-clip: content-box;
+    border-radius: 0.3rem;
   }
 
   &__cell {

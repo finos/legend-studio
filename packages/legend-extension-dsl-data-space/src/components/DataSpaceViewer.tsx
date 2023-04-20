@@ -96,11 +96,22 @@ export const DataSpaceViewer = observer(
     const { dataSpaceViewerState } = props;
     const frame = useRef<HTMLDivElement>(null);
     const [showFullHeader, setShowFullHeader] = useState(false);
+    const [scrollPercentage, setScrollPercentage] = useState(0);
 
     const onScroll: React.UIEventHandler<HTMLDivElement> = (event) => {
       const scrollTop = event.currentTarget.scrollTop;
       setShowFullHeader(scrollTop > 0);
       dataSpaceViewerState.layoutState.setTopScrollerVisible(scrollTop > 0);
+      setScrollPercentage(
+        event.currentTarget.scrollHeight <= 0
+          ? 100
+          : Math.round(
+              ((event.currentTarget.scrollTop +
+                event.currentTarget.clientHeight) /
+                event.currentTarget.scrollHeight) *
+                100,
+            ),
+      );
     };
 
     const scrollToTop = (): void => {
@@ -137,15 +148,20 @@ export const DataSpaceViewer = observer(
             showFullHeader={showFullHeader}
           />
           {dataSpaceViewerState.layoutState.isTopScrollerVisible && (
-            <button
-              className="data-space__viewer__scroller btn--dark"
-              tabIndex={-1}
-              title="Scroll to top"
-              disabled={!dataSpaceViewerState.layoutState.frame}
-              onClick={scrollToTop}
-            >
-              <CaretUpIcon />
-            </button>
+            <div className="data-space__viewer__scroller">
+              <button
+                className="data-space__viewer__scroller__btn btn--dark"
+                tabIndex={-1}
+                title="Scroll to top"
+                disabled={!dataSpaceViewerState.layoutState.frame}
+                onClick={scrollToTop}
+              >
+                <CaretUpIcon />
+              </button>
+              <div className="data-space__viewer__scroller__percentage">
+                {scrollPercentage}%
+              </div>
+            </div>
           )}
           <div
             className={clsx('data-space__viewer__frame', {
