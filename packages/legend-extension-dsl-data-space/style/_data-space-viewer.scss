@@ -349,6 +349,7 @@
       &__anchor {
         @include flexVCenter;
 
+        display: none;
         margin-left: 0.5rem;
         cursor: pointer;
 
@@ -359,6 +360,10 @@
         &:hover svg {
           color: var(--color-dark-grey-400);
         }
+      }
+
+      &:hover &__anchor {
+        display: flex;
       }
 
       &__documentation {
@@ -992,6 +997,7 @@
 
     margin-left: 0.5rem;
     cursor: pointer;
+    display: none;
 
     svg {
       color: var(--color-dark-grey-300);
@@ -1000,6 +1006,10 @@
     &:hover svg {
       color: var(--color-dark-grey-400);
     }
+  }
+
+  &__item__header:hover &__item__header__anchor {
+    display: flex;
   }
 
   &__item__description {
@@ -1076,10 +1086,6 @@
     &__tab__content {
       margin-top: 1rem;
       height: 30rem;
-
-      &--auto-height {
-        height: auto;
-      }
     }
   }
 

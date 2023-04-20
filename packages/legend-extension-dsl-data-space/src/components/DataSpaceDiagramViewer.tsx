@@ -24,7 +24,9 @@ import {
 } from '@finos/legend-art';
 import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
   type DataSpaceViewerState,
+  generateAnchorForDiagram,
 } from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useRef } from 'react';
@@ -85,15 +87,18 @@ export const DataSpaceDiagramViewer = observer(
     const { dataSpaceViewerState } = props;
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
     const sectionRef = useRef<HTMLDivElement>(null);
+    const anchor = generateAnchorForActivity(
+      DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
+    );
 
     useEffect(() => {
       if (sectionRef.current) {
         dataSpaceViewerState.layoutState.setWikiPageAnchor(
-          DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
+          anchor,
           sectionRef.current,
         );
       }
-    }, [dataSpaceViewerState]);
+    }, [dataSpaceViewerState, anchor]);
 
     // diagram selector
     const diagramCanvasRef = useRef<HTMLDivElement>(null);
@@ -108,8 +113,12 @@ export const DataSpaceDiagramViewer = observer(
       if (idx === 0 || idx === -1) {
         return;
       }
-      dataSpaceViewerState.setCurrentDiagram(
-        guaranteeNonNullable(analysisResult.diagrams[idx - 1]),
+      const previousDiagram = guaranteeNonNullable(
+        analysisResult.diagrams[idx - 1],
+      );
+      dataSpaceViewerState.setCurrentDiagram(previousDiagram);
+      dataSpaceViewerState.syncZoneWithNavigation(
+        generateAnchorForDiagram(previousDiagram),
       );
     };
     const showNextDiagram = (): void => {
@@ -122,8 +131,12 @@ export const DataSpaceDiagramViewer = observer(
       if (idx === analysisResult.diagrams.length - 1 || idx === -1) {
         return;
       }
-      dataSpaceViewerState.setCurrentDiagram(
-        guaranteeNonNullable(analysisResult.diagrams[idx + 1]),
+      const nextDiagram = guaranteeNonNullable(
+        analysisResult.diagrams[idx + 1],
+      );
+      dataSpaceViewerState.setCurrentDiagram(nextDiagram);
+      dataSpaceViewerState.syncZoneWithNavigation(
+        generateAnchorForDiagram(nextDiagram),
       );
     };
 
@@ -132,9 +145,13 @@ export const DataSpaceDiagramViewer = observer(
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
             Diagrams
-            <div className="data-space__viewer__wiki__section__header__anchor">
+            <button
+              className="data-space__viewer__wiki__section__header__anchor"
+              tabIndex={-1}
+              onClick={() => dataSpaceViewerState.changeZone(anchor, true)}
+            >
               <AnchorLinkIcon />
-            </div>
+            </button>
           </div>
         </div>
         <div className="data-space__viewer__wiki__section__content">
@@ -187,9 +204,12 @@ export const DataSpaceDiagramViewer = observer(
                                 dataSpaceViewerState.currentDiagram === diagram,
                             },
                           )}
-                          onClick={() =>
-                            dataSpaceViewerState.setCurrentDiagram(diagram)
-                          }
+                          onClick={() => {
+                            dataSpaceViewerState.setCurrentDiagram(diagram);
+                            dataSpaceViewerState.syncZoneWithNavigation(
+                              generateAnchorForDiagram(diagram),
+                            );
+                          }}
                         >
                           <CircleIcon />
                         </button>

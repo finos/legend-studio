@@ -43,6 +43,7 @@ import {
 } from '@finos/legend-art';
 import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
   type DataSpaceViewerState,
 } from '../stores/DataSpaceViewerState.js';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
@@ -1035,15 +1036,18 @@ export const DataSpaceModelsDocumentation = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     const sectionRef = useRef<HTMLDivElement>(null);
+    const anchor = generateAnchorForActivity(
+      DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION,
+    );
 
     useEffect(() => {
       if (sectionRef.current) {
         dataSpaceViewerState.layoutState.setWikiPageAnchor(
-          DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION,
+          anchor,
           sectionRef.current,
         );
       }
-    }, [dataSpaceViewerState]);
+    }, [dataSpaceViewerState, anchor]);
 
     const documentationEntries =
       dataSpaceViewerState.dataSpaceAnalysisResult.elementDocs;
@@ -1059,9 +1063,13 @@ export const DataSpaceModelsDocumentation = observer(
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
             Models Documentation
-            <div className="data-space__viewer__wiki__section__header__anchor">
+            <button
+              className="data-space__viewer__wiki__section__header__anchor"
+              tabIndex={-1}
+              onClick={() => dataSpaceViewerState.changeZone(anchor, true)}
+            >
               <AnchorLinkIcon />
-            </div>
+            </button>
           </div>
         </div>
         <div className="data-space__viewer__wiki__section__content">

@@ -39,6 +39,7 @@ import { action, computed, makeObservable, observable } from 'mobx';
 import type {
   DataSpaceAnalysisResult,
   DataSpaceDiagramAnalysisResult,
+  DataSpaceExecutableAnalysisResult,
   DataSpaceExecutionContextAnalysisResult,
 } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import {
@@ -50,17 +51,17 @@ import { DataSpaceViewerModelsDocumentationState } from './DataSpaceModelsDocume
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   DESCRIPTION = 'description',
-  DIAGRAM_VIEWER = 'diagram_viewer',
-  MODELS_DOCUMENTATION = 'models_documentation',
-  QUICK_START = 'quick_start',
-  EXECUTION_CONTEXT = 'execution_context',
-  DATA_ACCESS = 'data_access',
+  DIAGRAM_VIEWER = 'diagram-viewer',
+  MODELS_DOCUMENTATION = 'models-documentation',
+  QUICK_START = 'quick-start',
+  EXECUTION_CONTEXT = 'execution-context',
+  DATA_ACCESS = 'data-access',
 
-  DATA_STORES = 'data_stores', // TODO: with test-data, also let user call TDS query on top of these
-  DATA_AVAILABILITY = 'data_availability',
-  DATA_READINESS = 'data_readiness',
-  DATA_COST = 'data_cost',
-  DATA_GOVERNANCE = 'data_governance',
+  DATA_STORES = 'data-stores', // TODO: with test-data, also let user call TDS query on top of these
+  DATA_AVAILABILITY = 'data-availability',
+  DATA_READINESS = 'data-readiness',
+  DATA_COST = 'data-cost',
+  DATA_GOVERNANCE = 'data-governance',
   INFO = 'info', // TODO: test coverage? (or maybe this should be done in elements/diagrams/data-quality section)
   SUPPORT = 'support',
 }
@@ -77,6 +78,29 @@ type DataSpacePageNavigationCommand = {
   anchor: string;
   useSmoothScroll?: boolean;
 };
+
+const titleToAnchorChunk = (title: string): string =>
+  encodeURIComponent(
+    title
+      .trim()
+      .toLowerCase() // anchor is case-insensitive
+      .replace(/\s+/gu, '-'), // spaces will be replaced by hyphens
+  );
+export const generateAnchorForActivity = (activity: string): string => activity;
+export const generateAnchorForQuickStart = (
+  quickStart: DataSpaceExecutableAnalysisResult,
+): string =>
+  [
+    DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START,
+    titleToAnchorChunk(quickStart.title),
+  ].join(NAVIGATION_ZONE_SEPARATOR);
+export const generateAnchorForDiagram = (
+  diagram: DataSpaceDiagramAnalysisResult,
+): string =>
+  [
+    DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
+    titleToAnchorChunk(diagram.title),
+  ].join(NAVIGATION_ZONE_SEPARATOR);
 
 class DataSpaceLayoutState {
   readonly dataSpaceViewerState: DataSpaceViewerState;
@@ -140,7 +164,10 @@ class DataSpaceLayoutState {
   }
 
   setWikiPageAnchor(anchorKey: string, element: HTMLElement): void {
-    this.wikiPageAnchorIndex.set(anchorKey, element);
+    // do not allow overriding existing anchor
+    if (!this.wikiPageAnchorIndex.has(anchorKey)) {
+      this.wikiPageAnchorIndex.set(anchorKey, element);
+    }
   }
 
   setWikiAnchorToNavigate(
@@ -151,9 +178,9 @@ class DataSpaceLayoutState {
 
   navigateWikiAnchor(): void {
     if (this.wikiNavigationCommand && this.isAllWikiPageFullyRendered) {
-      const matchingWikiPageSection = this.wikiPageAnchorIndex.get(
-        this.wikiNavigationCommand.anchor,
-      );
+      const anchor = this.wikiNavigationCommand.anchor;
+      const matchingWikiPageSection = this.wikiPageAnchorIndex.get(anchor);
+      const anchorChunks = anchor.split(NAVIGATION_ZONE_SEPARATOR);
       if (matchingWikiPageSection) {
         this.frame?.scrollTo({
           top:
@@ -163,6 +190,17 @@ class DataSpaceLayoutState {
             ? 'smooth'
             : 'auto',
         });
+      } else if (
+        getNullableFirstEntry(anchorChunks) ===
+        DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER
+      ) {
+        const matchingDiagram =
+          this.dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.find(
+            (diagram) => generateAnchorForDiagram(diagram) === anchor,
+          );
+        if (matchingDiagram) {
+          this.dataSpaceViewerState.setCurrentDiagram(matchingDiagram);
+        }
       }
 
       this.setWikiAnchorToNavigate(undefined);
@@ -357,7 +395,15 @@ export class DataSpaceViewerState {
     ): void => this.onDiagramClassDoubleClick(classView);
   }
 
-  changeZone(zone: NavigationZone): void {
+  syncZoneWithNavigation(zone: NavigationZone): void {
+    this.layoutState.setCurrentNavigationZone(zone);
+    this.onZoneChange?.(zone);
+  }
+
+  changeZone(zone: NavigationZone, force = false): void {
+    if (force) {
+      this.layoutState.setCurrentNavigationZone('');
+    }
     if (zone !== this.layoutState.currentNavigationZone) {
       const zoneChunks = zone.split(NAVIGATION_ZONE_SEPARATOR);
       const activityChunk = getNullableEntry(zoneChunks, 0);
@@ -368,7 +414,6 @@ export class DataSpaceViewerState {
         )
       ) {
         const activty = activityChunk as DATA_SPACE_VIEWER_ACTIVITY_MODE;
-        this.setCurrentActivity(activty);
         if (DATA_SPACE_WIKI_PAGE_SECTIONS.includes(activty)) {
           this.layoutState.setWikiAnchorToNavigate({
             anchor: zone,
@@ -379,11 +424,11 @@ export class DataSpaceViewerState {
             ),
           });
         }
+        this.setCurrentActivity(activty);
         this.onZoneChange?.(zone);
         this.layoutState.setCurrentNavigationZone(zone);
       } else {
         this.setCurrentActivity(DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION);
-        this.onZoneChange?.(undefined);
         this.layoutState.setCurrentNavigationZone('');
       }
     }

@@ -26,7 +26,9 @@ import {
 } from '@finos/legend-art';
 import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
   type DataSpaceViewerState,
+  generateAnchorForQuickStart,
 } from '../stores/DataSpaceViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -52,8 +54,6 @@ enum TDS_EXECUTABLE_ACTION_TAB {
   QUERY = 'QUERY',
   QUERY_TEXT = 'QUERY_TEXT',
 }
-
-const MIN_NUMBER_OF_ROWS_FOR_AUTO_HEIGHT = 15;
 
 const TDSColumnDocumentationCellRenderer = (
   params: DataGridCellRendererParams<DataSpaceExecutableTDSResultColumn>,
@@ -101,8 +101,6 @@ const DataSpaceExecutableTDSResultView = observer(
     const queryText = executableAnalysisResult.info?.query;
 
     const columnSpecifications = tdsResult.columns;
-    const autoHeight =
-      tdsResult.columns.length <= MIN_NUMBER_OF_ROWS_FOR_AUTO_HEIGHT;
     const extractTDSExecutableActionConfigurations =
       applicationStore.pluginManager
         .getApplicationPlugins()
@@ -125,226 +123,196 @@ const DataSpaceExecutableTDSResultView = observer(
       );
 
     return (
-      <div className="data-space__viewer__quickstart__item">
-        <div className="data-space__viewer__quickstart__item__header">
-          <div className="data-space__viewer__quickstart__item__header__title">
-            {executableAnalysisResult.title}
-          </div>
-          <div className="data-space__viewer__quickstart__item__header__type">
-            TDS
-          </div>
-          <div className="data-space__viewer__quickstart__item__header__anchor">
-            <AnchorLinkIcon />
-          </div>
-        </div>
-        {executableAnalysisResult.description !== undefined && (
-          <div className="data-space__viewer__quickstart__item__description">
-            <DataSpaceMarkdownTextViewer
-              value={executableAnalysisResult.description}
-            />
-          </div>
-        )}
-        <div className="data-space__viewer__quickstart__item__content">
-          <div className="data-space__viewer__quickstart__item__content__tab__header">
-            <div className="data-space__viewer__quickstart__item__content__tabs">
-              <button
-                className={clsx(
-                  'data-space__viewer__quickstart__item__content__tab',
-                  {
-                    'data-space__viewer__quickstart__item__content__tab--active':
-                      selectedTab === TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS,
-                  },
-                )}
-                tabIndex={-1}
-                onClick={() =>
-                  setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS)
-                }
-              >
-                <div className="data-space__viewer__quickstart__item__content__tab__label">
-                  Column Specifications
-                </div>
-              </button>
-              <button
-                className={clsx(
-                  'data-space__viewer__quickstart__item__content__tab',
-                  {
-                    'data-space__viewer__quickstart__item__content__tab--active':
-                      selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY,
-                  },
-                )}
-                tabIndex={-1}
-                onClick={() => setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.QUERY)}
-              >
-                <div className="data-space__viewer__quickstart__item__content__tab__icon">
-                  <LegendLogo className="data-space__viewer__quickstart__item__content__tab__icon--query" />
-                </div>
-                <div className="data-space__viewer__quickstart__item__content__tab__label">
-                  Query
-                </div>
-              </button>
-              {extractTDSExecutableActionConfigurations.map((config) => (
-                <button
-                  key={config.key}
-                  className={clsx(
-                    'data-space__viewer__quickstart__item__content__tab',
-                    {
-                      'data-space__viewer__quickstart__item__content__tab--active':
-                        selectedTab === config.key,
-                    },
-                  )}
-                  tabIndex={-1}
-                  onClick={() => setSelectedTab(config.key)}
-                >
-                  {config.icon !== undefined && (
-                    <div className="data-space__viewer__quickstart__item__content__tab__icon">
-                      {config.icon}
-                    </div>
-                  )}
-                  <div className="data-space__viewer__quickstart__item__content__tab__label">
-                    {config.title}
-                  </div>
-                </button>
-              ))}
-            </div>
-            {queryText !== undefined && (
-              <button
-                className={clsx(
-                  'data-space__viewer__quickstart__item__content__tab',
-                  {
-                    'data-space__viewer__quickstart__item__content__tab--active':
-                      selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY_TEXT,
-                  },
-                )}
-                tabIndex={-1}
-                onClick={() =>
-                  setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.QUERY_TEXT)
-                }
-              >
-                <div className="data-space__viewer__quickstart__item__content__tab__icon">
-                  <CodeIcon className="data-space__viewer__quickstart__item__content__tab__icon--query" />
-                </div>
-              </button>
-            )}
-          </div>
-          <div
-            className={clsx(
-              'data-space__viewer__quickstart__item__content__tab__content',
-              {
-                'data-space__viewer__quickstart__item__content__tab__content':
-                  autoHeight,
-              },
-            )}
-          >
-            {selectedTab === TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS && (
-              <div className="data-space__viewer__quickstart__tds__column-specs data-space__viewer__grid ag-theme-balham-dark">
-                <DataGrid
-                  domLayout={autoHeight ? 'autoHeight' : 'normal'}
-                  rowData={columnSpecifications}
-                  gridOptions={{
-                    suppressScrollOnNewData: true,
-                    getRowId: (rowData) => rowData.data.uuid,
-                  }}
-                  suppressFieldDotNotation={true}
-                  columnDefs={[
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      field: 'name',
-                      headerValueGetter: () =>
-                        `Column ${
-                          columnSpecifications.length
-                            ? ` (${columnSpecifications.length})`
-                            : ''
-                        }`,
-                      flex: 1,
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: false,
-                      resizable: true,
-                      cellRenderer: TDSColumnDocumentationCellRenderer,
-                      headerName: 'Documentation',
-                      flex: 1,
-                      wrapText: true,
-                      autoHeight: true,
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: false,
-                      resizable: false,
-                      headerClass:
-                        'data-space__viewer__grid__last-column-header',
-                      cellRenderer: TDSColumnSampleValuesCellRenderer,
-                      headerName: 'Sample Values',
-                      flex: 1,
-                    },
-                  ]}
-                />
+      <div className="data-space__viewer__quickstart__item__content">
+        <div className="data-space__viewer__quickstart__item__content__tab__header">
+          <div className="data-space__viewer__quickstart__item__content__tabs">
+            <button
+              className={clsx(
+                'data-space__viewer__quickstart__item__content__tab',
+                {
+                  'data-space__viewer__quickstart__item__content__tab--active':
+                    selectedTab === TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS,
+                },
+              )}
+              tabIndex={-1}
+              onClick={() =>
+                setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS)
+              }
+            >
+              <div className="data-space__viewer__quickstart__item__content__tab__label">
+                Column Specifications
               </div>
-            )}
-            {selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY && (
-              <div className="data-space__viewer__quickstart__tds__query">
-                <div className="data-space__viewer__quickstart__tds__query__actions">
+            </button>
+            <button
+              className={clsx(
+                'data-space__viewer__quickstart__item__content__tab',
+                {
+                  'data-space__viewer__quickstart__item__content__tab--active':
+                    selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY,
+                },
+              )}
+              tabIndex={-1}
+              onClick={() => setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.QUERY)}
+            >
+              <div className="data-space__viewer__quickstart__item__content__tab__icon">
+                <LegendLogo className="data-space__viewer__quickstart__item__content__tab__icon--query" />
+              </div>
+              <div className="data-space__viewer__quickstart__item__content__tab__label">
+                Query
+              </div>
+            </button>
+            {extractTDSExecutableActionConfigurations.map((config) => (
+              <button
+                key={config.key}
+                className={clsx(
+                  'data-space__viewer__quickstart__item__content__tab',
+                  {
+                    'data-space__viewer__quickstart__item__content__tab--active':
+                      selectedTab === config.key,
+                  },
+                )}
+                tabIndex={-1}
+                onClick={() => setSelectedTab(config.key)}
+              >
+                {config.icon !== undefined && (
+                  <div className="data-space__viewer__quickstart__item__content__tab__icon">
+                    {config.icon}
+                  </div>
+                )}
+                <div className="data-space__viewer__quickstart__item__content__tab__label">
+                  {config.title}
+                </div>
+              </button>
+            ))}
+          </div>
+          {queryText !== undefined && (
+            <button
+              className={clsx(
+                'data-space__viewer__quickstart__item__content__tab',
+                {
+                  'data-space__viewer__quickstart__item__content__tab--active':
+                    selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY_TEXT,
+                },
+              )}
+              tabIndex={-1}
+              onClick={() =>
+                setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.QUERY_TEXT)
+              }
+            >
+              <div className="data-space__viewer__quickstart__item__content__tab__icon">
+                <CodeIcon className="data-space__viewer__quickstart__item__content__tab__icon--query" />
+              </div>
+            </button>
+          )}
+        </div>
+        <div className="data-space__viewer__quickstart__item__content__tab__content">
+          {selectedTab === TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS && (
+            <div className="data-space__viewer__quickstart__tds__column-specs data-space__viewer__grid ag-theme-balham-dark">
+              <DataGrid
+                rowData={columnSpecifications}
+                gridOptions={{
+                  suppressScrollOnNewData: true,
+                  getRowId: (rowData) => rowData.data.uuid,
+                }}
+                suppressFieldDotNotation={true}
+                columnDefs={[
+                  {
+                    minWidth: 50,
+                    sortable: true,
+                    resizable: true,
+                    field: 'name',
+                    headerValueGetter: () =>
+                      `Column ${
+                        columnSpecifications.length
+                          ? ` (${columnSpecifications.length})`
+                          : ''
+                      }`,
+                    flex: 1,
+                  },
+                  {
+                    minWidth: 50,
+                    sortable: false,
+                    resizable: true,
+                    cellRenderer: TDSColumnDocumentationCellRenderer,
+                    headerName: 'Documentation',
+                    flex: 1,
+                    wrapText: true,
+                    autoHeight: true,
+                  },
+                  {
+                    minWidth: 50,
+                    sortable: false,
+                    resizable: false,
+                    headerClass: 'data-space__viewer__grid__last-column-header',
+                    cellRenderer: TDSColumnSampleValuesCellRenderer,
+                    headerName: 'Sample Values',
+                    flex: 1,
+                  },
+                ]}
+              />
+            </div>
+          )}
+          {selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY && (
+            <div className="data-space__viewer__quickstart__tds__query">
+              <div className="data-space__viewer__quickstart__tds__query__actions">
+                <button
+                  className="data-space__viewer__quickstart__tds__query__action btn--dark"
+                  tabIndex={-1}
+                  onClick={() => {
+                    // TODO: wire this so we can go to the query for the service
+                  }}
+                >
+                  Open in Query
+                </button>
+                <button
+                  className="data-space__viewer__quickstart__tds__query__action btn--dark"
+                  tabIndex={-1}
+                  disabled={true}
+                >
+                  Open in Query with Test Data
+                </button>
+              </div>
+            </div>
+          )}
+          {selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY_TEXT &&
+            queryText !== undefined && (
+              <div className="data-space__viewer__quickstart__tds__query-text">
+                <div className="data-space__viewer__quickstart__tds__query-text__content">
+                  <CodeEditor
+                    inputValue={queryText}
+                    isReadOnly={true}
+                    language={CODE_EDITOR_LANGUAGE.PURE}
+                    showMiniMap={false}
+                    hideGutter={true}
+                  />
+                </div>
+                <div className="data-space__viewer__quickstart__tds__query-text__actions">
                   <button
-                    className="data-space__viewer__quickstart__tds__query__action btn--dark"
+                    className="data-space__viewer__quickstart__tds__query-text__action"
                     tabIndex={-1}
+                    title="Copy"
                     onClick={() => {
-                      // TODO: wire this so we can go to the query for the service
+                      applicationStore.clipboardService
+                        .copyTextToClipboard(queryText)
+                        .catch(applicationStore.alertUnhandledError);
                     }}
                   >
-                    Open in Query
+                    <CopyIcon />
                   </button>
                   <button
-                    className="data-space__viewer__quickstart__tds__query__action btn--dark"
+                    className="data-space__viewer__quickstart__tds__query-text__action"
                     tabIndex={-1}
-                    disabled={true}
                   >
-                    Open in Query with Test Data
+                    <MoreVerticalIcon />
                   </button>
                 </div>
               </div>
             )}
-            {selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY_TEXT &&
-              queryText !== undefined && (
-                <div className="data-space__viewer__quickstart__tds__query-text">
-                  <div className="data-space__viewer__quickstart__tds__query-text__content">
-                    <CodeEditor
-                      inputValue={queryText}
-                      isReadOnly={true}
-                      language={CODE_EDITOR_LANGUAGE.PURE}
-                      showMiniMap={false}
-                      hideGutter={true}
-                    />
-                  </div>
-                  <div className="data-space__viewer__quickstart__tds__query-text__actions">
-                    <button
-                      className="data-space__viewer__quickstart__tds__query-text__action"
-                      tabIndex={-1}
-                      title="Copy"
-                      onClick={() => {
-                        applicationStore.clipboardService
-                          .copyTextToClipboard(queryText)
-                          .catch(applicationStore.alertUnhandledError);
-                      }}
-                    >
-                      <CopyIcon />
-                    </button>
-                    <button
-                      className="data-space__viewer__quickstart__tds__query-text__action"
-                      tabIndex={-1}
-                    >
-                      <MoreVerticalIcon />
-                    </button>
-                  </div>
-                </div>
-              )}
-            {currentTabExtensionConfig?.renderer(
-              dataSpaceViewerState,
-              executableAnalysisResult,
-              tdsResult,
-            )}
-          </div>
+          {currentTabExtensionConfig?.renderer(
+            dataSpaceViewerState,
+            executableAnalysisResult,
+            tdsResult,
+          )}
         </div>
       </div>
     );
@@ -357,30 +325,37 @@ const DataSpaceExecutableAnalysisResultView = observer(
     executableAnalysisResult: DataSpaceExecutableAnalysisResult;
   }) => {
     const { dataSpaceViewerState, executableAnalysisResult } = props;
+    const quickStartRef = useRef<HTMLDivElement>(null);
+    const anchor = generateAnchorForQuickStart(executableAnalysisResult);
 
-    if (
-      executableAnalysisResult.result instanceof DataSpaceExecutableTDSResult
-    ) {
-      return (
-        <DataSpaceExecutableTDSResultView
-          dataSpaceViewerState={dataSpaceViewerState}
-          executableAnalysisResult={executableAnalysisResult}
-          tdsResult={executableAnalysisResult.result}
-        />
-      );
-    }
+    useEffect(() => {
+      if (quickStartRef.current) {
+        dataSpaceViewerState.layoutState.setWikiPageAnchor(
+          anchor,
+          quickStartRef.current,
+        );
+      }
+    }, [dataSpaceViewerState, anchor]);
+
     return (
-      <div className="data-space__viewer__quickstart__item">
+      <div ref={quickStartRef} className="data-space__viewer__quickstart__item">
         <div className="data-space__viewer__quickstart__item__header">
           <div className="data-space__viewer__quickstart__item__header__title">
             {executableAnalysisResult.title}
           </div>
           <div className="data-space__viewer__quickstart__item__header__type">
-            UNKNOWN
+            {executableAnalysisResult.result instanceof
+            DataSpaceExecutableTDSResult
+              ? 'TDS'
+              : 'UNKNOWN'}
           </div>
-          <div className="data-space__viewer__quickstart__item__header__anchor">
+          <button
+            className="data-space__viewer__quickstart__item__header__anchor"
+            tabIndex={-1}
+            onClick={() => dataSpaceViewerState.changeZone(anchor, true)}
+          >
             <AnchorLinkIcon />
-          </div>
+          </button>
         </div>
         {executableAnalysisResult.description !== undefined && (
           <div className="data-space__viewer__quickstart__item__description">
@@ -388,6 +363,14 @@ const DataSpaceExecutableAnalysisResultView = observer(
               value={executableAnalysisResult.description}
             />
           </div>
+        )}
+        {executableAnalysisResult.result instanceof
+          DataSpaceExecutableTDSResult && (
+          <DataSpaceExecutableTDSResultView
+            dataSpaceViewerState={dataSpaceViewerState}
+            executableAnalysisResult={executableAnalysisResult}
+            tdsResult={executableAnalysisResult.result}
+          />
         )}
       </div>
     );
@@ -401,15 +384,18 @@ export const DataSpaceQuickStart = observer(
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
     const documentationUrl = analysisResult.supportInfo?.documentationUrl;
     const sectionRef = useRef<HTMLDivElement>(null);
+    const anchor = generateAnchorForActivity(
+      DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START,
+    );
 
     useEffect(() => {
       if (sectionRef.current) {
         dataSpaceViewerState.layoutState.setWikiPageAnchor(
-          DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START,
+          anchor,
           sectionRef.current,
         );
       }
-    }, [dataSpaceViewerState]);
+    }, [dataSpaceViewerState, anchor]);
 
     const seeDocumentation = (): void => {
       if (documentationUrl) {
@@ -424,9 +410,13 @@ export const DataSpaceQuickStart = observer(
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
             Quick Start
-            <div className="data-space__viewer__wiki__section__header__anchor">
+            <button
+              className="data-space__viewer__wiki__section__header__anchor"
+              tabIndex={-1}
+              onClick={() => dataSpaceViewerState.changeZone(anchor, true)}
+            >
               <AnchorLinkIcon />
-            </div>
+            </button>
           </div>
           {Boolean(documentationUrl) && (
             <button
