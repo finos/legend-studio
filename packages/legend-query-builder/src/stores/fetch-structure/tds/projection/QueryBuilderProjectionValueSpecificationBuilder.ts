@@ -274,8 +274,25 @@ export const appendProjection = (
           aggregateColumnState.aggregationState.tdsState.queryBuilderState
             .graphManagerState.graph,
         );
+        let aggregateCalendarLambda;
+        const aggregateCalendarLambdaState =
+          aggregateColumnState.calendarFunction?.buildCalendarFunctionExpressionFromState(
+            aggregateColumnState,
+          );
+        if (
+          queryBuilderState.isCalendarEnabled &&
+          aggregateCalendarLambdaState !== undefined
+        ) {
+          aggregateCalendarLambda = buildGenericLambdaFunctionInstanceValue(
+            guaranteeNonNullable(aggregateColumnState.calendarFunction)
+              .lambdaParameterName,
+            [aggregateCalendarLambdaState],
+            aggregateColumnState.aggregationState.tdsState.queryBuilderState
+              .graphManagerState.graph,
+          );
+        }
         aggregateFunctionExpression.parametersValues = [
-          columnLambda,
+          aggregateCalendarLambda ?? columnLambda,
           aggregateLambda,
         ];
         aggregateLambdas.values.push(aggregateFunctionExpression);

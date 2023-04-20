@@ -559,6 +559,35 @@
       }
     }
 
+    .query-builder__projection__calendar {
+      &__container {
+        background-color: var(--color-legacylight-light-grey-300);
+      }
+
+      &__date__column__dnd__placeholder {
+        background-color: var(--color-legacylight-light-grey-100);
+      }
+
+      &__date__column__label__box {
+        background: var(--color-blue-50);
+      }
+    }
+
+    .query-builder__projection__calendar__date__column__dnd__placeholder
+      .dnd__entry-dropzone__placeholder__content {
+      border-color: var(--color-light-grey-250);
+      color: var(--color-light-grey-400);
+    }
+
+    .query-builder__projection__column__aggregate__calendar--clock--icon,
+    .query-builder__projection__column__aggregate__calendar--clock--icon--hidden {
+      background: var(--color-legacylight-light-blue-100);
+    }
+
+    .query-builder__projection__column__aggregate__calendar--clock--icon::after {
+      border-bottom: 0.5rem solid var(--color-legacylight-light-blue-100);
+    }
+
     // ------------------------------------ Setup Panel ---------------------------------------
 
     .query-builder__setup__content.panel__content {

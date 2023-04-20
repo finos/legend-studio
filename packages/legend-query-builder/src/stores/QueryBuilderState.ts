@@ -107,6 +107,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   showParametersPanel = false;
   isEditingWatermark = false;
   isCheckingEntitlments = false;
+  isCalendarEnabled = false;
 
   class?: Class | undefined;
   mapping?: Mapping | undefined;
@@ -136,6 +137,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       showParametersPanel: observable,
       isEditingWatermark: observable,
       isCheckingEntitlments: observable,
+      isCalendarEnabled: observable,
       changeDetectionState: observable,
       class: observable,
       mapping: observable,
@@ -148,6 +150,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setShowFunctionsExplorerPanel: action,
       setShowParametersPanel: action,
       setIsEditingWatermark: action,
+      setIsCalendarEnabled: action,
       setIsCheckingEntitlments: action,
       setClass: action,
       setMapping: action,
@@ -243,6 +246,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.isCheckingEntitlments = val;
   }
 
+  setIsCalendarEnabled(val: boolean): void {
+    this.isCalendarEnabled = val;
+  }
+
   setClass(val: Class | undefined): void {
     this.class = val;
   }
@@ -316,6 +323,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.watermarkState = new QueryBuilderWatermarkState(this);
     this.checkEntitlementsState = new QueryBuilderCheckEntitlementsState(this);
+    this.isCalendarEnabled = false;
 
     const currentFetchStructureImplementationType =
       this.fetchStructureState.implementation.type;

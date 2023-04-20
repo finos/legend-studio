@@ -40,7 +40,7 @@ import {
   PrimitiveInstanceValue,
   SimpleFunctionExpression,
   type VariableExpression,
-  type AbstractPropertyExpression,
+  AbstractPropertyExpression,
   getMilestoneTemporalStereotype,
   type INTERNAL__PropagatedValue,
   type ValueSpecification,
@@ -66,7 +66,10 @@ import {
   processTDSSortExpression,
   processTDSTakeExpression,
 } from './fetch-structure/tds/projection/QueryBuilderProjectionStateBuilder.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
+import {
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+  QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS,
+} from '../graph/QueryBuilderMetaModelConst.js';
 import { LambdaParameterState } from './shared/LambdaParameterState.js';
 import { processTDS_OLAPGroupByExpression } from './fetch-structure/tds/window/QueryBuilderWindowStateBuilder.js';
 import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkStateBuilder.js';
@@ -138,6 +141,22 @@ const processLetExpression = (
   );
   queryBuilderState.constantState.setShowConstantPanel(true);
   queryBuilderState.constantState.addConstant(constantExpression);
+};
+
+const processCalendarFunction = (
+  expression: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
+): void => {
+  queryBuilderState.isCalendarEnabled = true;
+  assertTrue(
+    expression.parametersValues.length === 4,
+    'Calendar function expected to have four parameters',
+  );
+  processTDSProjectionColumnPropertyExpression(
+    guaranteeType(expression.parametersValues[3], AbstractPropertyExpression),
+    queryBuilderState,
+  );
 };
 
 /**
@@ -531,6 +550,18 @@ export class QueryBuilderValueSpecificationProcessor
       return;
     } else if (matchFunctionName(functionName, [SUPPORTED_FUNCTIONS.LET])) {
       processLetExpression(
+        valueSpecification,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
+      return;
+    } else if (
+      matchFunctionName(
+        functionName,
+        Object.values(QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS),
+      )
+    ) {
+      processCalendarFunction(
         valueSpecification,
         this.queryBuilderState,
         this.parentLambda,

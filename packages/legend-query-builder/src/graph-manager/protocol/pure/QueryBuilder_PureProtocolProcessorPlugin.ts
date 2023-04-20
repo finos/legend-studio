@@ -42,7 +42,10 @@ import {
   GenericTypeExplicitReference,
   PrimitiveType,
 } from '@finos/legend-graph';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
+import {
+  QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+} from '../../../graph/QueryBuilderMetaModelConst.js';
 
 export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
@@ -207,6 +210,12 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
           matchFunctionName(
             functionName,
             Object.values(QUERY_BUILDER_SUPPORTED_FUNCTIONS),
+          ) ||
+          matchFunctionName(
+            functionName,
+            Object.values(
+              QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS,
+            ),
           )
         ) {
           // NOTE: this is a catch-all builder that is only meant for basic function expression

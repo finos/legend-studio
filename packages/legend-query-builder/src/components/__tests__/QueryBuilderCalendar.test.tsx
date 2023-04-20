@@ -1,0 +1,176 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { test, expect } from '@jest/globals';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import TEST_DATA_SimpleCalendarModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Calendar.json';
+import { stub_RawLambda, create_RawLambda } from '@finos/legend-graph';
+import { integrationTest } from '@finos/legend-shared/test';
+import { waitFor, getAllByText } from '@testing-library/react';
+import { act } from 'react-dom/test-utils';
+import {
+  TEST_DATA__ModelCoverageAnalysisResult_Calendar,
+  TEST_DATA__simpleProjectionWithCalendarAggregation,
+} from '../../stores/__tests__/TEST_DATA__QueryBuilder_Calendar.js';
+import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/explorer/QueryBuilderExplorerState.js';
+import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
+import { QUERY_BUILDER_CALENDAR_TYPE } from '../../graph-manager/QueryBuilderConst.js';
+import { QueryBuilderAggregateCalendarFunction_Ytd } from '../../stores/fetch-structure/tds/aggregation/calendarFunctions/QueryBuilderAggregateCalendarFunction_Ytd.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with calendar aggregation',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA_SimpleCalendarModel,
+      stub_RawLambda(),
+      'test::mapping',
+      'test::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_Calendar,
+    );
+    const employeeClass =
+      queryBuilderState.graphManagerState.graph.getClass('test::Employee');
+    await act(async () => {
+      queryBuilderState.changeClass(employeeClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getAllByText(queryBuilderSetup, 'Employee'));
+    await waitFor(() => getAllByText(queryBuilderSetup, 'mapping'));
+    const treeData = guaranteeNonNullable(
+      queryBuilderState.explorerState.treeData,
+    );
+    const rootNode = guaranteeType(
+      treeData.nodes.get(treeData.rootIds[0] as string),
+      QueryBuilderExplorerTreeRootNodeData,
+    );
+
+    expect(rootNode.mappingData.mapped).toBe(true);
+
+    // simpleProjection
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithCalendarAggregation.parameters,
+          TEST_DATA__simpleProjectionWithCalendarAggregation.body,
+        ),
+      );
+    });
+
+    const tdsStateOne = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+
+    // check calendar aggregation function
+    expect(tdsStateOne.aggregationState.columns.length).toBe(1);
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction,
+    ).toBeDefined();
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
+    ).toBe(QUERY_BUILDER_CALENDAR_TYPE.NY);
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction instanceof
+        QueryBuilderAggregateCalendarFunction_Ytd,
+    ).toBe(true);
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn
+        ?.func.value.name,
+    ).toBe('hireDate');
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder removes calendar aggregation operations when we disable calendar',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA_SimpleCalendarModel,
+      stub_RawLambda(),
+      'test::mapping',
+      'test::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_Calendar,
+    );
+    const employeeClass =
+      queryBuilderState.graphManagerState.graph.getClass('test::Employee');
+    await act(async () => {
+      queryBuilderState.changeClass(employeeClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getAllByText(queryBuilderSetup, 'Employee'));
+    await waitFor(() => getAllByText(queryBuilderSetup, 'mapping'));
+    const treeData = guaranteeNonNullable(
+      queryBuilderState.explorerState.treeData,
+    );
+    const rootNode = guaranteeType(
+      treeData.nodes.get(treeData.rootIds[0] as string),
+      QueryBuilderExplorerTreeRootNodeData,
+    );
+
+    expect(rootNode.mappingData.mapped).toBe(true);
+
+    // simpleProjection
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithCalendarAggregation.parameters,
+          TEST_DATA__simpleProjectionWithCalendarAggregation.body,
+        ),
+      );
+    });
+
+    const tdsStateOne = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+
+    // check calendar aggregation function
+    expect(tdsStateOne.aggregationState.columns.length).toBe(1);
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction,
+    ).toBeDefined();
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
+    ).toBe(QUERY_BUILDER_CALENDAR_TYPE.NY);
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction instanceof
+        QueryBuilderAggregateCalendarFunction_Ytd,
+    ).toBe(true);
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn
+        ?.func.value.name,
+    ).toBe('hireDate');
+
+    // disable calendar
+    await act(async () => {
+      tdsStateOne.aggregationState.disableCalendar();
+    });
+
+    // check that calendar aggregations are removed
+    expect(tdsStateOne.aggregationState.columns.length).toBe(1);
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction,
+    ).toBeUndefined();
+  },
+);

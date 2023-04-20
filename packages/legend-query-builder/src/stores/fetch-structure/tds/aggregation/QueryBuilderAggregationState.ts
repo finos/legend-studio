@@ -28,6 +28,7 @@ import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregateOpera
 import type { QueryBuilderProjectionColumnState } from '../projection/QueryBuilderProjectionColumnState.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../QueryBuilderStateHashUtils.js';
 import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
+import type { QueryBuilderAggregateCalendarFunction } from './QueryBuilderAggregateCalendarFunction.js';
 
 export class QueryBuilderAggregateColumnState
   extends QueryBuilderTDSColumnState
@@ -37,6 +38,8 @@ export class QueryBuilderAggregateColumnState
   projectionColumnState: QueryBuilderProjectionColumnState;
   lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
   operator: QueryBuilderAggregateOperator;
+  calendarFunction?: QueryBuilderAggregateCalendarFunction | undefined;
+  hideCalendarColumnState = true;
 
   constructor(
     aggregationState: QueryBuilderAggregationState,
@@ -47,10 +50,14 @@ export class QueryBuilderAggregateColumnState
     makeObservable(this, {
       projectionColumnState: observable,
       lambdaParameterName: observable,
+      calendarFunction: observable,
+      hideCalendarColumnState: observable,
       operator: observable,
+      setHideCalendarColumnState: action,
       setColumnState: action,
       setLambdaParameterName: action,
       setOperator: action,
+      setCalendarFunction: action,
       hashCode: computed,
     });
 
@@ -58,12 +65,23 @@ export class QueryBuilderAggregateColumnState
     this.projectionColumnState = projectionColumnState;
     this.operator = operator;
   }
+
   setColumnState(val: QueryBuilderProjectionColumnState): void {
     this.projectionColumnState = val;
   }
 
   setLambdaParameterName(val: string): void {
     this.lambdaParameterName = val;
+  }
+
+  setHideCalendarColumnState(val: boolean): void {
+    this.hideCalendarColumnState = val;
+  }
+
+  setCalendarFunction(
+    val: QueryBuilderAggregateCalendarFunction | undefined,
+  ): void {
+    this.calendarFunction = val;
   }
 
   setOperator(val: QueryBuilderAggregateOperator): void {
@@ -78,6 +96,7 @@ export class QueryBuilderAggregateColumnState
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.AGGREGATE_COLUMN_STATE,
       this.operator,
+      this.calendarFunction ?? '',
     ]);
   }
 
@@ -89,22 +108,26 @@ export class QueryBuilderAggregateColumnState
 export class QueryBuilderAggregationState implements Hashable {
   readonly tdsState: QueryBuilderTDSState;
   readonly operators: QueryBuilderAggregateOperator[] = [];
+  readonly calendarFunctions: QueryBuilderAggregateCalendarFunction[];
   columns: QueryBuilderAggregateColumnState[] = [];
 
   constructor(
     tdsState: QueryBuilderTDSState,
     operators: QueryBuilderAggregateOperator[],
+    calendarFunctions: QueryBuilderAggregateCalendarFunction[],
   ) {
     makeObservable(this, {
       columns: observable,
       removeColumn: action,
       addColumn: action,
       changeColumnAggregateOperator: action,
+      disableCalendar: action,
       hashCode: computed,
     });
 
     this.tdsState = tdsState;
     this.operators = operators;
+    this.calendarFunctions = calendarFunctions;
   }
 
   removeColumn(val: QueryBuilderAggregateColumnState): void {
@@ -161,6 +184,14 @@ export class QueryBuilderAggregationState implements Hashable {
         this.removeColumn(aggregateColumnState);
       }
     }
+  }
+
+  disableCalendar(): void {
+    this.tdsState.queryBuilderState.setIsCalendarEnabled(false);
+    this.columns.forEach((column) => {
+      column.setCalendarFunction(undefined);
+      column.setHideCalendarColumnState(true);
+    });
   }
 
   get hashCode(): string {

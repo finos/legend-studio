@@ -50,11 +50,15 @@ import {
   VariableExpression,
   Multiplicity,
   PrimitiveType,
+  V1_CStrictDate,
+  V1_CString,
 } from '@finos/legend-graph';
 import {
   QUERY_BUILDER_PURE_PATH,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+  QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS,
 } from '../../../../graph/QueryBuilderMetaModelConst.js';
+import { QUERY_BUILDER_CALENDAR_TYPE } from '../../../QueryBuilderConst.js';
 
 const buildProjectionColumnLambda = (
   valueSpecification: V1_ValueSpecification,
@@ -86,41 +90,82 @@ const buildProjectionColumnLambda = (
   );
   let currentPropertyExpression: V1_ValueSpecification = valueSpecification
     .body[0] as V1_ValueSpecification;
-  assertType(
-    currentPropertyExpression,
-    V1_AppliedProperty,
-    `Can't build projection column: only support lambda body as property expression`,
-  );
-  while (currentPropertyExpression instanceof V1_AppliedProperty) {
+
+  // calendar
+  if (
+    currentPropertyExpression instanceof V1_AppliedFunction &&
+    matchFunctionName(
+      currentPropertyExpression.function,
+      Object.values(QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS),
+    )
+  ) {
     assertTrue(
-      currentPropertyExpression.parameters.length >= 1,
+      currentPropertyExpression.parameters.length === 4,
+      `Can't build projection column: only support calendar function with four parameters`,
+    );
+    assertType(
+      currentPropertyExpression.parameters[0],
+      V1_AppliedProperty,
+      `Can't build projection column: only support first parameter of calendar function as property expression`,
+    );
+    const calendarType = guaranteeType(
+      currentPropertyExpression.parameters[1],
+      V1_CString,
+      `Can't build projection column: only support second parameter of calendar function as String`,
+    );
+    assertTrue(
+      Object.values(QUERY_BUILDER_CALENDAR_TYPE).find(
+        (val) => val === calendarType.value,
+      ) !== undefined,
+      `Can't build projection column: ${calendarType.value} is not a supported calendar type`,
+    );
+    guaranteeType(
+      currentPropertyExpression.parameters[2],
+      V1_CStrictDate,
+      `Can't build projection column: only support third parameter of calendar function as StrictDate`,
+    );
+    assertType(
+      currentPropertyExpression.parameters[3],
+      V1_AppliedProperty,
+      `Can't build projection column: only support fourth parameter of calendar function as property expression`,
+    );
+  } else {
+    assertType(
+      currentPropertyExpression,
+      V1_AppliedProperty,
       `Can't build projection column: only support lambda body as property expression`,
     );
-    currentPropertyExpression = currentPropertyExpression
-      .parameters[0] as V1_ValueSpecification;
-    // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
-    // $x.employees->subType(@Person)->subType(@Staff)
-    while (
-      currentPropertyExpression instanceof V1_AppliedFunction &&
-      matchFunctionName(
-        currentPropertyExpression.function,
-        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
-      )
-    ) {
+    while (currentPropertyExpression instanceof V1_AppliedProperty) {
+      assertTrue(
+        currentPropertyExpression.parameters.length >= 1,
+        `Can't build projection column: only support lambda body as property expression`,
+      );
       currentPropertyExpression = currentPropertyExpression
         .parameters[0] as V1_ValueSpecification;
+      // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
+      // $x.employees->subType(@Person)->subType(@Staff)
+      while (
+        currentPropertyExpression instanceof V1_AppliedFunction &&
+        matchFunctionName(
+          currentPropertyExpression.function,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
+        )
+      ) {
+        currentPropertyExpression = currentPropertyExpression
+          .parameters[0] as V1_ValueSpecification;
+      }
     }
+    // check lambda variable and parameter match
+    assertType(
+      currentPropertyExpression,
+      V1_Variable,
+      `Can't build projection column: only support lambda body as property expression`,
+    );
+    assertTrue(
+      columnLambdaParameter.name === currentPropertyExpression.name,
+      `Can't build column lambda: expects variable used in lambda body '${currentPropertyExpression.name}' to match lambda parameter '${columnLambdaParameter.name}'`,
+    );
   }
-  // check lambda variable and parameter match
-  assertType(
-    currentPropertyExpression,
-    V1_Variable,
-    `Can't build projection column: only support lambda body as property expression`,
-  );
-  assertTrue(
-    columnLambdaParameter.name === currentPropertyExpression.name,
-    `Can't build column lambda: expects variable used in lambda body '${currentPropertyExpression.name}' to match lambda parameter '${columnLambdaParameter.name}'`,
-  );
   return valueSpecification.accept_ValueSpecificationVisitor(
     new V1_ValueSpecificationBuilder(
       compileContext,

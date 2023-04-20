@@ -209,6 +209,7 @@ export const WandIcon = VSC.VscWand;
 export const CollapseTreeIcon = VSC.VscCollapseAll;
 export const ExpandTreeIcon = VSC.VscExpandAll;
 export const SerializeIcon = VSC.VscJson;
+export const CalendarIcon = VSC.VscCalendar;
 
 const GO = ReactIcons.GO;
 export const ChevronDownIcon = GO.GoChevronDown;
@@ -289,6 +290,7 @@ export const ArrowsSplitIcon = TB.TbArrowsSplit2;
 export const FunctionIcon = TB.TbMathFunction;
 export const RepoIcon = TB.TbBook;
 export const OffIcon = TB.TbCircleOff;
+export const CalendarClockIcon = TB.TbCalendarTime;
 
 const HI = ReactIcons.HI;
 export const CodeIcon = HI.HiCode;

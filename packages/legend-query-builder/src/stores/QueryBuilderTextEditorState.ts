@@ -169,24 +169,31 @@ export class QueryBuilderTextEditorState extends LambdaEditorState {
   }
 
   openModal(mode: QueryBuilderTextEditorMode): void {
-    const rawLambda = this.queryBuilderState.buildQuery();
-    if (mode === QueryBuilderTextEditorMode.TEXT) {
-      this.setQueryRawLambdaState(new QueryBuilderRawLambdaState(rawLambda));
-    }
-    if (mode === QueryBuilderTextEditorMode.JSON) {
-      this.setLambdaJson(
-        JSON.stringify(
-          pruneSourceInformation(
-            this.queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
-              rawLambda,
+    try {
+      const rawLambda = this.queryBuilderState.buildQuery();
+      if (mode === QueryBuilderTextEditorMode.TEXT) {
+        this.setQueryRawLambdaState(new QueryBuilderRawLambdaState(rawLambda));
+      }
+      if (mode === QueryBuilderTextEditorMode.JSON) {
+        this.setLambdaJson(
+          JSON.stringify(
+            pruneSourceInformation(
+              this.queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+                rawLambda,
+              ),
             ),
+            null,
+            DEFAULT_TAB_SIZE,
           ),
-          null,
-          DEFAULT_TAB_SIZE,
-        ),
+        );
+      }
+      this.setMode(mode);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.queryBuilderState.applicationStore.notificationService.notifyError(
+        error,
       );
     }
-    this.setMode(mode);
   }
 
   *closeModal(): GeneratorFn<void> {

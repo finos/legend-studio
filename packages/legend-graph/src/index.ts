@@ -125,6 +125,8 @@ export { V1_ExternalFormatModelGenerationInput } from './graph-manager/protocol/
 export { V1_ExecuteInput } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
 export { V1_buildExecutionResult } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';
 export { V1_serializeExecutionResult } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionResult.js';
+export { V1_CString } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CString.js';
+export { V1_CStrictDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictDate.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 

@@ -36,6 +36,11 @@ import {
   TrashIcon,
   PanelDnDEntry,
   PanelDnDEntryDragHandle,
+  CalendarIcon,
+  CalendarClockIcon,
+  CustomSelectorInput,
+  PURE_FunctionIcon,
+  PanelEntryDropZonePlaceholder,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -61,6 +66,18 @@ import {
   generateFunctionCallString,
   LAMBDA_PIPE,
   VARIABLE_REFERENCE_TOKEN,
+  AbstractPropertyExpression,
+  PRIMITIVE_TYPE,
+  Property,
+  PropertyExplicitReference,
+  VariableExpression,
+  Multiplicity,
+  type ValueSpecification,
+  PrimitiveType,
+  GenericType,
+  GenericTypeExplicitReference,
+  observe_PrimitiveInstanceValue,
+  PrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderFunctionsExplorerDragSource,
@@ -73,7 +90,73 @@ import { LambdaEditor } from '../shared/LambdaEditor.js';
 import {
   type QueryBuilderVariableDragSource,
   QUERY_BUILDER_VARIABLE_DND_TYPE,
+  BasicValueSpecificationEditor,
 } from '../shared/BasicValueSpecificationEditor.js';
+import { type QueryBuilderAggregateCalendarFunction } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregateCalendarFunction.js';
+import {
+  instanceValue_setValues,
+  propertyExpression_setFunc,
+} from '../../stores/shared/ValueSpecificationModifierHelper.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorState.js';
+import { generateDefaultValueForPrimitiveType } from '../../stores/QueryBuilderValueSpecificationHelper.js';
+import { QUERY_BUILDER_CALENDAR_TYPE } from '../../graph-manager/QueryBuilderConst.js';
+
+export type CalendarFunctionOption = {
+  label: string | React.ReactNode;
+  value: QueryBuilderAggregateCalendarFunction;
+};
+
+export const buildCalendarFunctionOption = (
+  calendarFunction: QueryBuilderAggregateCalendarFunction,
+): CalendarFunctionOption => ({
+  label: (
+    <div
+      className="query-builder__projection__calendar__function__label"
+      title={calendarFunction.getLabel()}
+    >
+      <PURE_FunctionIcon />
+      <div className="query-builder__projection__calendar__function__label__title">
+        {calendarFunction.getLabel()}
+      </div>
+    </div>
+  ),
+  value: calendarFunction,
+});
+
+export type CalendarFunctionDateColumnOption = {
+  label: string;
+  value: AbstractPropertyExpression;
+};
+
+export const buildCalendarFunctionDateColumnOption = (
+  dateColumn: Property | AbstractPropertyExpression,
+  parameter: VariableExpression,
+  humanizeLabel: boolean,
+): CalendarFunctionDateColumnOption => {
+  if (dateColumn instanceof Property) {
+    const propertyExpression = new AbstractPropertyExpression('');
+    propertyExpression_setFunc(
+      propertyExpression,
+      PropertyExplicitReference.create(guaranteeNonNullable(dateColumn)),
+    );
+    propertyExpression.parametersValues = [parameter];
+    return {
+      label: getPropertyChainName(propertyExpression, humanizeLabel),
+      value: propertyExpression,
+    };
+  } else {
+    return {
+      label: getPropertyChainName(dateColumn, humanizeLabel),
+      value: dateColumn,
+    };
+  }
+};
+
+export type CalendarTypeOption = {
+  label: string;
+  value: QUERY_BUILDER_CALENDAR_TYPE;
+};
 
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<
@@ -224,6 +307,8 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
 const QueryBuilderProjectionColumnEditor = observer(
   (props: { projectionColumnState: QueryBuilderProjectionColumnState }) => {
     const handleRef = useRef<HTMLDivElement>(null);
+    const applicationStore = useApplicationStore();
+
     const ref = useRef<HTMLDivElement>(null);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
@@ -232,6 +317,7 @@ const QueryBuilderProjectionColumnEditor = observer(
 
     const { projectionColumnState } = props;
     const tdsState = projectionColumnState.tdsState;
+    const isCalendarEnabled = tdsState.queryBuilderState.isCalendarEnabled;
     const isRemovalDisabled = tdsState.isColumnInUse(projectionColumnState);
 
     const removeColumn = (): void =>
@@ -257,6 +343,123 @@ const QueryBuilderProjectionColumnEditor = observer(
           val,
           projectionColumnState,
         );
+
+    // calendar
+    const aggregateCalendarFunctionDateColumns =
+      tdsState.queryBuilderState.class?.properties.filter((p) => {
+        const _type = p.genericType.value.rawType.name;
+        if (
+          _type === PRIMITIVE_TYPE.DATE ||
+          _type === PRIMITIVE_TYPE.STRICTDATE
+        ) {
+          return true;
+        }
+        return false;
+      }) ?? [];
+    const calendarFunctionDateColumnOptions =
+      aggregateCalendarFunctionDateColumns.map((option) =>
+        buildCalendarFunctionDateColumnOption(
+          option,
+          new VariableExpression(
+            aggregateColumnState?.calendarFunction?.lambdaParameterName ??
+              DEFAULT_LAMBDA_VARIABLE_NAME,
+            Multiplicity.ONE,
+          ),
+          tdsState.queryBuilderState.explorerState.humanizePropertyName,
+        ),
+      );
+    const calendarTypeOptions = Object.values(QUERY_BUILDER_CALENDAR_TYPE).map(
+      (ct) => ({
+        label: (
+          <div className="query-builder__projection__calendar__type__option">
+            <CalendarIcon />
+            <div className="query-builder__projection__calendar__type__option__title">
+              {ct}
+            </div>
+          </div>
+        ),
+        value: ct,
+      }),
+    );
+    const selectedCalendarTypeOption = aggregateColumnState?.calendarFunction
+      ?.calendarType
+      ? {
+          label: (
+            <div className="query-builder__projection__calendar__type__option">
+              <CalendarIcon />
+              <div className="query-builder__projection__calendar__type__option__title">
+                {aggregateColumnState.calendarFunction.calendarType}
+              </div>
+            </div>
+          ),
+          value: aggregateColumnState.calendarFunction.calendarType,
+        }
+      : null;
+    const onCalendarTypeOptionChange = (option: CalendarTypeOption): void => {
+      if (
+        option.value !== aggregateColumnState?.calendarFunction?.calendarType
+      ) {
+        aggregateColumnState?.calendarFunction?.setCalendarType(option.value);
+      }
+    };
+    const defaultEndDate = observe_PrimitiveInstanceValue(
+      new PrimitiveInstanceValue(
+        GenericTypeExplicitReference.create(
+          new GenericType(PrimitiveType.STRICTDATE),
+        ),
+      ),
+      tdsState.queryBuilderState.observerContext,
+    );
+    instanceValue_setValues(
+      defaultEndDate,
+      [generateDefaultValueForPrimitiveType(PRIMITIVE_TYPE.STRICTDATE)],
+      tdsState.queryBuilderState.observerContext,
+    );
+    const resetEndDate = (): void => {
+      if (aggregateColumnState?.calendarFunction) {
+        aggregateColumnState.calendarFunction.setEndDate(defaultEndDate);
+      }
+    };
+    const aggregateCalendarFunctions =
+      tdsState.aggregationState.calendarFunctions.filter((cf) =>
+        cf.isCompatibleWithColumn(projectionColumnState),
+      );
+    const calendarFunctionOptions = aggregateCalendarFunctions.map(
+      buildCalendarFunctionOption,
+    );
+    const selectedCalendarFunctionOption =
+      aggregateColumnState?.calendarFunction
+        ? buildCalendarFunctionOption(aggregateColumnState.calendarFunction)
+        : null;
+    const onCalendarFunctionOptionChange = (
+      option: CalendarFunctionOption | null,
+    ): void => {
+      if (option?.value !== aggregateColumnState?.calendarFunction) {
+        const lambdaParameterName =
+          aggregateColumnState?.calendarFunction?.lambdaParameterName;
+        aggregateColumnState?.setCalendarFunction(option?.value ?? undefined);
+        if (lambdaParameterName && aggregateColumnState.calendarFunction) {
+          aggregateColumnState.calendarFunction.setLambdaParameterName(
+            lambdaParameterName,
+          );
+        }
+        if (aggregateColumnState?.calendarFunction) {
+          if (calendarFunctionDateColumnOptions[0]) {
+            aggregateColumnState.calendarFunction.setDateColumn(
+              guaranteeNonNullable(calendarFunctionDateColumnOptions[0]).value,
+            );
+          } else {
+            applicationStore.notificationService.notifyWarning(
+              'Please provide the date column field for the calendar function',
+            );
+          }
+          aggregateColumnState.calendarFunction.setCalendarType(
+            guaranteeNonNullable(calendarTypeOptions[0]).value,
+          );
+          aggregateColumnState.calendarFunction.setEndDate(defaultEndDate);
+        }
+      }
+    };
 
     // Drag and Drop
     const handleHover = useCallback(
@@ -335,6 +538,61 @@ const QueryBuilderProjectionColumnEditor = observer(
 
     useDragPreviewLayer(dragPreviewConnector);
 
+    const toggleHideCalendarColumnState = (): void => {
+      if (aggregateColumnState) {
+        aggregateColumnState.setHideCalendarColumnState(
+          !aggregateColumnState.hideCalendarColumnState,
+        );
+      }
+    };
+
+    // Drag and Drop on calendar function date column
+    const handleDrop = useCallback(
+      (item: QueryBuilderExplorerTreeDragSource, type: string): void => {
+        if (type === QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY) {
+          if (
+            item.node.type.name === PRIMITIVE_TYPE.DATE ||
+            item.node.type.name === PRIMITIVE_TYPE.STRICTDATE
+          ) {
+            aggregateColumnState?.calendarFunction?.setDateColumn(
+              buildPropertyExpressionFromExplorerTreeNodeData(
+                item.node,
+                tdsState.queryBuilderState.explorerState,
+                aggregateColumnState.calendarFunction.lambdaParameterName,
+              ),
+            );
+          } else {
+            applicationStore.notificationService.notifyWarning(
+              `${item.node.type.name} type is not compaible with calendar function date column`,
+            );
+          }
+        }
+      },
+      [
+        aggregateColumnState?.calendarFunction,
+        applicationStore.notificationService,
+        tdsState.queryBuilderState.explorerState,
+      ],
+    );
+    const [{ isDragOver }, dropTargetConnector] = useDrop<
+      QueryBuilderExplorerTreeDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
+      () => ({
+        accept: [QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY],
+        drop: (item, monitor): void => {
+          if (!monitor.didDrop()) {
+            handleDrop(item, monitor.getItemType() as string);
+          } // prevent drop event propagation to accomondate for nested DnD
+        },
+        collect: (monitor) => ({
+          isDragOver: monitor.isOver({ shallow: true }),
+        }),
+      }),
+      [handleDrop],
+    );
+
     return (
       <PanelDnDEntry
         ref={ref}
@@ -361,107 +619,213 @@ const QueryBuilderProjectionColumnEditor = observer(
           onOpen={onContextMenuOpen}
           onClose={onContextMenuClose}
         >
-          <PanelDnDEntryDragHandle
-            isBeingDragged={isBeingDragged}
-            dropTargetConnector={handleRef}
-            className="query-builder__projection__column__drag-handle__container"
-          />
-          <div className="query-builder__projection__column__name">
-            <InputWithInlineValidation
-              className="query-builder__projection__column__name__input input-group__input"
-              spellCheck={false}
-              value={projectionColumnState.columnName}
-              onChange={changeColumnName}
-              error={isDuplicatedColumnName ? 'Duplicated column' : undefined}
+          <div className="query-builder__projection__column__container">
+            <PanelDnDEntryDragHandle
+              isBeingDragged={isBeingDragged}
+              dropTargetConnector={handleRef}
+              className="query-builder__projection__column__drag-handle__container"
             />
-          </div>
-          <div className="query-builder__projection__column__value">
-            {projectionColumnState instanceof
-              QueryBuilderSimpleProjectionColumnState && (
-              <QueryBuilderSimpleProjectionColumnEditor
-                projectionColumnState={projectionColumnState}
+            <div className="query-builder__projection__column__name">
+              <InputWithInlineValidation
+                className="query-builder__projection__column__name__input input-group__input"
+                spellCheck={false}
+                value={projectionColumnState.columnName}
+                onChange={changeColumnName}
+                error={isDuplicatedColumnName ? 'Duplicated column' : undefined}
               />
-            )}
-            {projectionColumnState instanceof
-              QueryBuilderDerivationProjectionColumnState && (
-              <QueryBuilderDerivationProjectionColumnEditor
-                projectionColumnState={projectionColumnState}
-              />
-            )}
-          </div>
-          <div className="query-builder__projection__column__aggregate">
-            <div className="query-builder__projection__column__aggregate__operator">
-              {aggregateColumnState && (
-                <div className="query-builder__projection__column__aggregate__operator__label">
-                  {aggregateColumnState.operator.getLabel(
-                    projectionColumnState,
-                  )}
-                </div>
+            </div>
+            <div className="query-builder__projection__column__value">
+              {projectionColumnState instanceof
+                QueryBuilderSimpleProjectionColumnState && (
+                <QueryBuilderSimpleProjectionColumnEditor
+                  projectionColumnState={projectionColumnState}
+                />
               )}
-              <DropdownMenu
-                className="query-builder__projection__column__aggregate__operator__dropdown"
-                title="Choose Aggregate Operator..."
-                disabled={!aggreateOperators.length}
-                content={
-                  <MenuContent>
-                    {aggregateColumnState && (
-                      <MenuContentItem
-                        className="query-builder__projection__column__aggregate__operator__dropdown__option"
-                        onClick={changeOperator(undefined)}
-                      >
-                        (none)
-                      </MenuContentItem>
+              {projectionColumnState instanceof
+                QueryBuilderDerivationProjectionColumnState && (
+                <QueryBuilderDerivationProjectionColumnEditor
+                  projectionColumnState={projectionColumnState}
+                />
+              )}
+            </div>
+            <div className="query-builder__projection__column__aggregate">
+              <div className="query-builder__projection__column__aggregate__operator">
+                {aggregateColumnState && (
+                  <div className="query-builder__projection__column__aggregate__operator__label">
+                    {aggregateColumnState.operator.getLabel(
+                      projectionColumnState,
                     )}
-                    {aggreateOperators.map((op) => (
-                      <MenuContentItem
-                        key={op.uuid}
-                        className="query-builder__projection__column__aggregate__operator__dropdown__option"
-                        onClick={changeOperator(op)}
-                      >
-                        {op.getLabel(projectionColumnState)}
-                      </MenuContentItem>
-                    ))}
-                  </MenuContent>
-                }
-                menuProps={{
-                  anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-                  transformOrigin: { vertical: 'top', horizontal: 'left' },
-                  elevation: 7,
-                }}
-              >
-                <div
-                  className={clsx(
-                    'query-builder__projection__column__aggregate__operator__badge',
-                    {
-                      'query-builder__projection__column__aggregate__operator__badge--activated':
-                        Boolean(aggregateColumnState),
-                    },
+                  </div>
+                )}
+                {isCalendarEnabled &&
+                  aggregateColumnState &&
+                  aggregateCalendarFunctions.length > 0 && (
+                    <div
+                      className={
+                        aggregateColumnState.hideCalendarColumnState
+                          ? 'query-builder__projection__column__aggregate__calendar--clock--icon__hidden'
+                          : 'query-builder__projection__column__aggregate__calendar--clock--icon'
+                      }
+                      onClick={toggleHideCalendarColumnState}
+                      title="Click to select calendar function"
+                    >
+                      <CalendarClockIcon />
+                    </div>
                   )}
+                <DropdownMenu
+                  className="query-builder__projection__column__aggregate__operator__dropdown"
+                  title="Choose Aggregate Operator..."
+                  disabled={!aggreateOperators.length}
+                  content={
+                    <MenuContent>
+                      {aggregateColumnState && (
+                        <MenuContentItem
+                          className="query-builder__projection__column__aggregate__operator__dropdown__option"
+                          onClick={changeOperator(undefined)}
+                        >
+                          (none)
+                        </MenuContentItem>
+                      )}
+                      {aggreateOperators.map((op) => (
+                        <MenuContentItem
+                          key={op.uuid}
+                          className="query-builder__projection__column__aggregate__operator__dropdown__option"
+                          onClick={changeOperator(op)}
+                        >
+                          {op.getLabel(projectionColumnState)}
+                        </MenuContentItem>
+                      ))}
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                    transformOrigin: { vertical: 'top', horizontal: 'left' },
+                    elevation: 7,
+                  }}
                 >
-                  <SigmaIcon />
-                </div>
-                <div className="query-builder__projection__column__aggregate__operator__dropdown__trigger">
-                  <CaretDownIcon />
-                </div>
-              </DropdownMenu>
+                  <div
+                    className={clsx(
+                      'query-builder__projection__column__aggregate__operator__badge',
+                      {
+                        'query-builder__projection__column__aggregate__operator__badge--activated':
+                          Boolean(aggregateColumnState),
+                      },
+                    )}
+                  >
+                    <SigmaIcon />
+                  </div>
+                  <div className="query-builder__projection__column__aggregate__operator__dropdown__trigger">
+                    <CaretDownIcon />
+                  </div>
+                </DropdownMenu>
+              </div>
+            </div>
+            <div className="query-builder__projection__column__actions">
+              <button
+                className="query-builder__projection__column__action"
+                tabIndex={-1}
+                onClick={removeColumn}
+                disabled={isRemovalDisabled}
+                title={
+                  isRemovalDisabled
+                    ? // TODO: We may want to provide a list of all places where column is in use
+                      "This column is used and can't be removed"
+                    : 'Remove'
+                }
+              >
+                <TimesIcon />
+              </button>
             </div>
           </div>
-          <div className="query-builder__projection__column__actions">
-            <button
-              className="query-builder__projection__column__action"
-              tabIndex={-1}
-              onClick={removeColumn}
-              disabled={isRemovalDisabled}
-              title={
-                isRemovalDisabled
-                  ? // TODO: We may want to provide a list of all places where column is in use
-                    "This column is used and can't be removed"
-                  : 'Remove'
-              }
-            >
-              <TimesIcon />
-            </button>
-          </div>
+          {isCalendarEnabled &&
+            aggregateColumnState &&
+            aggregateCalendarFunctions.length > 0 && (
+              <div
+                className={clsx(
+                  'query-builder__projection__calendar__container',
+                  {
+                    'query-builder__projection__calendar__container--hidden':
+                      aggregateColumnState.hideCalendarColumnState,
+                  },
+                )}
+              >
+                <div data-testid="test">
+                  <CustomSelectorInput
+                    className="query-builder__projection__calendar__function"
+                    options={calendarFunctionOptions}
+                    onChange={onCalendarFunctionOptionChange}
+                    value={selectedCalendarFunctionOption}
+                    placeholder={'Select Calendar Function'}
+                    isClearable={true}
+                    escapeClearsValue={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
+                  />
+                </div>
+                <div className="query-builder__projection__calendar__value">
+                  <BasicValueSpecificationEditor
+                    valueSpecification={
+                      aggregateColumnState.calendarFunction?.endDate ??
+                      defaultEndDate
+                    }
+                    setValueSpecification={(val: ValueSpecification): void => {
+                      if (val instanceof PrimitiveInstanceValue) {
+                        aggregateColumnState.calendarFunction?.setEndDate(val);
+                      }
+                    }}
+                    graph={tdsState.queryBuilderState.graphManagerState.graph}
+                    obseverContext={tdsState.queryBuilderState.observerContext}
+                    typeCheckOption={{
+                      expectedType: PrimitiveType.STRICTDATE,
+                    }}
+                    className="query-builder__parameters__value__editor"
+                    resetValue={resetEndDate}
+                  />
+                </div>
+                <div
+                  className="query-builder__projection__calendar__date__column"
+                  ref={dropTargetConnector}
+                >
+                  <PanelEntryDropZonePlaceholder
+                    showPlaceholder={isDragOver}
+                    label="Change Date Column"
+                    className="query-builder__projection__calendar__date__column__dnd__placeholder"
+                  >
+                    {aggregateColumnState.calendarFunction?.dateColumn ? (
+                      <div className="query-builder__projection__calendar__date__column__label__box">
+                        <div className="query-builder__projection__calendar__date__column__prefix">
+                          on
+                        </div>
+                        <div className="query-builder__projection__calendar__date__column__label">
+                          {getPropertyChainName(
+                            aggregateColumnState.calendarFunction.dateColumn,
+                            tdsState.queryBuilderState.explorerState
+                              .humanizePropertyName,
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="query-builder__projection__calendar__date__column__dnd__placeholder">
+                        Drag and drop date column here
+                      </div>
+                    )}
+                  </PanelEntryDropZonePlaceholder>
+                </div>
+                <CustomSelectorInput
+                  className="query-builder__projection__calendar__type"
+                  options={calendarTypeOptions}
+                  onChange={onCalendarTypeOptionChange}
+                  value={selectedCalendarTypeOption ?? calendarTypeOptions[0]}
+                  placeholder={'Select calendar type'}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
+                />
+              </div>
+            )}
         </ContextMenu>
       </PanelDnDEntry>
     );

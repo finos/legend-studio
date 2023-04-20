@@ -193,12 +193,13 @@ export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplore
 export const buildPropertyExpressionFromExplorerTreeNodeData = (
   node: QueryBuilderExplorerTreePropertyNodeData,
   explorerState: QueryBuilderExplorerState,
+  lambdaParameterName?: string,
 ): AbstractPropertyExpression => {
   const treeData = explorerState.nonNullableTreeData;
   const propertySearchIndexedTreeNodes =
     explorerState.propertySearchState.indexedExplorerTreeNodes;
   const projectionColumnLambdaVariable = new VariableExpression(
-    DEFAULT_LAMBDA_VARIABLE_NAME,
+    lambdaParameterName ?? DEFAULT_LAMBDA_VARIABLE_NAME,
     Multiplicity.ONE,
   );
   const propertyExpression = new AbstractPropertyExpression('');
