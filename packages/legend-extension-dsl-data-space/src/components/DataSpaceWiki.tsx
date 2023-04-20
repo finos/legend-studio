@@ -40,6 +40,17 @@ export const DataSpaceWiki = observer(
       dataSpaceViewerState.layoutState.isAllWikiPageFullyRendered,
     ]);
 
+    useEffect(() => {
+      if (dataSpaceViewerState.layoutState.isAllWikiPageFullyRendered) {
+        dataSpaceViewerState.layoutState.registerWikiPageScrollObserver();
+      }
+      return () =>
+        dataSpaceViewerState.layoutState.unregisterWikiPageScrollObserver();
+    }, [
+      dataSpaceViewerState,
+      dataSpaceViewerState.layoutState.isAllWikiPageFullyRendered,
+    ]);
+
     return (
       <div className="data-space__viewer__wiki">
         <DataSpaceDescription dataSpaceViewerState={dataSpaceViewerState} />

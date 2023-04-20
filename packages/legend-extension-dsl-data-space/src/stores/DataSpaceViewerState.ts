@@ -30,6 +30,7 @@ import type {
   PackageableRuntime,
 } from '@finos/legend-graph';
 import {
+  getNonNullableEnry,
   getNullableEntry,
   getNullableFirstEntry,
   guaranteeNonNullable,
@@ -75,6 +76,8 @@ const generateAnchorChunk = (text: string): string =>
   );
 export const generateAnchorForActivity = (activity: string): string =>
   generateAnchorChunk(activity);
+export const extractActivityFromAnchor = (anchor: string): string =>
+  decodeURIComponent(anchor);
 export const generateAnchorForQuickStart = (
   quickStart: DataSpaceExecutableAnalysisResult,
 ): string =>
@@ -119,6 +122,7 @@ class DataSpaceLayoutState {
 
   wikiPageAnchorIndex = new Map<string, HTMLElement>();
   wikiNavigationCommand?: DataSpacePageNavigationCommand | undefined;
+  private wikiPageIntersectionObserver?: IntersectionObserver | undefined;
 
   constructor(dataSpaceViewerState: DataSpaceViewerState) {
     makeObservable(this, {
@@ -129,6 +133,7 @@ class DataSpaceLayoutState {
       frame: observable.ref,
       wikiNavigationCommand: observable.ref,
       isAllWikiPageFullyRendered: computed,
+      registerWikiPageScrollObserver: action,
       setCurrentNavigationZone: action,
       enableExpandedMode: action,
       setFrame: action,
@@ -155,6 +160,66 @@ class DataSpaceLayoutState {
       ) &&
       Array.from(this.wikiPageAnchorIndex.values()).every(isNonNullable)
     );
+  }
+
+  registerWikiPageScrollObserver(): void {
+    if (this.frame && this.isAllWikiPageFullyRendered) {
+      const wikiPageIntersectionObserver = new IntersectionObserver(
+        (entries, observer) => {
+          const visibleAnchors = entries
+            .filter((entry) => entry.isIntersecting)
+            .map((entry) => {
+              for (const [key, element] of this.wikiPageAnchorIndex.entries()) {
+                if (element === entry.target) {
+                  return key;
+                }
+              }
+              return undefined;
+            })
+            .filter(isNonNullable);
+          if (visibleAnchors.length === 1) {
+            const anchor = getNonNullableEnry(visibleAnchors, 0);
+            if (
+              this.currentNavigationZone === undefined ||
+              this.currentNavigationZone === anchor ||
+              this.currentNavigationZone.startsWith(
+                `${anchor}${NAVIGATION_ZONE_SEPARATOR}`,
+              )
+            ) {
+              return;
+            }
+            // if (anchor === )
+
+            // generateAnchorForActivity(
+            //   DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
+            // )
+            this.dataSpaceViewerState.syncZoneWithNavigation(anchor);
+            const anchorChunks = anchor.split(NAVIGATION_ZONE_SEPARATOR);
+            const activity = getNullableFirstEntry(anchorChunks);
+            if (activity) {
+              this.dataSpaceViewerState.setCurrentActivity(
+                extractActivityFromAnchor(
+                  activity,
+                ) as DATA_SPACE_VIEWER_ACTIVITY_MODE,
+              );
+            }
+          }
+        },
+        {
+          root: this.frame,
+          threshold: 0.5,
+        },
+      );
+      Array.from(this.wikiPageAnchorIndex.values()).forEach((el) =>
+        wikiPageIntersectionObserver.observe(el),
+      );
+      this.wikiPageIntersectionObserver = wikiPageIntersectionObserver;
+    }
+  }
+
+  unregisterWikiPageScrollObserver(): void {
+    this.wikiPageIntersectionObserver?.disconnect();
+    this.wikiPageIntersectionObserver = undefined;
   }
 
   enableExpandedMode(val: boolean): void {
