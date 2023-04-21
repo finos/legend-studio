@@ -121,18 +121,23 @@ class DataSpaceLayoutState {
   isTopScrollerVisible = false;
 
   wikiPageAnchorIndex = new Map<string, HTMLElement>();
-  wikiNavigationCommand?: DataSpacePageNavigationCommand | undefined;
-  private wikiPageIntersectionObserver?: IntersectionObserver | undefined;
+  wikiPageNavigationCommand?: DataSpacePageNavigationCommand | undefined;
+  private wikiPageVisibleAnchors: string[] = [];
+  private wikiPageScrollIntersectionObserver?: IntersectionObserver | undefined;
 
   constructor(dataSpaceViewerState: DataSpaceViewerState) {
-    makeObservable(this, {
+    makeObservable<
+      DataSpaceLayoutState,
+      'wikiPageVisibleAnchors' | 'updatePageVisibleAnchors'
+    >(this, {
       currentNavigationZone: observable,
       isExpandedModeEnabled: observable,
       isTopScrollerVisible: observable,
       wikiPageAnchorIndex: observable,
+      wikiPageVisibleAnchors: observable,
       frame: observable.ref,
-      wikiNavigationCommand: observable.ref,
-      isAllWikiPageFullyRendered: computed,
+      wikiPageNavigationCommand: observable.ref,
+      isWikiPageFullyRendered: computed,
       registerWikiPageScrollObserver: action,
       setCurrentNavigationZone: action,
       enableExpandedMode: action,
@@ -140,7 +145,8 @@ class DataSpaceLayoutState {
       setTopScrollerVisible: action,
       setWikiPageAnchor: action,
       unsetWikiPageAnchor: action,
-      setWikiAnchorToNavigate: action,
+      setWikiPageAnchorToNavigate: action,
+      updatePageVisibleAnchors: action,
     });
 
     this.dataSpaceViewerState = dataSpaceViewerState;
@@ -150,7 +156,7 @@ class DataSpaceLayoutState {
     this.currentNavigationZone = val;
   }
 
-  get isAllWikiPageFullyRendered(): boolean {
+  get isWikiPageFullyRendered(): boolean {
     return (
       DATA_SPACE_WIKI_PAGE_SECTIONS.includes(
         this.dataSpaceViewerState.currentActivity,
@@ -163,41 +169,57 @@ class DataSpaceLayoutState {
   }
 
   registerWikiPageScrollObserver(): void {
-    if (this.frame && this.isAllWikiPageFullyRendered) {
+    if (this.frame && this.isWikiPageFullyRendered) {
       const wikiPageIntersectionObserver = new IntersectionObserver(
         (entries, observer) => {
-          const visibleAnchors = entries
-            .filter((entry) => entry.isIntersecting)
+          const anchorsWithVisibilityChanged = entries
             .map((entry) => {
               for (const [key, element] of this.wikiPageAnchorIndex.entries()) {
                 if (element === entry.target) {
-                  return key;
+                  return { key, isIntersecting: entry.isIntersecting };
                 }
               }
               return undefined;
             })
             .filter(isNonNullable);
-          if (visibleAnchors.length === 1) {
-            const anchor = getNonNullableEnry(visibleAnchors, 0);
-            if (
-              this.currentNavigationZone === undefined ||
-              this.currentNavigationZone === anchor ||
-              this.currentNavigationZone.startsWith(
-                `${anchor}${NAVIGATION_ZONE_SEPARATOR}`,
-              )
-            ) {
-              return;
-            }
-            this.dataSpaceViewerState.syncZoneWithNavigation(anchor);
-            const anchorChunks = anchor.split(NAVIGATION_ZONE_SEPARATOR);
-            const activity = getNullableFirstEntry(anchorChunks);
-            if (activity) {
-              this.dataSpaceViewerState.setCurrentActivity(
-                extractActivityFromAnchor(
-                  activity,
-                ) as DATA_SPACE_VIEWER_ACTIVITY_MODE,
-              );
-            }
+          anchorsWithVisibilityChanged.forEach((entry) => {
+            this.updatePageVisibleAnchors(entry.key, entry.isIntersecting);
+          });
+          // NOTE: sync scroll with menu/address is quite a delicate piece of work
+          // as it interferes with programatic scroll operations we do elsewhere.
+          // This is particularly bad when we do a programatic `smooth` scroll, which
+          // mimic user scrolling behavior and would tangle up with this observer
+          // Since currently, there's no good mechanism to detect scroll end event, and as such,
+          // there is no good way to temporarily disable this logic while doing the programmatic
+          // smooth scroll as such, we avoid supporting programatic smooth scrolling for now
+          // See https://developer.mozilla.org/en-US/docs/Web/API/Document/scrollend_event
+          if (
+            // if current navigation zone is not set, do not update zone
+            this.currentNavigationZone === undefined ||
+            // if there is no visible anchors, do not update zone
+            !this.wikiPageVisibleAnchors.length ||
+            // if some of the current visible anchors match or is parent section of the current
+            // navigation zone, do not update zone
+            this.wikiPageVisibleAnchors.some(
+              (visibleAnchor) =>
+                this.currentNavigationZone === visibleAnchor ||
+                this.currentNavigationZone.startsWith(
+                  `${visibleAnchor}${NAVIGATION_ZONE_SEPARATOR}`,
+                ),
+            )
+          ) {
+            return;
+          }
+          const anchor = getNonNullableEnry(this.wikiPageVisibleAnchors, 0);
+          this.dataSpaceViewerState.syncZoneWithNavigation(anchor);
+          const anchorChunks = anchor.split(NAVIGATION_ZONE_SEPARATOR);
+          const activity = getNullableFirstEntry(anchorChunks);
+          if (activity) {
+            this.dataSpaceViewerState.setCurrentActivity(
+              extractActivityFromAnchor(
+                activity,
+              ) as DATA_SPACE_VIEWER_ACTIVITY_MODE,
+            );
           }
         },
         {
@@ -208,13 +230,33 @@ class DataSpaceLayoutState {
       Array.from(this.wikiPageAnchorIndex.values()).forEach((el) =>
         wikiPageIntersectionObserver.observe(el),
       );
-      this.wikiPageIntersectionObserver = wikiPageIntersectionObserver;
+      this.wikiPageScrollIntersectionObserver = wikiPageIntersectionObserver;
     }
   }
 
   unregisterWikiPageScrollObserver(): void {
-    this.wikiPageIntersectionObserver?.disconnect();
-    this.wikiPageIntersectionObserver = undefined;
+    this.wikiPageScrollIntersectionObserver?.disconnect();
+    this.wikiPageScrollIntersectionObserver = undefined;
+    this.wikiPageVisibleAnchors = [];
+  }
+
+  private updatePageVisibleAnchors(
+    changedAnchor: string,
+    isIntersecting: boolean,
+  ): void {
+    if (isIntersecting) {
+      const anchors = this.wikiPageVisibleAnchors.filter(
+        (anchor) => changedAnchor !== anchor,
+      );
+      // NOTE: the newly visible anchors should be the furthest one in
+      // the direction of scroll
+      anchors.push(changedAnchor);
+      this.wikiPageVisibleAnchors = anchors;
+    } else {
+      this.wikiPageVisibleAnchors = this.wikiPageVisibleAnchors.filter(
+        (anchor) => changedAnchor !== anchor,
+      );
+    }
   }
 
   enableExpandedMode(val: boolean): void {
@@ -240,26 +282,23 @@ class DataSpaceLayoutState {
     this.wikiPageAnchorIndex.delete(anchorKey);
   }
 
-  setWikiAnchorToNavigate(
+  setWikiPageAnchorToNavigate(
     val: DataSpacePageNavigationCommand | undefined,
   ): void {
-    this.wikiNavigationCommand = val;
+    this.wikiPageNavigationCommand = val;
   }
 
-  navigateWikiAnchor(): void {
-    if (this.wikiNavigationCommand && this.isAllWikiPageFullyRendered) {
-      const anchor = this.wikiNavigationCommand.anchor;
+  navigateWikiPageAnchor(): void {
+    if (this.wikiPageNavigationCommand && this.isWikiPageFullyRendered) {
+      const anchor = this.wikiPageNavigationCommand.anchor;
       const matchingWikiPageSection = this.wikiPageAnchorIndex.get(anchor);
       const anchorChunks = anchor.split(NAVIGATION_ZONE_SEPARATOR);
       if (matchingWikiPageSection) {
-        this.frame?.scrollTo({
-          top:
+        if (this.frame) {
+          this.frame.scrollTop =
             matchingWikiPageSection.offsetTop -
-            (this.header?.getBoundingClientRect().height ?? 0),
-          behavior: this.wikiNavigationCommand.useSmoothScroll
-            ? 'smooth'
-            : 'auto',
-        });
+            (this.header?.getBoundingClientRect().height ?? 0);
+        }
       } else if (
         getNullableFirstEntry(anchorChunks) ===
         generateAnchorForActivity(
@@ -275,7 +314,7 @@ class DataSpaceLayoutState {
         }
       }
 
-      this.setWikiAnchorToNavigate(undefined);
+      this.setWikiPageAnchorToNavigate(undefined);
     }
   }
 }
@@ -486,7 +525,7 @@ export class DataSpaceViewerState {
       );
       if (activityChunk && matchingActivity) {
         if (DATA_SPACE_WIKI_PAGE_SECTIONS.includes(matchingActivity)) {
-          this.layoutState.setWikiAnchorToNavigate({
+          this.layoutState.setWikiPageAnchorToNavigate({
             anchor: zone,
             // NOTE: if we are already on the wiki page, use smooth scroll to suggest the scrollability of the page
             // if we are navigating from a different section, go directly to the section within the page to avoid the wait

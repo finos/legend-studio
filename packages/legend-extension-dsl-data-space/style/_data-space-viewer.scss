@@ -208,6 +208,10 @@
 
     height: 3.4rem;
     width: 3.4rem;
+
+    &:focus {
+      outline: none;
+    }
   }
 
   &__percentage {

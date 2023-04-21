@@ -286,6 +286,10 @@
   .data-space__viewer__scroller {
     background: var(--color-hclight-blue-60);
 
+    &__btn:focus {
+      outline: none;
+    }
+
     &__percentage {
       background: var(--color-hclight-blue-70);
       color: var(--color-hclight-white);

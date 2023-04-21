@@ -29,26 +29,26 @@ export const DataSpaceWiki = observer(
 
     useEffect(() => {
       if (
-        dataSpaceViewerState.layoutState.wikiNavigationCommand &&
-        dataSpaceViewerState.layoutState.isAllWikiPageFullyRendered
+        dataSpaceViewerState.layoutState.wikiPageNavigationCommand &&
+        dataSpaceViewerState.layoutState.isWikiPageFullyRendered
       ) {
-        dataSpaceViewerState.layoutState.navigateWikiAnchor();
+        dataSpaceViewerState.layoutState.navigateWikiPageAnchor();
       }
     }, [
       dataSpaceViewerState,
-      dataSpaceViewerState.layoutState.wikiNavigationCommand,
-      dataSpaceViewerState.layoutState.isAllWikiPageFullyRendered,
+      dataSpaceViewerState.layoutState.wikiPageNavigationCommand,
+      dataSpaceViewerState.layoutState.isWikiPageFullyRendered,
     ]);
 
     useEffect(() => {
-      if (dataSpaceViewerState.layoutState.isAllWikiPageFullyRendered) {
+      if (dataSpaceViewerState.layoutState.isWikiPageFullyRendered) {
         dataSpaceViewerState.layoutState.registerWikiPageScrollObserver();
       }
       return () =>
         dataSpaceViewerState.layoutState.unregisterWikiPageScrollObserver();
     }, [
       dataSpaceViewerState,
-      dataSpaceViewerState.layoutState.isAllWikiPageFullyRendered,
+      dataSpaceViewerState.layoutState.isWikiPageFullyRendered,
     ]);
 
     return (
