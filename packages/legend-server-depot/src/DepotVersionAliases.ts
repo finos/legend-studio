@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-shared';
 import type { DepotServerClient } from './DepotServerClient.js';
 import type { StoreProjectData } from './models/StoreProjectData.js';
-import type { VersionedProjectData } from './models/VersionedProjectData.js';
 
 /**
  * NOTE: `HEAD` alias does not exist in depot server
@@ -36,10 +34,10 @@ export const resolveProjectVersion = async (
   serverClient: DepotServerClient,
 ): Promise<string> => {
   if (versionId === LATEST_VERSION_ALIAS) {
-    const versionedData = (await serverClient.getLatestVersion(
+    const versionedData = await serverClient.getLatestVersion(
       project.groupId,
       project.artifactId,
-    )) as PlainObject<VersionedProjectData>;
+    );
     return versionedData.versionId as string;
   } else {
     return resolveVersion(versionId);

@@ -339,8 +339,22 @@ export class DepotServerClient extends AbstractServerClient {
       groupId,
     )}/${encodeURIComponent(artifactId)}`;
 
-  getVersions = (groupId: string, artifactId: string): Promise<string[]> =>
-    this.get(`${this._project(groupId, artifactId)}/versions`);
+  getVersions = (
+    groupId: string,
+    artifactId: string,
+    /**
+     * Flag indicating whether to return the snapshot versions or not
+     */
+    snapshots: boolean,
+  ): Promise<string[]> =>
+    this.get(
+      `${this._project(groupId, artifactId)}/versions`,
+      undefined,
+      undefined,
+      {
+        snapshots: snapshots,
+      },
+    );
 
   getLatestVersion = (
     groupId: string,

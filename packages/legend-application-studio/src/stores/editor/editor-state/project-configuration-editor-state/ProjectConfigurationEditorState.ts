@@ -41,7 +41,10 @@ import {
   UpdatePlatformConfigurationsCommand,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../__lib__/LegendStudioEvent.js';
-import { MASTER_SNAPSHOT_ALIAS, ProjectData } from '@finos/legend-server-depot';
+import {
+  MASTER_SNAPSHOT_ALIAS,
+  StoreProjectData,
+} from '@finos/legend-server-depot';
 import { ProjectDependencyEditorState } from './ProjectDependencyEditorState.js';
 
 export enum CONFIGURATION_EDITOR_TAB {

@@ -21,7 +21,7 @@ import {
 } from '@finos/legend-application-query';
 import { ArrowCircleUpIcon } from '@finos/legend-art';
 import { generateQueryProductionizerRoute } from '../../__lib__/studio/DSL_Service_LegendStudioNavigation.js';
-import { ProjectData } from '@finos/legend-server-depot';
+import { StoreProjectData } from '@finos/legend-server-depot';
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import { buildUrl } from '@finos/legend-shared';
 import { ServiceRegisterAction } from './ServiceRegisterModal.js';

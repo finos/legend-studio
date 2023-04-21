@@ -87,7 +87,7 @@ const useCloneServiceQuerySetupStore = (): CloneServiceQuerySetupStore =>
 const CloneQueryServiceSetupContent = observer(() => {
   const applicationStore = useApplicationStore();
   const querySetupState = useCloneServiceQuerySetupStore();
-  const depotServerClient = useDepotServerClient();
+  const depotServerClient = querySetupState.depotServerClient;
 
   const [fetchSelectedProjectVersionsStatus] = useState(ActionState.create());
 
@@ -147,12 +147,13 @@ const CloneQueryServiceSetupContent = observer(() => {
           depotServerClient.getVersions(
             guaranteeNonNullable(option?.value.groupId),
             guaranteeNonNullable(option?.value.artifactId),
+            true,
           ),
         )) as string[];
         querySetupState.setCurrentProjectVersions(v);
       } catch (error) {
         assertErrorThrown(error);
-        applicationStore.notifyError(error);
+        applicationStore.notificationService.notifyError(error);
       } finally {
         fetchSelectedProjectVersionsStatus.reset();
       }
@@ -163,7 +164,7 @@ const CloneQueryServiceSetupContent = observer(() => {
   const versionOptions = [
     LATEST_VERSION_ALIAS,
     SNAPSHOT_VERSION_ALIAS,
-    ...querySetupState.currentProjectVersions ?? [],
+    ...(querySetupState.currentProjectVersions ?? []),
   ]
     .slice()
     .sort((v1, v2) => compareSemVerVersions(v2, v1))

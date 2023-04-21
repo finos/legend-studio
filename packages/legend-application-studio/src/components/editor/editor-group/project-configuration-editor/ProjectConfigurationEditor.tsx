@@ -15,7 +15,11 @@
  */
 
 import { useEffect } from 'react';
-import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
+import {
+  isNonNullable,
+  type PlainObject,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
   ProjectConfigurationEditorState,
@@ -49,12 +53,15 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { ProjectDependencyEditor } from './ProjectDependencyEditor.js';
-import type { ProjectData } from '@finos/legend-server-depot';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 import {
   DocumentationLink,
   DocumentationPreview,
 } from '@finos/legend-lego/application';
+import type {
+  StoreProjectData,
+  VersionedProjectData,
+} from '@finos/legend-server-depot';
 
 const ProjectStructureEditor = observer(
   (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {

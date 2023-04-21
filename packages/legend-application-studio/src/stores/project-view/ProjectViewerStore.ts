@@ -47,7 +47,7 @@ import {
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
-import { ProjectData, resolveVersion } from '@finos/legend-server-depot';
+import { resolveVersion, StoreProjectData } from '@finos/legend-server-depot';
 import {
   type WorkflowManagerState,
   ProjectVersionWorkflowManagerState,

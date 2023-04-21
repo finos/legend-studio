@@ -52,7 +52,7 @@ import {
 } from '@finos/legend-graph';
 import {
   DepotServerClient,
-  type ProjectData,
+  type StoreProjectData,
   type ProjectVersionEntities,
   type RawProjectDependencyReport,
 } from '@finos/legend-server-depot';

@@ -22,7 +22,13 @@ import {
   CustomSelectorInput,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
-import { getNullableFirstEntry, guaranteeType } from '@finos/legend-shared';
+import {
+  ActionState,
+  assertErrorThrown,
+  getNullableFirstEntry,
+  guaranteeNonNullable,
+  guaranteeType,
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useContext, useEffect, useState } from 'react';
@@ -85,7 +91,7 @@ const useCreateMappingQuerySetupStore = (): CreateMappingQuerySetupStore =>
 const CreateMappingQuerySetupContent = observer(() => {
   const setupStore = useCreateMappingQuerySetupStore();
   const applicationStore = useApplicationStore();
-  const depotServerClient = useDepotServerClient();
+  const depotServerClient = setupStore.depotServerClient;
 
   const [fetchSelectedProjectVersionsStatus] = useState(ActionState.create());
 
@@ -147,12 +153,13 @@ const CreateMappingQuerySetupContent = observer(() => {
           depotServerClient.getVersions(
             guaranteeNonNullable(option?.value.groupId),
             guaranteeNonNullable(option?.value.artifactId),
+            true,
           ),
         )) as string[];
         setupStore.setCurrentProjectVersions(v);
       } catch (error) {
         assertErrorThrown(error);
-        applicationStore.notifyError(error);
+        applicationStore.notificationService.notifyError(error);
       } finally {
         fetchSelectedProjectVersionsStatus.reset();
       }
@@ -163,7 +170,7 @@ const CreateMappingQuerySetupContent = observer(() => {
   const versionOptions = [
     LATEST_VERSION_ALIAS,
     SNAPSHOT_VERSION_ALIAS,
-    ...setupStore.currentProjectVersions ?? [],
+    ...(setupStore.currentProjectVersions ?? []),
   ]
     .slice()
     .sort((v1, v2) => compareSemVerVersions(v2, v1))

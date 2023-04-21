@@ -799,6 +799,7 @@ const ProjectVersionDependencyEditor = observer(
               editorStore.depotServerClient.getVersions(
                 guaranteeNonNullable(projectDependency.groupId),
                 guaranteeNonNullable(projectDependency.artifactId),
+                true,
               ),
             )) as string[];
             setVersions(v);
@@ -814,7 +815,7 @@ const ProjectVersionDependencyEditor = observer(
             }
           } catch (error) {
             assertErrorThrown(error);
-            editorStore.applicationStore.notifyError(error);
+            editorStore.applicationStore.notificationService.notifyError(error);
           } finally {
             fetchSelectedProjectVersionsStatus.reset();
           }
