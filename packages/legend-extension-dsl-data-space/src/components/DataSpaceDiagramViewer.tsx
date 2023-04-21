@@ -222,7 +222,7 @@ export const DataSpaceDiagramViewer = observer(
             </div>
           )}
           {analysisResult.diagrams.length <= 0 && (
-            <DataSpaceWikiPlaceholder message="No diagrams provided" />
+            <DataSpaceWikiPlaceholder message="(not specified)" />
           )}
         </div>
       </div>

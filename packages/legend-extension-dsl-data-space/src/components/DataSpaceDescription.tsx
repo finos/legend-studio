@@ -69,7 +69,7 @@ export const DataSpaceDescription = observer(
             </div>
           )}
           {analysisResult.description === undefined && (
-            <DataSpaceWikiPlaceholder message="No description provided" />
+            <DataSpaceWikiPlaceholder message="(not specified)" />
           )}
         </div>
       </div>

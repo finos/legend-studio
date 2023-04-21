@@ -188,11 +188,6 @@ class DataSpaceLayoutState {
             ) {
               return;
             }
-            // if (anchor === )
-
-            // generateAnchorForActivity(
-            //   DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
-            // )
             this.dataSpaceViewerState.syncZoneWithNavigation(anchor);
             const anchorChunks = anchor.split(NAVIGATION_ZONE_SEPARATOR);
             const activity = getNullableFirstEntry(anchorChunks);

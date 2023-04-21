@@ -1111,7 +1111,7 @@ export const DataSpaceModelsDocumentation = observer(
             </div>
           )}
           {documentationEntries.length === 0 && (
-            <DataSpaceWikiPlaceholder message="No documentation provided" />
+            <DataSpaceWikiPlaceholder message="(not specified)" />
           )}
         </div>
       </div>
