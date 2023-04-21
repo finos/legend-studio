@@ -31,6 +31,7 @@ import {
   TEST_DATA__result,
   TEST_DATA__ResultState_entities,
   TEST_DATA__simpleProjectionQuery,
+  TEST_DATA__UnSupportedSimpleProjectionQuery,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_ResultStateTest.js';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
@@ -64,6 +65,19 @@ const cases: ResultStateTestCase[] = [
       rawMappingModelCoverageAnalysisResult:
         TEST_DATA__modelCoverageAnalysisResult,
       rawLambda: TEST_DATA__simpleProjectionQuery,
+    },
+  ],
+  [
+    'Simple check on result state when we go to text mode and come back to query builder state when query is unsupported',
+    {
+      entities: TEST_DATA__ResultState_entities,
+      _class: 'model::Firm',
+      mapping: 'execution::RelationalMapping',
+      runtime: 'execution::Runtime',
+      result: TEST_DATA__result,
+      rawMappingModelCoverageAnalysisResult:
+        TEST_DATA__modelCoverageAnalysisResult,
+      rawLambda: TEST_DATA__UnSupportedSimpleProjectionQuery,
     },
   ],
 ];

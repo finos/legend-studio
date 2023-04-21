@@ -2229,3 +2229,76 @@ export const TEST_DATA__simpeDateParameters = (
     },
   ],
 });
+
+export const TEST_DATA__simpeDateParametersForUnsupportedQuery = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::pure::tests::model::simple::Person',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          values: [
+            {
+              _type: 'func',
+              function: 'col',
+              parameters: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'age',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'string',
+                  value: 'Age',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'StrictDate',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'var_1',
+    },
+  ],
+};
