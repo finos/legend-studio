@@ -107,7 +107,6 @@ const DATA_SPACE_WIKI_PAGE_ANCHORS = DATA_SPACE_WIKI_PAGE_SECTIONS.map(
 
 type DataSpacePageNavigationCommand = {
   anchor: string;
-  useSmoothScroll?: boolean;
 };
 
 class DataSpaceLayoutState {
@@ -120,7 +119,7 @@ class DataSpaceLayoutState {
   header?: HTMLElement | undefined;
   isTopScrollerVisible = false;
 
-  wikiPageAnchorIndex = new Map<string, HTMLElement>();
+  private wikiPageAnchorIndex = new Map<string, HTMLElement>();
   wikiPageNavigationCommand?: DataSpacePageNavigationCommand | undefined;
   private wikiPageVisibleAnchors: string[] = [];
   private wikiPageScrollIntersectionObserver?: IntersectionObserver | undefined;
@@ -128,7 +127,9 @@ class DataSpaceLayoutState {
   constructor(dataSpaceViewerState: DataSpaceViewerState) {
     makeObservable<
       DataSpaceLayoutState,
-      'wikiPageVisibleAnchors' | 'updatePageVisibleAnchors'
+      | 'wikiPageAnchorIndex'
+      | 'wikiPageVisibleAnchors'
+      | 'updatePageVisibleAnchors'
     >(this, {
       currentNavigationZone: observable,
       isExpandedModeEnabled: observable,
@@ -158,6 +159,7 @@ class DataSpaceLayoutState {
 
   get isWikiPageFullyRendered(): boolean {
     return (
+      Boolean(this.frame) &&
       DATA_SPACE_WIKI_PAGE_SECTIONS.includes(
         this.dataSpaceViewerState.currentActivity,
       ) &&
@@ -192,6 +194,7 @@ class DataSpaceLayoutState {
           // Since currently, there's no good mechanism to detect scroll end event, and as such,
           // there is no good way to temporarily disable this logic while doing the programmatic
           // smooth scroll as such, we avoid supporting programatic smooth scrolling for now
+          // See https://github.com/w3c/csswg-drafts/issues/3744
           // See https://developer.mozilla.org/en-US/docs/Web/API/Document/scrollend_event
           if (
             // if current navigation zone is not set, do not update zone
@@ -289,22 +292,32 @@ class DataSpaceLayoutState {
   }
 
   navigateWikiPageAnchor(): void {
-    if (this.wikiPageNavigationCommand && this.isWikiPageFullyRendered) {
+    if (
+      this.frame &&
+      this.wikiPageNavigationCommand &&
+      this.isWikiPageFullyRendered
+    ) {
       const anchor = this.wikiPageNavigationCommand.anchor;
       const matchingWikiPageSection = this.wikiPageAnchorIndex.get(anchor);
       const anchorChunks = anchor.split(NAVIGATION_ZONE_SEPARATOR);
       if (matchingWikiPageSection) {
-        if (this.frame) {
-          this.frame.scrollTop =
-            matchingWikiPageSection.offsetTop -
-            (this.header?.getBoundingClientRect().height ?? 0);
-        }
+        this.frame.scrollTop =
+          matchingWikiPageSection.offsetTop -
+          (this.header?.getBoundingClientRect().height ?? 0);
       } else if (
         getNullableFirstEntry(anchorChunks) ===
         generateAnchorForActivity(
           DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
         )
       ) {
+        this.frame.scrollTop =
+          guaranteeNonNullable(
+            this.wikiPageAnchorIndex.get(
+              generateAnchorForActivity(
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
+              ),
+            ),
+          ).offsetTop - (this.header?.getBoundingClientRect().height ?? 0);
         const matchingDiagram =
           this.dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.find(
             (diagram) => generateAnchorForDiagram(diagram) === anchor,
@@ -527,11 +540,6 @@ export class DataSpaceViewerState {
         if (DATA_SPACE_WIKI_PAGE_SECTIONS.includes(matchingActivity)) {
           this.layoutState.setWikiPageAnchorToNavigate({
             anchor: zone,
-            // NOTE: if we are already on the wiki page, use smooth scroll to suggest the scrollability of the page
-            // if we are navigating from a different section, go directly to the section within the page to avoid the wait
-            useSmoothScroll: DATA_SPACE_WIKI_PAGE_SECTIONS.includes(
-              this.currentActivity,
-            ),
           });
         }
         this.setCurrentActivity(matchingActivity);
