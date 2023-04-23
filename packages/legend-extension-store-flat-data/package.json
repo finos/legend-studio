@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-store-flat-data",
-  "version": "0.0.76",
+  "version": "0.0.77",
   "description": "Legend extension for Flat-data store",
   "keywords": [
     "legend",

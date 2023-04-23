@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 6.0.0
+
+### Major Changes
+
+- [#1989](https://github.com/finos/legend-studio/pull/1989) [`84b9a4837`](https://github.com/finos/legend-studio/commit/84b9a4837d95e01f19eb4fb66411481a7e1fdabc) ([@gayathrir11](https://github.com/gayathrir11)) - **BREAKING CHANGE:** Leverage new projects/project-configurations APIs. Renamed `ProjectData` to `StoreProjectData`. Added new APIs to get a project's verisons and latest version.
+
 ## 5.0.1
 
 ## 5.0.0
