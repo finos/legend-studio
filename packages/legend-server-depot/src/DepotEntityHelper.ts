@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import type { ProjectData } from './models/ProjectData.js';
+import type { StoreProjectData } from './models/StoreProjectData.js';
 import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
 import type { DepotServerClient } from './DepotServerClient.js';
 import type { PlainObject } from '@finos/legend-shared';
 
 export const retrieveProjectEntitiesWithDependencies = async (
-  project: ProjectData,
+  project: StoreProjectData,
   versionId: string,
   depotServerClient: DepotServerClient,
 ): Promise<Entity[]> => {

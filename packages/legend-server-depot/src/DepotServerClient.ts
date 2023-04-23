@@ -23,7 +23,6 @@ import {
 } from '@finos/legend-shared';
 import { resolveProjectVersion } from './DepotVersionAliases.js';
 import type { DepotScope } from './models/DepotScope.js';
-import type { ProjectData } from './models/ProjectData.js';
 import {
   type ProjectDependencyCoordinates,
   ProjectVersionEntities,
@@ -31,6 +30,8 @@ import {
 import type { StoredEntity } from './models/StoredEntity.js';
 import type { RawProjectDependencyReport } from './models/RawProjectDependencyReport.js';
 import type { ProjectVersionPlatformDependency } from './models/ProjectVersionPlatformDependency.js';
+import type { VersionedProjectData } from './models/VersionedProjectData.js';
+import type { StoreProjectData } from './models/StoreProjectData.js';
 
 export interface DepotServerClientConfig {
   serverUrl: string;
@@ -46,6 +47,8 @@ export class DepotServerClient extends AbstractServerClient {
   // ------------------------------------------- Projects -------------------------------------------
 
   private _projects = (): string => `${this.baseUrl}/projects`;
+  private _projectConfigurations = (): string =>
+    `${this.baseUrl}/project-configurations`;
   private _project = (groupId: string, artifactId: string): string =>
     `${this._projects()}/${encodeURIComponent(groupId)}/${encodeURIComponent(
       artifactId,
@@ -53,14 +56,22 @@ export class DepotServerClient extends AbstractServerClient {
   private _projectById = (projectId: string): string =>
     `${this._projects()}/${encodeURIComponent(projectId)}`;
 
-  getProjects = (): Promise<PlainObject<ProjectData>[]> =>
-    this.get(this._projects());
+  getProjects = (): Promise<PlainObject<StoreProjectData>[]> =>
+    this.get(this._projectConfigurations());
+
   getProject = (
     groupId: string,
     artifactId: string,
-  ): Promise<PlainObject<ProjectData>> =>
-    this.get(this._project(groupId, artifactId));
-  getProjectById = (projectId: string): Promise<PlainObject<ProjectData>[]> =>
+  ): Promise<PlainObject<StoreProjectData>> =>
+    this.get(
+      `${this._projectConfigurations()}/${encodeURIComponent(
+        groupId,
+      )}/${encodeURIComponent(artifactId)}`,
+    );
+
+  getProjectById = (
+    projectId: string,
+  ): Promise<PlainObject<StoreProjectData>[]> =>
     this.get(this._projectById(projectId));
 
   // ------------------------------------------- Entities -------------------------------------------
@@ -84,14 +95,19 @@ export class DepotServerClient extends AbstractServerClient {
   ): Promise<PlainObject<Entity>[]> =>
     this.get(this._version(groupId, artifactId, version));
 
-  getEntities(
-    project: ProjectData,
+  async getEntities(
+    project: StoreProjectData,
     versionId: string,
   ): Promise<PlainObject<Entity>[]> {
+    const resolvedVersion = await resolveProjectVersion(
+      project,
+      versionId,
+      this,
+    );
     return this.getVersionEntities(
       project.groupId,
       project.artifactId,
-      resolveProjectVersion(project, versionId),
+      resolvedVersion,
     );
   }
 
@@ -109,15 +125,20 @@ export class DepotServerClient extends AbstractServerClient {
       )}/entities/${encodeURIComponent(entityPath)}`,
     );
 
-  getEntity(
-    project: ProjectData,
+  async getEntity(
+    project: StoreProjectData,
     versionId: string,
     entityPath: string,
   ): Promise<PlainObject<Entity>> {
+    const resolvedVersion = await resolveProjectVersion(
+      project,
+      versionId,
+      this,
+    );
     return this.getVersionEntity(
       project.groupId,
       project.artifactId,
-      resolveProjectVersion(project, versionId),
+      resolvedVersion,
       entityPath,
     );
   }
@@ -205,14 +226,19 @@ export class DepotServerClient extends AbstractServerClient {
     );
 
   async getIndexedDependencyEntities(
-    project: ProjectData,
+    project: StoreProjectData,
     versionId: string,
   ): Promise<Map<string, EntitiesWithOrigin>> {
     const dependencyEntitiesIndex = new Map<string, EntitiesWithOrigin>();
+    const resolvedVersion = await resolveProjectVersion(
+      project,
+      versionId,
+      this,
+    );
     const dependencies = await this.getDependencyEntities(
       project.groupId,
       project.artifactId,
-      resolveProjectVersion(project, versionId),
+      resolvedVersion,
       true,
       false,
     );
@@ -282,18 +308,69 @@ export class DepotServerClient extends AbstractServerClient {
       versionId,
     )}`;
 
-  getGenerationContentByPath = (
-    project: ProjectData,
+  getGenerationContentByPath = async (
+    project: StoreProjectData,
     versionId: string,
     filePath: string,
-  ): Promise<string> =>
-    this.get(
+  ): Promise<string> => {
+    const resolvedVersion = await resolveProjectVersion(
+      project,
+      versionId,
+      this,
+    );
+    return this.get(
       `${this._generationContentByGAV(
         project.groupId,
         project.artifactId,
-        resolveProjectVersion(project, versionId),
+        resolvedVersion,
       )}/file/${encodeURIComponent(filePath)}`,
       {},
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
+    );
+  };
+
+  // ------------------------------------------- Versions -------------------------------------------
+
+  private _versionedStoreProjectData = (
+    groupId: string,
+    artifactId: string,
+  ): string =>
+    `${this.baseUrl}/versions/${encodeURIComponent(
+      groupId,
+    )}/${encodeURIComponent(artifactId)}`;
+
+  getVersions = (
+    groupId: string,
+    artifactId: string,
+    /**
+     * Flag indicating whether to return the snapshot versions or not
+     */
+    snapshots: boolean,
+  ): Promise<string[]> =>
+    this.get(
+      `${this._project(groupId, artifactId)}/versions`,
+      undefined,
+      undefined,
+      {
+        snapshots: snapshots,
+      },
+    );
+
+  getLatestVersion = (
+    groupId: string,
+    artifactId: string,
+  ): Promise<PlainObject<VersionedProjectData>> =>
+    this.get(`${this._versionedStoreProjectData(groupId, artifactId)}/latest`);
+
+  getVersionedProjectData = (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+  ): Promise<PlainObject<VersionedProjectData>> =>
+    this.get(
+      `${this._versionedStoreProjectData(
+        groupId,
+        artifactId,
+      )}/${encodeURIComponent(versionId)}`,
     );
 }

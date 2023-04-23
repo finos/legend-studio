@@ -15,7 +15,11 @@
  */
 
 import { useEffect } from 'react';
-import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
+import {
+  isNonNullable,
+  type PlainObject,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
   ProjectConfigurationEditorState,
@@ -49,12 +53,15 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { ProjectDependencyEditor } from './ProjectDependencyEditor.js';
-import type { ProjectData } from '@finos/legend-server-depot';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 import {
   DocumentationLink,
   DocumentationPreview,
 } from '@finos/legend-lego/application';
+import type {
+  StoreProjectData,
+  VersionedProjectData,
+} from '@finos/legend-server-depot';
 
 const ProjectStructureEditor = observer(
   (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
@@ -411,11 +418,19 @@ export const ProjectConfigurationEditor = observer(() => {
       if (selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES) {
         const currentProjects = Array.from(configState.projects.values());
         if (currentProjects.length) {
-          const projectToAdd = currentProjects[0] as ProjectData;
+          const projectToAdd = currentProjects[0] as StoreProjectData;
           const dependencyToAdd = new ProjectDependency(
             projectToAdd.coordinates,
           );
-          dependencyToAdd.setVersionId(projectToAdd.latestVersion);
+          applicationStore.guardUnhandledError(async () => {
+            const versionedData = flowResult(
+              editorStore.depotServerClient.getLatestVersion(
+                projectToAdd.groupId,
+                projectToAdd.artifactId,
+              ),
+            ) as PlainObject<VersionedProjectData>;
+            dependencyToAdd.setVersionId(versionedData.versionId as string);
+          });
           currentProjectConfiguration.addProjectDependency(dependencyToAdd);
           flowResult(
             configState.projectDependencyEditorState.fetchDependencyReport(),

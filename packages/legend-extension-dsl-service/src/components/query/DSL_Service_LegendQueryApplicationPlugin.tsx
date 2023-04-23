@@ -21,7 +21,7 @@ import {
 } from '@finos/legend-application-query';
 import { ArrowCircleUpIcon } from '@finos/legend-art';
 import { generateQueryProductionizerRoute } from '../../__lib__/studio/DSL_Service_LegendStudioNavigation.js';
-import { ProjectData } from '@finos/legend-server-depot';
+import { StoreProjectData } from '@finos/legend-server-depot';
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import { buildUrl } from '@finos/legend-shared';
 import { ServiceRegisterAction } from './ServiceRegisterModal.js';
@@ -38,7 +38,7 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
         renderer: (editorStore, queryBuilderState) => {
           const openQueryProductionizer = async (): Promise<void> => {
             // fetch project data
-            const project = ProjectData.serialization.fromJson(
+            const project = StoreProjectData.serialization.fromJson(
               await editorStore.depotServerClient.getProject(
                 editorStore.query.groupId,
                 editorStore.query.artifactId,

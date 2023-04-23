@@ -25,7 +25,7 @@ import {
 } from '@finos/legend-query-builder';
 import {
   DepotScope,
-  ProjectData,
+  StoreProjectData,
   type DepotServerClient,
   type StoredEntity,
 } from '@finos/legend-server-depot';
@@ -58,7 +58,7 @@ export class UpdateExistingServiceQuerySetupStore extends BaseQuerySetupStore {
 
   async loadServiceUpdater(serviceInfo: ServiceInfo): Promise<void> {
     // fetch project data
-    const project = ProjectData.serialization.fromJson(
+    const project = StoreProjectData.serialization.fromJson(
       await this.depotServerClient.getProject(
         serviceInfo.groupId,
         serviceInfo.artifactId,

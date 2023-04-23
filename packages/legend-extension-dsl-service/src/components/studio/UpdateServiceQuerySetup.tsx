@@ -34,7 +34,7 @@ import {
   useLegendStudioBaseStore,
 } from '@finos/legend-application-studio';
 import { UpdateServiceQuerySetupStore } from '../../stores/studio/UpdateServiceQuerySetupStore.js';
-import { type ProjectData } from '@finos/legend-server-depot';
+import type { StoreProjectData } from '@finos/legend-server-depot';
 import {
   type ServiceQueryUpdaterSetupPathParams,
   generateServiceQueryUpdaterRoute,
@@ -108,7 +108,7 @@ const withUpdateServiceQuerySetupStore = (
 
 const CreateWorkspaceModal = observer(
   (props: {
-    selectedProject: ProjectData;
+    selectedProject: StoreProjectData;
     selectedSnapService: ServiceInfo;
   }) => {
     const { selectedProject, selectedSnapService } = props;

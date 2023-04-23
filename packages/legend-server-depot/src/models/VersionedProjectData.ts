@@ -14,32 +14,23 @@
  * limitations under the License.
  */
 
-import { list, createModelSchema, primitive } from 'serializr';
+import { createModelSchema, primitive } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
-import { generateGAVCoordinates } from '@finos/legend-storage';
 
-export class ProjectData {
-  id!: string;
-  projectId!: string;
+export class VersionedProjectData {
   groupId!: string;
   artifactId!: string;
-  versions!: string[];
+  versionId!: string;
   // TODO?: dependencies
   // TODO?: properties
-  latestVersion!: string;
-
-  get coordinates(): string {
-    return generateGAVCoordinates(this.groupId, this.artifactId, undefined);
-  }
+  deprecated!: boolean;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(ProjectData, {
+    createModelSchema(VersionedProjectData, {
       artifactId: primitive(),
+      deprecated: primitive(),
       groupId: primitive(),
-      id: primitive(),
-      latestVersion: primitive(),
-      projectId: primitive(),
-      versions: list(primitive()),
+      versionId: primitive(),
     }),
   );
 }

@@ -56,10 +56,10 @@ import {
 import {
   type ProjectDependencyGraphReport,
   ProjectVersionEntities,
-  ProjectData,
   ProjectDependencyCoordinates,
   RawProjectDependencyReport,
   buildDependencyReport,
+  StoreProjectData,
 } from '@finos/legend-server-depot';
 import {
   GRAPH_MANAGER_EVENT,
@@ -739,7 +739,7 @@ export class EditorGraphState {
             .getProjectById(dep.projectId)
             .then((projects) => {
               const projectsData = projects.map((p) =>
-                ProjectData.serialization.fromJson(p),
+                StoreProjectData.serialization.fromJson(p),
               );
               if (projectsData.length !== 1) {
                 throw new Error(
@@ -757,7 +757,7 @@ export class EditorGraphState {
                     .join(', ')}.`,
                 );
               }
-              const project = projectsData[0] as ProjectData;
+              const project = projectsData[0] as StoreProjectData;
               return new ProjectDependencyCoordinates(
                 project.groupId,
                 project.artifactId,

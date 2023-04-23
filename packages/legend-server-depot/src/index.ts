@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-export { ProjectData } from './models/ProjectData.js';
+export { StoreProjectData } from './models/StoreProjectData.js';
+export { VersionedProjectData } from './models/VersionedProjectData.js';
 export * from './models/ProjectVersionEntities.js';
 export { StoredEntity } from './models/StoredEntity.js';
 export { DepotScope } from './models/DepotScope.js';

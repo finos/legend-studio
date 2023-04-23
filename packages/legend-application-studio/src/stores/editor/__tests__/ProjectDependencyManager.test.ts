@@ -23,7 +23,7 @@ import { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import {
   type RawProjectDependencyReport,
   ProjectVersionEntities,
-  type ProjectData,
+  type StoreProjectData,
 } from '@finos/legend-server-depot';
 import {
   DependencyManager,
@@ -191,7 +191,7 @@ const buildFileGenerationDepentOnDependencyElements = (
 const testDependencyElements = async (
   entities: Entity[],
   dependencyEntities: PlainObject<ProjectVersionEntities>[],
-  projectsData?: PlainObject<ProjectData>[],
+  projectsData?: PlainObject<StoreProjectData>[],
   includeDependencyInFileGenerationScopeElements?: boolean,
   dependencyInfo?: PlainObject<RawProjectDependencyReport>,
 ): Promise<EditorStore> => {

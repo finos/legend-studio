@@ -15,7 +15,7 @@
  */
 
 import {
-  ProjectData,
+  StoreProjectData,
   type DepotServerClient,
 } from '@finos/legend-server-depot';
 import {
@@ -32,7 +32,7 @@ import { BaseQuerySetupStore } from './QuerySetupStore.js';
 
 export class LoadProjectServiceQuerySetupStore extends BaseQuerySetupStore {
   readonly loadProjectsState = ActionState.create();
-  projects: ProjectData[] = [];
+  projects: StoreProjectData[] = [];
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -50,8 +50,8 @@ export class LoadProjectServiceQuerySetupStore extends BaseQuerySetupStore {
     this.loadProjectsState.inProgress();
     try {
       this.projects = (
-        (yield this.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
-      ).map((v) => ProjectData.serialization.fromJson(v));
+        (yield this.depotServerClient.getProjects()) as PlainObject<StoreProjectData>[]
+      ).map((v) => StoreProjectData.serialization.fromJson(v));
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -60,7 +60,7 @@ export class LoadProjectServiceQuerySetupStore extends BaseQuerySetupStore {
     }
   }
 
-  async loadProjectServiceUpdater(project: ProjectData): Promise<void> {
+  async loadProjectServiceUpdater(project: StoreProjectData): Promise<void> {
     // find the matching SDLC instance
     const projectIDPrefix = parseProjectIdentifier(project.projectId).prefix;
     const matchingSDLCEntry = this.applicationStore.config.studioInstances.find(

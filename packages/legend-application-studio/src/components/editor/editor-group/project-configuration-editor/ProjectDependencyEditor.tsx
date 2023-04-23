@@ -53,11 +53,12 @@ import {
 import {
   MASTER_SNAPSHOT_ALIAS,
   type ProjectDependencyGraphReport,
-  type ProjectData,
+  type StoreProjectData,
   SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
 import type { ProjectDependency } from '@finos/legend-server-sdlc';
 import {
+  ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
   isNonNullable,
@@ -97,10 +98,10 @@ interface VersionOption {
 }
 interface ProjectOption {
   label: string;
-  value: ProjectData;
+  value: StoreProjectData;
 }
 
-const buildProjectOption = (project: ProjectData): ProjectOption => ({
+const buildProjectOption = (project: StoreProjectData): ProjectOption => ({
   label: project.coordinates,
   value: project,
 });
@@ -753,7 +754,7 @@ const ProjectVersionDependencyEditor = observer(
     projectDependency: ProjectDependency;
     deleteValue: () => void;
     isReadOnly: boolean;
-    projects: Map<string, ProjectData>;
+    projects: Map<string, StoreProjectData>;
   }) => {
     // init
     const { projectDependency, deleteValue, isReadOnly, projects } = props;
@@ -764,6 +765,8 @@ const ProjectVersionDependencyEditor = observer(
     const versionSelectorRef = useRef<SelectComponent>(null);
     const configState = editorStore.projectConfigurationEditorState;
     const dependencyEditorState = configState.projectDependencyEditorState;
+    const [versions, setVersions] = useState<string[]>([]);
+    const [fetchSelectedProjectVersionsStatus] = useState(ActionState.create());
     // project
     const selectedProject = configState.projects.get(
       projectDependency.projectId,
@@ -777,7 +780,9 @@ const ProjectVersionDependencyEditor = observer(
     const projectsOptions = Array.from(configState.projects.values())
       .map(buildProjectOption)
       .sort(compareLabelFn);
-    const onProjectSelectionChange = (val: ProjectOption | null): void => {
+    const onProjectSelectionChange = async (
+      val: ProjectOption | null,
+    ): Promise<void> => {
       if (
         (val !== null || selectedProjectOption !== null) &&
         (!val ||
@@ -785,17 +790,40 @@ const ProjectVersionDependencyEditor = observer(
           val.value !== selectedProjectOption.value)
       ) {
         projectDependency.setProjectId(val?.value.coordinates ?? '');
+        projectDependency.setVersionId('');
+        setVersions([]);
         if (val) {
-          projectDependency.setVersionId(val.value.latestVersion);
-          flowResult(dependencyEditorState.fetchDependencyReport()).catch(
-            applicationStore.alertUnhandledError,
-          );
+          try {
+            fetchSelectedProjectVersionsStatus.inProgress();
+            const v = (await flowResult(
+              editorStore.depotServerClient.getVersions(
+                guaranteeNonNullable(projectDependency.groupId),
+                guaranteeNonNullable(projectDependency.artifactId),
+                true,
+              ),
+            )) as string[];
+            setVersions(v);
+            if (v.length) {
+              projectDependency.setVersionId(
+                guaranteeNonNullable(v[v.length - 1]),
+              );
+              flowResult(dependencyEditorState.fetchDependencyReport()).catch(
+                applicationStore.alertUnhandledError,
+              );
+            } else {
+              projectDependency.setVersionId('');
+            }
+          } catch (error) {
+            assertErrorThrown(error);
+            editorStore.applicationStore.notificationService.notifyError(error);
+          } finally {
+            fetchSelectedProjectVersionsStatus.reset();
+          }
         }
       }
     };
     // version
     const version = projectDependency.versionId;
-    const versions = selectedProject?.versions ?? [];
     let versionOptions = versions
       .slice()
       .sort((v1, v2) => compareSemVerVersions(v2, v1))
@@ -888,10 +916,15 @@ const ProjectVersionDependencyEditor = observer(
           onChange={onVersionSelectionChange}
           value={selectedVersionOption}
           disabled={versionDisabled}
-          placeholder={projectSelectorPlaceholder}
+          placeholder={
+            fetchSelectedProjectVersionsStatus.isInProgress
+              ? 'Fetching project versions'
+              : projectSelectorPlaceholder
+          }
           isLoading={
             editorStore.projectConfigurationEditorState
-              .fetchingProjectVersionsState.isInProgress
+              .fetchingProjectVersionsState.isInProgress ||
+            fetchSelectedProjectVersionsStatus.isInProgress
           }
           darkMode={true}
         />

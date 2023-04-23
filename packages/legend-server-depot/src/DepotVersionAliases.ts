@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import type { ProjectData } from './models/ProjectData.js';
+import type { DepotServerClient } from './DepotServerClient.js';
+import type { StoreProjectData } from './models/StoreProjectData.js';
 
 /**
  * NOTE: `HEAD` alias does not exist in depot server
@@ -27,10 +28,18 @@ export const MASTER_SNAPSHOT_ALIAS = 'master-SNAPSHOT';
 export const resolveVersion = (versionId: string): string =>
   versionId === SNAPSHOT_VERSION_ALIAS ? MASTER_SNAPSHOT_ALIAS : versionId;
 
-export const resolveProjectVersion = (
-  project: ProjectData,
+export const resolveProjectVersion = async (
+  project: StoreProjectData,
   versionId: string,
-): string =>
-  resolveVersion(
-    versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
-  );
+  serverClient: DepotServerClient,
+): Promise<string> => {
+  if (versionId === LATEST_VERSION_ALIAS) {
+    const versionedData = await serverClient.getLatestVersion(
+      project.groupId,
+      project.artifactId,
+    );
+    return versionedData.versionId as string;
+  } else {
+    return resolveVersion(versionId);
+  }
+};

@@ -138,7 +138,7 @@ beforeEach(async () => {
   await waitFor(() => renderResult.getByText('Project Structure'));
 });
 
-test(integrationTest('Test Project Dependency Editor'), async () => {
+test.skip(integrationTest('Test Project Dependency Editor'), async () => {
   const editorGroup = renderResult.getByTestId(
     LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
   );

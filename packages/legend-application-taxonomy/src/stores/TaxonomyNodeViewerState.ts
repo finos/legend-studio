@@ -21,7 +21,7 @@ import {
 } from '@finos/legend-extension-dsl-data-space/graph';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
-  ProjectData,
+  StoreProjectData,
   retrieveProjectEntitiesWithDependencies,
 } from '@finos/legend-server-depot';
 import {
@@ -122,10 +122,10 @@ export class TaxonomyNodeViewerState {
 
       // fetch project
       this.initDataSpaceViewerState.setMessage(`Fetching project...`);
-      const project = ProjectData.serialization.fromJson(
+      const project = StoreProjectData.serialization.fromJson(
         (yield flowResult(
           this.explorerStore.depotServerClient.getProject(groupId, artifactId),
-        )) as PlainObject<ProjectData>,
+        )) as PlainObject<StoreProjectData>,
       );
       // analyze data space
       const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(

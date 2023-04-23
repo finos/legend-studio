@@ -39,7 +39,7 @@ import {
 } from '@finos/legend-query-builder';
 import {
   type DepotServerClient,
-  ProjectData,
+  StoreProjectData,
 } from '@finos/legend-server-depot';
 import {
   type SDLCServerClient,
@@ -435,7 +435,7 @@ export class ServiceQueryUpdaterStore extends ServiceQueryEditorStore {
     const { groupId, artifactId, servicePath } = parseServiceCoordinates(
       this.serviceCoordinates,
     );
-    const project = ProjectData.serialization.fromJson(
+    const project = StoreProjectData.serialization.fromJson(
       await this.depotServerClient.getProject(groupId, artifactId),
     );
 

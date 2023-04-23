@@ -32,7 +32,7 @@ import {
 import { parseGAVCoordinates } from '@finos/legend-storage';
 import {
   type DepotServerClient,
-  ProjectData,
+  StoreProjectData,
   retrieveProjectEntitiesWithDependencies,
 } from '@finos/legend-server-depot';
 import {
@@ -104,10 +104,10 @@ export class DataSpacePreviewStore {
 
       // fetch project
       this.initState.setMessage(`Fetching project...`);
-      const project = ProjectData.serialization.fromJson(
+      const project = StoreProjectData.serialization.fromJson(
         (yield flowResult(
           this.depotServerClient.getProject(groupId, artifactId),
-        )) as PlainObject<ProjectData>,
+        )) as PlainObject<StoreProjectData>,
       );
 
       // analyze data space
