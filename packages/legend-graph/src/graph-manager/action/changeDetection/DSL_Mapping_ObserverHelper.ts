@@ -30,17 +30,22 @@ import type {
   EnumValueMapping,
   SourceValue,
 } from '../../../graph/metamodel/pure/packageableElements/mapping/EnumValueMapping.js';
-import { ExpectedOutputMappingTestAssert } from '../../../graph/metamodel/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert.js';
 import type { InferableMappingElementIdValue } from '../../../graph/metamodel/pure/packageableElements/mapping/InferableMappingElementId.js';
 import type { InferableMappingElementRoot } from '../../../graph/metamodel/pure/packageableElements/mapping/InferableMappingElementRoot.js';
-import type { InputData } from '../../../graph/metamodel/pure/packageableElements/mapping/InputData.js';
 import type { InstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
 import type { LocalMappingPropertyInfo } from '../../../graph/metamodel/pure/packageableElements/mapping/LocalMappingPropertyInfo.js';
 import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { MappingClass } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingClass.js';
 import type { MappingInclude } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
-import type { DEPRECATED__MappingTest } from '../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
-import type { MappingTestAssert } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestAssert.js';
+import {
+  type DEPRECATED__MappingTest,
+  type DEPRECATED__InputData,
+  type DEPRECATED__MappingTestAssert,
+  DEPRECATED__ExpectedOutputMappingTestAssert,
+  DEPRECATED__ObjectInputData,
+  DEPRECATED__FlatDataInputData,
+  DEPRECATED__RelationalInputData,
+} from '../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import type { MergeOperationSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/MergeOperationSetImplementation.js';
 import type { OperationSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/OperationSetImplementation.js';
 import type {
@@ -66,20 +71,17 @@ import {
 } from '../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
 import type { FlatDataConnection } from '../../../graph/metamodel/pure/packageableElements/store/flatData/connection/FlatDataConnection.js';
 import type { EmbeddedFlatDataPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
-import { FlatDataInputData } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
 import type { FlatDataInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation.js';
 import type { FlatDataPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping.js';
 import type { JsonModelConnection } from '../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/JsonModelConnection.js';
 import type { ModelChainConnection } from '../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/ModelChainConnection.js';
 import type { XmlModelConnection } from '../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/XmlModelConnection.js';
-import { ObjectInputData } from '../../../graph/metamodel/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
 import type { PureInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation.js';
 import type { PurePropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping.js';
 import type { RelationalDatabaseConnection } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection.js';
 import type { EmbeddedRelationalInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 import type { InlineEmbeddedRelationalInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation.js';
 import type { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
-import { RelationalInputData } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
 import type { RelationalInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation.js';
 import type { RelationalPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';
 import type { RootRelationalInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
@@ -116,15 +118,24 @@ import {
   observe_RootRelationalInstanceSetImplementation,
 } from './STO_Relational_ObserverHelper.js';
 import type { FlatDataAssociationPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
-import type { MappingTest } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
+import {
+  type MappingTest,
+  MappingDataTest,
+  MappingQueryTest,
+} from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
 import {
   observe_AtomicTest,
   observe_TestAssertion,
   observe_TestSuite,
 } from './Testable_ObserverHelper.js';
-import type { MappingTestSuite } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
-import type { MappingStoreTestData } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
+import {
+  MappingDataTestSuite,
+  MappingQueryTestSuite,
+  type MappingTestSuite,
+} from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
+import type { StoreTestData } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
 import { observe_EmbeddedData } from './DSL_Data_ObserverHelper.js';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -141,10 +152,7 @@ export const observe_Abstract_Store = (metamodel: Store): void => {
 // ------------------------------------- TestSuite -----------------------------------
 
 export const observe_MappingStoreTestData = skipObservedWithContext(
-  (
-    metamodel: MappingStoreTestData,
-    context: ObserverContext,
-  ): MappingStoreTestData => {
+  (metamodel: StoreTestData, context: ObserverContext): StoreTestData => {
     makeObservable(metamodel, {
       store: observable,
       data: observable,
@@ -157,10 +165,11 @@ export const observe_MappingStoreTestData = skipObservedWithContext(
   },
 );
 
-export const observe_MappingTest = skipObserved(
-  (metamodel: MappingTest): MappingTest => {
+const observe_MappingQueryTest = skipObserved(
+  (metamodel: MappingQueryTest): MappingQueryTest => {
     makeObservable(metamodel, {
       id: observable,
+      doc: observable,
       query: observable,
       assertions: observable,
       hashCode: computed,
@@ -172,17 +181,49 @@ export const observe_MappingTest = skipObserved(
   },
 );
 
-export const observe_MappingTestSuite = skipObservedWithContext(
-  (metamodel: MappingTestSuite, context: ObserverContext): MappingTestSuite => {
+const observe_MappingDataTest = skipObservedWithContext(
+  (metamodel: MappingDataTest, context: ObserverContext): MappingDataTest => {
+    makeObservable(metamodel, {
+      id: observable,
+      assertions: observable,
+      doc: observable,
+      storeTestData: observable,
+      hashCode: computed,
+    });
+    metamodel.assertions.forEach(observe_TestAssertion);
+    metamodel.storeTestData.forEach((testData) =>
+      observe_MappingStoreTestData(testData, context),
+    );
+    return metamodel;
+  },
+);
+
+export const observe_MappingTest = (
+  metamodel: MappingTest,
+  context: ObserverContext,
+): MappingTest => {
+  if (metamodel instanceof MappingQueryTest) {
+    return observe_MappingQueryTest(metamodel);
+  } else if (metamodel instanceof MappingDataTest) {
+    return observe_MappingDataTest(metamodel, context);
+  }
+  throw new UnsupportedOperationError();
+};
+
+export const observe_MappingDataTestSuite = skipObservedWithContext(
+  (
+    metamodel: MappingDataTestSuite,
+    context: ObserverContext,
+  ): MappingDataTestSuite => {
     makeObservable(metamodel, {
       id: observable,
       tests: observable,
-      mappingStoreTestDatas: observable,
+      storeTestData: observable,
       hashCode: computed,
     });
 
     metamodel.tests.forEach((test) => observe_AtomicTest(test, context));
-    metamodel.mappingStoreTestDatas.forEach((testData) =>
+    metamodel.storeTestData.forEach((testData) =>
       observe_MappingStoreTestData(testData, context),
     );
 
@@ -190,6 +231,35 @@ export const observe_MappingTestSuite = skipObservedWithContext(
   },
 );
 
+export const observe_MappingQueryTestSuite = skipObservedWithContext(
+  (
+    metamodel: MappingQueryTestSuite,
+    context: ObserverContext,
+  ): MappingQueryTestSuite => {
+    makeObservable(metamodel, {
+      id: observable,
+      tests: observable,
+      query: observable,
+      hashCode: computed,
+    });
+
+    metamodel.tests.forEach((test) => observe_AtomicTest(test, context));
+    observe_RawLambda(metamodel.query);
+    return metamodel;
+  },
+);
+
+export const observe_MappingTestSuite = (
+  metamodel: MappingTestSuite,
+  context: ObserverContext,
+): MappingTestSuite => {
+  if (metamodel instanceof MappingDataTestSuite) {
+    return observe_MappingDataTestSuite(metamodel, context);
+  } else if (metamodel instanceof MappingQueryTestSuite) {
+    return observe_MappingQueryTestSuite(metamodel, context);
+  }
+  throw new UnsupportedOperationError('Unsupported test suite');
+};
 // ------------------------------------- Mapping -------------------------------------
 
 export const observe_EnumerationMappingReference = skipObserved(
@@ -701,7 +771,7 @@ export const observe_AssociationImplementation = skipObservedWithContext(
 );
 
 export const observe_ObjectInputData = skipObserved(
-  (metamodel: ObjectInputData): ObjectInputData => {
+  (metamodel: DEPRECATED__ObjectInputData): DEPRECATED__ObjectInputData => {
     makeObservable(metamodel, {
       inputType: observable,
       data: observable,
@@ -715,14 +785,14 @@ export const observe_ObjectInputData = skipObserved(
 );
 
 export const observe_InputData = (
-  metamodel: InputData,
+  metamodel: DEPRECATED__InputData,
   context: ObserverContext,
-): InputData => {
-  if (metamodel instanceof ObjectInputData) {
+): DEPRECATED__InputData => {
+  if (metamodel instanceof DEPRECATED__ObjectInputData) {
     return observe_ObjectInputData(metamodel);
-  } else if (metamodel instanceof FlatDataInputData) {
+  } else if (metamodel instanceof DEPRECATED__FlatDataInputData) {
     return observe_FlatDataInputData(metamodel);
-  } else if (metamodel instanceof RelationalInputData) {
+  } else if (metamodel instanceof DEPRECATED__RelationalInputData) {
     return observe_RelationalInputData(metamodel);
   }
   const extraObservers = context.plugins.flatMap(
@@ -742,8 +812,8 @@ export const observe_InputData = (
 
 export const observe_ExpectedOutputMappingTestAssert = skipObserved(
   (
-    metamodel: ExpectedOutputMappingTestAssert,
-  ): ExpectedOutputMappingTestAssert =>
+    metamodel: DEPRECATED__ExpectedOutputMappingTestAssert,
+  ): DEPRECATED__ExpectedOutputMappingTestAssert =>
     makeObservable(metamodel, {
       expectedOutput: observable,
       hashCode: computed,
@@ -751,10 +821,10 @@ export const observe_ExpectedOutputMappingTestAssert = skipObserved(
 );
 
 export const observe_MappingTestAssert = (
-  metamodel: MappingTestAssert,
+  metamodel: DEPRECATED__MappingTestAssert,
   context: ObserverContext,
-): MappingTestAssert => {
-  if (metamodel instanceof ExpectedOutputMappingTestAssert) {
+): DEPRECATED__MappingTestAssert => {
+  if (metamodel instanceof DEPRECATED__ExpectedOutputMappingTestAssert) {
     return observe_ExpectedOutputMappingTestAssert(metamodel);
   }
   return metamodel;

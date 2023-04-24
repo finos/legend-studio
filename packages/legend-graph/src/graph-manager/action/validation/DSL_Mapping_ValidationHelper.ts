@@ -15,16 +15,16 @@
  */
 
 import { fromGrammarString, isValidJSONString } from '@finos/legend-shared';
-import { ExpectedOutputMappingTestAssert } from '../../../graph/metamodel/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert.js';
-import type { InputData } from '../../../graph/metamodel/pure/packageableElements/mapping/InputData.js';
-import type { DEPRECATED__MappingTest } from '../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
-import type { MappingTestAssert } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestAssert.js';
-import { FlatDataInputData } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
 import {
-  ObjectInputData,
+  type DEPRECATED__InputData,
+  type DEPRECATED__MappingTest,
+  type DEPRECATED__MappingTestAssert,
+  DEPRECATED__ObjectInputData,
   ObjectInputType,
-} from '../../../graph/metamodel/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
-import { RelationalInputData } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
+  DEPRECATED__FlatDataInputData,
+  DEPRECATED__ExpectedOutputMappingTestAssert,
+  DEPRECATED__RelationalInputData,
+} from '../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import { isStubbed_PackageableElement } from '../../../graph/helpers/creator/DomainModelCreatorHelper.js';
 import { isStubbed_RawLambda } from '../../../graph/helpers/creator/RawValueSpecificationCreatorHelper.js';
 import { DEPRECATED__validate_FlatDataInputData } from './STO_FlatData_ValidationHelper.js';
@@ -38,9 +38,9 @@ import {
  * @deprecated
  */
 export const DEPRECATED__validate_MappingTestAssert = (
-  metamodel: MappingTestAssert,
+  metamodel: DEPRECATED__MappingTestAssert,
 ): ValidationIssue | undefined => {
-  if (metamodel instanceof ExpectedOutputMappingTestAssert) {
+  if (metamodel instanceof DEPRECATED__ExpectedOutputMappingTestAssert) {
     return !isValidJSONString(fromGrammarString(metamodel.expectedOutput))
       ? createValidationError([
           'Mapping test expected output assertion data is not a valid JSON string',
@@ -55,7 +55,7 @@ export const DEPRECATED__validate_MappingTestAssert = (
  * @deprecated
  */
 export const DEPRECATED__validate_ObjectInputData = (
-  metamodel: ObjectInputData,
+  metamodel: DEPRECATED__ObjectInputData,
 ): ValidationIssue | undefined => {
   if (isStubbed_PackageableElement(metamodel.sourceClass.value)) {
     return createValidationError(['Object input data source class is missing']);
@@ -74,13 +74,13 @@ export const DEPRECATED__validate_ObjectInputData = (
  * @deprecated
  */
 export const DEPRECATED__validate_InputData = (
-  metamodel: InputData,
+  metamodel: DEPRECATED__InputData,
 ): ValidationIssue | undefined => {
-  if (metamodel instanceof ObjectInputData) {
+  if (metamodel instanceof DEPRECATED__ObjectInputData) {
     return DEPRECATED__validate_ObjectInputData(metamodel);
-  } else if (metamodel instanceof RelationalInputData) {
+  } else if (metamodel instanceof DEPRECATED__RelationalInputData) {
     return DEPRECATED__validation_RelationalInputData(metamodel);
-  } else if (metamodel instanceof FlatDataInputData) {
+  } else if (metamodel instanceof DEPRECATED__FlatDataInputData) {
     return DEPRECATED__validate_FlatDataInputData(metamodel);
   }
   // NOTE: technically we need to modularize these, but they are deprecated, so we will leave them alone for now

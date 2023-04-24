@@ -79,11 +79,18 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvironmentConfig[] =
     [];
 
+  /**
+   * Indicates whether we should render the new mapping testable editor or the deprecated legacy editor.
+   * This flag will be removed once the editor for testable editor is signed off.
+   */
+  TEMPORARY_enableMappingTestableEditor = false;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendStudioApplicationCoreOptions, {
       enableGraphBuilderStrictMode: optional(primitive()),
       projectCreationGroupIdSuggestion: optional(primitive()),
       TEMPORARY__preserveSectionIndex: optional(primitive()),
+      TEMPORARY_enableMappingTestableEditor: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),
       ),

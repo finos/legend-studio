@@ -17,12 +17,16 @@
 import {
   clsx,
   CompareIcon,
+  ContextMenu,
   Dialog,
+  MenuContent,
+  MenuContentItem,
   Modal,
   ModalBody,
   ModalFooter,
   ModalFooterButton,
   ModalHeader,
+  ModalTitle,
   PanelContent,
   PanelLoadingIndicator,
   RefreshIcon,
@@ -52,6 +56,58 @@ import {
   CodeEditor,
   JSONDiffView,
 } from '@finos/legend-lego/code-editor';
+import { forwardRef, useState } from 'react';
+import type { TestableTestEditorState } from '../../../../stores/editor/editor-state/element-editor-state/testable/TestableEditorState.js';
+import { getTestableResultIcon } from '../../side-bar/testable/GlobalTestRunner.js';
+
+export const RenameModal = observer(
+  (props: {
+    val: string;
+    isReadOnly: boolean;
+    setValue: (val: string) => void;
+    showModal: boolean;
+    closeModal: () => void;
+  }) => {
+    const { val, isReadOnly, showModal, closeModal, setValue } = props;
+    const [inputValue, setInputValue] = useState(val);
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      setInputValue(event.target.value);
+    };
+    return (
+      <Dialog
+        open={showModal}
+        onClose={closeModal}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            setValue(inputValue);
+            closeModal();
+          }}
+          className="modal modal--dark search-modal"
+        >
+          <ModalTitle title="Rename" />
+          <div>
+            <input
+              className="panel__content__form__section__input"
+              spellCheck={false}
+              disabled={isReadOnly}
+              value={inputValue}
+              onChange={changeValue}
+            />
+          </div>
+          <div className="search-modal__actions">
+            <button className="btn btn--dark" disabled={isReadOnly}>
+              Rename
+            </button>
+          </div>
+        </form>
+      </Dialog>
+    );
+  },
+);
 
 const EqualToJsonAsssertionEditor = observer(
   (props: {
@@ -280,6 +336,91 @@ const TestAssertionResultViewer = observer(
           <div></div>
         </PanelContent>
       </>
+    );
+  },
+);
+
+export const TestAssertionContextMenu = observer(
+  forwardRef<
+    HTMLDivElement,
+    {
+      testableTestState: TestableTestEditorState;
+      testAssertionState: TestAssertionEditorState;
+    }
+  >(function TestContainerContextMenu(props, ref) {
+    const { testableTestState: testableTestState, testAssertionState } = props;
+    const rename = (): void =>
+      testableTestState.setAssertionToRename(testAssertionState.assertion);
+    const remove = (): void =>
+      testableTestState.deleteAssertion(testAssertionState);
+    const add = (): void => testableTestState.addAssertion();
+    return (
+      <MenuContent ref={ref}>
+        <MenuContentItem onClick={rename}>Rename</MenuContentItem>
+        <MenuContentItem onClick={remove}>Delete</MenuContentItem>
+        <MenuContentItem onClick={add}>Create a new assert</MenuContentItem>
+      </MenuContent>
+    );
+  }),
+);
+
+export const TestAssertionItem = observer(
+  (props: {
+    testAssertionEditorState: TestAssertionEditorState;
+    testableTestState: TestableTestEditorState;
+    isReadOnly: boolean;
+  }) => {
+    const { testAssertionEditorState, isReadOnly, testableTestState } = props;
+    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+      useState(false);
+    const isRunning = testableTestState.runningTestAction.isInProgress;
+    const testAssertion = testAssertionEditorState.assertion;
+    const isActive =
+      testableTestState.selectedAsertionState?.assertion === testAssertion;
+    const _testableResult =
+      testAssertionEditorState.assertionResultState.result;
+    const testableResult = isRunning
+      ? TESTABLE_RESULT.IN_PROGRESS
+      : _testableResult;
+    const resultIcon = getTestableResultIcon(testableResult);
+    const openTestAssertion = (): void =>
+      testableTestState.openAssertion(testAssertion);
+    const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
+    const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
+    return (
+      <ContextMenu
+        className={clsx(
+          'testable-test-assertion-explorer__item',
+          {
+            'testable-test-assertion-explorer__item--selected-from-context-menu':
+              !isActive && isSelectedFromContextMenu,
+          },
+          { 'testable-test-assertion-explorer__item--active': isActive },
+        )}
+        disabled={isReadOnly}
+        content={
+          <TestAssertionContextMenu
+            testableTestState={testableTestState}
+            testAssertionState={testAssertionEditorState}
+          />
+        }
+        menuProps={{ elevation: 7 }}
+        onOpen={onContextMenuOpen}
+        onClose={onContextMenuClose}
+      >
+        <button
+          className={clsx('testable-test-assertion-explorer__item__label')}
+          onClick={openTestAssertion}
+          tabIndex={-1}
+        >
+          <div className="testable-test-assertion-explorer__item__label__icon testable-test-assertion-explorer__test-result-indicator__container">
+            {resultIcon}
+          </div>
+          <div className="testable-test-assertion-explorer__item__label__text">
+            {testAssertion.id}
+          </div>
+        </button>
+      </ContextMenu>
     );
   },
 );

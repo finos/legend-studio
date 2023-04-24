@@ -20,7 +20,6 @@ import {
   guaranteeNonNullable,
   assertTrue,
   assertType,
-  guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { fromElementPathToMappingElementId } from '../../../../../../../../graph/MetaModelUtils.js';
@@ -32,11 +31,14 @@ import {
   EnumValueMapping,
   SourceValue,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/EnumValueMapping.js';
-import { DEPRECATED__MappingTest } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
-import { ObjectInputData } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
-import type { InputData } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/InputData.js';
-import { FlatDataInputData } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
-import { ExpectedOutputMappingTestAssert } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert.js';
+import {
+  DEPRECATED__MappingTest,
+  type DEPRECATED__InputData,
+  DEPRECATED__ObjectInputData,
+  DEPRECATED__ExpectedOutputMappingTestAssert,
+  DEPRECATED__FlatDataInputData,
+  DEPRECATED__RelationalInputData,
+} from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import type { Class } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import { InferableMappingElementIdImplicitValue } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/InferableMappingElementId.js';
 import {
@@ -54,16 +56,17 @@ import {
   V1_getEnumValueMappingSourceValueType,
 } from '../../../../model/packageableElements/mapping/V1_EnumValueMapping.js';
 import type { V1_EnumerationMapping } from '../../../../model/packageableElements/mapping/V1_EnumerationMapping.js';
-import type { V1_DEPRECATED__MappingTest } from '../../../../model/packageableElements/mapping/V1_DEPRECATED__MappingTest.js';
-import { V1_ExpectedOutputMappingTestAssert } from '../../../../model/packageableElements/mapping/V1_ExpectedOutputMappingTestAssert.js';
-import type { V1_InputData } from '../../../../model/packageableElements/mapping/V1_InputData.js';
-import { V1_ObjectInputData } from '../../../../model/packageableElements/store/modelToModel/mapping/V1_ObjectInputData.js';
-import { V1_FlatDataInputData } from '../../../../model/packageableElements/store/flatData/mapping/V1_FlatDataInputData.js';
+import {
+  type V1_DEPRECATED__MappingTest,
+  type V1_DEPRECATED__InputData,
+  V1_DEPRECATED__ObjectInputData,
+  V1_DEPRECATED__FlatDataInputData,
+  V1_DEPRECATED__ExpectedOutputMappingTestAssert,
+  V1_DEPRECATED__RelationalInputData,
+} from '../../../../model/packageableElements/mapping/V1_DEPRECATED__MappingTest.js';
 import type { V1_ClassMapping } from '../../../../model/packageableElements/mapping/V1_ClassMapping.js';
 import type { V1_MappingInclude } from '../../../../model/packageableElements/mapping/V1_MappingInclude.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
-import { V1_RelationalInputData } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData.js';
-import { RelationalInputData } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
 import {
   getAllClassMappings,
   getObjectInputType,
@@ -71,14 +74,30 @@ import {
 import { getRelationalInputType } from '../../../../../../../../graph/helpers/STO_Relational_Helper.js';
 import { getEnumValue } from '../../../../../../../../graph/helpers/DomainHelper.js';
 import { PrimitiveType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
-import type { V1_MappingTestSuite } from '../../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
-import { MappingTestSuite } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
-import { V1_MappingTest } from '../../../../model/packageableElements/mapping/V1_MappingTest.js';
+import {
+  V1_MappingDataTestSuite,
+  V1_MappingQueryTestSuite,
+  type V1_MappingTestSuite,
+} from '../../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
+import {
+  MappingDataTestSuite,
+  MappingQueryTestSuite,
+  type MappingTestSuite,
+} from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
+import {
+  V1_MappingDataTest,
+  V1_MappingQueryTest,
+  type V1_MappingTest,
+} from '../../../../model/packageableElements/mapping/V1_MappingTest.js';
 import type { TestSuite } from '../../../../../../../../graph/metamodel/pure/test/Test.js';
-import { MappingTest } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
+import {
+  MappingDataTest,
+  MappingQueryTest,
+  type MappingTest,
+} from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
 import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
 import type { V1_MappingStoreTestData } from '../../../../model/packageableElements/mapping/V1_MappingStoreTestData.js';
-import { MappingStoreTestData } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
+import { StoreTestData } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
 import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
 import { ModelStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/model/ModelStore.js';
 
@@ -212,8 +231,8 @@ export const V1_buildMappingInclude = (
 const buildMappingStoreTestData = (
   element: V1_MappingStoreTestData,
   context: V1_GraphBuilderContext,
-): MappingStoreTestData => {
-  const mappingStoreTestData = new MappingStoreTestData();
+): StoreTestData => {
+  const mappingStoreTestData = new StoreTestData();
   if (element.store === ModelStore.NAME) {
     mappingStoreTestData.store = PackageableElementExplicitReference.create(
       ModelStore.INSTANCE,
@@ -225,13 +244,14 @@ const buildMappingStoreTestData = (
   return mappingStoreTestData;
 };
 
-export const V1_buildMappingTest = (
-  element: V1_MappingTest,
+export const V1_buildMappingQueryTest = (
+  element: V1_MappingQueryTest,
   parentSuite: TestSuite,
   context: V1_GraphBuilderContext,
-): MappingTest => {
-  const mappingTest = new MappingTest();
+): MappingQueryTest => {
+  const mappingTest = new MappingQueryTest();
   mappingTest.id = element.id;
+  mappingTest.doc = element.doc;
   mappingTest.__parent = parentSuite;
   mappingTest.assertions = element.assertions.map((assertion) =>
     V1_buildTestAssertion(assertion, mappingTest, context),
@@ -244,30 +264,88 @@ export const V1_buildMappingTest = (
   return mappingTest;
 };
 
-export const V1_buildMappingTestSuite = (
-  element: V1_MappingTestSuite,
+export const V1_buildMappingDataTest = (
+  element: V1_MappingDataTest,
+  parentSuite: TestSuite,
   context: V1_GraphBuilderContext,
-): MappingTestSuite => {
-  const mappingTestSuite = new MappingTestSuite();
+): MappingDataTest => {
+  const mappingTest = new MappingDataTest();
+  mappingTest.id = element.id;
+  mappingTest.__parent = parentSuite;
+  mappingTest.doc = element.doc;
+  mappingTest.assertions = element.assertions.map((assertion) =>
+    V1_buildTestAssertion(assertion, mappingTest, context),
+  );
+  mappingTest.storeTestData = element.storeTestData.map((testData) =>
+    buildMappingStoreTestData(testData, context),
+  );
+  return mappingTest;
+};
+
+export const V1_buildMappingTest = (
+  element: V1_MappingTest,
+  parentSuite: TestSuite,
+  context: V1_GraphBuilderContext,
+): MappingTest => {
+  if (element instanceof V1_MappingDataTest) {
+    return V1_buildMappingDataTest(element, parentSuite, context);
+  } else if (element instanceof V1_MappingQueryTest) {
+    return V1_buildMappingQueryTest(element, parentSuite, context);
+  }
+  throw new UnsupportedOperationError(
+    'Unable to build mapping test: Unsupported mapping test type',
+  );
+};
+
+const V1_buildMappingDataTestSuite = (
+  element: V1_MappingDataTestSuite,
+  context: V1_GraphBuilderContext,
+): MappingDataTestSuite => {
+  const mappingTestSuite = new MappingDataTestSuite();
   mappingTestSuite.id = element.id;
-  mappingTestSuite.mappingStoreTestDatas = element.mappingStoreTestDatas.map(
-    (testData) => buildMappingStoreTestData(testData, context),
+  mappingTestSuite.storeTestData = element.storeTestData.map((testData) =>
+    buildMappingStoreTestData(testData, context),
   );
   mappingTestSuite.tests = element.tests.map((test) =>
-    V1_buildMappingTest(
-      guaranteeType(test, V1_MappingTest),
-      mappingTestSuite,
-      context,
-    ),
+    V1_buildMappingTest(test, mappingTestSuite, context),
   );
   return mappingTestSuite;
 };
 
-const V1_buildMappingTestInputData = (
-  inputData: V1_InputData,
+const V1_buildMappingQueryTestSuite = (
+  element: V1_MappingQueryTestSuite,
   context: V1_GraphBuilderContext,
-): InputData => {
-  if (inputData instanceof V1_ObjectInputData) {
+): MappingQueryTestSuite => {
+  const mappingTestSuite = new MappingQueryTestSuite();
+  mappingTestSuite.id = element.id;
+  mappingTestSuite.query = V1_buildRawLambdaWithResolvedPaths(
+    element.query.parameters,
+    element.query.body,
+    context,
+  );
+  mappingTestSuite.tests = element.tests.map((test) =>
+    V1_buildMappingTest(test, mappingTestSuite, context),
+  );
+  return mappingTestSuite;
+};
+
+export const V1_buildMappingTestSuite = (
+  element: V1_MappingTestSuite,
+  context: V1_GraphBuilderContext,
+): MappingTestSuite => {
+  if (element instanceof V1_MappingDataTestSuite) {
+    return V1_buildMappingDataTestSuite(element, context);
+  } else if (element instanceof V1_MappingQueryTestSuite) {
+    return V1_buildMappingQueryTestSuite(element, context);
+  }
+  throw new UnsupportedOperationError('Unsupported mapping test suite type');
+};
+
+const V1_buildMappingTestInputData = (
+  inputData: V1_DEPRECATED__InputData,
+  context: V1_GraphBuilderContext,
+): DEPRECATED__InputData => {
+  if (inputData instanceof V1_DEPRECATED__ObjectInputData) {
     assertNonNullable(
       inputData.sourceClass,
       `Object input data 'sourceClass' field is missing`,
@@ -280,12 +358,12 @@ const V1_buildMappingTestInputData = (
       inputData.data,
       `Object input data 'data' field is missing`,
     );
-    return new ObjectInputData(
+    return new DEPRECATED__ObjectInputData(
       context.resolveClass(inputData.sourceClass),
       getObjectInputType(inputData.inputType),
       inputData.data,
     );
-  } else if (inputData instanceof V1_FlatDataInputData) {
+  } else if (inputData instanceof V1_DEPRECATED__FlatDataInputData) {
     assertNonNullable(
       inputData.sourceFlatData,
       `Flat-data input data 'sourceFlatData' field is missing`,
@@ -294,11 +372,11 @@ const V1_buildMappingTestInputData = (
       inputData.data,
       `Flat-data input data 'data' field is missing`,
     );
-    return new FlatDataInputData(
+    return new DEPRECATED__FlatDataInputData(
       context.resolveFlatDataStore(inputData.sourceFlatData.path),
       inputData.data,
     );
-  } else if (inputData instanceof V1_RelationalInputData) {
+  } else if (inputData instanceof V1_DEPRECATED__RelationalInputData) {
     assertNonNullable(
       inputData.database,
       `Relational input data 'database' field is missing`,
@@ -311,7 +389,7 @@ const V1_buildMappingTestInputData = (
       inputData.data,
       `Relational input data 'data' field is missing`,
     );
-    return new RelationalInputData(
+    return new DEPRECATED__RelationalInputData(
       context.resolveDatabase(inputData.database),
       inputData.data,
       getRelationalInputType(inputData.inputType),
@@ -340,10 +418,10 @@ export const V1_buildMappingTestLegacy = (
   // TODO: fix this when we support another mapping test type
   assertType(
     mappingTest.assert,
-    V1_ExpectedOutputMappingTestAssert,
+    V1_DEPRECATED__ExpectedOutputMappingTestAssert,
     `Can't build mapping test assert of type '${mappingTest.assert}'`,
   );
-  const modelAssert = new ExpectedOutputMappingTestAssert(
+  const modelAssert = new DEPRECATED__ExpectedOutputMappingTestAssert(
     mappingTest.assert.expectedOutput,
   );
   const inputData = mappingTest.inputData.map((input) =>

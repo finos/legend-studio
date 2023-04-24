@@ -286,6 +286,7 @@ export const ArrowsJoinIcon = TB.TbArrowsJoin2;
 export const ArrowsSplitIcon = TB.TbArrowsSplit2;
 export const FunctionIcon = TB.TbMathFunction;
 export const RepoIcon = TB.TbBook;
+export const OffIcon = TB.TbCircleOff;
 
 const HI = ReactIcons.HI;
 export const CodeIcon = HI.HiCode;

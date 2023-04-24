@@ -24,7 +24,7 @@ import {
   MappingTestFlatDataInputDataState,
   MappingTestExpectedOutputAssertionState,
   MappingTestRelationalInputDataState,
-} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTestState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/DEPRECATED__MappingTestState.js';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -349,7 +349,7 @@ const MappingTestQueryEditor = observer(
   },
 );
 
-export const MappingTestObjectInputDataBuilder = observer(
+export const DEPRECATED__MappingTestObjectInputDataBuilder = observer(
   (props: {
     inputDataState: MappingTestObjectInputDataState;
     isReadOnly: boolean;
@@ -374,7 +374,7 @@ export const MappingTestObjectInputDataBuilder = observer(
   },
 );
 
-export const MappingTestFlatDataInputDataBuilder = observer(
+export const DEPRECATED__MappingTestFlatDataInputDataBuilder = observer(
   (props: {
     inputDataState: MappingTestFlatDataInputDataState;
     isReadOnly: boolean;
@@ -401,7 +401,7 @@ export const MappingTestFlatDataInputDataBuilder = observer(
 /**
  * Right now, we always default this to use Local H2 connection.
  */
-export const MappingTestRelationalInputDataBuilder = observer(
+export const DEPRECATED__MappingTestRelationalInputDataBuilder = observer(
   (props: {
     inputDataState: MappingTestRelationalInputDataState;
     isReadOnly: boolean;
@@ -469,7 +469,7 @@ const RelationalMappingTestInputDataTypeSelector = observer(
   },
 );
 
-export const MappingTestInputDataBuilder = observer(
+export const DEPRECATED__MappingTestInputDataBuilder = observer(
   (props: { testState: DEPRECATED__MappingTestState; isReadOnly: boolean }) => {
     const { testState, isReadOnly } = props;
     const inputDataState = testState.inputDataState;
@@ -504,21 +504,21 @@ export const MappingTestInputDataBuilder = observer(
     let inputDataBuilder: React.ReactNode;
     if (inputDataState instanceof MappingTestObjectInputDataState) {
       inputDataBuilder = (
-        <MappingTestObjectInputDataBuilder
+        <DEPRECATED__MappingTestObjectInputDataBuilder
           inputDataState={inputDataState}
           isReadOnly={isReadOnly}
         />
       );
     } else if (inputDataState instanceof MappingTestFlatDataInputDataState) {
       inputDataBuilder = (
-        <MappingTestFlatDataInputDataBuilder
+        <DEPRECATED__MappingTestFlatDataInputDataBuilder
           inputDataState={inputDataState}
           isReadOnly={isReadOnly}
         />
       );
     } else if (inputDataState instanceof MappingTestRelationalInputDataState) {
       inputDataBuilder = (
-        <MappingTestRelationalInputDataBuilder
+        <DEPRECATED__MappingTestRelationalInputDataBuilder
           inputDataState={inputDataState}
           isReadOnly={isReadOnly}
         />
@@ -573,7 +573,7 @@ export const MappingTestInputDataBuilder = observer(
   },
 );
 
-export const MappingTestExpectedOutputAssertionBuilder = observer(
+export const DEPRECATED__MappingTestExpectedOutputAssertionBuilder = observer(
   (props: {
     testState: DEPRECATED__MappingTestState;
     assertionState: MappingTestExpectedOutputAssertionState;
@@ -652,14 +652,14 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
   },
 );
 
-export const MappingTestAssertionBuilder = observer(
+export const DEPRECATED__MappingTestAssertionBuilder = observer(
   (props: { testState: DEPRECATED__MappingTestState; isReadOnly: boolean }) => {
     const { testState, isReadOnly } = props;
     const assertionState = testState.assertionState;
 
     if (assertionState instanceof MappingTestExpectedOutputAssertionState) {
       return (
-        <MappingTestExpectedOutputAssertionBuilder
+        <DEPRECATED__MappingTestExpectedOutputAssertionBuilder
           testState={testState}
           assertionState={assertionState}
           isReadOnly={isReadOnly}
@@ -670,7 +670,7 @@ export const MappingTestAssertionBuilder = observer(
   },
 );
 
-export const MappingTestBuilder = observer(
+export const DEPRECATED__MappingTestBuilder = observer(
   (props: { testState: DEPRECATED__MappingTestState; isReadOnly: boolean }) => {
     const { testState, isReadOnly } = props;
     const applicationStore = useApplicationStore();
@@ -699,7 +699,7 @@ export const MappingTestBuilder = observer(
           </ResizablePanelSplitter>
           <ResizablePanel size={250} minSize={28}>
             {/* use UUID key to make sure these components refresh when we change the state */}
-            <MappingTestInputDataBuilder
+            <DEPRECATED__MappingTestInputDataBuilder
               key={testState.inputDataState.uuid}
               testState={testState}
               isReadOnly={isReadOnly}
@@ -709,7 +709,7 @@ export const MappingTestBuilder = observer(
             <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
           </ResizablePanelSplitter>
           <ResizablePanel minSize={28}>
-            <MappingTestAssertionBuilder
+            <DEPRECATED__MappingTestAssertionBuilder
               key={testState.assertionState.uuid}
               testState={testState}
               isReadOnly={isReadOnly}
@@ -721,7 +721,7 @@ export const MappingTestBuilder = observer(
   },
 );
 
-export const MappingTestEditor = observer(
+export const DEPRECATED__MappingTestEditor = observer(
   (props: { testState: DEPRECATED__MappingTestState; isReadOnly: boolean }) => {
     const { testState, isReadOnly } = props;
     const applicationStore = useApplicationStore();
@@ -852,7 +852,10 @@ export const MappingTestEditor = observer(
         </div>
         <div className="mapping-test-editor__content">
           {selectedTab === MAPPING_TEST_EDITOR_TAB_TYPE.SETUP && (
-            <MappingTestBuilder testState={testState} isReadOnly={isReadOnly} />
+            <DEPRECATED__MappingTestBuilder
+              testState={testState}
+              isReadOnly={isReadOnly}
+            />
           )}
           {selectedTab === MAPPING_TEST_EDITOR_TAB_TYPE.RESULT && (
             <div className="mapping-test-editor__result">

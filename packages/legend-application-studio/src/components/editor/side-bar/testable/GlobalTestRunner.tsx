@@ -41,6 +41,7 @@ import {
   ModalFooterButton,
   Panel,
   PanelHeader,
+  OffIcon,
 } from '@finos/legend-art';
 import {
   AssertFail,
@@ -120,6 +121,15 @@ export const getTestableResultIcon = (
           className="global-test-runner__item__link__content__status__indicator global-test-runner__item__link__content__status__indicator--failed"
         >
           <WarningIcon />
+        </div>
+      );
+    case TESTABLE_RESULT.NO_TESTS:
+      return (
+        <div
+          title="No Tests to Run"
+          className="global-test-runner__item__link__content__status__indicator global-test-runner__item__link__content__status__indicator--unknown"
+        >
+          <OffIcon />
         </div>
       );
     default:

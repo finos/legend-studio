@@ -20,7 +20,6 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { RelationalInputType } from '../metamodel/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
 import { Column } from '../metamodel/pure/packageableElements/store/relational/model/Column.js';
 import { Database } from '../metamodel/pure/packageableElements/store/relational/model/Database.js';
 import type { Filter } from '../metamodel/pure/packageableElements/store/relational/model/Filter.js';
@@ -32,6 +31,7 @@ import {
 import type { Schema } from '../metamodel/pure/packageableElements/store/relational/model/Schema.js';
 import type { Table } from '../metamodel/pure/packageableElements/store/relational/model/Table.js';
 import type { View } from '../metamodel/pure/packageableElements/store/relational/model/View.js';
+import { RelationalInputType } from '../metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 
 const collectIncludedDatabases = (
   results: Set<Database>,

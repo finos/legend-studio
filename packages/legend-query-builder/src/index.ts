@@ -52,6 +52,8 @@ export * from './components/QuerySetupUtils.js';
 export * from './components/QueryBuilderTextEditor.js';
 
 export { QueryBuilderTextEditorMode } from './stores/QueryBuilderTextEditorState.js';
+export { buildSerialzieFunctionWithGraphFetch } from './stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeValueSpecificationBuilder.js';
+export { buildGetAllFunction } from './stores/QueryBuilderValueSpecificationBuilder.js';
 
 // ------------------------------------------- Shared components -------------------------------------------
 

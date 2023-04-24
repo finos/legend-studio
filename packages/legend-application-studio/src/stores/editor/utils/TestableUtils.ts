@@ -28,6 +28,7 @@ import {
   type IdentifiedConnection,
   type TestAssertion,
   type AtomicTest,
+  type Class,
   ExternalFormatData,
   RelationalCSVData,
   ConnectionTestData,
@@ -45,6 +46,7 @@ import {
   isNonNullable,
   returnUndefOnError,
   UnsupportedOperationError,
+  uuid,
 } from '@finos/legend-shared';
 import { EmbeddedDataType } from '../editor-state/ExternalFormatState.js';
 import type { EditorStore } from '../EditorStore.js';
@@ -52,11 +54,22 @@ import { createMockDataForMappingElementSource } from './MockDataUtils.js';
 
 export const createBareExternalFormat = (
   contentType?: string | undefined,
+  content?: string | undefined,
 ): ExternalFormatData => {
   const data = new ExternalFormatData();
   data.contentType = contentType ?? ContentType.APPLICATION_JSON;
-  data.data = '';
+  data.data = content ?? '';
   return data;
+};
+
+export const createDefaultEqualToJSONTestAssertion = (
+  id?: string | undefined,
+): EqualToJson => {
+  const xt = createBareExternalFormat(undefined, '{}');
+  const assertion = new EqualToJson();
+  assertion.expected = xt;
+  assertion.id = id ?? uuid();
+  return assertion;
 };
 
 export const getAllIdentifiedConnectionsFromRuntime = (
@@ -73,6 +86,16 @@ export const getAllIdentifiedConnectionsFromRuntime = (
       e.connections.map((connection) => connection.storeConnections),
     )
     .flat();
+};
+
+export const createEmbeddedDataFromClass = (
+  _class: Class,
+  editorStore: EditorStore,
+): ExternalFormatData => {
+  const _json = createMockDataForMappingElementSource(_class, editorStore);
+  const data = createBareExternalFormat();
+  data.data = _json;
+  return data;
 };
 
 // NOTE: this will all move to `engine` once engine support generating test data for all connections
@@ -97,14 +120,10 @@ export class TEMPORARY__EmbeddedDataConnectionVisitor
     throw new UnsupportedOperationError();
   }
   visit_JsonModelConnection(connection: JsonModelConnection): EmbeddedData {
-    const _class = connection.class.value;
-    const _json = createMockDataForMappingElementSource(
-      _class,
+    return createEmbeddedDataFromClass(
+      connection.class.value,
       this.editorStore,
     );
-    const data = createBareExternalFormat();
-    data.data = _json;
-    return data;
   }
   visit_XmlModelConnection(connection: XmlModelConnection): EmbeddedData {
     throw new UnsupportedOperationError();
