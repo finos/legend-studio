@@ -673,7 +673,6 @@ export const CreateProjectModal = observer(() => {
           >
             Create New Project
             <DocumentationLink
-              className="workspace-setup__create-project-modal__header__tab__doc"
               documentationKey={LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_PROJECT}
             />
           </button>
@@ -689,7 +688,6 @@ export const CreateProjectModal = observer(() => {
           >
             Import Project
             <DocumentationLink
-              className="workspace-setup__create-project-modal__header__tab__doc"
               documentationKey={LEGEND_STUDIO_DOCUMENTATION_KEY.IMPORT_PROJECT}
             />
           </button>

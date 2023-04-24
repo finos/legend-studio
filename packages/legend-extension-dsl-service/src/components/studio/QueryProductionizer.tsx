@@ -372,7 +372,6 @@ const QueryProductionizerContent = observer(() => {
             <div className="query-productionizer__title">
               Productionize Query
               <DocumentationLink
-                className="query-productionizer__title__documentation"
                 documentationKey={
                   DSL_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_PRODUCTIONIZE_QUERY
                 }

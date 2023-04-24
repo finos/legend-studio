@@ -21,6 +21,10 @@
   align-self: center;
   color: var(--color-dark-grey-500);
   cursor: pointer;
+
+  &--inline {
+    margin-left: 0.5rem;
+  }
 }
 
 .documentation-preview {

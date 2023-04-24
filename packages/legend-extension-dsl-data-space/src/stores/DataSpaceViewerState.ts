@@ -198,7 +198,7 @@ class DataSpaceLayoutState {
           // See https://developer.mozilla.org/en-US/docs/Web/API/Document/scrollend_event
           if (
             // if current navigation zone is not set, do not update zone
-            this.currentNavigationZone === undefined ||
+            this.currentNavigationZone === '' ||
             // if there is no visible anchors, do not update zone
             !this.wikiPageVisibleAnchors.length ||
             // if some of the current visible anchors match or is parent section of the current

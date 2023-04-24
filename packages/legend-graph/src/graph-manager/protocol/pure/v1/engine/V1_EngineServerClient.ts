@@ -63,6 +63,7 @@ import type {
   V1_SurveyDatasetsResult,
 } from './analytics/V1_StoreEntitlementAnalysis.js';
 import type { V1_RunTestsResult } from './test/V1_RunTestsResult.js';
+import type { V1_TEMPORARY__SnowflakeServiceDeploymentInput } from './service/V1_TEMPORARY__SnowflakeServiceDeploymentInput.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -120,13 +121,19 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // getting the user from the main engine server, which seems problematic.
   private queryBaseUrl?: string | undefined;
 
+  // NOTE: this is temporary solution to allow us test out the Snowflake service deployment flow
+  private TEMPORARY__snowflakeServiceDeploymentUrl?: string | undefined;
+
   constructor(
     config: ServerClientConfig & {
       queryBaseUrl?: string | undefined;
+      TEMPORARY__snowflakeServiceDeploymentUrl?: string | undefined;
     },
   ) {
     super(config);
     this.queryBaseUrl = config.queryBaseUrl;
+    this.TEMPORARY__snowflakeServiceDeploymentUrl =
+      config.TEMPORARY__snowflakeServiceDeploymentUrl;
   }
 
   setEnv = (value: string | undefined): void => {
@@ -668,5 +675,16 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.deleteWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DELETE_QUERY),
       this._query(queryId),
+    );
+
+  // ------------------------------------------- Snowflake Service -------------------------------------------
+
+  TEMPORARY__deploySnowflakeService = (
+    input: PlainObject<V1_TEMPORARY__SnowflakeServiceDeploymentInput>,
+  ): Promise<PlainObject> =>
+    this.post(
+      `${this.TEMPORARY__snowflakeServiceDeploymentUrl ?? this.baseUrl}`,
+      input,
+      undefined,
     );
 }

@@ -220,7 +220,6 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                   <div className="workspace-setup__title__header">
                     Setup Workspace
                     <DocumentationLink
-                      className="workspace-setup__doc__setup-workspace"
                       documentationKey={
                         LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE
                       }

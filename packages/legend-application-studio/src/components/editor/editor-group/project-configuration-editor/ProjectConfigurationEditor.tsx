@@ -158,10 +158,8 @@ const ProjectStructureEditor = observer(
                   value={projectConfig.groupId}
                   onChange={changeGroupId}
                 />
-
                 {isGroupIdChanged && (
                   <DocumentationLink
-                    className="panel__content__form__section__list__item__edit project-configuration-editor__documentation-btn"
                     documentationKey={
                       LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
                     }
@@ -194,7 +192,6 @@ const ProjectStructureEditor = observer(
                 />
                 {isArtifactIdChanged && (
                   <DocumentationLink
-                    className="panel__content__form__section__list__item__edit project-configuration-editor__documentation-btn"
                     documentationKey={
                       LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
                     }
@@ -465,7 +462,6 @@ export const ProjectConfigurationEditor = observer(() => {
             <>
               Acknowledge and Proceed
               <DocumentationLink
-                className="panel__content__form__section__list__item__edit project-configuration-editor__documentation-btn"
                 documentationKey={
                   LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
                 }

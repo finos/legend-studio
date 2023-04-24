@@ -103,7 +103,17 @@ export interface LegendStudioApplicationConfigurationData
   extends LegendApplicationConfigurationData {
   sdlc: { url: string; baseHeaders?: RequestHeaders };
   depot: { url: string };
-  engine: { url: string; queryUrl?: string };
+  engine: {
+    url: string;
+    queryUrl?: string;
+    /**
+     * Provides the URL to deploy a Snowflake service.
+     *
+     * TODO: to be removed when we're done with the POC and potentially have own packageable element
+     * to house Snowflake service specification
+     */
+    TEMPORARY__snowflakeServiceDeploymentUrl?: string | undefined;
+  };
   query?: { url: string };
 }
 
@@ -112,6 +122,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
 
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
+  readonly TEMPORARY__snowflakeServiceDeploymentUrl?: string | undefined;
   readonly depotServerUrl: string;
   readonly sdlcServerUrl: string;
   readonly SDLCServerBaseHeaders?: RequestHeaders | undefined;
@@ -137,6 +148,12 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
       this.engineQueryServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.engine.queryUrl,
       );
+    }
+    if (input.configData.engine.TEMPORARY__snowflakeServiceDeploymentUrl) {
+      this.TEMPORARY__snowflakeServiceDeploymentUrl =
+        LegendApplicationConfig.resolveAbsoluteUrl(
+          input.configData.engine.TEMPORARY__snowflakeServiceDeploymentUrl,
+        );
     }
 
     // depot

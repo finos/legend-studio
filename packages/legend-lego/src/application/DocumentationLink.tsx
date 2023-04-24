@@ -22,10 +22,10 @@ import { clsx, QuestionCircleIcon } from '@finos/legend-art';
 
 export const DocumentationLink: React.FC<{
   documentationKey: string;
+  inline?: boolean | undefined;
   title?: string | undefined;
   className?: string | undefined;
-}> = (props) => {
-  const { documentationKey, title, className } = props;
+}> = ({ documentationKey, title, className, inline = true }) => {
   const applicationStore = useApplicationStore();
   const documentationEntry =
     applicationStore.documentationService.getDocEntry(documentationKey);
@@ -50,7 +50,9 @@ export const DocumentationLink: React.FC<{
     <div
       onClick={openDocLink}
       title={title ?? 'Click to see documentation'}
-      className={clsx('documentation-link', className)}
+      className={clsx('documentation-link', className, {
+        'documentation-link--inline': inline,
+      })}
     >
       <QuestionCircleIcon />
     </div>
