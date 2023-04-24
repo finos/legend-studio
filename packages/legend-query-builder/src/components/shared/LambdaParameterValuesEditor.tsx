@@ -119,15 +119,15 @@ export const LambdaParameterValuesEditor = observer(
             )}
             {submitAction && (
               <ModalFooterButton
-                inProgress={isSubmitAction}
-                inProgressText={`${submitAction.label}...`}
+                inProgressText={
+                  isSubmitAction ? `${submitAction.label}...` : undefined
+                }
                 onClick={submit}
                 text={submitAction.label}
               />
             )}
             <ModalFooterButton
-              inProgress={isClosingAction}
-              inProgressText={'Closing...'}
+              inProgressText={isClosingAction ? 'Closing...' : undefined}
               onClick={close}
               text="Close"
             />

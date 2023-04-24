@@ -17,7 +17,7 @@
 import { capitalize, prettyCONSTName, toTitleCase } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { forwardRef, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { CheckSquareIcon, SquareIcon } from '../icon/Icon.js';
 import { generateSimpleDIVComponent } from '../utils/ComponentCreatorUtils.js';
 
@@ -189,7 +189,7 @@ export const PanelFormValidatedTextField = forwardRef<
     placeholder?: string;
     isReadOnly?: boolean;
     className?: string | undefined;
-    errorMessageClassname?: string | undefined;
+    errorMessageClassName?: string | undefined;
     inputType?: string | undefined;
     darkMode?: boolean;
     fullWidth?: boolean;
@@ -200,7 +200,7 @@ export const PanelFormValidatedTextField = forwardRef<
     value,
     update,
     prompt,
-    errorMessageClassname,
+    errorMessageClassName,
     placeholder,
     validateInput,
     onValidationFailure,
@@ -210,26 +210,22 @@ export const PanelFormValidatedTextField = forwardRef<
     fullWidth,
     inputType,
   } = props;
-
-  const displayValue = value ?? '';
-
-  const [inputValue, setInputValue] = useState(displayValue);
+  const [inputValue, setInputValue] = useState(value ?? '');
+  const validationErrorMessage = validateInput(inputValue);
 
   const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-    const stringValue = event.target.value;
-    const updatedValue = stringValue ? stringValue : undefined;
-
-    setInputValue(updatedValue ?? '');
-
-    const validationErrorMessage = validateInput(updatedValue ?? '');
-    if (validationErrorMessage === undefined) {
-      update(updatedValue);
-    } else {
-      if (onValidationFailure !== undefined) {
-        onValidationFailure(validationErrorMessage);
-      }
-    }
+    setInputValue(event.target.value);
   };
+
+  useEffect(() => {
+    if (!validationErrorMessage) {
+      if (value !== inputValue) {
+        update(inputValue);
+      }
+    } else {
+      onValidationFailure?.(validationErrorMessage);
+    }
+  }, [value, inputValue, validationErrorMessage, onValidationFailure, update]);
 
   return (
     <PanelFormSection>
@@ -264,7 +260,7 @@ export const PanelFormValidatedTextField = forwardRef<
             className={clsx(
               'panel__content__form__section__input-group__error-message input-group__error-message',
               { 'input--small': !fullWidth },
-              errorMessageClassname,
+              errorMessageClassName,
             )}
           >
             {validateInput(inputValue)}
@@ -306,7 +302,7 @@ export const PanelFormTextField = forwardRef<
     inputType,
   } = props;
 
-  const displayValue = value ?? '';
+  const inputValue = value ?? '';
   const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     const stringValue = event.target.value;
     const updatedValue = stringValue ? stringValue : undefined;
@@ -334,7 +330,7 @@ export const PanelFormTextField = forwardRef<
           spellCheck={false}
           disabled={isReadOnly}
           placeholder={placeholder}
-          value={displayValue}
+          value={inputValue}
           onChange={changeValue}
         />
         {errorMessage && (

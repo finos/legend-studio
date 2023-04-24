@@ -204,7 +204,7 @@ const ServiceGeneralEditor = observer(() => {
           name="URL Pattern"
           isReadOnly={isReadOnly}
           className="service-editor__pattern__input"
-          errorMessageClassname="service-editor__pattern__input"
+          errorMessageClassName="service-editor__pattern__input"
           prompt={
             <>
               Specifies the URL pattern of the service (e.g. /myService/

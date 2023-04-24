@@ -229,7 +229,7 @@ const VariableExpressionEditor = observer(
             {isCreating && (
               <ModalFooterButton
                 text="Create"
-                inProgress={hasFailedValidation}
+                disabled={hasFailedValidation}
                 onClick={onAction}
               />
             )}

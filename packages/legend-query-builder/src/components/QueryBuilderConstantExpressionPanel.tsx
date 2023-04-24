@@ -91,7 +91,7 @@ const QueryBuilderConstantExpressionEditor = observer(
       constantInput: string,
     ): string | undefined => {
       const possibleMessage = !constantInput
-        ? `Constant Name can't be empty`
+        ? `Constant name can't be empty`
         : isValidIdentifier(constantInput) === false
         ? 'Constant name must be text with no spaces and not start with an uppercase letter or number'
         : allVariableNames.filter((e) => e === constantInput).length >
@@ -198,7 +198,7 @@ const QueryBuilderConstantExpressionEditor = observer(
             {isCreating && (
               <ModalFooterButton
                 text="Create"
-                inProgress={hasFailedValidation}
+                disabled={hasFailedValidation}
                 onClick={onAction}
               />
             )}
