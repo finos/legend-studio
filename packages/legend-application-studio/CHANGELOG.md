@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 24.1.0
+
+### Minor Changes
+
+- [#2149](https://github.com/finos/legend-studio/pull/2149) [`e050727dc`](https://github.com/finos/legend-studio/commit/e050727dc7a2ffb6f1676e780b8b7f72f86038b7) ([@horbe](https://github.com/horbe)) - Add support for `JSON` relational type.
+
 ## 24.0.5
 
 ## 24.0.4

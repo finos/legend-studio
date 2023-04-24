@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 28.1.0
+
+### Minor Changes
+
+- [#2119](https://github.com/finos/legend-studio/pull/2119) [`ca2cf42f1`](https://github.com/finos/legend-studio/commit/ca2cf42f1b09c4db5cf56116606ea2d9754803dc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add graph origin to `DependencyManager` to remove unnecessary graph transformation per engine call.
+
+- [#2149](https://github.com/finos/legend-studio/pull/2149) [`e050727dc`](https://github.com/finos/legend-studio/commit/e050727dc7a2ffb6f1676e780b8b7f72f86038b7) ([@horbe](https://github.com/horbe)) - Add support for `JSON` relational type.
+
 ## 28.0.3
 
 ## 28.0.2
