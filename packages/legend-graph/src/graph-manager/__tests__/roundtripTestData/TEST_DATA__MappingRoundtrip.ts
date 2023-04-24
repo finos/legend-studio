@@ -1806,3 +1806,494 @@ export const TEST_DATA__MappingTestSuiteRoundtrip = [
     classifierPath: 'meta::relational::metamodel::Database',
   },
 ];
+
+export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
+  {
+    path: 'domain::ComplexClassTypeOfPropertyBelongs',
+    content: {
+      _type: 'class',
+      name: 'ComplexClassTypeOfPropertyBelongs',
+      package: 'domain',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'complexProperty',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'domain::ComplicatedDemographics',
+    content: {
+      _type: 'class',
+      name: 'ComplicatedDemographics',
+      package: 'domain',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'fips',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'state',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'propertyBelongsinDemographicsAndNotComplexxClass',
+          type: 'domain::ComplexClassTypeOfPropertyBelongs',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'domain::COVIDData',
+    content: {
+      _type: 'class',
+      name: 'COVIDData',
+      package: 'domain',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'id',
+          type: 'Integer',
+        },
+        {
+          multiplicity: {
+            lowerBound: 0,
+            upperBound: 1,
+          },
+          name: 'fips',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 0,
+            upperBound: 1,
+          },
+          name: 'date',
+          type: 'StrictDate',
+        },
+        {
+          multiplicity: {
+            lowerBound: 0,
+            upperBound: 1,
+          },
+          name: 'caseType',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 0,
+            upperBound: 1,
+          },
+          name: 'cases',
+          type: 'Float',
+        },
+        {
+          multiplicity: {
+            lowerBound: 0,
+            upperBound: 1,
+          },
+          name: 'lastReportedFlag',
+          type: 'Boolean',
+        },
+        {
+          multiplicity: {
+            lowerBound: 0,
+            upperBound: 1,
+          },
+          name: 'demographicsPropertyInCovidData',
+          type: 'domain::ComplicatedDemographics',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'store::CovidDataStore',
+    content: {
+      _type: 'relational',
+      filters: [],
+      includedStores: [],
+      joins: [
+        {
+          name: 'CovidDataDemographicsJoin',
+          operation: {
+            _type: 'dynaFunc',
+            funcName: 'equal',
+            parameters: [
+              {
+                _type: 'column',
+                column: 'FIPS',
+                table: {
+                  _type: 'Table',
+                  database: 'store::CovidDataStore',
+                  mainTableDb: 'store::CovidDataStore',
+                  schema: 'default',
+                  table: 'DEMOGRAPHICS',
+                },
+                tableAlias: 'DEMOGRAPHICS',
+              },
+              {
+                _type: 'column',
+                column: 'FIPS',
+                table: {
+                  _type: 'Table',
+                  database: 'store::CovidDataStore',
+                  mainTableDb: 'store::CovidDataStore',
+                  schema: 'default',
+                  table: 'COVID_DATA',
+                },
+                tableAlias: 'COVID_DATA',
+              },
+            ],
+          },
+        },
+      ],
+      name: 'CovidDataStore',
+      package: 'store',
+      schemas: [
+        {
+          name: 'default',
+          tables: [
+            {
+              columns: [
+                {
+                  name: 'FIPS',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 200,
+                  },
+                },
+                {
+                  name: 'STATE',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 200,
+                  },
+                },
+              ],
+              name: 'DEMOGRAPHICS',
+              primaryKey: [],
+            },
+            {
+              columns: [
+                {
+                  name: 'ID',
+                  nullable: false,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'FIPS',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 200,
+                  },
+                },
+                {
+                  name: 'DATE',
+                  nullable: true,
+                  type: {
+                    _type: 'Date',
+                  },
+                },
+                {
+                  name: 'CASE_TYPE',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 200,
+                  },
+                },
+                {
+                  name: 'CASES',
+                  nullable: true,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'LAST_REPORTED_FLAG',
+                  nullable: true,
+                  type: {
+                    _type: 'Bit',
+                  },
+                },
+              ],
+              name: 'COVID_DATA',
+              primaryKey: ['ID'],
+            },
+            {
+              columns: [
+                {
+                  name: 'ID',
+                  nullable: false,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'NAME',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 200,
+                  },
+                },
+              ],
+              name: 'PERSON',
+              primaryKey: ['ID'],
+            },
+          ],
+          views: [],
+        },
+      ],
+    },
+    classifierPath: 'meta::relational::metamodel::Database',
+  },
+  {
+    path: 'mapping::CovidDataMapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'relational',
+          class: 'domain::COVIDData',
+          distinct: false,
+          mainTable: {
+            _type: 'Table',
+            database: 'store::CovidDataStore',
+            mainTableDb: 'store::CovidDataStore',
+            schema: 'default',
+            table: 'COVID_DATA',
+          },
+          primaryKey: [
+            {
+              _type: 'column',
+              column: 'ID',
+              table: {
+                _type: 'Table',
+                database: 'store::CovidDataStore',
+                mainTableDb: 'store::CovidDataStore',
+                schema: 'default',
+                table: 'COVID_DATA',
+              },
+              tableAlias: 'COVID_DATA',
+            },
+          ],
+          propertyMappings: [
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'domain::COVIDData',
+                property: 'id',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'ID',
+                table: {
+                  _type: 'Table',
+                  database: 'store::CovidDataStore',
+                  mainTableDb: 'store::CovidDataStore',
+                  schema: 'default',
+                  table: 'COVID_DATA',
+                },
+                tableAlias: 'COVID_DATA',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'domain::COVIDData',
+                property: 'fips',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'FIPS',
+                table: {
+                  _type: 'Table',
+                  database: 'store::CovidDataStore',
+                  mainTableDb: 'store::CovidDataStore',
+                  schema: 'default',
+                  table: 'COVID_DATA',
+                },
+                tableAlias: 'COVID_DATA',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'domain::COVIDData',
+                property: 'date',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'DATE',
+                table: {
+                  _type: 'Table',
+                  database: 'store::CovidDataStore',
+                  mainTableDb: 'store::CovidDataStore',
+                  schema: 'default',
+                  table: 'COVID_DATA',
+                },
+                tableAlias: 'COVID_DATA',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'domain::COVIDData',
+                property: 'caseType',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'CASE_TYPE',
+                table: {
+                  _type: 'Table',
+                  database: 'store::CovidDataStore',
+                  mainTableDb: 'store::CovidDataStore',
+                  schema: 'default',
+                  table: 'COVID_DATA',
+                },
+                tableAlias: 'COVID_DATA',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'domain::COVIDData',
+                property: 'cases',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'CASES',
+                table: {
+                  _type: 'Table',
+                  database: 'store::CovidDataStore',
+                  mainTableDb: 'store::CovidDataStore',
+                  schema: 'default',
+                  table: 'COVID_DATA',
+                },
+                tableAlias: 'COVID_DATA',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'domain::COVIDData',
+                property: 'lastReportedFlag',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'LAST_REPORTED_FLAG',
+                table: {
+                  _type: 'Table',
+                  database: 'store::CovidDataStore',
+                  mainTableDb: 'store::CovidDataStore',
+                  schema: 'default',
+                  table: 'COVID_DATA',
+                },
+                tableAlias: 'COVID_DATA',
+              },
+            },
+            {
+              _type: 'embeddedPropertyMapping',
+              classMapping: {
+                _type: 'embedded',
+                primaryKey: [],
+                propertyMappings: [
+                  {
+                    _type: 'otherwiseEmbeddedPropertyMapping',
+                    classMapping: {
+                      _type: 'embedded',
+                      primaryKey: [],
+                      propertyMappings: [
+                        {
+                          _type: 'relationalPropertyMapping',
+                          property: {
+                            property: 'complexProperty',
+                          },
+                          relationalOperation: {
+                            _type: 'column',
+                            column: 'FIPS',
+                            table: {
+                              _type: 'Table',
+                              database: 'store::CovidDataStore',
+                              mainTableDb: 'store::CovidDataStore',
+                              schema: 'default',
+                              table: 'COVID_DATA',
+                            },
+                            tableAlias: 'COVID_DATA',
+                          },
+                        },
+                      ],
+                      root: false,
+                    },
+                    property: {
+                      property:
+                        'propertyBelongsinDemographicsAndNotComplexxClass',
+                    },
+                    otherwisePropertyMapping: {
+                      _type: 'relationalPropertyMapping',
+                      property: {
+                        property:
+                          'propertyBelongsinDemographicsAndNotComplexxClass',
+                      },
+                      relationalOperation: {
+                        _type: 'elemtWithJoins',
+                        joins: [
+                          {
+                            db: 'store::CovidDataStore',
+                            name: 'CovidDataDemographicsJoin',
+                          },
+                        ],
+                      },
+                      target: 'domain_Demographics',
+                    },
+                  },
+                ],
+                root: false,
+              },
+              property: {
+                class: 'domain::COVIDData',
+                property: 'demographicsPropertyInCovidData',
+              },
+            },
+          ],
+          root: false,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'CovidDataMapping',
+      package: 'mapping',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+];

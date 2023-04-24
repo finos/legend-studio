@@ -68,6 +68,7 @@ import {
   TEST_DATA__MappingRoundtrip,
   TEST_DATA__LocalPropertyMapping,
   TEST_DATA__MappingTestSuiteRoundtrip,
+  TEST_DATA__MappingOtherwisePropertyRoundtrip,
 } from './roundtripTestData/TEST_DATA__MappingRoundtrip.js';
 import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip.js';
 import { TEST__checkBuildingElementsRoundtrip } from '../__test-utils__/GraphManagerTestUtils.js';
@@ -148,6 +149,14 @@ describe(unitTest('Mapping test suite roundtrip'), () => {
       await TEST__checkBuildingElementsRoundtrip(entities);
     },
   );
+});
+
+describe(unitTest('Mapping test suite with otherwise roundtrip'), () => {
+  test.each([
+    ['mapping test suite', TEST_DATA__MappingOtherwisePropertyRoundtrip],
+  ])('%s', async (testName, entities) => {
+    await TEST__checkBuildingElementsRoundtrip(entities);
+  });
 });
 
 describe(unitTest('Flat-data import resolution roundtrip'), () => {
