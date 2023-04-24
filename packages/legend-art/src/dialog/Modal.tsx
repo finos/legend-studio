@@ -113,7 +113,7 @@ export const ModalFooterButton: React.FC<{
       )}
       title={title}
       onClick={onClick}
-      disabled={Boolean(inProgressText) ?? disabled}
+      disabled={Boolean(inProgressText) || disabled}
     >
       {inProgressText ? prettyCONSTName(inProgressText) : prettyCONSTName(text)}
       {children}

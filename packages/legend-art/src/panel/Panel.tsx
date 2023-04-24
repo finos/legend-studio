@@ -181,10 +181,8 @@ export const PanelFormValidatedTextField = forwardRef<
     name?: string;
     value: string | undefined;
     update: (value: string | undefined) => void;
-    validateInput: (input: string) => string | undefined;
-    onValidationFailure?:
-      | ((validationIssue: string) => void | string | undefined)
-      | undefined;
+    validate?: ((input: string) => string | undefined) | undefined;
+    onValidate?: ((issue: string | undefined) => void) | undefined;
     prompt?: string | React.ReactNode;
     placeholder?: string;
     isReadOnly?: boolean;
@@ -202,8 +200,8 @@ export const PanelFormValidatedTextField = forwardRef<
     prompt,
     errorMessageClassName,
     placeholder,
-    validateInput,
-    onValidationFailure,
+    validate,
+    onValidate,
     isReadOnly,
     className,
     darkMode,
@@ -211,21 +209,18 @@ export const PanelFormValidatedTextField = forwardRef<
     inputType,
   } = props;
   const [inputValue, setInputValue] = useState(value ?? '');
-  const validationErrorMessage = validateInput(inputValue);
+  const validationErrorMessage = validate?.(inputValue) ?? undefined;
 
   const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     setInputValue(event.target.value);
   };
 
   useEffect(() => {
-    if (!validationErrorMessage) {
-      if (value !== inputValue) {
-        update(inputValue);
-      }
-    } else {
-      onValidationFailure?.(validationErrorMessage);
+    if (!validationErrorMessage && value !== inputValue) {
+      update(inputValue);
     }
-  }, [value, inputValue, validationErrorMessage, onValidationFailure, update]);
+    onValidate?.(validationErrorMessage);
+  }, [value, inputValue, validationErrorMessage, onValidate, update]);
 
   return (
     <PanelFormSection>
@@ -255,7 +250,7 @@ export const PanelFormValidatedTextField = forwardRef<
           value={inputValue}
           onChange={changeValue}
         />
-        {validateInput(inputValue) && (
+        {validationErrorMessage && (
           <div
             className={clsx(
               'panel__content__form__section__input-group__error-message input-group__error-message',
@@ -263,11 +258,10 @@ export const PanelFormValidatedTextField = forwardRef<
               errorMessageClassName,
             )}
           >
-            {validateInput(inputValue)}
+            {validationErrorMessage}
           </div>
         )}
       </div>
-      {validateInput(inputValue) !== undefined && <PanelDivider />}
     </PanelFormSection>
   );
 });

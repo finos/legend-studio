@@ -215,7 +215,7 @@ const ServiceGeneralEditor = observer(() => {
           update={(value: string | undefined): void => {
             updatePattern(value ?? '');
           }}
-          validateInput={getValidationMessage}
+          validate={getValidationMessage}
           value={pattern}
         />
       </PanelForm>
