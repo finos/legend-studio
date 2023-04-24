@@ -17,7 +17,13 @@
 import { useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { guaranteeType } from '@finos/legend-shared';
-import { Dialog, ModalTitle } from '@finos/legend-art';
+import {
+  Dialog,
+  ModalTitle,
+  PanelDivider,
+  PanelFormSection,
+  PanelFormValidatedTextField,
+} from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -49,20 +55,38 @@ export const NewServiceModal = observer(
       servicePath,
       mappingPackage.path,
     );
-    const elementAlreadyExists =
-      editorStore.graphManagerState.graph.allOwnElements
-        .map((s) => s.path)
-        .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
+
+    const [elementExists, setElementExists] = useState<boolean>(false);
+
     const handleEnter = (): void => nameRef.current?.focus();
     const create = (): void => {
-      if (servicePath && !isReadOnly && !elementAlreadyExists) {
+      if (servicePath && !isReadOnly && !elementExists) {
         promoteToService(packagePath, serviceName)
           .then(() => close())
           .catch(applicationStore.alertUnhandledError);
       }
     };
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      setServicePath(event.target.value);
+
+    const validateElementDoesNotAlreadyExist = (
+      newServiceName: string,
+    ): string | undefined => {
+      const elementAlreadyExists =
+        editorStore.graphManagerState.graph.allOwnElements
+          .map((s) => s.path)
+          .includes(packagePath + ELEMENT_PATH_DELIMITER + newServiceName);
+
+      if (!elementAlreadyExists) {
+        return undefined;
+      } else {
+        setElementExists(true);
+        return 'Element with same path already exists';
+      }
+    };
+
+    const changeValue = (value: string): void => {
+      setServicePath(value);
+    };
+
     return (
       <Dialog
         open={showModal}
@@ -84,31 +108,28 @@ export const NewServiceModal = observer(
           className="modal search-modal modal--dark"
         >
           <ModalTitle title="Promote to Service" />
-          <div className="input-group">
-            <input
-              ref={nameRef}
-              className="input input--dark input-group__input"
-              disabled={isReadOnly}
-              value={servicePath}
-              spellCheck={false}
-              onChange={changeValue}
-              placeholder={`Enter a name, use ${ELEMENT_PATH_DELIMITER} to create new package(s) for the service`}
-            />
-            {elementAlreadyExists && (
-              <div className="input-group__error-message">
-                Element with same path already exists
-              </div>
-            )}
-          </div>
-          <div className="search-modal__actions">
-            <button
-              className="btn btn--dark"
-              disabled={Boolean(isReadOnly) || elementAlreadyExists}
-              onClick={create}
-            >
-              Create
-            </button>
-          </div>
+          <PanelFormValidatedTextField
+            ref={nameRef}
+            isReadOnly={isReadOnly ?? false}
+            update={(value: string | undefined): void => {
+              changeValue(value ?? '');
+            }}
+            validateInput={validateElementDoesNotAlreadyExist}
+            value={servicePath}
+            placeholder={`Enter a name, use ${ELEMENT_PATH_DELIMITER} to create new package(s) for the service`}
+          />
+          <PanelDivider />
+          <PanelFormSection>
+            <div className="search-modal__actions">
+              <button
+                className="btn btn--dark"
+                disabled={Boolean(isReadOnly) || elementExists}
+                onClick={create}
+              >
+                Create
+              </button>
+            </div>
+          </PanelFormSection>
         </form>
       </Dialog>
     );

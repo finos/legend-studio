@@ -17,7 +17,7 @@
 import { capitalize, prettyCONSTName, toTitleCase } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
 import { CheckSquareIcon, SquareIcon } from '../icon/Icon.js';
 import { generateSimpleDIVComponent } from '../utils/ComponentCreatorUtils.js';
 
@@ -175,6 +175,107 @@ export const PanelFormSection = generateSimpleDIVComponent(
   'panel__content__form__section',
 );
 
+export const PanelFormValidatedTextField = forwardRef<
+  HTMLInputElement,
+  {
+    name?: string;
+    value: string | undefined;
+    update: (value: string | undefined) => void;
+    validateInput: (input: string) => string | undefined;
+    onValidationFailure?:
+      | ((validationIssue: string) => void | string | undefined)
+      | undefined;
+    prompt?: string | React.ReactNode;
+    placeholder?: string;
+    isReadOnly?: boolean;
+    className?: string | undefined;
+    errorMessageClassname?: string | undefined;
+    inputType?: string | undefined;
+    darkMode?: boolean;
+    fullWidth?: boolean;
+  }
+>(function PanelFormValidatedTextField(props, ref) {
+  const {
+    name,
+    value,
+    update,
+    prompt,
+    errorMessageClassname,
+    placeholder,
+    validateInput,
+    onValidationFailure,
+    isReadOnly,
+    className,
+    darkMode,
+    fullWidth,
+    inputType,
+  } = props;
+
+  const displayValue = value ?? '';
+
+  const [inputValue, setInputValue] = useState(displayValue);
+
+  const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+    const stringValue = event.target.value;
+    const updatedValue = stringValue ? stringValue : undefined;
+
+    setInputValue(updatedValue ?? '');
+
+    const validationErrorMessage = validateInput(updatedValue ?? '');
+    if (validationErrorMessage === undefined) {
+      update(updatedValue);
+    } else {
+      if (onValidationFailure !== undefined) {
+        onValidationFailure(validationErrorMessage);
+      }
+    }
+  };
+
+  return (
+    <PanelFormSection>
+      {name && (
+        <div className="panel__content__form__section__header__label">
+          {capitalize(name)}
+        </div>
+      )}
+      {prompt && (
+        <div className="panel__content__form__section__header__prompt">
+          {prompt}
+        </div>
+      )}
+      <div className="input-group">
+        <input
+          className={clsx(
+            'input input-group__input panel__content__form__section__input',
+            className,
+            { 'input--dark': darkMode ? darkMode : true },
+            { 'input--small': !fullWidth },
+          )}
+          ref={ref}
+          type={inputType ? inputType : 'text'}
+          spellCheck={false}
+          disabled={isReadOnly}
+          placeholder={placeholder}
+          value={inputValue}
+          onChange={changeValue}
+        />
+        {validateInput(inputValue) && (
+          <div
+            className={clsx(
+              'panel__content__form__section__input-group__error-message input-group__error-message',
+              { 'input--small': !fullWidth },
+              errorMessageClassname,
+            )}
+          >
+            {validateInput(inputValue)}
+          </div>
+        )}
+      </div>
+      {validateInput(inputValue) !== undefined && <PanelDivider />}
+    </PanelFormSection>
+  );
+});
+
 export const PanelFormTextField = forwardRef<
   HTMLInputElement,
   {
@@ -204,6 +305,7 @@ export const PanelFormTextField = forwardRef<
     fullWidth,
     inputType,
   } = props;
+
   const displayValue = value ?? '';
   const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     const stringValue = event.target.value;

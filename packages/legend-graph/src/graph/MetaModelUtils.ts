@@ -44,6 +44,14 @@ export const extractPackagePathFromPath = (
   return idx === -1 ? undefined : fullPath.substring(0, idx);
 };
 
+export const isValidIdentifier = (
+  input: string,
+  allowDollarSymbol?: boolean,
+): boolean =>
+  allowDollarSymbol
+    ? Boolean(input.match(/^[a-z][\w\d$]*$/))
+    : Boolean(input.match(/^[a-z][\w\d]*$/));
+
 export const matchFunctionName = (
   functionName: string,
   functionFullPaths: string | string[],

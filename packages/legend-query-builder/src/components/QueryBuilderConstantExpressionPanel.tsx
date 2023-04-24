@@ -30,7 +30,7 @@ import {
   ModalFooterButton,
   ModalHeader,
   PanelFormSection,
-  PanelFormTextField,
+  PanelFormValidatedTextField,
   PlusIcon,
 } from '@finos/legend-art';
 import {
@@ -39,6 +39,7 @@ import {
   PrimitiveType,
   VariableExpression,
   Multiplicity,
+  isValidIdentifier,
 } from '@finos/legend-graph';
 import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -46,11 +47,12 @@ import { DEFAULT_CONSTANT_VARIABLE_NAME } from '../stores/QueryBuilderConfig.js'
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { QueryBuilderConstantExpressionState } from '../stores/QueryBuilderConstantsState.js';
 import { buildDefaultInstanceValue } from '../stores/shared/ValueSpecificationEditorHelper.js';
-import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
+import { useState } from 'react';
+import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
 
 // NOTE: We currently only allow constant variables for primitive types of multiplicity ONE.
 // This is why we don't show multiplicity in the editor.
@@ -68,9 +70,7 @@ const QueryBuilderConstantExpressionEditor = observer(
     const variableType =
       constantState.value.genericType?.value.rawType ?? PrimitiveType.STRING;
     const selectedType = buildElementOption(variableType);
-    const close = (): void => {
-      variableState.setSelectedConstant(undefined);
-    };
+
     const changeType = (val: PackageableElementOption<Type>): void => {
       if (variableType !== val.value) {
         constantState.changeValSpecType(val.value);
@@ -84,12 +84,29 @@ const QueryBuilderConstantExpressionEditor = observer(
             buildElementOption,
           ),
         );
-    const validationMessage = !variableName
-      ? `Constant Name can't be empty`
-      : allVariableNames.filter((e) => e === variableName).length >
-        (isCreating ? 0 : 1)
-      ? 'Constant Name Already Exists'
-      : undefined;
+
+    const [hasFailedValidation, setFailedValidation] = useState<boolean>(false);
+
+    const getValidationMessage = (
+      constantInput: string,
+    ): string | undefined => {
+      const possibleMessage = !constantInput
+        ? `Constant Name can't be empty`
+        : isValidIdentifier(constantInput) === false
+        ? 'Constant name must be text with no spaces and not start with an uppercase letter or number'
+        : allVariableNames.filter((e) => e === constantInput).length >
+          (isCreating ? 0 : 1)
+        ? 'Constant name already exists'
+        : undefined;
+
+      setFailedValidation(possibleMessage !== undefined);
+      return possibleMessage;
+    };
+
+    const close = (): void => {
+      variableState.setSelectedConstant(undefined);
+    };
+
     const onAction = (): void => {
       if (isCreating) {
         variableState.addConstant(constantState);
@@ -123,14 +140,14 @@ const QueryBuilderConstantExpressionEditor = observer(
             title={`${isCreating ? 'Create Constant' : 'Update Constant'}`}
           />
           <ModalBody className="query-builder__variables__modal__body">
-            <PanelFormTextField
+            <PanelFormValidatedTextField
               name="Constant Name"
               prompt="Name of constant. Should be descriptive of its purpose."
-              update={(value: string | undefined): void =>
-                variableExpression_setName(varExpression, value ?? '')
-              }
-              value={varExpression.name}
-              errorMessage={validationMessage}
+              update={(value: string | undefined): void => {
+                variableExpression_setName(varExpression, value ?? '');
+              }}
+              validateInput={getValidationMessage}
+              value={variableName}
               isReadOnly={false}
             />
             <PanelFormSection>
@@ -181,7 +198,7 @@ const QueryBuilderConstantExpressionEditor = observer(
             {isCreating && (
               <ModalFooterButton
                 text="Create"
-                inProgress={Boolean(validationMessage)}
+                inProgress={hasFailedValidation}
                 onClick={onAction}
               />
             )}
