@@ -83,6 +83,7 @@ import {
   Double,
   Float,
   Integer,
+  Json,
   Numeric,
   Other,
   Real,
@@ -145,7 +146,8 @@ export const observe_RelationalDataType = skipObserved(
       metamodel instanceof Other ||
       metamodel instanceof Bit ||
       metamodel instanceof Real ||
-      metamodel instanceof SemiStructured
+      metamodel instanceof SemiStructured ||
+      metamodel instanceof Json
     ) {
       return makeObservable(metamodel, {
         hashCode: computed,
