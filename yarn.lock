@@ -36,39 +36,46 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ag-grid-community/client-side-row-model@npm:29.3.2":
-  version: 29.3.2
-  resolution: "@ag-grid-community/client-side-row-model@npm:29.3.2"
+"@ag-grid-community/client-side-row-model@npm:29.3.0":
+  version: 29.3.0
+  resolution: "@ag-grid-community/client-side-row-model@npm:29.3.0"
   dependencies:
-    "@ag-grid-community/core": ~29.3.2
-  checksum: bf327210dd1b4876afc2eb0c7e745ed2630c26facf8881fd10dbcff69a18d7c8900aad340c318cb0f135e73539f4abe139f5a30604099767ff673ffc2ad64032
+    "@ag-grid-community/core": ~29.3.0
+  checksum: d9d056b965dd691c7bf4152f9ba925c2a5e562470da4b62dc222b5e198e1d2b83dc85cb89eb785f2113dbdd2180d611e0a3d143606ea1e1e47f3279b90e78ec1
   languageName: node
   linkType: hard
 
-"@ag-grid-community/core@npm:29.3.2, @ag-grid-community/core@npm:~29.3.2":
+"@ag-grid-community/core@npm:29.3.0":
+  version: 29.3.0
+  resolution: "@ag-grid-community/core@npm:29.3.0"
+  checksum: 952ac388b062a2df978b3dd0679e804f7d0206bf143b9fa976d056c5c099e79747ad61ee0b24bffee202ad210ea08a153da70823d21e0d982b8c2e469b5cbc5a
+  languageName: node
+  linkType: hard
+
+"@ag-grid-community/core@npm:~29.3.0":
   version: 29.3.2
   resolution: "@ag-grid-community/core@npm:29.3.2"
   checksum: 893908fc01579d058716b164cecca1bfc8430893112a6166d0389e6b161d965d6e950a0ced90d75ea43bfd223ab0b076c31a50c9a8ec71d2ee723f15f0d09055
   languageName: node
   linkType: hard
 
-"@ag-grid-community/react@npm:29.3.2":
-  version: 29.3.2
-  resolution: "@ag-grid-community/react@npm:29.3.2"
+"@ag-grid-community/react@npm:29.3.0":
+  version: 29.3.0
+  resolution: "@ag-grid-community/react@npm:29.3.0"
   dependencies:
     prop-types: ^15.8.1
   peerDependencies:
-    "@ag-grid-community/core": ~29.3.2
+    "@ag-grid-community/core": ~29.3.0
     react: ^16.3.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.3.0 || ^17.0.0 || ^18.0.0
-  checksum: 94d6566d2ff4efc0aa9c946b4e11f7bf7d618b83678cdb083e9a849269287d3af991d1c8d8f9a1018d3dca3864ceb6fb4730865775a34b380734e6d8ceda59c7
+  checksum: 359af362a2b17b3ba6daf0708b12418d9ce79281c47423d505e98bf3a21e91821d6846cdf3e3c344934e3023c6822687e2eb56d84ee37fc94f3707c979dc45a3
   languageName: node
   linkType: hard
 
-"@ag-grid-community/styles@npm:29.3.2":
-  version: 29.3.2
-  resolution: "@ag-grid-community/styles@npm:29.3.2"
-  checksum: 11e9061f493d2ab6f2691db0a48b69fd53b3918112a3030548ba3a09330c5e291a1a99354fdade1627f8a00e03ac2dcc1afd4bd31a00dea44ba22290e910187e
+"@ag-grid-community/styles@npm:29.3.0":
+  version: 29.3.0
+  resolution: "@ag-grid-community/styles@npm:29.3.0"
+  checksum: e5cb305613495ef3fc6c197670bff3562200a0941ce35b64ef0e0ef9e7425209fd345d93f12bbd7a10c35455e44d9b19ed686a7c8b057d44ca76bfd83faf9224
   languageName: node
   linkType: hard
 
@@ -2894,10 +2901,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-lego@workspace:packages/legend-lego"
   dependencies:
-    "@ag-grid-community/client-side-row-model": 29.3.2
-    "@ag-grid-community/core": 29.3.2
-    "@ag-grid-community/react": 29.3.2
-    "@ag-grid-community/styles": 29.3.2
+    "@ag-grid-community/client-side-row-model": 29.3.0
+    "@ag-grid-community/core": 29.3.0
+    "@ag-grid-community/react": 29.3.0
+    "@ag-grid-community/styles": 29.3.0
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
@@ -5085,11 +5092,11 @@ __metadata:
   linkType: hard
 
 "ansi-escapes@npm:^6.0.0":
-  version: 6.1.0
-  resolution: "ansi-escapes@npm:6.1.0"
+  version: 6.2.0
+  resolution: "ansi-escapes@npm:6.2.0"
   dependencies:
     type-fest: ^3.0.0
-  checksum: 7ce5d9cefd3d7345dc00161aea2ea9ad5fb3dd66658d4e8731ea047be838d755100f0823a05523d0e518e8e080746fc0a45d3ea3053099376bdd572efaedc7c1
+  checksum: f0bc667d5f1ededc3ea89b73c34f0cba95473525b07e1290ddfd3fc868c94614e95f3549f5c4fd0c05424af7d3fd298101fb3d9a52a597d3782508b340783bd7
   languageName: node
   linkType: hard
 
@@ -16572,9 +16579,9 @@ __metadata:
   linkType: hard
 
 "wildcard@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "wildcard@npm:2.0.0"
-  checksum: 1f4fe4c03dfc492777c60f795bbba597ac78794f1b650d68f398fbee9adb765367c516ebd4220889b6a81e9626e7228bbe0d66237abb311573c2ee1f4902a5ad
+  version: 2.0.1
+  resolution: "wildcard@npm:2.0.1"
+  checksum: e0c60a12a219e4b12065d1199802d81c27b841ed6ad6d9d28240980c73ceec6f856771d575af367cbec2982d9ae7838759168b551776577f155044f5a5ba843c
   languageName: node
   linkType: hard
 
@@ -16776,7 +16783,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:2.2.1, yaml@npm:^2.2.1":
+"yaml@npm:2.2.1":
   version: 2.2.1
   resolution: "yaml@npm:2.2.1"
   checksum: 84f68cbe462d5da4e7ded4a8bded949ffa912bc264472e5a684c3d45b22d8f73a3019963a32164023bdf3d83cfb6f5b58ff7b2b10ef5b717c630f40bd6369a23
@@ -16787,6 +16794,13 @@ __metadata:
   version: 1.10.2
   resolution: "yaml@npm:1.10.2"
   checksum: ce4ada136e8a78a0b08dc10b4b900936912d15de59905b2bf415b4d33c63df1d555d23acb2a41b23cf9fb5da41c256441afca3d6509de7247daa062fd2c5ea5f
+  languageName: node
+  linkType: hard
+
+"yaml@npm:^2.2.1":
+  version: 2.2.2
+  resolution: "yaml@npm:2.2.2"
+  checksum: d90c235e099e30094dcff61ba3350437aef53325db4a6bcd04ca96e1bfe7e348b191f6a7a52b5211e2dbc4eeedb22a00b291527da030de7c189728ef3f2b4eb3
   languageName: node
   linkType: hard
 
