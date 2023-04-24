@@ -15,7 +15,7 @@
  */
 
 import type { Connection } from '../../graph/metamodel/pure/packageableElements/connection/Connection.js';
-import type { InputData } from '../../graph/metamodel/pure/packageableElements/mapping/InputData.js';
+import type { DEPRECATED__InputData } from '../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import type { PropertyMapping } from '../../graph/metamodel/pure/packageableElements/mapping/PropertyMapping.js';
 import type { SetImplementation } from '../../graph/metamodel/pure/packageableElements/mapping/SetImplementation.js';
 import type { ObserverContext } from '../action/changeDetection/CoreObserverHelper.js';
@@ -41,9 +41,9 @@ export type PropertyMappingStubChecker = (
 ) => boolean | undefined;
 
 export type MappingTestInputDataObserver = (
-  inputData: InputData,
+  inputData: DEPRECATED__InputData,
   context: ObserverContext,
-) => InputData | undefined;
+) => DEPRECATED__InputData | undefined;
 
 export interface DSL_Mapping_PureGraphManagerPlugin_Extension
   extends PureGraphManagerPlugin {

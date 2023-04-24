@@ -19,11 +19,11 @@ import {
   type ExternalFormatData,
   type AtomicTest,
   type TestAssertion,
-  type ServiceTestSuite,
+  type TestSuite,
   observe_TestAssertion,
   observe_ExternalFormatData,
 } from '@finos/legend-graph';
-import { addUniqueEntry } from '@finos/legend-shared';
+import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
 
 export const equalToJSON_setExpected = action(
@@ -51,8 +51,18 @@ export const atomicTest_setId = action(
   },
 );
 
-export const testSuite_setId = action(
-  (test: ServiceTestSuite, val: string): void => {
-    test.id = val;
+export const atomicTest_setDoc = action(
+  (test: AtomicTest, val: string | undefined): void => {
+    test.doc = val;
+  },
+);
+
+export const testSuite_setId = action((test: TestSuite, val: string): void => {
+  test.id = val;
+});
+
+export const testSuite_deleteTest = action(
+  (test: TestSuite, val: AtomicTest): void => {
+    deleteEntry(test.tests, val);
   },
 );

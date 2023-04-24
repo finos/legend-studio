@@ -20,6 +20,7 @@ import { V1_Test } from './V1_Test.js';
 
 export abstract class V1_AtomicTest extends V1_Test implements Hashable {
   assertions: V1_TestAssertion[] = [];
+  doc: string | undefined;
 
   abstract override get hashCode(): string;
 }

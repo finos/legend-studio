@@ -85,7 +85,7 @@ import { flatData_setData } from '../../../../graph-modifier/STO_FlatData_GraphM
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
   mappingTest_setAssert,
-  mappingTest_setQuery,
+  DEPRECATED_mappingTest_setQuery,
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
@@ -145,7 +145,7 @@ export class MappingTestQueryState extends LambdaEditorState {
 
   *updateLamba(val: RawLambda): GeneratorFn<void> {
     this.query = val;
-    mappingTest_setQuery(this.test, val);
+    DEPRECATED_mappingTest_setQuery(this.test, val);
     yield flowResult(this.convertLambdaObjectToGrammarString(true));
   }
 

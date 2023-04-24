@@ -33,7 +33,7 @@ import {
   MAPPING_TEST_EDITOR_TAB_TYPE,
   DEPRECATED__MappingTestState,
   TEST_RESULT,
-} from './MappingTestState.js';
+} from './DEPRECATED__MappingTestState.js';
 import { createMockDataForMappingElementSource } from '../../../utils/MockDataUtils.js';
 import {
   type GeneratorFn,
@@ -110,7 +110,7 @@ import {
   pureInstanceSetImpl_setSrcClass,
   mapping_addClassMapping,
   mapping_addEnumerationMapping,
-  mapping_addTest,
+  mapping_addDEPRECATEDTest,
   mapping_deleteAssociationMapping,
   mapping_deleteClassMapping,
   mapping_deleteEnumerationMapping,
@@ -122,6 +122,7 @@ import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../utils/ModelClassifierUti
 import { rootRelationalSetImp_setMainTableAlias } from '../../../../graph-modifier/STO_Relational_GraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
 import type { MappingEditorTabState } from './MappingTabManagerState.js';
+import { MappingTestableState } from './testable/MappingTestableState.js';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -138,6 +139,11 @@ export const generateMappingTestName = (mapping: Mapping): string => {
   );
   return generatedName;
 };
+
+export enum MAPPING_EDITOR_TAB {
+  CLASS_MAPPINGS = 'CLASS_MAPPINGS',
+  BETA_TEST_SUITES = 'TEST_SUITES',
+}
 
 export enum MAPPING_ELEMENT_SOURCE_ID_LABEL {
   ENUMERATION_MAPPING = 'enumerationMapping',
@@ -577,15 +583,19 @@ export interface MappingElementSpec {
 }
 
 export class MappingEditorState extends ElementEditorState {
+  selectedTab = MAPPING_EDITOR_TAB.BETA_TEST_SUITES;
   currentTabState?: MappingEditorTabState | undefined;
   openedTabStates: MappingEditorTabState[] = [];
 
   mappingExplorerTreeData: TreeData<MappingExplorerTreeNodeData>;
   newMappingElementSpec?: MappingElementSpec | undefined;
 
+  // DEPREACTED legacy tests: TO REMOVE once mapping testable dev work is complete
   mappingTestStates: DEPRECATED__MappingTestState[] = [];
   isRunningAllTests = false;
   allTestRunTime = 0;
+  //
+  mappingTestableState: MappingTestableState;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -597,6 +607,7 @@ export class MappingEditorState extends ElementEditorState {
       newMappingElementSpec: observable,
       isRunningAllTests: observable,
       allTestRunTime: observable,
+      selectedTab: observable,
       mappingExplorerTreeData: observable.ref,
       mapping: computed,
       testSuiteResult: computed,
@@ -606,6 +617,7 @@ export class MappingEditorState extends ElementEditorState {
       closeAllTabs: action,
       createMappingElement: action,
       reprocessMappingExplorerTree: action,
+      setSelectedTab: action,
       mappingElementsWithSimilarTarget: computed,
       reprocess: action,
       openTab: flow,
@@ -628,6 +640,10 @@ export class MappingEditorState extends ElementEditorState {
     this.mappingExplorerTreeData = getMappingElementTreeData(
       this.mapping,
       editorStore,
+    );
+    this.mappingTestableState = new MappingTestableState(
+      this.editorStore,
+      this,
     );
   }
 
@@ -669,6 +685,10 @@ export class MappingEditorState extends ElementEditorState {
 
   setNewMappingElementSpec(spec: MappingElementSpec | undefined): void {
     this.newMappingElementSpec = spec;
+  }
+
+  setSelectedTab(tab: MAPPING_EDITOR_TAB): void {
+    this.selectedTab = tab;
   }
 
   // -------------------------------------- Tabs ---------------------------------------
@@ -1456,7 +1476,7 @@ export class MappingEditorState extends ElementEditorState {
     this.mappingTestStates.push(
       new DEPRECATED__MappingTestState(this.editorStore, test, this),
     );
-    mapping_addTest(
+    mapping_addDEPRECATEDTest(
       this.mapping,
       test,
       this.editorStore.changeDetectionState.observerContext,
@@ -1530,7 +1550,7 @@ export class MappingEditorState extends ElementEditorState {
       [inputData],
       new ExpectedOutputMappingTestAssert('{}'),
     );
-    mapping_addTest(
+    mapping_addDEPRECATEDTest(
       this.mapping,
       newTest,
       this.editorStore.changeDetectionState.observerContext,

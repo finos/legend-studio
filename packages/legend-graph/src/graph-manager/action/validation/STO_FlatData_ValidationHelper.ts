@@ -15,7 +15,7 @@
  */
 
 import { isStubbed_PackageableElement } from '../../../graph/helpers/creator/DomainModelCreatorHelper.js';
-import type { FlatDataInputData } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
+import type { DEPRECATED__FlatDataInputData } from '../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import {
   type ValidationIssue,
   createValidationError,
@@ -25,7 +25,7 @@ import {
  * @deprecated
  */
 export const DEPRECATED__validate_FlatDataInputData = (
-  metamodel: FlatDataInputData,
+  metamodel: DEPRECATED__FlatDataInputData,
 ): ValidationIssue | undefined => {
   if (isStubbed_PackageableElement(metamodel.sourceFlatData.value)) {
     return createValidationError([

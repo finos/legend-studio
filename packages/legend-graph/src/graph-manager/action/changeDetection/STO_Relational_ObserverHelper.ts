@@ -57,7 +57,6 @@ import type { FilterMapping } from '../../../graph/metamodel/pure/packageableEle
 import type { GroupByMapping } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/GroupByMapping.js';
 import type { InlineEmbeddedRelationalInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation.js';
 import type { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
-import type { RelationalInputData } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
 import type { RelationalInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation.js';
 import type { RelationalPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';
 import type { RootRelationalInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
@@ -129,6 +128,7 @@ import {
   observe_PropertyMapping,
   observe_SetImplementation,
 } from './DSL_Mapping_ObserverHelper.js';
+import type { DEPRECATED__RelationalInputData } from '../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 
 // ------------------------------------- Operation -------------------------------------
 
@@ -726,7 +726,9 @@ export const observe_RootRelationalInstanceSetImplementation =
   );
 
 export const observe_RelationalInputData = skipObserved(
-  (metamodel: RelationalInputData): RelationalInputData => {
+  (
+    metamodel: DEPRECATED__RelationalInputData,
+  ): DEPRECATED__RelationalInputData => {
     makeObservable(metamodel, {
       data: observable,
       inputType: observable,

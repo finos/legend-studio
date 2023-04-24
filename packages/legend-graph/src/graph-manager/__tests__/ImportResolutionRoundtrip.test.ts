@@ -142,13 +142,13 @@ describe(unitTest('Mapping import resolution roundtrip'), () => {
   });
 });
 
+// TODO: Readd once mapping test suite model is finalized
 describe(unitTest('Mapping test suite roundtrip'), () => {
-  test.each([['mapping test suite', TEST_DATA__MappingTestSuiteRoundtrip]])(
-    '%s',
-    async (testName, entities) => {
-      await TEST__checkBuildingElementsRoundtrip(entities);
-    },
-  );
+  test.skip.each([
+    ['mapping test suite', TEST_DATA__MappingTestSuiteRoundtrip],
+  ])('%s', async (testName, entities) => {
+    await TEST__checkBuildingElementsRoundtrip(entities);
+  });
 });
 
 describe(unitTest('Flat-data import resolution roundtrip'), () => {

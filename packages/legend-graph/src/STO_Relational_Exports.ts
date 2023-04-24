@@ -47,9 +47,9 @@ export * from './graph/metamodel/pure/packageableElements/store/relational/model
 export * from './graph/metamodel/pure/packageableElements/store/relational/model/RelationalOperationElement.js';
 export * from './graph/metamodel/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
 export {
-  RelationalInputData,
+  DEPRECATED__RelationalInputData as RelationalInputData,
   RelationalInputType,
-} from './graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
+} from './graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 export { RelationalPropertyMapping } from './graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';
 export { RelationalInstanceSetImplementation } from './graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation.js';
 export { RootRelationalInstanceSetImplementation } from './graph/metamodel/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';

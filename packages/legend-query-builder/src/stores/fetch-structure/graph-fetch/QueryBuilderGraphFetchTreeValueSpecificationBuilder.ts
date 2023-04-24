@@ -18,6 +18,7 @@ import {
   type ValueSpecification,
   type LambdaFunction,
   type PureModel,
+  type RootGraphFetchTree,
   extractElementNameFromPath,
   GenericType,
   GenericTypeExplicitReference,
@@ -159,6 +160,34 @@ export const buildPureSerializationConfig = (
   return newFunction;
 };
 
+export const buildSerialzieFunctionWithGraphFetch = (
+  tree: RootGraphFetchTree,
+  isChecked: boolean,
+  precedingExpression: ValueSpecification,
+  pureConfig: SimpleFunctionExpression | undefined,
+): SimpleFunctionExpression => {
+  const graphFetchInstance = new GraphFetchTreeInstanceValue();
+  graphFetchInstance.values = [tree];
+  const serializeFunction = new SimpleFunctionExpression(
+    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE),
+  );
+  const graphFetchFunc = new SimpleFunctionExpression(
+    isChecked
+      ? extractElementNameFromPath(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+        )
+      : extractElementNameFromPath(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
+        ),
+  );
+  graphFetchFunc.parametersValues = [precedingExpression, graphFetchInstance];
+  serializeFunction.parametersValues = [graphFetchFunc, graphFetchInstance];
+  if (pureConfig) {
+    serializeFunction.parametersValues.push(pureConfig);
+  }
+  return serializeFunction;
+};
+
 export const appendGraphFetch = (
   graphFetchTreeState: QueryBuilderGraphFetchTreeState,
   lambdaFunction: LambdaFunction,
@@ -184,32 +213,21 @@ export const appendGraphFetch = (
       graphFetchTreeState.treeData &&
       !isGraphFetchTreeDataEmpty(graphFetchTreeState.treeData)
     ) {
-      const graphFetchInstance = new GraphFetchTreeInstanceValue();
-      graphFetchInstance.values = [graphFetchTreeState.treeData.tree];
-      const serializeFunction = new SimpleFunctionExpression(
-        extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE),
-      );
-      const graphFetchFunc = new SimpleFunctionExpression(
-        graphFetchTreeState.isChecked
-          ? extractElementNameFromPath(
-              QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
-            )
-          : extractElementNameFromPath(
-              QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
-            ),
-      );
-      graphFetchFunc.parametersValues = [
+      const pureConfig = serializationState.config
+        ? buildPureSerializationConfig(
+            serializationState.config as unknown as Record<
+              PropertyKey,
+              boolean
+            >,
+            graphFetchTreeState.queryBuilderState.graphManagerState.graph,
+          )
+        : undefined;
+      const serializeFunction = buildSerialzieFunctionWithGraphFetch(
+        graphFetchTreeState.treeData.tree,
+        graphFetchTreeState.isChecked,
         precedingExpression,
-        graphFetchInstance,
-      ];
-      serializeFunction.parametersValues = [graphFetchFunc, graphFetchInstance];
-      if (serializationState.config) {
-        const configFunction = buildPureSerializationConfig(
-          serializationState.config as unknown as Record<PropertyKey, boolean>,
-          graphFetchTreeState.queryBuilderState.graphManagerState.graph,
-        );
-        serializeFunction.parametersValues.push(configFunction);
-      }
+        pureConfig,
+      );
       lambdaFunction.expressionSequence[0] = serializeFunction;
     }
   } else if (

@@ -272,6 +272,7 @@ export enum TESTABLE_RESULT {
   FAILED = 'FAILED',
   PASSED = 'PASSED',
   IN_PROGRESS = 'IN_PROGRESS',
+  NO_TESTS = 'NO_TESTS',
 }
 
 export const getTestableResultFromTestResult = (
