@@ -20,8 +20,6 @@ import type { V1_PackageableElement } from './v1/model/packageableElements/V1_Pa
 import type { V1_ElementBuilder } from './v1/transformation/pureGraph/to/V1_ElementBuilder.js';
 import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData.js';
 import type { PureModel } from '../../../graph/PureModel.js';
-import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
-import type { Runtime } from '../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
 import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
 import type { V1_ValueSpecification } from './v1/model/valueSpecification/V1_ValueSpecification.js';
 import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
@@ -68,8 +66,6 @@ export type V1_FunctionExpressionBuilder = (
 
 export type V1_ExecutionInputCollector = (
   graph: PureModel,
-  mapping: Mapping | undefined,
-  runtime: Runtime | undefined,
   protocolGraph: V1_PureModelContextData,
 ) => V1_PackageableElement[];
 
@@ -208,13 +204,6 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * In particular, these collectors are used to produce the minimal graph that is needed for such execution.
    */
   V1_getExtraExecutionInputCollectors?(): V1_ExecutionInputCollector[];
-
-  /**
-   * Get the list of collectors of graph elements to build the input for mapping model-coverage analysis.
-   *
-   * In particular, these collectors are used to produce the minimal graph that is needed for such analysis.
-   */
-  V1_getExtraMappingModelCoverageAnalysisInputCollectors?(): V1_MappingModelCoverageAnalysisInputCollector[];
 
   /**
    * Get the list of type inferrers for property expression.

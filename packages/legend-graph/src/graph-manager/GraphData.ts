@@ -19,7 +19,7 @@ import type { PureModel } from '../graph/PureModel.js';
 
 export abstract class GraphData {}
 
-export class LiveGraphData extends GraphData {
+export class InMemoryGraphData extends GraphData {
   readonly graph: PureModel;
 
   constructor(graph: PureModel) {

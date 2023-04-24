@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { primitive, createModelSchema, object } from 'serializr';
+import { primitive, createModelSchema } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
-import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
+import { V1_pureModelContextDataPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
+import type { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
 
 export class V1_GenerationInput {
   clientVersion!: string;
@@ -25,7 +26,7 @@ export class V1_GenerationInput {
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_GenerationInput, {
       clientVersion: primitive(),
-      model: object(V1_PureModelContextData),
+      model: V1_pureModelContextDataPropSchema,
     }),
   );
 }

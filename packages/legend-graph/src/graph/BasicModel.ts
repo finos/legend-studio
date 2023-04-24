@@ -234,9 +234,7 @@ export abstract class BasicModel {
 
   setOrigin(val: GraphDataOrigin): void {
     if (this._origin) {
-      throw new IllegalStateError(
-        `SDLC pointer has already been set for model.`,
-      );
+      throw new IllegalStateError(`Graph origin has already been set`);
     } else {
       this._origin = val;
     }

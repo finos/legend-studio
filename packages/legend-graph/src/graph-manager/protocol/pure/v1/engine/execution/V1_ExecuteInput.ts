@@ -18,7 +18,6 @@ import {
   createModelSchema,
   custom,
   list,
-  object,
   optional,
   primitive,
   SKIP,
@@ -28,7 +27,6 @@ import {
   SerializationFactory,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
 import type { V1_Runtime } from '../../model/packageableElements/runtime/V1_Runtime.js';
 import type { V1_RawExecutionContext } from '../../model/rawValueSpecification/V1_RawExecutionContext.js';
 import type { V1_RawLambda } from '../../model/rawValueSpecification/V1_RawLambda.js';
@@ -40,7 +38,10 @@ import {
 import type { V1_ParameterValue } from '../../model/packageableElements/service/V1_ParameterValue.js';
 import { V1_parameterValueModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
-import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
+import {
+  V1_pureModelContextDataPropSchema,
+  V1_pureModelContextPropSchema,
+} from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
 
 export class V1_ExecuteInput {
   clientVersion: string | undefined;
@@ -81,7 +82,7 @@ export class V1_TestDataGenerationExecutionInput extends V1_ExecuteInput {
       clientVersion: optional(primitive()),
       function: usingModelSchema(V1_rawLambdaModelSchema),
       mapping: primitive(),
-      model: object(V1_PureModelContextData),
+      model: V1_pureModelContextDataPropSchema,
       runtime: custom(
         (val) => V1_serializeRuntime(val),
         () => SKIP,
