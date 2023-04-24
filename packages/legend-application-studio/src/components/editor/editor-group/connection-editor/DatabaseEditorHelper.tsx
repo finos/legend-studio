@@ -22,6 +22,7 @@ import {
   QuestionCircleIcon,
   StringTypeIcon,
   ShapeTriangleIcon,
+  SerializeIcon,
 } from '@finos/legend-art';
 import {
   type RelationalDataType,
@@ -43,6 +44,7 @@ import {
   SmallInt,
   BigInt,
   SemiStructured,
+  Json,
 } from '@finos/legend-graph';
 
 export const generateColumnTypeLabel = (type: RelationalDataType): string => {
@@ -82,6 +84,8 @@ export const generateColumnTypeLabel = (type: RelationalDataType): string => {
     return `OTHER`;
   } else if (type instanceof SemiStructured) {
     return 'SEMI-STRUCTURED';
+  } else if (type instanceof Json) {
+    return 'JSON';
   }
   return '(UNKNOWN)';
 };
@@ -122,6 +126,10 @@ export const renderColumnTypeIcon = (
   } else if (type instanceof SemiStructured) {
     return (
       <ShapeTriangleIcon className="relation-source-tree__icon relation-source-tree__icon__semi-structured" />
+    );
+  } else if (type instanceof Json) {
+    return (
+      <SerializeIcon className="relation-source-tree__icon relation-source-tree__icon__json" />
     );
   } else if (type instanceof Other) {
     return (

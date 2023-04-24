@@ -1,0 +1,87 @@
+###Relational
+Database simple::store::MemSQLDB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM_DETAILS JSON,
+      MANAGERID INTEGER
+    )
+  )
+
+  Join manager(PERSON_SCHEMA.PERSON_TABLE.MANAGERID = {target}.ID)
+)
+
+
+###ExternalFormat
+Binding simple::store::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    simple::model::Firm,
+    simple::model::Address,
+    simple::model::AddressLine
+  ];
+}
+
+
+###Pure
+Class simple::model::Address
+{
+  name: String[1];
+  lines: simple::model::AddressLine[*];
+  street: String[0..1];
+}
+
+Class simple::model::AddressLine
+{
+  details: String[1];
+}
+
+Class simple::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  firm: simple::model::Firm[1];
+  manager: simple::model::Person[0..1];
+}
+
+Class simple::model::Firm
+{
+  legalName: String[1];
+  address: simple::model::Address[1];
+  employeeCount: Integer[1];
+  mnc: Boolean[1];
+  estDate: StrictDate[1];
+  lastUpdate: DateTime[1];
+  otherNames: String[*];
+  entityType: simple::model::EntityType[1];
+}
+
+Enum simple::model::EntityType
+{
+  Organization,
+  Company
+}
+
+
+###Mapping
+Mapping simple::mapping::MemSQLMapping
+(
+  simple::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [simple::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [simple::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [simple::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [simple::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding simple::store::FirmBinding : [simple::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
+    manager[simple_model_Person]: [simple::store::MemSQLDB]@manager
+  }
+)

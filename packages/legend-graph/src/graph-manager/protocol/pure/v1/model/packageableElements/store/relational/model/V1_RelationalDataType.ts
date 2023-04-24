@@ -165,3 +165,9 @@ export class V1_SemiStructured
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_SEMISTRUCTURED]);
   }
 }
+
+export class V1_Json extends V1_RelationalDataType implements Hashable {
+  get hashCode(): string {
+    return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_JSON]);
+  }
+}

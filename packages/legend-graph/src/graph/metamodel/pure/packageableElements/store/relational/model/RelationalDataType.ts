@@ -194,3 +194,9 @@ export class SemiStructured extends RelationalDataType {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_SEMISTRUCTURED]);
   }
 }
+
+export class Json extends RelationalDataType {
+  get hashCode(): string {
+    return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_JSON]);
+  }
+}

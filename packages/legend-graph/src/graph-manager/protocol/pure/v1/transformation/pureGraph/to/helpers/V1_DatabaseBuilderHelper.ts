@@ -74,6 +74,7 @@ import {
   SmallInt,
   BigInt,
   SemiStructured,
+  Json,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/RelationalDataType.js';
 import { ColumnMapping } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/ColumnMapping.js';
 import { GroupByMapping } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/GroupByMapping.js';
@@ -108,6 +109,7 @@ import {
   V1_Binary,
   V1_Other,
   V1_SemiStructured,
+  V1_Json,
 } from '../../../../model/packageableElements/store/relational/model/V1_RelationalDataType.js';
 import type { V1_View } from '../../../../model/packageableElements/store/relational/model/V1_View.js';
 import type { V1_Join } from '../../../../model/packageableElements/store/relational/model/V1_Join.js';
@@ -403,6 +405,8 @@ export const V1_transformDatabaseDataType = (
     return new Other();
   } else if (dataType instanceof V1_SemiStructured) {
     return new SemiStructured();
+  } else if (dataType instanceof V1_Json) {
+    return new Json();
   }
   throw new UnsupportedOperationError(
     `Can't transform relational data type`,

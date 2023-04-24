@@ -35,6 +35,7 @@ import {
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 import { RelationalPropertyMapping } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';
 import { TEST_DATA__SemiStructuredRelationalTypeRoundtrip } from './TEST_DATA__SemiStructuredRelationalTypeRoundtrip.js';
+import { TEST_DATA__JsonRelationalTypeRoundtrip } from './TEST_DATA__JsonRelationalTypeRoundtrip.js';
 import {
   getSchema,
   getTable,
@@ -137,6 +138,13 @@ pluginManager.usePresets([new Core_GraphManagerPreset()]).install();
 test(unitTest('SemiStructured relational type roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(
     TEST_DATA__SemiStructuredRelationalTypeRoundtrip as Entity[],
+    pluginManager,
+  );
+});
+
+test(unitTest('JSON relational type roundtrip'), async () => {
+  await TEST__checkBuildingElementsRoundtrip(
+    TEST_DATA__JsonRelationalTypeRoundtrip as Entity[],
     pluginManager,
   );
 });

@@ -36,6 +36,7 @@ import {
   SmallInt,
   BigInt,
   SemiStructured,
+  Json,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/RelationalDataType.js';
 import {
   type TableAlias,
@@ -79,6 +80,7 @@ import {
   V1_Binary,
   V1_Other,
   V1_SemiStructured,
+  V1_Json,
 } from '../../../model/packageableElements/store/relational/model/V1_RelationalDataType.js';
 import { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
@@ -157,6 +159,8 @@ const transformRelationalDataType = (
     return new V1_Other();
   } else if (type instanceof SemiStructured) {
     return new V1_SemiStructured();
+  } else if (type instanceof Json) {
+    return new V1_Json();
   }
   throw new UnsupportedOperationError(
     `Can't transform relational data type`,
