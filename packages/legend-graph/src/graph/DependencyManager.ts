@@ -83,11 +83,12 @@ const buildDependencyElementGetter =
   };
 
 export class DependencyManager {
+  private readonly extensionElementClasses: Clazz<PackageableElement>[];
+
+  private _origin: GraphDataOrigin | undefined;
+
   roots: Package[] = [];
   projectDependencyModelsIndex = new Map<string, BasicModel>();
-  _origin: GraphDataOrigin | undefined;
-
-  private readonly extensionElementClasses: Clazz<PackageableElement>[];
 
   constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
     this.extensionElementClasses = extensionElementClasses;
@@ -142,7 +143,7 @@ export class DependencyManager {
 
   setOrigin(val: GraphDataOrigin): void {
     if (this._origin) {
-      throw new IllegalStateError(`Graph Origin has already been set`);
+      throw new IllegalStateError(`Graph origin has already been set`);
     } else {
       this._origin = val;
     }

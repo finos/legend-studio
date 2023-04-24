@@ -776,10 +776,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       if (!options?.TEMPORARY__preserveSectionIndex) {
         graph.TEMPORARY__deleteOwnSectionIndex();
       }
-      /**
-       * This sets the SDLC of the graph if there exists a versioned `SDLC` of the graph. This means the graph is immutable and we can easily `refetch`
-       * the graph with the provided sdlc pointer
-       */
       if (options?.origin) {
         graph.setOrigin(options.origin);
       }
@@ -2251,8 +2247,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     clientVersion: string | undefined,
     parameterValues?: ParameterValue[],
   ): V1_ExecuteInput =>
-    this.buildExecutionInputWithPureModelContext(
-      this.buildPureModelContextForExecutionInput(graph),
+    this.createExecutionInputWithPureModelContext(
+      graph.origin
+        ? this.buildPureModelSDLCPointer(graph.origin, undefined)
+        : this.buildExecutionInputGraphData(graph),
       mapping,
       lambda,
       runtime,
@@ -2261,15 +2259,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       parameterValues,
     );
 
-  private buildPureModelContextForExecutionInput = (
-    graph: PureModel,
-  ): V1_PureModelContext =>
-    graph.origin
-      ? this.buildPureModelSDLCPointer(graph.origin, undefined)
-      : this.buildExecutionInputGraphData(graph);
-
-  private buildExecutionInputWithPureModelContext = (
-    pureModelContext: V1_PureModelContext,
+  private createExecutionInputWithPureModelContext = (
+    data: V1_PureModelContext,
     mapping: Mapping | undefined,
     lambda: RawLambda,
     runtime: Runtime | undefined,
@@ -2295,11 +2286,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           ).build(),
         )
       : undefined;
-    executeInput.model = pureModelContext;
+    executeInput.model = data;
     executeInput.context = new V1_RawBaseExecutionContext(); // TODO: potentially need to support more types
     if (parameterValues) {
-      executeInput.parameterValues = parameterValues.map((p) =>
-        V1_transformParameterValue(p),
+      executeInput.parameterValues = parameterValues.map((parameterValue) =>
+        V1_transformParameterValue(parameterValue),
       );
     }
     return executeInput;
@@ -2425,7 +2416,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       handleError: (message: Error) => void;
     },
     mapping: Mapping,
-    pureModelContext: V1_PureModelContext,
+    data: V1_PureModelContext,
     options?: ExecutionOptions,
     _report?: GraphManagerOperationReport,
   ): Promise<void> {
@@ -2434,8 +2425,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       const stopWatch = new StopWatch();
       stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
       DEPRECATED__validate_MappingTest(testInfo.test);
-      const input = this.buildExecutionInputWithPureModelContext(
-        pureModelContext,
+      const input = this.createExecutionInputWithPureModelContext(
+        data,
         mapping,
         testInfo.test.query,
         testInfo.runtime,
@@ -2543,8 +2534,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
     const testDataGenerationExecuteInput =
       new V1_TestDataGenerationExecutionInput();
-    this.buildExecutionInputWithPureModelContext(
-      this.buildPureModelContextForExecutionInput(graph),
+    this.createExecutionInputWithPureModelContext(
+      graph.origin
+        ? this.buildPureModelSDLCPointer(graph.origin, undefined)
+        : this.buildExecutionInputGraphData(graph),
       mapping,
       lambda,
       runtime,
@@ -2634,7 +2627,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     switch (executionMode) {
       case ServiceExecutionMode.FULL_INTERACTIVE: {
-        const data = this.createServiceRegistrationInput(graph, service);
+        const data = this.createServiceRegistrationInputGraphData(graph);
+        data.elements.push(this.elementToProtocol<V1_Service>(service));
         data.origin = new V1_PureModelContextPointer(protocol);
         input = data;
         break;
@@ -2736,8 +2730,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     switch (executionMode) {
       case ServiceExecutionMode.FULL_INTERACTIVE: {
-        const pmcp = this.createBulkServiceRegistrationInput(graph, services);
-        pmcp.forEach((data) => {
+        services.forEach((service) => {
+          const data = this.prunePureModelContextData(
+            this.createServiceRegistrationInputGraphData(graph),
+          );
+          data.elements.push(this.elementToProtocol<V1_Service>(service));
           data.origin = new V1_PureModelContextPointer(protocol);
           input.push(data);
         });
@@ -2870,26 +2867,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private prunePureModelContextData = (
-    data: V1_PureModelContextData,
-    elementFilter?: (val: V1_PackageableElement) => boolean,
-    entityFilter?: (entity: Entity) => boolean,
-  ): V1_PureModelContextData => {
-    const prunedGraphData = new V1_PureModelContextData();
-    prunedGraphData.elements = data.elements.filter((element) =>
-      elementFilter ? elementFilter(element) : true,
-    );
-    prunedGraphData.INTERNAL__rawDependencyEntities =
-      data.INTERNAL__rawDependencyEntities.filter((entity) =>
-        entityFilter ? entityFilter(entity) : true,
-      );
-    return prunedGraphData;
-  };
-
-  // We almost should never be poking into dependency entities. However for service registration the input
-  // expects only one service in the pmcd. The service registration api should be modified to accept service as a
-  // parameter outside the model
-  private TEMPORARY_filterOutServicesInPMCD = (
+  // NOTE: We almost should never be poking into dependency entities. However for service registration the input
+  // expects only one service in the graph data. Perhaps, the service registration API should be modified to accept
+  // service as a parameter outside the model
+  private createServiceRegistrationInputGraphData = (
     graph: PureModel,
   ): V1_PureModelContextData => {
     const graphData = this.getFullGraphModelData(graph);
@@ -2898,36 +2879,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       (element: V1_PackageableElement) => !(element instanceof V1_Service),
       (entity: Entity) => {
         const content = entity.content as { _type: string };
-        return !(content._type === V1_SERVICE_ELEMENT_PROTOCOL_TYPE);
+        return content._type !== V1_SERVICE_ELEMENT_PROTOCOL_TYPE;
       },
     );
     return prunedGraphData;
   };
 
-  private createServiceRegistrationInput = (
-    graph: PureModel,
-    service: Service,
-  ): V1_PureModelContextData => {
-    const prunedGraphData = this.TEMPORARY_filterOutServicesInPMCD(graph);
-    prunedGraphData.elements.push(this.elementToProtocol<V1_Service>(service));
-    return prunedGraphData;
-  };
-
-  private createBulkServiceRegistrationInput = (
-    graph: PureModel,
-    services: Service[],
-  ): V1_PureModelContextData[] => {
-    const graphData = this.TEMPORARY_filterOutServicesInPMCD(graph);
-    const results: V1_PureModelContextData[] = [];
-    services.forEach((service) => {
-      const prunedGraphData = this.prunePureModelContextData(graphData);
-      prunedGraphData.elements.push(
-        this.elementToProtocol<V1_Service>(service),
-      );
-      results.push(prunedGraphData);
-    });
-    return results;
-  };
   // --------------------------------------------- Query ---------------------------------------------
 
   async searchQueries(
@@ -3212,6 +3169,22 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   };
 
   // --------------------------------------------- Shared ---------------------------------------------
+
+  private prunePureModelContextData = (
+    data: V1_PureModelContextData,
+    elementFilter?: (val: V1_PackageableElement) => boolean,
+    entityFilter?: (entity: Entity) => boolean,
+  ): V1_PureModelContextData => {
+    const prunedGraphData = new V1_PureModelContextData();
+    prunedGraphData.elements = data.elements.filter((element) =>
+      elementFilter ? elementFilter(element) : true,
+    );
+    prunedGraphData.INTERNAL__rawDependencyEntities =
+      data.INTERNAL__rawDependencyEntities.filter((entity) =>
+        entityFilter ? entityFilter(entity) : true,
+      );
+    return prunedGraphData;
+  };
 
   private buildPureModelSDLCPointer(
     origin: GraphDataOrigin,
